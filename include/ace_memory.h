@@ -21,6 +21,10 @@ static const char *ident_ace_memory_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.3  2000/11/09 10:58:18  prez
 ** THINK I have it working again ... with the free list.
 ** Will check, still thinking of sorting free list by size.
@@ -67,8 +71,8 @@ public:
   void free (void *);
   // return a chunk of memory back to free store.
 
-  size_t chunks() { return pool_.size(); }
-  size_t used() { return (pool_.size() * n_chunks_) - free_list_.size(); }
+  size_t chunks() const { return pool_.size(); }
+  size_t used() const { return (pool_.size() * n_chunks_) - free_list_.size(); }
 
 private:
   ACE_Array_Base<char *> pool_;
@@ -189,16 +193,16 @@ public:
   void free (void *);
   // return a chunk of memory back to free store.
 
-  size_t size();
+  size_t size() const;
   // Total size (amount of nodes available)
 
-  size_t nodesize();
+  size_t nodesize() const;
   // Size of each node (same as specified)
 
-  size_t chunksize();
+  size_t chunksize() const;
   // Amount of nodes per allocated chunk
 
-  size_t count();
+  size_t count() const;
   // Amount of used chunks so far
 
 private:
@@ -237,25 +241,25 @@ ACE_Cached_Fixed_Allocator<ACE_LOCK>::free (void * ptr)
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
-ACE_Cached_Fixed_Allocator<ACE_LOCK>::size ()
+ACE_Cached_Fixed_Allocator<ACE_LOCK>::size () const
 {
   return n_chunks_;
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
-ACE_Cached_Fixed_Allocator<ACE_LOCK>::nodesize ()
+ACE_Cached_Fixed_Allocator<ACE_LOCK>::nodesize () const
 {
   return n_size_;
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
-ACE_Cached_Fixed_Allocator<ACE_LOCK>::chunksize ()
+ACE_Cached_Fixed_Allocator<ACE_LOCK>::chunksize () const
 {
   return n_chunks_;
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
-ACE_Cached_Fixed_Allocator<ACE_LOCK>::count ()
+ACE_Cached_Fixed_Allocator<ACE_LOCK>::count () const
 {
   return size() - free_list_.size();
 }
@@ -314,16 +318,16 @@ public:
   void free (void *);
   // return a chunk of memory back to free store.
 
-  size_t size();
+  size_t size() const;
   // Total size (amount of nodes available)
 
-  size_t nodesize();
+  size_t nodesize() const;
   // Size of each node (same as specified)
 
-  size_t chunksize();
+  size_t chunksize() const;
   // Amount of nodes per allocated chunk
 
-  size_t count();
+  size_t count() const;
   // Amount of used chunks so far
 
 private:
@@ -350,25 +354,25 @@ ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::free (void * ptr)
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
-ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::size ()
+ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::size () const
 {
   return pool_.size() * n_chunks_;
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
-ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::nodesize ()
+ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::nodesize () const
 {
   return n_size_;
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
-ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::chunksize ()
+ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::chunksize () const
 {
   return n_chunks_;
 }
 
 template <class ACE_LOCK> ACE_INLINE size_t
-ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::count ()
+ACE_Expandable_Cached_Fixed_Allocator<ACE_LOCK>::count () const
 {
   return size() - free_list_.size();
 }

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.218  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.217  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -578,7 +582,7 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 	i_UserDef.insert(*j);
 }
 
-mDateTime Chan_Live_t::Creation_Time()
+mDateTime Chan_Live_t::Creation_Time() const 
 {
     NFT("Chan_Live_t::Creation_Time");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Creation_Time"));
@@ -606,21 +610,21 @@ void Chan_Live_t::Topic(mstring source, mstring topic, mstring setter, mDateTime
 }
 
 
-mstring Chan_Live_t::Topic()
+mstring Chan_Live_t::Topic() const
 {
     NFT(("Chan_Live_t::Topic"));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic"));
     RET(i_Topic);
 }
 
-mstring Chan_Live_t::Topic_Setter()
+mstring Chan_Live_t::Topic_Setter() const
 {
     NFT(("Chan_Live_t::Topic_Setter"));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Setter"));
     RET(i_Topic_Setter);
 }
 
-mDateTime Chan_Live_t::Topic_Set_Time()
+mDateTime Chan_Live_t::Topic_Set_Time() const
 {
     NFT(("Chan_Live_t::Topic_Set_Time"));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Set_Time"));
@@ -628,15 +632,15 @@ mDateTime Chan_Live_t::Topic_Set_Time()
 }
 
 
-unsigned int Chan_Live_t::Squit()
+unsigned int Chan_Live_t::Squit() const
 {
-    NFT("Chan_Livt_t::Squit");
+    NFT("Chan_Live_t::Squit");
     unsigned int retval = squit.size();
     RET(retval);
 }
 
 
-mstring Chan_Live_t::Squit(unsigned int num)
+mstring Chan_Live_t::Squit(unsigned int num) const
 {
     FT("Chan_Live_t::Squit", (num));
     unsigned int i;
@@ -652,15 +656,15 @@ mstring Chan_Live_t::Squit(unsigned int num)
 }
 
 
-unsigned int Chan_Live_t::Users()
+unsigned int Chan_Live_t::Users() const 
 {
-    NFT("Chan_Livt_t::Users");
+    NFT("Chan_Live_t::Users");
     unsigned int retval = users.size();
     RET(retval);
 }
 
 
-mstring Chan_Live_t::User(unsigned int num)
+mstring Chan_Live_t::User(unsigned int num) const
 {
     FT("Chan_Live_t::User", (num));
     unsigned int i;
@@ -676,16 +680,20 @@ mstring Chan_Live_t::User(unsigned int num)
 }
 
 
-unsigned int Chan_Live_t::Ops()
+unsigned int Chan_Live_t::Ops() const
 {
     NFT("Chan_Live_t::Ops");
+    unsigned int count = 0;
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-    unsigned int retval = count_if(users.begin(),users.end(),checkops);
-    RET(retval);
+    map<mstring,pair<bool,bool> >::const_iterator i;
+    for (i=users.begin(); i!=users.end(); i++)
+	if (i->second.first)
+	    count++;
+    RET(count);
 }
 
 
-mstring Chan_Live_t::Op(unsigned int num)
+mstring Chan_Live_t::Op(unsigned int num) const
 {
     FT("Chan_Live_t::Op", (num));
     unsigned int i;
@@ -705,16 +713,20 @@ mstring Chan_Live_t::Op(unsigned int num)
 }
 
 
-unsigned int Chan_Live_t::Voices()
+unsigned int Chan_Live_t::Voices() const
 {
     NFT("Chan_Live_t::Voices");
+    unsigned int count = 0;
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-    unsigned int retval = count_if(users.begin(),users.end(),checkvoices);
-    RET(retval);
+    map<mstring,pair<bool,bool> >::const_iterator i;
+    for (i=users.begin(); i!=users.end(); i++)
+	if (i->second.second)
+	    count++;
+    RET(count);
 }
 
 
-mstring Chan_Live_t::Voice(unsigned int num)
+mstring Chan_Live_t::Voice(unsigned int num) const
 {
     FT("Chan_Live_t::Voice", (num));
     unsigned int i;
@@ -734,13 +746,14 @@ mstring Chan_Live_t::Voice(unsigned int num)
 
 
 
-pair<bool,bool> Chan_Live_t::User(mstring name)
+pair<bool,bool> Chan_Live_t::User(mstring name) const
 {
     FT("Chan_Live_t::User", (name));
     if (IsIn(name))
     {
 	RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-	NRET(pair<bool.bool>, users[name.LowerCase()]);
+	map<mstring, pair<bool,bool> >::const_iterator i = users.find(name.LowerCase());
+	NRET(pair<bool.bool>, i->second);
     }
     else
     {
@@ -750,7 +763,7 @@ pair<bool,bool> Chan_Live_t::User(mstring name)
 }
 
 
-unsigned int Chan_Live_t::Bans()
+unsigned int Chan_Live_t::Bans() const
 {
     NFT("Chan_Live_t::Bans");
     unsigned int retval = bans.size();
@@ -758,7 +771,7 @@ unsigned int Chan_Live_t::Bans()
 }
 
 
-mstring Chan_Live_t::Ban(unsigned int num)
+mstring Chan_Live_t::Ban(unsigned int num) const
 {
     FT("Chan_Live_t::Ban", (num));
     unsigned int i;
@@ -774,20 +787,21 @@ mstring Chan_Live_t::Ban(unsigned int num)
 }
 
 
-mDateTime Chan_Live_t::Ban(mstring mask)
+mDateTime Chan_Live_t::Ban(mstring mask) const
 {
     FT("Chan_Live_t::Ban", (mask));
     mDateTime retval(0.0);
-    if (IsBan(mask))
+    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+    map<mstring,mDateTime>::const_iterator i = bans.find(mask.LowerCase());
+    if (i != bans.end());
     {
-	RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
-	retval = bans[mask.LowerCase()];
+	retval = i->second;
     }
     RET(retval);
 }
 
 
-unsigned int Chan_Live_t::Exempts()
+unsigned int Chan_Live_t::Exempts() const
 {
     NFT("Chan_Live_t::Exempts");
     unsigned int retval = exempt.size();
@@ -795,7 +809,7 @@ unsigned int Chan_Live_t::Exempts()
 }
 
 
-mstring Chan_Live_t::Exempt(unsigned int num)
+mstring Chan_Live_t::Exempt(unsigned int num) const 
 {
     FT("Chan_Live_t::Exempt", (num));
     unsigned int i;
@@ -811,20 +825,21 @@ mstring Chan_Live_t::Exempt(unsigned int num)
 }
 
 
-mDateTime Chan_Live_t::Exempt(mstring mask)
+mDateTime Chan_Live_t::Exempt(mstring mask) const
 {
     FT("Chan_Live_t::Exempt", (mask));
     mDateTime retval(0.0);
-    if (IsExempt(mask))
+    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
+    map<mstring,mDateTime>::const_iterator i = exempt.find(mask.LowerCase());
+    if (i != exempt.end())
     {
-	RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
-	retval = exempt[mask.LowerCase()];
+	retval = i->second;
     }
     RET(retval);
 }
 
 
-bool Chan_Live_t::IsSquit(mstring nick)
+bool Chan_Live_t::IsSquit(mstring nick)const 
 {
     FT("Chan_Live_t::IsSquit", (nick));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
@@ -833,7 +848,7 @@ bool Chan_Live_t::IsSquit(mstring nick)
 }
 
 
-bool Chan_Live_t::IsIn(mstring nick)
+bool Chan_Live_t::IsIn(mstring nick) const
 {
     FT("Chan_Live_t::IsIn", (nick));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
@@ -842,40 +857,36 @@ bool Chan_Live_t::IsIn(mstring nick)
 }
 
 
-bool Chan_Live_t::IsOp(mstring nick)
+bool Chan_Live_t::IsOp(mstring nick) const
 {
     FT("Chan_Live_t::IsOp", (nick));
 
-    if (IsIn(nick))
+    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    map<mstring, pair<bool,bool> >::const_iterator i = users.find(nick.LowerCase());
+    if (i != users.end() && i->second.first)
     {
-	RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-	if (users[nick.LowerCase()].first == true)
-	{
-	    RET(true);
-	}
+	RET(true);
     }
     RET(false);
 }
 
 
-bool Chan_Live_t::IsVoice(mstring nick)
+bool Chan_Live_t::IsVoice(mstring nick) const
 {
     FT("Chan_Live_t::IsVoice", (nick));
 
-    if (IsIn(nick))
+    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    map<mstring, pair<bool,bool> >::const_iterator i = users.find(nick.LowerCase());
+    if (i != users.end() && i->second.second)
     {
-	RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
-	if (users[nick.LowerCase()].second == true)
-	{
-	    RET(true);
-	}
+	RET(true);
     }
     RET(false);
-
+    RET(false);
 }
 
 
-bool Chan_Live_t::IsBan(mstring mask)
+bool Chan_Live_t::IsBan(mstring mask) const
 {
     FT("Chan_Live_t::IsBan", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
@@ -883,11 +894,11 @@ bool Chan_Live_t::IsBan(mstring mask)
     RET(retval);
 }
 
-bool Chan_Live_t::MatchBan(mstring mask)
+bool Chan_Live_t::MatchBan(mstring mask) const
 {
     FT("Chan_Live_t::MatchBan", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
-    map<mstring, mDateTime>::iterator i;
+    map<mstring, mDateTime>::const_iterator i;
     for (i=bans.begin(); i!=bans.end(); i++)
     {
 	if (mask.Matches(i->first, true))
@@ -898,7 +909,7 @@ bool Chan_Live_t::MatchBan(mstring mask)
     RET(false);
 }
 
-bool Chan_Live_t::IsExempt(mstring mask)
+bool Chan_Live_t::IsExempt(mstring mask) const
 {
     FT("Chan_Live_t::IsExempt", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
@@ -906,11 +917,11 @@ bool Chan_Live_t::IsExempt(mstring mask)
     RET(retval);
 }
 
-bool Chan_Live_t::MatchExempt(mstring mask)
+bool Chan_Live_t::MatchExempt(mstring mask) const 
 {
     FT("Chan_Live_t::MatchExempt", (mask));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
-    map<mstring, mDateTime>::iterator i;
+    map<mstring, mDateTime>::const_iterator i;
     for (i=exempt.begin(); i!=exempt.end(); i++)
     {
 	if (mask.Matches(i->first, true))
@@ -967,7 +978,7 @@ bool Chan_Live_t::ModeExists(mstring mode, vector<mstring> mode_params,
     FT("Chan_Live_t::ModeExists", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
     unsigned int i, param;
 
-    if (reqparam == "")
+    if (reqparam.empty())
 	if (mode.Contains(reqmode))
 	{
 	    RET(true);
@@ -1016,7 +1027,7 @@ void Chan_Live_t::RemoveMode(mstring mode, vector<mstring> mode_params,
 	    if (reqmode == mode[i] && param < mode_params.size())
 	    {
 		if ((reqparam != "" && mode_params[param] == reqparam) ||
-		    reqparam == "")
+		    reqparam.empty())
 		{
 		    // Do nothing ... we want to delete it!
 		}
@@ -1247,7 +1258,7 @@ void Chan_Live_t::SendMode(mstring in)
 		    if (add)
 		    {
 			// ONLY allow +k if we've turned it off before, or one isnt set
-			if (i_Key == "" || ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
+			if (i_Key.empty() || ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
 			{
 			    if (!(Parent->chanserv.IsStored(i_Name) &&
 				Parent->chanserv.stored[i_Name.LowerCase()].Mlock_Off().Contains("k")))
@@ -1627,55 +1638,56 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     }
 }
 
-bool Chan_Live_t::HasMode(mstring in)
+bool Chan_Live_t::HasMode(mstring in) const
 {
     FT("Chan_Live_t::HasMode", (in));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
     RET(modes.Contains(in));
 }
 
-mstring Chan_Live_t::Mode()
+mstring Chan_Live_t::Mode() const 
 {
     NFT("Chan_Live_t::Mode");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
     RET(modes);
 }
 
-mstring Chan_Live_t::Key()
+mstring Chan_Live_t::Key() const
 {
     NFT("Chan_Live_t::Key");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
     RET(i_Key);
 }
 
-unsigned int Chan_Live_t::Limit()
+unsigned int Chan_Live_t::Limit() const
 {
     NFT("Chan_Live_t::Limit");
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
     RET(i_Limit);
 }
 
-mDateTime Chan_Live_t::PartTime(mstring nick)
+mDateTime Chan_Live_t::PartTime(mstring nick) const
 {
     FT("Chan_Live_t::PartTime", (nick));
-    mDateTime retval((time_t) 0);
+    mDateTime retval(0.0);
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "recent_parts"));
-    if (recent_parts.find(nick.LowerCase()) != recent_parts.end())
+    map<mstring, mDateTime>::const_iterator i = recent_parts.find(nick.LowerCase());
+    if (i != recent_parts.end())
     {
-	retval = recent_parts[nick.LowerCase()];
+	retval = i->second;
     }
     RET(retval);
 }
 
 
-size_t Chan_Live_t::Usage()
+size_t Chan_Live_t::Usage() const
 {
     size_t retval = 0;
 
     WLOCK(("ChanServ", "live", i_Name.LowerCase()));
     retval += i_Name.capacity();
     retval += sizeof(i_Creation_Time.Internal());
-    map<mstring, pair<bool,bool> >::iterator i;
+    map<mstring, pair<bool,bool> >::const_iterator i;
     for (i=squit.begin(); i!=squit.end(); i++)
     {
 	retval += i->first.capacity();
@@ -1688,7 +1700,7 @@ size_t Chan_Live_t::Usage()
 	retval += sizeof(i->second.first);
 	retval += sizeof(i->second.second);
     }
-    map<mstring, mDateTime>::iterator j;
+    map<mstring, mDateTime>::const_iterator j;
     for (j=bans.begin(); j!=bans.end(); j++)
     {
 	retval += j->first.capacity();
@@ -1707,7 +1719,7 @@ size_t Chan_Live_t::Usage()
     retval += i_Key.capacity();
     retval += p_modes_on.capacity();
     retval += p_modes_off.capacity();
-    vector<mstring>::iterator k;
+    vector<mstring>::const_iterator k;
     for (k=p_modes_on_params.begin(); k!=p_modes_on_params.end(); k++)
     {
 	retval += k->capacity();
@@ -1727,7 +1739,7 @@ size_t Chan_Live_t::Usage()
 }
 
 
-void Chan_Live_t::DumpB()
+void Chan_Live_t::DumpB() const
 {
     MB(0, (i_Name, i_Creation_Time, squit.size(), users.size(), bans.size(),
 	exempt.size(), i_Topic, i_Topic_Setter, i_Topic_Set_Time, modes,
@@ -1736,7 +1748,7 @@ void Chan_Live_t::DumpB()
     MB(16, (ph_timer, recent_parts.size()));
 }
 
-void Chan_Live_t::DumpE()
+void Chan_Live_t::DumpE() const 
 {
     ME(0, (i_Name, i_Creation_Time, squit.size(), users.size(), bans.size(),
 	exempt.size(), i_Topic, i_Topic_Setter, i_Topic_Set_Time, modes,
@@ -1745,19 +1757,6 @@ void Chan_Live_t::DumpE()
     ME(16, (ph_timer, recent_parts.size()));
 }
 
-
-bool checkops(pair<const mstring, pair<bool,bool> > &in)
-{
-    FT("checkops",(in.first,in.second.first,in.second.second));
-    RET(in.second.first);
-}
-
-
-bool checkvoices(pair<const mstring, pair<bool,bool> > &in)
-{
-    FT("checkvoices",(in.first,in.second.first,in.second.second));
-    RET(in.second.second);
-}
 
 // --------- end of Chan_Live_t -----------------------------------
 
@@ -2813,7 +2812,7 @@ mDateTime Chan_Stored_t::LastUsed()
     RET(i_LastUsed);
 }
 
-mDateTime Chan_Stored_t::RegTime()
+mDateTime Chan_Stored_t::RegTime() const
 {
     NFT("Chan_Stored_t::RegTime");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_RegTime"));
@@ -2846,6 +2845,13 @@ void Chan_Stored_t::Founder(mstring in)
 }
 
 
+mstring Chan_Stored_t::Founder() const 
+{
+    NFT("Chan_Stored_t::Founder");
+    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
+    RET(i_Founder);
+}
+
 void Chan_Stored_t::CoFounder(mstring in)
 {
     FT("Chan_Stored_t::CoFounder", (in));
@@ -2867,14 +2873,7 @@ void Chan_Stored_t::CoFounder(mstring in)
     MCE(i_CoFounder);
 }
 
-mstring Chan_Stored_t::Founder()
-{
-    NFT("Chan_Stored_t::Founder");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
-    RET(i_Founder);
-}
-
-mstring Chan_Stored_t::CoFounder()
+mstring Chan_Stored_t::CoFounder() const
 {
     NFT("Chan_Stored_t::CoFounder");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
@@ -2890,7 +2889,7 @@ void Chan_Stored_t::Description(mstring in)
     MCE(i_Description);
 }
 
-mstring Chan_Stored_t::Description()
+mstring Chan_Stored_t::Description() const
 {
     NFT("Description(mstring in)	{ i_Description = in;");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Description"));
@@ -2906,7 +2905,7 @@ void Chan_Stored_t::Password(mstring in)
     MCE(i_Password);
 }
 
-mstring Chan_Stored_t::Password()
+mstring Chan_Stored_t::Password() const
 {
     NFT("Chan_Stored_t::Password");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"));
@@ -2922,7 +2921,7 @@ void Chan_Stored_t::Email(mstring in)
     MCE(i_Email);
 }
 
-mstring Chan_Stored_t::Email()
+mstring Chan_Stored_t::Email() const
 {
     NFT("Chan_Stored_t::Email");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Email"));
@@ -2938,7 +2937,7 @@ void Chan_Stored_t::URL(mstring in)
     MCE(i_URL);
 }
 
-mstring Chan_Stored_t::URL()
+mstring Chan_Stored_t::URL() const
 {
     NFT("Chan_Stored_t::URL");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_URL"));
@@ -2954,7 +2953,7 @@ void Chan_Stored_t::Comment(mstring in)
     MCE(i_Comment);
 }
 	
-mstring Chan_Stored_t::Comment()
+mstring Chan_Stored_t::Comment() const
 {
     NFT("Chan_Stored_t::Comment");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
@@ -3005,21 +3004,21 @@ void Chan_Stored_t::UnSuspend()
 }
 
 
-mstring Chan_Stored_t::Mlock_Off()
+mstring Chan_Stored_t::Mlock_Off() const
 {
     NFT("Chan_Stored_t::Mlock_Off");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
     RET(i_Mlock_Off);
 }
 
-mstring Chan_Stored_t::Mlock_On()
+mstring Chan_Stored_t::Mlock_On() const
 {
     NFT("Chan_Stored_t::Mlock_On");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_On"));
     RET(i_Mlock_On);
 }
 
-mstring Chan_Stored_t::Mlock()
+mstring Chan_Stored_t::Mlock() const
 {
     NFT("Chan_Stored_t::Mlock");
     mstring Result;
@@ -3316,7 +3315,7 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 }
 
 
-mstring Chan_Stored_t::L_Mlock()
+mstring Chan_Stored_t::L_Mlock() const
 {
     NFT("Chan_Stored_t::L_Mlock");
     mstring Result;
@@ -3547,35 +3546,35 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
     NRET(vector<mstring>, retval);
 }
 
-mstring Chan_Stored_t::Mlock_Key()
+mstring Chan_Stored_t::Mlock_Key() const
 {
     NFT("Chan_Stored_t::Mlock_Key");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
     RET(i_Mlock_Key);
 }
 
-unsigned int Chan_Stored_t::Mlock_Limit()
+unsigned int Chan_Stored_t::Mlock_Limit() const
 {
     NFT("Chan_Stored_t::Mlock_Limit");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Limit"));
     RET(i_Mlock_Limit);
 }
 
-mstring Chan_Stored_t::Last_Topic()
+mstring Chan_Stored_t::Last_Topic() const
 {
     NFT("Chan_Stored_t::i_Topic");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
     RET(i_Topic);
 }
 
-mstring Chan_Stored_t::Last_Topic_Setter()
+mstring Chan_Stored_t::Last_Topic_Setter() const
 {
     NFT("Chan_Stored_t::i_Topic_Setter");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
     RET(i_Topic_Setter);
 }
 
-mDateTime Chan_Stored_t::Last_Topic_Set_Time()
+mDateTime Chan_Stored_t::Last_Topic_Set_Time() const
 {
     NFT("Chan_Stored_t::i_Topic_Set_Time");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
@@ -3595,7 +3594,7 @@ void Chan_Stored_t::Bantime(unsigned long in)
 }
 
 
-unsigned long Chan_Stored_t::Bantime()
+unsigned long Chan_Stored_t::Bantime() const
 {
     NFT("Chan_Stored_t::Bantime");
     if (!Parent->chanserv.LCK_Bantime())
@@ -3620,7 +3619,7 @@ void Chan_Stored_t::L_Bantime(bool in)
 }
 
 
-bool Chan_Stored_t::L_Bantime()
+bool Chan_Stored_t::L_Bantime() const 
 {
     NFT("Chan_Stored_t::L_Bantime");
     if (!Parent->chanserv.LCK_Bantime())
@@ -3645,7 +3644,7 @@ void Chan_Stored_t::Parttime(unsigned long in)
 }
 
 
-unsigned long Chan_Stored_t::Parttime()
+unsigned long Chan_Stored_t::Parttime() const
 {
     NFT("Chan_Stored_t::Parttime");
     if (!Parent->chanserv.LCK_Parttime())
@@ -3670,7 +3669,7 @@ void Chan_Stored_t::L_Parttime(bool in)
 }
 
 
-bool Chan_Stored_t::L_Parttime()
+bool Chan_Stored_t::L_Parttime() const
 {
     NFT("Chan_Stored_t::L_Parttime");
     if (!Parent->chanserv.LCK_Parttime())
@@ -3695,7 +3694,7 @@ void Chan_Stored_t::Keeptopic(bool in)
 }
 
 
-bool Chan_Stored_t::Keeptopic()
+bool Chan_Stored_t::Keeptopic() const
 {
     NFT("Chan_Stored_t::Keeptopic");
     if (!Parent->chanserv.LCK_Keeptopic())
@@ -3720,7 +3719,7 @@ void Chan_Stored_t::L_Keeptopic(bool in)
 }
 
 
-bool Chan_Stored_t::L_Keeptopic()
+bool Chan_Stored_t::L_Keeptopic() const
 {
     NFT("Chan_Stored_t::L_Keeptopic");
     if (!Parent->chanserv.LCK_Keeptopic())
@@ -3745,7 +3744,7 @@ void Chan_Stored_t::Topiclock(bool in)
 }
 
 
-bool Chan_Stored_t::Topiclock()
+bool Chan_Stored_t::Topiclock() const
 {
     NFT("Chan_Stored_t::Topiclock");
     if (!Parent->chanserv.LCK_Topiclock())
@@ -3770,7 +3769,7 @@ void Chan_Stored_t::L_Topiclock(bool in)
 }
 
 
-bool Chan_Stored_t::L_Topiclock()
+bool Chan_Stored_t::L_Topiclock() const
 {
     NFT("Chan_Stored_t::L_Topiclock");
     if (!Parent->chanserv.LCK_Topiclock())
@@ -3795,7 +3794,7 @@ void Chan_Stored_t::Private(bool in)
 }
 
 
-bool Chan_Stored_t::Private()
+bool Chan_Stored_t::Private() const
 {
     NFT("Chan_Stored_t::Private");
     if (!Parent->chanserv.LCK_Private())
@@ -3820,7 +3819,7 @@ void Chan_Stored_t::L_Private(bool in)
 }
 
 
-bool Chan_Stored_t::L_Private()
+bool Chan_Stored_t::L_Private() const
 {
     NFT("Chan_Stored_t::L_Private");
     if (!Parent->chanserv.LCK_Private())
@@ -3845,7 +3844,7 @@ void Chan_Stored_t::Secureops(bool in)
 }
 
 
-bool Chan_Stored_t::Secureops()
+bool Chan_Stored_t::Secureops() const
 {
     NFT("Chan_Stored_t::Secureops");
     if (!Parent->chanserv.LCK_Secureops())
@@ -3870,7 +3869,7 @@ void Chan_Stored_t::L_Secureops(bool in)
 }
 
 
-bool Chan_Stored_t::L_Secureops()
+bool Chan_Stored_t::L_Secureops() const
 {
     NFT("Chan_Stored_t::L_Secureops");
     if (!Parent->chanserv.LCK_Secureops())
@@ -3895,7 +3894,7 @@ void Chan_Stored_t::Secure(bool in)
 }
 
 
-bool Chan_Stored_t::Secure()
+bool Chan_Stored_t::Secure() const
 {
     NFT("Chan_Stored_t::Secure");
     if (!Parent->chanserv.LCK_Secure())
@@ -3920,7 +3919,7 @@ void Chan_Stored_t::L_Secure(bool in)
 }
 
 
-bool Chan_Stored_t::L_Secure()
+bool Chan_Stored_t::L_Secure() const
 {
     NFT("Chan_Stored_t::L_Secure");
     if (!Parent->chanserv.LCK_Secure())
@@ -3945,7 +3944,7 @@ void Chan_Stored_t::NoExpire(bool in)
 }
 
 
-bool Chan_Stored_t::NoExpire()
+bool Chan_Stored_t::NoExpire() const
 {
     NFT("Chan_Stored_t::NoExpire");
     if (!Parent->chanserv.LCK_NoExpire())
@@ -3970,7 +3969,7 @@ void Chan_Stored_t::L_NoExpire(bool in)
 }
 
 
-bool Chan_Stored_t::L_NoExpire()
+bool Chan_Stored_t::L_NoExpire() const
 {
     NFT("Chan_Stored_t::L_NoExpire");
     if (!Parent->chanserv.LCK_NoExpire())
@@ -3995,7 +3994,7 @@ void Chan_Stored_t::Anarchy(bool in)
 }
 
 
-bool Chan_Stored_t::Anarchy()
+bool Chan_Stored_t::Anarchy() const
 {
     NFT("Chan_Stored_t::Anarchy");
     if (!Parent->chanserv.LCK_Anarchy())
@@ -4020,7 +4019,7 @@ void Chan_Stored_t::L_Anarchy(bool in)
 }
 
 
-bool Chan_Stored_t::L_Anarchy()
+bool Chan_Stored_t::L_Anarchy() const
 {
     NFT("Chan_Stored_t::L_Anarchy");
     if (!Parent->chanserv.LCK_Anarchy())
@@ -4045,7 +4044,7 @@ void Chan_Stored_t::KickOnBan(bool in)
 }
 
 
-bool Chan_Stored_t::KickOnBan()
+bool Chan_Stored_t::KickOnBan() const
 {
     NFT("Chan_Stored_t::KickOnBan");
     if (!Parent->chanserv.LCK_KickOnBan())
@@ -4070,7 +4069,7 @@ void Chan_Stored_t::L_KickOnBan(bool in)
 }
 
 
-bool Chan_Stored_t::L_KickOnBan()
+bool Chan_Stored_t::L_KickOnBan() const
 {
     NFT("Chan_Stored_t::L_KickOnBan");
     if (!Parent->chanserv.LCK_KickOnBan())
@@ -4095,7 +4094,7 @@ void Chan_Stored_t::Restricted(bool in)
 }
 
 
-bool Chan_Stored_t::Restricted()
+bool Chan_Stored_t::Restricted() const
 {
     NFT("Chan_Stored_t::Restricted");
     if (!Parent->chanserv.LCK_Restricted())
@@ -4120,7 +4119,7 @@ void Chan_Stored_t::L_Restricted(bool in)
 }
 
 
-bool Chan_Stored_t::L_Restricted()
+bool Chan_Stored_t::L_Restricted() const
 {
     NFT("Chan_Stored_t::L_Restricted");
     if (!Parent->chanserv.LCK_Restricted())
@@ -4145,7 +4144,7 @@ void Chan_Stored_t::Join(bool in)
 }
 
 
-bool Chan_Stored_t::Join()
+bool Chan_Stored_t::Join() const
 {
     NFT("Chan_Stored_t::Join");
     if (!Parent->chanserv.LCK_Join())
@@ -4170,7 +4169,7 @@ void Chan_Stored_t::L_Join(bool in)
 }
 
 
-bool Chan_Stored_t::L_Join()
+bool Chan_Stored_t::L_Join() const
 {
     NFT("Chan_Stored_t::L_Join");
     if (!Parent->chanserv.LCK_Join())
@@ -4197,7 +4196,7 @@ bool Chan_Stored_t::Revenge(mstring in)
 }
 
 
-mstring Chan_Stored_t::Revenge()
+mstring Chan_Stored_t::Revenge() const
 {
     NFT("Chan_Stored_t::Revenge");
     if (!Parent->chanserv.LCK_Revenge())
@@ -4222,7 +4221,7 @@ void Chan_Stored_t::L_Revenge(bool in)
 }
 
 
-bool Chan_Stored_t::L_Revenge()
+bool Chan_Stored_t::L_Revenge() const
 {
     NFT("Chan_Stored_t::L_Revenge");
     if (!Parent->chanserv.LCK_Revenge())
@@ -4233,28 +4232,28 @@ bool Chan_Stored_t::L_Revenge()
     RET(true);
 }
 
-bool Chan_Stored_t::Suspended()
+bool Chan_Stored_t::Suspended() const
 {
     NFT("Chan_Stored_t::Suspended");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
     RET(i_Suspend_By != "");
 }
 
-mstring Chan_Stored_t::Suspend_By()
+mstring Chan_Stored_t::Suspend_By() const
 {
     NFT("Chan_Stored_t::Suspend_By");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
     RET(i_Suspend_By);
 }
 
-mDateTime Chan_Stored_t::Suspend_Time()
+mDateTime Chan_Stored_t::Suspend_Time() const
 {
     NFT("Chan_Stored_t::Suspend_Time");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
     RET(i_Suspend_Time);
 }
 
-bool Chan_Stored_t::Forbidden()
+bool Chan_Stored_t::Forbidden() const
 {
     NFT("Chan_Stored_t::Forbidden");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Forbidden"));
@@ -5098,7 +5097,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 }
 
 
-size_t Chan_Stored_t::Usage()
+size_t Chan_Stored_t::Usage() const
 {
     size_t retval = 0;
 
@@ -5113,7 +5112,7 @@ size_t Chan_Stored_t::Usage()
     retval += i_Email.capacity();
     retval += i_URL.capacity();
     retval += i_Comment.capacity();
-    map<mstring, unsigned int>::iterator i;
+    map<mstring, unsigned int>::const_iterator i;
     for (i=failed_passwds.begin(); i!=failed_passwds.end(); i++)
     {
 	retval += i->first.capacity();
@@ -5161,7 +5160,7 @@ size_t Chan_Stored_t::Usage()
     retval += i_Suspend_By.capacity();
     retval += sizeof(i_Suspend_Time.Internal());
 
-    set<entlist_val_t<long> >::iterator j;
+    set<entlist_val_t<long> >::const_iterator j;
     entlist_val_t<long> *jp;
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
     for (j=i_Level.begin(); j!=i_Level.end(); j++)
@@ -5176,7 +5175,7 @@ size_t Chan_Stored_t::Usage()
 	retval += jp->Usage();
     }}
 
-    set<entlist_val_t<mstring> >::iterator k;
+    set<entlist_val_t<mstring> >::const_iterator k;
     entlist_val_t<mstring> *kp;
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     for (k=i_Akick.begin(); k!=i_Akick.end(); k++)
@@ -5185,7 +5184,7 @@ size_t Chan_Stored_t::Usage()
 	retval += kp->Usage();
     }}
 
-    list<entlist_t>::iterator l;
+    list<entlist_t>::const_iterator l;
     {MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
     for (l = i_Greet.begin(); l != i_Greet.end(); l++)
     {
@@ -5197,7 +5196,7 @@ size_t Chan_Stored_t::Usage()
 	retval += l->Usage();
     }}
 
-    map<mstring,mstring>::iterator m;
+    map<mstring,mstring>::const_iterator m;
     for (m=i_UserDef.begin(); m!=i_UserDef.end(); m++)
     {
 	retval += m->first.capacity();
@@ -5207,7 +5206,7 @@ size_t Chan_Stored_t::Usage()
     return retval;
 }
 
-void Chan_Stored_t::DumpB()
+void Chan_Stored_t::DumpB() const
 {
     MB(0, (i_Name, i_RegTime, i_LastUsed, i_Founder, i_CoFounder,
 	i_Description, i_Password, i_Email, i_URL, i_Comment,
@@ -5225,7 +5224,7 @@ void Chan_Stored_t::DumpB()
 }
 
 
-void Chan_Stored_t::DumpE()
+void Chan_Stored_t::DumpE()const 
 {
     ME(0, (i_Name, i_RegTime, i_LastUsed, i_Founder, i_CoFounder,
 	i_Description, i_Password, i_Email, i_URL, i_Comment,
@@ -9382,7 +9381,7 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
 
     cstored->CoFounder(founder);
     Parent->chanserv.stats.i_Set++;
-    if (founder == "")
+    if (founder.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/COFOUNDER").c_str(),
@@ -9551,7 +9550,7 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     cstored->Email(option);
     Parent->chanserv.stats.i_Set++;
-    if (option == "")
+    if (option.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/EMAIL").c_str(),
@@ -9611,7 +9610,7 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
 	option = "";
     cstored->URL(option);
     Parent->chanserv.stats.i_Set++;
-    if (option == "")
+    if (option.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/URL").c_str(),
@@ -9664,7 +9663,7 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 	option = "";
     cstored->Comment(option);
     Parent->chanserv.stats.i_Set++;
-    if (option == "")
+    if (option.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/COMMENT").c_str(),
@@ -12014,19 +12013,20 @@ void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
 }
 
 
-long ChanServ::LVL(mstring level)
+long ChanServ::LVL(mstring level) const
 {
     FT("ChanServ::LVL", (level));
     long retval = 0;
-    if (!IsLVL(level) ||
-	lvl[level.UpperCase()] > Level_Max() + 1 ||
-	lvl[level.UpperCase()] < Level_Min())
+    map<mstring,long>::const_iterator i = lvl.find(level.UpperCase());
+    if (i == lvl.end() ||
+	i->second > Level_Max() + 1 ||
+	i->second < Level_Min())
     {
 	retval = Level_Min()-1;
     }
     else
     {
-	retval = lvl[level.UpperCase()];
+	retval = i->second;
     }
     RET(retval);
 }

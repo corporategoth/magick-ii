@@ -25,6 +25,10 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.42  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -159,9 +163,9 @@ public:
     	{ return (i_Name < in.i_Name); }
 
     mstring Name()const		{ return i_Name; }
-    mDateTime RegTime();
-    mstring HeadCom();
-    mstring Head();
+    mDateTime RegTime() const;
+    mstring HeadCom() const;
+    mstring Head() const;
     void Head(mstring newhead);
 
     bool insert(mstring entry, mstring nick, mDateTime modtime = Now());
@@ -172,34 +176,34 @@ public:
     bool find(mstring entry);
     entlist_ui member;
 
-    bool IsIn(mstring nick);
-    bool IsHead(mstring nick);
-    bool IsOn(mstring nick);
+    bool IsIn(mstring nick) const;
+    bool IsHead(mstring nick) const;
+    bool IsOn(mstring nick) const;
 
     void Description(mstring in);
-    mstring Description();
+    mstring Description() const;
     void Email(mstring in);
-    mstring Email();
+    mstring Email() const;
     void URL(mstring in);
-    mstring URL();
+    mstring URL() const;
     void Private(bool in);
-    bool Private();
+    bool Private() const;
     void L_Private(bool in);
-    bool L_Private();
+    bool L_Private() const;
     void OpenMemos(bool in);
-    bool OpenMemos();
+    bool OpenMemos() const;
     void L_OpenMemos(bool in);
-    bool L_OpenMemos();
+    bool L_OpenMemos() const;
     void Secure(bool in);
-    bool Secure();
+    bool Secure() const;
     void L_Secure(bool in);
-    bool L_Secure();
+    bool L_Secure() const;
 
     bool MSG_insert(mstring entry, mstring nick);
     bool MSG_erase();
     entlist_i MSG_begin()	{ return i_Messages.begin(); }
     entlist_i MSG_end()		{ return i_Messages.end(); }
-    size_t MSG_size()		{ return i_Messages.size(); }
+    size_t MSG_size()const	{ return i_Messages.size(); }
     bool MSG_find(int num);
     entlist_i message;
 
@@ -208,9 +212,9 @@ public:
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
-    size_t Usage();
-    void DumpB();
-    void DumpE();
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 
 class CommServ : public mBase, public SXP::IPersistObj

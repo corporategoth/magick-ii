@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.82  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -309,21 +313,21 @@ void Committee::operator=(const Committee &in)
 	i_UserDef.insert(*j);
 }
 
-mDateTime Committee::RegTime()
+mDateTime Committee::RegTime() const
 {
     NFT("Committee::RegTime");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_RegTime"));
     RET(i_RegTime);
 }
 
-mstring Committee::HeadCom()
+mstring Committee::HeadCom() const
 {
     NFT("Committee::HeadCom");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     RET(i_HeadCom);
 }
 
-mstring Committee::Head()
+mstring Committee::Head() const
 {
     NFT("Committee::Head");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
@@ -423,7 +427,7 @@ bool Committee::find(mstring entry)
 }
 
 
-bool Committee::IsIn(mstring nick)
+bool Committee::IsIn(mstring nick) const
 {
     FT("Committee::IsIn", (nick));
 
@@ -462,7 +466,7 @@ bool Committee::IsIn(mstring nick)
 	RET(true);
     }}
 
-    entlist_ui iter;
+    entlist_cui iter;
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
     {
@@ -494,7 +498,7 @@ bool Committee::IsIn(mstring nick)
 }
 
 
-bool Committee::IsOn(mstring nick)
+bool Committee::IsOn(mstring nick) const
 {
     FT("Committee::IsOn", (nick));
 
@@ -538,7 +542,7 @@ bool Committee::IsOn(mstring nick)
 }
 
 
-bool Committee::IsHead(mstring nick)
+bool Committee::IsHead(mstring nick) const
 {
     FT("Committee::IsHead", (nick));
 
@@ -553,7 +557,7 @@ bool Committee::IsHead(mstring nick)
     {
 	RET(true);
     }
-    else if (i_Head == "" && i_HeadCom == "")
+    else if (i_Head.empty() && i_HeadCom.empty())
     {
 	bool retval = IsIn(nick);
 	RET(retval);
@@ -570,7 +574,7 @@ void Committee::Description(mstring in)
     MCE(i_Description);
 }
 
-mstring Committee::Description()
+mstring Committee::Description() const
 {
     NFT("Committee::Description");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
@@ -586,7 +590,7 @@ void Committee::Email(mstring in)
     MCE(i_Email);
 }
 
-mstring Committee::Email()
+mstring Committee::Email() const
 {
     NFT("Committee::Email");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
@@ -602,7 +606,7 @@ void Committee::URL(mstring in)
     MCE(i_URL);
 }
 
-mstring Committee::URL()
+mstring Committee::URL() const
 {
     NFT("Committee::URL");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
@@ -621,58 +625,7 @@ void Committee::Private(bool in)
     }
 }
 
-
-void Committee::Secure(bool in)
-{
-    FT("Committee::Secure", (in));
-    if (!L_Secure())
-    {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
-	MCB(i_Secure);
-	i_Secure = in;
-	MCE(i_Secure);
-    }
-}
-
-
-bool Committee::Secure()
-{
-    NFT("Committee::Secure");
-    if (!Parent->commserv.LCK_Secure())
-    {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
-	RET(i_Secure);
-    }
-    RET(Parent->commserv.DEF_Secure());
-}
-
-
-void Committee::L_Secure(bool in)
-{
-    FT("Committee::L_Secure", (in));
-    if (!Parent->commserv.LCK_Secure())
-    {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
-	MCB(l_Secure);
-	l_Secure = in;
-	MCE(l_Secure);
-    }
-}
-
-
-bool Committee::L_Secure()
-{
-    NFT("Committee::L_Secure");
-    if (!Parent->commserv.LCK_Secure())
-    {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
-	RET(l_Secure);
-    }
-    RET(true);
-}
-
-
-bool Committee::Private()
+bool Committee::Private() const
 {
     NFT("Committee::Private");
     if (!Parent->commserv.LCK_Private())
@@ -697,13 +650,63 @@ void Committee::L_Private(bool in)
 }
 
 
-bool Committee::L_Private()
+bool Committee::L_Private() const
 {
     NFT("Committee::L_Private");
     if (!Parent->commserv.LCK_Private())
     {
 	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Private"));
 	RET(l_Private);
+    }
+    RET(true);
+}
+
+
+void Committee::Secure(bool in)
+{
+    FT("Committee::Secure", (in));
+    if (!L_Secure())
+    {
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
+	MCB(i_Secure);
+	i_Secure = in;
+	MCE(i_Secure);
+    }
+}
+
+
+bool Committee::Secure() const
+{
+    NFT("Committee::Secure");
+    if (!Parent->commserv.LCK_Secure())
+    {
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
+	RET(i_Secure);
+    }
+    RET(Parent->commserv.DEF_Secure());
+}
+
+
+void Committee::L_Secure(bool in)
+{
+    FT("Committee::L_Secure", (in));
+    if (!Parent->commserv.LCK_Secure())
+    {
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
+	MCB(l_Secure);
+	l_Secure = in;
+	MCE(l_Secure);
+    }
+}
+
+
+bool Committee::L_Secure() const
+{
+    NFT("Committee::L_Secure");
+    if (!Parent->commserv.LCK_Secure())
+    {
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
+	RET(l_Secure);
     }
     RET(true);
 }
@@ -722,7 +725,7 @@ void Committee::OpenMemos(bool in)
 }
 
 
-bool Committee::OpenMemos()
+bool Committee::OpenMemos() const
 {
     NFT("Committee::OpenMemos");
     if (!Parent->commserv.LCK_OpenMemos())
@@ -747,7 +750,7 @@ void Committee::L_OpenMemos(bool in)
 }
 
 
-bool Committee::L_OpenMemos()
+bool Committee::L_OpenMemos() const
 {
     NFT("Committee::L_OpenMemos");
     if (!Parent->commserv.LCK_OpenMemos())
@@ -826,7 +829,7 @@ bool Committee::MSG_find(int number)
     }
 }
 
-size_t Committee::Usage()
+size_t Committee::Usage() const
 {
     size_t retval = 0;
 
@@ -839,11 +842,10 @@ size_t Committee::Usage()
     retval += i_Email.capacity();
     retval += i_URL.capacity();
     
-    set<entlist_t>::iterator i;
+    entlist_cui i;
     for (i=i_Members.begin(); i!=i_Members.end(); i++)
     {
-	entlist_t tmp = *i;
-	retval += tmp.Usage();
+	retval += i->Usage();
     }
 
     retval += sizeof(i_Private);
@@ -853,13 +855,13 @@ size_t Committee::Usage()
     retval += sizeof(i_Secure);
     retval += sizeof(l_Secure);
 
-    list<entlist_t>::iterator j;
+    entlist_ci j;
     for (j=i_Messages.begin(); j!=i_Messages.end(); j++)
     {
 	retval += j->Usage();
     }
 
-    map<mstring,mstring>::iterator l;
+    map<mstring,mstring>::const_iterator l;
     for (l=i_UserDef.begin(); l!=i_UserDef.end(); l++)
     {
 	retval += l->first.capacity();
@@ -869,14 +871,14 @@ size_t Committee::Usage()
     return retval;    
 }
 
-void Committee::DumpB()
+void Committee::DumpB() const
 {
     MB(0, (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email,
 	i_URL, i_Members.size(), i_Private, l_Private, i_OpenMemos,
 	l_OpenMemos, i_Secure, l_Secure, i_Messages.size(), i_UserDef.size()));
 }
 
-void Committee::DumpE()
+void Committee::DumpE() const
 {
     ME(0, (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email,
 	i_URL, i_Members.size(), i_Private, l_Private, i_OpenMemos,
@@ -1413,7 +1415,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	if (Parent->nickserv.IsStored(comm->Head()))
 	{
 	    mstring realrecipiant = Parent->nickserv.stored[comm->Head().LowerCase()].Host();
-	    if (realrecipiant == "")
+	    if (realrecipiant.empty())
 		realrecipiant = comm->Head();
 	    if (realme.LowerCase() != realrecipiant.LowerCase())
 	    {
@@ -1450,7 +1452,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	if (Parent->nickserv.IsStored(comm->member->Entry()))
 	{
 	    mstring realrecipiant = Parent->nickserv.stored[comm->member->Entry().LowerCase()].Host();
-	    if (realrecipiant == "")
+	    if (realrecipiant.empty())
 		realrecipiant = comm->member->Entry();
 	    if (realme.LowerCase() != realrecipiant.LowerCase())
 	    {
@@ -2074,7 +2076,7 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (Parent->commserv.list[committee].Head() == "")
+    if (Parent->commserv.list[committee].Head().empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/MULTI_HEAD"),
 				committee.c_str());
@@ -2240,7 +2242,7 @@ void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     Parent->commserv.list[committee].Email(email);
     Parent->commserv.stats.i_Set++;
-    if (email == "")
+    if (email.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNSET"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL").c_str(),
@@ -2309,7 +2311,7 @@ void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
 	url = "";
     Parent->commserv.list[committee].URL(url);
     Parent->commserv.stats.i_Set++;
-    if (url == "")
+    if (url.empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNSET"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_URL").c_str(),

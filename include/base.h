@@ -25,6 +25,10 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.75  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -145,7 +149,7 @@ protected:
     vector<mstring *> ud_array;
     map<mstring,mstring> i_UserDef;
 public:
-    mstring UserDef(mstring type);
+    mstring UserDef(mstring type) const;
     void UserDef(mstring type, mstring val);
 };
 
@@ -153,7 +157,7 @@ class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class mBase;
 
-    mstring PreParse(const mstring& message);
+    mstring PreParse(const mstring& message) const;
 protected:
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
     size_t thread_count;
@@ -192,9 +196,9 @@ public:
     static void push_message_immediately(const mstring& message);
     virtual void execute(const mstring& message) =0;
 
-    mstring FirstName() { return names.Before(" "); }
-    mstring GetNames() { return names; }
-    bool IsName(mstring in)
+    mstring FirstName() const { return names.Before(" "); }
+    mstring GetNames() const { return names; }
+    bool IsName(mstring in) const
     {
         mstring tmp = " "+names.UpperCase()+" ";
 	return tmp.Contains(" "+in.UpperCase()+" ");
@@ -203,20 +207,20 @@ public:
     virtual threadtype_enum Get_TType() const =0;
     virtual mstring GetInternalName() const =0;
 
-    virtual bool MSG()		{ return messages; }
+    virtual bool MSG() const	{ return messages; }
     virtual void MSG(bool on)	{ messages=on; } 
 
-    bool signon(const mstring& nickname);
-    bool signoff(const mstring& nickname);
-    void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...);
-    void privmsg(const mstring &dest, const char *pszFormat, ...);
-    void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr);
-    void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...);
-    void notice(const mstring &dest, const char *pszFormat, ...);
-    void noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr);
-    void send(const mstring &source, const mstring &dest, const char *pszFormat, ...);
-    void send(const mstring &dest, const char *pszFormat, ...);
-    void sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr);
+    bool signon(const mstring& nickname) const;
+    bool signoff(const mstring& nickname) const;
+    void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    void privmsg(const mstring &dest, const char *pszFormat, ...) const;
+    void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
+    void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    void notice(const mstring &dest, const char *pszFormat, ...) const;
+    void noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
+    void send(const mstring &source, const mstring &dest, const char *pszFormat, ...) const;
+    void send(const mstring &dest, const char *pszFormat, ...) const;
+    void sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const;
 
     operator mVariant() const
     {
@@ -267,9 +271,9 @@ public:
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
 
-    size_t Usage();
-    void DumpB();
-    void DumpE();
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 typedef list<entlist_t>::iterator entlist_i;
 typedef list<entlist_t>::const_iterator entlist_ci;
@@ -347,7 +351,7 @@ public:
 	    pOut->EndObject(tag_entlist_val_t);
     }
 
-    size_t Usage()
+    size_t Usage() const
     {
 	size_t retval = entlist_t::Usage();
 	retval += sizeof(i_Value);
@@ -355,12 +359,12 @@ public:
 	return retval;
     }
 
-    void DumpB()
+    void DumpB() const
     {
 	entlist_t::DumpB();
 	WB(4, (i_Stupid));
     }
-    void DumpE()
+    void DumpE() const
     {
 	entlist_t::DumpE();
 	WE(4, (i_Stupid));
@@ -448,7 +452,7 @@ public:
     	pOut->EndObject(tag_entlist_val_t);
     }
 
-    size_t Usage()
+    size_t Usage() const
     {
 	size_t retval = entlist_t::Usage();
 	retval += sizeof(i_Value.first);
@@ -457,12 +461,12 @@ public:
 	return retval;
     }
 
-    void DumpB()
+    void DumpB() const
     {
 	entlist_t::DumpB();
 	WB(4, (i_Stupid));
     }
-    void DumpE()
+    void DumpE() const
     {
 	entlist_t::DumpE();
 	WE(4, (i_Stupid));
@@ -482,8 +486,8 @@ class CommandMap
 
     typedef void (*functor)(mstring, mstring, mstring);
     // map<service, map<command, pair<committees, functor> > >
-    typedef map<mstring, list<triplet<mstring, mstring, functor> > > cmap;
-    typedef list<triplet<mstring, mstring, functor> >::iterator clist_iter;
+    typedef list<triplet<mstring, mstring, functor> > ctype;
+    typedef map<mstring, ctype> cmap;
     cmap i_user;
     cmap i_system;
 
@@ -497,16 +501,16 @@ public:
     void RemCommand(mstring service, mstring command,
 	    mstring committees);
     pair<bool, functor> GetSystemCommand(mstring service, mstring command,
-	    mstring user);
+	    mstring user) const;
     pair<bool, functor> GetUserCommand(mstring service, mstring command,
-	    mstring user);
+	    mstring user) const;
 
     bool DoCommand(mstring mynick, mstring user, mstring command,
-	    mstring params);
+	    mstring params) const;
     bool DoUserCommand(mstring mynick, mstring user, mstring command,
-	    mstring params);
+	    mstring params) const;
     bool DoSystemCommand(mstring mynick, mstring user, mstring command,
-	    mstring params);
+	    mstring params) const;
 };
 void do_1_2param(mstring mynick, mstring source, mstring params);
 void do_1_3param(mstring mynick, mstring source, mstring params);

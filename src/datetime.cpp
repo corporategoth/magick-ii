@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.59  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -272,35 +276,41 @@ mDateTime& mDateTime::operator-=(time_t in)
 	*this-=mDateTime(in);
 	return *this;
 }
-mDateTime& mDateTime::operator+(const mDateTime& in)
+mDateTime mDateTime::operator+(const mDateTime& in) const
 {
-	Val+=in.Val;
-	return *this;
+	mDateTime retval(Val);
+	retval += in;
+	return retval;
 }
-mDateTime& mDateTime::operator+(double in)
+mDateTime mDateTime::operator+(double in) const
 {
-	Val+=in;
-	return *this;
+	mDateTime retval(Val);
+	retval += in;
+	return retval;
 }
-mDateTime& mDateTime::operator+(time_t in)
+mDateTime mDateTime::operator+(time_t in) const
 {
-	*this+=mDateTime(in);
-	return *this;
+	mDateTime retval(Val);
+	retval += in;
+	return retval;
 }
-mDateTime& mDateTime::operator-(const mDateTime& in)
+mDateTime mDateTime::operator-(const mDateTime& in) const
 {
-	Val-=in.Val;
-	return *this;
+	mDateTime retval(Val);
+	retval -= in;
+	return retval;
 }
-mDateTime& mDateTime::operator-(double in)
+mDateTime mDateTime::operator-(double in) const
 {
-	Val-=in;
-	return *this;
+	mDateTime retval(Val);
+	retval -= in;
+	return retval;
 }
-mDateTime& mDateTime::operator-(time_t in)
+mDateTime mDateTime::operator-(time_t in) const
 {
-	*this-=mDateTime(in);
-	return *this;
+	mDateTime retval(Val);
+	retval -= in;
+	return retval;
 }
 
 bool mDateTime::operator==(const mDateTime& in)const
@@ -608,7 +618,7 @@ mstring mDateTime::DateTimeString()const
 	return Result;
 }
 
-mDateTime::operator time_t()
+mDateTime::operator time_t() const
 {
 	int Year,Month,Day,Hour,Min,Sec,MSec;
 	DecodeDate(Year,Month,Day);
@@ -620,10 +630,10 @@ mDateTime::operator time_t()
 	localtm.tm_hour=Hour;
 	localtm.tm_min=Min;
 	localtm.tm_sec=Sec;
-	localtm.tm_isdst=0;
+	localtm.tm_isdst=-1;
 	return mktime(&localtm);
 }
-mDateTime::operator mstring()
+mDateTime::operator mstring() const
 {
 	return DateTimeString();
 }
@@ -785,95 +795,93 @@ mstring mDateTime::timetstring()const
     return Result;
 }
 
-int mDateTime::MSecond()
+int mDateTime::MSecond() const
 {
     int Hours,Seconds,Minutes,Msecs;
     DecodeTime(Hours,Seconds,Minutes,Msecs);
     return Msecs;
 }
-int mDateTime::Second()
+int mDateTime::Second() const
 {
     int Hours,Seconds,Minutes,Msecs;
     DecodeTime(Hours,Seconds,Minutes,Msecs);
     return Seconds;
 }
-int mDateTime::Minute()
+int mDateTime::Minute() const
 {
     int Hours,Seconds,Minutes,Msecs;
     DecodeTime(Hours,Seconds,Minutes,Msecs);
     return Minutes;
 }
-int mDateTime::Hour()
+int mDateTime::Hour() const
 {
     int Hours,Seconds,Minutes,Msecs;
     DecodeTime(Hours,Seconds,Minutes,Msecs);
     return Hours;
 }
-int mDateTime::Day()
+int mDateTime::Day() const
 {
     int Year,Month,Day;
     DecodeDate(Year,Month,Day);
     return Day;
 }
-int mDateTime::Month()
+int mDateTime::Month() const
 {
     int Year,Month,Day;
     DecodeDate(Year,Month,Day);
     return Month;
 }
-int mDateTime::Year()
+int mDateTime::Year() const
 {
     int Year,Month,Day;
     DecodeDate(Year,Month,Day);
     return Year;
 }
-int mDateTime::Year2()
+int mDateTime::Year2() const
 {
-    int Year2=Year();
-    while (Year2>100)
-	Year2-=100;
+    int Year2=Year() % 100;
     return Year2;
 }
-int mDateTime::Century()
+int mDateTime::Century() const
 {
     return Year()-Year2();
 }
-unsigned long mDateTime::MSecondsSince()
+unsigned long mDateTime::MSecondsSince() const
 {
     mDateTime dummyvar=Now()-(*this);
     unsigned long CurrentVal=(unsigned long)(dummyvar.Val*(double)MSecsPerDay);
     return CurrentVal;
 }
 
-mstring mDateTime::Ago(bool gmt, mstring source)
+mstring mDateTime::Ago(bool gmt, mstring source) const
 {
     // Later we find out if this is a GMT time.
     return(DisectTime(SecondsSince(), source));
 }
 
-unsigned long mDateTime::SecondsSince()
+unsigned long mDateTime::SecondsSince() const
 {
     mDateTime dummyvar=Now()-(*this);
     unsigned long CurrentVal=(unsigned long)(dummyvar.Val*(double)SecsPerDay);
     return CurrentVal;
 }
 
-unsigned long mDateTime::MinutesSince()
+unsigned long mDateTime::MinutesSince() const
 {
     return (SecondsSince() / 60);
 }
 
-unsigned long mDateTime::HoursSince()
+unsigned long mDateTime::HoursSince() const
 {
     return (MinutesSince() / 60);
 }
 
-unsigned long mDateTime::DaysSince()
+unsigned long mDateTime::DaysSince() const
 {
     return (HoursSince() / 24);
 }
 
-unsigned long mDateTime::YearsSince()
+unsigned long mDateTime::YearsSince() const
 {
     return (int)((double) DaysSince() / 365.25);
 }

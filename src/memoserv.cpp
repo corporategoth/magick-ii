@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.82  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -263,35 +267,35 @@ void Memo_t::ChgNick(mstring in)
     MCE(i_Nick);
 }
 
-mstring Memo_t::Sender()
+mstring Memo_t::Sender() const
 {
     NFT(("Memo_t::Sender"));
     RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Sender"));
     RET(i_Sender);
 }
 
-mDateTime Memo_t::Time()
+mDateTime Memo_t::Time() const
 {
     NFT(("Memo_t::Time"));
     RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Time"));
     RET(i_Time);
 }
 
-mstring Memo_t::Text()
+mstring Memo_t::Text() const
 {
     NFT(("Memo_t::Text"));
     RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Text"));
     RET(i_Text);
 }
 
-unsigned long Memo_t::File()
+unsigned long Memo_t::File() const
 {
     NFT(("Memo_t::File"));
     RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_File"));
     RET(i_File);
 }
 
-bool Memo_t::IsRead()
+bool Memo_t::IsRead() const
 {
     NFT(("Memo_t::IsRead"));
     RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
@@ -314,7 +318,7 @@ void Memo_t::Unread()
     MCE(i_Read);
 }
 
-size_t Memo_t::Usage()
+size_t Memo_t::Usage() const
 {
     size_t retval = 0;
     WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
@@ -324,7 +328,7 @@ size_t Memo_t::Usage()
     retval += sizeof(i_Time.Internal());
     retval += sizeof(i_File);
     retval += sizeof(i_Read);
-    map<mstring,mstring>::iterator j;
+    map<mstring,mstring>::const_iterator j;
     for (j=i_UserDef.begin(); j!=i_UserDef.end(); j++)
     {
 	retval += j->first.capacity();
@@ -333,13 +337,13 @@ size_t Memo_t::Usage()
     return retval;
 }
 
-void Memo_t::DumpB()
+void Memo_t::DumpB() const
 {
     MB(0, (i_Nick, i_Sender, i_Text, i_Time, i_Read, i_File,
 	i_UserDef.size()));
 }
 
-void Memo_t::DumpE()
+void Memo_t::DumpE() const
 {
     ME(0, (i_Nick, i_Sender, i_Text, i_Time, i_Read, i_File,
 	i_UserDef.size()));
@@ -370,21 +374,21 @@ void News_t::operator=(const News_t &in)
 }
 
 
-mstring News_t::Sender()
+mstring News_t::Sender() const
 {
     NFT("News_t::Sender");
     RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Sender"));
     RET(i_Sender);
 }
 
-mDateTime News_t::Time()
+mDateTime News_t::Time() const
 {
     NFT("News_t::Time");
     RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Time"));
     RET(i_Time);
 }
 
-mstring News_t::Text()
+mstring News_t::Text() const
 {
     NFT("News_t::Text");
     RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Text"));
@@ -392,7 +396,7 @@ mstring News_t::Text()
 }
 
 
-bool News_t::IsRead(mstring name)
+bool News_t::IsRead(mstring name) const
 {
     FT("News_t::IsRead", (name));
     mstring target = name;
@@ -436,7 +440,7 @@ void News_t::Unread(mstring name)
     MCE(i_Read.size());
 }
 
-size_t News_t::Usage()
+size_t News_t::Usage() const
 {
     size_t retval = 0;
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
@@ -444,10 +448,10 @@ size_t News_t::Usage()
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
     retval += sizeof(i_Time.Internal());
-    set<mstring>::iterator i;
+    set<mstring>::const_iterator i;
     for (i=i_Read.begin(); i!=i_Read.end(); i++)
 	retval += i->capacity();
-    map<mstring,mstring>::iterator j;
+    map<mstring,mstring>::const_iterator j;
     for (j=i_UserDef.begin(); j!=i_UserDef.end(); j++)
     {
 	retval += j->first.capacity();
@@ -456,13 +460,13 @@ size_t News_t::Usage()
     return retval;
 }
 
-void News_t::DumpB()
+void News_t::DumpB() const
 {
     MB(0, (i_Channel, i_Sender, i_Text, i_Time, i_Read.size(),
 	i_UserDef.size()));
 }
 
-void News_t::DumpE()
+void News_t::DumpE() const
 {
     ME(0, (i_Channel, i_Sender, i_Text, i_Time, i_Read.size(),
 	i_UserDef.size()));
@@ -561,7 +565,7 @@ void MemoServ::RemCommands()
 	    "*ATTACH", Parent->commserv.REGD_Name());
 }
 
-bool MemoServ::IsNick(mstring in)
+bool MemoServ::IsNick(mstring in) const
 {
     FT("MemoServ::IsNick", (in));
     RLOCK(("MemoServ", "nick"));
@@ -569,7 +573,7 @@ bool MemoServ::IsNick(mstring in)
     RET(retval);
 }
 
-bool MemoServ::IsChannel(mstring in)
+bool MemoServ::IsChannel(mstring in) const
 {
     FT("MemoServ::IsChannel", (in));
     RLOCK(("MemoServ", "channel"));
@@ -1243,7 +1247,7 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 
 		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);
 		size_t filesize = Parent->filesys.GetSize(FileMap::MemoAttach, filenum);
-		if (filename == "" || filesize <= 0)
+		if (filename.empty() || filesize <= 0)
 		{
 		    nonfiles = true;
 		    continue;

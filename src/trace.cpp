@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2000/12/23 22:22:25  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.101  2000/10/10 11:47:53  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -290,7 +294,7 @@ void ThreadID::WriteOut(const mstring &message)
 #endif
 }
 
-mstring ThreadID::logname()
+mstring ThreadID::logname() const
 {
     mstring name;
     name << "trace";
@@ -539,7 +543,7 @@ T_Changing::T_Changing(const mstring &name, const mVariant &arg)
 //      >> DE3(corewars.net)
 void T_Changing::End(const mVariant &arg)
 {
-    if (i_name == "")
+    if (i_name.empty())
 	return;
     tid = mThread::find();
     if (tid == NULL || tid->InTrace())

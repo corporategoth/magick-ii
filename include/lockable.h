@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.48  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -146,8 +150,8 @@ class mLOCK
 public:
     mLOCK(locktype_enum type, const mVarArray &args);
     ~mLOCK();
-    bool Locked();
-    size_t Locks() { return locks.size(); }
+    bool Locked() const;
+    size_t Locks() const { return locks.size(); }
     static size_t AllLocks();
 };
 
@@ -302,17 +306,17 @@ public:
     bool Bind(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown, bool alloc = true);
     ACE_SOCK_Stream *Unbind();
 
-    mstring Local_Host();
-    unsigned long Local_IP();
-    unsigned short Local_Port();
-    mstring Remote_Host();
-    unsigned long Remote_IP();
-    unsigned short Remote_Port();
+    mstring Local_Host() const;
+    unsigned long Local_IP() const;
+    unsigned short Local_Port() const;
+    mstring Remote_Host() const;
+    unsigned long Remote_IP() const;
+    unsigned short Remote_Port() const;
 
-    bool IsConnected();
+    bool IsConnected() const;
     void Resolve(socktype_enum type, mstring info);
-    int Last_Error();
-    mstring Last_Error_String();
+    int Last_Error() const;
+    mstring Last_Error_String() const;
 
     ssize_t send(void *buf, size_t len, unsigned long timeout = 0);
     ssize_t recv(void *buf, size_t len, unsigned long timeout = 0);

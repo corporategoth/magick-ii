@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.22  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -318,7 +322,7 @@ bool ceNode::DeleteNode(const mstring &NodeName)
     RET(true);
 }
 
-bool ceNode::NodeExists(const mstring &NodeName)
+bool ceNode::NodeExists(const mstring &NodeName) const
 {
     // strip off the first bit of the path, if not exists, return false, otherwise pass
     // the rest of the path to it, so it can do the same itself.
@@ -334,8 +338,8 @@ bool ceNode::NodeExists(const mstring &NodeName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if (i_children.find(temppath) != i_children.end() &&
-	    i_children[temppath] != NULL)
+	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
+	if (iter != i_children.end() && iter->second != NULL)
             Result=true;
     }
     else
@@ -343,16 +347,16 @@ bool ceNode::NodeExists(const mstring &NodeName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if (i_children.find(next) != i_children.end() &&
-	    i_children[next] != NULL)
+	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
+	if (iter != i_children.end() && iter->second != NULL)
         {
-            Result=i_children[next]->NodeExists(rest);
+            Result=iter->second->NodeExists(rest);
         }
     }
     RET(Result);
 }
 
-bool ceNode::KeyExists(const mstring &KeyName)
+bool ceNode::KeyExists(const mstring &KeyName) const
 {
     FT("ceNode::KeyExists", (KeyName));
     mstring temppath;
@@ -365,7 +369,8 @@ bool ceNode::KeyExists(const mstring &KeyName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if(i_keys.find(temppath)!=i_keys.end()&&(i_keys[temppath]!=""))
+	map<mstring,mstring>::const_iterator iter = i_keys.find(temppath);
+	if(iter != i_keys.end() && iter->second != "")
             Result=true;
     }
     else
@@ -373,16 +378,16 @@ bool ceNode::KeyExists(const mstring &KeyName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if (i_children.find(next) != i_children.end() &&
-	    i_children[next] != NULL)
+	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
+	if (iter != i_children.end() && iter->second != NULL)
         {
-            Result=i_children[next]->KeyExists(rest);
+            Result=iter->second->KeyExists(rest);
         }
     }
     RET(Result);
 }
 
-mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue)
+mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue) const
 {
     FT("ceNode::GetKey", (KeyName,DefValue));
     mstring temppath;
@@ -395,9 +400,9 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if (i_keys.find(temppath) != i_keys.end() &&
-	    i_keys[temppath] != "")
-            Result=i_keys[temppath];
+	map<mstring,mstring>::const_iterator iter = i_keys.find(temppath);
+	if(iter != i_keys.end() && iter->second != "")
+            Result=iter->second;
 	else
 	    Result=DefValue;
     }
@@ -406,10 +411,10 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if (i_children.find(next) != i_children.end() &&
-	    i_children[next] != NULL)
+	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
+	if (iter != i_children.end() && iter->second != NULL)
         {
-            Result=i_children[next]->GetKey(rest,DefValue);
+            Result=iter->second->GetKey(rest,DefValue);
         }
     }
     RET(Result);
@@ -428,9 +433,9 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if (i_children.find(temppath) != i_children.end() &&
-	    i_children[temppath] != NULL)
-            Result=i_children[temppath];
+	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
+	if (iter != i_children.end() && iter->second != NULL)
+            Result=iter->second;
     }
     else
     {
@@ -439,8 +444,8 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
 	rest = temppath.After("/");
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
-        if (i_children.find(next) == i_children.end() ||
-	    i_children[next] == NULL)
+	map<mstring,ceNode * >::iterator iter = i_children.find(temppath);
+	if (iter == i_children.end() || iter->second != NULL)
         {
             i_children[next]=new ceNode;
             i_children[next]->i_Name=next;
@@ -473,8 +478,8 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
 	rest = temppath.After("/");
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
-        if (i_children.find(next) == i_children.end() ||
-	    i_children[next] == NULL)
+	map<mstring,ceNode * >::iterator iter = i_children.find(temppath);
+	if (iter == i_children.end() || iter->second != NULL)
         {
             i_children[next]=new ceNode;
             i_children[next]->i_Name=next;
@@ -484,13 +489,13 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
     RET(Result);
 }
 
-map<mstring,mstring> ceNode::GetMap()
+map<mstring,mstring> ceNode::GetMap() const
 {
     NFT("ceNode::GetMap");
     map<mstring,mstring> submap, retval;
 
-    map<mstring,ceNode * >::iterator i;
-    map<mstring,mstring>::iterator j;
+    map<mstring,ceNode * >::const_iterator i;
+    map<mstring,mstring>::const_iterator j;
     for(i = i_children.begin(); i != i_children.end(); i++)
     {
         if(i->second!=NULL)
@@ -566,7 +571,7 @@ void mConfigEngine::Empty()
 }
 
 
-mstring mConfigEngine::Read(const mstring &key, const mstring Default)
+mstring mConfigEngine::Read(const mstring &key, const mstring Default) const
 {
     FT("mConfigEngine::Read", (key, Default));
     mstring Result;
@@ -574,7 +579,7 @@ mstring mConfigEngine::Read(const mstring &key, const mstring Default)
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default)
+bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default) const
 {
     FT("mConfigEngine::Read", (key, "(mstring &) outvar", Default));
     bool Result=true;
@@ -582,7 +587,7 @@ bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default)
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default)
+bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default) const
 {
     FT("mConfigEngine::Read", (key, "(bool &) outvar", Default));
     mstring tmp;
@@ -598,7 +603,7 @@ bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default)
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, int &outvar, int Default)
+bool mConfigEngine::Read(const mstring &key, int &outvar, int Default) const
 {
     FT("mConfigEngine::Read", (key, "(int &) outvar", Default));
     mstring tmpvar;
@@ -614,7 +619,7 @@ bool mConfigEngine::Read(const mstring &key, int &outvar, int Default)
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int Default)
+bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int Default) const
 {
     FT("mConfigEngine::Read", (key, "(unsigned int &) outvar", Default));
     mstring tmpvar;
@@ -630,7 +635,7 @@ bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int 
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, long &outvar, long Default)
+bool mConfigEngine::Read(const mstring &key, long &outvar, long Default) const
 {
     FT("mConfigEngine::Read", (key, "(long &) outvar", Default));
     mstring tmpvar;
@@ -646,7 +651,7 @@ bool mConfigEngine::Read(const mstring &key, long &outvar, long Default)
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned long Default)
+bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned long Default) const
 {
     FT("mConfigEngine::Read", (key, "(unsigned long &) outvar", Default));
     mstring tmpvar;
@@ -664,7 +669,7 @@ bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned lon
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, double &outvar, double Default)
+bool mConfigEngine::Read(const mstring &key, double &outvar, double Default) const
 {
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
     mstring tmpvar;
@@ -680,7 +685,7 @@ bool mConfigEngine::Read(const mstring &key, double &outvar, double Default)
     RET(Result);
 }
 
-bool mConfigEngine::Read(const mstring &key, float &outvar, float Default)
+bool mConfigEngine::Read(const mstring &key, float &outvar, float Default) const
 {
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
     mstring tmpvar;
@@ -838,7 +843,7 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
     RET(Result);
 }
 
-bool mConfigEngine::NodeExists(const mstring &NodeName)
+bool mConfigEngine::NodeExists(const mstring &NodeName) const
 {
     FT("mConfigEngine::NodeExists", (NodeName));
     RET(RootNode.NodeExists(NodeName));

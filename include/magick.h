@@ -25,6 +25,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.143  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.142  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -232,7 +236,7 @@ public:
     void log(ACE_Log_Record &log_record);
     void close();
     void open();
-    bool opened();
+    bool opened() const;
 };
 
 
@@ -310,7 +314,7 @@ public:
 	public:
 		bool IsServer(mstring server)const;
 		triplet<unsigned int,mstring,unsigned int> Server(mstring server)const;
-		vector<mstring> PriorityList(unsigned int pri);
+		vector<mstring> PriorityList(unsigned int pri)const;
 		size_t Server_size()const { return servers.size(); }
 
 		mstring Server_Name()const	{ return server_name; }
@@ -411,7 +415,7 @@ public:
 
 	void ActivateLogger();
 	void DeactivateLogger();
-	void ValidateLogger(ACE_Log_Msg *instance);
+	void ValidateLogger(ACE_Log_Msg *instance) const;
 	bool Verbose()const		{ return i_verbose; }
 	mstring Services_Dir()const	{ return i_services_dir; }
 	mstring Config_File()const	{ return files.MakePath(i_config_file); }
@@ -433,7 +437,7 @@ public:
 		i_level--;
 	}
 	void AUTO(bool on)	{ i_auto = on; }
-	bool AUTO()		{ return i_auto; }
+	bool AUTO()const	{ return i_auto; }
 	void MSG(bool on)
 	{
 	//  operserv.MSG(on);
@@ -457,7 +461,7 @@ public:
 	void Connected(bool in)		{ i_connected = in; }
 	bool Saving()const		{ return i_saving; }
 	void Disconnect();
-	void send(mstring text);
+	void send(mstring text)const;
 	mstring GetKey()const;
 	void save_databases();
 	void load_databases();
@@ -465,7 +469,7 @@ public:
 	operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
 
 	// Commandline, config, language PARSING.
-	void dump_help();
+	void dump_help() const;
 	bool paramlong(mstring first, mstring second);
 	bool paramshort(mstring first, mstring second);
 	bool get_config_values();
@@ -536,13 +540,13 @@ public:
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
-    set<mstring> LNG_Loaded();
-    size_t LNG_Usage(mstring lang);
-    set<mstring> HLP_Loaded();
-    size_t HLP_Usage(mstring lang);
-    size_t LFO_Usage();
-    void DumpB();
-    void DumpE();
+    set<mstring> LNG_Loaded() const;
+    size_t LNG_Usage(mstring lang) const;
+    set<mstring> HLP_Loaded() const;
+    size_t HLP_Usage(mstring lang) const;
+    size_t LFO_Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 
 extern Magick *Parent;

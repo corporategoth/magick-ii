@@ -25,6 +25,10 @@ static const char *ident_datetime_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.29  2000/09/11 10:58:19  prez
 ** Now saves in in GMT
 **
@@ -90,8 +94,8 @@ public:
     mDateTime(const mstring& src, mDateTimeFlag flag=DateTime);
     mDateTime(unsigned int year, unsigned int month, unsigned int day);
     mDateTime(unsigned int hour, unsigned int min, unsigned int sec, unsigned int msec);
-    mDateTime& operator=(const mDateTime& in);
 
+    mDateTime& operator=(const mDateTime& in);
     mDateTime& operator=(double in);
     mDateTime& operator=(time_t in);
     mDateTime& operator+=(const mDateTime& in);
@@ -100,13 +104,13 @@ public:
     mDateTime& operator-=(const mDateTime& in);
     mDateTime& operator-=(double in);
     mDateTime& operator-=(time_t in);
-    mDateTime& operator+(const mDateTime& in);
-    mDateTime& operator+(double in);
-    mDateTime& operator+(time_t in);
-    mDateTime& operator-(const mDateTime& in);
-    mDateTime& operator-(double in);
-    mDateTime& operator-(time_t in);
 
+    mDateTime operator+(const mDateTime& in) const;
+    mDateTime operator+(double in) const;
+    mDateTime operator+(time_t in) const;
+    mDateTime operator-(const mDateTime& in) const;
+    mDateTime operator-(double in) const;
+    mDateTime operator-(time_t in) const;
     bool operator==(const mDateTime& in)const;
     bool operator!=(const mDateTime& in)const;
     bool operator>(const mDateTime& in)const;
@@ -218,31 +222,31 @@ public:
     mstring TimeString()const;
     mstring DateTimeString()const;
 
-    operator double(){return Val;}
-    operator time_t();
-    operator mstring();
-    double Internal() { return Val; }
+    operator double() const {return Val;}
+    operator time_t() const;
+    operator mstring() const;
+    double Internal() const { return Val; }
 
     int DayOfWeek()const;
     void DecodeDate(int &year, int &month, int &day)const;
     void DecodeTime(int &hour, int &min, int &sec, int& msec)const;
 
-    int MSecond();
-    int Second();
-    int Minute();
-    int Hour();
-    int Day();
-    int Month();
-    int Year();
-    int Year2();
-    int Century();
-    mstring Ago(bool call = false, mstring source = "");
-    unsigned long MSecondsSince();
-    unsigned long SecondsSince();
-    unsigned long MinutesSince();
-    unsigned long HoursSince();
-    unsigned long DaysSince();
-    unsigned long YearsSince();
+    int MSecond() const;
+    int Second() const;
+    int Minute() const;
+    int Hour() const;
+    int Day() const;
+    int Month() const;
+    int Year() const;
+    int Year2() const;
+    int Century() const;
+    mstring Ago(bool call = false, mstring source = "") const;
+    unsigned long MSecondsSince() const;
+    unsigned long SecondsSince() const;
+    unsigned long MinutesSince() const;
+    unsigned long HoursSince() const;
+    unsigned long DaysSince() const;
+    unsigned long YearsSince() const;
 
     friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
     friend bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time);

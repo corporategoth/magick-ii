@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.280  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.279  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -953,7 +957,7 @@ StartGetLang:
 			i->second.ExtractWord(2, ":", false),
 			i->second.After(":", 2));
 	    
-	    if (entry.third == "")
+	    if (entry.third.empty())
 		entry.third = " ";
 
 	    Help[language][section].push_back(entry);
@@ -1017,7 +1021,7 @@ StartGetLang:
     NRET(vector<mstring>, helptext);
 }
 
-void Magick::dump_help()
+void Magick::dump_help() const
 {
     // This needs to be re-written.
     cout << "\n"
@@ -1976,7 +1980,7 @@ bool Magick::get_config_values()
 	i++;
     } while (ent!="");
     }
-    if (Server() == "" || !startup.IsServer(Server()))
+    if (Server().empty() || !startup.IsServer(Server()))
 	reconnect = true;
 
     in.Read(ts_Startup+"PROTOCOL",value_uint,0U);
@@ -2910,7 +2914,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     return 0;
 }
 
-void Magick::ValidateLogger(ACE_Log_Msg *instance)
+void Magick::ValidateLogger(ACE_Log_Msg *instance) const
 {
     FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
 
@@ -3091,7 +3095,7 @@ void Logger::open()
     }
 }
 
-bool Logger::opened()
+bool Logger::opened() const
 {
     NFT("Logger::opened");
     MLOCK(("LogFile"));
@@ -3156,12 +3160,12 @@ triplet<unsigned int,mstring,unsigned int> Magick::startup_t::Server(mstring ser
     NRET(triplet<unsigned int.mstring.unsigned int>, value);
 }
 
-vector<mstring> Magick::startup_t::PriorityList(unsigned int pri)
+vector<mstring> Magick::startup_t::PriorityList(unsigned int pri) const
 {
     FT("Magick::startup_t::PriorityList", (pri));
     vector<mstring> list;
 
-    map<mstring,triplet<unsigned int,mstring,unsigned int> >::iterator iter;
+    map<mstring,triplet<unsigned int,mstring,unsigned int> >::const_iterator iter;
 
     RLOCK(("Startup", "Servers"));
     for (iter=servers.begin(); iter!=servers.end(); iter++) {
@@ -3222,7 +3226,7 @@ void Magick::Disconnect()
     }}
 }
 
-void Magick::send(mstring in)
+void Magick::send(mstring in) const
 {
     RLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
@@ -3343,10 +3347,10 @@ void Magick::load_databases()
 }
 
 
-set<mstring> Magick::LNG_Loaded()
+set<mstring> Magick::LNG_Loaded() const
 {
     set<mstring> retval;
-    map<mstring, map<mstring, mstring> >::iterator i;
+    map<mstring, map<mstring, mstring> >::const_iterator i;
     RLOCK(("Messages"));
     for (i=Messages.begin(); i!=Messages.end(); i++)
     {
@@ -3355,31 +3359,32 @@ set<mstring> Magick::LNG_Loaded()
     return retval;
 }
 
-size_t Magick::LNG_Usage(mstring lang)
+size_t Magick::LNG_Usage(mstring lang) const
 {
     size_t retval = 0;
 
-    map<mstring, mstring>::iterator i;
+    map<mstring, map<mstring, mstring> >::const_iterator i;
+    map<mstring, mstring>::const_iterator j;
     RLOCK(("Messages"));
-    if (Messages.find(lang.UpperCase()) != Messages.end())
+    i = Messages.find(lang.UpperCase());
+    if (i != Messages.end())
     {
-	retval += Messages.find(lang.UpperCase())->first.capacity();
+	retval += i->first.capacity();
 	RLOCK(("Messages", lang.UpperCase()));
-	for (i = Messages[lang.UpperCase()].begin();
-				i != Messages[lang.UpperCase()].end(); i++)
+	for (j = i->second.begin(); j != i->second.end(); j++)
 	{
-	    retval += i->first.capacity();
-	    retval += i->second.capacity();
+	    retval += j->first.capacity();
+	    retval += j->second.capacity();
 	}
     }
 
     return retval;
 }
 
-set<mstring> Magick::HLP_Loaded()
+set<mstring> Magick::HLP_Loaded() const
 {
     set<mstring> retval;
-    map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::iterator i;
+    map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::const_iterator i;
     RLOCK(("Help"));
     for (i=Help.begin(); i!=Help.end(); i++)
     {
@@ -3388,27 +3393,28 @@ set<mstring> Magick::HLP_Loaded()
     return retval;
 }
 
-size_t Magick::HLP_Usage(mstring lang)
+size_t Magick::HLP_Usage(mstring lang) const
 {
     size_t retval = 0;
 
-    map<mstring, vector<triplet<mstring, mstring, mstring> > >::iterator i;
-    vector<triplet<mstring, mstring, mstring> >::iterator j;
+    map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::const_iterator i;
+    map<mstring, vector<triplet<mstring, mstring, mstring> > >::const_iterator j;
+    vector<triplet<mstring, mstring, mstring> >::const_iterator k;
 
     RLOCK(("Help"));
-    if (Help.find(lang.UpperCase()) != Help.end())
+    i = Help.find(lang.UpperCase());
+    if (i != Help.end())
     {
-	retval += Help.find(lang.UpperCase())->first.capacity();
+	retval += i->first.capacity();
 	RLOCK(("Help", lang.UpperCase()));
-	for (i=Help[lang.UpperCase()].begin();
-				i != Help[lang.UpperCase()].end(); i++)
+	for (j=i->second.begin(); j != i->second.end(); j++)
 	{
-	    retval += i->first.capacity();
-	    for (j = i->second.begin(); j != i->second.end(); j++)
+	    retval += j->first.capacity();
+	    for (k = j->second.begin(); k != j->second.end(); k++)
 	    {
-		retval += j->first.capacity();
-		retval += j->second.capacity();
-		retval += j->third.capacity();
+		retval += k->first.capacity();
+		retval += k->second.capacity();
+		retval += k->third.capacity();
 	    }
 	}
     }
@@ -3416,11 +3422,11 @@ size_t Magick::HLP_Usage(mstring lang)
     return retval;
 }
 
-size_t Magick::LFO_Usage()
+size_t Magick::LFO_Usage() const
 {
     size_t retval = 0;
 
-    map<mstring,mstring>::iterator i;
+    map<mstring,mstring>::const_iterator i;
     RLOCK(("LogMessages"));
     for (i=LogMessages.begin(); i!=LogMessages.end(); i++)
     {
@@ -3431,7 +3437,7 @@ size_t Magick::LFO_Usage()
     return retval;
 }
 
-void Magick::DumpB()
+void Magick::DumpB() const
 {
     MB(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
 	handlermap.size(), i_services_dir, i_config_file, i_programname,
@@ -3440,7 +3446,7 @@ void Magick::DumpB()
     MB(16, (i_connected, i_saving));
 }
 
-void Magick::DumpE()
+void Magick::DumpE() const
 {
     ME(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
 	handlermap.size(), i_services_dir, i_config_file, i_programname,

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.74  2000/12/21 14:18:18  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -585,7 +589,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
     unsigned int users, opers;
     float lag;
 
-    if (server == "")
+    if (server.empty())
     {
 	map<mstring, Server>::iterator iter;
 	RLOCK(("Server", "ServerList"));
@@ -1424,7 +1428,7 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
     		priv.c_str());
     LOG((LM_INFO, Parent->getLogMessage("SERVMSG/FILE_PRIV"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	file.c_str(), ((priv == "") ? "ALL" : priv.c_str())));
+	file.c_str(), ((priv.empty()) ? "ALL" : priv.c_str())));
     Parent->filesys.SetPriv(FileMap::Public, num, priv);
 }
 
@@ -1478,7 +1482,7 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 
     filename = Parent->filesys.GetName(FileMap::Public, filenum);
     size_t filesize = Parent->filesys.GetSize(FileMap::Public, filenum);
-    if (filename == "" || filesize <= 0)
+    if (filename.empty() || filesize <= 0)
     {
 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
 		filename.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());

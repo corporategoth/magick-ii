@@ -25,6 +25,10 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.30  2000/09/30 10:48:06  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -154,18 +158,18 @@ public:
     mFile(mstring name, FILE *in);
     mFile(mstring name, mstring mode = "r");
     ~mFile() { Close(); }
-    mstring Name()		{ return i_name; }
+    mstring Name() const	{ return i_name; }
     bool Open(mstring name, mstring mode = "r");
     void Close();
-    bool IsOpened();
+    bool IsOpened() const;
     long Seek(long offset, int whence = SEEK_SET);
     size_t Write(mstring buf, bool endline = true);
     size_t Write(const void *buf, size_t size);
     size_t Read(void *buf, size_t size);
     mstring ReadLine();
-    long Length();
-    mDateTime LastMod();
-    bool Eof();
+    long Length() const;
+    mDateTime LastMod() const;
+    bool Eof() const;
     void Attach(mstring name, FILE *in);
     FILE *Detach();
     void Flush();
@@ -191,21 +195,21 @@ class FileMap : public SXP::IPersistObj
 {
 public:
     enum FileType { MemoAttach, Picture, Public, Unknown };
+    typedef map<FileType, map<unsigned long, pair<mstring, mstring> > > filemap_t;
 
-    unsigned long FindAvail(FileType type);
+    unsigned long FindAvail(FileType type) const;
     bool Exists(FileType type, unsigned long num);
     mstring GetName(FileType type, unsigned long num);
     mstring GetRealName(FileType type, unsigned long num);
     mstring GetPriv(FileType type, unsigned long num);
     bool SetPriv(FileType type, unsigned long num, mstring priv);
     bool Rename(FileType type, unsigned long num, mstring newname);
-    bool GetFile(FileType type, unsigned long num, mstring recipiant);
     size_t GetSize(FileType type, unsigned long num);
     unsigned long NewFile(FileType type, mstring filename, mstring priv = "");
     void EraseFile(FileType type, unsigned long num);
     vector<unsigned long> GetList(FileType type, mstring source);
     unsigned long GetNum(FileType type, mstring name);
-    size_t FileSysSize(FileType type);
+    size_t FileSysSize(FileType type) const;
 
     virtual SXP::Tag& GetClassTag() const { return tag_FileMap; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
@@ -213,7 +217,7 @@ public:
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
 private:
-    map<FileType, map<unsigned long, pair<mstring, mstring> > > i_FileMap;
+    filemap_t i_FileMap;
     vector<mstring *> fm_array;
     static SXP::Tag tag_FileMap, tag_File;
 };
@@ -258,24 +262,24 @@ public:
 
     ~DccXfer();
 
-    unsigned long DccId()	{ return i_DccId; }
-    bool Ready();
-    XF_Type Type();
-    mstring Mynick();
-    mstring Source();
-    mstring Filename();
-    size_t Filesize();
-    size_t Total();
-    mDateTime LastData();
+    unsigned long DccId() const	{ return i_DccId; }
+    bool Ready() const;
+    XF_Type Type() const;
+    mstring Mynick() const;
+    mstring Source() const;
+    mstring Filename() const;
+    size_t Filesize() const;
+    size_t Total() const;
+    mDateTime LastData() const;
 
     void ChgNick(mstring in);
     void Cancel();
     void Action();	// Do what we want!
-    size_t Average(time_t secs = 0);
-    size_t Traffic()		{ return i_Traffic.size(); }
-    size_t Usage();
-    void DumpB();
-    void DumpE();
+    size_t Average(time_t secs = 0) const;
+    size_t Traffic() const	{ return i_Traffic.size(); }
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 
 class DccMap : public ACE_Task<ACE_MT_SYNCH>
@@ -309,7 +313,7 @@ public:
     virtual int svc(void);
 
     static map<unsigned long, DccXfer *> xfers;
-    vector<unsigned long> GetList(mstring in);
+    vector<unsigned long> GetList(mstring in) const;
 
     // These start in their own threads.
     void Connect(ACE_INET_Addr address,

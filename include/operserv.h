@@ -25,6 +25,10 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.45  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -260,7 +264,7 @@ public:
     size_t CloneList_size()const { return CloneList.size(); }
     size_t CloneList_sum()const;
     size_t CloneList_size(unsigned int amt)const;
-    size_t CloneList_Usage();
+    size_t CloneList_Usage()const;
 
     bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = Now());
     bool Clone_erase();
@@ -268,8 +272,8 @@ public:
 	{ return i_Clone.begin(); }
     set<Clone_Type>::iterator Clone_end()
 	{ return i_Clone.end(); }
-    size_t Clone_size()				{ return i_Clone.size(); }
-    size_t Clone_Usage();
+    size_t Clone_size() const			{ return i_Clone.size(); }
+    size_t Clone_Usage() const;
     bool Clone_find(mstring entry);
     pair<unsigned int, mstring> Clone_value(mstring entry);
     set<Clone_Type>::iterator Clone;
@@ -280,8 +284,8 @@ public:
 	{ return i_Akill.begin(); }
     set<Akill_Type>::iterator Akill_end()
 	{ return i_Akill.end(); }
-    size_t Akill_size()				{ return i_Akill.size(); }
-    size_t Akill_Usage();
+    size_t Akill_size()	const			{ return i_Akill.size(); }
+    size_t Akill_Usage() const;
     bool Akill_find(mstring entry);
     pair<unsigned long, mstring> Akill_value(mstring entry);
     set<Akill_Type>::iterator Akill;
@@ -292,8 +296,8 @@ public:
 	{ return i_OperDeny.begin(); }
     set<OperDeny_Type>::iterator OperDeny_end()
 	{ return i_OperDeny.end(); }
-    size_t OperDeny_size()			{ return i_OperDeny.size(); }
-    size_t OperDeny_Usage();
+    size_t OperDeny_size() const		{ return i_OperDeny.size(); }
+    size_t OperDeny_Usage() const;
     bool OperDeny_find(mstring entry);
     mstring OperDeny_value(mstring entry);
     set<OperDeny_Type>::iterator OperDeny;
@@ -304,8 +308,8 @@ public:
 	{ return i_Ignore.begin(); }
     set<Ignore_Type>::iterator Ignore_end()
 	{ return i_Ignore.end(); }
-    size_t Ignore_size()				{ return i_Ignore.size(); }
-    size_t Ignore_Usage();
+    size_t Ignore_size() const				{ return i_Ignore.size(); }
+    size_t Ignore_Usage() const;
     bool Ignore_find(mstring entry);
     bool Ignore_value(mstring entry);
     set<Ignore_Type>::iterator Ignore;
@@ -359,8 +363,8 @@ public:
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
     void PostLoad();
-    void DumpB();
-    void DumpE();
+    void DumpB() const;
+    void DumpE() const;
 };
 
 #endif

@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.54  2000/12/22 08:55:40  prez
 ** Made forbidden entries (chanserv or nickserv) show up as forbidden in
 ** a list (rather than (nick!) or whatever)
@@ -231,36 +235,36 @@ public:
     Protocol();
     ~Protocol() {}
     void Set(unsigned int in);
-    mstring GetToken(mstring in);
-    mstring GetNonToken(mstring in);
+    mstring GetToken(mstring in) const;
+    mstring GetNonToken(mstring in) const;
 
-    unsigned int Number()   { return i_Number; }
-    unsigned int NickLen()  { return i_NickLen; }
-    unsigned int MaxLine()  { return i_MaxLine; }
-    bool Globops()	    { return i_Globops; }
-    bool Tokens()	    { return i_Tokens; }
-    void Tokens(bool in)    { i_Tokens = in; }
-    bool P12()		    { return i_P12; }
-    bool TSora()	    { return i_TSora; }
-    unsigned int Akill()    { return i_Akill; }
-    unsigned int Signon()   { return i_Signon; }
-    unsigned int Modes()    { return i_Modes; }
-    mstring ChanModeArg()   { return i_ChanModeArg; }
-    mstring Server()	    { return i_Server; }
-    bool Numeric()	    { return i_Numeric; }
-    mstring SVSNICK()	    { return i_SVSNICK; }
-    mstring SVSMODE()	    { return i_SVSMODE; }
-    mstring SVSKILL()	    { return i_SVSKILL; }
-    mstring SVSNOOP()	    { return i_SVSNOOP; }
-    mstring SQLINE()	    { return i_SQLINE; }
-    mstring UNSQLINE()	    { return i_UNSQLINE; }
-    mstring SVSHOST()	    { return i_SVSHOST; }
-    mstring Burst()	    { return i_Burst; }
-    mstring EndBurst()	    { return i_EndBurst; }
-    mstring Protoctl()	    { return i_Protoctl; }
+    unsigned int Number() const   { return i_Number; }
+    unsigned int NickLen() const  { return i_NickLen; }
+    unsigned int MaxLine() const  { return i_MaxLine; }
+    bool Globops() const	  { return i_Globops; }
+    bool Tokens() const		  { return i_Tokens; }
+    void Tokens(bool in)	  { i_Tokens = in; }
+    bool P12() const		  { return i_P12; }
+    bool TSora() const		  { return i_TSora; }
+    unsigned int Akill() const    { return i_Akill; }
+    unsigned int Signon() const   { return i_Signon; }
+    unsigned int Modes() const    { return i_Modes; }
+    mstring ChanModeArg() const   { return i_ChanModeArg; }
+    mstring Server() const	  { return i_Server; }
+    bool Numeric() const	  { return i_Numeric; }
+    mstring SVSNICK() const	  { return i_SVSNICK; }
+    mstring SVSMODE() const	  { return i_SVSMODE; }
+    mstring SVSKILL() const	  { return i_SVSKILL; }
+    mstring SVSNOOP() const	  { return i_SVSNOOP; }
+    mstring SQLINE() const	  { return i_SQLINE; }
+    mstring UNSQLINE() const	  { return i_UNSQLINE; }
+    mstring SVSHOST() const	  { return i_SVSHOST; }
+    mstring Burst() const	  { return i_Burst; }
+    mstring EndBurst() const	  { return i_EndBurst; }
+    mstring Protoctl() const	  { return i_Protoctl; }
 
-    void DumpB();
-    void DumpE();
+    void DumpB() const;
+    void DumpE() const;
 };
 
 class Server
@@ -288,29 +292,29 @@ public:
     bool operator<(const Server &in) const
 	{ return (i_Name < in.i_Name); }
 
-    mstring Name()		{ return i_Name; }
-    mstring AltName();
+    mstring Name() const	{ return i_Name; }
+    mstring AltName() const;
     void AltName(mstring in);
-    unsigned int Numeric();
+    unsigned int Numeric() const;
     void Numeric(unsigned int num);
-    mstring Uplink();
-    int Hops();
-    mstring Description();
+    mstring Uplink() const;
+    int Hops() const;
+    mstring Description() const;
     void Ping();
     void Pong();
-    float Lag();
-    bool Jupe();
-    unsigned int Users();
-    unsigned int Opers();
+    float Lag() const;
+    bool Jupe() const;
+    unsigned int Users() const;
+    unsigned int Opers() const;
 
-    vector<mstring> Downlinks();
-    vector<mstring> AllDownlinks();
+    vector<mstring> Downlinks() const;
+    vector<mstring> AllDownlinks() const;
     
     ~Server();
 
-    size_t Usage();
-    void DumpB();
-    void DumpE();
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 
 class NetworkServ : public mBase
@@ -320,9 +324,9 @@ class NetworkServ : public mBase
     friend class Reconnect_Handler;
     friend class ToBeSquit_Handler;
     friend class Squit_Handler;
-private:
-    void raw(mstring send);
-    void sraw(mstring send);
+
+    void raw(mstring send) const;
+    void sraw(mstring send) const;
     set<mstring> WaitIsOn;
     map<mstring, pair<unsigned int, mDateTime> > ReDoMessages;
 
@@ -349,15 +353,15 @@ public:
     void PopUser(mstring nick, mstring channel = "");
     void SignOnAll();
     Protocol proto;
-    size_t UserMax();
+    size_t UserMax() const;
     map<mstring,Server> ServerList;
-    mstring OurUplink();
-    bool IsServer(mstring server);
-    mstring ServerNumeric(unsigned int num);
+    mstring OurUplink() const;
+    bool IsServer(mstring server) const;
+    mstring ServerNumeric(unsigned int num) const;
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's
     // squit, REGARDLESS of wether it is currently connected or not.
-    bool IsSquit(mstring server);
+    bool IsSquit(mstring server) const;
     void Jupe(mstring server, mstring reason);
 
     void AKILL(mstring host, mstring reason = "", unsigned long time = 0, mstring killer = "");
@@ -386,8 +390,8 @@ public:
     void SVSHOST(mstring mynick, mstring nick, mstring newhost);
     void TOPIC(mstring nick, mstring setter, mstring channel, mstring topic = "", mDateTime time = Now());
     void UNSQLINE(mstring nick, mstring target);
-    void WALLOPS(mstring nick, mstring message);    
-    void KillUnknownUser(mstring user);
+    void WALLOPS(mstring nick, mstring message);
+    void KillUnknownUser(mstring user) const;
     unsigned int SeenMessage(mstring data);
 
     NetworkServ();
@@ -396,8 +400,8 @@ public:
     virtual void execute(const mstring & message);
     void numeric_execute(const mstring & message);
 
-    void DumpB();
-    void DumpE();
+    void DumpB() const;
+    void DumpE() const;
 };
 
 #endif

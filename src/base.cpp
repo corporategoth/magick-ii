@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.143  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.142  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -236,16 +240,18 @@ static const char *ident = "@(#)$Id$";
 bool mBase::TaskOpened;
 mBaseTask mBase::BaseTask;
 
-mstring mUserDef::UserDef(mstring type)
+mstring mUserDef::UserDef(mstring type) const
 {
     FT("mUserDef::UserDef", (type));
-    if (i_UserDef.empty() || i_UserDef.find(type.LowerCase()) == i_UserDef.end())
+    map<mstring,mstring>::const_iterator iter = i_UserDef.find(type.LowerCase());
+    if (iter == i_UserDef.end())
     {
 	RET("");
     }
     else
     {
-	mstring retval = i_UserDef[type.LowerCase()];
+	
+	mstring retval = iter->second;
 	RET(retval);
     }
 }
@@ -289,13 +295,13 @@ void entlist_t::operator=(const entlist_t &in)
 }
 
 
-size_t entlist_t::Usage()
+size_t entlist_t::Usage() const
 {
     size_t retval = 0;
     retval += i_Entry.capacity();
     retval += i_Last_Modifier.capacity();
     retval += sizeof(i_Last_Modify_Time.Internal());
-    map<mstring,mstring>::iterator i;
+    map<mstring,mstring>::const_iterator i;
     for (i=i_UserDef.begin(); i!=i_UserDef.end(); i++)
     {
 	retval += i->first.capacity();
@@ -304,12 +310,12 @@ size_t entlist_t::Usage()
     return retval;
 }
 
-void entlist_t::DumpB()
+void entlist_t::DumpB() const
 {
     MB(0, (i_Entry, i_Last_Modifier, i_Last_Modify_Time, i_UserDef.size()));
 }
 
-void entlist_t::DumpE()
+void entlist_t::DumpE() const
 {
     ME(0, (i_Entry, i_Last_Modifier, i_Last_Modify_Time, i_UserDef.size()));
 }
@@ -418,7 +424,7 @@ int mBaseTask::message_i(const mstring& message)
     mstring data = PreParse(message);
 
     mstring source, type, target;
-    if (data == "")
+    if (data.empty())
 	RET(0);
 
     source=data.ExtractWord(1,": ");
@@ -515,7 +521,7 @@ int mBaseTask::message_i(const mstring& message)
     RET(0);
 }
 
-mstring mBaseTask::PreParse(const mstring& message)
+mstring mBaseTask::PreParse(const mstring& message) const
 {
     FT("mBaseTask::PreParse", (message));
     mstring data = message;
@@ -615,7 +621,7 @@ void mBase::shutdown()
     mBase::TaskOpened=false;
 }
 
-bool mBase::signon(const mstring &nickname)
+bool mBase::signon(const mstring &nickname) const
 {
     FT("mBase::signon", (nickname));
 
@@ -633,7 +639,7 @@ bool mBase::signon(const mstring &nickname)
     }
 }
 
-bool mBase::signoff(const mstring &nickname)
+bool mBase::signoff(const mstring &nickname) const
 {
     FT("mBase::signoff", (nickname));
 
@@ -650,7 +656,7 @@ bool mBase::signoff(const mstring &nickname)
 }
 
 
-void mBase::privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...)
+void mBase::privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...) const
 {
     FT("mBase::privmsg", (source, dest, pszFormat));
 
@@ -661,7 +667,7 @@ void mBase::privmsg(const mstring &source, const mstring &dest, const char *pszF
 }
 
 
-void mBase::privmsg(const mstring &dest, const char *pszFormat, ...)
+void mBase::privmsg(const mstring &dest, const char *pszFormat, ...) const
 {
     FT("mBase::privmsg", (dest, pszFormat));
 
@@ -672,7 +678,7 @@ void mBase::privmsg(const mstring &dest, const char *pszFormat, ...)
 }
 
 
-void mBase::privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr)
+void mBase::privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const
 {
     FT("mBase::privmsgV", (source, dest, pszFormat));
 
@@ -686,7 +692,7 @@ void mBase::privmsgV(const mstring &source, const mstring &dest, const char *psz
 }
 
 
-void mBase::notice(const mstring &source, const mstring &dest, const char *pszFormat, ...)
+void mBase::notice(const mstring &source, const mstring &dest, const char *pszFormat, ...) const
 {
     FT("mBase::notice", (source, dest, pszFormat));
 
@@ -697,7 +703,7 @@ void mBase::notice(const mstring &source, const mstring &dest, const char *pszFo
 }
 
 
-void mBase::notice(const mstring &dest, const char *pszFormat, ...)
+void mBase::notice(const mstring &dest, const char *pszFormat, ...) const
 {
     FT("mBase::notice", (dest, pszFormat));
 
@@ -708,7 +714,7 @@ void mBase::notice(const mstring &dest, const char *pszFormat, ...)
 }
 
 
-void mBase::noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr)
+void mBase::noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const
 {
     FT("mBase::noticeV", (source, dest, pszFormat));
 
@@ -721,7 +727,7 @@ void mBase::noticeV(const mstring &source, const mstring &dest, const char *pszF
 }
 
 
-void mBase::send(const mstring &source, const mstring &dest, const char *pszFormat, ...)
+void mBase::send(const mstring &source, const mstring &dest, const char *pszFormat, ...) const
 {
     FT("mBase::send", (source, dest, pszFormat));
 
@@ -731,7 +737,7 @@ void mBase::send(const mstring &source, const mstring &dest, const char *pszForm
     va_end(argptr);
 }
 
-void mBase::send(const mstring &dest, const char *pszFormat, ...)
+void mBase::send(const mstring &dest, const char *pszFormat, ...) const
 {
     FT("mBase::send", (dest, pszFormat));
 
@@ -741,7 +747,7 @@ void mBase::send(const mstring &dest, const char *pszFormat, ...)
     va_end(argptr);
 }
 
-void mBase::sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr)
+void mBase::sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr) const
 {
     FT("mBase::sendV", (source, dest, pszFormat));
 
@@ -914,7 +920,7 @@ void CommandMap::RemSystemCommand(mstring service, mstring command,
     WLOCK(("CommandMap", "i_system"));
     if (i_system.find(service.LowerCase()) != i_system.end())
     {
-	clist_iter iter;
+	ctype::iterator iter;
 	for (iter = i_system[service.LowerCase()].begin();
 		iter != i_system[service.LowerCase()].end(); iter++)
 	{
@@ -953,7 +959,7 @@ void CommandMap::RemCommand(mstring service, mstring command,
     WLOCK(("CommandMap", "i_user"));
     if (i_user.find(service.LowerCase()) != i_user.end())
     {
-	clist_iter iter;
+	ctype::iterator iter;
 	for (iter = i_user[service.LowerCase()].begin();
 		iter != i_user[service.LowerCase()].end(); iter++)
 	{
@@ -972,12 +978,12 @@ void CommandMap::RemCommand(mstring service, mstring command,
 
 
 pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstring command,
-	    mstring user)
+	    mstring user) const
 {
     FT("CommandMap::GetUserCommand", (service, command, user));
     unsigned int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
-    clist_iter iter;
+    ctype::const_iterator iter;
     mstring type, list;
 
     // IF i_system exists
@@ -1004,14 +1010,14 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
     //else
     //  scripted stuff ...
 
-    if (type == "")
+    if (type.empty())
 	NRET(pair<bool_functor>,retval);
 
     RLOCK(("CommandMap", "i_user"));
-    if (i_user.find(type) != i_user.end())
+    cmap::const_iterator mi = i_user.find(type);
+    if (mi != i_user.end())
     {
-	for (iter=i_user[type].begin();
-		iter!=i_user[type].end(); iter++)
+	for (iter=mi->second.begin(); iter!=mi->second.end(); iter++)
 	{
 	    if (command.Matches(iter->first, true))
 	    {
@@ -1036,12 +1042,12 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
 }
 
 pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, mstring command,
-	    mstring user)
+	    mstring user) const
 {
     FT("CommandMap::GetSystemCommand", (service, command, user));
     unsigned int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
-    clist_iter iter;
+    ctype::const_iterator iter;
     mstring type, list;
 
     // IF i_system exists
@@ -1068,14 +1074,14 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
     //else
     //  scripted stuff ...
 
-    if (type == "")
+    if (type.empty())
 	NRET(pair<bool_functor>,retval);
 
     RLOCK(("CommandMap", "i_system"));
-    if (i_system.find(type) != i_system.end())
+    cmap::const_iterator mi = i_system.find(type);
+    if (mi != i_system.end())
     {
-	for (iter=i_system[type].begin();
-		iter!=i_system[type].end(); iter++)
+	for (iter=mi->second.begin(); iter!=mi->second.end(); iter++)
 	{
 	    if (command.Matches(iter->first, true))
 	    {
@@ -1100,7 +1106,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
 }
 
 bool CommandMap::DoCommand(mstring mynick, mstring user, mstring command,
-	    mstring params)
+	    mstring params) const
 {
     FT("CommandMap::DoCommand", (mynick, user, command, params));
 
@@ -1121,7 +1127,7 @@ bool CommandMap::DoCommand(mstring mynick, mstring user, mstring command,
 
 
 bool CommandMap::DoUserCommand(mstring mynick, mstring user, mstring command,
-	    mstring params)
+	    mstring params) const
 {
     FT("CommandMap::DoUserCommand", (mynick, user, command, params));
 
@@ -1145,7 +1151,7 @@ bool CommandMap::DoUserCommand(mstring mynick, mstring user, mstring command,
 
 
 bool CommandMap::DoSystemCommand(mstring mynick, mstring user, mstring command,
-	    mstring params)
+	    mstring params) const
 {
     FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
 

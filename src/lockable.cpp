@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.56  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -463,7 +467,7 @@ mLOCK::~mLOCK()
     }
 }
 
-bool mLOCK::Locked()
+bool mLOCK::Locked() const
 {
     bool retval = false;
     if (locks.size())
@@ -747,7 +751,7 @@ ACE_SOCK_Stream *mSocket::Unbind()
     NRET(ACE_SOCK_Stream *, retval);
 }
 
-mstring mSocket::Local_Host()
+mstring mSocket::Local_Host() const
 {
     NFT("mSocket::Local_Host");
     MLOCK(("mSocket", sockid));
@@ -755,7 +759,7 @@ mstring mSocket::Local_Host()
     RET(retval);
 }
 
-unsigned long mSocket::Local_IP()
+unsigned long mSocket::Local_IP() const
 {
     NFT("mSocket::Local_IP");
     MLOCK(("mSocket", sockid));
@@ -763,7 +767,7 @@ unsigned long mSocket::Local_IP()
     RET(retval);
 }
 
-unsigned short mSocket::Local_Port()
+unsigned short mSocket::Local_Port() const
 {
     NFT("mSocket::Local_Port");
     MLOCK(("mSocket", sockid));
@@ -771,7 +775,7 @@ unsigned short mSocket::Local_Port()
     RET(retval);
 }
 
-mstring mSocket::Remote_Host()
+mstring mSocket::Remote_Host() const
 {
     NFT("mSocket::Remote_Host");
     MLOCK(("mSocket", sockid));
@@ -779,7 +783,7 @@ mstring mSocket::Remote_Host()
     RET(retval);
 }
 
-unsigned long mSocket::Remote_IP()
+unsigned long mSocket::Remote_IP() const
 {
     NFT("mSocket::Remote_IP");
     MLOCK(("mSocket", sockid));
@@ -787,7 +791,7 @@ unsigned long mSocket::Remote_IP()
     RET(retval);
 }
 
-unsigned short mSocket::Remote_Port()
+unsigned short mSocket::Remote_Port() const
 {
     NFT("mSocket::Remote_Port");
     MLOCK(("mSocket", sockid));
@@ -795,7 +799,7 @@ unsigned short mSocket::Remote_Port()
     RET(retval);
 }
 
-bool mSocket::IsConnected()
+bool mSocket::IsConnected() const
 {
     NFT("mSocket::IsConnected");
     MLOCK(("mSocket", sockid));
@@ -811,14 +815,14 @@ void mSocket::Resolve(socktype_enum type, mstring info)
 #endif
 }
 
-int mSocket::Last_Error()
+int mSocket::Last_Error() const
 {
     NFT("mSocket::Last_Error");
     MLOCK(("mSocket", sockid));
     RET(last_error);
 }
 
-mstring mSocket::Last_Error_String()
+mstring mSocket::Last_Error_String() const
 {
     NFT("mSocket::Last_Error_String");
     MLOCK(("mSocket", sockid));
@@ -881,7 +885,8 @@ mThread::selftothreadidmap_t mThread::selftothreadidmap;
 
 ThreadID* mThread::find(ACE_thread_t thread)
 {
-    if(selftothreadidmap.find(thread)!=selftothreadidmap.end()) {
+    if(selftothreadidmap.find(thread) != selftothreadidmap.end())
+    {
 	return selftothreadidmap[thread];
     }
     return NULL;
@@ -890,7 +895,7 @@ ThreadID* mThread::find(ACE_thread_t thread)
 vector<ThreadID*> mThread::findall()
 {
     vector<ThreadID*> threadlist;
-    selftothreadidmap_t::iterator iter;
+    selftothreadidmap_t::const_iterator iter;
     for (iter=selftothreadidmap.begin(); iter!=selftothreadidmap.end(); iter++)
 	threadlist.push_back(iter->second);
 

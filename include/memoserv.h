@@ -25,6 +25,10 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.35  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -135,12 +139,12 @@ public:
 
     void ChgNick(mstring in);
     mstring Nick()const	    { return i_Nick; }
-    mstring Sender();
-    mDateTime Time();
-    mstring Text();
-    unsigned long File();
+    mstring Sender() const;
+    mDateTime Time() const;
+    mstring Text() const;
+    unsigned long File() const;
 
-    bool IsRead();
+    bool IsRead() const;
     void Read()	;
     void Unread();
 
@@ -149,9 +153,9 @@ public:
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
-    size_t Usage();
-    void DumpB();
-    void DumpE();
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 
 class News_t : public mUserDef, public SXP::IPersistObj
@@ -181,11 +185,11 @@ public:
     	{ return (i_Time < in.i_Time); }
 
     mstring Channel()const	{ return i_Channel; }
-    mstring Sender();
-    mDateTime Time();
-    mstring Text();
+    mstring Sender() const;
+    mDateTime Time() const;
+    mstring Text() const;
 
-    bool IsRead(mstring name);
+    bool IsRead(mstring name) const;
     void Read(mstring name);
     void Unread(mstring name);
 
@@ -194,9 +198,9 @@ public:
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
 
-    size_t Usage();
-    void DumpB();
-    void DumpE();
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 
 // todo: move this over to a ACE_TASK style architecture
@@ -254,16 +258,16 @@ public:
 	unsigned long File()	    { return i_File; }
     } stats;
 
-    bool IsNick(mstring nick);
-    bool IsChannel(mstring channel);
+    bool IsNick(mstring nick) const;
+    bool IsChannel(mstring channel) const;
     map<mstring,list<Memo_t> > nick;
     map<mstring,list<News_t> > channel;
 
-    unsigned long News_Expire()	{ return news_expire; }
-    unsigned long InFlight()	{ return inflight; }
-    unsigned long Delay()	{ return delay; }
-    unsigned int Files()	{ return files; }
-    unsigned long FileSize()	{ return filesize; }
+    unsigned long News_Expire()const	{ return news_expire; }
+    unsigned long InFlight()const	{ return inflight; }
+    unsigned long Delay()const		{ return delay; }
+    unsigned int Files()const		{ return files; }
+    unsigned long FileSize()const	{ return filesize; }
 
     MemoServ();
     virtual threadtype_enum Get_TType() const { return tt_MemoServ; }

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.148  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.147  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -758,7 +762,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		    if (Parent->nickserv.IsStored(recipiant))
 		    {
 			mstring realrecipiant = Parent->nickserv.stored[recipiant.LowerCase()].Host();
-			if (realrecipiant == "")
+			if (realrecipiant.empty())
 			    realrecipiant = recipiant;
 
 			if (!(!filenum || Parent->memoserv.FileSize() == 0 ||
@@ -873,7 +877,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			Parent->nickserv.live[sender.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 			Parent->filesys.GetName(FileMap::Public, filenum).c_str(),
 			filenum, ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filenum)).c_str(),
-			((Parent->filesys.GetPriv(FileMap::Public, filenum) == "") ?
+			((Parent->filesys.GetPriv(FileMap::Public, filenum).empty()) ?
 				"ALL" : Parent->filesys.GetPriv(FileMap::Public, filenum).c_str())));
 		}
 		else
@@ -895,7 +899,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
 	return;
     }
-    else if (Parent->nickserv.PicExt() == "")
+    else if (Parent->nickserv.PicExt().empty())
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
 	return;
@@ -994,28 +998,28 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
     send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PUB_PENDING"));
 }
 
-bool Nick_Live_t::InFlight_t::Memo()
+bool Nick_Live_t::InFlight_t::Memo() const
 {
     NFT("Nick_Live_t::InFlight_t::Memo");
     RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "recipiant"));
     RET(recipiant != "");
 }
 
-bool Nick_Live_t::InFlight_t::Picture()
+bool Nick_Live_t::InFlight_t::Picture() const
 {
     NFT("Nick_Live_t::InFlight_t::Picture");
     RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "type"));
     RET(type == FileMap::Picture);
 }
 
-bool Nick_Live_t::InFlight_t::Public()
+bool Nick_Live_t::InFlight_t::Public() const
 {
     NFT("Nick_Live_t::InFlight_t::Public");
     RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "type"));
     RET(type == FileMap::Public);
 }
 
-bool Nick_Live_t::InFlight_t::Exists()
+bool Nick_Live_t::InFlight_t::Exists() const
 {
     NFT("Nick_Live_t::InFlight_t::Exists");
     RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "recipiant"));
@@ -1023,21 +1027,21 @@ bool Nick_Live_t::InFlight_t::Exists()
     RET(recipiant != "" || type != FileMap::MemoAttach);
 }
 
-bool Nick_Live_t::InFlight_t::File()
+bool Nick_Live_t::InFlight_t::File() const
 {
     NFT("Nick_Live_t::InFlight_t::File");
     RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "fileattach"));
     RET(fileattach);
 }
 
-bool Nick_Live_t::InFlight_t::InProg()
+bool Nick_Live_t::InFlight_t::InProg() const
 {
     NFT("Nick_Live_t::InFlight_t::InProg");
     RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "fileinprog"));
     RET(fileinprog);
 }
 
-size_t Nick_Live_t::InFlight_t::Usage()
+size_t Nick_Live_t::InFlight_t::Usage() const
 {
     size_t retval = 0;
 
@@ -1054,13 +1058,13 @@ size_t Nick_Live_t::InFlight_t::Usage()
     return retval;
 }
 
-void Nick_Live_t::InFlight_t::DumpB()
+void Nick_Live_t::InFlight_t::DumpB() const
 {
     // 8 Elements
     MB(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
 }
 
-void Nick_Live_t::InFlight_t::DumpE()
+void Nick_Live_t::InFlight_t::DumpE() const
 {
     // 8 Elements
     ME(0, (nick, type, timer, fileattach, fileinprog, sender, recipiant, text));
@@ -1324,7 +1328,7 @@ void Nick_Live_t::Quit(mstring reason)
 }
 
 
-bool Nick_Live_t::IsInChan(mstring chan)
+bool Nick_Live_t::IsInChan(mstring chan) const
 {
     FT("Nick_Live_t::IsInChan", (chan));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
@@ -1332,7 +1336,7 @@ bool Nick_Live_t::IsInChan(mstring chan)
     RET(retval);
 }
 
-set<mstring> Nick_Live_t::Channels()
+set<mstring> Nick_Live_t::Channels() const
 {
     NFT("Nick_Live_t::Channels");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
@@ -1723,14 +1727,14 @@ void Nick_Live_t::Mode(mstring in)
 }
 
 
-mstring Nick_Live_t::Mode()
+mstring Nick_Live_t::Mode() const
 {
     NFT("Nick_Live_t::Mode");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "modes"));
     RET(modes);
 }
 
-bool Nick_Live_t::HasMode(mstring in)
+bool Nick_Live_t::HasMode(mstring in) const
 {
     FT("Nick_Live_t::HasMode", (in));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "modes"));
@@ -1746,14 +1750,14 @@ void Nick_Live_t::Away(mstring in)
     MCE(i_away);
 }
 
-mstring Nick_Live_t::Away()
+mstring Nick_Live_t::Away() const
 {
     NFT("Nick_Live_t::Away");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_away"));
     RET(i_away);
 }
 
-mDateTime Nick_Live_t::IdleTime()
+mDateTime Nick_Live_t::IdleTime() const
 {
     NFT("Nick_Live_t::IdleTime");
     mDateTime tmp;
@@ -1779,42 +1783,42 @@ void Nick_Live_t::Action()
 }
 
 
-mDateTime Nick_Live_t::SignonTime()
+mDateTime Nick_Live_t::SignonTime() const
 {
     NFT("Nick_Live_t::SignonTime");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_Signon_Time"));
     RET(i_Signon_Time);
 }
 
-mDateTime Nick_Live_t::MySignonTime()
+mDateTime Nick_Live_t::MySignonTime() const
 {
     NFT("Nick_Live_t::MySignonTime");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_My_Signon_Time"));
     RET(i_My_Signon_Time);
 }
 
-mstring Nick_Live_t::RealName()
+mstring Nick_Live_t::RealName() const
 {
     NFT("Nick_Live_t::RealName");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_realname"));
     RET(i_realname);
 }
 
-mstring Nick_Live_t::User()
+mstring Nick_Live_t::User() const
 {
     NFT("Nick_Live_t::User");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_user"));
     RET(i_user);
 }
 
-mstring Nick_Live_t::Host()
+mstring Nick_Live_t::Host() const
 {
     NFT("Nick_Live_t::Host");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
     RET(i_host);
 }
 
-mstring Nick_Live_t::AltHost()
+mstring Nick_Live_t::AltHost() const
 {
     NFT("Nick_Live_t::AltHost");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_alt_host"));
@@ -1830,14 +1834,14 @@ void Nick_Live_t::AltHost(mstring in)
     MCE(i_alt_host);
 }
 
-mstring Nick_Live_t::Server()
+mstring Nick_Live_t::Server() const
 {
     NFT("Nick_Live_t::Server");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_server"));
     RET(i_server);
 } 
 
-mstring Nick_Live_t::Squit()
+mstring Nick_Live_t::Squit() const
 {
     NFT("Nick_Live_t::Squit");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_squit"));
@@ -1920,7 +1924,7 @@ void Nick_Live_t::ClearSquit()
 }
 
 
-mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
+mstring Nick_Live_t::Mask(Nick_Live_t::styles type) const
 {
     FT("Nick_Live_t::Mask", ((int) type));
 
@@ -1999,7 +2003,7 @@ mstring Nick_Live_t::Mask(Nick_Live_t::styles type)
 }
 
 
-mstring Nick_Live_t::AltMask(Nick_Live_t::styles type)
+mstring Nick_Live_t::AltMask(Nick_Live_t::styles type) const
 {
     FT("Nick_Live_t::AltMask", ((int) type));
 
@@ -2144,7 +2148,7 @@ void Nick_Live_t::UnChanIdentify(mstring channel)
     }
 }
 
-bool Nick_Live_t::IsChanIdentified(mstring channel)
+bool Nick_Live_t::IsChanIdentified(mstring channel) const
 {
     FT("Nick_Live_t::IsChanIdentified", (channel));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "chans_founder_identd"));
@@ -2236,14 +2240,14 @@ void Nick_Live_t::UnIdentify()
     MCE(identified);
 }
 
-bool Nick_Live_t::IsIdentified()
+bool Nick_Live_t::IsIdentified() const
 {
     NFT("Nick_Live_t::IsIdentified");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "identified"));
     RET(identified);
 }
 
-bool Nick_Live_t::IsRecognized()
+bool Nick_Live_t::IsRecognized() const
 {
     NFT("Nick_Live_t::IsRecognised");
     bool retval = false;
@@ -2254,7 +2258,7 @@ bool Nick_Live_t::IsRecognized()
     RET(retval);
 }
 
-bool Nick_Live_t::IsServices()
+bool Nick_Live_t::IsServices() const
 {
     NFT("Nick_Live_t::IsServices");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "services"));
@@ -2270,7 +2274,7 @@ void Nick_Live_t::SetLastNickReg()
     MCE(last_nick_reg);
 }
 
-mDateTime Nick_Live_t::LastNickReg()
+mDateTime Nick_Live_t::LastNickReg() const
 {
     NFT("Nick_Live_t::LastNickReg");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "last_nick_reg"));
@@ -2286,7 +2290,7 @@ void Nick_Live_t::SetLastChanReg()
     MCE(last_chan_reg);
 }
 
-mDateTime Nick_Live_t::LastChanReg()
+mDateTime Nick_Live_t::LastChanReg() const
 {
     NFT("Nick_Live_t::LastChanReg");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "last_chan_reg"));
@@ -2302,14 +2306,14 @@ void Nick_Live_t::SetLastMemo()
     MCE(last_memo);
 }
 
-mDateTime Nick_Live_t::LastMemo()
+mDateTime Nick_Live_t::LastMemo() const
 {
     NFT("Nick_Live_t::LastMemo");
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "last_memo"));
     RET(last_memo);
 }
 
-size_t Nick_Live_t::Usage()
+size_t Nick_Live_t::Usage() const
 {
     size_t retval = 0;
 
@@ -2329,12 +2333,12 @@ size_t Nick_Live_t::Usage()
     retval += i_squit.capacity();
     retval += i_away.capacity();
     retval += modes.capacity();
-    set<mstring>::iterator i;
+    set<mstring>::const_iterator i;
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
     {
 	retval += i->capacity();
     }
-    vector<mDateTime>::iterator j;
+    vector<mDateTime>::const_iterator j;
     for (j=last_msg_times.begin(); j!=last_msg_times.end(); j++)
     {
 	retval += sizeof(j->Internal());
@@ -2346,7 +2350,7 @@ size_t Nick_Live_t::Usage()
     {
 	retval += i->capacity();
     }
-    vector<mstring>::iterator k;
+    vector<mstring>::const_iterator k;
     for (k=try_chan_ident.begin(); k!=try_chan_ident.end(); k++)
     {
 	retval += k->capacity();
@@ -2360,7 +2364,7 @@ size_t Nick_Live_t::Usage()
     return retval;
 }
 
-void Nick_Live_t::DumpB()
+void Nick_Live_t::DumpB() const
 {
     // 16 Elements
     MB(0, (i_Name, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname,
@@ -2372,7 +2376,7 @@ void Nick_Live_t::DumpB()
 	identified, services, last_nick_reg, last_chan_reg, last_memo));
 }
 
-void Nick_Live_t::DumpE()
+void Nick_Live_t::DumpE() const
 {
     // 16 Elements
     ME(0, (i_Name, i_Signon_Time, i_My_Signon_Time, i_Last_Action, i_realname,
@@ -2505,7 +2509,7 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mDateTime regtime, const Nick_Stored_
 }
 
 
-mDateTime Nick_Stored_t::RegTime()
+mDateTime Nick_Stored_t::RegTime() const
 {
     NFT("Nick_Stored_t::RegTime");
     RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_RegTime"));
@@ -2518,7 +2522,7 @@ unsigned long Nick_Stored_t::Drop()
 
     // When we go, we take all our slaves with us!
     unsigned long i, dropped = 1;
-    if (Host() == "")
+    if (Host().empty())
     {
 	while(Siblings())
 	{
@@ -2623,7 +2627,7 @@ void Nick_Stored_t::operator=(const Nick_Stored_t &in)
 mstring Nick_Stored_t::Email()
 {
     NFT("Nick_Stored_t::Email");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Email"));
 	RET(i_Email);
@@ -2639,7 +2643,7 @@ mstring Nick_Stored_t::Email()
 void Nick_Stored_t::Email(mstring in)
 {
     FT("Nick_Stored_t::Email", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Email"));
 	MCB(i_Email);
@@ -2656,7 +2660,7 @@ void Nick_Stored_t::Email(mstring in)
 mstring Nick_Stored_t::URL()
 {
     NFT("Nick_Stored_t::URL");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_URL"));
 	RET(i_URL);
@@ -2672,7 +2676,7 @@ mstring Nick_Stored_t::URL()
 void Nick_Stored_t::URL(mstring in)
 {
     FT("Nick_Stored_t::URL", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_URL"));
 	MCB(i_URL);
@@ -2689,7 +2693,7 @@ void Nick_Stored_t::URL(mstring in)
 mstring Nick_Stored_t::ICQ()
 {
     NFT("Nick_Stored_t::ICQ");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_ICQ"));
 	RET(i_ICQ);
@@ -2705,7 +2709,7 @@ mstring Nick_Stored_t::ICQ()
 void Nick_Stored_t::ICQ(mstring in)
 {
     FT("Nick_Stored_t::ICQ", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_ICQ"));
 	MCB(i_ICQ);
@@ -2722,7 +2726,7 @@ void Nick_Stored_t::ICQ(mstring in)
 mstring Nick_Stored_t::Description()
 {
     NFT("Nick_Stored_t::Description");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Description"));
 	RET(i_Description);
@@ -2738,7 +2742,7 @@ mstring Nick_Stored_t::Description()
 void Nick_Stored_t::Description(mstring in)
 {
     FT("Nick_Stored_t::Description", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Description"));
 	MCB(i_Description);
@@ -2755,7 +2759,7 @@ void Nick_Stored_t::Description(mstring in)
 mstring Nick_Stored_t::Comment()
 {
     NFT("Nick_Stored_t::Comment");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Comment"));
 	RET(i_Comment);
@@ -2771,7 +2775,7 @@ mstring Nick_Stored_t::Comment()
 void Nick_Stored_t::Comment(mstring in)
 {
     FT("Nick_Stored_t::Comment", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Comment"));
 	MCB(i_Comment);
@@ -2788,7 +2792,7 @@ void Nick_Stored_t::Comment(mstring in)
 void Nick_Stored_t::Suspend(mstring name)
 {
     FT("Nick_Stored_t::Suspend", (name));
-    if (Host() == "")
+    if (Host().empty())
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
 	WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
@@ -2809,7 +2813,7 @@ void Nick_Stored_t::Suspend(mstring name)
 void Nick_Stored_t::UnSuspend()
 {
     NFT("Nick_Stored_t::UnSuspend");
-    if (Host() == "")
+    if (Host().empty())
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
 	MCB(i_Suspend_By);
@@ -2845,7 +2849,7 @@ mstring Nick_Stored_t::Host()
 mstring Nick_Stored_t::Password()
 {
     NFT("Nick_Stored_t::Password");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Password"));
 	RET(i_Password);
@@ -2861,7 +2865,7 @@ mstring Nick_Stored_t::Password()
 void Nick_Stored_t::Password(mstring in)
 {
     FT("Nick_Stored_t::Password", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Password"));
 	MCB(i_Password);
@@ -2879,7 +2883,7 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
 {
     FT("Nick_Stored_t::Slave", (nick, password, regtime));
 
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Forbidden"));
 	RLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_Password"));
@@ -2915,7 +2919,7 @@ unsigned int Nick_Stored_t::Siblings()
 {
     NFT("Nick_Stored_t::Siblings");
     unsigned int retval = 0;
-    if (Host() == "")
+    if (Host().empty())
     {
 	retval = i_slaves.size();
     }
@@ -2931,7 +2935,7 @@ mstring Nick_Stored_t::Sibling(unsigned int count)
 {
     FT("Nick_Stored_t::Siblings", (count));
     mstring retval = "";
-    if (Host() == "")
+    if (Host().empty())
     {
 	vector<mstring> chunked;
 	set<mstring>::iterator iter;
@@ -2979,7 +2983,7 @@ bool Nick_Stored_t::IsSibling(mstring nick)
     {
 	RET(true);
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
 	bool retval = (i_slaves.find(nick.LowerCase()) != i_slaves.end());
@@ -3190,7 +3194,7 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 bool Nick_Stored_t::MakeHost()
 {
     NFT("Nick_Stored_t::MakeHost"); 
-    if (Host() == "")
+    if (Host().empty())
     {
 	RET(false);
     }
@@ -3250,7 +3254,7 @@ bool Nick_Stored_t::MakeHost()
 bool Nick_Stored_t::Unlink()
 {
     NFT("Nick_Stored_t::Unlink");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RET(false);
     }
@@ -3297,7 +3301,7 @@ unsigned int Nick_Stored_t::Access()
 {
     NFT("Nick_Stored_t::Access");
     unsigned int retval = 0;
-    if (Host() == "")
+    if (Host().empty())
     {
 	retval = i_access.size();
     }
@@ -3312,7 +3316,7 @@ unsigned int Nick_Stored_t::Access()
 mstring Nick_Stored_t::Access(unsigned int count)
 {
     FT("Nick_Stored_t::Access", (count));
-    if (Host() == "")
+    if (Host().empty())
     {
 	set<mstring>::iterator iter;
 	unsigned int i;
@@ -3335,7 +3339,7 @@ mstring Nick_Stored_t::Access(unsigned int count)
 bool Nick_Stored_t::AccessAdd(const mstring& in)
 {
     FT("Nick_Stored_t::AccessAdd", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	// Incorrect syntax
 	if (!(in.Contains("@") && in.WordCount("@") == 2))
@@ -3380,7 +3384,7 @@ unsigned int Nick_Stored_t::AccessDel(mstring in)
 {
     FT("Nick_Stored_t::AccessDel", (in));
     unsigned int retval = 0;
-    if (Host() == "")
+    if (Host().empty())
     {
 	vector<mstring> chunked;
 	set<mstring>::iterator iter;
@@ -3408,7 +3412,7 @@ unsigned int Nick_Stored_t::AccessDel(mstring in)
 bool Nick_Stored_t::IsAccess(mstring in)
 {
     FT("Nick_Stored_t::IsAccess", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	set<mstring>::iterator iter;
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_access"));
@@ -3431,7 +3435,7 @@ unsigned int Nick_Stored_t::Ignore()
 {
     NFT("Nick_Stored_t::Ignore");
     unsigned int retval = 0;
-    if (Host() == "")
+    if (Host().empty())
     {
 	retval = i_ignore.size();
     }
@@ -3446,7 +3450,7 @@ unsigned int Nick_Stored_t::Ignore()
 mstring Nick_Stored_t::Ignore(unsigned int count)
 {
     FT("Nick_Stored_t::Ignore", (count));
-    if (Host() == "")
+    if (Host().empty())
     {
 	set<mstring>::iterator iter;
 	unsigned int i;
@@ -3469,7 +3473,7 @@ mstring Nick_Stored_t::Ignore(unsigned int count)
 bool Nick_Stored_t::IgnoreAdd(mstring in)
 {
     FT("Nick_Stored_t::IgnoreAdd", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	// Not stored nick
 	if (!Parent->nickserv.IsStored(in))
@@ -3500,7 +3504,7 @@ unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 {
     FT("Nick_Stored_t::IgnoreDel", (in));
     unsigned int retval = 0;
-    if (Host() == "")
+    if (Host().empty())
     {
 	vector<mstring> chunked;
 	set<mstring>::iterator iter;
@@ -3528,7 +3532,7 @@ unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 bool Nick_Stored_t::IsIgnore(mstring in)
 {
     FT("Nick_Stored_t::IsIgnore", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	set<mstring>::iterator iter;
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_ignore"));
@@ -3554,7 +3558,7 @@ bool Nick_Stored_t::Protect()
     {
 	RET(Parent->nickserv.DEF_Protect());
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Protect"));
 	RET(i_Protect);
@@ -3570,7 +3574,7 @@ bool Nick_Stored_t::Protect()
 void Nick_Stored_t::Protect(bool in)
 {
     FT("Nick_Stored_t::Protect", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!L_Protect())
 	{
@@ -3594,7 +3598,7 @@ bool Nick_Stored_t::L_Protect()
     {
 	RET(true);
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_Protect"));
 	RET(l_Protect);
@@ -3610,7 +3614,7 @@ bool Nick_Stored_t::L_Protect()
 void Nick_Stored_t::L_Protect(bool in)
 {
     FT("Nick_Stored_t::L_Protect", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!Parent->nickserv.LCK_Protect())
 	{
@@ -3634,7 +3638,7 @@ bool Nick_Stored_t::Secure()
     {
 	RET(Parent->nickserv.DEF_Secure());
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Secure"));
 	RET(i_Secure);
@@ -3650,7 +3654,7 @@ bool Nick_Stored_t::Secure()
 void Nick_Stored_t::Secure(bool in)
 {
     FT("Nick_Stored_t::Secure", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!L_Secure())
 	{
@@ -3674,7 +3678,7 @@ bool Nick_Stored_t::L_Secure()
     {
 	RET(true);
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_Secure"));
 	RET(l_Secure);
@@ -3690,7 +3694,7 @@ bool Nick_Stored_t::L_Secure()
 void Nick_Stored_t::L_Secure(bool in)
 {
     FT("Nick_Stored_t::L_Secure", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!Parent->nickserv.LCK_Secure())
 	{
@@ -3714,7 +3718,7 @@ bool Nick_Stored_t::NoExpire()
     {
 	RET(Parent->nickserv.DEF_NoExpire());
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_NoExpire"));
 	RET(i_NoExpire);
@@ -3730,7 +3734,7 @@ bool Nick_Stored_t::NoExpire()
 void Nick_Stored_t::NoExpire(bool in)
 {
     FT("Nick_Stored_t::NoExpire", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!L_NoExpire())
 	{
@@ -3754,7 +3758,7 @@ bool Nick_Stored_t::L_NoExpire()
     {
 	RET(true);
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_NoExpire"));
 	RET(l_NoExpire);
@@ -3770,7 +3774,7 @@ bool Nick_Stored_t::L_NoExpire()
 void Nick_Stored_t::L_NoExpire(bool in)
 {
     FT("Nick_Stored_t::L_NoExpire", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!Parent->nickserv.LCK_NoExpire())
 	{
@@ -3794,7 +3798,7 @@ bool Nick_Stored_t::NoMemo()
     {
 	RET(Parent->nickserv.DEF_NoMemo());
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_NoMemo"));
 	RET(i_NoMemo);
@@ -3810,7 +3814,7 @@ bool Nick_Stored_t::NoMemo()
 void Nick_Stored_t::NoMemo(bool in)
 {
     FT("Nick_Stored_t::NoMemo", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!L_NoMemo())
 	{
@@ -3834,7 +3838,7 @@ bool Nick_Stored_t::L_NoMemo()
     {
 	RET(true);
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_NoMemo"));
 	RET(l_NoMemo);
@@ -3850,7 +3854,7 @@ bool Nick_Stored_t::L_NoMemo()
 void Nick_Stored_t::L_NoMemo(bool in)
 {
     FT("Nick_Stored_t::L_NoMemo", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!Parent->nickserv.LCK_NoMemo())
 	{
@@ -3874,7 +3878,7 @@ bool Nick_Stored_t::Private()
     {
 	RET(Parent->nickserv.DEF_Private());
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Private"));
 	RET(i_Private);
@@ -3890,7 +3894,7 @@ bool Nick_Stored_t::Private()
 void Nick_Stored_t::Private(bool in)
 {
     FT("Nick_Stored_t::Private", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!L_Private())
 	{
@@ -3914,7 +3918,7 @@ bool Nick_Stored_t::L_Private()
     {
 	RET(true);
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_Private"));
 	RET(l_Private);
@@ -3930,7 +3934,7 @@ bool Nick_Stored_t::L_Private()
 void Nick_Stored_t::L_Private(bool in)
 {
     FT("Nick_Stored_t::L_Private", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!Parent->nickserv.LCK_Private())
 	{
@@ -3954,7 +3958,7 @@ bool Nick_Stored_t::PRIVMSG()
     {
 	RET(Parent->nickserv.DEF_PRIVMSG());
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_PRIVMSG"));
 	RET(i_PRIVMSG);
@@ -3970,7 +3974,7 @@ bool Nick_Stored_t::PRIVMSG()
 void Nick_Stored_t::PRIVMSG(bool in)
 {
     FT("Nick_Stored_t::PRIVMSG", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!L_PRIVMSG())
 	{
@@ -3994,7 +3998,7 @@ bool Nick_Stored_t::L_PRIVMSG()
     {
 	RET(true);
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_PRIVMSG"));
 	RET(l_PRIVMSG);
@@ -4010,7 +4014,7 @@ bool Nick_Stored_t::L_PRIVMSG()
 void Nick_Stored_t::L_PRIVMSG(bool in)
 {
     FT("Nick_Stored_t::L_PRIVMSG", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!Parent->nickserv.LCK_PRIVMSG())
 	{
@@ -4034,7 +4038,7 @@ mstring Nick_Stored_t::Language()
     {
 	RET(Parent->nickserv.DEF_Language().UpperCase());
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Language"));
 	RET(i_Language);
@@ -4050,7 +4054,7 @@ mstring Nick_Stored_t::Language()
 void Nick_Stored_t::Language(mstring in)
 {
     FT("Nick_Stored_t::Language", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!L_Language())
 	{
@@ -4074,7 +4078,7 @@ bool Nick_Stored_t::L_Language()
     {
 	RET(true);
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "l_Language"));
 	RET(l_Language);
@@ -4090,7 +4094,7 @@ bool Nick_Stored_t::L_Language()
 void Nick_Stored_t::L_Language(bool in)
 {
     FT("Nick_Stored_t::L_Language", (in));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (!Parent->nickserv.LCK_Language())
 	{
@@ -4110,14 +4114,23 @@ void Nick_Stored_t::L_Language(bool in)
 bool Nick_Stored_t::Suspended()
 {
     NFT("Nick_Stored_t::Suspended");
-    RET(Suspend_By() != "");
+    if (Host().empty())
+    {
+	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
+	RET(Suspend_By() != "");
+    }
+    else
+    {
+	bool retval = Parent->nickserv.stored[i_Host.LowerCase()].Suspended();
+	RET(retval);
+    }
 }
 
 
 mstring Nick_Stored_t::Suspend_By()
 {
     NFT("Nick_Stored_t::Suspend_By");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
 	RET(i_Suspend_By);
@@ -4133,7 +4146,7 @@ mstring Nick_Stored_t::Suspend_By()
 mDateTime Nick_Stored_t::Suspend_Time()
 {
     NFT("Nick_Stored_t::Suspend_Time");
-    if (Host() == "")
+    if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
 	RET(i_Suspend_Time);
@@ -4146,7 +4159,7 @@ mDateTime Nick_Stored_t::Suspend_Time()
 }
 
 
-bool Nick_Stored_t::Forbidden()
+bool Nick_Stored_t::Forbidden() const
 {
     NFT("Nick_Stored_t::Forbidden");
     RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Forbidden"));
@@ -4164,7 +4177,7 @@ void Nick_Stored_t::SendPic(mstring nick)
 unsigned long Nick_Stored_t::PicNum()
 {
     NFT("PicNum");
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (Parent->nickserv.PicExt() != "")
 	{
@@ -4184,7 +4197,7 @@ unsigned long Nick_Stored_t::PicNum()
 void Nick_Stored_t::GotPic(unsigned long picnum)
 {
     FT("Nick_Stored_t::GotPic", (picnum));
-    if (Host() == "")
+    if (Host().empty())
     {
 	if (Parent->nickserv.PicExt() != "")
 	{
@@ -4226,7 +4239,7 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
     {
 	RET(Now());
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_LastSeenTime"));
 	mDateTime lastseen = i_LastSeenTime;
@@ -4284,7 +4297,7 @@ mstring Nick_Stored_t::LastAllMask()
     {
 	RET(Parent->getMessage("VALS/ONLINE"));
     }
-    else if (Host() == "")
+    else if (Host().empty())
     {
 	RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_LastSeenTime"));
 	mDateTime lastseen = i_LastSeenTime;
@@ -4362,12 +4375,12 @@ void Nick_Stored_t::Quit(mstring message)
     }
 }
 
-size_t Nick_Stored_t::MyChannels()
+size_t Nick_Stored_t::MyChannels() const
 {
     NFT("Nick_Stored_t::MyChannels");
 
     size_t count = 0;
-    map<mstring, Chan_Stored_t>::iterator i;
+    map<mstring, Chan_Stored_t>::const_iterator i;
     RLOCK(("ChanServ", "stored"));
     for (i=Parent->chanserv.stored.begin(); i!=Parent->chanserv.stored.end(); i++)
     {
@@ -4971,12 +4984,11 @@ bool NickServ::IsLive(mstring in)const
 {
     FT("NickServ::IsLive", (in));
     bool retval = false;
-    map<mstring, Nick_Live_t>::const_iterator i;
     RLOCK(("NickServ", "live", in.LowerCase()));
-    if ((i = live.find(in.LowerCase())) != live.end())
+    map<mstring, Nick_Live_t>::const_iterator i = live.find(in.LowerCase());
+    if (i != live.end())
     {
-	Nick_Live_t *ptr = (Nick_Live_t *) &i->second;
-	if (ptr->Squit() == "")
+	if (i->second.Squit().empty())
 	    retval = true;
     }
     RET(retval);
@@ -5262,7 +5274,7 @@ void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
 	}
 
 	target = Parent->getSname(target);
-	if (Parent->nickserv.stored[target.LowerCase()].Host() == "")
+	if (Parent->nickserv.stored[target.LowerCase()].Host().empty())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISHOST"),
 							target.c_str());
@@ -5292,7 +5304,7 @@ void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (Parent->nickserv.stored[source.LowerCase()].Host() == "")
+	if (Parent->nickserv.stored[source.LowerCase()].Host().empty())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISHOST"));
 	    return;
@@ -5338,7 +5350,7 @@ void NickServ::do_Host(mstring mynick, mstring source, mstring params)
 	}
 
 	newhost = Parent->getSname(newhost);
-	if (Parent->nickserv.stored[newhost.LowerCase()].Host() == "")
+	if (Parent->nickserv.stored[newhost.LowerCase()].Host().empty())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISHOST"),
 						newhost.c_str());
@@ -5620,7 +5632,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	// AND the committee isnt private or the requesting user is in OPER
 	if (iter->first != Parent->commserv.ALL_Name() &&
 	    iter->first != Parent->commserv.REGD_Name() &&
-	    (iter->second.HeadCom() == "" ||
+	    (iter->second.HeadCom().empty() ||
 	    !(Parent->commserv.IsList(iter->second.HeadCom()) &&
 	      Parent->commserv.list[iter->second.HeadCom().UpperCase()].IsIn(nick->Name()))) &&
 	    iter->second.IsIn(target) && (!iter->second.Private() ||
@@ -5995,7 +6007,7 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 
     mstring filename = 	Parent->filesys.GetName(FileMap::Picture, picnum);
     size_t filesize = Parent->filesys.GetSize(FileMap::Picture, picnum);
-    if (filename == "" || filesize <= 0)
+    if (filename.empty() || filesize <= 0)
     {
 	Parent->nickserv.stored[target.LowerCase()].GotPic(0);
 	::send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
@@ -6960,7 +6972,7 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (Parent->nickserv.PicExt() == "")
+    if (Parent->nickserv.PicExt().empty())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/PICDISABLED"));
 	return;

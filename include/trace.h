@@ -25,6 +25,10 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.67  2000/12/12 02:51:58  prez
 ** Moved the do_nothing function
 **
@@ -114,15 +118,15 @@ public:
     ThreadID();
     ThreadID(threadtype_enum Type);
     ~ThreadID();
-    bool InTrace() { return t_intrace; }
-    mstring LastFunc() { return t_lastfunc; }
+    bool InTrace() const { return t_intrace; }
+    mstring LastFunc() const { return t_lastfunc; }
     void LastFunc(const mstring &in) { t_lastfunc = in; }
     void assign(threadtype_enum Type);
-    threadtype_enum type() { return t_internaltype; }
+    threadtype_enum type() const { return t_internaltype; }
     void indentup() { t_indent++; }
     void indentdown() { if (t_indent>0) t_indent--; }
-    short indent() { return t_indent; }
-    mstring logname();
+    short indent() const { return t_indent; }
+    mstring logname() const;
     void WriteOut (const mstring &message);
     void Flush();
 };

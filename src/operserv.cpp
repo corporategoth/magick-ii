@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.110  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.109  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -376,16 +380,16 @@ size_t OperServ::CloneList_size(unsigned int amt)const
     RET(value);
 }
 
-size_t OperServ::CloneList_Usage()
+size_t OperServ::CloneList_Usage() const
 {
     size_t retval = 0;
-    map<mstring, pair<unsigned int, list<mDateTime> > >::iterator i;
+    map<mstring, pair<unsigned int, list<mDateTime> > >::const_iterator i;
     WLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
 	retval += i->first.capacity();
 	retval += sizeof(i->second.first);
-	list<mDateTime>::iterator j;
+	list<mDateTime>::const_iterator j;
 	for (j=i->second.second.begin(); j!=i->second.second.end(); j++)
 	    retval += sizeof(j->Internal());
     }
@@ -444,16 +448,15 @@ bool OperServ::Clone_erase()
     }
 }
 
-size_t OperServ::Clone_Usage()
+size_t OperServ::Clone_Usage() const
 {
     size_t retval = 0;
-    set<Clone_Type>::iterator i;
+    set<Clone_Type>::const_iterator i;
     MLOCK(("OperServ", "Clone"));
     Clone_Type *tmp;
     for (i=i_Clone.begin(); i!=i_Clone.end(); i++)
     {
-	tmp = (Clone_Type *) &(*i);
-	retval += tmp->Usage();
+	retval += i->Usage();
     }
     return retval;
 }
@@ -553,16 +556,15 @@ bool OperServ::Akill_erase()
 }
 
 
-size_t OperServ::Akill_Usage()
+size_t OperServ::Akill_Usage() const
 {
     size_t retval = 0;
-    set<Akill_Type>::iterator i;
+    set<Akill_Type>::const_iterator i;
     MLOCK(("OperServ", "Akill"));
     Akill_Type *tmp;
     for (i=i_Akill.begin(); i!=i_Akill.end(); i++)
     {
-	tmp = (Akill_Type *) &(*i);
-	retval += tmp->Usage();
+	retval += i->Usage();
     }
     return retval;
 }
@@ -675,16 +677,15 @@ bool OperServ::OperDeny_erase()
 }
 
 
-size_t OperServ::OperDeny_Usage()
+size_t OperServ::OperDeny_Usage() const
 {
     size_t retval = 0;
-    set<OperDeny_Type>::iterator i;
+    set<OperDeny_Type>::const_iterator i;
     MLOCK(("OperServ", "OperDeny"));
     OperDeny_Type *tmp;
     for (i=i_OperDeny.begin(); i!=i_OperDeny.end(); i++)
     {
-	tmp = (OperDeny_Type *) &(*i);
-	retval += tmp->Usage();
+	retval += i->Usage();
     }
     return retval;
 }
@@ -798,16 +799,15 @@ bool OperServ::Ignore_erase()
 }
 
 
-size_t OperServ::Ignore_Usage()
+size_t OperServ::Ignore_Usage() const
 {
     size_t retval = 0;
-    set<Ignore_Type>::iterator i;
+    set<Ignore_Type>::const_iterator i;
     MLOCK(("OperServ", "Ignore"));
     entlist_val_t<bool> *tmp;
     for (i=i_Ignore.begin(); i!=i_Ignore.end(); i++)
     {
-	tmp = (entlist_val_t<bool> *) &(*i);
-	retval += tmp->Usage();
+	retval += i->Usage();
     }
     return retval;
 }
@@ -3890,13 +3890,13 @@ void OperServ::PostLoad()
     }
 }
 
-void OperServ::DumpB()
+void OperServ::DumpB() const
 {
     MB(0, (i_Clone.size(), CloneList.size(), i_Akill.size(),
 	i_OperDeny.size(), i_Ignore.size()));
 }
 
-void OperServ::DumpE()
+void OperServ::DumpE() const
 {
     ME(0, (i_Clone.size(), CloneList.size(), i_Akill.size(),
 	i_OperDeny.size(), i_Ignore.size()));

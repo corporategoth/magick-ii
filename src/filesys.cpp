@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.56  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -316,7 +320,7 @@ void mFile::Close()
     fd = NULL;
 }
 
-bool mFile::IsOpened()
+bool mFile::IsOpened() const
 {
     NFT("mFile::IsOpened");
     MLOCK(("mFile", i_name));
@@ -395,7 +399,7 @@ mstring mFile::ReadLine()
     RET(Result);
 }
 
-long mFile::Length()
+long mFile::Length() const
 {
     NFT("mFile::Length");
     if (!IsOpened())
@@ -406,7 +410,7 @@ long mFile::Length()
     RET((long) st.st_size);
 }
 
-mDateTime mFile::LastMod()
+mDateTime mFile::LastMod() const
 {
     NFT("mFile::LastMod");
     if (!IsOpened())
@@ -418,7 +422,7 @@ mDateTime mFile::LastMod()
     RET(retval);
 }
 
-bool mFile::Eof()
+bool mFile::Eof() const
 {
     NFT("mFile::Eof");
     if (!IsOpened())
@@ -504,7 +508,7 @@ long mFile::Copy(mstring sin, mstring sout, bool append)
 {
     FT("mFile::Copy", (sin, sout, append));
     
-    if (sin == "" || !Exists(sin) || sout == "")
+    if (sin.empty() || !Exists(sin) || sout.empty())
 	RET(0);
     mFile in(sin.c_str());
     mFile out(sout.c_str(), append ? "a" : "w");
@@ -528,7 +532,7 @@ long mFile::Copy(mstring sin, mstring sout, bool append)
 long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
 {
     FT("mFile::Dump", ("(vector<mstring>) sin", sout, append, endline));
-    if (sout == "")
+    if (sout.empty())
 	RET(0);
     mFile out(sout.c_str(), append ? "a" : "w");
     if (!(sin.size() && out.IsOpened()))
@@ -551,7 +555,7 @@ long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
 long mFile::Dump(list<mstring> sin, mstring sout, bool append, bool endline)
 {
     FT("mFile::Dump", ("(list<mstring>) sin", sout, append, endline));
-    if (sout == "")
+    if (sout.empty())
 	RET(0);
     mFile out(sout.c_str(), append ? "a" : "w");
     if (!(sin.size() && out.IsOpened()))
@@ -575,7 +579,7 @@ vector<mstring> mFile::UnDump( const mstring &sin)
     FT("mFile::UnDump", (sin));
     vector<mstring> Result;
 
-    if(sin == "" || !Exists(sin))
+    if(sin.empty() || !Exists(sin))
         NRET(vector<mstring>,Result);
     mFile in(sin.c_str(), "r");
     if(!in.IsOpened())
@@ -669,19 +673,23 @@ unsigned short FindAvailPort()
     RET(retval);
 }
 
-unsigned long FileMap::FindAvail(FileMap::FileType type)
+unsigned long FileMap::FindAvail(FileMap::FileType type) const
 {
     FT("FileMap::FindAvail", ((int) type));
 
     unsigned long filenum = 1;
     RLOCK(("FileMap", (int) type));
-    while (filenum < 0xffffffff) // Guarentee 8 digits
+    filemap_t::const_iterator fmi = i_FileMap.find(type);
+    if (fmi != i_FileMap.end())
     {
-	if (i_FileMap[type].find(filenum) == i_FileMap[type].end())
+	while (filenum < 0xffffffff) // Guarentee 8 digits
 	{
-	    RET(filenum);
+	    if (fmi->second.find(filenum) == fmi->second.end())
+	    {
+		RET(filenum);
+	    }
+	    filenum++;
 	}
-	filenum++;
     }
 
     LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEMAPFULL"),
@@ -706,10 +714,11 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 
     if (mFile::Exists(filename))
     {
-	if (i_FileMap.find(type) != i_FileMap.end())
+	filemap_t::const_iterator fmi = i_FileMap.find(type);
+	if (fmi != i_FileMap.end())
 	{
 	    RLOCK(("FileMap", (int) type));
-	    if (i_FileMap[type].find(num) != i_FileMap[type].end())
+	    if (fmi->second.find(num) != fmi->second.end())
 	    {
 		RET(true);
 	    }
@@ -720,12 +729,13 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
     }
     else
     {
-	if (i_FileMap.find(type) != i_FileMap.end())
+	filemap_t::iterator fmi = i_FileMap.find(type);
+	if (fmi != i_FileMap.end())
 	{
 	    WLOCK(("FileMap", (int) type));
-	    if (i_FileMap[type].find(num) != i_FileMap[type].end())
+	    if (fmi->second.find(num) != fmi->second.end())
 	    {
-	    	i_FileMap[type].erase(num);
+	    	fmi->second.erase(num);
 		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE2"),
 			(int) type, num));
 	    }
@@ -879,7 +889,7 @@ vector<unsigned long> FileMap::GetList(FileMap::FileType type, mstring source)
 	    else
 	    {
 		RLOCK(("FileMap", (int) type, iter->first));
-		if (iter->second.second == "")
+		if (iter->second.second.empty())
 		    retval.push_back(iter->first);
 		else
 		    for (i=1; i<=iter->second.second.WordCount(" "); i++)
@@ -903,10 +913,11 @@ unsigned long FileMap::GetNum(FileMap::FileType type, mstring name)
     FT("FileMap::GetNum", ((int) type, name));
     map<unsigned long, pair<mstring, mstring> >::iterator iter;
 
-    if (i_FileMap.find(type) != i_FileMap.end())
+    filemap_t::iterator fmi = i_FileMap.find(type);
+    if (fmi != i_FileMap.end())
     {
 	RLOCK(("FileMap", (int) type));
-    	for (iter = i_FileMap[type].begin(); iter != i_FileMap[type].end(); iter++)
+    	for (iter = fmi->second.begin(); iter != fmi->second.end(); iter++)
 	{
 	    RLOCK(("FileMap", (int) type, iter->first));
 	    if (iter->second.first == name)
@@ -921,20 +932,18 @@ unsigned long FileMap::GetNum(FileMap::FileType type, mstring name)
     RET(0);
 }
 
-size_t FileMap::FileSysSize(FileMap::FileType type)
+size_t FileMap::FileSysSize(FileMap::FileType type) const
 {
     FT("FileMap::FileSysSize", ((int) type));
     size_t retval = 0;
 
-    mstring dirname;
     if (type == MemoAttach)
-	dirname = Parent->files.MemoAttach();
+	retval = mFile::DirUsage(Parent->files.MemoAttach());
     else if (type == Picture)
-	dirname = Parent->files.Picture();
+	retval = mFile::DirUsage(Parent->files.Picture());
     else if (type == Public)
-	dirname = Parent->files.Public();
+	retval = mFile::DirUsage(Parent->files.Public());
 
-    retval = mFile::DirUsage(dirname);
     RET(retval);
 }
 
@@ -1040,7 +1049,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
     // Verify Paramaters
     if (!Parent->nickserv.IsLive(i_Source))
 	return;
-    if (i_Filename == "")
+    if (i_Filename.empty())
     {
 	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
 					"SEND");
@@ -1049,7 +1058,7 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
 
     // Set 'Ready to Transfer'
     mstring tmp = Parent->filesys.GetRealName(filetype, filenum);
-    if (tmp == "")
+    if (tmp.empty())
     {
 	Parent->filesys.EraseFile(filetype, filenum);
 	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
@@ -1265,7 +1274,7 @@ void DccXfer::operator=(const DccXfer &in)
     i_LastData=in.i_LastData;
 }
 
-bool DccXfer::Ready()
+bool DccXfer::Ready() const
 {
     NFT("DccXfer::Ready");
     RLOCK(("DccMap", "xfers", i_DccId, "i_File"));
@@ -1273,49 +1282,49 @@ bool DccXfer::Ready()
     RET(retval);
 }
 
-DccXfer::XF_Type DccXfer::Type()
+DccXfer::XF_Type DccXfer::Type() const
 {
     NFT("DccXfer::Type");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Type"));
     RET(i_Type);
 }
 
-mstring DccXfer::Mynick()
+mstring DccXfer::Mynick() const
 {
     NFT("DccXfer::Mynick");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Mynick"));
     RET(i_Mynick);
 }
 
-mstring DccXfer::Source()
+mstring DccXfer::Source() const
 {
     NFT("DccXfer::Source");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Source"));
     RET(i_Source);
 }
 
-mstring DccXfer::Filename()
+mstring DccXfer::Filename() const
 {
     NFT("DccXfer::Filename");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Filename"));
     RET(i_Filename);
 }
 
-size_t DccXfer::Filesize()
+size_t DccXfer::Filesize() const
 {
     NFT("DccXfer::Filesize");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Filesize"));
     RET(i_Filesize);
 }
 
-size_t DccXfer::Total()
+size_t DccXfer::Total() const
 {
     NFT("DccXfer::Total");
     RLOCK(("DccMap", "xfers", i_DccId, "i_Total"));
     RET(i_Total);
 }
 
-mDateTime DccXfer::LastData()
+mDateTime DccXfer::LastData() const
 {
     NFT("DccXfer::LastData");
     RLOCK(("DccMap", "xfers", i_DccId, "i_LastData"));
@@ -1544,13 +1553,13 @@ void DccXfer::Action()
     DumpE();
 }
 
-size_t DccXfer::Average(time_t secs)
+size_t DccXfer::Average(time_t secs) const
 {
     FT("DccXfer::Average", (secs));
     time_t now = time(NULL);
     size_t total = 0;
     int i = 0;
-    map<time_t, size_t>::iterator iter;
+    map<time_t, size_t>::const_iterator iter;
     if (secs > (time_t) Parent->files.Sampletime())
 	secs = 0;
 
@@ -1567,7 +1576,7 @@ size_t DccXfer::Average(time_t secs)
     RET(total / (i ? i : 1));
 }
 
-size_t DccXfer::Usage()
+size_t DccXfer::Usage() const
 {
     size_t retval = 0;
 
@@ -1585,7 +1594,7 @@ size_t DccXfer::Usage()
     retval += sizeof(i_Transiant);
     retval += sizeof(i_LastData.Internal());
 
-    map<time_t, size_t>::iterator iter;
+    map<time_t, size_t>::const_iterator iter;
     for (iter=i_Traffic.begin(); iter!=i_Traffic.end(); iter++)
     {
 	retval += sizeof(iter->first);
@@ -1595,14 +1604,14 @@ size_t DccXfer::Usage()
     return retval;
 }
 
-void DccXfer::DumpB()
+void DccXfer::DumpB() const
 {
     MB(0, (i_Socket.Last_Error(), i_File.Length(), i_Source, i_Mynick,
 	i_Tempfile, i_Filename, i_Blocksize, i_XferTotal, i_Total, i_Filesize,
 	i_Type, i_DccId, i_Transiant, i_LastData, i_Traffic.size()));
 }
 
-void DccXfer::DumpE()
+void DccXfer::DumpE() const
 {
     ME(0, (i_Socket.Last_Error(), i_File.Length(), i_Source, i_Mynick,
 	i_Tempfile, i_Filename, i_Blocksize, i_XferTotal, i_Total, i_Filesize,
@@ -1695,12 +1704,12 @@ int DccMap::svc(void)
     DRET(0);
 }
 
-vector<unsigned long> DccMap::GetList(mstring in)
+vector<unsigned long> DccMap::GetList(mstring in) const
 {
     FT("DccMap::GetList", (in));
     vector<unsigned long> retval;
 
-    map<unsigned long, DccXfer *>::iterator iter;
+    map<unsigned long, DccXfer *>::const_iterator iter;
     RLOCK(("DccMap", "xfers"));
     for (iter=xfers.begin(); iter!=xfers.end(); iter++)
     {

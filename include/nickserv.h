@@ -25,6 +25,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.52  2000/12/22 19:50:19  prez
 ** Made all config options const.  Beginnings of securing all non-modifying
 ** commands to const.  also added serviceschk.
@@ -211,15 +215,15 @@ public:
 	void End(unsigned long filenum);
 	void Picture (mstring mynick);
 	void Public (mstring mynick, mstring committees = "");
-	bool Memo();
-	bool Picture();
-	bool Public();
-	bool Exists();
-	bool File();
-	bool InProg();
-	size_t Usage();
-	void DumpB();
-	void DumpE();
+	bool Memo() const;
+	bool Picture() const;
+	bool Public() const;
+	bool Exists() const;
+	bool File() const;
+	bool InProg() const;
+	size_t Usage() const;
+	void DumpB() const;
+	void DumpE() const;
     } InFlight;
 
     Nick_Live_t();
@@ -242,38 +246,38 @@ public:
     void Part(mstring channel);
     void Kick(mstring kicker, mstring channel);
     void Quit(mstring reason);
-    bool IsInChan(mstring channel);
-    set<mstring> Channels();
+    bool IsInChan(mstring channel) const;
+    set<mstring> Channels() const;
 
     // true if user ignored
     bool FloodTrigger();
 
     // Data maintinance
     void Name(mstring in);
-    mstring Name()		{ return i_Name; }
+    mstring Name() const	{ return i_Name; }
 
     void SendMode(mstring in);
     void Mode(mstring in);
-    mstring Mode();
-    bool HasMode(mstring in);
+    mstring Mode() const;
+    bool HasMode(mstring in) const;
 
     void Away(mstring in);
-    mstring Away();
+    mstring Away() const;
 
-    mDateTime IdleTime();
+    mDateTime IdleTime() const;
     void Action();
 
-    mDateTime SignonTime();
-    mDateTime MySignonTime();
-    mstring RealName();
-    mstring User();
-    mstring Host();
-    mstring AltHost();
+    mDateTime SignonTime() const;
+    mDateTime MySignonTime() const;
+    mstring RealName() const;
+    mstring User() const;
+    mstring Host() const;
+    mstring AltHost() const;
     void AltHost(mstring in);
-    mstring Server();
+    mstring Server() const;
     void SetSquit();
     void ClearSquit();
-    mstring Squit();
+    mstring Squit() const;
 
     enum styles {
     	N = 1,		// nick!*@*
@@ -287,29 +291,29 @@ public:
     	H		// *!*@*.host
     	};
 
-    mstring Mask(styles type);
-    mstring AltMask(styles type);
+    mstring Mask(styles type) const;
+    mstring AltMask(styles type) const;
 
     // Will KILL user if >PassFailMax
     mstring ChanIdentify(mstring channel, mstring password);
     void UnChanIdentify(mstring channel);
-    bool IsChanIdentified(mstring channel);
+    bool IsChanIdentified(mstring channel) const;
     mstring Identify(mstring password);
     void UnIdentify();
-    bool IsIdentified();
-    bool IsRecognized();
-    bool IsServices();
+    bool IsIdentified() const;
+    bool IsRecognized() const;
+    bool IsServices() const;
 
     void SetLastNickReg();
-    mDateTime LastNickReg();
+    mDateTime LastNickReg() const;
     void SetLastChanReg();
-    mDateTime LastChanReg();
+    mDateTime LastChanReg() const;
     void SetLastMemo();
-    mDateTime LastMemo();
+    mDateTime LastMemo() const;
 
-    size_t Usage();
-    void DumpB();
-    void DumpE();
+    size_t Usage() const;
+    void DumpB() const;
+    void DumpE() const;
 };
 
 struct NickInfo;
@@ -386,8 +390,8 @@ public:
     bool operator<(const Nick_Stored_t &in) const
 	{ return (i_Name < in.i_Name); }
 
-    mstring Name()		{ return i_Name; }
-    mDateTime RegTime();
+    mstring Name() const	{ return i_Name; }
+    mDateTime RegTime() const;
 
     unsigned long Drop();
     mstring Password();
@@ -464,7 +468,7 @@ public:
     bool Suspended();
     mstring Suspend_By();
     mDateTime Suspend_Time();
-    bool Forbidden();
+    bool Forbidden() const;
     void SendPic(mstring nick);
     unsigned long PicNum();
     void GotPic(unsigned long picnum);
@@ -481,7 +485,7 @@ public:
     mstring LastQuit();
     void Quit(mstring message);
 
-    size_t MyChannels();
+    size_t MyChannels() const;
 
     SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);

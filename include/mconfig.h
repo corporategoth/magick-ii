@@ -25,6 +25,10 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.12  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -93,12 +97,12 @@ public:
     bool DeleteKey(const mstring &KeyName);
     bool CreateNode(const mstring &NodeName);
     bool DeleteNode(const mstring &NodeName);
-    bool NodeExists(const mstring &NodeName);
-    bool KeyExists(const mstring &KeyName);
-    mstring GetKey(const mstring &KeyName, const mstring &DefValue);
+    bool NodeExists(const mstring &NodeName) const;
+    bool KeyExists(const mstring &KeyName) const;
+    mstring GetKey(const mstring &KeyName, const mstring &DefValue) const;
     ceNode *GetNode(const mstring &NodeName);
     mstring Write(const mstring &KeyName, const mstring &Value);
-    map<mstring,mstring> GetMap();
+    map<mstring,mstring> GetMap() const;
 };
 
 class mConfigEngine
@@ -116,16 +120,16 @@ public:
     bool SaveFile();
     void Empty();
 
-    map<mstring,mstring> GetMap() { return RootNode.GetMap(); }
-    mstring Read(const mstring &key, const mstring Defailt="");
-    bool Read(const mstring &key, mstring &outvar, mstring Default="");
-    bool Read(const mstring &key, bool &outvar, bool Default=false);
-    bool Read(const mstring &key, int &outvar, int Default=0);
-    bool Read(const mstring &key, unsigned int &outvar, unsigned int Default=0);
-    bool Read(const mstring &key, long &outvar, long Default=0);
-    bool Read(const mstring &key, unsigned long &outvar, unsigned long Default=0);
-    bool Read(const mstring &key, float &outvar, float Default=0.0);
-    bool Read(const mstring &key, double &outvar, double Default=0.0);
+    map<mstring,mstring> GetMap() const { return RootNode.GetMap(); }
+    mstring Read(const mstring &key, const mstring Defailt="") const;
+    bool Read(const mstring &key, mstring &outvar, mstring Default="") const;
+    bool Read(const mstring &key, bool &outvar, bool Default=false) const;
+    bool Read(const mstring &key, int &outvar, int Default=0) const;
+    bool Read(const mstring &key, unsigned int &outvar, unsigned int Default=0) const;
+    bool Read(const mstring &key, long &outvar, long Default=0) const;
+    bool Read(const mstring &key, unsigned long &outvar, unsigned long Default=0) const;
+    bool Read(const mstring &key, float &outvar, float Default=0.0) const;
+    bool Read(const mstring &key, double &outvar, double Default=0.0) const;
 
     mstring Write(const mstring &key,const mstring &value);
     bool Write(const mstring &key,bool value);
@@ -138,7 +142,7 @@ public:
     ceNode *GetNode(const mstring& NodeName);
     bool DeleteNode(const mstring& NodeName);
     bool DeleteKey(const mstring& KeyName);
-    bool NodeExists(const mstring &NodeName);
+    bool NodeExists(const mstring &NodeName) const;
 };
 
 #endif

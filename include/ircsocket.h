@@ -25,6 +25,10 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/12/23 22:22:23  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.43  2000/09/27 11:21:37  prez
 ** Added a BURST mode ...
 **
@@ -155,21 +159,21 @@ public:
     virtual int handle_close(ACE_HANDLE handle = ACE_INVALID_HANDLE,
 		ACE_Reactor_Mask mask = ACE_Event_Handler::ALL_EVENTS_MASK);
 
-    unsigned long Local_IP() { return sock.Local_IP(); }
-    size_t In_Traffic() { return in_traffic; }
-    size_t Out_Traffic() { return out_traffic; }
-    mDateTime Connect_Time() { return connect_time; }
-    time_t HTM_Gap();
-    unsigned short HTM_Level();
-    size_t HTM_Threshold();
+    unsigned long Local_IP() const { return sock.Local_IP(); }
+    size_t In_Traffic() const { return in_traffic; }
+    size_t Out_Traffic() const { return out_traffic; }
+    mDateTime Connect_Time() const { return connect_time; }
+    time_t HTM_Gap() const;
+    unsigned short HTM_Level() const;
+    size_t HTM_Threshold() const;
     void HTM_Threshold(size_t in);
     void HTM(bool in);
-    size_t Average(time_t secs = 0);
-    bool Burst();
-    mDateTime SyncTime();
+    size_t Average(time_t secs = 0) const;
+    bool Burst() const;
+    mDateTime SyncTime() const;
     void EndBurst();
-    void DumpB();
-    void DumpE();
+    void DumpB() const;
+    void DumpE() const;
 };
 
 typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcConnector;
@@ -184,12 +188,12 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
 public:
     void ForceSave();
     void ForcePing();
-    mstring SyncTime(mstring source = "");
+    mstring SyncTime(mstring source = "") const;
     virtual int open(void *in=0);
     virtual int close(unsigned long in);
     virtual int svc(void);
-    void DumpB();
-    void DumpE();
+    void DumpB() const;
+    void DumpE() const;
 };
 
 #endif

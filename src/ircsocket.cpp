@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.143  2000/12/23 22:22:24  prez
+** 'constified' all classes (ie. made all functions that did not need to
+** touch another non-const function const themselves, good for data integrity).
+**
 ** Revision 1.142  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -471,21 +475,21 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     DRET(0);
 }
 
-time_t IrcSvcHandler::HTM_Gap()
+time_t IrcSvcHandler::HTM_Gap() const
 {
     NFT("IrcSvcHandler::HTM_Gap");
     RLOCK(("IrcSvcHandler", "htm_gap"));
     RET(htm_gap);
 }
 
-unsigned short IrcSvcHandler::HTM_Level()
+unsigned short IrcSvcHandler::HTM_Level() const
 {
     NFT("IrcSvcHandler::HTM_Level");
     RLOCK(("IrcSvcHandler", "htm_level"));
     RET(htm_level);
 }
 
-size_t IrcSvcHandler::HTM_Threshold()
+size_t IrcSvcHandler::HTM_Threshold() const
 {
     NFT("IrcSvcHandler::HTM_Threshold");
     RLOCK(("IrcSvcHandler", "htm_threshold"));
@@ -527,13 +531,13 @@ void IrcSvcHandler::HTM(bool in)
     MCE(last_htm_check);
 }
 
-size_t IrcSvcHandler::Average(time_t secs)
+size_t IrcSvcHandler::Average(time_t secs) const
 {
     FT("IrcSvcHandler::Average", (secs));
     time_t now = time(NULL);
     size_t total = 0;
     int i = 0;
-    map<time_t, size_t>::iterator iter;
+    map<time_t, size_t>::const_iterator iter;
     if (secs > (time_t) Parent->operserv.Max_HTM_Gap())
 	secs = 0;
     RLOCK(("IrcSvcHandler", "traffic"));
@@ -549,14 +553,14 @@ size_t IrcSvcHandler::Average(time_t secs)
     RET(total / (i ? i : 1));
 }
 
-bool IrcSvcHandler::Burst()
+bool IrcSvcHandler::Burst() const
 {
     NFT("IrcSvcHandler::Burst");
     RLOCK(("IrcSvcHandler", "i_burst"));
     RET(i_burst);
 }
 
-mDateTime IrcSvcHandler::SyncTime()
+mDateTime IrcSvcHandler::SyncTime() const
 {
     NFT("IrcSvcHandler::SyncTime");
     RLOCK(("IrcSvcHandler", "i_synctime"));
@@ -568,8 +572,12 @@ void IrcSvcHandler::EndBurst()
     NFT("IrcSvcHandler::EndBurst");
     WLOCK(("IrcSvcHandler", "i_burst"));
     WLOCK2(("IrcSvcHandler", "i_synctime"));
+    MCB(i_burst);
+    CB(1, i_synctime);
     i_burst = false;
     i_synctime = Now();
+    CE(1, i_synctime);
+    MCE(i_burst);
 }
 
 int IrcSvcHandler::send(const mstring & data)
@@ -582,16 +590,18 @@ int IrcSvcHandler::send(const mstring & data)
     RET(recvResult);
 }
 
-void IrcSvcHandler::DumpB()
+void IrcSvcHandler::DumpB() const
 {
     MB(0, (traffic.size(), in_traffic, out_traffic, connect_time,
-	last_htm_check, htm_level, htm_gap, htm_threshold));
+	last_htm_check, htm_level, htm_gap, htm_threshold, i_burst,
+	i_synctime));
 }
 
-void IrcSvcHandler::DumpE()
+void IrcSvcHandler::DumpE() const
 {
     ME(0, (traffic.size(), in_traffic, out_traffic, connect_time,
-	last_htm_check, htm_level, htm_gap, htm_threshold));
+	last_htm_check, htm_level, htm_gap, htm_threshold, i_burst,
+	i_synctime));
 }
 
 mstring Reconnect_Handler::FindNext(mstring server) {
@@ -651,7 +661,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     } else {
 	if (Parent->Server() != "")
 	    server = FindNext(Parent->Server());
-	if (server == "") {
+	if (server.empty()) {
 	    server = Parent->startup.PriorityList(1)[0];
 	}
     }
@@ -914,7 +924,7 @@ void EventTask::ForcePing()
     MCE(last_ping);
 }
 
-mstring EventTask::SyncTime(mstring source)
+mstring EventTask::SyncTime(mstring source) const
 {
     FT("EventTask::SyncTime", (source));
     RLOCK(("Events", "last_save"));
@@ -1034,7 +1044,7 @@ int EventTask::svc(void)
 		    if (!(nsi->second.NoExpire() || nsi->second.Forbidden() ||
 			nsi->second.Suspended()))
 		    {
-			if (nsi->second.Host() == "")
+			if (nsi->second.Host().empty())
 			{
 			    if (nsi->second.LastAllSeenTime().SecondsSince() >
 				Parent->nickserv.Expire())
@@ -1235,7 +1245,7 @@ int EventTask::svc(void)
 				mode = modeparam = "";
 				j=0;
 			    }
-			    if (mode == "")
+			    if (mode.empty())
 				mode += "-";
 			    mode += cli->second.p_modes_off[i];
 			    if (cli->second.p_modes_off[i] != 'l' &&
@@ -1262,7 +1272,7 @@ int EventTask::svc(void)
 				mode = modeparam = "";
 				j=0;
 			    }
-			    if (mode == "")
+			    if (mode.empty())
 				mode += "+";
 			    mode += cli->second.p_modes_on[i];
 			    if (Parent->server.proto.ChanModeArg().Contains(cli->second.p_modes_on[i]))
@@ -1302,7 +1312,7 @@ int EventTask::svc(void)
 		nsi = Parent->nickserv.stored.find(nli->first);
 		if (nsi != Parent->nickserv.stored.end() &&
 		    !nsi->second.IsOnline() && nsi->second.Protect() &&
-		    !nli->second.IsServices() && nli->second.Squit() == "" &&
+		    !nli->second.IsServices() && nli->second.Squit().empty() &&
 		    nli->second.MySignonTime().SecondsSince() >=
 					    Parent->nickserv.Ident())
 		{
@@ -1433,12 +1443,12 @@ int EventTask::svc(void)
     DRET(0);
 }
 
-void EventTask::DumpB()
+void EventTask::DumpB() const
 {
     MB(0, (last_expire, last_save, last_check, last_ping));
 }
 
-void EventTask::DumpE()
+void EventTask::DumpE() const
 {
     ME(0, (last_expire, last_save, last_check, last_ping));
 }
