@@ -16,7 +16,7 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#) $Id$";
+static const char *ident = "@(#)$Id$";
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -26,6 +26,9 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/02/27 03:58:39  prez
+** Fixed the WHAT program, also removed RegEx from Magick.
+**
 ** Revision 1.21  2000/02/23 14:29:05  prez
 ** Added beginnings of a File Map for stored files.
 ** Also updated Help files (finished nickserv).

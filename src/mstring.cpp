@@ -16,7 +16,7 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#) $Id$";
+static const char *ident = "@(#)$Id$";
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -26,6 +26,9 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2000/02/27 03:58:40  prez
+** Fixed the WHAT program, also removed RegEx from Magick.
+**
 ** Revision 1.57  2000/02/23 12:21:03  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -64,7 +67,6 @@ static const char *ident = "@(#) $Id$";
 /////////////////////////////////////////////////////////////////////////////
 
 #include "mstring.h"
-#include "rx/rxposix.h"
 
 #ifdef WIN32
 mstring const DirSlash="\\";
@@ -216,72 +218,6 @@ mstring& mstring::Truncate(size_t uiLine)
 {
 	*this=Left(uiLine);
 	return *this;
-}
-
-bool mstring::RxMatches(const mstring & in) const
-{
-
-// new code
-    bool Result=false;
-    regex_t matchcode;
-    regmatch_t matches[1];
-    if(regcomp(&matchcode,in.c_str(),0)!=0)
-    {
-	Result=false;
-	goto re_cleanup;
-    }
-    if(regexec(&matchcode,this->c_str(),1,matches,0)!=0)
-	Result=false;
-    else
-    {
-	// check the matches value for start offset of 0, length == length of this.
-	if(matches[0].rm_so!=0||(matches[0].rm_eo-matches[0].rm_so)!=Len())
-	    Result=false;
-	else
-	    Result=true;
-    }
-re_cleanup:
-    regfree(&matchcode);
-    return Result;
-/*	const char *psztext,*pszmask;
-	for(psztext=c_str(),pszmask=in.c_str();*pszmask!='\0';psztext++,pszmask++)
-	{
-		switch(*pszmask)
-		{
-		case '?':
-			if(*psztext=='\0')
-				return false;
-			psztext++;
-			pszmask++;
-			break;
-		case '*':
-			{
-				while(*pszmask=='*'||*pszmask=='?')
-					pszmask++;
-				if(*pszmask=='\0')
-					return true;
-				size_t uiLenMask;
-				const char *pEndMask=ACE_OS::strpbrk(pszmask,"*?");
-				if(pEndMask!=NULL)
-					uiLenMask=pEndMask-pszmask;
-				else
-					uiLenMask=ACE_OS::strlen(pszmask);
-				mstring strtomatch(pszmask,uiLenMask);
-				const char *pMatch=ACE_OS::strstr(psztext,strtomatch);
-				if(pMatch==NULL)
-					return false;
-				psztext=pMatch+uiLenMask-1;
-				pszmask+=uiLenMask-1;
-				break;
-			}
-		default:
-			if(*psztext!=*pszmask)
-				return false;
-			break;
-		}
-	}
-	return *psztext=='\0';
-*/
 }
 
 int mstring::Format(const char * pszFormat, ...)
@@ -854,50 +790,10 @@ unsigned int mstring::WordPosition(unsigned int N,const mstring& separators, boo
     return Result;
 }
 
-pair<int,int> mstring::RegFind(const mstring& pattern)const
+bool mstring::Matches(const mstring& in, bool nocase)const
 {
-    pair<int,int> Result;
-    regex_t matchcode;
-    regmatch_t matches[1];
-    if(regcomp(&matchcode,pattern.c_str(),0)!=0)
-    {
-	Result.first=0;
-	Result.second=0;
-	goto re_cleanup2;
-    }
-    if(regexec(&matchcode,this->c_str(),1,matches,0)!=0)
-    {
-	Result.first=0;
-	Result.second=0;
-    }
-    else
-    {
-	// check the matches value for start offset of 0, length == length of this.
-        Result.first=matches[0].rm_so;
-	Result.second=matches[0].rm_eo-matches[0].rm_so;
-    }
-re_cleanup2:
-    regfree(&matchcode);
-    return Result;
-
-}
-
-bool mstring::Matches(const mstring& in)const
-{
-    mstring in2;
-    unsigned int i;
-    for(i=0;i<in.length();i++)
-    {
-	if(in[i]=='.')
-	    in2=in2+"\\.";
-	else if(in[i]=='*')
-	    in2=in2+".*";
-	else if(in[i]=='?')
-	    in2=in2+".";
-	else
-	    in2=in2+in[i];
-    }
-    return RxMatches(in2);	
+    // nocase == non-case-sensative
+    return match_wild(in.c_str(), c_str(), nocase);
 }
 
 #ifdef NEED_ITOA
@@ -926,3 +822,53 @@ const char *ltoa(long l)
     return str.c_str();
 }
 #endif
+
+
+
+/*  Direct from Magick I, credit to Andy Church for writing this.
+ *
+ *  match_wild:  Attempt to match a string to a pattern which might contain
+ *              '*' or '?' wildcards.  Return 1 if the string matches the
+ *              pattern, 0 if not.
+ */
+
+bool match_wild (const char *pattern, const char *str, bool docase)
+{
+    char c;
+    const char *s;
+
+    /* This WILL eventually terminate: either by *pattern == 0, or by a
+     * trailing '*'. */
+
+    for (;;)
+    {
+	switch (c = *pattern++)
+	{
+	case 0:
+	    if (!*str)
+		return true;
+	    return false;
+	case '?':
+	    if (!*str)
+		return false;
+	    ++str;
+	    break;
+	case '*':
+	    if (!*pattern)
+		return true;	/* trailing '*' matches everything else */
+	    s = str;
+	    while (*s)
+	    {
+		if ((docase ? *s == *pattern : (tolower (*s) == tolower (*pattern)))
+		    && match_wild (pattern, s, docase))
+		    return true;
+		++s;
+	    }
+	    break;
+	default:
+	    if ((docase ? (*str++ != c) : (tolower (*str++) != tolower (c))))
+		return false;
+	    break;
+	}			/* switch */
+    }
+}

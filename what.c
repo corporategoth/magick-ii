@@ -2,7 +2,7 @@
 
 void main(int argc, char **argv)
 {
-    char c;
+    unsigned char c;
     int i, sequence;
     FILE *in;
 
@@ -18,22 +18,27 @@ void main(int argc, char **argv)
 	    sequence = 0;
 	    for (c=fgetc(in); !feof(in); c=fgetc(in))
 	    {
-		if (c=='@' && sequence == 0 ||
-		    c=='(' && sequence == 1 ||
-		    c=='#' && sequence == 2)
+		if (c >= 32 && c <= 126 && sequence == 4)
+		{
+		    printf("%c", c);
+		}
+		else if ((c == '@' && sequence == 0) ||
+		    (c == '(' && sequence == 1) ||
+		    (c == '#' && sequence == 2))
+		{
 		    sequence++;
-		if (c==')' && sequence == 3)
+		}
+		else if (c == ')' && sequence == 3)
 		{
 		    sequence++;
 		    printf("        ");
 		}
-		if (c==0 && sequence == 4)
+		else
 		{
+		    if (sequence == 4)
+			printf("\n");
 		    sequence = 0;
-		    printf("\n");
 		}
-		if (sequence == 4)
-		    printf("%c", c);
 	    }
 	    fclose(in);
 	}

@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/02/27 03:58:39  prez
+** Fixed the WHAT program, also removed RegEx from Magick.
+**
 ** Revision 1.4  2000/02/27 02:43:50  prez
 ** More FileSystem additions, plus created 'what' tool
 **
@@ -67,7 +70,7 @@ public:
     ~DccXfer();
 
     virtual int close(unsigned long in);
-    virtual int open(void *);
+    virtual int open(void * = 0);
     virtual int handle_input(ACE_HANDLE handle);
     bool Established();
 

@@ -24,6 +24,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/02/27 03:58:39  prez
+** Fixed the WHAT program, also removed RegEx from Magick.
+**
 ** Revision 1.41  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -146,9 +149,7 @@ public:
 	int CompareTo(const mstring& in, caseCompare cmp=ccExact);
 	int FormatV(const char *pszFormat, va_list argptr);
 	int Format(const char *pszFormat, ...);
-	// Matches using '*' and '?' rules
-	bool RxMatches(const mstring& in)const;
-	bool Matches(const mstring& in)const;
+	bool Matches(const mstring& in, bool nocase = false)const;
 	mstring& Truncate(size_t uiLine);
 	mstring& Pad(size_t nCount, char chPad=' ', bool bFromRight=true);
 	mstring& Trim(bool bFromRight=true);
@@ -169,7 +170,6 @@ public:
 	unsigned int WordCount(const mstring &separators, bool assemble = true)const;
 	mstring ExtractWord(int count,const mstring& separators, bool assemble = true)const;
 	unsigned int WordPosition(unsigned int count,const mstring& separators, bool assemble = true)const;
-	pair<int,int> RegFind(const mstring& pattern)const;
 };
 
 #define NEED_ITOA
@@ -193,5 +193,7 @@ extern const mstring IRC_Underline;
 extern const mstring IRC_Reverse;
 extern const mstring IRC_Colour;
 extern const mstring IRC_Off;
+
+extern bool match_wild (const char *pattern, const char *str, bool nocase = false);
 
 #endif

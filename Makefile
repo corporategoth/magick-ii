@@ -52,9 +52,12 @@ subdirs:
 	done
 
 link:	rmexec
-	gcc $(LFLAGS) $(LIBS) -o magick
+	$(CC) $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
 	strip magick
+
+what:
+	$(CC) $(LFLAGS) -o what what.c
 
 clean:
 	@for x in $(SUBDIRS) ./src; \
