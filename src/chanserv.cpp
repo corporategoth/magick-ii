@@ -7,7 +7,10 @@
 void *chanserv_thread_handler(void *level)
 {
     int ilevel=(int)level;  // 0 get's passed in for the first thread spawned, etc.
+    static int highestlevel=0;
     pair<mstring,mstring> data;
+
+    highestlevel=ilevel;
     MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
     while(false) // fix this a bit later to a proper check
     {
@@ -15,18 +18,25 @@ void *chanserv_thread_handler(void *level)
 	// brackets are here so that the lock exists only as long as we need it.
 	{
 	    ACE_Local_RLock inputbufferlock("chanserv::inputbuffer");
-	    if(MagickObject->chanserv.inputbuffer.size()>ilevel*MagickObject->chanserv.msg_thresh)
-	    {
-	        ACE_Thread::spawn(chanserv_thread_handler,(void *)(ilevel+1));
-	    }
-	    else if(MagickObject->chanserv.inputbuffer.size()<(ilevel-1)*MagickObject->chanserv.msg_thresh)
-		if(ilevel!=0)
-		    return NULL;
 	    // check the inputbuffer
 	    if(MagickObject->chanserv.inputbuffer.size()!=0)
 	    {
 		data=MagickObject->chanserv.inputbuffer.front();
 		MagickObject->chanserv.inputbuffer.pop_front();
+	    }
+	    if(ilevel==highestlevel)
+	    {
+		if(MagickObject->chanserv.inputbuffer.size()>highestlevel*MagickObject->chanserv.msg_thresh)
+		    ACE_Thread::spawn(chanserv_thread_handler,(void *)(ilevel+1));
+		// less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
+		else if(MagickObject->chanserv.inputbuffer.size()<(highestlevel-1)*MagickObject->chanserv.msg_thresh+MagickObject->chanserv.msg_thresh/2)
+		{
+		    if(highestlevel!=0)
+		    {
+			highestlevel--;
+			return NULL;
+		    }
+		}
 	    }
 	}
 	MagickObject->chanserv.execute(data.first,data.second);
