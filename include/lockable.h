@@ -17,52 +17,26 @@
 #include "mstring.h"
 #include "trace.h"
 
-class RLOCK
+class mLOCK
 {
-    ACE_Local_RLock lock[5];
-
-    T_Locking tlock[5];
-    int count;
-public:
-    RLOCK(mstring x1);
-    RLOCK(mstring x1, mstring x2);
-    RLOCK(mstring x1, mstring x2, mstring x3);
-    RLOCK(mstring x1, mstring x2, mstring x3, mstring x4);
-    RLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5);
-    ~RLOCK();
-};
-
-class WLOCK
-{
-    ACE_Local_WLock wlock;
-    ACE_Local_RLock lock[4];
-    T_Locking tlock[5];
+    // union {
+    	ACE_Local_Mutex mlock;
+    	ACE_Local_WLock wlock;
+    	ACE_Local_RLock rlock;
+    // } llock;
+    ACE_Local_RLock lock[14];
+    T_Locking tlock[15];
+    T_Locking::type_enum last_type;
 
     int count;
 public:
-    WLOCK(mstring x1);
-    WLOCK(mstring x1, mstring x2);
-    WLOCK(mstring x1, mstring x2, mstring x3);
-    WLOCK(mstring x1, mstring x2, mstring x3, mstring x4);
-    WLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5);
-    ~WLOCK();
+    mLOCK(T_Locking::type_enum, const mVarArray &args);
+    ~mLOCK();
 };
 
-class MLOCK
-{
-    ACE_Local_Mutex mlock;
-    ACE_Local_RLock lock[4];
-    T_Locking tlock[5];
-
-    int count;
-public:
-    MLOCK(mstring x1);
-    MLOCK(mstring x1, mstring x2);
-    MLOCK(mstring x1, mstring x2, mstring x3);
-    MLOCK(mstring x1, mstring x2, mstring x3, mstring x4);
-    MLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5);
-    ~MLOCK();
-};
+#define RLOCK(y)  mVarArray __lock_VarArray y; mLOCK __lock(T_Locking::Read, __lock_VarArray)
+#define WLOCK(y)  mVarArray __lock_VarArray y; mLOCK __lock(T_Locking::Write, __lock_VarArray)
+#define MLOCK(y)  mVarArray __lock_VarArray y; mLOCK __lock(T_Locking::Mutex, __lock_VarArray)
 
 class mThread
 {

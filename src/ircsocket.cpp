@@ -320,7 +320,7 @@ int EventTask::svc(void)
 
 	    // akills
 	    {
-		// MLOCK("OperServ","Akill");
+		MLOCK(("OperServ","Akill"));
 		bool firstgone = false;
 		for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
 			(Parent->operserv.Akill != Parent->operserv.Akill_end() && !firstgone);
@@ -352,7 +352,7 @@ int EventTask::svc(void)
 
 	    // nicknames
 	    {
-		// MLOCK("NickServ", "stored");
+		MLOCK(("NickServ", "stored"));
 		vector<mstring> expired_nicks;
 		for (nsi = Parent->nickserv.stored.begin();
 			nsi != Parent->nickserv.stored.end(); nsi++)
@@ -379,7 +379,7 @@ int EventTask::svc(void)
 
 	    // channels
 	    {
-		// MLOCK("ChanServ", "stored");
+		MLOCK(("ChanServ", "stored"));
 		vector<mstring> expired_chans;
 		for (csi = Parent->chanserv.stored.begin();
 			csi != Parent->chanserv.stored.end(); nsi++)
@@ -394,7 +394,7 @@ int EventTask::svc(void)
 
 	    // news articles
 	    {
-		// MLOCK("MemoServ", "news");
+		MLOCK(("MemoServ", "news"));
 		for (ni=Parent->memoserv.channel.begin();
 			ni!=Parent->memoserv.channel.end(); ni++)
 		{

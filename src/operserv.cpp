@@ -133,7 +133,7 @@ pair<int,mstring> OperServ::Clone_value(mstring entry)
 
     pair<int,mstring> retval = pair<int,mstring>(0,"");
     {
-    MLOCK("OperServ", "Clone");
+    MLOCK(("OperServ", "Clone"));
 //  entlist_val_ui<pair<int, mstring> > iter = Clone;
     set<entlist_val_t<pair<int, mstring> > >::iterator iter = Clone;
 
@@ -223,7 +223,7 @@ pair<long,mstring> OperServ::Akill_value(mstring entry)
 
     pair<long,mstring> retval = pair<long,mstring>(0,"");
     {
-    MLOCK("OperServ", "Akill");
+    MLOCK(("OperServ", "Akill"));
 //  entlist_val_ui<pair<long, mstring> > iter = Akill;
     set<entlist_val_t<pair<long, mstring> > >::iterator iter = Akill;
 
@@ -321,7 +321,7 @@ mstring OperServ::OperDeny_value(mstring entry)
 
     mstring retval = mstring(0,"");
     {
-    MLOCK("OperServ", "OperDeny");
+    MLOCK(("OperServ", "OperDeny"));
 //  entlist_val_ui<mstring> iter = OperDeny;
     set<entlist_val_t<mstring> >::iterator iter = OperDeny;
 
@@ -423,7 +423,7 @@ pair<mDateTime,bool> OperServ::Ignore_value(mstring entry)
 
     pair<mDateTime,bool> retval = pair<mDateTime,bool>((long) 0,false);
     {
-    MLOCK("OperServ", "Ignore");
+    MLOCK(("OperServ", "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = Ignore;
     set<entlist_val_t<pair<mDateTime, bool> > >::iterator iter = Ignore;
 

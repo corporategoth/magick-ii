@@ -883,7 +883,7 @@ void Chan_Stored_t::Join(mstring nick)
 	}
 
     { // NOONE else can move our iterator
-    MLOCK("ChanServ", "Akick", i_Name);
+    MLOCK(("ChanServ", "Akick", i_Name));
     if (Akick_find(nick))
     {
 	// If this user is the only user in channel

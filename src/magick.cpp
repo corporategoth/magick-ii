@@ -448,7 +448,7 @@ void Magick::LoadInternalMessages()
     /* note left side of message can have spaces before '=' that will be trimmed
 	right side will *not* be trimmed*/
 
-    WLOCK lock("Magick","LoadMessages");
+    WLOCK(("Magick","LoadMessages"));
     // so that the language file strings are only loaded in memory while this function is in effect.
 #include "language.h"
     int i;
@@ -488,7 +488,7 @@ mstring Magick::parseEscapes(const mstring & in)
 {
     FT("Magick::parseEscparse", (in));
     // hmm doesn't *really* need a mutex here.
-    MLOCK lock("Magick","parseEscapes");
+    MLOCK(("Magick","parseEscapes"));
     mstring Result;
     strstream inputstream;
     inputstream<<in.c_str();
@@ -512,7 +512,7 @@ void Magick::LoadExternalMessages()
 {
     NFT("Magick::LoadExternalMessages");
     // use the previously created name array to get the names to load
-    WLOCK lock("Magick","LoadMessages");
+    WLOCK(("Magick","LoadMessages"));
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
     wxFileConfig fconf("magick","",services_dir+DirSlash+"lang"+DirSlash+nickserv.DEF_Language()+".lng");
     int i;

@@ -735,8 +735,8 @@ mstring mDateTime::Ago(bool call)
 {
     mstring Result="";
     int Seconds = SecondsSince();
-    int Years = Seconds / (60 * 60 * 24 * 365.25);
-    Seconds -= Years * 60 * 60 * 24 * 365.25;
+    int Years = (int) (Seconds / (60 * 60 * 24 * 365.25));
+    Seconds -= (int) (Years * 60 * 60 * 24 * 365.25);
     int Days = Seconds / (60 * 60 * 24);
     Seconds -= Days * 60 * 60 * 24;
     int Hours = Seconds / (60 * 60);

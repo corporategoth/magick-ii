@@ -18,280 +18,56 @@
 #include "lockable.h"
 #include "utils.h"
 
-RLOCK::RLOCK(mstring x1)
+mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 {
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
+    int i;
+    mstring lockname;
+    for (int i=0; i<args.count()-1; i++) {
+	if (lockname != "")
+	    lockname += "::";
+	lockname += args[i].AsString();
+	lock[i].open(lockname.c_str());
+	lock[i].acquire();
+	tlock[i].open(T_Locking::Read, lockname);
+    }
 
-    count=1;
+    if (lockname != "")
+	lockname += "::";
+    lockname += args[i].AsString();
+
+    if (type == T_Locking::Write)
+    {
+	wlock.open(lockname.c_str());
+	wlock.acquire();
+    }
+    else if (type == T_Locking::Mutex)
+    {
+	mlock.open(lockname.c_str());
+	mlock.acquire();
+    }
+    else
+    {
+	rlock.open(lockname.c_str());
+	rlock.acquire();
+    }
+    tlock[i].open(type, lockname);
+    last_type = type;
+
+    count=i+1;
 }
 
-RLOCK::RLOCK(mstring x1, mstring x2)
+mLOCK::~mLOCK()
 {
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    count=2;
-}
-
-RLOCK::RLOCK(mstring x1, mstring x2, mstring x3)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
-    lock[2].acquire();
-    tlock[2].open(T_Locking::Read, x1+"::"+x2+"::"+x3);
-
-    count=3;
-}
-
-RLOCK::RLOCK(mstring x1, mstring x2, mstring x3, mstring x4)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
-    lock[2].acquire();
-    tlock[2].open(T_Locking::Read, x1+"::"+x2+"::"+x3);
-
-    lock[3].open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
-    lock[3].acquire();
-    tlock[3].open(T_Locking::Read, x1+"::"+x2+"::"+x3+"::"+x4);
-
-    count=4;
-}
-
-RLOCK::RLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
-    lock[2].acquire();
-    tlock[2].open(T_Locking::Read, x1+"::"+x2+"::"+x3);
-
-    lock[3].open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
-    lock[3].acquire();
-    tlock[3].open(T_Locking::Read, x1+"::"+x2+"::"+x3+"::"+x4);
-
-    lock[4].open((x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5).c_str());
-    lock[4].acquire();
-    tlock[4].open(T_Locking::Read, x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5);
-
-    count=5;
-}
-
-RLOCK::~RLOCK()
-{
+    if (last_type == T_Locking::Write)
+	wlock.release();
+    else if (last_type == T_Locking::Mutex)
+	mlock.release();
+    else
+	rlock.release();
     for(;count;count--)
 	lock[count-1].release();
 }
 
-WLOCK::WLOCK(mstring x1)
-{
-    wlock.open(x1.c_str());
-    wlock.acquire();
-    tlock[0].open(T_Locking::Write, x1);
-
-    count=0;
-}
-
-WLOCK::WLOCK(mstring x1, mstring x2)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    wlock.open((x1+"::"+x2).c_str());
-    wlock.acquire();
-    tlock[1].open(T_Locking::Write, x1+"::"+x2);
-
-    count=1;
-}
-
-WLOCK::WLOCK(mstring x1, mstring x2, mstring x3)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    wlock.open((x1+"::"+x2+"::"+x3).c_str());
-    wlock.acquire();
-    tlock[2].open(T_Locking::Write, x1+"::"+x2+"::"+x3);
-
-    count=2;
-}
-
-WLOCK::WLOCK(mstring x1, mstring x2, mstring x3, mstring x4)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
-    lock[2].acquire();
-    tlock[2].open(T_Locking::Read, x1+"::"+x2+"::"+x3);
-
-    wlock.open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
-    wlock.acquire();
-    tlock[3].open(T_Locking::Write, x1+"::"+x2+"::"+x3+"::"+x4);
-
-    count=3;
-}
-
-WLOCK::WLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
-    lock[2].acquire();
-    tlock[2].open(T_Locking::Read, x1+"::"+x2+"::"+x3);
-
-    lock[3].open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
-    lock[3].acquire();
-    tlock[3].open(T_Locking::Read, x1+"::"+x2+"::"+x3+"::"+x4);
-
-    wlock.open((x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5).c_str());
-    wlock.acquire();
-    tlock[4].open(T_Locking::Write, x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5);
-
-    count=4;
-}
-
-WLOCK::~WLOCK()
-{
-    wlock.release();
-    for(;count;count--)
-	lock[count-1].release();
-}
-
-MLOCK::MLOCK(mstring x1)
-{
-    mlock.open(x1.c_str());
-    mlock.acquire();
-    tlock[0].open(T_Locking::Mutex, x1);
-
-    count=0;
-}
-
-MLOCK::MLOCK(mstring x1, mstring x2)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    mlock.open((x1+"::"+x2).c_str());
-    mlock.acquire();
-    tlock[1].open(T_Locking::Mutex, x1+"::"+x2);
-
-    count=1;
-}
-
-MLOCK::MLOCK(mstring x1, mstring x2, mstring x3)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    mlock.open((x1+"::"+x2+"::"+x3).c_str());
-    mlock.acquire();
-    tlock[2].open(T_Locking::Mutex, x1+"::"+x2+"::"+x3);
-
-    count=2;
-}
-
-MLOCK::MLOCK(mstring x1, mstring x2, mstring x3, mstring x4)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[1].open(T_Locking::Read, x1+"::"+x2);
-
-    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
-    lock[2].acquire();
-    tlock[2].open(T_Locking::Read, x1+"::"+x2+"::"+x3);
-
-    mlock.open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
-    mlock.acquire();
-    tlock[3].open(T_Locking::Mutex, x1+"::"+x2+"::"+x3+"::"+x4);
-
-    count=3;
-}
-
-MLOCK::MLOCK(mstring x1, mstring x2, mstring x3, mstring x4, mstring x5)
-{
-    lock[0].open(x1.c_str());
-    lock[0].acquire();
-    tlock[0].open(T_Locking::Read, x1);
-
-    lock[1].open((x1+"::"+x2).c_str());
-    lock[1].acquire();
-    tlock[0].open(T_Locking::Read, x1+"::"+x2);
-
-    lock[2].open((x1+"::"+x2+"::"+x3).c_str());
-    lock[2].acquire();
-    tlock[0].open(T_Locking::Read, x1+"::"+x2+"::"+x3);
-
-    lock[3].open((x1+"::"+x2+"::"+x3+"::"+x4).c_str());
-    lock[3].acquire();
-    tlock[0].open(T_Locking::Read, x1+"::"+x2+"::"+x3+"::"+x4);
-
-    mlock.open((x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5).c_str());
-    mlock.acquire();
-    tlock[4].open(T_Locking::Mutex, x1+"::"+x2+"::"+x3+"::"+x4+"::"+x5);
-
-    count=4;
-}
-
-MLOCK::~MLOCK()
-{
-    mlock.release();
-    for(;count;count--)
-	lock[count-1].release();
-}
 
 mThread::selftothreadidmap_t mThread::selftothreadidmap;
 

@@ -479,7 +479,7 @@ void Nick_Live_t::Quit(mstring reason)
 
     // Check if we're currently being TEMP ignored ...
     {
-    MLOCK("OperServ","Ignore");
+    MLOCK(("OperServ","Ignore"));
     if (Parent->operserv.Ignore_find(Mask(N_U_P_H)))
     {
 	if (Parent->operserv.Ignore->Value().second != true)
@@ -528,7 +528,7 @@ bool Nick_Live_t::FloodTrigger()
     // Check if we're currently being ignored ...
     if (Parent->operserv.Ignore_size())
     {
-	RLOCK("OperServ","Ignore");
+	RLOCK(("OperServ","Ignore"));
 	if (Parent->operserv.Ignore_find(Mask(N_U_P_H)))
 	{
 	    // IF we havnt ignored for long enough yet, or its perminant ...
@@ -539,7 +539,7 @@ bool Nick_Live_t::FloodTrigger()
 	    }
 	    else
 	    {
-		MLOCK("OperServ","Ignore");
+		MLOCK(("OperServ","Ignore"));
 		Parent->operserv.Ignore_erase();
 	    }
 	}
@@ -556,7 +556,7 @@ bool Nick_Live_t::FloodTrigger()
 	flood_triggered_times++;
 	// Add To ignore, they're naughty.
 	{
-	WLOCK("OperServ","Ignore");
+	WLOCK(("OperServ","Ignore"));
 	mstring message;
 	if (flood_triggered_times >= Parent->operserv.Ignore_Limit()) {
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()),
