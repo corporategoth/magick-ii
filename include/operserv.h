@@ -68,11 +68,11 @@ private:
 public:
     mstring Services_Admin()	    { return services_admin; }
     bool Secure()		    { return secure; }
-    mstring Def_Expire()	    { return def_expire; }
-    mstring Expire_Oper()	    { return expire_oper; }
-    mstring Expire_Admin()	    { return expire_admin; }
-    mstring Expire_Sop()	    { return expire_sop; }
-    mstring Expire_SAdmin()	    { return expire_sadmin; }
+    unsigned long Def_Expire()	    { return def_expire; }
+    unsigned long Expire_Oper()	    { return expire_oper; }
+    unsigned long Expire_Admin()	    { return expire_admin; }
+    unsigned long Expire_Sop()	    { return expire_sop; }
+    unsigned long Expire_SAdmin()	    { return expire_sadmin; }
     unsigned int Max_Clone()	    { return max_clone; }
     unsigned int Clone_Limit()	    { return clone_limit; }
     mstring Def_Clone()		    { return def_clone; }

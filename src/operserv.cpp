@@ -1011,7 +1011,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 
     mstring host   = params.ExtractWord(3, " ").LowerCase();
     mstring reason = params.After(" ", 3);
-    long time = Parent->operserv.Def_Expire();
+    unsigned long time = Parent->operserv.Def_Expire();
 
     if (FromHumanTime(reason.Before(" ")))
     {

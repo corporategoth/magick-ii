@@ -21,9 +21,9 @@
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 0;
-const mstring BUILD_TYPE = "Windows 95/98/NT";
-const mstring BUILD_SYS = "localhost";
+const int BUILD_NUMBER = 1;
+const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
+const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;
 const unsigned short Magick_Minor_Ver=0;
 const unsigned long FileVersionNumber=(Magick_Major_Ver*0x10000)+Magick_Minor_Ver;
