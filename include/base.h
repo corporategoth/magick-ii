@@ -257,4 +257,47 @@ void notice(const mstring& source, const mstring &dest, const mstring &message);
 void send(const mstring& source, const mstring &dest, const mstring &message);
 
 
+class CommandMap
+{
+    friend class OperServ;
+    friend class NickServ;
+    friend class ChanServ;
+    friend class MemoServ;
+    friend class CommServ;
+    friend class ServMsg;
+
+    typedef void (*functor)(mstring, mstring, mstring);
+    // map<service, map<command, pair<committees, functor> > >
+    typedef map<mstring, map<mstring, pair<mstring, functor> > > cmap;
+    typedef map<mstring, map<mstring, pair<mstring, functor> > >::iterator cmap_iter1;
+    typedef map<mstring, pair<mstring, functor> >::iterator cmap_iter2;
+    cmap i_user;
+    cmap i_system;
+
+    void AddSystemCommand(mstring service, mstring command,
+	    mstring committees, functor function);
+    void RemSystemCommand(mstring service, mstring command,
+	    mstring committees);
+public:
+    void AddCommand(mstring service, mstring command,
+	    mstring committees, functor function);
+    void RemCommand(mstring service, mstring command,
+	    mstring committees);
+    bool IsSystemCommand(mstring service, mstring command,
+	    mstring committees);
+    bool IsUserCommand(mstring service, mstring command,
+	    mstring committees);
+    pair<bool, functor> GetSystemCommand(mstring service, mstring command,
+	    mstring user);
+    pair<bool, functor> GetUserCommand(mstring service, mstring command,
+	    mstring user);
+
+    bool DoCommand(mstring mynick, mstring user, mstring command,
+	    mstring params);
+    bool DoUserCommand(mstring mynick, mstring user, mstring command,
+	    mstring params);
+    bool DoSystemCommand(mstring mynick, mstring user, mstring command,
+	    mstring params);
+};
+
 #endif

@@ -440,7 +440,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 
     if (params.WordCount(" ") < 4)
     {
-	send(mynick, source, "Not enough paramaters");
+	::send(mynick, source, "Not enough paramaters");
 	return;
     }
 
@@ -475,7 +475,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 	}
 	else
 	{
-	    send(mynick, source, mstring("Invalid thread type \"") + ttype + mstring("\" is not valid."));
+	    ::send(mynick, source, mstring("Invalid thread type \"") + ttype + mstring("\" is not valid."));
 	    return;
 	}
     }
@@ -542,7 +542,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 		    }
 		}
 		if (j>=Trace::levelname.size())
-	   	    send(mynick, source, mstring("Trace level \"") + levels[i] +
+		    ::send(mynick, source, mstring("Trace level \"") + levels[i] +
 		        mstring("\" is not valid, ignored."));
 	    }
 	}
@@ -576,7 +576,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		send(mynick, source, mstring("Trace level \"") + levels[i] +
+		::send(mynick, source, mstring("Trace level \"") + levels[i] +
 		    mstring("\" is not valid, ignored."));
 	}
     }
@@ -609,7 +609,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		send(mynick, source, mstring("Trace level \"") + levels[i] +
+		::send(mynick, source, mstring("Trace level \"") + levels[i] +
 		    mstring("\" is not valid, ignored."));
 	}
     }
@@ -619,7 +619,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	send(mynick, source, "Incorrect TRACE option.");
+	::send(mynick, source, "Incorrect TRACE option.");
 	return;
     }
 
@@ -631,8 +631,8 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 	tmp.Format("%#06x  ", Trace::TraceLevel((threadtype_enum) i));
 	line2 += tmp;
     }
-    send(mynick, source, line1);
-    send(mynick, source, line2);
+    ::send(mynick, source, line1);
+    ::send(mynick, source, line2);
 }
 
 void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server)
@@ -702,6 +702,8 @@ void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, m
 
 OperServ::OperServ()
 {
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	"TRACE", "ALL", OperServ::ToggleTrace);
 }
 
 void OperServ::execute(const mstring & data)
@@ -727,10 +729,15 @@ void OperServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (command == "TRACE")
+    else if (!Parent->commands.DoCommand(mynick, source, command, message))
     {
-	ToggleTrace(mynick, source, message);
+	// Invalid command or not enough privs.
+	send(mynick, source, "Invalid command.");
     }
+    //else if (command == "TRACE")
+    //{
+	//ToggleTrace(mynick, source, message);
+    //}
     else if (command == "BREAKDOWN")
     {
 

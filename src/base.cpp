@@ -512,3 +512,303 @@ void mBaseTask::i_shutdown()
     NFT("mBaseTask::message_i");
     activation_queue_.enqueue(new shutdown_MO);
 }
+
+// Command Map stuff ...
+
+void CommandMap::AddSystemCommand(mstring service, mstring command,
+	    mstring committees, functor function)
+{
+    FT("CommandMap::AddSystemCommand", (service, command, committees));
+
+    i_system[service.LowerCase()][command.UpperCase()] = pair<mstring, functor>(committees, function);
+}
+
+
+void CommandMap::RemSystemCommand(mstring service, mstring command,
+	    mstring committees)
+{
+    FT("CommandMap::RemSystemCommand", (service, command, committees));
+    if (IsSystemCommand(service, command, committees))
+    {
+	i_system[service.LowerCase()].erase(command.LowerCase());
+	if (!service.size())
+	    i_system.erase(service);
+    }
+}
+
+
+void CommandMap::AddCommand(mstring service, mstring command,
+	    mstring committees, functor function)
+{
+    FT("CommandMap::AddCommand", (service, command, committees));
+
+    i_user[service.LowerCase()][command.UpperCase()] = pair<mstring, functor>(committees, function);
+}
+
+
+void CommandMap::RemCommand(mstring service, mstring command,
+	    mstring committees)
+{
+    FT("CommandMap::RemCommand", (service, command, committees));
+    if (IsUserCommand(service, command, committees))
+    {
+	i_user[service.LowerCase()].erase(command.LowerCase());
+	if (!service.size())
+	    i_user.erase(service);
+    }
+}
+
+
+bool CommandMap::IsSystemCommand(mstring service, mstring command,
+	    mstring committees)
+{
+    FT("CommandMap::IsExactSystemCommand", (service, command, committees));
+    int i;
+
+    // IF i_system exists
+    //   IF command (exact) exists
+    //     IF (" " + cmd_committees + " ") contains ANY OF committees
+    //       RETURN true
+    //     ENDIF
+    //   ENDIF
+    // ENDIF
+    // RETURN false;
+
+    if (i_system.find(service.LowerCase()) != i_system.end())
+    {
+	if (i_system[service.LowerCase()].find(command.UpperCase()) !=
+		i_system[service.LowerCase()].end())
+	{
+	    for (i=1; i <= committees.WordCount(" "); i++)
+	    {
+		if (mstring(" " +
+		    i_system[service.LowerCase()][command.UpperCase()].first.UpperCase() +
+		    " ").Contains(" " + committees.ExtractWord(i, " ").UpperCase() + " "))
+		{
+		    RET(true);
+		}
+	    }
+	}
+    }
+    RET(false)
+}
+
+
+bool CommandMap::IsUserCommand(mstring service, mstring command,
+	    mstring committees)
+{
+    FT("CommandMap::IsExactUserCommand", (service, command, committees));
+    int i;
+
+    // IF i_system exists
+    //   IF command (exact) exists
+    //     IF (" " + cmd_committees + " ") contains ANY OF committees
+    //       RETURN true
+    //     ENDIF
+    //   ENDIF
+    // ENDIF
+    // RETURN false;
+
+    if (i_user.find(service.LowerCase()) != i_user.end())
+    {
+	if (i_user[service.LowerCase()].find(command.UpperCase()) !=
+		i_user[service.LowerCase()].end())
+	{
+	    for (i=1; i <= committees.WordCount(" "); i++)
+	    {
+		if (mstring(" " +
+		    i_user[service.LowerCase()][command.UpperCase()].first.UpperCase() +
+		    " ").Contains(" " + committees.ExtractWord(i, " ").UpperCase() + " "))
+		{
+		    RET(true);
+		}
+	    }
+	}
+    }
+    RET(false);
+}
+
+
+pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstring command,
+	    mstring user)
+{
+    FT("CommandMap::GetUserCommand", (service, command, user));
+    int i;
+    pair<bool, functor> retval = pair<bool, functor>(false, NULL);
+    cmap_iter2 iter;
+    mstring type, nickname, list, cmd;
+    if (Parent->nickserv.IsStored(user) &&
+	Parent->nickserv.stored[user.LowerCase()].IsOnline())
+	    nickname = user;
+
+    // IF i_system exists
+    //   IF command (pattern) exists
+    //     IF (" " + cmd_committees + " ") contains ANY OF committees
+    //       RETURN true
+    //     ENDIF
+    //   ENDIF
+    // ENDIF
+    // RETURN false;
+
+    if (Parent->operserv.IsName(service))
+	type = Parent->operserv.GetInternalName().LowerCase();
+    else if (Parent->nickserv.IsName(service))
+	type = Parent->nickserv.GetInternalName().LowerCase();
+    else if (Parent->chanserv.IsName(service))
+	type = Parent->chanserv.GetInternalName().LowerCase();
+    else if (Parent->memoserv.IsName(service))
+	type = Parent->memoserv.GetInternalName().LowerCase();
+    else if (Parent->commserv.IsName(service))
+	type = Parent->commserv.GetInternalName().LowerCase();
+    else if (Parent->servmsg.IsName(service))
+	type = Parent->servmsg.GetInternalName().LowerCase();
+    //else
+    //  scripted stuff ...
+
+    if (type == "")
+	NRET(pair<bool_functor>,retval);
+
+    if (i_user.find(type) != i_user.end())
+    {
+	for (iter=i_user[type].begin();
+		iter!=i_user[type].end(); iter++)
+	{
+	    if (iter->first.Matches(command))
+	    {
+		cmd = iter->first.UpperCase();
+		for (i=1; i <= i_user[type][cmd].first.WordCount(" "); i++)
+		{
+		    list = i_user[type][cmd].first.ExtractWord(i, " ").LowerCase();
+
+		    // If its a command for "ALL" users, OR
+		    // its a valid committee AND a valid (reg'd + online) user
+		    //       AND that user is on the committee
+		    if (list == "all" ||
+			(nickname != "" && Parent->commserv.IsList(list)
+			 && Parent->commserv.list[list].IsIn(nickname)))
+		    {
+			retval.first = true;
+			retval.second = i_user[type][cmd].second;
+			NRET(pair<bool_functor>,retval);
+		    }
+		}
+	    }
+	}
+    }
+    NRET(pair<bool_functor>,retval);
+}
+
+pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, mstring command,
+	    mstring user)
+{
+    FT("CommandMap::GetSystemCommand", (service, command, user));
+    int i;
+    pair<bool, functor> retval = pair<bool, functor>(false, NULL);
+    cmap_iter2 iter;
+    mstring type, nickname, list, cmd;
+    if (Parent->nickserv.IsStored(user) &&
+	Parent->nickserv.stored[user.LowerCase()].IsOnline())
+	    nickname = user;
+
+    // IF i_system exists
+    //   IF command (pattern) exists
+    //     IF (" " + cmd_committees + " ") contains ANY OF committees
+    //       RETURN true
+    //     ENDIF
+    //   ENDIF
+    // ENDIF
+    // RETURN false;
+
+    if (Parent->operserv.IsName(service))
+	type = Parent->operserv.GetInternalName().LowerCase();
+    else if (Parent->nickserv.IsName(service))
+	type = Parent->nickserv.GetInternalName().LowerCase();
+    else if (Parent->chanserv.IsName(service))
+	type = Parent->chanserv.GetInternalName().LowerCase();
+    else if (Parent->memoserv.IsName(service))
+	type = Parent->memoserv.GetInternalName().LowerCase();
+    else if (Parent->commserv.IsName(service))
+	type = Parent->commserv.GetInternalName().LowerCase();
+    else if (Parent->servmsg.IsName(service))
+	type = Parent->servmsg.GetInternalName().LowerCase();
+    //else
+    //  scripted stuff ...
+
+    if (type == "")
+	NRET(pair<bool_functor>,retval);
+
+    if (i_system.find(type) != i_system.end())
+    {
+	for (iter=i_system[type].begin();
+		iter!=i_system[type].end(); iter++)
+	{
+	    if (iter->first.Matches(command))
+	    {
+		cmd = iter->first.UpperCase();
+		for (i=1; i <= i_system[type][cmd].first.WordCount(" "); i++)
+		{
+		    list = i_system[type][cmd].first.ExtractWord(i, " ").LowerCase();
+
+		    // If its a command for "ALL" i_systems, OR
+		    // its a valid committee AND a valid (reg'd + online) i_system
+		    //       AND that i_system is on the committee
+		    if (list == "all" ||
+			(nickname != "" && Parent->commserv.IsList(list)
+			 && Parent->commserv.list[list].IsIn(nickname)))
+		    {
+			retval.first = true;
+			retval.second = i_system[type][cmd].second;
+			NRET(pair<bool_functor>,retval);
+		    }
+		}
+	    }
+	}
+    }
+    NRET(pair<bool_functor>,retval);
+}
+
+bool CommandMap::DoCommand(mstring mynick, mstring user, mstring command,
+	    mstring params)
+{
+    FT("CommandMap::DoCommand", (mynick, user, command, params));
+
+    if (DoUserCommand(mynick, user, command, params))
+    {
+	RET(true);
+    }
+    else if (DoSystemCommand(mynick, user, command, params))
+    {
+	RET(true);
+    }
+    RET(false);
+}
+
+
+bool CommandMap::DoUserCommand(mstring mynick, mstring user, mstring command,
+	    mstring params)
+{
+    FT("CommandMap::DoUserCommand", (mynick, user, command, params));
+
+    pair<bool,functor> cmd = GetUserCommand(mynick, command, user);
+    if (cmd.first)
+    {
+	(*cmd.second)(mynick, user, params);
+	RET(true);
+    }
+    RET(false);
+}
+
+
+bool CommandMap::DoSystemCommand(mstring mynick, mstring user, mstring command,
+	    mstring params)
+{
+    FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
+
+    pair<bool,functor> cmd = GetSystemCommand(mynick, command, user);
+    if (cmd.first)
+    {
+	(*cmd.second)(mynick, user, params);
+	RET(true);
+    }
+    RET(false);
+}

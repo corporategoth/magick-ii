@@ -210,16 +210,22 @@ public:
 	Magick(int inargc, char **inargv);
 	int Start();
 
+	// Stuff that NEEDS to be there first
+	LoggerTask loggertask;
+	CommandMap commands;
+
+	// Services ...
 	OperServ operserv;
 	ChanServ chanserv;
 	NickServ nickserv;
 	MemoServ memoserv;
 	ServMsg servmsg;
 	CommServ commserv;
+
+	// Other stuff ...
 	NetworkServ server;
-	LoggerTask loggertask;
-	EventTask events;
         IrcServer ACO_server;
+	EventTask events;
 
 //protected:
 	bool i_shutdown;
