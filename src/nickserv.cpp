@@ -735,7 +735,7 @@ mstring Nick_Stored_t::Email()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Email());
     }
@@ -756,7 +756,7 @@ void Nick_Stored_t::Email(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Email(in);
     }
@@ -777,7 +777,7 @@ mstring Nick_Stored_t::URL()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(URL());
     }
@@ -798,7 +798,7 @@ void Nick_Stored_t::URL(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	URL(in);
     }
@@ -819,7 +819,7 @@ mstring Nick_Stored_t::ICQ()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(ICQ());
     }
@@ -840,7 +840,7 @@ void Nick_Stored_t::ICQ(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	ICQ(in);
     }
@@ -861,7 +861,7 @@ mstring Nick_Stored_t::Description()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Description());
     }
@@ -882,7 +882,7 @@ void Nick_Stored_t::Description(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Description(in);
     }
@@ -903,7 +903,7 @@ mstring Nick_Stored_t::Comment()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Comment());
     }
@@ -924,7 +924,7 @@ void Nick_Stored_t::Comment(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Comment(in);
     }
@@ -946,7 +946,7 @@ void Nick_Stored_t::Suspend(mstring name)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Suspend(name);
     }
@@ -967,7 +967,7 @@ void Nick_Stored_t::UnSuspend()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	UnSuspend();
     }
@@ -988,7 +988,7 @@ mstring Nick_Stored_t::Password()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Password());
     }
@@ -1009,7 +1009,7 @@ void Nick_Stored_t::Password(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Password(in);
     }
@@ -1055,7 +1055,7 @@ int Nick_Stored_t::Siblings()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Siblings());
     }
@@ -1085,7 +1085,7 @@ mstring Nick_Stored_t::Sibling(int count)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Sibling(count));
     }
@@ -1110,7 +1110,7 @@ bool Nick_Stored_t::IsSibling(mstring nick)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(IsSibling(nick));
     }
@@ -1150,7 +1150,7 @@ bool Nick_Stored_t::MakeHost()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(MakeHost());
     }
@@ -1227,7 +1227,7 @@ bool Nick_Stored_t::Unlink()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Unlink());
     }
@@ -1248,7 +1248,7 @@ int Nick_Stored_t::Access()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Access());
     }
@@ -1276,7 +1276,7 @@ mstring Nick_Stored_t::Access(int count)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Access(count));
     }
@@ -1323,7 +1323,7 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(AccessAdd(in));
     }
@@ -1354,7 +1354,7 @@ int Nick_Stored_t::AccessDel(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(AccessDel(in));
     }
@@ -1381,7 +1381,7 @@ bool Nick_Stored_t::IsAccess(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(IsAccess(in));
     }
@@ -1402,7 +1402,7 @@ int Nick_Stored_t::Ignore()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Ignore());
     }
@@ -1430,7 +1430,7 @@ mstring Nick_Stored_t::Ignore(int count)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Ignore(count));
     }
@@ -1463,7 +1463,7 @@ bool Nick_Stored_t::IgnoreAdd(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(IgnoreAdd(in));
     }
@@ -1494,7 +1494,7 @@ int Nick_Stored_t::IgnoreDel(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(IgnoreDel(in));
     }
@@ -1521,7 +1521,7 @@ bool Nick_Stored_t::IsIgnore(mstring in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(IsIgnore(in));
     }
@@ -1546,7 +1546,7 @@ bool Nick_Stored_t::Protect()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Protect());
     }
@@ -1568,7 +1568,7 @@ void Nick_Stored_t::Protect(bool in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Protect(in);
     }
@@ -1593,7 +1593,7 @@ bool Nick_Stored_t::Secure()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Secure());
     }
@@ -1615,7 +1615,7 @@ void Nick_Stored_t::Secure(bool in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Secure(in);
     }
@@ -1640,7 +1640,7 @@ bool Nick_Stored_t::NoExpire()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(NoExpire());
     }
@@ -1662,7 +1662,7 @@ void Nick_Stored_t::NoExpire(bool in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	NoExpire(in);
     }
@@ -1687,7 +1687,7 @@ bool Nick_Stored_t::NoMemo()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(NoMemo());
     }
@@ -1709,7 +1709,7 @@ void Nick_Stored_t::NoMemo(bool in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	NoMemo(in);
     }
@@ -1734,7 +1734,7 @@ bool Nick_Stored_t::Private()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Private());
     }
@@ -1756,7 +1756,7 @@ void Nick_Stored_t::Private(bool in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	Private(in);
     }
@@ -1781,7 +1781,7 @@ bool Nick_Stored_t::PRIVMSG()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(PRIVMSG());
     }
@@ -1803,7 +1803,7 @@ void Nick_Stored_t::PRIVMSG(bool in)
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	PRIVMSG(in);
     }
@@ -1824,7 +1824,7 @@ bool Nick_Stored_t::Suspended()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Suspended());
     }
@@ -1845,7 +1845,7 @@ mstring Nick_Stored_t::Suspend_By()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Suspend_By());
     }
@@ -1866,7 +1866,7 @@ mDateTime Nick_Stored_t::Suspend_Time()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(Suspend_Time());
     }
@@ -1918,7 +1918,7 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(LastAllSeenTime());
     }
@@ -1989,7 +1989,7 @@ mstring Nick_Stored_t::LastAllMask()
     else
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host, i_Name);
+		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
 	RET(LastAllMask());
     }
