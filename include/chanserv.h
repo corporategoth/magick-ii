@@ -25,6 +25,9 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/09/11 10:58:18  prez
+** Now saves in in GMT
+**
 ** Revision 1.46  2000/09/10 09:53:42  prez
 ** Added functionality to ensure the order of messages is kept.
 **
@@ -126,6 +129,7 @@ class Chan_Live_t : public mUserDef
     map<mstring, pair<bool, bool> > squit;
     map<mstring, pair<bool, bool> > users;
     map<mstring, mDateTime> bans;
+    map<mstring, mDateTime> exempt;
     mstring i_Topic;
     mstring i_Topic_Setter;
     mDateTime i_Topic_Set_Time;
@@ -182,11 +186,17 @@ public:
     unsigned int Bans();
     mstring Ban(unsigned int num);
     mDateTime Ban(mstring mask);
+    unsigned int Exempts();
+    mstring Exempt(unsigned int num);
+    mDateTime Exempt(mstring mask);
     bool IsSquit(mstring nick);
     bool IsIn(mstring nick);
     bool IsOp(mstring nick);
     bool IsVoice(mstring nick);
     bool IsBan(mstring mask);
+    bool MatchBan(mstring mask);
+    bool IsExempt(mstring mask);
+    bool MatchExempt(mstring mask);
 
     void LockDown();
     void UnLock();

@@ -67,7 +67,7 @@ public:
 #endif /* HAVE_WSTRING */
 
 	inline void WriteElement(Tag& t, mDateTime &val) {
-		WriteElement(t,(double)val);
+		WriteElement(t,(double) GMT(val, true));
 	}
 };
 
@@ -115,7 +115,7 @@ public:
     {
         double temp;
         Retrieve(temp);
-        val=temp;
+        val=GMT(mDateTime(temp), false);
     }
 
 };

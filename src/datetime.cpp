@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/09/11 10:58:19  prez
+** Now saves in in GMT
+**
 ** Revision 1.56  2000/09/09 02:17:48  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -996,3 +999,33 @@ mstring DisectTime(long intime, mstring source)
     return Result;
 }
 
+mDateTime GMT(mDateTime in, bool to)
+{
+    ACE_OS::tzset();
+    long offset = ACE_OS::timezone() * (to ? 1 : -1);
+    double val = in.Internal();
+    unsigned long days = 0, secs = 0;
+    days = (unsigned long) val;
+    val -= days;
+    secs = (unsigned long) (val * (double) SecsPerDay);
+
+    if (secs + offset > SecsPerDay)
+    {
+	if (offset > 0)
+	{
+	    days++;
+	    secs += offset - SecsPerDay;
+	}
+	else if (offset < 0)
+	{
+	    days--;
+	    secs -= offset + SecsPerDay;
+	}
+    }
+    else
+    {
+	secs += offset;
+    }
+    val = (double) days + ((double) secs * (1.0 / (double) SecsPerDay));
+    return mDateTime(val);
+}

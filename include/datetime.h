@@ -25,6 +25,9 @@ static const char *ident_datetime_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/09/11 10:58:19  prez
+** Now saves in in GMT
+**
 ** Revision 1.28  2000/09/09 02:17:47  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -247,6 +250,7 @@ public:
 };
 
 mstring DisectTime(long intime, mstring source = "");
+mDateTime GMT(mDateTime in, bool to);
 
 extern mDateTime Now();
 extern mDateTime Date();

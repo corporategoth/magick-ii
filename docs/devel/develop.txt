@@ -145,6 +145,23 @@ or at run-time with
 
 You must specify your own trace level.
 
+Locking
+=======
+
+Magick has LOCKING code with RLOCK(()), WLOCK(()) and MLOCK(()).
+These are Read, Write and Mutex locks respectively.  You MUST
+use these locking mechanisms before EVERY read or write of a
+veriable in an object.  This will ensure data integrity across
+threads (and ensure one thread blocks if another is using the
+data).  The locks will automatically expire, and if you need
+more than one of any type, you can put a number from 2-8 after
+the LOCK, eg. RLOCK2(()), etc.  The argument inside the (()) is
+a vararray, so you may specify up to 16 'known' types (see
+variant.h for a list of known types).
+
+*** 90% of all bugs in thread-based programs is because some
+*** data was accessed by 2 threads at once without propper locking.
+
 RULE OF THUMB
 -------------
 
@@ -329,10 +346,11 @@ x Method to determine (wether encrypted, compressed, or plain) what
 	flags are set on the datafile (including compression level,
 	possibly encryption type, magick internal version). (flags?!!!)
 
-* Store ALL dates / times in GMT ... when we load them live, we convert them
+x Store ALL dates / times in GMT ... when we load them live, we convert them
 	to local timezone (determined with __timezone) -- if TZ cant be
 	determined, we exit out and tell them to set TZ=??? (fallback).
 	OR -- we can use the TZ environment veriable exclusively.
+	> ACE_OS::tzset(); ACE_OS::timezone() used
 
 User Interface
 --------------
