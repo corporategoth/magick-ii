@@ -255,14 +255,14 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="ADMIN")
 	{
 	    // :source ADMIN
-	    Parent->ircsvchandler->send(": " + Parent->Startup_SERVER_NAME + " 256 " +
-		source + " Administrative info about " + Parent->Startup_SERVER_NAME);
-	    Parent->ircsvchandler->send(": " + Parent->Startup_SERVER_NAME + " 257 " +
-		source + " " + Parent->Startup_SERVER_DESC);
-	    Parent->ircsvchandler->send(": " + Parent->Startup_SERVER_NAME + " 258 " +
-		source + " Admins - " + Parent->OperServ_SERVICES_ADMIN);
-	    Parent->ircsvchandler->send(": " + Parent->Startup_SERVER_NAME + " 259 " +
-		source + " Magick IRC Services - magick@magick.tm");
+	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 256 " +
+		source + " :Administrative info about " + Parent->Startup_SERVER_NAME);
+	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 257 " +
+		source + " :" + Parent->Startup_SERVER_DESC);
+	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 258 " +
+		source + " :Admins - " + Parent->OperServ_SERVICES_ADMIN);
+	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 259 " +
+		source + " :Magick IRC Services - magick@magick.tm");
 	}
 	else if (msgtype=="AKILL")
 	{
