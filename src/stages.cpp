@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2001/12/25 04:06:46  prez
+** Fixed up memory leak in stages
+**
 ** Revision 1.10  2001/12/16 01:30:46  prez
 ** More changes to fix up warnings ... added some new warning flags too!
 **
@@ -664,7 +667,8 @@ VerifyStage::VerifyStage(Stage &PrevStage, size_t verifyoffset, const char *veri
 	offset = verifyoffset;
 	vsize = verifysize;
 	text = new char[vsize];
-	memcpy(text, verifytext, verifysize);
+	if (text != NULL)
+	    memcpy(text, verifytext, verifysize);
     }
 }
 
@@ -672,7 +676,7 @@ VerifyStage::~VerifyStage()
 {
     NFT("VerifyStage::~VerifyStage");
     if (text != NULL)
-	delete text;
+	delete [] text;
 }
 
 bool VerifyStage::Validate()
