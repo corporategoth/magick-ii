@@ -24,6 +24,9 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/07/23 20:53:13  prez
+** removing of antlr
+**
 ** Revision 1.15  2000/07/11 13:22:18  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
@@ -160,7 +163,6 @@ FULLNAME+" - "+SLOGAN,
 "Library Creditations: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
 "    cint           http://root.cern.ch/root/Cint.html",
-"    antlr          http://www.antlr.org",
 "    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",
 "    expat          http://www.jclark.com/xml/expat.html",
 "    sxp            http://www.sourceforge.net/project/?group_id=2280",

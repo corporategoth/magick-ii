@@ -24,18 +24,15 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.100  2000/07/11 13:22:18  prez
+** Revision 1.101  2000/07/23 20:53:13  prez
+** removing of antlr
+**
+** Revision 1.15  2000/07/11 13:22:18  prez
 ** Fixed loading/saving -- they now work with encryption and compression.
 ** Tested, it works too!  Now all we need to do is fix the loading, and
 ** we're set ... :))
 **
-** Revision 1.99  2000/06/15 11:29:54  ungod
-** rollback of last checkin. prez added a new define but forgot to tell me/add it to the bcb project
-**
-** Revision 1.98  2000/06/15 11:28:04  ungod
-** #include config.h so that the PACKAGE works properly
-**
-** Revision 1.97  2000/06/08 13:07:34  prez
+** Revision 1.14  2000/06/08 13:07:34  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
 **
@@ -75,7 +72,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 1;
+const int BUILD_NUMBER = 2;
 const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
 const mstring BUILD_SYS = "haven";
 
@@ -88,11 +85,10 @@ const mstring BUILD_SYS = "haven";
  * helper directory.  PLEASE do not change these
  * because you think it'd be funky to have 'MyNet
  * Services', we DO diserve SOME creditation for what
- * we've done, dont you think?  The PACKAGE text may
- * only be ONE word (else it stuffs up version replies).
+ * we've done, dont you think?
  *
  * For a FULL release product (non-alpha/beta), the
- * VERSION value will be blank (else it will contain
+ * RELEASE value will be blank (else it will contain
  * either aN or bN (where n is the alpha or beta number
  * respectively).  It may also contain pre for pre-
  * release code.
@@ -167,7 +163,6 @@ FULLNAME+" - "+SLOGAN,
 "Library Creditations: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
 "    cint           http://root.cern.ch/root/Cint.html",
-"    antlr          http://www.antlr.org",
 "    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",
 "    expat          http://www.jclark.com/xml/expat.html",
 "    sxp            http://www.sourceforge.net/project/?group_id=2280",
