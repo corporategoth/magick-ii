@@ -160,6 +160,7 @@ int Magick::Start()
 
     //write_log ("All systems nominal");
 
+    // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
 
     
     // temporary placeholder

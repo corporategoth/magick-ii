@@ -8,13 +8,16 @@ ChanServ::ChanServ()
 // ***************************************
 // NOTE:this function has to be re-entrant
 // ***************************************
+
+static int highestlevel=0;
+
 void *chanserv_thread_handler(void *level)
 {
     int ilevel=(int)level;  // 0 get's passed in for the first thread spawned, etc.
-    static int highestlevel=0;
     pair<mstring,mstring> data;
 
-    highestlevel=ilevel;
+    if(highestlevel<ilevel)
+	highestlevel=ilevel;
     MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
     while(MagickObject->chanserv.on==true)
     {
@@ -30,10 +33,8 @@ void *chanserv_thread_handler(void *level)
 	    }
 	    if(ilevel==highestlevel)
 	    {
-		if(MagickObject->chanserv.inputbuffer.size()>highestlevel*MagickObject->chanserv.msg_thresh)
-		    ACE_Thread::spawn(chanserv_thread_handler,(void *)(ilevel+1));
 		// less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
-		else if(MagickObject->chanserv.inputbuffer.size()<(highestlevel-1)*MagickObject->chanserv.msg_thresh+MagickObject->chanserv.msg_thresh/2)
+		if(MagickObject->chanserv.inputbuffer.size()<(highestlevel-1)*MagickObject->chanserv.msg_thresh+MagickObject->chanserv.msg_thresh/2)
 		{
 		    if(highestlevel!=0)
 		    {
@@ -60,6 +61,10 @@ void ChanServ::push_message(const mstring& servicename, const mstring& message)
     ACE_Local_WLock inputbufferlock("chanserv::inputbuffer");
     pair<mstring,mstring> dummyvar(servicename,message);
     inputbuffer.push_back(dummyvar);
+    // put this here in case the processing loop get's hung up, it just *shrugs* and 
+    // starts up another when the threshhold gets hit
+    if(inputbuffer.size()>highestlevel*msg_thresh)
+        ACE_Thread::spawn(chanserv_thread_handler,(void *)(highestlevel+1));
 }
 
 void ChanServ::execute(const mstring & servicename, const mstring & message)
