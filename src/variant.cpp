@@ -27,6 +27,9 @@ RCSID(variant_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2001/03/08 14:34:29  prez
+** Fixed some OS incompatabilities
+**
 ** Revision 1.46  2001/03/08 08:07:41  ungod
 ** fixes for bcc 5.5
 **
@@ -698,6 +701,6 @@ mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& t
 
 const mVarArray mVarArray::EmptyArray()
 {
-	mVarArray Result;
-	return const_cast<const mVarArray>(Result);
+	const mVarArray Result;
+	return Result;
 }

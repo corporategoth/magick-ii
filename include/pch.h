@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2001/03/08 14:34:29  prez
+** Fixed some OS incompatabilities
+**
 ** Revision 1.33  2001/03/08 08:07:40  ungod
 ** fixes for bcc 5.5
 **
@@ -146,16 +149,16 @@
 # endif
 #endif
 
-#ifdef STDC_HEADERS
+
+#ifdef WIN32
+# define WIN32_LEAN_AND_MEAN
+# define STRICT
+# include <windows.h>
+# ifdef STDC_HEADERS
 #  include <cstdlib>
 #  include <cstdarg>
 #  include <cstring>
-#endif
-
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#define STRICT
-#include <windows.h>
+# endif
 #endif
 
 /* Standard C++ Extensions ... */
