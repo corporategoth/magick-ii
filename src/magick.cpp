@@ -14,7 +14,6 @@
 #include <iostream>
 #include <strstream>
 #include <ace/INET_Addr.h>
-#include <signal.h>
 #include "magick.h"
 #include "log.h"
 #include "EscLexer.hpp"
