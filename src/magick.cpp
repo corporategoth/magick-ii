@@ -63,6 +63,7 @@ int Magick::Start()
 				config_file=argv[i];
 			}
 			else if(argv[i]=="-help"||argv[i]=="--help"||
+
 					argv[i]=="-?"||argv[i]=="-h")
 			{
 				dump_help(argv[0]);
@@ -77,8 +78,9 @@ int Magick::Start()
 		return MAGICK_RET_ERROR;
 	}
 	// load the local messages database and internal "default messages"
-	// could we maybe have the external messages as part of the ini?
+	// the external messages are part of a separate ini called language.ini (both local and global can be done here too)
 	LoadInternalMessages();
+	LoadExternalMessages();
 
 	if(logfile!=NULL)
 		fclose(logfile);
@@ -122,10 +124,16 @@ void Magick::dump_help(mstring & progname)
 void Magick::LoadInternalMessages()
 {
 	/* This is to be replaced with language files.
+
 	   blah.lng (and magick.ini has LANGUAGE=blah
+
 	   Another file should be created for LOGMSG=blahlog
+
 	   for log messages (user display and log messages
+
 	   should be seperated */
+
+
 
 	/* note left side of message can have spaces before '=' that will be trimmed
 		right side will *not* be trimmed*/
@@ -479,4 +487,333 @@ mstring Magick::parseEscapes(const mstring & in)
 		//todo
 	}
 	return lexer.retstring;
+}
+
+void Magick::LoadExternalMessages()
+{
+	wxFileConfig *languageini=new wxFileConfig("magick","","language.ini","");
+	// load and escparse the messages
+	mstring Names[] =
+	{
+	/* Log stuff (NO FORMATTING HERE!) */
+	"ERR_READ_DB",
+	"ERR_WRITE_DB",
+	"ERR_UNKNOWN_SERVMSG",
+
+	/* Incorrect Syntax */
+	"ERR_UNKNOWN_COMMAND",
+	"ERR_UNKNOWN_OPTION",
+	"ERR_MORE_INFO",
+	"ERR_NOHELP",
+	"ERR_STARTHRESH",
+	"ERR_REQ_PARAM",
+	"ERR_NEED_MLOCK_PARAM",
+	"ERR_MLOCK_POSITIVE",
+	"ERR_MLOCK_UNKNOWN",
+	"ERR_SECURE_NICKS",
+	"ERR_FORMATTING",
+	"ERR_MAY_NOT_HAVE",
+	"ERR_MUST_HAVE",
+
+	/* Access Denied */
+	"ERR_WRONG_PASSWORD",
+	"ERR_ACCESS_DENIED",
+	"ERR_SUSPENDED_NICK",
+	"ERR_SUSPENDED_CHAN",
+	"ERR_TEMP_DISABLED",
+	"ERR_FAILED",
+	"ERR_YOU_DONT_EXIST",
+	"ERR_CHAN_NOTVALID",
+	"ERR_READ_ONLY",
+
+	/* Need verification */
+	"ERR_NEED_PASSWORD",
+	"ERR_NEED_OPS",
+	"ERR_IDENT_NICK_FIRST",
+	"ERR_IDENT_CHAN_FIRST",
+	"ERR_NICK_FORBIDDEN",
+	"ERR_NICK_OWNED",
+	"ERR_NICK_SECURE",
+	"ERR_NICK_IDENTIFY",
+	"ERR_WILL_KILL_YOU",
+
+	/* Done as or to wrong person */
+	"ERR_MUST_BE_HOST",
+	"ERR_CANT_BE_HOST",
+	"ERR_MUST_BE_LINK",
+	"ERR_CANT_BE_LINK",
+	"ERR_MUST_BETO_HOST",
+	"ERR_CANT_BETO_HOST",
+	"ERR_MUST_BETO_LINK",
+	"ERR_CANT_BETO_LINK",
+	"ERR_NOT_ON_YOURSELF",
+	"ERR_NOT_ON_IRCOP",
+	"ERR_ONLY_ON_IRCOP",
+	"ERR_MUST_BE_IRCOP",
+
+	/****************************************************************************
+	 *********************************** MISC ***********************************
+	 ****************************************************************************/
+
+	"INFO_SYNC_TIME",
+	"INFO_LIST_MATCH",
+	"INFO_END_OF_LIST",
+	"INFO_EMAIL",
+	"INFO_URL",
+	"INFO_FOUNDER",
+	"INFO_DESC",
+	"INFO_MLOCK",
+	"INFO_JOIN",
+
+	/* Different lists maintinance */
+	"LIST_THERE",
+	"LIST_NOT_THERE",
+	"LIST_NOT_FOUND",
+	"LIST_ADDED",
+	"LIST_ADDED_AT",
+	"LIST_REMOVED",
+	"LIST_REMOVED_NUM",
+	"LIST_REMOVED_MASK",
+	"LIST_REMOVED_ALL",
+	"LIST_UNCHANGED",
+	"LIST_CHANGED",
+	"LIST_LIMIT",
+
+	/* Output in multi files */
+	"MULTI_GETPASS",
+	"MULTI_GETPASS_WALLOP",
+	"MULTI_FORBID",
+	"MULTI_SUSPEND",
+	"MULTI_UNSUSPEND",
+
+	/* process stuff */
+	"FLOODING",
+	"TEMP_FLOOD",
+	"PERM_FLOOD",
+	"IS_IGNORED",
+	"SERVICES_OFF_REASON",
+	"SERVICES_OFF",
+	"SERVICES_ON",
+	"ONOFF_NOTIFY",
+
+	/****************************************************************************
+	 ********************************* NickServ *********************************
+	 ****************************************************************************/
+
+	/* INFO displays */
+	"NS_INFO_INTRO",
+	"NS_INFO_HOST",
+	"NS_INFO_EMAIL",
+	"NS_INFO_URL",
+	"NS_INFO_SUSPENDED",
+	"NS_INFO_USERMASK",
+	"NS_INFO_REGISTERED",
+	"NS_INFO_ONLINE_AS",
+	"NS_INFO_AONLINE_AS",
+	"NS_INFO_LAST_SEEN",
+	"NS_INFO_LAST_ONLINE",
+	"NS_INFO_OPTIONS",
+	"NS_INFO_COUNT",
+	"NS_INFO_ONLINE"
+
+	/* FLAG names */
+	"NS_FLAG_SUSPENDED",
+	"NS_FLAG_KILLPROTECT",
+	"NS_FLAG_SECURE",
+	"NS_FLAG_PRIVATE",
+	"NS_FLAG_IRCOP",
+	"NS_FLAG_SOP",
+	"NS_FLAG_NONE",
+
+	/* General returns */
+	"NS_REGISTERED",
+	"NS_LINKED",
+	"NS_DROPPED",
+	"NS_CHANGE_PASSWORD",
+	"NS_KILLED_IMPOSTER",
+	"NS_RELEASE",
+	"NS_FORCED_CHANGE",
+	"NS_FORCED_KILL",
+	"NS_FAILMAX_KILL",
+	"NS_GHOST_KILL",
+	"NS_IDENTIFIED",
+	"NS_FORBID_WALLOP",
+
+	/* Ownership and status */
+	"NS_NOT_YOURS",
+	"NS_IN_USE",
+	"NS_NOT_IN_USE",
+	"NS_YOU_NO_SLAVES",
+	"NS_NO_SLAVES",
+	"NS_YOU_NOT_REGISTERED",
+	"NS_NOT_REGISTERED",
+	"NS_TAKEN",
+	"NS_CANNOT_REGISTER",
+	"NS_CANNOT_LINK",
+	"NS_AM_IGNORED",
+	"NS_IS_SUSPENDED_MEMO",
+	"NS_IS_SUSPENDED",
+	"NS_IS_NOT_SUSPENDED",
+
+
+	/****************************************************************************
+	 ********************************* ChanServ *********************************
+	 ****************************************************************************/
+
+	/* INFO Displays */
+	"CS_INFO_INTRO",
+	"CS_INFO_FOUNDER",
+	"CS_INFO_DESC",
+	"CS_INFO_URL",
+	"CS_INFO_REG_TIME",
+	"CS_INFO_LAST_USED",
+	"CS_INFO_SUSPENDED",
+	"CS_INFO_SUSPENDER",
+	"CS_INFO_TOPIC",
+	"CS_INFO_TOPIC_SET",
+	"CS_INFO_REVENGE",
+	"CS_INFO_CHAN_STAT",
+	"CS_INFO_OPTIONS",
+	"CS_INFO_MLOCK",
+	"CS_INFO_COUNT",
+
+	/* FLAG Names */
+	"CS_FLAG_SUSPENDED",
+	"CS_FLAG_PRIVATE",
+	"CS_FLAG_KEEPTOPIC",
+	"CS_FLAG_TOPICLOCK",
+	"CS_FLAG_SECUREOPS",
+	"CS_FLAG_SECURE",
+	"CS_FLAG_RESTRICTED",
+	"CS_FLAG_NONE",
+
+	/* Bitchy Stuff */
+	"CS_REV_LEVEL",
+	"CS_REV_SET",
+	"CS_REV_DEOP",
+	"CS_REV_KICK",
+	"CS_REV_BAN",
+	"CS_SUSPENDED_TOPIC",
+	"CS_FORBID_WALLOP",
+
+	/* Levels and Access */
+	"CS_LEVEL_YOU",
+	"CS_LEVEL_LIST",
+	"CS_LEVEL_LOW",
+	"CS_LEVEL_HIGH",
+	"CS_LEVEL_CHANGE",
+	"CS_LEVEL_NO_CHANGE",
+	"CS_LEVEL_RESET",
+	"CS_LEVEL_NONE",
+	"CS_ACCESS_ZERO",
+	"CS_ACCESS_LOW",
+	"CS_ACCESS_HIGH",
+	"CS_ACCESS_HIGHER",
+	"CS_ACCESS_HIGHER_MATCH",
+
+	/* General Outputs */
+	"CS_REGISTERED",
+	"CS_DROPPED",
+	"CS_CHANGE_PASSWORD",
+	"CS_IDENTIFIED",
+	"CS_YOU_UNBANNED",
+	"CS_UNBANNED",
+	"CS_CLEARED",
+	"CS_CLEAR_KICK",
+
+	/* Ownerships */
+	"CS_ERR_SUSPENDED",
+	"CS_ERR_REGISTERED",
+	"CS_IN_USE",
+	"CS_NOT_IN_USE",
+	"CS_NOT_REGISTERED",
+	"CS_TAKEN",
+	"CS_CANNOT_REGISTER",
+	"CS_FORBIDDEN",
+	"CS_GET_OUT",
+	"CS_IS_SUSPENDED",
+	"CS_IS_NOT_SUSPENDED",
+	"CS_YOU_NOT_IN_CHAN",
+	"CS_YOU_IN_CHAN",
+	"CS_NOT_IN_CHAN",
+	"CS_IN_CHAN",
+	"CS_YOU_NOT_GOT",
+	"CS_NOT_GOT",
+	"CS_YOU_ALREADY_GOT",
+	"CS_ALREADY_GOT",
+
+	/****************************************************************************
+	 ********************************* MemoServ *********************************
+	 ****************************************************************************/
+
+	"MS_IS_BACKUP",
+
+	"MS_YOU_DONT_HAVE",
+	"NS_YOU_DONT_HAVE",
+	"MS_YOU_HAVE",
+	"NS_YOU_HAVE",
+	"MS_DOESNT_EXIST",
+	"NS_DOESNT_EXIST",
+	"NS_MAY_NOT",
+
+	"MS_LIST",
+	"NS_LIST",
+	"MS_NEW",
+	"MS_READ_NEW",
+	"NS_NEW",
+	"NS_READ_NEW",
+	"MS_MEMO",
+	"NS_MEMO",
+	"MS_TODEL",
+	"MS_TODEL_ALL",
+
+	"MS_SEND",
+	"NS_SEND",
+	"MS_MASS_SEND",
+	"MS_DELETE",
+	"NS_DELETE",
+	"MS_DELETE_ALL",
+	"NS_DELETE_ALL",
+
+	/****************************************************************************
+ 	 ********************************* OperServ *********************************
+	 ****************************************************************************/
+
+
+	"OS_GLOBAL_WALLOP",
+
+	"OS_SET_EXP",
+	"OS_SET_EXP_CHAN",
+	"OS_SET_EXP_NICK",
+	"OS_SET_EXP_NEWS",
+	"OS_SET_EXP_AKILL",
+	"OS_SET_SOPS",
+	"OS_SET_CLONES",
+	"OS_SET_RELEASE",
+	"OS_SET_AKICKS",
+	"OS_SET_FLOOD",
+	"OS_SET_IGNORE",
+	"OS_SET_RELINK",
+	"OS_SET_OVERRIDE",
+	"OS_SET_UPDATE",
+	"OS_SET_ADMINS",
+
+	"OS_QLINE",
+	"OS_UNQLINE",
+	"OS_SVSNOOP_ON",
+	"OS_SVSNOOP_OFF",
+	"OS_JUPE",
+	"OS_UPDATE",
+	"OS_NEW_MESSAGE",
+	"OS_AKILL_ADDED",
+	"OS_AKILL_NOT_THERE",
+	"OS_AKILL_EXPIRE",
+	"OS_AKILL_BANNED",
+	"OS_CLONE_HIGH",
+	"OS_CLONE_LOW",
+	""
+	}
+
+	delete languageini;
+
 }
