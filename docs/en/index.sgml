@@ -49,14 +49,14 @@ who knew him forget him.
 <p>
 
 Magick is designed and developed by the Magick Development
-Team <htmlurl url="mailto:magick-devel@magick.tm">.  Any bugs, feature requests,
+Team <htmlurl url="mailto:magick-devel@magick.tm" name="magick-devel@magick.tm">.  Any bugs, feature requests,
 comments, etc should be directed at this mailing list.  The
 development team is an OPEN team, however certain skills
 are required to join, not the least of which is the ability
 to program in C and C++, and to use CVS.  To join this team,
-please e-mail prez@magick.tm for further details.
+please e-mail <htmlurl url="mailto:prez@magick.tm" name="prez@magick.tm"> for further details.
 
-The Magick Alpha Team <htmlurl url="mailto:magick-alpha@magick.tm"> test current
+The Magick Alpha Team <htmlurl url="mailto:magick-alpha@magick.tm" name="magick-alpha@magick.tm"> test current
 development versions of Magick, finding not only bugs, but
 also making sure it is a user friendly and understandable
 product, so it may be changed at the same time its being
@@ -65,38 +65,48 @@ it).  The alpha team is an OPEN testing team, and you may
 join it by first downloading and installing/setting up the
 current alpha version of Magick (if you cannot do this on
 your own, its recommended you do not join the alpha team),
-and then e-mailing majordomo@magick.tm with "subscribe
+and then e-mailing <htmlurl url="mailto:majordomo@magick.tm" name="majordomo@magick.tm"> with "subscribe
 magick-alpha" (no quotes, on one line).
 
-The Magick Beta Team <htmlurl url="mailto:magick-beta@magick.tm"> test versions
+The Magick Beta Team <htmlurl url="mailto:magick-beta@magick.tm" name="magick-beta@magick.tm"> test versions
 of magick that have been through alpha testing, and are in
 the final phase of development.  The beta team's main goal
 is to find bugs before Magick is released, so they do not
 get out into the release version of Magick.  The beta team
 is an OPEN testing team, and you may join it by first down-
 loading and installing/setting up the current beta version
-of Magick, and then e-mailing majordomo@magick.tm with
+of Magick, and then e-mailing <htmlurl url="mailto:majordomo@magick.tm" name="majordomo@magick.tm"> with
 "subscribe magick-beta" (no quotes, on one line).
 
 The following people have contributed to the final product
 of Magick II (testers not included):
 
-Programmers
-Preston Elder		prez@magick.tm
-William King		ungod@magick.tm
+<verb>Programmers</verb>
+<itemize>
+<item><htmlurl url="mailto:prez@magick.tm" name="Preston Elder">
+<item><htmlurl url="mailto:ungod@magick.tm" name="William King">
+</itemize>
 
-Designers (some coding)
-Patrick Prins		striker@magick.tm
+<verb>Designers (some coding)</verb>
+<itemize>
+<item><htmlurl url="mailto:striker@magick.tm" name="Patrick Prins">
+</itemize>
 
-Supporters
-Marieke Bermon		Kelly Hill
-Emma Ellison		Todd Wright
-Matt Heckaman
+<verb>Supporters</verb>
+<itemize>
+<item>Marieke Bermon
+<item>Kelly Hill
+<item>Emma Ellison
+<item>Todd Wright
+<item>Matt Heckaman
+</itemize>
 
-Supporters Who Dont Know It
-Coca-Cola Amatil	Life Support *bleep ... bleep*
-Nescafe Blend 43	See above (any kind of caffiene!)
-Tschaicovski		If you dont understand, you never will...
+<verb>Supporters Who Dont Know It</verb>
+<itemize>
+<item>Coca-Cola Amatil	- Life Support *bleep ... bleep*
+<item>Nescafe Blend 43	- See above (any kind of caffiene!)
+<item>Tschaicovski	- If you dont understand, you never will...
+</itemize>
 
 <sect1>Changes
 <p>
@@ -307,8 +317,8 @@ The Magick home page can be found at:
 Magick is freely downloadable from:
 	<htmlurl url="ftp://ftp.magick.tm/pub/Magick">
 
-The Magick public mailing list is <htmlurl url="mailto:magick@magick.tm">
-To subscribe, email majordomo@magick.tm with 'subscribe
+The Magick public mailing list is <htmlurl url="mailto:magick@magick.tm" name="magick@magick.tm">
+To subscribe, email <htmlurl url="mailto:majordomo@magick.tm" name="majordomo@magick.tm"> with 'subscribe
 magick' (no quotes) in the text of the message.
 
 <sect1>Requirements
@@ -1055,7 +1065,7 @@ Public License instead of this License.
 
 <sect>Copyright<p>
 
-Magick Copyright 2000 Magick Development Team, magick-devel@magick.tm
+Magick Copyright 2000 Magick Development Team, <htmlurl url="mailto:magick-devel@magick.tm" name="magick-devel@magick.tm">
 
 
 This program is free software; you can redistribute it and/or modify
