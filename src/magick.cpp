@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.324  2001/11/06 09:31:15  prez
+** Changed to display a message on windows mode, informing of console state.
+**
 ** Revision 1.323  2001/11/05 05:09:39  prez
 ** Windows updates, namely disabling fork() on windows.
 **
@@ -713,6 +716,11 @@ int Magick::Start(bool firstrun)
 	    mFile::Erase(files.Pidfile());
 	}
     }
+#endif
+
+#ifdef WIN32
+    // Must do this BEFORE the logger is started ...
+    NLOG(LM_INFO, "COMMANDLINE/START_NOFORK");
 #endif
 
     if (!ActivateLogger())
