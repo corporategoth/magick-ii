@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2001/11/22 17:32:18  prez
+** Some fixes to lockable for mpatrol, and mstring overwriting its own memory.
+**
 ** Revision 1.111  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -451,7 +454,7 @@ void mstring::copy(const char *in, const size_t len)
     if (len && in)
     {
 	i_len = len;
-	i_res = 2;
+	i_res = sizeof(int);
 	while (i_res <= i_len)
 	    i_res *= 2;
 	i_str = alloc(i_res);
@@ -491,7 +494,7 @@ void mstring::append(const char *in, const size_t len)
     char *tmp = NULL;
 
     if (i_res==0)
-	i_res = 2;
+	i_res = sizeof(int);
     while (i_res <= i_len + len)
 	i_res *= 2;
     if (oldres != i_res)
@@ -550,13 +553,14 @@ void mstring::erase(int begin, int end)
 	begin = end;
 	end = i;
     }
+    end++;
 
-    if (begin > 0 || end+1 < static_cast<int>(i_len))
+    if (begin > 0 || end < static_cast<int>(i_len))
     {
 	i=0;
 	if (i_res==0)
-	    i_res = 2;
-	while (i_res / 2 > i_len - ((end+1)-begin))
+	    i_res = sizeof(int);
+	while (i_res >= sizeof(int) && i_res / 2 > i_len - (end-begin))
 	    i_res /= 2;
 	if (i_res != oldres)
 	{
@@ -570,20 +574,18 @@ void mstring::erase(int begin, int end)
 	    if (begin > 0)
 	    {
 		memcpy(tmp, i_str, begin);
-		i += begin;
+		i = begin;
 	    }
 	}
 	else
 	{
-	    i += begin;
+	    i = begin;
 	    tmp = i_str;
 	}
 
-	if (end+1 < static_cast<int>(i_len))
-	{
-	    memcpy(&tmp[i], &i_str[end+1], i_len-(end+1));
-	}
-	i_len -= (end+1)-begin;
+	if (end < static_cast<int>(i_len))
+	    memmove(&tmp[i], &i_str[end], i_len-end);
+	i_len -= end-begin;
 	memset(&tmp[i_len], 0, i_res-i_len);
     }
     if (tmp != i_str)
@@ -611,34 +613,38 @@ void mstring::insert(const size_t pos, const char *in, const size_t len)
 
     lock_write();
 
-    if (pos >= i_len)
+    if (i_str == NULL || pos >= i_len)
     {
 	lock_rel();
 	append(in, len);
 	return;
     }
 
+    size_t oldres = i_res;
     if (i_res==0)
-	i_res = 2;
+	i_res = sizeof(int);
     while (i_res <= i_len + len)
 	i_res *= 2;
-    tmp = alloc(i_res);
-    if(tmp == NULL)
+
+    if (oldres != i_res)
     {
-	lock_rel();
-	return;
+	tmp = alloc(i_res);
+	if(tmp == NULL)
+	{
+	    lock_rel();
+	    return;
+	}
+	memset(tmp, 0, i_res);
     }
-    memset(tmp, 0, i_res);
+    else
+	tmp = i_str;
 
     i=0;
-    if (pos > 0)
-    {
+    if (pos > 0 && tmp != i_str)
 	memcpy(tmp, i_str, pos);
-	i += pos;
-    }
+    i += pos;
+    memmove(&tmp[i+len], &i_str[pos], i_len-pos);
     memcpy(&tmp[i], in, len);
-    i += len;
-    memcpy(&tmp[i], &i_str[pos], i_len-pos);
 
     if (i_str != NULL)
 	dealloc(i_str);
@@ -1034,10 +1040,10 @@ void mstring::replace(const mstring &i_find, const mstring &i_replace, const boo
     }
 
     if (i_res==0)
-	i_res = 2;
+	i_res = sizeof(int);
     while (i_res <= i_len)
 	i_res *= 2;
-    while (i_res / 2 > i_len)
+    while (i_res >= sizeof(int) && i_res / 2 > i_len)
 	i_res /= 2;
     tmp = alloc(i_res);
     if (tmp == NULL)
@@ -1348,7 +1354,7 @@ int mstring::Format(const char *fmt, ...)
 
 int mstring::FormatV(const char *fmt, va_list argptr)
 {
-    int len = -1, sz = 1024;
+    int len = -1, sz = sizeof(int);
     char *buffer;
     buffer = alloc(sz);
     if (buffer == NULL)
@@ -1573,9 +1579,6 @@ list<mstring> mstring::List(const mstring &delim, bool const assemble) const
 
 void mstring::Assemble(const vector<mstring> &text, const mstring &delim)
 {
-    size_t offs = 0;
-    vector<mstring>::const_iterator iter;
-
     lock_write();
 
     if (i_str != NULL)
@@ -1583,11 +1586,12 @@ void mstring::Assemble(const vector<mstring> &text, const mstring &delim)
 
     if (text.size())
     {
+	vector<mstring>::const_iterator iter;
 	i_len += text.size()-1 * delim.length();
 	for (iter=text.begin(); iter != text.end(); iter++)
 	    i_len += iter->length();
 
-	i_res = 2;
+	i_res = sizeof(int);
 	while (i_res <= i_len)
 	    i_res *= 2;
 	i_str = alloc(i_res);
@@ -1599,6 +1603,7 @@ void mstring::Assemble(const vector<mstring> &text, const mstring &delim)
 	
 	memset(i_str, 0, i_res);
 
+	size_t offs = 0;
 	iter = text.begin();
 	memcpy(i_str, iter->c_str(), iter->length());
 	offs += iter->length();
@@ -1624,9 +1629,6 @@ void mstring::Assemble(const vector<mstring> &text, const mstring &delim)
 
 void mstring::Assemble(const list<mstring> &text, const mstring &delim)
 {
-    size_t offs = 0;
-    list<mstring>::const_iterator iter;
-
     lock_write();
 
     if (i_str != NULL)
@@ -1634,11 +1636,12 @@ void mstring::Assemble(const list<mstring> &text, const mstring &delim)
 
     if (text.size())
     {
+	list<mstring>::const_iterator iter;
 	i_len += text.size()-1 * delim.length();
 	for (iter=text.begin(); iter != text.end(); iter++)
 	    i_len += iter->length();
 
-	i_res = 2;
+	i_res = sizeof(int);
 	while (i_res <= i_len)
 	    i_res *= 2;
 	i_str = alloc(i_res);
@@ -1650,6 +1653,7 @@ void mstring::Assemble(const list<mstring> &text, const mstring &delim)
 	
 	memset(i_str, 0, i_res);
 
+	size_t offs = 0;
 	iter = text.begin();
 	memcpy(i_str, iter->c_str(), iter->length());
 	offs += iter->length();

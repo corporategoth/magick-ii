@@ -25,6 +25,9 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2001/11/22 17:32:18  prez
+** Some fixes to lockable for mpatrol, and mstring overwriting its own memory.
+**
 ** Revision 1.64  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -265,9 +268,11 @@ public:
 #if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
 #define new ::new(MP_FUNCNAME, __FILE__, __LINE__)
 #define delete __mp_pushdelstack(MP_FUNCNAME, __FILE__, __LINE__), ::delete
-#define malloc(l) __mp_alloc((l), 0, MP_AT_MALLOC, MP_FUNCNAME, __FILE__, \
-				__LINE__, 0)
-#define free(p) __mp_free((p), MP_AT_FREE, MP_FUNCNAME, __FILE__, __LINE__, 0)
+#define malloc(l) \
+    __mp_alloc((l), 0, MP_AT_MALLOC, MP_FUNCNAME, __FILE__, __LINE__, NULL, 0, \
+               0)
+#define free(p) \
+    __mp_free((p), MP_AT_FREE, MP_FUNCNAME, __FILE__, __LINE__, 0)
 #else
 #    define malloc	ACE_OS::malloc
 #    define free	ACE_OS::free

@@ -25,23 +25,24 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.125  2001/11/12 01:05:01  prez
+** Revision 1.126  2001/11/22 17:32:18  prez
+** Some fixes to lockable for mpatrol, and mstring overwriting its own memory.
+**
+** Revision 1.36  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
-** Revision 1.124  2001/11/03 21:02:51  prez
+** Revision 1.35  2001/11/03 21:02:51  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
 **
-** Revision 1.123  2001/07/24 02:51:13  prez
+** Revision 1.34  2001/07/24 02:51:13  prez
 ** Added ability to do JOIN or SJOIN
 **
-** Revision 1.122  2001/07/05 06:00:38  prez
+** Revision 1.33  2001/07/05 06:00:39  prez
 ** Up'd version to b11
 **
-** Revision 1.121  2001/06/11 03:44:45  prez
-** Re-wrote how burst works, and made the burst message a lower priority
-** than normal.  Also removed the chance of a stray pointer being picked
-** up in the dependancy system.
+** Revision 1.32  2001/05/28 11:17:33  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
 ** Revision 1.31  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
@@ -136,7 +137,7 @@ RCSID(version_h, "@(#) $Id$");
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 6;
+const int BUILD_NUMBER = 3;
 
 /* Versioning Information
  *
