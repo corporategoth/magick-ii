@@ -211,6 +211,9 @@ public:
     mstring L_Mlock(mstring mode);
     mstring Mlock_Key()			{ return i_Mlock_Key; }
     int Mlock_Limit()			{ return i_Mlock_Limit; }
+    mstring Last_Topic()		{ return i_Topic; }
+    mstring Last_Topic_Setter()		{ return i_Topic_Setter; }
+    mDateTime Last_Topic_Set_Time()	{ return i_Topic_Set_Time; }
 
     unsigned long Bantime();
     void Bantime(unsigned long in);

@@ -3215,6 +3215,125 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_Info", (mynick, source, params));
 
+    mstring message = params.Before(" ");
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    if (Parent->chanserv.stored[channel.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, "Channel " + channel + " is forbidden.");
+	return;
+    }
+
+    Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+
+    ::send(mynick, source, "Information about " + chan->Name());
+    ::send(mynick, source, "    Founder: " + chan->Founder());
+    if (chan->CoFounder() != "")
+	::send(mynick, source, " Co-Founder: " + chan->CoFounder());
+    ::send(mynick, source, "Description: " + chan->Description());
+    ::send(mynick, source, " Registered: " + chan->RegTime().Ago());
+    if (!chan->Private())
+    {
+	if (Parent->chanserv.IsLive(channel))
+	{
+	    Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
+	    mstring output = "";
+	    if (clive->Ops())
+		output << clive->Ops() << " Ops";
+	    if (output != "")
+		output << ", ";
+	    if (clive->Voices())
+		output << clive->Voices() << " Voices";
+	    if (output != "")
+		output << ", ";
+	    if (clive->Users())
+		output << clive->Users() << " Users";
+	    if (output != "")
+		output << ", ";
+	    if (clive->Squit())
+		output << clive->Squit() << " SPLIT Users";
+	    ::send(mynick, source, "  In Use By: " + output);
+	}
+	else
+	{
+	    ::send(mynick, source, "  Last Used: " + chan->LastUsed().Ago());
+	}
+    }
+    ::send(mynick, source, "     E-Mail: " + chan->Email());
+    ::send(mynick, source, "        URL: " + chan->URL());
+    if (chan->Suspended())
+    {
+	::send(mynick, source, "  Suspended: " + chan->Suspend_Time().Ago());
+	::send(mynick, source, "         By: " + chan->Suspend_By());
+	::send(mynick, source, "        For: " + chan->Comment());
+    }
+    else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
+    {
+	::send(mynick, source, "    Comment: " + chan->Comment());
+    }
+    ::send(mynick, source, " Last Topic: " + chan->Last_Topic());
+    ::send(mynick, source, "     Set By: " + chan->Last_Topic_Setter() + " " +
+				    chan->Last_Topic_Set_Time().Ago() + " Ago");
+    ::send(mynick, source, "  Mode Lock: " + chan->Mlock());
+    ::send(mynick, source, "    Revenge: " + chan->Revenge());
+    mstring output = "";
+    if (chan->Bantime())
+    {
+	output << chan->Bantime();
+	::send(mynick, source, "Ban Removal: " + output + " seconds");
+	output = "";
+    }
+
+    if (output != "")
+	output << ", ";
+    if (chan->Keeptopic())
+	output << "Keep Topic";
+
+    if (output != "")
+	output << ", ";
+    if (chan->Topiclock())
+	output << "Topic Lock";
+
+    if (output != "")
+	output << ", ";
+    if (chan->Private())
+	output << "Private";
+
+    if (output != "")
+	output << ", ";
+    if (chan->Secureops())
+	output << "Secure Ops";
+
+    if (output != "")
+	output << ", ";
+    if (chan->NoExpire())
+	output << "NoExpire";
+
+    if (output != "")
+	output << ", ";
+    if (chan->Restricted())
+	output << "Restricted";
+
+    if (output != "")
+	output << ", ";
+    if (chan->Anarchy())
+	output << "Anarchy";
+
+    if (output != "")
+	::send(mynick, source, "    Options: " + output);
 }
 
 void ChanServ::do_List(mstring mynick, mstring source, mstring params)

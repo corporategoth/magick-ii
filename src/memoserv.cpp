@@ -805,6 +805,133 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 {
     FT("MemoServ::do_Reply", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    if (IsChan(params.ExtractWord(2, " ")))
+    {
+	if (params.WordCount(" ") < 4)
+	{
+	    ::send(mynick, source, "Not enough paramaters");
+	    return;
+	}
+	mstring who = params.ExtractWord(2, " ");
+	mstring what = params.ExtractWord(3, " ");
+	mstring text = params.After(" ", 3);
+	mstring whoami = source.LowerCase();
+	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
+	{
+	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
+	}
+
+	if (!Parent->chanserv.IsStored(who))
+	{
+	    ::send(mynick, source, "No such channel " + who + ".");
+	    return;
+	}
+
+	if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "WRITEMEMO"))
+	{
+	    ::send(mynick, source, "Access denied.");
+	    return;
+	}
+
+	if (!Parent->memoserv.IsChannel(who))
+	{
+	    ::send(mynick, source, "Channel " + who + " has no memos.");
+	    return;
+	}
+
+	if (!what.IsNumber() || what.Contains(".") ||
+	    atoi(what.c_str()) <= 0)
+	{
+	    ::send(mynick, source, "You must specify a posetive whole number.");
+	    return;
+	}
+
+	if (atoi(what.c_str()) > Parent->memoserv.channel[who.LowerCase()].size())
+	{
+	    ::send(mynick, source, "News Article #" + what +
+				    " does not exist for channel " + who);
+	    return;
+	}
+
+	int i;
+	list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
+	for (i=1; i < atoi(what.c_str()); iter++, i++) ;
+	mstring output = "";
+	output << "[" << IRC_Bold << "REPLY" << IRC_Off << "(" <<
+		iter->Sender() << "): \"";
+	if (iter->Text().size() < 21)
+	    output << iter->Text().SubString(0, 19) << "...";
+	else
+	    output << iter->Text().SubString(0, iter->Text().size());
+	output << "\"] " << text;
+
+	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
+					    false, mynick, who, text);
+    }
+    else
+    {
+	mstring who = source;
+	mstring what = params.ExtractWord(2, " ");
+	mstring text = params.After(" ", 2);
+
+	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
+	{
+	    who = Parent->nickserv.stored[source.LowerCase()].Host();
+	}
+
+	if (!Parent->memoserv.IsNick(who))
+	{
+	    ::send(mynick, source, "You have no memos.");
+	    return;
+	}
+
+	if (!what.IsNumber() || what.Contains(".") ||
+	    atoi(what.c_str()) <= 0)
+	{
+	    ::send(mynick, source, "You must specify a posetive whole number.");
+	    return;
+	}
+
+	if (atoi(what.c_str()) > Parent->memoserv.nick[who.LowerCase()].size())
+	{
+	    ::send(mynick, source, "Memo #" + what + " does not exist.");
+	    return;
+	}
+
+	int i;
+	list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
+	for (i=1; i < atoi(what.c_str()); iter++, i++) ;
+
+	if (!Parent->nickserv.IsStored(iter->Sender()))
+	{
+	    ::send(mynick, source, "Nickname " + iter->Sender() +
+					    " is no longer registered.");
+	    return;
+	}
+
+	mstring output = "";
+	output << "[" << IRC_Bold << "REPLY" << IRC_Off;
+	if (iter->File())
+	    output << "(" << "filename" << ")";
+	output << ": \"";
+	if (iter->Text().size() < 21)
+	    output << iter->Text().SubString(0, 19) << "...";
+	else
+	    output << iter->Text().SubString(0, iter->Text().size());
+	output << "\"] " << text;
+	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
+					    false, mynick, who, text);
+    }
 }
 
 
@@ -1092,6 +1219,39 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
 void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 {
     FT("MemoServ::do_File", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring name = params.ExtractWord(2, " ");
+    mstring text = params.After(" ", 2);
+
+    if (IsChan(name))
+    {
+	::send(mynick, source, "Cannot send file attachments to channels!");
+	return;
+    }
+    else if (!Parent->nickserv.IsStored(name))
+    {
+	::send(mynick, source, "Nickname " + name + " is not registered.");
+	return;
+    }
+
+    if (text.size() > 450)
+    {
+	text.Truncate(450);
+	::send(mynick, source, "Message truncated.  Last characters of message were \"" +
+				text.SubString(430, 450) + "\".");
+	::send(mynick, source, "Use /MSG " + mynick +
+			    " CONTINUE <message>    to extend message.");
+    }
+
+    Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
+					    true, mynick, name, text);
 }
 
 
