@@ -27,6 +27,10 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2002/01/02 04:44:57  prez
+** Made the main loop wait for events to close instead of trying to close
+** them manually ...
+**
 ** Revision 1.89  2002/01/01 22:16:55  prez
 ** Fixed memory leak properly in db saving ...
 **
@@ -1926,13 +1930,6 @@ int DccMap::close(const unsigned long in)
     static_cast<void>(in);
     FT("DccMap::close", (in));
 
-    bool registered = false;
-    if (!Magick::instance_exists())
-    {
-	Magick::register_instance(magick_instance);
-	registered = true;
-    }
-
     // dump all and close open file handles.
     DccMap::xfers_t::iterator iter;
     RLOCK(("DccMap", "xfers"));
@@ -1949,9 +1946,6 @@ int DccMap::close(const unsigned long in)
     WLOCK(("DccMap", "xfers"));
     for (iter=XfersBegin(); XfersSize(); iter=XfersBegin())
 	RemXfers(iter->first);
-
-    if (registered)
-	Magick::deregister_instance();
 
     RET(0);
 }

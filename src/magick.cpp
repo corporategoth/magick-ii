@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.340  2002/01/02 04:44:57  prez
+** Made the main loop wait for events to close instead of trying to close
+** them manually ...
+**
 ** Revision 1.339  2001/12/27 04:54:46  prez
 ** Converted SXP to not use STL strings, use mstring instead.
 **
@@ -1155,23 +1159,21 @@ int Magick::Stop()
 	signalhandler = NULL;
     }
 
-    { RLOCK(("Events"));
     if (events != NULL)
     {
-	events->close(0);
+	events->wait();
 	WLOCK(("Events"));
 	delete events;
 	events = NULL;
-    }}
+    }
 
-    { RLOCK(("DCC"));
     if (dcc != NULL)
     {
-	dcc->close(0);
+	dcc->wait();
 	WLOCK(("DCC"));
 	delete dcc;
 	dcc = NULL;
-    }}
+    }
 
 #ifndef WIN32
     if (Result != MAGICK_RET_RESTART)
