@@ -8,7 +8,7 @@ OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) bob.$(OBJ) chanserv.$(OBJ) confbase.$(OB
        datetime.$(OBJ) fileconf.$(OBJ) ircsocket.$(OBJ) lockable.$(OBJ) log.$(OBJ) \
        magick.$(OBJ) main.$(OBJ) mstream.$(OBJ) mstring.$(OBJ) textfile.$(OBJ) \
        trace.$(OBJ) utils.$(OBJ) variant.$(OBJ)
-SUBDIRS=antlr bob
+SUBDIRS=antlr bob des
 
 all: SUBS RMLIB $(LIBNAME)
 

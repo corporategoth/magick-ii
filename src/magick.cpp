@@ -38,6 +38,7 @@ int Magick::Start()
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
 
+    CP(("Magick II has been started ..."));
     FILE *logfile=fopen("mdebug.log","w+");
     // the below defaults to stderr if logfile cannot be opened
     wxLogStderr logger(logfile);
@@ -805,6 +806,7 @@ void Magick::get_config_values()
     //in.Read(ts_DevNull+"Flood_Time",&devnull.flood_time,10);
     //in.Read(ts_DevNull+"Ignore_Time",&devnull.ignore_time,20);
     //in.Read(ts_DevNull+"Ignore_Offences",&devnull.ignore_offences,5);
+    CP(("%s read and loaded to live configuration.", config_file.c_str()));
 }
 
 int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)

@@ -14,7 +14,7 @@
 #include "log.h"
 extern "C"
 {
-#include "spr.h"
+#include "des/spr.h"
 };
 
 mEncryptStream::mEncryptStream(wxOutputStream& stream, const mstring& passphrase)

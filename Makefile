@@ -11,10 +11,6 @@
 # The Adaptive Communication Environment (ACE) library
 # should be installed and available as -lace.
 
-# Cryptographic Library
-CRYPTDIR=../support/cryptlib21
-LIBCRYPT=$(CRYPTDIR)/libcrypt.a
-
 # Z (compression) Library
 #ZDIR=../support/zlib-1.1.3
 #LIBZ=$(ZDIR)/libz.a
