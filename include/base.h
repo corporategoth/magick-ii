@@ -204,7 +204,6 @@ protected:
     mstring realname;		// 'Real Name' of service
 
     bool messages;		// Wether to process /MSG, /NOTICE.
-    bool automation;		// Wether to do automatic tasks.
 
     //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
     static bool TaskOpened;
@@ -236,8 +235,6 @@ public:
 
     virtual bool MSG()		{ return messages; }
     virtual void MSG(bool on)	{ messages=on; } 
-    virtual bool AUTO()		{ return automation; }
-    virtual void AUTO(bool on)	{ automation=on; }
 
     bool signon(const mstring& nickname);
     bool signoff(const mstring& nickname);

@@ -211,7 +211,7 @@ public:
 	bool AUTO()		{ return i_auto; }
 	void MSG(bool on)
 	{
-	    operserv.MSG(on);
+	//  operserv.MSG(on);
 	    nickserv.MSG(on);
 	    chanserv.MSG(on);
 	    memoserv.MSG(on);

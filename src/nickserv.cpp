@@ -430,15 +430,26 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     InFlight.init();
     last_msg_entries = flood_triggered_times = failed_passwds = 0;
 
+    { MLOCK(("OperServ", "Akill"));
+    if (Parent->operserv.Akill_find(i_user + "@" + i_host))
+    {
+        ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
+	    new mstring(i_Name + ":" + Parent->operserv.Akill->Value().second),
+	    ACE_Time_Value(1));
+    }}
+
     if (Parent->operserv.AddHost(i_host))
     {
 	// Set off timer in 1s to do this:
 	// Parent->server.KILL(Parent->nickserv.FirstName(), i_Name, "Too many connections from one host");
 
-        ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),new mstring(i_Name + ":" + "Too many connections from your host"),ACE_Time_Value(1));
+        ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
+	    new mstring(i_Name + ":" + Parent->operserv.Def_Clone()),
+	    ACE_Time_Value(1));
 
 	return;
     }
+
     if (Parent->nickserv.IsStored(i_Name))
     {
 	if (IsRecognized() && !Parent->nickserv.stored[i_Name.LowerCase()].Secure())
@@ -783,9 +794,27 @@ void Nick_Live_t::Mode(mstring in)
 	    // We check the existing modes incase we get
 	    // duplicate +o/-o (dont want to overhost it!)
 	    if (add && !modes.Contains(in[i]) && !IsServices())
+	    {
 		Parent->operserv.RemHost(i_host);
+		MLOCK(("OperServ", "OperDeny"));
+		if (Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
+		    !IsServices())
+		{
+		    // if (Parent->ircd.Has_SVSMODE)
+		    // {
+		    SendMode("-o");
+		    // }
+		    // else
+		    // {
+		    // Parent->server.KILL(Parent->operserv.FirstName(),
+		    //		    i_Name, "Tried to OPER when DENIED.");
+		    // }
+		}
+	    }
 	    else if (modes.Contains(in[i]) && !IsServices())
+	    {
 		Parent->operserv.AddHost(i_host);
+	    }
 
 	default:
 	    if (add && !modes.Contains(in[i]))
@@ -3211,7 +3240,6 @@ NickServ::NickServ()
 {
     NFT("NickServ::NickServ");
     messages=true;
-    automation=true;
 }
 
 mstring NickServ::findnextnick(mstring in)

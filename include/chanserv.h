@@ -16,6 +16,7 @@
 #include "mstring.h"
 #include "variant.h"
 #include "base.h"
+#include "ircsocket.h"
 
 bool checkops(pair<const mstring, pair<bool,bool> > &in);
 bool checkvoices(pair<const mstring, pair<bool,bool> > &in);
@@ -24,6 +25,7 @@ class Chan_Live_t : public mUserDef
 {
     friend class Nick_Live_t;
     friend class EventTask;
+    friend class Part_Handler;
     mstring i_Name;
     mDateTime i_Creation_Time;
     // below: .first == op .second==voice
@@ -40,6 +42,7 @@ class Chan_Live_t : public mUserDef
     mstring p_modes_off;
     vector<mstring> p_modes_on_params;
     vector<mstring> p_modes_off_params;
+    long ph_timer;
 
     bool ModeExists(mstring mode, vector<mstring> mode_params,
 			bool change, char reqmode, mstring reqparam = "");
@@ -90,6 +93,8 @@ public:
     bool IsVoice(mstring nick);
     bool IsBan(mstring mask);
 
+    void LockDown();
+    void UnLock();
     void SendMode(mstring in);			// out
     void Mode(mstring source, mstring in);	// in
     bool HasMode(mstring in)	{ return modes.Contains(in); }
@@ -206,6 +211,8 @@ public:
     void Suspend(mstring name);
     void UnSuspend();
 
+    mstring Mlock_Off()			{ return i_Mlock_Off + l_Mlock_Off; }
+    mstring Mlock_On()			{ return i_Mlock_On + l_Mlock_On; }
     mstring Mlock();
     mstring Mlock(mstring mode);
     mstring L_Mlock();
@@ -426,6 +433,7 @@ public:
     bool IsLive(mstring in);
     map<mstring,Chan_Stored_t> stored;
     map<mstring,Chan_Live_t> live;
+    Part_Handler ph;
 
     ChanServ();
     virtual threadtype_enum Get_TType() const { return tt_ChanServ; }

@@ -487,6 +487,8 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "JUPE*", Parent->commserv.ADMIN_Name(), OperServ::do_Jupe);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ID*", Parent->commserv.SADMIN_Name(), NickServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "ON", Parent->commserv.SADMIN_Name(), OperServ::do_On);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "OFF", Parent->commserv.SADMIN_Name(), OperServ::do_Off);
@@ -588,6 +590,16 @@ void OperServ::execute(const mstring & data)
     mynick  = data.ExtractWord(3, ": ");
     message = data.After(":", 2);
     command = message.ExtractWord(1, " ").UpperCase();
+
+    // We SHOULD still process THESE messages, ONLY.
+    if (!MSG())
+    {
+	if (!(command == "ON" || command == "OFF" ||
+	      command.Matches("ID*")))
+	{
+	    return;
+	}
+    }
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {

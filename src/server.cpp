@@ -234,7 +234,6 @@ NetworkServ::NetworkServ()
 {
     NFT("NetworkServ::NetworkServ");
     messages=true;
-    automation=true;
 }
 
 

@@ -281,6 +281,23 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 }
 
 
+int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
+{
+    FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    mstring *tmp = (mstring *) arg;
+
+    if (Parent->chanserv.IsLive(*tmp) &&
+	Parent->chanserv.live[tmp->LowerCase()].IsIn(
+			Parent->chanserv.FirstName()))
+    {
+	Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
+	Parent->chanserv.live[tmp->LowerCase()].ph_timer = 0;
+    }
+    delete tmp;
+    RET(0);
+}
+
+
 mstring EventTask::SyncTime()
 {
     NFT("EventTask::SyncTime");

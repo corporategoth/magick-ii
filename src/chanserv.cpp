@@ -359,6 +359,40 @@ bool Chan_Live_t::IsBan(mstring mask)
     RET((bans.find(mask.LowerCase()) != bans.end()));
 }
 
+void Chan_Live_t::LockDown()
+{
+    NFT("Chan_Live_t::LockDown");
+
+    Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+    // Override the MLOCK checking.
+    Parent->server.MODE(Parent->chanserv.FirstName(), i_Name, "+s");
+    ph_timer = ACE_Reactor::instance()->schedule_timer(&(Parent->chanserv.ph),
+			    new mstring(i_Name),
+			    ACE_Time_Value(Parent->chanserv.ChanKeep()));
+}
+
+void Chan_Live_t::UnLock()
+{
+    NFT("Chan_Live_t::UnLock");
+
+    if (Parent->chanserv.IsStored(i_Name))
+    {
+	Chan_Stored_t *chan = &Parent->chanserv.stored[i_Name.LowerCase()];
+	if (!chan->Mlock_On().Contains("s"))
+	    SendMode("-s");
+    }
+
+/*
+    mstring *arg;
+    if (ACE_Reactor::instance()->cancel_timer(timer,
+					    (const void **) arg))
+    {
+	    delete arg;
+    }
+*/
+    ph_timer = 0;
+}
+
 bool Chan_Live_t::ModeExists(mstring mode, vector<mstring> mode_params,
 			bool change, char reqmode, mstring reqparam)
 {
@@ -661,8 +695,7 @@ void Chan_Live_t::SendMode(mstring in)
 		}
 	    break;
 	}
-    }
-	
+    }	
 }
 
 
@@ -863,44 +896,53 @@ void Chan_Stored_t::Join(mstring nick)
 {
     FT("Chan_Stored_t::Join", (nick));
 
-    // Ignore us joining
-    if(Parent->nickserv.IsLive(nick))
-	if (Parent->nickserv.live[nick.LowerCase()].IsServices())
-	{
-	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+o " + nick);
-	    return;
-	}
+    Chan_Live_t *clive = NULL;
+    Nick_Live_t *nlive = NULL;
+    Nick_Stored_t *nstored = NULL;
+
+    if (Parent->chanserv.IsLive(i_Name))
+	clive = &Parent->chanserv.live[i_Name.LowerCase()];
+    else
+	return;
+    unsigned int users = clive->Users();
+
+    if (Parent->nickserv.IsLive(nick))
+	nlive = &Parent->nickserv.live[nick.LowerCase()];
+    else
+	return;
+
+    if (Parent->nickserv.IsStored(nick))
+	nstored = &Parent->nickserv.stored[nick.LowerCase()];
+
+    if (nlive->IsServices())
+    {
+	clive->SendMode("+o " + nick);
+	return;
+    }
+
+    if (Join() && users == 1)
+    {
+	Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+	users++;
+    }
 
     { // NOONE else can move our iterator
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (Akick_find(nick))
     {
 	// If this user is the only user in channel
-	if (Parent->chanserv.IsLive(i_Name))
-	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
-		Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+	if (users == 1)
+	    clive->LockDown();
 
 	if (Parent->nickserv.IsLive(Akick->Entry()))
-	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+b " +
-		Parent->nickserv.live[nick.LowerCase()].Mask(Nick_Live_t::P_H));
+	    clive->SendMode("+b " +
+		nlive->Mask(Nick_Live_t::P_H));
 	else
-	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+b " + Akick->Entry());
+	    clive->SendMode("+b " + Akick->Entry());
 
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Akick->Value());
-		
-	if (Parent->chanserv.IsLive(i_Name))
-	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
-	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode("+s");
-		// Activate timer to PART in ? seconds ...
-		// Probably should set something in live to say that
-		// chanserv is only there to keep the channel (and probably
-		// should store the timer ID that will make magick leave)
-		// just incase someone else joins before it goes off.
-	    }
-		
 
 	return;
     }}
@@ -908,48 +950,53 @@ void Chan_Stored_t::Join(mstring nick)
     if (Restricted() && GetAccess(nick) < (long) 1)
     {
 	// If this user is the only user in channel
-	if (Parent->chanserv.IsLive(i_Name))
-	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
-		Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+	if (users == 1)
+	    clive->LockDown();
 
 	if (Parent->nickserv.IsLive(nick))
-	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+b " +
-		Parent->nickserv.live[nick.LowerCase()].Mask(Nick_Live_t::P_H));
+	    clive->SendMode("+b " +
+		nlive->Mask(Nick_Live_t::P_H));
 	else
-	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+b " + nick + "!*@*");
+	    clive->SendMode("+b " + nick + "!*@*");
 
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
-		i_Name, Parent->chanserv.DEF_Akick_Reason());
-		
-	if (Parent->chanserv.IsLive(i_Name))
-	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
-	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode("+s");
-		// Activate timer to PART in ? seconds ...
-		// Probably should set something in live to say that
-		// chanserv is only there to keep the channel (and probably
-		// should store the timer ID that will make magick leave)
-		// just incase someone else joins before it goes off.
-	    }
-		
+		i_Name, "This channel is restricted.");
 
 	return;
     }
 
-    if (Parent->chanserv.IsLive(i_Name))
+    clive->UnLock();
+    if (!Join() && users == 2 &&
+			clive->IsIn(Parent->chanserv.FirstName()))
     {
-	if (GetAccess(nick, "AUTOOP"))
-	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+o " + nick);
-	else if (GetAccess(nick, "AUTOVOICE"))
-	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+v " + nick);
+	Parent->server.PART(Parent->chanserv.FirstName(), i_Name);
+	users--;
     }
 
-    // Carry over topic ..
-    if (Parent->chanserv.IsLive(i_Name))
+    if (users == (Join() ? 2 : 1))
     {
-	if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1 &&
-		Keeptopic() && i_Topic != "")
+	if (i_Mlock_On.Contains("k") && i_Mlock_On.Contains("l"))
+	{
+	    if (i_Mlock_On.Before("k").Contains("l"))
+	    {
+		clive->SendMode(i_Mlock_On + " " + itoa(i_Mlock_Limit) + " " +
+						    i_Mlock_Key);
+	    }
+	    else
+	    {
+		clive->SendMode(i_Mlock_On + " " + i_Mlock_Key + " " +
+						    itoa(i_Mlock_Limit));
+	    }
+	}
+	else
+	{
+	    clive->SendMode(i_Mlock_On + " " + i_Mlock_Key + " " +
+			mstring(i_Mlock_Limit ? "" : itoa(i_Mlock_Limit)));
+	}
+
+	// Carry over topic ..
+	if (Keeptopic() && i_Topic != "")
 	{
 	    if (i_Topic_Setter != "")
 	    {
@@ -963,13 +1010,18 @@ void Chan_Stored_t::Join(mstring nick)
 	}
     }
 
+    if (GetAccess(nick, "AUTOOP"))
+	clive->SendMode("+o " + nick);
+    else if (GetAccess(nick, "AUTOVOICE"))
+	clive->SendMode("+v " + nick);
+
     mstring target = nick;
-    if (Parent->nickserv.IsStored(nick) &&
-	Parent->nickserv.stored[nick.LowerCase()].Host() != "" &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[nick.LowerCase()].Host()))
+    if (nstored != NULL && nstored->Host() != "" &&
+	Parent->nickserv.IsStored(nstored->Host()))
     {
-	target = Parent->nickserv.stored[nick.LowerCase()].Host();
+	target = nstored->Host();
     }
+
     {
 	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
 	if (Greet_find(target))
@@ -1053,8 +1105,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 
     if (!Parent->chanserv.IsLive(i_Name))
 	return;
-    if (Parent->nickserv.IsLive(setter))
-	if (Parent->nickserv.live[setter.LowerCase()].IsServices())
+    if (Parent->nickserv.IsLive(setter) &&
+	Parent->nickserv.live[setter.LowerCase()].IsServices())
 	    return;
 
 
@@ -2966,7 +3018,6 @@ ChanServ::ChanServ()
 {
     NFT("ChanServ::ChanServ");
     messages=true;
-    automation=true;
 }
 
 void ChanServ::AddCommands()
@@ -6548,6 +6599,19 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
     cstored->Join(onoff.GetBool());
     ::send(mynick, source, "Join for channel " + cstored->Name() +
 	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
+	!Parent->chanserv.live[channel.LowerCase()].IsIn(
+		Parent->chanserv.FirstName()))
+    {
+	Parent->server.JOIN(Parent->chanserv.FirstName(), channel);
+    }
+    else if (!onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
+	Parent->chanserv.live[channel.LowerCase()].IsIn(
+		Parent->chanserv.FirstName()))
+    {
+	Parent->server.PART(Parent->chanserv.FirstName(), channel);
+    }
+
 }
 
 void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)

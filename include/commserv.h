@@ -25,6 +25,8 @@ class Committee : public mUserDef
     mstring i_HeadCom;
     mstring i_Head;
     mstring i_Description;
+    mstring i_Email;
+    mstring i_URL;
 
     set<entlist_t> i_Members;
     bool i_Private;
@@ -68,6 +70,10 @@ public:
     bool IsOn(mstring nick);
 
     // If TRUE, all members can do a /MS COMMITTEE 
+    void Email(mstring in)	{ i_Email = in; }
+    mstring Email()const	{ return i_Email; }
+    void URL(mstring in)	{ i_URL = in; }
+    mstring URL()const		{ return i_URL; }
     void Private(bool in)	{ i_Private = in; }
     bool Private()const		{ return i_Private; }
     void L_Private(bool in)	{ l_Private = in; }
@@ -176,6 +182,8 @@ public:
     static void do_logon_Del(mstring mynick, mstring source, mstring params);
     static void do_logon_List(mstring mynick, mstring source, mstring params);
     static void do_set_Head(mstring mynick, mstring source, mstring params);
+    static void do_set_Email(mstring mynick, mstring source, mstring params);
+    static void do_set_URL(mstring mynick, mstring source, mstring params);
     static void do_set_Secure(mstring mynick, mstring source, mstring params);
     static void do_set_Private(mstring mynick, mstring source, mstring params);
     static void do_set_OpenMemos(mstring mynick, mstring source, mstring params);

@@ -420,19 +420,19 @@ void mBaseTask::message_i(const mstring& message)
 		if (Parent->operserv.IsName(target))
 		    Parent->operserv.execute(message);
 
-		else if (Parent->nickserv.IsName(target))
+		else if (Parent->nickserv.IsName(target) && Parent->nickserv.MSG())
 		    Parent->nickserv.execute(message);
 
-		else if (Parent->chanserv.IsName(target))
+		else if (Parent->chanserv.IsName(target) && Parent->chanserv.MSG())
 		    Parent->chanserv.execute(message);
 
-		else if (Parent->memoserv.IsName(target))
+		else if (Parent->memoserv.IsName(target) && Parent->memoserv.MSG())
 		    Parent->memoserv.execute(message);
 
-		else if (Parent->commserv.IsName(target))
+		else if (Parent->commserv.IsName(target) && Parent->commserv.MSG())
 		    Parent->commserv.execute(message);
 
-		else if (Parent->servmsg.IsName(target))
+		else if (Parent->servmsg.IsName(target) && Parent->servmsg.MSG())
 		    Parent->servmsg.execute(message);
 
 		// else check if it's script handled, might do up a list of script servers

@@ -780,10 +780,21 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 	    return;
 	}
     }
-    else if (!Parent->nickserv.IsStored(name))
+    else
     {
-	::send(mynick, source, "Nickname " + name + " is not registered.");
-	return;
+	if (!Parent->nickserv.IsStored(name))
+	{
+	    ::send(mynick, source, "Nickname " + name + " is not registered.");
+	    return;
+	}
+
+	bool ignored = Parent->nickserv.stored[name.LowerCase()].IsIgnore(source);
+	if ((ignored && !Parent->nickserv.stored[name.LowerCase()].NoMemo()) ||
+	    (!ignored && Parent->nickserv.stored[name.LowerCase()].NoMemo()))
+	{
+	    ::send(mynick, source, "Nickname " + name + " is ignoring your memos.");
+	    return;
+	}
     }
 
     if (text.size() > 450)
@@ -958,10 +969,21 @@ void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
 	    return;
 	}
     }
-    else if (!Parent->nickserv.IsStored(dest))
+    else
     {
-	::send(mynick, source, "Nickname " + dest + " is not registered.");
-	return;
+	if (!Parent->nickserv.IsStored(dest))
+	{
+	    ::send(mynick, source, "Nickname " + dest + " is not registered.");
+	    return;
+	}
+
+	bool ignored = Parent->nickserv.stored[dest.LowerCase()].IsIgnore(source);
+	if ((ignored && !Parent->nickserv.stored[dest.LowerCase()].NoMemo()) ||
+	    (!ignored && Parent->nickserv.stored[dest.LowerCase()].NoMemo()))
+	{
+	    ::send(mynick, source, "Nickname " + dest + " is ignoring your memos.");
+	    return;
+	}
     }
 
     Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
@@ -1085,6 +1107,14 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, "Nickname " + iter->Sender() +
 					    " is no longer registered.");
+	    return;
+	}
+
+	bool ignored = Parent->nickserv.stored[iter->Sender().LowerCase()].IsIgnore(source);
+	if ((ignored && !Parent->nickserv.stored[iter->Sender().LowerCase()].NoMemo()) ||
+	    (!ignored && Parent->nickserv.stored[iter->Sender().LowerCase()].NoMemo()))
+	{
+	    ::send(mynick, source, "Nickname " + iter->Sender() + " is ignoring your memos.");
 	    return;
 	}
 
@@ -1405,10 +1435,21 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, "Cannot send file attachments to channels!");
 	return;
     }
-    else if (!Parent->nickserv.IsStored(name))
+    else
     {
-	::send(mynick, source, "Nickname " + name + " is not registered.");
-	return;
+	if (!Parent->nickserv.IsStored(name))
+	{
+	    ::send(mynick, source, "Nickname " + name + " is not registered.");
+	    return;
+	}
+
+	bool ignored = Parent->nickserv.stored[name.LowerCase()].IsIgnore(source);
+	if ((ignored && !Parent->nickserv.stored[name.LowerCase()].NoMemo()) ||
+	    (!ignored && Parent->nickserv.stored[name.LowerCase()].NoMemo()))
+	{
+	    ::send(mynick, source, "Nickname " + name + " is ignoring your memos.");
+	    return;
+	}
     }
 
     if (text.size() > 450)

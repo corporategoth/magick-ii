@@ -75,6 +75,8 @@ void Committee::operator=(const Committee &in)
     i_Head = in.i_Head;
     i_HeadCom = in.i_HeadCom;
     i_Description = in.i_Description;
+    i_Email = in.i_Email;
+    i_URL = in.i_URL;
     i_OpenMemos = in.i_OpenMemos;
     l_OpenMemos = in.l_OpenMemos;
     i_Secure = in.i_Secure;
@@ -367,6 +369,10 @@ void CommServ::AddCommands()
 		"LOG* VIEW", Parent->commserv.REGD_Name(), CommServ::do_logon_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* HEAD*", Parent->commserv.REGD_Name(), CommServ::do_set_Head);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* E*MAIL*", Parent->commserv.REGD_Name(), CommServ::do_set_Email);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* U*R*L*", Parent->commserv.REGD_Name(), CommServ::do_set_URL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* SEC*", Parent->commserv.REGD_Name(), CommServ::do_set_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -868,6 +874,16 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, "   Head: " + comm->Head());
     }
 
+    if (comm->Email() != "")
+    {
+	::send(mynick, source, " E-Mail: " + comm->Email());
+    }
+
+    if (comm->URL() != "")
+    {
+	::send(mynick, source, "   URL: " + comm->URL());
+    }
+
     output = "";
     if (comm->size())
     {
@@ -1101,6 +1117,94 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
     Parent->commserv.list[committee].Head(newhead);
     ::send(mynick, source, "Head of committee  " + committee + " is now " +
 	    newhead + ".");
+}
+
+
+void CommServ::do_set_Email(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_set_Email", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring email     = params.ExtractWord(4, " ");
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, "Committee " + committee + " does not exist.");
+	return;
+    }
+
+    if (!Parent->commserv.list[committee].IsHead(source))
+    {
+	::send(mynick, source, "You are not head of " + committee + ".");
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, "Settings may not be changed on DEFAULT committees.");
+	return;
+    }
+
+    Parent->commserv.list[committee].Email(email);
+    ::send(mynick, source, "E-Mail of committee  " + committee + " is now " +
+	    email + ".");
+}
+
+
+void CommServ::do_set_URL(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_set_URL", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring url       = params.ExtractWord(4, " ");
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, "Committee " + committee + " does not exist.");
+	return;
+    }
+
+    if (!Parent->commserv.list[committee].IsHead(source))
+    {
+	::send(mynick, source, "You are not head of " + committee + ".");
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, "Settings may not be changed on DEFAULT committees.");
+	return;
+    }
+
+    Parent->commserv.list[committee].URL(url);
+    ::send(mynick, source, "URL of committee  " + committee + " is now " +
+	    url + ".");
 }
 
 
