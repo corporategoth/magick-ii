@@ -9,6 +9,8 @@ Win32
 	also need to modify $ACE_ROOT\include\makeinclude\outputdir.bor and change mkdir to mkdir /s
 (r) win32 (note not win32s)
 
+Note: bcc5.5 can now be obtained for free from 
+
 
 General UNIX
 (c) gcc 2.95 or above
