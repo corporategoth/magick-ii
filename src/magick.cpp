@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.267  2000/08/31 06:25:09  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.266  2000/08/28 10:51:37  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -753,7 +757,7 @@ int Magick::Start()
     { WLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
-  	ircsvchandler->shutdown();
+  	ircsvchandler->close();
 	delete ircsvchandler;
 	ircsvchandler = NULL;
     }}
@@ -2757,7 +2761,7 @@ bool Magick::get_config_values()
 	{ WLOCK(("IrcSvcHandler"));
 	if (ircsvchandler != NULL)
 	{
-	    ircsvchandler->shutdown();
+	    ircsvchandler->close();
 	    delete ircsvchandler;
 	    ircsvchandler = NULL;
 	}}
@@ -2980,7 +2984,7 @@ void Magick::Disconnect()
     { WLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
-	ircsvchandler->shutdown();
+	ircsvchandler->close();
 	delete ircsvchandler;
 	ircsvchandler = NULL;
     }}

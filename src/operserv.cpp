@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2000/08/31 06:25:09  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.95  2000/08/28 10:51:39  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -528,7 +532,6 @@ bool OperServ::Akill_find(mstring entry)
 	{
 	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
 	    {
-CP(("DEBUG %s %s", iter->Entry().c_str(), iter->Value().second.c_str()));
 		break;
 	    }
 	}
@@ -540,7 +543,6 @@ CP(("DEBUG %s %s", iter->Entry().c_str(), iter->Value().second.c_str()));
     }
     else
     {
-CP(("DEBUG 6"));
 	Akill = i_Akill.end();
 	RET(false);
     }

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/08/31 06:25:09  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.44  2000/08/28 10:51:37  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -99,6 +103,7 @@ static const char *ident = "@(#)$Id$";
 #ifdef MAGICK_LOCKS_WORK
 
 map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > mLOCK::LockMap;
+map<unsigned long, mSocket *> mSocket::SockMap;
 
 typedef ACE_RW_Thread_Mutex	mLock_Read;
 typedef ACE_RW_Thread_Mutex	mLock_Write;
@@ -425,6 +430,334 @@ size_t mLOCK::AllLocks()
 }
 
 #endif /* MAGICK_LOCKS_WORK */
+
+void mSocket::init()
+{
+    NFT("mSocket::init");
+
+    sock = NULL;
+    last_error = 0;
+    sockid = 0;
+
+    unsigned long i;
+    MLOCK(("SockMap"));
+    for (i=1; i>0; i++)
+	if (SockMap.find(i) == SockMap.end())
+	{
+	    SockMap[i] = this;
+	    sockid = i;
+	    break;
+	}
+}
+
+mSocket::mSocket()
+{
+    NFT("mSocket::mSocket");
+    init();
+}
+
+mSocket::mSocket(ACE_INET_Addr addr, unsigned long timeout)
+{
+    FT("mSocket::mSocket", ("(ACE_INET_Addr) addr", timeout));
+    init();
+    Connect(addr, timeout);
+}
+
+mSocket::mSocket(mstring host, unsigned short port, unsigned long timeout)
+{
+    FT("mSocket::mSocket", (host, port, timeout));
+    init();
+    Connect(host, port, timeout);
+}
+
+mSocket::mSocket(unsigned short port, unsigned long timeout)
+{
+    FT("mSocket::mSocket", (port, timeout));
+    init();
+    Accept(port, timeout);
+}
+
+mSocket::mSocket(ACE_SOCK_Stream *in, dir_enum direction)
+{
+    FT("mSocket::mSocket", ("(ACE_SOCK_Stream *) in"));
+    init();
+    Bind(in, direction);
+}
+
+
+mSocket::~mSocket()
+{
+    NFT("mSocket::mSocket");
+    MLOCK(("mSocket", sockid));
+    if (sock != NULL)
+	close();
+    SockMap.erase(sockid);
+}
+
+void mSocket::operator=(const mSocket &in)
+{
+    FT("mSocket::operator=", ("(const mSocket &) in"));
+
+    MLOCK(("mSocket", in.sockid));
+    sockid = in.sockid;
+    local = in.local;
+    remote = in.remote;
+    last_error = in.last_error;
+    trace = in.trace;
+    sock = in.sock;
+    mSocket *tmp = (mSocket *) &in;
+    tmp->sock = NULL;
+
+    SockMap[sockid] = this;
+}
+
+
+bool mSocket::Connect(ACE_INET_Addr addr, unsigned long timeout)
+{
+    FT("mSocket::Connect", ("(ACE_INET_Addr) addr", timeout));
+
+    MLOCK(("mSocket", sockid));
+    sock = new ACE_SOCK_Stream;
+    if (sock == NULL)
+	RET(false);
+
+    ACE_Time_Value tv(timeout);
+    ACE_SOCK_Connector tmp;
+    int result = tmp.connect(*sock, (ACE_Addr &) addr, timeout ? &tv : 0);
+    last_error = errno;
+    sock->get_local_addr(local);
+    sock->get_remote_addr(remote);
+
+    if (result < 0)
+    {
+#ifdef MAGICK_TRACE_WORKS
+	trace.Failed(sockid, local.get_port_number(), remote.get_port_number(),
+	    mstring(remote.get_host_addr()), Last_Error_String(), D_From);
+		
+#endif	
+	delete sock;
+	sock = NULL;
+	RET(false);
+    }
+#ifdef MAGICK_TRACE_WORKS
+    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
+	mstring(remote.get_host_addr()), D_From);
+		
+#endif	
+    RET(true);
+}
+
+bool mSocket::Connect(unsigned long host, unsigned short port, unsigned long timeout)
+{
+    FT("mSocket::Connect", (host, port, timeout));
+    ACE_INET_Addr tmp(port, host);
+    bool retval = Connect(tmp, timeout);
+    RET(retval);
+}
+
+bool mSocket::Connect(mstring host, unsigned short port, unsigned long timeout)
+{
+    FT("mSocket::Connect", (host, port, timeout));
+    ACE_INET_Addr tmp(port, host);
+    bool retval = Connect(tmp, timeout);
+    RET(retval);
+}
+
+bool mSocket::Accept(unsigned short port, unsigned long timeout)
+{
+    FT("mSocket::Accept", (port, timeout));
+    ACE_INET_Addr addr(port, Parent->LocalHost());
+
+    MLOCK(("mSocket", sockid));
+    sock = new ACE_SOCK_Stream;
+    if (sock == NULL)
+	RET(false);
+
+    ACE_Time_Value tv(timeout);
+    ACE_SOCK_Acceptor tmp(addr);
+    int result = tmp.accept(*sock, NULL, timeout ? &tv : 0);
+    last_error = errno;
+    sock->get_local_addr(local);
+    sock->get_remote_addr(remote);
+
+    if (result < 0)
+    {
+#ifdef MAGICK_TRACE_WORKS
+	trace.Failed(sockid, local.get_port_number(), remote.get_port_number(),
+	    mstring(remote.get_host_addr()), Last_Error_String(), D_To);
+#endif	
+	delete sock;
+	sock = NULL;
+	RET(false);
+    }
+#ifdef MAGICK_TRACE_WORKS
+    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
+	mstring(remote.get_host_addr()), D_To);
+#endif	
+    RET(true);
+}
+
+bool mSocket::Bind(ACE_SOCK_Stream *in, dir_enum direction)
+{
+    FT("mSocket::Bind", ("(ACE_SOCK_Stream *) in"));
+    if (in == NULL)
+	RET(false);
+
+    MLOCK(("mSocket", sockid));
+    sock = in;
+    in = NULL;
+    sock->get_local_addr(local);
+    sock->get_remote_addr(remote);
+
+#ifdef MAGICK_TRACE_WORKS
+    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
+	mstring(remote.get_host_addr()), direction);
+#endif	
+
+    RET(true);
+}
+
+ACE_SOCK_Stream *mSocket::Unbind()
+{
+    NFT("mSocket::Unbind");
+    MLOCK(("mSocket", sockid));
+#ifdef MAGICK_TRACE_WORKS
+    trace.End(Last_Error_String());
+#endif
+    ACE_SOCK_Stream *retval = sock;
+    sock = NULL;
+    last_error = 0;
+    NRET(ACE_SOCK_Stream *, retval);
+}
+
+mstring mSocket::Local_Host()
+{
+    NFT("mSocket::Local_Host");
+    MLOCK(("mSocket", sockid));
+    mstring retval = local.get_host_addr();
+    RET(retval);
+}
+
+unsigned long mSocket::Local_IP()
+{
+    NFT("mSocket::Local_IP");
+    MLOCK(("mSocket", sockid));
+    unsigned long retval = local.get_ip_address();
+    RET(retval);
+}
+
+unsigned short mSocket::Local_Port()
+{
+    NFT("mSocket::Local_Port");
+    MLOCK(("mSocket", sockid));
+    unsigned short retval = local.get_port_number();
+    RET(retval);
+}
+
+mstring mSocket::Remote_Host()
+{
+    NFT("mSocket::Remote_Host");
+    MLOCK(("mSocket", sockid));
+    mstring retval = remote.get_host_addr();
+    RET(retval);
+}
+
+unsigned long mSocket::Remote_IP()
+{
+    NFT("mSocket::Remote_IP");
+    MLOCK(("mSocket", sockid));
+    unsigned long retval = remote.get_ip_address();
+    RET(retval);
+}
+
+unsigned short mSocket::Remote_Port()
+{
+    NFT("mSocket::Remote_Port");
+    MLOCK(("mSocket", sockid));
+    unsigned short retval = remote.get_port_number();
+    RET(retval);
+}
+
+bool mSocket::IsConnected()
+{
+    NFT("mSocket::IsConnected");
+    MLOCK(("mSocket", sockid));
+    RET(sock != NULL);
+}
+
+void mSocket::Resolve(socktype_enum type, mstring info)
+{
+    FT("mSocket::Resolve", ((int) type, info));
+    MLOCK(("mSocket", sockid));
+#ifdef MAGICK_TRACE_WORKS
+    trace.Resolve(type, info);
+#endif
+}
+
+int mSocket::Last_Error()
+{
+    NFT("mSocket::Last_Error");
+    MLOCK(("mSocket", sockid));
+    RET(last_error);
+}
+
+mstring mSocket::Last_Error_String()
+{
+    NFT("mSocket::Last_Error_String");
+    MLOCK(("mSocket", sockid));
+    mstring retval = strerror(last_error);
+    RET(retval);
+}
+
+ssize_t mSocket::send(void *buf, size_t len, unsigned long timeout)
+{
+    FT("mSocket::send", ("(void *) buf", len, timeout));
+    ACE_Time_Value tv(timeout);
+    MLOCK(("mSocket", sockid));
+    ssize_t retval = sock->send(buf, len, timeout ? &tv : 0);
+    last_error = errno;
+
+    /* if (result < 0)
+    {
+	close();
+    } */
+
+    RET(retval);
+}
+
+ssize_t mSocket::recv(void *buf, size_t len, unsigned long timeout)
+{
+    FT("mSocket::recv", ("(void *) buf", len, timeout));
+    ACE_Time_Value tv(timeout);
+    MLOCK(("mSocket", sockid));
+    ssize_t retval = sock->recv(buf, len, timeout ? &tv : 0);
+    last_error = errno;
+
+    /* if (result < 0)
+    {
+	close();
+    } */
+
+    RET(retval);
+}
+
+int mSocket::close()
+{
+    NFT("mSocket::close");
+    int retval = 0;
+    MLOCK(("mSocket", sockid));
+    if (sock != NULL)
+    {
+#ifdef MAGICK_TRACE_WORKS
+	trace.End(Last_Error_String());
+#endif	
+	retval = sock->close();
+	delete sock;
+	sock = NULL;
+    }
+    last_error = 0;
+    RET(retval);
+}
 
 mThread::selftothreadidmap_t mThread::selftothreadidmap;
 

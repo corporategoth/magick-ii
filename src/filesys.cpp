@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/08/31 06:25:09  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.45  2000/08/28 10:51:37  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -947,11 +951,11 @@ void FileMap::PostLoad()
     fm_array.clear();
 }
 
-DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
+DccXfer::DccXfer(unsigned long dccid, mSocket socket,
 	mstring mynick, mstring source,
 	FileMap::FileType filetype, unsigned long filenum)
 {
-    FT("DccXfer::DccXfer", (dccid, "(ACE_SOCK_Stream *) socket",
+    FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
 			mynick, source, (int) filetype, filenum));
 
     WLOCK(("DccMap", "xfers", dccid));
@@ -1003,11 +1007,11 @@ DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
 }
 
 
-DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
+DccXfer::DccXfer(unsigned long dccid, mSocket socket,
 	mstring mynick, mstring source, mstring filename,
 	size_t filesize, size_t blocksize)
 {
-    FT("DccXfer::DccXfer", (dccid, "(ACE_SOCK_Stream *) socket",
+    FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
 		mynick, source, filename, filesize, blocksize));
 
     WLOCK(("DccMap", "xfers", dccid));
@@ -1077,12 +1081,12 @@ DccXfer::~DccXfer()
     else
 	Log(LM_DEBUG, Parent->getLogMessage("OTHER/DCC_CANCEL"), i_DccId);
 
-    if (i_Socket.get() == NULL)
+    if (!i_Socket.IsConnected())
     {
 	return;
     }
     else
-	i_Socket->close();
+	i_Socket.close();
 
     CP(("DCC Xfer #%d Completed", i_DccId));
     // If we know the size, verify it, else we take
@@ -1152,9 +1156,9 @@ void DccXfer::operator=(const DccXfer &in)
     i_Filesize=in.i_Filesize;
     i_Type=in.i_Type;
     i_DccId=in.i_DccId;
+    i_Socket = in.i_Socket;
 
     DccXfer *tmp = (DccXfer *) &in;
-    i_Socket = tmp->i_Socket;
     if (tmp->i_File.IsOpened())
     {
 	tmp->i_File.Close();
@@ -1260,23 +1264,21 @@ void DccXfer::Action()
 {
     NFT("DccXfer::Action");
     long XferAmt = 0, TranSz = 0;
-    int merrno;
     unsigned long verify;
-    ACE_Time_Value onesec(1);
 
     WLOCK(("DccMap", "xfers", i_DccId));
     if (i_Type == Get)
     {
 	COM(("Executing action for DCC %d GET", i_DccId));
 	XferAmt = 0;
-	merrno = 0;
 	if (i_Traffic.size() && (Parent->files.Max_Speed() == 0 ||
 		Average() <= Parent->files.Max_Speed()))
 	{
-	    XferAmt = i_Socket->recv_n((void *) &i_Transiant[i_XferTotal],
-			i_Blocksize - i_XferTotal, &onesec);
-	    merrno = errno;
-	    COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
+	    XferAmt = i_Socket.recv((void *) &i_Transiant[i_XferTotal],
+			i_Blocksize - i_XferTotal, 1);
+	    COM(("%d: Bytes Transferred - %d, RECV Response %d (%s)",
+		i_DccId, XferAmt, i_Socket.Last_Error(),
+		i_Socket.Last_Error_String().c_str()));
 	}
 	// Traffic Accounting ...
 	map<time_t, size_t>::iterator iter;
@@ -1308,9 +1310,10 @@ void DccXfer::Action()
 		    i_XferTotal = 0;
 		    ACE_OS::memset(i_Transiant, 0, i_Blocksize);
 		    verify = htonl(i_Total);
-		    XferAmt = i_Socket->send_n((void *) &verify, 4, &onesec);
-		    merrno = errno;
-		    COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
+		    XferAmt = i_Socket.send((void *) &verify, 4, 1);
+		    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)",
+			i_DccId, XferAmt, i_Socket.Last_Error(),
+			i_Socket.Last_Error_String().c_str()));
 		    if (i_Filesize == i_Total)
 		    {
 			send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
@@ -1322,7 +1325,7 @@ void DccXfer::Action()
 	}
 	else
 	{
-	    switch (merrno)
+	    switch (i_Socket.Last_Error())
 	    {
 	    case 0:
 	    case EINTR:		// Interrupted System Call
@@ -1333,7 +1336,7 @@ void DccXfer::Action()
 		break;
 	    default:
 		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-						"GET", merrno);
+			"GET", i_Socket.Last_Error(), i_Socket.Last_Error_String().c_str());
 		i_File.Close();
 	    }
 	}
@@ -1350,18 +1353,18 @@ void DccXfer::Action()
     {
 	COM(("Executing action for DCC %d SEND", i_DccId));
 	XferAmt = 0;
-	merrno = 0;
 	if (i_Traffic.size() && (Parent->files.Max_Speed() == 0 ||
 		Average() <= Parent->files.Max_Speed()))
 	{
 	    if (i_XferTotal == i_Blocksize)
 	    {
-		XferAmt = i_Socket->recv_n((void *) &verify, 4, &onesec);
-		merrno = errno;
-		COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
+		XferAmt = i_Socket.recv((void *) &verify, 4, 1);
+		COM(("%d: Bytes Transferred - %d, RECV Response %d (%s)",
+			i_DccId, XferAmt, i_Socket.Last_Error(),
+			i_Socket.Last_Error_String().c_str()));
 		if (XferAmt <= 0 || ntohl(verify) != i_Total)
 		{
-		    switch (merrno)
+		    switch (i_Socket.Last_Error())
 		    {
 		    case 0:
 		    case EINTR:		// Interrupted System Call
@@ -1372,7 +1375,7 @@ void DccXfer::Action()
 			break;
 		    default:
 			send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-						"SEND", merrno);
+				"SEND", i_Socket.Last_Error(), i_Socket.Last_Error_String().c_str());
 			i_File.Close();
 			return;
 		    }
@@ -1398,10 +1401,11 @@ void DccXfer::Action()
 		i_XferTotal = 0;
 	    }
 	    CP(("Going to send %d bytes ...", TranSz));
-	    XferAmt = i_Socket->send_n((void *) &i_Transiant[i_XferTotal],
-			TranSz - i_XferTotal, &onesec);
-	    merrno = errno;
-	    COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
+	    XferAmt = i_Socket.send((void *) &i_Transiant[i_XferTotal],
+			TranSz - i_XferTotal, 1);
+	    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)",
+		i_DccId, XferAmt, i_Socket.Last_Error(),
+		i_Socket.Last_Error_String().c_str()));
 	}
 	// Traffic Accounting ...
 	map<time_t, size_t>::iterator iter;
@@ -1426,7 +1430,7 @@ void DccXfer::Action()
 	}
 	else
 	{
-	    switch (merrno)
+	    switch (i_Socket.Last_Error())
 	    {
 	    case 0:
 	    case EINTR:		// Interrupted System Call
@@ -1437,7 +1441,7 @@ void DccXfer::Action()
 		break;
 	    default:
 		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-						"SEND", merrno);
+			"SEND", i_Socket.Last_Error(), i_Socket.Last_Error_String().c_str());
 		i_File.Close();
 	    }
 	}
@@ -1610,13 +1614,8 @@ void *DccMap::Connect2(void *in)
 
     NewSocket *val = (NewSocket *) in;
 
-    auto_ptr<ACE_SOCK_Stream> DCC_SOCK(new ACE_SOCK_Stream);
-    ACE_Time_Value tv(Parent->files.Timeout());
-    ACE_SOCK_Connector tmp;
-    int result = tmp.connect(*DCC_SOCK, (ACE_Addr &) val->address, &tv);
-    CP(("Connect responded with %d", errno));
-
-    if (result >= 0)
+    mSocket DCC_SOCK(val->address, Parent->files.Timeout());
+    if (DCC_SOCK.IsConnected())
     {
 	unsigned long WorkId;
 	bool found = false;
@@ -1655,13 +1654,8 @@ void *DccMap::Accept2(void *in)
 
     NewSocket *val = (NewSocket *) in;
 
-    ACE_INET_Addr local(val->port, Parent->LocalHost());
-    auto_ptr<ACE_SOCK_Stream> DCC_SOCK(new ACE_SOCK_Stream);
-    ACE_Time_Value tv(Parent->files.Timeout());
-    ACE_SOCK_Acceptor tmp(local);
-    int result = tmp.accept(*DCC_SOCK, NULL, &tv);
-    CP(("Accept responded with %d", errno));
-    if (result != -1)
+    mSocket DCC_SOCK(val->port, Parent->files.Timeout());
+    if (DCC_SOCK.IsConnected())
     {
 	unsigned long WorkId;
 	bool found = false;
@@ -1737,5 +1731,3 @@ void DccMap::Cancel(unsigned long DccId, bool silent)
     }
     tm.cancel_all();
 }
-
-

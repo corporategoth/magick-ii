@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/08/31 06:25:08  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.39  2000/08/28 10:51:35  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -159,6 +163,55 @@ public:
 #define MLOCK8(y)  do_nothing()
 
 #endif /* MAGICK_LOCKS_WORK */
+
+class mSocket
+{
+    unsigned long sockid;
+    ACE_SOCK_Stream *sock;
+    ACE_INET_Addr local, remote;
+    int last_error;
+
+#ifdef MAGICK_TRACE_WORKS
+    T_Sockets trace;
+#endif
+
+    void init();
+public:
+    static map<unsigned long, mSocket *> SockMap;
+
+    mSocket();
+    mSocket(ACE_INET_Addr addr, unsigned long timeout = 0);
+    mSocket(unsigned long host, unsigned short port, unsigned long timeout = 0);
+    mSocket(mstring host, unsigned short port, unsigned long timeout = 0);
+    mSocket(unsigned short port, unsigned long timeout = 0);
+    mSocket(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown);
+    mSocket(const mSocket &in) { *this = in; }
+    ~mSocket();
+    void operator=(const mSocket &in);
+
+    bool Connect(ACE_INET_Addr addr, unsigned long timeout = 0);
+    bool Connect(unsigned long host, unsigned short port, unsigned long timeout = 0);
+    bool Connect(mstring host, unsigned short port, unsigned long timeout = 0);
+    bool Accept(unsigned short port, unsigned long timeout = 0);
+    bool Bind(ACE_SOCK_Stream *in, dir_enum direction = D_Unknown);
+    ACE_SOCK_Stream *Unbind();
+
+    mstring Local_Host();
+    unsigned long Local_IP();
+    unsigned short Local_Port();
+    mstring Remote_Host();
+    unsigned long Remote_IP();
+    unsigned short Remote_Port();
+
+    bool IsConnected();
+    void Resolve(socktype_enum type, mstring info);
+    int Last_Error();
+    mstring Last_Error_String();
+
+    ssize_t send(void *buf, size_t len, unsigned long timeout = 0);
+    ssize_t recv(void *buf, size_t len, unsigned long timeout = 0);
+    int close();
+};
 
 class mThread
 {

@@ -25,6 +25,10 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/08/31 06:25:08  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.39  2000/08/28 10:51:35  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -81,6 +85,7 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 
 #include "mstring.h"
 #include "datetime.h"
+#include "lockable.h"
 
 class Reconnect_Handler : public ACE_Event_Handler
 {
@@ -127,13 +132,15 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     unsigned short htm_level;
     time_t htm_gap;
     size_t htm_threshold;
+    mSocket sock;
 public:
-    virtual int close(unsigned long in);
     int send(const mstring& data);
     virtual int open(void *);
     virtual int handle_input(ACE_HANDLE handle);
-    virtual int handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask);
+    virtual int handle_close(ACE_HANDLE handle = ACE_INVALID_HANDLE,
+		ACE_Reactor_Mask mask = ACE_Event_Handler::ALL_EVENTS_MASK);
 
+    unsigned long Local_IP() { return sock.Local_IP(); }
     size_t In_Traffic() { return in_traffic; }
     size_t Out_Traffic() { return out_traffic; }
     mDateTime Connect_Time() { return connect_time; }
@@ -145,7 +152,7 @@ public:
     size_t Average(time_t secs = 0);
 };
 
-typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcServer;
+typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcConnector;
 
 class EventTask : public ACE_Task<ACE_MT_SYNCH>
 {

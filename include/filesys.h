@@ -25,6 +25,10 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/08/31 06:25:08  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.26  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -211,7 +215,7 @@ private:
     // We dont care HOW we got the socket, just
     // that we now have it.  This way we can just
     // concentrate on getting the job done.
-    auto_ptr<ACE_SOCK_Stream> i_Socket;
+    mSocket i_Socket;
     mFile i_File;
     mstring i_Source;
     mstring i_Mynick;
@@ -229,10 +233,10 @@ private:
 
 public:
     DccXfer() { i_Transiant = NULL; }
-    DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
+    DccXfer(unsigned long dccid, mSocket socket,
 	mstring mynick, mstring source,
 	FileMap::FileType filetype, unsigned long filenum);
-    DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
+    DccXfer(unsigned long dccid, mSocket socket,
 	mstring mynick, mstring source, mstring filename,
 	size_t filesize, size_t blocksize);
     DccXfer(const DccXfer &in)

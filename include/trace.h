@@ -25,6 +25,10 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2000/08/31 06:25:08  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.63  2000/08/28 10:51:35  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -80,8 +84,11 @@ static const char *ident_trace_h = "@(#) $Id$";
 
 enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
-extern unsigned short makehex(mstring SLevel);
+unsigned short makehex(mstring SLevel);
 enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_Mutex };
+enum socktype_enum { S_Unknown = 0, S_IrcServer, S_DCC, S_DCCFile,
+			S_Client, S_Services, S_Telnet };
+enum dir_enum { D_Unknown, D_From, D_To };
 
 class ThreadID {
 private:
@@ -120,6 +127,7 @@ inline int do_nothing() { return 1; }
 #define NDRET(x,y) return y
 #define CP(x) do_nothing()
 #define COM(x) do_nothing()
+#define CSRC(x, y, z) do_nothing()
 #define MB(x) do_nothing()
 #define ME(x) do_nothing()
 #define CH(x,y) do_nothing()
@@ -152,6 +160,9 @@ inline int do_nothing() { return 1; }
 
 // Comments definition -- COM(());
 #define COM(x) { T_Comments __com x; }
+
+// Config file load
+#define CSRC(x, y, z) { T_Source(x, y, z); }
 
 // Modify begin -- MB(AOC());
 #define MB(x) mVarArray __mb_VarArray x; T_Modify __mod(__mb_VarArray)
@@ -196,6 +207,7 @@ extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 //   /   Up Function (T_Functions)
 //   **  CheckPoint (T_CheckPoint)
 //   ##  Comments (T_Comments)
+//   ==  Config Load (T_Source)
 //   ->  Outbound Traffic (T_Chatter)
 //   <-  Inbound Traffic (T_Chatter)
 //   --  Unknown Traffic (T_Chatter)
@@ -205,7 +217,8 @@ extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 //   :-  Read/Write UnLocking (T_Locking)
 //   %%  CPU/Memory Stats (T_Stats)
 //   |+  Socket Establish (T_Sockets)
-//   ||  Socket Definition (T_Sockets)
+//   ||  Socket Failed Establish (T_Sockets)
+//   |=  Socket Definition (T_Sockets)
 //   |-  Socket Dropout (T_Sockets)
 //   !!  BOB Binds, Registrations (T_Bind)
 //   ??  External commands (T_External)
@@ -363,15 +376,9 @@ class T_Chatter : public Trace
     T_Chatter() {} 
 
 public:
-    enum dir_enum { From, To, Unknown };
     T_Chatter(dir_enum direction, const mstring &input);
     ~T_Chatter() {}
 };
-
-// ===================================================
-
-// class T_Stats : public Trace {};
-
 
 // ===================================================
 
@@ -389,7 +396,32 @@ public:
 
 // ===================================================
 
-// class T_Sockets : public Trace {};
+class T_Source : public Trace
+{
+    ThreadID *tid;
+public:
+    T_Source(mstring section, mstring key, mstring value);
+};
+
+// ===================================================
+
+// class T_Stats : public Trace {};
+
+// ===================================================
+
+class T_Sockets : public Trace
+{
+    ThreadID *tid;
+    unsigned long s_id;
+
+public:
+    void Begin(unsigned long id, unsigned short local, unsigned short remote,
+	mstring host, dir_enum direction = D_Unknown);
+    void Failed(unsigned long id, unsigned short local, unsigned short remote,
+	mstring host, mstring reason, dir_enum direction = D_Unknown);
+    void Resolve(socktype_enum type, mstring info);
+    void End(mstring reason);
+};
 
 // ===================================================
 

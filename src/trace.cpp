@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2000/08/31 06:25:09  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.98  2000/08/22 08:43:41  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -517,9 +521,9 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
     ShortLevel(Chatter);
     if (IsOn(tid)) {
 	mstring message;
-	if (direction == From)
+	if (direction == D_From)
 	    message << "<- " << input;
-	else if(direction == To)
+	else if(direction == D_To)
 	    message << "-> " << input;
 	else
 	    message << "-- " << input; // Confused
@@ -558,8 +562,10 @@ void T_Locking::open(locktype_enum ltype, mstring lockname)
 	    message << ":+ " << "R " << name;
 	else if(locktype == L_Write)
 	    message << ":+ " << "W " << name;
-	else
+	else if (locktype == L_Mutex)
 	    message << ":+ " << "M " << name;
+	else
+	    message << ":+ " << "I " << name;
 	tid->WriteOut(message);
     }
 }
@@ -582,8 +588,10 @@ T_Locking::~T_Locking()
 	        message << ":- " << "R " << name;
 	    else if(locktype == L_Write)
 		message << ":- " << "W " << name;
-	    else
+	    else if (locktype == L_Mutex)
 		message << ":- " << "M " << name;
+	    else
+		message << ":- " << "I " << name;
 	    tid->WriteOut(message);
 	}
     }
@@ -591,17 +599,36 @@ T_Locking::~T_Locking()
 
 // ===================================================
 
-//      |+ 3: 2478 / 6667 (203.30.145.2)
-//      || 3: Server (styx.us.relic.net)
-//      || 3: Telnet (Ungod)
-//      || 3: DCC (PreZ)
-//      || 3: ServNet (2)
+T_Source::T_Source(mstring section, mstring key, mstring value)
+{
+    tid = mThread::find();
+    if (tid == NULL || tid->InTrace())
+	return; // should throw an exception later
+    ShortLevel(Source);
+    if (IsOn(tid)) {
+	mstring message;
+	message << "== [" << section << "] " << key << " = " << value;
+	tid->WriteOut(message);
+    }
+}
+
+// ===================================================
+
+//      |+ 3: 2478 <- 203.30.145.2:6667
+//      |+ 3: 2478 -> 203.30.145.2:6667
+//      || 3: 2478 -> 203.30.145.2:6667 (no route to host)
+//      |= 3: Server (styx.us.relic.net)
+//      |= 3: Telnet (Ungod)
+//      |= 3: DCC (PreZ)
+//      |= 3: ServNet (2)
 //      |- 3: Socket Timeout
 
 // T_Sockets::T_Sockets() {}
-/*
-T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
+
+void T_Sockets::Begin(unsigned long id, unsigned short local,
+	unsigned short remote, mstring host, dir_enum direction)
 {
+    s_id = id;
     tid = mThread::find();
     if (tid == NULL || tid->InTrace())
 	return; // should throw an exception later
@@ -609,12 +636,44 @@ T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
     if (IsOn(tid)) 
     {
 	mstring message;
-	message << "|+ " << local << " / " << remote << " (" << host << ")";
+	message << "|+ " << s_id << ": " << local;
+	if (direction == D_To)
+	    message << " <- ";
+	else if (direction == D_From)
+	    message << " -> ";
+	else
+	    message << " <-> ";
+	message << host << ":" << remote;
 	tid->WriteOut(message);
     }
 }
 
-T_Sockets::End(mstring reason)
+void T_Sockets::Failed(unsigned long id, unsigned short local,
+	unsigned short remote, mstring host, mstring reason,
+	dir_enum direction)
+{
+    s_id = id;
+    tid = mThread::find();
+    if (tid == NULL || tid->InTrace())
+	return; // should throw an exception later
+    ShortLevel(Sockets);
+    if (IsOn(tid)) 
+    {
+	mstring message;
+	message << "|| " << s_id << ": " << local;
+	if (direction == D_To)
+	    message << " <- ";
+	else if (direction == D_From)
+	    message << " -> ";
+	else
+	    message << " <-> ";
+	message << host << ":" << remote << " (" << reason << ")";
+	tid->WriteOut(message);
+    }
+}
+
+
+void T_Sockets::Resolve(socktype_enum type, mstring info)
 {
     tid = mThread::find();
     if (tid == NULL || tid->InTrace())
@@ -623,11 +682,47 @@ T_Sockets::End(mstring reason)
     if (IsOn(tid)) 
     {
 	mstring message;
-	message << "|- " << reason;
+	message << "|= " << s_id << ": ";
+	switch (type)
+	{
+	case S_IrcServer:
+	    message << "IRC Server (" << info << ")";
+	    break;
+	case S_DCC:
+	    message << "DCC Chat (" << info << ")";
+	    break;
+	case S_DCCFile:
+	    message << "DCC File Transfer (" << info << ")";
+	    break;
+	case S_Client:
+	    message << PACKAGE << " Client (" << info << ")";
+	    break;
+	case S_Services:
+	    message << "Other " << PACKAGE << " (" << info << ")";
+	    break;
+	case S_Telnet:
+	    message << "Telnet (" << info << ")";
+	    break;
+	default:
+	    message << "Unknown (" << info << ")";
+	}
 	tid->WriteOut(message);
     }
 }
-*/
+
+void T_Sockets::End(mstring reason)
+{
+    tid = mThread::find();
+    if (tid == NULL || tid->InTrace())
+	return; // should throw an exception later
+    ShortLevel(Sockets);
+    if (IsOn(tid)) 
+    {
+	mstring message;
+	message << "|- " << s_id << ": " << reason;
+	tid->WriteOut(message);
+    }
+}
 
 // ===================================================
 

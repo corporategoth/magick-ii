@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2000/08/31 06:25:09  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.16  2000/08/19 15:17:40  ungod
 ** no message
 **
@@ -551,12 +555,8 @@ bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default)
     mstring tmp;
     bool Result=true;
     tmp=RootNode.GetKey(key,Default ? "true" : "false");
-    if (tmp.CmpNoCase("true")==0 || tmp.CmpNoCase("on")==0 || tmp.CmpNoCase("yes")==0 ||
-     tmp.CmpNoCase("y")==0 || tmp.CmpNoCase("t")==0 || tmp == "1")
-        outvar=true;
-    else if(tmp.CmpNoCase("false")==0 || tmp.CmpNoCase("off")==0 || tmp.CmpNoCase("no")==0 ||
-     tmp.CmpNoCase("n")==0 || tmp.CmpNoCase("f")==0 || tmp == "0")
-        outvar=false;
+    if (tmp.IsBool())
+	outvar=tmp.GetBool();
     else
     {
         outvar=Default;
@@ -763,8 +763,7 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
     vector<mstring> decommented;
     decommented=DeComment(configarray);
     ceNode *currNode=&RootNode;
-    mstring currline;
-    mstring currpath;
+    mstring currline, currpath;
     for(vector<mstring>::const_iterator i=decommented.begin();i!=decommented.end();i++)
     {
         currline=*i;
@@ -774,6 +773,7 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
             // new section
             Result=RootNode.CreateNode(currline.After("[").Before("]"));
             currNode=RootNode.GetNode(currline.After("[").Before("]"));
+            currpath = currline.After("[").Before("]");
         }
         else if(currline.First('=')>0)
         {
@@ -783,6 +783,7 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
 		mstring data = currline.After("=").Trim(false);
 		data.Replace("\\ ", " ", true);
                 Result=currNode->SetKey(currline.Before("=").Trim(true), data);
+                CSRC(currpath,currline.Before("=").Trim(true), data);
 	    }
         }
     }

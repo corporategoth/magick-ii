@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/08/31 06:25:09  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.39  2000/07/28 14:49:36  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -112,22 +116,22 @@ mVariant::mVariant(double in)
 
 mVariant::mVariant(const char * in)
 {
-	truevaluetype="mstring";
-	valuetype="string";
+	truevaluetype="char *";
+	valuetype="mstring";
 	StringValue=mstring(in);
 }
 
 mVariant::mVariant(const mstring& in)
 {
 	truevaluetype="mstring";
-	valuetype="string";
+	valuetype="mstring";
 	StringValue=in;
 }
 
 mVariant::mVariant(mDateTime in)
 {
 	truevaluetype="mDateTime";
-	valuetype="string";
+	valuetype="mstring";
 	StringValue=in.DateTimeString();
 }
 
@@ -201,7 +205,7 @@ mVariant& mVariant::operator=(const mVariant& in)
         PtrValue=in.PtrValue;
     else if(valuetype=="short")
         ShortValue=in.ShortValue;
-    else if(valuetype=="string")
+    else if(valuetype=="mstring")
         StringValue=in.StringValue;
     else if(valuetype=="unsigned char")
         UCharValue=in.UCharValue;
@@ -274,7 +278,7 @@ bool mVariant::operator==(const mVariant& in)const
 	    else 
 	    	return false;
 	}
-	else if(valuetype=="string")
+	else if(valuetype=="mstring")
 	{
 	    if(StringValue==in.StringValue)
 		return true;
@@ -374,7 +378,7 @@ bool mVariant::operator<(const mVariant& in)const
 	    else 
 		return false;
 	}
-	else if(valuetype=="string")
+	else if(valuetype=="mstring")
 	{
 	    if(StringValue<in.StringValue)
 		return true;
@@ -440,7 +444,7 @@ mstring mVariant::AsString()const
 	dummystring.Format("%p",PtrValue);
     else if(valuetype=="short")
 	dummystring.Format("%d",ShortValue);
-    else if(valuetype=="string")
+    else if(valuetype=="mstring")
 	dummystring=StringValue;
     else if(valuetype=="unsigned char")
 	dummystring.Format("%u",UCharValue);

@@ -149,7 +149,7 @@ NOFILE             =DCC %s failed (missing file).
 NOCONNECT          =DCC %s failed (no connection established).
 FAILED             =DCC %s failed (internal server error).
 TIMEOUT            =DCC %s aborted (timeout).
-SOCKERR            =DCC %s aborted (socket error %d).
+SOCKERR            =DCC %s aborted (socket error %d - %s).
 TOOSLOW            =DCC %s aborted (transfer too slow).
 
 LOOKUP_MEMOATTACH  =Memo Attachment %08x is %s and belongs to %s, memo #%d (sent by %s, %s ago).

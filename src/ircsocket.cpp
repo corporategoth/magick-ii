@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.127  2000/08/31 06:25:09  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.126  2000/08/28 10:51:37  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -214,12 +218,12 @@ static const char *ident = "@(#)$Id$";
 
 int IrcSvcHandler::open(void *in)
 {
-    mThread::Attach(tt_MAIN);
+    //mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::open", (in));
-    CP(("Socket opened"));
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
-    //activate();
-    // todo activate the task
+    sock.Bind(&Parent->ircsvchandler->peer(), D_From);
+    sock.Resolve(S_IrcServer, Parent->Server());
+
     in_traffic = out_traffic = 0;
     connect_time = Now();
     htm_level = 0;
@@ -235,13 +239,14 @@ int IrcSvcHandler::open(void *in)
 
 int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 {
+    mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_input", ("(ACE_HANDLE) hin"));
     //todo this is the sucker that get's data from the socket, so this is our main routine.
     // might set this up to be an active object here.
     char data[513];
     int recvResult;
     ACE_OS::memset(data,0,513);
-    recvResult=peer().recv(data,512);
+    recvResult=sock.recv(data,512);
     if(recvResult<=0 || Parent->Shutdown())
 	return -1;
 
@@ -362,11 +367,12 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     else
         flack = data2;
 
-    RET(0);
+    DRET(0);
 }
 
 int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 {
+    mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
     CP(("IrcSvcHandler closed, scheduling reconnect, then closing down"));
 
@@ -385,6 +391,8 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
     }
 
+    //sock.Unbind();
+    destroy(); // Destroy us from ACE...
     DRET(0);
 }
 
@@ -463,19 +471,9 @@ int IrcSvcHandler::send(const mstring & data)
     FT("IrcSvcHandler::send",(data));
     int recvResult;
     out_traffic += data.Len();
-    recvResult=peer().send((data + "\r\n").c_str(),data.Len()+2);
-    CH(T_Chatter::To,data);
+    recvResult=sock.send((void *) (data + "\r\n").c_str(),data.Len()+2);
+    CH(D_To,data);
     RET(recvResult);
-}
-
-int IrcSvcHandler::close(unsigned long in)
-{
-    FT("IrcSvcHandler::close",(in));
-    // todo: shutdown the ping timer
-    CP(("Socket closed"));
-    int retval = 0;
-//    int retval = handle_close();
-    RET(retval);
 }
 
 mstring Reconnect_Handler::FindNext(mstring server) {
@@ -521,11 +519,12 @@ mstring Reconnect_Handler::FindNext(mstring server) {
 
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    mThread::Attach(tt_MAIN);
     FT("Reconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
 
     if(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
 	    Parent->Shutdown())
-	return 0;
+	DRET(0);
 
     mstring server;
     triplet<unsigned int,mstring,unsigned int> details;
@@ -549,7 +548,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     WLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL)
     {
-	Parent->ircsvchandler->shutdown();
+	Parent->ircsvchandler->close();
 	delete Parent->ircsvchandler;
 	Parent->ircsvchandler = NULL;
     }
@@ -558,7 +557,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     Log(LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
 		server.c_str(), details.first);
 
-    IrcServer C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
+    IrcConnector C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
 
     unsigned int i;
     for (i=1; i<5; i++)
@@ -580,7 +579,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     {
 	if (Parent->ircsvchandler != NULL)
 	{
-	    Parent->ircsvchandler->shutdown();
+	    Parent->ircsvchandler->close();
 	    delete Parent->ircsvchandler;
 	    Parent->ircsvchandler = NULL;
 	}
@@ -592,11 +591,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }
     else
     {
-        ACE_INET_Addr localaddr;
-	Parent->ircsvchandler->peer().get_local_addr(localaddr);
-	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
-	Parent->i_localhost = localaddr.get_ip_address();
-	//Parent->ircsvchandler->open(NULL);
+	if (Parent->ircsvchandler != NULL)
+	    Parent->i_localhost = Parent->ircsvchandler->Local_IP();
 	if (Parent->server.proto.TSora())
 	    Parent->server.raw("PASS " + details.second + " :TS");
 	else
@@ -613,11 +609,12 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    Parent->server.raw("SVINFO 3 1 0 :" + mstring(itoa(time(NULL))));
 	Parent->Connected(true);
     }
-    RET(0);
+    DRET(0);
 }
 
 int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    mThread::Attach(tt_MAIN);
     // We ONLY get here if we didnt receive a SQUIT message in <10s
     // after any QUIT message with 2 valid servers in it
     FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
@@ -653,11 +650,12 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }   
 
     delete tmp;
-    RET(0);
+    DRET(0);
 }
 
 int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    mThread::Attach(tt_MAIN);
     // OK -- we get here after we've passwd Squit_Protect()
     // seconds after a REAL squit
     FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
@@ -692,12 +690,13 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     }
 
     delete tmp;
-    RET(0);
+    DRET(0);
 }
 
 
 int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    mThread::Attach(tt_MAIN);
     // Memo timed out, send it!
     // If its a file, and not inprogress, ignore.
     FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
@@ -722,12 +721,13 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	}
     }
     delete tmp;
-    RET(0);
+    DRET(0);
 }
 
 
 int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
+    mThread::Attach(tt_MAIN);
     FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
@@ -743,12 +743,14 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	Parent->chanserv.live[tmp->LowerCase()].ph_timer = 0;
     }
     delete tmp;
-    RET(0);
+    DRET(0);
 }
 
 void *EventTask::save_databases(void *in)
 {
+    mThread::Attach(tt_MAIN);
     Parent->save_databases();
+    mThread::Detach();
     return NULL;
 }
 

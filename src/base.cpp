@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.132  2000/08/31 06:25:08  prez
+** Added our own socket class (wrapper around ACE_SOCK_Stream,
+** ACE_SOCK_Connector and ACE_SOCK_Acceptor, with tracing).
+**
 ** Revision 1.131  2000/08/28 10:51:35  prez
 ** Changes: Locking mechanism only allows one lock to be set at a time.
 ** Activation_Queue removed, and use pure message queue now, mBase::init()
@@ -311,8 +315,14 @@ int mBaseTask::svc(void)
 void mBaseTask::message(const mstring& message)
 {
     FT("mBaseTask::message",(message));
+    size_t length=message.Len();
     MLOCK(("MessageQueue"));
-    if(message_queue_.is_full() || thread_count < Parent->config.Min_Threads())
+    // Most likely the third condition will match most, as on a
+    // large network, average message size is about 100 bytes, a
+    // FAR cry from the 450 (default) size we're allocating per msg.
+    if (thread_count < Parent->config.Min_Threads() ||
+	message_queue_.is_full() ||
+	message_queue_.message_count() > thread_count * Parent->config.High_Water_Mark())
     {
 	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
 	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
@@ -322,15 +332,16 @@ void mBaseTask::message(const mstring& message)
 	else
 	{
 	    thread_count = thr_count();
-	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thread_count) * (sizeof(ACE_Method_Object *) * 2));
+	    message_queue_.high_water_mark(thread_count *
+		Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
 	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD"));
 	}
     }
-    char *transit = new char[message.Len()+1];
-    ACE_OS::memset(transit, 0, message.Len()+1);
-    ACE_OS::strncpy(transit, message.c_str(), message.Len());
-    ACE_Message_Block *data = new ACE_Message_Block(message.Len(),
+    char *transit = new char[length+1];
+    ACE_OS::memset(transit, 0, length+1);
+    ACE_OS::strncpy(transit, message.c_str(), length);
+    ACE_Message_Block *data = new ACE_Message_Block(length+1,
 		ACE_Message_Block::MB_DATA, 0, transit);
     message_queue_.enqueue(data);
 }
@@ -351,7 +362,7 @@ int mBaseTask::message_i(const mstring& message)
     type  =data.ExtractWord(2,": ").UpperCase();
     target=data.ExtractWord(3,": ");
 
-    CH(T_Chatter::From,data);	    
+    CH(D_From,data);	    
 
     if ((type == "PRIVMSG" || type == "NOTICE") && !IsChan(target) &&
     	Parent->nickserv.IsLive(source))
@@ -429,7 +440,8 @@ int mBaseTask::message_i(const mstring& message)
 		(Parent->config.High_Water_Mark() * (thread_count-2)))
     {
 	    COM(("Low water mark reached, killing thread."));
-	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thread_count-1) * (sizeof(ACE_Method_Object *) * 2));
+	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() *
+		(thread_count-1) * Parent->server.proto.MaxLine());
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
 	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
 	    thread_count--;
@@ -469,7 +481,8 @@ void mBaseTask::i_shutdown()
 {
     NFT("mBaseTask::i_shutdown");
     MLOCK(("MessageQueue"));
-    message_queue_.enqueue(new ACE_Message_Block(0, ACE_Message_Block::MB_HANGUP));
+    message_queue_.enqueue(new ACE_Message_Block(0,
+				ACE_Message_Block::MB_HANGUP));
 }
 
 void mBase::push_message(const mstring& message)
@@ -492,14 +505,14 @@ void mBase::push_message(const mstring& message)
 	}
 	BaseTask.thread_count = BaseTask.thr_count();
     }
-    CH(T_Chatter::From,message);
+    CH(D_From,message);
     BaseTask.message(message);
 }
 
 void mBase::push_message_immediately(const mstring& message)
 {
     FT("mBase::push_message_immediately", (message));
-    CH(T_Chatter::From,message);
+    CH(D_From,message);
     BaseTask.message_i(message);
 }
 
@@ -509,7 +522,8 @@ void mBase::init()
 
     TaskOpened = false;    
     MLOCK(("MessageQueue"));
-    BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (sizeof(ACE_Method_Object *) * 2));
+    BaseTask.message_queue_.high_water_mark(Parent->config.Min_Threads() *
+	Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
     BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
 }
 
