@@ -405,6 +405,12 @@ public:
     {
 	FT("entlist_val_pair_t< pair<X, Y> >::entlist_val_pair_t", (entry, "( pair<X,Y> ) value", nick, modtime, stupid));
     }
+    entlist_val_pair_t(const mstring & entry, const X & value1, const Y & value2, const mstring & nick, const mDateTime & modtime =
+		       mDateTime::CurrentDateTime(), const bool stupid =
+		       false) : entlist_t(entry, nick, modtime), i_Value(pair<X,Y>(value1, value2)), i_Stupid(stupid)
+    {
+	FT("entlist_val_pair_t< pair<X, Y> >::entlist_val_pair_t", (entry, "( const X & ) value1", "( const Y & ) value2", nick, modtime, stupid));
+    }
     virtual ~ entlist_val_pair_t()
     {
     }

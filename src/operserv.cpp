@@ -735,6 +735,120 @@ bool OperServ::Ignore_value(const mstring & entry)
     ETCB();
 }
 
+bool OperServ::KillChan_insert(const mstring & entry, const unsigned long value, const mstring & reason, const mstring & nick,
+			    const mDateTime & added)
+{
+    BTCB();
+    FT("OperServ::KillChan_insert", (entry, value, reason, nick, added));
+
+    // no @
+    if (!IsChan(entry))
+    {
+	RET(false);
+    }
+
+    MLOCK((lck_OperServ, "KillChan"));
+    if (!KillChan_find(entry))
+    {
+	pair < set < KillChan_Type >::iterator, bool > tmp;
+
+	MCB(i_KillChan.size());
+	KillChan_Type ent(entry, pair < unsigned long, mstring > (value, reason), nick, added);
+	i_KillChan.erase(ent);
+	tmp = i_KillChan.insert(ent);
+
+	MCE(i_KillChan.size());
+	if (tmp.second)
+	    KillChan = tmp.first;
+	else
+	    KillChan = i_KillChan.end();
+	RET(true);
+    }
+    else
+    {
+	KillChan = i_KillChan.end();
+	RET(false);
+    }
+    ETCB();
+}
+
+bool OperServ::KillChan_erase()
+{
+    BTCB();
+    NFT("OperServ::KillChan_erase");
+
+    MLOCK((lck_OperServ, "KillChan"));
+    if (KillChan != i_KillChan.end())
+    {
+	MCB(i_KillChan.size());
+	i_KillChan.erase(KillChan++);
+	MCE(i_KillChan.size());
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+
+    ETCB();
+}
+
+size_t OperServ::KillChan_Usage() const
+{
+    BTCB();
+
+    MLOCK((lck_OperServ, "KillChan"));
+    size_t retval = accumulate(i_KillChan.begin(), i_KillChan.end(), 0, AddUsage());
+    return retval;
+    ETCB();
+}
+
+bool OperServ::KillChan_find(const mstring & entry)
+{
+    BTCB();
+    FT("OperServ::KillChan_find", (entry));
+
+    // no @
+    if (!IsChan(entry))
+    {
+	RET(false);
+    }
+
+//  entlist_val_ui<pair<long, mstring> > iter = i_KillChan.end();
+    MLOCK((lck_OperServ, "KillChan"));
+    set < KillChan_Type >::iterator iter = i_KillChan.find(KillChan_Type(entry, 0, "", ""));
+
+    if (iter != i_KillChan.end())
+    {
+	KillChan = iter;
+	RET(true);
+    }
+    else
+    {
+	KillChan = i_KillChan.end();
+	RET(false);
+    }
+    ETCB();
+}
+
+pair < unsigned long, mstring > OperServ::KillChan_value(const mstring & entry)
+{
+    BTCB();
+    FT("OperServ::KillChan_value", (entry));
+
+    pair < unsigned long, mstring > retval = pair < unsigned long, mstring > (0, "");
+
+    MLOCK((lck_OperServ, "KillChan"));
+//  entlist_val_ui<pair<long, mstring> > iter = KillChan;
+    set < KillChan_Type >::iterator iter = KillChan;
+
+    if (KillChan_find(entry))
+	retval = KillChan->Value();
+    KillChan = iter;
+    return retval;
+    ETCB();
+}
+
 OperServ::OperServ()
 {
     BTCB();
@@ -827,6 +941,24 @@ void OperServ::AddCommands()
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "IGN* H*LP",
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name(), do_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*CHAN* ADD*",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), OperServ::do_killchan_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*CHAN* DEL*",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), OperServ::do_killchan_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*CHAN* ERA*",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), OperServ::do_killchan_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*CHAN* LIST",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), OperServ::do_killchan_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*CHAN* VIEW",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), OperServ::do_killchan_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*CHAN* H*LP",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), do_2param);
 
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "H*LP", Magick::instance().commserv.ALL_Name(),
 						 OperServ::do_Help);
@@ -843,7 +975,7 @@ void OperServ::AddCommands()
 						 OperServ::do_UnQline);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "NO*OP*", Magick::instance().commserv.ADMIN_Name(),
 						 OperServ::do_NOOP);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*", Magick::instance().commserv.ADMIN_Name(),
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL", Magick::instance().commserv.ADMIN_Name(),
 						 OperServ::do_Kill);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "HIDE*", Magick::instance().commserv.ADMIN_Name(),
 						 OperServ::do_Hide);
@@ -907,6 +1039,12 @@ void OperServ::AddCommands()
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name(), NULL);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "IGN*",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*CHAN* *",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*CHAN*",
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name(), do_1_2param);
     ETCB();
@@ -984,6 +1122,24 @@ void OperServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "IGN* H*LP",
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*CHAN* ADD*",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*CHAN* DEL*",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*CHAN* ERA*",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*CHAN* LIST",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*CHAN* VIEW",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*CHAN* H*LP",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
 
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "H*LP", Magick::instance().commserv.ALL_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "TRACE", Magick::instance().commserv.SADMIN_Name());
@@ -993,7 +1149,7 @@ void OperServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "Q*LINE*", Magick::instance().commserv.ADMIN_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNQ*LINE*", Magick::instance().commserv.ADMIN_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "NO*OP*", Magick::instance().commserv.ADMIN_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*", Magick::instance().commserv.ADMIN_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL", Magick::instance().commserv.ADMIN_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "HIDE*", Magick::instance().commserv.ADMIN_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "*PING*",
 						 Magick::instance().commserv.OPER_Name() + " " +
@@ -1040,6 +1196,12 @@ void OperServ::RemCommands()
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "IGN*",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*CHAN* *",
+						 Magick::instance().commserv.OPER_Name() + " " +
+						 Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*CHAN*",
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name());
     ETCB();
@@ -3575,11 +3737,319 @@ void OperServ::do_ignore_List(const mstring & mynick, const mstring & source, co
     ETCB();
 }
 
+void OperServ::do_killchan_Add(const mstring & mynick, const mstring & source, const mstring & params)
+{
+    BTCB();
+    FT("OperServ::do_killchan_Add", (mynick, source, params));
+
+    mstring message = params.ExtractTo(2, " ").UpperCase();
+
+    if (params.WordCount(" ") < 4)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    mstring channel = params.ExtractWord(3, " ").LowerCase();
+    mstring reason = params.ExtractFrom(4, " ");
+    unsigned long expire = FromHumanTime(reason.Before(" "));
+
+    if (expire)
+    {
+	if (params.WordCount(" ") < 5)
+	{
+	    SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	    return;
+	}
+
+	reason = reason.ExtractFrom(2, " ");
+    }
+    else
+	expire = Magick::instance().operserv.Def_Expire();
+
+    if (!IsChan(channel))
+    {
+	SEND(mynick, source, "ERR_SITUATION/ONACHAN", (message));
+	return;
+    }
+
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
+    {
+	if (expire > Magick::instance().operserv.Expire_SAdmin())
+	{
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH",
+		 (ToHumanTime(Magick::instance().operserv.Expire_SAdmin(), source)));
+	    return;
+	}
+    }
+    else if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source))
+    {
+	if (expire > Magick::instance().operserv.Expire_Sop())
+	{
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH",
+		 (ToHumanTime(Magick::instance().operserv.Expire_Sop(), source)));
+	    return;
+	}
+    }
+    else if (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->IsOn(source))
+    {
+	if (expire > Magick::instance().operserv.Expire_Admin())
+	{
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH",
+		 (ToHumanTime(Magick::instance().operserv.Expire_Admin(), source)));
+	    return;
+	}
+    }
+    else if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source))
+    {
+	if (expire > Magick::instance().operserv.Expire_Oper())
+	{
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH",
+		 (ToHumanTime(Magick::instance().operserv.Expire_Oper(), source)));
+	    return;
+	}
+    }
+
+    {
+	MLOCK((lck_OperServ, "KillChan"));
+	if (Magick::instance().operserv.KillChan_find(channel))
+	{
+	    mstring entry = Magick::instance().operserv.KillChan->Entry();
+
+	    Magick::instance().operserv.KillChan_erase();
+	    Magick::instance().operserv.KillChan_insert(entry, expire, reason, source);
+	    Magick::instance().operserv.stats.i_KillChan++;
+	    SEND(mynick, source, "LIST/CHANGE_TIME",
+		 (entry, Magick::instance().getMessage(source, "LIST/KILLCHAN"), ToHumanTime(expire, source)));
+	    ANNOUNCE(mynick, "MISC/KILLCHAN_EXTEND", (source, entry, ToHumanTime(expire, source)));
+	    LOG(LM_INFO, "OPERSERV/KILLCHAN_ADD",
+		(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), entry, ToHumanTime(expire, source),
+		 reason));
+	}
+	else
+	{
+	    map<mstring, size_t> killmasks;
+	    size_t killusers = 0;
+	    if (Magick::instance().chanserv.IsLive(channel))
+	    {
+		unsigned int i;
+		{
+		    map_entry<Chan_Live_t> chan = Magick::instance().chanserv.GetLive(channel);
+		    for (i=0; i<chan->Users(); i++)
+		    {
+			mstring user = chan->User(i);
+
+			// Just in case we've lost the plot.
+			if (!Magick::instance().nickserv.IsLive(user))
+			    continue;
+
+			if ((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+			     Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(user)) ||
+			    (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+			     Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(user)))
+			    continue;
+
+			killmasks[Magick::instance().nickserv.GetLive(user)->Mask(Magick::instance().operserv.Ignore_Method()).After("!")] = 0;
+		    }
+		}
+
+		RLOCK((lck_NickServ, lck_live));
+		map<mstring, size_t>::iterator mi;
+		for (mi=killmasks.begin(); mi!=killmasks.end(); mi++)
+		{
+		    NickServ::live_t::iterator iter;
+		    for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
+		    {
+			map_entry < Nick_Live_t > nlive(iter->second);
+			if (!nlive->IsServices() && nlive->Mask(Nick_Live_t::U_P_H).After("!").Matches(mi->first, true))
+			{
+			    mi->second++;
+			    killusers++;
+			}
+		    }
+		}
+	    }
+
+	    float percent = 100.0 * static_cast < float > (killusers) /
+			    static_cast < float > (Magick::instance().nickserv.LiveSize());
+	    if (percent > Magick::instance().operserv.Akill_Reject() &&
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source)))
+	    {
+		SEND(mynick, source, "ERR_SITUATION/AKILLTOOMANY",
+		     (fmstring("%.2f", percent), fmstring("%.2f", Magick::instance().operserv.Akill_Reject())));
+	    }
+	    else
+	    {
+		Magick::instance().operserv.KillChan_insert(channel, expire, reason, source);
+		Magick::instance().operserv.stats.i_KillChan++;
+		SEND(mynick, source, "LIST/ADD_TIME",
+		    (channel, Magick::instance().getMessage(source, "LIST/KILLCHAN"), ToHumanTime(expire, source)));
+		ANNOUNCE(mynick, "MISC/KILLCHAN_ADD",
+		    (source, channel, ToHumanTime(expire, source), reason, killusers, fmstring("%.2f", percent)));
+		LOG(LM_INFO, "OPERSERV/KILLCHAN_ADD",
+		    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), channel,
+		     ToHumanTime(expire, source), reason));
+
+		map<mstring, size_t>::iterator mi;
+		for (mi=killmasks.begin(); mi!=killmasks.end(); mi++)
+		{
+		    percent = 100.0 * static_cast < float > (mi->second) /
+			    static_cast < float > (Magick::instance().nickserv.LiveSize());
+		    Magick::instance().operserv.Akill_insert(mi->first, expire, reason,
+					Magick::instance().chanserv.FirstName());
+		    Magick::instance().server.AKILL(mi->first, reason, expire, 
+					Magick::instance().chanserv.FirstName());
+		    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/AKILL_ADD",
+			(Magick::instance().chanserv.FirstName(), mi->first, ToHumanTime(expire),
+			 reason, mi->second, fmstring("%.2f", percent)));
+		    LOG(LM_INFO, "OPERSERV/AKILL_ADD", (Magick::instance().chanserv.FirstName(),
+			mi->first, ToHumanTime(expire), reason));
+		}
+	    }
+	}
+    }
+    ETCB();
+}
+
+void OperServ::do_killchan_Del(const mstring & mynick, const mstring & source, const mstring & params)
+{
+    BTCB();
+    FT("OperServ::do_killchan_Del", (mynick, source, params));
+
+    mstring message = params.ExtractTo(2, " ").UpperCase();
+
+    if (params.WordCount(" ") < 3)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    mstring channel = params.ExtractWord(3, " ").LowerCase();
+
+    if (!Magick::instance().operserv.KillChan_size())
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/KILLCHAN")));
+	return;
+    }
+
+    MLOCK((lck_OperServ, "KillChan"));
+    if (channel.IsNumber() && !channel.Contains("."))
+    {
+	unsigned int num = atoi(channel.c_str());
+
+	if (num < 1 || num > Magick::instance().operserv.KillChan_size())
+	{
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, Magick::instance().operserv.KillChan_size()));
+	    return;
+	}
+
+	Magick::instance().operserv.KillChan = find_if(Magick::instance().operserv.KillChan_begin(),
+				Magick::instance().operserv.KillChan_end(), FindNumberedEntry(num - 1));
+	if (Magick::instance().operserv.KillChan != Magick::instance().operserv.KillChan_end())
+	{
+	    Magick::instance().operserv.stats.i_KillChan++;
+	    SEND(mynick, source, "LIST/DEL",
+		 (Magick::instance().operserv.KillChan->Entry(), Magick::instance().getMessage(source, "LIST/KILLCHAN")));
+	    LOG(LM_INFO, "OPERSERV/KILLCHAN_DEL",
+		(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+		 Magick::instance().operserv.KillChan->Entry()));
+	    Magick::instance().operserv.KillChan_erase();
+	}
+	else
+	{
+	    SEND(mynick, source, "LIST/NOTEXISTS_NUMBER", (num, Magick::instance().getMessage(source, "LIST/KILLCHAN")));
+	}
+    }
+    else
+    {
+	if (Magick::instance().operserv.KillChan_find(channel))
+	{
+	    Magick::instance().operserv.stats.i_KillChan++;
+	    SEND(mynick, source, "LIST/DEL",
+		 (Magick::instance().operserv.KillChan->Entry(), Magick::instance().getMessage(source, "LIST/KILLCHAN")));
+	    LOG(LM_INFO, "OPERSERV/KILLCHAN_DEL",
+		(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+		 Magick::instance().operserv.KillChan->Entry()));
+	    Magick::instance().operserv.KillChan_erase();
+	}
+	else
+	{
+	    SEND(mynick, source, "LIST/NOTEXISTS", (channel, Magick::instance().getMessage(source, "LIST/KILLCHAN")));
+	}
+    }
+    ETCB();
+}
+
+void OperServ::do_killchan_List(const mstring & mynick, const mstring & source, const mstring & params)
+{
+    BTCB();
+    FT("OperServ::do_killchan_List", (mynick, source, params));
+
+    mstring message = params.ExtractTo(2, " ").UpperCase();
+
+    {
+	RLOCK((lck_IrcSvcHandler));
+	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    SEND(mynick, source, "MISC/HTM", (message));
+	    return;
+	}
+    }
+
+    if (params.WordCount(" ") < 2)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    mstring channel = "*";
+
+    if (params.WordCount(" ") > 2)
+	channel = params.ExtractWord(3, " ").LowerCase();
+
+    if (Magick::instance().operserv.KillChan_size())
+    {
+	SEND(mynick, source, "LIST/DISPLAY_MATCH", (channel, Magick::instance().getMessage(source, "LIST/KILLCHAN")));
+    }
+    else
+    {
+	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/KILLCHAN")));
+	return;
+    }
+    unsigned int i = 1;
+
+    MLOCK((lck_OperServ, "KillChan"));
+    for (Magick::instance().operserv.KillChan = Magick::instance().operserv.KillChan_begin();
+	 Magick::instance().operserv.KillChan != Magick::instance().operserv.KillChan_end(); Magick::instance().operserv.KillChan++)
+    {
+	if (Magick::instance().operserv.KillChan->Entry().Matches(channel, true))
+	{
+	    ::sendV(mynick, source, "%3d. %s (%s)", i, Magick::instance().operserv.KillChan->Entry().c_str(),
+		    parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
+				 mVarArray(Magick::instance().operserv.KillChan->Last_Modify_Time().Ago(),
+					   Magick::instance().operserv.KillChan->Last_Modifier())).c_str());
+	    ::sendV(mynick, source, "     [%s] %s",
+		    ToHumanTime(Magick::instance().operserv.KillChan->Value().first, source).c_str(),
+		    Magick::instance().operserv.KillChan->Value().second.c_str());
+	    i++;
+	}
+    }
+    ETCB();
+}
+
+
+
 SXP::Tag OperServ::tag_OperServ("OperServ");
 SXP::Tag OperServ::tag_Clone("Clone");
 SXP::Tag OperServ::tag_Akill("Akill");
 SXP::Tag OperServ::tag_OperDeny("OperDeny");
 SXP::Tag OperServ::tag_Ignore("Ignore");
+SXP::Tag OperServ::tag_KillChan("KillChan");
 
 void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
@@ -3617,6 +4087,15 @@ void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	i_array.push_back(tmp);
 	pIn->ReadTo(tmp);
     }
+
+    if (pElement->IsA(tag_KillChan))
+    {
+	KillChan_Type *tmp = new KillChan_Type;
+
+	k_array.push_back(tmp);
+	pIn->ReadTo(tmp);
+    }
+
     ETCB();
 }
 
@@ -3665,6 +4144,11 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	    if (l->Value())
 		wse(*l);
 	}
+    }
+
+    {
+	MLOCK((lck_OperServ, "KillChan"));
+	for_each(i_KillChan.begin(), i_KillChan.end(), SXP::WriteSubElement(pOut, tag_KillChan));
     }
 
     pOut->EndObject(tag_OperServ);
@@ -3719,10 +4203,21 @@ void OperServ::PostLoad()
     }
     i_array.clear();
 
+    for (i = 0; i < k_array.size(); i++)
+    {
+	if (k_array[i] != NULL)
+	{
+	    i_KillChan.insert(*k_array[i]);
+	    delete k_array[i];
+	}
+    }
+    k_array.clear();
+
     for_each(Clone_begin(), Clone_end(), mem_fun_ref_void(&entlist_val_pair_t<unsigned int, mstring>::PostLoad));
     for_each(Akill_begin(), Akill_end(), mem_fun_ref_void(&entlist_val_pair_t<unsigned long, mstring>::PostLoad));
     for_each(OperDeny_begin(), OperDeny_end(), mem_fun_ref_void(&entlist_val_t<mstring>::PostLoad));
     for_each(Ignore_begin(), Ignore_end(), mem_fun_ref_void(&entlist_val_t<mstring>::PostLoad));
+    for_each(KillChan_begin(), KillChan_end(), mem_fun_ref_void(&entlist_val_pair_t<unsigned long, mstring>::PostLoad));
 
     ETCB();
 }
@@ -3730,13 +4225,13 @@ void OperServ::PostLoad()
 void OperServ::DumpB() const
 {
     BTCB();
-    MB(0, (i_Clone.size(), CloneList.size(), i_Akill.size(), i_OperDeny.size(), i_Ignore.size()));
+    MB(0, (i_Clone.size(), CloneList.size(), i_Akill.size(), i_OperDeny.size(), i_Ignore.size(), i_KillChan.size()));
     ETCB();
 }
 
 void OperServ::DumpE() const
 {
     BTCB();
-    ME(0, (i_Clone.size(), CloneList.size(), i_Akill.size(), i_OperDeny.size(), i_Ignore.size()));
+    ME(0, (i_Clone.size(), CloneList.size(), i_Akill.size(), i_OperDeny.size(), i_Ignore.size(), i_KillChan.size()));
     ETCB();
 }

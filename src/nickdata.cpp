@@ -980,8 +980,7 @@ void Nick_Live_t::Join(const mstring & chan)
 	map_entry < Chan_Live_t > tmp(new Chan_Live_t(chan, i_Name));
 	Magick::instance().chanserv.AddLive(tmp);
     }
-    // We do this seperately coz we require initialisation of
-    // the channel to be completed.
+
     if (joined)
     {
 	{
@@ -990,8 +989,6 @@ void Nick_Live_t::Join(const mstring & chan)
 	    joined_channels.insert(chan.LowerCase());
 	    MCE(joined_channels.size());
 	}
-	if (Magick::instance().chanserv.IsStored(chan))
-	    Magick::instance().chanserv.GetStored(chan)->Join(i_Name);
     }
 
     mMessage::CheckDependancies(mMessage::ChanExists, chan);
@@ -1012,6 +1009,56 @@ void Nick_Live_t::Join(const mstring & chan)
 					Magick::instance().server.proto.Numeric.ChannelNumeric(clive->Numeric()),
 					"!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
     }
+
+    {
+	MLOCK((lck_OperServ, "KillChan"));
+	if (Magick::instance().operserv.KillChan_find(chan) &&
+	    !((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(i_Name)) ||
+	    (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(i_Name))))
+	{
+	    mstring killmask = Mask(Magick::instance().operserv.Ignore_Method()).After("!");
+	    size_t killusers = 0;
+	    RLOCK((lck_NickServ, lck_live));
+	    NickServ::live_t::iterator iter;
+	    for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
+	    {
+		map_entry < Nick_Live_t > nlive(iter->second);
+		if (!nlive->IsServices() && nlive->Mask(Nick_Live_t::U_P_H).After("!").Matches(killmask, true))
+		    killusers++;
+	    }
+
+	    float percent = 100.0 * static_cast < float > (killusers) /
+		    static_cast < float > (Magick::instance().nickserv.LiveSize());
+	    if (percent <= Magick::instance().operserv.Akill_Reject())
+	    {
+		Magick::instance().operserv.Akill_insert(killmask, 
+			     Magick::instance().operserv.KillChan->Value().first,
+			     Magick::instance().operserv.KillChan->Value().second,
+			     Magick::instance().chanserv.FirstName());
+		Magick::instance().server.AKILL(killmask,
+			     Magick::instance().operserv.KillChan->Value().second,
+			     Magick::instance().operserv.KillChan->Value().first,
+			     Magick::instance().chanserv.FirstName());
+		ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/AKILL_ADD", (Magick::instance().chanserv.FirstName(),
+			 killmask, ToHumanTime(Magick::instance().operserv.KillChan->Value().first),
+			Magick::instance().operserv.KillChan->Value().second, killusers, fmstring("%.2f", percent)));
+		LOG(LM_INFO, "OPERSERV/AKILL_ADD", (Magick::instance().chanserv.FirstName(),
+		    killmask, ToHumanTime(Magick::instance().operserv.KillChan->Value().first),
+		    Magick::instance().operserv.KillChan->Value().second));
+	    }
+	}
+    }
+
+    // We do this seperately coz we require initialisation of
+    // the channel to be completed.
+    if (joined)
+    {
+	if (Magick::instance().chanserv.IsStored(chan))
+	    Magick::instance().chanserv.GetStored(chan)->Join(i_Name);
+    }
+
     ETCB();
 }
 

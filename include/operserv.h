@@ -78,6 +78,7 @@ public:
     typedef entlist_val_pair_t < unsigned long, mstring > Akill_Type;
     typedef entlist_val_t < mstring > OperDeny_Type;
     typedef entlist_val_t < bool > Ignore_Type;
+    typedef entlist_val_pair_t < unsigned long, mstring > KillChan_Type;
 
 private:
 
@@ -94,8 +95,12 @@ private:
     // Mask (N_U_H), Permanent (bool)
     set < Ignore_Type > i_Ignore;
 
+    // Channel, Expire (long), Reason (mstring)
+    set < KillChan_Type > i_KillChan;
+
     vector < Clone_Type * > c_array;
     vector < Akill_Type * > a_array;
+    vector < KillChan_Type * > k_array;
     vector < OperDeny_Type * > o_array;
     vector < Ignore_Type * > i_array;
 
@@ -106,7 +111,7 @@ private:
     bool AddHost(const mstring & host);
     void RemHost(const mstring & host);
 
-    static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny, tag_Ignore;
+    static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny, tag_Ignore, tag_KillChan;
 
 public:
     OperServ();
@@ -136,6 +141,7 @@ public:
 	unsigned long i_Akill;
 	unsigned long i_OperDeny;
 	unsigned long i_Ignore;
+	unsigned long i_KillChan;
 
     public:
 	stats_t()
@@ -146,7 +152,7 @@ public:
 	{
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Trace = i_Mode = i_Qline = i_Unqline = i_Noop = i_Kill = i_Hide = i_Ping = i_Update = i_Reload = i_Unload =
-		i_Jupe = i_OnOff = i_Clone = i_Akill = i_OperDeny = i_Ignore = 0;
+		i_Jupe = i_OnOff = i_Clone = i_Akill = i_OperDeny = i_Ignore = i_KillChan = 0;
 	}
 	mDateTime ClearTime() const
 	{
@@ -219,6 +225,10 @@ public:
 	unsigned long Ignore() const
 	{
 	    return i_Ignore;
+	}
+	unsigned long KillChan() const
+	{
+	    return i_KillChan;
 	}
     }
     stats;
@@ -428,6 +438,28 @@ public:
 
     set < Ignore_Type >::iterator Ignore;
 
+    bool KillChan_insert(const mstring & entry, const unsigned long value, const mstring & reason, const mstring & nick,
+		      const mDateTime & added = mDateTime::CurrentDateTime());
+    bool KillChan_erase();
+
+    set < KillChan_Type >::iterator KillChan_begin()
+    {
+	return i_KillChan.begin();
+    }
+    set < KillChan_Type >::iterator KillChan_end()
+    {
+	return i_KillChan.end();
+    }
+    size_t KillChan_size() const
+    {
+	return i_KillChan.size();
+    }
+    size_t KillChan_Usage() const;
+    bool KillChan_find(const mstring & entry);
+    pair < unsigned long, mstring > KillChan_value(const mstring & entry);
+
+    set < KillChan_Type >::iterator KillChan;
+
     threadtype_enum Get_TType() const
     {
 	return tt_OperServ;
@@ -477,6 +509,9 @@ public:
     static void do_ignore_Add(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_ignore_Del(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_ignore_List(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_killchan_Add(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_killchan_Del(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_killchan_List(const mstring & mynick, const mstring & source, const mstring & params);
 
     SXP::Tag & GetClassTag() const
     {

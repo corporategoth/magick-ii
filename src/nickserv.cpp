@@ -1966,14 +1966,11 @@ void NickServ::do_Getpass(const mstring & mynick, const mstring & source, const 
     }
 
     // If we are NOT a SADMIN, and target is a PRIV GROUP.
-    if (!
-	(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
 	 Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsIn(source)) &&
 	(Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsIn(target) ||
 	 (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
 	  Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsIn(target)) ||
-	 (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
-	  Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->IsIn(target)) ||
 	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
 	  Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsIn(target))))
     {
@@ -2034,8 +2031,6 @@ void NickServ::do_Setpass(const mstring & mynick, const mstring & source, const 
 	(Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsIn(target) ||
 	 (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
 	  Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsIn(target)) ||
-	 (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
-	  Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->IsIn(target)) ||
 	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
 	  Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsIn(target))))
     {

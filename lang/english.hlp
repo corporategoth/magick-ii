@@ -2585,8 +2585,8 @@
 04 =OPER SOP::This service allows you to use the following commands:
 05 =OPER SOP::    HELP         CLONE        AKILL        IGNORE
 06 =OPER SOP::    MODE         PING         SETTINGS     REGISTER
-07A=OPER:SOP:    IDENTIFY
-07B=SOP::    IDENTIFY     OPERDENY     HTM
+07A=OPER:SOP:    IDENTIFY     KILLCHAN
+07B=SOP::    IDENTIFY     OPERDENY     HTM          KILLCHAN
 08 =ADMIN::And as a Server Admin, the following commands:
 09 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
 10 =ADMIN::    KILL         HIDE
@@ -3066,3 +3066,47 @@
 07 =OPER SOP::only entries mathcing that mask will be displayed,
 08 =OPER SOP::wildcards may be specified.
 
+[OPERSERV/KILLCHAN]
+01 =OPER SOP::Sometimes a channel becomes simply a hangout for abusive
+02 =OPER SOP::users or attack bots, and they are better off gone.  This
+03 =OPER SOP::list facilitates this need.  All people who join a kill
+04 =OPER SOP::channel who are not on a privileged committee will be
+05 =OPER SOP::automatically added to the Auto Kill list.
+06 =OPER SOP::
+07 =OPER SOP::You may maintain the Kill Channel list with:
+08 =OPER SOP::    ADD          DEL          LIST
+
+[OPERSERV/KILLCHAN/ADD]
+01 =OPER SOP::KILLCHAN ADD <channel> [time] <reason>
+02 =OPER SOP::
+03 =OPER SOP::This will add a channel to the Kill Channel list and
+04 =OPER SOP::add Auto Kills for all non-privileged users in it.  You
+05 =OPER SOP::must specify specify a reason for the channel having
+06 =OPER SOP::all its users killed, which will be used as their kill
+07 =OPER SOP::reason.  You may optionally specify a time in Standard
+08 =OPER SOP::Time Format.  If you do so, it will be used as the
+09 =OPER SOP::expiry time that the Auto Kill will remain in effect
+10 =OPER SOP::(depending on access, there are various maximum times
+11 =OPER SOP::specifiable).  If you do not specify a time, the
+12 =OPER SOP::default will be used (see SETTINGS OTHER for this).
+
+[OPERSERV/KILLCHAN/DEL]
+01 =OPER SOP::KILLCHAN DEL <channel|NUM>
+02 =OPER SOP::
+03 =OPER SOP::This will remove a channel from the Kill Channel list,
+04 =OPER SOP::allowing the channel to be used again by all users.
+05 =OPER SOP::You may specify a channel, and it will be removed from
+06 =OPER SOP::the list, or you may specify a number obtained from the
+07 =OPER SOP::the KILLCHAN LIST command.
+
+[OPERSERV/KILLCHAN/LIST]
+01 =OPER SOP::KILLCHAN LIST [channel]
+02 =OPER SOP::
+03 =OPER SOP::This will display the Kill Channel list, including the
+04 =OPER SOP::channel having all its members auto killed, how long
+05 =OPER SOP::these auto kills will last for, the reason the channel
+05 =OPER SOP::has all its members auto killed, who added them,
+06 =OPER SOP::and numbers that may be used to delete them from the
+07 =OPER SOP::Kill Channel list.  If a channel is specified, only
+08 =OPER SOP::that entry will be displayed.  You may specify wildcards
+09 =OPER SOP::to see multiple entries.
