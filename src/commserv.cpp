@@ -877,14 +877,13 @@ void CommServ::AddList(Committee_t * in)
 #endif
     }
 
-    RLOCK((lck_CommServ, lck_list));
+    WLOCK((lck_CommServ, lck_list));
     map_entry < Committee_t > old_entry(i_list, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	i_list.erase(in->Name().LowerCase());
     }
-    WLOCK((lck_CommServ, lck_list));
     i_list[in->Name().UpperCase()] = in;
     ETCB();
 }
@@ -941,7 +940,7 @@ void CommServ::RemList(const mstring & in)
     BTCB();
     FT("CommServ::RemList", (in));
 
-    RLOCK((lck_CommServ, lck_list));
+    WLOCK((lck_CommServ, lck_list));
     CommServ::list_t::iterator iter = i_list.find(in.UpperCase());
     if (iter == i_list.end())
     {
@@ -958,7 +957,6 @@ void CommServ::RemList(const mstring & in)
 	map_entry < Committee_t > entry(iter->second);
 	entry->setDelete();
     }
-    WLOCK((lck_CommServ, lck_list));
     i_list.erase(iter);
     ETCB();
 }

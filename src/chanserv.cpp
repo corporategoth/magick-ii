@@ -524,14 +524,13 @@ void ChanServ::AddStored(Chan_Stored_t * in)
 #endif
     }
 
-    RLOCK((lck_ChanServ, lck_stored));
+    WLOCK((lck_ChanServ, lck_stored));
     map_entry < Chan_Stored_t > old_entry(stored, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	stored.erase(in->Name().LowerCase());
     }
-    WLOCK((lck_ChanServ, lck_stored));
     stored[in->Name().LowerCase()] = in;
     ETCB();
 }
@@ -588,7 +587,7 @@ void ChanServ::RemStored(const mstring & in)
     BTCB();
     FT("ChanServ::RemStored", (in));
 
-    RLOCK((lck_ChanServ, lck_stored));
+    WLOCK((lck_ChanServ, lck_stored));
     ChanServ::stored_t::iterator iter = stored.find(in.LowerCase());
     if (iter == stored.end())
     {
@@ -605,7 +604,6 @@ void ChanServ::RemStored(const mstring & in)
 	map_entry < Chan_Stored_t > entry(iter->second);
 	entry->setDelete();
     }
-    WLOCK((lck_ChanServ, lck_stored));
     stored.erase(iter);
     ETCB();
 }
@@ -650,14 +648,13 @@ void ChanServ::AddLive(Chan_Live_t * in)
 #endif
     }
 
-    RLOCK((lck_ChanServ, lck_live));
+    WLOCK((lck_ChanServ, lck_live));
     map_entry < Chan_Live_t > old_entry(live, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	live.erase(in->Name().LowerCase());
     }
-    WLOCK((lck_ChanServ, lck_live));
     live[in->Name().LowerCase()] = in;
     ETCB();
 }

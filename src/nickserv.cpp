@@ -403,14 +403,13 @@ void NickServ::AddStored(Nick_Stored_t * in)
 #endif
     }
 
-    RLOCK((lck_NickServ, lck_stored));
+    WLOCK((lck_NickServ, lck_stored));
     map_entry < Nick_Stored_t > old_entry(stored, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	stored.erase(in->Name().LowerCase());
     }
-    WLOCK((lck_NickServ, lck_stored));
     stored[in->Name().LowerCase()] = in;
     ETCB();
 }
@@ -467,7 +466,7 @@ void NickServ::RemStored(const mstring & in)
     BTCB();
     FT("NickServ::RemStored", (in));
 
-    RLOCK((lck_NickServ, lck_stored));
+    WLOCK((lck_NickServ, lck_stored));
     NickServ::stored_t::iterator iter = stored.find(in.LowerCase());
     if (iter == stored.end())
     {
@@ -484,7 +483,6 @@ void NickServ::RemStored(const mstring & in)
 	map_entry < Nick_Stored_t > entry(iter->second);
 	entry->setDelete();
     }
-    WLOCK((lck_NickServ, lck_stored));
     stored.erase(iter);
     ETCB();
 }
@@ -539,14 +537,13 @@ void NickServ::AddLive(Nick_Live_t * in)
 #endif
     }
 
-    RLOCK((lck_NickServ, lck_live));
+    WLOCK((lck_NickServ, lck_live));
     map_entry < Nick_Live_t > old_entry(live, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	live.erase(in->Name().LowerCase());
     }
-    WLOCK((lck_NickServ, lck_live));
     live[in->Name().LowerCase()] = in;
     ETCB();
 }
@@ -603,7 +600,7 @@ void NickServ::RemLive(const mstring & in)
     BTCB();
     FT("NickServ::RemLive", (in));
 
-    RLOCK((lck_NickServ, lck_live));
+    WLOCK((lck_NickServ, lck_live));
     NickServ::live_t::iterator iter = live.find(in.LowerCase());
     if (iter == live.end())
     {
@@ -620,7 +617,6 @@ void NickServ::RemLive(const mstring & in)
 	map_entry < Nick_Live_t > entry(iter->second);
 	entry->setDelete();
     }
-    WLOCK((lck_NickServ, lck_live));
     live.erase(iter);
     ETCB();
 }

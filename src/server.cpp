@@ -1205,14 +1205,13 @@ void Server::AddList(Server_t * in)
 #endif
     }
 
-    RLOCK((lck_Server, lck_list));
+    WLOCK((lck_Server, lck_list));
     map_entry < Server_t > old_entry(i_list, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	i_list.erase(in->Name().LowerCase());
     }
-    WLOCK((lck_Server, lck_list));
     i_list[in->Name().LowerCase()] = in;
     ETCB();
 }
@@ -1269,7 +1268,7 @@ void Server::RemList(const mstring & in, bool downlinks)
     BTCB();
     FT("Server::RemList", (in, downlinks));
 
-    RLOCK((lck_Server, lck_list));
+    WLOCK((lck_Server, lck_list));
     Server::list_t::iterator iter = i_list.find(in.LowerCase());
     if (iter == i_list.end())
     {
@@ -1299,7 +1298,6 @@ void Server::RemList(const mstring & in, bool downlinks)
 	me->setDelete();
     }
 
-    WLOCK((lck_Server, lck_list));
     i_list.erase(iter);
 
     for (unsigned int i = 0; i < Kill.size(); i++)
