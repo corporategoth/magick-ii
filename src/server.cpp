@@ -1359,7 +1359,7 @@ void NetworkServ::execute(const mstring & data)
 	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
 		wxLogNotice("Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
 	}
-	else if (msgtype=="PROTOCOL")
+	else if (msgtype=="PROTOCTL")
 	{
 	    // This is valid from DAL4.4.15+
 	}
@@ -2057,7 +2057,8 @@ void NetworkServ::numeric_execute(const mstring & data)
 		else if (Parent->servmsg.IsName(*k))
 		{
 		    Parent->servmsg.signon(*k);
-		    Parent->server.MODE(*k, "+o");
+		    if (Parent->servmsg.FirstName() == *k)
+			Parent->server.MODE(*k, "+o");
 		}
 	    }
 	}

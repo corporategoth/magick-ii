@@ -1030,7 +1030,7 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
 void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Ping", (mynick, source, params));
-    Parent->events.ForcePing();
+    Parent->events->ForcePing();
     Parent->operserv.stats.i_Ping++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/PING"));
 }
@@ -1039,7 +1039,7 @@ void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
 void OperServ::do_Update(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Update", (mynick, source, params));
-    Parent->events.ForceSave();
+    Parent->events->ForceSave();
     Parent->operserv.stats.i_Update++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UPDATE"));
 }
@@ -1182,7 +1182,7 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
 		    ToHumanTime(Parent->config.Squit_Cancel()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SYNC"),
 		    ToHumanTime(Parent->config.Cycletime()).c_str(),
-		    Parent->events.SyncTime().c_str());
+		    Parent->events->SyncTime().c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_CYCLE"),
 		    ToHumanTime(Parent->config.Checktime()).c_str(),
 		    ToHumanTime(Parent->config.Ping_Frequency()).c_str());

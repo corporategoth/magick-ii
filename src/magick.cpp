@@ -44,8 +44,8 @@ Magick::Magick(int inargc, char **inargv)
     i_gotconnect = false;
     i_connected = false;
     i_auto = false;
-    loggertask.open();
-    events.open();
+    loggertask = new LoggerTask;
+    loggertask->open();
 }
 
 int Magick::Start()
@@ -152,7 +152,11 @@ int Magick::Start()
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
 
-#if 0
+    if (loggertask != NULL)
+    {
+	loggertask->close(0);
+	delete loggertask;
+    }
 #ifndef WIN32
     if ((i = fork ()) < 0)
     {
@@ -167,7 +171,10 @@ int Magick::Start()
 	RET(1);
     }
 #endif
-#endif
+    loggertask = new LoggerTask;
+    loggertask->open();
+    events = new EventTask;
+    events->open();
 
     wxFile pidfile;
     pidfile.Create(files.Pidfile().Strip(mstring::stBoth),true);
@@ -369,6 +376,11 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGTSTP);
 #endif
 
+    if (events != NULL)
+    {
+	events->close(0);
+	delete events;
+    }
     delete signalhandler;
     if(logger!=NULL)
 	delete logger;
@@ -1987,7 +1999,11 @@ void Magick::doscripthandle(const mstring& server, const mstring& command, const
 
 Magick::~Magick()
 {
-    loggertask.i_shutdown();
+    if (loggertask != NULL)
+    {
+	loggertask->close(0);
+	delete loggertask;
+    }
 }
 
 bool Magick::startup_t::IsServer(mstring server)

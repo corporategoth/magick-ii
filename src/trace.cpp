@@ -194,11 +194,11 @@ void ThreadID::WriteOut(const mstring &message)
 	for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end(); iter++)
 	    if (iter->first == t_internaltype)
 	    {
-		Parent->loggertask.logmessage(t_internaltype, iter->second);
+		Parent->loggertask->logmessage(t_internaltype, iter->second);
 		ThreadMessageQueue.erase(iter);
 		iter = ThreadMessageQueue.begin();
 	    }
-	Parent->loggertask.logmessage(t_internaltype,finalout);
+	Parent->loggertask->logmessage(t_internaltype,finalout);
     }
 }
 

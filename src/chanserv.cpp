@@ -2630,8 +2630,6 @@ long Chan_Stored_t::Access_value(mstring entry, bool looklive)
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     set<entlist_val_t<long> >::iterator iter = Access;
 
-    if (
-
     if (Access_find(entry, looklive))
 	retval=Access->Value();
     Access = iter;

@@ -57,8 +57,6 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* *", Parent->commserv.OPER_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT*", Parent->commserv.OPER_Name(), do_1_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT*", Parent->commserv.REGD_Name(), do_Stats);
 }
 
@@ -478,6 +476,14 @@ void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
 void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_Stats", (mynick, source, params));
+
+    if (params.WordCount(" ") > 1 &&
+	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name()].IsIn(source))
+    {
+	do_1_2param(mynick, source, params);
+	return;
+    }
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_UPTIME"),
 		StartTime.Ago().c_str());

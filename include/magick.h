@@ -77,8 +77,10 @@ private:
 	bool i_connected;
 
 public:
+	LoggerTask *loggertask;
+	EventTask *events;
+	
 	// Stuff that NEEDS to be there first
-	LoggerTask loggertask;
 	CommandMap commands;
 
 	// Services ...
@@ -92,7 +94,6 @@ public:
 	// Other stuff ...
 	NetworkServ server;
         IrcServer ACO_server;
-	EventTask events;
 
 	// Config Values
 	class startup_t {
