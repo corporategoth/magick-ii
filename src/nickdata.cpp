@@ -2027,6 +2027,13 @@ mstring Nick_Live_t::ChanIdentify(const mstring & channel, const mstring & passw
 		    long level = cstored->GetAccess(i_Name);
 		    if (oldlevel < level)
 		    {
+			if (!Magick::instance().server.proto.FounderMode().empty() &&
+			    oldlevel <= Magick::instance().chanserv.Level_Max())
+			{
+			    for (unsigned int i = 0; i < Magick::instance().server.proto.FounderMode().length(); i++)
+				clive->SendMode("+" + mstring(Magick::instance().server.proto.FounderMode()[i]) + " " + i_Name);
+			}
+
 			if (oldlevel < cstored->Level_value("AUTOOP") && level >= cstored->Level_value("AUTOOP"))
 			{
 			    if (!clive->IsOp(i_Name))
@@ -2167,7 +2174,7 @@ mstring Nick_Live_t::Identify(const mstring & password)
 	    {
 		if (Magick::instance().chanserv.IsStored(*jci))
 		{
-		    bool op = false, halfop = false, voice = false;
+		    bool op = false, halfop = false, voice = false, founder = false;
 		    {
 			map_entry<Chan_Stored_t> cstored = Magick::instance().chanserv.GetStored(*jci);
 
@@ -2209,6 +2216,11 @@ mstring Nick_Live_t::Identify(const mstring & password)
 			}
 
 			long access = cstored->GetAccess(i_Name);
+
+			if (!Magick::instance().server.proto.FounderMode().empty() &&
+			    access > Magick::instance().chanserv.Level_Max())
+			    founder = true;
+
 			if (access >= cstored->Level_value("AUTOOP"))
 			    op = true;
 			else if (Magick::instance().server.proto.ChanModeArg().Contains('h') && access >= cstored->Level_value("AUTOHALFOP"))
@@ -2217,11 +2229,18 @@ mstring Nick_Live_t::Identify(const mstring & password)
 			    voice = true;
 		    }
 
-		    if (op || halfop || voice)
+		    if (op || halfop || voice || founder)
 		    {
 			if (Magick::instance().chanserv.IsLive(*jci))
 			{
 			    map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(*jci);
+
+			    if (founder)
+			    {
+				for (unsigned int i = 0; i < Magick::instance().server.proto.FounderMode().length(); i++)
+				    clive->SendMode("+" + mstring(Magick::instance().server.proto.FounderMode()[i]) + " " + i_Name);
+			    }
+
 			    if (op && !clive->IsOp(i_Name))
 				clive->SendMode("+o " + i_Name);
 			    else if (halfop && !clive->IsHalfOp(i_Name))
