@@ -1,0 +1,315 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+
+<html>
+  <head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <meta http-equiv="Content-Type" content=
+    "text/html; charset=iso-8859-1">
+
+    <title>SXP</title>
+  </head>
+
+  <body>
+    <h1>SXP</h1>
+
+    <p>This project is <a href= 
+    "http://sourceforge.net/project/?group_id=2280">hosted</a> at <a href= 
+    "http://sourceforge.net"> <img src= 
+    "http://sourceforge.net/sflogo.php?group_id=2280&amp;type=1" width=
+    "88" height="31" border="0" alt="SourceForge"></a>.</p>
+
+    <p>Last update: <b>14 Mar 2000</b>. Latest version: <a href="#changes">
+    <b>0.061</b></a></p>
+
+    <p><a href="#what">What is SXP?</a><br>
+     <a href="#why">Why XML Persistence, Anyway?</a><br>
+     <a href="#platform">Platform &amp; Performance</a><br>
+     <a href="#download">Download Latest Version</a><br>
+     <a href="#changes">Changes</a><br>
+     <a href="#future">Future Work</a><br>
+     <a href="#manual">SXP Manual (not too formal)</a><br>
+     <a href="#disclaimer">Disclaimer and License</a><br>
+     <a href="#contacts">Credits &amp; Contacts</a><br>
+     <a href="#links">XML Links</a><br>
+    </p>
+
+    <h2><a name="what">What is SXP?</a></h2>
+
+    <p>SXP stands for Simple XML Persistence, and is a quick-and-dirty C++
+    library I threw together. It provides a simple (I hope) mechanism for
+    enabling the objects in your application to persist themselves (i.e.
+    read from and write to) to a XML file. It is built as a C++ wrapper
+    around James Clark's excellent <a href= 
+    "http://www.jclark.com/xml/expat.html"><em>expat</em></a> parser.</p>
+
+    <p>SXP's major selling points are:</p>
+
+    <ul>
+      <li>ease of use: a major design goal for it was adding XML
+      persistence to a class to take around 2 line of code per class
+      member (one for reading and one for writing). Efficiency concerns
+      and C++ syntax quirks expanded this number to around 4 lines of code
+      per class member (plus some fixed overhead); still, you should be
+      able to add XML persistence to your classes in a minutes, rather
+      than hours.</li>
+
+      <li>efficiency: XML persistence via SXP adds to your persistable
+      objects four virtual functions and no data members. If you need to
+      support persisting of object references, you might need to add a
+      single pointer to your objects. SXP can be used directly with all
+      but the most lightweight of objects. SXP uses hash tables and works
+      with one string compare ( <em>strcmp()</em> ) per XML tag in the
+      input file. SXP reuses its internal objects from a pool to avoid
+      constant allocation/deallocation of small objects.</li>
+
+      <li>acceptable performance: SXP is more than fast enough for
+      prototyping applications and even for small-to-medium
+      production-level projects.</li>
+    </ul>
+
+    <h2><a name="why">Why XML Persistence, Anyway?</a></h2>
+
+    <p>If you are allergic towards industry buzzwords (like myself), you
+    probably think XML is for consultants and "enterprise developers"
+    (whatever that means), not for Real Programmers (like yourself).
+    Still, I think XML is a Good Thing (TM), and is suitable not only for
+    some multi-million dollar project with 5000 pages of design documents
+    filled with UML and Booch notation, but also for the config files of
+    your little pet project you're developing in your spare time, or for
+    the document format of the application you're working on to in your
+    [non-spare?!?] time. Here are a few reasons why I like XML:</p>
+
+    <ul>
+      <li>XML files are easy to view and easy to edit with a simple text
+      editor - anything from Notepad to emacs will do. There are also
+      several freely available XML editors, which make the task even
+      easier - check out the "Buyer's Guide" section at <a href= 
+      "http://xml.com">XML.com</a>. This means it will be easier to debug
+      your save/load code. Ever had the problem when you write your save
+      and load routines, and saving and loading a file definitely doesn't
+      produce the same memory objects you started with? You have no idea
+      whether the bug is in the save or the load routine, and spend 1 hour
+      tracing the correct one. Not with XML: one look at the XML file
+      itself can tell you if it's correct.</li>
+
+      <li>XML files are open - anyone can read your XML files, process
+      them, convert them with a XML parser or a few lines of Perl code.
+      (If you still haven't picked up Perl, go ahead and spend 2-3 days to
+      learn it. You'll thank me.) That "anyone" includes yourself after
+      six months - if you're like me, after 6 months you won't know
+      anything about the code you're happily hacking at today, including
+      how to read its data files. You can find XML parsers for all kinds
+      of environments and programming languages.</li>
+
+      <li>XML files are high-level - the parser and the support lib
+      (something like SXP) will take care of handling primitive data types
+      like numbers and strings, and you'll never have the joy again of
+      having to store the string length before the string itself (brrr...)
+      Still, XML files are more compact than most high-level alternatives
+      (I've used MS OLE IPropertyBags, stored in OLE structured storage
+      files, which definitely incur more overhead).</li>
+
+      <li>Disk space is ultra-cheap today, so the overhead of XML compared
+      to binary files can be safely ignored in most cases. (In the rest of
+      the cases, you're looking at more data than you can handle without a
+      database engine.)</li>
+
+      <li>XML is simple to use. The special case of using XML for object
+      persistence is made even more simple with SXP.</li>
+    </ul>
+
+    <h2><a name="platform">Platform &amp; Performance</a></h2>
+
+    <p>SXP was developed on Win32 with Visual C++ 6.0 and tested with <a
+    href="http://www.jclark.com/xml/expat.html">expat</a> 1.1. It uses
+    heavily STL for strings and collections. If you have expat and STL on
+    your system, you should be able to compile and use SXP - but I haven't
+    really tried it. </p>
+	<p><i>Update:</i> Thanks to Andrei Errapart for cleaning up the
+	incompatibilities with GCC and preparing a GNU autoconf version
+	for those on weird platforms, as well as building RPMs.
+	</p>
+
+    <p>SXP is meant for fast prototyping; it was easy to write, and it is
+    easy to use. Its performance isn't what it would be if I didn't take
+    the easy shortcut with STL strings and lists. If you decide to use SXP
+    in a production-level application, you should probably rip off STL and
+    replace it with your own custom string and list handling in static
+    arrays. Quick profiling has shown that when handling large
+    multimegabyte XML files SXP spends about 30% of its time in <em>
+    expat</em>, 55-60% in the STL support routines and only 10-15% in the
+    SXP code itself. Moral: you can get it to run much, much faster, if
+    you need.</p>
+
+    <p>Still, SXP is not too slow to be unusable: for example, reading a 5
+    MB XML file describing the structure of a graph with 1000 nodes and
+    100 000 connections between them (see the second example below) takes
+    less then 4 seconds on my 450 MHz Celeron. This comes to show that,
+    first, with today's CPUs you can get away with being lazy and using
+    STL, and, second, <em>expat</em> is a darn good parser.</p>
+
+    <h2><a name="download">Download latest version</a></h2>
+
+    <p>The latest version of SXP is 0.061. You can choose from three
+	packages:
+	<ul>
+	<li><a href="sxp-0.061.zip">sxp-0.061.zip</a> (18 KB) - just the source
+	files, makes a reasonably good attempt at self-configuration, works
+	ok for Win32/MSVC++ and linux/gcc.</li>
+	<li><a href="sxp-0.06.tar.gz">sxp-0.06.tar.gz</a> (127 KB) - 
+	source files + GNU autoconf script, should work "everywhere" GNU autoconf
+	works.</li>
+	<li><a href="sxp-0.06-1.i386.rpm">sxp-0.06-1.i386.rpm</a> (78 KB) - 
+	RPM for Linux-IA/32.</li>
+	</ul>
+	</p>
+
+    <p>You will need to download <a href= 
+    "ftp://ftp.jclark.com/pub/xml/expat.zip"><em>expat</em></a> first.</p>
+
+    <p>The "simple" archive contains the following files:</p>
+
+    <ul>
+      <li><a href="sxp.h">sxp.h</a>, <a href="sxp.cpp">sxp.cpp</a>, <a
+      href="sxp_data.h">sxp_data.h</a> - SXP itself. You only need this to
+      use SXP. Please forgive my Microsoftish naming habits :-)</li>
+
+      <li><a href="config.cpp">config.cpp</a>, <a href="config.xml">
+      config.xml</a> - a simple example of using SXP to store
+      configuration information (or user preferences, if you like) in an
+      XML file.</li>
+
+      <li><a href="graph.cpp">graph.cpp</a>, <a href="graph.xml">
+      graph.xm</a>l - a bit more complicated example of using SXP to store
+      a more complex data structure (a graph), illustrates a possible
+      technique for persisting object references.</li>
+    </ul>
+
+    <p>To build the examples, you will need the following files from the
+    <em>expat</em> distribution:<br>
+     <strong>xmltok.dll, xmlparse.dll, xmlparse.lib,
+    xmlparse.h</strong><br>
+     <strong>xmlparse.lib</strong> and <strong>xmlparse.h</strong> must be
+    in the same directory where <strong>sxp.h</strong> is located; the two
+    <strong>.dll</strong> files must be located in the directory where you
+    execute your own program. To cut a long story short, just unzip the
+    SXP archive in a directory of your choice, copy the four expat files
+    there too, and create your Visual C++ workspace and project there.</p>
+
+    <p>You will need to redistribute the two <strong>.dll</strong> files
+    from expat with your application if you use SXP.</p>
+
+    <h2><a name="changes">Revision history:</a></h2>
+
+    <p><b>0.061</b></p>
+
+    <ul>
+      <li>Cleaned up incompatibilities with GCC, GNU autoconf support
+	  courtesy of Andrei Errapart. You can choose from three
+	  versions now: The basic version, guaranteed to work on Win32/MSVC++
+	  and linux/GCC, the TGZ version with all the GNU autoconf machinery
+	  inside it for all the others, and a RPM for Linux/IA-32.</li>
+    </ul>
+	
+    <p><b>0.06</b></p>
+
+    <ul>
+      <li>Unicode output/input via UTF-8 (only for character data, tags
+      and attribute names can be ASCII IMHO).</li>
+    </ul>
+
+    <p><b>0.05</b></p>
+
+    <p> All in all, from a user class point of view, only one thing has
+    changed: recursive invocation when outputting XML is done with
+    WriteSubElement, not with WriteElement.</p>
+
+    <ul>
+      <li>reading of simple data types from char * and fprintf-ing of said
+      data types in FP segregated into separate classes and into a new
+      file; this provides a single place to add data converters</li>
+
+      <li>hashtable moved to singleton object instead of all-static class
+      because of problems with order of construction of global objects
+      (more specifically, tags which are static members in user
+      classes)</li>
+
+      <li>virtual function calls removed where possible with "class C:
+      B&lt;C&gt;" trick</li>
+
+      <li>inlining introduced in gross quantities</li>
+
+      <li>a bunch of minor bugs fixed</li>
+    </ul>
+
+    <p><b>0.04</b></p>
+
+    <p>Initial public release.</p>
+
+    <h2><a name="manual">SXP Manual</a></h2>
+
+    <p>Both <a href="sxp.h">sxp.h</a> itself and the samples (<a href= 
+    "config.cpp">config.cpp</a> and <a href="graph.cpp">graph.cpp</a>) are
+    <em>very</em> heavily commented and will serve the role of a manual.
+    Please first read <a href="config.cpp">config.cpp</a>, then the
+    comments for the interfaces in <a href="sxp.h">sxp.h</a>. Once you
+    understand that, read <a href="graph.cpp">graph.cpp</a>. This should
+    be more than enough for you to know how to SXP-enable your own
+    classes. If you think more explanation and instruction is needed, <a
+    href="mailto:assen@users.sourceforge.net">write</a> me and I'll try to
+    find the time for a decent manual.</p>
+
+    <h2><a name="future">Future work</a></h2>
+
+    <p>I intend to remove as much of STL strings as possible to try to
+    improve the performance.<br>
+     I will try to find some time for a decent introduction text.<br>
+     Any <a href="mailto:assen@users.sourceforge.net">suggestions</a>
+    towards more functionality? I'm trying to adhere to the KISS principle
+    in SXP, though; I don't want to fill it with bells and whistles.</p>
+
+    <h2><a name="disclaimer">Disclaimer and License</a></h2>
+
+    <p>SXP has not been extensively tested. It worked on all the test
+    examples I wrote, a modification of it works inside a commercial
+    application I'm working on, but I can't guarantee it will work for
+    you. If it crashes your system, deletes or corrupts your data, and
+    destroys your personal life, it's not my fault - you've been warned.
+    Proceed at your own risk.</p>
+
+    <p>SXP can be distributed by any of the non-viral public licenses out
+    there. I like the <a href= 
+    "http://www.opensource.org/licenses/artistic-license.html">Artistic
+    License</a>; I don't like the GPL. Basically, do whatever you like
+    with it, let me know if you make it better, and don't put it under the
+    GPL.</p>
+
+    <h2><a name="contacts">Contacts and credits</a></h2>
+
+    <p>SXP is a tiny layer on top of a much bigger piece of software, the
+    excellent <em><a href="http://www.jclark.com/xml/expat.html">
+    expat</a></em> XML parser by <a href="http://www.jclark.com">James
+    Clark</a>. If SXP works, it is James Clark's credit; when SXP doesn't
+    work, it's my fault.</p>
+
+    <p>My name is Ivan-Assen Ivanov and I live somewhere in Bulgaria (go
+    fetch a book of maps). Forgive my English. I hope my C++ is
+    better.</p>
+
+    <p>I'd be glad to hear complaints, bug reports, praises, suggestions
+    and tales how you used SXP and killed the dragon <a href= 
+    "mailto:assen@users.sourceforge.net">here</a>.</p>
+
+    <p>Big Brother is watching you, number <a href= 
+    "http://www.TheCounter.com/counter/581781.vmain" target="_top"><img
+    alt="0" src="http://c1.thecounter.com/id=581781" border="0"></a></p>
+
+    <h2>XML <a name="links">Links</a></h2>
+
+    <p><a href="http://xml.com">xml.com</a> - great articles, a lot of
+    product reviews<br>
+     <a href="http://www.jclark.com">James Clark</a>'s page - the author
+    of expat</p>
+  </body>
+</html>
+
