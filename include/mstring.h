@@ -25,6 +25,10 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2001/12/12 07:43:52  prez
+** Some more platform changes.  Made it look for _snprintf and _vsnprintf
+** aswell (is the case on windows).  Also updated windows config.h.win.
+**
 ** Revision 1.84  2001/12/12 07:19:20  prez
 ** Added check for snprintf, and changed *toa functions to use snprintf.  Also
 ** moved magick::snprintf and magick::vsnprintf to just snprintf and vsnprintf
@@ -318,6 +322,9 @@ bool match_wild (const char *pattern, const char *str, bool nocase);
 mstring fmstring (const char *fmt, ...);
 
 #ifndef HAVE_VSNPRINTF
+#ifdef HAVE__VSNPRINTF
+#define vsnprintf _vsnprintf
+#else
 /** For systems that dont have vsnprintf
  *  A simple wrapper to ACE_OS::vsprintf
  */
@@ -326,9 +333,13 @@ inline int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
     int iLen = ACE_OS::vsprintf(buf, fmt, ap);
     return iLen;
 }
-#endif
+#endif /* _vsnprintf */
+#endif /* vsnprintf */
 
 #ifndef HAVE_SNPRINTF
+#ifdef HAVE__SNPRINTF
+#define snprintf _snprintf
+#else
 /** For systems that dont have snprintf
  *  A simple wrapper to vsnprintf.
  *  @see vsnprintf
@@ -341,7 +352,8 @@ inline int snprintf(char *buf, const size_t sz, const char *fmt, ...)
     va_end(argptr);
     return iLen;
 }
-#endif
+#endif /* _snprintf */
+#endif /* snprintf */
 
 #ifndef HAVE_ITOA
 /** Reverse of atoi */

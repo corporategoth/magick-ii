@@ -58,6 +58,11 @@
 #define CONVERT 1
 #endif
 
+/* Enable two-way encryption on passwords */
+#ifndef GETPASS
+/* #undef GETPASS */
+#endif
+
 /* Define if we are on a windows system */
 #ifndef WIN32
 #define WIN32 1
@@ -93,6 +98,15 @@
 
 /* Define if you have the vsnprintf function.  */
 /* #undef HAVE_VSNPRINTF */
+
+/* Define if you have the `_vsnprintf' function. */
+#define HAVE__VSNPRINTF 1
+
+/* Define if you have the snprintf function.  */
+/* #undef HAVE_SNPRINTF */
+
+/* Define if you have the `_snprintf' function. */
+#define HAVE__SNPRINTF 1
 
 /* Define if you have the <exception> header file.  */
 #define HAVE_EXCEPTION 1
@@ -135,6 +149,5 @@
 
 /* Version number of package */
 #define VERSION "2.0"
-
 
 #endif

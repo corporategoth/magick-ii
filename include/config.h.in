@@ -138,6 +138,12 @@
 /* Define if you have the `vsnprintf' function. */
 #undef HAVE_VSNPRINTF
 
+/* Define if you have the `_snprintf' function. */
+#undef HAVE__SNPRINTF
+
+/* Define if you have the `_vsnprintf' function. */
+#undef HAVE__VSNPRINTF
+
 /* Name of package */
 #undef PACKAGE
 

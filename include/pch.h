@@ -21,6 +21,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2001/12/12 07:43:52  prez
+** Some more platform changes.  Made it look for _snprintf and _vsnprintf
+** aswell (is the case on windows).  Also updated windows config.h.win.
+**
 ** Revision 1.43  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -274,26 +278,24 @@ typedef DIR ACE_DIR;
 typedef struct utsname ACE_utsname;
 #endif
 
-/* Alter this when it is intergrated
- * Below is an example if it was implemented in 6.5 */
-#if ACE_MAJOR_VERSION < 6 || (ACE_MAJOR_VERSION == 6 && ACE_MINOR_VERSION < 5)
+/* Alter this when it is intergrated */
 #include "ace_memory.h"
-#endif /* ifdef __cplusplus */
 
 #define atoi(x)		ACE_OS::strtol(x, NULL, 10)
 #define atol(x)		ACE_OS::strtol(x, NULL, 10)
 #define atof(x)		ACE_OS::strtod(x, NULL)
 #define atod(x)		ACE_OS::strtod(x, NULL)
 
-/* ACE's linux exclusion is too large, so use the
- * underlying OS strtoul for this, else you'll get
- * a standard long that doesnt convert to an unsigned!
- *
-#define atoui(x)	ACE_OS::strtoul(x, NULL, 10)
-#define atoul(x)	ACE_OS::strtoul(x, NULL, 10)
-*/
+/* ACE cast strtoul to long on Linux until v5.1.5 */
+#if ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
+	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \
+	ACE_BETA_VERSION >= 5)))
 #define atoui(x)	strtoul(x, NULL, 10)
 #define atoul(x)	strtoul(x, NULL, 10)
+#else
+#define atoui(x)	ACE_OS::strtoul(x, NULL, 10)
+#define atoul(x)	ACE_OS::strtoul(x, NULL, 10)
+#endif
 
 /* Debugging software -- if we dont use it, use ACE equivs */
 #if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)

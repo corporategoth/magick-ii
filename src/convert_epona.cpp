@@ -27,6 +27,10 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2001/12/12 07:43:52  prez
+** Some more platform changes.  Made it look for _snprintf and _vsnprintf
+** aswell (is the case on windows).  Also updated windows config.h.win.
+**
 ** Revision 1.5  2001/11/17 07:18:12  prez
 ** Fixed up unbanning, so it gets ALL bans ...
 **
@@ -69,9 +73,6 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 #ifdef CONVERT
 #include "convert_epona.h"
 #include "magick.h"
-#ifdef _WIN32
-#define strcasecmp stricmp
-#endif
 
 /* Database file handling routines.
  *
@@ -632,7 +633,7 @@ EPO_NickCore *EPO_findcore(const char *nick, EPO_NickCore **nclists)
     EPO_NickCore *nc;
 
     for (nc = nclists[HASH(nick)]; nc; nc = nc->next) {
-	if (strcasecmp(nc->display, nick) == 0)
+	if (ACE_OS_String::strcasecmp(nc->display, nick) == 0)
 	    return nc;
     }
     
