@@ -508,16 +508,54 @@ mDateTime::operator mstring()
 }
 int mDateTime::DayOfWeek()
 {
-	// todo this is limited to the range 1900-2036, rewrite it to use internal format
-	tm *localtm;
-	time_t localtm_t=(time_t)*this;
-	localtm=localtime(localtm_t);
-	return localtm->tm_wday;
+	mDateTime knownmonday(1970,1,5);
+	int Result=((int)(Val-knownmonday.Val))%7;
+	return Result;
+}
+void mDateTime::DecodeDate(int &year, int &month, int &day)
+{
+  const int D1 = 365;
+  const int D4 = D1 * 4 + 1;
+  const int D100 = D4 * 25 - 1;
+  const int D400 = D100 * 4 + 1;
+  int NumDays = (int)Val;
+  int Y400,Y100,Y4,Y1,Y,M=0,D;
+  int LeftOver;
+
+  LeftOver=NumDays%D400;
+  Y400=NumDays/D400;
+  NumDays=LeftOver;
+
+  LeftOver=NumDays%D100;
+  Y100=NumDays/D100;
+  NumDays=LeftOver;
+
+  LeftOver=NumDays%D4;
+  Y4=NumDays/D4;
+  NumDays=LeftOver;
+  
+  LeftOver=NumDays%D1;
+  Y1=NumDays/D1;
+  NumDays=LeftOver;
+
+  Y=Y400*400+Y100*100+Y4*4+Y1;
+
+  int i=0;
+  mDayTable *DayTable=GetDayTable(Y);
+  while(*DayTable[i]>NumDays)
+  {
+	  M++;
+	  i++;
+	  NumDays-=*DayTable[i];
+  }
+  D=NumDays;
+  year=Y;
+  month=M;
+  day=D;
+
 }
 #if 0
-	void DecodeDate(int &year, int &month, int &day);
 	void DecodeTime(int &hour, int &min, int &sec, int& msec); 
-};
 
 wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);
 wxInputStream& operator>>(wxInputStream& is, mDateTime& src);
