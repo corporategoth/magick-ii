@@ -1296,9 +1296,9 @@ size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
 #endif
 
 // there is no distinction between text and binary files under Unix
-#if defined(__UNIX__) || defined(__linux__)
+#ifndef WIN32
   #define   O_BINARY    (0)
-#endif  //__UNIX__
+#endif
 
 bool wxFile::Exists(const char *name)
 {
@@ -1561,20 +1561,26 @@ bool wxTempFile::Open(const mstring& strName)
   // otherwise rename() in Commit() might not work (if the files are on
   // different partitions for example). Unfortunately, the only standard
   // (POSIX) temp file creation function tmpnam() can't do it.
-  #if defined(__UNIX__) || defined(__linux__)
-    static const char *szMktempSuffix = "XXXXXX";
-    m_strTemp << strName << szMktempSuffix;
-    mktemp((char *)m_strTemp.c_str()); // will do because length doesn't change
-  #else // Windows
+  #ifdef WIN32
     mstring strPath;
     wxSplitPath(strName, &strPath, NULL, NULL);
     if ( strPath.IsEmpty() )
       strPath = '.';  // GetTempFileName will fail if we give it empty string
-	char cm_strTemp[MAX_PATH];
+
+    // 260 was taken from windef.h
+    #ifndef MAX_PATH
+      #define MAX_PATH  260
+    #endif
+    char cm_strTemp[MAX_PATH];
+
     if ( !GetTempFileName(strPath, "wx_",0, cm_strTemp))
       wxLogLastError("GetTempFileName");
     m_strTemp=cm_strTemp;
-  #endif  // Windows/Unix
+  #else
+    static const char *szMktempSuffix = "XXXXXX";
+    m_strTemp << strName << szMktempSuffix;
+    mktemp((char *)m_strTemp.c_str()); // will do because length doesn't change
+  #endif
 
   return m_file.Open(m_strTemp, wxFile::write);
 }

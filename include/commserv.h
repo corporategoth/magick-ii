@@ -70,9 +70,9 @@ public:
 
     bool MSG_insert(mstring entry, mstring nick);
     bool MSG_erase();
-    entlist_i MSG_begin()const	{ return i_Messages.begin(); }
-    entlist_i MSG_end()const	{ return i_Messages.end(); }
-    size_t MSG_size()const	{ return i_Messages.size(); }
+    entlist_i MSG_begin()	{ return i_Messages.begin(); }
+    entlist_i MSG_end()		{ return i_Messages.end(); }
+    size_t MSG_size()		{ return i_Messages.size(); }
     entlist_i message;
 
 };

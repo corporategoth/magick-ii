@@ -64,20 +64,7 @@ mstring &wxGetHomeDir(mstring &pstr)
   FT("wxGetHomeDir", (pstr));
   mstring& strDir = pstr;
 
-  #if defined(__UNIX__) || defined(__linux__)
-    const char *szHome = getenv("HOME");
-    if ( szHome == NULL ) {
-      // we're homeless...
-      wxLogWarning("can't find user's HOME, using current directory.");
-      strDir = ".";
-    }
-    else
-       strDir = szHome;
-
-    // add a trailing slash if needed
-    if ( strDir.Last() != '/' )
-      strDir << '/';
-  #else   // Windows
+  #ifdef WIN32
       const char *szHome = getenv("HOMEDRIVE");
       if ( szHome != NULL )
         strDir << szHome;
@@ -94,8 +81,6 @@ mstring &wxGetHomeDir(mstring &pstr)
         if ( strcmp(szHome, "\\") != 0 )
           RET(strDir);
       }
-
-
     // 260 was taken from windef.h
     #ifndef MAX_PATH
       #define MAX_PATH  260
@@ -110,7 +95,20 @@ mstring &wxGetHomeDir(mstring &pstr)
     // extract the dir name
     wxSplitPath(strPath, &strDir, NULL, NULL);
 
-  #endif  // UNIX/Win
+  #else
+    const char *szHome = getenv("HOME");
+    if ( szHome == NULL ) {
+      // we're homeless...
+      wxLogWarning("can't find user's HOME, using current directory.");
+      strDir = ".";
+    }
+    else
+       strDir = szHome;
+
+    // add a trailing slash if needed
+    if ( strDir.Last() != '/' )
+      strDir << '/';
+  #endif
 
   RET(strDir);
 }

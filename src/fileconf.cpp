@@ -76,17 +76,17 @@ mstring wxFileConfig::GetGlobalDir()
   NFT("wxFileConfig::GetGlobalDir");
   mstring strDir;
 
-  #if defined(__UNIX__) || defined(__linux__)
-    strDir = "/etc/";
-  #elif defined(__WXSTUBS__)
-    wxASSERT_MSG( false, "TODO" ) ;
-  #else // Windows
+  #ifdef WIN32
     char szWinDir[MAX_PATH];
     ::GetWindowsDirectory(szWinDir, MAX_PATH);
 
     strDir = szWinDir;
     strDir << '\\';
-  #endif // Unix/Windows
+  #elif defined(__WXSTUBS__)
+    wxASSERT_MSG( false, "TODO" ) ;
+  #else // unix
+    strDir = "/etc/";
+  #endif
 
   RET(strDir);
 }
@@ -98,10 +98,10 @@ mstring wxFileConfig::GetLocalDir()
 
   wxGetHomeDir(&strDir);
 
-#if defined(__UNIX__) || defined(__linux__)
-  if (strDir.Last() != '/') strDir << '/';
-#else
+#ifdef WIN32
   if (strDir.Last() != '\\') strDir << '\\';
+#else
+  if (strDir.Last() != '/') strDir << '/';
 #endif
 
   RET(strDir);
@@ -114,11 +114,11 @@ mstring wxFileConfig::GetGlobalFileName(const char *szFile)
   str << szFile;
 
   if ( strchr(szFile, '.') == NULL )
-  #if defined(__UNIX__) || defined(__linux__)
-    str << ".conf";
-  #else   // Windows
+  #ifdef WIN32
     str << ".ini";
-  #endif  // UNIX/Win
+  #else
+    str << ".conf";
+  #endif
 
   RET(str);
 }
@@ -128,7 +128,7 @@ mstring wxFileConfig::GetLocalFileName(const char *szFile)
   FT("wxFileConfig::GetLocalFileName", (szFile));
   mstring str = GetLocalDir();
 
-  #if defined(__UNIX__) || defined(__linux__)
+  #ifndef WIN32
     str << '.';
   #endif
 
@@ -1763,20 +1763,7 @@ const char* wxGetHomeDir(mstring *pstr)
   FT("wxGetHomeDir", (pstr));
   mstring& strDir = *pstr;
 
-  #if defined(__UNIX__) || defined(__linux__)
-    const char *szHome = getenv("HOME");
-    if ( szHome == NULL ) {
-      // we're homeless...
-      wxLogWarning("can't find user's HOME, using current directory.");
-      strDir = ".";
-    }
-    else
-       strDir = szHome;
-
-    // add a trailing slash if needed
-    if ( strDir.Last() != '/' )
-      strDir << '/';
-  #else   // Windows
+  #ifdef WIN32
       const char *szHome = getenv("HOMEDRIVE");
       if ( szHome != NULL )
         strDir << szHome;
@@ -1807,8 +1794,20 @@ const char* wxGetHomeDir(mstring *pstr)
 
     // extract the dir name
     wxSplitPath(strPath, &strDir, NULL, NULL);
+  #else
+    const char *szHome = getenv("HOME");
+    if ( szHome == NULL ) {
+      // we're homeless...
+      wxLogWarning("can't find user's HOME, using current directory.");
+      strDir = ".";
+    }
+    else
+       strDir = szHome;
 
-  #endif  // UNIX/Win
+    // add a trailing slash if needed
+    if ( strDir.Last() != '/' )
+      strDir << '/';
+  #endif
 
   RET(strDir.c_str());
 }

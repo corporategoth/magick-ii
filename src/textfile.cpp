@@ -36,11 +36,11 @@
 const wxTextFileType wxTextFile::typeDefault =
 #if   defined(WIN32)
   wxTextFileType_Dos;
-#elif defined(__UNIX__) || defined(__linux__)
-  wxTextFileType_Unix;
-#else
+#elif defined(__WXSTUBS__)
   wxTextFileType_None;
   #error  "wxTextFile: unsupported platform."
+#else
+  wxTextFileType_Unix;
 #endif
 
 // ----------------------------------------------------------------------------
