@@ -543,7 +543,7 @@ namespace SXP
 	}
 
 	// give the parser food for thought
-	inline ErrCode Feed(const char *pData, int nLen, int bFinal = 1);
+	ErrCode Feed(const char *pData, int nLen, int bFinal = 1);
 
 	// give the parser a food for thought the lazy way
 	ErrCode FeedFile(char *pchFilename);
