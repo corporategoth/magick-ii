@@ -2,18 +2,31 @@
 #ifdef _MSC_VER
 #pragma hdrstop
 #endif
-// $Id$
-//
-// Magick IRC Services
-// (c) 1997-1999 Preston A. Elder <prez@magick.tm>
-// (c) 1998-1999 W. King <ungod@magick.tm>
-//
-// The above copywright may not be removed under any
-// circumstances, however it may be added to if any
-// modifications are made to this file.  All modified
-// code must be clearly documented and labelled.
-//
-// ===================================================
+
+/*  Magick IRC Services
+**
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
+**
+** The above copywright may not be removed under any
+** circumstances, however it may be added to if any
+** modifications are made to this file.  All modified
+** code must be clearly documented and labelled.
+*/
+
+/* ==========================================================
+**
+** Unofficial Event History: N/A
+**
+** Official Event History: $Log$
+** Official Event History: Revision 1.92  2000/02/15 10:06:33  prez
+** Official Event History: *** empty log message ***
+** Official Event History:
+**
+** ========================================================== */
+#pragma ident "$Id$"
+/* ========================================================== */
+
 #include "base.h"
 #include "lockable.h"
 #include "magick.h"
