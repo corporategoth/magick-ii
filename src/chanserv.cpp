@@ -20,23 +20,8 @@
 #include "magick.h"
 #include "cryptstream.h"
 
-Chan_Live_t::Chan_Live_t()
-{
-    NFT("Chan_Live_t::Chan_Live_t");
-}
 
-Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)
-{
-    NFT("Chan_Live_t::Chan_Live_t");
-    *this=in;
-}
-
-Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
-{
-    FT("Chan_Live_t::Chan_Live_t", (name, first_user));
-    i_Name = name;
-    users[first_user.LowerCase()] = pair<bool,bool>(false,false);
-}
+// Private functions
 
 void Chan_Live_t::Join(mstring nick)
 {
@@ -83,12 +68,220 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     }
 }
 
+
+
+// Public functions
+
+Chan_Live_t::Chan_Live_t()
+{
+    NFT("Chan_Live_t::Chan_Live_t");
+}
+
+
+Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)
+{
+    NFT("Chan_Live_t::Chan_Live_t");
+    *this=in;
+}
+
+
+Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
+{
+    FT("Chan_Live_t::Chan_Live_t", (name, first_user));
+    i_Name = name;
+    users[first_user.LowerCase()] = pair<bool,bool>(false,false);
+}
+
+
+void Chan_Live_t::operator=(const Chan_Live_t &in)
+{
+    NFT("Chan_Live_t::operator=");
+    bans.clear();
+    set<mstring>::const_iterator i;
+    for(i=in.bans.begin();i!=in.bans.end();i++)
+	bans.insert(*i);
+    i_Creation_Time=in.i_Creation_Time;
+    i_Key=in.i_Key;
+    i_Limit=in.i_Limit;
+    i_Name=in.i_Name;
+    i_Topic=in.i_Topic;
+    i_Topic_Set_Time=in.i_Topic_Set_Time;
+    i_Topic_Setter=in.i_Topic_Setter;
+    i_UserDef.clear();
+    map<mstring,mstring>::const_iterator j;
+    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
+	i_UserDef.insert(*j);
+    modes=in.modes;
+    users.clear();
+    map<mstring, pair<bool, bool> >::const_iterator k;
+    for(k=in.users.begin();k!=in.users.end();k++)
+	users.insert(*k);
+}
+
+
+bool Chan_Live_t::operator==(const Chan_Live_t &in) const
+{
+    NFT("Chan_Live_t::operator==");
+    RET(i_Name==in.i_Name);
+}
+
+
+bool Chan_Live_t::operator<(const Chan_Live_t &in) const
+{
+    NFT("Chan_Live_t::operator<");
+    RET(i_Name<in.i_Name);
+}
+
+
+mstring Chan_Live_t::Name()
+{
+    NFT("Chan_Live_t::Name");
+    RET("");
+}
+
+
+mDateTime Chan_Live_t::Creation_Time()
+{
+    NFT("Chan_Live_t::Creation_Time");
+    RET(i_Creation_Time);
+}
+
+
+void Chan_Live_t::Topic(mstring topic, mstring setter)
+{
+    FT("Chan_Live_t::Topic", (topic, setter));
+    i_Topic = topic;
+    i_Topic_Setter = setter;
+    i_Topic_Set_Time = Now();
+}
+
+
+void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
+{
+    FT("Chan_Live_t::Topic", (topic, setter, time));
+    i_Topic = topic;
+    i_Topic_Setter = setter;
+    i_Topic_Set_Time = time;
+}
+
+
+mstring Chan_Live_t::Topic()
+{
+    NFT("Chan_Live_t::Topic");
+    RET(i_Topic);
+}
+
+
+mstring Chan_Live_t::Topic_Setter()
+{
+    NFT("Chan_Live_t::Topic_Setter");
+    RET(i_Topic_Setter);
+}
+
+
+mDateTime Chan_Live_t::Topic_Set_Time()
+{
+    NFT("Chan_Live_t::Topic_Set_Time");
+    RET(i_Topic_Set_Time);
+}
+
+
+int Chan_Live_t::Users()
+{
+    NFT("Chan_Livt_t::Users");
+    RET(users.size());
+}
+
+
+mstring Chan_Live_t::User(int num)
+{
+    FT("Chan_Live_t::Users", (num));
+    RET("");
+}
+
+
+int Chan_Live_t::Ops()
+{
+    NFT("Chan_Live_t::Ops");
+    RET(count_if(users.begin(),users.end(),checkops));
+}
+
+
+mstring Chan_Live_t::Op(int num)
+{
+    FT("Chan_Live_t::Op", (num));
+    RET("");
+}
+
+
+int Chan_Live_t::Voices()
+{
+    NFT("Chan_Live_t::Voices");
+    RET(count_if(users.begin(),users.end(),checkvoices));
+}
+
+
+mstring Chan_Live_t::Voice(int num)
+{
+    FT("Chan_Live_t::Voice", (num));
+    RET("");
+}
+
+
+
+// What the hell do I do with this? --Striker
+// pair<bool, bool> User(mstring name);
+// See below for attempt.
+//
+// pair<bool,bool> Chan_Live_t::User(mstring name);
+// {
+//    FT("Chan_Live_t::User", (name));
+// }
+///////////////////////////////////////////////////////////////////
+
+
+
+
 bool Chan_Live_t::IsIn(mstring nick)
 {
     FT("Chan_Live_t::IsIn", (nick));
     if (users.empty()) RET(false);
     RET((users.find(nick.LowerCase()) != users.end()));
 }
+
+
+bool Chan_Live_t::IsOp(mstring nick)
+{
+    FT("Chan_Live_t::IsOp", (nick));
+
+    if (IsIn(nick))
+	if (users[nick.LowerCase()].first == true)
+	{
+	    RET(true);
+	}
+    RET(false);
+}
+
+
+bool Chan_Live_t::IsVoice(mstring nick)
+{
+    FT("Chan_Live_t::IsVoice", (nick));
+
+    if (IsIn(nick))
+	if (users[nick.LowerCase()].second == true)
+	{
+	    RET(true);
+	}
+    RET(false);
+
+}
+
+
+void Chan_Live_t::SendMode(mstring source, mstring in)
+{
+    FT("Chan_Live_t::SendMode", (source, in));
+}
+
 
 void Chan_Live_t::Mode(mstring source, mstring in)
 {
@@ -218,67 +411,47 @@ bool Chan_Live_t::HasMode(mstring in)
     RET(modes.Contains(in));
 }
 
-bool Chan_Live_t::IsOp(mstring nick)
-{
-    FT("Chan_Live_t::IsOp", (nick));
 
-    if (IsIn(nick))
-	if (users[nick.LowerCase()].first == true)
-	{
-	    RET(true);
-	}
-    RET(false);
+
+mstring Chan_Live_t::Mode()
+{
+    NFT("Chan_Live_t::Mode");
+    RET("");
 }
 
-bool Chan_Live_t::IsVoice(mstring nick)
+
+mstring Chan_Live_t::Key()
 {
-    FT("Chan_Live_t::IsVoice", (nick));
-
-    if (IsIn(nick))
-	if (users[nick.LowerCase()].second == true)
-	{
-	    RET(true);
-	}
-    RET(false);
-
+    NFT("Chan_Live_t::Key");
+    RET("");
 }
 
-void Chan_Live_t::operator=(const Chan_Live_t &in)
+
+int Chan_Live_t::Limit()
 {
-    NFT("Chan_Live_t::operator=");
-    bans.clear();
-    set<mstring>::const_iterator i;
-    for(i=in.bans.begin();i!=in.bans.end();i++)
-	bans.insert(*i);
-    i_Creation_Time=in.i_Creation_Time;
-    i_Key=in.i_Key;
-    i_Limit=in.i_Limit;
-    i_Name=in.i_Name;
-    i_Topic=in.i_Topic;
-    i_Topic_Set_Time=in.i_Topic_Set_Time;
-    i_Topic_Setter=in.i_Topic_Setter;
-    i_UserDef.clear();
-    map<mstring,mstring>::const_iterator j;
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	i_UserDef.insert(*j);
-    modes=in.modes;
-    users.clear();
-    map<mstring, pair<bool, bool> >::const_iterator k;
-    for(k=in.users.begin();k!=in.users.end();k++)
-	users.insert(*k);
+    NFT("Chan_Live_t::Limit");
+    RET(0);
 }
 
-bool Chan_Live_t::operator==(const Chan_Live_t &in) const
+
+
+mstring Chan_Live_t::UserDef(mstring type)
 {
-    NFT("Chan_Live_t::operator==");
-    RET(i_Name==in.i_Name);
+    FT("Chan_Live_t::UserDef", (type));
+    RET("");
 }
 
-bool Chan_Live_t::operator<(const Chan_Live_t &in) const
+
+mstring Chan_Live_t::UserDef(mstring type, mstring val)
 {
-    NFT("Chan_Live_t::operator<");
-    RET(i_Name<in.i_Name);
+    FT("Chan_Live_t::UserDef", (type, val));
+    RET("");
 }
+
+
+// --------- end of Chan_Live_t -----------------------------------
+
+
 
 bool checkops(pair<mstring, pair<bool,bool> > &in)
 {
@@ -293,17 +466,6 @@ bool checkops(pair<mstring, pair<bool,bool> > &in)
     }
 }
 
-int Chan_Live_t::Users()
-{
-    NFT("Chan_Livt_t::Users");
-    RET(users.size());
-}
-
-int Chan_Live_t::Ops()
-{
-    NFT("Chan_Live_t::Ops");
-    RET(count_if(users.begin(),users.end(),checkops));
-}
 
 bool checkvoices(pair<mstring, pair<bool,bool> > &in)
 {
@@ -318,45 +480,6 @@ bool checkvoices(pair<mstring, pair<bool,bool> > &in)
     }
 }
 
-int Chan_Live_t::Voices()
-{
-    NFT("Chan_Live_t::Voices");
-    RET(count_if(users.begin(),users.end(),checkvoices));
-}
-
-void Chan_Live_t::Topic(mstring topic, mstring setter)
-{
-    FT("Chan_Live_t::Topic", (topic, setter));
-    i_Topic = topic;
-    i_Topic_Setter = setter;
-    i_Topic_Set_Time = Now();
-}
-
-void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
-{
-    FT("Chan_Live_t::Topic", (topic, setter, time));
-    i_Topic = topic;
-    i_Topic_Setter = setter;
-    i_Topic_Set_Time = time;
-}
-
-mstring Chan_Live_t::Topic()
-{
-    NFT("Chan_Live_t::Topic");
-    RET(i_Topic);
-}
-
-mstring Chan_Live_t::Topic_Setter()
-{
-    NFT("Chan_Live_t::Topic_Setter");
-    RET(i_Topic_Setter);
-}
-
-mDateTime Chan_Live_t::Topic_Set_Time()
-{
-    NFT("Chan_Live_t::Topic_Set_Time");
-    RET(i_Topic_Set_Time);
-}
 
 userlist_t::userlist_t(const userlist_t& in)
 {
