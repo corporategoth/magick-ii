@@ -3428,7 +3428,7 @@ void Server::parse_J(mstring & source, const mstring & msgtype, const mstring & 
 	    request += " " + IrcParam(params, i);
 
 	// :source JOIN :#channel
-	for (unsigned int i = 1; i <= request.WordCount(", "); i++)
+	for (i = 1; i <= request.WordCount(", "); i++)
 	{
 	    mstring chan(request.ExtractWord(i, ", "));
 
@@ -5382,7 +5382,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 		    !Magick::instance().nickserv.GetStored(nlive->Name())->Private())
 		{
 		    sraw("302 " + source + " :" + nlive->Name() + "*=-" + nlive->User() + "@" +
-						nlive->AltHost().empty() ? nlive->Host() : nlive->AltHost());
+						(nlive->AltHost().empty() ? nlive->Host() : nlive->AltHost()));
 		}
 		else
 		{
