@@ -28,6 +28,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.231  2000/05/20 03:28:11  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.230  2000/05/18 11:49:13  ungod
 ** no message
 **
@@ -223,17 +228,10 @@ Magick::Magick(int inargc, char **inargv)
     i_gotconnect = false;
     i_connected = false;
     i_auto = false;
-    loggertask = new LoggerTask;
-    loggertask->open();
 }
 
 Magick::~Magick()
 {
-    if (loggertask != NULL)
-    {
-	loggertask->close(0);
-	delete loggertask;
-    }
 }
 
 int Magick::Start()
@@ -343,11 +341,6 @@ int Magick::Start()
 
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
-    if (loggertask != NULL)
-    {
-	loggertask->close(0);
-	delete loggertask;
-    }
     Result = ACE_OS::fork();
     if (Result < 0)
     {
@@ -365,8 +358,6 @@ int Magick::Start()
 	RET(1);
     }
     // Can only open these after fork if we want then to live
-    loggertask = new LoggerTask;
-    loggertask->open();
 
 /*			Trace::TurnSet(tt_MAIN, 0xffff);
 		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
@@ -460,10 +451,7 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     CP((PRODUCT + " II has been started ..."));
-    Trace::TurnSet(tt_MAIN, 0xffff);
-    load_databases();
-    Trace::TurnSet(tt_MAIN, 0);
-printf("I am outside load (%d) ...\n", nickserv.stored.size()); fflush(stdout);
+    //load_databases();
     i_ResetTime=Now();
 
     //this little piece of code creates the actual connection from magick
@@ -2867,57 +2855,42 @@ SXP::Tag Magick::tag_Magick("Magick");
 void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Magick::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-printf("Beginning of BeginElement\n"); fflush(stdout);
     if( pElement->IsA( operserv.GetClassTag() ) )
     {
-printf("DEBUG 1\n"); fflush(stdout);
         pIn->ReadTo(&operserv);
-printf("DEBUG 2\n"); fflush(stdout);
         operserv.PostLoad();
     }
     if( pElement->IsA( nickserv.GetClassTag() ) )
     {
-printf("DEBUG 3\n"); fflush(stdout);
         pIn->ReadTo(&nickserv);
-printf("DEBUG 4\n"); fflush(stdout);
         nickserv.PostLoad();
     }
     if( pElement->IsA( chanserv.GetClassTag() ) )
     {
-printf("DEBUG 5\n"); fflush(stdout);
         pIn->ReadTo(&chanserv);
-printf("DEBUG 6\n"); fflush(stdout);
         chanserv.PostLoad();
     }
     if( pElement->IsA( memoserv.GetClassTag() ) )
     {
-printf("DEBUG 7\n"); fflush(stdout);
         pIn->ReadTo(&memoserv);
-printf("DEBUG 8\n"); fflush(stdout);
         memoserv.PostLoad();
     }
     if( pElement->IsA( commserv.GetClassTag() ) )
     {
-printf("DEBUG 9\n"); fflush(stdout);
         pIn->ReadTo(&commserv);
-printf("DEBUG 10\n"); fflush(stdout);
         commserv.PostLoad();
     }
     if( pElement->IsA( filesys.GetClassTag() ) )
     {
-printf("DEBUG 11\n"); fflush(stdout);
         pIn->ReadTo(&filesys);
-printf("DEBUG 12\n"); fflush(stdout);
         filesys.PostLoad();
     }
-printf("End of BeginElement .. %d\n", nickserv.stored.size()); fflush(stdout);
 }
 
 void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
-printf("Beginning of EndElement\n"); fflush(stdout);
 }
 
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
@@ -2955,9 +2928,7 @@ void Magick::load_databases()
     if (mFile::Exists(files.Database()))
     {
    	SXP::CParser p( this ); // let the parser know which is the object
-printf("Before FileFeed\n"); fflush(stdout);
 	p.FeedFile(	(char *)files.Database().c_str());
-printf("After FileFeed\n"); fflush(stdout);
     }
 }
 

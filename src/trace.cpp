@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2000/05/20 03:28:12  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.91  2000/05/17 14:08:12  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -226,7 +231,7 @@ unsigned short makehex (mstring SLevel)
 ThreadID::ThreadID()
 {
     t_indent = 0;
-    t_internaltype = tt_MAIN;
+    t_internaltype = tt_LOST;
 }
 
 ThreadID::ThreadID(threadtype_enum Type)
@@ -235,8 +240,14 @@ ThreadID::ThreadID(threadtype_enum Type)
     t_internaltype = Type;
 }
 
+ThreadID::~ThreadID()
+{
+    Flush();
+}
+
 void ThreadID::assign(threadtype_enum Type)
 {
+    Flush();
     t_internaltype = Type;
 }
 
@@ -247,19 +258,38 @@ void ThreadID::WriteOut(const mstring &message)
         finalout += ".  ";
     finalout += message;
 
-    list<pair<threadtype_enum, mstring> >::iterator iter;
-    if(Parent!=NULL)
-    {
-	for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end(); iter++)
-	    if (iter->first == t_internaltype)
-	    {
-		Parent->loggertask->logmessage(t_internaltype, iter->second);
-		ThreadMessageQueue.erase(iter);
-		iter = ThreadMessageQueue.begin();
-	    }
-	Parent->loggertask->logmessage(t_internaltype,finalout);
-    }
+    messages.push_back(finalout);
 }
+
+mstring ThreadID::logname()
+{
+    mstring name;
+    name << "trace";
+    if (t_internaltype!=tt_MAIN)
+	name << "_" << threadname[t_internaltype];
+    name << ".log";
+    return name;
+}
+                                
+void ThreadID::Flush()
+{
+    list<pair<threadtype_enum, mstring> >::iterator iter, iter2;
+    for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end();)
+	if (iter->first == t_internaltype)
+	{
+	    iter2=iter;
+	    iter2++;
+	    messages.push_front(iter->second);
+	    ThreadMessageQueue.erase(iter);
+	    iter = iter2;
+	}
+	else
+	    iter++;
+
+    mFile::Dump(messages, Parent->Services_Dir()+DirSlash+logname(), true, true);
+    messages.clear();
+}
+
 
 // ===================================================
 
@@ -564,65 +594,3 @@ T_Sockets::End(mstring reason)
 
 // T_External::T_External() {}
 
-// ===================================================
-
-int LoggerTask::open(void *in)
-{
-    return activate();
-}
-int LoggerTask::close(unsigned long in)
-{
-    // dump all and close open file handles.
-    return 0;
-}
-
-int LoggerTask::svc(void)
-{
-    // main service routine
-    //this->activation_queue_.enqueue(new logMsg_MO(this,msg,resultant_future));
-    while(1)
-    {
-	// Destructor automatically deletes it.
-	try
-	{
-	    auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue ());
-	    // Call it.
-	    if (Parent->Shutdown())
-		return -1;
-
-	    if (mo->call () == -1)
-		break;
-	}
-	catch(...)
-	{
-	    return 0;
-	}
-    }
-    return 0;
-}
-
-void LoggerTask::i_shutdown()
-{
-    activation_queue_.enqueue(new shutdown_MO);
-}
-
-void LoggerTask::logmessage(threadtype_enum type,const mstring& data)
-{
-    activation_queue_.enqueue(new LoggerTask_logmessage_MO(this,type,data));
-}
-
-mstring LoggerTask::logname(threadtype_enum type)
-{
-    mstring name;
-    if (type==tt_MAIN)
-	name << "trace.log";
-    else
-	name << "trace_" << threadname[type] << ".log";
-    return name;
-}
-
-void LoggerTask::logmessage_i(threadtype_enum type,const mstring& data)
-{
-    ofstream out((Parent->Services_Dir()+DirSlash+logname(type)).c_str(),ios::out|ios::app);
-    out<<data<<endl;
-}

@@ -24,6 +24,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/05/20 03:28:12  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.40  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -100,7 +105,7 @@ restart:
 	    Result=internalobject.Start();
 	}
 	if(Result==MAGICK_RET_RESTART) {
-	    mThread::Detach(tt_MAIN);
+	    mThread::Detach();
 	    goto restart;
 	}
 	return Result;

@@ -65,10 +65,9 @@ public:
 	}
 #endif /* HAVE_WSTRING */
 
-	void WriteElement(Tag& t, const mDateTime &val)
-    {
-        WriteElement(t,(double)val);
-    }
+	inline void WriteElement(Tag& t, mDateTime &val) {
+		WriteElement(t,(double)val);
+	}
 };
 
 // IDataInput: bundles together methods for converting from the char*

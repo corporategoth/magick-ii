@@ -24,6 +24,11 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2000/05/20 03:28:10  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.16  2000/05/20 01:17:43  ungod
 ** added UnDump static function and ReadLine function
 **
@@ -108,12 +113,14 @@ public:
     long Length();
     bool Eof() { return feof(fd); }
     void Attach(FILE *in) { fd = in; }
+    FILE *Detach();
     void Flush();
     
     static bool Exists(mstring name);
     static long Length(mstring name);
     static long Copy(mstring sin, mstring sout, bool append = false);
     static long Dump(vector<mstring> sin, mstring sout, bool append = false, bool endline = true);
+    static long Dump(list<mstring> sin, mstring sout, bool append = false, bool endline = true);
     static vector<mstring> UnDump( const mstring &sin);
 };
 

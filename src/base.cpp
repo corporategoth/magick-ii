@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2000/05/20 03:28:11  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.116  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -532,8 +537,8 @@ int mBaseTask::open(void *in)
 
 int mBaseTask::svc(void)
 {
-    NFT("mBaseTask::svc");
     mThread::Attach(tt_mBase);
+    NFT("mBaseTask::svc");
     while(!Parent->Shutdown())
     {
 	ACE_Method_Object *tmp;
@@ -545,8 +550,7 @@ int mBaseTask::svc(void)
 	if(mo->call()<0)
 	    break;
     }
-    mThread::Detach(tt_mBase);
-    RET(0);
+    DRET(0);
 }
 
 class mBaseTaskmessage_MO : public ACE_Method_Object

@@ -24,6 +24,11 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.124  2000/05/20 03:28:10  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.123  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -167,7 +172,6 @@ private:
 
 	static SXP::Tag tag_Magick;
 public:
-	LoggerTask *loggertask;
 	EventTask *events;
 	DccMap *dcc;
 

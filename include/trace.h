@@ -24,6 +24,11 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/05/20 03:28:10  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.56  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -56,6 +61,8 @@ static const char *ident_trace_h = "@(#) $Id$";
 // Set return value -- RET()
 #define RET(x) {__ft.return_value=mVariant(x); return (x);}
 #define NRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); return y;}
+#define DRET(x) {__ft.return_value=mVariant(x); mThread::Detach(); return (x);}
+#define NDRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); mThread::Detach(); return y;}
 #if 0
 // this is a good idea but in practice is majorly fubar'ed
 #define CRET(x,y,z) {mstring __ft_val; __ft_val << y; \
@@ -76,6 +83,8 @@ static const char *ident_trace_h = "@(#) $Id$";
 
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) { T_Chatter __ch(x,y); }
+
+#define FLUSH() { ThreadID *tid = mThread::find(); if (tid != NULL) tid->Flush(); }
 
 // OperServ TRACE Syntax:
 //
@@ -129,23 +138,6 @@ extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 
 // ===================================================
 
-class LoggerTask : public ACE_Task<ACE_MT_SYNCH>
-{
-    friend class LoggerTask_logmessage_MO;
-private:
-    ACE_Activation_Queue activation_queue_;
-    //map<threadtype_enum, queue<mstring> > buffers;
-    // todo later buffer these up until a dump is done.
-    void logmessage_i(threadtype_enum type,const mstring& data);
-    mstring logname(threadtype_enum type);
-public:
-    virtual int open(void *in=0);
-    virtual int close(unsigned long in);
-    virtual int svc(void);
-    void i_shutdown();
-    void logmessage(threadtype_enum type,const mstring& data);
-};
-
 class shutdown_MO : public ACE_Method_Object
 {
 public:
@@ -155,44 +147,26 @@ public:
     }
 };
 
-class LoggerTask_logmessage_MO : public ACE_Method_Object
-{
-private:
-    LoggerTask *i_loggertask;
-    threadtype_enum i_type;
-    mstring i_data;
-
-public:
-    LoggerTask_logmessage_MO(LoggerTask *loggertask, threadtype_enum type,const mstring& data)
-    {
-	i_type=type;
-	i_data=data;
-	i_loggertask=loggertask;
-    }
-    virtual int call()
-    {
-	i_loggertask->logmessage_i(i_type,i_data);
-	return 0;
-    }
-};
-
 class Magick;
 
 class ThreadID {
 private:
     threadtype_enum t_internaltype;
     short t_indent;
+    list<mstring> messages;
     
 public:
     ThreadID();
     ThreadID(threadtype_enum Type);
-    ~ThreadID() {}
+    ~ThreadID();
     void assign(threadtype_enum Type);
     threadtype_enum type() { return t_internaltype; }
     void indentup() { t_indent++; }
     void indentdown() { if (t_indent>0) t_indent--; }
     short indent() { return t_indent; }
+    mstring logname();
     void WriteOut (const mstring &message);
+    void Flush();
 };
 
 class Trace

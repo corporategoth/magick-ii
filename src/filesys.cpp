@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/05/20 03:28:11  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.26  2000/05/20 01:17:07  ungod
 ** added UnDump static function and ReadLine function
 **
@@ -236,6 +241,14 @@ long mFile::Length(mstring name)
     RET(st.st_size);
 }
 
+FILE *mFile::Detach()
+{
+    NFT("mFile::Detach");
+    FILE *rfd = fd;
+    fd = NULL;
+    NRET(FILE *, rfd);
+}
+
 long mFile::Copy(mstring sin, mstring sout, bool append)
 {
     FT("mFile::Copy", (sin, sout, append));
@@ -256,15 +269,12 @@ long mFile::Copy(mstring sin, mstring sout, bool append)
     RET(total);
 }
 
-
+// CANNOT trace this, it is used by TRACE code ...
 long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
 {
-    FT("mFile::Dump", ("(vector<mstring>) sin", sout, append, endline));
-
     mFile out(sout.c_str(), append ? "a" : "w");
     if (!(sin.size() && out.IsOpened()))
-	RET(0);
-
+	return 0;
     size_t i, total = 0;
     for (i=0; i<sin.size(); i++)
     {
@@ -273,7 +283,27 @@ long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
 	total += out.Write(sin[i].c_str(), sin[i].Len());
     }
     out.Close();
-    RET(total);
+    return total;
+}
+
+
+// CANNOT trace this, it is used by TRACE code ...
+long mFile::Dump(list<mstring> sin, mstring sout, bool append, bool endline)
+{
+    mFile out(sout.c_str(), append ? "a" : "w");
+    if (!(sin.size() && out.IsOpened()))
+	return 0;
+	
+    size_t total = 0;
+    list<mstring>::iterator iter;
+    for (iter=sin.begin(); iter!=sin.end(); iter++)
+    {
+	if (endline)
+	    *iter << "\n";
+	total += out.Write(iter->c_str(), iter->Len());
+    }
+    out.Close();
+    return total;
 }
 
 vector<mstring> mFile::UnDump( const mstring &sin)
@@ -305,7 +335,7 @@ mstring mFile::ReadLine()
     try
     {
         buffer=new char[Length()+1];
-        fgets(buffer,Length()+1,fd);
+        ACE_OS::fgets(buffer,Length()+1,fd);
         Result=buffer;
         if(Result[Result.Len()-1]=='\n')
             Result=Result.Left(Result.Len()-1);
@@ -1013,8 +1043,8 @@ int DccMap::close(unsigned long in)
 
 int DccMap::svc(void)
 {
-    NFT("DccMap::svc");
     mThread::Attach(tt_MAIN);
+    NFT("DccMap::svc");
 
     unsigned long WorkId;
     while (!Parent->Shutdown())
@@ -1049,8 +1079,9 @@ int DccMap::svc(void)
 	    continue;
 	}
 	active.push(WorkId);
+	FLUSH(); // Force TRACE output dump
     }
-    mThread::Detach(tt_MAIN);
+    mThread::Detach();
 }
 
 vector<unsigned long> DccMap::GetList(mstring in)
@@ -1105,8 +1136,7 @@ void *DccMap::Connect2(void *in)
     if (val != NULL)
 	delete val;
 
-    //mThread::Detach(tt_MAIN);
-    RET(0);
+    DRET(0);
 }
 
 void *DccMap::Accept2(void *in)
@@ -1148,8 +1178,7 @@ void *DccMap::Accept2(void *in)
     if (val != NULL)
 	delete val;
 
-    //mThread::Detach(tt_MAIN);
-    RET(0);
+    DRET(0);
 }
 
 void DccMap::Connect(ACE_INET_Addr address,

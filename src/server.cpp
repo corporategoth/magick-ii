@@ -27,6 +27,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2000/05/20 03:28:12  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.95  2000/05/19 10:48:15  prez
 ** Finalized the DCC Sending (now uses the Action map properly)
 **
@@ -1444,7 +1449,6 @@ void NetworkServ::KillUnknownUser(mstring user)
 void NetworkServ::execute(const mstring & data)
 {
     //okay this is the main networkserv command switcher
-//    mThread::ReAttach(tt_ServNet);
     FT("NetworkServ::execute", (data));
 
     mstring source, sourceL, msgtype;
@@ -2982,7 +2986,6 @@ void NetworkServ::execute(const mstring & data)
 	break;
     }
 
-//    mThread::ReAttach(tt_mBase);   
 }
 
 void NetworkServ::numeric_execute(const mstring & data)

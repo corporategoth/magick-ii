@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/05/20 03:28:11  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.35  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -135,14 +140,14 @@ void mThread::Attach(threadtype_enum ttype)
     COM(("Thread ID has been attached."));
 }
 
-void mThread::Detach(threadtype_enum ttype)
+void mThread::Detach()
 {
-    FT("mThread::Detach", ("(threadtype_enum) ttype"));
+    NFT("mThread::Detach");
     ThreadID *tmpid=find();
     if(tmpid==NULL)
     {
 	// todo ttype to typename
-	CP(("mThread::Detach without valid mThread::Attach... type: %s",threadname[ttype].c_str()));
+	CP(("mThread::Detach without valid mThread::Attach..."));
 	return;
     }
     selftothreadidmap.erase(ACE_Thread::self());

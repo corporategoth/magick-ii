@@ -24,6 +24,11 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/05/20 03:28:10  prez
+** Implemented transaction based tracing (now tracing wont dump its output
+** until logical 'transactions' are done, which are ended by the thread
+** being re-attached to another type, ending, or an explicit FLUSH() call).
+**
 ** Revision 1.30  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -118,7 +123,7 @@ public:
     static vector<ThreadID*> findall();
     static size_t size() { return selftothreadidmap.size(); }
     static void Attach(threadtype_enum ttype);
-    static void Detach(threadtype_enum ttype);
+    static void Detach();
     static void ReAttach(threadtype_enum ttype);
 };
 
