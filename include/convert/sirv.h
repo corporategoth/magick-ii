@@ -39,6 +39,14 @@ RCSID(convert_sirv_h, "@(#) $Id$");
  * (c) 1998-2002 Trevor Klingbeil <priority1@dal.net>
  */
 
+void bolivia_load_nick();
+void bolivia_load_chan();
+void bolivia_load_memo();
+void bolivia_load_sa();
+void bolivia_load_sop();
+void bolivia_load_trigger();
+void bolivia_load_akill();
+void bolivia_load_ignore();
 
 #endif /* CONVERT */
 #endif /* _CONVERT_SIRV_H */

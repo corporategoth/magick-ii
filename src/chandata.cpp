@@ -1955,7 +1955,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
 	    RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
 	    // Carry over topic ..
-	    if (!burst && Keeptopic() && !i_Topic.empty())
+	    if (!burst && Keeptopic() && !i_Topic.empty() && clive->Topic().empty())
 	    {
 		Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(), i_Topic_Setter, i_Name, i_Topic,
 						i_Topic_Set_Time);
@@ -2227,6 +2227,11 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
 	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic"));
 	RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
 	RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
+
+	// Its already the same ...
+	if (i_Topic == topic)
+	    return;
+
 	Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(), i_Topic_Setter, i_Name, i_Topic,
 					settime);
     }

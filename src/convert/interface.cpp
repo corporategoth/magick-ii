@@ -101,7 +101,14 @@ void convert_db(convert_t c)
 	ptlink_load_oper();
 	break;
     case CONVERT_SIRV:
-	LOG(LM_EMERGENCY, "COMMANDLINE/CANNOT_CONVERT", ("sirv"));
+	sirv_load_nick();
+	sirv_load_chan();
+	sirv_load_memo();
+	sirv_load_sa();
+	sirv_load_sop();
+	sirv_load_trigger();
+	sirv_load_akill();
+	sirv_load_ignore();
 	break;
     case CONVERT_WRECKED:
 	wrecked_load_nick();

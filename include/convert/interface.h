@@ -90,6 +90,9 @@ struct auspice_MemoList;
 struct bolivia_NickInfo;
 struct bolivia_ChanInfo;
 struct bolivia_MemoList;
+struct sirv_NickInfo;
+struct sirv_ChanInfo;
+struct sirv_MemoList;
 struct ptlink_NickInfo;
 struct ptlink_ChanInfo;
 struct ptlink_MemoInfo;
@@ -128,6 +131,10 @@ public:
     static Nick_Stored_t *bolivia_CreateNickEntry(bolivia_NickInfo *ni);
     static Chan_Stored_t *bolivia_CreateChanEntry(bolivia_ChanInfo *ci);
     static MemoServ::nick_memo_t bolivia_CreateMemoEntry(bolivia_MemoList *ml);
+
+    static Nick_Stored_t *sirv_CreateNickEntry(sirv_NickInfo *ni);
+    static Chan_Stored_t *sirv_CreateChanEntry(sirv_ChanInfo *ci);
+    static MemoServ::nick_memo_t sirv_CreateMemoEntry(sirv_MemoList *ml);
 
     static Nick_Stored_t *ptlink_CreateNickEntry(ptlink_NickInfo *ni);
     static Chan_Stored_t *ptlink_CreateChanEntry(ptlink_ChanInfo *ci);
