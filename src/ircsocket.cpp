@@ -27,8 +27,8 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.197  2002/01/11 16:47:57  prez
-** Added ChanServ DETAIL command.  Also hopefully added some fixes for coredumps.
+** Revision 1.198  2002/01/11 16:48:25  prez
+** Added fixes for coredumps
 **
 ** Revision 1.196  2002/01/10 19:30:38  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
@@ -495,10 +495,10 @@ void *IrcSvcHandler::worker(void *in)
 
 	    msg = NULL;
 	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL)
-	    {
-	    	msg = dynamic_cast<mMessage *>(Magick::instance().ircsvchandler->message_queue.dequeue());
-	    }}
+	    if (Magick::instance().ircsvchandler == NULL)
+		break;
+	    msg = dynamic_cast<mMessage *>(Magick::instance().ircsvchandler->message_queue.dequeue());
+	    }
 	    while (Magick::instance().Pause())
 		ACE_OS::sleep(1);
 	    if (msg != NULL)
