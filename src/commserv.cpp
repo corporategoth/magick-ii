@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2001/11/07 04:11:58  prez
+** Added in better message trying to delete a member who is a head.
+**
 ** Revision 1.105  2001/11/04 19:23:09  ungod
 ** fixed up compilation for borland c++ builder
 **
@@ -1938,9 +1941,12 @@ void CommServ::do_member_Del(const mstring &mynick, const mstring &source, const
 
     if (comm.IsHead(member))
     {
-	SEND(mynick, source, "COMMSERV/OTH_HEAD", (
-				member, 
-				Parent->getMessage(source, "LIST/MEMBER")));
+	if (comm.HeadCom().empty())
+	    SEND(mynick, source, "COMMSERV/OTH_HEAD", (
+				member,  committee));
+	else
+	    SEND(mynick, source, "COMMSERV/OTH_MEMBER", (
+				member,  comm.HeadCom()));
 	return;
     }
 
