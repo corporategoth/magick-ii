@@ -162,6 +162,9 @@ Flow_Control::~Flow_Control()
 	magick_instance->Finish();
 	delete magick_instance;
     }
+#ifdef WIN32
+    reactor(NULL);
+#endif
 }
 
 int Flow_Control::svc()
