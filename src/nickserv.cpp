@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.145  2000/12/22 08:15:29  prez
+** Fixed bug that created a blank entry in the stored nick list
+**
 ** Revision 1.144  2000/12/22 03:30:26  prez
 ** Fixed bug in nickserv ident.
 **
@@ -2816,17 +2819,18 @@ mstring Nick_Stored_t::Host()
     NFT("Nick_Stored_t::Host");
     mstring retval;
     RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
-    if (i_Host != "" && !Parent->nickserv.IsStored(i_Host))
-    {
-	LOG((LM_ERROR, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
+    if (i_Host != "")
+	if (!Parent->nickserv.IsStored(i_Host))
+	{
+	    LOG((LM_ERROR, Parent->getLogMessage("ERROR/HOST_NOTREGD"),
 		i_Host.c_str(), i_Name.c_str()));
-	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
-	MCB(i_Host);
-	i_Host = "";
-	MCE(i_Host);
-    }
-    else
-	retval = Parent->nickserv.stored[i_Host.LowerCase()].Name();
+	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
+	    MCB(i_Host);
+	    i_Host = "";
+	    MCE(i_Host);
+	}
+	else
+	    retval = Parent->nickserv.stored[i_Host.LowerCase()].Name();
     RET(retval);
 }
 
