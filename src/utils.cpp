@@ -38,6 +38,7 @@ RCSID(utils_cpp, "@(#)$Id$");
 
 vector < int > ParseNumbers(const mstring & what)
 {
+    BTCB();
     FT("ParseNumbers", (what));
     vector < int > numbers;
     unsigned int i;
@@ -73,10 +74,13 @@ vector < int > ParseNumbers(const mstring & what)
 	}
     }
     NRET(vector < int >, numbers);
+
+    ETCB();
 }
 
 bool MakeDirectory(const mstring & in)
 {
+    BTCB();
     FT("MakeDirectory", (in));
 
     int i, occ = in.Occurances(DirSlash);
@@ -122,10 +126,12 @@ bool MakeDirectory(const mstring & in)
 	RET(false);
     }
     RET(true);
+    ETCB();
 }
 
 unsigned long FromHumanTime(const mstring & in)
 {
+    BTCB();
     FT("FromHumanTime", (in));
 
     unsigned int i = 0;
@@ -208,10 +214,12 @@ unsigned long FromHumanTime(const mstring & in)
 	total += number;
 
     RET(total);
+    ETCB();
 }
 
 mstring ToHumanTime(const unsigned long in, const mstring & source)
 {
+    BTCB();
     FT("ToHumanTime", (in, source));
 
     mstring retval;
@@ -226,10 +234,12 @@ mstring ToHumanTime(const unsigned long in, const mstring & source)
     }
 
     RET(retval);
+    ETCB();
 }
 
 mstring ToHumanNumber(const unsigned long in)
 {
+    BTCB();
     FT("ToHumanNumber", (in));
 
     mstring retval(in);
@@ -256,10 +266,12 @@ mstring ToHumanNumber(const unsigned long in)
 	break;
     }
     RET(retval);
+    ETCB();
 }
 
 mstring ToHumanSpace(const unsigned long in)
 {
+    BTCB();
     FT("ToHumanSpace", (in));
     mstring retval;
 
@@ -318,10 +330,12 @@ mstring ToHumanSpace(const unsigned long in)
     }
 
     RET(retval);
+    ETCB();
 }
 
 unsigned long FromHumanSpace(const mstring & in)
 {
+    BTCB();
     FT("FromHumanTime", (in));
 
     unsigned int i = 0;
@@ -395,10 +409,12 @@ unsigned long FromHumanSpace(const mstring & in)
 	total += number;
 
     RET(total);
+    ETCB();
 }
 
 mstring parseMessage(const mstring & message, const mVarArray & va)
 {
+    BTCB();
     FT("parseMessage", (message, "(const mVarArray&) va"));
 
     mstring data, tok;
@@ -446,10 +462,12 @@ mstring parseMessage(const mstring & message, const mVarArray & va)
     }
 
     RET(data);
+    ETCB();
 }
 
 size_t mCRYPT(const char *in, char *out, const size_t size, const char *key1, const char *key2, const bool enc)
 {
+    BTCB();
     FT("mCRYPT", ("(const char *) in", "(char *) out", size, "(const char *) key1", "(const char *) key2", enc));
 
 #ifndef HASCRYPT
@@ -492,10 +510,12 @@ size_t mCRYPT(const char *in, char *out, const size_t size, const char *key1, co
     memset(&bfkey2, 0, sizeof(BF_KEY));
     return i;
 #endif
+    ETCB();
 }
 
 void mHASH16(const char *in, const size_t size, char *out)
 {
+    BTCB();
     MD5_CTX c;
 
     memset(out, 0, MD5_DIGEST_LENGTH);
@@ -504,10 +524,12 @@ void mHASH16(const char *in, const size_t size, char *out)
     MD5_Final(const_cast < unsigned char * > (reinterpret_cast < const unsigned char * > (out)), &c);
 
     memset(&c, 0, sizeof(MD5_CTX));
+    ETCB();
 }
 
 void mHASH(const char *in, const size_t size, char *out)
 {
+    BTCB();
     unsigned char md[MD5_DIGEST_LENGTH];
     mHASH16(in, size, reinterpret_cast < char * > (md));
 
@@ -515,10 +537,12 @@ void mHASH(const char *in, const size_t size, char *out)
     for (int i = 0; i < MD5_DIGEST_LENGTH; i++)
 	sprintf(&out[i * 2], "%02x", md[i]);
     memset(md, 0, MD5_DIGEST_LENGTH);
+    ETCB();
 }
 
 mstring sysinfo_node()
 {
+    BTCB();
     mstring retval;
     ACE_utsname *type = new ACE_utsname;
 
@@ -527,10 +551,12 @@ mstring sysinfo_node()
     delete type;
 
     return retval;
+    ETCB();
 }
 
 mstring sysinfo_type()
 {
+    BTCB();
     mstring retval;
     ACE_utsname *type = new ACE_utsname;
 
@@ -539,10 +565,12 @@ mstring sysinfo_type()
     delete type;
 
     return retval;
+    ETCB();
 }
 
 mstring sysinfo_rel()
 {
+    BTCB();
     mstring retval;
     ACE_utsname *type = new ACE_utsname;
 
@@ -551,10 +579,12 @@ mstring sysinfo_rel()
     delete type;
 
     return retval;
+    ETCB();
 }
 
 mstring version_string(bool extended)
 {
+    BTCB();
     mstring tmp(VERSION);
 
     if (!RELEASE.empty())
@@ -618,4 +648,5 @@ mstring version_string(bool extended)
 	tmp << "] Build #" << BUILD_NUMBER << " (" << BUILD_TIME << ")";
     }
     return tmp;
+    ETCB();
 }

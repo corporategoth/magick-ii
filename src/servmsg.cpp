@@ -39,12 +39,15 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 
 ServMsg::ServMsg()
 {
+    BTCB();
     NFT("ServMsg::ServMsg");
     messages = true;
+    ETCB();
 }
 
 void ServMsg::AddCommands()
 {
+    BTCB();
     NFT("ServMsg::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -129,10 +132,12 @@ void ServMsg::AddCommands()
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "FILE* *", Magick::instance().commserv.ALL_Name(), NULL);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "FILE*", Magick::instance().commserv.ALL_Name(),
 						 do_1_2param);
+    ETCB();
 }
 
 void ServMsg::RemCommands()
 {
+    BTCB();
     NFT("ServMsg::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "STAT* NICK*",
@@ -186,10 +191,12 @@ void ServMsg::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "STAT*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "FILE* *", Magick::instance().commserv.ALL_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "FILE*", Magick::instance().commserv.ALL_Name());
+    ETCB();
 }
 
 void ServMsg::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     mThread::ReAttach(tt_OtherServ);
     FT("ServMsg::execute", (source, msgtype, params));
     //okay this is the main servmsg command switcher
@@ -213,10 +220,12 @@ void ServMsg::execute(mstring & source, const mstring & msgtype, const mstring &
 
     mThread::ReAttach(tt_mBase);
 
+    ETCB();
 }
 
 void ServMsg::do_Help(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_Help", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -241,10 +250,12 @@ void ServMsg::do_Help(const mstring & mynick, const mstring & source, const mstr
 
     for (i = 0; i < help.size(); i++)
 	::send(mynick, source, help[i]);
+    ETCB();
 }
 
 void ServMsg::do_Credits(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_Credits", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -264,10 +275,12 @@ void ServMsg::do_Credits(const mstring & mynick, const mstring & source, const m
 	    ::sendV(mynick, source, credits[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
+    ETCB();
 }
 
 void ServMsg::do_Contrib(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_Contrib", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -287,10 +300,12 @@ void ServMsg::do_Contrib(const mstring & mynick, const mstring & source, const m
 	    ::sendV(mynick, source, contrib[i], mynick.c_str());
 	else
 	    ::send(mynick, source, " ");
+    ETCB();
 }
 
 void ServMsg::do_Languages(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_Languages", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -335,10 +350,12 @@ void ServMsg::do_Languages(const mstring & mynick, const mstring & source, const
     {
 	NSEND(mynick, source, "MISC/LANG_NOLIST");
     }
+    ETCB();
 }
 
 void ServMsg::do_BreakDown(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_BreakDown", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -380,11 +397,13 @@ void ServMsg::do_BreakDown(const mstring & mynick, const mstring & source, const
 	    100.0 * static_cast < float > (ServCounts[""].first) / static_cast < float >
 	    (Magick::instance().nickserv.LiveSize()));
     do_BreakDown2(ServCounts, mynick, source, "", "");
+    ETCB();
 }
 
 void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > > ServCounts, const mstring & mynick,
 			    const mstring & source, const mstring & previndent, const mstring & server)
 {
+    BTCB();
     FT("ServMsg::do_BreakDown2", (mynick, source, previndent, server));
     vector < mstring > downlinks;
     mstring out, servername;
@@ -437,10 +456,12 @@ void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >
 	    }
 	}
     }
+    ETCB();
 }
 
 void ServMsg::do_stats_Nick(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_stats_Nick", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
@@ -522,10 +543,12 @@ void ServMsg::do_stats_Nick(const mstring & mynick, const mstring & source, cons
 	 (fmstring("%10d", Magick::instance().nickserv.stats.SetPicture()),
 	  fmstring("%10d", Magick::instance().nickserv.stats.Send())));
     Magick::instance().servmsg.stats.i_Stats++;
+    ETCB();
 }
 
 void ServMsg::do_stats_Channel(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_stats_Channel", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
@@ -618,10 +641,12 @@ void ServMsg::do_stats_Channel(const mstring & mynick, const mstring & source, c
 	 (fmstring("%10d", Magick::instance().chanserv.stats.Lock()),
 	  fmstring("%10d", Magick::instance().chanserv.stats.Unlock())));
     Magick::instance().servmsg.stats.i_Stats++;
+    ETCB();
 }
 
 void ServMsg::do_stats_Other(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_stats_Other", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
@@ -706,10 +731,12 @@ void ServMsg::do_stats_Other(const mstring & mynick, const mstring & source, con
 	 (fmstring("%10d", Magick::instance().servmsg.stats.File_Send()),
 	  fmstring("%10d", Magick::instance().servmsg.stats.File_Cancel())));
     Magick::instance().servmsg.stats.i_Stats++;
+    ETCB();
 }
 
 void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_stats_Oper", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
@@ -770,10 +797,12 @@ void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, cons
     if (!Magick::instance().server.proto.SVSHOST().empty())
 	SEND(mynick, source, "STATS/OPER_CMD9", (fmstring("%10d", Magick::instance().operserv.stats.Hide())));
     Magick::instance().servmsg.stats.i_Stats++;
+    ETCB();
 }
 
 void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_stats_Usage", (mynick, source, params));
     int count;
     size_t size;
@@ -970,10 +999,12 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
 
     }
     Magick::instance().servmsg.stats.i_Stats++;
+    ETCB();
 }
 
 void ServMsg::do_stats_All(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_stats_All", (mynick, source, params));
 
     mstring message = params.Before(" ", 2);
@@ -994,10 +1025,12 @@ void ServMsg::do_stats_All(const mstring & mynick, const mstring & source, const
     do_stats_Other(mynick, source, params);
     Magick::instance().servmsg.stats.i_Stats -= 5;
     do_stats_Usage(mynick, source, params);
+    ETCB();
 }
 
 void ServMsg::do_Stats(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_Stats", (mynick, source, params));
 
     if (params.WordCount(" ") > 1 &&
@@ -1044,10 +1077,12 @@ void ServMsg::do_Stats(const mstring & mynick, const mstring & source, const mst
 	     (Magick::instance().operserv.CloneList_sum() - Magick::instance().operserv.CloneList_size(),
 	      Magick::instance().operserv.CloneList_size() - Magick::instance().operserv.CloneList_size(1)));
     Magick::instance().servmsg.stats.i_Stats++;
+    ETCB();
 }
 
 void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_List", (mynick, source, params));
 
     unsigned int listsize, i, j, count;
@@ -1140,10 +1175,12 @@ void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const
 	}
     }
     SEND(mynick, source, "LIST/DISPLAYED", (i, count));
+    ETCB();
 }
 
 void ServMsg::do_file_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_Add", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -1170,10 +1207,12 @@ void ServMsg::do_file_Add(const mstring & mynick, const mstring & source, const 
 
     Magick::instance().servmsg.stats.i_file_Add++;
     Magick::instance().nickserv.GetLive(source)->InFlight.Public(mynick, priv);
+    ETCB();
 }
 
 void ServMsg::do_file_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_Del", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -1197,10 +1236,12 @@ void ServMsg::do_file_Del(const mstring & mynick, const mstring & source, const 
     SEND(mynick, source, "LIST/DEL",
 	 (Magick::instance().filesys.GetName(FileMap::Public, num), Magick::instance().getMessage(source, "LIST/FILES")));
     Magick::instance().filesys.EraseFile(FileMap::Public, num);
+    ETCB();
 }
 
 void ServMsg::do_file_Rename(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_Rename", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -1228,10 +1269,12 @@ void ServMsg::do_file_Rename(const mstring & mynick, const mstring & source, con
     LOG(LM_INFO, "SERVMSG/FILE_RENAME",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), file, newfile));
     Magick::instance().filesys.Rename(FileMap::Public, num, newfile);
+    ETCB();
 }
 
 void ServMsg::do_file_Priv(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_Priv", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -1263,10 +1306,12 @@ void ServMsg::do_file_Priv(const mstring & mynick, const mstring & source, const
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), file,
 	 ((priv.empty()) ? "ALL" : priv.c_str())));
     Magick::instance().filesys.SetPriv(FileMap::Public, num, priv);
+    ETCB();
 }
 
 void ServMsg::do_file_Send(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_Send", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -1344,10 +1389,12 @@ void ServMsg::do_file_Send(const mstring & mynick, const mstring & source, const
 	    Magick::instance().dcc->Accept(port, mynick, source, FileMap::Public, filenum);
 	}
     }
+    ETCB();
 }
 
 void ServMsg::do_file_Dcc(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_Dcc", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -1400,10 +1447,12 @@ void ServMsg::do_file_Dcc(const mstring & mynick, const mstring & source, const 
     {
 	NSEND(mynick, source, "DCC/NOACTIVE");
     }
+    ETCB();
 }
 
 void ServMsg::do_file_Cancel(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_Cancel", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -1461,10 +1510,12 @@ void ServMsg::do_file_Cancel(const mstring & mynick, const mstring & source, con
 	    }
 	}
     }
+    ETCB();
 }
 
 void ServMsg::do_file_Lookup(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_file_Lookup", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -1574,10 +1625,12 @@ void ServMsg::do_file_Lookup(const mstring & mynick, const mstring & source, con
     {
 	SEND(mynick, source, "DCC/NLOOKUP_OTHER", (type));
     }
+    ETCB();
 }
 
 void ServMsg::do_Global(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_Global", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1598,10 +1651,12 @@ void ServMsg::do_Global(const mstring & mynick, const mstring & source, const ms
     Magick::instance().servmsg.stats.i_Global++;
     ANNOUNCE(mynick, "MISC/GLOBAL_MSG", (source));
     LOG(LM_NOTICE, "SERVMSG/GLOBAL", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), text));
+    ETCB();
 }
 
 void ServMsg::do_Ask(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("ServMsg::do_Ask", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1621,4 +1676,5 @@ void ServMsg::do_Ask(const mstring & mynick, const mstring & source, const mstri
 
     Magick::instance().servmsg.stats.i_Ask++;
     Magick::instance().server.HELPOPS(mynick, source + " (ASK) - " + text);
+    ETCB();
 }

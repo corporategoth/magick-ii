@@ -38,6 +38,7 @@ RCSID(stages_cpp, "@(#)$Id$");
 
 long Stage::Consume()
 {
+    BTCB();
     NFT("Stage::Consume");
     if (input == NULL)
     {
@@ -67,41 +68,51 @@ long Stage::Consume()
     {
 	RET(total);
     }
+    ETCB();
 }
 
 StringStage::StringStage(const mstring & in)
 {
+    BTCB();
     FT("StringStage::StringStage", (in));
     input = NULL;
     tag = 0;
     offset = 0;
     i_str = in;
+    ETCB();
 }
 
 StringStage::StringStage(Stage & PrevStage)
 {
+    BTCB();
     FT("StringStage::StringStage", ("(Stage &) PrevStage"));
     input = & PrevStage;
     tag = input->GetTag();
     offset = 0;
+    ETCB();
 }
 
 StringStage::~StringStage()
 {
+    BTCB();
     NFT("StringStage::~StringStage");
+    ETCB();
 }
 
 bool StringStage::Validate()
 {
+    BTCB();
     NFT("StringStage::Validate");
     if (!(input != NULL || i_str.length()))
 	RET(false);
 
     RET(true);
+    ETCB();
 }
 
 long StringStage::Consume()
 {
+    BTCB();
     NFT("StringStage::Consume");
     if (input == NULL)
     {
@@ -132,16 +143,20 @@ long StringStage::Consume()
     {
 	RET(total);
     }
+    ETCB();
 }
 
 mstring StringStage::Result()
 {
+    BTCB();
     NFT("StringStage::Result");
     RET(i_str);
+    ETCB();
 }
 
 long StringStage::Read(char *buf, size_t size)
 {
+    BTCB();
     FT("StringStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input != NULL)
@@ -158,10 +173,12 @@ long StringStage::Read(char *buf, size_t size)
     memcpy(buf, i_str, retval);
     offset += retval;
     RET(retval);
+    ETCB();
 }
 
 FileStage::FileStage(const mstring & name)
 {
+    BTCB();
     FT("FileStage::FileStage", (name));
     input = NULL;
     tag = 0;
@@ -169,10 +186,12 @@ FileStage::FileStage(const mstring & name)
     file.Open(name, "rb");
     if (file.IsOpened())
 	file.Read(&tag, 1);
+    ETCB();
 }
 
 FileStage::FileStage(Stage & PrevStage, const mstring & name, const mstring & mode)
 {
+    BTCB();
     FT("FileStage::FileStage", ("(Stage &) PrevStage", name, mode));
     input = & PrevStage;
     tag = input->GetTag();
@@ -180,16 +199,20 @@ FileStage::FileStage(Stage & PrevStage, const mstring & name, const mstring & mo
     file.Open(name, mode);
     if (file.IsOpened())
 	file.Write(&tag, 1);
+    ETCB();
 }
 
 FileStage::~FileStage()
 {
+    BTCB();
     NFT("FileStage::~FileStage");
     file.Close();
+    ETCB();
 }
 
 bool FileStage::Validate()
 {
+    BTCB();
     NFT("FileStage::Validate");
     if (!file.IsOpened())
 	RET(false);
@@ -198,10 +221,12 @@ bool FileStage::Validate()
 	RET(false);
 
     RET(true);
+    ETCB();
 }
 
 long FileStage::Consume()
 {
+    BTCB();
     NFT("FileStage::Consume");
     if (input == NULL)
     {
@@ -240,10 +265,12 @@ long FileStage::Consume()
     {
 	RET(total);
     }
+    ETCB();
 }
 
 long FileStage::Read(char *buf, size_t size)
 {
+    BTCB();
     FT("FileStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input != NULL)
@@ -258,10 +285,12 @@ long FileStage::Read(char *buf, size_t size)
     long retval = file.Read(buf, size);
 
     RET(retval);
+    ETCB();
 }
 
 CryptStage::CryptStage(Stage & PrevStage, const mstring & key1, const mstring & key2)
 {
+    BTCB();
     FT("CryptStage::CryptStage", ("(Stage &) PrevStage", "(const mstring &) key1", "(const mstring &) key2"));
     input = & PrevStage;
     tag = input->GetTag();
@@ -294,20 +323,24 @@ CryptStage::CryptStage(Stage & PrevStage, const mstring & key1, const mstring & 
     memset(buffer, 0, sizeof(buffer));
     memset(outbuf, 0, sizeof(outbuf));
     lastpos = bufsize = outbufsize = 0;
+    ETCB();
 }
 
 CryptStage::~CryptStage()
 {
+    BTCB();
     NFT("CryptStage::~CryptStage");
     // Security,  dont leave keys around ...
 #ifdef HASCRYPT
     memset(&bfkey1, 0, sizeof(bfkey1));
     memset(&bfkey2, 0, sizeof(bfkey2));
 #endif
+    ETCB();
 }
 
 bool CryptStage::Validate()
 {
+    BTCB();
     NFT("CryptStage::Validate");
     if (input == NULL)
 	RET(false);
@@ -316,10 +349,12 @@ bool CryptStage::Validate()
 	RET(false);
 
     RET(true);
+    ETCB();
 }
 
 long CryptStage::Read(char *buf, size_t size)
 {
+    BTCB();
     FT("CryptStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input == NULL)
@@ -410,10 +445,12 @@ long CryptStage::Read(char *buf, size_t size)
 	while (buf[i - 2] == 0)
 	    i--;
     RET(i);
+    ETCB();
 }
 
 CompressStage::CompressStage(Stage & PrevStage, int level)
 {
+    BTCB();
     FT("CompressStage::CompressStage", ("Stage &) PrevStage", level));
     input = & PrevStage;
     tag = input->GetTag();
@@ -444,28 +481,34 @@ CompressStage::CompressStage(Stage & PrevStage, int level)
     strm.next_in = reinterpret_cast < Bytef * > (buffer);
     strm.avail_in = 0;
     strm.total_in = 0;
+    ETCB();
 }
 
 CompressStage::~CompressStage()
 {
+    BTCB();
     NFT("CompressStage::~CompressStage");
     if (compress)
 	deflateEnd(&strm);
     else
 	inflateEnd(&strm);
+    ETCB();
 }
 
 bool CompressStage::Validate()
 {
+    BTCB();
     NFT("CompressStage::Validate");
     if (input == NULL)
 	RET(false);
 
     RET(true);
+    ETCB();
 }
 
 long CompressStage::Read(char *buf, size_t size)
 {
+    BTCB();
     FT("CompressStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input == NULL)
@@ -521,10 +564,12 @@ long CompressStage::Read(char *buf, size_t size)
     }
 
     RET(size - strm.avail_out);
+    ETCB();
 }
 
 XMLStage::XMLStage(SXP::IPersistObj * pRoot, SXP::dict & attribs)
 {
+    BTCB();
     FT("XMLStage::XMLStage", ("(SXP::IPersistObj *) pRoot", "(SXP::dict &) attribs"));
     input = NULL;
     tag = STAGE_TAG_XML;
@@ -541,10 +586,12 @@ XMLStage::XMLStage(SXP::IPersistObj * pRoot, SXP::dict & attribs)
 	    pRoot->WriteElement(generator, attribs);
 	}
     }
+    ETCB();
 }
 
 XMLStage::XMLStage(Stage & PrevStage, SXP::IPersistObj * pRoot)
 {
+    BTCB();
     FT("XMLStage::XMLStage", ("(Stage &) PrevStage", "(SXP::IPersistObj *) pRoot"));
     input = & PrevStage;
     tag = input->GetTag();
@@ -555,29 +602,35 @@ XMLStage::XMLStage(Stage & PrevStage, SXP::IPersistObj * pRoot)
     curpos = 0;
     if (pRoot != NULL)
 	parser = new SXP::CParser(pRoot);
+    ETCB();
 }
 
 XMLStage::~XMLStage()
 {
+    BTCB();
     NFT("XMLStage::~XMLStage");
     if (parser != NULL)
 	delete parser;
 
     if (generator != NULL)
 	delete generator;
+    ETCB();
 }
 
 bool XMLStage::Validate()
 {
+    BTCB();
     NFT("XMLStage::Validate");
     if (input == NULL ? generator == NULL : parser == NULL)
 	RET(false);
 
     RET(true);
+    ETCB();
 }
 
 long XMLStage::Consume()
 {
+    BTCB();
     NFT("XMLStage::Consume");
     if (input == NULL)
     {
@@ -625,10 +678,12 @@ long XMLStage::Consume()
     {
 	RET(total);
     }
+    ETCB();
 }
 
 long XMLStage::Read(char *buf, size_t size)
 {
+    BTCB();
     FT("XMLStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input != NULL)
@@ -655,10 +710,12 @@ long XMLStage::Read(char *buf, size_t size)
     curpos += size;
 
     RET(size);
+    ETCB();
 }
 
 VerifyStage::VerifyStage(Stage & PrevStage, size_t verifyoffset, const char *verifytext, size_t verifysize)
 {
+    BTCB();
     FT("VerifyStage::VerifyStage", ("(Stage &) PrevStage", verifyoffset, verifytext, verifysize));
     input = & PrevStage;
     tag = input->GetTag();
@@ -675,17 +732,21 @@ VerifyStage::VerifyStage(Stage & PrevStage, size_t verifyoffset, const char *ver
 	if (text != NULL)
 	    memcpy(text, verifytext, verifysize);
     }
+    ETCB();
 }
 
 VerifyStage::~VerifyStage()
 {
+    BTCB();
     NFT("VerifyStage::~VerifyStage");
     if (text != NULL)
 	delete [] text;
+    ETCB();
 }
 
 bool VerifyStage::Validate()
 {
+    BTCB();
     NFT("VerifyStage::Validate");
     if (input == NULL)
 	RET(false);
@@ -694,10 +755,12 @@ bool VerifyStage::Validate()
 	RET(false);
 
     RET(true);
+    ETCB();
 }
 
 long VerifyStage::Read(char *buf, size_t size)
 {
+    BTCB();
     FT("VerifyStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input == NULL)
@@ -748,4 +811,5 @@ long VerifyStage::Read(char *buf, size_t size)
     }
 
     RET(res);
+    ETCB();
 }

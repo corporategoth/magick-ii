@@ -44,6 +44,7 @@ const char *strNonC__Exception = "NON-C++ EXCEPTION";
 
 unsigned short makehex(const mstring & SLevel)
 {
+    BTCB();
     if (SLevel.length() != 6 || SLevel[0u] != '0' || (SLevel[1u] != 'x' && SLevel[1u] != 'X'))
 	return 0;
 
@@ -321,6 +322,7 @@ unsigned short makehex(const mstring & SLevel)
 	}
     }
     return level;
+    ETCB();
 }
 
 // ===================================================
@@ -335,17 +337,22 @@ ThreadID::ThreadID(const threadtype_enum Type) : t_internaltype(Type), t_indent(
 
 ThreadID::~ThreadID()
 {
+    BTCB();
     Flush();
+    ETCB();
 }
 
 void ThreadID::assign(const threadtype_enum Type)
 {
+    BTCB();
     Flush();
     t_internaltype = Type;
+    ETCB();
 }
 
 void ThreadID::WriteOut(const mstring & message)
 {
+    BTCB();
 #ifndef MAGICK_TRACE_WORKS
     static_cast < void > (message);
 #else
@@ -357,16 +364,19 @@ void ThreadID::WriteOut(const mstring & message)
 
     messages.push_back(finalout);
 #endif
+    ETCB();
 }
 
 mstring ThreadID::logname() const
 {
+    BTCB();
     mstring name("trace");
 
     if (strlen(threadname[t_internaltype]))
 	name << "_" << threadname[t_internaltype];
     name << ".log";
     return name;
+    ETCB();
 }
 
 // ONLY trace function with trace codes, so people
@@ -374,6 +384,7 @@ mstring ThreadID::logname() const
 // locks are being set/removed.                                
 void ThreadID::Flush()
 {
+    BTCB();
 #ifdef MAGICK_TRACE_WORKS
     if (!Magick::instance_exists())
 	return;
@@ -418,6 +429,7 @@ void ThreadID::Flush()
     if (tid != NULL)
 	tid->t_intrace = false;
 #endif
+    ETCB();
 }
 
 #ifdef MAGICK_TRACE_WORKS
@@ -434,7 +446,9 @@ list < pair < threadtype_enum, mstring > > ThreadMessageQueue;
 
 int levelname_count()
 {
+    BTCB();
     return sizeof(Trace::levelname) / sizeof(Trace::levelname_struct);
+    ETCB();
 }
 
 // ===================================================
@@ -442,6 +456,7 @@ int levelname_count()
 //      \  function()
 T_Function::T_Function(const char *file, const int line, const mstring & name) : m_name(name)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -458,11 +473,13 @@ T_Function::T_Function(const char *file, const int line, const mstring & name) :
 	tid->WriteOut(message);
     }
     tid->indentup();
+    ETCB();
 }
 
 //      \  function( (char) T, (int) 5 )
 T_Function::T_Function(const char *file, const int line, const mstring & name, const mVarArray & args) : m_name(name)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -486,11 +503,13 @@ T_Function::T_Function(const char *file, const int line, const mstring & name, c
 	tid->WriteOut(message);
     }
     tid->indentup();
+    ETCB();
 }
 
 //      /  (char) Y
 T_Function::~T_Function()
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -507,6 +526,7 @@ T_Function::~T_Function()
 	    message << ": (" << return_value.type() << ") " << return_value.AsString();
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 // ===================================================
@@ -514,11 +534,14 @@ T_Function::~T_Function()
 //      ** This is an important part!
 T_CheckPoint::T_CheckPoint()
 {
+    BTCB();
     common("CheckPoint Reached");
+    ETCB();
 }
 
 T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 {
+    BTCB();
     mstring output;
     va_list args;
 
@@ -526,10 +549,12 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
     output.FormatV(fmt, args);
     va_end(args);
     common(output);
+    ETCB();
 }
 
 void T_CheckPoint::common(const mstring & input)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -538,6 +563,7 @@ void T_CheckPoint::common(const mstring & input)
     {
 	tid->WriteOut("** " + input);
     }
+    ETCB();
 }
 
 // ===================================================
@@ -546,6 +572,7 @@ void T_CheckPoint::common(const mstring & input)
 
 T_Exception::T_Exception(const char *file, const int line, const char *what)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -557,6 +584,7 @@ T_Exception::T_Exception(const char *file, const int line, const char *what)
 	out << "!! " << file << ":" << line << ": " << what;
 	tid->WriteOut(out);
     }
+    ETCB();
 }
 
 // ===================================================
@@ -564,11 +592,14 @@ T_Exception::T_Exception(const char *file, const int line, const char *what)
 //      ## Loading value blah ...
 T_Comment::T_Comment()
 {
+    BTCB();
     common("Comment Reached");
+    ETCB();
 }
 
 T_Comment::T_Comment(const char *fmt, ...)
 {
+    BTCB();
     va_list args;
     mstring output;
 
@@ -576,10 +607,12 @@ T_Comment::T_Comment(const char *fmt, ...)
     output.FormatV(fmt, args);
     va_end(args);
     common(output);
+    ETCB();
 }
 
 void T_Comment::common(const mstring & input)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -588,6 +621,7 @@ void T_Comment::common(const mstring & input)
     {
 	tid->WriteOut("## " + input);
     }
+    ETCB();
 }
 
 // ===================================================
@@ -601,6 +635,7 @@ T_Modify::T_Modify(const mVarArray & args, unsigned int offset) : i_args(args), 
 
 void T_Modify::Begin()
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -615,6 +650,7 @@ void T_Modify::Begin()
 	    tid->WriteOut(message);
 	}
     }
+    ETCB();
 }
 
 //      >> DE1(PreZ)
@@ -622,6 +658,7 @@ void T_Modify::Begin()
 //      >> DE3(corewars.net)
 void T_Modify::End()
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -636,6 +673,7 @@ void T_Modify::End()
 	    tid->WriteOut(message);
 	}
     }
+    ETCB();
 }
 
 // ===================================================
@@ -652,6 +690,7 @@ T_Changing::T_Changing(const mstring & name, const mVariant & arg) : i_name(name
 //      >> DE3(corewars.net)
 void T_Changing::End(const mVariant & arg)
 {
+    BTCB();
     if (i_name.empty())
 	return;
     ThreadID *tid = mThread::find();
@@ -665,6 +704,7 @@ void T_Changing::End(const mVariant & arg)
 	message << "== " << i_name << " = " << i_arg.AsString() << " -> " << arg.AsString();
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 // ===================================================
@@ -674,6 +714,7 @@ void T_Changing::End(const mVariant & arg)
 //      -- ChanServ :PRIVMSG ChanServ :WTF?!
 T_Chatter::T_Chatter(const dir_enum direction, const mstring & input)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -690,6 +731,7 @@ T_Chatter::T_Chatter(const dir_enum direction, const mstring & input)
 	    message << "-- " << input;	// Confused
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 // ===================================================
@@ -710,6 +752,7 @@ T_Chatter::T_Chatter(const dir_enum direction, const mstring & input)
 //      :+ M Magick::LoadMessages
 void T_Locking::open(const locktype_enum ltype, const mstring & lockname)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -730,6 +773,7 @@ void T_Locking::open(const locktype_enum ltype, const mstring & lockname)
 	    message << ":+ " << "I " << name;
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 //      :- R ChanInfo::#Magick
@@ -738,6 +782,7 @@ void T_Locking::open(const locktype_enum ltype, const mstring & lockname)
 
 T_Locking::~T_Locking()
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -759,12 +804,14 @@ T_Locking::~T_Locking()
 	    tid->WriteOut(message);
 	}
     }
+    ETCB();
 }
 
 // ===================================================
 
 T_Source::T_Source(const mstring & text)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -773,10 +820,12 @@ T_Source::T_Source(const mstring & text)
     {
 	tid->WriteOut("$$ " + text);
     }
+    ETCB();
 }
 
 T_Source::T_Source(const mstring & section, const mstring & key, const mstring & value)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -788,6 +837,7 @@ T_Source::T_Source(const mstring & section, const mstring & key, const mstring &
 	message << "$$ [" << section << "] " << key << " = " << value;
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 // ===================================================
@@ -806,6 +856,7 @@ T_Source::T_Source(const mstring & section, const mstring & key, const mstring &
 void T_Socket::Begin(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
 		     const dir_enum direction)
 {
+    BTCB();
     s_id = id;
     ThreadID *tid = mThread::find();
 
@@ -825,11 +876,13 @@ void T_Socket::Begin(const unsigned long id, const unsigned short local, const u
 	message << host << ":" << remote;
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 void T_Socket::Failed(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
 		      const mstring & reason, const dir_enum direction)
 {
+    BTCB();
     s_id = id;
     ThreadID *tid = mThread::find();
 
@@ -849,10 +902,12 @@ void T_Socket::Failed(const unsigned long id, const unsigned short local, const 
 	message << host << ":" << remote << " (" << reason << ")";
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 void T_Socket::Resolve(const socktype_enum type, const mstring & info)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -887,10 +942,12 @@ void T_Socket::Resolve(const socktype_enum type, const mstring & info)
 	}
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 void T_Socket::End(const mstring & reason)
 {
+    BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
@@ -902,6 +959,7 @@ void T_Socket::End(const mstring & reason)
 	message << "|- " << s_id << ": " << reason;
 	tid->WriteOut(message);
     }
+    ETCB();
 }
 
 // ===================================================
@@ -930,6 +988,7 @@ void T_Socket::End(const mstring & reason)
 
 Logger::Logger()
 {
+    BTCB();
     NFT("Logger::Logger");
     ACE_Log_Msg::enable_debug_messages();
 
@@ -938,10 +997,12 @@ Logger::Logger()
 #else
     fout.Open(Magick::instance().files.Logfile(), "a");
 #endif
+    ETCB();
 }
 
 Logger::~Logger()
 {
+    BTCB();
     NFT("Logger::~Logger");
 
 #ifdef TEST_MODE
@@ -951,10 +1012,12 @@ Logger::~Logger()
     if (fout.IsOpened())
 	fout.Close();
 #endif
+    ETCB();
 }
 
 void Logger::log(ACE_Log_Record & log_record)
 {
+    BTCB();
     FT("Logger::log", ("(ACE_Log_Record &) log_record"));
 
     if (!Magick::instance_exists())
@@ -1065,42 +1128,51 @@ void Logger::log(ACE_Log_Record & log_record)
 
     if (log_record.type() == LM_EMERGENCY)
 	exit(MAGICK_RET_ERROR);
+    ETCB();
 }
 
 void Logger::close()
 {
+    BTCB();
     NFT("Logger::close");
 
     if (fout.IsOpened())
     {
 	fout.Close();
     }
+    ETCB();
 }
 
 void Logger::open()
 {
+    BTCB();
     NFT("Logger::open");
 
     if (!fout.IsOpened())
     {
 	fout.Open(Magick::instance().files.Logfile(), "a");
     }
+    ETCB();
 }
 
 bool Logger::opened() const
 {
+    BTCB();
     NFT("Logger::opened");
     bool retval = fout.IsOpened();
 
     RET(retval);
+    ETCB();
 }
 
 void LOG2(ACE_Log_Priority type, const mstring & msg)
 {
+    BTCB();
     if (Magick::instance_exists() && Magick::instance().ValidateLogger(ACE_LOG_MSG))
     {
 	ACE_DEBUG((type, (const ACE_TCHAR *) msg));
 	if (ACE_LOG_MSG != NULL && ACE_LOG_MSG->flags() & ACE_Log_Msg::STDERR)
 	    fprintf(stderr, "\n");
     }
+    ETCB();
 }
