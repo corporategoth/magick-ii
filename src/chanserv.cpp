@@ -3031,13 +3031,14 @@ ChanServ::ChanServ()
     NFT("ChanServ::ChanServ");
     messages=true;
     Revenge_Levels.insert("NONE");
-    Revenge_Levels.insert("MIRROR");
+    Revenge_Levels.insert("REVERSE");
     Revenge_Levels.insert("DEOP");
     Revenge_Levels.insert("KICK");
     Revenge_Levels.insert("BAN1");
     Revenge_Levels.insert("BAN2");
     Revenge_Levels.insert("BAN3");
     Revenge_Levels.insert("BAN4");
+    Revenge_Levels.insert("MIRROR");
 }
 
 void ChanServ::AddCommands()

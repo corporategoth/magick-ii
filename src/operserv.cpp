@@ -61,9 +61,9 @@ void OperServ::RemHost(mstring host)
 }
 
 
-bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick)
+bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added)
 {
-    FT("OperServ::Clone_insert", (entry, value, reason, nick));
+    FT("OperServ::Clone_insert", (entry, value, reason, nick, added));
 
     // Wildcards but no @
     if (entry.Contains("@") || entry.Contains("!"))
@@ -75,7 +75,7 @@ bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, m
     {
 	pair<set<entlist_val_t<pair<unsigned int, mstring> > >::iterator,bool> tmp;
 	tmp = i_Clone.insert(entlist_val_t<pair<unsigned int, mstring> >(
-			entry, pair<unsigned int, mstring>(value, reason), nick));
+			entry, pair<unsigned int, mstring>(value, reason), nick, added));
 	if (tmp.second)
 	    Clone = tmp.first;
 	else
@@ -149,9 +149,9 @@ pair<unsigned int,mstring> OperServ::Clone_value(mstring entry)
 }
 
 
-bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick)
+bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick, mDateTime added)
 {
-    FT("OperServ::Akill_insert", (entry, value, reason, nick));
+    FT("OperServ::Akill_insert", (entry, value, reason, nick, added));
 
     // no @
     if (!entry.Contains("@") || entry.Contains("!"))
@@ -163,7 +163,7 @@ bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, 
     {
 	pair<set<entlist_val_t<pair<unsigned long, mstring> > >::iterator, bool> tmp;
 	tmp = i_Akill.insert(entlist_val_t<pair<unsigned long, mstring> >(
-			entry, pair<unsigned long, mstring>(value, reason), nick));
+			entry, pair<unsigned long, mstring>(value, reason), nick, added));
 	if (tmp.second)
 	    Akill = tmp.first;
 	else

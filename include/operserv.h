@@ -13,10 +13,8 @@
 #ifndef _operserv_h
 #define _operserv_h
 
-#include "mstring.h"
-#include "variant.h"
 #include "base.h"
-#include "nickserv.h"
+#include "convert.h"
 
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
@@ -88,7 +86,7 @@ public:
     bool oAkill()		{ return akill; }
     bool oOperDeny()		{ return operdeny; }
 
-    bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick);
+    bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = Now());
     bool Clone_erase();
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator Clone_begin()
 	{ return i_Clone.begin(); }
@@ -99,7 +97,7 @@ public:
     pair<unsigned int, mstring> Clone_value(mstring entry);
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator Clone;
 
-    bool Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick);
+    bool Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick, mDateTime added = Now());
     bool Akill_erase();
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator Akill_begin()
 	{ return i_Akill.begin(); }

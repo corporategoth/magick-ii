@@ -13,11 +13,10 @@
 #ifndef _nickserv_h
 #define _nickserv_h
 
-#include "mstring.h"
-#include "variant.h"
 #include "base.h"
 #include "mstream.h"
 #include "ircsocket.h"
+#include "convert.h"
 
 class Nick_Live_t : public mUserDef
 {
@@ -159,12 +158,15 @@ public:
     bool IsServices()		{ return (i_server == ""); }
 };
 
+struct NickInfo;
+
 class Nick_Stored_t : public mUserDef
 {
     friend class Nick_Live_t;
     friend class NickServ;
     friend wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in);
     friend wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out);
+    friend Nick_Stored_t CreateNickEntry(NickInfo *ni);
 
     mstring i_Name;
     mDateTime i_RegTime;

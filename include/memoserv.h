@@ -13,14 +13,17 @@
 #ifndef _memoserv_h
 #define _memoserv_h
 
-#include "mstring.h"
-#include "variant.h"
 #include "base.h"
+#include "convert.h"
+
+struct MemoList;
+struct NewsList;
 
 class Memo_t : public mUserDef
 {
     friend wxOutputStream &operator<<(wxOutputStream& out,Memo_t& in);
     friend wxInputStream &operator>>(wxInputStream& in, Memo_t& out);
+    friend list<Memo_t> CreateMemoEntry(MemoList *ml);
 
     mstring i_Nick;
     mstring i_Sender;
@@ -56,6 +59,7 @@ class News_t : public mUserDef
 {
     friend wxOutputStream &operator<<(wxOutputStream& out,News_t& in);
     friend wxInputStream &operator>>(wxInputStream& in, News_t& out);
+    friend list<News_t> CreateNewsEntry(NewsList *nl);
 
     mstring i_Channel;
     mstring i_Sender;

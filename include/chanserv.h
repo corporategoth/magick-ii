@@ -13,10 +13,9 @@
 #ifndef _chanserv_h
 #define _chanserv_h
 
-#include "mstring.h"
-#include "variant.h"
 #include "base.h"
 #include "ircsocket.h"
+#include "convert.h"
 
 bool checkops(pair<const mstring, pair<bool,bool> > &in);
 bool checkvoices(pair<const mstring, pair<bool,bool> > &in);
@@ -104,6 +103,8 @@ public:
 
 };
 
+struct ChanInfo;
+
 class Chan_Stored_t : public mUserDef
 {
     friend class Nick_Live_t;
@@ -111,6 +112,7 @@ class Chan_Stored_t : public mUserDef
     friend class ChanServ;
     friend wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in);
     friend wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out);
+    friend Chan_Stored_t CreateChanEntry(ChanInfo *ci);
 
     mstring i_Name;
     mDateTime i_RegTime;

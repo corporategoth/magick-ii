@@ -13,9 +13,8 @@
 #ifndef _commserv_h
 #define _commserv_h
 
-#include "mstring.h"
-#include "variant.h"
 #include "base.h"
+#include "convert.h"
 
 class Committee : public mUserDef
 {

@@ -445,13 +445,14 @@ LVL_CMDMODE        =MODE Command
 LVL_CMDCLEAR       =CLEAR Command
 
 REV_NONE           =Disabled
-REV_MIRROR         =Mirror Activity
+REV_REVERSE        =Reverse Activity
 REV_DEOP           =DeOp Only
 REV_KICK           =Kick Only
 REV_BAN1           =Nick (nick!*@*) Ban
 REV_BAN2           =Mask (*!*user@*.host) Ban
 REV_BAN3           =Port (*!*@port.host) Ban
 REV_BAN4           =Host (*!*@*.host) Ban
+REV_MIRROR         =Mirror Activity
 
 ;
 ; This section defines STATUS resopnses about channels.

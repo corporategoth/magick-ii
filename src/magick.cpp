@@ -469,9 +469,10 @@ void Magick::dump_help(mstring & progname)
          << "    -r, --relink time              Override SERVER_RELINK in config file.\n"
          << "        --norelink                 Set SERVER_RELINK to 0.\n"
          << "        --dir directory            Change working (database) directory.\n"
-         << "	--config config            Specify filename for config file.\n"
-         << "	--log logfile              Output logs to different file.\n"
-         << "	--trace type:level         Turn on tracing from the onset.\n"
+	 << "        --convert type             Convet another verion of services database.\n"
+         << "	     --config config            Specify filename for config file.\n"
+         << "	     --log logfile              Output logs to different file.\n"
+         << "	     --trace type:level         Turn on tracing from the onset.\n"
          << "\n"
          << "For more help on the usage of " + PRODUCT + ", please browse the docs directory.\n"
          << "This software is free to the public, no registration or licensing fee\n"
@@ -769,6 +770,29 @@ bool Magick::paramlong(mstring first, mstring second)
 	    wxLogFatal("--keyfile: keyfile doesn't exist");
 	}
 	files.keyfile=second;
+	RET(true);
+    }
+    else if(first=="--convert")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    wxLogFatal(getMessage("ERR_REQ_PARAM"),"--convert");
+	}
+	if (second.CmpNoCase("magick")==0)
+	{
+	    load_ns_dbase();
+	    load_cs_dbase();
+	    load_ms_dbase();
+	    load_news_dbase();
+	    load_akill();
+	    load_clone();
+	    load_sop();
+	    load_message();
+	}
+	else
+	{
+	    wxLogFatal("Database type is not valid.");
+	}
 	RET(true);
     }
     else
