@@ -451,21 +451,31 @@ bool Committee_t::IsHead(const mstring & nick) const
     BTCB();
     FT("Committee_t::IsHead", (nick));
 
-    if_RLOCK ((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Head"), !i_Head.empty() && i_Head.IsSameAs(nick, true))
+    if_RLOCK ((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Head"), !i_Head.empty())
     {
-	RET(true);
-    }
-    else
-    {
-	if_RLOCK2 ((lck_CommServ, lck_list, i_Name.UpperCase(), "i_HeadCom"), !i_HeadCom.empty() &&
-		   Magick::instance().commserv.IsList(i_HeadCom))
+	if (Magick::instance().nickserv.IsStored(nick))
 	{
-	    if (Magick::instance().commserv.GetList(i_HeadCom)->IsIn(nick))
+	    mstring target = Magick::instance().nickserv.GetStored(nick)->Host();
+	    if (target.empty())
+		target = nick;
+
+	    if (i_Head.IsSameAs(target, true))
 	    {
 		RET(true);
 	    }
 	}
-	else if (i_Head.empty() && i_HeadCom.empty())
+    }
+    else
+    {
+	if_RLOCK2 ((lck_CommServ, lck_list, i_Name.UpperCase(), "i_HeadCom"), !i_HeadCom.empty())
+	{
+	    if (Magick::instance().commserv.IsList(i_HeadCom) &&
+		Magick::instance().commserv.GetList(i_HeadCom)->IsIn(nick))
+	    {
+		RET(true);
+	    }
+	}
+	else
 	{
 	    bool retval = IsIn(nick);
 
