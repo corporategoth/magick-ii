@@ -2,7 +2,7 @@
 ; (c) 1996-1999 Preston A. Elder, W. King
 ;
 ; English On-Line Language File
-; Translated By: Preston A. Elder <prez@magick.tm>
+; Translated By: Striker Stormbringer <striker@darker.net>
 ; Please also edit the ERR_SYNTAX/TRANSLATED token to
 ; reflect the above (this is displayed when someone
 ; switches to your language).
@@ -83,9 +83,9 @@
 ; entered the wrong data, or amount of data.
 ;
 [ERR_SYNTAX]
-TRANSLATED         =Preston Elder <prez@magick.tm>
-UNKNOWN_COMMAND    =Unrecognized command %s.  Type /msg %s HELP for help.
-UNKNOWN_OPTION     =Unrecognized option %s.  Type /msg %s HELP %s for help.
+TRANSLATED         =Striker Stormbringer <striker@darker.net>
+UNKNOWN_COMMAND    =Commando niet herkend %s.  Tiep /msg %s HELP voor help.
+UNKNOWN_OPTION     =Optie niet herkend %s.  Tiep /msg %s HELP %s voor help.
 NEED_PARAMS        =Insufficiant paramaters specified for %s.  Type /msg %s HELP %s for help.
 MUSTCONTAIN        =Specified %s entry must contain a '%c' character.
 MAYNOTCONTAIN      =Specified %s entry may not contain a '%c' character.
