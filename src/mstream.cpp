@@ -930,10 +930,17 @@ unsigned char wxDataInputStream::Read8()
 
 double wxDataInputStream::ReadDouble()
 {
+	mstring tmpResult;
+	tmpResult=ReadString()
+	return atof(tmpResult.c_str());
+
+#if 0
+  // the below code dun seem to be working so the above is a temporary workaround
   char buf[10];
 
   Read(&buf, 10);
   return ConvertFromIeeeExtended((unsigned char *)buf);
+#endif
 }
 
 mstring wxDataInputStream::ReadLine()
@@ -1015,10 +1022,16 @@ wxOutputStream&  wxDataOutputStream::WriteLine(const mstring& line)
 
 wxOutputStream&  wxDataOutputStream::WriteDouble(double d)
 {
+	mstring tmp;
+	tmp<<d;
+	return WriteString(tmp);
+#if 0
+  // this code dun seem to be working, so the above is a temporary workaround.
   char buf[10];
 
   ConvertToIeeeExtended(d, (unsigned char *)buf);
   return Write(buf, 10);
+#endif
 }
 
 /*
