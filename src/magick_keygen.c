@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2001/12/05 00:13:04  prez
+** Got rid of a warning in magick_keygen
+**
 ** Revision 1.21  2001/11/04 19:23:09  ungod
 ** fixed up compilation for borland c++ builder
 **
@@ -452,6 +455,8 @@ int mstring_vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap)
 
 void signal_catcher(int signum)
 {
+    (void) signum;
+
     if (outfile != NULL)
     {
 	fclose(outfile);
