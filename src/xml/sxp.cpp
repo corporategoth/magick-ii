@@ -25,6 +25,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/04/30 05:05:32  ungod
+** fix prez's well meaning fuckup. ie *leave pch.h in there*,
+** we need it for mdatetime support.
+**
 ** Revision 1.3  2000/04/30 03:48:30  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -71,6 +75,7 @@ static const char *ident = "@(#)$Id$";
 **
 **
 ** ========================================================== */
+#include "pch.h"
 #include "xml/sxp.h"
 
 SXP_NS_BEGIN
