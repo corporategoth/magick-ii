@@ -20,7 +20,7 @@
 
 mstring DateSeparator="/";
 mstring ShortDateFormat="d/m/yyyy";
-mstring LongDateFormat="mmmm d, yyyy";
+mstring LongDateFormat="mmmm d',' yyyy";
 mstring TimeSeparator=":";
 mstring TimeAMString="am";
 mstring TimePMString="pm";
