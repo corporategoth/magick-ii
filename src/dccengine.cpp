@@ -5,138 +5,123 @@ using namespace std;
 #pragma warning(disable:4786)
 #endif
 
-const unsigned char CTCP_DELIM_CHAR='\001';
-const unsigned char CTCP_QUOTE_CHAR='\\';
-const unsigned char CTCP_MQUOTE_CHAR='\020';
+const char CTCP_DELIM_CHAR='\001';
+const char CTCP_QUOTE_CHAR='\\';
+const char CTCP_MQUOTE_CHAR='\020';
 //#define CTCP_QUOTE_EM   "\r\n\001\\"
 
-bytevector DccEngine::lowQuote(bytevector& in)
+mstring DccEngine::lowQuote(mstring& in)
 {
-    bytevector Result;
-    bytevector::iterator pos;
+    mstring Result;
+    mstring::iterator pos;
     for(pos=in.begin();pos!=in.end();pos++)
     {
 	if(*pos=='\0')
-	{
-	    Result.push_back(CTCP_MQUOTE_CHAR);
-	    Result.push_back('0');
-	}
+	    Result<<CTCP_MQUOTE_CHAR<<'0';
 	else if(*pos=='\n')
-	{
-	    Result.push_back(CTCP_MQUOTE_CHAR);
-	    Result.push_back('n');
-	}
+	    Result<<CTCP_MQUOTE_CHAR<<'n';
 	else if(*pos=='\r')
-	{
-	    Result.push_back(CTCP_MQUOTE_CHAR);
-	    Result.push_back('r');
-	}
+	    Result<<CTCP_MQUOTE_CHAR<<'r';
 	else if(*pos==CTCP_MQUOTE_CHAR)
-	{
-	    Result.push_back(CTCP_MQUOTE_CHAR);
-	    Result.push_back(CTCP_MQUOTE_CHAR);
-	}
+	    Result<<CTCP_MQUOTE_CHAR<<CTCP_MQUOTE_CHAR;
 	else
-	    Result.push_back(*pos);
+	    Result<<*pos;
     }
     return Result;
 }
-bytevector DccEngine::lowDequote(bytevector& in)
+
+mstring DccEngine::lowDequote(mstring& in)
 {
-    bytevector Result;
-    bytevector::iterator pos;
+    mstring Result;
+    mstring::iterator pos;
     for(pos=in.begin();pos!=in.end();pos++)
     {
 	if(*pos==CTCP_MQUOTE_CHAR)
 	{
 	    if(*(pos+1)=='0')
     	    {
-		Result.push_back('\0');
+		Result<<'\0';
 		pos++;
 	    }
 	    else if(*(pos+1)=='n')
     	    {
-		Result.push_back('\n');
+		Result<<'\n';
 		pos++;
 	    }
 	    else if(*(pos+1)=='r')
 	    {
-		Result.push_back('\r');
+		Result<<'\r';
 		pos++;
 	    }
 	    else if(*(pos+1)==CTCP_MQUOTE_CHAR)
 	    {
-		Result.push_back(CTCP_MQUOTE_CHAR);
+		Result<<CTCP_MQUOTE_CHAR;
 		pos++;
 	    }
 	    else
 	    {
-		Result.push_back(*(pos+1));
+		Result<<*(pos+1);
 		pos++;
 	    }
 	}
 	else
-	    Result.push_back(*pos);
+	    Result<<*pos;
     }
     return Result;
 }
-bytevector DccEngine::ctcpQuote(bytevector& in)
+
+mstring DccEngine::ctcpQuote(mstring& in)
 {
-    bytevector Result;
-    bytevector::iterator pos;
+    mstring Result;
+    mstring::iterator pos;
     for(pos=in.begin();pos!=in.end();pos++)
     {
 	if(*pos==CTCP_DELIM_CHAR)
-	{
-	    Result.push_back(CTCP_QUOTE_CHAR);
-	    Result.push_back('a');
-	}
+	    Result<<CTCP_QUOTE_CHAR<<'a';
 	else if(*pos==CTCP_QUOTE_CHAR)
-	{
-	    Result.push_back(CTCP_QUOTE_CHAR);
-	    Result.push_back(CTCP_QUOTE_CHAR);
-	}
+	    Result<<CTCP_QUOTE_CHAR<<CTCP_QUOTE_CHAR;
 	else
-	    Result.push_back(*pos);
+	    Result<<*pos;
     }
     return Result;
 }
-bytevector DccEngine::ctcpDequote(bytevector& in)
+
+mstring DccEngine::ctcpDequote(mstring& in)
 {
-    bytevector Result;
-    bytevector::iterator pos;
+    mstring Result;
+    mstring::iterator pos;
     for(pos=in.begin();pos!=in.end();pos++)
     {
 	if(*pos==CTCP_DELIM_CHAR)
 	{
 	    if(*(pos+1)=='a')
 	    {
-		Result.push_back(CTCP_DELIM_CHAR);
+		Result<<CTCP_DELIM_CHAR;
 		pos++;
 	    }
 	    else if(*(pos+1)==CTCP_QUOTE_CHAR)
 	    {
-		Result.push_back(CTCP_QUOTE_CHAR);
+		Result<<CTCP_QUOTE_CHAR;
 		pos++;
 	    }
 	    else
 	    {
-		Result.push_back(*(pos+1));
+		Result<<*(pos+1);
 		pos++;
 	    }
 	}
 	else
-	    Result.push_back(*pos);
+	    Result<<*pos;
     }
     return Result;
 }
 
-vector<bytevector> DccEngine::ctcpExtract(bytevector& in)
+vector<mstring> DccEngine::ctcpExtract(mstring& in)
 {
     // pull out /001...../001 pairs
-    vector<bytevector> Result;
-    bytevector tmpstring;
-    bytevector::iterator start,end;
+    vector<mstring> Result;
+    mstring tmpstring;
+    mstring::iterator start,end;
     start=find(in.begin(),in.end(),CTCP_DELIM_CHAR);
     if(start==in.end())
 	return Result;
@@ -149,5 +134,22 @@ vector<bytevector> DccEngine::ctcpExtract(bytevector& in)
 	if(start!=in.end())
 	    end=find(start+1,in.end(),CTCP_DELIM_CHAR);
     }
+    return Result;
+}
+
+void DccEngine::decode(mstring & in)
+{
+    vector<mstring> ResVector;
+    if(count(in.begin(),in.end(),CTCP_DELIM_CHAR)<2)
+	return;
+    ResVector=ctcpExtract(in);
+
+}
+
+mstring DccEngine::encode(mstring & in)
+{
+    mstring Result;
+
+
     return Result;
 }
