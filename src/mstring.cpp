@@ -376,7 +376,7 @@ size_t mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd) cons
 		else
 			i--;
 	}
-	return -1;
+	return npos;
 }
 
 bool mstring::IsAscii() const
