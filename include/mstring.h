@@ -164,6 +164,9 @@ extern const mstring IRC_Color;		/**< The IRC color code, usually ^C */
 
 extern const mstring IRC_Off;		/**< The IRC off code, usually ^O */
 
+mstring IrcParam(const mstring &in, const unsigned int count);
+unsigned int IrcParamCount(const mstring &in);
+
 /** Wildcard match of a pattern to a string
  *  The pattern and string may not be NULL's.
  *  @param pattern The wildcard pattern to match.  A '*' represents
@@ -890,8 +893,19 @@ public:
     bool IsNumber() const;
 
     /** @return true if the current contents contains a value that would,
-	be consistant with an IP address. */
-    bool IsIpAddress() const;
+	be consistant with an IPV4 IP address. */
+    bool IsIpv4Address() const;
+
+    /** @return true if the current contents contains a value that would,
+	be consistant with an IPV6 IP address. */
+    bool IsIpv6Address() const;
+
+    /** @return true if the current contents contains a value that would,
+	be consistant with an IPV4 or IPV6 IP address. */
+    bool IsIpAddress() const
+    {
+	return IsIpv4Address() || IsIpv6Address();
+    }
 
     /** @return true if all characters are standard ASCII characters */
     bool IsAscii() const;

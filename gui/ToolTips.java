@@ -41,7 +41,7 @@ public class ToolTips
 	{ "Startup/SETMODE",		"The user modes that all services users will set on signon." },
 	{ "Startup/BIND",		"IP Address to bind to.  If you have more than one IP address\n" +
 					"attached to your machine, and you want to bind to a specific\n" +
-					"one, use this parameter.  Setting this to 0.0.0.0 will mean\n" +
+					"one, use this parameter.  Setting this to * will mean\n" +
 					"'bind to anything', usually being IP address of the first\n" +
 					"network interface on the machine." },
 	{ "Startup/REMOTES",		"Each entry in this table is an IRC server that Magick will\n" +

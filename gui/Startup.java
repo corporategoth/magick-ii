@@ -51,13 +51,6 @@ public class Startup extends TabbedPane
 	    {
 		Vector v = new Vector();
 		InetAddress addr = null;
-		try
-		{
-		    addr = InetAddress.getByName("0.0.0.0");
-		}
-		catch (Exception ex)
-		{
-		}
 		v.add(addr);
 		v.add(new Integer(6667));
 		v.add(new String(""));
@@ -126,7 +119,7 @@ public class Startup extends TabbedPane
 	    {
 		if (row >= internal.size() || col >= ((Vector) internal.get(row)).size())
 		    return false;
-		if (col != 0 && ((InetAddress) getValueAt(row, 0)).getHostAddress().equals("0.0.0.0"))
+		if (col != 0 && getValueAt(row, 0) == null)
 		    return false;
 		return true;
 	    }
@@ -153,12 +146,12 @@ public class Startup extends TabbedPane
 
 		v.setElementAt(in, col);
 
-		if (row + 1 == internal.size() && !((InetAddress) getValueAt(row, 0)).getHostAddress().equals("0.0.0.0"))
+		if (row + 1 == internal.size() && getValueAt(row, 0) != null)
 		{
 		    addBlankRecord();
 		}
 
-		if (internal.size() > 1 && row + 1 != internal.size() && ((InetAddress) getValueAt(row, 0)).getHostAddress().equals("0.0.0.0"))
+		if (internal.size() > 1 && row + 1 != internal.size() && getValueAt(row, 0) == null)
 		{
 		    internal.remove(row);
 		}
@@ -419,11 +412,11 @@ public class Startup extends TabbedPane
 	for (int i=0; i<remotes.getRowCount(); i++)
 	{
 	    InetAddress addr = (InetAddress) remotes.getValueAt(i, 0);
-	    if (!addr.getHostAddress().equals("0.0.0.0"))
-		rv += "REMOTE_" + (i+1) + " = " + addr.getHostAddress() + ":" +
-			remotes.getValueAt(i, 1) + ":" +
-			remotes.getValueAt(i, 2) + ":" +
-			remotes.getValueAt(i, 3) + ":" +
+	    if (addr != null)
+		rv += "REMOTE_" + (i+1) + " = " + addr.getHostAddress() + "|" +
+			remotes.getValueAt(i, 1) + "|" +
+			remotes.getValueAt(i, 2) + "|" +
+			remotes.getValueAt(i, 3) + "|" +
 			remotes.getValueAt(i, 4) + "\n";
 	}
 
@@ -433,7 +426,7 @@ public class Startup extends TabbedPane
 	for (int i=0; i<allows.getRowCount(); i++)
 	{
 	    if (((String) allows.getValueAt(i, 0)).length() != 0)
-		rv += "ALLOW_" + (i+1) + " = " + allows.getValueAt(i, 0) + ":" +
+		rv += "ALLOW_" + (i+1) + " = " + allows.getValueAt(i, 0) + "|" +
 			allows.getValueAt(i, 1) + "\n";
 	}
 
@@ -460,20 +453,12 @@ public class Startup extends TabbedPane
 
 	i=0;
 	InetAddress addr = null;
-	try
-	{
-	    addr = InetAddress.getByName("0.0.0.0");
-	}
-	catch (Exception ex)
-	{
-	}
-
 	while (remotes.getRowCount() > 1)
 	    remotes.setValueAt(addr, 0, 0);
 	for (i=0; data.keyExists("Startup/REMOTE_" + (i+1)); i++)
 	{
 	    String fullLine = data.getValue("Startup/REMOTE_" + (i+1));
-	    String[] fields = fullLine.split(":");
+	    String[] fields = fullLine.split("|");
 	    if (fields.length == 5)
 	    {
 		try
@@ -496,7 +481,7 @@ public class Startup extends TabbedPane
 	for (i=0; data.keyExists("Startup/ALLOW_" + (i+1)); i++)
 	{
 	    String fullLine = data.getValue("Startup/ALLOW_" + (i+1));
-	    String[] fields = fullLine.split(":");
+	    String[] fields = fullLine.split("|");
 	    if (fields.length == 2)
 	    {
 		allows.setValueAt(fields[0], i, 0);

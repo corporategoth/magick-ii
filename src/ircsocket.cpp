@@ -711,10 +711,10 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
     u_long p(pri);
     mstring source, msgtype, params;
 
-    source = message.ExtractWord(1, ": ");
+    source = IrcParam(message, 1);
 
     // IF we dont start with ':' or '@', and its not PING or SERVER ...
-    if (source[0u] != ':' && source[0u] != '@' && Magick::instance().server.proto.Numeric.Prefix() &&
+    if (message[0u] != ':' && message[0u] != '@' && Magick::instance().server.proto.Numeric.Prefix() &&
 	!source.IsSameAs("PING", true) && !source.IsSameAs("SERVER", true))
     {
 	// AND we have server numerics, AND the length of the message is <= the
@@ -736,16 +736,16 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 
     if (message[0u] == ':' || source[0u] == '@' || source[0u] == '!')
     {
-	msgtype = message.ExtractWord(2, ": ");
+	msgtype = IrcParam(message, 2);
 	if (message.WordCount(" ") > 2)
-	    params = message.After(" ", 2);
+	    params = " " + message.After(" ", 2);
     }
     else
     {
 	source.erase();
-	msgtype = message.ExtractWord(1, ": ");
+	msgtype = IrcParam(message, 1);
 	if (message.WordCount(" ") > 1)
-	    params = message.After(" ");
+	    params = " " + message.After(" ");
     }
 
     // Exception case ...

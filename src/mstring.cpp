@@ -66,6 +66,41 @@ const mstring IRC_Reverse(static_cast < char > (22));	// ^V
 const mstring IRC_Color(static_cast < char > (3));	// ^C
 const mstring IRC_Off(static_cast < char > (15));	// ^O
 
+mstring IrcParam(const mstring &in, const unsigned int count)
+{
+    mstring tmp(in), last;
+    int pos = tmp.find(" :");
+    if (pos >= 0)
+    {
+	last = tmp.SubString(pos+2);
+	tmp.Truncate(pos);
+    }
+    unsigned int wc = tmp.WordCount(" ");
+    if (tmp[0u] == ':')
+	tmp.erase(0, 0);
+
+    if (count == wc+1)
+	return last;
+    else if (count <= wc)
+	return tmp.ExtractWord(count, " ");
+    else
+	return "";
+}
+
+unsigned int IrcParamCount(const mstring &in)
+{
+    mstring tmp(in);
+    int pos = tmp.find(" :");
+    if (pos >= 0)
+	tmp.Truncate(pos);
+    unsigned int wc = tmp.WordCount(" ");
+
+    if (pos >= 0)
+	return wc+1;
+    else
+	return wc;
+}
+
 #ifdef MAGICK_HAS_EXCEPTIONS
 inline char *mstring::alloc(const size_t sz) throw (mstring_noalloc)
 #else
@@ -1022,7 +1057,7 @@ bool mstring::IsNumber() const
     return retval;
 }
 
-bool mstring::IsIpAddress() const
+bool mstring::IsIpv4Address() const
 {
     bool retval = true;
 
@@ -1069,6 +1104,69 @@ bool mstring::IsIpAddress() const
     lock_rel();
 
     if (deccount != 3 || !gotnum || num > 255)
+	retval = false;
+
+    return retval;
+}
+
+bool mstring::IsIpv6Address() const
+{
+    bool retval = true;
+
+    lock_read();
+
+    if (i_str == NULL)
+    {
+	lock_rel();
+	return false;
+    }
+
+    /* Required this way else will coredump on a blank
+     * string (ie. accessing i_str[i] of NULL) */
+    size_t i, firstnum=0, deccount = 0;
+    bool haddouble = false;
+
+    for (i = 0; i < i_len; i++)
+    {
+	if (i_str[i] == ':')
+	{
+	    if (i > 0 && firstnum == 0 && i_str[i-1] == ':')
+	    {
+		if (haddouble)
+		{
+		    retval = false;
+		    break;
+		}
+		else
+		    haddouble = true;
+	    }
+
+	    if (deccount >= 8 || (firstnum != 0 && i-firstnum > 4))
+	    {
+		retval = false;
+		break;
+	    }
+
+	    firstnum = 0;
+	    deccount++;
+	}
+	else if ((i_str[i] >= '0' && i_str[i] <= '9') ||
+		 (i_str[i] >= 'a' && i_str[i] <= 'f') ||
+		 (i_str[i] >= 'A' && i_str[i] <= 'F'))
+	{
+	    if (!firstnum)
+		firstnum = i;
+	}
+	else
+	{
+	    retval = false;
+	    break;
+	}
+    }
+
+    lock_rel();
+
+    if (deccount < 2 || (firstnum != 0 && i-firstnum > 4))
 	retval = false;
 
     return retval;

@@ -2122,23 +2122,18 @@ bool Magick::get_config_values()
 	    {
 		mstring tmp[5];
 
-		tmp[0] = value_mstring.ExtractWord(1, ":");
-		tmp[1] = value_mstring.ExtractWord(2, ":");
-		tmp[2] = value_mstring.ExtractWord(3, ":");
-		tmp[3] = value_mstring.ExtractWord(4, ":");
-		tmp[4] = value_mstring.ExtractWord(5, ":");
-		if (value_mstring.WordCount(":") == 5 && tmp[1].IsNumber() && tmp[3].IsNumber() && tmp[4].IsNumber() &&
+		tmp[0] = value_mstring.ExtractWord(1, "|");
+		tmp[1] = value_mstring.ExtractWord(2, "|");
+		tmp[2] = value_mstring.ExtractWord(3, "|");
+		tmp[3] = value_mstring.ExtractWord(4, "|");
+		tmp[4] = value_mstring.ExtractWord(5, "|");
+		if (value_mstring.WordCount("|") == 5 && tmp[1].IsNumber() && tmp[3].IsNumber() && tmp[4].IsNumber() &&
 		    atoi(tmp[1]) > 0 && atoi(tmp[3]) > 0 && atol(tmp[4]) > 0)
 		{
 		    // startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
 		    startup.servers[tmp[0].LowerCase()] =
 			pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > (atol(tmp[3]),
-												 triplet < unsigned int,
-												 mstring,
-												 unsigned long > (atoi(tmp[1]),
-														  tmp[2],
-														  atol(tmp
-														       [4])));
+				triplet < unsigned int, mstring, unsigned long > (atoi(tmp[1]), tmp[2], atol(tmp[4])));
 		    if (min_level < 1 || atoi(tmp[3]) < min_level)
 			min_level = atoi(tmp[3]);
 		}
@@ -2178,12 +2173,12 @@ bool Magick::get_config_values()
 	    in.Read(ts_Startup + lookfor, value_mstring, "");
 	    if (!value_mstring.empty())
 	    {
-		if (value_mstring.Contains(":"))
+		if (value_mstring.Contains("|"))
 		{
 		    mstring tmp[2];
 
-		    tmp[0] = value_mstring.ExtractWord(1, ":");
-		    tmp[1] = value_mstring.ExtractWord(2, ":");
+		    tmp[0] = value_mstring.ExtractWord(1, "|");
+		    tmp[1] = value_mstring.ExtractWord(2, "|");
 		    if (tmp[1].length() && tmp[1] != "*")
 		    {
 			for (unsigned int k = 1; k <= tmp[1].WordCount(", "); k++)

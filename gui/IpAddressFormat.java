@@ -36,7 +36,7 @@ public class IpAddressFormat extends JFormattedTextField.AbstractFormatter
     {
 	String newtext;
 	if (text == null || text.length() == 0)
-	    newtext = new String("0.0.0.0");
+	    return null;
 	else
 	    newtext = text;
 
@@ -57,7 +57,7 @@ public class IpAddressFormat extends JFormattedTextField.AbstractFormatter
     public String valueToString(Object value) throws ParseException
     {
 	if (value == null)
-	    return "0.0.0.0";
+	    return "";
 
 	InetAddress addr = ((InetAddress) value);
 	return addr.getHostAddress();

@@ -202,8 +202,8 @@ void ServMsg::execute(mstring & source, const mstring & msgtype, const mstring &
     //okay this is the main servmsg command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-    mstring mynick(Magick::instance().getLname(params.ExtractWord(1, ": ")));
-    mstring message(params.After(":"));
+    mstring mynick(Magick::instance().getLname(IrcParam(params, 1)));
+    mstring message(params.After(" :"));
     mstring command(message.Before(" "));
 
     if (message[0U] == CTCP_DELIM_CHAR)

@@ -1329,12 +1329,17 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
     BTCB();
     FT("Chan_Live_t::Mode", (source, in));
 
-    mstring change(in.ExtractWord(1, ": "));
+    mstring change(IrcParam(in, 1));
     mstring newmode, newmode_param;
-    unsigned int fwdargs = 2, i, wc;
+    unsigned int fwdargs = 1, i, wc;
     bool add = true;
 
-    wc = in.WordCount(": ");
+    wc = IrcParamCount(in);
+    mstring mode_param;
+    for (i=2; i<=wc; i++)
+	mode_param += " " + IrcParam(in, i);
+
+    wc = mode_param.WordCount(" ");
     CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
 
     {
@@ -1347,7 +1352,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 	CB(2, p_modes_on_params.size());
 	CB(3, p_modes_off);
 	CB(4, p_modes_off_params.size());
-	for (fwdargs = 2, i = 0; i < change.size(); i++)
+	for (i = 0; i < change.size(); i++)
 	{
 	    if (change[i] == '+')
 	    {
@@ -1361,7 +1366,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 	    }
 	    else if (Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 	    {
-		mstring arg(in.ExtractWord(fwdargs, ": "));
+		mstring arg(mode_param.ExtractWord(fwdargs, " "));
 
 		switch (change[i])
 		{
@@ -1575,13 +1580,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    {
 				RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
 				CB(5, i_Limit);
-				if (fwdargs > in.WordCount(": "))
-				{
-				    LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
-				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
-				    i_Limit = 0;
-				}
-				else if (!arg.IsNumber())
+				if (!arg.IsNumber() || arg.Contains("."))
 				{
 				    LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
 				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
@@ -1601,6 +1600,12 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 				CE(5, i_Limit);
 			    }
 			    fwdargs++;
+			}
+			else
+			{
+			    LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
+			    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
+			    i_Limit = 0;
 			}
 		    }
 		    else
@@ -2335,8 +2340,14 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(i_Name);
     mstring out_mode, out_param;
     mstring change(mode.Before(" "));
-    unsigned int fwdargs = 2, i, wc = mode.WordCount(": ");
+    unsigned int fwdargs = 1, i, wc;
     bool add = true;
+
+    wc = IrcParamCount(mode);
+    mstring mode_param;
+    for (i=2; i<=wc; i++)
+	mode_param += " " + IrcParam(mode, i);
+    wc = mode_param.WordCount(" ");
 
     for (i = 0; i < change.size(); i++)
     {
@@ -2350,7 +2361,7 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 	}
 	else if (Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 	{
-	    mstring arg = mode.ExtractWord(fwdargs, ": ");
+	    mstring arg = mode_param.ExtractWord(fwdargs, " ");
 
 	    switch (change[i])
 	    {
@@ -2359,14 +2370,18 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 		{
 		    if (add)
 		    {
-			// IF not (a server set the mode and we've got anarchy set) and
-			// not (services user set mode), AND (user is AUTODEOP OR
-			// (channel is secure ops AND (user is not AUTOOP or CMDOP)))
-			if (!(setter.Contains(".") && Anarchy()) &&
-			    !(Magick::instance().nickserv.IsLive(arg) &&
-			      Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
-			    (GetAccess(arg) <= Level_value("AUTODEOP") ||
-			     (!(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) && Secureops())))
+			// If all of the following are true:
+			//    The mode was not set on services
+			//    The mode was not set on someone with CMDOP or AUTOOP access
+			//    The mode was either:
+			//       Set by a server, and anarchy is off
+			//       Not set by a server, and secureops is on
+			// or the mode was set on someone at or below AUTODEOP
+			if ((
+			     !(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			     !(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) &&
+			     (setter.Contains(".") ? !Anarchy() : Secureops())
+			    ) || GetAccess(arg) <= Level_value("AUTODEOP"))
 			{
 			    out_mode += "-o";
 			    out_param += " " + arg;
@@ -2393,14 +2408,18 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 		{
 		    if (add)
 		    {
-			// IF not (a server set the mode and we've got anarchy set) and
-			// not (services user set mode), AND (user is AUTODEOP OR
-			// (channel is secure ops AND (user is not AUTOHALFOP or CMDHALFOP)))
-			if (!(setter.Contains(".") && Anarchy()) &&
-			    !(Magick::instance().nickserv.IsLive(arg) &&
-			      Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
-			    (GetAccess(arg) <= Level_value("AUTODEOP") ||
-			     (!(GetAccess(arg, "CMDHALFOP") || GetAccess(arg, "AUTOHALFOP")) && Secureops())))
+			// If all of the following are true:
+			//    The mode was not set on services
+			//    The mode was not set on someone with CMDHALFOP or AUTOHALFOP access
+			//    The mode was either:
+			//       Set by a server, and anarchy is off
+			//       Not set by a server, and secureops is on
+			// or the mode was set on someone at or below AUTODEOP
+			if ((
+			     !(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			     !(GetAccess(arg, "CMDHALFOP") || GetAccess(arg, "AUTOHALFOP")) &&
+			     (setter.Contains(".") ? !Anarchy() : Secureops())
+			    ) || GetAccess(arg) <= Level_value("AUTODEOP"))
 			{
 			    out_mode += "-h";
 			    out_param += " " + arg;
@@ -2416,14 +2435,18 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 		{
 		    if (add)
 		    {
-			// IF not (a server set the mode and we've got anarchy set) and
-			// not (services user set mode), AND (user is AUTODEOP OR
-			// (channel is secure ops AND (user is not AUTOVOICE or CMDVOICE)))
-			if (!(setter.Contains(".") && Anarchy()) &&
-			    !(Magick::instance().nickserv.IsLive(arg) &&
-			      Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
-			    (GetAccess(arg) <= Level_value("AUTODEOP") ||
-			     (!(GetAccess(arg, "CMDVOICE") || GetAccess(arg, "AUTOVOICE")) && Secureops())))
+			// If all of the following are true:
+			//    The mode was not set on services
+			//    The mode was not set on someone with CMDVOICE or AUTOVOICE access
+			//    The mode was either:
+			//       Set by a server, and anarchy is off
+			//       Not set by a server, and secureops is on
+			// or the mode was set on someone at or below AUTODEOP
+			if ((
+			     !(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			     !(GetAccess(arg, "CMDVOICE") || GetAccess(arg, "AUTOVOICE")) &&
+			     (setter.Contains(".") ? !Anarchy() : Secureops())
+			    ) || GetAccess(arg) <= Level_value("AUTODEOP"))
 			{
 			    out_mode += "-v";
 			    out_param += " " + arg;
@@ -3283,7 +3306,7 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
     setting.Mlock_Key.erase();
     setting.Mlock_Limit = 0;
     vector < mstring > retval;
-    mstring output, change(mode.ExtractWord(1, ": "));
+    mstring output, change(mode.ExtractWord(1, " "));
     unsigned int i;
     unsigned int fwdargs = 2;
     bool add = true;
@@ -3322,7 +3345,7 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 	    case 'k':
 		if (!ignorek && add)
 		{
-		    if (fwdargs > mode.WordCount(": "))
+		    if (fwdargs > mode.WordCount(" "))
 		    {
 			output.erase();
 			output = Magick::instance().getMessage(source, "ERR_SYNTAX/NOKEY");
@@ -3331,7 +3354,7 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 		    }
 		    else
 		    {
-			setting.Mlock_Key = mode.ExtractWord(fwdargs, ": ");
+			setting.Mlock_Key = mode.ExtractWord(fwdargs, " ");
 		    }
 		    fwdargs++;
 		}
@@ -3340,20 +3363,20 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 	    case 'l':
 		if (!ignorel && add)
 		{
-		    if (fwdargs > mode.WordCount(": "))
+		    if (fwdargs > mode.WordCount(" "))
 		    {
 			output.erase();
 			output = Magick::instance().getMessage(source, "ERR_SYNTAX/NOLIMIT");
 			retval.push_back(output);
 			fwdargs--;
 		    }
-		    else if (!mode.ExtractWord(fwdargs, ": ").IsNumber() || mode.ExtractWord(fwdargs, ": ").Contains("."))
+		    else if (!mode.ExtractWord(fwdargs, " ").IsNumber() || mode.ExtractWord(fwdargs, " ").Contains("."))
 		    {
 			output.erase();
 			output = Magick::instance().getMessage(source, "ERR_SYNTAX/WHOLENUMBER");
 			retval.push_back(output);
 		    }
-		    else if (atol(mode.ExtractWord(fwdargs, ": ")) < 1)
+		    else if (atol(mode.ExtractWord(fwdargs, " ")) < 1)
 		    {
 			output.erase();
 			output =
@@ -3363,7 +3386,7 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 		    }
 		    else
 		    {
-			setting.Mlock_Limit = atol(mode.ExtractWord(fwdargs, ": ").c_str());
+			setting.Mlock_Limit = atol(mode.ExtractWord(fwdargs, " ").c_str());
 		    }
 		    fwdargs++;
 		}
@@ -3663,7 +3686,7 @@ vector < mstring > Chan_Stored_t::L_Mlock(const mstring & source, const mstring 
     lock.Mlock_On.erase();
     lock.Mlock_Off.erase();
     vector < mstring > retval;
-    mstring output, change(mode.ExtractWord(1, ": "));
+    mstring output, change(mode.ExtractWord(1, " "));
     bool add = true;
     unsigned int i;
 

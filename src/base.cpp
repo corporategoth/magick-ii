@@ -239,23 +239,31 @@ void mMessage::AddDependancies()
 
 	    for (i = offset; i <= params_.WordCount(" "); i++)
 	    {
-		mstring nick(params_.ExtractWord(i, " ").Before(":"));
+		mstring nick(params_.ExtractWord(i, " ").Before(" :"));
 
-		AddDepend(NickExists, "!" + nick);
+		if (Magick::instance().server.proto.Numeric.User())
+		    AddDepend(NickExists, "!" + nick);
+		else
+		    AddDepend(NickExists, nick.LowerCase());
 	    }
 	}
     }
     else if (msgtype_ == "JOIN")
     {
 	// User is NOT in channel
-	for (unsigned int i = 1; i <= params_.WordCount(":, "); i++)
+	unsigned int count = IrcParamCount(params_);
+	for (unsigned int i = 1; i <= count; i++)
 	{
-	    mstring chan = params_.ExtractWord(i, ":, ");
+	    unsigned int chans = IrcParam(params_, i).WordCount(",");
+	    for (unsigned int j = 1; j <= chans; j++)
+	    {
+		mstring chan = IrcParam(params_, i).ExtractWord(j, ", ");
 
-	    if (IsChan(chan))
-		AddDepend(UserNoInChan, chan.LowerCase() + ":" + source_);
-	    else
-		AddDepend(UserNoInChan, chan + ":" + source_);
+		if (IsChan(chan))
+		    AddDepend(UserNoInChan, chan.LowerCase() + " " + source_);
+		else
+		    AddDepend(UserNoInChan, chan + " " + source_);
+	    }
 	}
     }
     else if (msgtype_ == "KICK")
@@ -263,25 +271,30 @@ void mMessage::AddDependancies()
 	// Channel exists
 	// Target exists
 	// Target in channel
-	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
-	AddDepend(NickExists, params_.ExtractWord(2, ": ").LowerCase());
-	AddDepend(UserInChan, params_.ExtractWord(1, ": ").LowerCase() + ":" + params_.ExtractWord(2, ": ").LowerCase());
+	AddDepend(ChanExists, IrcParam(params_, 1).LowerCase());
+	AddDepend(NickExists, IrcParam(params_, 2).LowerCase());
+	AddDepend(UserInChan, IrcParam(params_, 1).LowerCase() + " " + IrcParam(params_, 2).LowerCase());
     }
     else if (msgtype_ == "KILL")
     {
 	// Target exists
-	AddDepend(NickExists, params_.ExtractWord(1, ": ").LowerCase());
+	AddDepend(NickExists, IrcParam(params_, 1).LowerCase());
     }
-    else if ((msgtype_ == "MODE" || msgtype_ == "SVSMODE") && IsChan(params_.ExtractWord(1, ": ")))
+    else if ((msgtype_ == "MODE" || msgtype_ == "SVSMODE") && IsChan(IrcParam(params_, 1)))
     {
 	// Channel exists
 	// ALL params_ that are users exist ... ?
-	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
+	AddDepend(ChanExists, IrcParam(params_, 1).LowerCase());
 
-	mstring mode = params_.ExtractWord(2, ": ");
-	unsigned int fwdarg = 3;
+	mstring mode = IrcParam(params_, 2);
+	unsigned int i, fwdarg = 1;
 
-	for (unsigned int i = 0; i < mode.length() && fwdarg <= params_.WordCount(": "); i++)
+	unsigned int count = IrcParamCount(params_);
+	mstring mode_arg;
+	for (i=3; i<=count; i++)
+	    mode_arg += " " + IrcParam(params_, i);
+
+	for (i = 0; i < mode.length() && fwdarg <= mode_arg.WordCount(" "); i++)
 	{
 	    if (Magick::instance().server.proto.ChanModeArg().Contains(mode[i]))
 	    {
@@ -291,20 +304,20 @@ void mMessage::AddDependancies()
 		case 'h':
 		case 'v':
 		    if (Magick::instance().server.proto.Numeric.User())
-			AddDepend(NickExists, "!" + params_.ExtractWord(fwdarg, ": "));
+			AddDepend(NickExists, "!" + mode_arg.ExtractWord(fwdarg, " "));
 		    else
-			AddDepend(NickExists, params_.ExtractWord(fwdarg, ": "));
+			AddDepend(NickExists, mode_arg.ExtractWord(fwdarg, " ").LowerCase());
 		    break;
 		}
 		fwdarg++;
 	    }
 	}
     }
-    else if (msgtype_ == "NICK" || msgtype_ == "SNICK" || msgtype_ == "USER")
+    else if (msgtype_ == "NICK" || msgtype_ == "USER")
     {
 	// Server exists OR
 	// Target nick does NOT exist
-	AddDepend(NickNoExists, params_.ExtractWord(1, ": ").LowerCase());
+	AddDepend(NickNoExists, IrcParam(params_, 1).LowerCase());
 	if (source_.empty() || source_[0u] == '@')
 	{
 	    mstring server;
@@ -313,40 +326,40 @@ void mMessage::AddDependancies()
 	    {
 	    case 0000:
 		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + params_.ExtractWord(4, ": "));
+		    AddDepend(ServerExists, "@" + IrcParam(params_, 4));
 		else
-		    AddDepend(ServerExists, params_.ExtractWord(4, ": ").LowerCase());
+		    AddDepend(ServerExists, IrcParam(params_, 4).LowerCase());
 		break;
 	    case 0001:
 		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + params_.ExtractWord(5, ": "));
+		    AddDepend(ServerExists, "@" + IrcParam(params_, 5));
 		else
-		    AddDepend(ServerExists, params_.ExtractWord(5, ": ").LowerCase());
+		    AddDepend(ServerExists, IrcParam(params_, 5).LowerCase());
 		break;
 	    case 1000:
 	    case 1001:
 	    case 1002:
 		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + params_.ExtractWord(6, ": "));
+		    AddDepend(ServerExists, "@" + IrcParam(params_, 6));
 		else
-		    AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
+		    AddDepend(ServerExists, IrcParam(params_, 6).LowerCase());
 		break;
 	    case 1003:
 	    case 2000:
 	    case 2001:
 		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + params_.ExtractWord(7, ": "));
+		    AddDepend(ServerExists, "@" + IrcParam(params_, 7));
 		else
-		    AddDepend(ServerExists, params_.ExtractWord(7, ": ").LowerCase());
+		    AddDepend(ServerExists, IrcParam(params_, 7).LowerCase());
 		break;
 	    case 2002:
-		AddDepend(ServerExists, params_.ExtractWord(8, ": ").LowerCase());
+		AddDepend(ServerExists, IrcParam(params_, 8).LowerCase());
 		break;
 	    case 2003:
 		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + params_.ExtractWord(6, ": "));
+		    AddDepend(ServerExists, "@" + IrcParam(params_, 6));
 		else
-		    AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
+		    AddDepend(ServerExists, IrcParam(params_, 6).LowerCase());
 		break;
 	    case 3000:
 		// Source is already added ...
@@ -358,32 +371,33 @@ void mMessage::AddDependancies()
     {
 	// Channel exists
 	// User in channel
-	mstring chan = params_.ExtractWord(1, ": ");
+	mstring chan = IrcParam(params_, 1);
 
 	if (IsChan(chan))
 	{
 	    AddDepend(ChanExists, chan.LowerCase());
-	    AddDepend(UserInChan, chan.LowerCase() + ":" + source_);
+	    AddDepend(UserInChan, chan.LowerCase() + " " + source_);
 	}
 	else
 	{
 	    AddDepend(ChanExists, chan);
-	    AddDepend(UserInChan, chan + ":" + source_);
+	    AddDepend(UserInChan, chan + " " + source_);
 	}
     }
     else if (msgtype_ == "SERVER")
     {
 	// Uplink exists
-	AddDepend(ServerNoExists, params_.ExtractWord(1, ": ").LowerCase());
+	AddDepend(ServerNoExists, IrcParam(params_, 1).LowerCase());
     }
     else if (msgtype_ == "SJOIN")
     {
 	// ALL nick's mentioned
 	if (source_[0u] == '@' || source_.Contains(".") || source_.empty())
 	{
-	    for (unsigned int i = 1; i <= params_.After(":").WordCount(" "); i++)
+	    mstring nicks = params_.After(" :");
+	    for (unsigned int i = 1; i <= nicks.WordCount(" "); i++)
 	    {
-		mstring nick(params_.After(":").ExtractWord(i, " ").LowerCase());
+		mstring nick(nicks.ExtractWord(i, " ").LowerCase());
 
 		if (!nick.empty())
 		{
@@ -411,17 +425,18 @@ void mMessage::AddDependancies()
 		    if (!IsNotNick)
 		    {
 			AddDepend(NickExists, nick);
-			AddDepend(UserNoInChan, params_.ExtractWord(2, ": ").LowerCase() + ":" + nick);
+			AddDepend(UserNoInChan, IrcParam(params_, 2).LowerCase() + " " + nick);
 		    }
 		}
 	    }
 	}
 	else
 	{
-	    for (unsigned int i = 2; i <= params_.WordCount(": "); i++)
+	    unsigned int count = IrcParamCount(params_);
+	    for (unsigned int i = 2; i <= count; i++)
 	    {
 		char c = 0;
-		mstring chan = params_.ExtractWord(i, ": ").LowerCase();
+		mstring chan = IrcParam(params_, i).LowerCase();
 
 		while (c != chan[0u])
 		{
@@ -437,14 +452,14 @@ void mMessage::AddDependancies()
 			break;
 		    }
 		}
-		AddDepend(UserNoInChan, chan + ":" + source_.After(":"));
+		AddDepend(UserNoInChan, chan + " " + source_.LowerCase());
 	    }
 	}
     }
     else if (msgtype_ == "SQUIT")
     {
 	// Uplink exists
-	mstring server = params_.ExtractWord(1, ": ");
+	mstring server = IrcParam(params_, 1);
 
 	if (server.Contains("."))
 	    AddDepend(ServerExists, server.LowerCase());
@@ -454,7 +469,7 @@ void mMessage::AddDependancies()
     else if (msgtype_ == "TOPIC")
     {
 	// Channel exists
-	mstring chan = params_.ExtractWord(1, ": ");
+	mstring chan = IrcParam(params_, 1);
 
 	if (IsChan(chan))
 	    AddDepend(ChanExists, chan.LowerCase());
@@ -580,10 +595,10 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case UserInChan:
-	    if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
-		Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
+	    if (Magick::instance().server.GetChannel(iter->second.Before(" ")).empty() ||
+		Magick::instance().server.GetUser(iter->second.After(" ")).empty() ||
 		!Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(
-			iter->second.Before(":")))->IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+			iter->second.Before(" ")))->IsIn(Magick::instance().server.GetUser(iter->second.After(" "))))
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
@@ -600,10 +615,10 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case UserNoInChan:
-	    if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
-		Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
+	    if (Magick::instance().server.GetChannel(iter->second.Before(" ")).empty() ||
+		Magick::instance().server.GetUser(iter->second.After(" ")).empty() ||
 		!Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(
-			iter->second.Before(":")))->IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+			iter->second.Before(" ")))->IsIn(Magick::instance().server.GetUser(iter->second.After(" "))))
 	    {
 		iter->third = true;
 	    }
@@ -738,10 +753,10 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case UserInChan:
-		if (!Magick::instance().server.GetChannel(iter->second.Before(":")).empty() &&
-		    !Magick::instance().server.GetUser(iter->second.After(":")).empty() &&
+		if (!Magick::instance().server.GetChannel(iter->second.Before(" ")).empty() &&
+		    !Magick::instance().server.GetUser(iter->second.After(" ")).empty() &&
 		    Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(
-			iter->second.Before(":")))->IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+			iter->second.Before(" ")))->IsIn(Magick::instance().server.GetUser(iter->second.After(" "))))
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -756,10 +771,10 @@ bool mMessage::RecheckDependancies()
 		}
 		break;
 	    case UserNoInChan:
-		if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
-		    Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
+		if (Magick::instance().server.GetChannel(iter->second.Before(" ")).empty() ||
+		    Magick::instance().server.GetUser(iter->second.After(" ")).empty() ||
 		    !Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(
-			iter->second.Before(":")))->IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+			iter->second.Before(" ")))->IsIn(Magick::instance().server.GetUser(iter->second.After(" "))))
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -863,7 +878,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 	    target = param1;
 	else
 	    target = param1.LowerCase();
-	target += ":";
+	target += " ";
 	if (param2[0u] == '!')
 	    target += param2;
 	else
@@ -992,9 +1007,9 @@ int mMessage::call()
     {
 
 	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(src) &&
-	    !IsChan(params_.ExtractWord(1, ": ")))
+	    !IsChan(IrcParam(params_, 1)))
 	{
-	    mstring target(params_.ExtractWord(1, ": "));
+	    mstring target(IrcParam(params_, 1));
 
 	    if (target.Contains("@"))
 	    {
