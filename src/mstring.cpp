@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2000/12/10 07:34:51  prez
+** Added a flush to the no memory error output.
+**
 ** Revision 1.87  2000/12/10 02:30:05  prez
 ** More misc fixes on mstring ... one of them fixing single char 0 strings.
 **
@@ -181,9 +184,11 @@ mstring const IRC_Off((char) 15);	// ^O
 
 #define NOMEM { \
 	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
+	ACE_OS::fflush(stderr); \
 	return; }
 #define NOMEMR(X) { \
 	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
+	ACE_OS::fflush(stderr); \
 	return X; }
 	
 
