@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2000/02/16 12:59:39  ungod
+** fixing for borland compilability
+**
 ** Revision 1.83  2000/02/15 13:27:03  prez
 ** *** empty log message ***
 **
@@ -681,9 +684,9 @@ int EventTask::svc(void)
 		{
 		    Parent->server.KILL(Parent->nickserv.FirstName(),
 			oldnick, "Kill Protection enforced.");
-		    Parent->server.NICK(oldnick, Parent->startup.Ownuser() ?
+		    Parent->server.NICK(oldnick, (Parent->startup.Ownuser() ?
 				    oldnick.LowerCase() :
-				    Parent->startup.Services_User(),
+				    Parent->startup.Services_User()),
 				    Parent->startup.Services_Host(),
 				    Parent->startup.Server_Name(),
 				    "Nickname Enforcer");

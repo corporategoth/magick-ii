@@ -1,0 +1,29 @@
+#------------------------------------------------------------------------------
+VERSION = BWS.01
+#------------------------------------------------------------------------------
+!ifndef ROOT
+ROOT = $(MAKEDIR)\..
+!endif
+#------------------------------------------------------------------------------
+MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
+DCC = $(ROOT)\bin\dcc32.exe $**
+BRCC = $(ROOT)\bin\brcc32.exe $**
+#------------------------------------------------------------------------------
+PROJECTS = magickbcc.exe antlr.lib crypto.lib rxbcc.lib
+#------------------------------------------------------------------------------
+default: $(PROJECTS)
+#------------------------------------------------------------------------------
+
+magickbcc.exe: magickbcc.bpr
+  $(MAKE)
+
+antlr.lib: src\antlr\antlr.bpr
+  $(MAKE)
+
+crypto.lib: src\des\crypto.bpr
+  $(MAKE)
+
+rxbcc.lib: src\rx-1.5\rx\rx\rxbcc.bpr
+  $(MAKE)
+
+

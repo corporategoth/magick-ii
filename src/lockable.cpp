@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/02/16 12:59:39  ungod
+** fixing for borland compilability
+**
 ** Revision 1.32  2000/02/15 13:27:03  prez
 ** *** empty log message ***
 **

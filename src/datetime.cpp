@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/02/16 12:59:39  ungod
+** fixing for borland compilability
+**
 ** Revision 1.45  2000/02/15 13:27:03  prez
 ** *** empty log message ***
 **
@@ -754,10 +757,10 @@ int mDateTime::Year()
     return Year;
 }
 
-int mDateTime::MSecondsSince()
+unsigned long mDateTime::MSecondsSince()
 {
     mDateTime dummyvar=Now()-(*this);
-    int CurrentVal=(int)(dummyvar.Val*(double)MSecsPerDay);
+    unsigned long CurrentVal=(unsigned long)(dummyvar.Val*(double)MSecsPerDay);
     return CurrentVal;
 }
 
@@ -767,27 +770,27 @@ mstring mDateTime::Ago(bool gmt)
     return(DisectTime(SecondsSince()));
 }
 
-int mDateTime::SecondsSince()
+unsigned long mDateTime::SecondsSince()
 {
     return (MSecondsSince() / 1000);
 }
 
-int mDateTime::MinutesSince()
+unsigned long mDateTime::MinutesSince()
 {
     return (SecondsSince() / 60);
 }
 
-int mDateTime::HoursSince()
+unsigned long mDateTime::HoursSince()
 {
     return (MinutesSince() / 60);
 }
 
-int mDateTime::DaysSince()
+unsigned long mDateTime::DaysSince()
 {
     return (HoursSince() / 24);
 }
 
-int mDateTime::YearsSince()
+unsigned long mDateTime::YearsSince()
 {
     return (int)((double) DaysSince() / 365.25);
 }

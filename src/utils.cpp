@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/02/16 12:59:41  ungod
+** fixing for borland compilability
+**
 ** Revision 1.27  2000/02/15 13:27:04  prez
 ** *** empty log message ***
 **
@@ -366,7 +369,6 @@ unsigned long FromHumanTime(mstring in)
 	    break;
 	default:
 	    RET(0);
-	    break;
 	}
     }
     if (number != 0)

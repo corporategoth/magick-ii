@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/02/16 12:59:40  ungod
+** fixing for borland compilability
+**
 ** Revision 1.67  2000/02/15 13:27:04  prez
 ** *** empty log message ***
 **
@@ -1461,8 +1464,8 @@ void NetworkServ::execute(const mstring & data)
 			    Parent->nickserv.recovered.end())
 		{
 		    Parent->server.NICK(source,
-				Parent->startup.Ownuser() ?
-				sourceL : Parent->startup.Services_User(),
+				(Parent->startup.Ownuser() ?
+				sourceL : Parent->startup.Services_User()),
 				Parent->startup.Services_Host(),
 				Parent->startup.Server_Name(),
 				"Nickname Enforcer");

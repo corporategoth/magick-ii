@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/02/16 12:59:40  ungod
+** fixing for borland compilability
+**
 ** Revision 1.56  2000/02/15 13:27:04  prez
 ** *** empty log message ***
 **
@@ -3753,8 +3756,8 @@ void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
 			Parent->getMessage(nick, "MISC/KILL_RECOVER") + ")");
     }
 
-    Parent->server.NICK(nick, Parent->startup.Ownuser() ? nick.LowerCase() :
-				Parent->startup.Services_User(),
+    Parent->server.NICK(nick, (Parent->startup.Ownuser() ? nick.LowerCase() :
+				Parent->startup.Services_User()),
 				Parent->startup.Services_Host(),
 				Parent->startup.Server_Name(),
 				"Nickname Enforcer");

@@ -19,6 +19,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2000/02/16 12:59:37  ungod
+** fixing for borland compilability
+**
 ** Revision 1.7  2000/02/15 10:37:47  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
@@ -56,7 +59,7 @@ public:
     wxCryptOutputStream(wxOutputStream& stream, const mstring& passphrase);
     //virtual ~mEncryptStream();
 protected:
-    size_t OnSysWrite(void *buffer, size_t size);
+    size_t OnSysWrite(const void *buffer, size_t size);
 private:
     bool ppgiven;
     des_key_schedule key1;

@@ -23,11 +23,13 @@ OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.
   Debug\trace.obj Debug\utils.obj Debug\variant.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
-LIBFILES = 
+LIBFILES = src\des\Debug\crypto.lib src\rx-1.5\rx\rx\Debug\rxbcc.lib \
+  src\antlr\Debug\antlr.lib ..\support\ACE_wrappers\bin\Dynamic\Release\ace_b.lib \
+  ..\support\zlib\zlib.LIB
 IDLGENFILES =
 IDLFILES =
-LIBRARIES =
-SPARELIBS =
+LIBRARIES = VCL40.lib
+SPARELIBS = VCL40.lib
 PACKAGES = VCL40.bpi VCLJPG40.bpi VCLX40.bpi bcbsmp40.bpi VCLDB40.bpi ibsmp40.bpi \
   VCLDBX40.bpi QRPT40.bpi TEEUI40.bpi TEEDB40.bpi TEE40.bpi DSS40.bpi \
   VCLMID40.bpi NMFAST40.bpi INETDB40.bpi INET40.bpi dclocx40.bpi RXCTL4.bpi \
@@ -45,12 +47,11 @@ SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 # ---------------------------------------------------------------------------
 CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
-  -Od -w -Tkh30000 -a8 -5 -d -k -v -vi -D$(SYSDEFINES);$(USERDEFINES) -q -tWR \
-  -tWM -c
+  -Od -Tkh30000 -a8 -5 -d -k -v -vi -D$(SYSDEFINES);$(USERDEFINES) -q -tWR -tWM -c
 IDLCFLAGS = -Isrc -I$(BCB)\include -I$(BCB)\include\ATL -Iinclude\bob -Iinclude \
   -I..\support\ace_wrappers -I..\support\zlib -src_suffixcpp -D_DEBUG -DDEBUG \
   -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1
-PFLAGS = -Usrc;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB-1.1.3;$(BCB)\lib;$(DEBUGLIBPATH) \
+PFLAGS = -Usrc;$(BCB)\lib;$(DEBUGLIBPATH) \
   -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
   -N2Debug -N0Debug -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1 \
   -$YD
@@ -60,8 +61,7 @@ RFLAGS = -isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\
 AFLAGS = /isrc /i$(BCB)\include /i$(BCB)\include\ATL /iinclude\bob /iinclude \
   /i..\support\ace_wrappers /i..\support\zlib /d_DEBUG /dDEBUG /dWIN32 /d_CONSOLE \
   /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /mx /w2 /zd
-LFLAGS = -Lsrc;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB-1.1.3;$(BCB)\lib;$(DEBUGLIBPATH) \
-  -ap -Tpe -x -Gn -v -q
+LFLAGS = -Lsrc;$(BCB)\lib;$(DEBUGLIBPATH) -ap -Tpe -x -v -q
 IFLAGS =
 # ---------------------------------------------------------------------------
 ALLOBJ = c0x32.obj $(OBJFILES)
@@ -103,8 +103,10 @@ Count=1
 Item0=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
 
 [HistoryLists\hlLibraryPath]
-Count=1
-Item0=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB-1.1.3;$(BCB)\lib
+Count=3
+Item0=src;$(BCB)\lib
+Item1=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB;$(BCB)\lib
+Item2=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB-1.1.3;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -119,8 +121,9 @@ Count=1
 Item0=Debug
 
 [HistoryLists\hlFinalOutputDir]
-Count=1
-Item0=Debug
+Count=2
+Item0=Debug\
+Item1=Debug
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

@@ -19,6 +19,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/02/16 12:59:37  ungod
+** fixing for borland compilability
+**
 ** Revision 1.21  2000/02/15 10:37:47  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
@@ -195,12 +198,12 @@ public:
     int Month();
     int Year();
     mstring Ago(bool call = false);
-    int MSecondsSince();
-    int SecondsSince();
-    int MinutesSince();
-    int HoursSince();
-    int DaysSince();
-    int YearsSince();
+    unsigned long MSecondsSince();
+    unsigned long SecondsSince();
+    unsigned long MinutesSince();
+    unsigned long HoursSince();
+    unsigned long DaysSince();
+    unsigned long YearsSince();
 
     friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
     friend bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time);

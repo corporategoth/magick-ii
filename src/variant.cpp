@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/02/16 12:59:41  ungod
+** fixing for borland compilability
+**
 ** Revision 1.32  2000/02/15 13:27:04  prez
 ** *** empty log message ***
 **
@@ -37,7 +40,7 @@
 **
 ** ========================================================== */
 
-#include "variant.h"
+#include "../include/variant.h"
 #include "trace.h"
 
 const mVarArray EmptyArray;

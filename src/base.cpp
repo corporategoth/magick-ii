@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2000/02/16 12:59:38  ungod
+** fixing for borland compilability
+**
 ** Revision 1.95  2000/02/15 13:27:03  prez
 ** *** empty log message ***
 **
@@ -178,7 +181,7 @@ bool mBase::signon(const mstring &nickname)
     else
     {
 	Parent->server.NICK(nickname,
-		Parent->startup.Ownuser() ? nickname.LowerCase() : Parent->startup.Services_User(),
+		(Parent->startup.Ownuser() ? nickname.LowerCase() : Parent->startup.Services_User()),
 		Parent->startup.Services_Host(), Parent->startup.Server_Name(), realname);
 	RET(true);
     }
@@ -600,7 +603,7 @@ void CommandMap::AddSystemCommand(mstring service, mstring command,
 
     i_system[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
 		    (command.UpperCase(),
-		    (committees != "") ? committees.LowerCase() : mstring("all"),
+		    ((committees != "") ? committees.LowerCase() : mstring("all")),
 		    function));
 }
 
@@ -637,7 +640,7 @@ void CommandMap::AddCommand(mstring service, mstring command,
 
     i_user[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
 		    (command.UpperCase(),
-		    (committees != "") ? committees.LowerCase() : mstring("all"),
+		    ((committees != "") ? committees.LowerCase() : mstring("all")),
 		    function));
 }
 

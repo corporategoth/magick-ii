@@ -57,8 +57,8 @@ public:
 
     bool insert(mstring entry, mstring nick, mDateTime modtime = Now());
     bool erase();
-    entlist_ui begin()const	{ return i_Members.begin(); }
-    entlist_ui end()const	{ return i_Members.end(); }
+    entlist_ui begin()		{ return i_Members.begin(); }
+    entlist_ui end()		{ return i_Members.end(); }
     size_t size()const		{ return i_Members.size(); }
     bool find(mstring entry);
     entlist_ui member;

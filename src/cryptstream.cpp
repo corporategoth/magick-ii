@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma hdrstop
 #endif
 
@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/02/16 12:59:39  ungod
+** fixing for borland compilability
+**
 ** Revision 1.9  2000/02/15 13:27:03  prez
 ** *** empty log message ***
 **
@@ -72,7 +75,7 @@ wxCryptInputStream::wxCryptInputStream(wxInputStream& stream, const mstring& pas
     des_set_key(&ckey2,key2);
 }
 
-size_t wxCryptOutputStream::OnSysWrite(void *buffer, size_t size)
+size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
 {
     wxASSERT(buffer!=NULL);
     if(ppgiven==false)
