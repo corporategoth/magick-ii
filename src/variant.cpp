@@ -62,6 +62,12 @@ mVariant::mVariant(const char * in)
 		valuetype=VarNull;
 }
 
+mVariant::mVariant(const mstring& in)
+{
+	valuetype=VarString;
+	value.StringValue=in.c_str();
+}
+
 mVariant::mVariant(bool in)
 {
 	valuetype=VarBool;

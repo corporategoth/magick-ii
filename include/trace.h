@@ -29,18 +29,21 @@ using namespace std;
 // wxOutputStream
 
 // FunctionTrace -- FT("...", ());
-#define FT(x,y) T_Functions __ft(x,AOC(y))
+#define FT(x,y)  mVarArray FT_VarArray y; T_Functions __ft(x, FT_VarArray)
+#define NFT(x) FT(x,(""))
 // Set return value -- RET()
-#define RET(x) __ft.return_value(x); return x
-#define NRET(x,y) __ft.return_value("(" + #x + ") " + #y); return y
+#define RET(x) {__ft.return_value=(x); return x;}
+
+#define NRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); return y;}
+
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }
 // Modify begin -- MB(AOC());
-#define MB(x) T_Modify __mod(AOC(x))
+#define MB(x) mVarArray MB_VarArray x;T_Modify __mod(MB_VarArray)
 // Modify end -- ME(());
-#define ME(x) __mod.End(AOC(x))
+#define ME(x) mVarArray ME_VarArray x;__mod.End(ME_VarArray)
 // In or Out chatter -- CH(enum, "...");
-#define CH(x) { T_Chatter __ch(x); }
+#define CH(x,y) { T_Chatter __ch(x,y); }
 
 // forward declarations till we get them done
 class Thread;
@@ -217,7 +220,9 @@ public:
 // ===================================================
 
 // ToDo -- A method to get the current ThreadID number
+
 // in here, without specifying it everywhere.
+
 class ThreadID {
 private:
     threadtype_enum internaltype;
@@ -245,6 +250,7 @@ class T_Functions : public Trace
 {
     ThreadID *tid;
     mstring m_name;
+
     T_Functions() {} 
 public:
     mVariant return_value;
@@ -296,18 +302,31 @@ public:
 // ===================================================
 
 class T_Locking : public Trace {
+
 public:
+
     enum type_enum { Read, Write, Mutex };
 
+
+
 private:
+
     ThreadID *tid;
+
     type_enum locktype;
+
     mstring name;
 
+
+
 public:
+
     T_Locking() {}
-    void open(type_enum, mstring lockname);
+
+    void open(T_Locking::type_enum ltype, mstring lockname);
+
     ~T_Locking();
+
 };
 
 // ===================================================

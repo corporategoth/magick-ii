@@ -166,6 +166,9 @@ int Magick::Start()
     ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
 
+    // calibrate the threshholds.
+    // try and see how many iterations of 500 random NickInfo's into a map occur in 60s
+
     serversocket.open(0);
     
     // temporary placeholder

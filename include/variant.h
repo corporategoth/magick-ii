@@ -57,6 +57,7 @@ public:
 	 mVariant(int in);
 	 mVariant(short in);
 	 mVariant();
+	 mVariant(const mstring& in);
 
 	 mVariant& operator=(const mVariant& in);
 	 bool operator==(const mVariant& in)const;

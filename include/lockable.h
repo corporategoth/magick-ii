@@ -15,10 +15,12 @@
 #define _LOCKABLE_H
 #include <ace/Local_Tokens.h>
 #include "mstring.h"
+#include "trace.h"
 
 class RLOCK
 {
     ACE_Local_RLock lock[5];
+
     T_Locking tlock[5];
     int count;
 public:
@@ -35,6 +37,7 @@ class WLOCK
     ACE_Local_WLock wlock;
     ACE_Local_RLock lock[4];
     T_Locking tlock[5];
+
     int count;
 public:
     WLOCK(mstring x1);
@@ -50,6 +53,7 @@ class MLOCK
     ACE_Local_Mutex mlock;
     ACE_Local_RLock lock[4];
     T_Locking tlock[5];
+
     int count;
 public:
     MLOCK(mstring x1);
