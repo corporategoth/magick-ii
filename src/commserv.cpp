@@ -210,3 +210,56 @@ void CommServ::load_database(wxInputStream& in)
 void CommServ::save_database(wxOutputStream& out)
 {
 }
+
+wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
+{
+    out<<in.i_Name;
+    if(in.i_HeadCom!=NULL)
+	out<<in.i_HeadCom->i_Name;
+    else
+	out<<mstring("");
+    out<<in.i_Head<<in.i_Description;
+
+    out<<in.i_Members.size();
+    for(in.member=in.i_Members.begin();in.member!=in.i_Members.end();in.member++)
+	out<<(*in.member);
+
+    out<<in.i_OpenMemos;
+
+    out<<in.i_Messages.size();
+    for(in.message=in.i_Messages.begin();in.message!=in.i_Messages.end();in.message++)
+	out<<(*in.message);
+
+    return out;
+}
+wxInputStream &operator>>(wxInputStream& in, Committee& out)
+{
+    int locsize,i;
+    entlist_t locent;
+    // need to write lock out.
+
+    in>>out.i_Name;
+    in>>out.i_HeadCom->i_Name;
+    in>>out.i_Head>>out.i_Description;
+
+    in>>locsize;
+    out.i_Members.clear();
+    for(i=0;i<locsize;i++)
+    {
+	in>>locent;
+	out.i_Members.insert(locent);
+    }
+
+    in>>out.i_OpenMemos;
+
+    in>>locsize;
+    out.i_Messages.clear();
+    for(i=0;i<locsize;i++)
+    {
+	in>>locent;
+	out.i_Messages.push_back(locent);
+    }
+
+
+    return in;
+}
