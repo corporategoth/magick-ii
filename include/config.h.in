@@ -21,6 +21,11 @@
 
 #ifndef _CONFIG_H
 #define _CONFIG_H
+/* Define if you want to test only (no connections) */
+#ifndef TEST_MODE
+#undef TEST_MODE
+#endif
+
 /* Define if you want to use encryption */
 #ifndef HASCRYPT
 #undef HASCRYPT
@@ -54,11 +59,6 @@
 /* Enable two-way encryption on passwords */
 #ifndef GETPASS
 #undef GETPASS
-#endif
-
-/* Define if we are on a windows system */
-#ifndef WIN32
-#undef WIN32
 #endif
 
 /* Crypto key 1 placeholder */

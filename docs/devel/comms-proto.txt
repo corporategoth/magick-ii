@@ -1,0 +1,53 @@
+All numeric stuff transferred here is network byte order.
+All strings end in a null terminator (ie. \0).
+All message ID's are transmitted as unsigned shorts
+eg. a hello message would be:
+   <msgid><length><type>
+
+0 - Error
+    - Error ID (unsigned short)
+        - 0 = Unknown message
+        - 1 = Message not valid for your type
+        - 2 = Access denied
+
+1 - Hello
+    - Identifier (unsigned char)
+        - 0 = Magick Server
+        - 1 = Magick Front-end
+    - Protocol number (unsigned char)
+    - Name (string)
+    - Version (string)
+
+2 - Bye
+
+3 - Authenticate (NOT IMPLEMENTED - ALWAYS ERROR)
+
+4 - Ping
+
+5 - Pong
+
+6 - Request File
+    - Transaction ID (unsigned long)
+    - File Type (unsigned char)
+        - 0 = Configuration File
+
+7 - Send File
+    - Transaction ID (unsigned long)
+    - File Type (unsigned char)
+        - 0 = Configuration File
+
+8 - File Transfer
+    - Transaction ID (unsigned long)
+    - File Length (unsigned long)
+    - File data (raw)
+
+9 - File Transfer Ack
+    - Transaction ID (unsigned long)
+
+10 - Send Signal
+    - Signal Number (unsigned char)
+        - 1  (HUP ): Reload Config
+        - 2  (INT ): Re-signon all clients
+        - 9  (KILL): Kill magick soft
+        - 13 (PIPE): Flush Trace data (if any)
+        - 15 (TERM): Save Databases

@@ -53,6 +53,57 @@ map < ACE_thread_t, Magick * > Magick::InstanceMap;
 static Magick GLOB_Magick;
 #endif
 
+/* Class for testing purposes ... */
+#ifdef TEST_MODE
+class TestInput : public ACE_Task < ACE_MT_SYNCH >
+{
+    typedef ACE_Task < ACE_MT_SYNCH > internal;
+    Magick *magick_instance;
+
+public:
+    TestInput(ACE_Thread_Manager * tm = 0) : internal(tm)
+    {
+    }
+
+    int open(void *in = 0)
+    {
+	magick_instance = (Magick *) in;
+	int retval = activate();
+
+	return retval;
+    }
+
+    int close(u_long flags = 0)
+    {
+	static_cast < void > (flags);
+
+	return 0;
+    }
+
+    int svc(void)
+    {
+	Magick::register_instance(magick_instance);
+	while (!Magick::instance().Shutdown())
+	{
+	    char buf[513];
+
+	    ACE_OS::memset(buf, 0, 513);
+	    ACE_OS::fgets(buf, 512, stdin);
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL)
+		Magick::instance().ircsvchandler->handle_input(buf);
+	}
+	Magick::deregister_instance();
+	return 0;
+    }
+
+    int fini()
+    {
+	return 0;
+    }
+};
+#endif /* TEST_MODE */
+
 #ifdef MAGICK_HAS_EXCEPTIONS
 void Magick::register_instance(Magick * ins, ACE_thread_t id) throw (E_Magick)
 #else
@@ -376,6 +427,7 @@ int Magick::Start()
 
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
+#ifndef TEST_MODE
 #ifndef WIN32
     if (i_fork && firstrun)
     {
@@ -415,50 +467,57 @@ int Magick::Start()
     if (!DoItAll())
 	NLOG(LM_STARTUP, "COMMANDLINE/START_FORK");
 #endif
+#endif
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler = new SignalHandler;
-    reactor().register_handler(SIGINT, signalhandler);
-#if defined(SIGTERM) && (SIGTERM != 0)
-    reactor().register_handler(SIGTERM, signalhandler);
+
+#if defined(SIGHUP) && (SIGHUP != 0)
+    reactor().register_handler(SIGHUP, signalhandler);
 #endif
-#if defined(SIGPIPE) && (SIGPIPE != 0)
-    reactor().register_handler(SIGPIPE, signalhandler);
+#if defined(SIGINT) && (SIGINT != 0)
+    reactor().register_handler(SIGINT, signalhandler);
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
     reactor().register_handler(SIGQUIT, signalhandler);
 #endif
-    reactor().register_handler(SIGSEGV, signalhandler);
-#ifdef SIGBUS
-    reactor().register_handler(SIGBUS, signalhandler);
-#endif
-#ifdef SIGHUP
-    reactor().register_handler(SIGHUP, signalhandler);
-#endif
+#if defined(SIGILL) && (SIGILL != 0)
     reactor().register_handler(SIGILL, signalhandler);
-#ifdef SIGTRAP
+#endif
+#if defined(SIGTRAP) && (SIGTRAP != 0)
     reactor().register_handler(SIGTRAP, signalhandler);
 #endif
-#ifdef SIGIOT
-    reactor().register_handler(SIGIOT, signalhandler);
+#if defined(SIGABRT) && (SIGABRT != 0)
+    reactor().register_handler(SIGABRT, signalhandler);
 #endif
-#ifdef SIGFPE
+#if defined(SIGFPE) && (SIGFPE != 0)
     reactor().register_handler(SIGFPE, signalhandler);
 #endif
-#ifdef SIGWINCH
-    reactor().register_handler(SIGWINCH, signalhandler);
+#if defined(SIGSEGV) && (SIGSEGV != 0)
+    reactor().register_handler(SIGSEGV, signalhandler);
 #endif
-#ifdef SIGTTIN
+#if defined(SIGBUS) && (SIGBUS != 0)
+    reactor().register_handler(SIGBUS, signalhandler);
+#endif
+#if defined(SIGPIPE) && (SIGPIPE != 0)
+    reactor().register_handler(SIGPIPE, signalhandler);
+#endif
+#if defined(SIGTERM) && (SIGTERM != 0)
+    reactor().register_handler(SIGTERM, signalhandler);
+#endif
+#if defined(SIGTTIN) && (SIGTTIN != 0)
     reactor().register_handler(SIGTTIN, signalhandler);
 #endif
-#ifdef SIGTTOU
+#if defined(SIGTTOU) && (SIGTTOU != 0)
     reactor().register_handler(SIGTTOU, signalhandler);
-#endif
-#ifdef SIGTSTP
-    reactor().register_handler(SIGTSTP, signalhandler);
 #endif
 
 #if 0
+
+// NOFORK & Test Mode needs this to stop the task (CTRL-Z)
+#if defined(SIGTSTP) && (SIGTSTP != 0)
+    reactor().register_handler(SIGTSTP, signalhandler);
+#endif
 
 // Linux POSIX threads (pre-lxpthreads) use these ...
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
@@ -472,7 +531,7 @@ int Magick::Start()
 #if defined(SIGALRM) && (SIGALRM != 0)
     reactor().register_handler(SIGALRM, signalhandler);
 #endif
-#ifdef SIGCHLD
+#if defined(SIGCHLD) && (SIGCHLD != 0)
     reactor().register_handler(SIGCHLD, signalhandler);
 #endif
 
@@ -546,6 +605,11 @@ int Magick::Run()
 
     reactor().schedule_timer(&Magick::instance().hh, 0, ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
     reactor().schedule_timer(&(Magick::instance().rh), 0, ACE_Time_Value::zero);
+#ifdef TEST_MODE
+    TestInput ti;
+
+    ti.open(this);
+#endif
     AUTO(true);			// Activate events from here.
 
     // next thing to be done here is set up the acceptor mechanism to listen
@@ -560,6 +624,10 @@ int Magick::Run()
     reactor().run_reactor_event_loop();
     DumpE();
     FLUSH();
+
+#ifdef TEST_MODE
+    ti.close();
+#endif
 
     CurrentState = RunCompleted;
     RET(MAGICK_RET_NORMAL);
@@ -592,48 +660,52 @@ int Magick::Stop()
 
     NLOG(LM_STARTUP, "COMMANDLINE/STOP_EVENTS");
 
-    //todo work out some way to "ignore" signals
-    reactor().remove_handler(SIGINT);
-#if defined(SIGTERM) && (SIGTERM != 0)
-    reactor().remove_handler(SIGTERM);
+#if defined(SIGHUP) && (SIGHUP != 0)
+    reactor().remove_handler(SIGHUP);
 #endif
-#if defined(SIGPIPE) && (SIGPIPE != 0)
-    reactor().remove_handler(SIGPIPE);
+#if defined(SIGINT) && (SIGINT != 0)
+    reactor().remove_handler(SIGINT);
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
     reactor().remove_handler(SIGQUIT);
 #endif
-    reactor().remove_handler(SIGSEGV);
-#ifdef SIGBUS
-    reactor().remove_handler(SIGBUS);
-#endif
-#ifdef SIGHUP
-    reactor().remove_handler(SIGHUP);
-#endif
+#if defined(SIGILL) && (SIGILL != 0)
     reactor().remove_handler(SIGILL);
-#ifdef SIGTRAP
+#endif
+#if defined(SIGTRAP) && (SIGTRAP != 0)
     reactor().remove_handler(SIGTRAP);
 #endif
-#ifdef SIGIOT
-    reactor().remove_handler(SIGIOT);
+#if defined(SIGABRT) && (SIGABRT != 0)
+    reactor().remove_handler(SIGABRT);
 #endif
-#ifdef SIGFPE
+#if defined(SIGFPE) && (SIGFPE != 0)
     reactor().remove_handler(SIGFPE);
 #endif
-#ifdef SIGWINCH
-    reactor().remove_handler(SIGWINCH);
+#if defined(SIGSEGV) && (SIGSEGV != 0)
+    reactor().remove_handler(SIGSEGV);
 #endif
-#ifdef SIGTTIN
+#if defined(SIGBUS) && (SIGBUS != 0)
+    reactor().remove_handler(SIGBUS);
+#endif
+#if defined(SIGPIPE) && (SIGPIPE != 0)
+    reactor().remove_handler(SIGPIPE);
+#endif
+#if defined(SIGTERM) && (SIGTERM != 0)
+    reactor().remove_handler(SIGTERM);
+#endif
+#if defined(SIGTTIN) && (SIGTTIN != 0)
     reactor().remove_handler(SIGTTIN);
 #endif
-#ifdef SIGTTOU
+#if defined(SIGTTOU) && (SIGTTOU != 0)
     reactor().remove_handler(SIGTTOU);
-#endif
-#ifdef SIGTSTP
-    reactor().remove_handler(SIGTSTP);
 #endif
 
 #if 0
+
+// NOFORK & Test Mode needs this to stop the task (CTRL-Z)
+#if defined(SIGTSTP) && (SIGTSTP != 0)
+    reactor().remove_handler(SIGTSTP);
+#endif
 
 // Linux POSIX threads (pre-lxpthreads) use these ...
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
@@ -647,7 +719,7 @@ int Magick::Stop()
 #if defined(SIGALRM) && (SIGALRM != 0)
     reactor().remove_handler(SIGALRM);
 #endif
-#ifdef SIGCHLD
+#if defined(SIGCHLD) && (SIGCHLD != 0)
     reactor().remove_handler(SIGCHLD);
 #endif
 
@@ -3281,7 +3353,7 @@ void Magick::EndLogMessage(ACE_Log_Msg * instance) const
 	return;
 
     if (instance->flags() & ACE_Log_Msg::STDERR)
-	fprintf(stderr, "\n");
+	ACE_OS::fprintf(stderr, "\n");
 }
 
 Logger::Logger()
@@ -3289,15 +3361,24 @@ Logger::Logger()
     NFT("Logger::Logger");
     ACE_Log_Msg::enable_debug_messages();
 
+#ifdef TEST_MODE
+    fout.Attach("STDERR", stderr, "a");
+#else
     fout.Open(Magick::instance().files.Logfile(), "a");
+#endif
 }
 
 Logger::~Logger()
 {
     NFT("Logger::~Logger");
 
+#ifdef TEST_MODE
+    if (fout.IsOpened())
+	fout.Detach();
+#else
     if (fout.IsOpened())
 	fout.Close();
+#endif
 }
 
 void Logger::log(ACE_Log_Record & log_record)

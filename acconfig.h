@@ -1,3 +1,9 @@
+
+/* Define if you want to test only (no connections) */
+#ifndef TEST_MODE
+#undef TEST_MODE
+#endif
+
 /* Define if you want to use encryption */
 #ifndef HASCRYPT
 #undef HASCRYPT
@@ -33,11 +39,6 @@
 #undef GETPASS
 #endif
 
-/* Define if we are on a windows system */
-#ifndef WIN32
-#undef WIN32
-#endif
-
 /* Crypto key 1 placeholder */
 #ifndef CRYPTO_KEY1
 #define CRYPTO_KEY1 ""
@@ -47,4 +48,3 @@
 #ifndef CRYPTO_KEY2
 #define CRYPTO_KEY2 ""
 #endif
-

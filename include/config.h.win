@@ -1,6 +1,5 @@
 /* include/config.h.  Generated automatically by configure.  */
 /* include/config.h.in.  Generated automatically from configure.in by autoheader.  */
-
 /* Magick IRC Services
 **
 ** (c) 1997-2002 Preston Elder <prez@magick.tm>
@@ -23,17 +22,12 @@
 
 #ifndef _CONFIG_H
 #define _CONFIG_H
+/* Define if you want to test only (no connections) */
+#ifndef TEST_MODE
+/* #undef TEST_MODE */
+#endif
 
-/* Define if the `S_IS*' macros in <sys/stat.h> do not work properly.  */
-/* #undef STAT_MACROS_BROKEN */
-
-/* Define if you have the ANSI C header files.  */
-#define STDC_HEADERS 1
-
-/* Define if you can safely include both <sys/time.h> and <time.h>.  */
-/* #undef TIME_WITH_SYS_TIME */
-
-/* Define if you want to use DES encryption */
+/* Define if you want to use encryption */
 #ifndef HASCRYPT
 #define HASCRYPT 1
 #endif
@@ -43,12 +37,12 @@
 #define MAGICK_LOCKS_WORK 1
 #endif
 
-/* Define if your system's locking works */
+/* Define if trace works on your system */
 #ifndef MAGICK_TRACE_WORKS
 /* #undef MAGICK_TRACE_WORKS */
 #endif
 
-/* Define if your system's locking works */
+/* Define if you want to use mpatrol */
 #ifndef MAGICK_USE_MPATROL
 /* #undef MAGICK_USE_MPATROL */
 #endif
@@ -68,89 +62,127 @@
 /* #undef GETPASS */
 #endif
 
-/* Define if we are on a windows system */
-#ifndef WIN32
-#define WIN32 1
-#endif
-
 /* Crypto key 1 placeholder */
 #ifndef CRYPTO_KEY1
-#define CRYPTO_KEY1 "| Magick II Key Stamp 1 .............................................................. |"
+#define CRYPTO_KEY1 "| Magick II Key Stamp 1 .............................................. |"
 #endif
 
 /* Crypto key 2 placeholder */
 #ifndef CRYPTO_KEY2
-#define CRYPTO_KEY2 "| Magick II Key Stamp 2 .............................................................. |"
+#define CRYPTO_KEY2 "| Magick II Key Stamp 2 .............................................. |"
 #endif
+
+
+/* Define if you have the <bits/stl_config.h> header file. */
+/* #undef HAVE_BITS_STL_CONFIG_H */
 
 /* Define if the system has the type `bool'. */
 #define HAVE_BOOL 1
 
-/* Define if you have the dtoa function.  */
+/* Define if you have the `dtoa' function. */
 /* #undef HAVE_DTOA */
 
-/* Define if you have the ftoa function.  */
+/* Define if you have the <exception> header file. */
+#define HAVE_EXCEPTION 1
+
+/* Define if you have the `ftoa' function. */
 /* #undef HAVE_FTOA */
 
-/* Define if you have the itoa function.  */
+/* Define if you have the <inttypes.h> header file. */
+/* #undef HAVE_INTTYPES_H */
+
+/* Define if you have the `itoa' function. */
 /* #undef HAVE_ITOA */
 
-/* Define if you have the ltoa function.  */
+/* Define if you have the <list> header file. */
+#define HAVE_LIST 1
+
+/* Define if you have the `ltoa' function. */
 /* #undef HAVE_LTOA */
 
-/* Define if you have the uitoa function.  */
+/* Define if you have the <map> header file. */
+#define HAVE_MAP 1
+
+/* Define if you have the <memory.h> header file. */
+/* #undef HAVE_MEMORY_H */
+
+/* Define if you have the <mpatrol.h> header file. */
+/* #undef HAVE_MPATROL_H */
+
+/* Define if you have the <queue> header file. */
+#define HAVE_QUEUE 1
+
+/* Define if you have the <set> header file. */
+#define HAVE_SET 1
+
+/* Define if you have the `snprintf' function. */
+/* #undef HAVE_SNPRINTF */
+
+/* Define if you have the <stack> header file. */
+#define HAVE_STACK 1
+
+/* Define if you have the <stdint.h> header file. */
+/* #undef HAVE_STDINT_H */
+
+/* Define if you have the <stdlib.h> header file. */
+/* #undef HAVE_STDLIB_H */
+
+/* Define if you have the <stl_config.h> header file. */
+/* #undef HAVE_STL_CONFIG_H */
+
+/* Define if you have the <string> header file. */
+#define HAVE_STRING 1
+
+/* Define if you have the <strings.h> header file. */
+/* #undef HAVE_STRINGS_H */
+
+/* Define if you have the <string.h> header file. */
+/* #undef HAVE_STRING_H */
+
+/* Define if you have the <sys/stat.h> header file. */
+/* #undef HAVE_SYS_STAT_H */
+
+/* Define if you have the <sys/types.h> header file. */
+/* #undef HAVE_SYS_TYPES_H */
+
+/* Define if you have the <termio.h> header file. */
+/* #undef HAVE_TERMIO_H */
+
+/* Define if you have the `uitoa' function. */
 /* #undef HAVE_UITOA */
 
-/* Define if you have the ultoa function.  */
+/* Define if you have the `ultoa' function. */
 /* #undef HAVE_ULTOA */
 
-/* Define if you have the vsnprintf function.  */
+/* Define if you have the <unistd.h> header file. */
+/* #undef HAVE_UNISTD_H */
+
+/* Define if you have the <utility> header file. */
+#define HAVE_UTILITY 1
+
+/* Define if you have the <vector> header file. */
+#define HAVE_VECTOR 1
+
+/* Define if you have the `vsnprintf' function. */
 /* #undef HAVE_VSNPRINTF */
-
-/* Define if you have the `_vsnprintf' function. */
-#define HAVE__VSNPRINTF 1
-
-/* Define if you have the snprintf function.  */
-/* #undef HAVE_SNPRINTF */
 
 /* Define if you have the `_snprintf' function. */
 #define HAVE__SNPRINTF 1
 
-/* Define if you have the <exception> header file.  */
-#define HAVE_EXCEPTION 1
-
-/* Define if you have the <list> header file.  */
-#define HAVE_LIST 1
-
-/* Define if you have the <map> header file.  */
-#define HAVE_MAP 1
-
-/* Define if you have the <mpatrol.h> header file.  */
-/* #undef HAVE_MPATROL_H */
-
-/* Define if you have the <queue> header file.  */
-#define HAVE_QUEUE 1
-
-/* Define if you have the <set> header file.  */
-#define HAVE_SET 1
-
-/* Define if you have the <stack> header file.  */
-#define HAVE_STACK 1
-
-/* Define if you have the <string> header file.  */
-#define HAVE_STRING 1
-
-/* Define if you have the <termio.h> header file.  */
-/* #undef HAVE_TERMIO_H */
-
-/* Define if you have the <utility> header file.  */
-#define HAVE_UTILITY 1
-
-/* Define if you have the <vector> header file.  */
-#define HAVE_VECTOR 1
+/* Define if you have the `_vsnprintf' function. */
+#define HAVE__VSNPRINTF 1
 
 /* Name of package */
 #define PACKAGE "Magick"
+
+/* Define if the `S_IS*' macros in <sys/stat.h> do not work properly. */
+/* #undef STAT_MACROS_BROKEN */
+
+/* Define if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+
+/* Define if you can safely include both <sys/time.h> and <time.h>. */
+/* #undef TIME_WITH_SYS_TIME */
 
 /* Version number of package */
 #define VERSION "2.0"

@@ -167,6 +167,7 @@ public:
     int send(const mstring & data);
     int open(void * = 0);
     int handle_input(ACE_HANDLE handle);
+    int handle_input(const char *data);
     int handle_close(ACE_HANDLE = ACE_INVALID_HANDLE, ACE_Reactor_Mask = ACE_Event_Handler::ALL_EVENTS_MASK);
     int fini();
 

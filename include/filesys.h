@@ -175,7 +175,7 @@ private:
     map < time_t, size_t > i_Traffic;
 
 public:
-    DccXfer() : i_BlockSize(0), i_XferTotal(0), i_Total(0), i_FileSize(0), i_Type(Invalid), i_DccId(0), i_Transiant(NULL)
+    DccXfer() : i_Blocksize(0), i_XferTotal(0), i_Total(0), i_Filesize(0), i_Type(Invalid), i_DccId(0), i_Transiant(NULL)
     {
     }
     DccXfer(const unsigned long dccid, const mSocket & socket, const mstring & mynick, const mstring & source,
