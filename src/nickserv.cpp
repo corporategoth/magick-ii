@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2000/08/03 13:06:31  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.116  2000/08/02 20:08:57  prez
 ** Minor code cleanups, added ACE installation instructions, updated the
 ** suggestions file and stopped people doing a whole bunch of stuff to
@@ -5268,6 +5271,17 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
 		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
 	    {
+		if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+		    Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
+		{
+		    if (message.Contains("NOEXP") && !iter->second.NoExpire())
+			continue;
+		    if (message.Contains("FORBID") && !iter->second.Forbidden())
+			continue;
+		    if (message.Contains("SUSP") && !iter->second.Suspended())
+			continue;
+		}
+
 		::send(mynick, source, iter->second.Name() + "  (" +
 					iter->second.LastAllMask() + ")");
 		i++;
@@ -5602,6 +5616,9 @@ void NickServ::do_Live(mstring mynick, mstring source, mstring params)
 	{
 	    if (i < listsize)
 	    {
+		if (message.Contains("OPER") && !iter->second.HasMode("o"))
+		    continue;
+
 		::send(mynick, source, iter->second.Mask(Nick_Live_t::N_U_P_H) + " (" +
 					((iter->second.Server() != "") ?
 						iter->second.Server() :

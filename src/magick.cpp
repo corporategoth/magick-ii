@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.258  2000/08/03 13:06:31  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.257  2000/07/30 09:04:05  prez
 ** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
 ** on linux, as it seems to corrupt the databases.
@@ -562,7 +565,7 @@ int Magick::Start()
     Result = ACE::fork(i_programname);
     if (Result < 0)
     {
-	Log(LM_EMERGENCY, getLogMessage("SYS_ERROR/FAILED_FORK"), Result);
+	Log(LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_FORK"), Result);
 	RET(1);
     }
     else if (Result != 0)
@@ -572,7 +575,7 @@ int Magick::Start()
     Result = ACE_OS::setpgid (0, 0);
     if (Result < 0)
     {
-	Log(LM_EMERGENCY, getLogMessage("SYS_ERROR/FAILED_SETPGID"), Result);
+	Log(LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETPGID"), Result);
 	RET(1);
     }
     // Can only open these after fork if we want then to live

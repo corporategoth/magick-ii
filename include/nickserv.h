@@ -25,6 +25,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/08/03 13:06:29  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.45  2000/07/28 14:49:34  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -584,12 +587,14 @@ public:
     static void do_Ghost(mstring mynick, mstring source, mstring params);
     static void do_Recover(mstring mynick, mstring source, mstring params);
     static void do_List(mstring mynick, mstring source, mstring params);
+    static void do_ListNoExp(mstring mynick, mstring source, mstring params);
     static void do_Send(mstring mynick, mstring source, mstring params);
     static void do_Suspend(mstring mynick, mstring source, mstring params);
     static void do_UnSuspend(mstring mynick, mstring source, mstring params);
     static void do_Forbid(mstring mynick, mstring source, mstring params);
     static void do_Getpass(mstring mynick, mstring source, mstring params);
     static void do_Live(mstring mynick, mstring source, mstring params);
+    static void do_LiveOper(mstring mynick, mstring source, mstring params);
 
     static void do_access_Current(mstring mynick, mstring source, mstring params);
     static void do_access_Add(mstring mynick, mstring source, mstring params);

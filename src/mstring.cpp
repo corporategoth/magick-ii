@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2000/08/03 13:06:31  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.66  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -160,13 +163,14 @@ bool mstring::IsSameAs(const mstring & in, bool bCaseSensitive)
 		return CmpNoCase(in)==0;
 }
 
-mstring mstring::Mid(size_t nFirst, size_t nCount) const
+mstring mstring::Mid(int nFirst, int nCount) const
 {
-	if (nCount==-1) nCount=npos;
+	if (nCount<0) nCount=npos;
+	if (nFirst<0) nFirst=0;
 	return substr(nFirst, nCount);
 }
 
-mstring mstring::SubString(size_t from, size_t to) const
+mstring mstring::SubString(int from, int to) const
 {
 	return Mid(from, (to - from + 1));
 }
@@ -176,36 +180,52 @@ mstring::mstring(const string & in)
 	*this=in.c_str();
 }
 
-mstring mstring::Left(size_t nCount)const
+mstring mstring::Left(int nCount)const
 {
 	return Mid(0, nCount);
 }
 
-mstring mstring::Right(size_t nCount)const
+mstring mstring::Right(int nCount)const
 {
-    return Mid(this->size()-nCount-1);
+	return Mid(this->size()-nCount-1);
 }
 
 mstring mstring::Before(const mstring & in, int count) const
 {
-    return Mid(0,Find(in,count));
+	int m_pos = Find(in,count);
+	if (m_pos >= 0)
+		return Mid(0,m_pos);
+	else
+		return *this;
 }
 
 mstring mstring::After(const mstring & in,int count) const
 {
-    return Mid(Find(in,count)+in.Len());
+	int m_pos = Find(in,count);
+	if (m_pos >= 0)
+		return Mid(m_pos+in.Len());
+	else
+		return *this;
 }
 
 mstring mstring::RevBefore(const mstring & in) const
 {
 	// change find_last_of to Last(in)
-	return Mid(0,Index(in,true,true)-1);
+	int m_pos = Index(in,true,true);
+	if (m_pos >= 0)
+		return Mid(0,m_pos);
+	else
+		return *this;
 }
 
 mstring mstring::RevAfter(const mstring & in) const
 {
 	// change find_last_of to Last(in)
-	return Mid(Index(in,true,true)+in.size());
+	int m_pos = Index(in,true,true);
+	if (m_pos >= 0)
+		return Mid(m_pos+in.size());
+	else
+		return *this;
 }
 
 void mstring::MakeUpper()
@@ -226,11 +246,21 @@ void mstring::MakeLower()
 
 mstring& mstring::Trim(bool bFromRight)
 {
+	if (!this->size())
+		return *this;
 	// change find_last_of to Last(in)
 	if(bFromRight==true)
-		*this=Mid(0,find_last_not_of(" \t\n")+1);
+	{
+		int m_pos = find_last_not_of(" \t\n");
+		if (m_pos >= 0)
+			*this=Mid(0,m_pos+1);
+	}
 	else
-		*this=Mid(find_first_not_of(" \t\n"));
+	{
+		int m_pos = find_first_not_of(" \t\n");
+		if (m_pos >= 0)
+			*this=Mid(m_pos);
+	}
 	return *this;
 }
 
@@ -243,7 +273,7 @@ mstring& mstring::Pad(size_t nCount, char chPad, bool bFromRight)
 	return *this;
 }
 
-mstring& mstring::Truncate(size_t uiLine)
+mstring& mstring::Truncate(int uiLine)
 {
 	*this=Left(uiLine);
 	return *this;
@@ -359,24 +389,24 @@ int mstring::Find(const mstring & in, int count) const
 	return distance(begin(),i);
 }
 
-size_t mstring::First(char c) const
+int mstring::First(char c) const
 {
 	return Find(c);
 }
 
-size_t mstring::First(const mstring & in) const
+int mstring::First(const mstring & in) const
 {
 	return Find(in);
 }
 
-size_t mstring::Index(char ch, int startpos) const
+int mstring::Index(char ch, int startpos) const
 {
 	return find(ch,startpos);
 }
 
-size_t mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd) const
+int mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd) const
 {
-	size_t i;
+	int i;
 	
 	unsigned int start,end;
 	if(fromEnd==true)
@@ -481,12 +511,12 @@ mstring mstring::LowerCase() const
     return Result;
 }
 
-mstring& mstring::Remove(size_t pos)
+mstring& mstring::Remove(int pos)
 {
 	return Truncate(pos);
 }
 
-mstring& mstring::Remove(size_t nStart, size_t nLen)
+mstring& mstring::Remove(int nStart, size_t nLen)
 {
 	erase(nStart,nLen);
 	return *this;
@@ -494,7 +524,9 @@ mstring& mstring::Remove(size_t nStart, size_t nLen)
 
 mstring& mstring::Remove(mstring str)
 {
-	Remove(Find(str), str.Len());
+	int m_pos = Find(str);
+	if (m_pos >= 0)
+		Remove(m_pos, str.Len());
 	return *this;
 }
 

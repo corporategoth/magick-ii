@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.118  2000/08/03 13:06:31  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.117  2000/07/30 09:04:05  prez
 ** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
 ** on linux, as it seems to corrupt the databases.
@@ -179,6 +182,8 @@ int IrcSvcHandler::open(void *in)
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     //activate();
     // todo activate the task
+    in_traffic = out_traffic = 0;
+    connect_time = Now();
     htm_level = 0;
     htm_gap = Parent->operserv.Init_HTM_Gap();
     htm_threshold = Parent->operserv.Init_HTM_Thresh();
@@ -219,6 +224,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     if (traffic.find(now) == traffic.end())
 	traffic[now] = 0;
     traffic[now] += ACE_OS::strlen(data);
+    in_traffic += ACE_OS::strlen(data);
     }
 
     // Check to see if we're in HTM.
@@ -389,6 +395,7 @@ int IrcSvcHandler::send(const mstring & data)
     FT("IrcSvcHandler::send",(data));
     //activation_queue_.enqueue(new send_MO(this,mstring(data)));
     int recvResult;
+    out_traffic += data.Len();
     recvResult=peer().send((data + "\r\n").c_str(),data.Len()+2);
     CH(T_Chatter::To,data);
     RET(recvResult);

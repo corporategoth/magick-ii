@@ -11,3 +11,5 @@ Known problems that exist in magick that should be fixed.
 - Should probably lock when setting/getting CFG vals, just
   incase one is set while another thread is accessing it
   (though this possibility is VERY slim).
+- It will segfault if we lose connection to server and
+  try to re-establish it.

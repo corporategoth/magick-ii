@@ -241,14 +241,8 @@ AC_DEFINE(MAGICK_LOCKS_WORK)
 
 dnl Right now, I think linux trace is broken (symptom is
 dnl trace text ends up in unfortunate places, like the DB).
-case "`uname -s`" in
-	Linux|linux)
-		AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_TRACE_WORKS)])
-	;;
-	*)
-		AC_DEFINE(MAGICK_TRACE_WORKS)
-	;;
-esac
+AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_TRACE_WORKS)])
+dnl AC_DEFINE(MAGICK_TRACE_WORKS)
 
 dnl ====================================================
 
@@ -268,6 +262,7 @@ if test "$des" = "true"; then
 fi
 
 dnl Find out which to use for C++ headers ...
+AC_CHECK_HEADERS(termio.h)
 AC_CHECK_HEADERS(iostream.h)
 AC_CHECK_HEADERS(istream.h)
 AC_CHECK_HEADERS(ostream.h)

@@ -19,6 +19,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2000/08/03 13:06:31  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.4  2000/07/21 00:18:49  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -45,15 +48,14 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 
 #include <stdio.h>
-#ifndef WIN32
-#include <termio.h>
-#endif
-
 #include "config.h"
 #include "crypt.h"
 #ifdef HASCRYPT
 #include "des/des_locl.h"
 #include "des/spr.h"
+#endif
+#ifdef HAVE_TERMIO_H
+#include <termio.h>
 #endif
 
 #define MIN_KEYLEN	16
@@ -77,7 +79,7 @@ int main(int argc, char **argv)
     FILE *outfile, *tty;
     des_key_schedule key1, key2;
     des_cblock ckey1, ckey2;
-#ifndef WIN32
+#ifdef HAVE_TERMIO_H
     struct termio tty_new, tty_orig;
 #endif
 
@@ -109,7 +111,7 @@ int main(int argc, char **argv)
     }
 
     /* This crap is needed to turn of echoing password */
-#ifndef WIN32
+#ifdef HAVE_TERMIO_H
     if ((tty = fopen("/dev/tty", "r")) == NULL)
 	tty = stdin;
     ioctl(fileno(tty), TCGETA,&tty_orig);
@@ -127,7 +129,7 @@ int main(int argc, char **argv)
     if (strlen(inkey) < MIN_KEYLEN)
     {
 	fprintf(stderr, "Key must be at least %d characters.\n", MIN_KEYLEN);
-#ifndef WIN32
+#ifdef HAVE_TERMIO_H
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
 	return 2;
@@ -142,14 +144,14 @@ int main(int argc, char **argv)
     if (strcmp(inkey, outkey)!=0)
     {
 	fprintf(stderr, "Key mismatch, aborting key generation.\n");
-#ifndef WIN32
+#ifdef HAVE_TERMIO_H
 	ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
 	return 3;
     }
 
     memset(outkey, 0, KEYLEN);
-#ifndef WIN32
+#ifdef HAVE_TERMIO_H
     ioctl(fileno(tty), TCSETA, &tty_orig);
 #endif
 

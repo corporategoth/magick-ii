@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.113  2000/08/03 13:06:32  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.112  2000/08/02 20:08:58  prez
 ** Minor code cleanups, added ACE installation instructions, updated the
 ** suggestions file and stopped people doing a whole bunch of stuff to
@@ -3505,37 +3508,8 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="+"+PATCH8;
 	    if(PATCH9!="")
 		tmp+="+"+PATCH9;
-	    tmp+=" [";
-	    if(Parent->operserv.GetNames() != "")
-		tmp+="O";
-	    else
-		tmp+="o";
-	    if(Parent->nickserv.GetNames() != "")
-		tmp+="N";
-	    else
-		tmp+="n";
-	    if(Parent->chanserv.GetNames() != "")
-		tmp+="C";
-	    else
-		tmp+="c";
-	    if(Parent->memoserv.GetNames() != "")
-		tmp+="M";
-	    else
-		tmp+="m";
-	    if(Parent->commserv.GetNames() != "")
-		tmp+="S";
-	    else
-		tmp+="s";
-	    if(Parent->servmsg.GetNames() != "")
-		tmp+="H";
-	    else
-		tmp+="h";
-	    if(Parent->servmsg.ShowSync())
-		tmp+="Y";
-	    else
-		tmp+="y";
-	    tmp << Parent->startup.Level() << "] Build #" << BUILD_NUMBER <<
-		" (" << BUILD_TIME << ") " << BUILD_SYS << "/" << BUILD_TYPE << ".";
+	    tmp << " Build #" << BUILD_NUMBER << " (" << BUILD_TIME <<
+		") " << BUILD_SYS << "/" << BUILD_TYPE << ".";
 	    sraw("351 " + source + " " + PACKAGE + " " + Parent->startup.Server_Name() + " :" + tmp);
 	}
 	else

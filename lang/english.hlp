@@ -211,15 +211,21 @@
 
 [NICKSERV/LIST]
 01 =::LIST [mask [maximum]]
-02 =::
-03 =::This will list all registered nicknames that match
-04 =::the mask you have specified and their last hosts or
-05 =::"ONLINE" up to a default maximum number of entries
-06 =::set by the Services Admins.  You override the maximum
-07 =::amount of entries displayed up to an absolute maximum
-08 =::also specified by the Services Admins.  Users marked
-09A=:OPER:as private will not be displayed in the list.
-09B=OPER::as private will be displayed in the list.
+02 =SOP::LISTNOEXP [mask [maximum]]
+03 =SOP::LISTFORBID [mask [maximum]]
+04 =SOP::LISTSUSP [mask [maximum]]
+05 =::
+06 =::This will list all registered nicknames that match
+07 =::the mask you have specified and their last hosts or
+08 =::"ONLINE" up to a default maximum number of entries
+09 =::set by the Services Admins.  You override the maximum
+10 =::amount of entries displayed up to an absolute maximum
+11 =::also specified by the Services Admins.  Users marked
+12A=:OPER:as private will not be displayed in the list.
+12B=OPER::as private will be displayed in the list.
+13 =SOP::The NOEXP, FORBID and SUSP suffixes to the LIST command
+14 =SOP::will list only people with No Expire set, Forbidden
+15 =SOP::users, or suspended users respectively.
 
 [NICKSERV/SEND]
 01 =REGD::SEND <nickname>
@@ -269,13 +275,16 @@
 
 [NICKSERV/LIVE]
 01 =SOP::LIVE [mask [maximum]]
-02 =SOP::
-03 =SOP::This will list all online nicknames that match the
-04 =SOP::full nick!user@host mask specified.  If the nick is
-05 =SOP::left off, * will be assumed.  If the host is left
-06 =SOP::off, *@* will be assumed.  This will display the
-07 =SOP::users full host, what server they are on, and what
-08 =SOP::modes they currently have set.
+02 =SOP::LIVEOPER [mask [maximum]]
+03 =SOP::
+04 =SOP::This will list all online nicknames that match the
+05 =SOP::full nick!user@host mask specified.  If the nick is
+06 =SOP::left off, * will be assumed.  If the host is left
+07 =SOP::off, *@* will be assumed.  This will display the
+08 =SOP::users full host, what server they are on, and what
+09 =SOP::modes they currently have set.  The OPER suffix to
+10 =SOP::the LIST command will list only people with mode
+11 =SOP::+o set (ie. IRC Operators).
 
 [NICKSERV/ACCESS]
 01 =REGD::Your access list is a method to be able to come in
@@ -732,15 +741,21 @@
 
 [CHANSERV/LIST]
 01 =::LIST [<mask> [<maximum>]]
-02 =::
-03 =::This will list all registered channels that match
-04 =::the mask you have specified and their descriptions
-05 =::up to a default maximum number of entries set by the
-06 =::Services Admins.  You override the maximum amount of
-07 =::entries displayed up to an absolute maximum also
-08 =::specified by the Services Admins.  Channels marked
-09A=:OPER:as private will not be displayed in the list.
-09B=OPER::as private will be displayed in the list.
+02 =SOP::LISTNOEXP [<mask> [<maximum>]]
+03 =SOP::LISTFORBID [<mask> [<maximum>]]
+04 =SOP::LISTSUSP [<mask> [<maximum>]]
+05 =::
+06 =::This will list all registered channels that match
+07 =::the mask you have specified and their descriptions
+08 =::up to a default maximum number of entries set by the
+09 =::Services Admins.  You override the maximum amount of
+10 =::entries displayed up to an absolute maximum also
+11 =::specified by the Services Admins.  Channels marked
+12A=:OPER:as private will not be displayed in the list.
+12B=OPER::as private will be displayed in the list.
+13 =SOP::The NOEXP, FORBID and SUSP suffixes to the LIST command
+14 =SOP::will list only channels with No Expire set, Forbidden
+15 =SOP::users, or suspended users respectively.
 
 [CHANSERV/SUSPEND]
 01 =SOP::SUSPEND <channel> <reason>

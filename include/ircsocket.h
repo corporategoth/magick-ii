@@ -25,6 +25,9 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/08/03 13:06:29  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.36  2000/07/29 21:58:52  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -112,6 +115,8 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     mstring flack;
 
     map<time_t, size_t> traffic;
+    size_t in_traffic, out_traffic;
+    mDateTime connect_time;
     mDateTime last_htm_check;
     unsigned short htm_level;
     time_t htm_gap;
@@ -122,6 +127,9 @@ public:
     virtual int open(void *);
     virtual int handle_input(ACE_HANDLE handle);
 
+    size_t In_Traffic() { return in_traffic; }
+    size_t Out_Traffic() { return out_traffic; }
+    mDateTime Connect_Time() { return connect_time; }
     time_t HTM_Gap();
     unsigned short HTM_Level();
     size_t HTM_Threshold();

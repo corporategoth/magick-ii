@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/08/03 13:06:32  prez
+** Fixed a bunch of stuff in mstring (caused exceptions on FreeBSD machines).
+**
 ** Revision 1.61  2000/06/27 18:56:59  prez
 ** Added choosing of keys to configure, also created the keygen,
 ** and scrambler (so keys are not stored in clear text, even in
@@ -830,6 +833,18 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
 							message.c_str());
 	return;
+    }
+
+    if (Parent->ircsvchandler != NULL)
+    {
+	::send(mynick, source, Parent->getMessage(source, "STATS/USE_TRAFFIC"),
+		ToHumanSpace(Parent->ircsvchandler->In_Traffic()).c_str(),
+		ToHumanSpace(Parent->ircsvchandler->In_Traffic() /
+		Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str(),
+		ToHumanSpace(Parent->ircsvchandler->Out_Traffic()).c_str(),
+		ToHumanSpace(Parent->ircsvchandler->Out_Traffic() /
+		Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str(),
+		ToHumanTime(Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str());
     }
 
     size = 0;
