@@ -29,19 +29,22 @@ using namespace std;
 // wxOutputStream
 
 // FunctionTrace -- FT("...", ());
-#define FT(x,y)  mVarArray FT_VarArray y; T_Functions __ft(x, FT_VarArray)
-#define NFT(x) FT(x,(""))
+#define FT(x,y)  mVarArray __ft_VarArray y; T_Functions __ft(x, __ft_VarArray)
+#define NFT(x) T_Functions __ft(x)
+
 // Set return value -- RET()
 #define RET(x) {__ft.return_value=(x); return x;}
-
 #define NRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); return y;}
 
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }
+
 // Modify begin -- MB(AOC());
-#define MB(x) mVarArray MB_VarArray x;T_Modify __mod(MB_VarArray)
+#define MB(x) mVarArray __mb_VarArray x; T_Modify __mod(__mb_VarArray)
+
 // Modify end -- ME(());
-#define ME(x) mVarArray ME_VarArray x;__mod.End(ME_VarArray)
+#define ME(x) mVarArray __me_VarArray x; __mod.End(__me_VarArray)
+
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) { T_Chatter __ch(x,y); }
 
@@ -252,8 +255,10 @@ class T_Functions : public Trace
     mstring m_name;
 
     T_Functions() {} 
+
 public:
     mVariant return_value;
+    T_Functions(const mstring &name);
     T_Functions(const mstring &name, const mVarArray &args);
     ~T_Functions();
 };
@@ -264,6 +269,7 @@ class T_CheckPoint : public Trace
 {
     ThreadID *tid;
     void common(const char *input);
+
 public:
     T_CheckPoint();
     T_CheckPoint(const char *fmt, ...);
@@ -276,6 +282,7 @@ class T_Modify : public Trace
 {
     ThreadID *tid;
     T_Modify() {}
+
 public:
     T_Modify(const mVarArray &args);
     void End(const mVarArray &args);
@@ -288,6 +295,7 @@ class T_Chatter : public Trace
 {
     ThreadID *tid;
     T_Chatter() {} 
+
 public:
     enum dir_enum { From, To, Unknown };
     T_Chatter(dir_enum direction, const mstring &input);
@@ -302,29 +310,17 @@ public:
 // ===================================================
 
 class T_Locking : public Trace {
-
 public:
-
     enum type_enum { Read, Write, Mutex };
 
-
-
 private:
-
     ThreadID *tid;
-
     type_enum locktype;
-
     mstring name;
 
-
-
 public:
-
     T_Locking() {}
-
     void open(T_Locking::type_enum ltype, mstring lockname);
-
     ~T_Locking();
 
 };

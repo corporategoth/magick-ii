@@ -166,6 +166,18 @@ void ThreadID::WriteOut(const mstring &message)
 
 // ===================================================
 
+//      \\ function()
+T_Functions::T_Functions(const mstring &name)
+{
+    ShortLevel(Functions);
+    m_name=name;
+    if (IsOn(tid)) {
+	mstring message = "\\\\ " + m_name + "()";
+	tid->WriteOut(message);
+    }
+    tid->indentup();
+}
+
 //      \\ function( (char) T, (int) 5 )
 T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
@@ -187,10 +199,8 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 //      // (char) Y
 T_Functions::~T_Functions()
 { 
-
     ShortLevel(Functions);
     tid->indentdown(); 
-
     if (IsOn(tid)) {
 	mstring message="// (" + return_value.type() + ") " + return_value.AsString();
 	tid->WriteOut(message);
@@ -298,7 +308,6 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {
     ShortLevel(Locking);
-
     if (IsOn(tid)) 
     {
 	locktype = ltype;
@@ -314,42 +323,24 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
     }
 }
 
-
-
 //      :- R ChanInfo::#Magick
-
 //      :- W NickInfo::PreZ::Flags
-
 //      :- M Magick::LoadMessages
 
 T_Locking::~T_Locking() {
-
     ShortLevel(Locking);
-
     if (IsOn(tid)) {
-
 	if (name) {
-
     	    mstring message;
-
 	    if(locktype == Read)
-
 	        message << ":- " << "R " << name;
-
 	    else if(locktype == Write)
-
 		message << ":- " << "W " << name;
-
 	    else
-
 		message << ":- " << "M " << name;
-
 	    tid->WriteOut(message);
-
 	}
-
     }
-
 }
 
 // ===================================================

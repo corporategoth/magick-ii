@@ -17,8 +17,8 @@ RLOCK::RLOCK(mstring x1)
 {
     lock[0].open(x1.c_str());
     lock[0].acquire();
-
     tlock[0].open(T_Locking::Read, x1);
+
     count=1;
 }
 
