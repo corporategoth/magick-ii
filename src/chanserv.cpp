@@ -154,7 +154,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    break;
 
 	case 'k':
-	    if (in.ExtractWord(fwdargs, ": ") == i_Key)
+	    if ((i_Key && in.ExtractWord(fwdargs, ": ") == i_Key) || i_Key == "")
 	    {
 		if (add)
 		    i_Key = "";
