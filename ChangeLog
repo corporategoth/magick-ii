@@ -1,3 +1,179 @@
+* 2002-08-04 23:21  William King <ungod@magick.tm>
+  src/chanserv.cpp (1.296):
+  
+  Developer seems to be smoking crack, reversed previous change and moved
+  the write lock further up the code to lock the map earlier in the process
+  of the function.
+
+* 2002-08-04 22:48  William King <ungod@magick.tm>
+  include/pch.h (1.56):
+  
+  added #include <typeinfo> to the exceptions section to support the new
+  e.what() call added to ETCB().
+
+* 2002-08-04 22:47  William King <ungod@magick.tm>
+  src/chanserv.cpp (1.295):
+  
+  moved the erase to inside the lock, it looks like we're getting race
+  conditions here, causing a crash.
+
+* 2002-08-04 22:20  William King <ungod@magick.tm>
+  include/trace.h (1.95):
+  
+  Added MASSERT macro to facilitate adding assertion checks in trace mode. 
+  Equates to null macro in non-trace mode.
+
+* 2002-08-04 00:18  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.116):
+  
+  Command functions are const
+
+* 2002-08-04 00:17  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.115), include/server.h (1.91), src/base.cpp (1.199),
+  src/operserv.cpp (1.155), src/server.cpp (1.234):
+  
+  Removed P12 (nothing was using it!), stopped Server being derived from
+  mBase, simplefied CommandMap, added KillOnAkill protocol code.
+
+* 2002-08-03 22:34  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.aurora.ini (1.4), ircd/ircd.bahamut.ini (1.5),
+  ircd/ircd.dal.ini (1.4), ircd/ircd.dal4.4.15.ini (1.4),
+  ircd/ircd.hybrid5.ini (1.4), ircd/ircd.hybrid7.ini (1.4),
+  ircd/ircd.ircu.ini (1.4), ircd/ircd.ircu2.10.ini (1.5),
+  ircd/ircd.ircu2.10ext.ini (1.5), ircd/ircd.rfc1459+ts8.ini (1.4),
+  ircd/ircd.rfc1459.ini (1.4), ircd/ircd.unreal.ini (1.5):
+  
+  Added KILLAFTERAKILL
+
+* 2002-07-30 19:22  Preston A. Elder <prez@magick.tm>
+  include/version.h (1.139), include/version.h-release (1.42):
+  
+  Removed cint
+
+* 2002-07-30 11:59  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.8):
+  
+  Fixed the timer issue
+
+* 2002-07-30 11:38  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.294):
+  
+  Fixed up mlock
+
+* 2002-07-30 11:19  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.293):
+  
+  Another mlock patch for forbidden chans
+
+* 2002-07-30 10:30  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.292):
+  
+  Fixed mlock
+
+* 2002-07-30 10:22  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.7):
+  
+  Services rejoin forbidden channels with mlock +k or +i
+
+* 2002-07-30 10:13  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.6), src/chanserv.cpp (1.291), src/server.cpp (1.233):
+  
+  Allowed an mlock to be changed/used on forbidden channels.
+
+* 2002-07-30 09:41  Preston A. Elder <prez@magick.tm>
+  src/Makefile.am (1.34):
+  
+  Tweaks *sigh*
+
+* 2002-07-30 09:38  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.5):
+  
+  One less warning
+
+* 2002-07-30 09:24  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.4):
+  
+  LockDown/UnLock changes
+
+* 2002-07-30 09:09  Preston A. Elder <prez@magick.tm>
+  include/chanserv.h (1.84):
+  
+  Added C_Stored_t Drop
+
+* 2002-07-30 09:09  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.3), src/chanserv.cpp (1.290):
+  
+  Fixes for ChanServ's forbidden behavior
+
+* 2002-07-30 08:40  Preston A. Elder <prez@magick.tm>
+  src/trace.cpp (1.129):
+  
+  more readability fixes
+
+* 2002-07-30 08:10  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.198), src/chandata.cpp (1.2), src/chanserv.cpp (1.289),
+  src/commserv.cpp (1.121), src/datetime.cpp (1.82), src/filesys.cpp
+  (1.103), src/ircsocket.cpp (1.226), src/magick.cpp (1.370),
+  src/memoserv.cpp (1.118), src/nickdata.cpp (1.7), src/nickserv.cpp
+  (1.211), src/operserv.cpp (1.154), src/server.cpp (1.232):
+  
+  Code cleanups to make life a little more ledgable
+
+* 2002-07-29 16:10  Preston A. Elder <prez@magick.tm>
+  src/nickdata.cpp (1.6):
+  
+  oops x 2
+
+* 2002-07-29 15:37  Preston A. Elder <prez@magick.tm>
+  src/nickdata.cpp (1.5):
+  
+  oops
+
+* 2002-07-29 14:47  Preston A. Elder <prez@magick.tm>
+  configure.in (1.66), src/nickdata.cpp (1.4):
+  
+  Fix to make services not show up as online
+
+* 2002-07-29 14:27  Preston A. Elder <prez@magick.tm>
+  Makefile.dist (1.12):
+  
+  Commented out something not quite standard :P
+
+* 2002-07-29 14:08  Preston A. Elder <prez@magick.tm>
+  gui/Makefile.am (1.5), src/Makefile.am (1.33), src/base.cpp (1.197),
+  src/nickdata.cpp (1.3):
+  
+  Fixed makefiles, and problems with messages not getting to services.
+
+* 2002-07-29 13:18  Preston A. Elder <prez@magick.tm>
+  include/trace.h (1.94), src/trace.cpp (1.128):
+  
+  Tweaks to exception code, to enable RTTI
+
+* 2002-07-29 07:31  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.114), src/base.cpp (1.196), src/nickdata.cpp (1.2),
+  src/server.cpp (1.231):
+  
+  Fixed services not signing themselves off after protecting a nickname.
+
+* 2002-07-29 04:11  Preston A. Elder <prez@magick.tm>
+  crypt.dep (1.1), crypt.mak (1.1), magick.dep (1.1), magick.mak (1.10),
+  magick_keygen.dep (1.1), magick_keygen.mak (1.1), magick_stampkeys.dep
+  (1.1), magick_stampkeys.mak (1.1), what.dep (1.1), what.mak (1.1),
+  xml.dep (1.1), xml.mak (1.1):
+  
+  Added some .mak and .dep files, and updated magick.mak
+
+* 2002-07-29 03:30  Preston A. Elder <prez@magick.tm>
+  src/operserv.cpp (1.153), src/server.cpp (1.230):
+  
+  Fixed clone kill problem on Unreal
+
+* 2002-07-29 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.42):
+  
+  Created version 2.0s20020729
+
 * 2002-07-29 02:53  Preston A. Elder <prez@magick.tm>
   README (1.27), docs/en/index.sgml (1.43), src/magick.cpp (1.369),
   src/operserv.cpp (1.152), src/trace.cpp (1.127):
