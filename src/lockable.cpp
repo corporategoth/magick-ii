@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2000/12/25 06:36:14  prez
+** Added locking around the threadtoself map, and removed a bunch of
+** defines from mstring (while keeping it the same!)
+**
 ** Revision 1.57  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -885,19 +889,36 @@ mThread::selftothreadidmap_t mThread::selftothreadidmap;
 
 ThreadID* mThread::find(ACE_thread_t thread)
 {
+    ThreadID *tid = NULL;
+    mLock_Mutex lock("SelfToThreadMap");
+    if (lock.acquire() < 0)
+    {
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "SelfToThreadMap"));
+	return tid;
+    }
     if(selftothreadidmap.find(thread) != selftothreadidmap.end())
     {
-	return selftothreadidmap[thread];
+	tid = selftothreadidmap[thread];
     }
-    return NULL;
+    lock.release();
+    return tid;
 }
 
 vector<ThreadID*> mThread::findall()
 {
     vector<ThreadID*> threadlist;
     selftothreadidmap_t::const_iterator iter;
+    mLock_Mutex lock("SelfToThreadMap");
+    if (lock.acquire() < 0)
+    {
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "SelfToThreadMap"));
+	return threadlist;
+    }
     for (iter=selftothreadidmap.begin(); iter!=selftothreadidmap.end(); iter++)
 	threadlist.push_back(iter->second);
+    lock.release();
 
     return threadlist;
 }
@@ -906,7 +927,15 @@ void mThread::Attach(threadtype_enum ttype)
 {
     FT("mThread::Attach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid=new ThreadID(ttype);
+    mLock_Mutex lock("SelfToThreadMap");
+    if (lock.acquire() < 0)
+    {
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "SelfToThreadMap"));
+	return;
+    }
     selftothreadidmap[ACE_Thread::self()]=tmpid;
+    lock.release();
     COM(("Thread ID has been attached."));
 }
 
@@ -920,7 +949,15 @@ void mThread::Detach()
 	CP(("mThread::Detach without valid mThread::Attach..."));
 	return;
     }
+    mLock_Mutex lock("SelfToThreadMap");
+    if (lock.acquire() < 0)
+    {
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "SelfToThreadMap"));
+	return;
+    }
     selftothreadidmap.erase(ACE_Thread::self());
+    lock.release();
     delete tmpid;
     COM(("Thread ID has been detached."));
 }

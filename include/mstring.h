@@ -25,6 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/12/25 06:36:14  prez
+** Added locking around the threadtoself map, and removed a bunch of
+** defines from mstring (while keeping it the same!)
+**
 ** Revision 1.61  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -145,32 +149,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 
 /* Use our own Memory Map for clustered alloc */
 #include "mmemory.h"
-#define ALLOC(X, Y)	X = (char *) memory_area.alloc(Y)
-#define DEALLOC(X)	memory_area.dealloc(X); X = NULL
 
-#elif ALLOCTYPE == 3
-
-/* Duplicate ACE's new, but with no return's.
-#ifdef MAGICK_HAS_EXCEPTIONS
-#define ALLOC(X, Y)	try { X = new char[Y]; } \
-			catch (ACE_bad_alloc) { errno = ENOMEM; }
-#else
-#define ALLOC(X, Y)	X = new char[Y]; \
-			if (X == NULL) { errno = ENOMEM; }
-#endif
-#define DEALLOC(X)	delete [] X; X = NULL
-
-#elif ALLOCTYPE == 2
-
-/* Standard C++ Allocation */
-#define ALLOC(X, Y)	X = new char[Y]
-#define DEALLOC(X)	delete [] X; X = NULL
-
-#else
-
-/* Standard C Allocation */
-#define ALLOC(X, Y)	X = (char *) malloc(Y)
-#define DEALLOC(X)	free(X); X = NULL
+/* MUST have void *alloc(size_t) and dealloc(void *) functions */
+#define MEMORY_AREA	MemoryManager<ACE_Thread_Mutex>
 
 #endif
 
@@ -302,13 +283,19 @@ class mstring
 {
     char *i_str;
     size_t i_len, i_res;
+
 #if ALLOCTYPE == 4
-    static MemoryManager<ACE_Thread_Mutex> memory_area;
+    static MEMORY_AREA memory_area;
 #endif
 #ifdef MSTRING_LOCKS_WORK
-    unsigned long lock_id;
     LOCK_TYPE *i_lock;
 #endif
+
+    static char *alloc(size_t size);
+    static void dealloc(char * & in);
+    void lock_read() const;
+    void lock_write() const;
+    void lock_rel() const;
     void init();
     int occurances(const char *str) const;
 

@@ -37,8 +37,5 @@ development team to be worked on, and are coming:
   protocol.  This will probably wait until there it is
   finalised, and there is actually a server using it.
 
-- Make ALL value return only functions const (note: nickserv
-  value returns are NOT const as Host() can alter values).
-
 This is by no means an extensive list, there are alot more
 suggestions being tracked in the docs/develop directory.

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2000/12/25 06:36:14  prez
+** Added locking around the threadtoself map, and removed a bunch of
+** defines from mstring (while keeping it the same!)
+**
 ** Revision 1.24  2000/12/23 23:18:36  prez
 ** Fixed problem with it using default value always
 **
@@ -208,8 +212,8 @@ bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if (i_children.find(next) == i_children.end() ||
-	    i_children[next] == NULL)
+	map<mstring,ceNode * >::iterator iter = i_children.find(next);
+	if (iter == i_children.end() || iter->second == NULL)
         {
             i_children[next]=new ceNode;
             i_children[next]->i_Name=next;
@@ -233,9 +237,10 @@ bool ceNode::DeleteKey(const mstring &KeyName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if (i_keys.find(temppath) == i_keys.end())
+	map<mstring,mstring>::iterator iter = i_keys.find(temppath);
+	if(iter != i_keys.end())
         {
-            i_keys.erase(temppath);
+            i_keys.erase(iter);
             Result=true;
         }
     }
@@ -244,8 +249,8 @@ bool ceNode::DeleteKey(const mstring &KeyName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if (i_children.find(next) == i_children.end() ||
-	    i_children[next] == NULL)
+	map<mstring,ceNode * >::iterator iter = i_children.find(next);
+	if (iter == i_children.end() || iter->second == NULL)
             Result=false;
         else
             Result=i_children[next]->DeleteKey(rest);
@@ -268,7 +273,8 @@ bool ceNode::CreateNode(const mstring &NodeName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if (i_children.find(temppath) == i_children.end())
+	map<mstring,ceNode * >::iterator iter = i_children.find(temppath);
+	if (iter == i_children.end() || iter->second == NULL)
         {
             i_children[temppath]=new ceNode;
             i_children[temppath]->i_Name=temppath;
@@ -279,8 +285,8 @@ bool ceNode::CreateNode(const mstring &NodeName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if (i_children.find(next) == i_children.end() ||
-	    i_children[next] == NULL)
+	map<mstring,ceNode * >::iterator iter = i_children.find(next);
+	if (iter == i_children.end() || iter->second == NULL)
         {
             i_children[next]=new ceNode;
 	    i_children[next]->i_Name=next;
@@ -303,11 +309,12 @@ bool ceNode::DeleteNode(const mstring &NodeName)
     if(!temppath.Contains("/"))
     {
         // end of the line
-        if (i_children.find(temppath) != i_children.end())
+	map<mstring,ceNode * >::iterator iter = i_children.find(temppath);
+	if (iter != i_children.end())
         {
-            if(i_children[temppath]!=NULL)
-                delete i_children[temppath];
-            i_children.erase(temppath);
+            if(iter->second != NULL)
+                delete iter->second;
+            i_children.erase(iter);
         }
     }
     else
@@ -315,8 +322,8 @@ bool ceNode::DeleteNode(const mstring &NodeName)
         mstring next,rest;
 	next = temppath.Before("/");
 	rest = temppath.After("/");
-        if (i_children.find(next) != i_children.end() &&
-	    i_children[next] != NULL)
+	map<mstring,ceNode * >::iterator iter = i_children.find(next);
+	if (iter != i_children.end() && iter->second != NULL)
         {
             i_children[next]->DeleteNode(rest);
         }

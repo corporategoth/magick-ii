@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2000/12/25 06:36:14  prez
+** Added locking around the threadtoself map, and removed a bunch of
+** defines from mstring (while keeping it the same!)
+**
 ** Revision 1.89  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -172,7 +176,7 @@ static const char *ident = "@(#)$Id$";
 // This defaults to 8192 chunks.  Use init(size) before
 // any use of it, or pass size as a 2nd param to the first
 // use of it, or use blocksize(size) at any time to change.
-MemoryManager<ACE_Thread_Mutex> mstring::memory_area;
+MEMORY_AREA mstring::memory_area;
 #endif
 
 static unsigned long next_lock_id = 0;
@@ -184,6 +188,7 @@ mstring const DirSlash="\\";
 mstring const DirSlash="/";
 #endif
 mstring const Blank;
+mstring const IRC_CTCP((char) 1);	// ^A
 mstring const IRC_Bold((char) 2);	// ^B
 mstring const IRC_Underline((char) 31);	// ^_
 mstring const IRC_Reverse((char) 21);	// ^V
@@ -193,99 +198,171 @@ mstring const IRC_Off((char) 15);	// ^O
 #define NOMEM { \
 	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
 	ACE_OS::fflush(stderr); \
-	LOCK_REL; \
+	lock_rel(); \
 	return; }
 
 #define NOMEMR(X) { \
 	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
 	ACE_OS::fflush(stderr); \
-	LOCK_REL; \
+	lock_rel(); \
 	return X; }
 
-#ifdef MSTRING_LOCKS_WORK
+char *mstring::alloc(size_t size)
+{
+    char *out = NULL;
 
-#define LOCK_READ \
-	if (i_lock != NULL && i_lock->acquire_read() < 0) { \
-		ACE_OS::fprintf(stderr, "WARNING: Failed to acquire read lock on line %d of %s\n", __LINE__, __FILE__); \
-		ACE_OS::fflush(stderr); }
+#if ALLOCTYPE == 4
 
-#define LOCK_WRITE \
-	if (i_lock != NULL && i_lock->acquire_write() < 0) { \
-		ACE_OS::fprintf(stderr, "WARNING: Failed to acquire write lock on line %d of %s\n", __LINE__, __FILE__); \
-		ACE_OS::fflush(stderr); }
+    /* Use our own Memory Map for clustered alloc */
+    out = (char *) memory_area.alloc(size);
 
-#define LOCK_REL \
-	if (i_lock != NULL && i_lock->release() < 0) { \
-		ACE_OS::fprintf(stderr, "WARNING: Failed to release lock on line %d of %s\n", __LINE__, __FILE__); \
-		ACE_OS::fflush(stderr); }
+#elif ALLOCTYPE == 3
+
+    /* Duplicate ACE's new, but with no return's.
+# ifdef MAGICK_HAS_EXCEPTIONS
+    try
+    {
+	out = new char[size];
+    }
+    catch (ACE_bad_alloc)
+    {
+	errno = ENOMEM;
+    }
+# else
+    out = new char[size];
+    if (out == NULL)
+    {
+	errno = ENOMEM;
+    }
+# endif
+
+#elif ALLOCTYPE == 2
+
+    /* Standard C++ Allocation */
+    out = new char[size];
 
 #else
 
-#define LOCK_READ  do_nothing()
-#define LOCK_WRITE do_nothing()
-#define LOCK_REL   do_nothing()
+    /* Standard C Allocation */
+    out = (char *) malloc(size);
 
 #endif
+
+    return out;
+}
+
+void mstring::dealloc(char * & in)
+{
+    if (in == NULL)
+	return;
+
+#if ALLOCTYPE == 4
+
+    /* Use our own Memory Map for clustered alloc */
+    memory_area.dealloc(in);
+
+#elif ALLOCTYPE == 3
+
+    /* Duplicate ACE's new, but with no return's. */
+    delete [] in;
+
+#elif ALLOCTYPE == 2
+
+    /* Standard C++ Allocation */
+    delete [] in;
+
+#else
+
+    /* Standard C Allocation */
+    free(in);
+
+#endif
+
+    in = NULL;
+}
+
+void mstring::lock_read() const
+{
+#ifdef MSTRING_LOCKS_WORK
+    if (i_lock != NULL && i_lock->acquire_read() < 0)
+    {
+	ACE_OS::fprintf(stderr, "WARNING: Failed to acquire read lock on line %d of %s\n", __LINE__, __FILE__);
+	ACE_OS::fflush(stderr);
+    }
+#endif
+}
+
+void mstring::lock_write() const
+{
+#ifdef MSTRING_LOCKS_WORK
+    if (i_lock != NULL && i_lock->acquire_write() < 0)
+    {
+	ACE_OS::fprintf(stderr, "WARNING: Failed to acquire write lock on line %d of %s\n", __LINE__, __FILE__);
+	ACE_OS::fflush(stderr);
+    }
+#endif
+}
+
+void mstring::lock_rel() const
+{
+#ifdef MSTRING_LOCKS_WORK
+    if (i_lock != NULL && i_lock->release() < 0)
+    {
+	ACE_OS::fprintf(stderr, "WARNING: Failed to release lock on line %d of %s\n", __LINE__, __FILE__);
+	ACE_OS::fflush(stderr);
+    }
+#endif
+}
 
 void mstring::init()
 {
 #ifdef MSTRING_LOCKS_WORK
+    char lockname[30];
     UNIQ_LOCK_TYPE uniq_lock("mstring_lock_id");
     uniq_lock.acquire();
-/*    while (lock_id_array.find(next_lock_id) != lock_id_array.end())
-	next_lock_id++;
-    lock_id_array.insert(next_lock_id); */
-    lock_id = next_lock_id;
     next_lock_id++;
-    uniq_lock.release();
-
-    char lockname[30];
     sprintf(lockname, "mstring_%08x%08x", time(NULL), next_lock_id);
+    uniq_lock.release();
     i_lock = new LOCK_TYPE(lockname);
 #endif
 
-    LOCK_WRITE;
+    lock_write();
     i_len = 0;
     i_res = 0;
     i_str = NULL;
-    LOCK_REL;
+    lock_rel();
 }
 
 mstring::~mstring()
 {
-    LOCK_WRITE;
+    lock_write();
 
     if (i_str != NULL)
-	DEALLOC(i_str);
+	dealloc(i_str);
     i_len = 0;
     i_res = 0;
 
-    LOCK_REL;
+    lock_rel();
 
 #ifdef MSTRING_LOCKS_WORK
     if (i_lock != NULL)
 	delete i_lock;
-
-/*    UNIQ_LOCK_TYPE uniq_lock("mstring_lock_id");
-    uniq_lock.acquire();
-    lock_id_array.erase(lock_id);
-    uniq_lock.release(); */
 #endif
 }
 
 void mstring::copy(const char *in, size_t length)
 {
-    LOCK_WRITE;
+    lock_write();
 
     if (i_str != NULL)
-	DEALLOC(i_str);
+	dealloc(i_str);
     if (length && in)
     {
 	i_len = length;
 	i_res = 2;
 	while (i_res <= i_len)
 	    i_res *= 2;
-	ALLOC(i_str, i_res);
+	i_str = alloc(i_res);
 	if (i_str == NULL)
 	    NOMEM;
 	memset(i_str, 0, i_res);
@@ -297,7 +374,7 @@ void mstring::copy(const char *in, size_t length)
 	i_res = 0;
     }
 
-    LOCK_REL;
+    lock_rel();
 }
 
 void mstring::append(const char *in, size_t length)
@@ -305,11 +382,11 @@ void mstring::append(const char *in, size_t length)
     if (length == 0 || in == NULL)
 	return;
 
-    LOCK_WRITE;
+    lock_write();
 
     if (i_str == NULL)
     {
-	LOCK_REL;
+	lock_rel();
 	copy(in, length);
 	return;
     }
@@ -323,7 +400,7 @@ void mstring::append(const char *in, size_t length)
 	i_res *= 2;
     if (oldres != i_res)
     {
-	ALLOC(tmp, i_res);
+	tmp = alloc(i_res);
 	if (tmp == NULL)
 	    NOMEM;
 	memset(tmp, 0, i_res);
@@ -337,31 +414,31 @@ void mstring::append(const char *in, size_t length)
     if (tmp != i_str)
     {
 	if (i_str != NULL)
-	    DEALLOC(i_str);
+	    dealloc(i_str);
 	i_str = tmp;
     }
 
     i_len += length;
 
-    LOCK_REL;
+    lock_rel();
 }
 
 void mstring::erase(int begin, int end)
 {
-    LOCK_WRITE;
+    lock_write();
 
     size_t i, oldres = i_res;
     char *tmp = NULL;
     if (i_str == NULL)
     {
-	LOCK_REL;
+	lock_rel();
 	return;
     }
 
     if (end < 0 || end >= i_len)
 	if (begin >= i_len)
 	{
-	    LOCK_REL;
+	    lock_rel();
 	    return;
 	}
 	else
@@ -384,7 +461,7 @@ void mstring::erase(int begin, int end)
 	    i_res /= 2;
 	if (i_res != oldres)
 	{
-	    ALLOC(tmp, i_res);
+	    tmp = alloc(i_res);
 	    if (tmp == NULL)
 		NOMEM;
 	    memset(tmp, 0, i_res);
@@ -410,7 +487,7 @@ void mstring::erase(int begin, int end)
     if (tmp != i_str)
     {
 	if (i_str != NULL)
-	    DEALLOC(i_str);
+	    dealloc(i_str);
 	i_str = tmp;
     }
     else if (tmp == NULL)
@@ -420,7 +497,7 @@ void mstring::erase(int begin, int end)
 	i_res = 0;
     }
 
-    LOCK_REL;
+    lock_rel();
 }
 
 void mstring::insert(size_t pos, const char *in, size_t length)
@@ -431,11 +508,11 @@ void mstring::insert(size_t pos, const char *in, size_t length)
     if (length == 0)
 	return;
 
-    LOCK_WRITE;
+    lock_write();
 
     if (pos >= i_len)
     {
-	LOCK_REL;
+	lock_rel();
 	append(in, length);
 	return;
     }
@@ -444,7 +521,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 	i_res = 2;
     while (i_res <= i_len + length)
 	i_res *= 2;
-    ALLOC(tmp, i_res);
+    tmp = alloc(i_res);
     if(tmp == NULL)
 	NOMEM;
     memset(tmp, 0, i_res);
@@ -460,11 +537,11 @@ void mstring::insert(size_t pos, const char *in, size_t length)
     memcpy(&tmp[i], &i_str[pos], i_len-pos);
 
     if (i_str != NULL)
-	DEALLOC(i_str);
+	dealloc(i_str);
     i_str = tmp;
     i_len += length;
 
-    LOCK_REL;
+    lock_rel();
 }
 
 // We compare up to a length they both have.  If its
@@ -473,7 +550,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 // same length and have the same text.
 int mstring::compare (const char *in, size_t length) const
 {
-    LOCK_READ;
+    lock_read();
 
     int retval = 0;
 
@@ -497,14 +574,14 @@ int mstring::compare (const char *in, size_t length) const
 
     retval = strcmp((i_str ? i_str : ""), (length ? in : ""));
 
-    LOCK_REL;
+    lock_rel();
 
     return retval;
 }
 
 void mstring::swap(mstring &in)
 {
-    LOCK_WRITE;
+    lock_write();
 
 #ifdef MSTRING_LOCKS_WORK
     if (in.i_lock != NULL)
@@ -533,17 +610,17 @@ void mstring::swap(mstring &in)
 	}
 #endif
 
-    LOCK_REL;
+    lock_rel();
 }
 
 const char *mstring::c_str() const
 {
     char *retval = "";
 
-    LOCK_READ;
+    lock_read();
     if (i_str != NULL)
 	retval = i_str;
-    LOCK_REL;
+    lock_rel();
 
     return (const char *) retval;    
 }
@@ -552,10 +629,10 @@ const char mstring::operator[] (size_t offs) const
 {
     char retval = 0;
 
-    LOCK_READ;
+    lock_read();
     if (i_str != NULL && offs < i_len)
 	retval = i_str[offs];
-    LOCK_REL;
+    lock_rel();
 
     return (const char) retval;
 }
@@ -564,10 +641,10 @@ const char mstring::first() const
 {
     char retval = 0;
 
-    LOCK_READ;
+    lock_read();
     if (i_str != NULL)
 	retval = i_str[0];
-    LOCK_REL;
+    lock_rel();
 
     return (const char) retval;
 }
@@ -576,43 +653,43 @@ const char mstring::last() const
 {
     char retval = 0;
 
-    LOCK_READ;
+    lock_read();
     if (i_str != NULL)
 	retval = i_str[i_len-1];
-    LOCK_REL;
+    lock_rel();
 
     return (const char) retval;
 }
 
 size_t mstring::length() const
 {
-    LOCK_READ;
+    lock_read();
     size_t retval = i_len;
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
 size_t mstring::size() const
 {
-    LOCK_READ;
+    lock_read();
     size_t retval = i_len;
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
 size_t mstring::capacity() const
 {
-    LOCK_READ;
+    lock_read();
     size_t retval = i_res;
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
 bool mstring::empty() const
 {
-    LOCK_READ;
+    lock_read();
     bool retval = (i_str == NULL);
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
@@ -620,14 +697,14 @@ bool mstring::empty() const
 // Index value of any of these chars
 int mstring::find_first_of(const char *str, size_t length) const
 {
-    LOCK_READ;
+    lock_read();
 
     int i, retval = i_len + 1;
     char *ptr;
 
     if (i_str == NULL || str == NULL || length == 0)
     {
-	LOCK_REL;
+	lock_rel();
 	return -1;
     }
 
@@ -640,7 +717,7 @@ int mstring::find_first_of(const char *str, size_t length) const
     if (retval > i_len)
 	retval = -1;
 
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
@@ -650,10 +727,10 @@ int mstring::find_last_of(const char *str, size_t length) const
     int i, retval = -1;
     char *ptr;
 
-    LOCK_READ;
+    lock_read();
     if (i_str == NULL || str == NULL || length == 0)
     {
-	LOCK_REL;
+	lock_rel();
 	return -1;
     }
 
@@ -664,7 +741,7 @@ int mstring::find_last_of(const char *str, size_t length) const
 	    retval = ptr - i_str;
     }
 
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
@@ -673,15 +750,15 @@ int mstring::find_first_not_of(const char *str, size_t length) const
 {
     int i, retval = -1;
 
-    LOCK_READ;
+    lock_read();
     if (i_str == NULL || str == NULL || length == 0)
     {
-	LOCK_REL;
+	lock_rel();
 	return -1;
     }
 
     char *tmp;
-    ALLOC(tmp, length+1);
+    tmp = alloc(length+1);
     if (tmp == NULL)
 	NOMEMR(-1);
     memcpy(tmp, str, length);
@@ -695,9 +772,9 @@ int mstring::find_first_not_of(const char *str, size_t length) const
 	    break;
 	}
     }
-    DEALLOC(tmp);
+    dealloc(tmp);
 
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
@@ -706,15 +783,15 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 {
     int i, retval = -1;
 
-    LOCK_READ;
+    lock_read();
     if (i_str == NULL || str == NULL || length == 0)
     {
-	LOCK_REL;
+	lock_rel();
 	return -1;
     }
 
     char *tmp;
-    ALLOC(tmp, length+1);
+    tmp = alloc(length+1);
     if (tmp == NULL)
 	NOMEMR(-1);
     memcpy(tmp, str, length);
@@ -728,9 +805,9 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 	    break;
 	}
     }
-    DEALLOC(tmp);
+    dealloc(tmp);
 
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
@@ -769,10 +846,10 @@ int mstring::find(const char *str, int occurance) const
     if (length < 1)
 	return -1;
 
-    LOCK_READ;
+    lock_read();
     if (i_str == NULL)
     {
-	LOCK_REL;
+	lock_rel();
 	return -1;
     }
 
@@ -792,7 +869,7 @@ int mstring::find(const char *str, int occurance) const
     if (ptr != NULL)
 	retval = ptr - i_str;
 
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
@@ -805,9 +882,9 @@ int mstring::rfind(const char *str, int occurance) const
     if (occurance < 1)
 	occurance = 1;
 
-    LOCK_READ;
+    lock_read();
     occ = occurances(str);
-    LOCK_REL;
+    lock_rel();
     if (occurance <= occ)
 	retval = find(str, occ - occurance + 1);
 
@@ -829,10 +906,10 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     if (find_len < 1)
 	return;
 
-    LOCK_WRITE;
+    lock_write();
     if (i_str == NULL)
     {
-	LOCK_REL;
+	lock_rel();
 	return;
     }
     old_len = i_len;
@@ -860,8 +937,8 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     if (i_len == 0)
     {
 	i_res = 0;
-	DEALLOC(i_str);
-	LOCK_REL;
+	dealloc(i_str);
+	lock_rel();
 	return;
     }
 
@@ -871,7 +948,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	i_res *= 2;
     while (i_res / 2 > i_len)
 	i_res /= 2;
-    ALLOC(tmp, i_res);
+    tmp = alloc(i_res);
     if (tmp == NULL)
 	NOMEM;
     memset(tmp, 0, i_res);
@@ -895,9 +972,9 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	    memcpy(&tmp[j], iter->first, old_len - i);
 	}
     }
-    DEALLOC(i_str);
+    dealloc(i_str);
     i_str = tmp;
-    LOCK_REL;
+    lock_rel();
 }
 
 void mstring::replace(int begin, int end, char *replace, size_t length)
@@ -909,7 +986,7 @@ void mstring::replace(int begin, int end, char *replace, size_t length)
 mstring mstring::substr(int nFirst, int nCount) const
 {
     mstring retval;
-    LOCK_READ;
+    lock_read();
     if (i_str != NULL)
     {
 	if (nFirst < 0)
@@ -918,13 +995,13 @@ mstring mstring::substr(int nFirst, int nCount) const
 	    nCount = i_len - nFirst;
 	if ((nCount + nFirst) > i_len)
 	    nCount = i_len - nFirst;
-	LOCK_REL;
+	lock_rel();
 	if (nCount > 0)
 	    retval.copy(&i_str[nFirst], nCount);
     }
     else
     {
-	LOCK_REL;
+	lock_rel();
     }
 
     return retval;
@@ -937,7 +1014,7 @@ mstring mstring::substr(int nFirst, int nCount) const
 bool mstring::IsWord() const
 {
     bool retval = true;
-    LOCK_READ;
+    lock_read();
 
     if (i_str == NULL)
 	retval = false;
@@ -946,14 +1023,14 @@ bool mstring::IsWord() const
 	if (!isalpha(i_str[i]))
 	    retval = false;
     
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
 bool mstring::IsNumber() const
 {
     bool retval = true;
-    LOCK_READ;
+    lock_read();
     if (i_str == NULL)
 	retval = false;
 
@@ -961,14 +1038,14 @@ bool mstring::IsNumber() const
 	if (!isdigit(i_str[i]))
 	    retval = false;
 
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
 bool mstring::IsAscii() const
 {
     bool retval = true;
-    LOCK_READ;
+    lock_read();
 
     if (i_str == NULL)
 	retval = false;
@@ -977,7 +1054,7 @@ bool mstring::IsAscii() const
 	if (!isascii(i_str[i]))
 	    retval = false;
 
-    LOCK_REL;
+    lock_rel();
     return retval;
 }
 
@@ -1007,48 +1084,48 @@ bool mstring::GetBool() const
 
 mstring mstring::UpperCase() const
 {
-    LOCK_READ;
+    lock_read();
     mstring tmp(*this);
-    LOCK_REL;
+    lock_rel();
     tmp.MakeUpper();
     return tmp;
 }
 
 mstring mstring::LowerCase() const
 {
-    LOCK_READ;
+    lock_read();
     mstring tmp(*this);
-    LOCK_REL;
+    lock_rel();
     tmp.MakeLower();
     return tmp;
 }
 
 void mstring::MakeUpper()
 {
-    LOCK_WRITE;
+    lock_write();
     if (i_str == NULL)
     {
-	LOCK_REL;
+	lock_rel();
 	return;
     }
 
     for (size_t i=0; i<i_len; i++)
 	i_str[i] = toupper(i_str[i]);
-    LOCK_REL;
+    lock_rel();
 }
 
 void mstring::MakeLower()
 {
-    LOCK_WRITE;
+    lock_write();
     if (i_str == NULL)
     {
-	LOCK_REL;
+	lock_rel();
 	return;
     }
 
     for (size_t i=0; i<i_len; i++)
 	i_str[i] = tolower(i_str[i]);
-    LOCK_REL;
+    lock_rel();
 }
 
 
@@ -1066,9 +1143,9 @@ int mstring::Occurances(const mstring &in, bool NoCase) const
     }
     else
     {
-	LOCK_READ;
+	lock_read();
 	retval = occurances(in.c_str());
-	LOCK_REL;
+	lock_rel();
     }
     return retval;
 }
@@ -1152,7 +1229,7 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 {
     int length, size = 1024;
     char *buffer;
-    ALLOC(buffer, size);
+    buffer = alloc(size);
     if (buffer == NULL)
 	NOMEMR(-1);
     while (buffer != NULL)
@@ -1160,20 +1237,20 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	length = vsnprintf(buffer, size-1, fmt, argptr);
 	if (length < size)
 	    break;
-	DEALLOC(buffer);
+	dealloc(buffer);
 	size *= 2;
-	ALLOC(buffer, size);
+	buffer = alloc(size);
 	if (buffer == NULL)
 	    NOMEMR(-1);
     }
     if (buffer && length < 1)
     {
-	DEALLOC(buffer);
+	dealloc(buffer);
     }
     if (buffer)
     {
 	copy(buffer, length);
-	DEALLOC(buffer);
+	dealloc(buffer);
     }
     else
 	copy(NULL, 0);
@@ -1188,9 +1265,9 @@ mstring mstring::Before(const mstring &in, int occurance) const
 	return Left(m_pos);
     else
     {
-	LOCK_READ;
+	lock_read();
 	mstring retval(*this);
-	LOCK_REL;
+	lock_rel();
 	return retval;
     }
 }
@@ -1202,9 +1279,9 @@ mstring mstring::After(const mstring &in, int occurance) const
 	return Right(m_pos+in.i_len);
     else
     {
-	LOCK_READ;
+	lock_read();
 	mstring retval(*this);
-	LOCK_REL;
+	lock_rel();
 	return retval;
     }
 }
@@ -1216,9 +1293,9 @@ mstring mstring::RevBefore(const mstring &in, int occurance) const
 	return Left(m_pos);
     else
     {
-	LOCK_READ;
+	lock_read();
 	mstring retval(*this);
-	LOCK_REL;
+	lock_rel();
 	return retval;
     }
 }
@@ -1230,9 +1307,9 @@ mstring mstring::RevAfter(const mstring &in, int occurance) const
 	return Right(m_pos+in.i_len);
     else
     {
-	LOCK_READ;
+	lock_read();
 	mstring retval(*this);
-	LOCK_REL;
+	lock_rel();
 	return retval;
     }
 }
@@ -1241,15 +1318,15 @@ mstring mstring::SubString(int from, int to) const
 {
     if (to < 0)
     {
-	LOCK_READ;
+	lock_read();
 	if (from < i_len)
 	    to = i_len-1;
 	else
 	{
-	    LOCK_REL;
+	    lock_rel();
 	    return "";
 	}
-	LOCK_REL;
+	lock_rel();
     }
     if (to < from)
     {
@@ -1265,7 +1342,7 @@ unsigned int mstring::WordCount(const mstring &delim, bool assemble) const
 {
     int Result=0;
     size_t i=0;
-    LOCK_READ;
+    lock_read();
     while(i<i_len)
     {
 	while(i<i_len && assemble && delim.Contains(i_str[i]))
@@ -1275,7 +1352,7 @@ unsigned int mstring::WordCount(const mstring &delim, bool assemble) const
 	while(i<i_len && !delim.Contains(i_str[i]))
 	    i++;
     }
-    LOCK_REL;
+    lock_rel();
     return Result;
 }
 
@@ -1287,15 +1364,15 @@ mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
     if(begin!=-1)
     {
 	i=begin;
-	LOCK_READ;
+	lock_read();
 	while(i < (int) i_len && !delim.Contains(i_str[(unsigned int) i]))
 	    i++;
 	if (i!=begin)
 	{
-	    LOCK_REL;
+	    lock_rel();
 	    return SubString(begin, i-1);
 	}
-	LOCK_REL;
+	lock_rel();
     }
     return "";
 }
@@ -1305,7 +1382,7 @@ int mstring::WordPosition(unsigned int count, const mstring &delim,
 {
     unsigned int i=0,cnt=0;
     int Result=-1;
-    LOCK_READ;
+    lock_read();
     while(i<i_len && cnt!=count)
     {
 	// Skip past multi-seperators IF we assemble them.
@@ -1322,7 +1399,7 @@ int mstring::WordPosition(unsigned int count, const mstring &delim,
 	else
 	    Result=i;
     }
-    LOCK_REL;
+    lock_rel();
     return Result;
 }
 
