@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.135  2001/11/18 01:44:56  prez
+** Changed trace levels
+**
 ** Revision 1.134  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -1627,9 +1630,10 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
     }
 
     mstring line1, line2, tmp;
-    for (i=tt_MAIN; i<tt_MAX; i++)
+    for (i=0; i<tt_MAX; i++)
     {
-	tmp.Format("%6s  ", (i == tt_MAIN) ? "MAIN" : threadname[i].c_str());
+	tmp.Format("%6s  ", (strlen(threadname[i].c_str())) ?
+				threadname[i].c_str() : "MAIN");
 	line1 += tmp;
 	tmp.Format("%#06x  ", Trace::TraceLevel(static_cast<threadtype_enum>(i)));
 	line2 += tmp;
