@@ -514,12 +514,12 @@ long mFile::Copy(const mstring & infile, const mstring & outfile, const bool app
     if (!(in.IsOpened() && out.IsOpened()))
 	RET(0);
 
-    unsigned char c[65535];
+    unsigned char c[32768];
     size_t total = 0, length = in.Length();
 
     do
     {
-	size_t bytesread = in.Read(c, 65535);
+	size_t bytesread = in.Read(c, 32768);
 
 	total += out.Write(c, bytesread);
     } while (total < length - 1);
