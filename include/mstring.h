@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2001/12/12 03:51:00  prez
+** Forgot to return SV in all the *toa functions
+**
 ** Revision 1.82  2001/12/12 03:48:47  prez
 ** Fixed all the *toa functions, to NOT return c_str() of a temporary veriable.
 **
@@ -1103,6 +1106,7 @@ inline const char *itoa(int i)
     memset(sv, 0, sizeof(sv));
     mstring tmp(i);
     strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+    return sv;
 }
 #endif
 
@@ -1114,6 +1118,7 @@ inline const char *ltoa(long l)
     memset(sv, 0, sizeof(sv));
     mstring tmp(l);
     strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+    return sv;
 }
 #endif
 
@@ -1125,6 +1130,7 @@ inline const char *ftoa(float f)
     memset(sv, 0, sizeof(sv));
     mstring tmp(f);
     strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+    return sv;
 }
 #endif
 
@@ -1136,6 +1142,7 @@ inline const char *dtoa(double d)
     memset(sv, 0, sizeof(sv));
     mstring tmp(d);
     strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+    return sv;
 }
 #endif
 
@@ -1147,6 +1154,7 @@ inline const char *ultoa(unsigned long ul)
     memset(sv, 0, sizeof(sv));
     mstring tmp(ul);
     strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+    return sv;
 }
 #endif
 
@@ -1158,8 +1166,8 @@ inline const char *uitoa(unsigned int ui)
     memset(sv, 0, sizeof(sv));
     mstring tmp(ui);
     strncpy(sv, tmp.c_str(), sizeof(sv)-1);
+    return sv;
 }
 #endif
-
 
 #endif
