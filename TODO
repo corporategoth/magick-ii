@@ -25,12 +25,6 @@ development team to be worked on, and are coming:
   sign off of it, but its not going to reply to anything).
   And of course, ability to un-reserve it (kill?)
 
-- Change .lfo and .lng files (in language directory) to
-  accept something like $1, $2, etc and replace with the
-  string equivilant of arg1, arg2, etc.  This way we can
-  move around arguments for languages that have different
-  sentance structures.
-
 - Add the rest of the trace code, and implement the other
   trace types (and use them).
 
@@ -38,6 +32,9 @@ development team to be worked on, and are coming:
   function does, peculiarities about it, and other
   commenting that tell you how the program works or the
   bit of code in question fits into the grand scheme.
+  Should use doxygen style (obtainable from:
+  http://www.stack.nl/~dimitri/doxygen) so that the
+  code is auto-documented for us, and nicely laid out.
 
 - Performance tuning, as parts of the code work, but are
   horribly slow or convoluted (as with any big project!)

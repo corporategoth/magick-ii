@@ -27,6 +27,12 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.161  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.160  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -782,7 +788,8 @@ int mMessage::call()
 	}
 	else if (msgtype_.IsSameAs("TEST", false))
 	{
-	    // Call back TestComplete
+	    // Make sure we dont take any more test messages ...
+	    ACE_Thread::yield();
 	}
 	RET(0);
     }
@@ -1778,12 +1785,12 @@ bool CommandMap::DoCommand(const mstring &mynick, const mstring &user,
 	RET(true);
     }
     if (command.WordCount(" ") < 2)
-	send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_COMMAND"),
-			command.UpperCase().c_str(), mynick.c_str());
+	SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+			command.UpperCase(), mynick));
     else
-	send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_OPTION"),
-			command.UpperCase().c_str(), mynick.c_str(),
-			command.Before(" ").UpperCase().c_str());
+	SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+			command.UpperCase(), mynick,
+			command.Before(" ").UpperCase()));
     RET(false);
 }
 
@@ -1800,12 +1807,12 @@ bool CommandMap::DoUserCommand(const mstring &mynick, const mstring &user,
 	    (*cmd.second)(mynick, user, params);
 	else
 	    if (command.WordCount(" ") < 2)
-		send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_COMMAND"),
-			command.UpperCase().c_str(), mynick.c_str());
+		SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+			command.UpperCase(), mynick));
 	    else
-		send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_OPTION"),
-			command.UpperCase().c_str(), mynick.c_str(),
-			command.Before(" ").UpperCase().c_str());
+		SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+			command.UpperCase(), mynick,
+			command.Before(" ").UpperCase()));
 	RET(true);
     }
     RET(false);
@@ -1824,12 +1831,12 @@ bool CommandMap::DoSystemCommand(const mstring &mynick, const mstring &user,
 	    (*cmd.second)(mynick, user, params);
 	else
 	    if (command.WordCount(" ") < 2)
-		send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_COMMAND"),
-			command.UpperCase().c_str(), mynick.c_str());
+		SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+			command.UpperCase(), mynick));
 	    else
-		send(mynick, user, Parent->getMessage(user, "ERR_SYNTAX/UNKNOWN_OPTION"),
-			command.UpperCase().c_str(), mynick.c_str(),
-			command.Before(" ").UpperCase().c_str());
+		SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+			command.UpperCase(), mynick,
+			command.Before(" ").UpperCase()));
 	RET(true);
     }
     RET(false);
@@ -1841,9 +1848,9 @@ void do_1_2param(const mstring &mynick, const mstring &source, const mstring &pa
     FT("do_1_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.Before(" ", 2));
@@ -1852,9 +1859,9 @@ void do_1_2param(const mstring &mynick, const mstring &source, const mstring &pa
     if (!Parent->commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 
 }
@@ -1864,9 +1871,9 @@ void do_1_3param(const mstring &mynick, const mstring &source, const mstring &pa
     FT("do_1_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.Before(" ") + " " + params.ExtractWord(3, " "));
@@ -1875,9 +1882,9 @@ void do_1_3param(const mstring &mynick, const mstring &source, const mstring &pa
     if (!Parent->commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 }
 
@@ -1886,9 +1893,9 @@ void do_1_4param(const mstring &mynick, const mstring &source, const mstring &pa
     FT("do_1_4param", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.Before(" ") + " " + params.ExtractWord(4, " "));
@@ -1897,9 +1904,9 @@ void do_1_4param(const mstring &mynick, const mstring &source, const mstring &pa
     if (!Parent->commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 }
 
@@ -1908,9 +1915,9 @@ void do_1_2paramswap(const mstring &mynick, const mstring &source, const mstring
     FT("do_1_2paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(2, " ") + " " + params.Before(" "));
@@ -1923,9 +1930,9 @@ void do_1_2paramswap(const mstring &mynick, const mstring &source, const mstring
     if (!Parent->commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 
 }
@@ -1935,9 +1942,9 @@ void do_1_3paramswap(const mstring &mynick, const mstring &source, const mstring
     FT("do_1_3paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(3, " ") + " " + params.Before(" "));
@@ -1951,9 +1958,9 @@ void do_1_3paramswap(const mstring &mynick, const mstring &source, const mstring
     if (!Parent->commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 }
 
@@ -1962,9 +1969,9 @@ void do_1_4paramswap(const mstring &mynick, const mstring &source, const mstring
     FT("do_1_3paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(4, " ") + " " + params.Before(" "));
@@ -1979,9 +1986,9 @@ void do_1_4paramswap(const mstring &mynick, const mstring &source, const mstring
     if (!Parent->commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 }
 
@@ -1990,9 +1997,9 @@ void do_2param(const mstring &mynick, const mstring &source, const mstring &para
     FT("do_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(2, " "));
@@ -2005,9 +2012,9 @@ void do_2param(const mstring &mynick, const mstring &source, const mstring &para
     if (!Parent->commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 
 }
@@ -2017,9 +2024,9 @@ void do_3param(const mstring &mynick, const mstring &source, const mstring &para
     FT("do_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(3, " "));
@@ -2033,9 +2040,9 @@ void do_3param(const mstring &mynick, const mstring &source, const mstring &para
     if (!Parent->commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 }
 
@@ -2044,9 +2051,9 @@ void do_4param(const mstring &mynick, const mstring &source, const mstring &para
     FT("do_3param", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
-			params.Before(" ").UpperCase().c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+			params.Before(" ").UpperCase(), mynick,
+			params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(4, " "));
@@ -2061,9 +2068,9 @@ void do_4param(const mstring &mynick, const mstring &source, const mstring &para
     if (!Parent->commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-//			command.c_str(), mynick.c_str(),
-//			command.Before(" ").c_str());
+//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//			command, mynick,
+//			command.Before(" ")));
     }
 }
 

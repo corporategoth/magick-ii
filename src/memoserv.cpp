@@ -27,6 +27,12 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.98  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -1300,8 +1306,8 @@ void MemoServ::do_Help(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -1326,15 +1332,15 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1342,8 +1348,8 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
     {
 	if (params.WordCount(" ") < 3)
 	{
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -1354,22 +1360,22 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-				who.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+				who));
 	    return;
 	}
 	who = Parent->getSname(who);
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
 
 	if (!Parent->memoserv.IsChannel(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase().c_str());
+	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
+				who.LowerCase()));
 	    return;
 	}
 
@@ -1390,9 +1396,9 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		    continue;
 
 		iter->Read(whoami);
-		::send(mynick, source, Parent->getMessage("MS_COMMAND/NEWS"),
-			i, iter->Sender().c_str(), iter->Channel().c_str(),
-			iter->Time().Ago().c_str());
+		SEND(mynick, source, "MS_COMMAND/NEWS", (
+			i, iter->Sender(), iter->Channel(),
+			iter->Time().Ago()));
 		unsigned int sentsize;
 		mstring output;
 		for (sentsize = 0; sentsize < iter->Text().size();
@@ -1416,8 +1422,8 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		}
 	    }
 	    if (i==1 && unread)
-		::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_NOUNREAD"),
-			    who.LowerCase().c_str());
+		SEND(mynick, source, "MS_STATUS/CS_NOUNREAD", (
+			    who.LowerCase()));
 	}
 	else
 	{
@@ -1454,9 +1460,9 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		    if (iter != newslist.end())
 		    {
 			iter->Read(whoami);
-			::send(mynick, source, Parent->getMessage("MS_COMMAND/NEWS"),
-				j, iter->Sender().c_str(), iter->Sender().c_str(),
-				iter->Time().Ago().c_str());
+			SEND(mynick, source, "MS_COMMAND/NEWS", (
+				j, iter->Sender(), iter->Sender(),
+				iter->Time().Ago()));
 			unsigned int sentsize;
 			for (sentsize = 0; sentsize < iter->Text().size();
 					sentsize+=Parent->server.proto.MaxLine())
@@ -1481,9 +1487,9 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		}
 	    }
 	    if (nonnumeric)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
 	    if (triedabove)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
 	}
     }
     else
@@ -1496,7 +1502,7 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 
 	if (!Parent->memoserv.IsNick(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
@@ -1519,17 +1525,17 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		iter->Read();
 		if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
 		{
-		    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_FILE"),
-			i, iter->Sender().c_str(),
-			iter->Time().Ago().c_str(),
-			Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
-			ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File())).c_str());
+		    SEND(mynick, source, "MS_COMMAND/MEMO_FILE", (
+			i, iter->Sender(),
+			iter->Time().Ago(),
+			Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
+			ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File()))));
 		}
 		else
 		{
-		    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
-			i, iter->Sender().c_str(),
-			iter->Time().Ago().c_str());
+		    SEND(mynick, source, "MS_COMMAND/MEMO", (
+			i, iter->Sender(),
+			iter->Time().Ago()));
 		}
 		unsigned int sentsize;
 		mstring output;
@@ -1591,17 +1597,17 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 			iter->Read();
 			if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
 			{
-			    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_FILE"),
-				j, iter->Sender().c_str(),
-				iter->Time().Ago().c_str(),
-				Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
-				ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File())).c_str());
+			    SEND(mynick, source, "MS_COMMAND/MEMO_FILE", (
+				j, iter->Sender(),
+				iter->Time().Ago(),
+				Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
+				ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File()))));
 			}
 			else
 			{
-			    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
-				j, iter->Sender().c_str(),
-				iter->Time().Ago().c_str());
+			    SEND(mynick, source, "MS_COMMAND/MEMO", (
+				j, iter->Sender(),
+				iter->Time().Ago()));
 			}
 			unsigned int sentsize;
 			for (sentsize = 0; sentsize < iter->Text().size();
@@ -1627,9 +1633,9 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		}
 	    }
 	    if (nonnumeric)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
 	    if (triedabove)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
 	}
     }
 }
@@ -1645,15 +1651,15 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1661,8 +1667,8 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
     {
 	if (params.WordCount(" ") < 3)
 	{
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -1673,22 +1679,22 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-		    who.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		    who));
 	    return;
 	}
 	who = Parent->getSname(who);
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
 
 	if (!Parent->memoserv.IsChannel(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase().c_str());
+	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
+				who.LowerCase()));
 	    return;
 	}
 
@@ -1703,8 +1709,8 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 	    {
 		iter->Unread(whoami);
 	    }
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/UNREAD_ALL"),
-				    who.LowerCase().c_str());
+	    SEND(mynick, source, "MS_COMMAND/UNREAD_ALL", (
+				    who.LowerCase()));
 	}
 	else
 	{
@@ -1749,14 +1755,14 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 	    }
 	    if (!output.empty())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_UNREAD"),
-					    output.c_str(), who.c_str());
+		SEND(mynick, source, "MS_COMMAND/CS_UNREAD", (
+					    output, who));
 		output.erase();
 	    }
 	    if (nonnumeric)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
 	    if (triedabove)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
 	}
     }
     else
@@ -1769,7 +1775,7 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 
 	if (!Parent->memoserv.IsNick(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
@@ -1784,7 +1790,7 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 	    {
 		iter->Unread();
 	    }
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_UNREAD_ALL"));
+	    NSEND(mynick, source, "MS_COMMAND/NS_UNREAD_ALL");
 	}
 	else
 	{
@@ -1829,14 +1835,14 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 	    }
 	    if (!output.empty())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_UNREAD"),
-					output.c_str());
+		SEND(mynick, source, "MS_COMMAND/NS_UNREAD", (
+					output));
 		output.erase();
 	    }
 	    if (nonnumeric)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
 	    if (triedabove)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
 	}
     }
 }
@@ -1852,15 +1858,15 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1872,7 +1878,7 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
 
     if (!Parent->memoserv.IsNick(who))
     {
-	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	return;
     }
 
@@ -1929,7 +1935,7 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
 		    mFile::DirUsage(Parent->files.TempDir()) <=
 		    Parent->files.TempDirSize()))
 		{
-		    ::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
+		    NSEND(mynick, source, "DCC/NOSPACE2");
 		    return;
 		}
 
@@ -1946,11 +1952,11 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
 	}
     }
     if (nonnumeric)
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+	NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
     if (triedabove)
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+	SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
     if (nonfiles)
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONFILES"));
+	NSEND(mynick, source, "ERR_SYNTAX/NONFILES");
  }
 
 
@@ -1964,8 +1970,8 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -1973,8 +1979,8 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
     {
 	if (params.WordCount(" ") < 2)
 	{
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -1984,22 +1990,22 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-		    who.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		    who));
 	    return;
 	}
 	who = Parent->getSname(who);
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
 
 	if (!Parent->memoserv.IsChannel(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase().c_str());
+	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
+				who.LowerCase()));
 	    return;
 	}
 
@@ -2016,10 +2022,10 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	    else
 		output << iter->Text();
 
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NEWS_LIST"),
+	    SEND(mynick, source, "MS_COMMAND/NEWS_LIST", (
 		    iter->IsRead(whoami) ? ' ' : '*',
-		    i++, iter->Sender().c_str(), iter->Channel().c_str(),
-		    iter->Time().Ago().c_str(), output.c_str());
+		    i++, iter->Sender(), iter->Channel(),
+		    iter->Time().Ago(), output));
 	}
     }
     else
@@ -2030,7 +2036,7 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 
 	if (!Parent->memoserv.IsNick(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
@@ -2049,19 +2055,19 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 
 	    if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_LIST_FILE"),
+		SEND(mynick, source, "MS_COMMAND/MEMO_LIST_FILE", (
 		    iter->IsRead() ? ' ' : '*',
-		    i++, iter->Sender().c_str(),
-		    iter->Time().Ago().c_str(), output.c_str(),
-		    Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
-		    ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File())).c_str());
+		    i++, iter->Sender(),
+		    iter->Time().Ago(), output,
+		    Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
+		    ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File()))));
 	    }
 	    else
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_LIST"),
+		SEND(mynick, source, "MS_COMMAND/MEMO_LIST", (
 		    iter->IsRead() ? ' ' : '*',
-		    i++, iter->Sender().c_str(),
-		    iter->Time().Ago().c_str(), output.c_str());
+		    i++, iter->Sender(),
+		    iter->Time().Ago(), output));
 	    }
 	}
     }
@@ -2078,15 +2084,15 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2097,15 +2103,15 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
     {
 	if (!Parent->chanserv.IsStored(name))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-			name.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+			name));
 	    return;
 	}
 	name = Parent->getSname(name);
 
 	if (!Parent->chanserv.GetStored(name).GetAccess(source, "WRITEMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
     }
@@ -2113,15 +2119,15 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
     {
 	if (!Parent->nickserv.IsStored(name))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-			name.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+			name));
 	    return;
 	}
 	name = Parent->getSname(name);
 	if (Parent->nickserv.GetStored(name).Forbidden())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-			name.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+			name));
 	    return;
 	}
 
@@ -2129,8 +2135,8 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 		!Parent->nickserv.GetStored(name).NoMemo() :
 		Parent->nickserv.GetStored(name).NoMemo())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/IGNORE"),
-			    name.c_str());
+	    SEND(mynick, source, "MS_STATUS/IGNORE", (
+			    name));
 	    return;
 	}
     }
@@ -2139,19 +2145,19 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 	Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
     		Parent->memoserv.Delay())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
-		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
+		message, ToHumanTime(Parent->memoserv.Delay() -
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
-		source).c_str());
+		source)));
 	return;
     }
 
     if (text.size() > Parent->server.proto.MaxLine())
     {
 	text.Truncate(Parent->server.proto.MaxLine());
-	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/TRUNCATE"),
+	SEND(mynick, source, "MS_STATUS/TRUNCATE", (
 			text.SubString(Parent->server.proto.MaxLine()-20,
-		    	Parent->server.proto.MaxLine()).c_str(), mynick.c_str());
+		    	Parent->server.proto.MaxLine()), mynick));
     }
 
     Parent->memoserv.stats.i_Send++;
@@ -2170,7 +2176,7 @@ void MemoServ::do_Flush(const mstring &mynick, const mstring &source, const mstr
     {
 	if (Parent->nickserv.GetLive(source).InFlight.File())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOFLUSH"));
+	    NSEND(mynick, source, "ERR_SITUATION/NOFLUSH");
 	    return;
 	}
 	Parent->memoserv.stats.i_Flush++;
@@ -2178,7 +2184,7 @@ void MemoServ::do_Flush(const mstring &mynick, const mstring &source, const mstr
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NOPENDING"));
+	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
 }
 
@@ -2192,15 +2198,15 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2208,8 +2214,8 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
     {
 	if (params.WordCount(" ") < 4)
 	{
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -2221,36 +2227,36 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-		    who.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		    who));
 	    return;
 	}
 	who = Parent->getSname(who);
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READ"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
 
 	if (!Parent->memoserv.IsChannel(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase().c_str());
+	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
+				who.LowerCase()));
 	    return;
 	}
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	    NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	    return;
 	}
 
 	unsigned int num = atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.ChannelNewsSize(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-			1, Parent->memoserv.ChannelNewsSize(who));
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+			1, Parent->memoserv.ChannelNewsSize(who)));
 	    return;
 	}
 
@@ -2258,10 +2264,10 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
     		Parent->memoserv.Delay())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
-		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+	    SEND(mynick, source, "ERR_SITUATION/NOTYET", (
+		message, ToHumanTime(Parent->memoserv.Delay() -
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
-		source).c_str());
+		source)));
 	    return;
 	}
 
@@ -2270,9 +2276,9 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
 	MemoServ::channel_news_t::iterator iter = Parent->memoserv.ChannelNewsEnd(who);
 	for (i=1; i < num; iter++, i++) ;
-	output.Format(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG").c_str(),
-		Parent->chanserv.GetStored(who).Name().c_str(),
-		iter->Sender().c_str(), iter->Text().c_str());
+	output = parseMessage(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG"),
+		mVarArray(Parent->chanserv.GetStored(who).Name(),
+		iter->Sender(), iter->Text()));
 	}
 
 	do_Forward2(mynick, source, dest, output);
@@ -2288,21 +2294,21 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 
 	if (!Parent->memoserv.IsNick(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	    NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	    return;
 	}
 
 	unsigned int num = atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.NickMemoSize(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-			1, Parent->memoserv.NickMemoSize(who));
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+			1, Parent->memoserv.NickMemoSize(who)));
 	    return;
 	}
 
@@ -2310,10 +2316,10 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
     		Parent->memoserv.Delay())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
-		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+	    SEND(mynick, source, "ERR_SITUATION/NOTYET", (
+		message, ToHumanTime(Parent->memoserv.Delay() -
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
-		source).c_str());
+		source)));
 	    return;
 	}
 
@@ -2324,12 +2330,12 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 	for (i=1; i < num; iter++, i++) ;
 
 	if (iter->File())
-	    output.Format(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG").c_str(),
-		Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
-		iter->Sender().c_str(), iter->Text().c_str());
+	    output = parseMessage(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG"),
+		mVarArray(Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
+		iter->Sender(), iter->Text()));
 	else
-	    output.Format(Parent->getMessage(dest, "MS_STATUS/FORWARD").c_str(),
-		iter->Sender().c_str(), iter->Text().c_str());
+	    output = parseMessage(Parent->getMessage(dest, "MS_STATUS/FORWARD"),
+		mVarArray(iter->Sender(), iter->Text()));
 	}
 
 	do_Forward2(mynick, source, dest, output);
@@ -2346,15 +2352,15 @@ void MemoServ::do_Forward2(const mstring &mynick, const mstring &source,
     {
 	if (!Parent->chanserv.IsStored(dest))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-			dest.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+			dest));
 	    return;
 	}
 	dest = Parent->getSname(dest);
 
 	if (!Parent->chanserv.GetStored(dest).GetAccess(source, "WRITEMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
     }
@@ -2362,15 +2368,15 @@ void MemoServ::do_Forward2(const mstring &mynick, const mstring &source,
     {
 	if (!Parent->nickserv.IsStored(dest))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-			dest.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+			dest));
 	    return;
 	}
 	dest = Parent->getSname(dest);
 	if (Parent->nickserv.GetStored(dest).Forbidden())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-			dest.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+			dest));
 	    return;
 	}
 
@@ -2378,8 +2384,8 @@ void MemoServ::do_Forward2(const mstring &mynick, const mstring &source,
 		!Parent->nickserv.GetStored(dest).NoMemo() :
 		Parent->nickserv.GetStored(dest).NoMemo())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/IGNORE"),
-			    dest.c_str());
+	    SEND(mynick, source, "MS_STATUS/IGNORE", (
+			    dest));
 	    return;
 	}
     }
@@ -2401,15 +2407,15 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2417,8 +2423,8 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
     {
 	if (params.WordCount(" ") < 4)
 	{
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -2430,36 +2436,36 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-		    who.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		    who));
 	    return;
 	}
 	who = Parent->getSname(who);
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
 
 	if (!Parent->memoserv.IsChannel(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase().c_str());
+	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
+				who.LowerCase()));
 	    return;
 	}
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	    NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	    return;
 	}
 
 	unsigned int num = atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.ChannelNewsSize(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-			1, Parent->memoserv.ChannelNewsSize(who));
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+			1, Parent->memoserv.ChannelNewsSize(who)));
 	    return;
 	}
 
@@ -2467,10 +2473,10 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
     		Parent->memoserv.Delay())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
-		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+	    SEND(mynick, source, "ERR_SITUATION/NOTYET", (
+		message, ToHumanTime(Parent->memoserv.Delay() -
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
-		source).c_str());
+		source)));
 	    return;
 	}
 
@@ -2479,12 +2485,12 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
 	MemoServ::channel_news_t::iterator iter = Parent->memoserv.ChannelNewsBegin(who);
 	for (i=1; i < num; iter++, i++) ;
-	output.Format(Parent->getMessage("MS_STATUS/REPLY_ARG").c_str(),
-		iter->Sender().c_str(),
+	output = parseMessage(Parent->getMessage("MS_STATUS/REPLY_ARG"),
+		mVarArray(iter->Sender(),
 		(iter->Text().size() > 20) ?
-		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().c_str(),
-		text.c_str());
+		    (iter->Text().SubString(0, 19) + "...") :
+		    iter->Text(),
+		text));
 	}
 
 	Parent->memoserv.stats.i_Reply++;
@@ -2502,22 +2508,22 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 
 	if (!Parent->memoserv.IsNick(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 	who = Parent->getSname(who);
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	    NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	    return;
 	}
 
 	unsigned int num = atoi(what.c_str());
 	if (num <= 0 || num > Parent->memoserv.NickMemoSize(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-			1, Parent->memoserv.NickMemoSize(who));
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+			1, Parent->memoserv.NickMemoSize(who)));
 	    return;
 	}
 
@@ -2525,10 +2531,10 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
     		Parent->memoserv.Delay())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
-		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+	    SEND(mynick, source, "ERR_SITUATION/NOTYET", (
+		message, ToHumanTime(Parent->memoserv.Delay() -
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
-		source).c_str());
+		source)));
 	    return;
 	}
 
@@ -2540,14 +2546,14 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 
 	if (!Parent->nickserv.IsStored(iter->Sender()))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-		    Parent->getSname(iter->Sender()).c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+		    Parent->getSname(iter->Sender())));
 	    return;
 	}
 	if (Parent->nickserv.GetStored(iter->Sender()).Forbidden())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-			iter->Sender().c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+			iter->Sender()));
 	    return;
 	}
 
@@ -2555,24 +2561,24 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 		!Parent->nickserv.GetStored(iter->Sender()).NoMemo() :
 		Parent->nickserv.GetStored(iter->Sender()).NoMemo())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/IGNORE"),
-			    iter->Sender().c_str());
+	    SEND(mynick, source, "MS_STATUS/IGNORE", (
+			    iter->Sender()));
 	    return;
 	}
 
 	if (iter->File())
-	    output.Format(Parent->getMessage("MS_STATUS/REPLY_ARG").c_str(),
-		Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
+	    output = parseMessage(Parent->getMessage("MS_STATUS/REPLY_ARG"),
+		mVarArray(Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
 		(iter->Text().length() > 20) ?
-		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().c_str(),
-		text.c_str());
+		    (iter->Text().SubString(0, 19) + "...") :
+		    iter->Text(),
+		text));
 	else
-	    output.Format(Parent->getMessage("MS_STATUS/REPLY").c_str(),
-		(iter->Text().length() > 20) ?
-		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().c_str(),
-		text.c_str());
+	    output = parseMessage(Parent->getMessage("MS_STATUS/REPLY"),
+		mVarArray((iter->Text().length() > 20) ?
+		    (iter->Text().SubString(0, 19) + "...") :
+		    iter->Text(),
+		text));
 
 	Parent->memoserv.stats.i_Reply++;
 	Parent->nickserv.GetLive(source).InFlight.Memo(
@@ -2592,13 +2598,13 @@ void MemoServ::do_Cancel(const mstring &mynick, const mstring &source, const mst
     {
 	Parent->memoserv.stats.i_Cancel++;
 	if (Parent->nickserv.GetLive(source).InFlight.File())
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CANCEL"));
+	    NSEND(mynick, source, "MS_COMMAND/CANCEL");
 	    
 	Parent->nickserv.GetLive(source).InFlight.Cancel();
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NOPENDING"));
+	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
 }
 
@@ -2613,15 +2619,15 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2629,8 +2635,8 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
     {
 	if (params.WordCount(" ") < 3)
 	{
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -2641,22 +2647,22 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-		    who.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		    who));
 	    return;
 	}
 	who = Parent->getSname(who);
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
 
 	if (!Parent->memoserv.IsChannel(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase().c_str());
+	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
+				who.LowerCase()));
 	    return;
 	}
 
@@ -2665,13 +2671,13 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	{
 	    if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "DELMEMO"))
 	    {
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+		NSEND(mynick, source, "MISC/NOACCESS");
 		return;
 	    }
 
 	    Parent->memoserv.RemChannel(who);
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL_ALL"),
-				    who.c_str());
+	    SEND(mynick, source, "MS_COMMAND/CS_DEL_ALL", (
+				    who));
 	    LOG(LM_DEBUG, "MEMOSERV/DEL_ALL", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		who));
@@ -2745,23 +2751,23 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	    }}
 	    if (!denied.empty())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_NOTDEL"),
-			    denied.c_str(), who.c_str());
+		SEND(mynick, source, "MS_COMMAND/CS_NOTDEL", (
+			    denied, who));
 		denied.erase();
 	    }
 	    if (!output.empty())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL"),
-			    output.c_str(), who.c_str());
+		SEND(mynick, source, "MS_COMMAND/CS_DEL", (
+			    output, who));
 		output.erase();
 		LOG(LM_DEBUG, "MEMOSERV/DEL", (
 			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 			adjust, who));
 	    }
 	    if (nonnumeric)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
 	    if (triedabove)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
 	}
     }
     else
@@ -2774,7 +2780,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 
 	if (!Parent->memoserv.IsNick(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
@@ -2790,7 +2796,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 		    Parent->filesys.EraseFile(FileMap::MemoAttach, iter->File());
 	    }}
 	    Parent->memoserv.RemNick(who);
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_DEL_ALL"));
+	    NSEND(mynick, source, "MS_COMMAND/NS_DEL_ALL");
 	}
 	else
 	{
@@ -2852,14 +2858,14 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	    }}
 	    if (!output.empty())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_DEL"),
-			    output.c_str());
+		SEND(mynick, source, "MS_COMMAND/NS_DEL", (
+			    output));
 		output.erase();
 	    }
 	    if (nonnumeric)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
 	    if (triedabove)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
 	}
     }
 }
@@ -2872,8 +2878,8 @@ void MemoServ::do_Continue(const mstring &mynick, const mstring &source, const m
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2882,9 +2888,9 @@ void MemoServ::do_Continue(const mstring &mynick, const mstring &source, const m
     if (text.size() > Parent->server.proto.MaxLine())
     {
 	text.Truncate(Parent->server.proto.MaxLine());
-	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/TRUNCATE"),
+	SEND(mynick, source, "MS_STATUS/TRUNCATE", (
 			text.SubString(Parent->server.proto.MaxLine()-20,
-			Parent->server.proto.MaxLine()-1).c_str(), mynick.c_str());
+			Parent->server.proto.MaxLine()-1), mynick));
     }
 
     if (Parent->nickserv.GetLive(source).InFlight.Memo())
@@ -2894,7 +2900,7 @@ void MemoServ::do_Continue(const mstring &mynick, const mstring &source, const m
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NOPENDING"));
+	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
 }
 
@@ -2910,8 +2916,8 @@ void MemoServ::do_Preview(const mstring &mynick, const mstring &source, const ms
 	mstring text(Parent->nickserv.GetLive(source).InFlight.Text());
 	size_t shown = 0, length = text.length();
 
-	::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/PREVIEW"),
-		Parent->nickserv.GetLive(source).InFlight.Recipiant().c_str());
+	SEND(mynick, source, "MS_COMMAND/PREVIEW", (
+		Parent->nickserv.GetLive(source).InFlight.Recipiant()));
 	while (shown < length)
 	{
 	    if (length-shown > Parent->server.proto.MaxLine())
@@ -2931,7 +2937,7 @@ void MemoServ::do_Preview(const mstring &mynick, const mstring &source, const ms
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NOPENDING"));
+	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
 }
 
@@ -2946,15 +2952,15 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2963,22 +2969,22 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
 
     if (IsChan(name))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOATTACH"));
+	NSEND(mynick, source, "ERR_SITUATION/NOATTACH");
 	return;
     }
     else
     {
 	if (!Parent->nickserv.IsStored(name))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-			name.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+			name));
 	    return;
 	}
 	name = Parent->getSname(name);
 	if (Parent->nickserv.GetStored(name).Forbidden())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-			name.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+			name));
 	    return;
 	}
 	mstring target = Parent->nickserv.GetStored(name).Host();
@@ -3001,15 +3007,15 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
 		}}
 		if (count >= Parent->memoserv.Files())
 		{
-		    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/ATTACHLIMIT"),
-					name.c_str());
+		    SEND(mynick, source, "MS_STATUS/ATTACHLIMIT", (
+					name));
 		    return;
 		}
 	    }
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/FILEDISABLED"));
+	    NSEND(mynick, source, "MS_STATUS/FILEDISABLED");
 	    return;
 	}
 
@@ -3017,8 +3023,8 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
 		!Parent->nickserv.GetStored(name).NoMemo() :
 		Parent->nickserv.GetStored(name).NoMemo())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/IGNORE"),
-			    name.c_str());
+	    SEND(mynick, source, "MS_STATUS/IGNORE", (
+			    name));
 	    return;
 	}
     }
@@ -3027,19 +3033,19 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
 	Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
     		Parent->memoserv.Delay())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
-		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
+	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
+		message, ToHumanTime(Parent->memoserv.Delay() -
 		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
-		source).c_str());
+		source)));
 	return;
     }
 
     if (text.size() > Parent->server.proto.MaxLine())
     {
 	text.Truncate(Parent->server.proto.MaxLine());
-	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/TRUNCATE"),
+	SEND(mynick, source, "MS_STATUS/TRUNCATE", (
 			text.SubString(Parent->server.proto.MaxLine()-20,
-			Parent->server.proto.MaxLine()-1).c_str(), mynick.c_str());
+			Parent->server.proto.MaxLine()-1), mynick));
     }
 
     Parent->memoserv.stats.i_File++;
@@ -3058,15 +3064,15 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3075,8 +3081,8 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	message += " " + params.ExtractWord(3, " ").UpperCase();
 	if (params.WordCount(" ") < 5)
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	    SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
@@ -3088,34 +3094,34 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-		    who.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		    who));
 	    return;
 	}
 	who = Parent->getSname(who);
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
 
 	if (!Parent->memoserv.IsChannel(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/CS_EMPTY"),
-				who.LowerCase().c_str());
+	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
+				who.LowerCase()));
 	    return;
 	}
 
 	if (!onoff.IsBool())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	    NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	    return;
 	}
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "DELMEMO"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MISC/NOACCESS"));
+	    NSEND(mynick, source, "MISC/NOACCESS");
 	    return;
 	}
 
@@ -3130,11 +3136,11 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    {
 		iter->NoExpire(onoff.GetBool());
 	    }}
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_SET_ALL"),
-			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
-			who.c_str(), onoff.GetBool() ?
-				Parent->getMessage("VALS/ON").c_str() :
-				Parent->getMessage("VALS/OFF").c_str());
+	    SEND(mynick, source, "MS_COMMAND/CS_SET_ALL", (
+			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+			who, onoff.GetBool() ?
+				Parent->getMessage("VALS/ON") :
+				Parent->getMessage("VALS/OFF")));
 
 	    LOG(LM_DEBUG, "MEMOSERV/SET_ALL", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
@@ -3186,11 +3192,11 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    }}
 	    if (!output.empty())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_SET"),
-			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
-			output.c_str(), who.c_str(), onoff.GetBool() ?
-				Parent->getMessage("VALS/ON").c_str() :
-				Parent->getMessage("VALS/OFF").c_str());
+		SEND(mynick, source, "MS_COMMAND/CS_SET", (
+			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+			output, who, onoff.GetBool() ?
+				Parent->getMessage("VALS/ON") :
+				Parent->getMessage("VALS/OFF")));
 		output.erase();
 		LOG(LM_DEBUG, "MEMOSERV/SET", (
 			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
@@ -3200,16 +3206,16 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 				Parent->getMessage("VALS/OFF")));
 	    }
 	    if (nonnumeric)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
 	    if (triedabove)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
 	}
     }
     else
     {
 	message += " " + params.ExtractWord(2, " ").UpperCase();
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONANICK"),
-		message.c_str());
+	SEND(mynick, source, "ERR_SITUATION/NOTONANICK", (
+		message));
 
 /* No NoExpire setting for nicknames.
 
@@ -3222,13 +3228,13 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 
 	if (!Parent->memoserv.IsNick(who))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
 	if (!onoff.IsBool())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	    NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	    return;
 	}
 
@@ -3243,11 +3249,11 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    {
 		iter->NoExpire(onoff.GetBool());
 	    }}
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_SET_ALL"),
-		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
+	    SEND(mynick, source, "MS_COMMAND/NS_SET_ALL", (
+		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
 		onoff.GetBool() ?
-			Parent->getMessage("VALS/ON").c_str() :
-			Parent->getMessage("VALS/OFF").c_str());
+			Parent->getMessage("VALS/ON") :
+			Parent->getMessage("VALS/OFF")));
 	}
 	else
 	{
@@ -3291,17 +3297,17 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    }}
 	    if (!output.empty())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NS_SET"),
-			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
-			output.c_str(), onoff.GetBool() ?
-				Parent->getMessage("VALS/ON").c_str() :
-				Parent->getMessage("VALS/OFF").c_str());
+		SEND(mynick, source, "MS_COMMAND/NS_SET", (
+			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+			output, onoff.GetBool() ?
+				Parent->getMessage("VALS/ON") :
+				Parent->getMessage("VALS/OFF")));
 		output.erase();
 	    }
 	    if (nonnumeric)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
 	    if (triedabove)
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"), amt);
+		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", ( amt));
 	}
 */
     }

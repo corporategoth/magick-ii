@@ -233,7 +233,7 @@ KILL_THREAD      =Killing thread, not enough work to warrant it.
 COULDNOTOPEN     =Could not open file $1 ($2) - #$3: $4.
 FILEOPERROR      =Could not perform $1 on file $2 - #$3: $4.
 DIROPERROR       =Could not perform $1 on directory $2 - #$3: $4.
-OPERROR          =Could nor perform $1 - #$2: $3.
+OPERROR          =Could not perform $1 - #$2: $3.
 FILEMAPFULL      =Could not find an available file number for type $1!
 MISSING_FILE1    =Removed physical file type $1, #$2 that did not have a file map entry.
 MISSING_FILE2    =Removed file map entry type $1, #$2 that did not have a physical file.
@@ -254,7 +254,6 @@ LOCK_RELEASE     =Failed to release $1 lock for $2.
 LOCK_DUP         =Duplicate $1 lock $2 detected where only 1 allowed!
 THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!
 THREAD_DEAD_HALF =Over half of threads not processing, shutting down!
-EXCEPTION        =Exception thrown on line $1, column $2 of $3.
 LOCKED_BIN       =System lock values do not match!  Binary recompile required!
 
 [EXCEPTIONS]
@@ -305,7 +304,6 @@ DCC_CANCEL       =DCC ID $1 failed to complete successfully.
 ; These are errors (of varying severity) that we may encounter.
 ;
 [ERROR]
-SIGNAL           =RECEIVED SIGNAL $1, EXITING.
 REQ_BYNONUSER    =$1 command requested by non-existent user $2.
 REQ_BYNONSERVICE =$1 command requested by non-service $2.
 REQ_FORNONUSER   =$1 command requested by $2 for non-existent user $3.
@@ -332,4 +330,3 @@ NOLANGTOKEN      =Invalid token $1 for language $2 used, error returned.
 BADSET           =Tried to set BAD data ($1) for $2 on $3.
 DB_SANITY_FAIL   =Database load failed sanity checks (usually because of invalid key).
 DB_CORRUPT       =Database load failed due to data corruption.
-INVALID_TYPE     =Invalid data type $1 on message queue, ignored.

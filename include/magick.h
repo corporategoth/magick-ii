@@ -25,6 +25,12 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.159  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.158  2001/05/05 17:33:57  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -264,15 +270,15 @@ public:
 
 #define LOG2(X)	\
 	if (Parent->ValidateLogger(ACE_LOG_MSG)) \
-		ACE_DEBUG(X);
+		ACE_DEBUG(X)
 #define LOG(X, Y, Z) \
-	LOG2((X, parseMessage(Parent->getLogMessage(Y), mVarArray Z)));
+	LOG2((X, parseMessage(Parent->getLogMessage(Y), mVarArray Z)))
 #define NLOG(X, Y) \
-	LOG2((X, parseMessage(Parent->getLogMessage(Y))));
+	LOG2((X, parseMessage(Parent->getLogMessage(Y))))
 #define SLOG(X, Y, Z) \
-	LOG2((X, parseMessage(Y, mVarArray Z)));
+	LOG2((X, parseMessage(Y, mVarArray Z)))
 #define NSLOG(X, Y) \
-	LOG2((X, parseMessage(Y)));
+	LOG2((X, parseMessage(Y)))
 
 class Logger : public ACE_Log_Msg_Callback
 {

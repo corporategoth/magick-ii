@@ -27,6 +27,12 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.122  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.121  2001/05/05 17:33:59  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -357,11 +363,11 @@ bool OperServ::AddHost(const mstring& host)
 
 		Akill_insert("*@" + host, Parent->operserv.Clone_AkillTime(),
 			Parent->operserv.Clone_Akill(), FirstName());
-	 	announce(FirstName(), Parent->getMessage("MISC/AKILL_ADD"),
-			FirstName().c_str(), host.c_str(),
-			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
-			Parent->operserv.Clone_Akill().c_str(),
-			killusers.size(), percent);
+	 	ANNOUNCE(FirstName(), "MISC/AKILL_ADD", (
+			FirstName(), host,
+			ToHumanTime(Parent->operserv.Clone_AkillTime()),
+			Parent->operserv.Clone_Akill(),
+			killusers.size(), fmstring("%.2f", percent)));
 		LOG(LM_INFO, "OPERSERV/AKILL_ADD", (
 			FirstName(), host,
 			ToHumanTime(Parent->operserv.Clone_AkillTime()),
@@ -1258,7 +1264,7 @@ void OperServ::execute(mstring& source, const mstring& msgtype, const mstring& p
     }
     else if (Secure() && !Parent->nickserv.GetLive(source.LowerCase()).HasMode("o"))
     {
-	send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
+	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
     }
     else if (msgtype == "PRIVMSG" &&
 	!Parent->commands.DoCommand(mynick, source, command, message))
@@ -1279,8 +1285,8 @@ void OperServ::do_Help(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -1304,8 +1310,8 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1339,8 +1345,8 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "OS_STATUS/INVALID_THREAD"),
- 							ttype.c_str());
+	    SEND(mynick, source, "OS_STATUS/INVALID_THREAD", (
+ 							ttype));
 	    return;
 	}
     }
@@ -1420,8 +1426,8 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 		    }
 		}
 		if (j>=Trace::levelname.size())
-		    ::send(mynick, source, Parent->getMessage(source, "OS_STATUS/INVALID_LEVEL"),
-								levels[i].c_str());
+		    SEND(mynick, source, "OS_STATUS/INVALID_LEVEL", (
+								levels[i]));
 	    }
 	}
     }
@@ -1460,8 +1466,8 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		::send(mynick, source, Parent->getMessage(source, "OS_STATUS/INVALID_LEVEL"),
-								levels[i].c_str());
+		SEND(mynick, source, "OS_STATUS/INVALID_LEVEL", (
+								levels[i]));
 	}
     }
     else if (action.Matches("*DOWN", true))
@@ -1499,8 +1505,8 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		::send(mynick, source, Parent->getMessage(source, "OS_STATUS/INVALID_LEVEL"),
-								levels[i].c_str());
+		SEND(mynick, source, "OS_STATUS/INVALID_LEVEL", (
+								levels[i]));
 	}
     }
     else if (action.Matches("VIEW*", true) || action.Matches("LIST*", true))
@@ -1509,8 +1515,8 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-			(message + " " + action).c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+			message + " " + action, mynick, message));
 	return;
     }
 
@@ -1541,8 +1547,8 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1555,10 +1561,10 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 	{
 	    Parent->server.MODE(mynick, target, mode);
 	    Parent->operserv.stats.i_Mode++;
-	    announce(mynick, Parent->getMessage("MISC/CHAN_MODE"),
-			source.c_str(), mode.c_str(), target.c_str());
-	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/CHAN_MODE"),
-			mode.c_str(), target.c_str());
+	    ANNOUNCE(mynick, "MISC/CHAN_MODE", (
+			source, mode, target));
+	    SEND(mynick, source, "OS_COMMAND/CHAN_MODE", (
+			mode, target));
 
 	    LOG(LM_INFO, "OPERSERV/MODE", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
@@ -1566,8 +1572,8 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTINUSE"),
-					    target.c_str());
+	    SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
+					    target));
 	}
     }
     else
@@ -1581,28 +1587,28 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 		{
 		    Parent->server.SVSMODE(mynick, target, mode);
 		    Parent->operserv.stats.i_Mode++;
-		    announce(mynick, Parent->getMessage("MISC/NICK_MODE"),
-			source.c_str(), mode.c_str(), target.c_str());
-		    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NICK_MODE"),
-			mode.c_str(), target.c_str());
+		    ANNOUNCE(mynick, "MISC/NICK_MODE", (
+			source, mode, target));
+		    SEND(mynick, source, "OS_COMMAND/NICK_MODE", (
+			mode, target));
 		    LOG(LM_INFO, "OPERSERV/MODE", (
 			Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 			mode, target));
 		}
 		else
 		{
-		    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOT_SUPPORTED"));
+		    NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 		}
 	    }
 	    else
 	    {
-		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-					    target.c_str());
+		SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+					    target));
 	    }
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	}
     }
 }
@@ -1615,14 +1621,14 @@ void OperServ::do_Qline(const mstring &mynick, const mstring &source, const mstr
     mstring message = params.Before(" ").UpperCase();
     if (Parent->server.proto.SQLINE().empty())
     {
-	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
     }
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1632,11 +1638,11 @@ void OperServ::do_Qline(const mstring &mynick, const mstring &source, const mstr
 	reason = params.After(" ", 2);
     Parent->server.SQLINE(mynick, target, reason);
     Parent->operserv.stats.i_Qline++;
-    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
-		target.c_str(), Parent->getMessage(source, "VALS/ON").c_str());
-    announce(mynick, Parent->getMessage("MISC/QLINE"),
-		source.c_str(), Parent->getMessage("VALS/ON").c_str(),
-		target.c_str());
+    SEND(mynick, source, "OS_COMMAND/QLINE", (
+		target, Parent->getMessage(source, "VALS/ON")));
+    ANNOUNCE(mynick, "MISC/QLINE", (
+		source, Parent->getMessage("VALS/ON"),
+		target));
     LOG(LM_INFO, "OPERSERV/QLINE", (
 	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	target));
@@ -1650,25 +1656,25 @@ void OperServ::do_UnQline(const mstring &mynick, const mstring &source, const ms
     mstring message = params.Before(" ").UpperCase();
     if (Parent->server.proto.UNSQLINE().empty())
     {
-	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
     }
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
     mstring target  = params.ExtractWord(2, " ");
     Parent->server.UNSQLINE(mynick, target);
     Parent->operserv.stats.i_Unqline++;
-    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
-		target.c_str(), Parent->getMessage(source, "VALS/OFF").c_str());
-    announce(mynick, Parent->getMessage("MISC/QLINE"),
-		source.c_str(), Parent->getMessage("VALS/OFF").c_str(),
-		target.c_str());
+    SEND(mynick, source, "OS_COMMAND/QLINE", (
+		target, Parent->getMessage(source, "VALS/OFF")));
+    ANNOUNCE(mynick, "MISC/QLINE", (
+		source, Parent->getMessage("VALS/OFF"),
+		target));
     LOG(LM_INFO, "OPERSERV/UNQLINE", (
 	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	target));
@@ -1682,14 +1688,14 @@ void OperServ::do_NOOP(const mstring &mynick, const mstring &source, const mstri
     mstring message = params.Before(" ").UpperCase();
     if (Parent->server.proto.SVSNOOP().empty())
     {
-	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
     }
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1698,29 +1704,29 @@ void OperServ::do_NOOP(const mstring &mynick, const mstring &source, const mstri
 
     if (!Parent->server.IsList(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/ISNOTLINKED"),
-			target.c_str());
+	SEND(mynick, source, "OS_STATUS/ISNOTLINKED", (
+			target));
 	return;
     }
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
     Parent->server.SVSNOOP(mynick, target, onoff.GetBool());
     Parent->operserv.stats.i_Noop++;
-    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NOOP"),
+    SEND(mynick, source, "OS_COMMAND/NOOP", (
 	    onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str(),
-	    target.c_str());
-    announce(mynick, Parent->getMessage("MISC/NOOP"),
-	    source.c_str(), onoff.GetBool() ?
-		Parent->getMessage("VALS/ON").c_str() :
-		Parent->getMessage("VALS/OFF").c_str(),
-	    target.c_str());
+		Parent->getMessage(source, "VALS/ON") :
+		Parent->getMessage(source, "VALS/OFF"),
+	    target));
+    ANNOUNCE(mynick, "MISC/NOOP", (
+	    source, onoff.GetBool() ?
+		Parent->getMessage("VALS/ON") :
+		Parent->getMessage("VALS/OFF"),
+	    target));
     LOG(LM_INFO, "OPERSERV/NOOP", (
 	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	target, onoff.GetBool() ?
@@ -1736,14 +1742,14 @@ void OperServ::do_Kill(const mstring &mynick, const mstring &source, const mstri
     mstring message = params.Before(" ").UpperCase();
     if (Parent->server.proto.SVSKILL().empty())
     {
-	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
     }
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1754,18 +1760,18 @@ void OperServ::do_Kill(const mstring &mynick, const mstring &source, const mstri
     {
 	Parent->server.SVSKILL(mynick, target, reason);
 	Parent->operserv.stats.i_Kill++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/KILL"),
-		    target.c_str());
-	announce(mynick, Parent->getMessage("MISC/KILL"),
-		    source.c_str(), target.c_str());
+	SEND(mynick, source, "OS_COMMAND/KILL", (
+		    target));
+	ANNOUNCE(mynick, "MISC/KILL", (
+		    source, target));
 	LOG(LM_INFO, "OPERSERV/KILL", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		target, reason));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-		    target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+		    target));
     }
 }
 
@@ -1777,14 +1783,14 @@ void OperServ::do_Hide(const mstring &mynick, const mstring &source, const mstri
     mstring message = params.Before(" ").UpperCase();
     if (Parent->server.proto.SVSHOST().empty())
     {
-	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
     }
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1795,18 +1801,18 @@ void OperServ::do_Hide(const mstring &mynick, const mstring &source, const mstri
     {
 	Parent->server.SVSHOST(mynick, target, newhost);
 	Parent->operserv.stats.i_Hide++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HIDE"),
-		    target.c_str(), newhost.c_str());
-	announce(mynick, Parent->getMessage("MISC/HIDE"),
-		    source.c_str(), target.c_str(), newhost.c_str());
+	SEND(mynick, source, "OS_COMMAND/HIDE", (
+		    target, newhost));
+	ANNOUNCE(mynick, "MISC/HIDE", (
+		    source, target, newhost));
 	LOG(LM_INFO, "OPERSERV/HIDE", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		target, newhost));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-		    target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+		    target));
     }
 }
 
@@ -1820,8 +1826,8 @@ void OperServ::do_Ping(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -1830,7 +1836,7 @@ void OperServ::do_Ping(const mstring &mynick, const mstring &source, const mstri
     {
 	Parent->events->ForcePing();
 	Parent->operserv.stats.i_Ping++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/PING"));
+	NSEND(mynick, source, "OS_COMMAND/PING");
 	LOG(LM_DEBUG, "OPERSERV/PING", (
 	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H)));
     }}
@@ -1847,7 +1853,7 @@ void OperServ::do_Update(const mstring &mynick, const mstring &source, const mst
     {
 	Parent->events->ForceSave();
 	Parent->operserv.stats.i_Update++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UPDATE"));
+	NSEND(mynick, source, "OS_COMMAND/UPDATE");
 	LOG(LM_DEBUG, "OPERSERV/UPDATE", (
 	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H)));
     }}
@@ -1858,8 +1864,8 @@ void OperServ::do_Shutdown(const mstring &mynick, const mstring &source, const m
 {
     FT("OperServ::do_Shutdown", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
-    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/SHUTDOWN"));
-    announce(mynick, Parent->getMessage("MISC/SHUTDOWN"), source.c_str());
+    NSEND(mynick, source, "OS_COMMAND/SHUTDOWN");
+    ANNOUNCE(mynick, "MISC/SHUTDOWN", ( source));
     LOG(LM_CRITICAL, "OPERSERV/SHUTDOWN", (
 	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H)));
     ACE_OS::sleep(1);
@@ -1877,16 +1883,16 @@ void OperServ::do_Reload(const mstring &mynick, const mstring &source, const mst
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (Parent->get_config_values())
     {
 	Parent->operserv.stats.i_Reload++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD"));
-	announce(mynick, Parent->getMessage("MISC/RELOAD"), source.c_str());
+	NSEND(mynick, source, "OS_COMMAND/RELOAD");
+	ANNOUNCE(mynick, "MISC/RELOAD", ( source));
 	LOG(LM_NOTICE, "OPERSERV/RELOAD", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H)));
     }
@@ -1894,7 +1900,7 @@ void OperServ::do_Reload(const mstring &mynick, const mstring &source, const mst
     {
 	LOG(LM_ERROR, "COMMANDLINE/NO_CFG_FILE", (
 		Parent->Config_File()));
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD_FAIL"));
+	NSEND(mynick, source, "OS_COMMAND/RELOAD_FAIL");
     }
 }
 
@@ -1908,13 +1914,13 @@ void OperServ::do_Signon(const mstring &mynick, const mstring &source, const mst
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     Parent->server.SignOnAll();
-    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/SIGNON"));
+    NSEND(mynick, source, "OS_COMMAND/SIGNON");
 }
 
 
@@ -1927,15 +1933,15 @@ void OperServ::do_Unload(const mstring &mynick, const mstring &source, const mst
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1947,16 +1953,16 @@ void OperServ::do_Unload(const mstring &mynick, const mstring &source, const mst
     if (unload1 || unload2)
     {
 	Parent->operserv.stats.i_Unload++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UNLOAD"),
-			language.c_str());
+	SEND(mynick, source, "OS_COMMAND/UNLOAD", (
+			language));
 	LOG(LM_DEBUG, "OPERSERV/UNLOAD", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		language));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/ISNOTLANG"),
-			language.c_str());
+	SEND(mynick, source, "OS_STATUS/ISNOTLANG", (
+			language));
     }
 }
 
@@ -1968,8 +1974,8 @@ void OperServ::do_Jupe(const mstring &mynick, const mstring &source, const mstri
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1978,10 +1984,10 @@ void OperServ::do_Jupe(const mstring &mynick, const mstring &source, const mstri
 
     Parent->server.Jupe(target, reason);
     Parent->operserv.stats.i_Jupe++;
-    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/JUPE"),
-		target.c_str());
-    announce(mynick, Parent->getMessage(source, "MISC/JUPE"),
-		source.c_str(), target.c_str());
+    SEND(mynick, source, "OS_COMMAND/JUPE", (
+		target));
+    ANNOUNCE(mynick, "MISC/JUPE", (
+		source, target));
     LOG(LM_NOTICE, "OPERSERV/JUPE", (
 	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	target, reason));
@@ -1998,8 +2004,8 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2010,12 +2016,12 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
     {
 	Parent->AUTO(true);
 	Parent->operserv.stats.i_OnOff++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
-	    Parent->getMessage(source, "VALS/SVC_AUTO").c_str(),
-	    Parent->getMessage(source, "VALS/ON").c_str());
-	announce(mynick, Parent->getMessage("MISC/ONOFF"),
-	    Parent->getMessage("VALS/SVC_AUTO").c_str(),
-	    Parent->getMessage("VALS/ON").c_str(), source.c_str());
+	SEND(mynick, source, "OS_COMMAND/ONOFF", (
+	    Parent->getMessage(source, "VALS/SVC_AUTO"),
+	    Parent->getMessage(source, "VALS/ON")));
+	ANNOUNCE(mynick, "MISC/ONOFF", (
+	    Parent->getMessage("VALS/SVC_AUTO"),
+	    Parent->getMessage("VALS/ON"), source));
 	LOG(LM_NOTICE, "OPERSERV/ONOFF", (
 	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	    Parent->getMessage("VALS/ON"),
@@ -2025,12 +2031,12 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
     {
 	Parent->ActivateLogger();
 	Parent->operserv.stats.i_OnOff++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
-	    Parent->getMessage(source, "VALS/SVC_LOG").c_str(),
-	    Parent->getMessage(source, "VALS/ON").c_str());
-	announce(mynick, Parent->getMessage("MISC/ONOFF"),
-	    Parent->getMessage("VALS/SVC_LOG").c_str(),
-	    Parent->getMessage("VALS/ON").c_str(), source.c_str());
+	SEND(mynick, source, "OS_COMMAND/ONOFF", (
+	    Parent->getMessage(source, "VALS/SVC_LOG"),
+	    Parent->getMessage(source, "VALS/ON")));
+	ANNOUNCE(mynick, "MISC/ONOFF", (
+	    Parent->getMessage("VALS/SVC_LOG"),
+	    Parent->getMessage("VALS/ON"), source));
 	LOG(LM_NOTICE, "OPERSERV/ONOFF", (
 	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	    Parent->getMessage("VALS/ON"),
@@ -2042,12 +2048,12 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 	{
 	    Parent->MSG(true);
 	    Parent->operserv.stats.i_OnOff++;
-	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
-		Parent->getMessage(source, "VALS/SVC_MSG").c_str(),
-		Parent->getMessage(source, "VALS/ON").c_str());
-	    announce(mynick, Parent->getMessage("MISC/ONOFF"),
-		Parent->getMessage("VALS/SVC_MSG").c_str(),
-		Parent->getMessage("VALS/ON").c_str(), source.c_str());
+	    SEND(mynick, source, "OS_COMMAND/ONOFF", (
+		Parent->getMessage(source, "VALS/SVC_MSG"),
+		Parent->getMessage(source, "VALS/ON")));
+	    ANNOUNCE(mynick, "MISC/ONOFF", (
+		Parent->getMessage("VALS/SVC_MSG"),
+		Parent->getMessage("VALS/ON"), source));
 	    LOG(LM_NOTICE, "OPERSERV/ONOFF", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("VALS/ON"),
@@ -2072,21 +2078,21 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 	    //  scripted stuff ...
 	    else
 	    {
-		::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOSERVICE"),
-		    service.c_str());
+		SEND(mynick, source, "ERR_SITUATION/NOSERVICE", (
+		    service));
 		service.erase();
 	    }
 	    if (!service.empty())
 	    {
 		Parent->operserv.stats.i_OnOff++;
-		::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF_ONE"),
-		    Parent->getMessage(source, "VALS/SVC_MSG").c_str(),
-		    service.c_str(),
-		    Parent->getMessage(source, "VALS/ON").c_str());
-		announce(mynick, Parent->getMessage("MISC/ONOFF_ONE"),
-		    Parent->getMessage("VALS/SVC_MSG").c_str(),
-		    service.c_str(),
-		    Parent->getMessage("VALS/ON").c_str(), source.c_str());
+		SEND(mynick, source, "OS_COMMAND/ONOFF_ONE", (
+		    Parent->getMessage(source, "VALS/SVC_MSG"),
+		    service,
+		    Parent->getMessage(source, "VALS/ON")));
+		ANNOUNCE(mynick, "MISC/ONOFF_ONE", (
+		    Parent->getMessage("VALS/SVC_MSG"),
+		    service,
+		    Parent->getMessage("VALS/ON"), source));
 		LOG(LM_NOTICE, "OPERSERV/ONOFF_ONE", (
 		    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		    Parent->getMessage("VALS/ON"),
@@ -2108,8 +2114,8 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2120,12 +2126,12 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
     {
 	Parent->AUTO(false);
 	Parent->operserv.stats.i_OnOff++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
-	    Parent->getMessage(source, "VALS/SVC_AUTO").c_str(),
-	    Parent->getMessage(source, "VALS/OFF").c_str());
-	announce(mynick, Parent->getMessage("MISC/ONOFF"),
-	    Parent->getMessage("VALS/SVC_AUTO").c_str(),
-	    Parent->getMessage("VALS/OFF").c_str(), source.c_str());
+	SEND(mynick, source, "OS_COMMAND/ONOFF", (
+	    Parent->getMessage(source, "VALS/SVC_AUTO"),
+	    Parent->getMessage(source, "VALS/OFF")));
+	ANNOUNCE(mynick, "MISC/ONOFF", (
+	    Parent->getMessage("VALS/SVC_AUTO"),
+	    Parent->getMessage("VALS/OFF"), source));
 	LOG(LM_NOTICE, "OPERSERV/ONOFF", (
 	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	    Parent->getMessage("VALS/OFF"),
@@ -2134,12 +2140,12 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
     else if (type.Matches("LOG*", true))
     {
 	Parent->operserv.stats.i_OnOff++;
-	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
-	    Parent->getMessage(source, "VALS/SVC_LOG").c_str(),
-	    Parent->getMessage(source, "VALS/OFF").c_str());
-	announce(mynick, Parent->getMessage("MISC/ONOFF"),
-	    Parent->getMessage("VALS/SVC_LOG").c_str(),
-	    Parent->getMessage("VALS/OFF").c_str(), source.c_str());
+	SEND(mynick, source, "OS_COMMAND/ONOFF", (
+	    Parent->getMessage(source, "VALS/SVC_LOG"),
+	    Parent->getMessage(source, "VALS/OFF")));
+	ANNOUNCE(mynick, "MISC/ONOFF", (
+	    Parent->getMessage("VALS/SVC_LOG"),
+	    Parent->getMessage("VALS/OFF"), source));
 	LOG(LM_NOTICE, "OPERSERV/ONOFF", (
 	    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	    Parent->getMessage("VALS/OFF"),
@@ -2152,12 +2158,12 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 	{
 	    Parent->MSG(false);
 	    Parent->operserv.stats.i_OnOff++;
-	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
-		Parent->getMessage(source, "VALS/SVC_MSG").c_str(),
-		Parent->getMessage(source, "VALS/OFF").c_str());
-	    announce(mynick, Parent->getMessage("MISC/ONOFF"),
-		Parent->getMessage("VALS/SVC_MSG").c_str(),
-		Parent->getMessage("VALS/OFF").c_str(), source.c_str());
+	    SEND(mynick, source, "OS_COMMAND/ONOFF", (
+		Parent->getMessage(source, "VALS/SVC_MSG"),
+		Parent->getMessage(source, "VALS/OFF")));
+	    ANNOUNCE(mynick, "MISC/ONOFF", (
+		Parent->getMessage("VALS/SVC_MSG"),
+		Parent->getMessage("VALS/OFF"), source));
 	    LOG(LM_NOTICE, "OPERSERV/ONOFF", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("VALS/OFF"),
@@ -2182,21 +2188,21 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 	    //  scripted stuff ...
 	    else
 	    {
-		::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOSERVICE"),
-		    service.c_str());
+		SEND(mynick, source, "ERR_SITUATION/NOSERVICE", (
+		    service));
 		service.erase();
 	    }
 	    if (!service.empty())
 	    {
 		Parent->operserv.stats.i_OnOff++;
-		::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF_ONE"),
-		    Parent->getMessage(source, "VALS/SVC_MSG").c_str(),
-		    service.c_str(),
-		    Parent->getMessage(source, "VALS/OFF").c_str());
-		announce(mynick, Parent->getMessage("MISC/ONOFF_ONE"),
-		    Parent->getMessage("VALS/SVC_MSG").c_str(),
-		    service.c_str(),
-		    Parent->getMessage("VALS/OFF").c_str(), source.c_str());
+		SEND(mynick, source, "OS_COMMAND/ONOFF_ONE", (
+		    Parent->getMessage(source, "VALS/SVC_MSG"),
+		    service,
+		    Parent->getMessage(source, "VALS/OFF")));
+		ANNOUNCE(mynick, "MISC/ONOFF_ONE", (
+		    Parent->getMessage("VALS/SVC_MSG"),
+		    service,
+		    Parent->getMessage("VALS/OFF"), source));
 		LOG(LM_NOTICE, "OPERSERV/ONOFF_ONE", (
 		    Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		    Parent->getMessage("VALS/OFF"),
@@ -2215,9 +2221,10 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/HTM"),
-		ToHumanSpace(Parent->ircsvchandler->HTM_Threshold()).c_str(),
-		static_cast<float>(Parent->ircsvchandler->Average(Parent->ircsvchandler->HTM_Gap())) / static_cast<float>(1024));
+	SEND(mynick, source, "OS_STATUS/HTM", (
+		ToHumanSpace(Parent->ircsvchandler->HTM_Threshold()),
+		fmstring("%.1f", static_cast<float>(Parent->ircsvchandler->Average(Parent->ircsvchandler->HTM_Gap())) /
+		static_cast<float>(1024))));
     }
     else
     {
@@ -2230,10 +2237,10 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	if (command.IsSameAs("ON", true))
 	{
 	    Parent->ircsvchandler->HTM(true);
-	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HTM"),
-		Parent->getMessage(source, "VALS/ON").c_str());
-	    announce(mynick, Parent->getMessage("MISC/HTM_ON_FORCE"),
-		source.c_str());
+	    SEND(mynick, source, "OS_COMMAND/HTM", (
+		Parent->getMessage(source, "VALS/ON")));
+	    ANNOUNCE(mynick, "MISC/HTM_ON_FORCE", (
+		source));
 	    LOG(LM_NOTICE, "OPERSERV/HTM_FORCE", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("VALS/ON")));
@@ -2241,10 +2248,10 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	else if (command.IsSameAs("OFF", true))
 	{
 	    Parent->ircsvchandler->HTM(false);
-	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HTM"),
-		Parent->getMessage(source, "VALS/OFF").c_str());
-	    announce(mynick, Parent->getMessage("MISC/HTM_OFF_FORCE"),
-		source.c_str());
+	    SEND(mynick, source, "OS_COMMAND/HTM", (
+		Parent->getMessage(source, "VALS/OFF")));
+	    ANNOUNCE(mynick, "MISC/HTM_OFF_FORCE", (
+		source));
 	    LOG(LM_NOTICE, "OPERSERV/HTM_FORCE", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("VALS/OFF")));
@@ -2253,31 +2260,31 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	{
 	    if (params.WordCount(" ") < 3)
 	    {
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				(message + " " + command).c_str(), mynick.c_str(), message.c_str());
+		SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message + " " + command, mynick, message));
 		return;
 	    }
 	    size_t newsize = FromHumanSpace(params.ExtractWord(3, " "));
 	    if (!newsize)
 	    {
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBESIZE"),
-				ToHumanSpace(1).c_str());
+		SEND(mynick, source, "ERR_SYNTAX/MUSTBESIZE", (
+				ToHumanSpace(512)));
 		return;
 	    }
 	    Parent->ircsvchandler->HTM_Threshold(newsize);
 
-	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HTM_SET"),
-		ToHumanSpace(newsize).c_str());
-	    announce(mynick, Parent->getMessage("MISC/HTM_SET"),
-		ToHumanSpace(newsize).c_str(), source.c_str());
+	    SEND(mynick, source, "OS_COMMAND/HTM_SET", (
+		ToHumanSpace(newsize)));
+	    ANNOUNCE(mynick, "MISC/HTM_SET", (
+		ToHumanSpace(newsize), source));
 	    LOG(LM_NOTICE, "OPERSERV/HTM_SET", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		ToHumanSpace(newsize)));
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-			(message + " " + command).c_str(), mynick.c_str(), message.c_str());
+	    SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+			message + " " + command, mynick, message));
 	    return;
 	}
 
@@ -2295,8 +2302,8 @@ void OperServ::do_settings_Config(const mstring &mynick, const mstring &source, 
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -2305,36 +2312,36 @@ void OperServ::do_settings_Config(const mstring &mynick, const mstring &source, 
 -   Minimum threads active is ?, Current threads active is ?.
 -   New thread will spawn each ? messages, and die when below ?.
 */
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LEVEL"),
-		    Parent->startup.Level(), Parent->Level());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LAG"),
-		    ToHumanTime(Parent->startup.Lagtime(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LAGCHECK"),
-		    ToHumanTime(Parent->config.Ping_Frequency(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SERVERS"),
-		    Parent->startup.Server_size());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_RELINK"),
-		    ToHumanTime(Parent->config.Server_Relink(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT1"),
-		    ToHumanTime(Parent->config.Squit_Protect(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT2"),
-		    ToHumanTime(Parent->config.Squit_Cancel(), source).c_str());
+    SEND(mynick, source, "OS_SETTINGS/CFG_LEVEL", (
+		    Parent->startup.Level(), Parent->Level()));
+    SEND(mynick, source, "OS_SETTINGS/CFG_LAG", (
+		    ToHumanTime(Parent->startup.Lagtime(), source)));
+    SEND(mynick, source, "OS_SETTINGS/CFG_LAGCHECK", (
+		    ToHumanTime(Parent->config.Ping_Frequency(), source)));
+    SEND(mynick, source, "OS_SETTINGS/CFG_SERVERS", (
+		    Parent->startup.Server_size()));
+    SEND(mynick, source, "OS_SETTINGS/CFG_RELINK", (
+		    ToHumanTime(Parent->config.Server_Relink(), source)));
+    SEND(mynick, source, "OS_SETTINGS/CFG_SQUIT1", (
+		    ToHumanTime(Parent->config.Squit_Protect(), source)));
+    SEND(mynick, source, "OS_SETTINGS/CFG_SQUIT2", (
+		    ToHumanTime(Parent->config.Squit_Cancel(), source)));
     { RLOCK(("Events"));
     if (Parent->events != NULL)
-	::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SYNC"),
-		    ToHumanTime(Parent->config.Savetime(), source).c_str(),
-		    Parent->events->SyncTime(source).c_str());
+	SEND(mynick, source, "OS_SETTINGS/CFG_SYNC", (
+		    ToHumanTime(Parent->config.Savetime(), source),
+		    Parent->events->SyncTime(source)));
     }
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_CYCLE"),
-		    ToHumanTime(Parent->config.Cycletime(), source).c_str(),
-		    ToHumanTime(Parent->config.Checktime(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_DCC1"),
-		    ToHumanSpace(Parent->files.Blocksize()).c_str(),
-		    ToHumanTime(Parent->files.Timeout(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_DCC2"),
-		    ToHumanSpace(Parent->files.Min_Speed()).c_str(),
-		    ToHumanSpace(Parent->files.Max_Speed()).c_str(),
-		    ToHumanTime(Parent->files.Sampletime(), source).c_str());
+    SEND(mynick, source, "OS_SETTINGS/CFG_CYCLE", (
+		    ToHumanTime(Parent->config.Cycletime(), source),
+		    ToHumanTime(Parent->config.Checktime(), source)));
+    SEND(mynick, source, "OS_SETTINGS/CFG_DCC1", (
+		    ToHumanSpace(Parent->files.Blocksize()),
+		    ToHumanTime(Parent->files.Timeout(), source)));
+    SEND(mynick, source, "OS_SETTINGS/CFG_DCC2", (
+		    ToHumanSpace(Parent->files.Min_Speed()),
+		    ToHumanSpace(Parent->files.Max_Speed()),
+		    ToHumanTime(Parent->files.Sampletime(), source)));
 }
     
 void OperServ::do_settings_Nick(const mstring &mynick, const mstring &source, const mstring &params)
@@ -2346,19 +2353,19 @@ void OperServ::do_settings_Nick(const mstring &mynick, const mstring &source, co
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_EXPIRE"),
-			ToHumanTime(Parent->nickserv.Expire(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_IDENT"),
-			ToHumanTime(Parent->nickserv.Ident(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_HOLD"),
-			ToHumanTime(Parent->nickserv.Release(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PASS"),
-			Parent->nickserv.Passfail());
+    SEND(mynick, source, "OS_SETTINGS/NICK_EXPIRE", (
+			ToHumanTime(Parent->nickserv.Expire(), source)));
+    SEND(mynick, source, "OS_SETTINGS/NICK_IDENT", (
+			ToHumanTime(Parent->nickserv.Ident(), source)));
+    SEND(mynick, source, "OS_SETTINGS/NICK_HOLD", (
+			ToHumanTime(Parent->nickserv.Release(), source)));
+    SEND(mynick, source, "OS_SETTINGS/NICK_PASS", (
+			Parent->nickserv.Passfail()));
 
     mstring output;
     if (Parent->nickserv.DEF_Protect())
@@ -2427,8 +2434,8 @@ void OperServ::do_settings_Nick(const mstring &mynick, const mstring &source, co
 	    output << IRC_Off;
     }
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_OPTIONS"),
-			output.c_str());
+    SEND(mynick, source, "OS_SETTINGS/NICK_OPTIONS", (
+			output));
 
     output.erase();
     if (Parent->nickserv.LCK_Language())
@@ -2437,16 +2444,16 @@ void OperServ::do_settings_Nick(const mstring &mynick, const mstring &source, co
     if (Parent->nickserv.LCK_Language())
 	output << IRC_Off;    
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_LANG"),
-			output.c_str());
+    SEND(mynick, source, "OS_SETTINGS/NICK_LANG", (
+			output));
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PICSIZE"),
-		    ToHumanSpace(Parent->nickserv.PicSize()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PICEXT"),
-		    Parent->nickserv.PicExt().c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_FILES"),
+    SEND(mynick, source, "OS_SETTINGS/NICK_PICSIZE", (
+		    ToHumanSpace(Parent->nickserv.PicSize())));
+    SEND(mynick, source, "OS_SETTINGS/NICK_PICEXT", (
+		    Parent->nickserv.PicExt()));
+    SEND(mynick, source, "OS_SETTINGS/NICK_FILES", (
 		    Parent->memoserv.Files(),
-		    ToHumanSpace(Parent->memoserv.FileSize()).c_str());
+		    ToHumanSpace(Parent->memoserv.FileSize())));
 }
 
 
@@ -2459,17 +2466,17 @@ void OperServ::do_settings_Channel(const mstring &mynick, const mstring &source,
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_EXPIRE"),
-		    ToHumanTime(Parent->chanserv.Expire(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_IDENT"),
-		    Parent->chanserv.Passfail());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_KEEPTIME"),
-		    ToHumanTime(Parent->chanserv.ChanKeep(), source).c_str());
+    SEND(mynick, source, "OS_SETTINGS/CHAN_EXPIRE", (
+		    ToHumanTime(Parent->chanserv.Expire(), source)));
+    SEND(mynick, source, "OS_SETTINGS/CHAN_IDENT", (
+		    Parent->chanserv.Passfail()));
+    SEND(mynick, source, "OS_SETTINGS/CHAN_KEEPTIME", (
+		    ToHumanTime(Parent->chanserv.ChanKeep(), source)));
 
     mstring output;
     if (Parent->chanserv.LCK_Bantime())
@@ -2477,20 +2484,20 @@ void OperServ::do_settings_Channel(const mstring &mynick, const mstring &source,
     output << ToHumanTime(Parent->chanserv.DEF_Bantime(), source);
     if (Parent->chanserv.LCK_Bantime())
 	output << IRC_Off;
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_BANTIME"),
-		    output.c_str());
+    SEND(mynick, source, "OS_SETTINGS/CHAN_BANTIME", (
+		    output));
     output.erase();
     if (Parent->chanserv.LCK_Parttime())
 	output << IRC_Bold;
     output << ToHumanTime(Parent->chanserv.DEF_Parttime(), source);
     if (Parent->chanserv.LCK_Parttime())
 	output << IRC_Off;
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_PARTTIME"),
-		    output.c_str());
+    SEND(mynick, source, "OS_SETTINGS/CHAN_PARTTIME", (
+		    output));
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_MLOCK"),
-		    Parent->chanserv.DEF_MLock().c_str(),
-		    Parent->chanserv.LCK_MLock().c_str());
+    SEND(mynick, source, "OS_SETTINGS/CHAN_MLOCK", (
+		    Parent->chanserv.DEF_MLock(),
+		    Parent->chanserv.LCK_MLock()));
 
     output.erase();
     if (Parent->chanserv.DEF_Keeptopic())
@@ -2603,8 +2610,8 @@ void OperServ::do_settings_Channel(const mstring &mynick, const mstring &source,
 	    output << IRC_Off;
     }
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_OPTIONS"),
-		    output.c_str());
+    SEND(mynick, source, "OS_SETTINGS/CHAN_OPTIONS", (
+		    output));
 
     output.erase();
     if (Parent->chanserv.LCK_Revenge())
@@ -2612,14 +2619,14 @@ void OperServ::do_settings_Channel(const mstring &mynick, const mstring &source,
     output << Parent->chanserv.DEF_Revenge();
     if (Parent->chanserv.LCK_Revenge())
 	output << IRC_Off;    
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_REVENGE"),
-		    output.c_str());
+    SEND(mynick, source, "OS_SETTINGS/CHAN_REVENGE", (
+		    output));
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_ACCESS"),
+    SEND(mynick, source, "OS_SETTINGS/CHAN_ACCESS", (
 		    Parent->chanserv.Level_Min(),
-		    Parent->chanserv.Level_Max());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_NEWS"),
-		    ToHumanTime(Parent->memoserv.News_Expire(), source).c_str());
+		    Parent->chanserv.Level_Max()));
+    SEND(mynick, source, "OS_SETTINGS/CHAN_NEWS", (
+		    ToHumanTime(Parent->memoserv.News_Expire(), source)));
 }
 
 
@@ -2632,17 +2639,17 @@ void OperServ::do_settings_Other(const mstring &mynick, const mstring &source, c
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_INFLIGHT"),
-		    ToHumanTime(Parent->memoserv.InFlight(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL1"),
-		    ToHumanTime(Parent->operserv.Def_Expire(), source).c_str(),
-		    Parent->operserv.Akill_Reject());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL2"));
+    SEND(mynick, source, "OS_SETTINGS/MISC_INFLIGHT", (
+		    ToHumanTime(Parent->memoserv.InFlight(), source)));
+    SEND(mynick, source, "OS_SETTINGS/MISC_AKILL1", (
+		    ToHumanTime(Parent->operserv.Def_Expire(), source),
+		    fmstring("%.2f", Parent->operserv.Akill_Reject())));
+    NSEND(mynick, source, "OS_SETTINGS/MISC_AKILL2");
     ::send(mynick, source, "%-20s: %s",
 		    Parent->commserv.SADMIN_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_SAdmin(), source).c_str());
@@ -2655,17 +2662,17 @@ void OperServ::do_settings_Other(const mstring &mynick, const mstring &source, c
     ::send(mynick, source, "%-20s: %s",
 		    Parent->commserv.OPER_Name().c_str(),
 		    ToHumanTime(Parent->operserv.Expire_Oper(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_CLONES"),
+    SEND(mynick, source, "OS_SETTINGS/MISC_CLONES", (
 		    Parent->operserv.Clone_Limit(),
-		    Parent->operserv.Max_Clone());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_FLOOD1"),
+		    Parent->operserv.Max_Clone()));
+    SEND(mynick, source, "OS_SETTINGS/MISC_FLOOD1", (
 		    Parent->operserv.Flood_Msgs(),
-		    ToHumanTime(Parent->operserv.Flood_Time(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_FLOOD2"),
-		    ToHumanTime(Parent->operserv.Ignore_Remove(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_IGNORE"),
-		    ToHumanTime(Parent->operserv.Ignore_Time(), source).c_str(),
-		    Parent->operserv.Ignore_Limit());
+		    ToHumanTime(Parent->operserv.Flood_Time(), source)));
+    SEND(mynick, source, "OS_SETTINGS/MISC_FLOOD2", (
+		    ToHumanTime(Parent->operserv.Ignore_Remove(), source)));
+    SEND(mynick, source, "OS_SETTINGS/MISC_IGNORE", (
+		    ToHumanTime(Parent->operserv.Ignore_Time(), source),
+		    Parent->operserv.Ignore_Limit()));
     mstring output;
 
     if (Parent->commserv.DEF_OpenMemos())
@@ -2700,8 +2707,8 @@ void OperServ::do_settings_Other(const mstring &mynick, const mstring &source, c
 	if (Parent->commserv.LCK_Secure())
 	    output << IRC_Off;
     }
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_COMM_OPT"),
-		    output.c_str());
+    SEND(mynick, source, "OS_SETTINGS/MISC_COMM_OPT", (
+		    output));
 }
 
 
@@ -2714,8 +2721,8 @@ void OperServ::do_settings_All(const mstring &mynick, const mstring &source, con
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -2733,8 +2740,8 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 5)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2744,20 +2751,20 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
 
     if (host.Contains("!"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/CLONE").c_str(), '!');
+	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/CLONE"), '!'));
 	return;
     }
     else if (host.Contains("@"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/CLONE").c_str(), '@');
+	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/CLONE"), '@'));
 	return;
     }
 
     if (!amount.IsNumber() || amount.Contains("."))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	return;
     }
 
@@ -2785,23 +2792,23 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
     // IF we have less than 1 char for 
     if (!super && num <= Parent->config.Starthresh())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
-			Parent->getMessage(source, "LIST/CLONE").c_str(),
-			Parent->config.Starthresh());
+	SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
+			Parent->getMessage(source, "LIST/CLONE"),
+			Parent->config.Starthresh()));
 	return;
     }
     else if (num <= 1)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
-			Parent->getMessage(source, "LIST/CLONE").c_str(), 1);
+	SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
+			Parent->getMessage(source, "LIST/CLONE"), 1));
 	return;
     }
 
     num = atoi(amount.c_str());
     if (num < 1 || num > Parent->operserv.Max_Clone())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-				1, Parent->operserv.Max_Clone());
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+				1, Parent->operserv.Max_Clone()));
 	return;
     }
 
@@ -2812,10 +2819,10 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
 	Parent->operserv.Clone_erase();
 	Parent->operserv.Clone_insert(entry, num, reason, source);
 	Parent->operserv.stats.i_Clone++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_LEVEL"),
-		    entry.c_str(),
-		    Parent->getMessage(source, "LIST/CLONE").c_str(),
-		    num);
+	SEND(mynick, source, "LIST/CHANGE_LEVEL", (
+		    entry,
+		    Parent->getMessage(source, "LIST/CLONE"),
+		    num));
 	LOG(LM_DEBUG, "OPERSERV/CLONE_ADD", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		entry, num));
@@ -2824,10 +2831,10 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
     {
 	Parent->operserv.Clone_insert(host, num, reason, source);
 	Parent->operserv.stats.i_Clone++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/ADD_LEVEL"),
-		    host.c_str(),
-		    Parent->getMessage(source, "LIST/CLONE").c_str(),
-		    num);
+	SEND(mynick, source, "LIST/ADD_LEVEL", (
+		    host,
+		    Parent->getMessage(source, "LIST/CLONE"),
+		    num));
 	LOG(LM_DEBUG, "OPERSERV/CLONE_ADD", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		host, num));
@@ -2841,8 +2848,8 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2850,14 +2857,14 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 
     if (host.Contains("!"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/CLONE").c_str(), '!');
+	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/CLONE"), '!'));
 	return;
     }
     else if (host.Contains("@"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/CLONE").c_str(), '@');
+	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/CLONE"), '@'));
 	return;
     }
 
@@ -2867,8 +2874,8 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Clone_size())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-				1, Parent->operserv.Clone_size());
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+				1, Parent->operserv.Clone_size()));
 	    return;
 	}
 
@@ -2878,9 +2885,9 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 	if (Parent->operserv.Clone != Parent->operserv.Clone_end())
 	{
 	    Parent->operserv.stats.i_Clone++;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
-			Parent->operserv.Clone->Entry().c_str(),
-			Parent->getMessage(source, "LIST/CLONE").c_str());
+	    SEND(mynick, source, "LIST/DEL", (
+			Parent->operserv.Clone->Entry(),
+			Parent->getMessage(source, "LIST/CLONE")));
 	    LOG(LM_DEBUG, "OPERSERV/CLONE_DEL", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		Parent->operserv.Clone->Entry()));
@@ -2888,8 +2895,8 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS_NUMBER"),
-			num, Parent->getMessage(source, "LIST/CLONE").c_str());
+	    SEND(mynick, source, "LIST/NOTEXISTS_NUMBER", (
+			num, Parent->getMessage(source, "LIST/CLONE")));
 	}
     }
     else
@@ -2907,15 +2914,15 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 	if (count)
 	{
 	    Parent->operserv.stats.i_Clone++;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
-			count, host.c_str(),
-			Parent->getMessage(source, "LIST/CLONE").c_str());
+	    SEND(mynick, source, "LIST/DEL_MATCH", (
+			count, host,
+			Parent->getMessage(source, "LIST/CLONE")));
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
-			host.c_str(),
-			Parent->getMessage(source, "LIST/CLONE").c_str());
+	    SEND(mynick, source, "LIST/NOTEXISTS", (
+			host,
+			Parent->getMessage(source, "LIST/CLONE")));
 	}
     }
 }
@@ -2930,15 +2937,15 @@ void OperServ::do_clone_List(const mstring &mynick, const mstring &source, const
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -2949,27 +2956,27 @@ void OperServ::do_clone_List(const mstring &mynick, const mstring &source, const
 
 	if (host.Contains("!"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/CLONE").c_str(), '!');
+	    SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/CLONE"), '!'));
 	    return;
 	}
 	else if (host.Contains("@"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/CLONE").c_str(), '@');
+	    SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/CLONE"), '@'));
 	    return;
 	}
     }
 
     if (Parent->operserv.Clone_size())
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
-		host.c_str(), Parent->getMessage(source, "LIST/CLONE").c_str());
+	SEND(mynick, source, "LIST/DISPLAY_MATCH", (
+		host, Parent->getMessage(source, "LIST/CLONE")));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
-		Parent->getMessage(source, "LIST/CLONE").c_str());
+	SEND(mynick, source, "LIST/EMPTY", (
+		Parent->getMessage(source, "LIST/CLONE")));
 	return;
     }
     unsigned int i=1;
@@ -2980,10 +2987,11 @@ void OperServ::do_clone_List(const mstring &mynick, const mstring &source, const
     {
 	if (Parent->operserv.Clone->Entry().Matches(host, true))
 	{
-	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
+	    ::send(mynick, source, "%3d. %s (%s)",
 			    i, Parent->operserv.Clone->Entry().c_str(),
-			    Parent->operserv.Clone->Last_Modify_Time().Ago().c_str(),
-			    Parent->operserv.Clone->Last_Modifier().c_str());
+			    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
+			    mVarArray(Parent->operserv.Clone->Last_Modify_Time().Ago(),
+			    Parent->operserv.Clone->Last_Modifier())).c_str());
 	    ::send(mynick, source, "     [%4d] %s",
 			    Parent->operserv.Clone->Value().first,
 			    Parent->operserv.Clone->Value().second.c_str());
@@ -2999,8 +3007,8 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3012,8 +3020,8 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     {
 	if (params.WordCount(" ") < 5)
 	{
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	    return;
 	}
 
@@ -3026,8 +3034,8 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     {
 	if (time > Parent->operserv.Expire_SAdmin())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
-		    ToHumanTime(Parent->operserv.Expire_SAdmin(), source).c_str());
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH", (
+		    ToHumanTime(Parent->operserv.Expire_SAdmin(), source)));
 	    return;
 	}
     }
@@ -3036,8 +3044,8 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     {
 	if (time > Parent->operserv.Expire_Sop())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
-		    ToHumanTime(Parent->operserv.Expire_Sop(), source).c_str());
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH", (
+		    ToHumanTime(Parent->operserv.Expire_Sop(), source)));
 	    return;
 	}
     }
@@ -3046,8 +3054,8 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     {
 	if (time > Parent->operserv.Expire_Admin())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
-		    ToHumanTime(Parent->operserv.Expire_Admin(), source).c_str());
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH", (
+		    ToHumanTime(Parent->operserv.Expire_Admin(), source)));
 	    return;
 	}
     }
@@ -3056,16 +3064,16 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     {
 	if (time > Parent->operserv.Expire_Oper())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
-		    ToHumanTime(Parent->operserv.Expire_Oper(), source).c_str());
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOHIGH", (
+		    ToHumanTime(Parent->operserv.Expire_Oper(), source)));
 	    return;
 	}
     }
 	
     if (host.Contains("!"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/AKILL").c_str(), '!');
+	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/AKILL"), '!'));
 	return;
     }
 
@@ -3098,15 +3106,15 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     // IF we have less than 1 char for 
     if (!super && num <= Parent->config.Starthresh())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
-			Parent->getMessage(source, "LIST/AKILL").c_str(),
-			Parent->config.Starthresh());
+	SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
+			Parent->getMessage(source, "LIST/AKILL"),
+			Parent->config.Starthresh()));
 	return;
     }
     else if (num <= 1)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
-			Parent->getMessage(source, "LIST/AKILL").c_str(), 1);
+	SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
+			Parent->getMessage(source, "LIST/AKILL"), 1));
 	return;
     }
 
@@ -3118,13 +3126,13 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	Parent->operserv.Akill_erase();
 	Parent->operserv.Akill_insert(entry, time, reason, source);
 	Parent->operserv.stats.i_Akill++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME"),
-		    entry.c_str(),
-		    Parent->getMessage(source, "LIST/AKILL").c_str(),
-		    ToHumanTime(time, source).c_str());
-	announce(mynick, Parent->getMessage("MISC/AKILL_EXTEND"),
-		    source.c_str(), entry.c_str(),
-		    ToHumanTime(time, source).c_str());
+	SEND(mynick, source, "LIST/CHANGE_TIME", (
+		    entry,
+		    Parent->getMessage(source, "LIST/AKILL"),
+		    ToHumanTime(time, source)));
+	ANNOUNCE(mynick, "MISC/AKILL_EXTEND", (
+		    source, entry,
+		    ToHumanTime(time, source)));
 	LOG(LM_INFO, "OPERSERV/AKILL_ADD", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		entry, ToHumanTime(time, source), reason));
@@ -3144,22 +3152,23 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 			static_cast<float>(Parent->nickserv.LiveSize());
 	if (percent > Parent->operserv.Akill_Reject())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOMANY"),
-		    percent, Parent->operserv.Akill_Reject());
+	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOMANY", (
+		fmstring("%.2f", percent),
+		fmstring("%.2f", Parent->operserv.Akill_Reject())));
 	}
 	else
 	{
 	    Parent->operserv.Akill_insert(host, time, reason, source);
 	    Parent->server.AKILL(host, reason, time, source);
 	    Parent->operserv.stats.i_Akill++;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD_TIME"),
-		    host.c_str(),
-		    Parent->getMessage(source, "LIST/AKILL").c_str(),
-		    ToHumanTime(time, source).c_str());
-	    announce(mynick, Parent->getMessage("MISC/AKILL_ADD"),
-		    source.c_str(), host.c_str(),
-		    ToHumanTime(time, source).c_str(), reason.c_str(),
-		    killusers.size(), percent);
+	    SEND(mynick, source, "LIST/ADD_TIME", (
+		    host,
+		    Parent->getMessage(source, "LIST/AKILL"),
+		    ToHumanTime(time, source)));
+	    ANNOUNCE(mynick, "MISC/AKILL_ADD", (
+		    source, host,
+		    ToHumanTime(time, source), reason,
+		    killusers.size(), fmstring("%.2f", percent)));
 	    LOG(LM_INFO, "OPERSERV/AKILL_ADD", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		host, ToHumanTime(time, source), reason));
@@ -3174,8 +3183,8 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3183,8 +3192,8 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 
     if (host.Contains("!"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/AKILL").c_str(), '!');
+	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/AKILL"), '!'));
 	return;
     }
 
@@ -3194,8 +3203,8 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Akill_size())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-				1, Parent->operserv.Akill_size());
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+				1, Parent->operserv.Akill_size()));
 	    return;
 	}
 
@@ -3206,9 +3215,9 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 	{
 	    Parent->operserv.stats.i_Akill++;
 	    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
-			Parent->operserv.Akill->Entry().c_str(),
-			Parent->getMessage(source, "LIST/AKILL").c_str());
+	    SEND(mynick, source, "LIST/DEL", (
+			Parent->operserv.Akill->Entry(),
+			Parent->getMessage(source, "LIST/AKILL")));
 	    LOG(LM_INFO, "OPERSERV/AKILL_DEL", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		Parent->operserv.Akill->Entry()));
@@ -3216,8 +3225,8 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS_NUMBER"),
-			num, Parent->getMessage(source, "LIST/AKILL").c_str());
+	    SEND(mynick, source, "LIST/NOTEXISTS_NUMBER", (
+			num, Parent->getMessage(source, "LIST/AKILL")));
 	}
     }
     else
@@ -3236,15 +3245,15 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 	if (count)
 	{
 	    Parent->operserv.stats.i_Akill++;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
-			count, host.c_str(),
-			Parent->getMessage(source, "LIST/AKILL").c_str());
+	    SEND(mynick, source, "LIST/DEL_MATCH", (
+			count, host,
+			Parent->getMessage(source, "LIST/AKILL")));
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
-			host.c_str(),
-			Parent->getMessage(source, "LIST/AKILL").c_str());
+	    SEND(mynick, source, "LIST/NOTEXISTS", (
+			host,
+			Parent->getMessage(source, "LIST/AKILL")));
 	}
     }
 }
@@ -3259,15 +3268,15 @@ void OperServ::do_akill_List(const mstring &mynick, const mstring &source, const
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3278,21 +3287,21 @@ void OperServ::do_akill_List(const mstring &mynick, const mstring &source, const
 
 	if (host.Contains("!"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-		    Parent->getMessage(source, "LIST/AKILL").c_str(), '!');
+	    SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+		    Parent->getMessage(source, "LIST/AKILL"), '!'));
 	    return;
 	}
     }
 
     if (Parent->operserv.Akill_size())
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
-		host.c_str(), Parent->getMessage(source, "LIST/AKILL").c_str());
+	SEND(mynick, source, "LIST/DISPLAY_MATCH", (
+		host, Parent->getMessage(source, "LIST/AKILL")));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
-		Parent->getMessage(source, "LIST/AKILL").c_str());
+	SEND(mynick, source, "LIST/EMPTY", (
+		Parent->getMessage(source, "LIST/AKILL")));
 	return;
     }
     unsigned int i=1;
@@ -3303,10 +3312,11 @@ void OperServ::do_akill_List(const mstring &mynick, const mstring &source, const
     {
 	if (Parent->operserv.Akill->Entry().Matches(host, true))
 	{
-	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
+	    ::send(mynick, source, "%3d. %s (%s)",
 			    i, Parent->operserv.Akill->Entry().c_str(),
-			    Parent->operserv.Akill->Last_Modify_Time().Ago().c_str(),
-			    Parent->operserv.Akill->Last_Modifier().c_str());
+			    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
+			    mVarArray(Parent->operserv.Akill->Last_Modify_Time().Ago(),
+			    Parent->operserv.Akill->Last_Modifier())).c_str());
 	    ::send(mynick, source, "     [%s] %s",
 			    ToHumanTime(Parent->operserv.Akill->Value().first, source).c_str(),
 			    Parent->operserv.Akill->Value().second.c_str());
@@ -3322,8 +3332,8 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3334,8 +3344,8 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
     {
 	if (!Parent->nickserv.IsLive(host))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-			    host.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+			    host));
 	    return;
 	}
 	host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
@@ -3365,9 +3375,9 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
     // IF we have less than 1 char for 
     if (num <= Parent->config.Starthresh())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
-			Parent->getMessage(source, "LIST/OPERDENY").c_str(),
-			Parent->config.Starthresh());
+	SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
+			Parent->getMessage(source, "LIST/OPERDENY"),
+			Parent->config.Starthresh()));
 	return;
     }
 
@@ -3379,10 +3389,10 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
     Parent->operserv.OperDeny_insert(host, reason, source);
     }
     Parent->operserv.stats.i_OperDeny++;
-    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
-	host.c_str(), Parent->getMessage(source, "LIST/OPERDENY").c_str());
-    announce(mynick, Parent->getMessage("MISC/OPERDENY_ADD"),
-		source.c_str(), host.c_str());
+    SEND(mynick, source, "LIST/ADD", (
+	host, Parent->getMessage(source, "LIST/OPERDENY")));
+    ANNOUNCE(mynick, "MISC/OPERDENY_ADD", (
+		source, host));
     LOG(LM_NOTICE, "OPERSERV/OPERDENY_ADD", (
 	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	host, reason));
@@ -3422,8 +3432,8 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3435,8 +3445,8 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.OperDeny_size())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-				1, Parent->operserv.OperDeny_size());
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+				1, Parent->operserv.OperDeny_size()));
 	    return;
 	}
 
@@ -3446,9 +3456,9 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 	if (Parent->operserv.OperDeny != Parent->operserv.OperDeny_end())
 	{
 	    Parent->operserv.stats.i_OperDeny++;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
-			Parent->operserv.OperDeny->Entry().c_str(),
-			Parent->getMessage(source, "LIST/OPERDENY").c_str());
+	    SEND(mynick, source, "LIST/DEL", (
+			Parent->operserv.OperDeny->Entry(),
+			Parent->getMessage(source, "LIST/OPERDENY")));
 	    LOG(LM_NOTICE, "OPERSERV/OPERDENY_DEL", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		Parent->operserv.OperDeny->Entry()));
@@ -3456,8 +3466,8 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS_NUMBER"),
-			num, Parent->getMessage(source, "LIST/OPERDENY").c_str());
+	    SEND(mynick, source, "LIST/NOTEXISTS_NUMBER", (
+			num, Parent->getMessage(source, "LIST/OPERDENY")));
 	}
     }
     else
@@ -3466,8 +3476,8 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 	{
 	    if (!Parent->nickserv.IsLive(host))
 	    {
-		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-			    host.c_str());
+		SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+			    host));
 		return;
 	    }
 	    host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
@@ -3490,15 +3500,15 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 	if (count)
 	{
 	    Parent->operserv.stats.i_OperDeny++;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
-			count, host.c_str(),
-			Parent->getMessage(source, "LIST/OPERDENY").c_str());
+	    SEND(mynick, source, "LIST/DEL_MATCH", (
+			count, host,
+			Parent->getMessage(source, "LIST/OPERDENY")));
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
-			host.c_str(),
-			Parent->getMessage(source, "LIST/OPERDENY").c_str());
+	    SEND(mynick, source, "LIST/NOTEXISTS", (
+			host,
+			Parent->getMessage(source, "LIST/OPERDENY")));
 	}
     }
 }
@@ -3513,15 +3523,15 @@ void OperServ::do_operdeny_List(const mstring &mynick, const mstring &source, co
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3534,8 +3544,8 @@ void OperServ::do_operdeny_List(const mstring &mynick, const mstring &source, co
 	{
 	    if (!Parent->nickserv.IsLive(host))
 	    {
-		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-			    host.c_str());
+		SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+			    host));
 		return;
 	    }
 	    host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
@@ -3548,13 +3558,13 @@ void OperServ::do_operdeny_List(const mstring &mynick, const mstring &source, co
 
     if (Parent->operserv.OperDeny_size())
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
-		host.c_str(), Parent->getMessage(source, "LIST/OPERDENY").c_str());
+	SEND(mynick, source, "LIST/DISPLAY_MATCH", (
+		host, Parent->getMessage(source, "LIST/OPERDENY")));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
-		Parent->getMessage(source, "LIST/OPERDENY").c_str());
+	SEND(mynick, source, "LIST/EMPTY", (
+		Parent->getMessage(source, "LIST/OPERDENY")));
 	return;
     }
     unsigned int i=1;
@@ -3565,10 +3575,11 @@ void OperServ::do_operdeny_List(const mstring &mynick, const mstring &source, co
     {
 	if (Parent->operserv.OperDeny->Entry().Matches(host, true))
 	{
-	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
+	    ::send(mynick, source, "%3d. %s (%s)",
 			    i, Parent->operserv.OperDeny->Entry().c_str(),
-			    Parent->operserv.OperDeny->Last_Modify_Time().Ago().c_str(),
-			    Parent->operserv.OperDeny->Last_Modifier().c_str());
+			    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
+			    mVarArray(Parent->operserv.OperDeny->Last_Modify_Time().Ago(),
+			    Parent->operserv.OperDeny->Last_Modifier())).c_str());
 	    ::send(mynick, source, "     %s",
 			    Parent->operserv.OperDeny->Value().c_str());
 	    i++;
@@ -3583,8 +3594,8 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3594,8 +3605,8 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
     {
 	if (!Parent->nickserv.IsLive(host))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-			    host.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+			    host));
 	    return;
 	}
 	host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
@@ -3626,15 +3637,15 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
     // IF we have less than 1 char for 
     if (!super && num <= Parent->config.Starthresh())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
-			Parent->getMessage(source, "LIST/SIGNORE").c_str(),
-			Parent->config.Starthresh());
+	SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
+			Parent->getMessage(source, "LIST/SIGNORE"),
+			Parent->config.Starthresh()));
 	return;
     }
     else if (num <= 1)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
-			Parent->getMessage(source, "LIST/SIGNORE").c_str(), 1);
+	SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
+			Parent->getMessage(source, "LIST/SIGNORE"), 1));
 	return;
     }
 
@@ -3645,8 +3656,8 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
     }
     Parent->operserv.Ignore_insert(host, true, source);
     Parent->operserv.stats.i_Ignore++;
-    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
-	    host.c_str(), Parent->getMessage(source, "LIST/SIGNORE").c_str());
+    SEND(mynick, source, "LIST/ADD", (
+	    host, Parent->getMessage(source, "LIST/SIGNORE")));
     LOG(LM_DEBUG, "OPERSERV/IGNORE_ADD", (
 	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 	host));
@@ -3659,8 +3670,8 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
     mstring message = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3672,8 +3683,8 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Ignore_size())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-				1, Parent->operserv.Ignore_size());
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+				1, Parent->operserv.Ignore_size()));
 	    return;
 	}
 
@@ -3683,9 +3694,9 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 	if (Parent->operserv.Ignore != Parent->operserv.Ignore_end())
 	{
 	    Parent->operserv.stats.i_Ignore++;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
-			Parent->operserv.Ignore->Entry().c_str(),
-			Parent->getMessage(source, "LIST/SIGNORE").c_str());
+	    SEND(mynick, source, "LIST/DEL", (
+			Parent->operserv.Ignore->Entry(),
+			Parent->getMessage(source, "LIST/SIGNORE")));
 	    LOG(LM_DEBUG, "OPERSERV/IGNORE_DEL", (
 		Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
 		Parent->operserv.Ignore->Entry()));
@@ -3693,8 +3704,8 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS_NUMBER"),
-			num, Parent->getMessage(source, "LIST/SIGNORE").c_str());
+	    SEND(mynick, source, "LIST/NOTEXISTS_NUMBER", (
+			num, Parent->getMessage(source, "LIST/SIGNORE")));
 	}
     }
     else
@@ -3703,8 +3714,8 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 	{
 	    if (!Parent->nickserv.IsLive(host))
 	    {
-		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-			    host.c_str());
+		SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+			    host));
 		return;
 	    }
 	    host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
@@ -3727,15 +3738,15 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 	if (count)
 	{
 	    Parent->operserv.stats.i_Ignore++;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
-			count, host.c_str(),
-			Parent->getMessage(source, "LIST/SIGNORE").c_str());
+	    SEND(mynick, source, "LIST/DEL_MATCH", (
+			count, host,
+			Parent->getMessage(source, "LIST/SIGNORE")));
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
-			host.c_str(),
-			Parent->getMessage(source, "LIST/SIGNORE").c_str());
+	    SEND(mynick, source, "LIST/NOTEXISTS", (
+			host,
+			Parent->getMessage(source, "LIST/SIGNORE")));
 	}
     }
 }
@@ -3750,15 +3761,15 @@ void OperServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -3771,8 +3782,8 @@ void OperServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
 	{
 	    if (!Parent->nickserv.IsLive(host))
 	    {
-		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-			    host.c_str());
+		SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+			    host));
 		return;
 	    }
 	    host = Parent->nickserv.GetLive(host.LowerCase()).Mask(Parent->operserv.Ignore_Method());
@@ -3795,21 +3806,22 @@ void OperServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
 	{
 	    if (head == false)
 	    {
-		::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
-			host.c_str(),
-			Parent->getMessage(source, "LIST/SIGNORE").c_str());
+		SEND(mynick, source, "LIST/DISPLAY_MATCH", (
+			host,
+			Parent->getMessage(source, "LIST/SIGNORE")));
 		head = true;
 	    }
-	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
+	    ::send(mynick, source, "%3d. %s (%s)",
 			    i, Parent->operserv.Ignore->Entry().c_str(),
-			    Parent->operserv.Ignore->Last_Modify_Time().Ago().c_str(),
-			    Parent->operserv.Ignore->Last_Modifier().c_str());
+			    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
+			    mVarArray(Parent->operserv.Ignore->Last_Modify_Time().Ago(),
+			    Parent->operserv.Ignore->Last_Modifier())).c_str());
 	    i++;
 	}
     }
     if (head == false)
-	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
-		Parent->getMessage(source, "LIST/SIGNORE").c_str());
+	SEND(mynick, source, "LIST/EMPTY", (
+		Parent->getMessage(source, "LIST/SIGNORE")));
 }
 
 SXP::Tag OperServ::tag_OperServ("OperServ");

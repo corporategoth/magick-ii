@@ -29,6 +29,12 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.303  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.302  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -698,6 +704,9 @@ int Magick::Start()
 #if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
 #endif
+#if defined(SIGABRT) && (SIGABRT != 0)
+    ACE_Reactor::instance()->register_handler(SIGABRT,signalhandler);
+#endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
     ACE_Reactor::instance()->register_handler(SIGPIPE,signalhandler);
 #endif
@@ -810,6 +819,9 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGINT);
 #if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->remove_handler(SIGTERM);
+#endif
+#if defined(SIGABRT) && (SIGABRT != 0)
+    ACE_Reactor::instance()->remove_handler(SIGABRT);
 #endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
     ACE_Reactor::instance()->remove_handler(SIGPIPE);
@@ -967,7 +979,9 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 		Messages["DEFAULT"].end())
     {
 	retval = Messages["DEFAULT"][name.UpperCase()];
+	RET(retval);
     }}
+    LOG(LM_ERROR, "ERROR/NOLANGTOKEN", (name.UpperCase(), lang.UpperCase()));
     RET(retval);
 }
 
@@ -1086,8 +1100,8 @@ StartGetLang:
 	mstring tmpstr, tmpstr2;
 	tmpstr2 = name;
 	tmpstr2.replace("/", " ");
-	tmpstr.Format(getMessage(nick, "ERR_SITUATION/NOHELP"),
-	    tmpstr2.After(" ").c_str());
+	tmpstr = parseMessage(getMessage(nick, "ERR_SITUATION/NOHELP"),
+	    			mVarArray(tmpstr2.After(" ")));
 	helptext.push_back(tmpstr);
     }
     NRET(vector<mstring>, helptext);
@@ -3086,7 +3100,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	if (Parent->events != NULL)
 	{
 	    LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SAVE", ( signum));
-	    announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_SAVE"), signum);
+	    ANNOUNCE(Parent->operserv.FirstName(), "MISC/SIGNAL_SAVE", ( signum));
 	    Parent->events->ForceSave();
 	}}
 	break;
@@ -3103,7 +3117,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	}
 	else
 	{
-	    announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_LOAD"), signum);
+	    ANNOUNCE(Parent->operserv.FirstName(), "MISC/SIGNAL_LOAD", ( signum));
 	}
 	break;
 #endif
@@ -3125,7 +3139,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	}
 	tid = mThread::find();
 	LOG(LM_ALERT, "SYS_ERRORS/SIGNAL_KILL", ( signum, tid->LastFunc()));
-	announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_KILL"), signum, tid->LastFunc().c_str());
+	ANNOUNCE(Parent->operserv.FirstName(), "MISC/SIGNAL_KILL", ( signum, tid->LastFunc()));
 	Parent->Shutdown(true);
 	Parent->Die();
 	return -1;

@@ -25,6 +25,12 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.91  2001/05/03 04:40:17  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -337,6 +343,15 @@ void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, 
 void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...);
 void send(const mstring &source, const mstring &dest, const char *pszFormat, ...);
 void announce(const mstring &source, const char *pszFormat, ...);
+
+#define SEND(W, X, Y, Z) \
+	::send(W, X, parseMessage(Parent->getMessage(X, Y), mVarArray Z))
+#define NSEND(W, X, Y) \
+	::send(W, X, parseMessage(Parent->getMessage(X, Y), mVarArray::EmptyArray()))
+#define ANNOUNCE(X, Y, Z) \
+	::announce(X, parseMessage(Parent->getMessage(Y), mVarArray Z))
+#define NANNOUNCE(X, Y) \
+	::announce(X, parseMessage(Parent->getMessage(Y), mVarArray::EmptyArray()))
 
 extern SXP::Tag tag_entlist_val_t;
 extern SXP::Tag tag_entlist_t;

@@ -27,6 +27,12 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.161  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.160  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -418,31 +424,31 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	{
 	    if (htm_gap > static_cast<time_t>(Parent->operserv.Max_HTM_Gap()))
 	    {
-		announce(Parent->operserv.FirstName(),
-			Parent->getMessage("MISC/HTM_DIE"));
+		NANNOUNCE(Parent->operserv.FirstName(),
+			"MISC/HTM_DIE");
 		CP(("HTM gap limit reached"));
 		return -1;
 	    }
 	    else
 	    {
 		if (!htm_level)
-		    announce(Parent->operserv.FirstName(),
-			Parent->getMessage("MISC/HTM_ON"),
-			static_cast<float>(total) /
-				static_cast<float>(htm_gap) / 1024.0,
-			static_cast<float>(htm_threshold) / 1024.0);
+		    ANNOUNCE(Parent->operserv.FirstName(),
+			"MISC/HTM_ON", (
+			fmstring("%.1f", static_cast<float>(total) /
+				static_cast<float>(htm_gap) / 1024.0),
+			fmstring("%.1f", static_cast<float>(htm_threshold) / 1024.0)));
 		else if (htm_level < 3)
-		    announce(Parent->operserv.FirstName(),
-			Parent->getMessage("MISC/HTM_STILL"),
+		    ANNOUNCE(Parent->operserv.FirstName(),
+			"MISC/HTM_STILL", (
 			htm_level + 1, htm_gap,
-			static_cast<float>(total) /
-				static_cast<float>(htm_gap) / 1024.0);
+			fmstring("%.1f", static_cast<float>(total) /
+				static_cast<float>(htm_gap) / 1024.0)));
 		else
-		    announce(Parent->operserv.FirstName(),
-			Parent->getMessage("MISC/HTM_TURBO"),
+		    ANNOUNCE(Parent->operserv.FirstName(),
+			"MISC/HTM_TURBO", (
 			htm_level + 1, htm_gap,
-			static_cast<float>(total) /
-				static_cast<float>(htm_gap) / 1024.0);
+			fmstring("%.1f", static_cast<float>(total) /
+				static_cast<float>(htm_gap) / 1024.0)));
 		htm_level++;
 		htm_gap += 2;
 		LOG(LM_NOTICE, "OPERSERV/HTM_ON", (htm_level, htm_gap,
@@ -453,8 +459,8 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	}
 	else if (htm_level)
 	{
-	    announce(Parent->operserv.FirstName(),
-		Parent->getMessage("MISC/HTM_OFF"));
+	    NANNOUNCE(Parent->operserv.FirstName(),
+		"MISC/HTM_OFF");
 	    htm_level = 0;
 	    htm_gap = Parent->operserv.Init_HTM_Gap();
 	    NLOG(LM_NOTICE, "OPERSERV/HTM_OFF");
@@ -984,8 +990,7 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	    if (!entry.InFlight.InProg())
 	    {
 		/* Already handled by DccXfer::DccXfer
-		send(entry.InFlight.service, entry.Name(),
-			Parent->getMessage(entry.Name(), "DCC/NOCONNECT"), "GET");
+		SEND(entry.InFlight.service, "DCC/NOCONNECT", ( "GET"));
 		*/
 		entry.InFlight.Cancel();
 	    }
@@ -1187,12 +1192,12 @@ int EventTask::svc(void)
 				Parent->operserv.Akill->Value().second,
 				Parent->operserv.Akill->Last_Modifier(),
 				ToHumanTime(Parent->operserv.Akill->Value().first)));
-			announce(Parent->operserv.FirstName(),
-				Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
-				Parent->operserv.Akill->Entry().c_str(),
-				Parent->operserv.Akill->Value().second.c_str(),
-				Parent->operserv.Akill->Last_Modifier().c_str(),
-				ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
+			ANNOUNCE(Parent->operserv.FirstName(),
+				"MISC/EXPIRE_AKILL", (
+				Parent->operserv.Akill->Entry(),
+				Parent->operserv.Akill->Value().second,
+				Parent->operserv.Akill->Last_Modifier(),
+				ToHumanTime(Parent->operserv.Akill->Value().first)));
 			Parent->operserv.Akill_erase();
 		    }
 		}
@@ -1424,6 +1429,9 @@ int EventTask::svc(void)
 			}
 			for (ri=remove.begin(); ri!=remove.end(); ri++)
 			{
+			    LOG(LM_DEBUG, "EVENT/UNBAN", (*ri,
+				cli->second.Name(),
+				ToHumanTime(csi->second.Bantime())));
 			    cli->second.SendMode("-b " + *ri);
 			}
 		    }
@@ -1481,11 +1489,9 @@ int EventTask::svc(void)
 		    if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
 		    {
 			if (nsi->second.Forbidden())
-			    send(Parent->nickserv.FirstName(), oldnick,
-				Parent->getMessage("MISC/RENAMED_FORBID"));
+			    NSEND(Parent->nickserv.FirstName(), oldnick, "MISC/RENAMED_FORBID");
 			else
-			    send(Parent->nickserv.FirstName(), oldnick,
-				Parent->getMessage("MISC/RENAMED_IDENT"));
+			    NSEND(Parent->nickserv.FirstName(), oldnick, "MISC/RENAMED_IDENT");
 			Parent->server.SVSNICK(Parent->nickserv.FirstName(),
 				oldnick, newnick);
 		    }
@@ -1680,7 +1686,7 @@ int EventTask::svc(void)
 	    }
 	    if (dead > (thread_heartbeat.size() / 2))
 	    {
-		announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/THREAD_DEAD_HALF"));
+		NANNOUNCE(Parent->operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
 		NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
 	    }
 	    WLOCK(("Events", "last_heartbeat"));

@@ -1,0 +1,332 @@
+; Magick IRC Services
+; (c) 1997-2001 Preston A. Elder <prez@magick.tm>
+; (c) 1998-2001 William King <ungod@magick.tm>
+;
+; English Log Output Language File
+; Translated By: Preston A. Elder <prez@magick.tm>
+; Please also edit the COMMANDLINE/TRANSLATED token
+; to reflect the above (this is displayed on startup).
+;
+; --------------------------------------------------------------
+;
+; This file is split up into sections.  These sections are so
+; that we can logically group responses together.  IF you change
+; the section names, or the response 'tags' within them, then
+; you will likely break Magick's responses.  IF you are a
+; developer and adding new sections, please note that they may
+; NOT have a '/' (forward-slash) or space in their name.
+;
+; Throughout this file there are various codes that are replaced
+; with a value direct from Magick.  See below for a table that
+; outlines the codes and their meanings.  All lines in this file
+; starting with ';' are comments.  If your response string has
+; leading spaces, you MUST put a '\' in front of the first space,
+; else leading spaces are stripped.
+;
+; In each string there are (or can be) $ replacement tokens,
+; where the number after the $ is the paramater to replace
+; with.  You may re-order the paramaters passed (or remove
+; them alltogether) by simply changing around these tokens.
+; Starting a token number with 0 will treat all following
+; numbers literally (useful to follow a token with a number).
+; eg. $1$0123 will output whatever is in $1, then 123 (the
+; $0 is ignored).  You cannot change the format of a token.
+;
+; --------------------------------------------------------------
+;
+
+;
+; These are responses to command line options or config options.
+;
+[COMMANDLINE]
+TRANSLATED       =Preston A. Elder <prez@magick.tm>
+UNKNOWN_OPTION   =Unknown option --config, ignored.
+NEEDPARAM        =Option --config requires a parameter.
+MUSTBENUMBER     =Parameter for --level must be a positive number.
+TIMEORZERO       =Time value specified is invalid or zero, on value --check.
+VALUETOOHIGH     =Value specified for --compress must be below or equal to 9.
+NO_CFG_FILE      =Could not read config file magick.ini, aborting.
+STOP             =CONFIG: [Startup] STOP code received.
+ACTIVE           =Magick is already active or stale PID file exists, please kill (or remove) it before restarting.
+RECONNECT        =Reconnecting to server due to configuration change.
+CANNOT_CONVERT   =Database type blah invalid (aborting).
+NO_KEYFILE       =Key file magick.key does not exist.
+NONOPTION        =Non-option arguments are not allowed.
+ONEOPTION        =You may only specify one parameter after a group of options.
+TRACE_SYNTAX     =Parameter for --trace must be in the format of TYPE:LEVEL
+ZERO_LEVEL       =Zero or error in parsing trace level, ignoring.
+CFG_SYNTAX       =Configuration token "REMOTE_1" contains a syntax error or invalid data.
+UNKNOWN_PROTO    =Unknown protocol identifier 100, default (0) used.
+START_LANG       =Loading default language file ...
+START_FORK       =Spawning into background ...
+START_EVENTS     =Starting events engine ...
+START_CALIBRATE  =Calibrating thread thresholds ...
+START_COMPLETE   =Magick 2.0 startup procedure complete.
+STOP_EVENTS      =Stopping events engine ...
+STOP_COMPLETE    =Magick 2.0 shutdown procedure complete.
+
+;
+; These are used when a command is executed from NickServ.
+;
+[NICKSERV]
+REGISTER         =PreZ!prez@some.isp.com registered nickname PreZ.
+DROP             =PreZ!prez@some.isp.com droped nickname PreZ (2 slaves).
+LINK             =PreZ!prez@some.isp.com linked nickname Saidin to PreZ.
+UNLINK           =PreZ!prez@some.isp.com unlinked nickname Saidin from PreZ.
+HOST             =PreZ!prez@some.isp.com changed their host nickname from PreZ to Saidin.
+IDENTIFY         =PreZ!prez@some.isp.com identified for nickname PreZ.
+IDENTIFY_FAILED  =PreZ!prez@some.isp.com failed identification for nickname PreZ.
+GHOST            =PreZ!prez@some.isp.com killed nickname Saidin with the ghost command.
+RECOVER          =PreZ!prez@some.isp.com requested services to recover nickname Saidin.
+SUSPEND          =PreZ!prez@some.isp.com suspended nickname BadGuy for Doing something bad.
+UNSUSPEND        =PreZ!prez@some.isp.com unsuspended nickname BadGuy.
+FORBID           =PreZ!prez@some.isp.com forbade nickname BadName from being registered.
+GETPASS          =PreZ!prez@some.isp.com retrieved the password for nickname SomeUser (HostUser).
+ACCESS_ADD       =PreZ!prez@some.isp.com added hostmask *prez@other.isp.com to nickname PreZ.
+ACCESS_DEL       =PreZ!prez@some.isp.com removed hostmask *prez@other.isp.com from nickname PreZ.
+IGNORE_ADD       =PreZ!prez@some.isp.com added nickname BadGuy to the ignore list for nickname PreZ.
+IGNORE_DEL       =PreZ!prez@some.isp.com removed nickname BadGuy from the ignore list for nickname PreZ.
+PICTURE_ADD      =PreZ!prez@some.isp.com set a picture for nickname PreZ (00000001 - 25Kb).
+PICTURE_DEL      =PreZ!prez@some.isp.com removed a picture from nickname PreZ.
+SET_PASSWORD     =PreZ!prez@some.isp.com changed the password for nickname PreZ.
+SET              =PreZ!prez@some.isp.com set the value of EMAIL for nickname PreZ to prez@magick.tm.
+UNSET            =PreZ!prez@some.isp.com unset the value of EMAIL for nickname PreZ.
+LOCK             =PreZ!prez@some.isp.com locked the value of PRIVATE for nickname PreZ to ON.
+UNLOCK           =PreZ!prez@some.isp.com unlocked the value of PRIVATE for nickname PreZ.
+
+;
+; These are used when a command is executed from ChanServ.
+;
+[CHANSERV]
+REGISTER         =PreZ!prez@some.isp.com registered channel #magick.
+DROP             =PreZ!prez@some.isp.com droped channel #magick (PreZ).
+IDENTIFY         =PreZ!prez@some.isp.com identified as founder for channel #magick.
+IDENTIFY_FAILED  =PreZ!prez@some.isp.com failed identification for channel #magick.
+SUSPEND          =PreZ!prez@some.isp.com suspended channel #badchan for being bad.
+UNSUSPEND        =PreZ!prez@some.isp.com unsuspended channel #badchan.
+FORBID           =PreZ!prez@some.isp.com forbade channel #badchan from being registered.
+GETPASS          =PreZ!prez@some.isp.com retrieved the password for channel #somechan (SomeFounder).
+MODE             =PreZ!prez@some.isp.com changed mode "+s" on channel #magick with the MODE command.
+OP               =PreZ!prez@some.isp.com oped PreZ in channel #magick with the OP command.
+DEOP             =PreZ!prez@some.isp.com deoped PreZ in channel #magick with the DEOP command.
+VOICE            =PreZ!prez@some.isp.com voiced PreZ in channel #magick with the VOICE command.
+DEVOICE          =PreZ!prez@some.isp.com devoiced PreZ in channel #magick with the DEVOICE command.
+TOPIC            =PreZ!prez@some.isp.com set the topic on #magick with the TOPIC command.
+KICK             =PreZ!prez@some.isp.com kicked BadGuy from channel #magick with the KICK command.
+ANONKICK         =PreZ!prez@some.isp.com anonymously kicked BadGuy from channel #magick with the REMOVE command.
+INVITE           =PreZ!prez@some.isp.com invited PreZ to channel #magick with the INVITE command.
+UNBAN            =PreZ!prez@some.isp.com unbanned PreZ from channel #magick with the UNBAN command.
+COMMAND          =PreZ!prez@some.isp.com executed the CLEAR ALL command for channel #magick.
+LEVEL            =PreZ!prez@some.isp.com set the level of AUTOOP to 10 for channel #magick.
+ACCESS_ADD       =PreZ!prez@some.isp.com added SomeUser to the access list for channel #magick at level 10.
+ACCESS_CHANGE    =PreZ!prez@some.isp.com changed SomeUser on the access list of channel #magick to level 5.
+ACCESS_DEL       =PreZ!prez@some.isp.com removed SomeUser from the access list for channel #magick.
+AKICK_ADD        =PreZ!prez@some.isp.com added BadGuy to the auto kick list for channel #magick.
+AKICK_DEL        =PreZ!prez@some.isp.com removed BadGuy from the auto kick list for channel #magick.
+GREET_ADD        =PreZ!prez@some.isp.com added a greeting for PreZ on channel #magick.
+GREET_DEL        =PreZ!prez@some.isp.com removed a greeting for #magick on channel #magick.
+MESSAGE_ADD      =PreZ!prez@some.isp.com added a on-join message for channel #magick.
+MESSAGE_DEL      =PreZ!prez@some.isp.com removed a on-join message from channel #magick.
+SET_PASSWORD     =PreZ!prez@some.isp.com changed the password for channel #magick.
+SET              =PreZ!prez@some.isp.com set the value of EMAIL for channel #magick to magick@magick.tm.
+UNSET            =PreZ!prez@some.isp.com unset the value of EMAIL for channel #magick.
+LOCK             =PreZ!prez@some.isp.com locked the value of PRIVATE for channel #magick to ON.
+UNLOCK           =PreZ!prez@some.isp.com unlocked the value of PRIVATE for channel #magick.
+
+;
+; These are used when a command is executed from MemoServ.
+;
+[MEMOSERV]
+SEND             =PreZ!prez@some.isp.com sent a news article to #magick.
+DEL              =PreZ!prez@some.isp.com removed 3 news article(s) from #magick.
+DEL_ALL          =PreZ!prez@some.isp.com removed all news articles from #magick.
+SET              =PreZ!prez@some.isp.com set the value of NOEXPIRE for 3 news article(s) of #magick to ON.
+SET_ALL          =PreZ!prez@some.isp.com set the value of NOEXPIRE for all news articles of #magick to ON.
+FILE             =PreZ!prez@some.isp.com sent a file attachment (file.ext / 00000001 - 25Kb) to SomeUser.
+GET              =PreZ!prez@some.isp.com received a file attachment (otherfile.ext / 00000002 - 25Kb) from SomeUser.
+
+;
+; These are used when a command is executed from CommServ.
+;
+[COMMSERV]
+ADD              =PreZ!prez@some.isp.com created a new committee called MAGICK-BETA with MrLame as its head.
+DEL              =PreZ!prez@some.isp.com deleted committee MAGICK-BETA.
+MEMO             =PreZ!prez@some.isp.com sent a memo to all members of committee MAGICK-BETA.
+MEMBER_ADD       =PreZ!prez@some.isp.com added nickname SomeUser to committee MAGICK-BETA.
+MEMBER_DEL       =PreZ!prez@some.isp.com removed nickname SomeUser from committee MAGICK-BETA.
+LOGON_ADD        =PreZ!prez@some.isp.com added a new logon message to committee MAGICK-BETA.
+LOGON_DEL        =PreZ!prez@some.isp.com removed a logon message from committee MAGICK-BETA.
+SET              =PreZ!prez@some.isp.com set the value of EMAIL for committee MAGICK-BETA to beta@magick.tm.
+UNSET            =PreZ!prez@some.isp.com unset the value of EMAIL for committee MAGICK-BETA.
+LOCK             =PreZ!prez@some.isp.com locked the value of PRIVATE for committee MAGICK-BETA to ON.
+UNLOCK           =PreZ!prez@some.isp.com unlocked the value of PRIVATE for committee MAGICK-BETA.
+
+;
+; These are used when a command is executed from ServMsg.
+;
+[SERVMSG]
+GLOBAL           =PreZ!prez@some.isp.com sent message "hello world" to all users.
+FILE_ADD         =PreZ!prez@some.isp.com added file file.ext (00000001 - 25Kb) at privilege OPER to public filesystem.
+FILE_DEL         =PreZ!prez@some.isp.com has removed file file.ext (00000002) from the public filesystem.
+FILE_RENAME      =PreZ!prez@some.isp.com has renamed file file.ext to otherfile.ext in the public filesystem.
+FILE_PRIV        =PreZ!prez@some.isp.com has re-secured file file.ext to ADMIN in the public filesystem.
+FILE_SEND        =PreZ!prez@some.isp.com has downloaded the file file.ext from the public filesystem.
+FILE_LOOKUP      =PreZ!prez@some.isp.com looked up file 00000001 of type MemoAttach.
+
+;
+; These are used when a command is executed from OperServ.
+;
+[OPERSERV]
+MODE             =PreZ!prez@some.isp.com set mode "+s" for #magick with the MODE command.
+QLINE            =PreZ!prez@some.isp.com quarantined nickname BadGuy.
+UNQLINE          =PreZ!prez@some.isp.com unquarantined nickname BadGuy.
+NOOP             =PreZ!prez@some.isp.com has turned quarantine all IRC ops on server bad.server.com ON.
+KILL             =PreZ!prez@some.isp.com silently killed nickname BadGuy with "connection reset by peer".
+HIDE             =PreZ!prez@some.isp.com has changed the hostname of nickname PreZ to hidden.isp.com.
+PING             =PreZ!prez@some.isp.com triggered server pings manually.
+UPDATE           =PreZ!prez@some.isp.com triggered database update manually.
+SHUTDOWN         =PreZ!prez@some.isp.com REQUESTED A SHUTDOWN OF SERVICES.
+RELOAD           =PreZ!prez@some.isp.com reloaded the services configuration file.
+UNLOAD           =PreZ!prez@some.isp.com unloaded language ENGLISH.
+JUPE             =PreZ!prez@some.isp.com juped server bad.server.com (laggy server).
+ONOFF            =PreZ!prez@some.isp.com TURNED ON Message SERVICES.
+ONOFF_ONE        =PreZ!prez@some.isp.com TURNED ON Message SERVICES FOR ChanServ.
+CLONE_ADD        =PreZ!prez@some.isp.com added host some.isp.com to the clone override list with 10 clones.
+CLONE_DEL        =PreZ!prez@some.isp.com removed host some.isp.com from the clone override list.
+AKILL_ADD        =PreZ!prez@some.isp.com added mask *badguy@bad.isp.com to the auto kill list (3 hours) for "being bad".
+AKILL_DEL        =PreZ!prez@some.isp.com removed mask *badguy@bad.isp.com from the auto kill list.
+OPERDENY_ADD     =PreZ!prez@some.isp.com added mask *!*badoper@bad.isp.com to the oper deny list (being bad oper).
+OPERDENY_DEL     =PreZ!prez@some.isp.com removed mask *!*badoper@bad.isp.com from the oper deny list.
+IGNORE_ADD       =PreZ!prez@some.isp.com added mask *!*badguy@bad.isp.com to the services permanent ignore list.
+IGNORE_DEL       =PreZ!prez@some.isp.com removed mask *!*badguy@bad.isp.com from the services permanent ignore list.
+IGNORED          =Ignored message from *!*badguy@bad.isp.com: PRIVMSG NickServ :help
+HTM_FORCE        =PreZ!prez@some.isp.com has forced HTM mode ON.
+HTM_ON           =HTM mode 1 (5 delay) activated (20.8Kb/s > 16.0Kb/s).
+HTM_OFF          =HTM mode deactivated.
+HTM_SET          =PreZ!prez@some.isp.com has set the HTM threshold to 16Kb/s.
+HTM_IGNORE       =Ignored message from PreZ!prez@some.isp.com (HTM mode): PRIVMSG NickServ :help
+
+;
+; These are used when an automated event kicks off.
+;
+[EVENT]
+EXPIRE_AKILL     =Expiring akill for *badguy@bad.isp.com (being bad) set by PreZ for 3 hours.
+EXPIRE_NICK      =Expiring nickname SomeUser (HostUser).
+EXPIRE_CHAN      =Expiring channel #somechan (SomeFounder).
+EXPIRE_NEWS      =Expiring news article for channel #magick.
+LOAD             =Loading databases ...
+SAVE             =Databases saved.
+UNBAN            =Removed ban *!*badguy@bad.isp.com from channel #magick due to timeout (1 day).
+KILLPROTECT      =Killed/renamed nickname SomeUser for failure to identify.
+PING             =Pinged all servers.
+LEVEL_UP         =LIVE LEVEL HAS INCREASED BY ONE (25.6 average lag).
+LEVEL_DOWN       =LIVE LEVEL HAS DECREASED BY ONE (1.2 average lag).
+AKICK            =Kicked user BadGuy from channel #magick for triggering AKICK (*!*badguy@bad.isp.com).
+RESTRICTED       =Kicked user BadGuy from restricted channel #somechan.
+NEW_THREAD       =Starting new thread to handle excess load.
+KILL_THREAD      =Killing thread, not enough work to warrant it.
+
+;
+; These are errors that come from system based
+;
+[SYS_ERRORS]
+COULDNOTOPEN     =Could not open file magick.log (w) - #13: Permission denied.
+FILEOPERROR      =Could not perform fwrite on file magick.log - #13: Permission denied.
+DIROPERROR       =Could not perform opendir on directory files/temp - #13: Permission denied.
+OPERROR          =Could not perform fork - #12: Out of memory.
+FILEMAPFULL      =Could not find an available file number for type 2!
+MISSING_FILE1    =Removed physical file type 2, #00000001 that did not have a file map entry.
+MISSING_FILE2    =Removed file map entry type 2, #00000001 that did not have a physical file.
+SIGNAL_IGNORE    =Caught signal #14, ignoring.
+SIGNAL_SAVE      =Caught signal #15, saving databases.
+SIGNAL_LOAD      =Caught signal #1, loading configuration file.
+SIGNAL_RETRY     =Caught signal #11, attempting to retry.
+SIGNAL_KILL      =Caught signal #11 - last function was BadFunction, attempting to shutdown.
+SIGNAL_SIGNON    =Caught signal #2, re-signing on all clients.
+SIGNAL_SPAWN     =Caught signal #1, spawning a new process.
+NOT_IMPLEMENTED  =Entered UnImplementedFunction, which is not implemented.
+INVALID_FORMAT   =Invalid date format char 3y in ddmmyyy.
+NOT_LITERAL      =Character x should be in quotes, taken as literal in ddmmxyy.
+RUN_AS_ROOT      =Running as a super user is a potential security risk!
+LOCK_OPEN        =Failed to open READ lock for NickServ::live.
+LOCK_ACQUIRE     =Failed to acquire READ lock for NickServ::live.
+LOCK_RELEASE     =Failed to release READ lock for NickServ::live.
+LOCK_DUP         =Duplicate MUTEX lock MessageQueue detected where only 1 allowed!
+THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!
+THREAD_DEAD_HALF =Over half of threads not processing, shutting down!
+LOCKED_BIN       =System lock values do not match!  Binary recompile required!
+
+[EXCEPTIONS]
+GENERIC          =Exception - Memo:Nick:Add:Blank
+GENERIC1         =Exception - Memo:Nick:Get:NotFound - PreZ
+GENERIC2         =Exception - Memo:NickMemo:Get:NotFound - PreZ/3
+UNHANDLED        =Unhandled Exception: some text.
+UNKNOWN          =Unhandled Exception: no information available.
+DCC_REMOVED      =Corrupt DCC #00000001 removed!
+NICK_S_REMOVED   =Corrupt stored nickname BadGuy removed!
+NICK_L_REMOVED   =Corrupt live nickname BadGuy removed!
+CHAN_S_REMOVED   =Corrupt stored channel #badchan removed!
+CHAN_L_REMOVED   =Corrupt live channel #badchan removed!
+
+;
+; This is a section for miscellaneous other occurrences.
+;
+[OTHER]
+SQUIT_FIRST      =Suspected SQUIT detected, servers server.network.com and hub.network.com, waiting ...
+SQUIT_CANCEL     =Suspected SQUIT of servers server.network.com and hub.network.com was fake.
+SQUIT_SECOND     =SQUIT of servers server.network.com and hub.network.com confirmed, taking appropriate action.
+KILL_CLONE       =Clone protection triggered for PreZ!prez@some.isp.com, killing user.
+KILL_AKILL       =Killing user PreZ!prez@some.isp.com on auto kill list $2 ($3).
+KILL_UNKNOWN     =Killed unknown user PreZ.
+NOVALIDSERVERS   =Magick aborting, no valid servers available to connect to!
+CONNECTING       =Connecting to server 127.0.0.1:6667 ...
+CONNECTED        =Connection established and authenticated to server hub.network.com.
+WRONGPASS        =Password mismatch connecting to server hub.network.com, skipping.
+WEAREBANNED      =We are k-lined from server hub.network.com, skipping.
+REFUSED          =Connection to server 127.0.0.1:6667 refused.
+CLOSED           =Connection to server 127.0.0.1 closed.
+SERVER_MSG       =SERVER MESSAGE (GNOTICE): Server services.network.com has linked to network
+LINK             =Server server.network.com has linked to the network via. hub.network.com.
+INVALIDLINK      =Server server.network.com has been SQUIT from hub.network.com as it is not allowed!
+KILLED           =Service NickServ has been killed by PreZ!prez@some.isp.com, attempting to respawn.
+TEMP_IGNORE      =BadGuy!badguy@bad.isp.com triggered services temporary ignore.
+PERM_IGNORE      =BadGuy!badguy@bad.isp.com triggered services permanent ignore.
+KILL_NICK_PASS   =Killing user PreZ!prez@some.isp.com for password failures on nickname PreZ.
+KILL_CHAN_PASS   =Killing user PreZ!prez@some.isp.com for password failures on channel #magick.
+LOAD_LANGUAGE    =Loaded ENGLISH language file.
+LOAD_HELP        =Loaded ENGLISH help file.
+REVENGE          =Taking revenge on user BadGuy in channel #magick for KICK on PreZ.
+DCC_INIT         =DCC ID 00000001 initialised with PreZ (SEND).
+DCC_CLOSE        =DCC ID 00000001 completed successfully.
+DCC_CANCEL       =DCC ID 00000001 failed to complete successfully.
+
+;
+; These are errors (of varying severity) that we may encounter.
+;
+[ERROR]
+REQ_BYNONUSER    =KILL command requested by non-existent user NotOnline.
+REQ_BYNONSERVICE =KILL command requested by non-service NotAService.
+REQ_FORNONUSER   =KILL command requested by NickServ for non-existent user NotOnline.
+REQ_TOUSER       =NICK command requested by NickServ to existing user ChanServ.
+REQ_FORNONCHAN   =INVITE command requested by ChanServ for non-existent channel #notchan.
+REQ_FORNONSERVER =SVSNOOP command requested by OperServ for non-existent server nonserv.network.com.
+REQ_NOTINCHAN    =KICK command requested by ChanServ for BadGuy who is not in channel #magick.
+REQ_UNKNOWN      =Command type 20 for NickServ (data1/data2/data3) queued 10 seconds ago, but unhandled (unknown type).
+UNKNOWN_MSG      =Unknown message from server: UNKNOWNMSG :some text
+REC_FORNONUSER   =Received KILL from PreZ for non-existent user NotOnline.
+REC_FORNONCHAN   =Received PART from PreZ for non-existent channel #notchan.
+REC_NOTINCHAN    =Received KICK from PreZ for BadGuy who is not in channel #magick.
+REC_FORNOTINCHAN =Received PART for PreZ who is not in channel #magick.
+REC_FORNONSERVER =Received SERVER from server.network.com for non-existent server hub.network.com.
+DUP_CHAN         =Duplicate JOIN received from PreZ for channel #magick.
+MODE_INEFFECT    =MODE change +s received from PreZ for #magick that is already in effect.
+MODE_NOTINCHAN   =MODE change +o received from PreZ for SomeUser who is not in channel #magick.
+FOUNDER_NOTREGD  =Channel #badchan has a founder of BadGuy who is not registered (channel droped).
+HOST_NOTREGD     =Nickname PreZ was listed as the host of Saidin, but does not exist (rectified)!
+SLAVE_NOTREGD    =Nickname Saidin was listed as a slave of PreZ, but does not exist (rectified)!
+KEYMISMATCH      =Channel key mismatch (Key1 | Key2) for channel #magick from PreZ.
+NOLIMIT          =No limit specified when required for channel #magick from PreZ.
+NOLANGTOKEN      =Invalid token ERR_SITUATION/BADTOKEN for language ENGLISH used, error returned.
+BADSET           =Tried to set BAD data (PreZ) for FOUNDER on #magick.
+DB_SANITY_FAIL   =Database load failed sanity checks (usually because of invalid key).
+DB_CORRUPT       =Database load failed due to data corruption.

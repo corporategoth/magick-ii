@@ -27,6 +27,12 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2001/05/06 03:03:08  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.61  2001/05/05 17:34:00  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -515,6 +521,8 @@ mstring parseMessage(const mstring & message, const mVarArray& va)
 	}
 	start = end;
     }
+    // Needed to avoid formatting on our stuff ...
+    data.replace("%", "%%");
 
     RET(data);    
 }

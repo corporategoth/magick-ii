@@ -27,6 +27,12 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.170  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.169  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -605,7 +611,7 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message, silent));
     if (!Parent->nickserv.IsStored(nick))
     {
-	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
+	NSEND(mynick, nick, "NS_YOU_STATUS/ISNOTSTORED");
 	return;
     }
 
@@ -613,14 +619,14 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     {
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    send(mynick, nick, Parent->getMessage(nick, "CS_STATUS/ISNOTSTORED"),
-		    who.c_str());
+	    SEND(mynick, nick, "CS_STATUS/ISNOTSTORED", (
+		    who));
 	    return;
 	}
 
 	if (file)
 	{
-	    send(mynick, nick, Parent->getMessage(nick, "ERR_SYNTAX/CHANFILEATTACH"));
+	    NSEND(mynick, nick, "ERR_SYNTAX/CHANFILEATTACH");
 	    return;
 	}
     }
@@ -628,20 +634,20 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     {
 	if (!Parent->nickserv.IsStored(who))
 	{
-	    send(mynick, nick, Parent->getMessage(nick, "NS_OTH_STATUS/ISNOTSTORED"),
-			who.c_str());
+	    SEND(mynick, nick, "NS_OTH_STATUS/ISNOTSTORED", (
+			who));
 	    return;
 	}
 	if (Parent->nickserv.GetStored(who).Forbidden())
 	{
-	    ::send(mynick, nick, Parent->getMessage(nick, "NS_OTH_STATUS/ISFORBIDDEN"),
-			Parent->getSname(who).c_str());
+	    SEND(mynick, nick, "NS_OTH_STATUS/ISFORBIDDEN", (
+			Parent->getSname(who)));
 	    return;
 	}
 
 	if (file && !Parent->memoserv.Files())
 	{
-	    send(mynick, nick, Parent->getMessage(nick, "MS_SYNTAX/FILEDISABLED"));
+	    NSEND(mynick, nick, "MS_SYNTAX/FILEDISABLED");
 	    return;
 	}
     }
@@ -650,7 +656,7 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
 	mFile::DirUsage(Parent->files.TempDir()) <=
 		Parent->files.TempDirSize()))
     {
-	send(mynick, nick, Parent->getMessage(nick, "DCC/NOSPACE2"));
+	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
     }
 
@@ -658,7 +664,7 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     {
 	if (InProg())
 	{
-	    send(service, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
+	    NSEND(service, nick, "ERR_SITUATION/FILEINPROG");
 	    return;
 	}
 	else
@@ -689,11 +695,11 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     if (!silent)
     {
 	if (fileattach)
-	    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING_FILE"),
-		ToHumanTime(Parent->memoserv.InFlight(), nick).c_str());
+	    SEND(service, nick, "MS_COMMAND/PENDING_FILE", (
+		ToHumanTime(Parent->memoserv.InFlight(), nick)));
 	else
-	    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING"),
-		ToHumanTime(Parent->memoserv.InFlight(), nick).c_str());
+	    SEND(service, nick, "MS_COMMAND/PENDING", (
+		ToHumanTime(Parent->memoserv.InFlight(), nick)));
     }
 }
 
@@ -704,7 +710,7 @@ void Nick_Live_t::InFlight_t::Continue(const mstring& message)
     FT("Nick_Live_t::InFlight_t::Continue", (message));
     if (!Memo())
     {
-	send(service, nick, Parent->getMessage(nick, "MS_STATUS/NOPENDING"));
+	NSEND(service, nick, "MS_STATUS/NOPENDING");
 	return;
     }
     WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "text"));
@@ -727,8 +733,8 @@ void Nick_Live_t::InFlight_t::Continue(const mstring& message)
 	CE(1, timer);
     }
     MCE(text);
-    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CONTINUE"),
-	    ToHumanTime(Parent->memoserv.InFlight(), nick).c_str());
+    SEND(service, nick, "MS_COMMAND/CONTINUE", (
+	    ToHumanTime(Parent->memoserv.InFlight(), nick)));
 }
 
 
@@ -753,7 +759,7 @@ void Nick_Live_t::InFlight_t::Cancel()
     }
     if (Memo() && !File())
     {
-	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
+	NSEND(service, nick, "MS_COMMAND/CANCEL");
     }
     init();
 }
@@ -809,8 +815,8 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 
 			RLOCK2(("ChanServ", "stored", recipiant.LowerCase()));
 			Chan_Stored_t &cstored = Parent->chanserv.GetStored(recipiant);
-			send(service, nick, Parent->getMessage(nick, "MS_COMMAND/SENT"),
-			    recipiant.c_str(), cstored.Founder().c_str());
+			SEND(service, nick, "MS_COMMAND/SENT", (
+			    recipiant, cstored.Founder()));
 			LOG(LM_DEBUG, "MEMOSERV/SEND", (
 				Parent->nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
 				recipiant));
@@ -827,9 +833,9 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 				if (Parent->nickserv.IsStored(clive.User(i)) &&
 				    cstored.GetAccess(clive.User(i), "READMEMO"))
 				{
-				    send(service, clive.User(i), Parent->getMessage(clive.User(i), "MS_COMMAND/CS_NEW"),
-					    newslist.size(), recipiant.c_str(), nick.c_str(),
-					    service.c_str(), recipiant.c_str(), newslist.size());
+				    SEND(service, clive.User(i), "MS_COMMAND/CS_NEW", (
+					    newslist.size(), recipiant, nick,
+					    service, recipiant, newslist.size()));
 				}
 			    }
 			}
@@ -848,14 +854,14 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			    Parent->memoserv.FileSize()))
 			{
 			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
-			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/TOOBIG"));
+			    NSEND(service, nick, "MS_COMMAND/TOOBIG");
 			}
 			else if (!(!filenum || Parent->files.MemoAttachSize() == 0 ||
 			    Parent->filesys.FileSysSize(FileMap::MemoAttach) <=
 			    Parent->files.MemoAttachSize()))
 			{
 			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
-			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/NOSPACE"));
+			    NSEND(service, nick, "MS_COMMAND/NOSPACE");
 			}
 			else if (recipiant.IsSameAs(realrecipiant, true) ||
 			    Parent->nickserv.IsStored(realrecipiant))
@@ -872,36 +878,36 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 					ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, filenum)),
 					realrecipiant));
 			    }
-			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/SENT"),
-				recipiant.c_str(), realrecipiant.c_str());
+			    SEND(service, nick, "MS_COMMAND/SENT", (
+				recipiant, realrecipiant));
 
 			    RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
 			    MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(realrecipiant);
 			    RLOCK3(("NickServ", "stored", realrecipiant.LowerCase()));
 			    Nick_Stored_t &nstored = Parent->nickserv.GetStored(realrecipiant);
 			    if (nstored.IsOnline())
-				send(service, realrecipiant, Parent->getMessage(realrecipiant, "MS_COMMAND/NS_NEW"),
-				    memolist.size(), service.c_str(), memolist.size());
+				SEND(service, realrecipiant, "MS_COMMAND/NS_NEW", (
+				    memolist.size(), service, memolist.size()));
 			    unsigned int i;
 			    for (i=0; i < nstored.Siblings(); i++)
 			    {
 				if (Parent->nickserv.GetStored(nstored.Sibling(i)).IsOnline())
 				{
-				    send(service, nstored.Sibling(i), Parent->getMessage(nstored.Sibling(i), "MS_COMMAND/NS_NEW"),
-					memolist.size(), service.c_str(), memolist.size());
+				    SEND(service, nstored.Sibling(i), "MS_COMMAND/NS_NEW", (
+					memolist.size(), service, memolist.size()));
 				}
 			    }
 			}
 			else if (File())
 			{
 			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
-			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
+			    NSEND(service, nick, "MS_COMMAND/CANCEL");
 			}
 		    }
 		    else if (File())
 		    {
 			Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
-			send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
+			NSEND(service, nick, "MS_COMMAND/CANCEL");
 		    }
 		}
 	    }
@@ -912,19 +918,19 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 		    Parent->nickserv.PicSize()))
 		{
 		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
-		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/TOOBIG"));
+		    NSEND(service, nick, "NS_YOU_COMMAND/TOOBIG");
 		}
 		else if (filenum && !(Parent->files.PictureSize() == 0 ||
 		    Parent->filesys.FileSysSize(FileMap::Picture) <=
 		    Parent->files.PictureSize()))
 		{
 		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
-		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/NOSPACE"));
+		    NSEND(service, nick, "NS_YOU_COMMAND/NOSPACE");
 		}
 		else if (filenum)
 		{
 		    Parent->nickserv.GetStored(sender).GotPic(filenum);
-		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/SAVED"));
+		    NSEND(service, nick, "NS_YOU_COMMAND/SAVED");
 		    LOG(LM_DEBUG, "NICKSERV/PICTURE_ADD", (
 			Parent->nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
 			sender, fmstring("%08x", filenum),
@@ -932,7 +938,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 		}
 		else
 		{
-		    send(service, nick, Parent->getMessage(nick, "DCC/FAILED"), "GET");
+		    SEND(service, nick, "DCC/FAILED", ( "GET"));
 		}
 	    }
 	    else if (Public())
@@ -942,13 +948,13 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 		    Parent->files.PublicSize()))
 		{
 		    Parent->filesys.EraseFile(FileMap::Public, filenum);
-		    send(service, nick, Parent->getMessage(nick, "DCC/NOSPACE"));
+		    NSEND(service, nick, "DCC/NOSPACE");
 		}
 		else if (filenum)
 		{
-		    send(service, nick, Parent->getMessage(nick, "LIST/ADD"),
-    			Parent->filesys.GetName(FileMap::Public, filenum).c_str(),
-    			Parent->getMessage(nick,"LIST/FILES").c_str());
+		    SEND(service, nick, "LIST/ADD", (
+    			Parent->filesys.GetName(FileMap::Public, filenum),
+    			Parent->getMessage(nick,"LIST/FILES")));
 		    Parent->filesys.SetPriv(FileMap::Public, filenum, text);
 		    LOG(LM_DEBUG, "SERVMSG/FILE_ADD", (
 			Parent->nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
@@ -960,7 +966,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 		}
 		else
 		{
-		    send(service, nick, Parent->getMessage(nick, "DCC/FAILED"), "GET");
+		    SEND(service, nick, "DCC/FAILED", ( "GET"));
 		}
 	    }
 	}
@@ -974,12 +980,12 @@ void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
     FT("Nick_Live_t::InFlight_t::Picture", (mynick));
     if (!Parent->nickserv.IsStored(nick))
     {
-	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
+	NSEND(mynick, nick, "NS_YOU_STATUS/ISNOTSTORED");
 	return;
     }
     else if (Parent->nickserv.PicExt().empty())
     {
-	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
+	NSEND(mynick, nick, "NS_YOU_STATUS/PICDISABLED");
 	return;
     }
 
@@ -987,7 +993,7 @@ void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
 	mFile::DirUsage(Parent->files.TempDir()) <=
 		Parent->files.TempDirSize()))
     {
-	send(mynick, nick, Parent->getMessage(nick, "DCC/NOSPACE2"));
+	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
     }
 
@@ -995,7 +1001,7 @@ void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
     {
 	if (InProg())
 	{
-	    send(mynick, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
+	    NSEND(mynick, nick, "ERR_SITUATION/FILEINPROG");
 	    return;
 	}
 	else
@@ -1021,7 +1027,7 @@ void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
 			ACE_Time_Value(Parent->memoserv.InFlight()));
     DumpE();
 
-    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PENDING"));
+    NSEND(service, nick, "NS_YOU_COMMAND/PENDING");
 }
 
 
@@ -1030,7 +1036,7 @@ void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& commi
     FT("Nick_Live_t::InFlight_t::Public", (mynick, committees));
     if (!Parent->nickserv.IsStored(nick))
     {
-	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
+	NSEND(mynick, nick, "NS_YOU_STATUS/ISNOTSTORED");
 	return;
     }
 
@@ -1038,7 +1044,7 @@ void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& commi
 	mFile::DirUsage(Parent->files.TempDir()) <=
 		Parent->files.TempDirSize()))
     {
-	send(mynick, nick, Parent->getMessage(nick, "DCC/NOSPACE2"));
+	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
     }
 
@@ -1046,7 +1052,7 @@ void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& commi
     {
 	if (InProg())
 	{
-	    send(mynick, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
+	    NSEND(mynick, nick, "ERR_SITUATION/FILEINPROG");
 	    return;
 	}
 	else
@@ -1073,7 +1079,7 @@ void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& commi
 			ACE_Time_Value(Parent->memoserv.InFlight()));
     DumpE();
 
-    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PUB_PENDING"));
+    NSEND(service, nick, "NS_YOU_COMMAND/PUB_PENDING");
 }
 
 mstring Nick_Live_t::InFlight_t::Text()
@@ -1472,27 +1478,27 @@ bool Nick_Live_t::FloodTrigger()
 	if (flood_triggered_times >= Parent->operserv.Ignore_Limit())
 	{
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), true, i_Name);
-	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/IGNORE_TRIGGER"),
-			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time(), i_Name).c_str());
-	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PERM_IGNORE"),
-			Parent->operserv.Ignore_Limit());
+	    SEND(Parent->servmsg.FirstName(), i_Name, "ERR_SITUATION/IGNORE_TRIGGER", (
+			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time(), i_Name)));
+	    SEND(Parent->servmsg.FirstName(), i_Name, "ERR_SITUATION/PERM_IGNORE", (
+			Parent->operserv.Ignore_Limit()));
 	    LOG(LM_NOTICE, "OTHER/PERM_IGNORE", (
 			Mask(N_U_P_H)));
-	    announce(Parent->servmsg.FirstName(), Parent->getMessage("MISC/FLOOD_PERM"),
-			i_Name.c_str());
+	    ANNOUNCE(Parent->servmsg.FirstName(), "MISC/FLOOD_PERM", (
+			i_Name));
 	}
 	else
 	{
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), false, i_Name);
-	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/IGNORE_TRIGGER"),
-			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time(), i_Name).c_str());
-	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/TEMP_IGNORE"),
-			ToHumanNumber(flood_triggered_times).c_str(), Parent->operserv.Ignore_Limit(),
-			ToHumanTime(Parent->operserv.Ignore_Time(), i_Name).c_str());
+	    SEND(Parent->servmsg.FirstName(), i_Name, "ERR_SITUATION/IGNORE_TRIGGER", (
+			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time(), i_Name)));
+	    SEND(Parent->servmsg.FirstName(), i_Name, "ERR_SITUATION/TEMP_IGNORE", (
+			ToHumanNumber(flood_triggered_times), Parent->operserv.Ignore_Limit(),
+			ToHumanTime(Parent->operserv.Ignore_Time(), i_Name)));
 	    LOG(LM_NOTICE, "OTHER/TEMP_IGNORE", (
 			Mask(N_U_P_H)));
-	    announce(Parent->servmsg.FirstName(), Parent->getMessage("MISC/FLOOD_TEMP"),
-			i_Name.c_str());
+	    ANNOUNCE(Parent->servmsg.FirstName(), "MISC/FLOOD_TEMP", (
+			i_Name));
 	}
  
  	CE(1, flood_triggered_times);
@@ -1738,8 +1744,7 @@ void Nick_Live_t::Mode(const mstring& in)
 			if (!Parent->server.proto.SVSMODE().empty())
 			{
 			    SendMode("-o");
-			    send(Parent->operserv.FirstName(), i_Name,
-				Parent->getMessage(i_Name, "OS_STATUS/ISOPERDENY"));
+			    NSEND(Parent->operserv.FirstName(), i_Name, "OS_STATUS/ISOPERDENY");
 			}
 			else
 			{
@@ -2196,7 +2201,8 @@ mstring Nick_Live_t::ChanIdentify(const mstring& channel, const mstring& passwor
 	    MCB(chans_founder_identd.size());
 	    chans_founder_identd.insert(channel.LowerCase());
 	    MCE(chans_founder_identd.size());
-	    retval = Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED");
+	    retval = parseMessage(Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED"),
+						mVarArray(channel));
 	}
 	else
 	{
@@ -2224,13 +2230,15 @@ mstring Nick_Live_t::ChanIdentify(const mstring& channel, const mstring& passwor
 	    {
 		LOG(LM_INFO, "CHANSERV/IDENTIFY_FAILED", (
 			Mask(N_U_P_H), channel));
-		retval = Parent->getMessage(i_Name, "ERR_SITUATION/CHAN_WRONG_PASS");
+		retval = parseMessage(Parent->getMessage(i_Name, "ERR_SITUATION/CHAN_WRONG_PASS"),
+								mVarArray(channel));
 	    }
 	}
     }
     else
     {
-	retval = Parent->getMessage(i_Name, "CS_STATUS/ISNOTSTORED");
+	retval = parseMessage(Parent->getMessage(i_Name, "CS_STATUS/ISNOTSTORED"),
+							mVarArray(channel));
     }
     RET(retval);
 }
@@ -2512,9 +2520,8 @@ void Nick_Stored_t::Signon(const mstring& realname, const mstring& mask)
     {
 	unsigned int count = Parent->memoserv.NickMemoCount(who);
 	if (count)
-	    send(Parent->memoserv.FirstName(), i_Name,
-		Parent->getMessage(i_Name, "MS_STATUS/NS_UNREAD"),
-		count, Parent->memoserv.FirstName().c_str());
+	    SEND(Parent->memoserv.FirstName(), i_Name, "MS_STATUS/NS_UNREAD", (
+		count, Parent->memoserv.FirstName()));
     }
 }
 
@@ -5433,8 +5440,8 @@ void NickServ::do_Help(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -5456,8 +5463,8 @@ void NickServ::do_Register(const mstring &mynick, const mstring &source, const m
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -5468,20 +5475,20 @@ void NickServ::do_Register(const mstring &mynick, const mstring &source, const m
 
     if (Parent->nickserv.IsStored(source))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISSTORED"));
+	NSEND(mynick, source, "NS_YOU_STATUS/ISSTORED");
     }
     else if (!Parent->nickserv.GetLive(source).HasMode("o") &&
 		Parent->nickserv.GetLive(source).LastNickReg().SecondsSince() <
     		Parent->nickserv.Delay())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
-		message.c_str(), ToHumanTime(Parent->nickserv.Delay() -
+	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
+		message, ToHumanTime(Parent->nickserv.Delay() -
 		Parent->nickserv.GetLive(source).LastNickReg().SecondsSince(),
-		source).c_str());
+		source)));
     }
     else if (password.length() < 5 || password.IsSameAs(source, true))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
+	NSEND(mynick, source, "ERR_SITUATION/COMPLEX_PASS");
     }
     else
     {
@@ -5490,14 +5497,14 @@ void NickServ::do_Register(const mstring &mynick, const mstring &source, const m
 	}
 	else if (!email.Contains("@"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
-		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), '@');
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
+		Parent->getMessage(source, "NS_SET/EMAIL"), '@'));
 	    return;
 	}
 	else if (email.WordCount("@") != 2)
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAINONE"),
-		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), '@');
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAINONE", (
+		Parent->getMessage(source, "NS_SET/EMAIL"), '@'));
 	    return;
 	}
 
@@ -5511,8 +5518,8 @@ void NickServ::do_Register(const mstring &mynick, const mstring &source, const m
 	Parent->nickserv.AddStored(&tmp);
 	live.Identify(password);
 	Parent->nickserv.stats.i_Register++;
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/REGISTERED"),
-		live.Mask(Nick_Live_t::U_H).After("!").c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/REGISTERED", (
+		live.Mask(Nick_Live_t::U_H).After("!")));
 	LOG(LM_INFO, "NICKSERV/REGISTER", (
 		live.Mask(Nick_Live_t::N_U_P_H),
 		source));
@@ -5529,8 +5536,8 @@ void NickServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
     {
 	if (!Parent->nickserv.GetLive(source).IsIdentified())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NEED_NICK_IDENT"),
-				message.c_str(), mynick.c_str());
+	    SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
+				message, mynick));
 	    return;
 	}
 	else
@@ -5539,7 +5546,7 @@ void NickServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
 	    dropped = Parent->nickserv.GetStored(source).Drop();
 	    Parent->nickserv.RemStored(source);
 	    Parent->nickserv.GetLive(source).UnIdentify();
-	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/DROPPED"));
+	    NSEND(mynick, source, "NS_YOU_COMMAND/DROPPED");
 	    LOG(LM_INFO, "NICKSERV/DROP", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source, dropped-1));
@@ -5560,22 +5567,22 @@ void NickServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
 	    Parent->nickserv.RemStored(target);
 	    if (!Parent->nickserv.IsStored(source))
 		Parent->nickserv.GetLive(source).UnIdentify();
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/DROPPED"),
-				target.c_str());
+	    SEND(mynick, source, "NS_OTH_COMMAND/DROPPED", (
+				target));
 	    LOG(LM_INFO, "NICKSERV/DROP", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		target, dropped-1));
 	}
 	else
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTYOURS"),
-				target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTYOURS", (
+				target));
 	}
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-					params.ExtractWord(2, " ").c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+					params.ExtractWord(2, " ")));
     }
 }
 
@@ -5586,8 +5593,8 @@ void NickServ::do_Link(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -5596,26 +5603,26 @@ void NickServ::do_Link(const mstring &mynick, const mstring &source, const mstri
 
     if (!Parent->nickserv.IsStored(hostnick))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-							hostnick.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+							hostnick));
 	return;
     }
     hostnick = Parent->getSname(hostnick);
 
     if (Parent->nickserv.GetStored(hostnick).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-					hostnick.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+					hostnick));
 	return;
     }
     else if (!Parent->nickserv.GetLive(source).HasMode("o") &&
 		Parent->nickserv.GetLive(source).LastNickReg().SecondsSince() <
     		Parent->nickserv.Delay())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
-		message.c_str(), ToHumanTime(Parent->nickserv.Delay() -
+	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
+		message, ToHumanTime(Parent->nickserv.Delay() -
 		Parent->nickserv.GetLive(source).LastNickReg().SecondsSince(),
-		source).c_str());
+		source)));
 	return;
     }
 
@@ -5624,8 +5631,8 @@ void NickServ::do_Link(const mstring &mynick, const mstring &source, const mstri
     {
 	if (!Parent->nickserv.GetLive(source).IsIdentified())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NEED_NICK_IDENT"),
-					message.c_str(), mynick.c_str());
+	    SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
+					message, mynick));
 	    return;
 	}
 	regtime = Parent->nickserv.GetStored(source).RegTime();
@@ -5636,15 +5643,15 @@ void NickServ::do_Link(const mstring &mynick, const mstring &source, const mstri
 	Parent->nickserv.GetLive(source).SetLastNickReg();
 	Parent->nickserv.stats.i_Link++;
 	Parent->nickserv.GetLive(source).Identify(password);
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/LINKED"),
-					hostnick.c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/LINKED", (
+					hostnick));
 	LOG(LM_INFO, "NICKSERV/LINK", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source, hostnick));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NICK_WRONG_PASS"));
+	NSEND(mynick, source, "ERR_SITUATION/NICK_WRONG_PASS");
     }
 }
 
@@ -5656,8 +5663,8 @@ void NickServ::do_UnLink(const mstring &mynick, const mstring &source, const mst
 
     if (!Parent->nickserv.GetLive(source).IsIdentified())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NEED_NICK_IDENT"),
-						message.c_str(), mynick.c_str());
+	SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
+						message, mynick));
 	return;
     }
 
@@ -5668,45 +5675,45 @@ void NickServ::do_UnLink(const mstring &mynick, const mstring &source, const mst
 	
 	if (!Parent->nickserv.IsStored(target))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-						target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						target));
 	    return;
 	}
 
 	target = Parent->getSname(target);
 	if (Parent->nickserv.GetStored(target).Host().empty())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISHOST"),
-							target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISHOST", (
+							target));
 	    return;
 	}
 
 	if (!(Parent->nickserv.GetStored(target).IsSibling(source) ||
 		Parent->nickserv.GetStored(target).Host().IsSameAs(source, true)))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTYOURS"),
-							target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTYOURS", (
+							target));
 	    return;
 	}
 	
 	if (Parent->nickserv.GetStored(target).Unlink())
 	{
 	    Parent->nickserv.stats.i_Unlink++;
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/UNLINKED"),
-							target.c_str());
+	    SEND(mynick, source, "NS_OTH_COMMAND/UNLINKED", (
+							target));
 	    LOG(LM_INFO, "NICKSERV/UNLINK", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source, target));
 	}
 	else
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTLINKED"),
-							target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTLINKED", (
+							target));
     }
     else
     {
 	if (Parent->nickserv.GetStored(source).Host().empty())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISHOST"));
+	    NSEND(mynick, source, "NS_YOU_STATUS/ISHOST");
 	    return;
 	}
 
@@ -5714,13 +5721,13 @@ void NickServ::do_UnLink(const mstring &mynick, const mstring &source, const mst
 	{
 	    Parent->nickserv.stats.i_Unlink++;
 	    mstring target = Parent->nickserv.GetStored(source).Host();
-	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/UNLINKED"));
+	    NSEND(mynick, source, "NS_YOU_COMMAND/UNLINKED");
 	    LOG(LM_INFO, "NICKSERV/UNLINK", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source, target));
 	}
 	else
-	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISNOTLINKED"));
+	    NSEND(mynick, source, "NS_YOU_STATUS/ISNOTLINKED");
     }
 }
 
@@ -5735,8 +5742,8 @@ void NickServ::do_Host(const mstring &mynick, const mstring &source, const mstri
 
     if (!Parent->nickserv.GetLive(source).IsIdentified())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NEED_NICK_IDENT"),
-						message.c_str(), mynick.c_str());
+	SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
+						message, mynick));
 	return;
     }
 
@@ -5744,16 +5751,16 @@ void NickServ::do_Host(const mstring &mynick, const mstring &source, const mstri
     {
 	if (!Parent->nickserv.IsStored(newhost))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-						newhost.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						newhost));
 	    return;
 	}
 
 	newhost = Parent->getSname(newhost);
 	if (Parent->nickserv.GetStored(newhost).Host().empty())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISHOST"),
-						newhost.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISHOST", (
+						newhost));
 	    return;
 	}
 
@@ -5761,16 +5768,16 @@ void NickServ::do_Host(const mstring &mynick, const mstring &source, const mstri
 		Parent->nickserv.GetStored(newhost).IsSibling(source) ||
 		Parent->nickserv.GetStored(newhost).Host().IsSameAs(source, true)))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTLINKED"),
-						newhost.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTLINKED", (
+						newhost));
 	    return;
 	}
 
 	mstring oldhost = Parent->nickserv.GetStored(newhost).Host();
 	Parent->nickserv.stats.i_Host++;
 	Parent->nickserv.GetStored(newhost).MakeHost();
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/NEWHOST"),
-						newhost.c_str());
+	SEND(mynick, source, "NS_OTH_COMMAND/NEWHOST", (
+						newhost));
 	LOG(LM_INFO, "NICKSERV/HOST", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		oldhost, newhost));
@@ -5780,7 +5787,7 @@ void NickServ::do_Host(const mstring &mynick, const mstring &source, const mstri
 	mstring oldhost = Parent->nickserv.GetStored(source).Host();
 	Parent->nickserv.stats.i_Host++;
 	Parent->nickserv.GetStored(source).MakeHost();
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/NEWHOST"));
+	NSEND(mynick, source, "NS_YOU_COMMAND/NEWHOST");
 	LOG(LM_INFO, "NICKSERV/HOST", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		oldhost, source));
@@ -5805,16 +5812,16 @@ void NickServ::do_Slaves(const mstring &mynick, const mstring &source, const mst
 	    target = params.ExtractWord(2, " ");
 	    if (!Parent->nickserv.IsStored(target))
 	    {
-		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-						target.c_str());
+		SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						target));
 		return;
 	    }
 
 	    target = Parent->getSname(target);
 	    if (Parent->nickserv.GetStored(target).Forbidden())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-					target.c_str());
+		SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+					target));
 		return;
 	    }
 	}
@@ -5852,21 +5859,21 @@ void NickServ::do_Identify(const mstring &mynick, const mstring &source, const m
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
     if (!Parent->nickserv.IsStored(source))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-						source.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						source));
 	return;
     }
 
     if (Parent->nickserv.GetStored(source).Suspended())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISSUSPENDED"));
+	NSEND(mynick, source, "NS_YOU_STATUS/ISSUSPENDED");
 	return;
     }
 
@@ -5895,15 +5902,15 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -5912,8 +5919,8 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     mstring output;
     if (!Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						target));
 	return;
     }
 
@@ -5922,22 +5929,22 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 
     if (nick.Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nick.Name().c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nick.Name()));
 	return;
     }
 
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/REALNAME"),
-			nick.Name().c_str(), nick.LastRealName().c_str());
+	SEND(mynick, source, "NS_INFO/REALNAME", (
+			nick.Name(), nick.LastRealName()));
     if (!nick.Host().empty())
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/HOST"),
-		Parent->nickserv.GetStored(nick.Host()).Name().c_str());
+	SEND(mynick, source, "NS_INFO/HOST", (
+		Parent->nickserv.GetStored(nick.Host()).Name()));
     output.erase();
     if (nick.NoExpire() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))
 	output << " (" << Parent->getMessage(source, "NS_INFO/NOEXPIRE") << ")";
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/REGISTERED"),
-		nick.RegTime().Ago().c_str(), output.c_str());
+	SEND(mynick, source, "NS_INFO/REGISTERED", (
+		nick.RegTime().Ago(), output));
 
     if (!nick.IsOnline())
     {
@@ -5953,8 +5960,8 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    {
 		if (output.length() + nick.Sibling(i).length() > Parent->server.proto.MaxLine())
 		{
-		    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/ONLINEAS"),
-						output.c_str());
+		    SEND(mynick, source, "NS_INFO/ONLINEAS", (
+						output));
 		    output.erase();
 		    isonline = true;
 		}
@@ -5963,57 +5970,57 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	}
 	if (!output.empty())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/ONLINEAS"),
-						output.c_str());
+	    SEND(mynick, source, "NS_INFO/ONLINEAS", (
+						output));
 	    isonline = true;
 	}
 	if (!isonline)
 	{
 	    if (!nick.Private() || (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source)))
-		::send(mynick, source, Parent->getMessage(source, "NS_INFO/LASTALLMASK"),
-						nick.LastAllMask().c_str());
-	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/LASTALLSEEN"),
-					nick.LastAllSeenTime().Ago().c_str());
+		SEND(mynick, source, "NS_INFO/LASTALLMASK", (
+						nick.LastAllMask()));
+	    SEND(mynick, source, "NS_INFO/LASTALLSEEN", (
+					nick.LastAllSeenTime().Ago()));
 	    if (nick.LastAllMask().UpperCase() !=
 		mstring(nick.Name() + "!" + nick.LastMask()).UpperCase() &&
 		(!nick.Private() || (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))))
-		::send(mynick, source, Parent->getMessage(source, "NS_INFO/LASTMASK"),
-					 nick.LastMask().c_str());
+		SEND(mynick, source, "NS_INFO/LASTMASK", (
+					 nick.LastMask()));
 	    if (nick.LastAllSeenTime() != nick.LastSeenTime())
-		::send(mynick, source, Parent->getMessage(source, "NS_INFO/LASTSEEN"),
-					nick.LastSeenTime().Ago().c_str());
-	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/QUITMSG"),
-					nick.LastQuit().c_str());
+		SEND(mynick, source, "NS_INFO/LASTSEEN", (
+					nick.LastSeenTime().Ago()));
+	    SEND(mynick, source, "NS_INFO/QUITMSG", (
+					nick.LastQuit()));
 	}
     }
     if (nick.Suspended())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/SUSPEND"),
-					nick.Suspend_Time().Ago().c_str(),
-					nick.Suspend_By().c_str());
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/SUSPENDFOR"),
-					nick.Comment().c_str());
+	SEND(mynick, source, "NS_INFO/SUSPEND", (
+					nick.Suspend_Time().Ago(),
+					nick.Suspend_By()));
+	SEND(mynick, source, "NS_INFO/SUSPENDFOR", (
+					nick.Comment()));
     }
     else
     {
 	if (!nick.Email().empty())
-	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/EMAIL"),
-					nick.Email().c_str());
+	    SEND(mynick, source, "NS_INFO/EMAIL", (
+					nick.Email()));
 	if (!nick.URL().empty())
-	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/URL"),
-					nick.URL().c_str());
+	    SEND(mynick, source, "NS_INFO/URL", (
+					nick.URL()));
 	if (!nick.ICQ().empty())
-	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/ICQ"),
-					nick.ICQ().c_str());
+	    SEND(mynick, source, "NS_INFO/ICQ", (
+					nick.ICQ()));
 	if (!nick.Description().empty())
-	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/DESCRIPTION"),
-					nick.Description().c_str());
+	    SEND(mynick, source, "NS_INFO/DESCRIPTION", (
+					nick.Description()));
 	if (!nick.Comment().empty() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	    Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))
-	    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMENT"),
-					nick.Comment().c_str());
+	    SEND(mynick, source, "NS_INFO/COMMENT", (
+					nick.Comment()));
     }
 
     output.erase();
@@ -6035,8 +6042,8 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	{
 	    if (output.length() + iter->second.Name().length() > Parent->server.proto.MaxLine())
 	    {
-		::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMITTEES"),
-						output.c_str());
+		SEND(mynick, source, "NS_INFO/COMMITTEES", (
+						output));
 		output.erase();
 	    }
 	    if (!output.empty())
@@ -6049,8 +6056,8 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	}
     }
     if (!output.empty())
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMITTEES"),
-					output.c_str());
+	SEND(mynick, source, "NS_INFO/COMMITTEES", (
+					output));
 
     output.erase();
     bool firstoption = true;
@@ -6107,20 +6114,20 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     }
 
     if (!output.empty())
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/OPTIONS"),
-						output.c_str());
+	SEND(mynick, source, "NS_INFO/OPTIONS", (
+						output));
     if (nick.PicNum() &&
 	Parent->filesys.Exists(FileMap::Picture, nick.PicNum()))
-	::send(mynick, source, Parent->getMessage(source, "NS_INFO/HASPIC"),
-				ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, nick.PicNum())).c_str(),
-				mynick.c_str(), nick.Name().c_str());
+	SEND(mynick, source, "NS_INFO/HASPIC", (
+				ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, nick.PicNum())),
+				mynick, nick.Name()));
     if (nick.IsOnline())
-	::send(mynick, source,  Parent->getMessage(source, "NS_INFO/ISONLINE"),
-		Parent->getLname(nick.Name()).c_str());
+	SEND(mynick, source,  "NS_INFO/ISONLINE", (
+		Parent->getLname(nick.Name())));
     { RLOCK(("Events"));
     if (Parent->servmsg.ShowSync() && Parent->events != NULL)
-	::send(mynick, source, Parent->getMessage("MISC/SYNC"),
-			Parent->events->SyncTime(source).c_str());
+	SEND(mynick, source, "MISC/SYNC", (
+			Parent->events->SyncTime(source)));
     }
 }
 
@@ -6131,8 +6138,8 @@ void NickServ::do_Ghost(const mstring &mynick, const mstring &source, const mstr
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6141,36 +6148,36 @@ void NickServ::do_Ghost(const mstring &mynick, const mstring &source, const mstr
 
     if (nick.IsSameAs(source, true))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONYOURSELF"),
-						message.c_str());
+	SEND(mynick, source, "ERR_SITUATION/NOTONYOURSELF", (
+						message));
 	return;
     }
 
     if (!Parent->nickserv.IsStored(nick))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-						nick.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						nick));
 	return;
     }
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
-						nick.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
+						nick));
 	return;
     }
 
     nick = Parent->getLname(nick);
     if (Parent->nickserv.GetStored(nick).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nick.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nick));
 	return;
     }
 
     if (pass != Parent->nickserv.GetStored(nick).Password())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NICK_WRONG_PASS"));
+	NSEND(mynick, source, "ERR_SITUATION/NICK_WRONG_PASS");
 	return;
     }
 
@@ -6181,8 +6188,8 @@ void NickServ::do_Ghost(const mstring &mynick, const mstring &source, const mstr
 	Parent->nickserv.RemRecovered(nick);
     }
     Parent->nickserv.stats.i_Ghost++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/RELEASED"),
-				nick.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/RELEASED", (
+				nick));
     LOG(LM_DEBUG, "NICKSERV/GHOST", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	nick));
@@ -6195,8 +6202,8 @@ void NickServ::do_Recover(const mstring &mynick, const mstring &source, const ms
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6205,29 +6212,29 @@ void NickServ::do_Recover(const mstring &mynick, const mstring &source, const ms
 
     if (nick.IsSameAs(source, true))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONYOURSELF"),
-						message.c_str());
+	SEND(mynick, source, "ERR_SITUATION/NOTONYOURSELF", (
+						message));
 	return;
     }
 
     if (!Parent->nickserv.IsStored(nick))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nick.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nick));
 	return;
     }
 
     nick = Parent->getSname(nick);
     if (Parent->nickserv.GetStored(nick).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nick.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nick));
 	return;
     }
 
     if (pass != Parent->nickserv.GetStored(nick).Password())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NICK_WRONG_PASS"));
+	NSEND(mynick, source, "ERR_SITUATION/NICK_WRONG_PASS");
 	return;
     }
 
@@ -6245,8 +6252,8 @@ void NickServ::do_Recover(const mstring &mynick, const mstring &source, const ms
 
     Parent->nickserv.AddRecovered(nick, mDateTime::CurrentDateTime());
     Parent->nickserv.stats.i_Recover++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/HELD"),
-				nick.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/HELD", (
+				nick));
     LOG(LM_DEBUG, "NICKSERV/RECOVER", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	nick));
@@ -6265,8 +6272,8 @@ void NickServ::do_List(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -6287,14 +6294,14 @@ void NickServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
-					Parent->config.Maxlist());
+	    SEND(mynick, source, "LIST/MAXLIST", (
+					Parent->config.Maxlist()));
 	    return;
 	}
     }
 
-    ::send(mynick, source, Parent->getMessage(source, "LIST/NICK_LIST"),
-					mask.c_str());
+    SEND(mynick, source, "LIST/NICK_LIST", (
+					mask));
     NickServ::stored_t::iterator iter;
 
 
@@ -6339,8 +6346,8 @@ void NickServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	    count++;
 	}
     }
-    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
-							i, count);
+    SEND(mynick, source, "LIST/DISPLAYED", (
+							i, count));
 }
 
 void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstring &params)
@@ -6353,15 +6360,15 @@ void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6369,32 +6376,32 @@ void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 
     if (!Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-							target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+							target));
 	return;
     }
 
     target = Parent->getSname(target);
     if (Parent->nickserv.GetStored(target).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
 	return;
     }
 
     unsigned long picnum = Parent->nickserv.GetStored(target).PicNum();
     if (!picnum)
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/NOPIC"),
-							target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/NOPIC", (
+							target));
 	return;
     }
 
     if (!Parent->filesys.Exists(FileMap::Picture, picnum))
     {
 	Parent->nickserv.GetStored(target).GotPic(0);
-	::send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
-							"SEND");
+	SEND(mynick, source, "DCC/NOFILE", (
+							"SEND"));
 	return;
     }
 
@@ -6403,8 +6410,8 @@ void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstri
     if (filename.empty() || filesize <= 0)
     {
 	Parent->nickserv.GetStored(target).GotPic(0);
-	::send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
-							"SEND");
+	SEND(mynick, source, "DCC/NOFILE", (
+							"SEND"));
 	return;
     }
 
@@ -6412,7 +6419,7 @@ void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 	mFile::DirUsage(Parent->files.TempDir()) <=
 		Parent->files.TempDirSize()))
     {
-	::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
+	NSEND(mynick, source, "DCC/NOSPACE2");
 	return;
     }
 
@@ -6435,8 +6442,8 @@ void NickServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6445,38 +6452,38 @@ void NickServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
 
     if (!Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-							target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+							target));
 	return;
     }
 
     target = Parent->getSname(target);
     if (Parent->nickserv.GetStored(target).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
 	return;
     }
 
     if (Parent->nickserv.GetStored(target).Suspended())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISSUSPENDED"),
-							target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISSUSPENDED", (
+							target));
 	return;
     }
 
     if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONCOMMITTEE"),
-				message.c_str(), Parent->commserv.OPER_Name().c_str());
+	SEND(mynick, source, "ERR_SITUATION/NOTONCOMMITTEE", (
+				message, Parent->commserv.OPER_Name()));
 	return;
     }
 
     Parent->nickserv.GetStored(target).Suspend(source, reason);
     Parent->nickserv.stats.i_Suspend++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/SUSPENDED"),
-						target.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/SUSPENDED", (
+						target));
     LOG(LM_NOTICE, "NICKSERV/SUSPEND", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, reason));
@@ -6489,8 +6496,8 @@ void NickServ::do_UnSuspend(const mstring &mynick, const mstring &source, const 
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6498,30 +6505,30 @@ void NickServ::do_UnSuspend(const mstring &mynick, const mstring &source, const 
 
     if (!Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-							target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+							target));
 	return;
     }
 
     target = Parent->getSname(target);
     if (Parent->nickserv.GetStored(target).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
 	return;
     }
 
     if (!Parent->nickserv.GetStored(target).Suspended())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSUSPENDED"),
-							target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSUSPENDED", (
+							target));
 	return;
     }
 
     Parent->nickserv.GetStored(target).UnSuspend();
     Parent->nickserv.stats.i_Unsuspend++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/UNSUSPENDED"),
-						target.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/UNSUSPENDED", (
+						target));
     LOG(LM_NOTICE, "NICKSERV/UNSUSPEND", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target));
@@ -6534,24 +6541,24 @@ void NickServ::do_Forbid(const mstring &mynick, const mstring &source, const mst
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
     mstring target   = params.ExtractWord(2, " ");
     if (Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISSTORED"),
-					Parent->getSname(target).c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISSTORED", (
+					Parent->getSname(target)));
 	return;
     }
 
     Nick_Stored_t tmp(target);
     Parent->nickserv.AddStored(&tmp);
     Parent->nickserv.stats.i_Forbid++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/FORBIDDEN"),
-					target.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/FORBIDDEN", (
+					target));
     LOG(LM_NOTICE, "NICKSERV/FORBID", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target));
@@ -6565,8 +6572,8 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6574,16 +6581,16 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 
     if (!Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						target));
 	return;
     }
 
     target = Parent->getSname(target);
     if (Parent->nickserv.GetStored(target).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
 	return;
     }
 
@@ -6598,8 +6605,8 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target))))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONPRIVCOMMITTEE"),
-						message.c_str());
+	SEND(mynick, source, "ERR_SITUATION/NOTONPRIVCOMMITTEE", (
+						message));
 	return;
     }
 
@@ -6610,10 +6617,10 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 	host = nick.Name();
 
     Parent->nickserv.stats.i_Getpass++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/GETPASS"),
-			nick.Name().c_str(), host.c_str(), nick.Password().c_str());
-    announce(mynick, Parent->getMessage("MISC/NICK_GETPASS"),
-			source.c_str(), nick.Name().c_str(), host.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/GETPASS", (
+			nick.Name(), host, nick.Password()));
+    ANNOUNCE(mynick, "MISC/NICK_GETPASS", (
+			source, nick.Name(), host));
     LOG(LM_NOTICE, "NICKSERV/GETPASS", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	nick.Name(), host));
@@ -6633,8 +6640,8 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -6655,8 +6662,8 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
-					Parent->config.Maxlist());
+	    SEND(mynick, source, "LIST/MAXLIST", (
+					Parent->config.Maxlist()));
 	    return;
 	}
     }
@@ -6665,15 +6672,15 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
 	mask += "!*@*";
     else if (!mask.Contains("@"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
-				Parent->getMessage(source, "LIST/NICKNAME").c_str(), '@');
+	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
+				Parent->getMessage(source, "LIST/NICKNAME"), '@'));
 	return;
     }
     else if (!mask.Contains("!"))
 	mask.prepend("*!");
 
-    ::send(mynick, source, Parent->getMessage(source, "LIST/NICK_LIST"),
-					mask.c_str());
+    SEND(mynick, source, "LIST/NICK_LIST", (
+					mask));
     NickServ::live_t::iterator iter;
 
     RLOCK(("NickServ", "live"));
@@ -6698,8 +6705,8 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
 	    count++;
 	}
     }
-    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
-							i, count);
+    SEND(mynick, source, "LIST/DISPLAYED", (
+							i, count));
 }
 
 
@@ -6710,8 +6717,8 @@ void NickServ::do_access_Current(const mstring &mynick, const mstring &source, c
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6719,9 +6726,9 @@ void NickServ::do_access_Current(const mstring &mynick, const mstring &source, c
 	    Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!")))
     {
 	Parent->nickserv.stats.i_Access++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!").c_str(),
-		Parent->getMessage(source, "LIST/ACCESS").c_str());
+	SEND(mynick, source, "LIST/ADD", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!"),
+		Parent->getMessage(source, "LIST/ACCESS")));
 	LOG(LM_DEBUG, "NICKSERV/ACCESS_ADD", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!"),
@@ -6730,9 +6737,9 @@ void NickServ::do_access_Current(const mstring &mynick, const mstring &source, c
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/EXISTS"),
-		mstring(Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!")).c_str(),
-		Parent->getMessage(source, "LIST/ACCESS").c_str());
+	SEND(mynick, source, "LIST/EXISTS", (
+		mstring(Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!")),
+		Parent->getMessage(source, "LIST/ACCESS")));
     }
 }
 
@@ -6743,8 +6750,8 @@ void NickServ::do_access_Add(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6752,31 +6759,31 @@ void NickServ::do_access_Add(const mstring &mynick, const mstring &source, const
 
     if (hostmask.Contains("!"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-				Parent->getMessage(source, "LIST/ACCESS").c_str(), '!');
+	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+				Parent->getMessage(source, "LIST/ACCESS"), '!'));
 	return;
     }
 
     if (!hostmask.Contains("@"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
-				Parent->getMessage(source, "LIST/ACCESS").c_str(), '@');
+	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
+				Parent->getMessage(source, "LIST/ACCESS"), '@'));
 	return;
     }
 
     if (Parent->nickserv.GetStored(source).AccessAdd(hostmask))
     {
 	Parent->nickserv.stats.i_Access++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
-			hostmask.c_str(), Parent->getMessage(source, "LIST/ACCESS").c_str());
+	SEND(mynick, source, "LIST/ADD", (
+			hostmask, Parent->getMessage(source, "LIST/ACCESS")));
 	LOG(LM_DEBUG, "NICKSERV/ACCESS_ADD", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		hostmask, source));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/EXISTS"),
-			hostmask.c_str(), Parent->getMessage(source, "LIST/ACCESS").c_str());
+	SEND(mynick, source, "LIST/EXISTS", (
+			hostmask, Parent->getMessage(source, "LIST/ACCESS")));
     }
 }
 
@@ -6787,8 +6794,8 @@ void NickServ::do_access_Del(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6798,15 +6805,15 @@ void NickServ::do_access_Del(const mstring &mynick, const mstring &source, const
     {
 	if (hostmask.Contains(".") || hostmask.Contains("-"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	    NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	    return;
 	}
 
 	unsigned int num = atoi(hostmask.c_str());
 	if (num <= 0 || num > Parent->nickserv.GetStored(source).Access())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-			1, Parent->nickserv.GetStored(source).Access());
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+			1, Parent->nickserv.GetStored(source).Access()));
 	    return;
 	}
 
@@ -6815,15 +6822,15 @@ void NickServ::do_access_Del(const mstring &mynick, const mstring &source, const
 
     if (hostmask.Contains("!"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
-				Parent->getMessage(source, "LIST/ACCESS").c_str(), '!');
+	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
+				Parent->getMessage(source, "LIST/ACCESS"), '!'));
 	return;
     }
 
     if (!hostmask.Contains("@"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
-				Parent->getMessage(source, "LIST/ACCESS").c_str(), '@');
+	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
+				Parent->getMessage(source, "LIST/ACCESS"), '@'));
 	return;
     }
 
@@ -6831,17 +6838,17 @@ void NickServ::do_access_Del(const mstring &mynick, const mstring &source, const
     if (count)
     {
 	Parent->nickserv.stats.i_Access++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
-			count, hostmask.c_str(),
-			Parent->getMessage(source, "LIST/ACCESS").c_str());
+	SEND(mynick, source, "LIST/DEL_MATCH", (
+			count, hostmask,
+			Parent->getMessage(source, "LIST/ACCESS")));
 	LOG(LM_DEBUG, "NICKSERV/ACCESS_DEL", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		hostmask, source));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
-			hostmask.c_str(), Parent->getMessage(source, "LIST/ACCESS").c_str());
+	SEND(mynick, source, "LIST/NOTEXISTS", (
+			hostmask, Parent->getMessage(source, "LIST/ACCESS")));
     }
 }
 
@@ -6856,8 +6863,8 @@ void NickServ::do_access_List(const mstring &mynick, const mstring &source, cons
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -6868,16 +6875,16 @@ void NickServ::do_access_List(const mstring &mynick, const mstring &source, cons
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsStored(target))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-					target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+					target));
 	    return;
 	}
 
 	target = Parent->getSname(target);
 	if (Parent->nickserv.GetStored(target).Forbidden())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
 	    return;
 	}
     }
@@ -6885,20 +6892,20 @@ void NickServ::do_access_List(const mstring &mynick, const mstring &source, cons
     if (Parent->nickserv.GetStored(target).Access())
     {
 	if (!source.IsSameAs(target, true))
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
-			target.c_str(), Parent->getMessage(source, "LIST/ACCESS").c_str());
+	    SEND(mynick, source, "LIST/DISPLAY2", (
+			target, Parent->getMessage(source, "LIST/ACCESS")));
 	else
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY"),
-			Parent->getMessage(source, "LIST/ACCESS").c_str());
+	    SEND(mynick, source, "LIST/DISPLAY", (
+			Parent->getMessage(source, "LIST/ACCESS")));
     }
     else
     {
 	if (!source.IsSameAs(target, true))
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
-			target.c_str(), Parent->getMessage(source, "LIST/ACCESS").c_str());
+	    SEND(mynick, source, "LIST/EMPTY2", (
+			target, Parent->getMessage(source, "LIST/ACCESS")));
 	else
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
-			Parent->getMessage(source, "LIST/ACCESS").c_str());
+	    SEND(mynick, source, "LIST/EMPTY", (
+			Parent->getMessage(source, "LIST/ACCESS")));
 	return;
     }
 
@@ -6919,8 +6926,8 @@ void NickServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6928,32 +6935,32 @@ void NickServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
 
     if (!Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						target));
 	return;
     }
 
     target = Parent->getSname(target);
     if (Parent->nickserv.GetStored(target).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
 	return;
     }
 
     if (Parent->nickserv.GetStored(source).IgnoreAdd(target))
     {
 	Parent->nickserv.stats.i_Ignore++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
-			target.c_str(), Parent->getMessage(source, "LIST/IGNORE").c_str());
+	SEND(mynick, source, "LIST/ADD", (
+			target, Parent->getMessage(source, "LIST/IGNORE")));
 	LOG(LM_DEBUG, "NICKSERV/IGNORE_ADD", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		target, source));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/EXISTS"),
-			target.c_str(), Parent->getMessage(source, "LIST/IGNORE").c_str());
+	SEND(mynick, source, "LIST/EXISTS", (
+			target, Parent->getMessage(source, "LIST/IGNORE")));
     }
 }
 
@@ -6964,8 +6971,8 @@ void NickServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -6975,15 +6982,15 @@ void NickServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
     {
 	if (target.Contains(".") || target.Contains("-"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	    NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	    return;
 	}
 
 	unsigned int num = atoi(target.c_str());
 	if (num <= 0 || num > Parent->nickserv.GetStored(source).Ignore())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-			1, Parent->nickserv.GetStored(source).Ignore());
+	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+			1, Parent->nickserv.GetStored(source).Ignore()));
 	    return;
 	}
 
@@ -6994,17 +7001,17 @@ void NickServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
     if (count)
     {
 	Parent->nickserv.stats.i_Ignore++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
-			count, target.c_str(),
-			Parent->getMessage(source, "LIST/IGNORE").c_str());
+	SEND(mynick, source, "LIST/DEL_MATCH", (
+			count, target,
+			Parent->getMessage(source, "LIST/IGNORE")));
 	LOG(LM_DEBUG, "NICKSERV/IGNORE_DEL", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		target, source));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
-			target.c_str(), Parent->getMessage(source, "LIST/IGNORE").c_str());
+	SEND(mynick, source, "LIST/NOTEXISTS", (
+			target, Parent->getMessage(source, "LIST/IGNORE")));
     }
 
 }
@@ -7020,8 +7027,8 @@ void NickServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -7032,16 +7039,16 @@ void NickServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsStored(target))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				target));
 	    return;
 	}
 
 	target = Parent->getSname(target);
 	if (Parent->nickserv.GetStored(target).Forbidden())
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
 	    return;
 	}
     }
@@ -7049,20 +7056,20 @@ void NickServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
     if (Parent->nickserv.GetStored(target).Ignore())
     {
 	if (!source.IsSameAs(target, true))
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
-			target.c_str(), Parent->getMessage(source, "LIST/IGNORE").c_str());
+	    SEND(mynick, source, "LIST/DISPLAY2", (
+			target, Parent->getMessage(source, "LIST/IGNORE")));
 	else
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY"),
-			Parent->getMessage(source, "LIST/IGNORE").c_str());
+	    SEND(mynick, source, "LIST/DISPLAY", (
+			Parent->getMessage(source, "LIST/IGNORE")));
     }
     else
     {
 	if (!source.IsSameAs(target, true))
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
-			target.c_str(), Parent->getMessage(source, "LIST/IGNORE").c_str());
+	    SEND(mynick, source, "LIST/EMPTY2", (
+			target, Parent->getMessage(source, "LIST/IGNORE")));
 	else
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
-			Parent->getMessage(source, "LIST/IGNORE").c_str());
+	    SEND(mynick, source, "LIST/EMPTY", (
+			Parent->getMessage(source, "LIST/IGNORE")));
 	return;
     }
 
@@ -7083,8 +7090,8 @@ void NickServ::do_set_Password(const mstring &mynick, const mstring &source, con
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7092,8 +7099,8 @@ void NickServ::do_set_Password(const mstring &mynick, const mstring &source, con
 
     if (!Parent->nickserv.GetLive(source).IsIdentified())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NEED_NICK_IDENT"),
-			message.c_str(), mynick.c_str());
+	SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
+			message, mynick));
 	return;
     }
 
@@ -7101,14 +7108,14 @@ void NickServ::do_set_Password(const mstring &mynick, const mstring &source, con
     if (newpass.IsSameAs(oldpass, true) || newpass.IsSameAs(source, true) ||
 	newpass.length() < 5)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
+	NSEND(mynick, source, "ERR_SITUATION/COMPLEX_PASS");
 	return;
     }
 
     Parent->nickserv.GetStored(source).Password(newpass);
     Parent->nickserv.stats.i_Set++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
-		Parent->getMessage(source, "NS_SET/PASSWORD").c_str(), newpass.c_str());
+    SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
+		Parent->getMessage(source, "NS_SET/PASSWORD"), newpass));
     LOG(LM_INFO, "NICKSERV/SET_PASSWORD", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source));
@@ -7121,8 +7128,8 @@ void NickServ::do_set_Email(const mstring &mynick, const mstring &source, const 
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7132,14 +7139,14 @@ void NickServ::do_set_Email(const mstring &mynick, const mstring &source, const 
 	newvalue.erase();
     else if (!newvalue.Contains("@"))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
-		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), '@');
+	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
+		Parent->getMessage(source, "NS_SET/EMAIL"), '@'));
 	return;
     }
     else if (newvalue.WordCount("@") != 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAINONE"),
-		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), '@');
+	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAINONE", (
+		Parent->getMessage(source, "NS_SET/EMAIL"), '@'));
 	return;
     }
 
@@ -7147,8 +7154,8 @@ void NickServ::do_set_Email(const mstring &mynick, const mstring &source, const 
     Parent->nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
-		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), newvalue.c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
+		Parent->getMessage(source, "NS_SET/EMAIL"), newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/EMAIL"),
@@ -7156,8 +7163,8 @@ void NickServ::do_set_Email(const mstring &mynick, const mstring &source, const 
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/UNSET"),
-		Parent->getMessage(source, "NS_SET/EMAIL").c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
+		Parent->getMessage(source, "NS_SET/EMAIL")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/EMAIL"),
@@ -7172,8 +7179,8 @@ void NickServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7191,9 +7198,9 @@ void NickServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
     Parent->nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
-		Parent->getMessage(source, "NS_SET/URL").c_str(),
-		("http://" + newvalue).c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
+		Parent->getMessage(source, "NS_SET/URL"),
+		"http://" + newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/URL"),
@@ -7201,8 +7208,8 @@ void NickServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/UNSET"),
-		Parent->getMessage(source, "NS_SET/URL").c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
+		Parent->getMessage(source, "NS_SET/URL")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/URL"),
@@ -7217,8 +7224,8 @@ void NickServ::do_set_ICQ(const mstring &mynick, const mstring &source, const ms
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7228,13 +7235,13 @@ void NickServ::do_set_ICQ(const mstring &mynick, const mstring &source, const ms
 	newvalue.erase();
     else if (!newvalue.IsNumber() || newvalue.Contains("."))
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	return;
     }
     else if (newvalue.length() < 6 || newvalue.length() > 9)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
-				100000, 999999999);
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
+				100000, 999999999));
 	return;
     }
 
@@ -7243,8 +7250,8 @@ void NickServ::do_set_ICQ(const mstring &mynick, const mstring &source, const ms
     Parent->nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
-		Parent->getMessage(source, "NS_SET/ICQ").c_str(), newvalue.c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
+		Parent->getMessage(source, "NS_SET/ICQ"), newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/ICQ"),
@@ -7252,8 +7259,8 @@ void NickServ::do_set_ICQ(const mstring &mynick, const mstring &source, const ms
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/UNSET"),
-		Parent->getMessage(source, "NS_SET/ICQ").c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
+		Parent->getMessage(source, "NS_SET/ICQ")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/ICQ"),
@@ -7268,8 +7275,8 @@ void NickServ::do_set_Description(const mstring &mynick, const mstring &source, 
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7282,8 +7289,8 @@ void NickServ::do_set_Description(const mstring &mynick, const mstring &source, 
     Parent->nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
-		Parent->getMessage(source, "NS_SET/DESCRIPTION").c_str(), newvalue.c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
+		Parent->getMessage(source, "NS_SET/DESCRIPTION"), newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/DESCRIPTION"),
@@ -7291,8 +7298,8 @@ void NickServ::do_set_Description(const mstring &mynick, const mstring &source, 
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/UNSET"),
-		Parent->getMessage(source, "NS_SET/DESCRIPTION").c_str());
+	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
+		Parent->getMessage(source, "NS_SET/DESCRIPTION")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/DESCRIPTION"),
@@ -7307,8 +7314,8 @@ void NickServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7317,16 +7324,16 @@ void NickServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
 
     if (!Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-		target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+		target));
 	return;
     }
 
     target = Parent->getSname(target);
     if (Parent->nickserv.GetStored(target).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
 	return;
     }
 
@@ -7337,9 +7344,9 @@ void NickServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
     Parent->nickserv.stats.i_Set++;
     if (!comment.empty())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/SET_TO"),
-		Parent->getMessage(source, "NS_SET/COMMENT").c_str(),
-		target.c_str(), comment.c_str());
+	SEND(mynick, source, "NS_OTH_COMMAND/SET_TO", (
+		Parent->getMessage(source, "NS_SET/COMMENT"),
+		target, comment));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/COMMENT"),
@@ -7347,9 +7354,9 @@ void NickServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/UNSET"),
-		Parent->getMessage(source, "NS_SET/COMMENT").c_str(),
-		target.c_str());
+	SEND(mynick, source, "NS_OTH_COMMAND/UNSET", (
+		Parent->getMessage(source, "NS_SET/COMMENT"),
+		target));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("NS_SET/COMMENT"),
@@ -7364,14 +7371,14 @@ void NickServ::do_set_Picture(const mstring &mynick, const mstring &source, cons
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
     if (Parent->nickserv.PicExt().empty())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/PICDISABLED"));
+	NSEND(mynick, source, "NS_YOU_STATUS/PICDISABLED");
 	return;
     }
 
@@ -7383,7 +7390,7 @@ void NickServ::do_set_Picture(const mstring &mynick, const mstring &source, cons
 	    Parent->filesys.EraseFile(FileMap::Picture,
 		Parent->nickserv.GetStored(source).PicNum());
 	Parent->nickserv.GetStored(source).GotPic(0u);
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/REMOVED"));
+	NSEND(mynick, source, "NS_YOU_COMMAND/REMOVED");
 	LOG(LM_DEBUG, "NICKSERV/PICTURE_DEL", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source));
@@ -7405,8 +7412,8 @@ void NickServ::do_set_Protect(const mstring &mynick, const mstring &source, cons
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7414,8 +7421,8 @@ void NickServ::do_set_Protect(const mstring &mynick, const mstring &source, cons
 
     if (Parent->nickserv.GetStored(source).L_Protect())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PROTECT").c_str());
+	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PROTECT")));
 	return;
     }
 
@@ -7429,17 +7436,17 @@ void NickServ::do_set_Protect(const mstring &mynick, const mstring &source, cons
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
     Parent->nickserv.GetStored(source).Protect(onoff.GetBool());
     Parent->nickserv.stats.i_Set++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
-			Parent->getMessage(source, "NS_SET/PROTECT").c_str(),
+    SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
+			Parent->getMessage(source, "NS_SET/PROTECT"),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PROTECT"),
@@ -7455,8 +7462,8 @@ void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7464,8 +7471,8 @@ void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 
     if (Parent->nickserv.GetStored(source).L_Secure())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/SECURE").c_str());
+	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/SECURE")));
 	return;
     }
 
@@ -7479,17 +7486,17 @@ void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
     Parent->nickserv.GetStored(source).Secure(onoff.GetBool());
     Parent->nickserv.stats.i_Set++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
-			Parent->getMessage(source, "NS_SET/SECURE").c_str(),
+    SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
+			Parent->getMessage(source, "NS_SET/SECURE"),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/SECURE"),
@@ -7505,8 +7512,8 @@ void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7515,23 +7522,23 @@ void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-		nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+		nickname));
 	return;
     }
 
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_NoExpire())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/NOEXPIRE").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/NOEXPIRE"),
+				nickname));
 	return;
     }
 
@@ -7545,17 +7552,17 @@ void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
     Parent->nickserv.GetStored(nickname).NoExpire(onoff.GetBool());
     Parent->nickserv.stats.i_NoExpire++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_SET_TO"),
-			Parent->getMessage(source, "NS_SET/NOEXPIRE").c_str(),
-			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_SET_TO", (
+			Parent->getMessage(source, "NS_SET/NOEXPIRE"),
+			nickname, onoff.GetBool() ?
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_NOTICE, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/NOEXPIRE"),
@@ -7572,8 +7579,8 @@ void NickServ::do_set_NoMemo(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7581,8 +7588,8 @@ void NickServ::do_set_NoMemo(const mstring &mynick, const mstring &source, const
 
     if (Parent->nickserv.GetStored(source).L_NoMemo())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/NOMEMO").c_str());
+	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/NOMEMO")));
 	return;
     }
 
@@ -7596,17 +7603,17 @@ void NickServ::do_set_NoMemo(const mstring &mynick, const mstring &source, const
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
     Parent->nickserv.GetStored(source).NoMemo(onoff.GetBool());
     Parent->nickserv.stats.i_Set++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
-			Parent->getMessage(source, "NS_SET/NOMEMO").c_str(),
+    SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
+			Parent->getMessage(source, "NS_SET/NOMEMO"),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/NOMEMO"),
@@ -7622,8 +7629,8 @@ void NickServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7631,8 +7638,8 @@ void NickServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 
     if (Parent->nickserv.GetStored(source).L_Private())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PRIVATE").c_str());
+	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PRIVATE")));
 	return;
     }
 
@@ -7646,17 +7653,17 @@ void NickServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
     Parent->nickserv.GetStored(source).Private(onoff.GetBool());
     Parent->nickserv.stats.i_Set++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
-			Parent->getMessage(source, "NS_SET/PRIVATE").c_str(),
+    SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
+			Parent->getMessage(source, "NS_SET/PRIVATE"),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVATE"),
@@ -7672,8 +7679,8 @@ void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, cons
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7681,8 +7688,8 @@ void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, cons
 
     if (Parent->nickserv.GetStored(source).L_PRIVMSG())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PRIVMSG").c_str());
+	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PRIVMSG")));
 	return;
     }
 
@@ -7696,17 +7703,17 @@ void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, cons
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
     Parent->nickserv.GetStored(source).PRIVMSG(onoff.GetBool());
     Parent->nickserv.stats.i_Set++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
-			Parent->getMessage(source, "NS_SET/PRIVMSG").c_str(),
+    SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
+			Parent->getMessage(source, "NS_SET/PRIVMSG"),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVMSG"),
@@ -7725,15 +7732,15 @@ void NickServ::do_set_Language(const mstring &mynick, const mstring &source, con
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7741,8 +7748,8 @@ void NickServ::do_set_Language(const mstring &mynick, const mstring &source, con
 
     if (Parent->nickserv.GetStored(source).L_Language())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/LANGUAGE").c_str());
+	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/LANGUAGE")));
 	return;
     }
 
@@ -7755,18 +7762,18 @@ void NickServ::do_set_Language(const mstring &mynick, const mstring &source, con
 	// check for valid language ...
 	if (!mFile::Exists(Parent->files.Langdir()+DirSlash+lang.LowerCase()+".lng"))
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "OS_STATUS/NOLANG"),
-			lang.c_str());
+	    SEND(mynick, source, "OS_STATUS/NOLANG", (
+			lang));
 	    return;
 	}
     }
 
     Parent->nickserv.GetStored(source).Language(lang);
     Parent->nickserv.stats.i_Set++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/SET_TO"),
-			Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
+    SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
+			Parent->getMessage(source, "NS_SET/LANGUAGE"),
 			mstring(lang + " (" +
-			Parent->getMessage(source, "ERR_SYNTAX/TRANSLATED") + ")").c_str());
+			Parent->getMessage(source, "ERR_SYNTAX/TRANSLATED") + ")")));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/LANGUAGE"),
@@ -7780,8 +7787,8 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7790,24 +7797,24 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_Protect())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PROTECT").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PROTECT"),
+				nickname));
 	return;
     }
 
@@ -7821,7 +7828,7 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
@@ -7829,11 +7836,11 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
     Parent->nickserv.GetStored(nickname).Protect(onoff.GetBool());
     Parent->nickserv.GetStored(nickname).L_Protect(true);
     Parent->nickserv.stats.i_Lock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
-			Parent->getMessage(source, "NS_SET/PROTECT").c_str(),
-			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
+			Parent->getMessage(source, "NS_SET/PROTECT"),
+			nickname, onoff.GetBool() ?
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PROTECT"),
@@ -7849,8 +7856,8 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7859,24 +7866,24 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_Secure())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/SECURE").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/SECURE"),
+				nickname));
 	return;
     }
 
@@ -7890,7 +7897,7 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
@@ -7898,11 +7905,11 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     Parent->nickserv.GetStored(nickname).Secure(onoff.GetBool());
     Parent->nickserv.GetStored(nickname).L_Secure(true);
     Parent->nickserv.stats.i_Lock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
-			Parent->getMessage(source, "NS_SET/SECURE").c_str(),
-			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
+			Parent->getMessage(source, "NS_SET/SECURE"),
+			nickname, onoff.GetBool() ?
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/SECURE"),
@@ -7918,8 +7925,8 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7928,24 +7935,24 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_NoMemo())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/NOMEMO").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/NOMEMO"),
+				nickname));
 	return;
     }
 
@@ -7959,7 +7966,7 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
@@ -7967,11 +7974,11 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
     Parent->nickserv.GetStored(nickname).NoMemo(onoff.GetBool());
     Parent->nickserv.GetStored(nickname).L_NoMemo(true);
     Parent->nickserv.stats.i_Lock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
-			Parent->getMessage(source, "NS_SET/NOMEMO").c_str(),
-			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
+			Parent->getMessage(source, "NS_SET/NOMEMO"),
+			nickname, onoff.GetBool() ?
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/NOMEMO"),
@@ -7987,8 +7994,8 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -7997,24 +8004,24 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_Private())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PRIVATE").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PRIVATE"),
+				nickname));
 	return;
     }
 
@@ -8028,7 +8035,7 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
@@ -8036,11 +8043,11 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     Parent->nickserv.GetStored(nickname).Private(onoff.GetBool());
     Parent->nickserv.GetStored(nickname).L_Private(true);
     Parent->nickserv.stats.i_Lock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
-			Parent->getMessage(source, "NS_SET/PRIVATE").c_str(),
-			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
+			Parent->getMessage(source, "NS_SET/PRIVATE"),
+			nickname, onoff.GetBool() ?
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVATE"),
@@ -8056,8 +8063,8 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -8066,24 +8073,24 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_PRIVMSG())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PRIVMSG").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PRIVMSG"),
+				nickname));
 	return;
     }
 
@@ -8097,7 +8104,7 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	NSEND(mynick, source, "ERR_SYNTAX/MUSTBEONOFF");
 	return;
     }
 
@@ -8105,11 +8112,11 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
     Parent->nickserv.GetStored(nickname).PRIVMSG(onoff.GetBool());
     Parent->nickserv.GetStored(nickname).L_PRIVMSG(true);
     Parent->nickserv.stats.i_Lock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
-			Parent->getMessage(source, "NS_SET/PRIVMSG").c_str(),
-			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON").c_str() :
-				Parent->getMessage(source, "VALS/OFF").c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
+			Parent->getMessage(source, "NS_SET/PRIVMSG"),
+			nickname, onoff.GetBool() ?
+				Parent->getMessage(source, "VALS/ON") :
+				Parent->getMessage(source, "VALS/OFF")));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVMSG"),
@@ -8128,15 +8135,15 @@ void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, co
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -8145,24 +8152,24 @@ void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, co
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_Language())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/LANGUAGE"),
+				nickname));
 	return;
     }
 
@@ -8172,8 +8179,8 @@ void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, co
     }
     else if (!mFile::Exists(Parent->files.Langdir()+DirSlash+lang.LowerCase()+".lng"))
     {
-	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/NOLANG"),
-			lang.c_str());
+	SEND(mynick, source, "OS_STATUS/NOLANG", (
+			lang));
 	return;
     }
 
@@ -8181,10 +8188,10 @@ void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, co
     Parent->nickserv.GetStored(nickname).Language(lang);
     Parent->nickserv.GetStored(nickname).L_Language(true);
     Parent->nickserv.stats.i_Lock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/LOCKED"),
-			Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
-			nickname.c_str(), mstring(lang + " (" +
-			Parent->getMessageL(lang, "ERR_SYNTAX/TRANSLATED") + ")").c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/LOCKED", (
+			Parent->getMessage(source, "NS_SET/LANGUAGE"),
+			nickname, mstring(lang + " (" +
+			Parent->getMessageL(lang, "ERR_SYNTAX/TRANSLATED") + ")")));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/LANGUAGE"),
@@ -8198,8 +8205,8 @@ void NickServ::do_unlock_Protect(const mstring &mynick, const mstring &source, c
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -8207,32 +8214,32 @@ void NickServ::do_unlock_Protect(const mstring &mynick, const mstring &source, c
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_Protect())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PROTECT").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PROTECT"),
+				nickname));
 	return;
     }
 
     Parent->nickserv.GetStored(nickname).L_Protect(false);
     Parent->nickserv.stats.i_Unlock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_UNLOCKED"),
-			Parent->getMessage(source, "NS_SET/PROTECT").c_str(),
-			nickname.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
+			Parent->getMessage(source, "NS_SET/PROTECT"),
+			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PROTECT"),
@@ -8246,8 +8253,8 @@ void NickServ::do_unlock_Secure(const mstring &mynick, const mstring &source, co
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -8255,32 +8262,32 @@ void NickServ::do_unlock_Secure(const mstring &mynick, const mstring &source, co
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_Secure())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/SECURE").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/SECURE"),
+				nickname));
 	return;
     }
 
     Parent->nickserv.GetStored(nickname).L_Secure(false);
     Parent->nickserv.stats.i_Unlock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_UNLOCKED"),
-			Parent->getMessage(source, "NS_SET/SECURE").c_str(),
-			nickname.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
+			Parent->getMessage(source, "NS_SET/SECURE"),
+			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/SECURE"),
@@ -8294,8 +8301,8 @@ void NickServ::do_unlock_NoMemo(const mstring &mynick, const mstring &source, co
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -8303,32 +8310,32 @@ void NickServ::do_unlock_NoMemo(const mstring &mynick, const mstring &source, co
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_NoMemo())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/NOMEMO").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/NOMEMO"),
+				nickname));
 	return;
     }
 
     Parent->nickserv.GetStored(nickname).L_NoMemo(false);
     Parent->nickserv.stats.i_Unlock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_UNLOCKED"),
-			Parent->getMessage(source, "NS_SET/NOMEMO").c_str(),
-			nickname.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
+			Parent->getMessage(source, "NS_SET/NOMEMO"),
+			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/NOMEMO"),
@@ -8342,8 +8349,8 @@ void NickServ::do_unlock_Private(const mstring &mynick, const mstring &source, c
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -8351,32 +8358,32 @@ void NickServ::do_unlock_Private(const mstring &mynick, const mstring &source, c
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_Private())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PRIVATE").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PRIVATE"),
+				nickname));
 	return;
     }
 
     Parent->nickserv.GetStored(nickname).L_Private(false);
     Parent->nickserv.stats.i_Unlock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_UNLOCKED"),
-			Parent->getMessage(source, "NS_SET/PRIVATE").c_str(),
-			nickname.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
+			Parent->getMessage(source, "NS_SET/PRIVATE"),
+			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVATE"),
@@ -8390,8 +8397,8 @@ void NickServ::do_unlock_PRIVMSG(const mstring &mynick, const mstring &source, c
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -8399,32 +8406,32 @@ void NickServ::do_unlock_PRIVMSG(const mstring &mynick, const mstring &source, c
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_PRIVMSG())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/PRIVMSG").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/PRIVMSG"),
+				nickname));
 	return;
     }
 
     Parent->nickserv.GetStored(nickname).L_PRIVMSG(false);
     Parent->nickserv.stats.i_Unlock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_UNLOCKED"),
-			Parent->getMessage(source, "NS_SET/PRIVMSG").c_str(),
-			nickname.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
+			Parent->getMessage(source, "NS_SET/PRIVMSG"),
+			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVMSG"),
@@ -8438,8 +8445,8 @@ void NickServ::do_unlock_Language(const mstring &mynick, const mstring &source, 
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -8447,32 +8454,32 @@ void NickServ::do_unlock_Language(const mstring &mynick, const mstring &source, 
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+				nickname));
 	return;
     }
 
     nickname = Parent->getSname(nickname);
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						nickname));
 	return;
     }
 
     if (Parent->nickserv.LCK_Language())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
-				Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
-				nickname.c_str());
+	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
+				Parent->getMessage(source, "NS_SET/LANGUAGE"),
+				nickname));
 	return;
     }
 
     Parent->nickserv.GetStored(nickname).L_Language(false);
     Parent->nickserv.stats.i_Unlock++;
-    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/UNLOCKED"),
-			Parent->getMessage(source, "NS_SET/LANGUAGE").c_str(),
-			nickname.c_str());
+    SEND(mynick, source, "NS_OTH_COMMAND/UNLOCKED", (
+			Parent->getMessage(source, "NS_SET/LANGUAGE"),
+			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/LANGUAGE"),

@@ -27,6 +27,12 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.43  2001/03/27 07:04:31  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -526,8 +532,8 @@ void DccEngine::DoDccChat(const mstring& mynick, const mstring& source,
     // should just pass the commands through the same engine as the
     // telnet commands.
 
-    send(mynick, source, Parent->getMessage(source, "DCC/NOACCESS"),
-						"CHAT");
+    SEND(mynick, source, "DCC/NOACCESS", (
+						"CHAT"));
 }
 
 // INBOUND DCC!!
@@ -557,8 +563,8 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     if (!(Parent->nickserv.GetLive(source).InFlight.File() &&
 	!Parent->nickserv.GetLive(source).InFlight.InProg()))
     {
-	send(mynick, source, Parent->getMessage(source, "DCC/NOREQUEST"),
-						"GET");
+	SEND(mynick, source, "DCC/NOREQUEST", (
+						"GET"));
 	return;
     }
 
@@ -567,7 +573,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     {
 	if (size && Parent->nickserv.PicSize() && size > Parent->nickserv.PicSize())
 	{
-	    send(mynick, source, Parent->getMessage(source, "DCC/TOOBIG"), "GET");
+	    SEND(mynick, source, "DCC/TOOBIG", ( "GET"));
 	    return;
 	}
 	
@@ -575,7 +581,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	if (!(filename.Contains(".") &&
 	    (" " + Parent->nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
 	{
-	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/INVALIDEXT"));
+	    NSEND(mynick, source, "NS_YOU_STATUS/INVALIDEXT");
 	    Parent->nickserv.GetLive(source).InFlight.Cancel();
 	    return;
 	}
@@ -589,7 +595,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     {
 	if (size && Parent->memoserv.FileSize() && size > Parent->memoserv.FileSize())
 	{
-	    send(mynick, source, Parent->getMessage(source, "DCC/TOOBIG"), "GET");
+	    SEND(mynick, source, "DCC/TOOBIG", ( "GET"));
 	    return;
 	}
     }

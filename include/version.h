@@ -25,6 +25,12 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.118  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.117  2001/04/22 21:45:20  prez
 ** Fixed make / make install and RPM spec
 **
@@ -143,7 +149,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm";
-const mstring RELEASE			= "b8";
+const mstring RELEASE			= "b9";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";

@@ -27,6 +27,12 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2001/05/06 03:03:08  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.86  2001/05/05 17:33:59  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -486,8 +492,7 @@ void ServMsg::do_Help(const mstring &mynick, const mstring &source, const mstrin
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (message));
 	return;
     }}
 
@@ -512,8 +517,7 @@ void ServMsg::do_Credits(const mstring &mynick, const mstring &source, const mst
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (message));
 	return;
     }}
 
@@ -535,8 +539,8 @@ void ServMsg::do_Contrib(const mstring &mynick, const mstring &source, const mst
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -558,8 +562,8 @@ void ServMsg::do_Languages(const mstring &mynick, const mstring &source, const m
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -567,7 +571,7 @@ void ServMsg::do_Languages(const mstring &mynick, const mstring &source, const m
     mstring output, val;
     if (langs.size())
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/LANG_LIST"));
+	NSEND(mynick, source, "MISC/LANG_LIST");
 	set<mstring>::iterator i;
 	for (i=langs.begin(); i != langs.end(); i++)
 	{
@@ -591,7 +595,7 @@ void ServMsg::do_Languages(const mstring &mynick, const mstring &source, const m
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/LANG_NOLIST"));
+	NSEND(mynick, source, "MISC/LANG_NOLIST");
     }
 }
 
@@ -606,12 +610,12 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
-    ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN_HEAD"));
+    NSEND(mynick, source, "MISC/BREAKDOWN_HEAD");
     mstring out;
 
     map<mstring,pair<unsigned int,unsigned int> > ServCounts;
@@ -705,8 +709,8 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -736,42 +740,42 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
 	}
     }}
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_REGD"),
-		Parent->nickserv.StoredSize(), linked);
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_DENIED"),
-		suspended, forbidden);
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD"),
-		ToHumanTime(Parent->nickserv.stats.ClearTime().SecondsSince()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD1"),
-		Parent->nickserv.stats.Register(),
-		Parent->nickserv.stats.Drop());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD2"),
-		Parent->nickserv.stats.Link(),
-		Parent->nickserv.stats.Unlink());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD3"),
-		Parent->nickserv.stats.Host(),
-		Parent->nickserv.stats.Identify());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD4"),
-		Parent->nickserv.stats.Ghost(),
-		Parent->nickserv.stats.Recover());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD5"),
-		Parent->nickserv.stats.Suspend(),
-		Parent->nickserv.stats.Unsuspend());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD6"),
-		Parent->nickserv.stats.Forbid(),
-		Parent->nickserv.stats.Getpass());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD7"),
-		Parent->nickserv.stats.Access(),
-		Parent->nickserv.stats.Ignore());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD8"),
-		Parent->nickserv.stats.Set(),
-		Parent->nickserv.stats.NoExpire());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD9"),
-		Parent->nickserv.stats.Lock(),
-		Parent->nickserv.stats.Unlock());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD10"),
-		Parent->nickserv.stats.SetPicture(),
-		Parent->nickserv.stats.Send());
+    SEND(mynick, source, "STATS/NICK_REGD", (
+		Parent->nickserv.StoredSize(), linked));
+    SEND(mynick, source, "STATS/NICK_DENIED", (
+		suspended, forbidden));
+    SEND(mynick, source, "STATS/NICK_CMD", (
+		ToHumanTime(Parent->nickserv.stats.ClearTime().SecondsSince())));
+    SEND(mynick, source, "STATS/NICK_CMD1", (
+		fmstring("%10d", Parent->nickserv.stats.Register()),
+		fmstring("%10d", Parent->nickserv.stats.Drop())));
+    SEND(mynick, source, "STATS/NICK_CMD2", (
+		fmstring("%10d", Parent->nickserv.stats.Link()),
+		fmstring("%10d", Parent->nickserv.stats.Unlink())));
+    SEND(mynick, source, "STATS/NICK_CMD3", (
+		fmstring("%10d", Parent->nickserv.stats.Host()),
+		fmstring("%10d", Parent->nickserv.stats.Identify())));
+    SEND(mynick, source, "STATS/NICK_CMD4", (
+		fmstring("%10d", Parent->nickserv.stats.Ghost()),
+		fmstring("%10d", Parent->nickserv.stats.Recover())));
+    SEND(mynick, source, "STATS/NICK_CMD5", (
+		fmstring("%10d", Parent->nickserv.stats.Suspend()),
+		fmstring("%10d", Parent->nickserv.stats.Unsuspend())));
+    SEND(mynick, source, "STATS/NICK_CMD6", (
+		fmstring("%10d", Parent->nickserv.stats.Forbid()),
+		fmstring("%10d", Parent->nickserv.stats.Getpass())));
+    SEND(mynick, source, "STATS/NICK_CMD7", (
+		fmstring("%10d", Parent->nickserv.stats.Access()),
+		fmstring("%10d", Parent->nickserv.stats.Ignore())));
+    SEND(mynick, source, "STATS/NICK_CMD8", (
+		fmstring("%10d", Parent->nickserv.stats.Set()),
+		fmstring("%10d", Parent->nickserv.stats.NoExpire())));
+    SEND(mynick, source, "STATS/NICK_CMD9", (
+		fmstring("%10d", Parent->nickserv.stats.Lock()),
+		fmstring("%10d", Parent->nickserv.stats.Unlock())));
+    SEND(mynick, source, "STATS/NICK_CMD10", (
+		fmstring("%10d", Parent->nickserv.stats.SetPicture()),
+		fmstring("%10d", Parent->nickserv.stats.Send())));
     Parent->servmsg.stats.i_Stats++;
 }
 
@@ -785,8 +789,8 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -814,53 +818,53 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
 	}
     }}
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_REGD"),
-		Parent->chanserv.StoredSize());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_DENIED"),
-		suspended, forbidden);
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD"),
-		ToHumanTime(Parent->chanserv.stats.ClearTime().SecondsSince()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD1"),
-		Parent->chanserv.stats.Register(),
-		Parent->chanserv.stats.Drop());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD2"),
-		Parent->chanserv.stats.Identify());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD3"),
-		Parent->chanserv.stats.Suspend(),
-		Parent->chanserv.stats.Unsuspend());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD4"),
-		Parent->chanserv.stats.Forbid(),
-		Parent->chanserv.stats.Getpass());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD5"),
-		Parent->chanserv.stats.Mode(),
-		Parent->chanserv.stats.Topic());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD6"),
-		Parent->chanserv.stats.Op(),
-		Parent->chanserv.stats.Deop());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD7"),
-		Parent->chanserv.stats.Voice(),
-		Parent->chanserv.stats.Devoice());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD8"),
-		Parent->chanserv.stats.Kick(),
-		Parent->chanserv.stats.Anonkick());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD9"),
-		Parent->chanserv.stats.Invite(),
-		Parent->chanserv.stats.Unban());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD10"),
-		Parent->chanserv.stats.Clear(),
-		Parent->chanserv.stats.Akick());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD11"),
-		Parent->chanserv.stats.Level(),
-		Parent->chanserv.stats.Access());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD12"),
-		Parent->chanserv.stats.Greet(),
-		Parent->chanserv.stats.Message());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD13"),
-		Parent->chanserv.stats.Set(),
-		Parent->chanserv.stats.NoExpire());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD14"),
-		Parent->chanserv.stats.Lock(),
-		Parent->chanserv.stats.Unlock());
+    SEND(mynick, source, "STATS/CHAN_REGD", (
+		Parent->chanserv.StoredSize()));
+    SEND(mynick, source, "STATS/CHAN_DENIED", (
+		suspended, forbidden));
+    SEND(mynick, source, "STATS/CHAN_CMD", (
+		ToHumanTime(Parent->chanserv.stats.ClearTime().SecondsSince())));
+    SEND(mynick, source, "STATS/CHAN_CMD1", (
+		fmstring("%10d", Parent->chanserv.stats.Register()),
+		fmstring("%10d", Parent->chanserv.stats.Drop())));
+    SEND(mynick, source, "STATS/CHAN_CMD2", (
+		fmstring("%10d", Parent->chanserv.stats.Identify())));
+    SEND(mynick, source, "STATS/CHAN_CMD3", (
+		fmstring("%10d", Parent->chanserv.stats.Suspend()),
+		fmstring("%10d", Parent->chanserv.stats.Unsuspend())));
+    SEND(mynick, source, "STATS/CHAN_CMD4", (
+		fmstring("%10d", Parent->chanserv.stats.Forbid()),
+		fmstring("%10d", Parent->chanserv.stats.Getpass())));
+    SEND(mynick, source, "STATS/CHAN_CMD5", (
+		fmstring("%10d", Parent->chanserv.stats.Mode()),
+		fmstring("%10d", Parent->chanserv.stats.Topic())));
+    SEND(mynick, source, "STATS/CHAN_CMD6", (
+		fmstring("%10d", Parent->chanserv.stats.Op()),
+		fmstring("%10d", Parent->chanserv.stats.Deop())));
+    SEND(mynick, source, "STATS/CHAN_CMD7", (
+		fmstring("%10d", Parent->chanserv.stats.Voice()),
+		fmstring("%10d", Parent->chanserv.stats.Devoice())));
+    SEND(mynick, source, "STATS/CHAN_CMD8", (
+		fmstring("%10d", Parent->chanserv.stats.Kick()),
+		fmstring("%10d", Parent->chanserv.stats.Anonkick())));
+    SEND(mynick, source, "STATS/CHAN_CMD9", (
+		fmstring("%10d", Parent->chanserv.stats.Invite()),
+		fmstring("%10d", Parent->chanserv.stats.Unban())));
+    SEND(mynick, source, "STATS/CHAN_CMD10", (
+		fmstring("%10d", Parent->chanserv.stats.Clear()),
+		fmstring("%10d", Parent->chanserv.stats.Akick())));
+    SEND(mynick, source, "STATS/CHAN_CMD11", (
+		fmstring("%10d", Parent->chanserv.stats.Level()),
+		fmstring("%10d", Parent->chanserv.stats.Access())));
+    SEND(mynick, source, "STATS/CHAN_CMD12", (
+		fmstring("%10d", Parent->chanserv.stats.Greet()),
+		fmstring("%10d", Parent->chanserv.stats.Message())));
+    SEND(mynick, source, "STATS/CHAN_CMD13", (
+		fmstring("%10d", Parent->chanserv.stats.Set()),
+		fmstring("%10d", Parent->chanserv.stats.NoExpire())));
+    SEND(mynick, source, "STATS/CHAN_CMD14", (
+		fmstring("%10d", Parent->chanserv.stats.Lock()),
+		fmstring("%10d", Parent->chanserv.stats.Unlock())));
     Parent->servmsg.stats.i_Stats++;
 }
 
@@ -874,8 +878,8 @@ void ServMsg::do_stats_Other(const mstring &mynick, const mstring &source, const
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -892,69 +896,69 @@ void ServMsg::do_stats_Other(const mstring &mynick, const mstring &source, const
 
 
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_MEMO"),
-		Parent->memoserv.NickSize());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_NEWS"),
-		Parent->memoserv.ChannelSize());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_COMM"),
-		Parent->commserv.ListSize());
+    SEND(mynick, source, "STATS/OTH_MEMO", (
+		Parent->memoserv.NickSize()));
+    SEND(mynick, source, "STATS/OTH_NEWS", (
+		Parent->memoserv.ChannelSize()));
+    SEND(mynick, source, "STATS/OTH_COMM", (
+		Parent->commserv.ListSize()));
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
-		Parent->memoserv.GetInternalName().c_str(),
-		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD1"),
-		Parent->memoserv.stats.Read(),
-		Parent->memoserv.stats.Unread());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD2"),
-		Parent->memoserv.stats.Send(),
-		Parent->memoserv.stats.Flush());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD3"),
-		Parent->memoserv.stats.Reply(),
-		Parent->memoserv.stats.Forward());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD4"),
-		Parent->memoserv.stats.Cancel(),
-		Parent->memoserv.stats.Del());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD5"),
-		Parent->memoserv.stats.Continue(),
-		Parent->memoserv.stats.Set());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD6"),
-		Parent->memoserv.stats.File(),
-		Parent->memoserv.stats.Get());
+    SEND(mynick, source, "STATS/OTH_CMD", (
+		Parent->memoserv.GetInternalName(),
+		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince())));
+    SEND(mynick, source, "STATS/OTH_CMD1", (
+		fmstring("%10d", Parent->memoserv.stats.Read()),
+		fmstring("%10d", Parent->memoserv.stats.Unread())));
+    SEND(mynick, source, "STATS/OTH_CMD2", (
+		fmstring("%10d", Parent->memoserv.stats.Send()),
+		fmstring("%10d", Parent->memoserv.stats.Flush())));
+    SEND(mynick, source, "STATS/OTH_CMD3", (
+		fmstring("%10d", Parent->memoserv.stats.Reply()),
+		fmstring("%10d", Parent->memoserv.stats.Forward())));
+    SEND(mynick, source, "STATS/OTH_CMD4", (
+		fmstring("%10d", Parent->memoserv.stats.Cancel()),
+		fmstring("%10d", Parent->memoserv.stats.Del())));
+    SEND(mynick, source, "STATS/OTH_CMD5", (
+		fmstring("%10d", Parent->memoserv.stats.Continue()),
+		fmstring("%10d", Parent->memoserv.stats.Set())));
+    SEND(mynick, source, "STATS/OTH_CMD6", (
+		fmstring("%10d", Parent->memoserv.stats.File()),
+		fmstring("%10d", Parent->memoserv.stats.Get())));
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
-		Parent->commserv.GetInternalName().c_str(),
-		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
-		Parent->commserv.stats.Add(),
-		Parent->commserv.stats.Del());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
-		Parent->commserv.stats.Member(),
-		Parent->commserv.stats.Logon());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD13"),
-		Parent->commserv.stats.Memo(),
-		Parent->commserv.stats.Set());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD14"),
-		Parent->commserv.stats.Lock(),
-		Parent->commserv.stats.Unlock());
+    SEND(mynick, source, "STATS/OTH_CMD", (
+		Parent->commserv.GetInternalName(),
+		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince())));
+    SEND(mynick, source, "STATS/OTH_CMD11", (
+		fmstring("%10d", Parent->commserv.stats.Add()),
+		fmstring("%10d", Parent->commserv.stats.Del())));
+    SEND(mynick, source, "STATS/OTH_CMD12", (
+		fmstring("%10d", Parent->commserv.stats.Member()),
+		fmstring("%10d", Parent->commserv.stats.Logon())));
+    SEND(mynick, source, "STATS/OTH_CMD13", (
+		fmstring("%10d", Parent->commserv.stats.Memo()),
+		fmstring("%10d", Parent->commserv.stats.Set())));
+    SEND(mynick, source, "STATS/OTH_CMD14", (
+		fmstring("%10d", Parent->commserv.stats.Lock()),
+		fmstring("%10d", Parent->commserv.stats.Unlock())));
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
-		Parent->servmsg.GetInternalName().c_str(),
-		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD21"),
-		Parent->servmsg.stats.Global(),
-		Parent->servmsg.stats.Credits());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD22"),
-		Parent->servmsg.stats.Ask(),
-		Parent->servmsg.stats.Stats());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD23"),
-		Parent->servmsg.stats.File_Add(),
-		Parent->servmsg.stats.File_Del());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD24"),
-		Parent->servmsg.stats.File_Priv(),
-		Parent->servmsg.stats.File_Rename());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD25"),
-		Parent->servmsg.stats.File_Send(),
-		Parent->servmsg.stats.File_Cancel());
+    SEND(mynick, source, "STATS/OTH_CMD", (
+		Parent->servmsg.GetInternalName(),
+		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince())));
+    SEND(mynick, source, "STATS/OTH_CMD21", (
+		fmstring("%10d", Parent->servmsg.stats.Global()),
+		fmstring("%10d", Parent->servmsg.stats.Credits())));
+    SEND(mynick, source, "STATS/OTH_CMD22", (
+		fmstring("%10d", Parent->servmsg.stats.Ask()),
+		fmstring("%10d", Parent->servmsg.stats.Stats())));
+    SEND(mynick, source, "STATS/OTH_CMD23", (
+		fmstring("%10d", Parent->servmsg.stats.File_Add()),
+		fmstring("%10d", Parent->servmsg.stats.File_Del())));
+    SEND(mynick, source, "STATS/OTH_CMD24", (
+		fmstring("%10d", Parent->servmsg.stats.File_Priv()),
+		fmstring("%10d", Parent->servmsg.stats.File_Rename())));
+    SEND(mynick, source, "STATS/OTH_CMD25", (
+		fmstring("%10d", Parent->servmsg.stats.File_Send()),
+		fmstring("%10d", Parent->servmsg.stats.File_Cancel())));
     Parent->servmsg.stats.i_Stats++;
 }
 
@@ -968,8 +972,8 @@ void ServMsg::do_stats_Oper(const mstring &mynick, const mstring &source, const 
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -983,52 +987,52 @@ void ServMsg::do_stats_Oper(const mstring &mynick, const mstring &source, const 
     }
 
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CLONE"),
-		Parent->operserv.Clone_size());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_AKILL"),
-		Parent->operserv.Akill_size());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_OPERDENY"),
-		Parent->operserv.OperDeny_size());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_IGNORE"),
-		Parent->operserv.Ignore_size());
+    SEND(mynick, source, "STATS/OPER_CLONE", (
+		Parent->operserv.Clone_size()));
+    SEND(mynick, source, "STATS/OPER_AKILL", (
+		Parent->operserv.Akill_size()));
+    SEND(mynick, source, "STATS/OPER_OPERDENY", (
+		Parent->operserv.OperDeny_size()));
+    SEND(mynick, source, "STATS/OPER_IGNORE", (
+		Parent->operserv.Ignore_size()));
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD"),
-		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD1"),
-		Parent->operserv.stats.Trace(),
-		Parent->operserv.stats.Mode());
+    SEND(mynick, source, "STATS/OPER_CMD", (
+		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince())));
+    SEND(mynick, source, "STATS/OPER_CMD1", (
+		fmstring("%10d", Parent->operserv.stats.Trace()),
+		fmstring("%10d", Parent->operserv.stats.Mode())));
     if (!(Parent->server.proto.SQLINE().empty() ||
 	Parent->server.proto.UNSQLINE().empty()))
     {
-	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD2"),
-		Parent->operserv.stats.Qline(),
-		Parent->operserv.stats.Unqline());
+	SEND(mynick, source, "STATS/OPER_CMD2", (
+		fmstring("%10d", Parent->operserv.stats.Qline()),
+		fmstring("%10d", Parent->operserv.stats.Unqline())));
     }
     if (!(Parent->server.proto.SVSNOOP().empty() ||
 	Parent->server.proto.SVSKILL().empty()))
     {
-	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD3"),
-		Parent->operserv.stats.Noop(),
-		Parent->operserv.stats.Kill());
+	SEND(mynick, source, "STATS/OPER_CMD3", (
+		fmstring("%10d", Parent->operserv.stats.Noop()),
+		fmstring("%10d", Parent->operserv.stats.Kill())));
     }
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD4"),
-		Parent->operserv.stats.Ping(),
-		Parent->operserv.stats.Update());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD5"),
-		Parent->operserv.stats.Reload(),
-		Parent->operserv.stats.Unload());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD6"),
-		Parent->operserv.stats.Jupe(),
-		Parent->operserv.stats.OnOff());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD7"),
-		Parent->operserv.stats.Clone(),
-		Parent->operserv.stats.Akill());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD8"),
-		Parent->operserv.stats.OperDeny(),
-		Parent->operserv.stats.Ignore());
+    SEND(mynick, source, "STATS/OPER_CMD4", (
+		fmstring("%10d", Parent->operserv.stats.Ping()),
+		fmstring("%10d", Parent->operserv.stats.Update())));
+    SEND(mynick, source, "STATS/OPER_CMD5", (
+		fmstring("%10d", Parent->operserv.stats.Reload()),
+		fmstring("%10d", Parent->operserv.stats.Unload())));
+    SEND(mynick, source, "STATS/OPER_CMD6", (
+		fmstring("%10d", Parent->operserv.stats.Jupe()),
+		fmstring("%10d", Parent->operserv.stats.OnOff())));
+    SEND(mynick, source, "STATS/OPER_CMD7", (
+		fmstring("%10d", Parent->operserv.stats.Clone()),
+		fmstring("%10d", Parent->operserv.stats.Akill())));
+    SEND(mynick, source, "STATS/OPER_CMD8", (
+		fmstring("%10d", Parent->operserv.stats.OperDeny()),
+		fmstring("%10d", Parent->operserv.stats.Ignore())));
     if (!Parent->server.proto.SVSHOST().empty())
-	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD9"),
-		Parent->operserv.stats.Hide());
+	SEND(mynick, source, "STATS/OPER_CMD9", (
+		fmstring("%10d", Parent->operserv.stats.Hide())));
     Parent->servmsg.stats.i_Stats++;
 }
 
@@ -1044,8 +1048,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -1055,26 +1059,26 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	ACE_Time_Value user, sys;
 	user = tmp.ru_utime;
 	sys  = tmp.ru_stime;
-	::send(mynick, source, Parent->getMessage(source, "STATS/USE_CPU"),
+	SEND(mynick, source, "STATS/USE_CPU", (
 		(sys.sec() == 0) ?
-			Parent->getMessage(source, "VALS/TIME_NONE").c_str() :
-			ToHumanTime(sys.sec(), source).c_str(),
+			Parent->getMessage(source, "VALS/TIME_NONE") :
+			ToHumanTime(sys.sec(), source),
 		(user.sec() == 0) ?
-			Parent->getMessage(source, "VALS/TIME_NONE").c_str() :
-			ToHumanTime(user.sec(), source).c_str());
+			Parent->getMessage(source, "VALS/TIME_NONE") :
+			ToHumanTime(user.sec(), source)));
     }
 
     { RLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL)
     {
-	::send(mynick, source, Parent->getMessage(source, "STATS/USE_TRAFFIC"),
-		ToHumanSpace(Parent->ircsvchandler->In_Traffic()).c_str(),
+	SEND(mynick, source, "STATS/USE_TRAFFIC", (
+		ToHumanSpace(Parent->ircsvchandler->In_Traffic()),
 		ToHumanSpace(Parent->ircsvchandler->In_Traffic() /
-		Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str(),
-		ToHumanSpace(Parent->ircsvchandler->Out_Traffic()).c_str(),
+		Parent->ircsvchandler->Connect_Time().SecondsSince()),
+		ToHumanSpace(Parent->ircsvchandler->Out_Traffic()),
 		ToHumanSpace(Parent->ircsvchandler->Out_Traffic() /
-		Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str(),
-		ToHumanTime(Parent->ircsvchandler->Connect_Time().SecondsSince(), source).c_str());
+		Parent->ircsvchandler->Connect_Time().SecondsSince()),
+		ToHumanTime(Parent->ircsvchandler->Connect_Time().SecondsSince(), source)));
     }}
 
     size = 0;
@@ -1085,8 +1089,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	size += i->first.capacity();
 	size += i->second.Usage();
     }}
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_LIVE"),
-		Parent->nickserv.LiveSize(),ToHumanSpace(size).c_str());
+    SEND(mynick, source, "STATS/USE_NS_LIVE", (
+	fmstring("%5d", Parent->nickserv.LiveSize()),ToHumanSpace(size)));
     size = 0;
     ChanServ::live_t::iterator j;
     { RLOCK(("ChanServ", "live"));
@@ -1095,8 +1099,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	size += j->first.capacity();
 	size += j->second.Usage();
     }}
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_LIVE"),
-		Parent->chanserv.LiveSize(), ToHumanSpace(size).c_str());
+    SEND(mynick, source, "STATS/USE_CS_LIVE", (
+	fmstring("%5d", Parent->chanserv.LiveSize()), ToHumanSpace(size)));
     size = 0;
     NickServ::stored_t::iterator k;
     { RLOCK(("NickServ", "stored"));
@@ -1105,8 +1109,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	size += k->first.capacity();
 	size += k->second.Usage();
     }}
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_STORED"),
-		Parent->nickserv.StoredSize(), ToHumanSpace(size).c_str());
+    SEND(mynick, source, "STATS/USE_NS_STORED", (
+	fmstring("%5d", Parent->nickserv.StoredSize()), ToHumanSpace(size)));
     size = 0;
     ChanServ::stored_t::iterator l;
     { RLOCK(("ChanServ", "stored"));
@@ -1115,8 +1119,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	size += l->first.capacity();
 	size += l->second.Usage();
     }}
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_STORED"),
-		Parent->chanserv.StoredSize(), ToHumanSpace(size).c_str());
+    SEND(mynick, source, "STATS/USE_CS_STORED", (
+	fmstring("%5d", Parent->chanserv.StoredSize()), ToHumanSpace(size)));
 
     size = 0;
     MemoServ::nick_t::iterator m1;
@@ -1133,8 +1137,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	    size += m2->Usage();
 	}}
     }}
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_MEMO"),
-		count, ToHumanSpace(size).c_str());
+    SEND(mynick, source, "STATS/USE_MEMO", (
+	fmstring("%5d", count), ToHumanSpace(size)));
 
     size = 0;
     MemoServ::channel_t::iterator n1;
@@ -1151,8 +1155,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	    size += n2->Usage();
 	}}
     }}
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NEWS"),
-		count, ToHumanSpace(size).c_str());
+    SEND(mynick, source, "STATS/USE_NEWS", (
+	fmstring("%5d", count), ToHumanSpace(size)));
 
     size = 0;
     CommServ::list_t::iterator o;
@@ -1162,19 +1166,19 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	size += o->first.capacity();
 	size += o->second.Usage();
     }}
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_COMMITTEE"),
-		Parent->commserv.ListSize(), ToHumanSpace(size).c_str());
+    SEND(mynick, source, "STATS/USE_COMMITTEE", (
+	fmstring("%5d", Parent->commserv.ListSize()), ToHumanSpace(size)));
 
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OPERSERV"),
-		(Parent->operserv.Clone_size() +
+    SEND(mynick, source, "STATS/USE_OPERSERV", (
+		fmstring("%5d", (Parent->operserv.Clone_size() +
 		Parent->operserv.Akill_size() +
 		Parent->operserv.OperDeny_size() +
-		Parent->operserv.Ignore_size()),
+		Parent->operserv.Ignore_size())),
 		ToHumanSpace(Parent->operserv.Clone_Usage() +
 		Parent->operserv.Akill_Usage() +
 		Parent->operserv.OperDeny_Usage() +
-		Parent->operserv.Ignore_Usage()).c_str());
+		Parent->operserv.Ignore_Usage())));
 
     size = 0;
     Server::list_t::iterator p;
@@ -1184,10 +1188,10 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	size += p->first.capacity();
 	size += p->second.Usage();
     }}
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OTHER"),
-		Parent->server.ListSize(), ToHumanSpace(size).c_str());
+    SEND(mynick, source, "STATS/USE_OTHER", (
+	fmstring("%5d", Parent->server.ListSize()), ToHumanSpace(size)));
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANGHEAD"));
+    NSEND(mynick, source, "STATS/USE_LANGHEAD");
 
     set<mstring> tmp, lang;
     tmp.clear(); tmp = Parent->LNG_Loaded();
@@ -1215,8 +1219,8 @@ void ServMsg::do_stats_All(const mstring &mynick, const mstring &source, const m
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -1248,19 +1252,19 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     mDateTime tmp = StartTime;
-    ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_UPTIME"),
-		StartTime.Ago().c_str());
+    SEND(mynick, source, "STATS/GEN_UPTIME", (
+		StartTime.Ago()));
     if ((tmp - Parent->ResetTime()).Minute() >= 1)
-	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_RESET"),
-		Parent->ResetTime().Ago().c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_MAXUSERS"),
-		Parent->server.UserMax());
+	SEND(mynick, source, "STATS/GEN_RESET", (
+		Parent->ResetTime().Ago()));
+    SEND(mynick, source, "STATS/GEN_MAXUSERS", (
+		Parent->server.UserMax()));
     size_t opers = 0;
     NickServ::live_t::iterator k;
     for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
@@ -1268,13 +1272,13 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
 	if (k->second.HasMode("o"))
 		opers++;
     }
-    ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_USERS"),
-		Parent->nickserv.LiveSize(), opers);
+    SEND(mynick, source, "STATS/GEN_USERS", (
+		Parent->nickserv.LiveSize(), opers));
 
     if ((Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1)))
-	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_CLONES"),
+	SEND(mynick, source, "STATS/GEN_CLONES", (
 		Parent->operserv.CloneList_sum() - Parent->operserv.CloneList_size(),
-		Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1));
+		Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1)));
     Parent->servmsg.stats.i_Stats++;
 }
 
@@ -1293,8 +1297,8 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
@@ -1315,8 +1319,8 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
-	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
-					Parent->config.Maxlist());
+	    SEND(mynick, source, "LIST/MAXLIST", (
+					Parent->config.Maxlist()));
 	    return;
 	}
     }
@@ -1325,13 +1329,13 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
 
     if (!filelist.size())
     {
- 	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
- 			Parent->getMessage(source, "LIST/FILES").c_str());
+ 	SEND(mynick, source, "LIST/EMPTY", (
+ 			Parent->getMessage(source, "LIST/FILES")));
  	return;
     }
 
-    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
-    		mask.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+    SEND(mynick, source, "LIST/DISPLAY_MATCH", (
+    		mask, Parent->getMessage(source, "LIST/FILES")));
 
     bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 		Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source));
@@ -1374,8 +1378,8 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
 	    count++;
 	}
     }
-    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
-							i, count);
+    SEND(mynick, source, "LIST/DISPLAYED", (
+							i, count));
 }
 
 
@@ -1389,15 +1393,15 @@ void ServMsg::do_file_Add(const mstring &mynick, const mstring &source, const ms
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1417,8 +1421,8 @@ void ServMsg::do_file_Del(const mstring &mynick, const mstring &source, const ms
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1427,15 +1431,15 @@ void ServMsg::do_file_Del(const mstring &mynick, const mstring &source, const ms
 
     if (!num)
     {
- 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
- 		file.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+ 	SEND(mynick, source, "LIST/NOTEXISTS", (
+ 		file, Parent->getMessage(source, "LIST/FILES")));
  	return;
     }
 
     Parent->servmsg.stats.i_file_Del++;
-    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
-    		Parent->filesys.GetName(FileMap::Public, num).c_str(),
-    		Parent->getMessage(source,"LIST/FILES").c_str());
+    SEND(mynick, source, "LIST/DEL", (
+    		Parent->filesys.GetName(FileMap::Public, num),
+    		Parent->getMessage(source,"LIST/FILES")));
     Parent->filesys.EraseFile(FileMap::Public, num);
 }
 
@@ -1447,8 +1451,8 @@ void ServMsg::do_file_Rename(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1458,16 +1462,16 @@ void ServMsg::do_file_Rename(const mstring &mynick, const mstring &source, const
 
     if (!num)
     {
- 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
- 		file.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+ 	SEND(mynick, source, "LIST/NOTEXISTS", (
+ 		file, Parent->getMessage(source, "LIST/FILES")));
  	return;
     }
 
     Parent->servmsg.stats.i_file_Rename++;
-    ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME"),
-    		Parent->filesys.GetName(FileMap::Public, num).c_str(),
-    		Parent->getMessage(source, "LIST/FILES").c_str(),
-    		newfile.c_str());
+    SEND(mynick, source, "LIST/CHANGE_TIME", (
+    		Parent->filesys.GetName(FileMap::Public, num),
+    		Parent->getMessage(source, "LIST/FILES"),
+    		newfile));
     LOG(LM_INFO, "SERVMSG/FILE_RENAME", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	file, newfile));
@@ -1482,8 +1486,8 @@ void ServMsg::do_file_Priv(const mstring &mynick, const mstring &source, const m
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1495,17 +1499,17 @@ void ServMsg::do_file_Priv(const mstring &mynick, const mstring &source, const m
 
     if (!num)
     {
- 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
- 		file.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+ 	SEND(mynick, source, "LIST/NOTEXISTS", (
+ 		file, Parent->getMessage(source, "LIST/FILES")));
  	return;
     }
 
     Parent->servmsg.stats.i_file_Priv++;
-    ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_TIME"),
-    		Parent->filesys.GetName(FileMap::Public, num).c_str(),
-    		Parent->getMessage(source, "LIST/FILES").c_str(),
-    		Parent->getMessage(source, "LIST/ACCESS").c_str(),
-    		priv.c_str());
+    SEND(mynick, source, "LIST/CHANGE2_TIME", (
+    		Parent->filesys.GetName(FileMap::Public, num),
+    		Parent->getMessage(source, "LIST/FILES"),
+    		Parent->getMessage(source, "LIST/ACCESS"),
+    		priv));
     LOG(LM_INFO, "SERVMSG/FILE_PRIV", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	file, ((priv.empty()) ? "ALL" : priv.c_str())));
@@ -1523,15 +1527,15 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     if (Parent->ircsvchandler != NULL &&
 	Parent->ircsvchandler->HTM_Level() > 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
-							message.c_str());
+	SEND(mynick, source, "MISC/HTM", (
+							message));
 	return;
     }}
 
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1555,8 +1559,8 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
 
     if (!(filenum && display))
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
-		filename.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+	SEND(mynick, source, "LIST/NOTEXISTS", (
+		filename, Parent->getMessage(source, "LIST/FILES")));
 	return;
     }
 
@@ -1564,8 +1568,8 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     size_t filesize = Parent->filesys.GetSize(FileMap::Public, filenum);
     if (filename.empty() || filesize <= 0)
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
-		filename.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+	SEND(mynick, source, "LIST/NOTEXISTS", (
+		filename, Parent->getMessage(source, "LIST/FILES")));
 	return;
     }
 
@@ -1573,7 +1577,7 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
 	mFile::DirUsage(Parent->files.TempDir()) <=
 	Parent->files.TempDirSize()))
     {
-	::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
+	NSEND(mynick, source, "DCC/NOSPACE2");
 	return;
     }
 
@@ -1581,6 +1585,9 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     if (Parent->dcc != NULL)
     {
 	Parent->servmsg.stats.i_file_Send++;
+	LOG(LM_INFO, "SERVMSG/FILE_SEND", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		filename));
 	unsigned short port = mSocket::FindAvailPort();
 	::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 		" " + mstring(Parent->LocalHost()) + " " +
@@ -1598,7 +1605,7 @@ void ServMsg::do_file_Dcc(const mstring &mynick, const mstring &source, const ms
 
     if (DccMap::XfersSize())
     {
-	::send(mynick, source, Parent->getMessage(source, "DCC/LIST_HEAD"));
+	NSEND(mynick, source, "DCC/LIST_HEAD");
 	DccMap::xfers_t::iterator iter;
 	RLOCK(("DccMap", "xfers"));
 	for (iter = DccMap::XfersBegin(); iter != DccMap::XfersEnd();
@@ -1645,7 +1652,7 @@ void ServMsg::do_file_Dcc(const mstring &mynick, const mstring &source, const ms
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "DCC/NOACTIVE"));
+	NSEND(mynick, source, "DCC/NOACTIVE");
     }    
 }
 
@@ -1657,8 +1664,8 @@ void ServMsg::do_file_Cancel(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1666,7 +1673,7 @@ void ServMsg::do_file_Cancel(const mstring &mynick, const mstring &source, const
 
     if (hexstr.length() != 8)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBEHEX", ( 8));
 	return;
     }
     else
@@ -1674,7 +1681,7 @@ void ServMsg::do_file_Cancel(const mstring &mynick, const mstring &source, const
 	for (unsigned int i=0; i<hexstr.length(); i++)
 	    if (!mstring("0123456789abcdef").Contains(hexstr[i]))
 	    {
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+		SEND(mynick, source, "ERR_SYNTAX/MUSTBEHEX", ( 8));
 		return;
 	    }
     }
@@ -1687,15 +1694,15 @@ void ServMsg::do_file_Cancel(const mstring &mynick, const mstring &source, const
     
     if (number == 0)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBEHEX", ( 8));
 	return;
     }
 
     RLOCK(("DccMap", "xfers"));
     if (!DccMap::IsXfers(number))
     {
-	::send(mynick, source, Parent->getMessage(source, "DCC/NODCCID"),
-		number);
+	SEND(mynick, source, "DCC/NODCCID", (
+		fmstring("%08x", number)));
     }
     else
     {
@@ -1704,8 +1711,8 @@ void ServMsg::do_file_Cancel(const mstring &mynick, const mstring &source, const
 	{
 	    Parent->dcc->Cancel(number);
 	    Parent->servmsg.stats.i_file_Cancel++;
-	    ::send(mynick, source, Parent->getMessage(source, "DCC/CANCEL"),
-		number);
+	    SEND(mynick, source, "DCC/CANCEL", (
+		fmstring("%08x", number)));
 	}}
     }
 }
@@ -1718,8 +1725,8 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
     mstring message  = params.Before(" ", 2).UpperCase();
     if (params.WordCount(" ") < 4)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
 
@@ -1728,7 +1735,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 
     if (hexstr.length() != 8)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBEHEX", ( 8));
 	return;
     }
     else
@@ -1736,7 +1743,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	for (unsigned int i=0; i<hexstr.length(); i++)
 	    if (!mstring("0123456789abcdef").Contains(hexstr[i]))
 	    {
-		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+		SEND(mynick, source, "ERR_SYNTAX/MUSTBEHEX", ( 8));
 		return;
 	    }
     }
@@ -1749,12 +1756,13 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
     
     if (number == 0)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBEHEX", ( 8));
 	return;
     }
 
     if (type.Matches("M*A*", true))
     {
+	type = "MemoAttach";
     	if (Parent->filesys.Exists(FileMap::MemoAttach, number))
     	{
     	    MemoServ::nick_t::iterator i;
@@ -1767,9 +1775,10 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    	{
 	    	    if (j->File() == number)
 	    	    {
-			::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_MEMOATTACH"),
-				number, Parent->filesys.GetName(FileMap::MemoAttach, number).c_str(),
-				j->Nick().c_str(), k, j->Sender().c_str(), j->Time().Ago().c_str());
+			SEND(mynick, source, "DCC/LOOKUP_MEMOATTACH", (
+				fmstring("%08x", number),
+				Parent->filesys.GetName(FileMap::MemoAttach, number),
+				j->Nick(), k, j->Sender(), j->Time().Ago()));
 			LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
 				Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 				fmstring("%08x", number), type));
@@ -1778,11 +1787,12 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    	}
 	    }
 	}
-	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_MEMOATTACH"),
-	    		number);
+	SEND(mynick, source, "DCC/NLOOKUP_MEMOATTACH", (
+	    		fmstring("%08x", number)));
     }
     else if (type.Matches("PIC*", true))
     {
+	type = "Picture";
     	if (Parent->filesys.Exists(FileMap::Picture, number))
     	{
     	    map<mstring, Nick_Stored_t >::iterator i;
@@ -1791,8 +1801,8 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    {
 	    	if (i->second.PicNum() == number)
 	    	{
-		    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PICTURE"),
-	  			number, i->second.Name().c_str());
+		    SEND(mynick, source, "DCC/LOOKUP_PICTURE", (
+	  		fmstring("%08x", number), i->second.Name()));
 		    LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
 			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 			fmstring("%08x", number), type));
@@ -1800,28 +1810,30 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    	}
 	    }
 	}
-	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_PICTURE"),
-	    		number);
+	SEND(mynick, source, "DCC/NLOOKUP_PICTURE", (
+	    		fmstring("%08x", number)));
     }
     else if (type.Matches("PUB*", true))
     {
+	type = "Public";
     	if (Parent->filesys.Exists(FileMap::Public, number))
     	{
-	    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PUBLIC"),
-	  		number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
-	  		Parent->filesys.GetPriv(FileMap::Public, number).c_str());
+	    SEND(mynick, source, "DCC/LOOKUP_PUBLIC", (
+	  		fmstring("%08x", number),
+			Parent->filesys.GetName(FileMap::Public, number),
+	  		Parent->filesys.GetPriv(FileMap::Public, number)));
 	    LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		fmstring("%08x", number), type));
 	    return;
     	}
-	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_PUBLIC"),
-	    		number);
+	SEND(mynick, source, "DCC/NLOOKUP_PUBLIC", (
+	    		fmstring("%08x", number)));
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_OTHER"),
-			type.c_str());
+	SEND(mynick, source, "DCC/NLOOKUP_OTHER", (
+			type));
     }
 }
 
@@ -1833,8 +1845,8 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
     mstring text = params.After(" ");
@@ -1848,8 +1860,8 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
 						    iter->first, text);
     }
     Parent->servmsg.stats.i_Global++;
-    announce(mynick, Parent->getMessage(source, "MISC/GLOBAL_MSG"),
-				source.c_str());
+    ANNOUNCE(mynick, "MISC/GLOBAL_MSG", (
+				source));
     LOG(LM_NOTICE, "SERVMSG/GLOBAL", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H), text));
 }
@@ -1861,14 +1873,14 @@ void ServMsg::do_Ask(const mstring &mynick, const mstring &source, const mstring
     mstring message  = params.Before(" ").UpperCase();
     if (!Parent->server.proto.Helpops())
     {
-	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
+	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
     }
 
     if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
 	return;
     }
     mstring text = params.After(" ");

@@ -28,6 +28,12 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.171  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.170  2001/05/05 17:33:59  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -2973,9 +2979,8 @@ void Server::parse_A(mstring &source, const mstring &msgtype, const mstring &par
 	    if (Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp;
-		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
-								msgtype.c_str());
+		mstring tmp = parseMessage(Parent->getMessage(source, "MISC/HTM"),
+								mVarArray(msgtype));
 		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
@@ -3034,9 +3039,8 @@ void Server::parse_A(mstring &source, const mstring &msgtype, const mstring &par
 		    {
 			size_t count = Parent->memoserv.NickMemoCount(who);
 			if (count)
-			    send(Parent->memoserv.FirstName(), source,
-				Parent->getMessage(source, "MS_STATUS/NS_UNREAD"),
-				count, Parent->memoserv.FirstName().c_str());
+			    SEND(Parent->memoserv.FirstName(), source, "MS_STATUS/NS_UNREAD",
+				(count, Parent->memoserv.FirstName()));
 		    }
 		}
 	    }
@@ -3283,9 +3287,8 @@ void Server::parse_I(mstring &source, const mstring &msgtype, const mstring &par
 	    if (Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp;
-		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
-								msgtype.c_str());
+		mstring tmp = parseMessage(Parent->getMessage(source, "MISC/HTM"),
+								mVarArray(msgtype));
 		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
@@ -3469,9 +3472,8 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 	    if (Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp;
-		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
-								msgtype.c_str());
+		mstring tmp = parseMessage(Parent->getMessage(source, "MISC/HTM"),
+								mVarArray(msgtype));
 		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
@@ -3502,9 +3504,8 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 	    if (Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp;
-		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
-								msgtype.c_str());
+		mstring tmp = parseMessage(Parent->getMessage(source, "MISC/HTM"),
+								mVarArray(msgtype));
 		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
@@ -3588,9 +3589,8 @@ void Server::parse_M(mstring &source, const mstring &msgtype, const mstring &par
 		if (Parent->ircsvchandler != NULL &&
 		    Parent->ircsvchandler->HTM_Level() > 3)
 		{
-		    mstring tmp;
-		    tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
-								msgtype.c_str());
+		    mstring tmp = parseMessage(Parent->getMessage(source, "MISC/HTM"),
+								mVarArray(msgtype));
 		    raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
@@ -3901,16 +3901,14 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 		    {
 			if (Parent->nickserv.GetStored(sourceL).Forbidden())
 			{
-			    Parent->nickserv.send(Parent->nickserv.FirstName(),
-				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
+			    SEND(Parent->nickserv.FirstName(), sourceL, "ERR_SITUATION/FORBIDDEN",
+				(ToHumanTime(Parent->nickserv.Ident(), sourceL)));
 			}
 			else if (Parent->nickserv.GetStored(sourceL).Protect() &&
 		    	     !Parent->nickserv.GetStored(sourceL).IsOnline())
 			{
-			    Parent->nickserv.send(Parent->nickserv.FirstName(),
-				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
+			    SEND(Parent->nickserv.FirstName(), sourceL, "ERR_SITUATION/PROTECTED",
+				(ToHumanTime(Parent->nickserv.Ident(), sourceL)));
 			}
 		    }
 		    mMessage::CheckDependancies(mMessage::NickExists, sourceL);
@@ -4273,10 +4271,10 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		}
 		else
 		{
-//		    announce(Parent->operserv.FirstName(),
-//			Parent->getMessage("MISC/INVALIDLINK"),
-//			params.ExtractWord(1, ": ").c_str(),
-//			Parent->startup.Server_Name().c_str());
+//		    ANNOUNCE(Parent->operserv.FirstName(),
+//			"MISC/INVALIDLINK", (
+//			params.ExtractWord(1, ": "),
+//			Parent->startup.Server_Name()));
 		    LOG(LM_ERROR, "OTHER/INVALIDLINK", (
 			params.ExtractWord(1, ": "),
 			Parent->startup.Server_Name()));
@@ -4318,9 +4316,9 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		}
 		else
 		{
-		    announce(Parent->operserv.FirstName(),
-			Parent->getMessage("MISC/INVALIDLINK"),
-			params.ExtractWord(1, ": ").c_str(), source.c_str());
+		    ANNOUNCE(Parent->operserv.FirstName(),
+			"MISC/INVALIDLINK", (
+			params.ExtractWord(1, ": "), source));
 		    LOG(LM_ERROR, "OTHER/INVALIDLINK", (
 			params.ExtractWord(1, ": "), source));
 		    sraw("SQUIT " + params.ExtractWord(1, ": ") + " :" +
@@ -4842,16 +4840,14 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		{
 		    if (Parent->nickserv.GetStored(sourceL).Forbidden())
 		    {
-			Parent->nickserv.send(Parent->nickserv.FirstName(),
-				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
+			SEND(Parent->nickserv.FirstName(), sourceL, "ERR_SITUATION/FORBIDDEN",
+				(ToHumanTime(Parent->nickserv.Ident(), sourceL)));
 		    }
 		    else if (Parent->nickserv.GetStored(sourceL).Protect() &&
 			!Parent->nickserv.GetStored(sourceL).IsOnline())
 		   {
-			Parent->nickserv.send(Parent->nickserv.FirstName(),
-				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
+			SEND(Parent->nickserv.FirstName(), sourceL, "ERR_SITUATION/PROTECTED",
+				(ToHumanTime(Parent->nickserv.Ident(), sourceL)));
 		    }
 		}
 		mMessage::CheckDependancies(mMessage::NickExists, sourceL);
@@ -5084,9 +5080,8 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 	    if (Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp;
-		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
-								msgtype.c_str());
+		mstring tmp = parseMessage(Parent->getMessage(source, "MISC/HTM"),
+								mVarArray(msgtype));
 		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
@@ -5374,16 +5369,14 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 		{
 		    if (Parent->nickserv.GetStored(sourceL).Forbidden())
 		    {
-			Parent->nickserv.send(Parent->nickserv.FirstName(),
-				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
+			SEND(Parent->nickserv.FirstName(), sourceL, "ERR_SITUATION/FORBIDDEN",
+				(ToHumanTime(Parent->nickserv.Ident(), sourceL)));
 		    }
 		    else if (Parent->nickserv.GetStored(sourceL).Protect() &&
 			!Parent->nickserv.GetStored(sourceL).IsOnline())
 		   {
-			Parent->nickserv.send(Parent->nickserv.FirstName(),
-				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
+			SEND(Parent->nickserv.FirstName(), sourceL, "ERR_SITUATION/PROTECTED",
+				(ToHumanTime(Parent->nickserv.Ident(), sourceL)));
 		    }
 		}
 		mMessage::CheckDependancies(mMessage::NickExists, sourceL);
@@ -5588,9 +5581,8 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 	    if (Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp;
-		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
-								msgtype.c_str());
+		mstring tmp = parseMessage(Parent->getMessage(source, "MISC/HTM"),
+								mVarArray(msgtype));
 		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());
@@ -5618,9 +5610,8 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 	    if (Parent->ircsvchandler != NULL &&
 		Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		mstring tmp;
-		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
-								msgtype.c_str());
+		mstring tmp = parseMessage(Parent->getMessage(source, "MISC/HTM"),
+								mVarArray(msgtype));
 		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
 			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
 			" " + source + " :" + tmp.c_str());

@@ -45,10 +45,10 @@
 ; --------------------------------------------------------------
 ;
 ; Códigos da recolocação de C:
-;	%s = Corda 		%c = Único Caráter;
-;	%d = inteiro 	%f = numérico (com DP's)
-;	%o = Octal 		%x = Hexidecimal
-;	%% = % Literais 	%g = Como %f
+;	$1 = Corda 		$2 = Único Caráter;
+;	$1 = inteiro 	$2 = numérico (com DP's)
+;	%o = Octal 		$1 = Hexidecimal
+;	%% = % Literais 	%g = Como $1
 ;
 ; Veja por favor a página manual em caráteres do formato de C
 ; (incluído com Magick, ou disponível com o comando
@@ -93,19 +93,19 @@
 ;
 [ERR_SYNTAX]
 TRANSLATED         =Bill Madeira <billm@surlink.net>
-UNKNOWN_COMMAND    =Comando não conhecida %s. Datilografe /msg %s HELP para a ajuda.
-UNKNOWN_OPTION     =Opção não conhecida %s. Datilografe a AJUDA %s de /msg %s para a ajuda.
-NEED_PARAMS        =Paramaters de Insuficiante especificados para %s. Datilografe a AJUDA %s de /msg %s para a ajuda.
-MUSTCONTAIN        =A entrada especificada de %s deve conter um caráter ' de %c '.
-MAYNOTCONTAIN      =A entrada especificada de %s não pode conter um caráter ' de %c '.
-STARTHRESH         =A entrada especificada de %s deve ter mais do que caráteres do non-non-wildcard de %d.
-MUSTBENUMBER       =Você deve especificar um número entre %d e %d.
+UNKNOWN_COMMAND    =Comando não conhecida $1. Datilografe /msg $2 HELP para a ajuda.
+UNKNOWN_OPTION     =Opção não conhecida $1. Datilografe a AJUDA $2 de /msg $3 para a ajuda.
+NEED_PARAMS        =Paramaters de Insuficiante especificados para $1. Datilografe a AJUDA $2 de /msg $3 para a ajuda.
+MUSTCONTAIN        =A entrada especificada de $1 deve conter um caráter ' de $2 '.
+MAYNOTCONTAIN      =A entrada especificada de $1 não pode conter um caráter ' de $2 '.
+STARTHRESH         =A entrada especificada de $1 deve ter mais do que caráteres do non-non-wildcard de $2.
+MUSTBENUMBER       =Você deve especificar um número entre $1 e $2.
 POSWHOLENUMBER     =Você pode somente especificar um número inteiro posetive.
 MUSTBEONOFF        =Você pode somente especificar "ON" ou "OFF".
 NONNUMERIC         =Os argumentos non-numerico especificaram (ignorado).
-ABOVELIMIT         =Todas as entradas acima de %d foram ignoradas.
+ABOVELIMIT         =Todas as entradas acima de $1 foram ignoradas.
 CHANFILEATTACH     =Os acessórios da lima não são permitidos às canaletas.
-MULTI_MODE         =Modalidades múltiplas de +/-%c especificadas (ignorado).
+MULTI_MODE         =Modalidades múltiplas de +/-$1 especificadas (ignorado).
 NOKEY              =Nenhuma chave especificada, mas requerida (ignorado).
 NOLIMIT            =Nenhum limite especificado, mas requerido (ignorado).
 
@@ -114,25 +114,25 @@ NOLIMIT            =Nenhum limite especificado, mas requerido (ignorado).
 ; não cumprido todos os critérios corretos a continuar.
 ;
 [ERR_SITUATION]
-ONYOURSELF         =Você pode somente executar %s em você mesmo.
-NOTONYOURSELF      =Você não pode executar %s em você mesmo.
-ONCOMMITTEE        =Você pode somente executar %s em um membro do comitê de %s.
-NOTONCOMMITTEE     =Você não pode executar %s em um membro do comitê de %s.
-ONPRIVCOMMITTEE    =Você pode somente executar %s em um membro do privilaged comitês.
-NOTONPRIVCOMMITTEE =Você não pode executar %s em um membro do privilaged comitês.
-ONDYNAMIC          =Você pode somente executar %s em um comitê dinâmico.
-NOTONDYNAMIC       =Você não pode executar %s em um comitê dinâmico.
-NEED_NICK_IDENT    =Você deve identificar para %s. O tipo /msg %s IDENTIFY o <password> a seguir tenta-o outra vez.
-NEED_CHAN_IDENT    =Você deve identificar para %s. O tipo /msg %s IDENTIFY o <password> de %s tenta então outra vez.
+ONYOURSELF         =Você pode somente executar $1 em você mesmo.
+NOTONYOURSELF      =Você não pode executar $1 em você mesmo.
+ONCOMMITTEE        =Você pode somente executar $1 em um membro do comitê de $2.
+NOTONCOMMITTEE     =Você não pode executar $1 em um membro do comitê de $2.
+ONPRIVCOMMITTEE    =Você pode somente executar $1 em um membro do privilaged comitês.
+NOTONPRIVCOMMITTEE =Você não pode executar $1 em um membro do privilaged comitês.
+ONDYNAMIC          =Você pode somente executar $1 em um comitê dinâmico.
+NOTONDYNAMIC       =Você não pode executar $1 em um comitê dinâmico.
+NEED_NICK_IDENT    =Você deve identificar para $1. O tipo /msg $2 IDENTIFY o <password> a seguir tenta-o outra vez.
+NEED_CHAN_IDENT    =Você deve identificar para $1. O tipo /msg $2 IDENTIFY o <password> de $3 tenta então outra vez.
 COMPLEX_PASS       =Escolha por favor uma senha mais complexa.
 NICK_WRONG_PASS    =Senha incorreta. Sua tentativa foi registrada.
-CHAN_WRONG_PASS    =Senha incorreta para a canaleta %s. Sua tentativa foi registrada.
-IGNORE_TRIGGER     =Você provocou serviços IGNORA (mensagens de %d em %s).
-TEMP_IGNORE        =Este é seu %s ignora (de um máximo %d). Os serviços não responderão para %s.
-PERM_IGNORE        =Você foi ignorado os tempos do máximo %d. Os serviços querem respondem não mais por muito tempo.
+CHAN_WRONG_PASS    =Senha incorreta para a canaleta $1. Sua tentativa foi registrada.
+IGNORE_TRIGGER     =Você provocou serviços IGNORA (mensagens de $1 em $2).
+TEMP_IGNORE        =Este é seu $1 ignora (de um máximo $2). Os serviços não responderão para $3.
+PERM_IGNORE        =Você foi ignorado os tempos do máximo $1. Os serviços querem respondem não mais por muito tempo.
 PROTECTED          =Este nickname tem a proteção da MATANÇA permitida. Se você NÃO IDENTIFICAR, você estará matado.
 DEFCOMMITTEE       =Os comitês da opção não podem ser modificados.
-AKILLTOOHIGH       =Você pode somente especificar um máximo de %s para um limite de tempo de AKILL.
+AKILLTOOHIGH       =Você pode somente especificar um máximo de $1 para um limite de tempo de AKILL.
 NOFLUSH            =Os memorandos com acessórios da lima não podem ser nivelados.
 NOATTACH           =Não pode emitir acessórios da lima às canaletas.
 FILEINPROG         =Não pode começar transferência nova do memorando ou de lima quando transferência de lima for em andamento.
@@ -150,24 +150,23 @@ KILL_RECOVER       =Comando do RECOVER usado
 KILL_OPERDENY      =Tentado /OPER NEGADA
 KICK_RESTRICTED    =Este canal é restrita.
 
-NICK_GETPASS       =%s executou apenas um GETPASS no nickname %s (%s).
-CHAN_GETPASS       =%s executou apenas um GETPASS na canaleta %s (%s).
-GLOBAL_MSG         =%s emitiu apenas uma mensagem a TODOS OS usuários.
-FLOOD_TEMP         =%s esta FLOODING services. Colocado em provisório ignore.
-FLOOD_PERM         =%s esta FLOODING services.  Colocated em permanent ignore.
-CHAN_MODE          =%s executou apenas uma mudança de modalidade (%s) na canaleta %s.
-NICK_MODE          =%s executou apenas uma mudança de modalidade (%s) no nickname %s.
-QLINE              =%s %s girado justo um quarentine em combinar dos nicknames  %s.
-NOOP               =%s quarentine girado justo do operador do IRC de %s no server %s.
-KILL               =%s apenas silenciosamente matado usuário %s.
-SHUTDOWN           =SHUTDOWN commando recebido de %s.
-RELOAD             =%s recarregou apenas a lima da configuração do server.
-JUPE               =%s server justo de JUPED  %s.
-ONOFF              =Os serviços foram %s girados por %s.
-ONOFF_ONE          =Service %s has been turned %s by %s.
+NICK_GETPASS       =$1 executou apenas um GETPASS no nickname $2 ($3).
+CHAN_GETPASS       =$1 executou apenas um GETPASS na canaleta $2 ($3).
+GLOBAL_MSG         =$1 emitiu apenas uma mensagem a TODOS OS usuários.
+FLOOD_TEMP         =$1 esta FLOODING services. Colocado em provisório ignore.
+FLOOD_PERM         =$1 esta FLOODING services.  Colocated em permanent ignore.
+CHAN_MODE          =$1 executou apenas uma mudança de modalidade ($2) na canaleta $3.
+NICK_MODE          =$1 executou apenas uma mudança de modalidade ($2) no nickname $3.
+QLINE              =$1 $2 girado justo um quarentine em combinar dos nicknames  $3.
+NOOP               =$1 quarentine girado justo do operador do IRC de $2 no server $3.
+KILL               =$1 apenas silenciosamente matado usuário $2.
+SHUTDOWN           =SHUTDOWN commando recebido de $1.
+RELOAD             =$1 recarregou apenas a lima da configuração do server.
+JUPE               =$1 server justo de JUPED  $2.
+ONOFF              =Os serviços foram $1 girados por $2.
+ONOFF_ONE          =Service $1 has been turned $2 by $3.
 
 BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (OPS)
-BREAKDOWN          ="%-40s  % 3.3fs  %5d (%3d)  %3.2f%%"
 ON                 =ON
 OFF                =OFF
 SUSPENDED          =SUSPENDIDA
@@ -176,127 +175,127 @@ SUSPENDED          =SUSPENDIDA
 ; This section contains the output of the STATS command.
 ;
 [STATS]
-GEN_UPTIME         =Services ligado por %s.
-GEN_RESET          =Services foi recomesado %s atraz.
-GEN_MAXUSERS       =Usuarios Maximo  : %d
-GEN_USERS          =Usuarios Ligados : %d (%d ops)
-GEN_CLONES         =Clones Connectado: %d (%d hosts)
+GEN_UPTIME         =Services ligado por $1.
+GEN_RESET          =Services foi recomesado $1 atraz.
+GEN_MAXUSERS       =Usuarios Maximo  : $1
+GEN_USERS          =Usuarios Ligados : $1 ($2 ops)
+GEN_CLONES         =Clones Connectado: $1 ($2 hosts)
 
-NICK_REGD          =Registrata : %d (%d linkada)
-NICK_DENIED        =Suspendida : %d (%d prohibida)
-NICK_CMD           =Lista de Commandos (%s):
-NICK_CMD1          =REGISTER   %10d / DROP       %10d
-NICK_CMD2          =LINK       %10d / UNLINK     %10d
-NICK_CMD3          =HOST       %10d / IDENTIFY   %10d
-NICK_CMD4          =GHOST      %10d / RECOVER    %10d
-NICK_CMD5          =SUSPEND    %10d / UNSUSPEND  %10d
-NICK_CMD6          =FORBID     %10d / GETPASS    %10d
-NICK_CMD7          =ACCESS     %10d / IGNORE     %10d
-NICK_CMD8          =SET        %10d / NOEXPIRE   %10d
-NICK_CMD9          =LOCK       %10d / UNLOCK     %10d
+NICK_REGD          =Registrata : $1 ($2 linkada)
+NICK_DENIED        =Suspendida : $1 ($2 prohibida)
+NICK_CMD           =Lista de Commandos ($1):
+NICK_CMD1          =REGISTER   $1 / DROP       $2
+NICK_CMD2          =LINK       $1 / UNLINK     $2
+NICK_CMD3          =HOST       $1 / IDENTIFY   $2
+NICK_CMD4          =GHOST      $1 / RECOVER    $2
+NICK_CMD5          =SUSPEND    $1 / UNSUSPEND  $2
+NICK_CMD6          =FORBID     $1 / GETPASS    $2
+NICK_CMD7          =ACCESS     $1 / IGNORE     $2
+NICK_CMD8          =SET        $1 / NOEXPIRE   $2
+NICK_CMD9          =LOCK       $1 / UNLOCK     $2
 
-CHAN_REGD          =Registrado : %d
-CHAN_DENIED        =Suspendido : %d (%d prohibido)
-CHAN_CMD           =Lista de Commandos (%s):
-CHAN_CMD1          =REGISTER   %10d / DROP       %10d
-CHAN_CMD2          =IDENTIFY   %10d
-CHAN_CMD3          =SUSPEND    %10d / UNSUSPEND  %10d
-CHAN_CMD4          =FORBID     %10d / GETPASS    %10d
-CHAN_CMD5          =MODE       %10d / TOPIC      %10d
-CHAN_CMD6          =OP         %10d / DEOP       %10d
-CHAN_CMD7          =VOICE      %10d / DEVOICE    %10d
-CHAN_CMD8          =KICK       %10d / ANONKICK   %10d
-CHAN_CMD9          =INVITE     %10d / UNBAN      %10d
-CHAN_CMD10         =CLEAR      %10d / AKICK      %10d
-CHAN_CMD11         =LEVEL      %10d / ACCESS     %10d
-CHAN_CMD12         =GREET      %10d / MESSAGE    %10d
-CHAN_CMD13         =SET        %10d / NOEXPIRE   %10d
-CHAN_CMD14         =LOCK       %10d / UNLOCK     %10d
+CHAN_REGD          =Registrado : $1
+CHAN_DENIED        =Suspendido : $1 ($2 prohibido)
+CHAN_CMD           =Lista de Commandos ($1):
+CHAN_CMD1          =REGISTER   $1 / DROP       $2
+CHAN_CMD2          =IDENTIFY   $1
+CHAN_CMD3          =SUSPEND    $1 / UNSUSPEND  $2
+CHAN_CMD4          =FORBID     $1 / GETPASS    $2
+CHAN_CMD5          =MODE       $1 / TOPIC      $2
+CHAN_CMD6          =OP         $1 / DEOP       $2
+CHAN_CMD7          =VOICE      $1 / DEVOICE    $2
+CHAN_CMD8          =KICK       $1 / ANONKICK   $2
+CHAN_CMD9          =INVITE     $1 / UNBAN      $2
+CHAN_CMD10         =CLEAR      $1 / AKICK      $2
+CHAN_CMD11         =LEVEL      $1 / ACCESS     $2
+CHAN_CMD12         =GREET      $1 / MESSAGE    $2
+CHAN_CMD13         =SET        $1 / NOEXPIRE   $2
+CHAN_CMD14         =LOCK       $1 / UNLOCK     $2
 
-OTH_MEMO           =Usuarios com Memos esperando       : %d
-OTH_NEWS           =Canais com novo Memos              : %d
-OTH_COMM           =Comitê Ativas                      : %d
-OTH_CLONE          =Entradas da ultrapassagem do clone : %d
-OTH_AKILL          =Entradas de Akill                  : %d
-OTH_OPERDENY       =Entradas de OperDeny               : %d
-OTH_IGNORE         =Entradas de Ignore                 : %d
+OTH_MEMO           =Usuarios com Memos esperando       : $1
+OTH_NEWS           =Canais com novo Memos              : $1
+OTH_COMM           =Comitê Ativas                      : $1
+OTH_CLONE          =Entradas da ultrapassagem do clone : $1
+OTH_AKILL          =Entradas de Akill                  : $1
+OTH_OPERDENY       =Entradas de OperDeny               : $1
+OTH_IGNORE         =Entradas de Ignore                 : $1
 
-OTH_CMD            =Lista de Commandos (%s): %s
-OTH_CMD1           =READ       %10d / UNREAD     %10d
-OTH_CMD2           =SEND       %10d / FLUSH      %10d
-OTH_CMD3           =REPLY      %10d / FORWARD    %10d
-OTH_CMD4           =CANCEL     %10d / DEL        %10d
-OTH_CMD5           =CONTINUE   %10d / FILE       %10d
+OTH_CMD            =Lista de Commandos ($1): $2
+OTH_CMD1           =READ       $1 / UNREAD     $2
+OTH_CMD2           =SEND       $1 / FLUSH      $2
+OTH_CMD3           =REPLY      $1 / FORWARD    $2
+OTH_CMD4           =CANCEL     $1 / DEL        $2
+OTH_CMD5           =CONTINUE   $1 / FILE       $2
 
-OTH_CMD6           =NEW        %10d / KILL       %10d
-OTH_CMD7           =ADD/DEL    %10d / MEMO       %10d
-OTH_CMD8           =LOGON      %10d / SET        %10d
+OTH_CMD6           =NEW        $1 / KILL       $2
+OTH_CMD7           =ADD/DEL    $1 / MEMO       $2
+OTH_CMD8           =LOGON      $1 / SET        $2
 
-OTH_CMD9           =GLOBAL     %10d / CREDITS    %10d
+OTH_CMD9           =GLOBAL     $1 / CREDITS    $2
 
-OTH_CMD10          =TRACE      %10d / MODE       %10d
-OTH_CMD11          =QLINE      %10d / UNQLINE    %10d
-OTH_CMD12          =NOOP       %10d / KILL       %10d
-OTH_CMD13          =PING       %10d / UPDATE     %10d
-OTH_CMD14          =RELOAD     %10d / UNLOAD     %10d
-OTH_CMD15          =JUPE       %10d / ON/OFF     %10d
-OTH_CMD16          =CLONE      %10d / AKILL      %10d
-OTH_CMD17          =OPERDENY   %10d / IGNORE     %10d
+OTH_CMD10          =TRACE      $1 / MODE       $2
+OTH_CMD11          =QLINE      $1 / UNQLINE    $2
+OTH_CMD12          =NOOP       $1 / KILL       $2
+OTH_CMD13          =PING       $1 / UPDATE     $2
+OTH_CMD14          =RELOAD     $1 / UNLOAD     $2
+OTH_CMD15          =JUPE       $1 / ON/OFF     $2
+OTH_CMD16          =CLONE      $1 / AKILL      $2
+OTH_CMD17          =OPERDENY   $1 / IGNORE     $2
 
 
-USE_NS_LIVE        =Nicks Ao vivo        %5d (%dkb)
-USE_CS_LIVE        =Canal Ao vivo        %5d (%dkb)
-USE_NS_STORED      =Nicks Guardado       %5d (%dkb)
-USE_CS_STORED      =Canais Guardado      %5d (%dkb)
-USE_MEMO           =Memos                %5d (%dkb)
-USE_NEWS           =Memos do canal       %5d (%dkb)
-USE_COMMITTEE      =Comitês              %5d (%dkb)
-USE_OPERSERV       =Lista de OperServ    %5d (%dkb)
-USE_OTHER          =Outros               %5d (%dkb)
-USE_TOTAL          =TOTAL                %5d (%dkb)
+USE_NS_LIVE        =Nicks Ao vivo        $1 ($2kb)
+USE_CS_LIVE        =Canal Ao vivo        $1 ($2kb)
+USE_NS_STORED      =Nicks Guardado       $1 ($2kb)
+USE_CS_STORED      =Canais Guardado      $1 ($2kb)
+USE_MEMO           =Memos                $1 ($2kb)
+USE_NEWS           =Memos do canal       $1 ($2kb)
+USE_COMMITTEE      =Comitês              $1 ($2kb)
+USE_OPERSERV       =Lista de OperServ    $1 ($2kb)
+USE_OTHER          =Outros               $1 ($2kb)
+USE_TOTAL          =TOTAL                $1 ($2kb)
 
 
 ;
 ; Esta seção contem TODA A saída dos comandos modificando da lista
 ;
 [LIST]
-LASTMOD            =Ultimo Modificado %s atraz por %s
-MAXLIST            =Você pode somente alistar até entradas de %d em uma vez.
-NICK_LIST          =Indicando os nicknames que combinam %s:
-CHAN_LIST          =Indicando os canais que combinam %s:
-DISPLAYED          =%d das entradas de %d indicadas.
+LASTMOD            =Ultimo Modificado $1 atraz por $2
+MAXLIST            =Você pode somente alistar até entradas de $1 em uma vez.
+NICK_LIST          =Indicando os nicknames que combinam $1:
+CHAN_LIST          =Indicando os canais que combinam $1:
+DISPLAYED          =$1 das entradas de $2 indicadas.
 
-DISPLAY            =Indicando todas as entradas na lista de %s:
-DISPLAY_MATCH      =Indicando as entradas que combinam %s na lista de %s:
-ADD                =Entrada adicionada %s à lista de %s.
-ADD_NUMBER         =Entrada adicionada #%d à lista de %s.
-ADD_LEVEL          =Entrada adicionada %s à lista de %s em %d.
-ADD_TIME           =Entrada adicionada %s à lista de %s para %s.
-CHANGE_LEVEL       =Entrada mudada %s na lista de %s a %d.
-CHANGE_TIME        =Entrada mudada %s na lista de %s a %s.
-DEL                =Mudada %s na lista de %s de Entrada um %s.
-DEL_MATCH          =Entradas suprimidas de %d que combinam %s da lista de %s.
-DEL_NUMBER         =Entrada suprimida #%d da lista de %s.
-EXISTS             =A entrada %s já existe ou é inclusiva na lista de %s.
-NOTEXISTS          =Nenhumas entradas que combinam %s na lista de %s.
-NOTEXISTS_NUMBER   =Nenhuma entrada #%d existe na lista de %s.
-EMPTY              =Nenhumas entradas na lista de %s.
+DISPLAY            =Indicando todas as entradas na lista de $1:
+DISPLAY_MATCH      =Indicando as entradas que combinam $1 na lista de $2:
+ADD                =Entrada adicionada $1 à lista de $2.
+ADD_NUMBER         =Entrada adicionada #$1 à lista de $2.
+ADD_LEVEL          =Entrada adicionada $1 à lista de $2 em $3.
+ADD_TIME           =Entrada adicionada $1 à lista de $2 para $3.
+CHANGE_LEVEL       =Entrada mudada $1 na lista de $2 a $3.
+CHANGE_TIME        =Entrada mudada $1 na lista de $2 a $3.
+DEL                =Mudada $1 na lista de $2 de Entrada um $3.
+DEL_MATCH          =Entradas suprimidas de $1 que combinam $2 da lista de $3.
+DEL_NUMBER         =Entrada suprimida #$1 da lista de $2.
+EXISTS             =A entrada $1 já existe ou é inclusiva na lista de $2.
+NOTEXISTS          =Nenhumas entradas que combinam $1 na lista de $2.
+NOTEXISTS_NUMBER   =Nenhuma entrada #$1 existe na lista de $2.
+EMPTY              =Nenhumas entradas na lista de $1.
 
-DISPLAY2           =Indicando todas as entradas na lista de %s %s:
-DISPLAY2_MATCH     =Indicando as entradas que combinam %s na lista de %s %s:
-ADD2               =Entrada adicionada %s à lista de %s %s.
-ADD2_NUMBER        =Entrada adicionada #%d à lista de %s %s.
-ADD2_LEVEL         =Entrada adicionada %s à lista de %s %s no nível %d.
-ADD2_TIME          =Entrada adicionada %s à lista de %s %s para %s.
-CHANGE2_LEVEL      =Entrada mudada %s na lista de %s %s ao nível %d.
-CHANGE2_TIME       =Entrada mudada %s na lista de %s %s a %s.
-DEL2               =Entrada suprimida %s da lista de %s %s.
-DEL2_MATCH         =Entradas suprimidas de %d que combinam %s da lista de %s %s.
-DEL2_NUMBER        =Entrada suprimida #%d da lista de %s %s.
-EXISTS2            =A entrada %s já existe ou é inclusiva na lista de %s %s.
-NOTEXISTS2         =Nenhumas entradas que combinam %s na lista de %s %s.
-NOTEXISTS2_NUMBER  =Nenhuma entrada #%d existe na lista de %s %s.
-EMPTY2             =Nenhumas entradas na lista de %s %s.
+DISPLAY2           =Indicando todas as entradas na lista de $1 $2:
+DISPLAY2_MATCH     =Indicando as entradas que combinam $1 na lista de $2 $3:
+ADD2               =Entrada adicionada $1 à lista de $2 $3.
+ADD2_NUMBER        =Entrada adicionada #$1 à lista de $2 $3.
+ADD2_LEVEL         =Entrada adicionada $1 à lista de $2 $3 no nível $4.
+ADD2_TIME          =Entrada adicionada $1 à lista de $2 $3 para $4.
+CHANGE2_LEVEL      =Entrada mudada $1 na lista de $2 $3 ao nível $4.
+CHANGE2_TIME       =Entrada mudada $1 na lista de $2 $3 a $4.
+DEL2               =Entrada suprimida $1 da lista de $2 $3.
+DEL2_MATCH         =Entradas suprimidas de $1 que combinam $2 da lista de $3 $4.
+DEL2_NUMBER        =Entrada suprimida #$1 da lista de $2 $3.
+EXISTS2            =A entrada $1 já existe ou é inclusiva na lista de $2 $3.
+NOTEXISTS2         =Nenhumas entradas que combinam $1 na lista de $2 $3.
+NOTEXISTS2_NUMBER  =Nenhuma entrada #$1 existe na lista de $2 $3.
+EMPTY2             =Nenhumas entradas na lista de $1 $2.
 
 ACCESS             =access
 IGNORE             =memo ignore
@@ -315,24 +314,24 @@ SIGNORE            =services ignore
 ; Esta seção define respostas do STATUS sobre OUTROS nicknames.
 ;
 [NS_OTH_STATUS]
-ISSTORED           =Nickname %s ja esta registrada ou linked.
-ISREGD             =Nickname %s ja esta registrada.
-ISLINKED           =Nickname %s ja esta linked.
-ISNOTSTORED        =Nickname %s não esta registrada ou linked.
-ISNOTREGD          =Nickname %s não esta registrada.
-ISNOTLINKED        =Nickname %s não esta linked.
-ISFORBIDDEN        =Nickname %s e prohibida
-ISSUSPENDED        =Nickname %s esta suspendida.
-ISNOTSUSPENDED     =Nickname %s não esta suspendida.
-ISHOST             =Nickname %s e um host.
-ISNOTHOST          =Nickname %s não e um host.
-IDENTIFIED         =Voce ja esta identificado para %s.
-ISLOCKED           =a opção de %s para o nickname %s é locked.
-ISNOTLOCKED        =a opção de %s para o nickname %s não é locked.
+ISSTORED           =Nickname $1 ja esta registrada ou linked.
+ISREGD             =Nickname $1 ja esta registrada.
+ISLINKED           =Nickname $1 ja esta linked.
+ISNOTSTORED        =Nickname $1 não esta registrada ou linked.
+ISNOTREGD          =Nickname $1 não esta registrada.
+ISNOTLINKED        =Nickname $1 não esta linked.
+ISFORBIDDEN        =Nickname $1 e prohibida
+ISSUSPENDED        =Nickname $1 esta suspendida.
+ISNOTSUSPENDED     =Nickname $1 não esta suspendida.
+ISHOST             =Nickname $1 e um host.
+ISNOTHOST          =Nickname $1 não e um host.
+IDENTIFIED         =Voce ja esta identificado para $1.
+ISLOCKED           =a opção de $1 para o nickname $2 é locked.
+ISNOTLOCKED        =a opção de $1 para o nickname $2 não é locked.
 
-ISNOTYOURS         =Nickname %s não esta linked para Voce.
-ISINUSE            =Nickname %s esta sendo usada.
-ISNOTINUSE         =Nickname %s não esta sendo usada.
+ISNOTYOURS         =Nickname $1 não esta linked para Voce.
+ISINUSE            =Nickname $1 esta sendo usada.
+ISNOTINUSE         =Nickname $1 não esta sendo usada.
 
 ;
 ; Esta seção define respostas do STATUS sobre SEUS nicknames.
@@ -350,8 +349,8 @@ ISNOTSUSPENDED     =Seu Nick nao esta suspendida.
 ISHOST             =Seu Nick e um host.
 ISNOTHOST          =Seu Nick não e um host.
 IDENTIFIED         =Voce ja esta identificado.
-ISLOCKED           =%s a opção é locked.
-ISNOTLOCKED        =%s a opção não é locked.
+ISLOCKED           =$1 a opção é locked.
+ISNOTLOCKED        =$1 a opção não é locked.
 
 PICDISABLED        =Armazenar retratos FOI INCAPACITADO.
 
@@ -359,26 +358,26 @@ PICDISABLED        =Armazenar retratos FOI INCAPACITADO.
 ; Estas respostas são SOMENTE para o comando de NickServ INFO
 ;
 [NS_INFO]
-REALNAME           =%s é %s
-HOST               =\      Nick de Host: %s
-REGISTERED         =\        Registrado: %s%s
-ONLINEAS           =\       Online Como: %s
-LASTALLMASK        =\ Ultima vez online: %s
-LASTALLSEEN        =\ Ultima vez Ligado: %s
-LASTMASK           =\   Ultima vez como: %s
-LASTSEEN           =\        Ultima vez: %s
-QUITMSG            =\       MSG de Quit: %s
-SUSPEND            =\        Suspendida: %s atraz por %s
-SUSPENDFOR         =\             Rasão: %s
-EMAIL              =\            E-Mail: %s
-URL                =\         Home Page: http://%s
-ICQ                =\             ICQ #: %s
-DESCRIPTION        =\         Descrição: %s
-COMMENT            =\         Commentos: %s
-COMMITTEES         =\           Comitês: %s
-OPTIONS            =\            Opções: %s
-HASPIC             =Este usuário tem um retrato disponível. O tipo /msg %s SEND %s para download o.
-ISONLINE           =Este usuário é atualmente em linha. Datilografe /whois %s para mais informação.
+REALNAME           =$1 é $2
+HOST               =\      Nick de Host: $1
+REGISTERED         =\        Registrado: $1$2
+ONLINEAS           =\       Online Como: $1
+LASTALLMASK        =\ Ultima vez online: $1
+LASTALLSEEN        =\ Ultima vez Ligado: $1
+LASTMASK           =\   Ultima vez como: $1
+LASTSEEN           =\        Ultima vez: $1
+QUITMSG            =\       MSG de Quit: $1
+SUSPEND            =\        Suspendida: $1 atraz por $2
+SUSPENDFOR         =\             Rasão: $1
+EMAIL              =\            E-Mail: $1
+URL                =\         Home Page: http://$1
+ICQ                =\             ICQ #: $1
+DESCRIPTION        =\         Descrição: $1
+COMMENT            =\         Commentos: $1
+COMMITTEES         =\           Comitês: $1
+OPTIONS            =\            Opções: $1
+HASPIC             =Este usuário tem um retrato disponível. O tipo /msg $1 SEND $2 para download o.
+ISONLINE           =Este usuário é atualmente em linha. Datilografe /whois $1 para mais informação.
 NOEXPIRE           =non-expiring
 
 ;
@@ -404,41 +403,41 @@ LANGUAGE           =Lingua
 ; O comando de NickServ executou em OUTROS nicknames.
 ;
 [NS_OTH_COMMAND]
-REGISTERED         =Nickname %s esta registrado com host %s.
-LINKED             =Nickname %s esta linked com %s.
-DROPPED            =Nickname %s nao esta mais registrada.
-UNLINKED           =Nickname %s nao esta mais linked.
-NEWHOST            =Nickname %s e o host.
-IDENTIFIED         =Senha Aceita - Voce esta identificado como %s.
-SET_TO             =%s para o nickname %s foi ajustado a %s.
-UNSET              =%s para o nickname %s foi unset.
-OPT_SET_TO         =%s a opção para o nickname %s foi ajustada a %s.
+REGISTERED         =Nickname $1 esta registrado com host $2.
+LINKED             =Nickname $1 esta linked com $2.
+DROPPED            =Nickname $1 nao esta mais registrada.
+UNLINKED           =Nickname $1 nao esta mais linked.
+NEWHOST            =Nickname $1 e o host.
+IDENTIFIED         =Senha Aceita - Voce esta identificado como $1.
+SET_TO             =$1 para o nickname $2 foi ajustado a $3.
+UNSET              =$1 para o nickname $2 foi unset.
+OPT_SET_TO         =$1 a opção para o nickname $2 foi ajustada a $3.
 
-RELEASED           =Cliente usando nickname %s foi killed.
-HELD               =Nickname %s esta sendo segurado pelo services.
-SUSPENDED          =Nickname %s foi suspendida.
-UNSUSPENDED        =Nickname %s foi unsuspendida.
-FORBIDDEN          =Nickname %s foi prohibida.
-GETPASS            =A senha para o nickname %s (%s) é %s.
-LOCKED             =%s para o nickname %s FOI TRAVADO a %s
-UNLOCKED           =%s para o nickname %s FOI DESTRAVADO.
-OPT_LOCKED         =A opção de %s para o nickname %s FOI TRAVADA a %s.
-OPT_UNLOCKED       =a opção de %s para o nickname %s FOI DESTRAVADA.
+RELEASED           =Cliente usando nickname $1 foi killed.
+HELD               =Nickname $1 esta sendo segurado pelo services.
+SUSPENDED          =Nickname $1 foi suspendida.
+UNSUSPENDED        =Nickname $1 foi unsuspendida.
+FORBIDDEN          =Nickname $1 foi prohibida.
+GETPASS            =A senha para o nickname $1 ($2) é $3.
+LOCKED             =$1 para o nickname $2 FOI TRAVADO a $3
+UNLOCKED           =$1 para o nickname $2 FOI DESTRAVADO.
+OPT_LOCKED         =A opção de $1 para o nickname $2 FOI TRAVADA a $3.
+OPT_UNLOCKED       =a opção de $1 para o nickname $2 FOI DESTRAVADA.
 
 ;
 ; Esta seção contem a saída usada no fim de SUCCESSFULL
 ; O comando de NickServ executou em SEUS nicknames.
 ;
 [NS_YOU_COMMAND]
-REGISTERED         =Seu nickname é registado agora sob o anfitrião %s.
-LINKED             =Seu nickname é ligado agora a %s.
+REGISTERED         =Seu nickname é registado agora sob o anfitrião $1.
+LINKED             =Seu nickname é ligado agora a $1.
 DROPPED            =Seu nickname foi deixado cair.
 UNLINKED           =Seu nickname unlinked.
 NEWHOST            =Seu nickname é agora o anfitrião.
 IDENTIFIED         =Senha aceitada - você é identificado agora.
-SET_TO             =Seu %s foi ajustado a %s.
-UNSET              =Seu %s foi unset.
-OPT_SET_TO         =A opção de %s foi ajustada a %s.
+SET_TO             =Seu $1 foi ajustado a $2.
+UNSET              =Seu $1 foi unset.
+OPT_SET_TO         =A opção de $1 foi ajustada a $2.
 
 PENDING            =Comece por favor a emitir seu retrato agora.
 CANCEL             =Durante transferência de file cancelou.
@@ -449,24 +448,24 @@ REMOVED            =Seu retrato foi removido.
 ; Respostas SOMENTE para o comando de ChanServ INFO
 ;
 [CS_INFO]
-IS                 =Informação de %s:
-FOUNDER            =\            Founder: %s
-COFOUNDER          =\          CoFounder: %s
-DESCRIPTION        =\          Descrição: %s
-REGISTERED         =\          Registado: %s%s
-INUSEBY            =\          Uso desde: %s
-LASTUSED           =\       Último Usado: %s
-EMAIL              =\             E-Mail: %s
-URL                =\           WWW Page: http://%s
-SUSPEND            =\         Suspendido: %s atraz por %s
-SUSPENDFOR         =\                Por: %s
-COMMENT            =\         Comentário: %s
-TOPIC              =\      Último Tópico: %s
-TOPICBY            =\                Set: %s atraz por %s
-MLOCK              =\          Mode Lock: %s
-REVENGE            =\           Vingança: %s
-BANTIME            =Remoção Da Proibição: %s
-OPTIONS            =\             Opções: %s
+IS                 =Informação de $1:
+FOUNDER            =\            Founder: $1
+COFOUNDER          =\          CoFounder: $1
+DESCRIPTION        =\          Descrição: $1
+REGISTERED         =\          Registado: $1$2
+INUSEBY            =\          Uso desde: $1
+LASTUSED           =\       Último Usado: $1
+EMAIL              =\             E-Mail: $1
+URL                =\           WWW Page: http://$1
+SUSPEND            =\         Suspendido: $1 atraz por $2
+SUSPENDFOR         =\                Por: $1
+COMMENT            =\         Comentário: $1
+TOPIC              =\      Último Tópico: $1
+TOPICBY            =\                Set: $1 atraz por $2
+MLOCK              =\          Mode Lock: $1
+REVENGE            =\           Vingança: $1
+BANTIME            =Remoção Da Proibição: $1
+OPTIONS            =\             Opções: $1
 
 NOEXPIRE           =non-expiring
 OPS                =ops
@@ -537,104 +536,103 @@ REV_MIRROR         =Atividade De Espelho
 ; Esta seção define resopnses do STATUS sobre as canaletas.
 ;
 [CS_STATUS]
-ISSTORED           =Canal %s esta registrado.
-ISNOTSTORED        =Canal %s não esta registrado.
-IN                 =Voce ja esta no canal %s.
-NOTIN              =Voce não ta no canal %s.
-OTH_IN             =Nickname %s ja esta no canal %s.
-OTH_NOTIN          =Nickname %s não esta no canal %s.
-OPPED              =Voce ja ten OPS no canal %s.
-NOTOPPED           =Voce não ten OPS no canal %s.
-OTH_OPPED          =Nickname %s ja ten ops no canal %s.
-OTH_NOTOPPED       =Nickname %s não ten ops no canal %s.
-VOICED             =Voce ja ten VOICE no canal %s.
-NOTVOICED          =Voce não ten VOICE no canal %s.
-OTH_VOICED         =Nickname %s ja ten VOICE no Canal %s.
-OTH_NOTVOICED      =Nickname %s não ten VOICE no canal %s.
-BANNED             =Voce ja ta BANNED do canal %s.
-NOTBANNED          =Voce não ta BANNED do canal %s.
-OTH_BANNED         =Nickname %s ja esta BANNED do canal %s.
-OTH_NOTBANNED      =Nickname %s não esta BANNED do canal %s.
-IDENTIFIED         =Voce ja esta identificado para o Canal %s.
-ISFORBIDDEN        =Canal %s e prohibido.
-ISNOTFORBIDDEN     =Canal %s não e prohibido.
-ISINUSE            =Canal %s esta en uso.
-ISNOTINUSE         =Canal %s nao esta en uso.
-RESTRICT           =Canal %s e registrado e ten %s set.  As limitações do acesso aplicam-se.
-HIGHERACCESS       =Nickname %s ten mais accesso do que voce na lista do %s
-LOCKGREET          =Seu Cumprimento %s esta tracando.
-NOTLOCKGREET       =Seu Cumprimento para canal %s não esta tracando.
-ISLOCKED           =%s para canal %s esta tracando.
-ISNOTLOCKED        =%s para canal %s não esta tracando.
-NOREVENGE          =Level de Vingança %s nao e valido.
+ISSTORED           =Canal $1 esta registrado.
+ISNOTSTORED        =Canal $1 não esta registrado.
+IN                 =Voce ja esta no canal $1.
+NOTIN              =Voce não ta no canal $1.
+OTH_IN             =Nickname $1 ja esta no canal $2.
+OTH_NOTIN          =Nickname $1 não esta no canal $2.
+OPPED              =Voce ja ten OPS no canal $1.
+NOTOPPED           =Voce não ten OPS no canal $1.
+OTH_OPPED          =Nickname $1 ja ten ops no canal $2.
+OTH_NOTOPPED       =Nickname $1 não ten ops no canal $2.
+VOICED             =Voce ja ten VOICE no canal $1.
+NOTVOICED          =Voce não ten VOICE no canal $1.
+OTH_VOICED         =Nickname $1 ja ten VOICE no Canal $2.
+OTH_NOTVOICED      =Nickname $1 não ten VOICE no canal $2.
+BANNED             =Voce ja ta BANNED do canal $1.
+NOTBANNED          =Voce não ta BANNED do canal $1.
+OTH_BANNED         =Nickname $1 ja esta BANNED do canal $2.
+OTH_NOTBANNED      =Nickname $1 não esta BANNED do canal $2.
+IDENTIFIED         =Voce ja esta identificado para o Canal $1.
+ISFORBIDDEN        =Canal $1 e prohibido.
+ISNOTFORBIDDEN     =Canal $1 não e prohibido.
+ISINUSE            =Canal $1 esta en uso.
+ISNOTINUSE         =Canal $1 nao esta en uso.
+RESTRICT           =Canal $1 e registrado e ten $2 set.  As limitações do acesso aplicam-se.
+HIGHERACCESS       =Nickname $1 ten mais accesso do que voce na lista do $2
+LOCKGREET          =Seu Cumprimento $1 esta tracando.
+NOTLOCKGREET       =Seu Cumprimento para canal $1 não esta tracando.
+ISLOCKED           =$1 para canal $2 esta tracando.
+ISNOTLOCKED        =$1 para canal $2 não esta tracando.
+NOREVENGE          =Level de Vingança $1 nao e valido.
 
 ;
 ; Esta seção contem a saída usada no fim de SUCCESSFULL
 ; Comandos de ChanServ
 ;
 [CS_COMMAND]
-REGISTERED         =A canal %s foi registada com founder %s.
-DROPPED            =Canal %s foi de-registado
-IDENTIFIED         =Senha Aceita -- Voce esta identificado para o canal %s.
-SET_TO             =%s para a canal %s foi ajustado a %s.
-UNSET              =%s para a canal %s foi unset.
-LOCKED             =%s para a canaleta %s FOI TRAVADO a %s.
-UNLOCKED           =%s para a canaleta %s FOI DESTRAVADO.
-MLOCK_REVERSED     =O fechamento da modalidade inverteu %s
-MLOCK_FORCED       =O fechamento da modalidade forçou %s.
-MLOCK_SET          =O fechamento da modalidade para a canaleta %s foi ajustado a %s.
-MLOCK_UNSET        =O fechamento da modalidade para a canaleta %s foi removido.
-MLOCK_LOCK         =O fechamento da modalidade para a canaleta %s foi travado a %s.
-MLOCK_UNLOCK       =O fechamento da modalidade para a canaleta %s foi destravado.
-SUSPENDED          =A canaleta %s foi suspendida.
-UNSUSPENDED        =A canaleta %s nao esta mais suspendida.
-FORBIDDEN          =A canaleta %s foi proibida.
-GETPASS            =A senha para a canaleta %s (%s) é %s.
-KICK               =Pedido por %s (%s).
-INVITE             =Você foi convidado canalizar %s.
-OTH_INVITE         =Você foi convidado canalizar %s por %s.
-UNBANNED           =Você foi unbanned da canaleta %s.
-OTH_UNBANNED       =O nickname %s foi unbanned da canaleta %s.
-CLEAR              =o comando de %s foi usado por %s para a canaleta %s.
-LEVEL_HEAD         =Level  TAG        Titulo (%s)
-LEVEL_LIST         =%5d  %-9s  %s
-LEVEL_HAVE         =Você tem o acesso de %s na canaleta %s.
+REGISTERED         =A canal $1 foi registada com founder $2.
+DROPPED            =Canal $1 foi de-registado
+IDENTIFIED         =Senha Aceita -- Voce esta identificado para o canal $1.
+SET_TO             =$1 para a canal $2 foi ajustado a $3.
+UNSET              =$1 para a canal $2 foi unset.
+LOCKED             =$1 para a canaleta $2 FOI TRAVADO a $3.
+UNLOCKED           =$1 para a canaleta $2 FOI DESTRAVADO.
+MLOCK_REVERSED     =O fechamento da modalidade inverteu $1
+MLOCK_FORCED       =O fechamento da modalidade forçou $1.
+MLOCK_SET          =O fechamento da modalidade para a canaleta $1 foi ajustado a $2.
+MLOCK_UNSET        =O fechamento da modalidade para a canaleta $1 foi removido.
+MLOCK_LOCK         =O fechamento da modalidade para a canaleta $1 foi travado a $2.
+MLOCK_UNLOCK       =O fechamento da modalidade para a canaleta $1 foi destravado.
+SUSPENDED          =A canaleta $1 foi suspendida.
+UNSUSPENDED        =A canaleta $1 nao esta mais suspendida.
+FORBIDDEN          =A canaleta $1 foi proibida.
+GETPASS            =A senha para a canaleta $1 ($2) é $3.
+KICK               =Pedido por $1 ($2).
+INVITE             =Você foi convidado canalizar $1.
+OTH_INVITE         =Você foi convidado canalizar $1 por $2.
+UNBANNED           =Você foi unbanned da canaleta $1.
+OTH_UNBANNED       =O nickname $1 foi unbanned da canaleta $2.
+CLEAR              =o comando de $1 foi usado por $2 para a canaleta $3.
+LEVEL_HEAD         =Level  TAG        Titulo ($1)
+LEVEL_HAVE         =Você tem o acesso de $1 na canaleta $2.
 
 ;
 ; Esta seção contem a saída usada no fim de SUCCESSFULL
 ; CommServ comanda, aswell como todas as saídas do status.
 ;
 [COMMSERV]
-ISSTORED           =O comitê %s existe já.
-ISNOTSTORED        =O comitê %s não existe.
-NOTMODIFY          =O comitê %s não pode ser modificado em linha.
-MULTI_HEAD         =O comitê %s tem mais de uma cabeça e não pode ser atribuído novamente.
-MEMBER             =Você está no comitê de %s.
-NOTMEMBER          =Você não está no comitê de %s.
-HEAD               =Você é cabeça do comitê de %s.
-NOTHEAD            =Você não é cabeça do comitê de %s.
-OTH_MEMBER         =%s está no comitê de %s.
-OTH_NOTMEMBER      =%s não está no comitê de %s.
-OTH_HEAD           =%s é cabeça do comitê de %s.
-OTH_NOTHEAD        =%s não é cabeça do comitê de %s.
-NEW                =O comitê %s foi criado com a cabeça %s.
-KILL               =O comitê %s foi suprimido.
-MEMO               =Memorando emitido a todos os membros do comitê de %s.
-SET_TO             =%s para o comitê %s foi ajustado a %s.
-UNSET              =%s para o comitê que %s foi unset.
+ISSTORED           =O comitê $1 existe já.
+ISNOTSTORED        =O comitê $1 não existe.
+NOTMODIFY          =O comitê $1 não pode ser modificado em linha.
+MULTI_HEAD         =O comitê $1 tem mais de uma cabeça e não pode ser atribuído novamente.
+MEMBER             =Você está no comitê de $1.
+NOTMEMBER          =Você não está no comitê de $1.
+HEAD               =Você é cabeça do comitê de $1.
+NOTHEAD            =Você não é cabeça do comitê de $1.
+OTH_MEMBER         =$1 está no comitê de $2.
+OTH_NOTMEMBER      =$1 não está no comitê de $2.
+OTH_HEAD           =$1 é cabeça do comitê de $2.
+OTH_NOTHEAD        =$1 não é cabeça do comitê de $2.
+NEW                =O comitê $1 foi criado com a cabeça $2.
+KILL               =O comitê $1 foi suprimido.
+MEMO               =Memorando emitido a todos os membros do comitê de $1.
+SET_TO             =$1 para o comitê $2 foi ajustado a $3.
+UNSET              =$1 para o comitê que $2 foi unset.
 DEFUNCT            =DEFUNCT
 
 ;
 ; These are the outputs for the CommServ INFO command ONLY.
 ;
 [COMMSERV_INFO]
-DESCRIPTION        =%s e %s
-HEADCOM            =\  Cabeça: %s
-HEAD               =\  Cabeça: %s
-EMAIL              =\  E-Mail: %s
-URL                = WWW Page: http://%s
-STATS              =\  Status: %s
-OPTIONS            =\ Opções: %s
+DESCRIPTION        =$1 e $2
+HEADCOM            =\  Cabeça: $1
+HEAD               =\  Cabeça: $1
+EMAIL              =\  E-Mail: $1
+URL                = WWW Page: http://$1
+STATS              =\  Status: $1
+OPTIONS            =\ Opções: $1
 MEMBERS            =membros
 MESSAGES           =mensages
 SET_HEAD           =Cabeça
@@ -648,119 +646,119 @@ SET_OPENMEMOS      =Open Memos
 ; These are status output lines for OperServ
 ;
 [OS_STATUS]
-INVALID_THREAD     =Thread type %s is not valid.
-INVALID_LEVEL      =Trace level %s is not valid (ignored).
-ISLINKED           =Server %s is already linked.
-ISNOTLINKED        =Server %s is not linked.
-ISLANG             =Language %s is already loaded.
-ISNOTLANG          =Language %s is not loaded.
-NOLANG             =Language %s does not exist.
+INVALID_THREAD     =Thread type $1 is not valid.
+INVALID_LEVEL      =Trace level $1 is not valid (ignored).
+ISLINKED           =Server $1 is already linked.
+ISNOTLINKED        =Server $1 is not linked.
+ISLANG             =Language $1 is already loaded.
+ISNOTLANG          =Language $1 is not loaded.
+NOLANG             =Language $1 does not exist.
 
 ;
 ; Estas são as linhas de saída para os AJUSTES de OperServ comandam SOMENTE.
 ;
 [OS_SETTINGS]
-CFG_LEVEL          =O nível baixo é %d, nível atual é %d.
-CFG_LAG            =O nível é aumentado se a retardação for mais do que %s.
-CFG_SERVERS        =Os serviços têm os server possable de %d a conectar a.
-CFG_RELINK         =Presta serviços de manutenção ao relink em %s se SQUIT.
-CFG_SQUIT1         =A proteção de SQUIT dura %s.
-CFG_SQUIT2         =Os usuários têm %s a reconectar antes que a proteção de SQUIT ative.
-CFG_SYNC           =As bases de dados conservam cada %s, e sincronização em %s.
-CFG_CYCLE          =O ciclo de HyperActive é %s, e a verificação da retardação é %s.
+CFG_LEVEL          =O nível baixo é $1, nível atual é $2.
+CFG_LAG            =O nível é aumentado se a retardação for mais do que $1.
+CFG_SERVERS        =Os serviços têm os server possable de $1 a conectar a.
+CFG_RELINK         =Presta serviços de manutenção ao relink em $1 se SQUIT.
+CFG_SQUIT1         =A proteção de SQUIT dura $1.
+CFG_SQUIT2         =Os usuários têm $1 a reconectar antes que a proteção de SQUIT ative.
+CFG_SYNC           =As bases de dados conservam cada $1, e sincronização em $2.
+CFG_CYCLE          =O ciclo de HyperActive é $1, e a verificação da retardação é $2.
 
-NICK_EXPIRE        =Os nicknames expirarão após %s.
-NICK_IDENT         =Os usuários têm %s a identificar.
-NICK_HOLD          =Os nicknames são prendidos para %s na falha identificar.
-NICK_PASS          =Os usuários serão matados se não identificarem tempos de %d.
-NICK_OPTIONS       =As opções do nickname da opção são: %s
-NICK_LANG          =A língua da opção é %s.
-NICK_PICSIZE       =O tamanho máximo do retrato é bytes de %d.
-NICK_PICEXT        =As extensões válidas do retrato são: %s
-NICK_FILES         =Os usuários podem ter até limas até de bytes de %d cada uma de %d.
+NICK_EXPIRE        =Os nicknames expirarão após $1.
+NICK_IDENT         =Os usuários têm $1 a identificar.
+NICK_HOLD          =Os nicknames são prendidos para $1 na falha identificar.
+NICK_PASS          =Os usuários serão matados se não identificarem tempos de $1.
+NICK_OPTIONS       =As opções do nickname da opção são: $1
+NICK_LANG          =A língua da opção é $1.
+NICK_PICSIZE       =O tamanho máximo do retrato é bytes de $1.
+NICK_PICEXT        =As extensões válidas do retrato são: $1
+NICK_FILES         =Os usuários podem ter até limas até de bytes de $1 cada uma de $2.
 
-CHAN_EXPIRE        =As canaletas expirarão após %s.
-CHAN_IDENT         =Os usuários serão matados se não identificarem tempos de %d.
-CHAN_KEEPTIME      =As canaletas são mantidas para %s após AKICKing o último usuário.
-CHAN_BANTIME       =O tempo do sustento da proibição da opção é %s.
-CHAN_MLOCK         =O fechamento da modalidade de opção é " %s ", as modalidades " %s " é forçado.
-CHAN_OPTIONS       =As opções da canaleta da opção são: %s
-CHAN_REVENGE       =Level da vingança da opção  %s.
-CHAN_ACCESS        =O nível de acesso mínimo é %d, e o máximo é %d.
-CHAN_NEWS          =Os artigos da notícia expiram após %s.
+CHAN_EXPIRE        =As canaletas expirarão após $1.
+CHAN_IDENT         =Os usuários serão matados se não identificarem tempos de $1.
+CHAN_KEEPTIME      =As canaletas são mantidas para $1 após AKICKing o último usuário.
+CHAN_BANTIME       =O tempo do sustento da proibição da opção é $1.
+CHAN_MLOCK         =O fechamento da modalidade de opção é " $1 ", as modalidades " $2 " é forçado.
+CHAN_OPTIONS       =As opções da canaleta da opção são: $1
+CHAN_REVENGE       =Level da vingança da opção  $1.
+CHAN_ACCESS        =O nível de acesso mínimo é $1, e o máximo é $2.
+CHAN_NEWS          =Os artigos da notícia expiram após $1.
 
-MISC_INFLIGHT      =Os memorandos são de bordo para %s.
-MISC_AKILL1        =O tempo da opção AutoKill é %s.
+MISC_INFLIGHT      =Os memorandos são de bordo para $1.
+MISC_AKILL1        =O tempo da opção AutoKill é $1.
 MISC_AKILL2        =Os tempos máximos de AutoKill (pelo comitê) são:
-MISC_AKILL3        =    %s: %s
-MISC_CLONES        =Os usuários podem ter até %d clones por o anfitrião, que pode ser cancelado até %d.
-MISC_FLOOD1        =A inundação é provocada com mensagens de %d é %s.
-MISC_FLOOD2        =Os serviços recordam disparadores velhos da inundação para %s.
-MISC_IGNORE        =Ignore dura para %s, e é feito permanente se tempos provocados de %d.
-MISC_COMM_OPT      =As opções do comitê da opção são: %s
+MISC_AKILL3        =    $1: $2
+MISC_CLONES        =Os usuários podem ter até $1 clones por o anfitrião, que pode ser cancelado até $2.
+MISC_FLOOD1        =A inundação é provocada com mensagens de $1 é $2.
+MISC_FLOOD2        =Os serviços recordam disparadores velhos da inundação para $1.
+MISC_IGNORE        =Ignore dura para $1, e é feito permanente se tempos provocados de $2.
+MISC_COMM_OPT      =As opções do comitê da opção são: $1
 
 ;
 ; Esta seção contem a saída usada no fim de SUCCESSFULL
 ; Comandos de OperServ.
 ;
 [OS_COMMAND]
-CHAN_MODE          =A mudança de modalidade %s foi emitida para a canaleta %s.
-NICK_MODE          =A mudança de modalidade %s foi emitida para o nickname %s.
-QLINE              =Quarentine para os nicknames que combinam %s foi %s girado.
-NOOP               =O quarentine do operador do IRC foi %s girado para o server %s.
-KILL               =O usuário %s foi matado (silenciosamente).
+CHAN_MODE          =A mudança de modalidade $1 foi emitida para a canaleta $2.
+NICK_MODE          =A mudança de modalidade $1 foi emitida para o nickname $2.
+QLINE              =Quarentine para os nicknames que combinam $1 foi $2 girado.
+NOOP               =O quarentine do operador do IRC foi $1 girado para o server $2.
+KILL               =O usuário $1 foi matado (silenciosamente).
 PING               =Mensagem do PING que está sendo emitida a todos os server.
 UPDATE             =Bases de dados esta salvando...
 SHUTDOWN           =Desligando Services...
 RELOAD             =Lima da configuração recarregada.
 RELOAD_FAIL        =ATENCAO: Não podia ler a lima da configuração.
-UNLOAD             =A língua %s foi descarregada.
-JUPE               =O server %s foi juped.
-ONOFF              =Os serviços foram %s girados.
-ONOFF_ONE          =O serviço %s foi %s girado.
+UNLOAD             =A língua $1 foi descarregada.
+JUPE               =O server $1 foi juped.
+ONOFF              =Os serviços foram $1 girados.
+ONOFF_ONE          =O serviço $1 foi $2 girado.
 
 ;
 ; These are MemoServ status responses.
 ;
 [MS_STATUS]
-CS_EMPTY           =A canaleta %s não tem nenhum artigo da notícia.
-CS_UNREAD          =A canaleta %s tem as notícias novas article%s de %d. Datilografe a %s de /msg %s LIST para alistá-los.
-CS_NOUNREAD        =A canaleta %s não tem nenhum artigo da notícia.
+CS_EMPTY           =A canaleta $1 não tem nenhum artigo da notícia.
+CS_UNREAD          =A canaleta $1 tem as notícias novas article$2 de $3. Datilografe a $4 de /msg $5 LIST para alistá-los.
+CS_NOUNREAD        =A canaleta $1 não tem nenhum artigo da notícia.
 NS_EMPTY           =Você não tem nenhum memorando.
-NS_UNREAD          =Você tem %d memo%s novo. Datilografe /msg %s LIST para alistá-lo.
+NS_UNREAD          =Você tem $1 memo$2 novo. Datilografe /msg $3 LIST para alistá-lo.
 NS_NOUNREAD        =Você não tem nenhum memorando da notícia.
-IGNORE             =O nickname %s está ignorando seus memorandos.
-TRUNCATE           =A mensagem truncou "... em %s ". O tipo /msg %s CONTINUA o <text> a continuar a mensagem.
+IGNORE             =O nickname $1 está ignorando seus memorandos.
+TRUNCATE           =A mensagem truncou "... em $1 ". O tipo /msg $2 CONTINUA o <text> a continuar a mensagem.
 PENDING            =Você tem os memorandos pendentes a ser emitidos.
 NOPENDING          =Você não tem nenhum memorando pendente a ser emitido.
 FILEDISABLED       =Os acessórios da lima nos memorandos FORAM INCAPACITADOS.
-FORWARD            =[FORWARD: %s] %s
-FORWARD_ARG        =[FORWARD(%s): %s] %s
-REPLY              =[REPLY: "%s"] %s
-REPLY_ARG          =[REPLY(%s): "%s"] %s
+FORWARD            =[FORWARD: $1] $2
+FORWARD_ARG        =[FORWARD($1): $2] $3
+REPLY              =[REPLY: "$1"] $2
+REPLY_ARG          =[REPLY($1): "$2"] $3
 
 ;
 ; Esta seção contem a saída usada no fim de SUCCESSFULL
 ; Comandos de MemoServ.
 ;
 [MS_COMMAND]
-NEWS               =#%d de %s a %s emitiu %s há.
-NEWS_LIST          =%c#%d de %s a %s emitiu %s há - " %s " # %d de %s %s emitido há.
-MEMO               =#%d from %s sent %s ago.
-MEMO_LIST          =%c#%d de %s %s emitido há
-CS_UNREAD          =os artigos %s da notícia de " %s " para a canaleta %s nao ta lido.
-CS_UNREAD_ALL      =Todos os artigos da notícia para a canaleta %s nao foram lido.
-NS_UNREAD          =Seus memorandos %s nao foram lido.
+NEWS               =#$1 de $2 a $3 emitiu $4 há.
+NEWS_LIST          =$1#$2 de $3 a $4 emitiu $5 há - " $6 " # $7 de $8 $9 emitido há.
+MEMO               =#$1 from $2 sent $3 ago.
+MEMO_LIST          =$1#$2 de $3 $4 emitido há
+CS_UNREAD          =os artigos $1 da notícia de " $2 " para a canaleta $3 nao ta lido.
+CS_UNREAD_ALL      =Todos os artigos da notícia para a canaleta $1 nao foram lido.
+NS_UNREAD          =Seus memorandos $1 nao foram lido.
 NS_UNREAD_ALL      =Todos seus memorandos nao foram lido.
-CS_NOTDEL          =Os artigos %s da notícia para a canaleta %s NOT foram suprimidos.
-CS_DEL             =Os artigos %s da notícia para a canaleta %s foram suprimidos.
-CS_DEL_ALL         =Todos os artigos da notícia para a canaleta %s foram suprimidos.
-NS_DEL             =Seus memorandos %s foram suprimidos.
+CS_NOTDEL          =Os artigos $1 da notícia para a canaleta $2 NOT foram suprimidos.
+CS_DEL             =Os artigos $1 da notícia para a canaleta $2 foram suprimidos.
+CS_DEL_ALL         =Todos os artigos da notícia para a canaleta $1 foram suprimidos.
+NS_DEL             =Seus memorandos $1 foram suprimidos.
 NS_DEL_ALL         =Todos seus memorandos foram suprimidos.
 CANCEL             =Durante o memorando foi cancelado.
-PENDING            =O memorando é agora pendente. Você tem %s para continuá-lo ou cancelar.
-PENDING_FILE       =O memorando é agora pendente. Você tem %s para começar sua transferência de lima, para continuá-la ou cancelar.
-CONTINUE           =Durante a restauração do temporizador do memorando. Você tem %s para continuá-la ou cancelar.
-SENT               =O memorando foi emitido a %s (%s).
-CS_NEW             =Há um artigo novo da notícia (# %d) para a canaleta %s de %s. O tipo /msg %s LEU %s %d para lê-lo.
-NS_NEW             =Você tem um memorando novo (# %d). O tipo /msg %s LEU %d para lê-lo.
+PENDING            =O memorando é agora pendente. Você tem $1 para continuá-lo ou cancelar.
+PENDING_FILE       =O memorando é agora pendente. Você tem $1 para começar sua transferência de lima, para continuá-la ou cancelar.
+CONTINUE           =Durante a restauração do temporizador do memorando. Você tem $1 para continuá-la ou cancelar.
+SENT               =O memorando foi emitido a $1 ($2).
+CS_NEW             =Há um artigo novo da notícia (# $1) para a canaleta $2 de $3. O tipo /msg $4 LEU $5 $6 para lê-lo.
+NS_NEW             =Você tem um memorando novo (# $1). O tipo /msg $2 LEU $3 para lê-lo.

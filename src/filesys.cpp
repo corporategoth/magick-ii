@@ -27,6 +27,12 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/05/06 03:03:07  prez
+** Changed all language sends to use $ style tokens too (aswell as logs), so we're
+** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
+** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
+** Also added example lng and lfo file, so you can see the context of each line.
+**
 ** Revision 1.70  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -1224,8 +1230,8 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
 	return;
     if (i_Filename.empty())
     {
-	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
-					"SEND");
+	SEND(mynick, source, "DCC/NOFILE", (
+					"SEND"));
 	return;
     }
 
@@ -1234,8 +1240,8 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     if (tmp.empty())
     {
 	Parent->filesys.EraseFile(filetype, filenum);
-	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
-					"SEND");
+	SEND(mynick, source, "DCC/NOFILE", (
+					"SEND"));
 	return;
     }
     
@@ -1246,8 +1252,8 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     {
 	i_File.Close();
 	Parent->filesys.EraseFile(filetype, filenum);
-	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
-					"SEND");
+	SEND(mynick, source, "DCC/NOFILE", (
+					"SEND"));
 	return;
     }
 
@@ -1295,8 +1301,8 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     }
     else
     {
-	send(mynick, source, Parent->getMessage(source, "DCC/NOREQUEST"),
-						"GET");
+	SEND(mynick, source, "DCC/NOREQUEST", (
+						"GET"));
 	return;
     }
 
@@ -1567,7 +1573,7 @@ void DccXfer::Action()
 		    return;
 		if (i_File.Write(i_Transiant, i_XferTotal) < 1)
 		{
-		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/FAILED"), "GET");
+		    SEND(i_Mynick, i_Source, "DCC/FAILED", ( "GET"));
 		    i_File.Close();
 		}
 		else
@@ -1581,8 +1587,8 @@ void DccXfer::Action()
 			i_Socket.Last_Error_String().c_str()));
 		    if (i_Filesize == i_Total)
 		    {
-			send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
-					"GET", i_Total);
+			SEND(i_Mynick, i_Source, "DCC/COMPLETED", (
+					"GET", i_Total));
 			i_File.Close();
 		    }
 		}
@@ -1600,8 +1606,8 @@ void DccXfer::Action()
 	    case EINPROGRESS:	// Operation In Progress
 		break;
 	    default:
-		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-			"GET", i_Socket.Last_Error(), i_Socket.Last_Error_String().c_str());
+		SEND(i_Mynick, i_Source, "DCC/SOCKERR", (
+			"GET", i_Socket.Last_Error(), i_Socket.Last_Error_String()));
 		i_File.Close();
 	    }
 	}
@@ -1609,8 +1615,8 @@ void DccXfer::Action()
 		i_Traffic.size() > Parent->files.Sampletime() &&
 		Average() < Parent->files.Min_Speed())
 	{
-	    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/TOOSLOW"),
-						"GET");
+	    SEND(i_Mynick, i_Source, "DCC/TOOSLOW", (
+						"GET"));
 	    i_File.Close();
 	}
     }
@@ -1639,8 +1645,8 @@ void DccXfer::Action()
 		    case EINPROGRESS:	// Operation In Progress
 			break;
 		    default:
-			send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-				"SEND", i_Socket.Last_Error(), i_Socket.Last_Error_String().c_str());
+			SEND(i_Mynick, i_Source, "DCC/SOCKERR", (
+				"SEND", i_Socket.Last_Error(), i_Socket.Last_Error_String()));
 			i_File.Close();
 			return;
 		    }
@@ -1659,7 +1665,7 @@ void DccXfer::Action()
 		    TranSz = i_File.Read(i_Transiant, i_Blocksize);
 		if (TranSz < 0)
 		{
-		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/FAILED"), "SEND");
+		    SEND(i_Mynick, i_Source, "DCC/FAILED", ( "SEND"));
 		    i_File.Close();
 		    return;
 		}
@@ -1689,8 +1695,8 @@ void DccXfer::Action()
 	    if (i_Filesize == i_Total + i_XferTotal)
 	    {
 		i_Total += i_XferTotal;
-		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
-					"SEND", i_Total);
+		SEND(i_Mynick, i_Source, "DCC/COMPLETED", (
+					"SEND", i_Total));
 		i_File.Close();
 	    }
 	}
@@ -1706,8 +1712,8 @@ void DccXfer::Action()
 	    case EINPROGRESS:	// Operation In Progress
 		break;
 	    default:
-		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-			"SEND", i_Socket.Last_Error(), i_Socket.Last_Error_String().c_str());
+		SEND(i_Mynick, i_Source, "DCC/SOCKERR", (
+			"SEND", i_Socket.Last_Error(), i_Socket.Last_Error_String()));
 		i_File.Close();
 	    }
 	}
@@ -1715,8 +1721,8 @@ void DccXfer::Action()
 		i_Traffic.size() > Parent->files.Sampletime() &&
 		Average() < Parent->files.Min_Speed())
 	{
-	    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/TOOSLOW"),
-						"GET");
+	    SEND(i_Mynick, i_Source, "DCC/TOOSLOW", (
+						"GET"));
 	    i_File.Close();
 	}
     }
@@ -1806,8 +1812,7 @@ int DccMap::close(const unsigned long in)
 	RLOCK2(("DccMap", "xfers", iter->first));
 	if (iter->second != NULL)
 	{
-	    send(iter->second->Mynick(), iter->second->Source(),
-		Parent->getMessage(iter->second->Source(), "DCC/FAILED"),
+	    SEND(iter->second->Mynick(), iter->second->Source(), "DCC/FAILED",
 		((iter->second->Type() == DccXfer::Get) ? "GET" : "SEND"));
 	    iter->second->Cancel();
 	}
@@ -1878,8 +1883,7 @@ int DccMap::svc(void)
 	// No data in X seconds...
 	if (dcc.LastData().SecondsSince() > Parent->files.Timeout())
 	{
-	    send(dcc.Mynick(), dcc.Source(),
-		Parent->getMessage(dcc.Source(), "DCC/TIMEOUT"),
+	    SEND(dcc.Mynick(), dcc.Source(), "DCC/TIMEOUT",
 		((dcc.Type() == DccXfer::Get) ? "GET" : "SEND"));
 	    dcc.Cancel();
 	    RemXfers(WorkId);
@@ -2095,12 +2099,12 @@ void *DccMap::Connect2(void *in)
 	    CP(("Created DCC entry #%d", WorkId));
 	}
 	else
-	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
-						"GET");
+	    SEND(val->mynick, val->source, "DCC/FAILED", (
+						"GET"));
     }
     else
-	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
-						"GET");
+	SEND(val->mynick, val->source, "DCC/NOCONNECT", (
+						"GET"));
 
     if (val != NULL)
 	delete val;
@@ -2137,12 +2141,12 @@ void *DccMap::Accept2(void *in)
 	    CP(("Created DCC entry #%d", WorkId));
 	}
 	else
-	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
-						"SEND");
+	    SEND(val->mynick, val->source, "DCC/FAILED", (
+						"SEND"));
     }
     else
-	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
-						"SEND");
+	SEND(val->mynick, val->source, "DCC/NOCONNECT", (
+						"SEND"));
 
     if (val != NULL)
 	delete val;
@@ -2195,8 +2199,7 @@ void DccMap::Cancel(const unsigned long DccId, const bool silent)
 	    RLOCK(("DccMap", "xfers", DccId));
 	    DccXfer &dcc = GetXfers(DccId);
 	    if (!silent)
-		send(dcc.Mynick(), dcc.Source(),
-		    Parent->getMessage(dcc.Source(), "DCC/FAILED"),
+		SEND(dcc.Mynick(), dcc.Source(), "DCC/FAILED",
 		    ((dcc.Type() == DccXfer::Get) ? "GET" : "SEND"));
 	    dcc.Cancel();
 	    RemXfers(DccId);

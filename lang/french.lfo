@@ -31,10 +31,10 @@
 ; --------------------------------------------------------------
 ;
 ; Modifications du C :
-; 	%s = String         %c = Single Character
-;     %d = Integer        %f = Numerique (avec DP's)
-;     %o = Octal          %x = Hexadecimal
-;     %% = Literal %      %g = Like %f
+; 	$1 = String         $2 = Single Character
+;     $1 = Integer        $2 = Numerique (avec DP's)
+;     %o = Octal          $1 = Hexadecimal
+;     %% = Literal %      %g = Like $1
 ;
 ; Il est conseille de regarder le manuel sur le format C des caracteres
 ; (inclu avec Magick, ou accessible avec la commande 'man format' ou 'man 
@@ -51,186 +51,186 @@
 ;
 
 [COMMANDLINE]
-UNKNOWN_OPTION   =option inconnues %s, ignorer.
-NEEDPARAM        =Option %s nécessite un paramètre.
-MUSTBENUMBER     =Paramètre pour %s doit être un nombre positif.
-TIMEORZERO	 =La valeur du temps est invalide ou nulle, sur la valeur %s.
-VALUETOOHIGH     =La valeur spécifiée pour  %s doit être inférieure ou égale a %d.
-NO_CFG_FILE      =Ne peut pas lire le fichier Cofing %s, (arrete).
+UNKNOWN_OPTION   =option inconnues $1, ignorer.
+NEEDPARAM        =Option $1 nécessite un paramètre.
+MUSTBENUMBER     =Paramètre pour $1 doit être un nombre positif.
+TIMEORZERO	 =La valeur du temps est invalide ou nulle, sur la valeur $1.
+VALUETOOHIGH     =La valeur spécifiée pour  $1 doit être inférieure ou égale a $2.
+NO_CFG_FILE      =Ne peut pas lire le fichier Cofing $1, (arrete).
 STOP             =CONFIG: [Startup] code STOP recu.
-ACTIVE           =%s est deja actif ou stale PID file exists, arretez (ou supprimer) le avant de redemarrer.
+ACTIVE           =$1 est deja actif ou stale PID file exists, arretez (ou supprimer) le avant de redemarrer.
 RECONNECT        =Reconnection au serveur due a une modification de la configuration.
-CANNOT_CONVERT   =base de donnee %s est invalide (arrete).
-NO_KEYFILE       =fichier Key n'existe pas %s.
+CANNOT_CONVERT   =base de donnee $1 est invalide (arrete).
+NO_KEYFILE       =fichier Key n'existe pas $1.
 NONOPTION        =L'argument Non-option n'est pas valide
 ONEOPTION        =Vous ne pouvez indiquer qu'un seul parametre apres un groupe d'option.
 TRACE_SYNTAX     =Parametre pour --trace doit etre au format de TYPE:LEVEL
 ZERO_LEVEL       =Le Level du parsing trace est errone oou nul, ignore.
-CFG_SYNTAX       =Configuration token "%s" contien une mauvaise syntaxe ou une donne invalide.
-UNKNOWN_PROTO    =Protocole identifiant inconnu %d, le protocole par défaut (%d) sera utilisé.
+CFG_SYNTAX       =Configuration token "$1" contien une mauvaise syntaxe ou une donne invalide.
+UNKNOWN_PROTO    =Protocole identifiant inconnu $1, le protocole par défaut ($2) sera utilisé.
 START_LANG       =Chargement de la langue par défaut ...
 START_FORK       =Spawning into background ...
 START_EVENTS     =Starting events engine ...
 START_CALIBRATE  =Calibrating thread thresholds ...
-START_COMPLETE   =%s %s procedure de dèmarrage compléte.
+START_COMPLETE   =$1 $2 procedure de dèmarrage compléte.
 STOP_EVENTS      =Stopping events engine ...
-STOP_COMPLETE    =%s %s procedure de fin compléte.
+STOP_COMPLETE    =$1 $2 procedure de fin compléte.
 
 ;
 ;Les suivantes sont utilisées quand une commande est lancée depuis NiskServ.
 ;
 
 [NICKSERV]
-REGISTER         =%s nom enregistre %s.
-DROP             =%s droped nickname %s (%d slaves).
-LINK             =%s nom de lien %s to %s.
-UNLINK           =%s nom desuni %s de %s.
-HOST             =%s change leur nom d'hote de %s en %s.
-IDENTIFY         =%s identifiant pour le nom %s.
-GHOST            =%s detruire le nom %s avec la commande ghost.
-RECOVER          =%s services requis pour retrouver le nom %s.
-SUSPEND          =%s suspension du nom %s pour %s.
-UNSUSPEND        =%s arreter la suspension du nom %s.
-FORBID           =%s interdire le nom %s d'être enregistrer.
-GETPASS          =%s retrieved the password for nickname %s (%s).
-ACCESS_ADD       =%s ajout d'un hostmask %s au nom %s.
-ACCESS_DEL       =%s enlever un hostmask %s du nom %s.
-IGNORE_ADD       =%s ajout d'un nom %s a la liste des ignorances de nom %s.
-IGNORE_DEL       =%s enlever un nom %s a la liste des ignorances de nom %s.
-PICTURE_ADD      =%s set a picture for nickname %s (%08x - %s).
-PICTURE_DEL      =%s removed a picture from nickname %s.
-SET_PASSWORD     =%s changer le mot de passepour le nom %s.
-SET              =%s mettre la valeur de %s pour le nom %s to %s.
-UNSET            =%s enlever la valeur de %s pour le nom %s.
-LOCK             =%s bloquer la valeur de %s pour le nom %s a %s.
-UNLOCK           =%s debloquer la valeur de %s pour le nom %s.
+REGISTER         =$1 nom enregistre $2.
+DROP             =$1 droped nickname $2 ($3 slaves).
+LINK             =$1 nom de lien $2 to $3.
+UNLINK           =$1 nom desuni $2 de $3.
+HOST             =$1 change leur nom d'hote de $2 en $3.
+IDENTIFY         =$1 identifiant pour le nom $2.
+GHOST            =$1 detruire le nom $2 avec la commande ghost.
+RECOVER          =$1 services requis pour retrouver le nom $2.
+SUSPEND          =$1 suspension du nom $2 pour $3.
+UNSUSPEND        =$1 arreter la suspension du nom $2.
+FORBID           =$1 interdire le nom $2 d'être enregistrer.
+GETPASS          =$1 retrieved the password for nickname $2 ($3).
+ACCESS_ADD       =$1 ajout d'un hostmask $2 au nom $3.
+ACCESS_DEL       =$1 enlever un hostmask $2 du nom $3.
+IGNORE_ADD       =$1 ajout d'un nom $2 a la liste des ignorances de nom $3.
+IGNORE_DEL       =$1 enlever un nom $2 a la liste des ignorances de nom $3.
+PICTURE_ADD      =$1 set a picture for nickname $2 ($3 - $4).
+PICTURE_DEL      =$1 removed a picture from nickname $2.
+SET_PASSWORD     =$1 changer le mot de passepour le nom $2.
+SET              =$1 mettre la valeur de $2 pour le nom $3 to $4.
+UNSET            =$1 enlever la valeur de $2 pour le nom $3.
+LOCK             =$1 bloquer la valeur de $2 pour le nom $3 a $4.
+UNLOCK           =$1 debloquer la valeur de $2 pour le nom $3.
 
 ;
 ; Les suivantes sont utilisées quand une commande est lancée depuis Chanserv
 ;
 [CHANSERV]
-REGISTER         =%s enregister un canal %s.
-DROP             =%s enlever un canal %s (%s).
-IDENTIFY         =%s identified as founder for channel %s.
-SUSPEND          =%s suspendre un canal %s pour %s.
-UNSUSPEND        =%s remettre un canal %s.
-FORBID           =%s interdire un canal %s d'etre enregistrer.
-GETPASS          =%s retrouver le mot de passe pour un canal %s (%s).
-MODE             =%s changer le mode "%s" du canal %s avec la commande MODE.
-OP               =%s oped %s dans le canal %s avec la commande OP. 
-DEOP             =%s deoped %s dans le canal %s avec la commande DEOP.
-VOICE            =%s voiced %s in channel %s with the VOICE command.
-DEVOICE          =%s devoiced %s in channel %s with the DEVOICE command.
-TOPIC            =%s activer le sujet %s avec la commande TOPIC.
-KICK             =%s kicked %s a partir du canal %s avec la commande KICK.
-ANONKICK         =%s kicked anonymement %s du canal %s avec la commande REMOVE.
-INVITE           =%s inviter %s au canal %s avec la commande INVITE.
-UNBAN            =%s Ne plus bannir %s du canal %s avec la commande UNBAN.
-COMMAND          =%s executer la %s  commande pour le canal %s.
-LEVEL            =%s donner le niveau de %s a %d le canal %s.
-ACCESS_ADD       =%s ajouter %s a la liste d'acces pour le canal %s au niveau %d.
-ACCESS_CHANGE    =%s changer %s sur la liste d'acces du canal %s au niveau %d.
-ACCESS_DEL       =%s supprimer %s sur la liste d'acces du canal %s.
-AKICK_ADD        =%s ajouter %s sur la liste auto-kick du canal %s.
-AKICK_DEL        =%s supprimer %s sur la liste auto-kick du canal %s.
-GREET_ADD        =%s ajouter une annonce %s sur le canal %s.
-GREET_DEL        =%s supprimer une annonce pour %s sur le canal %s.
-MESSAGE_ADD      =%s ajouter un message %s.
-MESSAGE_DEL      =%s supprimer un on-join message pour le canal %s.
-SET_PASSWORD     =%s modifier le mot de passe pour le canal %s.
-SET              =%s donner la valeur de %s pour le canal %s to %s.
-UNSET            =%s enlever la valeur de %s pour le canal %s.
-LOCK             =%s verrouiller la valeur de %s pour le canal %s a %s.
-UNLOCK           =%s deverrouiller la valeur de %s pour le canal %s.
+REGISTER         =$1 enregister un canal $2.
+DROP             =$1 enlever un canal $2 ($3).
+IDENTIFY         =$1 identified as founder for channel $2.
+SUSPEND          =$1 suspendre un canal $2 pour $3.
+UNSUSPEND        =$1 remettre un canal $2.
+FORBID           =$1 interdire un canal $2 d'etre enregistrer.
+GETPASS          =$1 retrouver le mot de passe pour un canal $2 ($3).
+MODE             =$1 changer le mode "$2" du canal $3 avec la commande MODE.
+OP               =$1 oped $2 dans le canal $3 avec la commande OP. 
+DEOP             =$1 deoped $2 dans le canal $3 avec la commande DEOP.
+VOICE            =$1 voiced $2 in channel $3 with the VOICE command.
+DEVOICE          =$1 devoiced $2 in channel $3 with the DEVOICE command.
+TOPIC            =$1 activer le sujet $2 avec la commande TOPIC.
+KICK             =$1 kicked $2 a partir du canal $3 avec la commande KICK.
+ANONKICK         =$1 kicked anonymement $2 du canal $3 avec la commande REMOVE.
+INVITE           =$1 inviter $2 au canal $3 avec la commande INVITE.
+UNBAN            =$1 Ne plus bannir $2 du canal $3 avec la commande UNBAN.
+COMMAND          =$1 executer la $2  commande pour le canal $3.
+LEVEL            =$1 donner le niveau de $2 a $3 le canal $4.
+ACCESS_ADD       =$1 ajouter $2 a la liste d'acces pour le canal $3 au niveau $4.
+ACCESS_CHANGE    =$1 changer $2 sur la liste d'acces du canal $3 au niveau $4.
+ACCESS_DEL       =$1 supprimer $2 sur la liste d'acces du canal $3.
+AKICK_ADD        =$1 ajouter $2 sur la liste auto-kick du canal $3.
+AKICK_DEL        =$1 supprimer $2 sur la liste auto-kick du canal $3.
+GREET_ADD        =$1 ajouter une annonce $2 sur le canal $3.
+GREET_DEL        =$1 supprimer une annonce pour $2 sur le canal $3.
+MESSAGE_ADD      =$1 ajouter un message $2.
+MESSAGE_DEL      =$1 supprimer un on-join message pour le canal $2.
+SET_PASSWORD     =$1 modifier le mot de passe pour le canal $2.
+SET              =$1 donner la valeur de $2 pour le canal $3 to $4.
+UNSET            =$1 enlever la valeur de $2 pour le canal $3.
+LOCK             =$1 verrouiller la valeur de $2 pour le canal $3 a $4.
+UNLOCK           =$1 deverrouiller la valeur de $2 pour le canal $3.
 
 ;
 ; Les suivantes sont utilisées quand une commande est lancée depuis MemoServ
 ;
 [MEMOSERV]
-SEND             =%s envoyer une note d'information a  %s.
-DEL              =%s supprimer %d une (des) note(s) d'info. de %s.
-DEL_ALL          =%s supprimer toutes les notes d'info. de  %s.
-FILE             =%s envoyer des fichiers attacher (%s / %08x - %s) a %s.
-GET              =%s recevoir des fichiers attacher (%s / %08x - %s) de %s.
+SEND             =$1 envoyer une note d'information a  $2.
+DEL              =$1 supprimer $2 une (des) note(s) d'info. de $3.
+DEL_ALL          =$1 supprimer toutes les notes d'info. de  $2.
+FILE             =$1 envoyer des fichiers attacher ($2 / $3 - $4) a $5.
+GET              =$1 recevoir des fichiers attacher ($2 / $3 - $4) de $5.
 
 ;
 ; Les suivantes sont utilisées quand une commande est lancée depuis CommServ
 ;
 [COMMSERV]
-ADD              =%s creer un nouveau commite appeler %s avec %s a sa tete.
-DEL              =%s supprimer un commite %s.
-MEMO             =%s envoyer un memo a tous les membres du commite %s.
-MEMBER_ADD       =%s ajouter un nom %s au commite %s.
-MEMBER_DEL       =%s supprimer un nom %s au commite %s.
-LOGON_ADD        =%s ajouter un nouveau message de connection au commite%s.
-LOGON_DEL        =%s supprimer un nouveau message de connection au commite%s.
-SET              =%s remplacer la valeur de %s du commite %s par %s.
-UNSET            =%s enlever la valeur de %s au commite %s.
-LOCK             =%s verrouiller la valeur de %s pour le commite %s a %s.
-UNLOCK           =%s deverrouiller la valeur de %s pour le commite %s.
+ADD              =$1 creer un nouveau commite appeler $2 avec $3 a sa tete.
+DEL              =$1 supprimer un commite $2.
+MEMO             =$1 envoyer un memo a tous les membres du commite $2.
+MEMBER_ADD       =$1 ajouter un nom $2 au commite $3.
+MEMBER_DEL       =$1 supprimer un nom $2 au commite $3.
+LOGON_ADD        =$1 ajouter un nouveau message de connection au commite$2.
+LOGON_DEL        =$1 supprimer un nouveau message de connection au commite$2.
+SET              =$1 remplacer la valeur de $2 du commite $3 par $4.
+UNSET            =$1 enlever la valeur de $2 au commite $3.
+LOCK             =$1 verrouiller la valeur de $2 pour le commite $3 a $4.
+UNLOCK           =$1 deverrouiller la valeur de $2 pour le commite $3.
 
 ;
 ; Les suivantes sont utilisées quand une commande est lancée depuis ServMsg.
 ;
 [SERVMSG]
-GLOBAL           =%s envoyer un message "%s" a tous le utilisateurs.
-FILE_ADD         =%s ajouter un fichier %s (%08x - %s) avec des permissions %s au systeme de fichier public.
-FILE_DEL         =%s a efface un fichier %s (%08x) du systeme de fichier public.
-FILE_RENAME      =%s a renommer le fichier %s en %s dans le systeme de fichier public.
-FILE_PRIV        =%s a resecurise le fichier %s en %s dans le systeme de fichier public.
-FILE_SEND        =%s a telecharge le fichier %s depuis le systeme de fichier public.
-FILE_LOOKUP      =%s a recherche un fichier %08x du type %s.
+GLOBAL           =$1 envoyer un message "$2" a tous le utilisateurs.
+FILE_ADD         =$1 ajouter un fichier $2 ($3 - $4) avec des permissions $5 au systeme de fichier public.
+FILE_DEL         =$1 a efface un fichier $2 ($3) du systeme de fichier public.
+FILE_RENAME      =$1 a renommer le fichier $2 en $3 dans le systeme de fichier public.
+FILE_PRIV        =$1 a resecurise le fichier $2 en $3 dans le systeme de fichier public.
+FILE_SEND        =$1 a telecharge le fichier $2 depuis le systeme de fichier public.
+FILE_LOOKUP      =$1 a recherche un fichier $2 du type $3.
 
 ;
 ; Les suivantes sont utilisées quand une commande est lancée depuis OperServ.
 ;
 [OPERSERV]
-MODE             =%s mettre le mode "%s" pour %s avec la commande MODE.
-QLINE            =%s nom mis en quarantaine %s.
-UNQLINE          =%s nom libere de sa quarantaine %s.
-NOOP             =%s a mis tous les Irc ops sur le serveur %s %s.
-KILL             =%s detruit discretement le nom %s avec "%s".
-HIDE             =%s a change le nom d'hote du nom %s en %s.
-PING             =%s declenchement de pings du serveur manuels.
-UPDATE           =%s declenchement de l’update de la base de donnee manuelle.
-SHUTDOWN         =%s demande un arrêt des services.
-RELOAD           =%s recharge le fichier de configuration des services.
-UNLOAD           =%s decharge le language %s.
-JUPE             =%s juped server %s (%s).
-ONOFF            =%s allume/eteind les services %s.
-ONOFF_ONE        =%s allume/eteind le service %s %s.
-CLONE_ADD        =hote %s ajouté %s a la liste de clone en mode manuel avec %d clones.
-CLONE_DEL        =hote %s supprime %s de la liste de clone en mode manuel.
-AKILL_ADD        =%s ajoute un masque %s a la liste d'auto-destruction(%s)pour "%s".
-AKILL_DEL        =%s enleve un masque %s a la liste d'auto-destruction.
-OPERDENY_ADD     =Mask %s ajoute %s a la liste oper deny (%s).
-OPERDENY_DEL     =Mask %s supprime %s a la liste oper deny.
-IGNORE_ADD       =%s ajoute un masque %s a la liste des services ignores en permanances.
-IGNORE_DEL       =%s enleve  un masque %s a la liste des services ignores en permanances 
-IGNORED          =Ignore le message de %s: %s
-HTM_FORCE        =%s a force le mode htm %s.
-HTM_ON           =mode HTM %d (%d delai) active (%.1fKb/s > %.1fKb/s).
+MODE             =$1 mettre le mode "$2" pour $3 avec la commande MODE.
+QLINE            =$1 nom mis en quarantaine $2.
+UNQLINE          =$1 nom libere de sa quarantaine $2.
+NOOP             =$1 a mis tous les Irc ops sur le serveur $2 $3.
+KILL             =$1 detruit discretement le nom $2 avec "$3".
+HIDE             =$1 a change le nom d'hote du nom $2 en $3.
+PING             =$1 declenchement de pings du serveur manuels.
+UPDATE           =$1 declenchement de l’update de la base de donnee manuelle.
+SHUTDOWN         =$1 demande un arrêt des services.
+RELOAD           =$1 recharge le fichier de configuration des services.
+UNLOAD           =$1 decharge le language $2.
+JUPE             =$1 juped server $2 ($3).
+ONOFF            =$1 allume/eteind les services $2.
+ONOFF_ONE        =$1 allume/eteind le service $2 $3.
+CLONE_ADD        =hote $1 ajouté $2 a la liste de clone en mode manuel avec $3 clones.
+CLONE_DEL        =hote $1 supprime $2 de la liste de clone en mode manuel.
+AKILL_ADD        =$1 ajoute un masque $2 a la liste d'auto-destruction($3)pour "$4".
+AKILL_DEL        =$1 enleve un masque $2 a la liste d'auto-destruction.
+OPERDENY_ADD     =Mask $1 ajoute $2 a la liste oper deny ($3).
+OPERDENY_DEL     =Mask $1 supprime $2 a la liste oper deny.
+IGNORE_ADD       =$1 ajoute un masque $2 a la liste des services ignores en permanances.
+IGNORE_DEL       =$1 enleve  un masque $2 a la liste des services ignores en permanances 
+IGNORED          =Ignore le message de $1: $2
+HTM_FORCE        =$1 a force le mode htm $2.
+HTM_ON           =mode HTM $1 ($2 delai) active ($3Kb/s > $4Kb/s).
 HTM_OFF          =Mode HTM desactive.
-HTM_SET          =%s a mis la limite HTM a %s/s.
-HTM_IGNORE       =Ignore le message de %s (Mode HTM): %s
+HTM_SET          =$1 a mis la limite HTM a $2/s.
+HTM_IGNORE       =Ignore le message de $1 (Mode HTM): $2
 
 ;
 ; ces commandes sont utilisees quand un evenement auto. S'arrete
 ;
 [EVENT]
-EXPIRE_AKILL     =akill espire pour %s (%s) defini par %s pour %s.
-EXPIRE_NICK      =nom expirant  %s (%s).
-EXPIRE_CHAN      =canal expirant %s (%s).
-EXPIRE_NEWS      =nouvel article expirant pour le canal %s.
+EXPIRE_AKILL     =akill espire pour $1 ($2) defini par $3 pour $4.
+EXPIRE_NICK      =nom expirant  $1 ($2).
+EXPIRE_CHAN      =canal expirant $1 ($2).
+EXPIRE_NEWS      =nouvel article expirant pour le canal $1.
 LOAD             =charge les bases de donnees ...
 SAVE             = bases de donnees sauvegardees.
-UNBAN            =enlever le bannissement %s du canal %s du a l'expiration du temps(%s).
-KILLPROTECT      =detruit/renomme le nom %s pour erreur d'identification.
+UNBAN            =enlever le bannissement $1 du canal $2 du a l'expiration du temps($3).
+KILLPROTECT      =detruit/renomme le nom $1 pour erreur d'identification.
 PING             =Ping tous les servers.
-LEVEL_UP         =Niveau actuel a augmenter d'un (%.3f average lag).
-LEVEL_DOWN       =Niveau actuel a diminuer d'un (%.3f average lag).
-AKICK            =Utilisateur %s ejecte du canal %s pour activation d'AKICK (%s).
-RESTRICTED       =Utilisateur %s ejecte du canal protege %s.
+LEVEL_UP         =Niveau actuel a augmenter d'un ($1 average lag).
+LEVEL_DOWN       =Niveau actuel a diminuer d'un ($1 average lag).
+AKICK            =Utilisateur $1 ejecte du canal $2 pour activation d'AKICK ($3).
+RESTRICTED       =Utilisateur $1 ejecte du canal protege $2.
 NEW_THREAD       =Debut d'un nouveau thread pour maitriser un chargement excessif.
 KILL_THREAD      =detruire un thread, pas assez de travail pour le garantir.
 
@@ -238,87 +238,84 @@ KILL_THREAD      =detruire un thread, pas assez de travail pour le garantir.
 ; Ce sont les erreurs qui viennent de la base du systeme
 ;
 [SYS_ERRORS]
-COULDNOTOPEN     =Impossible d'ouvrir le fichier %s (%s).
-FILEMAPFULL      =Impossible de trouver un num. valable de fichier pour le type %d!
-MISSING_FILE1    =Enlever un fichier physique %d, #%08x qui n'as pas d'entree file map.
-MISSING_FILE2    =Enlever l'entree de type file map %d, #%08x qui n'as pas de fichier physique.
-SIGNAL_IGNORE    =intercepter le signal #%d, ignore.
-SIGNAL_SAVE      =intercepter le signal #%d, Sauvegarge bases de donnees.
-SIGNAL_LOAD      =intercepter le signal #%d, chargement du fichier de config.
-SIGNAL_RETRY     =intercepter le signal #%d, tente de reessayer.
-SIGNAL_KILL      =intercepter le signal #%d - la dernier fonction etait %s, tente de redemarrer.
-SIGNAL_SIGNON    =intercepter le signal #%d, re-signing on all clients.
-SIGNAL_SPAWN     =intercepter le signal #%d, creation d'un nouveau processus.
-NOT_IMPLEMENTED  =Entrée %s, qui n'est pas implementee
-INVALID_FORMAT   =format de date invalide char %d%c dans %s.
-NOT_LITERAL      =Caractere %c devrait etre entre guillemets, pris literalement dans %s.
+COULDNOTOPEN     =Impossible d'ouvrir le fichier $1 ($2).
+FILEMAPFULL      =Impossible de trouver un num. valable de fichier pour le type $1!
+MISSING_FILE1    =Enlever un fichier physique $1, #$2 qui n'as pas d'entree file map.
+MISSING_FILE2    =Enlever l'entree de type file map $1, #$2 qui n'as pas de fichier physique.
+SIGNAL_IGNORE    =intercepter le signal #$1, ignore.
+SIGNAL_SAVE      =intercepter le signal #$1, Sauvegarge bases de donnees.
+SIGNAL_LOAD      =intercepter le signal #$1, chargement du fichier de config.
+SIGNAL_RETRY     =intercepter le signal #$1, tente de reessayer.
+SIGNAL_KILL      =intercepter le signal #$1 - la dernier fonction etait $2, tente de redemarrer.
+SIGNAL_SIGNON    =intercepter le signal #$1, re-signing on all clients.
+SIGNAL_SPAWN     =intercepter le signal #$1, creation d'un nouveau processus.
+NOT_IMPLEMENTED  =Entrée $1, qui n'est pas implementee
+INVALID_FORMAT   =format de date invalide char $1$2 dans $3.
+NOT_LITERAL      =Caractere $1 devrait etre entre guillemets, pris literalement dans $2.
 OUTOFTXNIDS      =Ne peut pas creer plus de transactions sur les ID
-FAILED_FORK      =Impossible de bifurquer le nouveau processus  avec %d, arrêt.
-FAILED_SETPGID   =Impossible de metre les permissions sur le processus avec %d, arrêt.
-FAILED_SETSID    =Failed to become process session leader with %d, terminating.
+FAILED_FORK      =Impossible de bifurquer le nouveau processus  avec $1, arrêt.
+FAILED_SETPGID   =Impossible de metre les permissions sur le processus avec $1, arrêt.
+FAILED_SETSID    =Failed to become process session leader with $1, terminating.
 RUN_AS_ROOT      =Lance comme Super utilisateur est un risque potentiel pour la securite!
-LOCK_OPEN        =Impossible d'ouvrir %s ferme pour %s.
-LOCK_ACQUIRE     =Impossible d'acquerir %s ferme pour %s.
-LOCK_RELEASE     =Impossible de liberer %s ferme pour %s.
-EXCEPTION        =Une exception apparait a la ligne %d, colonne %d de %s.
+LOCK_OPEN        =Impossible d'ouvrir $1 ferme pour $2.
+LOCK_ACQUIRE     =Impossible d'acquerir $1 ferme pour $2.
+LOCK_RELEASE     =Impossible de liberer $1 ferme pour $2.
 
 ;
 ; Cette section est pour divers autres evenements.
 ;
 [OTHER]
-SQUIT_FIRST      =Possible SQUIT detecte, Les serveurs %s et %s, en attente ...
-SQUIT_CANCEL     =Possible SQUIT de serveurs %s et %s etait erronee.
-SQUIT_SECOND     =SQUIT des serveurs %s et %s est confime, prise de mesure appropriees.
-KILL_CLONE       =Protection du clone declenchee pour %s, supression de l'utilisateur.
-KILL_AKILL       =Supperssion de l'utilisateur %s sur la liste d'autodestruction %s (%s).
-KILL_UNKNOWN     =Utilisateur %s inconnu detruit.
-CONNECTING       =Connection au serveur %s:%d ...
-CONNECTED        =Connection etablie et authentifiee au serveur %s.
-WRONGPASS        =Mot de passe non correspondant pour le serveur %s, passe.
-WEAREBANNED      =Nous sommes k-lined du serveur %s, passe.
-REFUSED          =Connection au serveur %s:%d refusee.
-SERVER_MSG       =MESSAGE DU SERVEUR (%s): %s
-LINK             =Serveur %s est lié au reseaux via. %s.
-KILLED           =Service %s a etait detruit par %s, tentative de re-creation.
-TEMP_IGNORE      =%s Services lances temporairement ignores.
-PERM_IGNORE      =%s Services lances ignores de facon permanente.
-KILL_NICK_PASS   =Suppression d'utilisateur %s pour mauvais mot de passe pour le nom %s.
-KILL_CHAN_PASS   =Suppression d'utilisateur %s pour mauvais mot de passe du canal %s.
-LOAD_LANGUAGE    =Chargement %s du fichier language.
-LOAD_HELP        =Chargement %s du fichier d'aide.
-REVENGE          =Prend revenche sur l'utilisateur %s dans le canal %s pour %s dans %s.
-DCC_INIT         =DCC ID %08x initialise avec %s (%s).
-DCC_CLOSE        =DCC ID %08x accompli avec succes.
-DCC_CANCEL       =DCC ID %08x impossible d'accomplir avec succes.
+SQUIT_FIRST      =Possible SQUIT detecte, Les serveurs $1 et $2, en attente ...
+SQUIT_CANCEL     =Possible SQUIT de serveurs $1 et $2 etait erronee.
+SQUIT_SECOND     =SQUIT des serveurs $1 et $2 est confime, prise de mesure appropriees.
+KILL_CLONE       =Protection du clone declenchee pour $1, supression de l'utilisateur.
+KILL_AKILL       =Supperssion de l'utilisateur $1 sur la liste d'autodestruction $2 ($3).
+KILL_UNKNOWN     =Utilisateur $1 inconnu detruit.
+CONNECTING       =Connection au serveur $1:$2 ...
+CONNECTED        =Connection etablie et authentifiee au serveur $1.
+WRONGPASS        =Mot de passe non correspondant pour le serveur $1, passe.
+WEAREBANNED      =Nous sommes k-lined du serveur $1, passe.
+REFUSED          =Connection au serveur $1:$2 refusee.
+SERVER_MSG       =MESSAGE DU SERVEUR ($1): $2
+LINK             =Serveur $1 est lié au reseaux via. $2.
+KILLED           =Service $1 a etait detruit par $2, tentative de re-creation.
+TEMP_IGNORE      =$1 Services lances temporairement ignores.
+PERM_IGNORE      =$1 Services lances ignores de facon permanente.
+KILL_NICK_PASS   =Suppression d'utilisateur $1 pour mauvais mot de passe pour le nom $2.
+KILL_CHAN_PASS   =Suppression d'utilisateur $1 pour mauvais mot de passe du canal $2.
+LOAD_LANGUAGE    =Chargement $1 du fichier language.
+LOAD_HELP        =Chargement $1 du fichier d'aide.
+REVENGE          =Prend revenche sur l'utilisateur $1 dans le canal $2 pour $3 dans $4.
+DCC_INIT         =DCC ID $1 initialise avec $2 ($3).
+DCC_CLOSE        =DCC ID $1 accompli avec succes.
+DCC_CANCEL       =DCC ID $1 impossible d'accomplir avec succes.
 
 ;
 ; Ce sont les erreurs (de securitees differentes) que l'ont peu rencontrer.
 ;
 [ERROR]
-SIGNAL           =SIGNAL RECU %d, QUITTE.
-REQ_BYNONUSER    =%s commande demandee par un utilisateur non-existant %s.
-REQ_BYNONSERVICE =%s commande demandee par un service non-existant %s.
-REQ_FORNONUSER   =%s commande demandee par %s pour un utilisateur non-existant %s.
-REQ_TOUSER       =%s commande demandee par %s vers un utilisateur existant %s.
-REQ_FORNONCHAN   =%s commande demandee par %s pour un canal non-existant %s.
-REQ_FORNONSERVER =%s commande demandee par %s pour un serveur non-existant %s.
-REQ_NOTINCHAN    =%s commande demandee par %s pour %s qui n'est pas un canal %s.
-REQ_UNKNOWN      =Type de commande %d pour %s (%s/%s/%s) mise en queue depuis %s, but lachee (type inconnu).
-UNKNOWN_MSG      =Message inconnu du serveur: %s
-REC_FORNONUSER   =Recu %s de %s pour un utilisateur non-existant %s.
-REC_FORNONCHAN   =Recu %s de %s pour un canal non-existant %s.
-REC_NOTINCHAN    =Recu %s de %s pour %s qui n'est pas un canal %s.
-REC_FORNOTINCHAN =Recu %s pour %s qui n'est pas un canal %s.
-REC_FORNONSERVER =Recu %s de %s pour un serveur non-existant %s.
-DUP_CHAN         =Duplicata %s recu de %s pour le canal %s.
-MODE_INEFFECT    =Chamgement du MODE %c%c recu de %s pour %s qui est deja en action.
-MODE_NOTINCHAN   =Chamgement du MODE %c%c recu de %s for %s qui n'est pas dans le canal %s.
-FOUNDER_NOTREGD  =Canal %s a foundateur de %s qui n'est pas enregistrer (canal abandonner).
-HOST_NOTREGD     =Nom %s est lister comme hote de %s, mais n'existe pas (modifie)!
-SLAVE_NOTREGD    =Nom %s est liste comme esclave de %s, mais n'existe pas (modifie)!
-KEYMISMATCH      =Clef du canal non correspondante (%s | %s) pour le canal %s de %s.
-NOLIMIT          =Pas de limites specifiee quand exigee pour le canal %s de %s.
-NOLANGTOKEN      =frappe invalide %s pour la langue %s utilisee, erreur retournee.
-BADSET           =Tentative de mettre de mauvaises informations (%s) pour %s sur %s.
+REQ_BYNONUSER    =$1 commande demandee par un utilisateur non-existant $2.
+REQ_BYNONSERVICE =$1 commande demandee par un service non-existant $2.
+REQ_FORNONUSER   =$1 commande demandee par $2 pour un utilisateur non-existant $3.
+REQ_TOUSER       =$1 commande demandee par $2 vers un utilisateur existant $3.
+REQ_FORNONCHAN   =$1 commande demandee par $2 pour un canal non-existant $3.
+REQ_FORNONSERVER =$1 commande demandee par $2 pour un serveur non-existant $3.
+REQ_NOTINCHAN    =$1 commande demandee par $2 pour $3 qui n'est pas un canal $4.
+REQ_UNKNOWN      =Type de commande $1 pour $2 ($3/$4/$5) mise en queue depuis $6, but lachee (type inconnu).
+UNKNOWN_MSG      =Message inconnu du serveur: $1
+REC_FORNONUSER   =Recu $1 de $2 pour un utilisateur non-existant $3.
+REC_FORNONCHAN   =Recu $1 de $2 pour un canal non-existant $3.
+REC_NOTINCHAN    =Recu $1 de $2 pour $3 qui n'est pas un canal $4.
+REC_FORNOTINCHAN =Recu $1 pour $2 qui n'est pas un canal $3.
+REC_FORNONSERVER =Recu $1 de $2 pour un serveur non-existant $3.
+DUP_CHAN         =Duplicata $1 recu de $2 pour le canal $3.
+MODE_INEFFECT    =Chamgement du MODE $1$2 recu de $3 pour $4 qui est deja en action.
+MODE_NOTINCHAN   =Chamgement du MODE $1$2 recu de $3 for $4 qui n'est pas dans le canal $5.
+FOUNDER_NOTREGD  =Canal $1 a foundateur de $2 qui n'est pas enregistrer (canal abandonner).
+HOST_NOTREGD     =Nom $1 est lister comme hote de $2, mais n'existe pas (modifie)!
+SLAVE_NOTREGD    =Nom $1 est liste comme esclave de $2, mais n'existe pas (modifie)!
+KEYMISMATCH      =Clef du canal non correspondante ($1 | $2) pour le canal $3 de $4.
+NOLIMIT          =Pas de limites specifiee quand exigee pour le canal $1 de $2.
+NOLANGTOKEN      =frappe invalide $1 pour la langue $2 utilisee, erreur retournee.
+BADSET           =Tentative de mettre de mauvaises informations ($1) pour $2 sur $3.
 CORRUPT_DB       =Base de donne corrompue ou clef invalide dans le fichier clef
-INVALID_TYPE     =Type de donne invalide %d dans la queue des messages, ignore.
