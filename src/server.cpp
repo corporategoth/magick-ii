@@ -192,7 +192,6 @@ NetworkServ::NetworkServ()
     NFT("NetworkServ::NetworkServ");
     messages=true;
     automation=true;
-    names=Parent->startup.Server_Name();
 }
 
 bool NetworkServ::IsServer(mstring server)

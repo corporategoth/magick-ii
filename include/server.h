@@ -54,22 +54,9 @@ class NetworkServ : public mBase
     friend class Magick;
 private:
 
-    // Config Entries ...
-    mstring names;		// Names of service (space delimited)
-    mstring realname;		// 'Real Name' of service
-
-    // Live Flags
-    bool messages;		// Wether to process /MSG, /NOTICE.
-    bool automation;		// Wether to do automatic tasks.
-
 public:
     map<mstring,Server> ServerList;
     bool IsServer(mstring server);
-
-    bool MSG() { return messages; }
-    void MSG(bool on) { messages = on; }
-    bool AUTO() { return automation; }
-    void AUTO(bool on) { automation = on; }
 
     virtual void load_database(void);
     virtual void save_database(void);

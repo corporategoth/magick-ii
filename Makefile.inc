@@ -6,7 +6,7 @@ CXX=g++
 
 # -fno-memoize-lookups
 
-CFLAGS=-DDEBUG -O -I/usr/local/include -I$(TOPDIR)/include -g
+CFLAGS=-DDEBUG -DMAGICK_HAS_EXCEPTIONS -O -I/usr/local/include -I$(TOPDIR)/include -g
 
 # Linking flags to give the compiler
 LFLAGS=-L/usr/local/lib -lACE -lpthread -lz
