@@ -287,7 +287,7 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="CONNECT")
 	{
 	    // :source CONNECT some.server port :our.server
-	    if (IsServer(data.ExtractWord(3, ": "))
+	    if (IsServer(data.ExtractWord(3, ": ")))
 	    {
 		// Already connected
 	    }
