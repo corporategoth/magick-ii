@@ -13,7 +13,7 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
-PROJECT = "..\..\Program Files\Borland\Program Files\Borland\CBuilder4\Projects\Debug\magickbcc.exe"
+PROJECT = magickbcc.exe
 OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
   Debug\confbase.obj Debug\cryptstream.obj Debug\datetime.obj Debug\dccengine.obj \
   Debug\EscLexer.obj Debug\EscParser.obj Debug\fileconf.obj Debug\ircsocket.obj \
@@ -24,8 +24,10 @@ OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.
   Debug\filesys.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
-LIBFILES = src\des\Debug\crypto.lib src\antlr\Debug\antlr.lib ..\support\zlib\zlib.LIB \
-  ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib
+LIBFILES = ..\support\zlib\zlib.LIB \
+  ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib \
+  src\antlr\antlr.lib src\des\crypto.lib src\expat\xmltok\xmltoklib.lib \
+  src\expat\xmlparse\xmlparselib.lib src\sxp\sxplib.lib
 IDLGENFILES =
 IDLFILES =
 LIBRARIES = VCL40.lib
@@ -46,22 +48,22 @@ RELEASELIBPATH = $(BCB)\lib\release
 SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 # ---------------------------------------------------------------------------
-CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
+CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat \
   -Od -wuse -wstv -wstu -wpin -wnod -wnak -wdef -wamb -Vmp -Tkh30000 -a8 -6 -d -k \
   -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q -tWR -tWM -c
-IDLCFLAGS = -Isrc -I$(BCB)\include -I$(BCB)\include\ATL -Iinclude\bob -Iinclude \
-  -I..\support\ace_wrappers -I..\support\zlib -src_suffixcpp -D_DEBUG -DDEBUG \
-  -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1
+IDLCFLAGS = -Isrc -I$(BCB)\include -I$(BCB)\include\ATL -Iinclude -I..\support\ace_wrappers \
+  -I..\support\zlib -I..\include\sxp -I..\include\expat -src_suffixcpp -D_DEBUG \
+  -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1
 PFLAGS = -Usrc;$(BCB)\lib;$(RELEASELIBPATH) \
-  -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
+  -Isrc;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat \
   -N2Debug -N0Debug -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1 \
   -$YD
-RFLAGS = -isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
+RFLAGS = -isrc;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat \
   -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1 /l 0xc09 /d \
   "_DEBUG" /i$(BCB)\include;$(BCB)\include\mfc
-AFLAGS = /isrc /i$(BCB)\include /i$(BCB)\include\ATL /iinclude\bob /iinclude \
-  /i..\support\ace_wrappers /i..\support\zlib /d_DEBUG /dDEBUG /dWIN32 /d_CONSOLE \
-  /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /mx /w2 /zd
+AFLAGS = /isrc /i$(BCB)\include /i$(BCB)\include\ATL /iinclude /i..\support\ace_wrappers \
+  /i..\support\zlib /i..\include\sxp /i..\include\expat /d_DEBUG /dDEBUG /dWIN32 \
+  /d_CONSOLE /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /mx /w2 /zd
 LFLAGS = -Lsrc;$(BCB)\lib;$(RELEASELIBPATH) -ap -Tpe -s -v -q
 IFLAGS =
 # ---------------------------------------------------------------------------
@@ -99,8 +101,9 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=1
-Item0=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
+Count=2
+Item0=src;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat
+Item1=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
 
 [HistoryLists\hlLibraryPath]
 Count=3
@@ -122,8 +125,8 @@ Item0=Debug
 
 [HistoryLists\hlFinalOutputDir]
 Count=7
-Item0=Debug\
-Item1=Debug
+Item0=DebugItem1=Debug
+Item1=
 Item2=DebugItem1=Debug
 Item3=
 Item4=DebugItem1=DebugItem1=Debug

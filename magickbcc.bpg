@@ -9,7 +9,8 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = antlr.lib crypto.lib magickbcc.exe
+PROJECTS = antlr.lib crypto.lib xmltoklib.lib xmlparselib.lib sxplib.lib \
+  magickbcc.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -21,6 +22,15 @@ antlr.lib: src\antlr\antlr.bpr
   $(MAKE)
 
 crypto.lib: src\des\crypto.bpr
+  $(MAKE)
+
+xmlparselib.lib: src\expat\xmlparse\xmlparselib.bpr
+  $(MAKE)
+
+sxplib.lib: src\sxp\sxplib.bpr
+  $(MAKE)
+
+xmltoklib.lib: src\expat\xmltok\xmltoklib.bpr
   $(MAKE)
 
 

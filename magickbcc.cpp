@@ -26,12 +26,15 @@ USEUNIT("src\textfile.cpp");
 USEUNIT("src\trace.cpp");
 USEUNIT("src\utils.cpp");
 USEUNIT("src\variant.cpp");
-USELIB("src\des\Debug\crypto.lib");
-USELIB("src\antlr\Debug\antlr.lib");
 USELIB("..\support\zlib\zlib.LIB");
 USELIB("..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib");
 USEUNIT("src\convert.cpp");
 USEUNIT("src\filesys.cpp");
+USELIB("src\antlr\antlr.lib");
+USELIB("src\des\crypto.lib");
+USELIB("src\expat\xmltok\xmltoklib.lib");
+USELIB("src\expat\xmlparse\xmlparselib.lib");
+USELIB("src\sxp\sxplib.lib");
 //---------------------------------------------------------------------------
 #endif // defined(__BORLANDC__)
 
