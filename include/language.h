@@ -4,8 +4,8 @@
 
 /* Magick IRC Services
 **
-** (c) 1997-2002 Preston Elder <prez@magick.tm>
-** (c) 1998-2002 William King <ungod@magick.tm>
+** (c) 1997-2003 Preston Elder <prez@magick.tm>
+** (c) 1998-2003 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any circumstances,
 ** however it may be added to if any modifications are made to this
@@ -42,8 +42,8 @@ RCSID(language_h, "@(#) $Id$");
 const unsigned int def_langent = 945;
 const char *def_lang[] =
 {
-"; Magick IRC Services", "; (c) 1997-2002 Preston A. Elder <prez@magick.tm>",
-	"; (c) 1998-2002 William King <ungod@magick.tm>", ";", "; English On-Line Language File",
+"; Magick IRC Services", "; (c) 1997-2003 Preston A. Elder <prez@magick.tm>",
+	"; (c) 1998-2003 William King <ungod@magick.tm>", ";", "; English On-Line Language File",
 	"; Translated By: Preston A. Elder <prez@magick.tm>", "; Please also edit the ERR_SYNTAX/TRANSLATED token to",
 	"; reflect the above (this is displayed when someone", "; switches to your language).", ";",
 	"; --------------------------------------------------------------", ";",

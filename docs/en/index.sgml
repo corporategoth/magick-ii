@@ -1185,8 +1185,8 @@ Example:
 ./magick_keygen
 
 Magick IRC Services - http://www.magick.tm
-    (c) 1997-2002 Preston A. Elder <prez@magick.tm>
-    (c) 1998-2002 William King <ungod@magick.tm>
+    (c) 1997-2003 Preston A. Elder <prez@magick.tm>
+    (c) 1998-2003 William King <ungod@magick.tm>
 
 Enter filename to output to [magick.key]:
 NOTE: A key must be at least 16 bytes long and may be up to 72 bytes long.
@@ -1572,8 +1572,8 @@ holder(s) and seek a different licensing arrangement.
 
 <sect>Copyright<p>
 
-(c) 1997-2002 Preston Elder, <htmlurl url="mailto:prez@magick.tm" name="prez@magick.tm">
-(c) 1998-2002 William King, <htmlurl url="mailto:ungod@magick.tm" name="ungod@magick.tm">
+(c) 1997-2003 Preston Elder, <htmlurl url="mailto:prez@magick.tm" name="prez@magick.tm">
+(c) 1998-2003 William King, <htmlurl url="mailto:ungod@magick.tm" name="ungod@magick.tm">
 
 The above copywright may not be removed under any circumstances,
 however it may be added to if any modifications are made to this

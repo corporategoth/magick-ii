@@ -1,7 +1,7 @@
 // Magick IRC Services
 //
-// (c) 1997-2002 Preston Elder <prez@magick.tm>
-// (c) 1998-2002 William King <ungod@magick.tm>
+// (c) 1997-2003 Preston Elder <prez@magick.tm>
+// (c) 1998-2003 William King <ungod@magick.tm>
 //
 // The above copywright may not be removed under any circumstances,
 // however it may be added to if any modifications are made to this
@@ -478,11 +478,11 @@ public class mct extends JApplet implements ActionListener
 	icon.setBackground(background);
 	gb.add(icon, gc);
 	gc.gridy++;
-	JLabel lab = new JLabel("(c) 1997-2002 Preston A. Elder <prez@magick.tm>");
+	JLabel lab = new JLabel("(c) 1997-2003 Preston A. Elder <prez@magick.tm>");
 	lab.setForeground(foreground);
 	gb.add(lab, gc);
 	gc.gridy++;
-	lab = new JLabel("(c) 1997-2002 William King <ungod@magick.tm>");
+	lab = new JLabel("(c) 1997-2003 William King <ungod@magick.tm>");
 	lab.setForeground(foreground);
 	gb.add(lab, gc);
 	gc.gridy++;

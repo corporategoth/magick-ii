@@ -9,8 +9,8 @@
 
 /* Magick IRC Services
 **
-** (c) 1997-2002 Preston Elder <prez@magick.tm>
-** (c) 1998-2002 William King <ungod@magick.tm>
+** (c) 1997-2003 Preston Elder <prez@magick.tm>
+** (c) 1998-2003 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any circumstances,
 ** however it may be added to if any modifications are made to this
@@ -1137,8 +1137,8 @@ void Magick::dump_help() const
     BTCB();
     // This needs to be re-written.
     cout << "\n" << FULLNAME + " - " + HOMEPAGE + "\n" <<
-	"    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n" <<
-	"    (c) 1998-2002 William King <ungod@magick.tm>\n" << "\n" <<
+	"    (c) 1997-2003 Preston A. Elder <prez@magick.tm>\n" <<
+	"    (c) 1998-2003 William King <ungod@magick.tm>\n" << "\n" <<
 	"Syntax: " << i_programname << " [options]\n" << "\n" <<
 	"--help             -h      Help output (summary of the below).\n" <<
 	"--version          -v      Display the Magick version string.\n" <<

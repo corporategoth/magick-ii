@@ -4,8 +4,8 @@
 
 /* Magick IRC Services
 **
-** (c) 1997-2002 Preston Elder <prez@magick.tm>
-** (c) 1998-2002 William King <ungod@magick.tm>
+** (c) 1997-2003 Preston Elder <prez@magick.tm>
+** (c) 1998-2003 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any circumstances,
 ** however it may be added to if any modifications are made to this
@@ -42,8 +42,8 @@ RCSID(logfile_h, "@(#) $Id$");
 const unsigned int def_logent = 377;
 const char *def_log[] =
 {
-"; Magick IRC Services", "; (c) 1997-2002 Preston A. Elder <prez@magick.tm>",
-	"; (c) 1998-2002 William King <ungod@magick.tm>", ";", "; English Log Output Language File",
+"; Magick IRC Services", "; (c) 1997-2003 Preston A. Elder <prez@magick.tm>",
+	"; (c) 1998-2003 William King <ungod@magick.tm>", ";", "; English Log Output Language File",
 	"; Translated By: Preston A. Elder <prez@magick.tm>", "; Please also edit the COMMANDLINE/TRANSLATED token",
 	"; to reflect the above (this is displayed on startup).", ";",
 	"; --------------------------------------------------------------", ";",

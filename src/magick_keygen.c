@@ -1,8 +1,8 @@
 
 /* Magick IRC Services
 **
-** (c) 1997-2002 Preston Elder <prez@magick.tm>
-** (c) 1998-2002 William King <ungod@magick.tm>
+** (c) 1997-2003 Preston Elder <prez@magick.tm>
+** (c) 1998-2003 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any circumstances,
 ** however it may be added to if any modifications are made to this
@@ -81,8 +81,8 @@ int main(int argc, char **argv)
 {
 #ifndef HASCRYPT
     printf("Magick IRC Services - http://www.magick.tm\n");
-    printf("    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n");
-    printf("    (c) 1998-2002 William King <ungod@magick.tm>\n\n");
+    printf("    (c) 1997-2003 Preston A. Elder <prez@magick.tm>\n");
+    printf("    (c) 1998-2003 William King <ungod@magick.tm>\n\n");
 
     fprintf(stderr, "You do not have encryption support.\n");
 
@@ -103,8 +103,8 @@ int main(int argc, char **argv)
 #endif
 
     printf("Magick IRC Services - http://www.magick.tm\n");
-    printf("    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n");
-    printf("    (c) 1998-2002 William King <ungod@magick.tm>\n\n");
+    printf("    (c) 1997-2003 Preston A. Elder <prez@magick.tm>\n");
+    printf("    (c) 1998-2003 William King <ungod@magick.tm>\n\n");
 
     if (argc > 1)
     {

@@ -2,8 +2,8 @@
 REM Magick IRC Services
 REM
 REM $Id$
-REM "(c) 1997-2002 Preston Elder <prez@magick.tm>"
-REM "(c) 1998-2002 William King <ungod@magick.tm>"
+REM "(c) 1997-2003 Preston Elder <prez@magick.tm>"
+REM "(c) 1998-2003 William King <ungod@magick.tm>"
 REM
 REM The above copywright may not be removed under any circumstances,
 REM however it may be added to if any modifications are made to this
