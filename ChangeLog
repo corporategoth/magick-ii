@@ -1,3 +1,66 @@
+* 2002-09-18 00:21  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.307), src/commserv.cpp (1.130), src/memoserv.cpp
+  (1.123), src/nickserv.cpp (1.221), src/operserv.cpp (1.163),
+  src/servmsg.cpp (1.110):
+  
+  Fixed problems with spaces in help commands.
+
+* 2002-09-17 19:54  Preston A. Elder <prez@magick.tm>
+  include/chanserv.h (1.86), include/commserv.h (1.73), include/nickserv.h
+  (1.88), include/server.h (1.95), include/utils.h (1.59), src/base.cpp
+  (1.204), src/chandata.cpp (1.18), src/chanserv.cpp (1.306),
+  src/commserv.cpp (1.129), src/filesys.cpp (1.106), src/ircsocket.cpp
+  (1.237), src/magick.cpp (1.376), src/nickdata.cpp (1.14),
+  src/nickserv.cpp (1.220), src/operserv.cpp (1.162), src/server.cpp
+  (1.251):
+  
+  Fixed up the map_entry class, to be more intuitive.
+
+* 2002-09-17 16:50  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.17), src/commserv.cpp (1.128), src/operserv.cpp
+  (1.161):
+  
+  Fixed some other potential problems with inserts.
+
+* 2002-09-17 16:08  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.305):
+  
+  Fixed insertion of chanserv levels.
+
+* 2002-09-17 05:36  Preston A. Elder <prez@magick.tm>
+  src/servmsg.cpp (1.109):
+  
+  Fixed up the time difference equasion for StartTime and ResetTime.
+
+* 2002-09-17 02:55  Preston A. Elder <prez@magick.tm>
+  gui/CommServ.java (1.9):
+  
+  Fixed CS_OVR_KICK
+
+* 2002-09-17 02:53  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.103), gui/CommServ.java (1.8), include/commserv.h
+  (1.72), src/chanserv.cpp (1.304), src/magick.cpp (1.375):
+  
+  Changed the way some of the ChanServ commands work to allow them to work
+  on unregistered channels.  Also added OVR_CS_Kick.
+
+* 2002-09-17 01:26  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.102), ircd/ircd.unreal.ini (1.11), lang/english.lng
+  (1.91), src/mstring.cpp (1.137), src/operserv.cpp (1.160):
+  
+  Fixed HIDE command for Unreal, also added some checking to ensure that a
+  valid hostname is specified.
+
+* 2002-09-17 00:40  Preston A. Elder <prez@magick.tm>
+  src/operserv.cpp (1.159):
+  
+  Fixed committee setting for OS KILL command
+
+* 2002-09-16 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.49):
+  
+  Created version 2.0s20020916
+
 * 2002-09-14 13:11  Preston A. Elder <prez@magick.tm>
   include/pch.h (1.61):
   
