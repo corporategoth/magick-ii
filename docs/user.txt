@@ -907,15 +907,15 @@ regardless of weather you are on it or not, or what level you have on it.
 3.1.4	ACCESS
 --------------
 
-SYNTAX: ACCESS <channel> ADD <nickname> <level>
-        ACCESS <channel> DEL <nickname|number>
+SYNTAX: ACCESS <channel> ADD <nickname|@committee|hostmask> <level>
+        ACCESS <channel> DEL <nickname|@committee|hostmask|number>
         ACCESS <channel> LIST
 
 This maintains a channels access list.   An access list is simply a list
-of nicknames, and what access they have in the channel, which is a
-number.  This number may be anything except 0 (which means 'not on the
-access list at all'), and has upper and lower limits specified by the
-IRC Operators.
+of nicknames, committees, hostmasks, and what access they have in the
+channel, which is a number.  This number may be anything except 0 (which
+means 'not on the access list at all'), and has upper and lower limits
+specified by the IRC Operators.
 
 Most ChanServ commands require a certain level of access to be used.
 The actual levels required to execute each command is set with the LEVEL
@@ -923,9 +923,11 @@ The actual levels required to execute each command is set with the LEVEL
 be required to IDENTIFY (2.1.6) to your nickname to have your access
 rights acknowledged.
 
-ADD will add a new nickname to the access list, it must be registered.
-DEL will remove either a nickname or the numbered entry from the
-	access list.  The entry numbers are shown on a LIST.
+ADD will add a new nickname, committee or hostmask to the access list.
+	If a committee is specified, it must be prefixed with a '@'.
+DEL will remove a nickname, committee, hostmask or the numbered entry
+	from the access list.  The entry numbers are shown on a LIST.
+	If a committee is specified, it must be prefixed with a '@'.
 ADD and DEL require ACCESS privileges.
 LIST will list out all current entries on the access list.  This command
 	requires VIEW privileges.
@@ -947,6 +949,7 @@ to execute that command from this list, then if the user has that access.
 The available level types you may set values for are:
 AUTODEOP	Automatically remove voice (+v) and ops (+o) from user.
 AUTOVOICE	Automatically give voice (+v) to user upon joining.
+AUTOHALFOP	Automatically give halfops (+h) to user upon joining.
 AUTOOP		Automatically give ops (+o) to user upon joining.
 READMEMO	User is allowed to read channel news articles.
 WRITEMEMO	User is allowed to post channel news articles.
@@ -963,6 +966,7 @@ VIEW		User may view things like channel modes, etc.
 CMDINVITE	User may use the INVITE command.
 CMDUNBAN	User may use the UNBAN command.
 CMDVOICE	User may use the VOICE and DEVOICE command.
+CMDVHALFOP	User may use the HALFOP and DEHALFOP command.
 CMDOP		User may use the OP and DEOP command.
 CMDKICK		User may use the KICK command.
 CMDMODE		User may use the MODE command to set modes.
@@ -992,12 +996,14 @@ SYNTAX: AKICK <channel> ADD <nickname|hostmask> [reason]
         AKICK <channel> LIST
 
 This maintains a channels auto kick list.   An auto kick list is simply
-a list of nicknames or hostmasks that are not allowed to enter the
-channel, and the reason for which they have been exiled.
+a list of nicknames, committees or hostmasks that are not allowed to enter
+the channel, and the reason for which they have been exiled.
 
-ADD will add a new registered nickname or hostmask to the auto kick list.
-DEL will remove either a nickname, hostmask or the numbered entry from
-	the auto kick list.  The entry numbers are shown on a LIST.
+ADD will add a new nickname, committee or hostmask to the auto kick list.
+	If a committee is specified, it must be prefixed with a '@'.
+DEL will remove a nickname, committee, hostmask or the numbered entry
+	from the auto kick list.  The entry numbers are shown on a LIST.
+	If a committee is specified, it must be prefixed with a '@'.
 ADD and DEL require AKICK privileges.
 LIST will list out all current entries on the auto kick list.  This
 	command requires VIEW privileges.

@@ -1178,25 +1178,26 @@
 07 =REGD::    ADD          DEL          LIST
 
 [CHANSERV/ACCESS/ADD]
-01 =REGD::ACCESS <channel> ADD <nickname> <level>
+01 =REGD::ACCESS <channel> ADD <nickname|@committee|mask> <level>
 02 =REGD::
-03 =REGD::This will add a nickname to a channel access list at
-04 =REGD::the level you specify.  You may only specify a level
-05 =REGD::that is below your own.  You must have ACCESS privileges
-06 =REGD::to use this command.  Please refer to the LEVEL LIST
-07 =REGD::to see what access you will be giving the person before
-08 =REGD::deciding what level to add them at.  You may only add
-09 =REGD::registered nicknames to a channel access list.
+03 =REGD::This will add an entry to the channel access list at the
+04 =REGD::level you specify.  You may specify a registered nickname,
+05 =REGD::a committee (prefixed by the '@' symbol), or a hostmask,
+06 =REGD::with optional nickname.  You may only specify a level that
+07 =REGD::is below your own.  You must have ACCESS privileges to use
+08 =REGD::this command.  Please refer to the LEVEL LIST to see what
+09 =REGD::access you  will be giving the person before deciding what
+10 =REGD::level to add them at.
 
 [CHANSERV/ACCESS/DEL]
-01 =REGD::ACCESS <channel> DEL <nickname|NUM>
+01 =REGD::ACCESS <channel> DEL <nickname|@committee|mask|NUM>
 02 =REGD::
-03 =REGD::This will remove a nickname from a channel access
-04 =REGD::list.  You may specify either the nickname to remove
-05 =REGD::or the entry number as displayed with the ACCESS LIST
-06 =REGD::command.  You may not remove anyone with a higher or
-07 =REGD::equal access level than you have.  You must have
-08 =REGD::ACCESS privileges to use this command.
+03 =REGD::This will remove an entry from a channel access list.
+04 =REGD::You may specify either the nickname, committee (prefixed
+05 =REGD::by the '@' symbol), hostmask or the entry number as
+06 =REGD::displayed with the ACCESS LIST command. You may not
+07 =REGD::remove anyone with a higher or equal access level than
+08 =REGD::you.  You must have ACCESS privileges to use this command.
 
 [CHANSERV/ACCESS/LIST]
 01 =REGD::ACCESS <channel> LIST
@@ -1217,27 +1218,29 @@
 08 =REGD::    ADD          DEL          LIST
 
 [CHANSERV/AKICK/ADD]
-01 =REGD::AKICK <channel> ADD <nickname|mask> [reason]
+01 =REGD::AKICK <channel> ADD <nickname|@committee|mask> [reason]
 02 =REGD::
-03 =REGD::This will add someone to the Auto Kick list (permanent
-04 =REGD::ban).  You may specify a registered nickname, or a
-05 =REGD::mask.  If you specify a nickname, a user will only be
-06 =REGD::kicked if services recognise the user on that nickname
-07 =REGD::(ie. they're recognised or identified).  If a mask is
-08 =REGD::specified, anyone matching that mask will be banned,
-09 =REGD::and that mask will be set as the ban.  If a reason is
-10 =REGD::specified, it will be used in the kick message, else
-11 =REGD::a default kick message will be used.  You must have
-12 =REGD::AKICK access to use this command.
+03 =REGD::This will add am entry to the Auto Kick list (permanent
+04 =REGD::ban).  You may specify a registered nickname, a committee
+05 =REGD::(prefixed by the '@' symbol), or a hostmask, with optional
+06 =REGD::nickname.  If you specify a registered nickname, a user
+07 =REGD::will only be kicked if services recognise the user on that
+08 =REGD::nickname (ie. they're recognised or identified).  If a
+09 =REGD::committee is specified, any member of that committee will
+10 =REGD::be banned.  If a hostmask is specified, anyone matching
+11 =REGD::that hostmask will be banned, and that mask will be set
+12 =REGD::as the ban.  If a reason is specified, it will be used as
+13 =REGD::the kick message, else the default kick message will be
+14 =REGD::used.  You must have AKICK access to use this command.
 
 [CHANSERV/AKICK/DEL]
-01 =REGD::AKICK <channel> DEL <nickname|mask|NUM>
+01 =REGD::AKICK <channel> DEL <nickname|@committee|mask|NUM>
 02 =REGD::
-03 =REGD::This will remove an entry from the Auto Kick list.  You
-04 =REGD::may specify a nickname or mask that matches one of the
-05 =REGD::entries on the list, or the entry number directly which
-06 =REGD::corresponds to one outputted from the LIST command.
-07 =REGD::You must have AKICK access to use this command.
+03 =REGD::This will remove an entry from the Auto Kick list.
+04 =REGD::You may specify either the nickname, committee (prefixed
+05 =REGD::by the '@' symbol), hostmask or the entry number as
+06 =REGD::displayed with the AKICK LIST command.  You must have
+07 =REGD::ACCESS privileges to use this command.
 
 [CHANSERV/AKICK/LIST]
 01 =REGD::AKICK <channel> LIST
