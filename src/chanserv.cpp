@@ -63,7 +63,7 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 {
     NFT("Chan_Live_t::operator=");
     bans.clear();
-    set<mstring>::iterator i;
+    set<mstring>::const_iterator i;
     for(i=in.bans.begin();i!=in.bans.end();i++)
 	bans.insert(*i);
     i_Creation_Time=in.i_Creation_Time;
@@ -74,14 +74,14 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
     i_Topic_Set_Time=in.i_Topic_Set_Time;
     i_Topic_Setter=in.i_Topic_Setter;
     i_UserDef.clear();
-    map<mstring,mstring>::iterator j;
+    map<mstring,mstring>::const_iterator j;
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	i_UserDef[j->first]=j->second;
+	i_UserDef.insert(*j);
     modes=in.modes;
     users.clear();
-    map<mstring, pair<bool, bool> >::iterator k;
+    map<mstring, pair<bool, bool> >::const_iterator k;
     for(k=in.users.begin();k!=in.users.end();k++)
-	users[k->first]=k->second;
+	users.insert(*k);
 }
 
 bool Chan_Live_t::operator==(const Chan_Live_t &in) const
@@ -180,7 +180,7 @@ void userlist_t::operator=(const userlist_t &in)
     i_Entry=in.i_Entry;
     i_Last_Modify_Time=in.i_Last_Modify_Time;
     i_Last_Modifier=in.i_Last_Modifier;
-    map<mstring,mstring>::iterator i;
+    map<mstring,mstring>::const_iterator i;
     i_UserDef.clear();
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
 	i_UserDef[i->first]=i->second;
