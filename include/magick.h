@@ -47,8 +47,8 @@ private:
 	vector<mstring> MessageNamesLong;
 	vector<mstring> MessageNamesShort;
 	//ACE_Thread_Mutex mutex;
-	ChanServ chanserv;
 public:
+	ChanServ chanserv;
 	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
 	mDateTime StartTime;
 	void LoadExternalMessages();

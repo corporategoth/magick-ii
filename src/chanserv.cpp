@@ -16,7 +16,20 @@ void *chanserv_thread_handler(void *level)
 	// brackets are here so that the lock exists only as long as we need it.
 	{
 	    ACE_Local_RLock inputbufferlock("chanserv::inputbuffer");
+	    if(MagickObject->chanserv.inputbuffer.size()>ilevel*MagickObject->chanserv.msg_thresh)
+	    {
+	        ACE_Thread::spawn(chanserv_thread_handler,(void *)(ilevel+1));
+	    }
+	    else if(MagickObject->chanserv.inputbuffer.size()<(ilevel-1)*MagickObject->chanserv.msg_thresh)
+		if(ilevel!=0)
+		    return NULL;
 	    // check the inputbuffer
+	    if(MagickObject->chanserv.inputbuffer.size()!=0)
+	    {
+		pair<mstring,mstring> data=MagickObject->chanserv.inputbuffer.front();
+		MagickObject->chanserv.inputbuffer.pop_front();
+		MagickObject->chanserv.execute(data.first,data.second);
+	    }
 	}
 
 	ACE_Thread::yield();
@@ -32,5 +45,11 @@ void init_chanserv()
 void ChanServ::push_message(const mstring& servicename, const mstring& message)
 {
     ACE_Local_WLock inputbufferlock("chanserv::inputbuffer");
-    inputbuffer.push_back(pair<mstring,mstring>(servicename,message));
+    pair<mstring,mstring> dummyvar(servicename,message);
+    inputbuffer.push_back(dummyvar);
+}
+
+void ChanServ::execute(const mstring & servicename, const mstring & message)
+{
+    //okay this is the main chanserv command switcher
 }

@@ -3,6 +3,18 @@ Microsoft Developer Studio Workspace File, Format Version 5.00
 
 ###############################################################################
 
+Project: "m_bob"=".\src\bob\m_bob.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "magick"=".\magick.dsp" - Package Owner=<4>
 
 Package=<5>
@@ -11,6 +23,9 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name m_bob
+    End Project Dependency
 }}}
 
 ###############################################################################
