@@ -1313,6 +1313,16 @@ void Server::AKILL(const mstring & host, const mstring & reason, const unsigned 
 						     FirstName()) << " " << static_cast < time_t >
 	    (mDateTime::CurrentDateTime()) << " :" << reason;
 	break;
+    case 1002:
+	if (proto.Tokens() && !proto.GetNonToken("TKL").empty())
+	    line << proto.GetNonToken("TKL");
+	else
+	    line << "TKL";
+	line << " + G " << host.Before("@") << " " << host.After("@") << ((!killer.empty()) ? killer : Magick::instance().
+									  operserv.
+									  FirstName()) << " " << exptime << " " << static_cast
+	    < time_t > (mDateTime::CurrentDateTime()) << " :" << reason;
+	break;
     case 2000:
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
 	    line << proto.GetNonToken("GLINE");
@@ -2339,6 +2349,13 @@ void Server::RAKILL(const mstring & host)
 	else
 	    line << "RAKILL";
 	line << " " << host.After("@") << " " << host.Before("@");
+	break;
+    case 1002:
+	if (proto.Tokens() && !proto.GetNonToken("TKL").empty())
+	    line << proto.GetNonToken("TKL");
+	else
+	    line << "TKL";
+	line << " - G " << host.Before("@") << " " << host.After("@") << " " << Magick::instance().operserv.FirstName();
 	break;
     case 2000:
 	if (proto.Tokens() && !proto.GetNonToken("UNGLINE").empty())

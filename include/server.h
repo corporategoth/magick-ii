@@ -63,6 +63,8 @@ class Protocol
      *        RAKILL host user
      * 1001 = AKILL host user time killer now :reason
      *        RAKILL host user
+     * 1002 = TKL + G user host killer expiry set :reason
+     *        TKL - G user host killer
      * 2000 = GLINE * +time user@host :reason
      *        UNGLINE * user@host
      * 2001 = GLINE * +user@host time :reason
