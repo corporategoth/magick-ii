@@ -25,6 +25,9 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2000/06/09 13:57:00  prez
+** Added tracing to mconfig
+**
 ** Revision 1.16  2000/06/08 13:07:33  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -84,11 +87,20 @@ public:
 
 	unsigned long i_Global;
 	unsigned long i_Credits;
+	unsigned long i_file_AddDel;
+	unsigned long i_file_Send;
+	unsigned long i_file_Change;
+	unsigned long i_file_Cancel;
     public:
 	stats_t() {
-	    i_Global = i_Credits = 0; }
-	unsigned long Global()	{ return i_Global; }
-	unsigned long Credits()	{ return i_Credits; }
+	    i_Global = i_Credits = i_file_AddDel = i_file_Send =
+	    i_file_Change = i_file_Cancel = 0; }
+	unsigned long Global()		{ return i_Global; }
+	unsigned long Credits()		{ return i_Credits; }
+	unsigned long File_AddDel()	{ return i_file_AddDel; }
+	unsigned long File_Send()	{ return i_file_Send; }
+	unsigned long File_Change()	{ return i_file_Change; }
+	unsigned long File_Cancel()	{ return i_file_Cancel; }
     } stats;
 
     bool ShowSync() { return showsync; }

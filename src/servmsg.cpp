@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/06/09 13:57:00  prez
+** Added tracing to mconfig
+**
 ** Revision 1.54  2000/06/08 13:07:35  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -668,6 +671,12 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD10"),
 		Parent->servmsg.stats.Global(),
 		Parent->servmsg.stats.Credits());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
+		Parent->servmsg.stats.File_AddDel(),
+		Parent->servmsg.stats.File_Send());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
+		Parent->servmsg.stats.File_Change(),
+		Parent->servmsg.stats.File_Cancel());
 }
 
 
@@ -1023,6 +1032,7 @@ void ServMsg::do_file_Add(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2)
 	priv = params.After(" ", 2).UpperCase();
 
+    Parent->servmsg.stats.i_file_AddDel++;
     Parent->nickserv.live[source.LowerCase()].InFlight.Public(mynick, priv);
 }
 
@@ -1049,6 +1059,7 @@ void ServMsg::do_file_Del(mstring mynick, mstring source, mstring params)
  	return;
     }
 
+    Parent->servmsg.stats.i_file_AddDel++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source,"LIST/FILES").c_str());
@@ -1079,6 +1090,7 @@ void ServMsg::do_file_Rename(mstring mynick, mstring source, mstring params)
  	return;
     }
 
+    Parent->servmsg.stats.i_file_Change++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME"),
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source, "LIST/FILES").c_str(),
@@ -1115,6 +1127,7 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
  	return;
     }
 
+    Parent->servmsg.stats.i_file_Change++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_TIME"),
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source, "LIST/FILES").c_str(),
@@ -1185,6 +1198,7 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
     filename = Parent->filesys.GetName(FileMap::Public, filenum);
     size_t filesize = Parent->filesys.GetSize(FileMap::Public, filenum);
 
+    Parent->servmsg.stats.i_file_Send++;
     unsigned short port = FindAvailPort();
     ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 		" " + mstring(ultoa(Parent->LocalHost())) + " " +
@@ -1199,10 +1213,6 @@ void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ", 2).UpperCase();
 
-    // ID       D      Size   Prog Speed/s User (File Name)
-    // 00000001 S 000000000   0.0% xxxx.xX PreZ (blah.tgz)
-    // 000000b2 S 000000000  48.2%         PreZ
-    // 0000ac36 R 000000000 100.0%         PreZ
 
     if (DccMap::xfers.size())
     {
@@ -1233,7 +1243,11 @@ void ServMsg::do_file_Dcc(mstring mynick, mstring source, mstring params)
 		}
 	    }
 	    
-	    ::send("%08x %c %9d %3.1f %4.1f%c %s (%s)", iter->first,
+	    // ID       D      Size   Prog Speed/s User (File Name)
+	    // 00000001 S 000000000   0.0% xxxx.xX PreZ (blah.tgz)
+	    // 000000b2 S 000000000  48.2%         PreZ
+	    // 0000ac36 R 000000000 100.0%         PreZ
+	    ::send("%08x %c %9d %3.1f%% %4.1f%c %s (%s)", iter->first,
 		((iter->second->Type() == DccXfer::Get) ? 'R' : 'S'),			
 		iter->second->Filesize(),
 		((float) iter->second->Total() /
@@ -1300,6 +1314,7 @@ void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
 	DccMap::xfers[number]->Cancel();
 	delete DccMap::xfers[number];
 	DccMap::xfers.erase(number);
+	Parent->servmsg.stats.i_file_Cancel++;
 	::send(mynick, source, Parent->getMessage(source, "DCC/CANCEL"),
 		number);
     }
