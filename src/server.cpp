@@ -14,7 +14,9 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
+#ifndef WIN32
 #pragma ident "$Id$"
+#endif
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -24,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2000/02/15 13:27:04  prez
+** *** empty log message ***
+**
 ** Revision 1.66  2000/02/15 10:37:50  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
@@ -1650,7 +1655,7 @@ void NetworkServ::execute(const mstring & data)
 			atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
 			data.After(":", 2));
 		    wxLogInfo(Parent->getLogMessage("OTHER/LINK"),
-			data.ExtractWord(3, ": ").c_str(), sourceL);
+			data.ExtractWord(3, ": ").c_str(), sourceL.c_str());
 		}
 		else
 		{

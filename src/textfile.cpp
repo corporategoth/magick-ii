@@ -14,7 +14,9 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
+#ifndef WIN32
 #pragma ident "$Id$"
+#endif
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -24,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2000/02/15 13:27:04  prez
+** *** empty log message ***
+**
 ** Revision 1.17  2000/02/15 10:37:51  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from

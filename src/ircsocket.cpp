@@ -14,7 +14,9 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
+#ifndef WIN32
 #pragma ident "$Id$"
+#endif
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -24,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2000/02/15 13:27:03  prez
+** *** empty log message ***
+**
 ** Revision 1.82  2000/02/15 10:37:49  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
@@ -230,7 +235,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if (Parent->server.IsServer(*tmp))
 	wxLogNotice(Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
 		tmp->c_str(),
-		Parent->server.ServerList[tmp->Lowercase()].Uplink().c_str());
+		Parent->server.ServerList[tmp->LowerCase()].Uplink().c_str());
     else
 	wxLogNotice(Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
 		tmp->c_str(), "?");
