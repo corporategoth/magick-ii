@@ -1542,7 +1542,7 @@
 02 =SOP::preventing the user from overriding your setting.
 03 =SOP::These commands will remove a lock placed on a channel.
 04 =SOP::
-05 =SOP::You may unlock a users settings with these commands:
+05 =SOP::You may unlock a channels settings with these commands:
 06 =SOP::    MLOCK        BANTIME      PARTTIME     KEEPTOPIC
 07 =SOP::    TOPICLOCK    PRIVATE      SECUREOPS    SECURE
 08 =SOP::    ANARCHY      JOIN         RESTRICTED   REVENGE
@@ -1618,7 +1618,6 @@
 02 =SOP::
 03 =SOP::This will unlock the value of Revenge for a
 04 =SOP::channel, however the value will remain the same.
-
 
 
 [MEMOSERV]
@@ -1923,6 +1922,68 @@
 05 =REGD::all other members (and the head) of a committee,
 06 =REGD::turning it into a community announcement system of
 07 =REGD::sorts.  Otherwise only the head can send memos.
+
+[COMMSERV/LOCK]
+01 =SOP::Services allows you to lock a value for a committee,
+02 =SOP::preventing the committee head from overriding your
+03 =SOP::setting.  Please use caution, as you are removing the
+04 =SOP::committee head's right to change their record.
+05 =SOP::
+06 =SOP::You may lock committee settings with these commands:
+07 =SOP::    SECURE       PRIVATE      OPENMEMOS
+
+[COMMSERV/LOCK/SECURE]
+01 =SOP::LOCK <committee> SECURE <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Secure for a committee to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::committee head from being able to override this setting.
+06 =SOP::Please use with caution, as you are removing head's
+07 =SOP::right to change their own record.
+
+[COMMSERV/LOCK/PRIVATE]
+01 =SOP::LOCK <committee> PRIVATE <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Private for a committee to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::committee head from being able to override this setting.
+06 =SOP::Please use with caution, as you are removing the head's
+07 =SOP::right to change their own record.
+
+[COMMSERV/LOCK/OPENMEMOS]
+01 =SOP::LOCK <channel> OPENMEMOS <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Open Memos for a committee
+04 =SOP::to whatever you set it to.  Doing this, will prevent
+05 =SOP::the committee head from being able to override this
+06 =SOP::setting.  Please use with caution, as you are removing
+07 =SOP::the head's right to change their own record.
+
+[COMMSERV/UNLOCK]
+01 =SOP::Services allows you to lock a value for a committee,
+02 =SOP::preventing the head from overriding your setting.
+03 =SOP::These commands will remove a lock placed on a committee.
+04 =SOP::
+05 =SOP::You may unlock committee settings with these commands:
+06 =SOP::    SECURE       PRIVATE      OPENMEMOS
+
+[COMMSERV/UNLOCK/SECURE]
+01 =SOP::UNLOCK <committee> SECURE
+02 =SOP::
+03 =SOP::This will unlock the value of Secure for a
+04 =SOP::channel, however the value will remain the same.
+
+[COMMSERV/UNLOCK/PRIVATE]
+01 =SOP::UNLOCK <committee> PRIVATE
+02 =SOP::
+03 =SOP::This will unlock the value of Private for a
+04 =SOP::channel, however the value will remain the same.
+
+[COMMSERV/UNLOCK/OPENMEMOS]
+01 =SOP::UNLOCK <committee> OPENMEMOS
+02 =SOP::
+03 =SOP::This will unlock the value of Open Memos for a
+04 =SOP::channel, however the value will remain the same.
 
 
 

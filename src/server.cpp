@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2000/03/15 08:23:52  prez
+** Added locking stuff for commserv options, and other stuff
+**
 ** Revision 1.77  2000/03/14 15:10:16  prez
 ** OK -- more stuff with SJOIN/SNICK -- but it WORKS!!!
 **
@@ -85,6 +88,7 @@ Protocol::Protocol()
     i_SVSHOST = false;
     i_P12 = false;
     i_Signon = 0000;
+    i_Modes = 3;
     i_Server = "SERVER %s %d :%s";
     i_Protoctl = "";
 
@@ -154,19 +158,19 @@ Protocol::Protocol()
     tokens["d"] = "UNSQLINE";
     tokens["e"] = "SVSNICK";
     tokens["f"] = "SVSNOOP";
-    tokens["g"] = "PRIVMSG NickServ :IDENTIFY";	// IDENTIFY
+    tokens["g"] = "PRIVMSG " + Parent->nickserv.FirstName() + " :IDENTIFY";
     tokens["h"] = "SVSKILL";
-    tokens["i"] = "PRIVMSG NickServ";		// NICKSERV
-    tokens["j"] = "PRIVMSG ChanServ";		// CHANSERV
-    tokens["k"] = "PRIVMSG OperServ";		// OPERSERV
-    tokens["l"] = "PRIVMSG MemoServ";		// MEMOSERV
+    tokens["i"] = "PRIVMSG " + Parent->nickserv.FirstName() + " NickServ";
+    tokens["j"] = "PRIVMSG " + Parent->chanserv.FirstName() + " ChanServ";
+    tokens["k"] = "PRIVMSG " + Parent->operserv.FirstName() + " OperServ";
+    tokens["l"] = "PRIVMSG " + Parent->memoserv.FirstName() + " MemoServ";
     tokens["m"] = "SERVICES";
     tokens["n"] = "SVSMODE";
     tokens["o"] = "SAMODE";
     tokens["p"] = "CHATOPS";
     tokens["q"] = "ZLINE";
     tokens["r"] = "UNZLINE";
-    tokens["s"] = "PRIVMSG HelpServ";		// HELPSERV
+    tokens["s"] = "PRIVMSG " + Parent->servmsg.FirstName() + " HelpServ";
 }
 
 void Protocol::Set(unsigned int in)
@@ -182,12 +186,14 @@ void Protocol::Set(unsigned int in)
     case 10: /* DAL < 4.4.15 */
 	i_Signon = 1000;
 	i_Globops = true;
+	i_Modes = 4;
 	break;
     case 11: /* DAL >= 4.4.15 */
 	i_Signon = 1001;
 	i_Globops = true;
 	i_Tokens = true;
 	i_SVS = true;
+	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
     case 20: /* UnderNet < 2.8.10  */
@@ -199,6 +205,7 @@ void Protocol::Set(unsigned int in)
 	i_SVS = true;
 	i_SVSHOST = true;
 	i_Tokens = true;
+	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
     case 40: /* Elite */
@@ -212,6 +219,7 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_P12 = true;
 	i_Signon = 1001;
+	i_Modes = 6;
 	i_Server = "SERVER %s %d relic2.1 :%s";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 

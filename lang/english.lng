@@ -228,17 +228,18 @@ OTH_CMD5           =CONTINUE   %10d / FILE       %10d
 OTH_CMD6           =NEW        %10d / KILL       %10d
 OTH_CMD7           =ADD/DEL    %10d / MEMO       %10d
 OTH_CMD8           =LOGON      %10d / SET        %10d
+OTH_CMD9           =LOCK       %10d / UNLOCK     %10d
 
-OTH_CMD9           =GLOBAL     %10d / CREDITS    %10d
+OTH_CMD10           =GLOBAL     %10d / CREDITS    %10d
 
-OTH_CMD10          =TRACE      %10d / MODE       %10d
-OTH_CMD11          =QLINE      %10d / UNQLINE    %10d
-OTH_CMD12          =NOOP       %10d / KILL       %10d
-OTH_CMD13          =PING       %10d / UPDATE     %10d
-OTH_CMD14          =RELOAD     %10d / UNLOAD     %10d
-OTH_CMD15          =JUPE       %10d / ON/OFF     %10d
-OTH_CMD16          =CLONE      %10d / AKILL      %10d
-OTH_CMD17          =OPERDENY   %10d / IGNORE     %10d
+OTH_CMD11          =TRACE      %10d / MODE       %10d
+OTH_CMD12          =QLINE      %10d / UNQLINE    %10d
+OTH_CMD13          =NOOP       %10d / KILL       %10d
+OTH_CMD14          =PING       %10d / UPDATE     %10d
+OTH_CMD15          =RELOAD     %10d / UNLOAD     %10d
+OTH_CMD16          =JUPE       %10d / ON/OFF     %10d
+OTH_CMD17          =CLONE      %10d / AKILL      %10d
+OTH_CMD18          =OPERDENY   %10d / IGNORE     %10d
 
 
 USE_NS_LIVE        =Live Nicknames      %5d (%dkb)
@@ -622,8 +623,12 @@ OTH_NOTHEAD        =%s is not head of the %s committee.
 NEW                =Committee %s has been created with head %s.
 KILL               =Committee %s has been deleted.
 MEMO               =Memo sent to all members of the %s committee.
+ISLOCKED           =%s for committee %s is locked.
+ISNOTLOCKED        =%s for committee %s is not locked.
 SET_TO             =%s for committee %s has been set to %s.
 UNSET              =%s for committee %s has been unset.
+LOCKED             =%s for committee %s has been locked to .%s..
+UNLOCKED           =%s for committee %s has been unlocked.
 DEFUNCT            =DEFUNCT
 
 ;

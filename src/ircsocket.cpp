@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2000/03/15 08:23:51  prez
+** Added locking stuff for commserv options, and other stuff
+**
 ** Revision 1.89  2000/03/14 10:05:16  prez
 ** Added Protocol class (now we can accept multi IRCD's)
 **
@@ -631,14 +634,14 @@ int EventTask::svc(void)
 		{
 		    if (cli->second.p_modes_on != "" || cli->second.p_modes_off != "")
 		    {
-			unsigned int modesperline = 4, j, k;
+			unsigned int j, k;
 			vector<mstring> modelines;
 			mstring mode;
 			mstring modeparam;
 
-			for (i=0, j=0, k=0; i<cli->second.p_modes_off.size(); i++, j++)
+			for (i=0, j=0, k=0; i<cli->second.p_modes_off.size(); i++)
 			{
-			    if (j>=modesperline)
+			    if (j>=Parent->server.proto.Modes())
 			    {
 				modelines.push_back(mode + " " + modeparam);
 				mode = modeparam = "";
@@ -656,16 +659,16 @@ int EventTask::svc(void)
 				if (modeparam != "")
 				    modeparam += " ";
 				modeparam +=  cli->second.p_modes_off_params[k];
-				k++;
+				j++; k++;
 			    }
 			}
 			cli->second.p_modes_off = "";
 			cli->second.p_modes_off_params.clear();
-			if (j>0 && cli->second.p_modes_on.size())
+			if (mode.size() && cli->second.p_modes_on.size())
 			    mode += "+";
-			for (i=0, k=0; i<cli->second.p_modes_on.size(); i++, j++)
+			for (i=0, k=0; i<cli->second.p_modes_on.size(); i++)
 			{
-			    if (j>=modesperline)
+			    if (j>=Parent->server.proto.Modes())
 			    {
 				modelines.push_back(mode + " " + modeparam);
 				mode = modeparam = "";
@@ -684,12 +687,12 @@ int EventTask::svc(void)
 				if (modeparam != "")
 				    modeparam += " ";
 				modeparam += cli->second.p_modes_on_params[k];
-				k++;
+				j++; k++;
 			    }
 			}
 			cli->second.p_modes_on = "";
 			cli->second.p_modes_on_params.clear();
-			if (j>0)
+			if (mode.size())
 			    modelines.push_back(mode + " " + modeparam);
 			for (i=0; i<modelines.size(); i++)
 			{

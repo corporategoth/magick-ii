@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/03/15 08:23:51  prez
+** Added locking stuff for commserv options, and other stuff
+**
 ** Revision 1.43  2000/03/14 13:36:46  prez
 ** Finished P12 compliance (SJOIN, etc).
 **
@@ -307,6 +310,119 @@ bool Committee::IsHead(mstring nick)
     RET(false);
 }
 
+void Committee::Secure(bool in)
+{
+    FT("Committee::Secure", (in));
+    if (!(Parent->commserv.LCK_Secure() || l_Secure))
+	i_Secure = in;
+}
+
+
+bool Committee::Secure()
+{
+    NFT("Committee::Secure");
+    if (!Parent->commserv.LCK_Secure())
+    {
+	RET(i_Secure);
+    }
+    RET(Parent->commserv.DEF_Secure());
+}
+
+
+void Committee::L_Secure(bool in)
+{
+    FT("Committee::L_Secure", (in));
+    if (!Parent->commserv.LCK_Secure())
+	l_Secure = in;
+}
+
+
+bool Committee::L_Secure()
+{
+    NFT("Committee::L_Secure");
+    if (!Parent->commserv.LCK_Secure())
+    {
+	RET(l_Secure);
+    }
+    RET(true);
+}
+
+
+void Committee::Private(bool in)
+{
+    FT("Committee::Private", (in));
+    if (!(Parent->commserv.LCK_Private() || l_Private))
+	i_Private = in;
+}
+
+
+bool Committee::Private()
+{
+    NFT("Committee::Private");
+    if (!Parent->commserv.LCK_Private())
+    {
+	RET(i_Private);
+    }
+    RET(Parent->commserv.DEF_Private());
+}
+
+
+void Committee::L_Private(bool in)
+{
+    FT("Committee::L_Private", (in));
+    if (!Parent->commserv.LCK_Private())
+	l_Private = in;
+}
+
+
+bool Committee::L_Private()
+{
+    NFT("Committee::L_Private");
+    if (!Parent->commserv.LCK_Private())
+    {
+	RET(l_Private);
+    }
+    RET(true);
+}
+
+
+void Committee::OpenMemos(bool in)
+{
+    FT("Committee::OpenMemos", (in));
+    if (!(Parent->commserv.LCK_OpenMemos() || l_OpenMemos))
+	i_OpenMemos = in;
+}
+
+
+bool Committee::OpenMemos()
+{
+    NFT("Committee::OpenMemos");
+    if (!Parent->commserv.LCK_OpenMemos())
+    {
+	RET(i_OpenMemos);
+    }
+    RET(Parent->commserv.DEF_OpenMemos());
+}
+
+
+void Committee::L_OpenMemos(bool in)
+{
+    FT("Committee::L_OpenMemos", (in));
+    if (!Parent->commserv.LCK_OpenMemos())
+	l_OpenMemos = in;
+}
+
+
+bool Committee::L_OpenMemos()
+{
+    NFT("Committee::L_OpenMemos");
+    if (!Parent->commserv.LCK_OpenMemos())
+    {
+	RET(l_OpenMemos);
+    }
+    RET(true);
+}
+
 
 bool Committee::MSG_insert(mstring entry, mstring nick)
 {
@@ -428,6 +544,18 @@ void CommServ::AddCommands()
 		"SET* PRIV*", Parent->commserv.REGD_Name(), CommServ::do_set_Private);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* *MEMO*", Parent->commserv.REGD_Name(), CommServ::do_set_OpenMemos);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOCK SEC*", Parent->commserv.SOP_Name(), CommServ::do_lock_Secure);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOCK PRIV*", Parent->commserv.SOP_Name(), CommServ::do_lock_Private);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOCK *MEMO*", Parent->commserv.SOP_Name(), CommServ::do_lock_OpenMemos);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK SEC*", Parent->commserv.SOP_Name(), CommServ::do_unlock_Secure);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK PRIV*", Parent->commserv.SOP_Name(), CommServ::do_unlock_Private);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK *MEMO*", Parent->commserv.SOP_Name(), CommServ::do_unlock_OpenMemos);
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -442,6 +570,14 @@ void CommServ::AddCommands()
 		"SET* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOCK *", Parent->commserv.SOP_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOCK", Parent->commserv.SOP_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK *", Parent->commserv.SOP_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK", Parent->commserv.SOP_Name(), do_1_3param);
 
 }
 
@@ -1011,19 +1147,31 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
     {
 	if (output.size())
 	    output << ", ";
+	if (comm->L_Secure())
+	    output << IRC_Bold;
 	output << Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE");
+	if (comm->L_Secure())
+	    output << IRC_Off;
     }
     if (comm->Private())
     {
 	if (output.size())
 	    output << ", ";
+	if (comm->L_Private())
+	    output << IRC_Bold;
 	output << Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE");
+	if (comm->L_Private())
+	    output << IRC_Off;
     }
     if (comm->OpenMemos())
     {
 	if (output.size())
 	    output << ", ";
+	if (comm->L_OpenMemos())
+	    output << IRC_Bold;
 	output << Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS");
+	if (comm->L_OpenMemos())
+	    output << IRC_Off;
     }
     if (output.size())
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/OPTIONS"),
@@ -1419,6 +1567,14 @@ void CommServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    if (Parent->commserv.list[committee].L_Secure())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str(),
+		committee.c_str());
+	return;
+    }
+
     if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
     {
 	if (Parent->commserv.DEF_Secure())
@@ -1485,6 +1641,14 @@ void CommServ::do_set_Private(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    if (Parent->commserv.list[committee].L_Private())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str(),
+		committee.c_str());
+	return;
+    }
+
     if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
     {
 	if (Parent->commserv.DEF_Private())
@@ -1532,7 +1696,8 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!Parent->commserv.list[committee].IsHead(source))
+    if (!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
 				committee.c_str());
@@ -1548,6 +1713,14 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
 				committee.c_str());
+	return;
+    }
+
+    if (Parent->commserv.list[committee].L_OpenMemos())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str(),
+		committee.c_str());
 	return;
     }
 
@@ -1575,6 +1748,360 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 }
 
 
+void CommServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_lock_Secure", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+				committee.c_str());
+	return;
+    }
+
+    if (Parent->commserv.LCK_Secure())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str(),
+		committee.c_str());
+	return;
+    }
+
+    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    {
+	if (Parent->commserv.DEF_Secure())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	return;
+    }
+
+    Parent->commserv.list[committee].L_Secure(false);
+    Parent->commserv.list[committee].Secure(onoff.GetBool());
+    Parent->commserv.list[committee].L_Secure(true);
+    Parent->commserv.stats.i_Lock++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/LOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str(),
+		committee.c_str(), onoff.GetBool() ?
+			Parent->getMessage(source, "MISC/ON").c_str() :
+			Parent->getMessage(source, "MISC/OFF").c_str());
+}
+
+
+void CommServ::do_lock_Private(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_lock_Private", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+				committee.c_str());
+	return;
+    }
+
+    if (Parent->commserv.LCK_Private())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str(),
+		committee.c_str());
+	return;
+    }
+
+    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    {
+	if (Parent->commserv.DEF_Private())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	return;
+    }
+
+    Parent->commserv.list[committee].L_Private(false);
+    Parent->commserv.list[committee].Private(onoff.GetBool());
+    Parent->commserv.list[committee].L_Private(true);
+    Parent->commserv.stats.i_Lock++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/LOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str(),
+		committee.c_str(), onoff.GetBool() ?
+			Parent->getMessage(source, "MISC/ON").c_str() :
+			Parent->getMessage(source, "MISC/OFF").c_str());
+}
+
+
+void CommServ::do_lock_OpenMemos(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_lock_OpenMemos", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+				committee.c_str());
+	return;
+    }
+
+    if (Parent->commserv.LCK_OpenMemos())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str(),
+		committee.c_str());
+	return;
+    }
+
+    if (onoff.CmpNoCase("default") == 0 || onoff.CmpNoCase("reset") == 0)
+    {
+	if (Parent->commserv.DEF_OpenMemos())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
+	return;
+    }
+
+    Parent->commserv.list[committee].L_OpenMemos(false);
+    Parent->commserv.list[committee].OpenMemos(onoff.GetBool());
+    Parent->commserv.list[committee].L_OpenMemos(true);
+    Parent->commserv.stats.i_Lock++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/LOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str(),
+		committee.c_str(), onoff.GetBool() ?
+			Parent->getMessage(source, "MISC/ON").c_str() :
+			Parent->getMessage(source, "MISC/OFF").c_str());
+}
+
+
+void CommServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_unlock_Secure", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+				committee.c_str());
+	return;
+    }
+
+    if (Parent->commserv.LCK_Secure())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str(),
+		committee.c_str());
+	return;
+    }
+
+    Parent->commserv.list[committee].L_Secure(false);
+    Parent->commserv.stats.i_Unlock++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str());
+}
+
+
+void CommServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_unlock_Private", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+				committee.c_str());
+	return;
+    }
+
+    if (Parent->commserv.LCK_Private())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str(),
+		committee.c_str());
+	return;
+    }
+
+    Parent->commserv.list[committee].L_Private(false);
+    Parent->commserv.stats.i_Unlock++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str());
+}
+
+
+void CommServ::do_unlock_OpenMemos(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_unlock_OpenMemos", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.SOP_Name() ||
+	committee == Parent->commserv.ADMIN_Name() ||
+	committee == Parent->commserv.OPER_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+				committee.c_str());
+	return;
+    }
+
+    if (Parent->commserv.LCK_OpenMemos())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str(),
+		committee.c_str());
+	return;
+    }
+
+    Parent->commserv.list[committee].L_OpenMemos(false);
+    Parent->commserv.stats.i_Unlock++;
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNLOCKED"),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str());
+}
+
+
 void CommServ::load_database(wxInputStream& in)
 {
     FT("CommServ::load_database", ("(wxInputStream &) in"));
@@ -1590,6 +2117,7 @@ void CommServ::load_database(wxInputStream& in)
 	COM(("Entry COMMITTEE %s loaded ...", tmpcommitee.Name().c_str()));
     }
 }
+
 
 void CommServ::save_database(wxOutputStream& out)
 {

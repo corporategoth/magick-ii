@@ -248,7 +248,7 @@ x Add to mDateTime a 'Difference' function that will output the difference
 		X days, XX:XX:XX
 		X years, X days, XX:XX:XX
 
-* Also add Year(), Month(), Day(), Jday(), Hour(), Min(), Sec() and Msec() to mDateTime
+x Also add Year(), Month(), Day(), Jday(), Hour(), Min(), Sec() and Msec() to mDateTime
 	to extract the current value of each 'element'.
 	eg. on 13/9/99 at 13:12:43.905
 	Year() = 1999, Month() = 9, Day() = 13, Jday() = 258
@@ -288,7 +288,7 @@ x encrypted iostream filters
 	nested bans etc.
   + Note: this may be forgotten about and standard "dump the object" format used.
 
-* Method to determine (wether encrypted, compressed, or plain) what
+x Method to determine (wether encrypted, compressed, or plain) what
 	flags are set on the datafile (including compression level,
 	possibly encryption type, magick internal version). (flags?!!!)
 
@@ -358,7 +358,7 @@ x generic services thread is basically passed messages from the Server
 ChanServ
 --------
 
-+ One central database with values that are stored, and live (as most of
+- One central database with values that are stored, and live (as most of
 	it is common), with 2 container classes pointing to the database.
 	ones that are not stored are removed from the central database
 	when they are no longer used.  The save routine just stores all
@@ -368,14 +368,14 @@ x Have a 'template' channel setup, that any new channels will be based
 	upon, or similar functionality in the ini file so it is easy to
 	set the 'default' registration options.
 
-* Have the ability for SOP (?) to be able to lock certain paramaters,
+x Have the ability for SOP (?) to be able to lock certain paramaters,
 	(eg. if the channel has an offencive topic, a SOP can lock the
 	channel at +s, and even founder cant change it.  Sortof a forced
 	mlock -- whether they want it or not, but does not interfere with
 	any other mlock flags they may have set.  Same with flags, topic,
 	anything!).
 
-* Compression of outbound modes (configurable amount of modes per line).
+x Compression of outbound modes (configurable amount of modes per line).
 
 NickServ
 --------
@@ -397,14 +397,14 @@ x Add ability for channel memo's to know who has read them, so that they
 	dont get constantly reminded that there are news articles for the
 	channel if they have already read them.
 
-* add ability to set timeout of read memos (and ability to set as unread)
++ Add ability to set timeout of read memos (and ability to set as unread)
 	(only notified on signon/unaway of unread memos).
 
-* Add ability to e-mail memos to a user if required (say a command to do
+- Add ability to e-mail memos to a user if required (say a command to do
 	it (specifying email address), or a nickserv setting to do it to
 	the stored email address for that nick record for all memos).
 
-+ A start.
+x A start.
 
 
 OperServ
@@ -428,7 +428,7 @@ x (cont) 4 hard-coded committees, being SADMIN for services admins (hard-coded
 	These committees should also store who added them (and when).  Others
 	dont need to, since only the head can add people.
 
-* Possibly setup multiple-OPER lists, so you can essentially set different
+- Possibly setup multiple-OPER lists, so you can essentially set different
 	'levels' of OPER's to access different commands (personally, I'm against
 	this, 5 levels is enough, SADMIN, SOP, ADMIN, OPER, and NONE).  Its
 	possible to say allow statistical information only to people who are

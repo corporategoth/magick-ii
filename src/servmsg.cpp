@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/03/15 08:23:52  prez
+** Added locking stuff for commserv options, and other stuff
+**
 ** Revision 1.34  2000/03/08 23:38:37  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -442,37 +445,40 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD8"),
 		Parent->commserv.stats.Logon(),
 		Parent->commserv.stats.Set());
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD9"),
+		Parent->commserv.stats.Lock(),
+		Parent->commserv.stats.Unlock());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
 		Parent->servmsg.GetInternalName().c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD9"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD10"),
 		Parent->servmsg.stats.Global(),
 		Parent->servmsg.stats.Credits());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
 		Parent->operserv.GetInternalName().c_str());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD10"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
 		Parent->operserv.stats.Trace(),
 		Parent->operserv.stats.Mode());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD11"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
 		Parent->operserv.stats.Qline(),
 		Parent->operserv.stats.Unqline());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD12"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD13"),
 		Parent->operserv.stats.Noop(),
 		Parent->operserv.stats.Kill());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD13"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD14"),
 		Parent->operserv.stats.Ping(),
 		Parent->operserv.stats.Update());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD14"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD15"),
 		Parent->operserv.stats.Reload(),
 		Parent->operserv.stats.Unload());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD15"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD16"),
 		Parent->operserv.stats.Jupe(),
 		Parent->operserv.stats.OnOff());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD16"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD17"),
 		Parent->operserv.stats.Clone(),
 		Parent->operserv.stats.Akill());
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD17"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD18"),
 		Parent->operserv.stats.OperDeny(),
 		Parent->operserv.stats.Ignore());
 }

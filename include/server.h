@@ -24,6 +24,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/03/15 08:23:51  prez
+** Added locking stuff for commserv options, and other stuff
+**
 ** Revision 1.30  2000/03/14 13:37:35  prez
 ** *** empty log message ***
 **
@@ -72,8 +75,17 @@ class Protocol
      * 1002 = NICK nick hops signon-time user host server service host :realname
      */
     unsigned int i_Signon;
+    unsigned int i_Modes; /* Modes per line */
 
     mstring i_Server;	/* Should have %s %d %s in it */
+
+    /* PROTOCTL identifiers
+     *
+     * NOQUIT      Do not quit each user on SQUIT (assume it)
+     * TOKEN       Use one-char tokens instead of PRIVMSG, etc
+     * WATCH=128   .
+     * SAFELIST    .
+     */
     mstring i_Protoctl; /* Verbatum (null if not sent) */
 public:
     Protocol();
@@ -88,6 +100,7 @@ public:
     bool SVSHOST()	    { return i_SVSHOST; }
     bool P12()		    { return i_P12; }
     unsigned int Signon()   { return i_Signon; }
+    unsigned int Modes()    { return i_Modes; }
     mstring Server()	    { return i_Server; }
     mstring Protoctl()	    { return i_Protoctl; }
 };

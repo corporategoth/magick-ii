@@ -24,6 +24,9 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2000/03/15 08:23:51  prez
+** Added locking stuff for commserv options, and other stuff
+**
 ** Revision 1.24  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -93,18 +96,18 @@ public:
     mstring Email()const	{ return i_Email; }
     void URL(mstring in)	{ i_URL = in; }
     mstring URL()const		{ return i_URL; }
-    void Private(bool in)	{ i_Private = in; }
-    bool Private()const		{ return i_Private; }
-    void L_Private(bool in)	{ l_Private = in; }
-    bool L_Private()const	{ return l_Private; }
-    void OpenMemos(bool in)	{ i_OpenMemos = in; }
-    bool OpenMemos()const	{ return i_OpenMemos; }
-    void L_OpenMemos(bool in)	{ l_OpenMemos = in; }
-    bool L_OpenMemos()const	{ return l_OpenMemos; }
-    void Secure(bool in)	{ i_Secure = in; }
-    bool Secure()const		{ return i_Secure; }
-    void L_Secure(bool in)	{ l_Secure = in; }
-    bool L_Secure()const	{ return l_Secure; }
+    void Private(bool in);
+    bool Private();
+    void L_Private(bool in);
+    bool L_Private();
+    void OpenMemos(bool in);
+    bool OpenMemos();
+    void L_OpenMemos(bool in);
+    bool L_OpenMemos();
+    void Secure(bool in);
+    bool Secure();
+    void L_Secure(bool in);
+    bool L_Secure();
 
     bool MSG_insert(mstring entry, mstring nick);
     bool MSG_erase();
@@ -160,16 +163,20 @@ public:
 	unsigned long i_Memo;
 	unsigned long i_Logon;
 	unsigned long i_Set;
+	unsigned long i_Lock;
+	unsigned long i_Unlock;
     public:
 	stats_t() {
 	    i_New = i_Kill = i_AddDel = i_Memo =
-		i_Logon = i_Set = 0; }
+		i_Logon = i_Set = i_Lock = i_Unlock = 0; }
 	unsigned long New()	{ return i_New; }
 	unsigned long Kill()	{ return i_Kill; }
 	unsigned long AddDel()	{ return i_AddDel; }
 	unsigned long Memo()	{ return i_Memo; }
 	unsigned long Logon()	{ return i_Logon; }
 	unsigned long Set()	{ return i_Set; }
+	unsigned long Lock()	{ return i_Lock; }
+	unsigned long Unlock()	{ return i_Unlock; }
     } stats;
 
     bool    DEF_OpenMemos()	{ return def_openmemos; }
@@ -227,6 +234,12 @@ public:
     static void do_set_Secure(mstring mynick, mstring source, mstring params);
     static void do_set_Private(mstring mynick, mstring source, mstring params);
     static void do_set_OpenMemos(mstring mynick, mstring source, mstring params);
+    static void do_lock_Secure(mstring mynick, mstring source, mstring params);
+    static void do_lock_Private(mstring mynick, mstring source, mstring params);
+    static void do_lock_OpenMemos(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Private(mstring mynick, mstring source, mstring params);
+    static void do_unlock_OpenMemos(mstring mynick, mstring source, mstring params);
 };
 
 #endif
