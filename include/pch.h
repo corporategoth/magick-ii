@@ -1,5 +1,9 @@
 #ifndef _PCH_H
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
