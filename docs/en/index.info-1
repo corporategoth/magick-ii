@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index6676.info.2.
+/tmp/sgmltmp.index31705.info.2.
 
    \input texinfo
 
@@ -865,6 +865,23 @@ operates.
      library file, and the include directory exists).  This should only
      be used if Magick does not detect a threads library.
 
+`--with-locknode=node'
+     -with-locktype=type -with-lockrel=rel This will set the host lock
+     values (see -enable-hostlock below) for the purpose of building a
+     locked binary for another system.  This is mainly for people who
+     want to run magick on a system that is not capable of compiling
+     it, but dont want to use an unlocked binary.  The best way to to
+     do this is after the configuration process, type 'make
+     ace[lowbar]uname' and then execute ace[lowbar]uname, the value on
+     the 2nd line is the node, the value on the 1st and 5th line are
+     the type and should be seperated by a `/' character (ie. 1st/5th).
+     The value of the 3rd line is the rel.  Alternatively, you can try
+     using the commands `uname -n' for the 2nd line, `uname -s' for the
+     1st line, `uname -m' for the 5th line, and `uname -r' for the 3rd
+     line, but it is recommended you use ace[lowbar]uname instead (as
+     the values may not match on some systems!).  NOTE: the release is
+     currently not used in hostlock protection.
+
 `--with-include=path'
      -with-libdir=path -with-lib=lib These will add -I, -L and -l
      options to the compile/link options.  If you find Magick wont
@@ -901,6 +918,18 @@ operates.
      of data at once.  On some bad thread implementations, this will
      stop segfaults, however it is a big target asking for data
      corruption turning this off.
+
+`--enable-hostlock'
+     -disable-hostlock This will enable or disable host and system type
+     checking on startup.  When enabled, if the binary is moved to a
+     system where the hostname or system specs are different from where
+     the binary was compiled, it will fail to operate, and a re-compile
+     will be necessary.  This is enabled by default, however if you
+     want to create a portable binary (that can be used anywhere)
+     disable this option.  This is a security feature to protect
+     against people copying your services directory (binaries and all)
+     and stealing the databases.  This is not infallable, however it
+     does help.
 
 `--enable-mpatrol'
      -disable-mpatrol This turns on or off the usage of the memory

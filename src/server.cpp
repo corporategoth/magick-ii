@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.157  2001/03/03 00:30:34  prez
+** Fixed compile error
+**
 ** Revision 1.156  2001/03/02 05:24:42  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -2823,10 +2826,10 @@ unsigned int NetworkServ::SeenMessage(mstring data)
 }
 
 
-void NetworkServ::execute(const mstring & message)
+void NetworkServ::execute(const mstring & data)
 {
     //okay this is the main networkserv command switcher
-    FT("NetworkServ::execute", (message));
+    FT("NetworkServ::execute", (data));
 
     mstring source, sourceL, msgtype, params;
 
@@ -5368,7 +5371,7 @@ void NetworkServ::execute(const mstring & message)
 
 }
 
-void NetworkServ::numeric_execute(const mstring & message)
+void NetworkServ::numeric_execute(const mstring & data)
 {
     FT("NetworkServ::numeric_execute", (data));
 
