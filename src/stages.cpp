@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2001/06/07 03:58:05  prez
+** Aparently we dont need or want a Feed call with 1
+**
 ** Revision 1.3  2001/06/03 02:12:44  prez
 ** Fixed problem with compress stage not recognizing its end ...
 **
@@ -440,9 +443,9 @@ long XMLStage::Consume()
     char buffer[DEF_STAGE_BUFFER];
     while ((res = input->Read(buffer, sizeof(buffer))) > 0)
     {
-	if (res < static_cast<long>(sizeof(buffer)))
+/*	if (res < static_cast<long>(sizeof(buffer)))
 	    xres = parser->Feed(buffer, res, 1);
-	else
+	else */
 	    xres = parser->Feed(buffer, res, 0);
 	total += res;
     }
