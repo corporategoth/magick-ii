@@ -2545,14 +2545,7 @@ void NickServ::do_set_Password(const mstring & mynick, const mstring & source, c
 	return;
     }
 
-#ifdef GETPASS
-    mstring oldpass = Magick::instance().nickserv.GetStored(source)->Password();
-
-    if (newpass.IsSameAs(oldpass, true) ||
-#else
-    if (
-#endif
-	   newpass.IsSameAs(source, true) || newpass.length() < 5)
+    if (newpass.IsSameAs(source, true) || newpass.length() < 5)
     {
 	NSEND(mynick, source, "ERR_SITUATION/COMPLEX_PASS");
 	return;
