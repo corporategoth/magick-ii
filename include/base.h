@@ -109,6 +109,43 @@ typedef list<entlist_val_t>::const_iterator entlist_val_ci;
 typedef set<entlist_val_t>::iterator entlist_val_ui;
 typedef set<entlist_val_t>::const_iterator entlist_val_cui;
 
+class entlist_str_t : public mUserDef
+{
+    friend wxOutputStream &operator<<(wxOutputStream& out,const entlist_str_t& in);
+    friend wxInputStream &operator>>(wxInputStream& in, entlist_str_t& out);
+    mstring i_Entry;
+    mstring i_Value;
+    mDateTime i_Last_Modify_Time;
+    mstring i_Last_Modifier;
+    bool i_Stupid;	// if TRUE, Change() does nothing.
+public:
+    entlist_str_t () {}
+    entlist_str_t (const entlist_str_t& in) { *this = in; }
+    entlist_str_t (mstring entry, mstring value, mstring nick, bool stupid = false);
+    void operator=(const entlist_str_t &in);
+    bool operator==(const entlist_str_t &in) const
+	{ return (i_Entry == in.i_Entry); }
+    bool operator!=(const entlist_str_t &in) const
+	{ return (i_Entry != in.i_Entry); }
+    bool operator<(const entlist_str_t &in) const
+	{ return (i_Entry < in.i_Entry); }
+
+    bool ChangeEnt(mstring entry, mstring nick);
+    bool ChangeStr(mstring value, mstring nick);
+    bool Change(mstring newent, mstring value, mstring nick);
+    mstring Entry()const		{ return i_Entry; }
+    mstring String()const		{ return i_Value; }
+    mDateTime Last_Modify_Time()const	{ return i_Last_Modify_Time; }
+    mstring Last_Modifier()const	{ return i_Last_Modifier; }
+};
+
+wxOutputStream &operator<<(wxOutputStream& out,const entlist_str_t& in);
+wxInputStream &operator>>(wxInputStream& in, entlist_str_t& out);
+typedef list<entlist_str_t>::iterator entlist_str_i;
+typedef list<entlist_str_t>::const_iterator entlist_str_ci;
+typedef set<entlist_str_t>::iterator entlist_str_ui;
+typedef set<entlist_str_t>::const_iterator entlist_str_cui;
+
 class mBase
 {
     friend mBaseTask;

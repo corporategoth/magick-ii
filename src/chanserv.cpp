@@ -31,8 +31,8 @@ void Chan_Live_t::Join(mstring nick)
     else
     {
 	users[nick.LowerCase()] = pair<bool,bool>(false,false);
-//	if (Parent->chanserv.IsStored(i_Name))
-//	    Parent->chanserv.stored[i_Name.LowerCase()].Join(nick);
+	if (Parent->chanserv.IsStored(i_Name))
+	    Parent->chanserv.stored[i_Name.LowerCase()].Join(nick);
     }
 }
 
@@ -268,6 +268,12 @@ void Chan_Live_t::SendMode(mstring source, mstring in)
 }
 
 
+void Chan_Live_t::SendMode(mstring in)
+{
+    SendMode(Parent->chanserv.FirstName(), in);
+}
+
+
 void Chan_Live_t::Mode(mstring source, mstring in)
 {
     FT("Chan_Live_t::Mode", (source, in));
@@ -413,7 +419,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	}
     }
     if (Parent->chanserv.IsStored(i_Name))
-	Parent->chanserv.stored[i_Name.LowerCase()].Mode(in);
+	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source, in);
 }
 
 
@@ -465,32 +471,69 @@ void Chan_Stored_t::Join(mstring nick)
 {
     FT("Chan_Stored_t::Join", (nick));
 
-/*
-    if (IsNickAkick(nick))
+    // Ignore us joining
+    if(Parent->nickserv.IsLive(nick))
+	if (Parent->nickserv.live[nick.LowerCase()].IsServices())
+	{
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+o " + nick);
+	    return;
+	}
+
+    { // NOONE else can move our iterator
+    MLOCK("ChanServ", "Akick", i_Name);
+    if (Akick_find(nick))
     {
 	// If this user is the only user in channel
 	if (Parent->chanserv.IsLive(i_Name))
 	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
 		Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
 
-	if (Parent->nickserv.IsLive(NickAkick(nick).first))
-	    Parent->chanserv[i_Name.LowerCase()].Mode("+b " +
+	if (Parent->nickserv.IsLive(Akick->Entry()))
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+b " +
 		Parent->nickserv.live[nick.LowerCase()].Mask(Nick_Live_t::P_H));
 	else
-	    Parent->chanserv[i_Name.LowerCase()].Mode("+b " +
-		NickAkick(nick).first);
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+b " + Akick->Entry());
 
-	if (NickAkick(nick).second != "")
-	    Parent->server.KICK(Parent->chanserv.FirstName(), nick,
-		i_Name, NickAkick(nick).second);
+	// Can only insert with reason or default, so its safe.
+	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
+		i_Name, Akick->String());
+		
+	if (Parent->chanserv.IsLive(i_Name))
+	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
+	    {
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("+s");
+		// Activate timer to PART in ? seconds ...
+		// Probably should set something in live to say that
+		// chanserv is only there to keep the channel (and probably
+		// should store the timer ID that will make magick leave)
+		// just incase someone else joins before it goes off.
+	    }
+		
+
+	return;
+    }}
+
+    if (Secure() && Restricted() && Access_value(nick) < (long) 1)
+    {
+	// If this user is the only user in channel
+	if (Parent->chanserv.IsLive(i_Name))
+	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
+		Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+
+	if (Parent->nickserv.IsLive(nick))
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+b " +
+		Parent->nickserv.live[nick.LowerCase()].Mask(Nick_Live_t::P_H));
 	else
-	    Parent->server.KICK(Parent->chanserv.FirstName(), nick,
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+b " + nick + "!*@*");
+
+	// Can only insert with reason or default, so its safe.
+	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Parent->chanserv.DEF_Akick_Reason());
 		
 	if (Parent->chanserv.IsLive(i_Name))
 	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
 	    {
-		Parent->chanserv.live[i_Name.LowerCase()].Mode("+s");
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("+s");
 		// Activate timer to PART in ? seconds ...
 		// Probably should set something in live to say that
 		// chanserv is only there to keep the channel (and probably
@@ -501,19 +544,14 @@ void Chan_Stored_t::Join(mstring nick)
 
 	return;
     }
-*/
 
-/*
-    if (Secure() && Restricted() && NickAccess(nick).second < 1)
+    if (Parent->chanserv.IsLive(i_Name))
     {
+	if (Access_value(nick) >= Access_Level_value("AUTOOP"))
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+o " + nick);
+	else if (Access_value(nick) >= Access_Level_value("AUTOVOICE"))
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+v " + nick);
     }
-*/
-
-/*
-    if (IsNickAccess(nick))
-    {
-    }
-*/
 
     // Carry over topic ..
     if (Parent->chanserv.IsLive(i_Name))
@@ -539,31 +577,44 @@ void Chan_Stored_t::Join(mstring nick)
 void Chan_Stored_t::Part(mstring nick)
 {
     FT("Chan_Stored_t::Part", (nick));
-/*
-    if (NickAccess(nick)>0)
-    {
+    if (Access_value(nick)>0)
 	i_LastUsed = Now();
-    }
-*/
 }
 
 
 void Chan_Stored_t::Kick(mstring nick, mstring kicker)
 {
     FT("Chan_Stored_t::Kick", (nick, kicker));
-/*
-    if (NickAccess(nick)>NickAccess(kicker))
+
+    // WE can kick anyone we want
+    if (Parent->nickserv.IsLive(kicker))
+	if (Parent->nickserv.live[kicker.LowerCase()].IsServices())
+	    return;
+
+    if (Access_value(nick)>Access_value(kicker))
     {
 	// Check revenge, and do it.
     }
-*/
 }
 
 
 void Chan_Stored_t::Topic(mstring topic, mstring setter, mDateTime time)
 {
     FT("Chan_Stored_t::Topic", (topic, setter, time));
-    if (!Topiclock())
+
+    // Its us re-setting it!
+    if (Parent->nickserv.IsLive(setter))
+    {
+	if (Parent->nickserv.live[setter.LowerCase()].IsServices())
+	    return;
+    }
+
+    if (Topiclock())
+    {
+	Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name,
+		i_Topic + "(" + i_Topic_Setter + ")");
+    }
+    else
     {
 	i_Topic = topic;
 	i_Topic_Setter = setter;
@@ -572,9 +623,156 @@ void Chan_Stored_t::Topic(mstring topic, mstring setter, mDateTime time)
 }
 
 
-void Chan_Stored_t::Mode(mstring mode)
+void Chan_Stored_t::Mode(mstring setter, mstring mode)
 {
     FT("Chan_Stored_t::Mode", (mode));
+    // ENFORCE mlock
+
+    if (!Parent->chanserv.IsLive(i_Name))
+	return;
+    if (Parent->nickserv.IsLive(setter))
+	if (Parent->nickserv.live[setter.LowerCase()].IsServices())
+	    return;
+
+
+    mstring send_on;
+    mstring send_off;
+    mstring send_on_args;
+    mstring send_off_args;
+
+    mstring change = mode.ExtractWord(1, ": ");
+    int fwdargs = 2;
+    bool add = true;
+    unsigned int i;
+    for (i=0; i<change.size(); i++)
+    {
+	switch(change[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+
+	case '-':
+	    add = false;
+	    break;
+
+	case 'o':
+	    if (add)
+	    {
+		if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Access_Level_value("AUTODEOP") ||
+			(Access_value(mode.ExtractWord(fwdargs, ": ")) < Access_Level_value("CMDOP") &&
+			Secureops()))		
+		send_off += "o";
+		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+	    }
+
+	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
+	    {
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
+			"+" + send_on + " " + send_off_args + " " + send_on_args);
+		send_off = send_on = send_off_args = send_on_args = "";
+	    }
+
+	    fwdargs++;
+	    break;
+
+	case 'v':
+	    if (add)
+	    {
+		if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Access_Level_value("AUTODEOP") ||
+			(Access_value(mode.ExtractWord(fwdargs, ": ")) < Access_Level_value("CMDVOICE") &&
+			Secureops()))
+		send_off += "v";
+		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+	    }
+
+	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
+	    {
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
+			"+" + send_on + " " + send_off_args + " " + send_on_args);
+		send_off = send_on = send_off_args = send_on_args = "";
+	    }
+
+	    fwdargs++;
+	    break;
+
+	case 'b':
+	    if (Access_value(mode.ExtractWord(fwdargs, ": ")) >= Access_value(setter))
+	    {
+		send_off += "b";
+		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		// Do Revenge
+	    }
+
+	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
+	    {
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
+			"+" + send_on + " " + send_off_args + " " + send_on_args);
+		send_off = send_on = send_off_args = send_on_args = "";
+	    }
+
+	    fwdargs++;
+	    break;
+
+	case 'k':
+	    if (add && i_Mlock_Off.Contains("k"))
+	    {
+		send_off += "k";
+		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+	    }
+	    else if (!add && i_Mlock_Key != "")
+	    {
+		send_on += "k";
+		send_on_args += " " + i_Mlock_Key;
+	    }
+
+	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
+	    {
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
+			"+" + send_on + " " + send_off_args + " " + send_on_args);
+		send_off = send_on = send_off_args = send_on_args = "";
+	    }
+
+	    fwdargs++;
+	    break;
+
+	case 'l':
+	    if (add && i_Mlock_Off.Contains("l") || i_Mlock_Limit)
+	    {
+		if (i_Mlock_Limit)
+		{
+		    send_on += "l";
+		    send_on_args << " " << i_Mlock_Limit;
+		}
+		else
+		{
+		    send_off = "l";
+		}
+	    }
+
+	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
+	    {
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
+			"+" + send_on + " " + send_off_args + " " + send_on_args);
+		send_off = send_on = send_off_args = send_on_args = "";
+	    }
+
+	    fwdargs++;
+	    break;
+
+	default:
+	    if (add && i_Mlock_Off.Contains(change[i]))
+		send_off += change[i];
+	    else if (!add && i_Mlock_On.Contains(change[i]))
+		send_on += change[i];
+	}
+    }
+    if (mstring(send_on+send_off+send_on_args+send_off_args).Len() > 0)
+    {
+	Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
+		"+" + send_on + " " + send_off_args + " " + send_on_args);
+	send_off = send_on = send_off_args = send_on_args = "";
+    }
 }
 
 
@@ -747,7 +945,7 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
 	i_Access.insert(*j);
 
-    entlist_cui k;
+    entlist_str_cui k;
     i_Akick.clear();
     for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
 	i_Akick.insert(*k);
@@ -800,9 +998,9 @@ mstring Chan_Stored_t::Mlock()
     NFT("Chan_Stored_t::MLock");
     mstring Result;
     if(i_Mlock_On!="")
-	Result="+" + i_Mlock_On;
+	Result+="+" + i_Mlock_On;
     if(i_Mlock_Off!="")
-	Result=Result+"-" + i_Mlock_Off;
+	Result+="-" + i_Mlock_Off;
     RET(Result);
 }
 
@@ -922,13 +1120,13 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	case 'o':
 	case 'v':
 	case 'b':
-	case 'k':
-	case 'l':
 	    break;
 
 	default:
 	    if (add)
 	    {
+		if (change[i]=='k' || change[i]=='l')
+		    break;
 		if (!i_Mlock_On.Contains(change[i]))
 		    i_Mlock_On += change[i];
 		if (i_Mlock_Off.Contains(change[i]))
@@ -936,6 +1134,9 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	    }
 	    else
 	    {
+		if ((change[i]=='k' && ignorek) ||
+			(change[i]=='l' && ignorel))
+		    break;
 		if (!i_Mlock_Off.Contains(change[i]))
 		    i_Mlock_Off += change[i];
 		if (i_Mlock_On.Contains(change[i]))
@@ -1202,6 +1403,368 @@ mstring Chan_Stored_t::Revenge()
 }
 
 
+bool Chan_Stored_t::Access_Level_find(mstring entry)
+{
+    FT("Chan_Stored_t::Access_Level_find", (entry));
+
+    entlist_val_ui iter = i_Access_Level.end();
+    if (!i_Access_Level.empty())
+	for (iter=i_Access_Level.begin(); iter!=i_Access_Level.end(); iter++)
+	    if (iter->Entry().LowerCase() == entry.LowerCase())
+		break;
+
+    if (iter == i_Access_Level.end())
+    {
+	Access_Level = iter;
+	RET(true);
+    }
+    else
+    {
+	Access_Level = i_Access_Level.end();
+	RET(false);
+    }
+}
+
+
+long Chan_Stored_t::Access_Level_value(mstring entry)
+{
+    FT("Chan_Stored_t::Access_Level_value", (entry));
+
+    long retval = 0;
+    entlist_val_ui iter = Access_Level;
+
+    if (Access_Level_find(entry))
+	retval=Access_Level->Value();
+    Access_Level = iter;
+    return retval;
+}
+
+
+bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick)
+{
+    FT("Chan_Stored_t::Access_insert", (entry, nick));
+
+    // Wildcards but no @
+    if ((entry.Contains("*") || entry.Contains("?")) &&
+	!entry.Contains("@"))
+    {
+	    RET(false);
+    }
+
+    // ! without @
+    if (entry.Contains("!") && !entry.Contains("@"))
+    {
+	    RET(false);
+    }
+
+    // Ensure its a stored nick if no @
+    // Add *! if its not *!*@*
+    if (!entry.Contains("@"))
+    {
+	if (!Parent->nickserv.IsStored(entry))
+	{
+	    RET(false);
+	}
+    }
+    else
+    {
+	if (!entry.Contains("!"))
+	    entry.Prepend("*!");
+    }
+
+    if (!Access_find(entry))
+    {
+	entlist_val_t tmp(entry, value, nick);
+	Access = i_Access.insert(i_Access.end(), tmp);
+	RET(true);
+    }
+    else
+    {
+	Access = i_Access.end();
+	RET(false);
+    }
+}
+
+
+bool Chan_Stored_t::Access_erase()
+{
+    NFT("Chan_Stored_t::Access_erase");
+
+    if (Access != i_Access.end())
+    {
+	i_Access.erase(Access);
+	Access = i_Access.end();
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+
+}
+
+
+bool Chan_Stored_t::Access_find(mstring entry)
+{
+    FT("Chan_Stored_t::Access_find", (entry));
+
+    mstring mask;
+    if (Parent->nickserv.IsLive(entry))
+	mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
+
+    entlist_val_ui iter = i_Access.end();
+    if (!i_Access.empty())
+    {
+	// FIND exact nickname
+	for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
+	    if (iter->Entry().LowerCase() == entry.LowerCase())
+		break;
+
+	// Not exact, try either REGEX of entry, or
+	// REGEX of live nickname if !Contains(@)
+	if (iter == i_Access.end())
+	{
+	    if (entry.Contains("@"))
+	    {
+		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
+		    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+			break;
+	    }
+	    else
+	    {
+		if (Parent->nickserv.IsLive(entry))
+		{
+		    mstring mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
+
+		    for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
+			if (mask.LowerCase().Matches(iter->Entry().LowerCase()))
+			    break;
+		}
+	    }
+	}
+    }
+
+    if (iter == i_Access.end())
+    {
+	Access = iter;
+	RET(true);
+    }
+    else
+    {
+	Access = i_Access.end();
+	RET(false);
+    }
+}
+
+
+long Chan_Stored_t::Access_value(mstring entry)
+{
+    FT("Chan_Stored_t::Access_value", (entry));
+
+    long retval = 0;
+    entlist_val_ui iter = Access;
+
+    if (Access_find(entry))
+	retval=Access->Value();
+    Access = iter;
+    return retval;
+}
+
+
+bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick)
+{
+    FT("Chan_Stored_t::Akick_insert", (entry, nick));
+
+    // Wildcards but no @
+    if ((entry.Contains("*") || entry.Contains("?")) &&
+	!entry.Contains("@"))
+    {
+	    RET(false);
+    }
+
+    // ! without @
+    if (entry.Contains("!") && !entry.Contains("@"))
+    {
+	    RET(false);
+    }
+
+    // Ensure its a stored nick if no @
+    // Add *! if its not *!*@*
+    if (!entry.Contains("@"))
+    {
+	if (!Parent->nickserv.IsStored(entry))
+	{
+	    RET(false);
+	}
+    }
+    else
+    {
+	if (!entry.Contains("!"))
+	    entry.Prepend("*!");
+    }
+
+    if (!Akick_find(entry))
+    {
+	entlist_str_t tmp(entry, value, nick);
+	Akick = i_Akick.insert(i_Akick.end(), tmp);
+	RET(true);
+    }
+    else
+    {
+	Akick = i_Akick.end();
+	RET(false);
+    }
+}
+
+bool Chan_Stored_t::Akick_insert(mstring entry, mstring nick)
+{
+    return Akick_insert(entry, Parent->chanserv.DEF_Akick_Reason(), nick);
+}
+
+bool Chan_Stored_t::Akick_erase()
+{
+    NFT("Chan_Stored_t::Akick_erase");
+
+    if (Akick != i_Akick.end())
+    {
+	i_Akick.erase(Akick);
+	Akick = i_Akick.end();
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+
+}
+
+
+bool Chan_Stored_t::Akick_find(mstring entry)
+{
+    FT("Chan_Stored_t::Akick_find", (entry));
+
+    mstring mask;
+    if (Parent->nickserv.IsLive(entry))
+	mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
+
+    entlist_str_ui iter = i_Akick.end();
+    if (!i_Akick.empty())
+    {
+	// FIND exact nickname
+	for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
+	    if (iter->Entry().LowerCase() == entry.LowerCase())
+		break;
+
+	// Not exact, try either REGEX of entry, or
+	// REGEX of live nickname if !Contains(@)
+	if (iter == i_Akick.end())
+	{
+	    if (entry.Contains("@"))
+	    {
+		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
+		    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+			break;
+	    }
+	    else
+	    {
+		if (Parent->nickserv.IsLive(entry))
+		{
+		    mstring mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
+
+		    for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
+			if (mask.LowerCase().Matches(iter->Entry().LowerCase()))
+			    break;
+		}
+	    }
+	}
+    }
+
+    if (iter == i_Akick.end())
+    {
+	Akick = iter;
+	RET(true);
+    }
+    else
+    {
+	Akick = i_Akick.end();
+	RET(false);
+    }
+}
+
+
+mstring Chan_Stored_t::Akick_string(mstring entry)
+{
+    FT("Chan_Stored_t::Akick_string", (entry));
+
+    mstring retval;
+    entlist_str_ui iter = Akick;
+
+    if (Akick_find(entry))
+	retval=Akick->String();
+    Akick = iter;
+    return retval;
+}
+
+
+bool Chan_Stored_t::Greet_insert(mstring entry, mstring nick)
+{
+    FT("Chan_Stored_t::Greet_insert", (entry, nick));
+
+    if (!Greet_find(entry))
+    {
+	entlist_t tmp(entry, nick, true);
+	Greet = i_Greet.insert(i_Greet.end(), tmp);
+	RET(true);
+    }
+    else
+    {
+	Greet = i_Greet.end();
+	RET(false);
+    }
+}
+
+
+bool Chan_Stored_t::Greet_erase()
+{
+    NFT("Chan_Stored_t::Greet_erase");
+
+    if (Greet != i_Greet.end())
+    {
+	i_Greet.erase(Greet);
+	Greet = i_Greet.end();
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+
+}
+
+
+bool Chan_Stored_t::Greet_find(mstring entry)
+{
+    FT("Chan_Stored_t::Greet_find", (entry));
+
+    entlist_i iter = i_Greet.end();
+    if (!i_Greet.empty())
+	for (iter=i_Greet.begin(); iter!=i_Greet.end(); iter++)
+	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+		break;
+
+    if (iter == i_Greet.end())
+    {
+	Greet = iter;
+	RET(true);
+    }
+    else
+    {
+	Greet = i_Greet.end();
+	RET(false);
+    }
+}
+
+
 wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 {
     out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
@@ -1219,7 +1782,7 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
 	out<<*j;
 
-    entlist_cui k;
+    entlist_str_cui k;
     out<<in.i_Akick.size();
     for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
 	out<<*k;
@@ -1243,6 +1806,7 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     mstring dummy,dummy2;
     entlist_t edummy;
     entlist_val_t evdummy;
+    entlist_str_t esdummy;
     in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
     in>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
@@ -1269,8 +1833,8 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     in>>count;
     for(i=0;i<count;i++)
     {
-	in>>edummy;
-	out.i_Akick.insert(edummy);
+	in>>esdummy;
+	out.i_Akick.insert(esdummy);
     }
 
     out.i_Greet.clear();
