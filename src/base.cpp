@@ -92,7 +92,11 @@ void *thread_handler(void *owner)
             COM(("%s has no more messages left going to suspended state...", Owner->GetInternalName().c_str()));
 	    mThread::suspend();
 //	    VERY VERY temporary measure!!
+#ifdef WIN32
+	    Sleep(1000);
+#else
 	    sleep(1);
+#endif
 	}
     }
     RET((void *) NULL);
