@@ -242,9 +242,9 @@ int Magick::Start()
     ACE_UNUSED_ARG (sigttsp);
 #endif
 
-    if(!Services_NickServ.IsEmpty())
+    if(!NickServ::getnames().IsEmpty())
 	nickserv.init();
-    if(!Services_ChanServ.IsEmpty())
+    if(!ChanServ::getnames().IsEmpty())
 	chanserv.init();
 
     // etc.
@@ -726,10 +726,10 @@ void Magick::get_config_values()
     in.Read(ts_Startup+"GMT",&Startup_GMT,+10.0);
     in.Read(ts_Startup+"STOP",&Startup_STOP,true);
 
-    in.Read(ts_Services+"NickServ",&Services_NickServ,"NickServ");
-    in.Read(ts_Services+"NickServ_Name",&Services_NickServ_Name,"Nickname Service");
-    in.Read(ts_Services+"ChanServ",&Services_ChanServ,"ChanServ");
-    in.Read(ts_Services+"ChanServ_Name",&Services_ChanServ_Name,"Channel Service");
+    in.Read(ts_Services+"NickServ",&nickserv.names,"NickServ");
+    in.Read(ts_Services+"NickServ_Name",&nickserv.realname,"Nickname Service");
+    in.Read(ts_Services+"ChanServ",&chanserv.names,"ChanServ");
+    in.Read(ts_Services+"ChanServ_Name",&chanserv.realname,"Channel Service");
     in.Read(ts_Services+"MemoServ",&Services_MemoServ,"MemoServ");
     in.Read(ts_Services+"MemoServ_Name",&Services_MemoServ_Name,"Memo/News Service");
     in.Read(ts_Services+"MEMO",&Services_MEMO,true);

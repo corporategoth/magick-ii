@@ -44,6 +44,8 @@ magick:
 		$(MAKE) -C $$x TOPDIR=$(TOPDIR); \
 	done
 	$(CC) $(LFLAGS) $(LIBS) -o magick
+	cp magick magick.debug
+	strip magick
 
 clean:
 	@for x in $(SUBDIRS) ./src; \

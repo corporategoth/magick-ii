@@ -133,10 +133,10 @@ protected:
 	double Startup_GMT;
 	bool Startup_STOP;
 
-	mstring Services_NickServ;
-	mstring Services_NickServ_Name;
-	mstring Services_ChanServ;
-	mstring Services_ChanServ_Name;
+//	mstring Services_NickServ;
+//	mstring Services_NickServ_Name;
+//	mstring Services_ChanServ;
+//	mstring Services_ChanServ_Name;
 	mstring Services_MemoServ;
 	mstring Services_MemoServ_Name;
 	bool Services_MEMO;

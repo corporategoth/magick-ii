@@ -16,6 +16,7 @@
 #include "magick.h"
 
 mstring ChanServ::names = "";
+mstring ChanServ::realname = "";
 ChanServ::ChanServ()
 {
     NFT("ChanServ::ChanServ");
