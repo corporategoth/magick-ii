@@ -191,7 +191,6 @@ void ThreadID::WriteOut(const mstring &message)
     list<pair<threadtype_enum, mstring> >::iterator iter;
     if(Parent!=NULL)
     {
-	MLOCK(("ThreadMessageQueue"));
 	for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end(); iter++)
 	    if (iter->first == t_internaltype)
 	    {

@@ -1463,6 +1463,7 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
 
 	if (Parent->nickserv.IsStored(nick))
 	{
+	    ChangeOver(nick);
 	    Parent->nickserv.stored.erase(nick.LowerCase());
 	}
 
@@ -1559,6 +1560,154 @@ bool Nick_Stored_t::IsSibling(mstring nick)
     }
 }
 
+void Nick_Stored_t::ChangeOver(mstring oldnick)
+{
+    FT("Nick_Stored_t::ChangeOver", (oldnick)); 
+
+    bool found;
+    map<mstring, Committee>::iterator citer;
+    for (citer = Parent->commserv.list.begin();
+			    citer != Parent->commserv.list.end(); citer++)
+    {
+	MLOCK(("CommServ", "list", citer->first, "member"));
+	found = false;
+	pair<mstring, mDateTime> tmp;
+	if (citer->second.Name() != Parent->commserv.ALL_Name() &&
+	    citer->second.Name() != Parent->commserv.REGD_Name() &&
+	    citer->second.Name() != Parent->commserv.SADMIN_Name())
+	{
+	    if (citer->second.find(i_Name))
+	    {
+/*		tmp = pair<mstring, mDateTime>(
+				citer->second.member->Last_Modifier(),
+				citer->second.member->Last_Modify_Time());
+*/
+		tmp.first =	citer->second.member->Last_Modifier();
+		tmp.second =	citer->second.member->Last_Modify_Time();
+		citer->second.erase();
+		found = true;
+	    }
+	    if (citer->second.find(oldnick))
+	    {
+		tmp = pair<mstring, mDateTime>(
+				citer->second.member->Last_Modifier(),
+				citer->second.member->Last_Modify_Time());
+		citer->second.erase();
+		found = true;
+	    }
+	    if (citer->second.IsHead(i_Name) || citer->second.IsHead(oldnick))
+		found = false;
+	    if (found)
+	    {
+		citer->second.insert(i_Name, tmp.second, tmp.second);
+		citer->second.member = citer->second.end();
+	    }
+	}
+    }
+
+    map<mstring, Chan_Stored_t>::iterator csiter;
+    for (csiter = Parent->chanserv.stored.begin();
+			csiter != Parent->chanserv.stored.end(); csiter++)
+    {
+	if (csiter->second.Founder().LowerCase() == oldnick.LowerCase())
+	{
+	    csiter->second.Founder(i_Name);
+	}
+	if (csiter->second.CoFounder().LowerCase() == oldnick.LowerCase())
+	{
+	    csiter->second.CoFounder(i_Name);
+	}
+	{ MLOCK(("ChanServ", "stored", csiter->first, "Access"));
+	found = false;
+	triplet<long, mstring, mDateTime> tmp;
+	if (csiter->second.Access_find(i_Name))
+	{
+	    tmp = triplet<long, mstring, mDateTime>(
+			    csiter->second.Access->Value(),
+			    csiter->second.Access->Last_Modifier(),
+			    csiter->second.Access->Last_Modify_Time());
+	    csiter->second.Access_erase();
+	    found = true;
+	}
+	if (csiter->second.Access_find(oldnick))
+	{
+	    tmp = triplet<long, mstring, mDateTime>(
+			    csiter->second.Access->Value(),
+			    csiter->second.Access->Last_Modifier(),
+			    csiter->second.Access->Last_Modify_Time());
+	    csiter->second.Access_erase();
+	    found = true;
+	}
+	if (found)
+	{
+	    csiter->second.Access_insert(i_Name, tmp.first, tmp.second,
+							    tmp.third);
+	    csiter->second.Access = csiter->second.Access_end();
+	} }
+	{ MLOCK(("ChanServ", "stored", csiter->first, "Akick"));
+	found = false;
+	triplet<mstring, mstring, mDateTime> tmp;
+	if (csiter->second.Akick_find(i_Name))
+	{
+	    tmp = triplet<mstring, mstring, mDateTime>(
+			    csiter->second.Akick->Value(),
+			    csiter->second.Akick->Last_Modifier(),
+			    csiter->second.Akick->Last_Modify_Time());
+	    csiter->second.Akick_erase();
+	    found = true;
+	}
+	if (csiter->second.Akick_find(oldnick))
+	{
+	    tmp = triplet<mstring, mstring, mDateTime>(
+			    csiter->second.Akick->Value(),
+			    csiter->second.Akick->Last_Modifier(),
+			    csiter->second.Akick->Last_Modify_Time());
+	    csiter->second.Akick_erase();
+	    found = true;
+	}
+	if (found)
+	{
+	    csiter->second.Akick_insert(i_Name, tmp.first, tmp.second, tmp.third);
+	    csiter->second.Akick = csiter->second.Akick_end();
+	} }
+	{ MLOCK(("ChanServ", "stored", csiter->first, "Greet"));
+	found = false;
+	pair<mstring, mDateTime> tmp;
+	if (csiter->second.Greet_find(i_Name))
+	{
+	    tmp = pair<mstring, mDateTime>(
+			    csiter->second.Greet->Entry(),
+			    csiter->second.Greet->Last_Modify_Time());
+	    csiter->second.Greet_erase();
+	    found = true;
+	}
+	if (csiter->second.Greet_find(oldnick))
+	{
+	    tmp = pair<mstring, mDateTime>(
+			    csiter->second.Greet->Entry(),
+			    csiter->second.Greet->Last_Modify_Time());
+	    csiter->second.Greet_erase();
+	    found = true;
+	}
+	if (found)
+	{
+	    csiter->second.Greet_insert(tmp.first, i_Name, tmp.second);
+	    csiter->second.Greet = csiter->second.Greet_end();
+	} }
+    }
+
+    
+    map<mstring, Nick_Stored_t>::iterator niter;
+    for (niter = Parent->nickserv.stored.begin();
+			niter != Parent->nickserv.stored.end(); niter++)
+    {
+	if (niter->second.IsIgnore(oldnick))
+	{
+	    niter->second.IgnoreDel(oldnick);
+	    niter->second.IgnoreAdd(i_Name);
+	}
+    }
+}
 
 bool Nick_Stored_t::MakeHost()
 {
@@ -1612,6 +1761,7 @@ bool Nick_Stored_t::MakeHost()
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.clear();
 	Parent->nickserv.stored[i_Host.LowerCase()].i_Host = i_Name;
+	ChangeOver(i_Host);
 	i_Host = "";
 	RET(true);
     }
@@ -3039,6 +3189,8 @@ void NickServ::AddCommands()
 		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"GET*PASS*", Parent->commserv.SOP_Name(), NickServ::do_Getpass);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"ACC* CUR*", Parent->commserv.REGD_Name(), NickServ::do_access_Current);
@@ -3081,7 +3233,7 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* SEC*", Parent->commserv.REGD_Name(), NickServ::do_set_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* NOEX*", Parent->commserv.REGD_Name(), NickServ::do_set_NoExpire);
+		"SET* NOEX*", Parent->commserv.SOP_Name(), NickServ::do_set_NoExpire);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* NOMEMO", Parent->commserv.REGD_Name(), NickServ::do_set_NoMemo);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3229,27 +3381,26 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_Drop", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
 
-    if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
-    {
-	::send(mynick, source, "Please IDENTIFY first.");
-	return;
-    }
 
     if (params.WordCount(" ") < 2)
     {
-	Parent->nickserv.stored.erase(source.LowerCase());
-	::send(mynick, source, "Your nickname has been dropped.");
+	if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
+	{
+	    ::send(mynick, source, "Please IDENTIFY first.");
+	    return;
+	}
+	else
+	{
+	    Parent->nickserv.stored.erase(source.LowerCase());
+	    ::send(mynick, source, "Your nickname has been dropped.");
+	}
     }
     else if (Parent->nickserv.IsStored(params.ExtractWord(2, " ")))
     {
 	mstring target = params.ExtractWord(2, " ");
-	if (Parent->nickserv.stored[target.LowerCase()].IsSibling(source) ||
+	if ((Parent->nickserv.stored[target.LowerCase()].IsSibling(source) &&
+	    Parent->nickserv.live[source.LowerCase()].IsIdentified()) ||
 	    (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	     Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source) &&
 	     !(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
@@ -3324,8 +3475,7 @@ void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (!Parent->nickserv.IsStored(source) ||
-	Parent->nickserv.stored[source.LowerCase()].Host() == "")
+    if (Parent->nickserv.stored[source.LowerCase()].Host() == "")
     {
 	::send(mynick, source, "Your nickname is not linked.");
 	return;
@@ -3351,12 +3501,6 @@ void NickServ::do_Host(mstring mynick, mstring source, mstring params)
     mstring newhost;
     if (params.WordCount(" ") > 1)
 	newhost = params.ExtractWord(2, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
 
     if (newhost != "")
     {
@@ -3566,7 +3710,11 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     for (iter=Parent->commserv.list.begin();
 		iter!=Parent->commserv.list.end(); iter++)
     {
-	if (iter->second.HeadCom() == "" &&
+	if (iter->first != Parent->commserv.ALL_Name() &&
+	    iter->first != Parent->commserv.REGD_Name() &&
+	    (iter->second.HeadCom() == "" ||
+	    !(Parent->commserv.IsList(iter->second.HeadCom()) &&
+	      Parent->commserv.list[iter->second.HeadCom().UpperCase()].IsIn(nick->Name()))) &&
 	    iter->second.IsIn(target) && (!iter->second.Private() ||
 	    (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	     Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
@@ -3818,12 +3966,6 @@ void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
-
     if (Parent->nickserv.stored[target.LowerCase()].Suspended())
     {
 	::send(mynick, source, "Nickname " + target + " is already suspended.");
@@ -3859,12 +4001,6 @@ void NickServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
-
     if (!Parent->nickserv.stored[target.LowerCase()].Suspended())
     {
 	::send(mynick, source, "Nickname " + target + " is not suspended.");
@@ -3892,13 +4028,52 @@ void NickServ::do_Forbid(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
+    Parent->nickserv.stored[target.LowerCase()] = Nick_Stored_t(target);
+}
+
+
+void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Getpass", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, "Please identify first.");
+	::send(mynick, source, "Not enough paramaters");
 	return;
     }
 
-    Parent->nickserv.stored[target.LowerCase()] = Nick_Stored_t(target);
+    mstring target   = params.ExtractWord(2, " ");
+
+    if (!Parent->nickserv.IsStored(target))
+    {
+	::send(mynick, source, "Nickname " + target + " is not registered.");
+	return;
+    }
+
+    // If we are NOT a SADMIN, and target is a PRIV GROUP.
+    if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	!Parent->commserv.list[Parent->commserv.SADMIN_Name().LowerCase()].IsIn(source) &&
+	(Parent->commserv.list[Parent->commserv.SADMIN_Name().LowerCase()].IsIn(target) ||
+	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(target)) ||
+	(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.ADMIN_Name().LowerCase()].IsIn(target)) ||
+	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name().LowerCase()].IsIn(target))))
+    {
+	::send(mynick, source, "You may not execute " + message +
+				" on someone in privilaged committees.");
+	return;
+    }
+
+    Nick_Stored_t *nick = &Parent->nickserv.stored[target.LowerCase()];
+    mstring host = nick->Name();
+    if (nick->Host() != "" && Parent->nickserv.IsStored(nick->Host()))
+	host = Parent->nickserv.stored[nick->Host().LowerCase()].Name();
+
+    ::send(mynick, source, "Password for nickname " + nick->Name() + " (" +
+	host + ") is " + IRC_Bold + nick->Password() + IRC_Off + ".");
 }
 
 
@@ -3910,18 +4085,6 @@ void NickServ::do_access_Current(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, "Not enough paramaters");
-	return;
-    }
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
 	return;
     }
 
@@ -3948,18 +4111,6 @@ void NickServ::do_access_Add(mstring mynick, mstring source, mstring params)
     }
 
     mstring hostmask = params.ExtractWord(3, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
 
     if (!(hostmask.Contains("@") && hostmask.WordCount("@") == 2) ||
 	  hostmask.Contains("!"))
@@ -3990,18 +4141,6 @@ void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
     }
 
     mstring hostmask = params.ExtractWord(3, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
 
     if ((!(hostmask.Contains("@") && hostmask.WordCount("@") == 2) ||
 	hostmask.Contains("!")) && !hostmask.IsNumber())
@@ -4039,21 +4178,9 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
 	    target = params.ExtractWord(3, " ");
     }
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
     if (source != target && !Parent->nickserv.IsStored(target))
     {
 	::send(mynick, source, "Nickname " + target + " is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
 	return;
     }
 
@@ -4089,18 +4216,6 @@ void NickServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
 
     mstring target = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
-
     if (!Parent->nickserv.IsStored(target))
     {
 	::send(mynick, source, "Your nickname is not registered.");
@@ -4129,18 +4244,6 @@ void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
     }
 
     mstring target = params.ExtractWord(3, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
 
     if (target.IsNumber())
 	target = Parent->nickserv.stored[source.LowerCase()].Ignore(atoi(target.c_str())-1);
@@ -4172,21 +4275,9 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	    target = params.ExtractWord(3, " ");
     }
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
     if (source != target && !Parent->nickserv.IsStored(target))
     {
 	::send(mynick, source, "Nickname " + target + " is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
 	return;
     }
 
@@ -4221,12 +4312,6 @@ void NickServ::do_set_Password(mstring mynick, mstring source, mstring params)
     }
 
     mstring newpass = params.ExtractWord(3, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
 
     if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
     {
@@ -4264,18 +4349,6 @@ void NickServ::do_set_Email(mstring mynick, mstring source, mstring params)
 
     mstring newvalue = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
-
     if (!newvalue.CmpNoCase("none"))
 	newvalue = "";
 
@@ -4295,18 +4368,6 @@ void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
     }
 
     mstring newvalue = params.ExtractWord(3, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
 
     if (!newvalue.CmpNoCase("none"))
 	newvalue = "";
@@ -4328,18 +4389,6 @@ void NickServ::do_set_ICQ(mstring mynick, mstring source, mstring params)
 
     mstring newvalue = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
-
     if (!newvalue.CmpNoCase("none"))
 	newvalue = "";
 
@@ -4359,18 +4408,6 @@ void NickServ::do_set_Description(mstring mynick, mstring source, mstring params
     }
 
     mstring newvalue = params.ExtractWord(3, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.stored[source.LowerCase()].IsOnline())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
 
     if (!newvalue.CmpNoCase("none"))
 	newvalue = "";
@@ -4433,15 +4470,9 @@ void NickServ::do_set_Protect(mstring mynick, mstring source, mstring params)
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
+    if (Parent->nickserv.stored[source.LowerCase()].L_Protect())
     {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (Parent->nickserv.LCK_Protect())
-    {
-	::send(mynick, source, "Protect is a SERVICE LOCKED value.");
+	::send(mynick, source, "Protect is a LOCKED value.");
 	return;
     }
 
@@ -4476,15 +4507,9 @@ void NickServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
+    if (Parent->nickserv.stored[source.LowerCase()].L_Secure())
     {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (Parent->nickserv.LCK_Secure())
-    {
-	::send(mynick, source, "Secure is a SERVICE LOCKED value.");
+	::send(mynick, source, "Secure is a LOCKED value.");
 	return;
     }
 
@@ -4511,17 +4536,18 @@ void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_set_NoExpire", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
-    if (params.WordCount(" ") < 3)
+    if (params.WordCount(" ") < 4)
     {
 	::send(mynick, source, "Not enough paramaters");
 	return;
     }
 
-    mstring onoff = params.ExtractWord(3, " ");
+    mstring nickname = params.ExtractWord(3, " ");
+    mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(source))
+    if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, "Your nickname is not registered.");
+	::send(mynick, source, "Nickname " + nickname + " is not registered.");
 	return;
     }
 
@@ -4545,9 +4571,10 @@ void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    Parent->nickserv.stored[source.LowerCase()].NoExpire(onoff.GetBool());
-    ::send(mynick, source, "NoExpire is now set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    Parent->nickserv.stored[nickname.LowerCase()].NoExpire(onoff.GetBool());
+    ::send(mynick, source, "NoExpire for " + nickname + " is now set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
+
 
 void NickServ::do_set_NoMemo(mstring mynick, mstring source, mstring params)
 {
@@ -4560,18 +4587,11 @@ void NickServ::do_set_NoMemo(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
+    if (Parent->nickserv.stored[source.LowerCase()].L_NoMemo())
     {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (Parent->nickserv.LCK_NoMemo())
-    {
-	::send(mynick, source, "NoMemo is a SERVICE LOCKED value.");
+	::send(mynick, source, "NoMemo is a LOCKED value.");
 	return;
     }
 
@@ -4606,15 +4626,9 @@ void NickServ::do_set_Private(mstring mynick, mstring source, mstring params)
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
+    if (Parent->nickserv.stored[source.LowerCase()].L_Private())
     {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (Parent->nickserv.LCK_Private())
-    {
-	::send(mynick, source, "Private is a SERVICE LOCKED value.");
+	::send(mynick, source, "Private is a LOCKED value.");
 	return;
     }
 
@@ -4649,15 +4663,9 @@ void NickServ::do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
+    if (Parent->nickserv.stored[source.LowerCase()].L_PRIVMSG())
     {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (Parent->nickserv.LCK_PRIVMSG())
-    {
-	::send(mynick, source, "PRIVMSG is a SERVICE LOCKED value.");
+	::send(mynick, source, "PRIVMSG is a LOCKED value.");
 	return;
     }
 
@@ -4692,15 +4700,9 @@ void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
 
     mstring lang = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(source))
+    if (Parent->nickserv.stored[source.LowerCase()].L_Language())
     {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (Parent->nickserv.LCK_Language())
-    {
-	::send(mynick, source, "Language is a SERVICE LOCKED value.");
+	::send(mynick, source, "Language is a LOCKED value.");
 	return;
     }
 
@@ -4730,12 +4732,6 @@ void NickServ::do_lock_Protect(mstring mynick, mstring source, mstring params)
 
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
 
     if (!Parent->nickserv.IsStored(nickname))
     {
@@ -4783,12 +4779,6 @@ void NickServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
     if (!Parent->nickserv.IsStored(nickname))
     {
 	::send(mynick, source, "Nickname " + nickname + " is not registered.");
@@ -4821,58 +4811,6 @@ void NickServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, "Secure for " + nickname + " is now locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
-void NickServ::do_lock_NoExpire(mstring mynick, mstring source, mstring params)
-{
-    FT("NickServ::do_lock_NoExpire", (mynick, source, params));
-
-    mstring message  = params.Before(" ", 2).UpperCase();
-    if (params.WordCount(" ") < 4)
-    {
-	::send(mynick, source, "Not enough paramaters");
-	return;
-    }
-
-    mstring nickname = params.ExtractWord(3, " ");
-    mstring onoff    = params.ExtractWord(4, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
-    if (!Parent->nickserv.IsStored(nickname))
-    {
-	::send(mynick, source, "Nickname " + nickname + " is not registered.");
-	return;
-    }
-
-    if (Parent->nickserv.LCK_NoExpire())
-    {
-	::send(mynick, source, "NoExpire is a SERVICE LOCKED value.");
-	return;
-    }
-
-    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
-    {
-	if (Parent->nickserv.DEF_NoExpire())
-	    onoff = "TRUE";
-	else
-	    onoff = "FALSE";
-    }
-
-    if (!onoff.IsBool())
-    {
-	::send(mynick, source, "The value you have entered is not valid.");
-	return;
-    }
-
-    Parent->nickserv.stored[nickname.LowerCase()].L_NoExpire(false);
-    Parent->nickserv.stored[nickname.LowerCase()].NoExpire(onoff.GetBool());
-    Parent->nickserv.stored[nickname.LowerCase()].L_NoExpire(true);
-    ::send(mynick, source, "NoExpire for " + nickname + " is now locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
-}
-
 void NickServ::do_lock_NoMemo(mstring mynick, mstring source, mstring params)
 {
     FT("NickServ::do_lock_NoMemo", (mynick, source, params));
@@ -4886,12 +4824,6 @@ void NickServ::do_lock_NoMemo(mstring mynick, mstring source, mstring params)
 
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
 
     if (!Parent->nickserv.IsStored(nickname))
     {
@@ -4939,12 +4871,6 @@ void NickServ::do_lock_Private(mstring mynick, mstring source, mstring params)
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
     if (!Parent->nickserv.IsStored(nickname))
     {
 	::send(mynick, source, "Nickname " + nickname + " is not registered.");
@@ -4991,12 +4917,6 @@ void NickServ::do_lock_PRIVMSG(mstring mynick, mstring source, mstring params)
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
     if (!Parent->nickserv.IsStored(nickname))
     {
 	::send(mynick, source, "Nickname " + nickname + " is not registered.");
@@ -5042,12 +4962,6 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
 
     mstring nickname = params.ExtractWord(3, " ");
     mstring lang     = params.ExtractWord(4, " ").UpperCase();
-
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
 
     if (!Parent->nickserv.IsStored(nickname))
     {

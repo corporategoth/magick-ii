@@ -205,6 +205,7 @@ class Nick_Stored_t : public mUserDef
     Nick_Stored_t(mstring nick, mDateTime regtime, const Nick_Stored_t &host); // Slave
     void Signon(mstring realname, mstring mask);
     void ChgNick(mstring nick);
+    void ChangeOver(mstring oldnick);
 public:
     Nick_Stored_t();
     Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
@@ -406,6 +407,7 @@ public:
     static void do_Suspend(mstring mynick, mstring source, mstring params);
     static void do_UnSuspend(mstring mynick, mstring source, mstring params);
     static void do_Forbid(mstring mynick, mstring source, mstring params);
+    static void do_Getpass(mstring mynick, mstring source, mstring params);
 
     static void do_access_Current(mstring mynick, mstring source, mstring params);
     static void do_access_Add(mstring mynick, mstring source, mstring params);
@@ -430,7 +432,6 @@ public:
     static void do_set_Language(mstring mynick, mstring source, mstring params);
     static void do_lock_Protect(mstring mynick, mstring source, mstring params);
     static void do_lock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_lock_NoExpire(mstring mynick, mstring source, mstring params);
     static void do_lock_NoMemo(mstring mynick, mstring source, mstring params);
     static void do_lock_Private(mstring mynick, mstring source, mstring params);
     static void do_lock_PRIVMSG(mstring mynick, mstring source, mstring params);

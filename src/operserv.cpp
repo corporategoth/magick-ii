@@ -99,7 +99,6 @@ bool OperServ::Clone_erase()
     {
 	RET(false);
     }
-
 }
 
 

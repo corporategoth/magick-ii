@@ -52,7 +52,7 @@ class entlist_t : public mUserDef
 public:
     entlist_t () {}
     entlist_t (const entlist_t& in) { *this = in; }
-    entlist_t (mstring entry, mstring nick);
+    entlist_t (mstring entry, mstring nick, mDateTime modtime = Now());
     void operator=(const entlist_t &in);
     bool operator==(const entlist_t &in) const
 	{ return (i_Entry == in.i_Entry); }
@@ -90,7 +90,7 @@ class entlist_val_t : public mUserDef
 public:
     entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (mstring entry, T value, mstring nick, bool stupid = false);
+    entlist_val_t (mstring entry, T value, mstring nick, mDateTime modtime = Now(), bool stupid = false);
     void operator=(const entlist_val_t &in);
     bool operator==(const entlist_val_t &in) const
 	{ return (i_Entry == in.i_Entry); }
@@ -107,12 +107,14 @@ public:
 };
 
 template<class T> inline
-entlist_val_t<T>::entlist_val_t(mstring entry, T value, mstring nick, bool stupid)
+entlist_val_t<T>::entlist_val_t(mstring entry, T value, mstring nick,
+					mDateTime modtime, bool stupid)
 {
-    FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick, stupid));
+    FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick,
+							modtime, stupid));
     i_Entry = entry;
     i_Value = value;
-    i_Last_Modify_Time = Now();
+    i_Last_Modify_Time = modtime;
     i_Last_Modifier = nick;
     i_Stupid = stupid;
 }

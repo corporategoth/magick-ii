@@ -143,6 +143,10 @@ class Chan_Stored_t : public mUserDef
     bool l_Secure;
     bool i_NoExpire;
     bool l_NoExpire;
+    bool i_NoGreet;
+    bool l_NoGreet;
+    bool i_Anarchy;
+    bool l_Anarchy;
     bool i_Restricted;
     bool l_Restricted;
     bool i_Join;
@@ -238,6 +242,14 @@ public:
     void NoExpire(bool in);
     bool L_NoExpire();
     void L_NoExpire(bool in);
+    bool NoGreet();
+    void NoGreet(bool in);
+    bool L_NoGreet();
+    void L_NoGreet(bool in);
+    bool Anarchy();
+    void Anarchy(bool in);
+    bool L_Anarchy();
+    void L_Anarchy(bool in);
     bool Restricted();
     void Restricted(bool in);
     bool L_Restricted();
@@ -275,16 +287,18 @@ public:
     //     1) Entry !has @ and is reg'd nick.
     //     2) Entry has (* or ?) and @.
     //     3) Entry has @ and no (* or ?).
-    bool Access_insert(mstring entry, long value, mstring nick);
+    bool Access_insert(mstring entry, long value, mstring nick, mDateTime modtime = Now());
     bool Access_erase();
     set<entlist_val_t<long> >::iterator Access_begin()
 	{ return i_Access.begin(); }
     set<entlist_val_t<long> >::iterator Access_end()
 	{ return i_Access.end(); }
     size_t Access_size()			{ return i_Access.size(); }
-    bool Access_find(mstring entry);
-    long Access_value(mstring entry);
+    bool Access_find(mstring entry, bool looklive = true);
+    long Access_value(mstring entry, bool looklive = true);
     set<entlist_val_t<long> >::iterator Access;
+    long GetAccess(mstring entry);
+    bool GetAccess(mstring entry, mstring type);
 
     // FIND: Looks for EXACT MATCH of passed entry, if !found,
     //       then if entry contains "@", REGEX match on entry,
@@ -293,26 +307,26 @@ public:
     //     1) Entry !has @ and is reg'd nick.
     //     2) Entry has (* or ?) and @.
     //     3) Entry has @ and no (* or ?).
-    bool Akick_insert(mstring entry, mstring value, mstring nick);
-    bool Akick_insert(mstring entry, mstring nick);
+    bool Akick_insert(mstring entry, mstring value, mstring nick, mDateTime modtime = Now());
+    bool Akick_insert(mstring entry, mstring nick, mDateTime modtime = Now());
     bool Akick_erase();
     set<entlist_val_t<mstring> >::iterator Akick_begin()
 	{ return i_Akick.begin(); }
     set<entlist_val_t<mstring> >::iterator Akick_end()
 	{ return i_Akick.end(); }
     size_t Akick_size()				{ return i_Akick.size(); }
-    bool Akick_find(mstring entry);
-    mstring Akick_string(mstring entry);
+    bool Akick_find(mstring entry, bool looklive = true);
+    mstring Akick_string(mstring entry, bool looklive = true);
     set<entlist_val_t<mstring> >::iterator Akick;
 
-    // FIND: Looks for REGEX MATCH of passed entry.
+    // FIND: Looks for EXACT MATCH of nick entry.
     // INSERT: Adds if not found.
-    bool Greet_insert(mstring entry, mstring nick);
+    bool Greet_insert(mstring entry, mstring nick, mDateTime modtime = Now());
     bool Greet_erase();
     entlist_i Greet_begin()			{ return i_Greet.begin(); }
     entlist_i Greet_end()			{ return i_Greet.end(); }
     size_t Greet_size()				{ return i_Greet.size(); }
-    bool Greet_find(mstring entry);
+    bool Greet_find(mstring nick);
     entlist_i Greet;
     
 };
@@ -347,6 +361,10 @@ private:
     bool lck_secure;		// SECURE is locked?
     bool def_noexpire;		// Default value of NOEXPIRE
     bool lck_noexpire;		// NOEXPIRE is locked?
+    bool def_nogreet;		// Default value of NOGREET
+    bool lck_nogreet;		// NOGREET is locked?
+    bool def_anarchy;		// Default value of ANARCHY
+    bool lck_anarchy;		// ANARCHY is locked?
     bool def_restricted;	// Default value of RESTRICTED
     bool lck_restricted;	// RESTRICTED is locked?
     bool def_join;		// Default value of JOIN
@@ -362,14 +380,17 @@ private:
     int lvl_writememo;		// Default level for WRITEMEMO
     int lvl_delmemo;		// Default level for DELMEMO
     int lvl_akick;		// Default level for AKICK
-    int lvl_starakick;		// Default level for STARAKICK
+    int lvl_super;		// Default level for SUPER
     int lvl_unban;		// Default level for UNBAN
     int lvl_access;		// Default level for ACCESS
     int lvl_set;		// Default level for SET
+    int lvl_view;		// Default level for VIEW
     int lvl_cmdinvite;		// Default level for CMDINVITE
     int lvl_cmdunban;		// Default level for CMDUNBAN
     int lvl_cmdvoice;		// Default level for CMDVOICE
     int lvl_cmdop;		// Default level for CMDOP
+    int lvl_cmdkick;		// Default level for CMDKICK
+    int lvl_cmdmode;		// Default level for CMDMODE
     int lvl_cmdclear;		// Default level for CMDCLEAR
 
     void AddCommands();
@@ -397,6 +418,10 @@ public:
     bool LCK_Secure()		{ return lck_secure; }
     bool DEF_NoExpire()		{ return def_noexpire; }
     bool LCK_NoExpire()		{ return lck_noexpire; }
+    bool DEF_NoGreet()		{ return def_nogreet; }
+    bool LCK_NoGreet()		{ return lck_nogreet; }
+    bool DEF_Anarchy()		{ return def_anarchy; }
+    bool LCK_Anarchy()		{ return lck_anarchy; }
     bool DEF_Restricted()	{ return def_restricted; }
     bool LCK_Restricted()	{ return lck_restricted; }
     bool DEF_Join()		{ return def_join; }
@@ -412,14 +437,17 @@ public:
     int	LVL_Writememo()		{ return lvl_writememo; }
     int	LVL_Delmemo()		{ return lvl_delmemo; }
     int	LVL_Akick()		{ return lvl_akick; }
-    int	LVL_Starakick()		{ return lvl_starakick; }
+    int	LVL_Super()		{ return lvl_super; }
     int	LVL_Unban()		{ return lvl_unban; }
     int	LVL_Access()		{ return lvl_access; }
     int	LVL_Set()		{ return lvl_set; }
+    int	LVL_View()		{ return lvl_view; }
     int	LVL_Cmdinvite()		{ return lvl_cmdinvite; }
     int	LVL_Cmdunban()		{ return lvl_cmdunban; }
-    int	LVL_Cmdvoice()		{ return lvl_cmdvoice; }
     int	LVL_Cmdop()		{ return lvl_cmdop; }
+    int	LVL_Cmdvoice()		{ return lvl_cmdvoice; }
+    int	LVL_Cmdkick()		{ return lvl_cmdkick; }
+    int	LVL_Cmdmode()		{ return lvl_cmdmode; }
     int	LVL_Cmdclear()		{ return lvl_cmdclear; }
 
 
@@ -444,6 +472,7 @@ public:
     static void do_Suspend(mstring mynick, mstring source, mstring params);
     static void do_UnSuspend(mstring mynick, mstring source, mstring params);
     static void do_Forbid(mstring mynick, mstring source, mstring params);
+    static void do_Getpass(mstring mynick, mstring source, mstring params);
 
     static void do_Mode(mstring mynick, mstring source, mstring params);
     static void do_Op(mstring mynick, mstring source, mstring params);
@@ -456,8 +485,13 @@ public:
     static void do_Users(mstring mynick, mstring source, mstring params);
     static void do_Invite(mstring mynick, mstring source, mstring params);
     static void do_Unban(mstring mynick, mstring source, mstring params);
-    static void do_Clear(mstring mynick, mstring source, mstring params);
 
+    static void do_clear_Users(mstring mynick, mstring source, mstring params);
+    static void do_clear_Modes(mstring mynick, mstring source, mstring params);
+    static void do_clear_Ops(mstring mynick, mstring source, mstring params);
+    static void do_clear_Voices(mstring mynick, mstring source, mstring params);
+    static void do_clear_Bans(mstring mynick, mstring source, mstring params);
+    static void do_clear_All(mstring mynick, mstring source, mstring params);
     static void do_level_Set(mstring mynick, mstring source, mstring params);
     static void do_level_Reset(mstring mynick, mstring source, mstring params);
     static void do_level_List(mstring mynick, mstring source, mstring params);
@@ -485,6 +519,8 @@ public:
     static void do_set_SecureOps(mstring mynick, mstring source, mstring params);
     static void do_set_Secure(mstring mynick, mstring source, mstring params);
     static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
+    static void do_set_NoGreet(mstring mynick, mstring source, mstring params);
+    static void do_set_Anarchy(mstring mynick, mstring source, mstring params);
     static void do_set_Restricted(mstring mynick, mstring source, mstring params);
     static void do_set_Join(mstring mynick, mstring source, mstring params);
     static void do_set_Revenge(mstring mynick, mstring source, mstring params);
@@ -495,7 +531,8 @@ public:
     static void do_lock_Private(mstring mynick, mstring source, mstring params);
     static void do_lock_SecureOps(mstring mynick, mstring source, mstring params);
     static void do_lock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_lock_NoExpire(mstring mynick, mstring source, mstring params);
+    static void do_lock_NoGreet(mstring mynick, mstring source, mstring params);
+    static void do_lock_Anarchy(mstring mynick, mstring source, mstring params);
     static void do_lock_Restricted(mstring mynick, mstring source, mstring params);
     static void do_lock_Join(mstring mynick, mstring source, mstring params);
     static void do_lock_Revenge(mstring mynick, mstring source, mstring params);

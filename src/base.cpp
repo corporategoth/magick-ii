@@ -53,11 +53,11 @@ mstring mUserDef::UserDef(mstring type, mstring val)
 // --------- end of mUserDef -----------------------------------
 
 
-entlist_t::entlist_t(mstring entry, mstring nick)
+entlist_t::entlist_t(mstring entry, mstring nick, mDateTime modtime)
 {
     FT("entlist_t::entlist_t", (entry, nick));
     i_Entry = entry;
-    i_Last_Modify_Time = Now();
+    i_Last_Modify_Time = modtime;
     i_Last_Modifier = nick;
 }
 

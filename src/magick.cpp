@@ -975,8 +975,12 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"LCK_SECUREOPS",&chanserv.lck_secureops,false);
     in.Read(ts_ChanServ+"DEF_SECURE",&chanserv.def_secure,false);
     in.Read(ts_ChanServ+"LCK_SECURE",&chanserv.lck_secure,false);
-    in.Read(ts_ChanServ+"DEF_NOEXPIRE",&chanserv.def_secure,false);
-    in.Read(ts_ChanServ+"LCK_NOEXPIRE",&chanserv.lck_secure,false);
+    in.Read(ts_ChanServ+"DEF_NOEXPIRE",&chanserv.def_noexpire,false);
+    in.Read(ts_ChanServ+"LCK_NOEXPIRE",&chanserv.lck_noexpire,false);
+    in.Read(ts_ChanServ+"DEF_NOGREET",&chanserv.def_nogreet,false);
+    in.Read(ts_ChanServ+"LCK_NOGREET",&chanserv.lck_nogreet,false);
+    in.Read(ts_ChanServ+"DEF_ANARCHY",&chanserv.def_anarchy,false);
+    in.Read(ts_ChanServ+"LCK_ANARCHY",&chanserv.lck_anarchy,false);
     in.Read(ts_ChanServ+"DEF_RESTRICTED",&chanserv.def_restricted,false);
     in.Read(ts_ChanServ+"LCK_RESTRICTED",&chanserv.lck_restricted,false);
     in.Read(ts_ChanServ+"DEF_JOIN",&chanserv.def_join,false);
@@ -992,14 +996,17 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"LVL_WRITEMEMO",&chanserv.lvl_writememo,15);
     in.Read(ts_ChanServ+"LVL_DELMEMO",&chanserv.lvl_delmemo,25);
     in.Read(ts_ChanServ+"LVL_AKICK",&chanserv.lvl_akick,20);
-    in.Read(ts_ChanServ+"LVL_STARAKICK",&chanserv.lvl_starakick,25);
+    in.Read(ts_ChanServ+"LVL_SUPER",&chanserv.lvl_super,25);
     in.Read(ts_ChanServ+"LVL_UNBAN",&chanserv.lvl_unban,10);
     in.Read(ts_ChanServ+"LVL_ACCESS",&chanserv.lvl_access,5);
     in.Read(ts_ChanServ+"LVL_SET",&chanserv.lvl_set,25);
+    in.Read(ts_ChanServ+"LVL_VIEW",&chanserv.lvl_view,1);
     in.Read(ts_ChanServ+"LVL_CMDINVITE",&chanserv.lvl_cmdinvite,5);
     in.Read(ts_ChanServ+"LVL_CMDUNBAN",&chanserv.lvl_cmdunban,10);
     in.Read(ts_ChanServ+"LVL_CMDVOICE",&chanserv.lvl_cmdvoice,5);
     in.Read(ts_ChanServ+"LVL_CMDOP",&chanserv.lvl_cmdop,10);
+    in.Read(ts_ChanServ+"LVL_CMDKICK",&chanserv.lvl_cmdkick,15);
+    in.Read(ts_ChanServ+"LVL_CMDMODE",&chanserv.lvl_cmdmode,15);
     in.Read(ts_ChanServ+"LVL_CMDCLEAR",&chanserv.lvl_cmdclear,20);
 
     in.Read(ts_MemoServ+"NEWS_EXPIRE",&memoserv.news_expire,21);

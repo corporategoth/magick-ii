@@ -86,9 +86,9 @@ void Committee::Head(mstring newhead)
     i_Head = newhead.LowerCase();
 }
 
-bool Committee::insert(mstring entry, mstring nick)
+bool Committee::insert(mstring entry, mstring nick, mDateTime modtime)
 {
-    FT("Committee::insert", (entry, nick));
+    FT("Committee::insert", (entry, nick, modtime));
 
     entlist_ui iter;
     if (!i_Members.empty())
@@ -97,7 +97,7 @@ bool Committee::insert(mstring entry, mstring nick)
 		break;
     if (i_Members.empty() || iter == i_Members.end())
     {
-	entlist_t tmp(entry, nick);
+	entlist_t tmp(entry, nick, modtime);
 	member = i_Members.insert(i_Members.end(), tmp);
 	RET(true);
     }
@@ -124,23 +124,35 @@ bool Committee::erase()
     }
 }
 
+bool Committee::find(mstring entry)
+{
+    FT("Committee::find", (entry));
+
+    entlist_ui iter = i_Members.end();
+    if (!i_Members.empty())
+    {
+	// FIND exact nickname
+	for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
+	    if (iter->Entry().LowerCase() == entry.LowerCase())
+		break;
+    }
+
+    if (iter != i_Members.end())
+    {
+	member = iter;
+	RET(true);
+    }
+    else
+    {
+	member = i_Members.end();
+	RET(false);
+    }
+}
+
 
 bool Committee::IsIn(mstring nick)
 {
     FT("Committee::IsIn", (nick));
-
-    // We're a HEAD, in by DEFAULT
-    if (i_HeadCom != "" && Parent->commserv.IsList(i_HeadCom) &&
-	Parent->commserv.list[i_HeadCom].IsIn(nick))
-    {
-	RET(true);
-    }
-
-    if (i_Name == Parent->commserv.REGD_Name() &&
-    	Parent->nickserv.IsStored(nick))
-    {
-	RET(true);
-    }
 
     if (i_Name == Parent->commserv.ALL_Name() &&
 	Parent->nickserv.IsLive(nick))
@@ -148,10 +160,37 @@ bool Committee::IsIn(mstring nick)
 	RET(true);
     }
 
+    if (!Parent->nickserv.IsStored(nick))
+    {
+	RET(false);
+    }
+
+    if (i_Name == Parent->commserv.REGD_Name())
+    {
+	RET(true);
+    }
+
+    mstring target = nick.LowerCase();
+    if (Parent->nickserv.stored[target].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.stored[target].Host()))
+	target = Parent->nickserv.stored[target].Host().LowerCase();
+
+    // We're a HEAD, in by DEFAULT
+    if (i_HeadCom != "" && Parent->commserv.IsList(i_HeadCom) &&
+	Parent->commserv.list[i_HeadCom].IsIn(target))
+    {
+	RET(true);
+    }
+
+    if (i_Head != "" && target == i_Head)
+    {
+	RET(true);
+    }
+
     entlist_ui iter;
     for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
     {
-	if (nick.LowerCase() = iter->Entry().LowerCase())
+	if (target == iter->Entry().LowerCase())
 	{
 	    RET(true);
 	}
@@ -236,6 +275,32 @@ bool Committee::MSG_erase()
     }
     else
     {
+	RET(false);
+    }
+}
+
+
+bool Committee::MSG_find(int number)
+{
+    FT("Committee::MSG_find", (number));
+
+    entlist_i iter = i_Messages.end();
+    int i;
+    if (!i_Messages.empty())
+    {
+	// FIND exact nickname
+	for (iter=i_Messages.begin(), i=0; iter!=i_Messages.end() &&
+						i != number; iter++, i++);
+    }
+
+    if (iter != i_Messages.end())
+    {
+	message = iter;
+	RET(true);
+    }
+    else
+    {
+	message = i_Messages.end();
 	RET(false);
     }
 }

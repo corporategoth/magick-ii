@@ -52,11 +52,12 @@ public:
     mstring Description()const	{ return i_Description; }
     void Head(mstring newhead);
 
-    bool insert(mstring entry, mstring nick);
+    bool insert(mstring entry, mstring nick, mDateTime modtime = Now());
     bool erase();
     entlist_ui begin()const	{ return i_Members.begin(); }
     entlist_ui end()const	{ return i_Members.end(); }
     size_t size()const		{ return i_Members.size(); }
+    bool find(mstring entry);
     entlist_ui member;
 
     bool IsIn(mstring nick);
@@ -76,6 +77,7 @@ public:
     entlist_i MSG_begin()	{ return i_Messages.begin(); }
     entlist_i MSG_end()		{ return i_Messages.end(); }
     size_t MSG_size()		{ return i_Messages.size(); }
+    bool MSG_find(int num);
     entlist_i message;
 
 };

@@ -22,7 +22,7 @@ mLOCK::mLOCK(T_Locking::type_enum type, const mVarArray &args)
 {
     int i;
     mstring lockname;
-    for (int i=0; i<args.count()-1; i++) {
+    for (i=0; i<args.count()-1; i++) {
 	if (lockname != "")
 	    lockname += "::";
 	lockname += args[i].AsString();
