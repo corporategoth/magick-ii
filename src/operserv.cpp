@@ -135,7 +135,6 @@ void OperServ::RemHost(const mstring & host)
 	}
 	else
 	{
-	    COM(("Removed CloneList entry ...\n"));
 	    CloneList.erase(host.LowerCase());
 	    CE(1, 0);
 	}

@@ -3937,6 +3937,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		    tmp->AltHost(params.ExtractWord(9, ": "));
 		    Magick::instance().nickserv.AddLive(tmp);
 		}
+		break;
 	    case 3000:		// server NICK nick hops time user host [mode] ipaddr numeric :realname
 		{
 		    map_entry < Nick_Live_t >
