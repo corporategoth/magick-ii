@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.92  2000/05/20 03:28:12  prez
 ** Implemented transaction based tracing (now tracing wont dump its output
 ** until logical 'transactions' are done, which are ended by the thread
@@ -285,6 +289,8 @@ void ThreadID::Flush()
 	}
 	else
 	    iter++;
+    if (!messages.size())
+	return;
 
     mFile::Dump(messages, Parent->Services_Dir()+DirSlash+logname(), true, true);
     messages.clear();

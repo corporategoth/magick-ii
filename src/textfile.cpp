@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.22  2000/03/28 16:20:59  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -68,7 +72,6 @@ static const char *ident = "@(#)$Id$";
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "textfile.h"
-#include "log.h"
 #include "trace.h"
 #include "magick.h"
 

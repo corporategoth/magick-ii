@@ -14,7 +14,7 @@
 ** ========================================================== */
 #ifndef _MCONFIG_H
 #define _MCONFIG_H
-static const char *ident_config_h = "@(#) $Id$";
+static const char *ident_mconfig_h = "@(#) $Id$";
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -24,6 +24,10 @@ static const char *ident_config_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.3  2000/05/20 01:20:59  ungod
 ** more meaty goodness in the quest for a better config engine.
 **

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.49  2000/04/03 09:45:22  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -55,7 +59,6 @@ static const char *ident = "@(#)$Id$";
 
 
 #include "datetime.h"
-#include "log.h"
 
 mstring DateSeparator="/";
 mstring ShortDateFormat="d/m/yyyy";
@@ -326,7 +329,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 			switch(count)
 			{
 			case 1:
-				Result << Day;
+				Result<<Day;
 				break;
 			case 2:
 				if(Day<10)
@@ -434,6 +437,28 @@ mstring mDateTime::FormatString(const mstring& format)const
 			}
 			Result<<Sec;
 			break;
+		case 'u':
+			count=1;
+			while(i+1<format.size()&&tolower(format[i+1])=='u')
+			{
+				i++;
+				count++;
+			}
+			switch(count)
+			{
+			case 1:
+				break;
+			case 3:
+				if(MSec<100)
+					Result=Result+"0";
+				if(MSec<10)
+					Result=Result+"0";
+				break;
+			default:
+				wxLogError("mDateTime::FormatString Invalid year format string");
+			}
+			Result<<MSec;
+			break;
 		case 't':
 			if(i+1<format.size()&&tolower(format[i+1])=='t')
 			{
@@ -494,9 +519,13 @@ mstring mDateTime::FormatString(const mstring& format)const
 		case '"':
 			i++;
 			while(i<format.size()&&format[i]!='"')
+			{
 				Result=Result+mstring(format[i]);
+				i++;
+			}
 			break;
 		case ' ':
+		case '.':
 		case '\t':
 		case '\n':
 			Result=Result+mstring(format[i]);
@@ -570,7 +599,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
   const int D100 = D4 * 25 - 1;
   const int D400 = D100 * 4 + 1;
   int NumDays = (int)Val;
-  int Y400,Y100,Y4,Y1,Y,M=1,D;
+  int Y400,Y100,Y4,Y1,Y,M=1;
   int LeftOver;
 
   LeftOver=NumDays%D400;
@@ -590,30 +619,28 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
   NumDays=LeftOver;
 
   Y=Y400*400+Y100*100+Y4*4+Y1;
+  year=Y+1900;
 
   int i=0;
-  mDayTable &DayTable=GetDayTable(Y);
+  mDayTable &DayTable=GetDayTable(year);
   while(DayTable[i]<NumDays)
   {
 	  M++;
 	  NumDays-=DayTable[i];
 	  i++;
   }
-  D=NumDays-1;
-  year=Y+1900;
+  day=NumDays-1;
   month=M;
-  day=D;
 
 }
 
-void mDateTime::DecodeTime(int &hour, int &min, int &sec, int& msec)const
+void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec)const
 {
 	//(Hour * 3600000 + Min * 60000 + Sec * 1000 + MSec) / MSecsPerDay;
 	int CurrentVal=(int)(fmod(Val,1.0)*(double)MSecsPerDay);
 	int LeftOver;
 	//Time = ((double)Hour * 3600000.0 + (double)Min * 60000.0 + (double)Sec * 1000.0 + (double)MSec) / (double)MSecsPerDay;
 
-	wxLogDebug("mDateTime::DecodeTime CurrentVal=%d",CurrentVal);
 	LeftOver=CurrentVal%3600000;
 	hour=CurrentVal/3600000;
 	CurrentVal=LeftOver;
@@ -625,7 +652,6 @@ void mDateTime::DecodeTime(int &hour, int &min, int &sec, int& msec)const
 	LeftOver=CurrentVal%1000;
 	sec=CurrentVal/1000;
 	msec=LeftOver;
-	wxLogDebug("mDateTime::DecodeTime hour=%d min=%d sec=%d msec=%d", hour,min,sec,msec);
 }
 
 wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src)

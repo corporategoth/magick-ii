@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.232  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.231  2000/05/20 03:28:11  prez
 ** Implemented transaction based tracing (now tracing wont dump its output
 ** until logical 'transactions' are done, which are ended by the thread
@@ -192,7 +196,6 @@ static const char *ident = "@(#)$Id$";
 
 //#define ACE_DEBUGGING
 
-wxLogStderr *logger;
 mDateTime StartTime;
 Magick *Parent;
 
@@ -211,6 +214,136 @@ mstring Magick::files_t::MakePath(mstring in)
 #endif
 }
 
+void wxLogFatal(const char *message, ...)
+{
+    va_list argptr;
+    va_start(argptr, message);
+    Parent->LogV(LM_EMERGENCY, message, argptr);
+    va_end(argptr);
+}
+
+void wxLogError(const char *message, ...)
+{
+    va_list argptr;
+    va_start(argptr, message);
+    Parent->LogV(LM_ERROR, message, argptr);
+    va_end(argptr);
+}
+
+void wxLogWarning(const char *message, ...)
+{
+    va_list argptr;
+    va_start(argptr, message);
+    Parent->LogV(LM_WARNING, message, argptr);
+    va_end(argptr);
+}
+
+void wxLogNotice(const char *message, ...)
+{
+    va_list argptr;
+    va_start(argptr, message);
+    Parent->LogV(LM_NOTICE, message, argptr);
+    va_end(argptr);
+}
+
+void wxLogInfo(const char *message, ...)
+{
+    va_list argptr;
+    va_start(argptr, message);
+    Parent->LogV(LM_INFO, message, argptr);
+    va_end(argptr);
+}
+
+void wxLogVerbose(const char *message, ...)
+{
+    va_list argptr;
+    va_start(argptr, message);
+    Parent->LogV(LM_DEBUG, message, argptr);
+    va_end(argptr);
+}
+
+void wxLogDebug(const char *message, ...)
+{
+    va_list argptr;
+    va_start(argptr, message);
+    Parent->LogV(LM_TRACE, message, argptr);
+    va_end(argptr);
+}
+
+void wxLogSysError(const char *message, ...)
+{
+    va_list argptr;
+    va_start(argptr, message);
+    Parent->LogV(LM_ALERT, message, argptr);
+    va_end(argptr);
+}
+
+
+
+size_t Magick::Log(ACE_Log_Priority priority, const char *message, ...)
+{
+    FT("Magick::Log", ((unsigned long) priority, message));
+
+    va_list argptr;
+    va_start(argptr, message);
+    LogV(priority, message, argptr);
+    va_end(argptr);
+}
+
+size_t Magick::LogV(ACE_Log_Priority priority, const char *message, va_list argptr)
+{
+    FT("Magick::LogV", ((unsigned long) priority, "(va_list) argptr"));
+
+    mstring text_priority, text;
+
+    switch (priority)
+    {
+    case LM_TRACE:
+	text_priority = "TRACE    ";
+	break;
+    case LM_DEBUG:
+	text_priority = "DEBUG    ";
+	break;
+    case LM_INFO:
+	text_priority = "INFO     ";
+	break;
+    case LM_NOTICE:
+	text_priority = "NOTICE   ";
+	break;
+    case LM_WARNING:
+	text_priority = "WARNING  ";
+	break;
+    case LM_STARTUP:
+	text_priority = "STARTUP  ";
+	break;
+    case LM_ERROR:
+	text_priority = "ERROR    ";
+	break;
+    case LM_CRITICAL:
+	text_priority = "CRITICAL ";
+	break;
+    case LM_ALERT:
+	text_priority = "ALERT    ";
+	break;
+    case LM_EMERGENCY:
+	text_priority = "EMERGENCY";
+	break;
+    default:
+	text_priority = "UNKNOWN  ";
+	break;
+    }
+
+    int __ace_error = ACE_OS::last_error ();
+    ACE_Log_Msg *ace___ = ACE_Log_Msg::instance ();
+    ace___->set (ASYS_TEXT (__FILE__), __LINE__, 0, __ace_error,
+	ace___->restart (), ace___->msg_ostream (), ace___->msg_callback ());
+
+    text.FormatV(message, argptr);
+    ace___->log(priority, "%s | %s | %s\n",
+	Now().FormatString("dd mmm yyyy hh:nn:ss").c_str(),
+	text_priority.c_str(), text.c_str());
+}
+
 Magick::Magick(int inargc, char **inargv)
 {
     Parent=this;
@@ -222,12 +355,16 @@ Magick::Magick(int inargc, char **inargv)
     i_config_file="magick.ini";
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
+    i_programname=argv[0].RevAfter("/");
 
+    logfile = NULL;
     i_level=0;
     i_reconnect = true;
     i_gotconnect = false;
     i_connected = false;
     i_auto = false;
+
+    ACE_LOG_MSG->open(i_programname.c_str());
 }
 
 Magick::~Magick()
@@ -245,11 +382,9 @@ int Magick::Start()
 #endif
 
     // We log to STDERR until we find our logfile...
-    logger=new wxLogStderr();
     LoadLogMessages("DEFAULT");
 
     // more stuff to do
-    i_programname=argv[0].RevAfter("/");
     unsigned int argc=argv.size();
     mstring errstring;
     for(i=1;i<argc;i++)
@@ -331,14 +466,14 @@ int Magick::Start()
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
 
-    FILE *logfile = ACE_OS::fopen((files.Logfile()).c_str(), "a");
-    logger->ChangeFile(logfile);
+    stderr = ACE_OS::fopen((files.Logfile()).c_str(), "a");
+    Log(LM_NOTICE, "This is a test ...");
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
     LoadInternalMessages();
 
-
+    FLUSH();
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
     Result = ACE_OS::fork();
@@ -503,6 +638,7 @@ int Magick::Start()
     while(!Shutdown())
     {
 	ACE_Reactor::instance()->run_event_loop();
+	FLUSH();
     }
 
     // We're going down .. execute relivant shutdowns.
@@ -587,8 +723,6 @@ int Magick::Start()
 
     delete signalhandler;
 
-    if(logger!=NULL)
-	delete logger;
     if(logfile!=NULL)
 	fclose(logfile);
 
@@ -1235,7 +1369,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--verbose" || first=="--debug")
     {
-	logger->SetVerbose(true);
+	//logger->SetVerbose(true);
     }
     else if(first=="--log")
     {
@@ -2051,7 +2185,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"PIDFILE",&files.pidfile,"magick.pid");
     in.Read(ts_Files+"LOGFILE",&files.logfile,"magick.log");
     in.Read(ts_Files+"VERBOSE", &value_bool, false);
-    logger->SetVerbose(value_bool);
+    //logger->SetVerbose(value_bool);
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
     in.Read(ts_Files+"LANGDIR",&files.langdir,"lang");
     in.Read(ts_Files+"DATABASE",&files.database,"magick.mnd");

@@ -34,7 +34,7 @@ public:
 
 	inline void WriteElement(Tag& t, double val) {
 		Indent();
-		fprintf(FP(), "<%s>%11.5g</%s>\n", t.ch, val, t.ch);
+		fprintf(FP(), "<%s>%5.5f</%s>\n", t.ch, val, t.ch);
 	}
 
 	inline void WriteElement(Tag& t, unsigned int val) {

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.100  2000/05/20 03:28:11  prez
 ** Implemented transaction based tracing (now tracing wont dump its output
 ** until logical 'transactions' are done, which are ended by the thread
@@ -155,7 +159,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
 	if (flack == "")
 	    mBase::push_message(data2.ExtractWord(data2.WordCount("\n\r"),"\n\r"));
-
+	FLUSH();
     }
     else
         flack = data2;

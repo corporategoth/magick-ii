@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.35  2000/05/13 07:05:47  prez
 ** Added displaying of sizes to all file fields..
 **
@@ -72,7 +76,6 @@ static const char *ident = "@(#)$Id$";
 #include <windows.h>
 #endif
 #include "utils.h"
-#include "log.h"
 #include "trace.h"
 #include "magick.h"
 

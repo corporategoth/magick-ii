@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.60  2000/05/18 10:13:15  prez
 ** Finished off the mFile structure, and the DCC system, it all works.
 **
@@ -88,7 +92,6 @@ static const char *ident = "@(#)$Id$";
 /////////////////////////////////////////////////////////////////////////////
 #include "mstream.h"
 #include "utils.h"
-#include "log.h"
 #include <math.h>
 #include <stdlib.h>
 

@@ -10,7 +10,7 @@ dist=true
 install=false
 type=HEADER
 [include/Makefile.am]
-files=include/base.h,include/chanserv.h,include/commserv.h,include/confbase.h,include/convert.h,include/cryptstream.h,include/datetime.h,include/dccengine.h,include/fileconf.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/log.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstream.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/textfile.h,include/trace.h,include/utils.h,include/variant.h,include/version.h,
+files=include/base.h,include/chanserv.h,include/commserv.h,include/confbase.h,include/convert.h,include/cryptstream.h,include/datetime.h,include/dccengine.h,include/fileconf.h,include/filesys.h,include/ircsocket.h,include/language.h,include/lockable.h,include/logfile.h,include/magick.h,include/memoserv.h,include/mstream.h,include/mstring.h,include/nickserv.h,include/operserv.h,include/pch.h,include/server.h,include/servmsg.h,include/textfile.h,include/trace.h,include/utils.h,include/variant.h,include/version.h,include/mconfig.h,
 sub_dirs=antlr,des,xml,
 type=normal
 [src/xml/dllmain.c]
@@ -214,11 +214,6 @@ install_location=
 dist=true
 install=false
 type=SOURCE
-[include/log.h]
-install_location=
-dist=true
-install=false
-type=HEADER
 [src/xml/xmlparse.c]
 install_location=
 dist=true
@@ -439,11 +434,6 @@ install_location=
 dist=true
 install=false
 type=DATA
-[src/log.cpp]
-install_location=
-dist=true
-install=false
-type=SOURCE
 [include/antlr/CommonHiddenStreamToken.hpp]
 install_location=
 dist=true
@@ -578,7 +568,7 @@ dist=true
 install=false
 type=HEADER
 [src/Makefile.am]
-files=src/EscLexer.cpp,src/EscLexer.hpp,src/EscLexerTokenTypes.hpp,src/EscParser.cpp,src/EscParser.hpp,src/base.cpp,src/chanserv.cpp,src/commserv.cpp,src/confbase.cpp,src/convert.cpp,src/cryptstream.cpp,src/datetime.cpp,src/dccengine.cpp,src/fileconf.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/log.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstream.cpp,src/mstring.cpp,src/nickserv.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/textfile.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,
+files=src/EscLexer.cpp,src/EscLexer.hpp,src/EscLexerTokenTypes.hpp,src/EscParser.cpp,src/EscParser.hpp,src/base.cpp,src/chanserv.cpp,src/commserv.cpp,src/confbase.cpp,src/convert.cpp,src/cryptstream.cpp,src/datetime.cpp,src/dccengine.cpp,src/fileconf.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstream.cpp,src/mstring.cpp,src/nickserv.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/textfile.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,src/mconfig.cpp,
 sub_dirs=antlr,des,xml,
 type=prog_main
 [src/utils.cpp]
@@ -688,11 +678,11 @@ version_control=CVS
 author=Magick Development Team
 project_type=normal_cpp
 sub_dir=src/
-lfv_open_groups=
+lfv_open_groups=Sources,
 workspace=1
 version=2.0
 project_name=Magick
-AMChanged=false
+AMChanged=true
 sgml_file=/home/prez/projects/Magick/Magick-II/docs/en/index.sgml
 short_info=,
 email=magick-devel@magick.tm
@@ -799,6 +789,11 @@ install_location=
 dist=true
 install=false
 type=SOURCE
+[include/mconfig.h]
+install_location=
+dist=true
+install=false
+type=HEADER
 [include/antlr/CommonASTNode.hpp]
 install_location=
 dist=true
@@ -863,6 +858,11 @@ type=HEADER
 files=magick.kdevprj,AUTHORS,COPYING,ChangeLog,INSTALL,README,TODO,magick.lsm,
 sub_dirs=magick,docs,src,include,
 type=normal
+[src/mconfig.cpp]
+install_location=
+dist=true
+install=false
+type=SOURCE
 [include/antlr/SemanticException.hpp]
 install_location=
 dist=true

@@ -21,6 +21,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2000/05/20 15:17:00  prez
+** Changed LOG system to use ACE's log system, removed wxLog, and
+** added wrappers into pch.h and magick.cpp.
+**
 ** Revision 1.13  2000/05/17 09:10:35  ungod
 ** changed most wxOutputStream to ofstream and wxInputStream
 ** to ifstream
@@ -98,5 +102,14 @@
 using namespace std;
 
 #include <zlib.h>
+
+// THIS IS A TEMPORARY FIX!!
+extern void wxLogFatal(const char *szFormat, ...);
+extern void wxLogError(const char *szFormat, ...);
+extern void wxLogWarning(const char *szFormat, ...);
+extern void wxLogInfo(const char *szFormat, ...);
+extern void wxLogVerbose(const char *szFormat, ...);
+extern void wxLogDebug(const char *szFormat, ...);
+extern void wxLogSysError(const char *szFormat, ...);
 
 #endif
