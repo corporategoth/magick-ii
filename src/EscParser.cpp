@@ -36,33 +36,29 @@
 EscParser::EscParser(TokenBuffer& tokenBuf, int k)
 : LLkParser(tokenBuf,k)
 {
-	FT("EscParser::EscParser", ("(TokenBuffer) tokenBuf", k));
 	setTokenNames(_tokenNames);
 }
 
 EscParser::EscParser(TokenBuffer& tokenBuf)
 : LLkParser(tokenBuf,1)
 {
-	FT("EscParser::EscParser", ("(TokenBuffer) tokenBuf"));
 	setTokenNames(_tokenNames);
 }
 
 EscParser::EscParser(Tokenizer& lexer, int k)
 : LLkParser(lexer,k)
 {
-	FT("EscParser::EscParser", ("(Tokenizer) lexer", k));
 	setTokenNames(_tokenNames);
 }
 
 EscParser::EscParser(Tokenizer& lexer)
 : LLkParser(lexer,1)
 {
-	FT("EscParser::EscParser", ("(Tokenizer) lexer"));
 	setTokenNames(_tokenNames);
 }
 
 void EscParser::expr() {
-	NFT("EscParser::expr");	
+	
 	
 	try {      // for error handling
 		{
@@ -117,7 +113,7 @@ void EscParser::expr() {
 }
 
 void EscParser::slashexpr() {
-	NFT("EscParser::slashexpr");	
+	
 	
 	try {      // for error handling
 		switch ( LA(1)) {

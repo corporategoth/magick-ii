@@ -35,7 +35,6 @@
 EscLexer::EscLexer(std::istream& in)
 	: CharScanner(new CharBuffer(in))
 {
-        FT("EscLexer::EscLexer", ("(std::istream) in"));
 	setCaseSensitive(true);
 	initLiterals();
 }
@@ -43,7 +42,6 @@ EscLexer::EscLexer(std::istream& in)
 EscLexer::EscLexer(CharBuffer& cb)
 	: CharScanner(cb)
 {
-        FT("EscLexer::EscLexer", ("(CharBuffer) cb"));
 	setCaseSensitive(true);
 	initLiterals();
 }
@@ -53,13 +51,11 @@ void EscLexer::initLiterals()
 }
 bool EscLexer::getCaseSensitiveLiterals() const
 {
-        NFT("EscLexer::getCaseSensitiveLiterals");
-	RET(true);
+	return true;
 }
 
 RefToken EscLexer::nextToken()
 {
-        NFT("EscLexer::nextToken");
 	RefToken _rettoken;
 	for (;;) {
 		RefToken _rettoken;
@@ -145,7 +141,6 @@ RefToken EscLexer::nextToken()
 }
 
 void EscLexer::mSlashn(bool _createToken) {
-	FT("EscLexer::mSlashn", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashn;
 	int _saveIndex;
@@ -160,7 +155,6 @@ void EscLexer::mSlashn(bool _createToken) {
 }
 
 void EscLexer::mSlasht(bool _createToken) {
-	FT("EscLexer::mSlasht", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slasht;
 	int _saveIndex;
@@ -175,7 +169,6 @@ void EscLexer::mSlasht(bool _createToken) {
 }
 
 void EscLexer::mSlashv(bool _createToken) {
-	FT("EscLexer::mSlashv", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashv;
 	int _saveIndex;
@@ -190,7 +183,6 @@ void EscLexer::mSlashv(bool _createToken) {
 }
 
 void EscLexer::mSlashb(bool _createToken) {
-	FT("EscLexer::mSlashb", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashb;
 	int _saveIndex;
@@ -205,7 +197,6 @@ void EscLexer::mSlashb(bool _createToken) {
 }
 
 void EscLexer::mSlashr(bool _createToken) {
-	FT("EscLexer::mSlashr", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashr;
 	int _saveIndex;
@@ -220,7 +211,6 @@ void EscLexer::mSlashr(bool _createToken) {
 }
 
 void EscLexer::mSlashf(bool _createToken) {
-	FT("EscLexer::mSlashf", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashf;
 	int _saveIndex;
@@ -235,7 +225,6 @@ void EscLexer::mSlashf(bool _createToken) {
 }
 
 void EscLexer::mSlasha(bool _createToken) {
-	FT("EscLexer::mSlasha", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slasha;
 	int _saveIndex;
@@ -250,7 +239,6 @@ void EscLexer::mSlasha(bool _createToken) {
 }
 
 void EscLexer::mSlashslash(bool _createToken) {
-	FT("EscLexer::mSlashslash", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashslash;
 	int _saveIndex;
@@ -265,7 +253,6 @@ void EscLexer::mSlashslash(bool _createToken) {
 }
 
 void EscLexer::mSlashquestion(bool _createToken) {
-	FT("EscLexer::mSlashquestion", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashquestion;
 	int _saveIndex;
@@ -280,7 +267,6 @@ void EscLexer::mSlashquestion(bool _createToken) {
 }
 
 void EscLexer::mSlashsinglequote(bool _createToken) {
-	FT("EscLexer::mSlashsinglequote", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashsinglequote;
 	int _saveIndex;
@@ -295,7 +281,6 @@ void EscLexer::mSlashsinglequote(bool _createToken) {
 }
 
 void EscLexer::mSlashdoublequote(bool _createToken) {
-	FT("EscLexer::mSlashdoublequote", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashdoublequote;
 	int _saveIndex;
@@ -310,7 +295,6 @@ void EscLexer::mSlashdoublequote(bool _createToken) {
 }
 
 void EscLexer::mSlashhexidecimal(bool _createToken) {
-	FT("EscLexer::mSlashhexidecimal", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashhexidecimal;
 	int _saveIndex;
@@ -330,7 +314,6 @@ void EscLexer::mSlashhexidecimal(bool _createToken) {
 }
 
 void EscLexer::mHEXDIGIT(bool _createToken) {
-	FT("EscLexer::mHEXDIGIT", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = HEXDIGIT;
 	int _saveIndex;
@@ -426,7 +409,6 @@ void EscLexer::mHEXDIGIT(bool _createToken) {
 }
 
 void EscLexer::mSlashoctal(bool _createToken) {
-	FT("EscLexer::mSlashoctal", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashoctal;
 	int _saveIndex;
@@ -446,7 +428,6 @@ void EscLexer::mSlashoctal(bool _createToken) {
 }
 
 void EscLexer::mOCTALDIGIT(bool _createToken) {
-	FT("EscLexer::mOCTALDIGIT", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = OCTALDIGIT;
 	int _saveIndex;
@@ -487,7 +468,6 @@ void EscLexer::mOCTALDIGIT(bool _createToken) {
 }
 
 void EscLexer::mSlashtrash(bool _createToken) {
-	FT("EscLexer::mSlashtrash", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashtrash;
 	int _saveIndex;
@@ -569,7 +549,6 @@ void EscLexer::mSlashtrash(bool _createToken) {
 }
 
 void EscLexer::mNewLine(bool _createToken) {
-	FT("EscLexer::mNewLine", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = NewLine;
 	int _saveIndex;
@@ -598,7 +577,6 @@ void EscLexer::mNewLine(bool _createToken) {
 }
 
 void EscLexer::mIGNORE(bool _createToken) {
-	FT("EscLexer::mIGNORE", (_createToken));
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = IGNORE;
 	int _saveIndex;
