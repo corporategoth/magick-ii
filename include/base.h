@@ -25,6 +25,10 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/12/09 11:24:25  prez
+** Changed all privmsg/notice/send/announce calls to have pszFormat
+** as a char *, to stop warnings from va_start.
+**
 ** Revision 1.73  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -198,15 +202,15 @@ public:
 
     bool signon(const mstring& nickname);
     bool signoff(const mstring& nickname);
-    void privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-    void privmsg(const mstring &dest, const mstring &pszFormat, ...);
-    void privmsgV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
-    void notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-    void notice(const mstring &dest, const mstring &pszFormat, ...);
-    void noticeV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
-    void send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-    void send(const mstring &dest, const mstring &pszFormat, ...);
-    void sendV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr);
+    void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+    void privmsg(const mstring &dest, const char *pszFormat, ...);
+    void privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr);
+    void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+    void notice(const mstring &dest, const char *pszFormat, ...);
+    void noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr);
+    void send(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+    void send(const mstring &dest, const char *pszFormat, ...);
+    void sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr);
 
     operator mVariant() const
     {
@@ -216,10 +220,10 @@ public:
     };
 };
 
-void privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-void notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-void send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...);
-void announce(const mstring &source, const mstring &pszFormat, ...);
+void privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+void notice(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+void send(const mstring &source, const mstring &dest, const char *pszFormat, ...);
+void announce(const mstring &source, const char *pszFormat, ...);
 
 extern SXP::Tag tag_entlist_val_t;
 extern SXP::Tag tag_entlist_t;

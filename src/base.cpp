@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.140  2000/12/09 11:24:25  prez
+** Changed all privmsg/notice/send/announce calls to have pszFormat
+** as a char *, to stop warnings from va_start.
+**
 ** Revision 1.139  2000/10/10 11:47:50  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -625,36 +629,34 @@ bool mBase::signoff(const mstring &nickname)
 }
 
 
-void mBase::privmsg(const mstring &source, const mstring &dest, const mstring &pszFormat, ...)
+void mBase::privmsg(const mstring &source, const mstring &dest, const char *pszFormat, ...)
 {
     FT("mBase::privmsg", (source, dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
     privmsgV(source, dest, pszFormat, argptr);
     va_end(argptr);
 }
 
 
-void mBase::privmsg(const mstring &dest, const mstring &pszFormat, ...)
+void mBase::privmsg(const mstring &dest, const char *pszFormat, ...)
 {
     FT("mBase::privmsg", (dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
     privmsgV(FirstName(), dest, pszFormat, argptr);
     va_end(argptr);
 }
 
 
-void mBase::privmsgV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr)
+void mBase::privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr)
 {
     FT("mBase::privmsgV", (source, dest, pszFormat));
 
     mstring message;
-    message.FormatV(pszFormat.c_str(), argptr);
+    message.FormatV(pszFormat, argptr);
 
     RLOCK(("NickServ", "live", dest.LowerCase()));
     RLOCK2(("ChanServ", "live", dest.LowerCase()));
@@ -663,36 +665,34 @@ void mBase::privmsgV(const mstring &source, const mstring &dest, const mstring &
 }
 
 
-void mBase::notice(const mstring &source, const mstring &dest, const mstring &pszFormat, ...)
+void mBase::notice(const mstring &source, const mstring &dest, const char *pszFormat, ...)
 {
     FT("mBase::notice", (source, dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
     noticeV(source, dest, pszFormat, argptr);
     va_end(argptr);
 }
 
 
-void mBase::notice(const mstring &dest, const mstring &pszFormat, ...)
+void mBase::notice(const mstring &dest, const char *pszFormat, ...)
 {
     FT("mBase::notice", (dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
     noticeV(FirstName(), dest, pszFormat, argptr);
     va_end(argptr);
 }
 
 
-void mBase::noticeV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr)
+void mBase::noticeV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr)
 {
     FT("mBase::noticeV", (source, dest, pszFormat));
 
     mstring message;
-    message.FormatV(pszFormat.c_str(), argptr);
+    message.FormatV(pszFormat, argptr);
     RLOCK(("NickServ", "live", dest.LowerCase()));
     RLOCK2(("ChanServ", "live", dest.LowerCase()));
     if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
@@ -700,29 +700,27 @@ void mBase::noticeV(const mstring &source, const mstring &dest, const mstring &p
 }
 
 
-void mBase::send(const mstring &source, const mstring &dest, const mstring &pszFormat, ...)
+void mBase::send(const mstring &source, const mstring &dest, const char *pszFormat, ...)
 {
     FT("mBase::send", (source, dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
     sendV(source, dest, pszFormat, argptr);
     va_end(argptr);
 }
 
-void mBase::send(const mstring &dest, const mstring &pszFormat, ...)
+void mBase::send(const mstring &dest, const char *pszFormat, ...)
 {
     FT("mBase::send", (dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
     sendV(FirstName(), dest, pszFormat, argptr);
     va_end(argptr);
 }
 
-void mBase::sendV(const mstring &source, const mstring &dest, const mstring &pszFormat, va_list argptr)
+void mBase::sendV(const mstring &source, const mstring &dest, const char *pszFormat, va_list argptr)
 {
     FT("mBase::sendV", (source, dest, pszFormat));
 
@@ -755,13 +753,12 @@ void mBase::sendV(const mstring &source, const mstring &dest, const mstring &psz
 }
 
 
-void privmsg(const mstring& source, const mstring &dest, const mstring &pszFormat, ...)
+void privmsg(const mstring& source, const mstring &dest, const char *pszFormat, ...)
 {
     FT("privmsg", (source, dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.privmsgV(source, dest, pszFormat, argptr);
 
@@ -788,13 +785,12 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &pszForma
 }
 
 
-void notice(const mstring& source, const mstring &dest, const mstring &pszFormat, ...)
+void notice(const mstring& source, const mstring &dest, const char *pszFormat, ...)
 {
     FT("notice", (source, dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.noticeV(source, dest, pszFormat, argptr);
 
@@ -821,13 +817,12 @@ void notice(const mstring& source, const mstring &dest, const mstring &pszFormat
 }
 
 
-void send(const mstring& source, const mstring &dest, const mstring &pszFormat, ...)
+void send(const mstring& source, const mstring &dest, const char *pszFormat, ...)
 {
     FT("send", (source, dest, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
 	if (Parent->operserv.IsName(source))
 	    Parent->operserv.sendV(source, dest, pszFormat, argptr);
 
@@ -854,15 +849,14 @@ void send(const mstring& source, const mstring &dest, const mstring &pszFormat, 
     va_end(argptr);
 }
 
-void announce(const mstring& source, const mstring &pszFormat, ...)
+void announce(const mstring& source, const char *pszFormat, ...)
 {
     FT("announce", (source, pszFormat));
 
     va_list argptr;
-    const char *str = pszFormat.c_str();
-    va_start(argptr, str);
+    va_start(argptr, pszFormat);
     mstring message;
-    message.FormatV(pszFormat.c_str(), argptr);
+    message.FormatV(pszFormat, argptr);
     va_end(argptr);
 	if (Parent->server.proto.Globops())
 	    Parent->server.GLOBOPS(source, message);
