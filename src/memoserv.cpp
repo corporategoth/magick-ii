@@ -66,7 +66,7 @@ Memo_t &Memo_t::operator=(const Memo_t & in)
 void Memo_t::ChgNick(const mstring & in)
 {
     FT("Memo_t::ChgNick", (in));
-    WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Nick"));
+    WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Nick"));
     MCB(i_Nick);
     i_Nick = in;
     MCE(i_Nick);
@@ -75,42 +75,42 @@ void Memo_t::ChgNick(const mstring & in)
 mstring Memo_t::Sender() const
 {
     NFT(("Memo_t::Sender"));
-    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Sender"));
+    RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Sender"));
     RET(i_Sender);
 }
 
 mDateTime Memo_t::Time() const
 {
     NFT(("Memo_t::Time"));
-    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Time"));
+    RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Time"));
     RET(i_Time);
 }
 
 mstring Memo_t::Text() const
 {
     NFT(("Memo_t::Text"));
-    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Text"));
+    RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Text"));
     RET(i_Text);
 }
 
 unsigned long Memo_t::File() const
 {
     NFT(("Memo_t::File"));
-    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_File"));
+    RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_File"));
     RET(i_File);
 }
 
 bool Memo_t::IsRead() const
 {
     NFT(("Memo_t::IsRead"));
-    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
+    RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Read"));
     RET(i_Read);
 }
 
 void Memo_t::Read()
 {
     NFT(("Memo_t::Read"));
-    WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
+    WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Read"));
     MCB(i_Read);
     i_Read = true;
     MCE(i_Read);
@@ -119,7 +119,7 @@ void Memo_t::Read()
 void Memo_t::Unread()
 {
     NFT(("Memo_t::Unread"));
-    WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
+    WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Read"));
     MCB(i_Read);
     i_Read = false;
     MCE(i_Read);
@@ -129,7 +129,7 @@ size_t Memo_t::Usage() const
 {
     size_t retval = 0;
 
-    WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
+    WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase()));
     retval += i_Nick.capacity();
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
@@ -178,35 +178,35 @@ News_t &News_t::operator=(const News_t & in)
 mstring News_t::Sender() const
 {
     NFT("News_t::Sender");
-    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Sender"));
+    RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Sender"));
     RET(i_Sender);
 }
 
 mDateTime News_t::Time() const
 {
     NFT("News_t::Time");
-    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Time"));
+    RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Time"));
     RET(i_Time);
 }
 
 mstring News_t::Text() const
 {
     NFT("News_t::Text");
-    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Text"));
+    RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Text"));
     RET(i_Text);
 }
 
 bool News_t::NoExpire() const
 {
     NFT("News_t::NoExpire");
-    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_NoExpire"));
+    RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_NoExpire"));
     RET(i_NoExpire);
 }
 
 void News_t::NoExpire(const bool in)
 {
     NFT("News_t::NoExpire");
-    WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_NoExpire"));
+    WLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_NoExpire"));
     MCB(i_NoExpire);
     i_NoExpire = in;
     MCE(i_NoExpire);
@@ -224,7 +224,7 @@ bool News_t::IsRead(const mstring & name)
 	if (!nstored->Host().empty())
 	    target = nstored->Host();
     }
-    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
+    RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Read"));
     bool retval(i_Read.find(target.LowerCase()) != i_Read.end());
 
     RET(retval);
@@ -242,7 +242,7 @@ void News_t::Read(const mstring & name)
 	if (!nstored->Host().empty())
 	    target = nstored->Host();
     }
-    WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
+    WLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Read"));
     MCB(i_Read.size());
     i_Read.insert(target.LowerCase());
     MCE(i_Read.size());
@@ -260,7 +260,7 @@ void News_t::Unread(const mstring & name)
 	if (!nstored->Host().empty())
 	    target = nstored->Host();
     }
-    WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
+    WLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Read"));
     MCB(i_Read.size());
     i_Read.erase(name.LowerCase());
     i_Read.erase(target.LowerCase());
@@ -271,7 +271,7 @@ size_t News_t::Usage() const
 {
     size_t retval = 0;
 
-    WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
+    WLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase()));
     retval += i_Channel.capacity();
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
@@ -411,7 +411,7 @@ void MemoServ::NickMemoConvert(const mstring & source, const mstring & target)
 {
     FT("MemoServ::NickMemoConvert", (source, target));
 
-    WLOCK(("MemoServ", "nick", source));
+    WLOCK((lck_MemoServ, lck_nick, source));
 
     MemoServ::nick_t::iterator iter = nick.find(source.LowerCase());
     if (iter != nick.end())
@@ -426,7 +426,7 @@ void MemoServ::NickMemoConvert(const mstring & source, const mstring & target)
 	}
 	// DELIBERATELY dont delete the members of the MemoServ::nick_memo_t
 	// for the source nick ... we're just renaming and moving.
-	WLOCK2(("MemoServ", "nick"));
+	WLOCK2((lck_MemoServ, lck_nick));
 	nick.erase(source.LowerCase());
     }
 }
@@ -471,7 +471,7 @@ void MemoServ::AddNick(nick_memo_t in)
 #endif
     }
 
-    WLOCK(("MemoServ", "nick"));
+    WLOCK((lck_MemoServ, lck_nick));
     nick[in.begin()->Nick().LowerCase()] = in;
 }
 
@@ -503,8 +503,8 @@ void MemoServ::AddNickMemo(Memo_t * in)
 #endif
     }
 
-    WLOCK(("MemoServ", "nick"));
-    WLOCK2(("MemoServ", "nick", in->Nick().LowerCase()));
+    WLOCK((lck_MemoServ, lck_nick));
+    WLOCK2((lck_MemoServ, lck_nick, in->Nick().LowerCase()));
     /* nick[in->Nick().LowerCase()].push_back(in); */
     nick[in->Nick().LowerCase()].push_back(*in);
 }
@@ -517,7 +517,7 @@ MemoServ::nick_memo_t & MemoServ::GetNick(const mstring & in) const
 {
     FT("MemoServ::GetNick", (in));
 
-    RLOCK(("MemoServ", "nick", in.LowerCase()));
+    RLOCK((lck_MemoServ, lck_nick, in.LowerCase()));
     MemoServ::nick_t::const_iterator iter = nick.find(in.LowerCase());
     if (iter == nick.end())
     {
@@ -549,7 +549,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const
 {
     FT("MemoServ::GetNickMemo", (in, num));
 
-    RLOCK(("MemoServ", "nick", in.LowerCase()));
+    RLOCK((lck_MemoServ, lck_nick, in.LowerCase()));
     MemoServ::nick_memo_t & ent = GetNick(in);
 
     size_t i;
@@ -598,7 +598,7 @@ void MemoServ::RemNick(const mstring & in)
 {
     FT("MemoServ::RemNick", (in));
 
-    WLOCK(("MemoServ", "nick"));
+    WLOCK((lck_MemoServ, lck_nick));
     MemoServ::nick_t::iterator iter = nick.find(in.LowerCase());
     if (iter == nick.end())
     {
@@ -609,7 +609,7 @@ void MemoServ::RemNick(const mstring & in)
 	return;
 #endif
     }
-    WLOCK2(("MemoServ", "nick", iter->first));
+    WLOCK2((lck_MemoServ, lck_nick, iter->first));
     /* nick_memo_t::iterator iter2;
      * for (iter2=iter->second.begin(); iter2!=iter->second.end(); iter2++)
      * if (*iter2 != NULL)
@@ -626,7 +626,7 @@ void MemoServ::RemNickMemo(const mstring & in, const size_t num)
 {
     FT("MemoServ::RemNickMemo", (in, num));
 
-    WLOCK(("MemoServ", "nick"));
+    WLOCK((lck_MemoServ, lck_nick));
     MemoServ::nick_t::iterator iter = nick.find(in.LowerCase());
     if (iter == nick.end())
     {
@@ -637,7 +637,7 @@ void MemoServ::RemNickMemo(const mstring & in, const size_t num)
 	return;
 #endif
     }
-    WLOCK2(("MemoServ", "nick", iter->first));
+    WLOCK2((lck_MemoServ, lck_nick, iter->first));
 
     size_t i;
 
@@ -664,7 +664,7 @@ void MemoServ::RemNickMemo(const mstring & in, const size_t num)
 bool MemoServ::IsNick(const mstring & in) const
 {
     FT("MemoServ::IsNick", (in));
-    RLOCK(("MemoServ", "nick"));
+    RLOCK((lck_MemoServ, lck_nick));
     bool retval = (nick.find(in.LowerCase()) != nick.end());
 
     RET(retval);
@@ -674,7 +674,7 @@ bool MemoServ::IsNickMemo(const mstring & in, const size_t num) const
 {
     FT("MemoServ::IsNickMemo", (in, num));
 
-    RLOCK(("MemoServ", "nick"));
+    RLOCK((lck_MemoServ, lck_nick));
     MemoServ::nick_t::const_iterator iter = nick.find(in.LowerCase());
     if (iter != nick.end())
     {
@@ -697,7 +697,7 @@ size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
 
     size_t retval = 0;
 
-    RLOCK(("MemoServ", "nick", in.LowerCase()));
+    RLOCK((lck_MemoServ, lck_nick, in.LowerCase()));
     MemoServ::nick_t::const_iterator iter = nick.find(in.LowerCase());
     if (iter != nick.end())
     {
@@ -751,7 +751,7 @@ void MemoServ::AddChannel(channel_news_t in)
 #endif
     }
 
-    WLOCK(("MemoServ", "channel"));
+    WLOCK((lck_MemoServ, lck_channel));
     channel[in.begin()->Channel().LowerCase()] = in;
 }
 
@@ -783,8 +783,8 @@ void MemoServ::AddChannelNews(News_t * in)
 #endif
     }
 
-    WLOCK(("MemoServ", "channel"));
-    WLOCK2(("MemoServ", "channel", in->Channel().LowerCase()));
+    WLOCK((lck_MemoServ, lck_channel));
+    WLOCK2((lck_MemoServ, lck_channel, in->Channel().LowerCase()));
     /* channel[in->Channel().LowerCase()].push_back(in); */
     channel[in->Channel().LowerCase()].push_back(*in);
 }
@@ -797,7 +797,7 @@ MemoServ::channel_news_t & MemoServ::GetChannel(const mstring & in) const
 {
     FT("MemoServ::GetChannel", (in));
 
-    RLOCK(("MemoServ", "channel", in.LowerCase()));
+    RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
     MemoServ::channel_t::const_iterator iter = channel.find(in.LowerCase());
     if (iter == channel.end())
     {
@@ -829,7 +829,7 @@ News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const
 {
     FT("MemoServ::GetChannelNews", (in, num));
 
-    RLOCK(("MemoServ", "channel", in.LowerCase()));
+    RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
     MemoServ::channel_news_t & ent = GetChannel(in);
 
     size_t i;
@@ -878,7 +878,7 @@ void MemoServ::RemChannel(const mstring & in)
 {
     FT("MemoServ::RemChannel", (in));
 
-    WLOCK(("MemoServ", "channel"));
+    WLOCK((lck_MemoServ, lck_channel));
     MemoServ::channel_t::iterator iter = channel.find(in.LowerCase());
     if (iter == channel.end())
     {
@@ -889,7 +889,7 @@ void MemoServ::RemChannel(const mstring & in)
 	return;
 #endif
     }
-    WLOCK2(("MemoServ", "channel", iter->first));
+    WLOCK2((lck_MemoServ, lck_channel, iter->first));
     /* channel_news_t::iterator iter2;
      * for (iter2=iter->second.begin(); iter2!=iter->second.end(); iter2++)
      * if (*iter2 != NULL)
@@ -906,7 +906,7 @@ void MemoServ::RemChannelNews(const mstring & in, const size_t num)
 {
     FT("MemoServ::RemChannelNews", (in, num));
 
-    WLOCK(("MemoServ", "channel"));
+    WLOCK((lck_MemoServ, lck_channel));
     MemoServ::channel_t::iterator iter = channel.find(in.LowerCase());
     if (iter == channel.end())
     {
@@ -917,7 +917,7 @@ void MemoServ::RemChannelNews(const mstring & in, const size_t num)
 	return;
 #endif
     }
-    WLOCK2(("MemoServ", "channel", iter->first));
+    WLOCK2((lck_MemoServ, lck_channel, iter->first));
 
     size_t i;
 
@@ -944,7 +944,7 @@ void MemoServ::RemChannelNews(const mstring & in, const size_t num)
 bool MemoServ::IsChannel(const mstring & in) const
 {
     FT("MemoServ::IsChannel", (in));
-    RLOCK(("MemoServ", "channel"));
+    RLOCK((lck_MemoServ, lck_channel));
     bool retval = (channel.find(in.LowerCase()) != channel.end());
 
     RET(retval);
@@ -954,7 +954,7 @@ bool MemoServ::IsChannelNews(const mstring & in, const size_t num) const
 {
     FT("MemoServ::IsChannelNews", (in, num));
 
-    RLOCK(("MemoServ", "channel"));
+    RLOCK((lck_MemoServ, lck_channel));
     MemoServ::channel_t::const_iterator iter = channel.find(in.LowerCase());
     if (iter != channel.end())
     {
@@ -977,7 +977,7 @@ size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, cons
 
     size_t retval = 0;
 
-    RLOCK(("MemoServ", "channel", in.LowerCase()));
+    RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
     MemoServ::channel_t::iterator iter = channel.find(in.LowerCase());
     if (iter != channel.end())
     {
@@ -1025,7 +1025,7 @@ void MemoServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1053,7 +1053,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1108,7 +1108,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	    MemoServ::channel_news_t::iterator iter;
 	    int i = 0;
 
-	    RLOCK(("MemoServ", "channel", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 	    for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
 		 iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
 	    {
@@ -1152,7 +1152,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	    bool triedabove = false, nonnumeric = false;
 	    size_t amt = 0;
 
-	    RLOCK(("MemoServ", "channel", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 	    MemoServ::channel_news_t & newslist = Magick::instance().memoserv.GetChannel(who);
 	    amt = newslist.size();
 	    MemoServ::channel_news_t::iterator iter = newslist.begin();
@@ -1230,7 +1230,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	    bool unread = (what.IsSameAs("new", true) || what.IsSameAs("unread", true));
 	    int i = 0;
 
-	    RLOCK(("MemoServ", "nick", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    for (iter = Magick::instance().memoserv.NickMemoBegin(who); iter != Magick::instance().memoserv.NickMemoEnd(who);
 		 iter++)
 	    {
@@ -1281,7 +1281,7 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 	    bool triedabove = false, nonnumeric = false;
 	    size_t amt = 0;
 
-	    RLOCK(("MemoServ", "nick", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(who);
 	    amt = memolist.size();
 	    MemoServ::nick_memo_t::iterator iter = memolist.begin();
@@ -1359,7 +1359,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1412,7 +1412,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	    MemoServ::channel_news_t::iterator iter;
 	    mstring output;
 
-	    RLOCK(("MemoServ", "channel", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 	    for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
 		 iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
 	    {
@@ -1428,7 +1428,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	    bool triedabove = false, nonnumeric = false;
 	    size_t amt = 0;
 
-	    RLOCK(("MemoServ", "channel", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 	    MemoServ::channel_news_t & newslist = Magick::instance().memoserv.GetChannel(who);
 	    amt = newslist.size();
 	    MemoServ::channel_news_t::iterator iter = newslist.begin();
@@ -1492,7 +1492,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	    MemoServ::nick_memo_t::iterator iter;
 	    mstring output;
 
-	    RLOCK(("MemoServ", "nick", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    for (iter = Magick::instance().memoserv.NickMemoBegin(who); iter != Magick::instance().memoserv.NickMemoEnd(who);
 		 iter++)
 	    {
@@ -1508,7 +1508,7 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 	    bool triedabove = false, nonnumeric = false;
 	    size_t amt = 0;
 
-	    RLOCK(("MemoServ", "nick", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(who);
 	    amt = memolist.size();
 	    MemoServ::nick_memo_t::iterator iter = memolist.begin();
@@ -1561,7 +1561,7 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1593,7 +1593,7 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
     bool triedabove = false, nonnumeric = false, nonfiles = false;
     size_t amt = 0;
 
-    RLOCK(("MemoServ", "nick", who.LowerCase()));
+    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
     MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(who);
     amt = memolist.size();
     MemoServ::nick_memo_t::iterator iter = memolist.begin();
@@ -1676,7 +1676,7 @@ void MemoServ::do_List(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1720,7 +1720,7 @@ void MemoServ::do_List(const mstring & mynick, const mstring & source, const mst
 	int i = 1;
 	mstring output;
 
-	RLOCK(("MemoServ", "channel", who.LowerCase()));
+	RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 	for (iter = Magick::instance().memoserv.ChannelNewsBegin(who); iter != Magick::instance().memoserv.ChannelNewsEnd(who);
 	     iter++)
 	{
@@ -1751,7 +1751,7 @@ void MemoServ::do_List(const mstring & mynick, const mstring & source, const mst
 	int i = 1;
 	mstring output;
 
-	RLOCK(("MemoServ", "nick", who.LowerCase()));
+	RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	for (iter = Magick::instance().memoserv.NickMemoBegin(who); iter != Magick::instance().memoserv.NickMemoEnd(who);
 	     iter++)
 	{
@@ -1784,7 +1784,7 @@ void MemoServ::do_Send(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1889,7 +1889,7 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1963,7 +1963,7 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 	mstring output;
 
 	{
-	    RLOCK(("MemoServ", "channel", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 	    MemoServ::channel_news_t::iterator iter = Magick::instance().memoserv.ChannelNewsEnd(who);
 	    for (i = 1; i < num; iter++, i++);
 	    output =
@@ -2014,7 +2014,7 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 	mstring output;
 
 	{
-	    RLOCK(("MemoServ", "nick", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    MemoServ::nick_memo_t::iterator iter = Magick::instance().memoserv.NickMemoBegin(who);
 	    for (i = 1; i < num; iter++, i++);
 
@@ -2088,7 +2088,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2164,7 +2164,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 	unsigned int i;
 
 	{
-	    RLOCK(("MemoServ", "channel", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 	    MemoServ::channel_news_t::iterator iter = Magick::instance().memoserv.ChannelNewsBegin(who);
 	    for (i = 1; i < num; iter++, i++);
 
@@ -2216,7 +2216,7 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 	unsigned int i;
 
 	{
-	    RLOCK(("MemoServ", "nick", who.LowerCase()));
+	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    MemoServ::nick_memo_t::iterator iter = Magick::instance().memoserv.NickMemoBegin(who);
 	    for (i = 1; i < num; iter++, i++);
 	    if (iter->File())
@@ -2283,7 +2283,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2369,7 +2369,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 	    size_t amt = 0;
 
 	    {
-		WLOCK(("MemoServ", "channel", who.LowerCase()));
+		WLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 		MemoServ::channel_news_t & newslist = Magick::instance().memoserv.GetChannel(who);
 		amt = newslist.size();
 		MemoServ::channel_news_t::iterator iter = newslist.begin();
@@ -2451,7 +2451,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 	{
 	    MemoServ::nick_memo_t::iterator iter;
 	    {
-		RLOCK(("MemoServ", "nick", who.LowerCase()));
+		RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 		for (iter = Magick::instance().memoserv.NickMemoBegin(who);
 		     iter != Magick::instance().memoserv.NickMemoEnd(who); iter++)
 		{
@@ -2486,7 +2486,7 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 	    size_t amt = 0;
 
 	    {
-		WLOCK(("MemoServ", "nick", who.LowerCase()));
+		WLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 		MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(who);
 		amt = memolist.size();
 		MemoServ::nick_memo_t::iterator iter = memolist.begin();
@@ -2613,7 +2613,7 @@ void MemoServ::do_File(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2665,7 +2665,7 @@ void MemoServ::do_File(const mstring & mynick, const mstring & source, const mst
 
 		MemoServ::nick_memo_t::iterator iter;
 		{
-		    RLOCK(("MemoServ", "nick", target.LowerCase()));
+		    RLOCK((lck_MemoServ, lck_nick, target.LowerCase()));
 		    for (iter = Magick::instance().memoserv.NickMemoBegin(target);
 			 iter != Magick::instance().memoserv.NickMemoEnd(target); iter++)
 		    {
@@ -2720,7 +2720,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2788,7 +2788,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	    mstring output;
 
 	    {
-		WLOCK(("MemoServ", "channel", who.LowerCase()));
+		WLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 		for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
 		     iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
 		{
@@ -2820,7 +2820,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	    size_t amt = 0;
 
 	    {
-		WLOCK(("MemoServ", "channel", who.LowerCase()));
+		WLOCK((lck_MemoServ, lck_channel, who.LowerCase()));
 		MemoServ::channel_news_t & newslist = Magick::instance().memoserv.GetChannel(who);
 		amt = newslist.size();
 		MemoServ::channel_news_t::iterator iter = newslist.begin();
@@ -2898,7 +2898,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	{
 	    MemoServ::nick_memo_t::iterator iter;
 	    mstring output;
-	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
+	    { WLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    for (iter = Magick::instance().memoserv.NickMemoBegin(who);
 		    iter != Magick::instance().memoserv.NickMemoEnd(who); iter++)
 	    {
@@ -2922,7 +2922,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	    bool triedabove = false, nonnumeric = false;
 	    mstring output;
 	    size_t amt = 0;
-	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
+	    { WLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(who);
 	    amt = memolist.size();
 	    nick_memo_t::iterator iter = memolist.begin();
@@ -3028,7 +3028,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     //TODO: Add your source code here
     pOut->BeginObject(tag_Memo_t);
 
-    WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
+    WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase()));
     pOut->WriteElement(tag_Nick, i_Nick);
     pOut->WriteElement(tag_Sender, i_Sender);
     pOut->WriteElement(tag_Time, i_Time);
@@ -3093,7 +3093,7 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     //TODO: Add your source code here
     pOut->BeginObject(tag_News_t);
 
-    WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
+    WLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase()));
     pOut->WriteElement(tag_Channel, i_Channel);
     pOut->WriteElement(tag_Sender, i_Sender);
     pOut->WriteElement(tag_Time, i_Time);
@@ -3167,10 +3167,10 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     MemoServ::channel_news_t::iterator j2;
 
     {
-	RLOCK(("MemoServ", "nick"));
+	RLOCK((lck_MemoServ, lck_nick));
 	for (i1 = NickBegin(); i1 != NickEnd(); i1++)
 	{
-	    RLOCK2(("MemoServ", "nick", i1->first));
+	    RLOCK2((lck_MemoServ, lck_nick, i1->first));
 	    for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++)
 	    {
 		pOut->WriteSubElement(&(*i2));
@@ -3179,10 +3179,10 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     {
-	RLOCK(("MemoServ", "channel"));
+	RLOCK((lck_MemoServ, lck_channel));
 	for (j1 = ChannelBegin(); j1 != ChannelEnd(); j1++)
 	{
-	    RLOCK2(("MemoServ", "channel", j1->first));
+	    RLOCK2((lck_MemoServ, lck_channel, j1->first));
 	    for (j2 = j1->second.begin(); j2 != j1->second.end(); j2++)
 	    {
 		pOut->WriteSubElement(&(*j2));

@@ -1047,7 +1047,7 @@ void Logger::log(ACE_Log_Record & log_record)
     if (!Magick::instance().files.Logchan().empty() && Magick::instance().Connected())
     {
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
 	    {
 		if (Magick::instance().chanserv.IsLive(Magick::instance().files.Logchan()))

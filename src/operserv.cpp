@@ -42,7 +42,7 @@ bool OperServ::AddHost(const mstring & host)
     FT("OperServ::AddHost", (host));
     bool retval = false;
 
-    MLOCK(("OperServ", "CloneList"));
+    MLOCK((lck_OperServ, "CloneList"));
     MCB(CloneList.size());
     if (CloneList.find(host.LowerCase()) == CloneList.end())
 	CloneList[host.LowerCase()].first = 0;
@@ -50,7 +50,7 @@ bool OperServ::AddHost(const mstring & host)
 
     CP(("Finding clone list, %s = %d", host.c_str(), CloneList[host.LowerCase()].first));
     {
-	MLOCK2(("OperServ", "Clone"));
+	MLOCK2((lck_OperServ, "Clone"));
 	if ((Clone_find(host) ? (CloneList[host.LowerCase()].first > Clone->Value().first)
 	     : (CloneList[host.LowerCase()].first > Clone_Limit())))
 	{
@@ -65,7 +65,7 @@ bool OperServ::AddHost(const mstring & host)
 	    bool burst = false;
 
 	    {
-		RLOCK(("IrcSvcHandler"));
+		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler != NULL)
 		    burst = Magick::instance().ircsvchandler->Burst();
 	    }
@@ -74,13 +74,13 @@ bool OperServ::AddHost(const mstring & host)
 	    {
 		CP(("Reached MAX clone kills, adding AKILL ..."));
 
-		MLOCK3(("OperServ", "Akill"));
+		MLOCK3((lck_OperServ, "Akill"));
 		if (!Akill_find("*@" + host))
 		{
 		    NickServ::live_t::iterator iter;
 		    vector < mstring > killusers;
 		    {
-			RLOCK(("NickServ", "live"));
+			RLOCK((lck_NickServ, lck_live));
 			for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd();
 			     iter++)
 			{
@@ -120,7 +120,7 @@ void OperServ::RemHost(const mstring & host)
 {
     FT("OperServ::RemHost", (host));
 
-    MLOCK(("OperServ", "CloneList"));
+    MLOCK((lck_OperServ, "CloneList"));
     MCB(CloneList.size());
     if (CloneList.find(host.LowerCase()) != CloneList.end())
     {
@@ -139,7 +139,7 @@ size_t OperServ::CloneList_sum() const
     map < mstring, pair < unsigned int, list < mDateTime > > >::const_iterator i;
     size_t value = 0;
 
-    RLOCK(("OperServ", "CloneList"));
+    RLOCK((lck_OperServ, "CloneList"));
     for (i = CloneList.begin(); i != CloneList.end(); i++)
     {
 	value += i->second.first;
@@ -154,7 +154,7 @@ size_t OperServ::CloneList_size(const unsigned int amt) const
     map < mstring, pair < unsigned int, list < mDateTime > > >::const_iterator i;
     size_t value = 0;
 
-    RLOCK(("OperServ", "CloneList"));
+    RLOCK((lck_OperServ, "CloneList"));
     for (i = CloneList.begin(); i != CloneList.end(); i++)
     {
 	if (i->second.first == amt)
@@ -168,7 +168,7 @@ size_t OperServ::CloneList_Usage() const
     size_t retval = 0;
     map < mstring, pair < unsigned int, list < mDateTime > > >::const_iterator i;
 
-    MLOCK(("OperServ", "CloneList"));
+    MLOCK((lck_OperServ, "CloneList"));
     for (i = CloneList.begin(); i != CloneList.end(); i++)
     {
 	retval += i->first.capacity();
@@ -186,20 +186,20 @@ void OperServ::CloneList_check()
 
     map < mstring, pair < unsigned int, list < mDateTime > > >::iterator iter;
 
-    MLOCK(("OperServ", "CloneList"));
+    MLOCK((lck_OperServ, "CloneList"));
     for (iter = CloneList.begin(); iter != CloneList.end(); iter++)
     {
 	if (iter->second.second.size() > Magick::instance().operserv.Clone_Trigger())
 	{
 	    CP(("Reached MAX clone kills, adding AKILL ..."));
 
-	    MLOCK2(("OperServ", "Akill"));
+	    MLOCK2((lck_OperServ, "Akill"));
 	    if (!Akill_find("*@" + iter->first))
 	    {
 		NickServ::live_t::iterator iter2;
 		vector < mstring > killusers;
 		{
-		    RLOCK(("NickServ", "live"));
+		    RLOCK((lck_NickServ, lck_live));
 		    for (iter2 = Magick::instance().nickserv.LiveBegin(); iter2 != Magick::instance().nickserv.LiveEnd();
 			 iter2++)
 		    {
@@ -241,7 +241,7 @@ bool OperServ::Clone_insert(const mstring & entry, const unsigned int value, con
 	RET(false);
     }
 
-    MLOCK(("OperServ", "Clone"));
+    MLOCK((lck_OperServ, "Clone"));
     if (!Clone_find(entry))
     {
 	pair < set < Clone_Type >::iterator, bool > tmp;
@@ -267,7 +267,7 @@ bool OperServ::Clone_erase()
 {
     NFT("OperServ::Clone_erase");
 
-    MLOCK(("OperServ", "Clone"));
+    MLOCK((lck_OperServ, "Clone"));
     if (Clone != i_Clone.end())
     {
 	MCB(i_Clone.size());
@@ -287,7 +287,7 @@ size_t OperServ::Clone_Usage() const
     size_t retval = 0;
 
     set < Clone_Type >::const_iterator i;
-    MLOCK(("OperServ", "Clone"));
+    MLOCK((lck_OperServ, "Clone"));
     for (i = i_Clone.begin(); i != i_Clone.end(); i++)
     {
 	retval += i->Usage();
@@ -300,7 +300,7 @@ bool OperServ::Clone_find(const mstring & entry)
     FT("OperServ::Clone_find", (entry));
 
 //  entlist_val_ui<pair<int, mstring> > iter = i_Clone.end();
-    MLOCK(("OperServ", "Clone"));
+    MLOCK((lck_OperServ, "Clone"));
     set < Clone_Type >::iterator iter = i_Clone.end();
     if (!i_Clone.empty())
 	for (iter = i_Clone.begin(); iter != i_Clone.end(); iter++)
@@ -325,7 +325,7 @@ pair < unsigned int, mstring > OperServ::Clone_value(const mstring & entry)
 
     pair < unsigned int, mstring > retval = pair < unsigned int, mstring > (0, "");
 
-    MLOCK(("OperServ", "Clone"));
+    MLOCK((lck_OperServ, "Clone"));
 //  entlist_val_ui<pair<int, mstring> > iter = Clone;
     set < Clone_Type >::iterator iter = Clone;
 
@@ -346,7 +346,7 @@ bool OperServ::Akill_insert(const mstring & entry, const unsigned long value, co
 	RET(false);
     }
 
-    MLOCK(("OperServ", "Akill"));
+    MLOCK((lck_OperServ, "Akill"));
     if (!Akill_find(entry))
     {
 	pair < set < Akill_Type >::iterator, bool > tmp;
@@ -372,7 +372,7 @@ bool OperServ::Akill_erase()
 {
     NFT("OperServ::Akill_erase");
 
-    MLOCK(("OperServ", "Akill"));
+    MLOCK((lck_OperServ, "Akill"));
     if (Akill != i_Akill.end())
     {
 	MCB(i_Akill.size());
@@ -393,7 +393,7 @@ size_t OperServ::Akill_Usage() const
     size_t retval = 0;
 
     set < Akill_Type >::const_iterator i;
-    MLOCK(("OperServ", "Akill"));
+    MLOCK((lck_OperServ, "Akill"));
     for (i = i_Akill.begin(); i != i_Akill.end(); i++)
     {
 	retval += i->Usage();
@@ -412,7 +412,7 @@ bool OperServ::Akill_find(const mstring & entry)
     }
 
 //  entlist_val_ui<pair<long, mstring> > iter = i_Akill.end();
-    MLOCK(("OperServ", "Akill"));
+    MLOCK((lck_OperServ, "Akill"));
     set < Akill_Type >::iterator iter = i_Akill.end();
     if (!i_Akill.empty())
 	for (iter = i_Akill.begin(); iter != i_Akill.end(); iter++)
@@ -441,7 +441,7 @@ pair < unsigned long, mstring > OperServ::Akill_value(const mstring & entry)
 
     pair < unsigned long, mstring > retval = pair < unsigned long, mstring > (0, "");
 
-    MLOCK(("OperServ", "Akill"));
+    MLOCK((lck_OperServ, "Akill"));
 //  entlist_val_ui<pair<long, mstring> > iter = Akill;
     set < Akill_Type >::iterator iter = Akill;
 
@@ -466,7 +466,7 @@ bool OperServ::OperDeny_insert(const mstring & i_entry, const mstring & value, c
     if (!entry.Contains("!"))
 	entry.prepend("*!");
 
-    MLOCK(("OperServ", "OperDeny"));
+    MLOCK((lck_OperServ, "OperDeny"));
     if (!OperDeny_find(entry))
     {
 	pair < set < OperDeny_Type >::iterator, bool > tmp;
@@ -491,7 +491,7 @@ bool OperServ::OperDeny_erase()
 {
     NFT("OperServ::OperDeny_erase");
 
-    MLOCK(("OperServ", "OperDeny"));
+    MLOCK((lck_OperServ, "OperDeny"));
     if (OperDeny != i_OperDeny.end())
     {
 	MCB(i_OperDeny.size());
@@ -512,7 +512,7 @@ size_t OperServ::OperDeny_Usage() const
     size_t retval = 0;
 
     set < OperDeny_Type >::const_iterator i;
-    MLOCK(("OperServ", "OperDeny"));
+    MLOCK((lck_OperServ, "OperDeny"));
     for (i = i_OperDeny.begin(); i != i_OperDeny.end(); i++)
     {
 	retval += i->Usage();
@@ -535,7 +535,7 @@ bool OperServ::OperDeny_find(const mstring & i_entry)
     if (!entry.Contains("!"))
 	entry.prepend("*!");
 
-    MLOCK(("OperServ", "OperDeny"));
+    MLOCK((lck_OperServ, "OperDeny"));
 //  entlist_val_ui<mstring> iter = i_OperDeny.end();
     set < OperDeny_Type >::iterator iter = i_OperDeny.end();
     if (!i_OperDeny.empty())
@@ -561,7 +561,7 @@ mstring OperServ::OperDeny_value(const mstring & entry)
 
     mstring retval;
 
-    MLOCK(("OperServ", "OperDeny"));
+    MLOCK((lck_OperServ, "OperDeny"));
 //  entlist_val_ui<mstring> iter = OperDeny;
     set < OperDeny_Type >::iterator iter = OperDeny;
 
@@ -586,7 +586,7 @@ bool OperServ::Ignore_insert(const mstring & i_entry, const bool perm, const mst
     if (!entry.Contains("!"))
 	entry.prepend("*!");
 
-    MLOCK(("OperServ", "Ignore"));
+    MLOCK((lck_OperServ, "Ignore"));
     if (!Ignore_find(entry))
     {
 	pair < set < Ignore_Type >::iterator, bool > tmp;
@@ -611,7 +611,7 @@ bool OperServ::Ignore_erase()
 {
     NFT("OperServ::Ignore_erase");
 
-    MLOCK(("OperServ", "Ignore"));
+    MLOCK((lck_OperServ, "Ignore"));
     if (Ignore != i_Ignore.end())
     {
 	MCB(i_Ignore.size());
@@ -632,7 +632,7 @@ size_t OperServ::Ignore_Usage() const
     size_t retval = 0;
 
     set < Ignore_Type >::const_iterator i;
-    MLOCK(("OperServ", "Ignore"));
+    MLOCK((lck_OperServ, "Ignore"));
     for (i = i_Ignore.begin(); i != i_Ignore.end(); i++)
     {
 	retval += i->Usage();
@@ -655,7 +655,7 @@ bool OperServ::Ignore_find(const mstring & i_entry)
     if (!entry.Contains("!"))
 	entry.prepend("*!");
 
-    MLOCK(("OperServ", "Ignore"));
+    MLOCK((lck_OperServ, "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = i_Ignore.end();
     set < Ignore_Type >::iterator iter = i_Ignore.end();
 
@@ -684,7 +684,7 @@ bool OperServ::Ignore_value(const mstring & entry)
 
     bool retval = false;
 
-    MLOCK(("OperServ", "Ignore"));
+    MLOCK((lck_OperServ, "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = Ignore;
     set < Ignore_Type >::iterator iter = Ignore;
 
@@ -1044,7 +1044,7 @@ void OperServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1542,7 +1542,7 @@ void OperServ::do_Ping(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1551,7 +1551,7 @@ void OperServ::do_Ping(const mstring & mynick, const mstring & source, const mst
     }
 
     {
-	RLOCK(("Events"));
+	RLOCK((lck_Events));
 	if (Magick::instance().events != NULL)
 	{
 	    Magick::instance().events->ForcePing();
@@ -1568,7 +1568,7 @@ void OperServ::do_Update(const mstring & mynick, const mstring & source, const m
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("Events"));
+	RLOCK((lck_Events));
 	if (Magick::instance().events != NULL)
 	{
 	    Magick::instance().events->ForceSave();
@@ -1625,7 +1625,7 @@ void OperServ::do_Reload(const mstring & mynick, const mstring & source, const m
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1654,7 +1654,7 @@ void OperServ::do_Signon(const mstring & mynick, const mstring & source, const m
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1672,7 +1672,7 @@ void OperServ::do_Unload(const mstring & mynick, const mstring & source, const m
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1941,7 +1941,7 @@ void OperServ::do_HTM(const mstring & mynick, const mstring & source, const mstr
 	mstring command = params.ExtractWord(2, " ").UpperCase();
 
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL)
 	    {
 
@@ -2002,7 +2002,7 @@ void OperServ::do_settings_Config(const mstring & mynick, const mstring & source
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2023,7 +2023,7 @@ void OperServ::do_settings_Config(const mstring & mynick, const mstring & source
     SEND(mynick, source, "OS_SETTINGS/CFG_SQUIT1", (ToHumanTime(Magick::instance().config.Squit_Protect(), source)));
     SEND(mynick, source, "OS_SETTINGS/CFG_SQUIT2", (ToHumanTime(Magick::instance().config.Squit_Cancel(), source)));
     {
-	RLOCK(("Events"));
+	RLOCK((lck_Events));
 	if (Magick::instance().events != NULL)
 	    SEND(mynick, source, "OS_SETTINGS/CFG_SYNC",
 		 (ToHumanTime(Magick::instance().config.Savetime(), source), Magick::instance().events->SyncTime(source)));
@@ -2045,7 +2045,7 @@ void OperServ::do_settings_Nick(const mstring & mynick, const mstring & source, 
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2150,7 +2150,7 @@ void OperServ::do_settings_Channel(const mstring & mynick, const mstring & sourc
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2314,7 +2314,7 @@ void OperServ::do_settings_Other(const mstring & mynick, const mstring & source,
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2386,7 +2386,7 @@ void OperServ::do_settings_All(const mstring & mynick, const mstring & source, c
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2474,7 +2474,7 @@ void OperServ::do_clone_Add(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
-    MLOCK(("OperServ", "Clone"));
+    MLOCK((lck_OperServ, "Clone"));
     if (Magick::instance().operserv.Clone_find(host))
     {
 	mstring entry = Magick::instance().operserv.Clone->Entry();
@@ -2521,7 +2521,7 @@ void OperServ::do_clone_Del(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
-    MLOCK(("OperServ", "Clone"));
+    MLOCK((lck_OperServ, "Clone"));
     if (host.IsNumber() && !host.Contains("."))
     {
 	unsigned int i, num = atoi(host.c_str());
@@ -2582,7 +2582,7 @@ void OperServ::do_clone_List(const mstring & mynick, const mstring & source, con
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2625,7 +2625,7 @@ void OperServ::do_clone_List(const mstring & mynick, const mstring & source, con
     }
     unsigned int i = 1;
 
-    MLOCK(("OperServ", "Clone"));
+    MLOCK((lck_OperServ, "Clone"));
     for (Magick::instance().operserv.Clone = Magick::instance().operserv.Clone_begin();
 	 Magick::instance().operserv.Clone != Magick::instance().operserv.Clone_end(); Magick::instance().operserv.Clone++)
     {
@@ -2758,7 +2758,7 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
     }
 
     {
-	MLOCK(("OperServ", "Akill"));
+	MLOCK((lck_OperServ, "Akill"));
 	if (Magick::instance().operserv.Akill_find(host))
 	{
 	    mstring entry = Magick::instance().operserv.Akill->Entry();
@@ -2778,7 +2778,7 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
 	    NickServ::live_t::iterator iter;
 	    vector < mstring > killusers;
 	    {
-		RLOCK(("NickServ", "live"));
+		RLOCK((lck_NickServ, lck_live));
 		for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 		{
 		    map_entry < Nick_Live_t > nlive(iter->second);
@@ -2834,7 +2834,7 @@ void OperServ::do_akill_Del(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
-    MLOCK(("OperServ", "Akill"));
+    MLOCK((lck_OperServ, "Akill"));
     if (host.IsNumber() && !host.Contains("."))
     {
 	unsigned int i, num = atoi(host.c_str());
@@ -2897,7 +2897,7 @@ void OperServ::do_akill_List(const mstring & mynick, const mstring & source, con
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2935,7 +2935,7 @@ void OperServ::do_akill_List(const mstring & mynick, const mstring & source, con
     }
     unsigned int i = 1;
 
-    MLOCK(("OperServ", "Akill"));
+    MLOCK((lck_OperServ, "Akill"));
     for (Magick::instance().operserv.Akill = Magick::instance().operserv.Akill_begin();
 	 Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end(); Magick::instance().operserv.Akill++)
     {
@@ -3009,7 +3009,7 @@ void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, c
     }
 
     {
-	MLOCK(("OperServ", "OperDeny"));
+	MLOCK((lck_OperServ, "OperDeny"));
 	if (Magick::instance().operserv.OperDeny_find(host))
 	{
 	    Magick::instance().operserv.OperDeny_erase();
@@ -3028,7 +3028,7 @@ void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, c
 	map_entry < Committee_t > sadmin;
 	if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()))
 	    sadmin = Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name());
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 	{
 	    map_entry < Nick_Live_t > nlive(iter->second);
@@ -3070,7 +3070,7 @@ void OperServ::do_operdeny_Del(const mstring & mynick, const mstring & source, c
 
     mstring host = params.ExtractWord(3, " ").LowerCase();
 
-    MLOCK(("OperServ", "OperDeny"));
+    MLOCK((lck_OperServ, "OperDeny"));
     if (host.IsNumber() && !host.Contains("."))
     {
 	unsigned int i, num = atoi(host.c_str());
@@ -3145,7 +3145,7 @@ void OperServ::do_operdeny_List(const mstring & mynick, const mstring & source, 
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -3191,7 +3191,7 @@ void OperServ::do_operdeny_List(const mstring & mynick, const mstring & source, 
     }
     unsigned int i = 1;
 
-    MLOCK(("OperServ", "OperDeny"));
+    MLOCK((lck_OperServ, "OperDeny"));
     for (Magick::instance().operserv.OperDeny = Magick::instance().operserv.OperDeny_begin();
 	 Magick::instance().operserv.OperDeny != Magick::instance().operserv.OperDeny_end();
 	 Magick::instance().operserv.OperDeny++)
@@ -3267,7 +3267,7 @@ void OperServ::do_ignore_Add(const mstring & mynick, const mstring & source, con
 	return;
     }
 
-    MLOCK(("OperServ", "Ignore"));
+    MLOCK((lck_OperServ, "Ignore"));
     if (Magick::instance().operserv.Ignore_find(host))
     {
 	Magick::instance().operserv.Ignore_erase();
@@ -3292,7 +3292,7 @@ void OperServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
 
     mstring host = params.ExtractWord(3, " ").LowerCase();
 
-    MLOCK(("OperServ", "Ignore"));
+    MLOCK((lck_OperServ, "Ignore"));
     if (host.IsNumber() && !host.Contains("."))
     {
 	unsigned int i, num = atoi(host.c_str());
@@ -3367,7 +3367,7 @@ void OperServ::do_ignore_List(const mstring & mynick, const mstring & source, co
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -3405,7 +3405,7 @@ void OperServ::do_ignore_List(const mstring & mynick, const mstring & source, co
     unsigned int i = 1;
     bool head = false;
 
-    MLOCK(("OperServ", "Ignore"));
+    MLOCK((lck_OperServ, "Ignore"));
     for (Magick::instance().operserv.Ignore = Magick::instance().operserv.Ignore_begin();
 	 Magick::instance().operserv.Ignore != Magick::instance().operserv.Ignore_end(); Magick::instance().operserv.Ignore++)
     {
@@ -3492,7 +3492,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->BeginObject(tag_OperServ);
 
     {
-	MLOCK(("OperServ", "Clone"));
+	MLOCK((lck_OperServ, "Clone"));
 	for (i = i_Clone.begin(); i != i_Clone.end(); i++)
 	{
 	    pOut->BeginObject(tag_Clone);
@@ -3502,7 +3502,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     {
-	MLOCK(("OperServ", "Akill"));
+	MLOCK((lck_OperServ, "Akill"));
 	for (j = i_Akill.begin(); j != i_Akill.end(); j++)
 	{
 	    pOut->BeginObject(tag_Akill);
@@ -3512,7 +3512,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     {
-	MLOCK(("OperServ", "OperDeny"));
+	MLOCK((lck_OperServ, "OperDeny"));
 	for (k = i_OperDeny.begin(); k != i_OperDeny.end(); k++)
 	{
 	    pOut->BeginObject(tag_OperDeny);
@@ -3522,7 +3522,7 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     {
-	MLOCK(("OperServ", "Ignore"));
+	MLOCK((lck_OperServ, "Ignore"));
 	for (l = i_Ignore.begin(); l != i_Ignore.end(); l++)
 	{
 	    // Only save PERM entries

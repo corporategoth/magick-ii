@@ -46,7 +46,7 @@ void Committee_t::defaults()
     BTCB();
     NFT("Committee_t::defaults");
 
-    ref_class::lockData(mVarArray("CommServ", "list", i_Name.UpperCase()));
+    ref_class::lockData(mVarArray(lck_CommServ, lck_list, i_Name.UpperCase()));
     setting.Private = Magick::instance().commserv.DEF_Private();
     lock.Private = false;
     setting.OpenMemos = Magick::instance().commserv.DEF_OpenMemos();
@@ -102,7 +102,7 @@ Committee_t &Committee_t::operator=(const Committee_t & in)
     FT("Committee_t::operator=", ("(const Committee_t &) in"));
 
     i_Name = in.i_Name;
-    ref_class::lockData(mVarArray("CommServ", "list", i_Name.UpperCase()));
+    ref_class::lockData(mVarArray(lck_CommServ, lck_list, i_Name.UpperCase()));
     i_RegTime = in.i_RegTime;
     i_Head = in.i_Head;
     i_HeadCom = in.i_HeadCom;
@@ -130,7 +130,7 @@ mDateTime Committee_t::RegTime() const
 {
     BTCB();
     NFT("Committee_t::RegTime");
-    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_RegTime"));
+    RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_RegTime"));
     RET(i_RegTime);
     ETCB();
 }
@@ -142,7 +142,7 @@ unsigned long Committee_t::Drop()
 
     {
 	vector < mstring > chunked;
-	RLOCK(("CommServ", "list"));
+	RLOCK((lck_CommServ, lck_list));
 	CommServ::list_t::iterator citer;
 	for (citer = Magick::instance().commserv.ListBegin(); citer != Magick::instance().commserv.ListEnd(); citer++)
 	{
@@ -162,11 +162,11 @@ unsigned long Committee_t::Drop()
     mstring entry = "@" + i_Name;
 
     {
-	RLOCK(("ChanServ", "stored"));
+	RLOCK((lck_ChanServ, lck_stored));
 	for (iter = Magick::instance().chanserv.StoredBegin(); iter != Magick::instance().chanserv.StoredEnd(); iter++)
 	{
 	    map_entry < Chan_Stored_t > cstored(iter->second);
-	    MLOCK(("ChanServ", "stored", iter->first, "Access"));
+	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Access"));
 	    if (cstored->Access_find(entry))
 		cstored->Access_erase();
 	}
@@ -179,7 +179,7 @@ mstring Committee_t::HeadCom() const
 {
     BTCB();
     NFT("Committee_t::HeadCom");
-    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+    RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_HeadCom"));
     RET(i_HeadCom);
     ETCB();
 }
@@ -189,10 +189,10 @@ void Committee_t::HeadCom(const mstring & newhead)
     BTCB();
     FT("Committee_t::HeadCom", (newhead));
 
-    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+    WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_HeadCom"));
     MCB(i_HeadCom);
     {
-	WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+	WLOCK2((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Head"));
 	if (!i_Head.empty())
 	{
 	    CB(1, i_Head);
@@ -209,7 +209,7 @@ mstring Committee_t::Head() const
 {
     BTCB();
     NFT("Committee_t::Head");
-    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+    RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Head"));
     RET(i_Head);
     ETCB();
 }
@@ -219,10 +219,10 @@ void Committee_t::Head(const mstring & newhead)
     BTCB();
     FT("Committee_t::Head", (newhead));
 
-    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+    WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Head"));
     MCB(i_Head);
     {
-	WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+	WLOCK2((lck_CommServ, lck_list, i_Name.UpperCase(), "i_HeadCom"));
 	if (!i_HeadCom.empty())
 	{
 	    CB(1, i_HeadCom);
@@ -242,7 +242,7 @@ bool Committee_t::insert(const mstring & entry, const mstring & nick, const mDat
 
     entlist_ui iter;
 
-    MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
+    MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "member"));
     if (!i_Members.empty())
 	for (iter = i_Members.begin(); iter != i_Members.end(); iter++)
 	    if (iter->Entry().IsSameAs(entry, true))
@@ -272,7 +272,7 @@ bool Committee_t::erase()
     BTCB();
     NFT("Committee_t::erase");
 
-    MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
+    MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "member"));
     if (member != i_Members.end())
     {
 	MCB(i_Members.size());
@@ -293,7 +293,7 @@ bool Committee_t::find(const mstring & entry)
     BTCB();
     FT("Committee_t::find", (entry));
 
-    MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
+    MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "member"));
     entlist_ui iter = i_Members.end();
 
     if (!i_Members.empty())
@@ -344,7 +344,7 @@ bool Committee_t::IsIn(const mstring & nick) const
 
     // We're a HEAD, in by DEFAULT
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+	RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_HeadCom"));
 	if (!i_HeadCom.empty() && Magick::instance().commserv.IsList(i_HeadCom) &&
 	    Magick::instance().commserv.GetList(i_HeadCom)->IsIn(target))
 	{
@@ -353,7 +353,7 @@ bool Committee_t::IsIn(const mstring & nick) const
     }
 
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+	RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Head"));
 	if (!i_Head.empty() && target.IsSameAs(i_Head, true))
 	{
 	    RET(true);
@@ -364,7 +364,7 @@ bool Committee_t::IsIn(const mstring & nick) const
     unsigned int i;
 
     {
-	MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
+	MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "member"));
 	entlist_cui iter;
 
 	for (iter = i_Members.begin(); iter != i_Members.end(); iter++)
@@ -435,7 +435,7 @@ bool Committee_t::IsOn(const mstring & nick) const
     // taken into account).
     if (IsIn(nick) && Magick::instance().nickserv.IsStored(nick) && Magick::instance().nickserv.GetStored(nick)->IsOnline())
     {
-	if_RLOCK (("CommServ", "list", i_Name.UpperCase(), "setting.Secure"), !setting.Secure ||
+	if_RLOCK ((lck_CommServ, lck_list, i_Name.UpperCase(), "setting.Secure"), !setting.Secure ||
 		  Magick::instance().nickserv.GetLive(nick)->IsIdentified())
 	{
 	    RET(true);
@@ -450,13 +450,13 @@ bool Committee_t::IsHead(const mstring & nick) const
     BTCB();
     FT("Committee_t::IsHead", (nick));
 
-    if_RLOCK (("CommServ", "list", i_Name.UpperCase(), "i_Head"), !i_Head.empty() && i_Head.IsSameAs(nick, true))
+    if_RLOCK ((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Head"), !i_Head.empty() && i_Head.IsSameAs(nick, true))
     {
 	RET(true);
     }
     else
     {
-	if_RLOCK2 (("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"), !i_HeadCom.empty() &&
+	if_RLOCK2 ((lck_CommServ, lck_list, i_Name.UpperCase(), "i_HeadCom"), !i_HeadCom.empty() &&
 		   Magick::instance().commserv.IsList(i_HeadCom))
 	{
 	    if (Magick::instance().commserv.GetList(i_HeadCom)->IsIn(nick))
@@ -479,7 +479,7 @@ void Committee_t::Description(const mstring & in)
 {
     BTCB();
     FT("Committee_t::Description", (in));
-    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
+    WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Description"));
     MCB(i_Description);
     i_Description = in;
     MCE(i_Description);
@@ -490,7 +490,7 @@ mstring Committee_t::Description() const
 {
     BTCB();
     NFT("Committee_t::Description");
-    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
+    RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Description"));
     RET(i_Description);
     ETCB();
 }
@@ -499,7 +499,7 @@ void Committee_t::Email(const mstring & in)
 {
     BTCB();
     FT("Committee_t::Email", (in));
-    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
+    WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Email"));
     MCB(i_Email);
     i_Email = in;
     MCE(i_Email);
@@ -510,7 +510,7 @@ mstring Committee_t::Email() const
 {
     BTCB();
     NFT("Committee_t::Email");
-    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
+    RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_Email"));
     RET(i_Email);
     ETCB();
 }
@@ -519,7 +519,7 @@ void Committee_t::URL(const mstring & in)
 {
     BTCB();
     FT("Committee_t::URL", (in));
-    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
+    WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_URL"));
     MCB(i_URL);
     i_URL = in;
     MCE(i_URL);
@@ -530,7 +530,7 @@ mstring Committee_t::URL() const
 {
     BTCB();
     NFT("Committee_t::URL");
-    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
+    RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "i_URL"));
     RET(i_URL);
     ETCB();
 }
@@ -541,7 +541,7 @@ void Committee_t::Private(const bool in)
     FT("Committee_t::Private", (in));
     if (!L_Private())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Private"));
+	WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "setting.Private"));
 	MCB(setting.Private);
 	setting.Private = in;
 	MCE(setting.Private);
@@ -555,7 +555,7 @@ bool Committee_t::Private() const
     NFT("Committee_t::Private");
     if (!Magick::instance().commserv.LCK_Private())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Private"));
+	RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "setting.Private"));
 	RET(setting.Private);
     }
     RET(Magick::instance().commserv.DEF_Private());
@@ -568,7 +568,7 @@ void Committee_t::L_Private(const bool in)
     FT("Committee_t::L_Private", (in));
     if (!Magick::instance().commserv.LCK_Private())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.Private"));
+	WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "lock.Private"));
 	MCB(lock.Private);
 	lock.Private = in;
 	MCE(lock.Private);
@@ -582,7 +582,7 @@ bool Committee_t::L_Private() const
     NFT("Committee_t::L_Private");
     if (!Magick::instance().commserv.LCK_Private())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.Private"));
+	RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "lock.Private"));
 	RET(lock.Private);
     }
     RET(true);
@@ -595,7 +595,7 @@ void Committee_t::Secure(const bool in)
     FT("Committee_t::Secure", (in));
     if (!L_Secure())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Secure"));
+	WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "setting.Secure"));
 	MCB(setting.Secure);
 	setting.Secure = in;
 	MCE(setting.Secure);
@@ -609,7 +609,7 @@ bool Committee_t::Secure() const
     NFT("Committee_t::Secure");
     if (!Magick::instance().commserv.LCK_Secure())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Secure"));
+	RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "setting.Secure"));
 	RET(setting.Secure);
     }
     RET(Magick::instance().commserv.DEF_Secure());
@@ -622,7 +622,7 @@ void Committee_t::L_Secure(const bool in)
     FT("Committee_t::L_Secure", (in));
     if (!Magick::instance().commserv.LCK_Secure())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.Secure"));
+	WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "lock.Secure"));
 	MCB(lock.Secure);
 	lock.Secure = in;
 	MCE(lock.Secure);
@@ -636,7 +636,7 @@ bool Committee_t::L_Secure() const
     NFT("Committee_t::L_Secure");
     if (!Magick::instance().commserv.LCK_Secure())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.Secure"));
+	RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "lock.Secure"));
 	RET(lock.Secure);
     }
     RET(true);
@@ -649,7 +649,7 @@ void Committee_t::OpenMemos(const bool in)
     FT("Committee_t::OpenMemos", (in));
     if (!L_OpenMemos())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.OpenMemos"));
+	WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "setting.OpenMemos"));
 	MCB(setting.OpenMemos);
 	setting.OpenMemos = in;
 	MCE(setting.OpenMemos);
@@ -663,7 +663,7 @@ bool Committee_t::OpenMemos() const
     NFT("Committee_t::OpenMemos");
     if (!Magick::instance().commserv.LCK_OpenMemos())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.OpenMemos"));
+	RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "setting.OpenMemos"));
 	RET(setting.OpenMemos);
     }
     RET(Magick::instance().commserv.DEF_OpenMemos());
@@ -676,7 +676,7 @@ void Committee_t::L_OpenMemos(const bool in)
     FT("Committee_t::L_OpenMemos", (in));
     if (!Magick::instance().commserv.LCK_OpenMemos())
     {
-	WLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.OpenMemos"));
+	WLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "lock.OpenMemos"));
 	MCB(lock.OpenMemos);
 	lock.OpenMemos = in;
 	MCE(lock.OpenMemos);
@@ -690,7 +690,7 @@ bool Committee_t::L_OpenMemos() const
     NFT("Committee_t::L_OpenMemos");
     if (!Magick::instance().commserv.LCK_OpenMemos())
     {
-	RLOCK(("CommServ", "list", i_Name.UpperCase(), "lock.OpenMemos"));
+	RLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "lock.OpenMemos"));
 	RET(lock.OpenMemos);
     }
     RET(true);
@@ -702,7 +702,7 @@ bool Committee_t::MSG_insert(const mstring & entry, const mstring & nick, const 
     BTCB();
     FT("Committee_t::MSG_insert", (entry, nick, addtime));
 
-    MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
+    MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "message"));
     if (IsHead(nick))
     {
 	MCB(i_Messages.size());
@@ -725,7 +725,7 @@ bool Committee_t::MSG_erase()
     BTCB();
     NFT("Committee_t::MSG_erase");
 
-    MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
+    MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "message"));
     if (message != i_Messages.end())
     {
 	MCB(i_Messages.size());
@@ -746,7 +746,7 @@ bool Committee_t::MSG_find(const int number)
     BTCB();
     FT("Committee_t::MSG_find", (number));
 
-    MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
+    MLOCK((lck_CommServ, lck_list, i_Name.UpperCase(), "message"));
     entlist_i iter = i_Messages.end();
     int i;
 
@@ -774,7 +774,7 @@ size_t Committee_t::Usage() const
     BTCB();
     size_t retval = 0;
 
-    WLOCK(("CommServ", "list", i_Name.UpperCase()));
+    WLOCK((lck_CommServ, lck_list, i_Name.UpperCase()));
     retval += i_Name.capacity();
     retval += sizeof(i_RegTime.Internal());
     retval += i_HeadCom.capacity();
@@ -877,14 +877,14 @@ void CommServ::AddList(Committee_t * in)
 #endif
     }
 
-    RLOCK(("CommServ", "list"));
+    RLOCK((lck_CommServ, lck_list));
     map_entry < Committee_t > old_entry(i_list, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	i_list.erase(in->Name().LowerCase());
     }
-    WLOCK(("CommServ", "list"));
+    WLOCK((lck_CommServ, lck_list));
     i_list[in->Name().UpperCase()] = in;
     ETCB();
 }
@@ -898,7 +898,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
     BTCB();
     FT("CommServ::GetList", (in));
 
-    RLOCK(("CommServ", "list", in.UpperCase()));
+    RLOCK((lck_CommServ, lck_list, in.UpperCase()));
     CommServ::list_t::const_iterator iter = i_list.find(in.UpperCase());
     if (iter == i_list.end())
     {
@@ -941,7 +941,7 @@ void CommServ::RemList(const mstring & in)
     BTCB();
     FT("CommServ::RemList", (in));
 
-    RLOCK(("CommServ", "list"));
+    RLOCK((lck_CommServ, lck_list));
     CommServ::list_t::iterator iter = i_list.find(in.UpperCase());
     if (iter == i_list.end())
     {
@@ -958,7 +958,7 @@ void CommServ::RemList(const mstring & in)
 	map_entry < Committee_t > entry(iter->second);
 	entry->setDelete();
     }
-    WLOCK(("CommServ", "list"));
+    WLOCK((lck_CommServ, lck_list));
     i_list.erase(iter);
     ETCB();
 }
@@ -967,7 +967,7 @@ bool CommServ::IsList(const mstring & in) const
 {
     BTCB();
     FT("CommServ::IsList", (in));
-    RLOCK(("CommServ", "list"));
+    RLOCK((lck_CommServ, lck_list));
     bool retval = (i_list.find(in.UpperCase()) != i_list.end());
 
     RET(retval);
@@ -1179,7 +1179,7 @@ void CommServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1321,7 +1321,7 @@ void CommServ::do_List(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1356,7 +1356,7 @@ void CommServ::do_List(const mstring & mynick, const mstring & source, const mst
     CommServ::list_t::iterator iter;
 
     {
-	RLOCK(("CommServ", "list"));
+	RLOCK((lck_CommServ, lck_list));
 	for (iter = Magick::instance().commserv.ListBegin(), i = 0, count = 0; iter != Magick::instance().commserv.ListEnd();
 	     iter++)
 	{
@@ -1387,7 +1387,7 @@ void CommServ::do_Memo(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1478,7 +1478,7 @@ void CommServ::do_Memo2(const mstring & source, const mstring & committee, const
 
 		Magick::instance().memoserv.AddNickMemo(&tmp);
 
-		RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
+		RLOCK2((lck_MemoServ, lck_nick, realrecipiant.LowerCase()));
 		MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(realrecipiant);
 		map_entry < Nick_Stored_t > nick = Magick::instance().nickserv.GetStored(realrecipiant);
 		if (nick->IsOnline())
@@ -1499,7 +1499,7 @@ void CommServ::do_Memo2(const mstring & source, const mstring & committee, const
 	}
     }
 
-    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
+    MLOCK((lck_CommServ, lck_list, comm->Name().UpperCase(), "member"));
     for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
     {
 	if (Magick::instance().nickserv.IsStored(comm->member->Entry()))
@@ -1514,7 +1514,7 @@ void CommServ::do_Memo2(const mstring & source, const mstring & committee, const
 
 		Magick::instance().memoserv.AddNickMemo(&tmp);
 
-		RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
+		RLOCK2((lck_MemoServ, lck_nick, realrecipiant.LowerCase()));
 		MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(realrecipiant);
 		map_entry < Nick_Stored_t > nick = Magick::instance().nickserv.GetStored(realrecipiant);
 		if (nick->IsOnline())
@@ -1545,7 +1545,7 @@ void CommServ::do_Info(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1647,7 +1647,7 @@ void CommServ::do_Info(const mstring & mynick, const mstring & source, const mst
     if (output.size())
 	SEND(mynick, source, "COMMSERV_INFO/OPTIONS", (output));
     {
-	RLOCK2(("Events"));
+	RLOCK2((lck_Events));
 	if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
 	    SEND(mynick, source, "MISC/SYNC", (Magick::instance().events->SyncTime(source)));
     }
@@ -1697,7 +1697,7 @@ void CommServ::do_member_Add(const mstring & mynick, const mstring & source, con
     }
 
     {
-	RLOCK(("CommServ", "list", committee.UpperCase()));
+	RLOCK((lck_CommServ, lck_list, committee.UpperCase()));
 	map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 	committee = comm->Name();
 
@@ -1770,7 +1770,7 @@ void CommServ::do_member_Del(const mstring & mynick, const mstring & source, con
 	return;
     }
 
-    MLOCK(("CommServ", "list", committee.UpperCase(), "member"));
+    MLOCK((lck_CommServ, lck_list, committee.UpperCase(), "member"));
     if (comm->find(member))
     {
 	Magick::instance().commserv.stats.i_Member++;
@@ -1795,7 +1795,7 @@ void CommServ::do_member_List(const mstring & mynick, const mstring & source, co
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1879,7 +1879,7 @@ int CommServ::do_member_List2(const mstring & mynick, const mstring & source, co
 	::send(mynick, source, output);
     }
 
-    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
+    MLOCK((lck_CommServ, lck_list, comm->Name().UpperCase(), "member"));
     for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
     {
 	output.erase();
@@ -1983,7 +1983,7 @@ void CommServ::do_logon_Del(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
-    MLOCK(("CommServ", "list", committee.UpperCase(), "message"));
+    MLOCK((lck_CommServ, lck_list, committee.UpperCase(), "message"));
     if (comm->MSG_find(num))
     {
 	Magick::instance().commserv.stats.i_Logon++;
@@ -2008,7 +2008,7 @@ void CommServ::do_logon_List(const mstring & mynick, const mstring & source, con
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -2050,7 +2050,7 @@ void CommServ::do_logon_List(const mstring & mynick, const mstring & source, con
     mstring output;
 
     SEND(mynick, source, "LIST/DISPLAY2", (committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
-    MLOCK(("CommServ", "list", committee.UpperCase(), "message"));
+    MLOCK((lck_CommServ, lck_list, committee.UpperCase(), "message"));
     for (i = 1, comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++, i++)
     {
 	output.erase();
@@ -2967,7 +2967,7 @@ void Committee_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     if (pElement->IsA(tag_Name))
     {
 	pElement->Retrieve(i_Name);
-	ref_class::lockData(mVarArray("CommnServ", "list", i_Name.UpperCase()));
+	ref_class::lockData(mVarArray("CommnServ", lck_list, i_Name.UpperCase()));
     }
     if (pElement->IsA(tag_RegTime))
 	pElement->Retrieve(i_RegTime);
@@ -3035,7 +3035,7 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     //TODO: Add your source code here
     pOut->BeginObject(tag_Committee_t);
 
-    WLOCK(("CommServ", "list", i_Name.UpperCase()));
+    WLOCK((lck_CommServ, lck_list, i_Name.UpperCase()));
     pOut->WriteElement(tag_Name, i_Name);
     pOut->WriteElement(tag_RegTime, i_RegTime);
     pOut->WriteElement(tag_HeadCom, i_HeadCom);
@@ -3125,7 +3125,7 @@ void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 
     CommServ::list_t::iterator iter;
     {
-	RLOCK(("CommServ", "list"));
+	RLOCK((lck_CommServ, lck_list));
 	for (iter = ListBegin(); iter != ListEnd(); iter++)
 	{
 	    map_entry < Committee_t > comm(iter->second);
@@ -3178,19 +3178,19 @@ void CommServ::PostLoad()
     c_array.clear();
 
     CommServ::list_t::iterator iter;
-    RLOCK(("CommServ", "list"));
+    RLOCK((lck_CommServ, lck_list));
     for (iter = i_list.begin(); iter != i_list.end(); iter++)
     {
 	map_entry < Committee_t > comm(iter->second);
 	{
-	    MLOCK(("CommServ", "list", iter->first, "member"));
+	    MLOCK((lck_CommServ, lck_list, iter->first, "member"));
 	    for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
 	    {
 		comm->member->PostLoad();
 	    }
 	}
 	{
-	    MLOCK(("CommServ", "list", iter->first, "message"));
+	    MLOCK((lck_CommServ, lck_list, iter->first, "message"));
 	    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 	    {
 		comm->message->PostLoad();
@@ -3209,7 +3209,7 @@ void CommServ::PostLoad()
 	    comm->i_HeadCom.erase();
 	    comm->i_Members.clear();
 	    {
-		MLOCK(("CommServ", "list", iter->first, "member"));
+		MLOCK((lck_CommServ, lck_list, iter->first, "member"));
 		for (j = 1; j <= Magick::instance().operserv.Services_Admin().WordCount(", "); j++)
 		    comm->i_Members.
 			insert(entlist_t

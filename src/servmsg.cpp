@@ -222,7 +222,7 @@ void ServMsg::do_Help(const mstring & mynick, const mstring & source, const mstr
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -250,7 +250,7 @@ void ServMsg::do_Credits(const mstring & mynick, const mstring & source, const m
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -273,7 +273,7 @@ void ServMsg::do_Contrib(const mstring & mynick, const mstring & source, const m
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -296,7 +296,7 @@ void ServMsg::do_Languages(const mstring & mynick, const mstring & source, const
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -344,7 +344,7 @@ void ServMsg::do_BreakDown(const mstring & mynick, const mstring & source, const
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -359,7 +359,7 @@ void ServMsg::do_BreakDown(const mstring & mynick, const mstring & source, const
 
     NickServ::live_t::iterator k;
     {
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	for (k = Magick::instance().nickserv.LiveBegin(); k != Magick::instance().nickserv.LiveEnd(); k++)
 	{
 	    map_entry < Nick_Live_t > nlive(k->second);
@@ -394,7 +394,7 @@ void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >
     if (server.empty())
     {
 	Server::list_t::iterator iter;
-	RLOCK(("Server", "list"));
+	RLOCK((lck_Server, lck_list));
 	for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 	{
 	    map_entry < Server_t > svr(iter->second);
@@ -446,7 +446,7 @@ void ServMsg::do_stats_Nick(const mstring & mynick, const mstring & source, cons
     mstring message = params.Before(" ", 2);
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -466,7 +466,7 @@ void ServMsg::do_stats_Nick(const mstring & mynick, const mstring & source, cons
 
     NickServ::stored_t::iterator i;
     {
-	RLOCK(("NickServ", "stored"));
+	RLOCK((lck_NickServ, lck_stored));
 	for (i = Magick::instance().nickserv.StoredBegin(); i != Magick::instance().nickserv.StoredEnd(); i++)
 	{
 	    map_entry < Nick_Stored_t > nstored(i->second);
@@ -531,7 +531,7 @@ void ServMsg::do_stats_Channel(const mstring & mynick, const mstring & source, c
     mstring message = params.Before(" ", 2);
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -551,7 +551,7 @@ void ServMsg::do_stats_Channel(const mstring & mynick, const mstring & source, c
 
     ChanServ::stored_t::iterator i;
     {
-	RLOCK(("ChanServ", "stored"));
+	RLOCK((lck_ChanServ, lck_stored));
 	for (i = Magick::instance().chanserv.StoredBegin(); i != Magick::instance().chanserv.StoredEnd(); i++)
 	{
 	    map_entry < Chan_Stored_t > cstored(i->second);
@@ -627,7 +627,7 @@ void ServMsg::do_stats_Other(const mstring & mynick, const mstring & source, con
     mstring message = params.Before(" ", 2);
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -715,7 +715,7 @@ void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, cons
     mstring message = params.Before(" ", 2);
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -781,7 +781,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     mstring message = params.Before(" ", 2);
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -801,7 +801,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
 	  ((user.sec() == 0) ? Magick::instance().getMessage(source, "VALS/TIME_NONE") : ToHumanTime(user.sec(), source))));
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL)
 	{
 	    SEND(mynick, source, "STATS/USE_TRAFFIC",
@@ -818,7 +818,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     size = 0;
     NickServ::live_t::iterator i;
     {
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	for (i = Magick::instance().nickserv.LiveBegin(); i != Magick::instance().nickserv.LiveEnd(); i++)
 	{
 	    map_entry < Nick_Live_t > nlive(i->second);
@@ -832,7 +832,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     size = 0;
     ChanServ::live_t::iterator j;
     {
-	RLOCK(("ChanServ", "live"));
+	RLOCK((lck_ChanServ, lck_live));
 	for (j = Magick::instance().chanserv.LiveBegin(); j != Magick::instance().chanserv.LiveEnd(); j++)
 	{
 	    map_entry < Chan_Live_t > clive(j->second);
@@ -846,7 +846,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     size = 0;
     NickServ::stored_t::iterator k;
     {
-	RLOCK(("NickServ", "stored"));
+	RLOCK((lck_NickServ, lck_stored));
 	for (k = Magick::instance().nickserv.StoredBegin(); k != Magick::instance().nickserv.StoredEnd(); k++)
 	{
 	    map_entry < Nick_Stored_t > nstored(k->second);
@@ -861,7 +861,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     size = 0;
     ChanServ::stored_t::iterator l;
     {
-	RLOCK(("ChanServ", "stored"));
+	RLOCK((lck_ChanServ, lck_stored));
 	for (l = Magick::instance().chanserv.StoredBegin(); l != Magick::instance().chanserv.StoredEnd(); l++)
 	{
 	    map_entry < Chan_Stored_t > cstored(l->second);
@@ -877,11 +877,11 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     MemoServ::nick_t::iterator m1;
     MemoServ::nick_memo_t::iterator m2;
     {
-	RLOCK(("MemoServ", "nick"));
+	RLOCK((lck_MemoServ, lck_nick));
 	for (count = 0, m1 = Magick::instance().memoserv.NickBegin(); m1 != Magick::instance().memoserv.NickEnd(); m1++)
 	{
 	    {
-		RLOCK2(("MemoServ", "nick", m1->first));
+		RLOCK2((lck_MemoServ, lck_nick, m1->first));
 		size += m1->first.capacity();
 		count += m1->second.size();
 		for (m2 = m1->second.begin(); m2 != m1->second.end(); m2++)
@@ -897,12 +897,12 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     MemoServ::channel_t::iterator n1;
     MemoServ::channel_news_t::iterator n2;
     {
-	RLOCK(("MemoServ", "channel"));
+	RLOCK((lck_MemoServ, lck_channel));
 	for (count = 0, n1 = Magick::instance().memoserv.ChannelBegin(); n1 != Magick::instance().memoserv.ChannelEnd(); n1++)
 	{
 	    size += n1->first.capacity();
 	    {
-		RLOCK2(("MemoServ", "channel", n1->first));
+		RLOCK2((lck_MemoServ, lck_channel, n1->first));
 		count += n1->second.size();
 		for (n2 = n1->second.begin(); n2 != n1->second.end(); n2++)
 		{
@@ -916,7 +916,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     size = 0;
     CommServ::list_t::iterator o;
     {
-	RLOCK(("CommServ", "list"));
+	RLOCK((lck_CommServ, lck_list));
 	for (o = Magick::instance().commserv.ListBegin(); o != Magick::instance().commserv.ListEnd(); o++)
 	{
 	    map_entry < Committee_t > comm(o->second);
@@ -938,7 +938,7 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
     size = 0;
     Server::list_t::iterator p;
     {
-	RLOCK(("Server", "list"));
+	RLOCK((lck_Server, lck_list));
 	for (p = Magick::instance().server.ListBegin(); p != Magick::instance().server.ListEnd(); p++)
 	{
 	    map_entry < Server_t > server(p->second);
@@ -979,7 +979,7 @@ void ServMsg::do_stats_All(const mstring & mynick, const mstring & source, const
     mstring message = params.Before(" ", 2);
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1013,7 +1013,7 @@ void ServMsg::do_Stats(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ");
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1029,7 +1029,7 @@ void ServMsg::do_Stats(const mstring & mynick, const mstring & source, const mst
 
     NickServ::live_t::iterator k;
     {
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	for (k = Magick::instance().nickserv.LiveBegin(); k != Magick::instance().nickserv.LiveEnd(); k++)
 	{
 	    map_entry < Nick_Live_t > nlive(k->second);
@@ -1057,7 +1057,7 @@ void ServMsg::do_file_List(const mstring & mynick, const mstring & source, const
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1149,7 +1149,7 @@ void ServMsg::do_file_Add(const mstring & mynick, const mstring & source, const 
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1272,7 +1272,7 @@ void ServMsg::do_file_Send(const mstring & mynick, const mstring & source, const
     mstring message = params.Before(" ", 2).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -1356,10 +1356,10 @@ void ServMsg::do_file_Dcc(const mstring & mynick, const mstring & source, const 
     {
 	NSEND(mynick, source, "DCC/LIST_HEAD");
 	DccMap::xfers_t::iterator iter;
-	RLOCK(("DccMap", "xfers"));
+	RLOCK((lck_DccMap, lck_xfers));
 	for (iter = DccMap::XfersBegin(); iter != DccMap::XfersEnd(); iter++)
 	{
-	    RLOCK2(("DccMap", "xfers", iter->first));
+	    RLOCK2((lck_DccMap, lck_xfers, iter->first));
 	    if (iter->second == NULL)
 		continue;
 
@@ -1444,7 +1444,7 @@ void ServMsg::do_file_Cancel(const mstring & mynick, const mstring & source, con
 	return;
     }
 
-    RLOCK(("DccMap", "xfers"));
+    RLOCK((lck_DccMap, lck_xfers));
     if (!DccMap::IsXfers(number))
     {
 	SEND(mynick, source, "DCC/NODCCID", (fmstring("%08x", number)));
@@ -1513,10 +1513,10 @@ void ServMsg::do_file_Lookup(const mstring & mynick, const mstring & source, con
 	{
 	    MemoServ::nick_t::iterator i;
 	    MemoServ::nick_memo_t::iterator j;
-	    RLOCK(("MemoServ", "nick"));
+	    RLOCK((lck_MemoServ, lck_nick));
 	    for (i = Magick::instance().memoserv.NickBegin(); i != Magick::instance().memoserv.NickEnd(); i++)
 	    {
-		RLOCK2(("MemoServ", "nick", i->first));
+		RLOCK2((lck_MemoServ, lck_nick, i->first));
 		for (k = 1, j = i->second.begin(); j != i->second.end(); j++, k++)
 		{
 		    if (j->File() == number)
@@ -1540,7 +1540,7 @@ void ServMsg::do_file_Lookup(const mstring & mynick, const mstring & source, con
 	if (Magick::instance().filesys.Exists(FileMap::Picture, number))
 	{
 	    NickServ::stored_t::iterator i;
-	    RLOCK(("NickServ", "stored"));
+	    RLOCK((lck_NickServ, lck_stored));
 	    for (i = Magick::instance().nickserv.StoredBegin(); i != Magick::instance().nickserv.StoredEnd(); i++)
 	    {
 		map_entry < Nick_Stored_t > nstored(i->second);
@@ -1590,7 +1590,7 @@ void ServMsg::do_Global(const mstring & mynick, const mstring & source, const ms
     mstring text = params.After(" ");
 
     Server::list_t::iterator iter;
-    RLOCK(("Server", "list"));
+    RLOCK((lck_Server, lck_list));
     for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
     {
 	Magick::instance().server.NOTICE(Magick::instance().servmsg.FirstName(), "$" + iter->first, text);

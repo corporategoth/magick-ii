@@ -53,7 +53,7 @@ bool Chan_Live_t::Join(const mstring & nick)
     BTCB();
     FT("Chan_Live_t::Join", (nick));
 
-    if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
+    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
     {
 	LOG(LM_WARNING, "ERROR/DUP_CHAN", ("JOIN", nick, i_Name));
 	RET(false);
@@ -62,12 +62,12 @@ bool Chan_Live_t::Join(const mstring & nick)
     {
 	MCB(users.size());
 	{
-	    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
+	    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"));
 	    if (squit.find(nick.LowerCase()) != squit.end())
 		squit.erase(nick.LowerCase());
 	}
 	{
-	    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+	    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 	    users[nick.LowerCase()] = triplet < bool, bool, bool > (false, false, false);
 	}
 	MCE(users.size());
@@ -80,7 +80,7 @@ unsigned int Chan_Live_t::Part(const mstring & nick)
 {
     BTCB();
     FT("Chan_Live_t::Part", (nick));
-    if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
+    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
     {
 	MCB(users.size());
 	CB(1, recent_parts.size());
@@ -93,12 +93,12 @@ unsigned int Chan_Live_t::Part(const mstring & nick)
 
 		if (target.empty())
 		    target = nstored->Name();
-		WLOCK(("ChanServ", "live", i_Name.LowerCase(), "recent_parts"));
+		WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "recent_parts"));
 		recent_parts[target.LowerCase()] = mDateTime::CurrentDateTime();
 	    }
 	}
 	{
-	    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+	    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 	    users.erase(nick.LowerCase());
 	}
 	if (!users.size())
@@ -107,9 +107,9 @@ unsigned int Chan_Live_t::Part(const mstring & nick)
 	    CB(3, i_Limit);
 	    CB(4, i_Key);
 	    {
-		WLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
-		WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
-		WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
+		WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
+		WLOCK2((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
+		WLOCK3((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
 		modes.erase();
 		i_Limit = 0;
 		i_Key.erase();
@@ -125,11 +125,11 @@ unsigned int Chan_Live_t::Part(const mstring & nick)
     }
     else
     {
-	if_RLOCK2 (("ChanServ", "live", i_Name.LowerCase(), "squit"), squit.find(nick.LowerCase()) != squit.end())
+	if_RLOCK2 ((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"), squit.find(nick.LowerCase()) != squit.end())
 	{
 	    MCB(squit.size());
 	    {
-		WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+		WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 		squit.erase(nick.LowerCase());
 	    }
 	    MCE(squit.size());
@@ -152,16 +152,16 @@ void Chan_Live_t::SquitUser(const mstring & nick)
 {
     BTCB();
     FT("Chan_Live_t::SquitUser", (nick));
-    if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "squit"), users.find(nick.LowerCase()) != users.end())
+    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"), users.find(nick.LowerCase()) != users.end())
     {
 	MCB(squit.size());
 	CB(1, users.size());
 	{
-	    WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "squit"));
+	    WLOCK2((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"));
 	    squit[nick.LowerCase()] = users[nick.LowerCase()];
 	}
 	{
-	    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+	    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 	    users.erase(nick.LowerCase());
 	}
 	CE(1, users.size());
@@ -180,13 +180,13 @@ void Chan_Live_t::UnSquitUser(const mstring & nick)
     {
 	MCB(modes);
 	{
-	    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
+	    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
 	    modes.erase();
 	}
 	MCE(modes);
     }
 
-    if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "squit"), squit.find(nick.LowerCase()) == squit.end())
+    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"), squit.find(nick.LowerCase()) == squit.end())
     {
 	LOG(LM_WARNING, "ERROR/REC_FORNOTINCHAN", ("UNSQUIT", nick, i_Name));
     }
@@ -199,11 +199,11 @@ unsigned int Chan_Live_t::Kick(const mstring & nick, const mstring & kicker)
 {
     BTCB();
     FT("Chan_Live_t::Kick", (nick, kicker));
-    if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
+    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
     {
 	MCB(users.size());
 	{
-	    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+	    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 	    users.erase(nick.LowerCase());
 	}
 	MCE(users.size());
@@ -212,11 +212,11 @@ unsigned int Chan_Live_t::Kick(const mstring & nick, const mstring & kicker)
     }
     else
     {
-	if_RLOCK2 (("ChanServ", "live", i_Name.LowerCase(), "squit"), squit.find(nick.LowerCase()) != squit.end())
+	if_RLOCK2 ((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"), squit.find(nick.LowerCase()) != squit.end())
 	{
 	    MCB(squit.size());
 	    {
-		WLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
+		WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"));
 		squit.erase(nick.LowerCase());
 	    }
 	    MCE(squit.size());
@@ -239,11 +239,11 @@ void Chan_Live_t::ChgNick(const mstring & nick, const mstring & newnick)
 {
     BTCB();
     FT("Chan_Live_t::ChgNick", (nick, newnick));
-    if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
+    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"), users.find(nick.LowerCase()) != users.end())
     {
 	MCB(users.size());
 	{
-	    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+	    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 	    users[newnick.LowerCase()] = users[nick.LowerCase()];
 	    users.erase(nick.LowerCase());
 	}
@@ -253,11 +253,11 @@ void Chan_Live_t::ChgNick(const mstring & nick, const mstring & newnick)
     }
     else
     {
-	if_RLOCK2 (("ChanServ", "live", i_Name.LowerCase(), "squit"), squit.find(nick.LowerCase()) != squit.end())
+	if_RLOCK2 ((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"), squit.find(nick.LowerCase()) != squit.end())
 	{
 	    MCB(squit.size());
 	    {
-		WLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
+		WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"));
 		squit[newnick.LowerCase()] = squit[nick.LowerCase()];
 		squit.erase(nick.LowerCase());
 	    }
@@ -275,7 +275,7 @@ Chan_Live_t::Chan_Live_t() : i_Numeric(0), i_Limit(0), ph_timer(0)
 {
     BTCB();
     NFT("Chan_Live_t::Chan_Live_t");
-    ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
+    ref_class::lockData(mVarArray(lck_ChanServ, lck_live, i_Name.LowerCase()));
     DumpB();
     ETCB();
 }
@@ -285,7 +285,7 @@ i_Numeric(0), i_Creation_Time(creation), i_Limit(0), ph_timer(0)
 {
     BTCB();
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
-    ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
+    ref_class::lockData(mVarArray(lck_ChanServ, lck_live, i_Name.LowerCase()));
     users[first_user.LowerCase()] = triplet < bool, bool, bool > (false, false, false);
 
     DumpB();
@@ -298,7 +298,7 @@ Chan_Live_t &Chan_Live_t::operator=(const Chan_Live_t & in)
     NFT("Chan_Live_t::operator=");
 
     i_Name = in.i_Name;
-    ref_class::lockData(mVarArray("ChanServ", "live", i_Name.LowerCase()));
+    ref_class::lockData(mVarArray(lck_ChanServ, lck_live, i_Name.LowerCase()));
     i_Numeric = in.i_Numeric;
     i_Creation_Time = in.i_Creation_Time;
     users.clear();
@@ -343,7 +343,7 @@ mDateTime Chan_Live_t::Creation_Time() const
 {
     BTCB();
     NFT("Chan_Live_t::Creation_Time");
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Creation_Time"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Creation_Time"));
     RET(i_Creation_Time);
     ETCB();
 }
@@ -352,7 +352,7 @@ void Chan_Live_t::Creation_Time(const mDateTime & in)
 {
     BTCB();
     FT("Chan_Live_t::Creation_Time", (in));
-    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Creation_Time"));
+    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Creation_Time"));
     i_Creation_Time = in;
     ETCB();
 }
@@ -362,9 +362,9 @@ void Chan_Live_t::Topic(const mstring & source, const mstring & topic, const mst
     BTCB();
     FT("Chan_Live_t::Topic", (source, topic, setter, settime));
     {
-	WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic"));
-	WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Setter"));
-	WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Set_Time"));
+	WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Topic"));
+	WLOCK2((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Topic_Setter"));
+	WLOCK3((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Topic_Set_Time"));
 	MCB(i_Topic);
 	CB(1, i_Topic_Setter);
 	CB(2, i_Topic_Set_Time);
@@ -384,7 +384,7 @@ mstring Chan_Live_t::Topic() const
 {
     BTCB();
     NFT(("Chan_Live_t::Topic"));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Topic"));
     RET(i_Topic);
     ETCB();
 }
@@ -393,7 +393,7 @@ mstring Chan_Live_t::Topic_Setter() const
 {
     BTCB();
     NFT(("Chan_Live_t::Topic_Setter"));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Setter"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Topic_Setter"));
     RET(i_Topic_Setter);
     ETCB();
 }
@@ -402,7 +402,7 @@ mDateTime Chan_Live_t::Topic_Set_Time() const
 {
     BTCB();
     NFT(("Chan_Live_t::Topic_Set_Time"));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Topic_Set_Time"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Topic_Set_Time"));
     RET(i_Topic_Set_Time);
     ETCB();
 }
@@ -421,7 +421,7 @@ void Chan_Live_t::Numeric(const unsigned long in)
 {
     BTCB();
     FT("Chan_Live_t::Numeric", (in));
-    WLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Numeric"));
+    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Numeric"));
     MCB(i_Numeric);
     i_Numeric = in;
     MCE(i_Numeric);
@@ -432,7 +432,7 @@ unsigned long Chan_Live_t::Numeric() const
 {
     BTCB();
     NFT("Chan_Live_t::Numeric");
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Numeric"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Numeric"));
     RET(i_Numeric);
     ETCB();
 }
@@ -445,7 +445,7 @@ mstring Chan_Live_t::Squit(const unsigned int num) const
 
     map < mstring, triplet < bool, bool, bool > >::const_iterator k;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"));
     for (i = 0, k = squit.begin(); k != squit.end(); k++, i++)
 	if (i == num)
 	{
@@ -474,7 +474,7 @@ mstring Chan_Live_t::User(const unsigned int num) const
 
     map < mstring, triplet < bool, bool, bool > >::const_iterator k;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     for (i = 0, k = users.begin(); k != users.end(); k++, i++)
 	if (i == num)
 	{
@@ -491,7 +491,7 @@ unsigned int Chan_Live_t::Ops() const
     NFT("Chan_Live_t::Ops");
     unsigned int count = 0;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     map < mstring, triplet < bool, bool, bool > >::const_iterator i;
 
     for (i = users.begin(); i != users.end(); i++)
@@ -509,7 +509,7 @@ mstring Chan_Live_t::Op(const unsigned int num) const
 
     map < mstring, triplet < bool, bool, bool > >::const_iterator k;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     for (i = 0, k = users.begin(); k != users.end(); k++)
 	if (k->second.first)
 	{
@@ -530,7 +530,7 @@ unsigned int Chan_Live_t::HalfOps() const
     NFT("Chan_Live_t::HalfOps");
     unsigned int count = 0;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     map < mstring, triplet < bool, bool, bool > >::const_iterator i;
 
     for (i = users.begin(); i != users.end(); i++)
@@ -548,7 +548,7 @@ mstring Chan_Live_t::HalfOp(const unsigned int num) const
 
     map < mstring, triplet < bool, bool, bool > >::const_iterator k;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     for (i = 0, k = users.begin(); k != users.end(); k++)
 	if (k->second.second)
 	{
@@ -569,7 +569,7 @@ unsigned int Chan_Live_t::Voices() const
     NFT("Chan_Live_t::Voices");
     unsigned int count = 0;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     map < mstring, triplet < bool, bool, bool > >::const_iterator i;
 
     for (i = users.begin(); i != users.end(); i++)
@@ -587,7 +587,7 @@ mstring Chan_Live_t::Voice(const unsigned int num) const
 
     map < mstring, triplet < bool, bool, bool > >::const_iterator k;
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     for (i = 0, k = users.begin(); k != users.end(); k++)
 	if (k->second.third)
 	{
@@ -607,7 +607,7 @@ triplet < bool, bool, bool > Chan_Live_t::User(const mstring & name) const
     FT("Chan_Live_t::User", (name));
     if (IsIn(name))
     {
-	RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+	RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 	map < mstring, triplet < bool, bool, bool > >::const_iterator i = users.find(name.LowerCase());
 	NRET(triplet < bool.bool.bool >, i->second);
     }
@@ -636,7 +636,7 @@ mstring Chan_Live_t::Ban(const unsigned int num) const
     unsigned int i;
 
     map < mstring, mDateTime >::const_iterator k;
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
     for (i = 0, k = bans.begin(); k != bans.end(); k++, i++)
 	if (i == num)
 	{
@@ -653,7 +653,7 @@ mDateTime Chan_Live_t::Ban(const mstring & mask) const
     FT("Chan_Live_t::Ban", (mask));
     mDateTime retval(0.0);
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
     map < mstring, mDateTime >::const_iterator i = bans.find(mask.LowerCase());
     if (i != bans.end())
     {
@@ -680,7 +680,7 @@ mstring Chan_Live_t::Exempt(const unsigned int num) const
     unsigned int i;
 
     map < mstring, mDateTime >::const_iterator k;
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
     for (i = 0, k = exempt.begin(); k != exempt.end(); k++, i++)
 	if (i == num)
 	{
@@ -697,7 +697,7 @@ mDateTime Chan_Live_t::Exempt(const mstring & mask) const
     FT("Chan_Live_t::Exempt", (mask));
     mDateTime retval(0.0);
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
     map < mstring, mDateTime >::const_iterator i = exempt.find(mask.LowerCase());
     if (i != exempt.end())
     {
@@ -711,7 +711,7 @@ bool Chan_Live_t::IsSquit(const mstring & nick) const
 {
     BTCB();
     FT("Chan_Live_t::IsSquit", (nick));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "squit"));
     bool retval = (squit.find(nick.LowerCase()) != squit.end());
 
     RET(retval);
@@ -722,7 +722,7 @@ bool Chan_Live_t::IsIn(const mstring & nick) const
 {
     BTCB();
     FT("Chan_Live_t::IsIn", (nick));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     bool retval = (users.find(nick.LowerCase()) != users.end());
 
     RET(retval);
@@ -734,7 +734,7 @@ bool Chan_Live_t::IsOp(const mstring & nick) const
     BTCB();
     FT("Chan_Live_t::IsOp", (nick));
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     map < mstring, triplet < bool, bool, bool > >::const_iterator i = users.find(nick.LowerCase());
 
     if (i != users.end() && i->second.first)
@@ -750,7 +750,7 @@ bool Chan_Live_t::IsHalfOp(const mstring & nick) const
     BTCB();
     FT("Chan_Live_t::IsHalfOp", (nick));
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     map < mstring, triplet < bool, bool, bool > >::const_iterator i = users.find(nick.LowerCase());
 
     if (i != users.end() && i->second.second)
@@ -766,7 +766,7 @@ bool Chan_Live_t::IsVoice(const mstring & nick) const
     BTCB();
     FT("Chan_Live_t::IsVoice", (nick));
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
     map < mstring, triplet < bool, bool, bool > >::const_iterator i = users.find(nick.LowerCase());
 
     if (i != users.end() && i->second.third)
@@ -781,7 +781,7 @@ bool Chan_Live_t::IsBan(const mstring & mask) const
 {
     BTCB();
     FT("Chan_Live_t::IsBan", (mask));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
     bool retval = (bans.find(mask.LowerCase()) != bans.end());
 
     RET(retval);
@@ -792,7 +792,7 @@ bool Chan_Live_t::MatchBan(const mstring & mask) const
 {
     BTCB();
     FT("Chan_Live_t::MatchBan", (mask));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
     map < mstring, mDateTime >::const_iterator i;
     for (i = bans.begin(); i != bans.end(); i++)
     {
@@ -809,7 +809,7 @@ bool Chan_Live_t::IsExempt(const mstring & mask) const
 {
     BTCB();
     FT("Chan_Live_t::IsExempt", (mask));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
     bool retval = (exempt.find(mask.LowerCase()) != exempt.end());
 
     RET(retval);
@@ -820,7 +820,7 @@ bool Chan_Live_t::MatchExempt(const mstring & mask) const
 {
     BTCB();
     FT("Chan_Live_t::MatchExempt", (mask));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
     map < mstring, mDateTime >::const_iterator i;
     for (i = exempt.begin(); i != exempt.end(); i++)
     {
@@ -841,7 +841,7 @@ void Chan_Live_t::LockDown()
     Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
     // Override the MLOCK checking.
     SendMode("+s");
-    MLOCK(("ChanServ", "live", i_Name.LowerCase(), "ph_timer"));
+    MLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "ph_timer"));
     MCB(ph_timer);
     while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
@@ -863,7 +863,7 @@ void Chan_Live_t::UnLock()
 
     mstring *arg = NULL;
 
-    MLOCK(("ChanServ", "live", i_Name.LowerCase(), "ph_timer"));
+    MLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "ph_timer"));
     MCB(ph_timer);
     if (ph_timer && Magick::instance().reactor().cancel_timer(ph_timer, reinterpret_cast < const void ** > (arg)) &&
 	arg != NULL)
@@ -985,10 +985,10 @@ void Chan_Live_t::SendMode(const mstring & in)
     }
 
     {
-	WLOCK(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on"));
-	WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on_params"));
-	WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off"));
-	WLOCK4(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off_params"));
+	WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "p_modes_on"));
+	WLOCK2((lck_ChanServ, lck_live, i_Name.LowerCase(), "p_modes_on_params"));
+	WLOCK3((lck_ChanServ, lck_live, i_Name.LowerCase(), "p_modes_off"));
+	WLOCK4((lck_ChanServ, lck_live, i_Name.LowerCase(), "p_modes_off_params"));
 	MCB(p_modes_on);
 	CB(1, p_modes_on_params.size());
 	CB(2, p_modes_off);
@@ -1271,7 +1271,7 @@ void Chan_Live_t::SendMode(const mstring & in)
 	    {
 		if (add)
 		{
-		    if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "modes"), !modes.Contains(mode[i]))
+		    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"), !modes.Contains(mode[i]))
 		    {
 			if (!(cstored && s_mlock_off.Contains(mode[i])))
 			{
@@ -1284,7 +1284,7 @@ void Chan_Live_t::SendMode(const mstring & in)
 		}
 		else
 		{
-		    if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "modes"), modes.Contains(mode[i]))
+		    if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"), modes.Contains(mode[i]))
 		    {
 			if (!(cstored && s_mlock_on.Contains(mode[i])))
 			{
@@ -1302,7 +1302,7 @@ void Chan_Live_t::SendMode(const mstring & in)
 	CE(3, p_modes_off_params.size());
 	MCE(p_modes_on);
     }
-    RLOCK2(("Events"));
+    RLOCK2((lck_Events));
     if (Magick::instance().events != NULL)
 	Magick::instance().events->AddChannelModePending(i_Name);
     ETCB();
@@ -1322,10 +1322,10 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
     CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
 
     {
-	WLOCK(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on"));
-	WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on_params"));
-	WLOCK3(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off"));
-	WLOCK4(("ChanServ", "live", i_Name.LowerCase(), "p_modes_off_params"));
+	WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "p_modes_on"));
+	WLOCK2((lck_ChanServ, lck_live, i_Name.LowerCase(), "p_modes_on_params"));
+	WLOCK3((lck_ChanServ, lck_live, i_Name.LowerCase(), "p_modes_off"));
+	WLOCK4((lck_ChanServ, lck_live, i_Name.LowerCase(), "p_modes_off_params"));
 	MCB(modes);
 	CB(1, p_modes_on);
 	CB(2, p_modes_on_params.size());
@@ -1357,7 +1357,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    if (add)
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].first = true;
 				}
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', arg))
@@ -1366,7 +1366,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    else
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].first = false;
 				}
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', arg))
@@ -1391,7 +1391,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    if (add)
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].second = true;
 				}
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'h', arg))
@@ -1400,7 +1400,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    else
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].second = false;
 				}
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'h', arg))
@@ -1425,7 +1425,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    if (add)
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].third = true;
 				}
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', arg))
@@ -1434,7 +1434,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    else
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].third = false;
 				}
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', arg))
@@ -1455,12 +1455,12 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		    if (fwdargs <= wc)
 		    {
 			{
-			    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+			    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
 			    CB(5, bans.size());
 			    if (add)
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
 				    bans[arg.LowerCase()] = mDateTime::CurrentDateTime();
 				}
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', arg))
@@ -1469,7 +1469,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    else
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "bans"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "bans"));
 				    bans.erase(arg.LowerCase());
 				}
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', arg))
@@ -1487,12 +1487,12 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		    if (fwdargs <= wc)
 		    {
 			{
-			    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
+			    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
 			    CB(5, exempt.size());
 			    if (add)
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
 				    exempt[arg.LowerCase()] = mDateTime::CurrentDateTime();
 				}
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', arg))
@@ -1501,7 +1501,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    else
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "exempt"));
 				    exempt.erase(arg.LowerCase());
 				}
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'e', arg))
@@ -1519,12 +1519,12 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		    if (fwdargs <= wc)
 		    {
 			{
-			    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
+			    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
 			    CB(5, i_Key);
 			    if (add)
 			    {
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
 				    i_Key = arg;
 				}
 				if (ModeExists(p_modes_on, p_modes_on_params, true, 'k', arg))
@@ -1537,7 +1537,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 				    LOG(LM_ERROR, "ERROR/KEYMISMATCH", (i_Key, arg, i_Name, source));
 				}
 				{
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
 				    i_Key.erase();
 				}
 				if (ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
@@ -1557,24 +1557,24 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			if (fwdargs <= wc)
 			{
 			    {
-				RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+				RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
 				CB(5, i_Limit);
 				if (fwdargs > in.WordCount(": "))
 				{
 				    LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
 				    i_Limit = 0;
 				}
 				else if (!arg.IsNumber())
 				{
 				    LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
-				    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
 				    i_Limit = 0;
 				}
 				else
 				{
 				    {
-					WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+					WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
 					i_Limit = atoi(arg.c_str());
 				    }
 				    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l', arg))
@@ -1590,7 +1590,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		    else
 		    {
 			{
-			    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+			    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
 			    CB(5, i_Limit);
 			    i_Limit = 0;
 			    CE(5, i_Limit);
@@ -1611,10 +1611,10 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 	    }
 	    else
 	    {
-		if_RLOCK (("ChanServ", "live", i_Name.LowerCase(), "modes"), add && !modes.Contains(change[i]))
+		if_RLOCK ((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"), add && !modes.Contains(change[i]))
 		{
 		    {
-			WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "modes"));
+			WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
 			modes += change[i];
 		    }
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, change[i]))
@@ -1622,10 +1622,10 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 		}
 		else
 		{
-		    if_RLOCK2 (("ChanServ", "live", i_Name.LowerCase(), "modes"), !add && modes.Contains(change[i]))
+		    if_RLOCK2 ((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"), !add && modes.Contains(change[i]))
 		    {
 			{
-			    WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "modes"));
+			    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
 			    modes.Remove(change[i]);
 			}
 			if (ModeExists(p_modes_off, p_modes_off_params, false, change[i]))
@@ -1655,7 +1655,7 @@ bool Chan_Live_t::HasMode(const mstring & in) const
 {
     BTCB();
     FT("Chan_Live_t::HasMode", (in));
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
     RET(modes.Contains(in));
     ETCB();
 }
@@ -1664,7 +1664,7 @@ mstring Chan_Live_t::Mode() const
 {
     BTCB();
     NFT("Chan_Live_t::Mode");
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "modes"));
     RET(modes);
     ETCB();
 }
@@ -1673,7 +1673,7 @@ mstring Chan_Live_t::Key() const
 {
     BTCB();
     NFT("Chan_Live_t::Key");
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Key"));
     RET(i_Key);
     ETCB();
 }
@@ -1682,7 +1682,7 @@ unsigned int Chan_Live_t::Limit() const
 {
     BTCB();
     NFT("Chan_Live_t::Limit");
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Limit"));
     RET(i_Limit);
     ETCB();
 }
@@ -1693,7 +1693,7 @@ mDateTime Chan_Live_t::PartTime(const mstring & nick) const
     FT("Chan_Live_t::PartTime", (nick));
     mDateTime retval(0.0);
 
-    RLOCK(("ChanServ", "live", i_Name.LowerCase(), "recent_parts"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "recent_parts"));
     map < mstring, mDateTime >::const_iterator i = recent_parts.find(nick.LowerCase());
     if (i != recent_parts.end())
     {
@@ -1708,7 +1708,7 @@ size_t Chan_Live_t::Usage() const
     BTCB();
     size_t retval = 0;
 
-    WLOCK(("ChanServ", "live", i_Name.LowerCase()));
+    WLOCK((lck_ChanServ, lck_live, i_Name.LowerCase()));
     retval += i_Name.capacity();
     retval += sizeof(i_Numeric);
     retval += sizeof(i_Creation_Time.Internal());
@@ -1795,7 +1795,7 @@ void Chan_Stored_t::ChgAttempt(const mstring & nick, const mstring & newnick)
     map < mstring, unsigned int >::iterator iter;
 
     // Create a new one if we find the entry
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "failed_passwds"));
     MCB(failed_passwds.size());
     for (iter = failed_passwds.begin(); iter != failed_passwds.end(); iter++)
 	if (iter->first.IsSameAs(nick, true))
@@ -1837,7 +1837,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
     bool burst = false;
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL)
 	    burst = Magick::instance().ircsvchandler->Burst();
     }
@@ -1852,7 +1852,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 		if (users == 1)
 		    clive->LockDown();
 
-		RLOCK2(("ChanServ", "stored", i_Name, "setting.Mlock_On"));
+		RLOCK2((lck_ChanServ, lck_stored, i_Name, "setting.Mlock_On"));
 		clive->SendMode("+" + setting.Mlock_On + "b " + nlive->AltMask(Magick::instance().operserv.Ignore_Method()));
 	    }
 
@@ -1870,7 +1870,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	nstored = Magick::instance().nickserv.GetStored(nick);
 
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
 	bool rv = Akick_find(nick, C_IsOn, true);
 
 	if (rv && ((Akick->Entry().Contains("@")) || (nstored.entry() != NULL && nstored->IsOnline())))
@@ -1929,9 +1929,9 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	mstring modes;
 
 	{
-	    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
-	    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
-	    RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+	    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_On"));
+	    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Key"));
+	    RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
 	    modes = setting.Mlock_On;
 	    if (!setting.Mlock_Key.empty())
 		modes << "k";
@@ -1950,9 +1950,9 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	}
 
 	{
-	    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
-	    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
-	    RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
+	    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic"));
+	    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
+	    RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
 	    // Carry over topic ..
 	    if (!burst && Keeptopic() && !i_Topic.empty())
 	    {
@@ -1970,7 +1970,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 
     if (GetAccess(nick) > 0)
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_LastUsed"));
 	MCB(i_LastUsed);
 	i_LastUsed = mDateTime::CurrentDateTime();
 	MCE(i_LastUsed);
@@ -1992,7 +1992,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
     }
 
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
 	for (Message = Message_begin(); Message != Message_end(); Message++)
 	{
 	    if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
@@ -2008,7 +2008,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	if (target.empty())
 	    target = nstored->Name();
 
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Greet"));
 	if (Greet_find(target) && clive->PartTime(target).SecondsSince() > Parttime())
 	{
 	    if (Greet->Entry() [0U] == '!')
@@ -2046,7 +2046,7 @@ void Chan_Stored_t::Part(const mstring & nick)
 
     if (GetAccess(nick) > 0)
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_LastUsed"));
 	MCB(i_LastUsed);
 	i_LastUsed = mDateTime::CurrentDateTime();
 	MCE(i_LastUsed);
@@ -2129,7 +2129,7 @@ void Chan_Stored_t::ChgNick(const mstring & nick, const mstring & newnick)
     // We supply the OLD nick to check the mask, and then the
     // new nick to check nick only (livelook is off).
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
 	bool rv = (Akick_find(nick, C_IsOn, true) || Akick_find(newnick, C_IsOn));
 
 	if (rv &&
@@ -2165,7 +2165,7 @@ void Chan_Stored_t::Quit(const mstring & nick)
 {
     BTCB();
     FT("Chan_Stored_t::Quit", (nick));
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "failed_passwds"));
     MCB(failed_passwds.size());
     failed_passwds.erase(nick.LowerCase());
     MCE(failed_passwds.size());
@@ -2181,7 +2181,7 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
 
     // Still in burst ...
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->Burst())
 	    burst = true;
     }
@@ -2199,7 +2199,7 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
 
     if (Suspended())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Comment"));
 	Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(), Magick::instance().chanserv.FirstName(),
 					i_Name,
 					"[" + IRC_Bold + Magick::instance().getMessage("VALS/SUSPENDED") + IRC_Off + "] " +
@@ -2214,17 +2214,17 @@ void Chan_Stored_t::Topic(const mstring & source, const mstring & topic, const m
 	if (burst)
 	    return;
 
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
-	RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
-	RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic"));
+	RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
+	RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
 	Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(), i_Topic_Setter, i_Name, i_Topic,
 					settime - (1.0 / (60.0 * 60.0 * 24.0)));
     }
     else
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
-	WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
-	WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic"));
+	WLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
+	WLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
 	MCB(i_Topic);
 	CB(1, i_Topic_Setter);
 	CB(2, i_Topic_Set_Time);
@@ -2258,9 +2258,9 @@ void Chan_Stored_t::SetTopic(const mstring & source, const mstring & setter, con
 	return;
 
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
-	WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
-	WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic"));
+	WLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
+	WLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
 	MCB(i_Topic);
 	CB(1, i_Topic_Setter);
 	CB(2, i_Topic_Set_Time);
@@ -2478,8 +2478,8 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 		if (fwdargs <= wc)
 		{
 		    {
-			RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
-			RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+			RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Off"));
+			RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Key"));
 			if (add && setting.Mlock_Off.Contains("k"))
 			{
 			    out_mode += "-k";
@@ -2498,8 +2498,8 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 
 	    case 'l':
 		{
-		    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
-		    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+		    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Off"));
+		    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
 		    if (add ? setting.Mlock_Off.Contains("l") : setting.Mlock_Limit)
 		    {
 			if (add)
@@ -2528,8 +2528,8 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 	else
 	{
 	    {
-		RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
-		RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+		RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Off"));
+		RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_On"));
 		if (add && setting.Mlock_Off.Contains(change[i]))
 		    out_mode += "-" + mstring(change[i]);
 		else if (!add && setting.Mlock_On.Contains(change[i]))
@@ -2547,7 +2547,7 @@ void Chan_Stored_t::defaults()
     BTCB();
     NFT("Chan_Stored_t::defaults");
 
-    ref_class::lockData(mVarArray("ChanServ", "stored", i_Name));
+    ref_class::lockData(mVarArray(lck_ChanServ, lck_stored, i_Name));
     // Dont lock in here, we locked outside ...
     setting.Mlock_On.erase();
     setting.Mlock_Off.erase();
@@ -2676,7 +2676,7 @@ bool Chan_Stored_t::DoRevenge(const mstring & i_type, const mstring & target, co
 	mstring tmp;
 
 	{
-	    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Revenge"));
+	    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Revenge"));
 	    tmp = setting.Revenge;
 	}
 	if (tmp == "REVERSE")
@@ -2819,7 +2819,7 @@ Chan_Stored_t &Chan_Stored_t::operator=(const Chan_Stored_t & in)
     BTCB();
     NFT("Chan_Stored_t::operator=");
     i_Name = in.i_Name;
-    ref_class::lockData(mVarArray("ChanServ", "stored", i_Name.LowerCase()));
+    ref_class::lockData(mVarArray(lck_ChanServ, lck_stored, i_Name.LowerCase()));
     i_RegTime = in.i_RegTime;
     i_LastUsed = in.i_LastUsed;
     i_Founder = in.i_Founder;
@@ -2919,7 +2919,7 @@ mDateTime Chan_Stored_t::LastUsed()
 	    }
 	}
     }
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_LastUsed"));
     RET(i_LastUsed);
     ETCB();
 }
@@ -2928,7 +2928,7 @@ mDateTime Chan_Stored_t::RegTime() const
 {
     BTCB();
     NFT("Chan_Stored_t::RegTime");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_RegTime"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_RegTime"));
     RET(i_RegTime);
     ETCB();
 }
@@ -2944,10 +2944,10 @@ void Chan_Stored_t::Founder(const mstring & in)
 	return;
     }
 
-    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
+    WLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Founder"));
     MCB(i_Founder);
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_CoFounder"));
 	if (i_CoFounder.IsSameAs(in, true))
 	{
 	    CB(1, i_CoFounder);
@@ -2965,7 +2965,7 @@ mstring Chan_Stored_t::Founder() const
 {
     BTCB();
     NFT("Chan_Stored_t::Founder");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Founder"));
     RET(i_Founder);
     ETCB();
 }
@@ -2982,12 +2982,12 @@ void Chan_Stored_t::CoFounder(const mstring & in)
     }
 
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Founder"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Founder"));
 	if (i_Founder.IsSameAs(in, true))
 	    return;
     }
 
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_CoFounder"));
     MCB(i_CoFounder);
     i_CoFounder = in;
     MCE(i_CoFounder);
@@ -2998,7 +2998,7 @@ mstring Chan_Stored_t::CoFounder() const
 {
     BTCB();
     NFT("Chan_Stored_t::CoFounder");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_CoFounder"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_CoFounder"));
     RET(i_CoFounder);
     ETCB();
 }
@@ -3007,7 +3007,7 @@ void Chan_Stored_t::Description(const mstring & in)
 {
     BTCB();
     FT("Chan_Stored_t::Description", (in));
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Description"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Description"));
     MCB(i_Description);
     i_Description = in;
     MCE(i_Description);
@@ -3018,7 +3018,7 @@ mstring Chan_Stored_t::Description() const
 {
     BTCB();
     NFT("Description(mstring in)	{ i_Description = in;");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Description"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Description"));
     RET(i_Description);
     ETCB();
 }
@@ -3027,7 +3027,7 @@ void Chan_Stored_t::Password(const mstring & in)
 {
     BTCB();
     FT("Chan_Stored_t::Password", (in));
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Password"));
     MCB(i_Password);
 #ifdef GETPASS
     i_Password = in;
@@ -3045,7 +3045,7 @@ mstring Chan_Stored_t::Password() const
 {
     BTCB();
     NFT("Chan_Stored_t::Password");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Password"));
     RET(i_Password);
     ETCB();
 }
@@ -3054,7 +3054,7 @@ void Chan_Stored_t::Email(const mstring & in)
 {
     BTCB();
     FT("Chan_Stored_t::Email", (in));
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Email"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Email"));
     MCB(i_Email);
     i_Email = in;
     MCE(i_Email);
@@ -3065,7 +3065,7 @@ mstring Chan_Stored_t::Email() const
 {
     BTCB();
     NFT("Chan_Stored_t::Email");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Email"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Email"));
     RET(i_Email);
     ETCB();
 }
@@ -3074,7 +3074,7 @@ void Chan_Stored_t::URL(const mstring & in)
 {
     BTCB();
     FT("Chan_Stored_t::URL", (in));
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_URL"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_URL"));
     MCB(i_URL);
     i_URL = in;
     MCE(i_URL);
@@ -3085,7 +3085,7 @@ mstring Chan_Stored_t::URL() const
 {
     BTCB();
     NFT("Chan_Stored_t::URL");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_URL"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_URL"));
     RET(i_URL);
     ETCB();
 }
@@ -3094,7 +3094,7 @@ void Chan_Stored_t::Comment(const mstring & in)
 {
     BTCB();
     FT("Chan_Stored_t::Comment", (in));
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Comment"));
     MCB(i_Comment);
     i_Comment = in;
     MCE(i_Comment);
@@ -3105,7 +3105,7 @@ mstring Chan_Stored_t::Comment() const
 {
     BTCB();
     NFT("Chan_Stored_t::Comment");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Comment"));
     RET(i_Comment);
     ETCB();
 }
@@ -3124,9 +3124,9 @@ unsigned int Chan_Stored_t::CheckPass(const mstring & nick, const mstring & pass
     mHASH(password.c_str(), password.length(), chkpass);
     mstring check(chkpass);
 #endif
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "failed_passwds"));
     MCB(failed_passwds.size());
-    if_RLOCK (("ChanServ", "stored", i_Name.LowerCase(), "i_Password"), i_Password == check)
+    if_RLOCK ((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Password"), i_Password == check)
 	failed_passwds.erase(nick.LowerCase());
     else
     {
@@ -3143,8 +3143,8 @@ void Chan_Stored_t::Suspend(const mstring & name)
 {
     BTCB();
     FT("Chan_Stored_t::Suspend", (name));
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
-    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Suspend_By"));
+    WLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Suspend_Time"));
     MCB(i_Suspend_By);
     CB(1, i_Suspend_Time);
     i_Suspend_By = name;
@@ -3158,7 +3158,7 @@ void Chan_Stored_t::UnSuspend()
 {
     BTCB();
     NFT("Chan_Stored_t::UnSuspend");
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Suspend_By"));
     MCB(i_Suspend_By);
     i_Suspend_By.erase();
     MCE(i_Suspend_By);
@@ -3169,7 +3169,7 @@ mstring Chan_Stored_t::Mlock_Off() const
 {
     BTCB();
     NFT("Chan_Stored_t::Mlock_Off");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Off"));
     RET(setting.Mlock_Off);
     ETCB();
 }
@@ -3178,7 +3178,7 @@ mstring Chan_Stored_t::Mlock_On() const
 {
     BTCB();
     NFT("Chan_Stored_t::Mlock_On");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_On"));
     RET(setting.Mlock_On);
     ETCB();
 }
@@ -3189,10 +3189,10 @@ mstring Chan_Stored_t::Mlock() const
     NFT("Chan_Stored_t::Mlock");
     mstring Result;
 
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
-    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
-    RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
-    RLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Off"));
+    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_On"));
+    RLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Key"));
+    RLOCK4((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
     if (!setting.Mlock_On.empty() || !setting.Mlock_Key.empty() || setting.Mlock_Limit)
 	Result << "+" << setting.Mlock_On;
     if (!setting.Mlock_Key.empty())
@@ -3210,10 +3210,10 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
     BTCB();
     FT("Chan_Stored_t::Mlock", (source, mode));
 
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
-    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
-    WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
-    WLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Off"));
+    WLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_On"));
+    WLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Key"));
+    WLOCK4((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
     MCB(setting.Mlock_On);
     CB(1, setting.Mlock_Off);
     CB(2, setting.Mlock_Key);
@@ -3352,8 +3352,8 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 	}
     }
 
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_Off"));
-    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_On"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Mlock_Off"));
+    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Mlock_On"));
     mstring locked(Magick::instance().chanserv.LCK_MLock() + "+" + lock.Mlock_On + "-" + lock.Mlock_Off);
     mstring override_on;
     mstring override_off;
@@ -3540,8 +3540,8 @@ mstring Chan_Stored_t::L_Mlock() const
     NFT("Chan_Stored_t::L_Mlock");
     mstring Result;
 
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_Off"));
-    RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_On"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Mlock_Off"));
+    RLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Mlock_On"));
     mstring mode_on(lock.Mlock_On);
     mstring mode_off(lock.Mlock_Off);
     mstring locked(Magick::instance().chanserv.LCK_MLock());
@@ -3596,8 +3596,8 @@ vector < mstring > Chan_Stored_t::L_Mlock(const mstring & source, const mstring 
     BTCB();
     FT("Chan_Stored_t::L_Mlock", (source, mode));
 
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_Off"));
-    WLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_On"));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Mlock_Off"));
+    WLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Mlock_On"));
     MCB(lock.Mlock_Off);
     CB(1, lock.Mlock_On);
     lock.Mlock_On.erase();
@@ -3686,8 +3686,8 @@ vector < mstring > Chan_Stored_t::L_Mlock(const mstring & source, const mstring 
     }
 
     {
-	WLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Off"));
-	WLOCK4(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_On"));
+	WLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Off"));
+	WLOCK4((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_On"));
 	CB(2, setting.Mlock_Off);
 	CB(3, setting.Mlock_On);
 	// Have to change the REAL mlock
@@ -3707,12 +3707,12 @@ vector < mstring > Chan_Stored_t::L_Mlock(const mstring & source, const mstring 
 	{
 	    if (lock.Mlock_Off[i] == 'k')
 	    {
-		WLOCK5(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+		WLOCK5((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Key"));
 		setting.Mlock_Key.erase();
 	    }
 	    else if (lock.Mlock_Off[i] == 'l')
 	    {
-		WLOCK5(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+		WLOCK5((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
 		setting.Mlock_Limit = 0;
 	    }
 	    if (!setting.Mlock_Off.Contains(lock.Mlock_Off[i]))
@@ -3774,7 +3774,7 @@ mstring Chan_Stored_t::Mlock_Key() const
 {
     BTCB();
     NFT("Chan_Stored_t::Mlock_Key");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Key"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Key"));
     RET(setting.Mlock_Key);
     ETCB();
 }
@@ -3783,7 +3783,7 @@ unsigned int Chan_Stored_t::Mlock_Limit() const
 {
     BTCB();
     NFT("Chan_Stored_t::Mlock_Limit");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Mlock_Limit"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
     RET(setting.Mlock_Limit);
     ETCB();
 }
@@ -3792,7 +3792,7 @@ mstring Chan_Stored_t::Last_Topic() const
 {
     BTCB();
     NFT("Chan_Stored_t::Last_Topic");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic"));
     RET(i_Topic);
     ETCB();
 }
@@ -3801,7 +3801,7 @@ mstring Chan_Stored_t::Last_Topic_Setter() const
 {
     BTCB();
     NFT("Chan_Stored_t::Last_Topic_Setter");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Setter"));
     RET(i_Topic_Setter);
     ETCB();
 }
@@ -3810,7 +3810,7 @@ mDateTime Chan_Stored_t::Last_Topic_Set_Time() const
 {
     BTCB();
     NFT("Chan_Stored_t::Last_Topic_Set_Time");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Topic_Set_Time"));
     RET(i_Topic_Set_Time);
     ETCB();
 }
@@ -3821,7 +3821,7 @@ void Chan_Stored_t::Bantime(const unsigned long in)
     FT("Chan_Stored_t::Bantime", (in));
     if (!L_Bantime())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Bantime"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Bantime"));
 	MCB(setting.Bantime);
 	setting.Bantime = in;
 	MCE(setting.Bantime);
@@ -3835,7 +3835,7 @@ unsigned long Chan_Stored_t::Bantime() const
     NFT("Chan_Stored_t::Bantime");
     if (!Magick::instance().chanserv.LCK_Bantime())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Bantime"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Bantime"));
 	RET(setting.Bantime);
     }
     RET(Magick::instance().chanserv.DEF_Bantime());
@@ -3848,7 +3848,7 @@ void Chan_Stored_t::L_Bantime(const bool in)
     FT("Chan_Stored_t::L_Bantime", (in));
     if (!Magick::instance().chanserv.LCK_Bantime())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Bantime"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Bantime"));
 	MCB(lock.Bantime);
 	lock.Bantime = in;
 	MCE(lock.Bantime);
@@ -3862,7 +3862,7 @@ bool Chan_Stored_t::L_Bantime() const
     NFT("Chan_Stored_t::L_Bantime");
     if (!Magick::instance().chanserv.LCK_Bantime())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Bantime"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Bantime"));
 	RET(lock.Bantime);
     }
     RET(true);
@@ -3875,7 +3875,7 @@ void Chan_Stored_t::Parttime(const unsigned long in)
     FT("Chan_Stored_t::Parttime", (in));
     if (!L_Parttime())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Parttime"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Parttime"));
 	MCB(setting.Parttime);
 	setting.Parttime = in;
 	MCE(setting.Parttime);
@@ -3889,7 +3889,7 @@ unsigned long Chan_Stored_t::Parttime() const
     NFT("Chan_Stored_t::Parttime");
     if (!Magick::instance().chanserv.LCK_Parttime())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Parttime"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Parttime"));
 	RET(setting.Parttime);
     }
     RET(Magick::instance().chanserv.DEF_Parttime());
@@ -3902,7 +3902,7 @@ void Chan_Stored_t::L_Parttime(const bool in)
     FT("Chan_Stored_t::L_Parttime", (in));
     if (!Magick::instance().chanserv.LCK_Parttime())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Parttime"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Parttime"));
 	MCB(lock.Parttime);
 	lock.Parttime = in;
 	MCE(lock.Parttime);
@@ -3916,7 +3916,7 @@ bool Chan_Stored_t::L_Parttime() const
     NFT("Chan_Stored_t::L_Parttime");
     if (!Magick::instance().chanserv.LCK_Parttime())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Parttime"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Parttime"));
 	RET(lock.Parttime);
     }
     RET(true);
@@ -3929,7 +3929,7 @@ void Chan_Stored_t::Keeptopic(const bool in)
     FT("Chan_Stored_t::Keeptopic", (in));
     if (!L_Keeptopic())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Keeptopic"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Keeptopic"));
 	MCB(setting.Keeptopic);
 	setting.Keeptopic = in;
 	MCE(setting.Keeptopic);
@@ -3943,7 +3943,7 @@ bool Chan_Stored_t::Keeptopic() const
     NFT("Chan_Stored_t::Keeptopic");
     if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Keeptopic"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Keeptopic"));
 	RET(setting.Keeptopic);
     }
     RET(Magick::instance().chanserv.DEF_Keeptopic());
@@ -3956,7 +3956,7 @@ void Chan_Stored_t::L_Keeptopic(const bool in)
     FT("Chan_Stored_t::L_Keeptopic", (in));
     if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Keeptopic"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Keeptopic"));
 	MCB(lock.Keeptopic);
 	lock.Keeptopic = in;
 	MCE(lock.Keeptopic);
@@ -3970,7 +3970,7 @@ bool Chan_Stored_t::L_Keeptopic() const
     NFT("Chan_Stored_t::L_Keeptopic");
     if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Keeptopic"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Keeptopic"));
 	RET(lock.Keeptopic);
     }
     RET(true);
@@ -3983,7 +3983,7 @@ void Chan_Stored_t::Topiclock(const bool in)
     FT("Chan_Stored_t::Topiclock", (in));
     if (!L_Topiclock())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Topiclock"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Topiclock"));
 	MCB(setting.Topiclock);
 	setting.Topiclock = in;
 	MCE(setting.Topiclock);
@@ -3997,7 +3997,7 @@ bool Chan_Stored_t::Topiclock() const
     NFT("Chan_Stored_t::Topiclock");
     if (!Magick::instance().chanserv.LCK_Topiclock())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Topiclock"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Topiclock"));
 	RET(setting.Topiclock);
     }
     RET(Magick::instance().chanserv.DEF_Topiclock());
@@ -4010,7 +4010,7 @@ void Chan_Stored_t::L_Topiclock(const bool in)
     FT("Chan_Stored_t::L_Topiclock", (in));
     if (!Magick::instance().chanserv.LCK_Topiclock())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Topiclock"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Topiclock"));
 	MCB(lock.Topiclock);
 	lock.Topiclock = in;
 	MCE(lock.Topiclock);
@@ -4024,7 +4024,7 @@ bool Chan_Stored_t::L_Topiclock() const
     NFT("Chan_Stored_t::L_Topiclock");
     if (!Magick::instance().chanserv.LCK_Topiclock())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Topiclock"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Topiclock"));
 	RET(lock.Topiclock);
     }
     RET(true);
@@ -4037,7 +4037,7 @@ void Chan_Stored_t::Private(const bool in)
     FT("Chan_Stored_t::Private", (in));
     if (!L_Private())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Private"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Private"));
 	MCB(setting.Private);
 	setting.Private = in;
 	MCE(setting.Private);
@@ -4051,7 +4051,7 @@ bool Chan_Stored_t::Private() const
     NFT("Chan_Stored_t::Private");
     if (!Magick::instance().chanserv.LCK_Private())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Private"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Private"));
 	RET(setting.Private);
     }
     RET(Magick::instance().chanserv.DEF_Private());
@@ -4064,7 +4064,7 @@ void Chan_Stored_t::L_Private(const bool in)
     FT("Chan_Stored_t::L_Private", (in));
     if (!Magick::instance().chanserv.LCK_Private())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Private"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Private"));
 	MCB(lock.Private);
 	lock.Private = in;
 	MCE(lock.Private);
@@ -4078,7 +4078,7 @@ bool Chan_Stored_t::L_Private() const
     NFT("Chan_Stored_t::L_Private");
     if (!Magick::instance().chanserv.LCK_Private())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Private"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Private"));
 	RET(lock.Private);
     }
     RET(true);
@@ -4091,7 +4091,7 @@ void Chan_Stored_t::Secureops(const bool in)
     FT("Chan_Stored_t::Secureops", (in));
     if (!L_Secureops())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secureops"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Secureops"));
 	MCB(setting.Secureops);
 	setting.Secureops = in;
 	MCE(setting.Secureops);
@@ -4105,7 +4105,7 @@ bool Chan_Stored_t::Secureops() const
     NFT("Chan_Stored_t::Secureops");
     if (!Magick::instance().chanserv.LCK_Secureops())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secureops"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Secureops"));
 	RET(setting.Secureops);
     }
     RET(Magick::instance().chanserv.DEF_Secureops());
@@ -4118,7 +4118,7 @@ void Chan_Stored_t::L_Secureops(const bool in)
     FT("Chan_Stored_t::L_Secureops", (in));
     if (!Magick::instance().chanserv.LCK_Secureops())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secureops"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Secureops"));
 	MCB(lock.Secureops);
 	lock.Secureops = in;
 	MCE(lock.Secureops);
@@ -4132,7 +4132,7 @@ bool Chan_Stored_t::L_Secureops() const
     NFT("Chan_Stored_t::L_Secureops");
     if (!Magick::instance().chanserv.LCK_Secureops())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secureops"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Secureops"));
 	RET(lock.Secureops);
     }
     RET(true);
@@ -4145,7 +4145,7 @@ void Chan_Stored_t::Secure(const bool in)
     FT("Chan_Stored_t::Secure", (in));
     if (!L_Secure())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secure"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Secure"));
 	MCB(setting.Secure);
 	setting.Secure = in;
 	MCE(setting.Secure);
@@ -4159,7 +4159,7 @@ bool Chan_Stored_t::Secure() const
     NFT("Chan_Stored_t::Secure");
     if (!Magick::instance().chanserv.LCK_Secure())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secure"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Secure"));
 	RET(setting.Secure);
     }
     RET(Magick::instance().chanserv.DEF_Secure());
@@ -4172,7 +4172,7 @@ void Chan_Stored_t::L_Secure(const bool in)
     FT("Chan_Stored_t::L_Secure", (in));
     if (!Magick::instance().chanserv.LCK_Secure())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secure"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Secure"));
 	MCB(lock.Secure);
 	lock.Secure = in;
 	MCE(lock.Secure);
@@ -4186,7 +4186,7 @@ bool Chan_Stored_t::L_Secure() const
     NFT("Chan_Stored_t::L_Secure");
     if (!Magick::instance().chanserv.LCK_Secure())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secure"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Secure"));
 	RET(lock.Secure);
     }
     RET(true);
@@ -4199,7 +4199,7 @@ void Chan_Stored_t::NoExpire(const bool in)
     FT("Chan_Stored_t::NoExpire", (in));
     if (!Magick::instance().chanserv.LCK_NoExpire())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.NoExpire"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.NoExpire"));
 	MCB(setting.NoExpire);
 	setting.NoExpire = in;
 	MCE(setting.NoExpire);
@@ -4213,7 +4213,7 @@ bool Chan_Stored_t::NoExpire() const
     NFT("Chan_Stored_t::NoExpire");
     if (!Magick::instance().chanserv.LCK_NoExpire())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.NoExpire"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.NoExpire"));
 	RET(setting.NoExpire);
     }
     RET(Magick::instance().chanserv.DEF_NoExpire());
@@ -4226,7 +4226,7 @@ void Chan_Stored_t::Anarchy(const bool in)
     FT("Chan_Stored_t::Anarchy", (in));
     if (!L_Anarchy())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Anarchy"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Anarchy"));
 	MCB(setting.Anarchy);
 	setting.Anarchy = in;
 	MCE(setting.Anarchy);
@@ -4240,7 +4240,7 @@ bool Chan_Stored_t::Anarchy() const
     NFT("Chan_Stored_t::Anarchy");
     if (!Magick::instance().chanserv.LCK_Anarchy())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Anarchy"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Anarchy"));
 	RET(setting.Anarchy);
     }
     RET(Magick::instance().chanserv.DEF_Anarchy());
@@ -4253,7 +4253,7 @@ void Chan_Stored_t::L_Anarchy(const bool in)
     FT("Chan_Stored_t::L_Anarchy", (in));
     if (!Magick::instance().chanserv.LCK_Anarchy())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Anarchy"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Anarchy"));
 	MCB(lock.Anarchy);
 	lock.Anarchy = in;
 	MCE(lock.Anarchy);
@@ -4267,7 +4267,7 @@ bool Chan_Stored_t::L_Anarchy() const
     NFT("Chan_Stored_t::L_Anarchy");
     if (!Magick::instance().chanserv.LCK_Anarchy())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Anarchy"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Anarchy"));
 	RET(lock.Anarchy);
     }
     RET(true);
@@ -4280,7 +4280,7 @@ void Chan_Stored_t::KickOnBan(const bool in)
     FT("Chan_Stored_t::KickOnBan", (in));
     if (!L_KickOnBan())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.KickOnBan"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.KickOnBan"));
 	MCB(setting.KickOnBan);
 	setting.KickOnBan = in;
 	MCE(setting.KickOnBan);
@@ -4294,7 +4294,7 @@ bool Chan_Stored_t::KickOnBan() const
     NFT("Chan_Stored_t::KickOnBan");
     if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.KickOnBan"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.KickOnBan"));
 	RET(setting.KickOnBan);
     }
     RET(Magick::instance().chanserv.DEF_KickOnBan());
@@ -4307,7 +4307,7 @@ void Chan_Stored_t::L_KickOnBan(const bool in)
     FT("Chan_Stored_t::L_KickOnBan", (in));
     if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.KickOnBan"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.KickOnBan"));
 	MCB(lock.KickOnBan);
 	lock.KickOnBan = in;
 	MCE(lock.KickOnBan);
@@ -4321,7 +4321,7 @@ bool Chan_Stored_t::L_KickOnBan() const
     NFT("Chan_Stored_t::L_KickOnBan");
     if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.KickOnBan"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.KickOnBan"));
 	RET(lock.KickOnBan);
     }
     RET(true);
@@ -4334,7 +4334,7 @@ void Chan_Stored_t::Restricted(const bool in)
     FT("Chan_Stored_t::Restricted", (in));
     if (!L_Restricted())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Restricted"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Restricted"));
 	MCB(setting.Restricted);
 	setting.Restricted = in;
 	MCE(setting.Restricted);
@@ -4348,7 +4348,7 @@ bool Chan_Stored_t::Restricted() const
     NFT("Chan_Stored_t::Restricted");
     if (!Magick::instance().chanserv.LCK_Restricted())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Restricted"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Restricted"));
 	RET(setting.Restricted);
     }
     RET(Magick::instance().chanserv.DEF_Restricted());
@@ -4361,7 +4361,7 @@ void Chan_Stored_t::L_Restricted(const bool in)
     FT("Chan_Stored_t::L_Restricted", (in));
     if (!Magick::instance().chanserv.LCK_Restricted())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Restricted"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Restricted"));
 	MCB(lock.Restricted);
 	lock.Restricted = in;
 	MCE(lock.Restricted);
@@ -4375,7 +4375,7 @@ bool Chan_Stored_t::L_Restricted() const
     NFT("Chan_Stored_t::L_Restricted");
     if (!Magick::instance().chanserv.LCK_Restricted())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Restricted"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Restricted"));
 	RET(lock.Restricted);
     }
     RET(true);
@@ -4388,7 +4388,7 @@ void Chan_Stored_t::Join(const bool in)
     FT("Chan_Stored_t::Join", (in));
     if (!L_Join())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Join"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Join"));
 	MCB(setting.Join);
 	setting.Join = in;
 	MCE(setting.Join);
@@ -4402,7 +4402,7 @@ bool Chan_Stored_t::Join() const
     NFT("Chan_Stored_t::Join");
     if (!Magick::instance().chanserv.LCK_Join())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Join"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Join"));
 	RET(setting.Join);
     }
     RET(Magick::instance().chanserv.DEF_Join());
@@ -4415,7 +4415,7 @@ void Chan_Stored_t::L_Join(const bool in)
     FT("Chan_Stored_t::L_Join", (in));
     if (!Magick::instance().chanserv.LCK_Join())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Join"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Join"));
 	MCB(lock.Join);
 	lock.Join = in;
 	MCE(lock.Join);
@@ -4429,7 +4429,7 @@ bool Chan_Stored_t::L_Join() const
     NFT("Chan_Stored_t::L_Join");
     if (!Magick::instance().chanserv.LCK_Join())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Join"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Join"));
 	RET(lock.Join);
     }
     RET(true);
@@ -4442,7 +4442,7 @@ bool Chan_Stored_t::Revenge(const mstring & in)
     FT("Chan_Stored_t::Revenge", (in));
     if (!L_Revenge())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Revenge"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Revenge"));
 	MCB(setting.Revenge);
 	setting.Revenge = in;
 	MCE(setting.Revenge);
@@ -4458,7 +4458,7 @@ mstring Chan_Stored_t::Revenge() const
     NFT("Chan_Stored_t::Revenge");
     if (!Magick::instance().chanserv.LCK_Revenge())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Revenge"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Revenge"));
 	RET(setting.Revenge);
     }
     RET(Magick::instance().chanserv.DEF_Revenge());
@@ -4471,7 +4471,7 @@ void Chan_Stored_t::L_Revenge(const bool in)
     FT("Chan_Stored_t::L_Revenge", (in));
     if (!Magick::instance().chanserv.LCK_Revenge())
     {
-	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Revenge"));
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Revenge"));
 	MCB(lock.Revenge);
 	lock.Revenge = in;
 	MCE(lock.Revenge);
@@ -4485,7 +4485,7 @@ bool Chan_Stored_t::L_Revenge() const
     NFT("Chan_Stored_t::L_Revenge");
     if (!Magick::instance().chanserv.LCK_Revenge())
     {
-	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Revenge"));
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.Revenge"));
 	RET(lock.Revenge);
     }
     RET(true);
@@ -4496,7 +4496,7 @@ bool Chan_Stored_t::Suspended() const
 {
     BTCB();
     NFT("Chan_Stored_t::Suspended");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Suspend_By"));
     RET(!i_Suspend_By.empty());
     ETCB();
 }
@@ -4505,7 +4505,7 @@ mstring Chan_Stored_t::Suspend_By() const
 {
     BTCB();
     NFT("Chan_Stored_t::Suspend_By");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_By"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Suspend_By"));
     RET(i_Suspend_By);
     ETCB();
 }
@@ -4514,7 +4514,7 @@ mDateTime Chan_Stored_t::Suspend_Time() const
 {
     BTCB();
     NFT("Chan_Stored_t::Suspend_Time");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Suspend_Time"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_Suspend_Time"));
     RET(i_Suspend_Time);
     ETCB();
 }
@@ -4523,7 +4523,7 @@ bool Chan_Stored_t::Forbidden() const
 {
     BTCB();
     NFT("Chan_Stored_t::Forbidden");
-    RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Forbidden"));
+    RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Forbidden"));
     RET(setting.Forbidden);
     ETCB();
 }
@@ -4533,7 +4533,7 @@ bool Chan_Stored_t::Level_change(const mstring & entry, const long value, const 
     BTCB();
     FT("Chan_Stored_t::Level_change", (entry, value, nick));
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Level"));
     if (Level_find(entry))
     {
 	const_cast < entlist_val_t < long > * > (&(*Level))->Value(value, nick);
@@ -4554,7 +4554,7 @@ bool Chan_Stored_t::Level_find(const mstring & entry)
     FT("Chan_Stored_t::Level_find", (entry));
 
     //  entlist_val_ui<long> iter = i_Level.end();
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Level"));
     set < entlist_val_t < long > >::iterator iter = i_Level.end();
 
     if (!i_Level.empty())
@@ -4583,7 +4583,7 @@ long Chan_Stored_t::Level_value(const mstring & entry)
     long retval = 0;
 
 //  entlist_val_ui<long> iter = Level;
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Level"));
     set < entlist_val_t < long > >::iterator iter = Level;
 
     if (Level_find(entry))
@@ -4632,7 +4632,7 @@ bool Chan_Stored_t::Access_insert(const mstring & i_entry, const long value, con
 	    entry.prepend("*!");
     }
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
     bool rv = Access_find(entry);
 
     // Result is false if its a mask, but not the same one
@@ -4665,7 +4665,7 @@ bool Chan_Stored_t::Access_erase()
     BTCB();
     NFT("Chan_Stored_t::Access_erase");
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
     if (Access != i_Access.end())
     {
 	MCB(i_Access.size());
@@ -4688,7 +4688,7 @@ bool Chan_Stored_t::Access_find(const mstring & entry, const Chan_Stored_t::comm
     FT("Chan_Stored_t::Access_find", (entry, livelook));
 
 //  entlist_val_ui<long> iter = i_Access.end();
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
     set < entlist_val_t < long > >::iterator iter = i_Access.end();
 
     if (!i_Access.empty())
@@ -4780,7 +4780,7 @@ long Chan_Stored_t::Access_value(const mstring & entry, const Chan_Stored_t::com
     long retval = 0;
 
 //  entlist_val_ui<long> iter = Access;
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
     set < entlist_val_t < long > >::iterator iter = Access;
 
     if (Access_find(entry, commstat, livelook))
@@ -4858,7 +4858,7 @@ long Chan_Stored_t::GetAccess(const mstring & entry)
 	else
 	{
 	    // Deliberately duplicating some of Access_value functionality.
-	    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
+	    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
 	    set < entlist_val_t < long > >::iterator iter = Access;
 
 	    if (Access_find(entry, C_IsOn, true))
@@ -4924,7 +4924,7 @@ bool Chan_Stored_t::Akick_insert(const mstring & i_entry, const mstring & value,
 	    entry.prepend("*!");
     }
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
     bool rv = Akick_find(entry);
 
     // Result is false if its a mask, but not the same one
@@ -4968,7 +4968,7 @@ bool Chan_Stored_t::Akick_erase()
     BTCB();
     NFT("Chan_Stored_t::Akick_erase");
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
     if (Akick != i_Akick.end())
     {
 	MCB(i_Akick.size());
@@ -4991,7 +4991,7 @@ bool Chan_Stored_t::Akick_find(const mstring & entry, const Chan_Stored_t::comms
     FT("Chan_Stored_t::Akick_find", (entry, livelook));
 
 //  entlist_val_ui<mstring> iter = i_Akick.end();
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
     set < entlist_val_t < mstring > >::iterator iter = i_Akick.end();
     if (!i_Akick.empty())
     {
@@ -5072,7 +5072,7 @@ mstring Chan_Stored_t::Akick_string(const mstring & entry, const Chan_Stored_t::
     mstring retval;
 
 //  entlist_val_ui<mstring> iter = Akick;
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
     set < entlist_val_t < mstring > >::iterator iter = Akick;
 
     if (Akick_find(entry, commstat, livelook))
@@ -5087,7 +5087,7 @@ bool Chan_Stored_t::Greet_insert(const mstring & entry, const mstring & nick, co
     BTCB();
     FT("Chan_Stored_t::Greet_insert", (entry, nick, modtime));
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Greet"));
     if (!Greet_find(entry))
     {
 	MCB(i_Greet.size());
@@ -5110,7 +5110,7 @@ bool Chan_Stored_t::Greet_erase()
     BTCB();
     NFT("Chan_Stored_t::Greet_erase");
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Greet"));
     if (Greet != i_Greet.end())
     {
 	MCB(i_Greet.size());
@@ -5132,7 +5132,7 @@ bool Chan_Stored_t::Greet_find(const mstring & nick)
     BTCB();
     FT("Chan_Stored_t::Greet_find", (nick));
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Greet"));
     entlist_i iter = i_Greet.end();
 
     if (!i_Greet.empty())
@@ -5158,7 +5158,7 @@ bool Chan_Stored_t::Message_insert(const mstring & entry, const mstring & nick)
     BTCB();
     FT("Chan_Stored_t::Message_insert", (entry, nick));
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
     MCB(i_Message.size());
     i_Message.push_back(entlist_t(entry, nick));
     MCE(i_Message.size());
@@ -5173,7 +5173,7 @@ bool Chan_Stored_t::Message_erase()
     BTCB();
     NFT("Chan_Stored_t::Message_erase");
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
     if (Message != i_Message.end())
     {
 	MCB(i_Message.size());
@@ -5195,7 +5195,7 @@ bool Chan_Stored_t::Message_find(const unsigned int num)
     BTCB();
     FT("Chan_Stored_t::Message_find", (num));
 
-    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+    MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
     if (num <= 0 || num > i_Message.size())
     {
 	RET(false);
@@ -5338,7 +5338,7 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     if (pElement->IsA(tag_Name))
     {
 	pElement->Retrieve(i_Name);
-	ref_class::lockData(mVarArray("ChanServ", "stored", i_Name.LowerCase()));
+	ref_class::lockData(mVarArray(lck_ChanServ, lck_stored, i_Name.LowerCase()));
     }
     if (pElement->IsA(tag_RegTime))
 	pElement->Retrieve(i_RegTime);
@@ -5584,7 +5584,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     //TODO: Add your source code here
     pOut->BeginObject(tag_Chan_Stored_t);
 
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase()));
     pOut->WriteElement(tag_Name, i_Name);
     pOut->WriteElement(tag_RegTime, i_RegTime);
     pOut->WriteElement(tag_LastUsed, i_LastUsed);
@@ -5642,7 +5642,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_Suspend_Time, i_Suspend_Time);
 
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Level"));
 	for (j = i_Level.begin(); j != i_Level.end(); j++)
 	{
 	    pOut->BeginObject(tag_Level);
@@ -5653,7 +5653,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
 	for (j = i_Access.begin(); j != i_Access.end(); j++)
 	{
 	    pOut->BeginObject(tag_Access);
@@ -5664,7 +5664,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
 	for (k = i_Akick.begin(); k != i_Akick.end(); k++)
 	{
 	    pOut->BeginObject(tag_Akick);
@@ -5674,7 +5674,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Greet"));
 	for (l = i_Greet.begin(); l != i_Greet.end(); l++)
 	{
 	    pOut->BeginObject(tag_Greet);
@@ -5684,7 +5684,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
 	for (l = i_Message.begin(); l != i_Message.end(); l++)
 	{
 	    pOut->BeginObject(tag_Message);
@@ -5708,7 +5708,7 @@ size_t Chan_Stored_t::Usage() const
     BTCB();
     size_t retval = 0;
 
-    WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
+    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase()));
     retval += i_Name.capacity();
     retval += sizeof(i_RegTime.Internal());
     retval += sizeof(i_LastUsed.Internal());
@@ -5745,14 +5745,14 @@ size_t Chan_Stored_t::Usage() const
     set < entlist_val_t < long > >::const_iterator j;
 
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Level"));
 	for (j = i_Level.begin(); j != i_Level.end(); j++)
 	{
 	    j->Usage();
 	}
     }
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Access"));
 	for (j = i_Access.begin(); j != i_Access.end(); j++)
 	{
 	    j->Usage();
@@ -5761,7 +5761,7 @@ size_t Chan_Stored_t::Usage() const
 
     set < entlist_val_t < mstring > >::const_iterator k;
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
 	for (k = i_Akick.begin(); k != i_Akick.end(); k++)
 	{
 	    k->Usage();
@@ -5770,14 +5770,14 @@ size_t Chan_Stored_t::Usage() const
 
     list < entlist_t >::const_iterator l;
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Greet"));
 	for (l = i_Greet.begin(); l != i_Greet.end(); l++)
 	{
 	    retval += l->Usage();
 	}
     }
     {
-	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Message"));
 	for (l = i_Message.begin(); l != i_Message.end(); l++)
 	{
 	    retval += l->Usage();
@@ -6316,14 +6316,14 @@ void ChanServ::AddStored(Chan_Stored_t * in)
 #endif
     }
 
-    RLOCK(("ChanServ", "stored"));
+    RLOCK((lck_ChanServ, lck_stored));
     map_entry < Chan_Stored_t > old_entry(stored, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	stored.erase(in->Name().LowerCase());
     }
-    WLOCK(("ChanServ", "stored"));
+    WLOCK((lck_ChanServ, lck_stored));
     stored[in->Name().LowerCase()] = in;
     ETCB();
 }
@@ -6337,7 +6337,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
     BTCB();
     FT("ChanServ::GetStored", (in));
 
-    RLOCK(("ChanServ", "stored"));
+    RLOCK((lck_ChanServ, lck_stored));
     ChanServ::stored_t::const_iterator iter = stored.find(in.LowerCase());
     if (iter == stored.end())
     {
@@ -6380,7 +6380,7 @@ void ChanServ::RemStored(const mstring & in)
     BTCB();
     FT("ChanServ::RemStored", (in));
 
-    RLOCK(("ChanServ", "stored"));
+    RLOCK((lck_ChanServ, lck_stored));
     ChanServ::stored_t::iterator iter = stored.find(in.LowerCase());
     if (iter == stored.end())
     {
@@ -6397,7 +6397,7 @@ void ChanServ::RemStored(const mstring & in)
 	map_entry < Chan_Stored_t > entry(iter->second);
 	entry->setDelete();
     }
-    WLOCK(("ChanServ", "stored"));
+    WLOCK((lck_ChanServ, lck_stored));
     stored.erase(iter);
     ETCB();
 }
@@ -6406,7 +6406,7 @@ bool ChanServ::IsStored(const mstring & in) const
 {
     BTCB();
     FT("ChanServ::IsStored", (in));
-    RLOCK(("ChanServ", "stored"));
+    RLOCK((lck_ChanServ, lck_stored));
     bool retval = stored.find(in.LowerCase()) != stored.end();
 
     RET(retval);
@@ -6442,14 +6442,14 @@ void ChanServ::AddLive(Chan_Live_t * in)
 #endif
     }
 
-    RLOCK(("ChanServ", "live"));
+    RLOCK((lck_ChanServ, lck_live));
     map_entry < Chan_Live_t > old_entry(live, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	live.erase(in->Name().LowerCase());
     }
-    WLOCK(("ChanServ", "live"));
+    WLOCK((lck_ChanServ, lck_live));
     live[in->Name().LowerCase()] = in;
     ETCB();
 }
@@ -6463,7 +6463,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
     BTCB();
     FT("ChanServ::GetLive", (in));
 
-    RLOCK(("ChanServ", "live", in.LowerCase()));
+    RLOCK((lck_ChanServ, lck_live, in.LowerCase()));
     ChanServ::live_t::const_iterator iter = live.find(in.LowerCase());
     if (iter == live.end())
     {
@@ -6506,7 +6506,7 @@ void ChanServ::RemLive(const mstring & in)
     BTCB();
     FT("ChanServ::RemLive", (in));
 
-    RLOCK(("ChanServ", "live"));
+    RLOCK((lck_ChanServ, lck_live));
     ChanServ::live_t::iterator iter = live.find(in.LowerCase());
     if (iter == live.end())
     {
@@ -6523,7 +6523,7 @@ void ChanServ::RemLive(const mstring & in)
 	map_entry < Chan_Live_t > entry(iter->second);
 	entry->setDelete();
     }
-    WLOCK(("ChanServ", "live"));
+    WLOCK((lck_ChanServ, lck_live));
     live.erase(iter);
     ETCB();
 }
@@ -6532,7 +6532,7 @@ bool ChanServ::IsLive(const mstring & in) const
 {
     BTCB();
     FT("ChanServ::IsLive", (in));
-    RLOCK(("ChanServ", "live"));
+    RLOCK((lck_ChanServ, lck_live));
     bool retval = live.find(in.LowerCase()) != live.end();
 
     RET(retval);
@@ -6575,7 +6575,7 @@ void ChanServ::do_Help(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -6786,7 +6786,7 @@ void ChanServ::do_Info(const mstring & mynick, const mstring & source, const mst
     mstring output;
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -6993,7 +6993,7 @@ void ChanServ::do_Info(const mstring & mynick, const mstring & source, const mst
     if (!output.empty())
 	SEND(mynick, source, "CS_INFO/OPTIONS", (output));
     {
-	RLOCK(("Events"));
+	RLOCK((lck_Events));
 	if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
 	    SEND(mynick, source, "MISC/SYNC", (Magick::instance().events->SyncTime(source)));
     }
@@ -7040,7 +7040,7 @@ void ChanServ::do_List(const mstring & mynick, const mstring & source, const mst
     bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
 		  Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
     {
-	RLOCK(("ChanServ", "stored"));
+	RLOCK((lck_ChanServ, lck_stored));
 	for (iter = Magick::instance().chanserv.StoredBegin(), i = 0, count = 0;
 	     iter != Magick::instance().chanserv.StoredEnd(); iter++)
 	{
@@ -8181,7 +8181,7 @@ void ChanServ::do_Users(const mstring & mynick, const mstring & source, const ms
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -8455,7 +8455,7 @@ void ChanServ::do_Live(const mstring & mynick, const mstring & source, const mst
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -8490,7 +8490,7 @@ void ChanServ::do_Live(const mstring & mynick, const mstring & source, const mst
     ChanServ::live_t::iterator iter;
 
     {
-	RLOCK(("ChanServ", "live"));
+	RLOCK((lck_ChanServ, lck_live));
 	for (iter = Magick::instance().chanserv.LiveBegin(), i = 0, count = 0; iter != Magick::instance().chanserv.LiveEnd();
 	     iter++)
 	{
@@ -8529,7 +8529,7 @@ void ChanServ::do_Detail(const mstring & mynick, const mstring & source, const m
     mstring message = params.Before(" ").UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -8557,7 +8557,7 @@ void ChanServ::do_Detail(const mstring & mynick, const mstring & source, const m
 
     ChanServ::stored_t::iterator iter;
     {
-	RLOCK(("ChanServ", "stored"));
+	RLOCK((lck_ChanServ, lck_stored));
 	for (iter = Magick::instance().chanserv.StoredBegin(); iter != Magick::instance().chanserv.StoredEnd(); iter++)
 	{
 	    map_entry < Chan_Stored_t > cstored(iter->second);
@@ -8576,7 +8576,7 @@ void ChanServ::do_Detail(const mstring & mynick, const mstring & source, const m
 	    }
 	    else
 	    {
-		MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+		MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Access"));
 		if (cstored->Access_find(nick))
 		{
 		    if (output.length())
@@ -8610,7 +8610,7 @@ void ChanServ::do_clear_Users(const mstring & mynick, const mstring & source, co
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -8688,7 +8688,7 @@ void ChanServ::do_clear_Ops(const mstring & mynick, const mstring & source, cons
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -8779,7 +8779,7 @@ void ChanServ::do_clear_HalfOps(const mstring & mynick, const mstring & source, 
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -8870,7 +8870,7 @@ void ChanServ::do_clear_Voices(const mstring & mynick, const mstring & source, c
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -8961,7 +8961,7 @@ void ChanServ::do_clear_Modes(const mstring & mynick, const mstring & source, co
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -9062,7 +9062,7 @@ void ChanServ::do_clear_Bans(const mstring & mynick, const mstring & source, con
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -9150,7 +9150,7 @@ void ChanServ::do_clear_All(const mstring & mynick, const mstring & source, cons
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -9275,7 +9275,7 @@ void ChanServ::do_level_Set(const mstring & mynick, const mstring & source, cons
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", channel.LowerCase(), "Level"));
+    MLOCK((lck_ChanServ, lck_stored, channel.LowerCase(), "Level"));
     if (cstored->Level_find(what))
     {
 	const_cast < entlist_val_t < long > * > (&(*cstored->Level))->Value(num, source);
@@ -9332,7 +9332,7 @@ void ChanServ::do_level_Reset(const mstring & mynick, const mstring & source, co
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", channel.LowerCase(), "Level"));
+    MLOCK((lck_ChanServ, lck_stored, channel.LowerCase(), "Level"));
     if (!what.Matches("ALL", true))
     {
 	if (cstored->Level_find(what) && Magick::instance().chanserv.LVL(what) > Magick::instance().chanserv.Level_Min())
@@ -9375,7 +9375,7 @@ void ChanServ::do_level_List(const mstring & mynick, const mstring & source, con
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -9422,7 +9422,7 @@ void ChanServ::do_level_List(const mstring & mynick, const mstring & source, con
 	SEND(mynick, source, "CS_COMMAND/LEVEL_HEAD", (channel));
     }
 
-    MLOCK(("ChanServ", "stored", channel.LowerCase(), "Level"));
+    MLOCK((lck_ChanServ, lck_stored, channel.LowerCase(), "Level"));
     for (cstored->Level = cstored->Level_begin(); cstored->Level != cstored->Level_end(); cstored->Level++)
     {
 	if (haveset)
@@ -9582,7 +9582,7 @@ void ChanServ::do_access_Add(const mstring & mynick, const mstring & source, con
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+    MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Access"));
     if (cstored->Access_find(who, Chan_Stored_t::C_IsIn))
     {
 	if (cstored->Access->Value() >= cstored->GetAccess(source))
@@ -9677,7 +9677,7 @@ void ChanServ::do_access_Del(const mstring & mynick, const mstring & source, con
 	    return;
 	}
 
-	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Access"));
 	for (i = 1, cstored->Access = cstored->Access_begin(); i < num && cstored->Access != cstored->Access_end();
 	     i++, cstored->Access++);
 	if (cstored->Access != cstored->Access_end())
@@ -9721,7 +9721,7 @@ void ChanServ::do_access_Del(const mstring & mynick, const mstring & source, con
 	    }
 	}
 
-	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Access"));
 	if (cstored->Access_find(who, Chan_Stored_t::C_IsIn))
 	{
 	    if (cstored->Access->Value() >= cstored->GetAccess(source))
@@ -9766,7 +9766,7 @@ void ChanServ::do_access_List(const mstring & mynick, const mstring & source, co
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -9816,7 +9816,7 @@ void ChanServ::do_access_List(const mstring & mynick, const mstring & source, co
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+    MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Access"));
     unsigned int i;
 
     for (i = 1, cstored->Access = cstored->Access_begin(); cstored->Access != cstored->Access_end(); cstored->Access++, i++)
@@ -9947,7 +9947,7 @@ void ChanServ::do_akick_Add(const mstring & mynick, const mstring & source, cons
     }
 
     {
-	MLOCK(("ChanServ", "stored", channel.LowerCase(), "Access"));
+	MLOCK((lck_ChanServ, lck_stored, channel.LowerCase(), "Access"));
 	if (cstored->Access_find(who, Chan_Stored_t::C_IsIn))
 	{
 	    // Reject if they're higher on access list, else erase them
@@ -9966,7 +9966,7 @@ void ChanServ::do_akick_Add(const mstring & mynick, const mstring & source, cons
     }
 
     {
-	MLOCK(("ChanServ", "stored", channel.LowerCase(), "Akick"));
+	MLOCK((lck_ChanServ, lck_stored, channel.LowerCase(), "Akick"));
 	bool rv = cstored->Akick_find(who);
 
 	// Result is false if its a mask, but not the same one
@@ -10104,7 +10104,7 @@ void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, cons
 	    return;
 	}
 
-	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Akick"));
 	for (i = 1, cstored->Akick = cstored->Akick_begin(); i < num && cstored->Akick != cstored->Akick_end();
 	     i++, cstored->Akick++);
 	if (cstored->Akick != cstored->Akick_end())
@@ -10142,7 +10142,7 @@ void ChanServ::do_akick_Del(const mstring & mynick, const mstring & source, cons
 	    }
 	}
 
-	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Akick"));
 	bool rv = cstored->Akick_find(who);
 
 	// Result is false if its a mask, but not the same one
@@ -10178,7 +10178,7 @@ void ChanServ::do_akick_List(const mstring & mynick, const mstring & source, con
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -10228,7 +10228,7 @@ void ChanServ::do_akick_List(const mstring & mynick, const mstring & source, con
 	return;
     }
 
-    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+    MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Akick"));
     int i;
 
     for (i = 1, cstored->Akick = cstored->Akick_begin(); cstored->Akick != cstored->Akick_end(); cstored->Akick++, i++)
@@ -10323,7 +10323,7 @@ void ChanServ::do_greet_Add(const mstring & mynick, const mstring & source, cons
     }
 
     {
-	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
+	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Greet"));
 	if (cstored->Greet_find(target))
 	{
 	    if (cstored->Greet->Entry() [0U] == '!' && source.IsSameAs(target, true) &&
@@ -10402,7 +10402,7 @@ void ChanServ::do_greet_Del(const mstring & mynick, const mstring & source, cons
     else
     {
 	{
-	    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
+	    MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Greet"));
 	    if (cstored->Greet_find(target))
 	    {
 		if (cstored->Greet->Entry() [0U] == '!' && !cstored->GetAccess(source, "OVERGREET"))
@@ -10434,7 +10434,7 @@ void ChanServ::do_greet_List(const mstring & mynick, const mstring & source, con
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -10498,7 +10498,7 @@ void ChanServ::do_greet_List(const mstring & mynick, const mstring & source, con
     bool found = false;
 
     {
-	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
+	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Greet"));
 	for (cstored->Greet = cstored->Greet_begin(); cstored->Greet != cstored->Greet_end(); cstored->Greet++)
 	{
 	    if (all || cstored->Greet->Last_Modifier().IsSameAs(target, true))
@@ -10629,7 +10629,7 @@ void ChanServ::do_message_Del(const mstring & mynick, const mstring & source, co
     }
 
     {
-	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Message"));
+	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Message"));
 	if (cstored->Message_find(num))
 	{
 	    cstored->Message_erase();
@@ -10655,7 +10655,7 @@ void ChanServ::do_message_List(const mstring & mynick, const mstring & source, c
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -10705,7 +10705,7 @@ void ChanServ::do_message_List(const mstring & mynick, const mstring & source, c
     SEND(mynick, source, "LIST/DISPLAY2", (channel, Magick::instance().getMessage(source, "LIST/JOINMSG")));
 
     {
-	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Message"));
+	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Message"));
 	int i;
 
 	for (i = 1, cstored->Message = cstored->Message_begin(); cstored->Message != cstored->Message_end();
@@ -11977,7 +11977,7 @@ void ChanServ::do_set_Join(const mstring & mynick, const mstring & source, const
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -12816,7 +12816,7 @@ void ChanServ::do_lock_Join(const mstring & mynick, const mstring & source, cons
     mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	{
 	    SEND(mynick, source, "MISC/HTM", (message));
@@ -13609,7 +13609,7 @@ void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 
     ChanServ::stored_t::iterator iter;
     {
-	RLOCK(("ChanServ", "stored"));
+	RLOCK((lck_ChanServ, lck_stored));
 	for (iter = StoredBegin(); iter != StoredEnd(); iter++)
 	{
 	    map_entry < Chan_Stored_t > cstored(iter->second);
@@ -13697,40 +13697,40 @@ void ChanServ::PostLoad()
     mstring locked = Magick::instance().chanserv.LCK_MLock();
 
     ChanServ::stored_t::iterator iter;
-    RLOCK(("ChanServ", "stored"));
+    RLOCK((lck_ChanServ, lck_stored));
     for (iter = StoredBegin(); iter != StoredEnd(); iter++)
     {
 	map_entry < Chan_Stored_t > cstored(iter->second);
 	{
-	    MLOCK(("ChanServ", "stored", iter->first, "Level"));
+	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Level"));
 	    for (cstored->Level = cstored->Level_begin(); cstored->Level != cstored->Level_end(); cstored->Level++)
 	    {
 		cstored->Level->PostLoad();
 	    }
 	}
 	{
-	    MLOCK(("ChanServ", "stored", iter->first, "Access"));
+	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Access"));
 	    for (cstored->Access = cstored->Access_begin(); cstored->Access != cstored->Access_end(); cstored->Access++)
 	    {
 		cstored->Access->PostLoad();
 	    }
 	}
 	{
-	    MLOCK(("ChanServ", "stored", iter->first, "Akick"));
+	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Akick"));
 	    for (cstored->Akick = cstored->Akick_begin(); cstored->Akick != cstored->Akick_end(); cstored->Akick++)
 	    {
 		cstored->Akick->PostLoad();
 	    }
 	}
 	{
-	    MLOCK(("ChanServ", "stored", iter->first, "Greet"));
+	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Greet"));
 	    for (cstored->Greet = cstored->Greet_begin(); cstored->Greet != cstored->Greet_end(); cstored->Greet++)
 	    {
 		cstored->Greet->PostLoad();
 	    }
 	}
 	{
-	    MLOCK(("ChanServ", "stored", iter->first, "Message"));
+	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Message"));
 	    for (cstored->Message = cstored->Message_begin(); cstored->Message != cstored->Message_end(); cstored->Message++)
 	    {
 		cstored->Message->PostLoad();

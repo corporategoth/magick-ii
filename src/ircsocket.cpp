@@ -62,7 +62,7 @@ void *IrcSvcHandler::worker(void *in)
 
 	    msg = NULL;
 	    {
-		RLOCK(("IrcSvcHandler"));
+		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler == NULL)
 		    break;
 		msg = dynamic_cast < mMessage * > (Magick::instance().ircsvchandler->message_queue.dequeue());
@@ -88,7 +88,7 @@ void *IrcSvcHandler::worker(void *in)
 		    if (msg != NULL && msg->validated())
 		    {
 			msg->priority(static_cast < u_long > (P_Retry));
-			RLOCK(("IrcSvcHandler"));
+			RLOCK((lck_IrcSvcHandler));
 			if (Magick::instance().ircsvchandler == NULL)
 			    break;
 			Magick::instance().ircsvchandler->enqueue(msg);
@@ -99,7 +99,7 @@ void *IrcSvcHandler::worker(void *in)
 	    size_t msgcnt = 0, thrcnt = 0;
 
 	    {
-		RLOCK(("IrcSvcHandler"));
+		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler != NULL)
 		{
 		    msgcnt = Magick::instance().ircsvchandler->message_queue.method_count();
@@ -207,7 +207,7 @@ int IrcSvcHandler::handle_input(const char *data)
     DumpB();
 
     {
-	WLOCK(("IrcSvcHandler", "traffic"));
+	WLOCK((lck_IrcSvcHandler, "traffic"));
 	for (iter = traffic.begin();
 	     iter != traffic.end() &&
 	     iter->first < now - static_cast < time_t > (Magick::instance().operserv.Max_HTM_Gap() + 2);
@@ -221,9 +221,9 @@ int IrcSvcHandler::handle_input(const char *data)
 
     // Check to see if we're in HTM.
     {
-	WLOCK(("IrcSvcHandler", "htm_gap"));
-	WLOCK2(("IrcSvcHandler", "htm_level"));
-	WLOCK3(("IrcSvcHandler", "last_htm_check"));
+	WLOCK((lck_IrcSvcHandler, "htm_gap"));
+	WLOCK2((lck_IrcSvcHandler, "htm_level"));
+	WLOCK3((lck_IrcSvcHandler, "last_htm_check"));
 	if (static_cast < time_t > (last_htm_check.SecondsSince()) > htm_gap)
 	{
 	    last_htm_check = mDateTime::CurrentDateTime();
@@ -231,12 +231,12 @@ int IrcSvcHandler::handle_input(const char *data)
 	    time_t i;
 
 	    {
-		RLOCK(("IrcSvcHandler", "traffic"));
+		RLOCK((lck_IrcSvcHandler, "traffic"));
 		for (i = now - (htm_gap + 1); i < now; i++)
 		    if (traffic.find(i) != traffic.end())
 			total += traffic[i];
 	    }
-	    RLOCK(("IrcSvcHandler", "htm_threshold"));
+	    RLOCK((lck_IrcSvcHandler, "htm_threshold"));
 	    if (total > (htm_gap * htm_threshold))
 	    {
 		if (htm_gap > static_cast < time_t > (Magick::instance().operserv.Max_HTM_Gap()))
@@ -356,11 +356,11 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 	enqueue_shutdown();
 
     {
-	MLOCK(("AllDependancies"));
+	MLOCK((lck_AllDependancies));
 	mMessage::AllDependancies.clear();
     }
     {
-	MLOCK(("MsgIdMap"));
+	MLOCK((lck_MsgIdMap));
 	map < unsigned long, mMessage * >::iterator mi;
 
 	for (mi = mMessage::MsgIdMap.begin(); mi != mMessage::MsgIdMap.end(); mi++)
@@ -371,23 +371,23 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 
     // Should I do this with SQUIT protection ...?
     {
-	WLOCK(("NickServ", "recovered"));
+	WLOCK((lck_NickServ, "recovered"));
 	Magick::instance().nickserv.recovered.clear();
     }
 
     // Essentially here, we enact SQUIT protection ...
     {
-	WLOCK(("Server", "ToBeSquit"));
-	WLOCK2(("Server", "ServerSquit"));
+	WLOCK((lck_Server, "ToBeSquit"));
+	WLOCK2((lck_Server, "ServerSquit"));
 	Magick::instance().server.DumpB();
 	CB(0, Magick::instance().server.ToBeSquit.size());
 	CB(1, Magick::instance().server.ServerSquit.size());
 	Server::list_t::iterator si;
 	{
-	    RLOCK(("Server", "list"));
+	    RLOCK((lck_Server, lck_list));
 	    for (si = Magick::instance().server.ListBegin(); si != Magick::instance().server.ListEnd(); si++)
 	    {
-		RLOCK2(("Server", "list", si->first));
+		RLOCK2((lck_Server, lck_list, si->first));
 		if (Magick::instance().server.ToBeSquit.find(si->first) != Magick::instance().server.ToBeSquit.end())
 		    Magick::instance().server.ToBeSquit.erase(si->first);
 		if (Magick::instance().server.ServerSquit.find(si->first) != Magick::instance().server.ServerSquit.end())
@@ -417,7 +417,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 
     if (!Magick::instance().Shutdown())
     {
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	NickServ::live_t::iterator iter;
 	vector < mstring > chunked;
 	for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
@@ -438,7 +438,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
     }
 
     {
-	WLOCK(("Server", "list"));
+	WLOCK((lck_Server, lck_list));
 	Magick::instance().server.i_list.clear();
     }
     Magick::instance().server.OurUplink("");
@@ -499,7 +499,7 @@ time_t IrcSvcHandler::HTM_Gap() const
 {
     BTCB();
     NFT("IrcSvcHandler::HTM_Gap");
-    RLOCK(("IrcSvcHandler", "htm_gap"));
+    RLOCK((lck_IrcSvcHandler, "htm_gap"));
     RET(htm_gap);
     ETCB();
 }
@@ -508,7 +508,7 @@ unsigned short IrcSvcHandler::HTM_Level() const
 {
     BTCB();
     NFT("IrcSvcHandler::HTM_Level");
-    RLOCK(("IrcSvcHandler", "htm_level"));
+    RLOCK((lck_IrcSvcHandler, "htm_level"));
     RET(htm_level);
     ETCB();
 }
@@ -517,7 +517,7 @@ size_t IrcSvcHandler::HTM_Threshold() const
 {
     BTCB();
     NFT("IrcSvcHandler::HTM_Threshold");
-    RLOCK(("IrcSvcHandler", "htm_threshold"));
+    RLOCK((lck_IrcSvcHandler, "htm_threshold"));
     RET(htm_threshold);
     ETCB();
 }
@@ -526,7 +526,7 @@ void IrcSvcHandler::HTM_Threshold(const size_t in)
 {
     BTCB();
     FT("IrcSvcHandler::HTM_Threshold", (in));
-    WLOCK(("IrcSvcHandler", "htm_threshold"));
+    WLOCK((lck_IrcSvcHandler, "htm_threshold"));
     MCB(htm_threshold);
     htm_threshold = in;
     MCE(htm_threshold);
@@ -537,9 +537,9 @@ void IrcSvcHandler::HTM(const bool in)
 {
     BTCB();
     FT("IrcSvcHandler::HTM", (in));
-    WLOCK(("IrcSvcHandler", "last_htm_check"));
-    WLOCK2(("IrcSvcHandler", "htm_level"));
-    WLOCK3(("IrcSvcHandler", "htm_gap"));
+    WLOCK((lck_IrcSvcHandler, "last_htm_check"));
+    WLOCK2((lck_IrcSvcHandler, "htm_level"));
+    WLOCK3((lck_IrcSvcHandler, "htm_gap"));
     MCB(last_htm_check);
     CB(1, htm_level);
     CB(2, htm_gap);
@@ -571,7 +571,7 @@ size_t IrcSvcHandler::Average(time_t secs) const
     map < time_t, size_t >::const_iterator iter;
     if (secs > static_cast < time_t > (Magick::instance().operserv.Max_HTM_Gap()))
 	secs = 0;
-    RLOCK(("IrcSvcHandler", "traffic"));
+    RLOCK((lck_IrcSvcHandler, "traffic"));
     for (iter = traffic.begin(); iter != traffic.end() && iter->first < now; iter++)
     {
 	if (secs ? iter->first >= (now - 1) - secs : 1)
@@ -588,7 +588,7 @@ bool IrcSvcHandler::Burst() const
 {
     BTCB();
     NFT("IrcSvcHandler::Burst");
-    RLOCK(("IrcSvcHandler", "i_burst"));
+    RLOCK((lck_IrcSvcHandler, "i_burst"));
     RET(i_burst);
     ETCB();
 }
@@ -597,8 +597,8 @@ float IrcSvcHandler::BurstTime() const
 {
     BTCB();
     NFT("IrcSvcHandler::BurstTime");
-    RLOCK(("IrcSvcHandler", "connect_time"));
-    RLOCK2(("IrcSvcHandler", "i_synctime"));
+    RLOCK((lck_IrcSvcHandler, "connect_time"));
+    RLOCK2((lck_IrcSvcHandler, "i_synctime"));
     float retval = static_cast < float > ((i_synctime - connect_time).asMSeconds() / 1000000.0);
 
     RET(retval);
@@ -609,7 +609,7 @@ mDateTime IrcSvcHandler::SyncTime() const
 {
     BTCB();
     NFT("IrcSvcHandler::SyncTime");
-    RLOCK(("IrcSvcHandler", "i_synctime"));
+    RLOCK((lck_IrcSvcHandler, "i_synctime"));
     RET(i_synctime);
     ETCB();
 }
@@ -618,8 +618,8 @@ void IrcSvcHandler::EndBurst()
 {
     BTCB();
     NFT("IrcSvcHandler::EndBurst");
-    WLOCK(("IrcSvcHandler", "i_burst"));
-    WLOCK2(("IrcSvcHandler", "i_synctime"));
+    WLOCK((lck_IrcSvcHandler, "i_burst"));
+    WLOCK2((lck_IrcSvcHandler, "i_synctime"));
     MCB(i_burst);
     CB(1, i_synctime);
     i_burst = false;
@@ -948,7 +948,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 		    {
 		    case H_Worker:
 			{
-			    RLOCK2(("IrcSvcHandler"));
+			    RLOCK2((lck_IrcSvcHandler));
 			    ACE_Thread_Manager *thr_mgr = NULL;
 
 			    if (Magick::instance().ircsvchandler != NULL)
@@ -974,7 +974,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 			break;
 		    case H_IrcServer:
 			{
-			    RLOCK2(("IrcSvcHandler"));
+			    RLOCK2((lck_IrcSvcHandler));
 			    if (Magick::instance().ircsvchandler != NULL)
 			    {
 				ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
@@ -998,7 +998,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 			break;
 		    case H_Events:
 			{
-			    WLOCK2(("Events"));
+			    WLOCK2((lck_Events));
 			    if (Magick::instance().events != NULL)
 			    {
 				ACE_Thread_Manager *thr_mgr = Magick::instance().events->thr_mgr();
@@ -1070,10 +1070,10 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 
     // Ensure we always have events and DCC tasks.
     {
-	RLOCK(("Events"));
+	RLOCK((lck_Events));
 	if (Magick::instance().events == NULL)
 	{
-	    WLOCK(("Events"));
+	    WLOCK((lck_Events));
 	    Magick::instance().events = new EventTask(&Magick::instance().thr_mgr());
 	    Magick::instance().events->open();
 	}
@@ -1091,7 +1091,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 
     // Force workers to checkin ...
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL)
 	    for (i = 0; i < threads.size(); i++)
 		Magick::instance().ircsvchandler->enqueue_test();
@@ -1241,7 +1241,7 @@ int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *ar
 
     Magick::instance().dh_timer = 0;
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL)
 	{
 	    if (Magick::instance().hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
@@ -1258,7 +1258,7 @@ int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *ar
 	    }
 	    if (!Magick::instance().ircsvchandler->fini())
 		Magick::instance().ircsvchandler->close(0);
-	    WLOCK(("IrcSvcHandler"));
+	    WLOCK((lck_IrcSvcHandler));
 	    delete Magick::instance().ircsvchandler;
 
 	    Magick::instance().ircsvchandler = NULL;
@@ -1361,7 +1361,7 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     int res = 0;
 
     {
-	WLOCK(("IrcSvcHandler"));
+	WLOCK((lck_IrcSvcHandler));
 	res = C_server.connect(Magick::instance().ircsvchandler, addr, ACE_Synch_Options::defaults, laddr);
     }
     if (res == -1)
@@ -1378,7 +1378,7 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     else
     {
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL)
 	    {
 		CB(2, Magick::instance().i_localhost);
@@ -1435,7 +1435,7 @@ ETCB();
 	 mstring *tmp = reinterpret_cast < mstring * > (const_cast < void * > (arg));
 
 	 {
-	     WLOCK(("Server", "ServerSquit"));
+	     WLOCK((lck_Server, "ServerSquit"));
 	     Magick::instance().server.DumpB();
 	     CB(1, Magick::instance().server.ServerSquit.size());
 	     Magick::instance().server.ServerSquit.erase(*tmp);
@@ -1454,7 +1454,7 @@ ETCB();
 	 // QUIT all user's who faked it ...
 	 vector < mstring > chunked;
 	 {
-	     WLOCK2(("Server", "ToBeSquit"));
+	     WLOCK2((lck_Server, "ToBeSquit"));
 	     if (Magick::instance().server.ToBeSquit.find(*tmp) != Magick::instance().server.ToBeSquit.end())
 	     {
 		 list < mstring >::iterator iter;
@@ -1535,8 +1535,8 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     mstring *tmp = reinterpret_cast < mstring * > (const_cast < void * > (arg));
 
     {
-	WLOCK(("Server", "ServerSquit"));
-	WLOCK2(("Server", "ToBeSquit"));
+	WLOCK((lck_Server, "ServerSquit"));
+	WLOCK2((lck_Server, "ToBeSquit"));
 	Magick::instance().server.DumpB();
 	CB(1, Magick::instance().server.ServerSquit.size());
 	CB(2, Magick::instance().server.ToBeSquit.size());
@@ -1551,7 +1551,7 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
     vector < mstring > SquitMe;
     NickServ::live_t::iterator i;
     {
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	for (i = Magick::instance().nickserv.LiveBegin(); i != Magick::instance().nickserv.LiveEnd(); i++)
 	{
 	    map_entry < Nick_Live_t > nlive(i->second);
@@ -1625,7 +1625,7 @@ int InFlight_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 
     if (Magick::instance().nickserv.IsLiveAll(*tmp))
     {
-	RLOCK(("NickServ", "live", tmp->LowerCase()));
+	RLOCK((lck_NickServ, lck_live, tmp->LowerCase()));
 	map_entry < Nick_Live_t > entry = Magick::instance().nickserv.GetLive(*tmp);
 	if (entry->InFlight.File())
 	{
@@ -1670,7 +1670,7 @@ int Part_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 		map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(*tmp);
 		clive->DumpB();
 		{
-		    MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
+		    MLOCK((lck_ChanServ, lck_live, tmp->LowerCase(), "ph_timer"));
 		    CB(1, clive->ph_timer);
 		    clive->ph_timer = 0;
 		    CE(1, clive->ph_timer);
@@ -1776,7 +1776,7 @@ void EventTask::AddChannelModePending(const mstring & in)
 {
     BTCB();
     FT("EventTask::AddChannelModePending", (in));
-    WLOCK(("Events", "cmodes_pending"));
+    WLOCK((lck_Events, "cmodes_pending"));
     MCB(cmodes_pending.size());
     cmodes_pending.insert(in);
     MCE(cmodes_pending.size());
@@ -1787,7 +1787,7 @@ void EventTask::ForceSave()
 {
     BTCB();
     NFT("EventTask::ForceSave");
-    WLOCK(("Events", "last_save"));
+    WLOCK((lck_Events, "last_save"));
     MCB(last_save);
     last_save = mDateTime(0.0);
     MCE(last_save);
@@ -1798,7 +1798,7 @@ void EventTask::ForcePing()
 {
     BTCB();
     NFT("EventTask::ForcePing");
-    WLOCK(("Events", "last_ping"));
+    WLOCK((lck_Events, "last_ping"));
     MCB(last_ping);
     last_ping = mDateTime(0.0);
     MCE(last_ping);
@@ -1809,7 +1809,7 @@ mstring EventTask::SyncTime(const mstring & source) const
 {
     BTCB();
     FT("EventTask::SyncTime", (source));
-    RLOCK(("Events", "last_save"));
+    RLOCK((lck_Events, "last_save"));
     mstring retval = ToHumanTime(Magick::instance().config.Savetime() - last_save.SecondsSince(), source);
 
     RET(retval);
@@ -1850,11 +1850,11 @@ int EventTask::svc(void)
     bool proc;
 
     {
-	WLOCK(("Events", "last_expire"));
-	WLOCK2(("Events", "last_save"));
-	WLOCK3(("Events", "last_check"));
-	WLOCK4(("Events", "last_ping"));
-	WLOCK5(("Events", "last_msgcheck"));
+	WLOCK((lck_Events, "last_expire"));
+	WLOCK2((lck_Events, "last_save"));
+	WLOCK3((lck_Events, "last_check"));
+	WLOCK4((lck_Events, "last_ping"));
+	WLOCK5((lck_Events, "last_msgcheck"));
 	last_expire = last_save = last_check = last_ping = last_msgcheck = mDateTime::CurrentDateTime();
     }
     DumpB();
@@ -1872,7 +1872,7 @@ int EventTask::svc(void)
 	else
 	{
 	    // Make sure we're sync'd to network ...
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler == NULL || Magick::instance().ircsvchandler->Burst())
 		proc = false;
 	    else
@@ -1889,10 +1889,10 @@ int EventTask::svc(void)
 	{
 	    // This is mainly used for 'only do this if users have had
 	    // enough time to rectify the situation since sync' ...
-	    if_RLOCK (("Events", "last_expire"), last_expire.SecondsSince() >= Magick::instance().config.Cycletime())
+	    if_RLOCK ((lck_Events, "last_expire"), last_expire.SecondsSince() >= Magick::instance().config.Cycletime())
 	    {
 		do_expire(synctime);
-		WLOCK(("Events", "last_expire"));
+		WLOCK((lck_Events, "last_expire"));
 		MCB(last_expire);
 		last_expire = mDateTime::CurrentDateTime();
 		MCE(last_expire);
@@ -1900,12 +1900,12 @@ int EventTask::svc(void)
 
 	    if (Magick::instance().Saving())
 	    {
-		WLOCK(("Events", "last_save"));
+		WLOCK((lck_Events, "last_save"));
 		MCB(last_save);
 		last_save = mDateTime::CurrentDateTime();
 		MCE(last_save);
 	    }
-	    if_RLOCK2 (("Events", "last_save"), last_save.SecondsSince() >= Magick::instance().config.Savetime())
+	    if_RLOCK2 ((lck_Events, "last_save"), last_save.SecondsSince() >= Magick::instance().config.Savetime())
 	    {
 		CP(("Starting DATABASE SAVE ..."));
 
@@ -1925,17 +1925,17 @@ int EventTask::svc(void)
 		else
 #endif
 		{
-		    WLOCK(("Events", "last_save"));
+		    WLOCK((lck_Events, "last_save"));
 		    MCB(last_save);
 		    last_save = mDateTime::CurrentDateTime();
 		    MCE(last_save);
 		}
 	    }
 
-	    if_RLOCK2 (("Events", "last_check"), last_check.SecondsSince() >= Magick::instance().config.Checktime())
+	    if_RLOCK2 ((lck_Events, "last_check"), last_check.SecondsSince() >= Magick::instance().config.Checktime())
 	    {
 		do_check(synctime);
-		WLOCK(("Events", "last_check"));
+		WLOCK((lck_Events, "last_check"));
 		MCB(last_check);
 		last_check = mDateTime::CurrentDateTime();
 		MCE(last_check);
@@ -1944,19 +1944,20 @@ int EventTask::svc(void)
 	    if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
 		do_modes(synctime);
 
-	    if_RLOCK2 (("Events", "last_msgcheck"), last_msgcheck.SecondsSince() > Magick::instance().config.MSG_Check_Time())
+	    if_RLOCK2 ((lck_Events, "last_msgcheck"),
+		       last_msgcheck.SecondsSince() > Magick::instance().config.MSG_Check_Time())
 	    {
 		do_msgcheck(synctime);
-		WLOCK(("Events", "last_msgcheck"));
+		WLOCK((lck_Events, "last_msgcheck"));
 		MCB(last_msgcheck);
 		last_msgcheck = mDateTime::CurrentDateTime();
 		MCE(last_msgcheck);
 	    }
 
-	    if_RLOCK2 (("Events", "last_ping"), last_ping.SecondsSince() >= Magick::instance().config.Ping_Frequency())
+	    if_RLOCK2 ((lck_Events, "last_ping"), last_ping.SecondsSince() >= Magick::instance().config.Ping_Frequency())
 	    {
 		do_ping(synctime);
-		WLOCK(("Events", "last_ping"));
+		WLOCK((lck_Events, "last_ping"));
 		MCB(last_ping);
 		last_ping = mDateTime::CurrentDateTime();
 		MCE(last_ping);
@@ -2182,7 +2183,7 @@ void EventTask::do_expire(mDateTime & synctime)
     //try
     {
 	vector < mstring > expired_akills;
-	MLOCK(("OperServ", "Akill"));
+	MLOCK((lck_OperServ, "Akill"));
 	for (Magick::instance().operserv.Akill = Magick::instance().operserv.Akill_begin();
 	     Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end(); Magick::instance().operserv.Akill++)
 	{
@@ -2225,7 +2226,7 @@ void EventTask::do_expire(mDateTime & synctime)
     {
 	vector < pair < mstring, mstring > > expired_nicks;
 	{
-	    RLOCK2(("NickServ", "stored"));
+	    RLOCK2((lck_NickServ, lck_stored));
 	    for (nsi = Magick::instance().nickserv.StoredBegin(); nsi != Magick::instance().nickserv.StoredEnd(); nsi++)
 	    {
 		map_entry < Nick_Stored_t > nstored(nsi->second);
@@ -2286,7 +2287,7 @@ void EventTask::do_expire(mDateTime & synctime)
     {
 	vector < pair < mstring, mstring > > expired_chans;
 	{
-	    RLOCK2(("ChanServ", "stored"));
+	    RLOCK2((lck_ChanServ, lck_stored));
 	    for (csi = Magick::instance().chanserv.StoredBegin(); csi != Magick::instance().chanserv.StoredEnd(); csi++)
 	    {
 		map_entry < Chan_Stored_t > cstored(csi->second);
@@ -2335,12 +2336,12 @@ void EventTask::do_expire(mDateTime & synctime)
 	map < mstring, vector < size_t > > expired_news;
 	map < mstring, vector < size_t > >::iterator iter;
 	{
-	    RLOCK2(("MemoServ", "channel"));
+	    RLOCK2((lck_MemoServ, lck_channel));
 	    for (ni = Magick::instance().memoserv.ChannelBegin(); ni != Magick::instance().memoserv.ChannelEnd(); ni++)
 	    {
 		size_t cnt = 0;
 
-		RLOCK3(("MemoServ", "channel", ni->first));
+		RLOCK3((lck_MemoServ, lck_channel, ni->first));
 		for (lni = ni->second.begin(), i = 0; lni != ni->second.end(); lni++, i++)
 		{
 		    if (!lni->NoExpire() && lni->Time().SecondsSince() > Magick::instance().memoserv.News_Expire())
@@ -2395,7 +2396,7 @@ void EventTask::do_check(mDateTime & synctime)
 
     if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
     {
-	RLOCK(("ChanServ", "live"));
+	RLOCK((lck_ChanServ, lck_live));
 	for (cli = Magick::instance().chanserv.LiveBegin(); cli != Magick::instance().chanserv.LiveEnd(); cli++)
 	{
 	    map_entry < Chan_Live_t > clive(cli->second);
@@ -2419,7 +2420,7 @@ void EventTask::do_check(mDateTime & synctime)
 		    vector < mstring > rem;
 		    vector < mstring >::iterator ri;
 		    {
-			RLOCK2(("ChanServ", "live", cli->first, "bans"));
+			RLOCK2((lck_ChanServ, lck_live, cli->first, "bans"));
 			for (di = clive->bans.begin(); di != clive->bans.end(); di++)
 			{
 			    if (di->second.SecondsSince() > bantime)
@@ -2439,7 +2440,7 @@ void EventTask::do_check(mDateTime & synctime)
 	    chunked.clear();
 	    if (found)
 	    {
-		WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
+		WLOCK((lck_ChanServ, lck_live, cli->first, "recent_parts"));
 		for (di = clive->recent_parts.begin(); di != clive->recent_parts.end(); di++)
 		{
 		    if (di->second.SecondsSince() > parttime)
@@ -2450,7 +2451,7 @@ void EventTask::do_check(mDateTime & synctime)
 	    }
 	    else if (clive->recent_parts.size())
 	    {
-		WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
+		WLOCK((lck_ChanServ, lck_live, cli->first, "recent_parts"));
 		clive->recent_parts.clear();
 	    }
 	}
@@ -2464,7 +2465,7 @@ void EventTask::do_check(mDateTime & synctime)
 	Magick::instance().nickserv.IsLive(Magick::instance().nickserv.FirstName()))
     {
 	{
-	    RLOCK(("NickServ", "live"));
+	    RLOCK((lck_NickServ, lck_live));
 	    for (nli = Magick::instance().nickserv.LiveBegin(); nli != Magick::instance().nickserv.LiveEnd(); nli++)
 	    {
 		map_entry < Nick_Live_t > nlive(nli->second);
@@ -2519,7 +2520,7 @@ void EventTask::do_check(mDateTime & synctime)
 	// Sign off clients we've decided to take.
 	chunked.clear();
 	{
-	    RLOCK(("NickServ", "recovered"));
+	    RLOCK((lck_NickServ, "recovered"));
 	    for (di = Magick::instance().nickserv.RecoveredBegin(); di != Magick::instance().nickserv.RecoveredEnd(); di++)
 	    {
 		if (di->second.SecondsSince() >= Magick::instance().nickserv.Release())
@@ -2553,7 +2554,7 @@ void EventTask::do_modes(mDateTime & synctime)
     unsigned int i;
 
     {
-	WLOCK(("Events", "cmodes_pending"));
+	WLOCK((lck_Events, "cmodes_pending"));
 	cmp = cmodes_pending;
 	MCB(cmodes_pending.size());
 	cmodes_pending.clear();
@@ -2574,8 +2575,8 @@ void EventTask::do_modes(mDateTime & synctime)
 		mstring modeparam;
 
 		{
-		    RLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
-		    RLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
+		    RLOCK2((lck_ChanServ, lck_live, *iter, "p_modes_off"));
+		    RLOCK3((lck_ChanServ, lck_live, *iter, "p_modes_off_params"));
 		    CP(("p_modes_off_size %d (%s)", chan->p_modes_off.size(), chan->p_modes_off.c_str()));
 		    for (i = 0, j = 0, k = 0; i < chan->p_modes_off.size(); i++)
 		    {
@@ -2602,14 +2603,14 @@ void EventTask::do_modes(mDateTime & synctime)
 			    k++;
 			}
 		    }
-		    WLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
-		    WLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
+		    WLOCK2((lck_ChanServ, lck_live, *iter, "p_modes_off"));
+		    WLOCK3((lck_ChanServ, lck_live, *iter, "p_modes_off_params"));
 		    chan->p_modes_off.erase();
 		    chan->p_modes_off_params.clear();
 		}
 		{
-		    RLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
-		    RLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
+		    RLOCK2((lck_ChanServ, lck_live, *iter, "p_modes_on"));
+		    RLOCK3((lck_ChanServ, lck_live, *iter, "p_modes_on_params"));
 		    if (mode.size() && chan->p_modes_on.size())
 			mode += "+";
 		    CP(("p_modes_on_size %d (%s)", chan->p_modes_on.size(), chan->p_modes_on.c_str()));
@@ -2637,8 +2638,8 @@ void EventTask::do_modes(mDateTime & synctime)
 			    k++;
 			}
 		    }
-		    WLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
-		    WLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
+		    WLOCK2((lck_ChanServ, lck_live, *iter, "p_modes_on"));
+		    WLOCK3((lck_ChanServ, lck_live, *iter, "p_modes_on_params"));
 		    chan->p_modes_on.erase();
 		    chan->p_modes_on_params.clear();
 		}
@@ -2672,7 +2673,7 @@ void EventTask::do_msgcheck(mDateTime & synctime)
     vector < mstring > chunked;
 
     {
-	MLOCK(("AllDependancies"));
+	MLOCK((lck_AllDependancies));
 	map < mMessage::type_t, map < mstring, set < unsigned long > > >::iterator j;
 
 	for (j = mMessage::AllDependancies.begin(); j != mMessage::AllDependancies.end(); j++)
@@ -2687,7 +2688,7 @@ void EventTask::do_msgcheck(mDateTime & synctime)
 		for (l = k->second.begin(); l != k->second.end(); l++)
 		{
 		    {
-			MLOCK2(("MsgIdMap"));
+			MLOCK2((lck_MsgIdMap));
 			map < unsigned long, mMessage * >::iterator m = mMessage::MsgIdMap.find(*l);
 
 			if (m != mMessage::MsgIdMap.end())
@@ -2718,7 +2719,7 @@ void EventTask::do_msgcheck(mDateTime & synctime)
     {
 	if (*m != NULL)
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL)
 	    {
 		COM(("(%d) Requing without filled dependancies\n", (*m)->msgid()));
@@ -2747,7 +2748,7 @@ void EventTask::do_ping(mDateTime & synctime)
     double min = -1, max = 0, sum = 0, avg = 0, count = 0;
 
     {
-	RLOCK2(("Server", "list"));
+	RLOCK2((lck_Server, lck_list));
 	for (si = Magick::instance().server.ListBegin(); si != Magick::instance().server.ListEnd(); si++)
 	{
 	    map_entry < Server_t > server(si->second);
@@ -2779,10 +2780,10 @@ void EventTask::do_ping(mDateTime & synctime)
     }
 
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() <= 3)
 	{
-	    RLOCK2(("Server", "list"));
+	    RLOCK2((lck_Server, lck_list));
 	    for (si = Magick::instance().server.ListBegin(); si != Magick::instance().server.ListEnd(); si++)
 	    {
 		map_entry < Server_t > server(si->second);

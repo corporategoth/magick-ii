@@ -89,7 +89,7 @@ public:
 
 	    ACE_OS::memset(buf, 0, 513);
 	    ACE_OS::fgets(buf, 512, stdin);
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL)
 		Magick::instance().ircsvchandler->handle_input(buf);
 	}
@@ -568,7 +568,7 @@ int Magick::Start()
     LOG(LM_STARTUP, "COMMANDLINE/START_COMPLETE", (PACKAGE, VERSION));
     // Can only open these after fork if we want then to live
     {
-	WLOCK(("Events"));
+	WLOCK((lck_Events));
 	events = new EventTask(&thr_mgr());
 	if (events == NULL)
 	{
@@ -601,7 +601,7 @@ int Magick::Run()
 
     NLOG(LM_STARTUP, "COMMANDLINE/START_EVENTS");
     {
-	WLOCK(("Events"));
+	WLOCK((lck_Events));
 	if (events != NULL)
 	    events->open(reinterpret_cast < void * > (this));
     }
@@ -743,7 +743,7 @@ int Magick::Stop()
     if (events != NULL)
     {
 	events->wait();
-	WLOCK(("Events"));
+	WLOCK((lck_Events));
 	delete events;
 
 	events = NULL;
@@ -2208,7 +2208,7 @@ bool Magick::get_config_values()
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
-		WLOCK(("Server", "WaitIsOn"));
+		WLOCK((lck_Server, "WaitIsOn"));
 		server.WaitIsOn.insert(nickserv.names.ExtractWord(i + 1, " "));
 		isonstr += nickserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
@@ -2251,7 +2251,7 @@ bool Magick::get_config_values()
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
-		WLOCK(("Server", "WaitIsOn"));
+		WLOCK((lck_Server, "WaitIsOn"));
 		server.WaitIsOn.insert(chanserv.names.ExtractWord(i + 1, " "));
 		isonstr += chanserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
@@ -2292,7 +2292,7 @@ bool Magick::get_config_values()
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
-		WLOCK(("Server", "WaitIsOn"));
+		WLOCK((lck_Server, "WaitIsOn"));
 		server.WaitIsOn.insert(memoserv.names.ExtractWord(i + 1, " "));
 		isonstr += memoserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
@@ -2333,7 +2333,7 @@ bool Magick::get_config_values()
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
-		WLOCK(("Server", "WaitIsOn"));
+		WLOCK((lck_Server, "WaitIsOn"));
 		server.WaitIsOn.insert(operserv.names.ExtractWord(i + 1, " "));
 		isonstr += operserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
@@ -2374,7 +2374,7 @@ bool Magick::get_config_values()
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
-		WLOCK(("Server", "WaitIsOn"));
+		WLOCK((lck_Server, "WaitIsOn"));
 		server.WaitIsOn.insert(commserv.names.ExtractWord(i + 1, " "));
 		isonstr += commserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
@@ -2415,7 +2415,7 @@ bool Magick::get_config_values()
 			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
-		WLOCK(("Server", "WaitIsOn"));
+		WLOCK((lck_Server, "WaitIsOn"));
 		server.WaitIsOn.insert(servmsg.names.ExtractWord(i + 1, " "));
 		isonstr += servmsg.names.ExtractWord(i + 1, " ") + " ";
 	    }
@@ -3011,7 +3011,7 @@ bool Magick::get_config_values()
     if (commserv.IsList(commserv.sadmin.Name))
     {
 	comm = commserv.GetList(commserv.sadmin.Name);
-	MLOCK(("CommServ", "list", commserv.sadmin.Name, "member"));
+	MLOCK((lck_CommServ, lck_list, commserv.sadmin.Name, "member"));
 	while (comm->size())
 	{
 	    comm->member = comm->begin();
@@ -3027,7 +3027,7 @@ bool Magick::get_config_values()
     comm->Private(commserv.sadmin.Private);
     comm->OpenMemos(commserv.sadmin.OpenMemos);
     {
-	MLOCK(("CommServ", "list", commserv.sadmin.Name, "member"));
+	MLOCK((lck_CommServ, lck_list, commserv.sadmin.Name, "member"));
 	for (i = 1; i <= operserv.services_admin.WordCount(", "); i++)
 	    comm->insert(operserv.services_admin.ExtractWord(i, ", "), operserv.FirstName());
     }
@@ -3074,7 +3074,7 @@ bool Magick::get_config_values()
     if (commserv.IsList(commserv.all.Name))
     {
 	comm = commserv.GetList(commserv.all.Name);
-	MLOCK(("CommServ", "list", commserv.all.Name, "member"));
+	MLOCK((lck_CommServ, lck_list, commserv.all.Name, "member"));
 	while (comm->size())
 	{
 	    comm->member = comm->begin();
@@ -3095,7 +3095,7 @@ bool Magick::get_config_values()
     if (commserv.IsList(commserv.regd.Name))
     {
 	comm = commserv.GetList(commserv.regd.Name);
-	MLOCK(("CommServ", "list", commserv.regd.Name, "member"));
+	MLOCK((lck_CommServ, lck_list, commserv.regd.Name, "member"));
 	while (comm->size())
 	{
 	    comm->member = comm->begin();
@@ -3164,7 +3164,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 	    {
 	    case Heartbeat_Handler::H_Worker:
 		{
-		    RLOCK(("IrcSvcHandler"));
+		    RLOCK((lck_IrcSvcHandler));
 		    if (Magick::instance().ircsvchandler != NULL)
 			thr_mgr = & Magick::instance().ircsvchandler->tm;
 		    else
@@ -3173,7 +3173,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 		break;
 	    case Heartbeat_Handler::H_IrcServer:
 		{
-		    RLOCK(("IrcSvcHandler"));
+		    RLOCK((lck_IrcSvcHandler));
 		    if (Magick::instance().ircsvchandler != NULL)
 			thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 		}
@@ -3186,7 +3186,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 		break;
 	    case Heartbeat_Handler::H_Events:
 		{
-		    WLOCK(("Events"));
+		    WLOCK((lck_Events));
 		    if (Magick::instance().events != NULL)
 		    {
 			thr_mgr = Magick::instance().events->thr_mgr();
@@ -3250,7 +3250,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:		// Save DB's (often prequil to -KILL!)
 	{
-	    RLOCK(("Events"));
+	    RLOCK((lck_Events));
 	    if (Magick::instance().events != NULL)
 	    {
 		LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SAVE", (signum));
@@ -3559,7 +3559,7 @@ void Magick::Disconnect(const bool reconnect)
     MCE(i_reconnect);
     server.sraw("QUIT :" + startup.Services_Quitmsg());
     {
-	RLOCK(("IrcSvcHandler"));
+	RLOCK((lck_IrcSvcHandler));
 	if (ircsvchandler != NULL)
 	{
 	    if (Magick::instance().hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
@@ -3592,7 +3592,7 @@ void Magick::Disconnect(const bool reconnect)
 
 void Magick::send(const mstring & in) const
 {
-    RLOCK(("IrcSvcHandler"));
+    RLOCK((lck_IrcSvcHandler));
     if (ircsvchandler != NULL)
 	ircsvchandler->send(in);
 }

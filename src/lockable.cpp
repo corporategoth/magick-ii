@@ -690,7 +690,7 @@ bool mSocket::Connect(const ACE_INET_Addr & addr, const unsigned long timeout)
 {
     FT("mSocket::Connect", ("(ACE_INET_Addr) addr", timeout));
 
-    WLOCK(("mSocket", sockid));
+    WLOCK((lck_mSocket, sockid));
     if (sock != NULL)
 	close();
 
@@ -749,7 +749,7 @@ bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
     FT("mSocket::Accept", (port, timeout));
     ACE_INET_Addr addr(port, Magick::instance().LocalHost());
 
-    WLOCK(("mSocket", sockid));
+    WLOCK((lck_mSocket, sockid));
     if (sock != NULL)
 	close();
 
@@ -790,7 +790,7 @@ bool mSocket::Bind(ACE_SOCK_Stream * in, const dir_enum direction, const bool al
     if (in == NULL)
 	RET(false);
 
-    WLOCK(("mSocket", sockid));
+    WLOCK((lck_mSocket, sockid));
     if (sock != NULL)
 	close();
 
@@ -813,7 +813,7 @@ bool mSocket::Bind(ACE_SOCK_Stream * in, const dir_enum direction, const bool al
 ACE_SOCK_Stream *mSocket::Unbind()
 {
     NFT("mSocket::Unbind");
-    WLOCK(("mSocket", sockid));
+    WLOCK((lck_mSocket, sockid));
 #ifdef MAGICK_TRACE_WORKS
     trace.End(Last_Error_String());
 #endif
@@ -827,7 +827,7 @@ ACE_SOCK_Stream *mSocket::Unbind()
 mstring mSocket::Local_Host() const
 {
     NFT("mSocket::Local_Host");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     mstring retval(local.get_host_addr());
 
     RET(retval);
@@ -836,7 +836,7 @@ mstring mSocket::Local_Host() const
 unsigned long mSocket::Local_IP() const
 {
     NFT("mSocket::Local_IP");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     unsigned long retval = local.get_ip_address();
 
     RET(retval);
@@ -845,7 +845,7 @@ unsigned long mSocket::Local_IP() const
 unsigned short mSocket::Local_Port() const
 {
     NFT("mSocket::Local_Port");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     unsigned short retval = local.get_port_number();
 
     RET(retval);
@@ -854,7 +854,7 @@ unsigned short mSocket::Local_Port() const
 mstring mSocket::Remote_Host() const
 {
     NFT("mSocket::Remote_Host");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     mstring retval = remote.get_host_addr();
 
     RET(retval);
@@ -863,7 +863,7 @@ mstring mSocket::Remote_Host() const
 unsigned long mSocket::Remote_IP() const
 {
     NFT("mSocket::Remote_IP");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     unsigned long retval = remote.get_ip_address();
 
     RET(retval);
@@ -872,7 +872,7 @@ unsigned long mSocket::Remote_IP() const
 unsigned short mSocket::Remote_Port() const
 {
     NFT("mSocket::Remote_Port");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     unsigned short retval = remote.get_port_number();
 
     RET(retval);
@@ -881,7 +881,7 @@ unsigned short mSocket::Remote_Port() const
 bool mSocket::IsConnected() const
 {
     NFT("mSocket::IsConnected");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     RET(sock != NULL);
 }
 
@@ -889,7 +889,7 @@ void mSocket::Resolve(const socktype_enum type, const mstring & info)
 {
     FT("mSocket::Resolve", (static_cast < int > (type), info));
 #ifdef MAGICK_TRACE_WORKS
-    WLOCK(("mSocket", sockid));
+    WLOCK((lck_mSocket, sockid));
     trace.Resolve(type, info);
 #else
     static_cast < void > (type);
@@ -900,14 +900,14 @@ void mSocket::Resolve(const socktype_enum type, const mstring & info)
 int mSocket::Last_Error() const
 {
     NFT("mSocket::Last_Error");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     RET(last_error);
 }
 
 mstring mSocket::Last_Error_String() const
 {
     NFT("mSocket::Last_Error_String");
-    RLOCK(("mSocket", sockid));
+    RLOCK((lck_mSocket, sockid));
     mstring retval = strerror(last_error);
 
     RET(retval);
@@ -918,7 +918,7 @@ ssize_t mSocket::send(void *buf, const size_t len, const unsigned long timeout)
     FT("mSocket::send", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
 
-    WLOCK(("mSocket", sockid));
+    WLOCK((lck_mSocket, sockid));
     ssize_t retval = sock->send(buf, len, timeout ? &tv : 0);
 
     if (retval < 0)
@@ -937,7 +937,7 @@ ssize_t mSocket::recv(void *buf, const size_t len, const unsigned long timeout)
     FT("mSocket::recv", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
 
-    WLOCK(("mSocket", sockid));
+    WLOCK((lck_mSocket, sockid));
     ssize_t retval = sock->recv(buf, len, timeout ? &tv : 0);
 
     if (retval < 0)
@@ -956,7 +956,7 @@ int mSocket::close()
     NFT("mSocket::close");
     int retval = 0;
 
-    WLOCK(("mSocket", sockid));
+    WLOCK((lck_mSocket, sockid));
     if (sock != NULL)
     {
 #ifdef MAGICK_TRACE_WORKS

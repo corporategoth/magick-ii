@@ -330,7 +330,7 @@ void Protocol::DumpE() const
 void Server_t::defaults()
 {
     NFT("Server_t::defaults");
-    ref_class::lockData(mVarArray("Server", "list", i_Name.LowerCase()));
+    ref_class::lockData(mVarArray(lck_Server, lck_list, i_Name.LowerCase()));
     i_Hops = 0;
     i_Ping = 0.0;
     i_Lag = 0;
@@ -379,7 +379,7 @@ Server_t &Server_t::operator=(const Server_t & in)
 {
     FT("Server_t::operator=", ("(const Server_t &) in"));
     i_Name = in.i_Name;
-    ref_class::lockData(mVarArray("Server", "list", i_Name.LowerCase()));
+    ref_class::lockData(mVarArray(lck_Server, lck_list, i_Name.LowerCase()));
     i_AltName = in.i_AltName;
     i_Numeric = in.i_Numeric;
     i_Uplink = in.i_Uplink;
@@ -394,14 +394,14 @@ Server_t &Server_t::operator=(const Server_t & in)
 mstring Server_t::AltName() const
 {
     NFT("Server_t::AltName");
-    RLOCK(("Server", "list", i_Name.LowerCase(), "i_AltName"));
+    RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_AltName"));
     RET(i_AltName);
 }
 
 void Server_t::AltName(const mstring & in)
 {
     FT("Server_t::AltName", (in));
-    WLOCK(("Server", "list", i_Name.LowerCase(), "i_AltName"));
+    WLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_AltName"));
     MCB(i_AltName);
     i_AltName = in;
     MCE(i_AltName);
@@ -410,14 +410,14 @@ void Server_t::AltName(const mstring & in)
 unsigned long Server_t::Numeric() const
 {
     NFT("Server_t::Numeric");
-    RLOCK(("Server", "list", i_Name.LowerCase(), "i_Numeric"));
+    RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Numeric"));
     RET(i_Numeric);
 }
 
 void Server_t::Numeric(const unsigned long in)
 {
     FT("Server_t::Numeric", (in));
-    WLOCK(("Server", "list", i_Name.LowerCase(), "i_Numeric"));
+    WLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Numeric"));
     MCB(i_Numeric);
     i_Numeric = in;
     MCE(i_Numeric);
@@ -426,21 +426,21 @@ void Server_t::Numeric(const unsigned long in)
 mstring Server_t::Uplink() const
 {
     NFT("Server_t::Uplink");
-    RLOCK(("Server", "list", i_Name.LowerCase(), "i_Uplink"));
+    RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Uplink"));
     RET(i_Uplink);
 }
 
 int Server_t::Hops() const
 {
     NFT("Server_t::Hops");
-    RLOCK(("Server", "list", i_Name.LowerCase(), "i_Hops"));
+    RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Hops"));
     RET(i_Hops);
 }
 
 mstring Server_t::Description() const
 {
     NFT("Server_t::Description");
-    RLOCK(("Server", "list", i_Name.LowerCase(), "i_Description"));
+    RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Description"));
     RET(i_Description);
 }
 
@@ -448,7 +448,7 @@ void Server_t::Ping()
 {
     NFT("Server_t::Ping");
 
-    WLOCK(("Server", "list", i_Name.LowerCase(), "i_Ping"));
+    WLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Ping"));
     if (i_Ping == mDateTime(0.0))
     {
 	Magick::instance().server.
@@ -464,10 +464,10 @@ void Server_t::Ping()
 void Server_t::Pong()
 {
     NFT("Server_t::Pong");
-    WLOCK(("Server", "list", i_Name.LowerCase(), "i_Ping"));
+    WLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Ping"));
     if (i_Ping != mDateTime(0.0))
     {
-	WLOCK2(("Server", "list", i_Name.LowerCase(), "i_Lag"));
+	WLOCK2((lck_Server, lck_list, i_Name.LowerCase(), "i_Lag"));
 	MCB(i_Lag);
 	CB(1, i_Ping);
 	i_Lag = static_cast < float > (i_Ping.MSecondsSince() / 1000000.0);
@@ -482,14 +482,14 @@ void Server_t::Pong()
 float Server_t::Lag() const
 {
     NFT("Server_t::Lag");
-    RLOCK(("Server", "list", i_Name.LowerCase(), "i_Lag"));
+    RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Lag"));
     RET(i_Lag);
 }
 
 bool Server_t::Jupe() const
 {
     NFT("Server_t::Jupe");
-    RLOCK(("Server", "list", i_Name.LowerCase(), "i_Jupe"));
+    RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Jupe"));
     RET(i_Jupe);
 }
 
@@ -501,7 +501,7 @@ unsigned int Server_t::Users() const
 
     NickServ::live_t::iterator k;
     {
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	for (k = Magick::instance().nickserv.LiveBegin(); k != Magick::instance().nickserv.LiveEnd(); k++)
 	{
 	    map_entry < Nick_Live_t > nlive(k->second);
@@ -520,7 +520,7 @@ unsigned int Server_t::Opers() const
 
     NickServ::live_t::iterator k;
     {
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	for (k = Magick::instance().nickserv.LiveBegin(); k != Magick::instance().nickserv.LiveEnd(); k++)
 	{
 	    map_entry < Nick_Live_t > nlive(k->second);
@@ -538,7 +538,7 @@ vector < mstring > Server_t::Downlinks() const
     Server::list_t::iterator iter;
 
     {
-	RLOCK(("Server", "list"));
+	RLOCK((lck_Server, lck_list));
 	for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 	{
 	    map_entry < Server_t > server(iter->second);
@@ -557,7 +557,7 @@ vector < mstring > Server_t::AllDownlinks() const
     bool found = false;
 
     {
-	RLOCK(("Server", "list"));
+	RLOCK((lck_Server, lck_list));
 	for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 	{
 	    map_entry < Server_t > server(iter->second);
@@ -575,7 +575,7 @@ vector < mstring > Server_t::AllDownlinks() const
 	found = false;
 	for (unsigned int i = 0; i < uplinks.size(); i++)
 	{
-	    RLOCK(("Server", "list"));
+	    RLOCK((lck_Server, lck_list));
 	    for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 	    {
 		map_entry < Server_t > server(iter->second);
@@ -599,7 +599,7 @@ size_t Server_t::Usage() const
 {
     size_t retval = 0;
 
-    WLOCK(("Server", "list", i_Name.LowerCase()));
+    WLOCK((lck_Server, lck_list, i_Name.LowerCase()));
     retval += i_Name.capacity();
     retval += i_AltName.capacity();
     retval += i_Uplink.capacity();
@@ -619,7 +619,7 @@ mstring Protocol::Numeric_t::FindServerNumeric(unsigned long n) const
 
     Server::list_t::const_iterator iter;
 
-    RLOCK(("Server", "list"));
+    RLOCK((lck_Server, lck_list));
     for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
     {
 	map_entry < Server_t > server(iter->second);
@@ -640,7 +640,7 @@ mstring Protocol::Numeric_t::FindUserNumeric(unsigned long n) const
 
     NickServ::live_t::const_iterator iter;
 
-    RLOCK(("NickServ", "live"));
+    RLOCK((lck_NickServ, lck_live));
     for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
     {
 	map_entry < Nick_Live_t > nlive(iter->second);
@@ -661,7 +661,7 @@ mstring Protocol::Numeric_t::FindChannelNumeric(unsigned long n) const
 
     ChanServ::live_t::const_iterator iter;
 
-    RLOCK(("ChanServ", "live"));
+    RLOCK((lck_ChanServ, lck_live));
     for (iter = Magick::instance().chanserv.LiveBegin(); iter != Magick::instance().chanserv.LiveEnd(); iter++)
     {
 	map_entry < Chan_Live_t > clive(iter->second);
@@ -848,7 +848,7 @@ void Server::SignOnAll()
     mstring doison;
     unsigned int i;
 
-    WLOCK(("Server", "WaitIsOn"));
+    WLOCK((lck_Server, "WaitIsOn"));
     for (i = 1; i <= Magick::instance().operserv.GetNames().WordCount(" "); i++)
     {
 	if (!Magick::instance().nickserv.IsLive(Magick::instance().operserv.GetNames().ExtractWord(i, " ")))
@@ -945,7 +945,7 @@ Server::Server()
 {
     NFT("Server::Server");
     messages = true;
-    WLOCK(("Server", "i_UserMax"));
+    WLOCK((lck_Server, "i_UserMax"));
     i_UserMax = 0;
     DumpE();
 }
@@ -953,14 +953,14 @@ Server::Server()
 size_t Server::UserMax() const
 {
     NFT("Server::UserMax");
-    RLOCK(("Server", "i_UserMax"));
+    RLOCK((lck_Server, "i_UserMax"));
     RET(i_UserMax);
 }
 
 void Server::OurUplink(const mstring & server)
 {
     FT("Server::OurUplink", (server));
-    WLOCK(("Server", "i_OurUplink"));
+    WLOCK((lck_Server, "i_OurUplink"));
     MCB(i_OurUplink);
     i_OurUplink = server;
     MCE(i_OurUplink);
@@ -969,7 +969,7 @@ void Server::OurUplink(const mstring & server)
 mstring Server::OurUplink() const
 {
     NFT("Server::OurUplink");
-    RLOCK(("Server", "i_OurUplink"));
+    RLOCK((lck_Server, "i_OurUplink"));
     RET(i_OurUplink);
 }
 
@@ -984,11 +984,11 @@ void Server::FlushMsgs(const mstring & nick)
     if (!Magick::instance().nickserv.IsLive(nick))
 	return;
 
-    RLOCK(("Server", "ToBeSent", nick.LowerCase()));
+    RLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
     MCB(ToBeSent.size());
     if ((i = ToBeSent.find(nick.LowerCase())) != ToBeSent.end())
     {
-	WLOCK(("Server", "ToBeSent", i->first));
+	WLOCK((lck_Server, "ToBeSent", i->first));
 	for (j = i->second.begin(); j != i->second.end(); j++)
 	{
 	    if (j->second.SecondsSince() > Magick::instance().config.Squit_Protect())
@@ -1094,14 +1094,14 @@ void Server::AddList(Server_t * in)
 #endif
     }
 
-    RLOCK(("Server", "list"));
+    RLOCK((lck_Server, lck_list));
     map_entry < Server_t > old_entry(i_list, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
 	i_list.erase(in->Name().LowerCase());
     }
-    WLOCK(("Server", "list"));
+    WLOCK((lck_Server, lck_list));
     i_list[in->Name().LowerCase()] = in;
 }
 
@@ -1113,7 +1113,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
 {
     FT("Server::GetList", (in));
 
-    RLOCK(("Server", "list", in.LowerCase()));
+    RLOCK((lck_Server, lck_list, in.LowerCase()));
     Server::list_t::const_iterator iter = i_list.find(in.LowerCase());
     if (iter == i_list.end())
     {
@@ -1154,7 +1154,7 @@ void Server::RemList(const mstring & in, bool downlinks)
 {
     FT("Server::RemList", (in, downlinks));
 
-    RLOCK(("Server", "list"));
+    RLOCK((lck_Server, lck_list));
     Server::list_t::iterator iter = i_list.find(in.LowerCase());
     if (iter == i_list.end())
     {
@@ -1184,7 +1184,7 @@ void Server::RemList(const mstring & in, bool downlinks)
 	me->setDelete();
     }
 
-    WLOCK(("Server", "list"));
+    WLOCK((lck_Server, lck_list));
     i_list.erase(iter);
 
     for (unsigned int i = 0; i < Kill.size(); i++)
@@ -1205,7 +1205,7 @@ void Server::RemList(const mstring & in, bool downlinks)
 bool Server::IsList(const mstring & server) const
 {
     FT("Server::IsList", (server));
-    RLOCK(("Server", "list"));
+    RLOCK((lck_Server, lck_list));
     bool retval = (i_list.find(server.LowerCase()) != i_list.end());
 
     RET(retval);
@@ -1250,7 +1250,7 @@ mstring Server::GetChannel(const mstring & channel) const
 bool Server::IsSquit(const mstring & server) const
 {
     FT("Server::IsSquit", (server));
-    RLOCK(("Server", "ServerSquit"));
+    RLOCK((lck_Server, "ServerSquit"));
     bool retval = (ServerSquit.find(server.LowerCase()) != ServerSquit.end());
 
     RET(retval);
@@ -1380,7 +1380,7 @@ void Server::AKILL(const mstring & host, const mstring & reason, const unsigned 
     vector < pair < mstring, unsigned long > > killusers;
 
     {
-	RLOCK(("NickServ", "live"));
+	RLOCK((lck_NickServ, lck_live));
 	for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 	{
 	    map_entry < Nick_Live_t > nlive(iter->second);
@@ -1417,7 +1417,7 @@ void Server::ANONKILL(const mstring & nick, const mstring & dest, const mstring 
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_KILL, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -1486,7 +1486,7 @@ void Server::GLOBOPS(const mstring & nick, const mstring & message)
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_GLOBOPS, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -1523,7 +1523,7 @@ void Server::HELPOPS(const mstring & nick, const mstring & message)
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_HELPOPS, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -1565,7 +1565,7 @@ void Server::CHATOPS(const mstring & nick, const mstring & message)
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_CHATOPS, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -1607,7 +1607,7 @@ void Server::INVITE(const mstring & nick, const mstring & dest, const mstring & 
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_INVITE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -1708,7 +1708,7 @@ void Server::KICK(const mstring & nick, const mstring & dest, const mstring & ch
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_KICK, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -1756,7 +1756,7 @@ void Server::KILL(const mstring & nick, const mstring & dest, const mstring & re
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_KILL, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -1891,7 +1891,7 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    tmp->Numeric(proto.Numeric.FindUserNumeric());
 	Magick::instance().nickserv.AddLive(tmp);
 	{
-	    WLOCK2(("Server", "i_UserMax"));
+	    WLOCK2((lck_Server, "i_UserMax"));
 	    if (i_UserMax < Magick::instance().nickserv.LiveSize())
 	    {
 		MCB(i_UserMax);
@@ -2095,7 +2095,7 @@ void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & 
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_NOTICE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -2201,7 +2201,7 @@ void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring &
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_PRIVMSG, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -2276,7 +2276,7 @@ void Server::SQLINE(const mstring & nick, const mstring & target, const mstring 
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_SQLINE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -2407,7 +2407,7 @@ void Server::SVSHOST(const mstring & mynick, const mstring & nick, const mstring
 
     if (!Magick::instance().nickserv.IsLive(mynick))
     {
-	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[mynick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					       mstring > > (t_SVSHOST, mDateTime::CurrentDateTime(), triplet < mstring,
@@ -2446,7 +2446,7 @@ void Server::SVSKILL(const mstring & mynick, const mstring & nick, const mstring
 
     if (!Magick::instance().nickserv.IsLive(mynick))
     {
-	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[mynick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					       mstring > > (t_SVSKILL, mDateTime::CurrentDateTime(), triplet < mstring,
@@ -2495,7 +2495,7 @@ void Server::SVSNICK(const mstring & mynick, const mstring & nick, const mstring
 
     if (!Magick::instance().nickserv.IsLive(mynick))
     {
-	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[mynick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					       mstring > > (t_SVSNICK, mDateTime::CurrentDateTime(), triplet < mstring,
@@ -2569,7 +2569,7 @@ void Server::SVSMODE(const mstring & mynick, const mstring & nick, const mstring
 
     if (!Magick::instance().nickserv.IsLive(mynick))
     {
-	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[mynick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					       mstring > > (t_SVSMODE, mDateTime::CurrentDateTime(), triplet < mstring,
@@ -2606,7 +2606,7 @@ void Server::TOPIC(const mstring & nick, const mstring & setter, const mstring &
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_TOPIC, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -2665,7 +2665,7 @@ void Server::UNSQLINE(const mstring & nick, const mstring & target)
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_UNSQLINE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -2696,7 +2696,7 @@ void Server::WALLOPS(const mstring & nick, const mstring & message)
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+	WLOCK((lck_Server, "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
 	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
 					     mstring > > (t_WALLOPS, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
@@ -2846,7 +2846,7 @@ void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & 
     else if (msgtype == "ADMIN")
     {
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
@@ -2882,13 +2882,13 @@ void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & 
 	    // HAS to be AFTER the nickname is added to map.
 	    CommServ::list_t::iterator iter;
 	    {
-		RLOCK2(("CommServ", "list"));
+		RLOCK2((lck_CommServ, lck_list));
 		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		{
 		    map_entry < Committee_t > comm(iter->second);
 		    if (comm->IsOn(source))
 		    {
-			MLOCK(("CommServ", "list", iter->first, "message"));
+			MLOCK((lck_CommServ, lck_list, iter->first, "message"));
 			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
 			    Magick::instance().servmsg.send(source,
@@ -3174,7 +3174,7 @@ void Server::parse_I(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// :source INFO :server/nick
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
@@ -3308,7 +3308,7 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 		    (params.ExtractWord(1, ": "),
 		     (!Magick::instance().nickserv.IsLive(source) ? source : Magick::instance().nickserv.GetLive(source)->
 		      Mask(Nick_Live_t::N_U_P_H))));
-		WLOCK2(("Server", "WaitIsOn"));
+		WLOCK2((lck_Server, "WaitIsOn"));
 		WaitIsOn.insert(params.ExtractWord(1, ": "));
 		sraw(((proto.Tokens() &&
 		       !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") : mstring("ISON")) + " " +
@@ -3347,7 +3347,7 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 	//:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
 
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
@@ -3363,7 +3363,7 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 		     Magick::instance().startup.Server_Name() + " :0 " + Magick::instance().startup.Server_Desc());
 
 		Server::list_t::iterator iter;
-		RLOCK2(("Server", "list"));
+		RLOCK2((lck_Server, lck_list));
 		for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 		{
 		    map_entry < Server_t > server(iter->second);
@@ -3381,7 +3381,7 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 	sraw("321 " + source + " Channel :Users  Name");
 
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
@@ -3395,7 +3395,7 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 	    {
 		ChanServ::live_t::iterator iter;
 		{
-		    RLOCK2(("ChanServ", "live"));
+		    RLOCK2((lck_ChanServ, lck_live));
 		    for (iter = Magick::instance().chanserv.LiveBegin(); iter != Magick::instance().chanserv.LiveEnd(); iter++)
 		    {
 			map_entry < Chan_Live_t > clive(iter->second);
@@ -3491,7 +3491,7 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
 	{
 	    sraw("375 " + source + " :Message Of The Day");
 	    {
-		RLOCK(("IrcSvcHandler"));
+		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 		{
 		    mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
@@ -3547,11 +3547,11 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    // DONT kill when we do SQUIT protection.
 	    map < mstring, list < mstring > >::iterator i;
 	    {
-		RLOCK(("Server", "ToBeSquit"));
+		RLOCK((lck_Server, "ToBeSquit"));
 		for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 		{
 		    list < mstring >::iterator k;
-		    WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
+		    WLOCK2((lck_Server, "ToBeSquit", i->first.LowerCase()));
 		    for (k = i->second.begin(); k != i->second.end(); k++)
 			if (k->IsSameAs(newnick, true))
 			{
@@ -3755,7 +3755,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		}
 
 		{
-		    WLOCK2(("Server", "i_UserMax"));
+		    WLOCK2((lck_Server, "i_UserMax"));
 		    if (i_UserMax < Magick::instance().nickserv.LiveSize())
 		    {
 			MCB(i_UserMax);
@@ -3772,7 +3772,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		mstring setmode;
 
 		{
-		    RLOCK2(("CommServ", "list"));
+		    RLOCK2((lck_CommServ, lck_list));
 		    for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		    {
 			map_entry < Committee_t > comm(iter->second);
@@ -3791,7 +3791,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 			    else if (iter->first == Magick::instance().commserv.SADMIN_Name())
 				setmode += Magick::instance().commserv.SADMIN_SetMode();
 
-			    MLOCK(("CommServ", "list", iter->first, "message"));
+			    MLOCK((lck_CommServ, lck_list, iter->first, "message"));
 			    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			    {
 				Magick::instance().servmsg.send(newnick,
@@ -3856,7 +3856,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		    mstring setmode;
 
 		    {
-			RLOCK2(("CommServ", "list"));
+			RLOCK2((lck_CommServ, lck_list));
 			for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd();
 			     iter++)
 			{
@@ -3876,7 +3876,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 				else if (iter->first == Magick::instance().commserv.SADMIN_Name())
 				    setmode += Magick::instance().commserv.SADMIN_SetMode();
 
-				MLOCK(("CommServ", "list", iter->first, "message"));
+				MLOCK((lck_CommServ, lck_list, iter->first, "message"));
 				for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 				{
 				    Magick::instance().servmsg.send(newnick,
@@ -3947,7 +3947,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	if (!IsChan(dest))
 	{
 	    {
-		RLOCK(("IrcSvcHandler"));
+		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
 		{
 		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", ("NOTICE", source, params.ExtractWord(1, ": ")));
@@ -4059,7 +4059,7 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	if (!IsChan(dest))
 	{
 	    {
-		RLOCK(("IrcSvcHandler"));
+		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
 		{
 		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", ("PRIVMSG", source, params.ExtractWord(1, ": ")));
@@ -4116,12 +4116,12 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
 	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(source);
 	    numeric = nlive->Numeric();
 	    nlive->SetSquit();
-	    WLOCK2(("Server", "ToBeSquit"));
+	    WLOCK2((lck_Server, "ToBeSquit"));
 	    MCB(ToBeSquit.size());
 	    ToBeSquit[server2.LowerCase()].push_back(source.LowerCase());
 	    LOG(LM_NOTICE, "OTHER/SQUIT_FIRST", (server2, server1));
 
-	    WLOCK3(("Server", "ServerSquit"));
+	    WLOCK3((lck_Server, "ServerSquit"));
 	    if (ServerSquit.find(nlive->Server()) == ServerSquit.end())
 	    {
 		CB(1, ServerSquit.size());
@@ -4538,11 +4538,11 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	// DONT kill when we do SQUIT protection.
 	map < mstring, list < mstring > >::iterator i;
 	{
-	    RLOCK(("Server", "ToBeSquit"));
+	    RLOCK((lck_Server, "ToBeSquit"));
 	    for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 	    {
 		list < mstring >::iterator k;
-		WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
+		WLOCK2((lck_Server, "ToBeSquit", i->first.LowerCase()));
 		for (k = i->second.begin(); k != i->second.end(); k++)
 		    if (k->IsSameAs(newnick, true))
 		    {
@@ -4751,7 +4751,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    }
 
 	    {
-		WLOCK2(("Server", "i_UserMax"));
+		WLOCK2((lck_Server, "i_UserMax"));
 		if (i_UserMax < Magick::instance().nickserv.LiveSize())
 		{
 		    MCB(i_UserMax);
@@ -4769,7 +4769,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    mstring setmode;
 
 	    {
-		RLOCK2(("CommServ", "list"));
+		RLOCK2((lck_CommServ, lck_list));
 		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		{
 		    map_entry < Committee_t > comm(iter->second);
@@ -4788,7 +4788,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			else if (iter->first == Magick::instance().commserv.SADMIN_Name())
 			    setmode += Magick::instance().commserv.SADMIN_SetMode();
 
-			MLOCK(("CommServ", "list", iter->first, "message"));
+			MLOCK((lck_CommServ, lck_list, iter->first, "message"));
 			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
 			    Magick::instance().servmsg.send(newnick,
@@ -4864,8 +4864,8 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    RemList(svr->Name());
 
 	    {
-		WLOCK2(("Server", "ToBeSquit"));
-		WLOCK3(("Server", "ServerSquit"));
+		WLOCK2((lck_Server, "ToBeSquit"));
+		WLOCK3((lck_Server, "ServerSquit"));
 		MCB(ToBeSquit.size());
 		CB(1, ServerSquit.size());
 		for (i = 0; i < tlist.size(); i++)
@@ -4894,7 +4894,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    vector < pair < mstring, unsigned long > > chunked2;
 
 	    {
-		RLOCK(("NickServ", "live"));
+		RLOCK((lck_NickServ, lck_live));
 		for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 		{
 		    map_entry < Nick_Live_t > nlive(iter->second);
@@ -5112,7 +5112,7 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
 //:vampire.darker.net 209 ChanServ Class 10 :1
 //:vampire.darker.net 209 ChanServ Class 1 :7
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
@@ -5150,7 +5150,7 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
 
 	    NickServ::live_t::iterator iter;
 	    {
-		RLOCK2(("NickServ", "live"));
+		RLOCK2((lck_NickServ, lck_live));
 		for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 		{
 		    map_entry < Nick_Live_t > nlive(iter->second);
@@ -5242,11 +5242,11 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	// DONT kill when we do SQUIT protection.
 	map < mstring, list < mstring > >::iterator i;
 	{
-	    RLOCK(("Server", "ToBeSquit"));
+	    RLOCK((lck_Server, "ToBeSquit"));
 	    for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 	    {
 		list < mstring >::iterator k;
-		WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
+		WLOCK2((lck_Server, "ToBeSquit", i->first.LowerCase()));
 		for (k = i->second.begin(); k != i->second.end(); k++)
 		    if (k->IsSameAs(newnick, true))
 		    {
@@ -5357,7 +5357,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	    }
 
 	    {
-		WLOCK2(("Server", "i_UserMax"));
+		WLOCK2((lck_Server, "i_UserMax"));
 		if (i_UserMax < Magick::instance().nickserv.LiveSize())
 		{
 		    MCB(i_UserMax);
@@ -5374,7 +5374,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	    mstring setmode;
 
 	    {
-		RLOCK2(("CommServ", "list"));
+		RLOCK2((lck_CommServ, lck_list));
 		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		{
 		    map_entry < Committee_t > comm(iter->second);
@@ -5393,7 +5393,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 			else if (iter->first == Magick::instance().commserv.SADMIN_Name())
 			    setmode += Magick::instance().commserv.SADMIN_SetMode();
 
-			MLOCK(("CommServ", "list", iter->first, "message"));
+			MLOCK((lck_CommServ, lck_list, iter->first, "message"));
 			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
 			    Magick::instance().servmsg.send(newnick,
@@ -5556,7 +5556,7 @@ void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & 
 //:soul.darker.net 352 ChanServ #operzone satan680 pc134.net19.ktv.koping.se vampire.darker.net Alien G*@ :2 am I GOD ?
 //:soul.darker.net 315 ChanServ vampire.darker.net :End of /WHO list.
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
@@ -5584,7 +5584,7 @@ void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & 
 	//:soul.darker.net 318 ChanServ PreZ :End of /WHOIS list.
 
 	{
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"), mVarArray(msgtype));
@@ -5747,7 +5747,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
     case 303:			// RPL_ISON
 	{
 	    {
-		RLOCK(("IrcSvcHandler"));
+		RLOCK((lck_IrcSvcHandler));
 		if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->Burst())
 		{
 		    Magick::instance().ircsvchandler->EndBurst();
@@ -5767,14 +5767,14 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 	    {
 		// Remove clients from 'signon list' who are
 		// already on the network.
-		WLOCK(("Server", "WaitIsOn"));
+		WLOCK((lck_Server, "WaitIsOn"));
 		if (WaitIsOn.find(params.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
 		    WaitIsOn.erase(params.ExtractWord(i, ": "));
 	    }
 	    if (WaitIsOn.size())
 	    {
 		set < mstring >::reverse_iterator k;
-		RLOCK(("Server", "WaitIsOn"));
+		RLOCK((lck_Server, "WaitIsOn"));
 		for (k = WaitIsOn.rbegin(); k != WaitIsOn.rend(); k++)
 		{
 		    if (Magick::instance().operserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
@@ -5800,7 +5800,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 
 			    // Should be fact finding ONLY ...
 			    {
-				RLOCK2(("ChanServ", "stored"));
+				RLOCK2((lck_ChanServ, lck_stored));
 				for (iter = Magick::instance().chanserv.StoredBegin();
 				     iter != Magick::instance().chanserv.StoredEnd(); iter++)
 				{
@@ -5896,7 +5896,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 		}
 	    }
 	    {
-		WLOCK(("Server", "WaitIsOn"));
+		WLOCK((lck_Server, "WaitIsOn"));
 		WaitIsOn.clear();
 	    }
 	    if (!proto.EndBurst().empty())

@@ -463,7 +463,7 @@ void mMessage::AddDependancies()
     }
 
     {
-	MLOCK(("MsgIdMap"));
+	MLOCK((lck_MsgIdMap));
 	msgid_ = LastMsgId++;
 	while (MsgIdMap.find(msgid_) != MsgIdMap.end())
 	    msgid_ = LastMsgId++;
@@ -481,10 +481,10 @@ void mMessage::AddDependancies()
 	    if (Magick::instance().server.GetServer(iter->second).empty())
 	    {
 		added++;
-		MLOCK2(("AllDependancies"));
+		MLOCK2((lck_AllDependancies));
 		if (added == 1)
 		{
-		    MLOCK(("MsgIdMap"));
+		    MLOCK((lck_MsgIdMap));
 		    MsgIdMap[msgid_] = this;
 		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
@@ -498,10 +498,10 @@ void mMessage::AddDependancies()
 	    if (!Magick::instance().server.GetServer(iter->second).empty())
 	    {
 		added++;
-		MLOCK2(("AllDependancies"));
+		MLOCK2((lck_AllDependancies));
 		if (added == 1)
 		{
-		    MLOCK(("MsgIdMap"));
+		    MLOCK((lck_MsgIdMap));
 		    MsgIdMap[msgid_] = this;
 		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
@@ -515,10 +515,10 @@ void mMessage::AddDependancies()
 	    if (Magick::instance().server.GetUser(iter->second).empty())
 	    {
 		added++;
-		MLOCK2(("AllDependancies"));
+		MLOCK2((lck_AllDependancies));
 		if (added == 1)
 		{
-		    MLOCK(("MsgIdMap"));
+		    MLOCK((lck_MsgIdMap));
 		    MsgIdMap[msgid_] = this;
 		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
@@ -532,10 +532,10 @@ void mMessage::AddDependancies()
 	    if (!Magick::instance().server.GetUser(iter->second).empty())
 	    {
 		added++;
-		MLOCK2(("AllDependancies"));
+		MLOCK2((lck_AllDependancies));
 		if (added == 1)
 		{
-		    MLOCK(("MsgIdMap"));
+		    MLOCK((lck_MsgIdMap));
 		    MsgIdMap[msgid_] = this;
 		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
@@ -549,10 +549,10 @@ void mMessage::AddDependancies()
 	    if (Magick::instance().server.GetChannel(iter->second).empty())
 	    {
 		added++;
-		MLOCK2(("AllDependancies"));
+		MLOCK2((lck_AllDependancies));
 		if (added == 1)
 		{
-		    MLOCK(("MsgIdMap"));
+		    MLOCK((lck_MsgIdMap));
 		    MsgIdMap[msgid_] = this;
 		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
@@ -566,10 +566,10 @@ void mMessage::AddDependancies()
 	    if (!Magick::instance().server.GetChannel(iter->second).empty())
 	    {
 		added++;
-		MLOCK2(("AllDependancies"));
+		MLOCK2((lck_AllDependancies));
 		if (added == 1)
 		{
-		    MLOCK(("MsgIdMap"));
+		    MLOCK((lck_MsgIdMap));
 		    MsgIdMap[msgid_] = this;
 		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
@@ -586,10 +586,10 @@ void mMessage::AddDependancies()
 		IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
 	    {
 		added++;
-		MLOCK2(("AllDependancies"));
+		MLOCK2((lck_AllDependancies));
 		if (added == 1)
 		{
-		    MLOCK(("MsgIdMap"));
+		    MLOCK((lck_MsgIdMap));
 		    MsgIdMap[msgid_] = this;
 		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
@@ -610,10 +610,10 @@ void mMessage::AddDependancies()
 	    else
 	    {
 		added++;
-		MLOCK2(("AllDependancies"));
+		MLOCK2((lck_AllDependancies));
 		if (added == 1)
 		{
-		    MLOCK(("MsgIdMap"));
+		    MLOCK((lck_MsgIdMap));
 		    MsgIdMap[msgid_] = this;
 		}
 		AllDependancies[iter->first] [iter->second].insert(msgid_);
@@ -652,7 +652,7 @@ bool mMessage::RecheckDependancies()
 		{
 		    resolved = true;
 		    iter->third = true;
-		    MLOCK2(("AllDependancies"));
+		    MLOCK2((lck_AllDependancies));
 		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
 		    {
 			if ((j = i->second.find(msgid_)) != i->second.end())
@@ -667,7 +667,7 @@ bool mMessage::RecheckDependancies()
 		{
 		    resolved = true;
 		    iter->third = true;
-		    MLOCK2(("AllDependancies"));
+		    MLOCK2((lck_AllDependancies));
 		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
 		    {
 			if ((j = i->second.find(msgid_)) != i->second.end())
@@ -682,7 +682,7 @@ bool mMessage::RecheckDependancies()
 		{
 		    resolved = true;
 		    iter->third = true;
-		    MLOCK2(("AllDependancies"));
+		    MLOCK2((lck_AllDependancies));
 		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
 		    {
 			if ((j = i->second.find(msgid_)) != i->second.end())
@@ -697,7 +697,7 @@ bool mMessage::RecheckDependancies()
 		{
 		    resolved = true;
 		    iter->third = true;
-		    MLOCK2(("AllDependancies"));
+		    MLOCK2((lck_AllDependancies));
 		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
 		    {
 			if ((j = i->second.find(msgid_)) != i->second.end())
@@ -712,7 +712,7 @@ bool mMessage::RecheckDependancies()
 		{
 		    resolved = true;
 		    iter->third = true;
-		    MLOCK2(("AllDependancies"));
+		    MLOCK2((lck_AllDependancies));
 		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
 		    {
 			if ((j = i->second.find(msgid_)) != i->second.end())
@@ -727,7 +727,7 @@ bool mMessage::RecheckDependancies()
 		{
 		    resolved = true;
 		    iter->third = true;
-		    MLOCK2(("AllDependancies"));
+		    MLOCK2((lck_AllDependancies));
 		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
 		    {
 			if ((j = i->second.find(msgid_)) != i->second.end())
@@ -745,7 +745,7 @@ bool mMessage::RecheckDependancies()
 		{
 		    resolved = true;
 		    iter->third = true;
-		    MLOCK2(("AllDependancies"));
+		    MLOCK2((lck_AllDependancies));
 		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
 		    {
 			if ((j = i->second.find(msgid_)) != i->second.end())
@@ -763,7 +763,7 @@ bool mMessage::RecheckDependancies()
 		{
 		    resolved = true;
 		    iter->third = true;
-		    MLOCK2(("AllDependancies"));
+		    MLOCK2((lck_AllDependancies));
 		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
 		    {
 			if ((j = i->second.find(msgid_)) != i->second.end())
@@ -784,7 +784,7 @@ bool mMessage::RecheckDependancies()
     {
 	CP(("No more dependancies for %d.", msgid_));
 	{
-	    MLOCK(("MsgIdMap"));
+	    MLOCK((lck_MsgIdMap));
 	    map < unsigned long, mMessage * >::iterator k = MsgIdMap.find(msgid_);
 
 	    if (k != MsgIdMap.end())
@@ -874,7 +874,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
     set < unsigned long > mydep;
 
     {
-	MLOCK(("AllDependancies"));
+	MLOCK((lck_AllDependancies));
 	map < type_t, map < mstring, set < unsigned long > > >::iterator i = AllDependancies.find(type);
 
 	if (i != AllDependancies.end())
@@ -896,7 +896,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 	mMessage *msg = NULL;
 
 	{
-	    MLOCK(("MsgIdMap"));
+	    MLOCK((lck_MsgIdMap));
 	    map < unsigned long, mMessage * >::iterator iter = MsgIdMap.find(*k);
 
 	    if (iter != MsgIdMap.end())
@@ -919,7 +919,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 	    CP(("No more dependancies for %d.", msg->msgid()));
 	    msg->priority(static_cast < unsigned long > (P_DepFilled));
 
-	    RLOCK(("IrcSvcHandler"));
+	    RLOCK((lck_IrcSvcHandler));
 	    if (Magick::instance().ircsvchandler != NULL)
 		Magick::instance().ircsvchandler->enqueue(msg);
 	}
