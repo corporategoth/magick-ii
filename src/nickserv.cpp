@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2000/03/27 21:26:12  prez
+** More bug fixes due to testing, also implemented revenge.
+**
 ** Revision 1.70  2000/03/26 14:59:37  prez
 ** LOADS of bugfixes due to testing in the real-time environment
 ** Also enabled the SECURE OperServ option in the CFG file.
@@ -693,7 +696,7 @@ void Nick_Live_t::Quit(mstring reason)
 		Parent->chanserv.stored[try_chan_ident[i]].Password());
 
     if (Parent->nickserv.IsStored(i_Name) &&
-	Parent->nickserv.stored[i_Name].IsOnline())
+	Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
 	Parent->nickserv.stored[i_Name.LowerCase()].Quit(reason);
 }
 
@@ -844,13 +847,15 @@ void Nick_Live_t::Name(mstring in)
 
     if (Parent->nickserv.IsStored(i_Name))
     {
-	if (Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
+	if (Parent->nickserv.stored[i_Name.LowerCase()].Forbidden())
+	{
+	    Parent->nickserv.send(i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/FORBIDDEN"));
+	    return;
+	}
+	else if (Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
 	    Parent->nickserv.stored[i_Name.LowerCase()].Signon(i_realname, Mask(U_P_H).After("!"));
 	else if (Parent->nickserv.stored[i_Name.LowerCase()].Protect())
-	{
 	    Parent->nickserv.send(i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PROTECTED"));
-	}
-
     }
 
     // Send notices for committees we were NOT on
@@ -910,11 +915,14 @@ void Nick_Live_t::Mode(mstring in)
 		Parent->operserv.RemHost(i_host);
 		MLOCK(("OperServ", "OperDeny"));
 		if (Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
-		    !IsServices())
+		    !IsServices() && !(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+		    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(i_Name)))
 		{
 		    if (Parent->server.proto.SVS())
 		    {
 			SendMode("-oAa");
+			send(Parent->operserv.FirstName(), i_Name,
+				Parent->getMessage(i_Name, "OS_STATUS/ISOPERDENY"));
 		    }
 		    else
 		    {
@@ -5605,8 +5613,11 @@ void NickServ::load_database(wxInputStream& in)
     {
 	COM(("Loading NICK entry %d ...", i));
 	in>>tmpstored;
-	stored[tmpstored.Name().LowerCase()]=tmpstored;
-	COM(("Entry NICK %s loaded ...", tmpstored.Name().c_str()));
+	if (tmpstored.Name().Len())
+	{
+	    stored[tmpstored.Name().LowerCase()]=tmpstored;
+	    COM(("Entry NICK %s loaded ...", tmpstored.Name().c_str()));
+	}
     }
 
     // Go through the map and populate 'slaves',

@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.209  2000/03/27 21:26:12  prez
+** More bug fixes due to testing, also implemented revenge.
+**
 ** Revision 1.208  2000/03/26 14:59:37  prez
 ** LOADS of bugfixes due to testing in the real-time environment
 ** Also enabled the SECURE OperServ option in the CFG file.
@@ -1801,6 +1804,8 @@ bool Magick::get_config_values()
     in.Read(ts_ChanServ+"LCK_NOEXPIRE",&chanserv.lck_noexpire,false);
     in.Read(ts_ChanServ+"DEF_ANARCHY",&chanserv.def_anarchy,false);
     in.Read(ts_ChanServ+"LCK_ANARCHY",&chanserv.lck_anarchy,false);
+    in.Read(ts_ChanServ+"DEF_KICKONBAN",&chanserv.def_kickonban,false);
+    in.Read(ts_ChanServ+"LCK_KICKONBAN",&chanserv.lck_kickonban,false);
     in.Read(ts_ChanServ+"DEF_RESTRICTED",&chanserv.def_restricted,false);
     in.Read(ts_ChanServ+"LCK_RESTRICTED",&chanserv.lck_restricted,false);
     in.Read(ts_ChanServ+"DEF_JOIN",&chanserv.def_join,false);

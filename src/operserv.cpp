@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/03/27 21:26:13  prez
+** More bug fixes due to testing, also implemented revenge.
+**
 ** Revision 1.67  2000/03/26 14:59:37  prez
 ** LOADS of bugfixes due to testing in the real-time environment
 ** Also enabled the SECURE OperServ option in the CFG file.
@@ -637,17 +640,15 @@ void OperServ::AddCommands()
 	    "A*KILL VIEW", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_akill_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* ADD*", Parent->commserv.SOP_Name(), OperServ::do_operdeny_Add);
+	    "O*DENY* ADD*", Parent->commserv.SADMIN_Name(), OperServ::do_operdeny_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* DEL*", Parent->commserv.SOP_Name(), OperServ::do_operdeny_Del);
+	    "O*DENY* DEL*", Parent->commserv.SADMIN_Name(), OperServ::do_operdeny_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* ERA*", Parent->commserv.SOP_Name(), OperServ::do_operdeny_Del);
+	    "O*DENY* ERA*", Parent->commserv.SADMIN_Name(), OperServ::do_operdeny_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* LIST", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), OperServ::do_operdeny_List);
+	    "O*DENY* LIST", Parent->commserv.SOP_Name(), OperServ::do_operdeny_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* VIEW", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), OperServ::do_operdeny_List);
+	    "O*DENY* VIEW", Parent->commserv.SOP_Name(), OperServ::do_operdeny_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "IGN* ADD*", Parent->commserv.SOP_Name(), OperServ::do_ignore_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -722,7 +723,7 @@ void OperServ::execute(const mstring & data)
     if (!MSG())
     {
 	if (!(command == "ON" || command == "OFF" ||
-	      command.Matches("ID*")))
+	      command.Matches(mstring("ID*"))))
 	{
 	    return;
 	}
@@ -1534,6 +1535,17 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 	    output << IRC_Off;
     }
 
+    if (Parent->chanserv.DEF_KickOnBan())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_KickOnBan())
+	    output << IRC_Bold;
+	output << Parent->getMessage(source, "CS_SET/KICKONBAN");
+	if (Parent->chanserv.LCK_KickOnBan())
+	    output << IRC_Off;
+    }
+
     if (Parent->chanserv.DEF_Restricted())
     {
 	if (output != "")
@@ -1701,6 +1713,42 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    unsigned int i;
+    bool super = (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source));
+    // i+1 below because unsigned i will always be >= 0
+    for (i=host.size()-1, num=0; i+1>0; i--)
+    {
+	switch (host[i])
+	{
+	case '@':
+	    if (!super)
+		i=0;
+	    break;
+	case '!':	// ALL these constitute wildcards.
+	case '*':
+	case '?':
+	case '.':
+	    break;
+	default:
+	    num++;
+	}
+    }
+    // IF we have less than 1 char for 
+    if (!super && num <= Parent->config.Starthresh())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/CLONE").c_str(),
+			Parent->config.Starthresh());
+	return;
+    }
+    else if (num <= 1)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/CLONE").c_str(), 1);
+	return;
+    }
+
     MLOCK(("OperServ", "Clone"));
     if (Parent->operserv.Clone_find(host))
     {
@@ -1783,7 +1831,10 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
     {
 	int count = 0;
 	while (Parent->operserv.Clone_find(host))
+	{
 	    Parent->operserv.Clone_erase();
+	    count++;
+	}
 
 	if (count)
 	{
@@ -1937,6 +1988,43 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	host.Prepend("*@");
     }
 
+    unsigned int i, num;
+    bool super = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source));
+    // i+1 below because unsigned i will always be >= 0
+    for (i=host.size()-1, num=0; i+1>0; i--)
+    {
+	switch (host[i])
+	{
+	case '@':
+	    if (!super)
+		i=0;
+	    break;
+	case '!':	// ALL these constitute wildcards.
+	case '*':
+	case '?':
+	case '.':
+	    break;
+	default:
+	    num++;
+	}
+    }
+    // IF we have less than 1 char for 
+    if (!super && num <= Parent->config.Starthresh())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/AKILL").c_str(),
+			Parent->config.Starthresh());
+	return;
+    }
+    else if (num <= 1)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/AKILL").c_str(), 1);
+	return;
+    }
+
+
     MLOCK(("OperServ", "Akill"));
     if (Parent->operserv.Akill_find(host))
     {
@@ -2025,6 +2113,7 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
 	{
 	    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
 	    Parent->operserv.Akill_erase();
+	    count++;
 	}
 
 	if (count)
@@ -2129,6 +2218,32 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 	host.Prepend("*!");
     }
 
+    unsigned int i, num;
+    // i+1 below because unsigned i will always be >= 0
+    for (i=host.size()-1, num=0; i+1>0; i--)
+    {
+	switch (host[i])
+	{
+	case '@':
+	case '!':	// ALL these constitute wildcards.
+	case '*':
+	case '?':
+	case '.':
+	    break;
+	default:
+	    num++;
+	}
+    }
+
+    // IF we have less than 1 char for 
+    if (num <= Parent->config.Starthresh())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/OPERDENY").c_str(),
+			Parent->config.Starthresh());
+	return;
+    }
+
     MLOCK(("OperServ", "OperDeny"));
     if (Parent->operserv.OperDeny_find(host))
     {
@@ -2220,7 +2335,10 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
 
 	int count = 0;
 	while (Parent->operserv.OperDeny_find(host))
+	{
 	    Parent->operserv.OperDeny_erase();
+	    count++;
+	}
 
 	if (count)
 	{
@@ -2330,6 +2448,39 @@ void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
 	host.Prepend("*!");
     }
 
+    unsigned int i, num;
+    bool super = (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source));
+    // i+1 below because unsigned i will always be >= 0
+    for (i=host.size()-1, num=0; i+1>0; i--)
+    {
+	switch (host[i])
+	{
+	case '@':
+	case '!':	// ALL these constitute wildcards.
+	case '*':
+	case '?':
+	case '.':
+	    break;
+	default:
+	    num++;
+	}
+    }
+    // IF we have less than 1 char for 
+    if (!super && num <= Parent->config.Starthresh())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/SIGNORE").c_str(),
+			Parent->config.Starthresh());
+	return;
+    }
+    else if (num <= 1)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/SIGNORE").c_str(), 1);
+	return;
+    }
+
     MLOCK(("OperServ", "Ignore"));
     if (Parent->operserv.Ignore_find(host))
     {
@@ -2402,7 +2553,10 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 
 	int count = 0;
 	while (Parent->operserv.Ignore_find(host))
+	{
 	    Parent->operserv.Ignore_erase();
+	    count++;
+	}
 
 	if (count)
 	{
@@ -2464,9 +2618,12 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	    Parent->operserv.Ignore->Value())
 	{
 	    if (head == false)
+	    {
 		::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
 			host.c_str(),
 			Parent->getMessage(source, "LIST/SIGNORE").c_str());
+		head = true;
+	    }
 	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
 			    i, Parent->operserv.Ignore->Entry().c_str(),
 			    Parent->operserv.Ignore->Last_Modify_Time().Ago().c_str(),

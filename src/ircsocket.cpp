@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2000/03/27 21:26:12  prez
+** More bug fixes due to testing, also implemented revenge.
+**
 ** Revision 1.93  2000/03/24 15:35:18  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -434,15 +437,14 @@ int EventTask::svc(void)
 		MLOCK(("OperServ","Akill"));
 		bool firstgone = false;
 		for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
-			(Parent->operserv.Akill != Parent->operserv.Akill_end() && !firstgone);
+			Parent->operserv.Akill_size() &&
+			(Parent->operserv.Akill != Parent->operserv.Akill_end() || firstgone);
 			Parent->operserv.Akill++)
 		{
 		    if (firstgone)
 		    {
-			if (!Parent->operserv.Akill_size())
-			    break;
-			Parent->operserv.Akill = Parent->operserv.Akill_begin();
 			firstgone = false;
+			Parent->operserv.Akill = Parent->operserv.Akill_begin();
 		    }
 		    if (Parent->operserv.Akill->Last_Modify_Time().SecondsSince() >
 			    Parent->operserv.Akill->Value().first)
@@ -553,14 +555,13 @@ int EventTask::svc(void)
 		{
 		    bool firstgone = false;
 		    for (lni=ni->second.begin();
-			(lni!=ni->second.end() && !firstgone); lni++)
+			ni->second.size() &&
+			(lni != ni->second.end() || firstgone); lni++)
 		    {
 			if (firstgone)
 			{
-			    if (!ni->second.size())
-				break;
-			    lni = ni->second.begin();
 			    firstgone = false;
+			    lni = ni->second.begin();
 			}
 			if (lni->Time().SecondsSince() >
 			    Parent->memoserv.News_Expire())

@@ -24,6 +24,9 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/03/27 21:26:11  prez
+** More bug fixes due to testing, also implemented revenge.
+**
 ** Revision 1.33  2000/03/27 10:40:11  prez
 ** Started implementing revenge
 **
@@ -195,6 +198,8 @@ class Chan_Stored_t : public mUserDef
     bool l_NoExpire;
     bool i_Anarchy;
     bool l_Anarchy;
+    bool i_KickOnBan;
+    bool l_KickOnBan;
     bool i_Restricted;
     bool l_Restricted;
     bool i_Join;
@@ -305,6 +310,10 @@ public:
     void Anarchy(bool in);
     bool L_Anarchy();
     void L_Anarchy(bool in);
+    bool KickOnBan();
+    void KickOnBan(bool in);
+    bool L_KickOnBan();
+    void L_KickOnBan(bool in);
     bool Restricted();
     void Restricted(bool in);
     bool L_Restricted();
@@ -432,6 +441,8 @@ private:
     bool lck_noexpire;		// NOEXPIRE is locked?
     bool def_anarchy;		// Default value of ANARCHY
     bool lck_anarchy;		// ANARCHY is locked?
+    bool def_kickonban;		// Default value of KICKONBAN
+    bool lck_kickonban;		// KICKONBAN is locked?
     bool def_restricted;	// Default value of RESTRICTED
     bool lck_restricted;	// RESTRICTED is locked?
     bool def_join;		// Default value of JOIN
@@ -545,6 +556,8 @@ public:
     bool LCK_NoExpire()		{ return lck_noexpire; }
     bool DEF_Anarchy()		{ return def_anarchy; }
     bool LCK_Anarchy()		{ return lck_anarchy; }
+    bool DEF_KickOnBan()	{ return def_kickonban; }
+    bool LCK_KickOnBan()	{ return lck_kickonban; }
     bool DEF_Restricted()	{ return def_restricted; }
     bool LCK_Restricted()	{ return lck_restricted; }
     bool DEF_Join()		{ return def_join; }
@@ -632,6 +645,7 @@ public:
     static void do_set_Secure(mstring mynick, mstring source, mstring params);
     static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
     static void do_set_Anarchy(mstring mynick, mstring source, mstring params);
+    static void do_set_KickOnBan(mstring mynick, mstring source, mstring params);
     static void do_set_Restricted(mstring mynick, mstring source, mstring params);
     static void do_set_Join(mstring mynick, mstring source, mstring params);
     static void do_set_Revenge(mstring mynick, mstring source, mstring params);
@@ -644,6 +658,7 @@ public:
     static void do_lock_SecureOps(mstring mynick, mstring source, mstring params);
     static void do_lock_Secure(mstring mynick, mstring source, mstring params);
     static void do_lock_Anarchy(mstring mynick, mstring source, mstring params);
+    static void do_lock_KickOnBan(mstring mynick, mstring source, mstring params);
     static void do_lock_Restricted(mstring mynick, mstring source, mstring params);
     static void do_lock_Join(mstring mynick, mstring source, mstring params);
     static void do_lock_Revenge(mstring mynick, mstring source, mstring params);
@@ -656,6 +671,7 @@ public:
     static void do_unlock_SecureOps(mstring mynick, mstring source, mstring params);
     static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
     static void do_unlock_Anarchy(mstring mynick, mstring source, mstring params);
+    static void do_unlock_KickOnBan(mstring mynick, mstring source, mstring params);
     static void do_unlock_Restricted(mstring mynick, mstring source, mstring params);
     static void do_unlock_Join(mstring mynick, mstring source, mstring params);
     static void do_unlock_Revenge(mstring mynick, mstring source, mstring params);

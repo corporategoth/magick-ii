@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2000/03/27 21:26:13  prez
+** More bug fixes due to testing, also implemented revenge.
+**
 ** Revision 1.82  2000/03/26 14:59:37  prez
 ** LOADS of bugfixes due to testing in the real-time environment
 ** Also enabled the SECURE OperServ option in the CFG file.
@@ -1410,7 +1413,7 @@ void NetworkServ::execute(const mstring & data)
 			    iter->second.message != iter->second.MSG_end();
 			    iter->second.message++)
 			{
-			    Parent->servmsg.send(sourceL, "[" + IRC_Bold +
+			    Parent->servmsg.send(source, "[" + IRC_Bold +
 					    iter->first + IRC_Off + "] " +
 					    iter->second.message->Entry());
 			}

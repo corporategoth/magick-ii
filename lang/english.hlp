@@ -1191,7 +1191,7 @@
 10 =REGD::    URL          DESCRIPTION  MLOCK        BANTIME
 11 =REGD::    PARTTIME     KEEPTOPIC    TOPICLOCK    PRIVATE
 12 =REGD::    SECUREOPS    SECURE       ANARCHY      JOIN
-13 =REGD::    RESTRICTED   REVENGE
+13 =REGD::    KICKONBAN    RESTRICTED   REVENGE      
 14 =SOP::As a SOP you may also use the following commands:
 15 =SOP::    COMMENT      NOEXPIRE
 
@@ -1374,6 +1374,15 @@
 06 =REGD::user to join channel.
 07 =REGD::You must have SET priviliages to use this command.
 
+[CHANSERV/SET/KICKONBAN]
+01 =REGD::SET <channel> KICKONBAN <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Kick On Ban.
+04 =REGD::When this option is on, services will kick a user
+05 =REGD::who is banned from channel out automatically (if
+06 =REGD::it does not violate a revenge constraint).
+07 =REGD::You must have SET priviliages to use this command.
+
 [CHANSERV/SET/RESTRICTED]
 01 =REGD::SET <channel> RESTRICTED <ON|OFF|RESET>
 02 =REGD::
@@ -1386,7 +1395,7 @@
 [CHANSERV/SET/JOIN]
 01 =REGD::SET <channel> JOIN <ON|OFF|RESET>
 02 =REGD::
-03 =REGD::This will turn on or off Keep Topic.
+03 =REGD::This will turn on or off Services Channel Join.
 04 =REGD::When this option is on, services will join the
 05 =REGD::channel, and remain oped.  You may not deop or
 06 =REGD::kick services, they'll rejoin and reop.
@@ -1426,7 +1435,8 @@
 06 =SOP::You may lock a channels settings with these commands:
 07 =SOP::    MLOCK        BANTIME      PARTTIME     KEEPTOPIC
 08 =SOP::    TOPICLOCK    PRIVATE      SECUREOPS    SECURE
-09 =SOP::    ANARCHY      JOIN         RESTRICTED   REVENGE
+09 =SOP::    ANARCHY      KICKONBAN    JOIN         RESTRICTED
+10 =SOP::    REVENGE
 
 [CHANSERV/LOCK/MLOCK]
 01 =SOP::LOCK <channel> MLOCK <modes>
@@ -1510,6 +1520,15 @@
 06 =SOP::able to override this setting, so please use with caution,
 07 =SOP::as you are removing the right to change their own record.
 
+[CHANSERV/LOCK/KICKONBAN]
+01 =SOP::LOCK <channel> KICKONBAN <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Kick On Ban for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
+
 [CHANSERV/LOCK/RESTRICTED]
 01 =SOP::LOCK <channel> RESTRICTED <ON|OFF|RESET>
 02 =SOP::
@@ -1545,7 +1564,8 @@
 05 =SOP::You may unlock a channels settings with these commands:
 06 =SOP::    MLOCK        BANTIME      PARTTIME     KEEPTOPIC
 07 =SOP::    TOPICLOCK    PRIVATE      SECUREOPS    SECURE
-08 =SOP::    ANARCHY      JOIN         RESTRICTED   REVENGE
+08 =SOP::    ANARCHY      KICKONBAN    JOIN         RESTRICTED
+09 =SOP::    REVENGE
 
 [CHANSERV/UNLOCK/MLOCK]
 01 =SOP::UNLOCK <channel> MLOCK
@@ -1599,6 +1619,12 @@
 01 =SOP::UNLOCK <channel> ANARCHY
 02 =SOP::
 03 =SOP::This will unlock the value of Anarchy for a
+04 =SOP::channel, however the value will remain the same.
+
+[CHANSERV/UNLOCK/KICKONBAN]
+01 =SOP::UNLOCK <channel> KICKONBAN
+02 =SOP::
+03 =SOP::This will unlock the value of Kick On Ban for a
 04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/RESTRICTED]
@@ -2136,8 +2162,9 @@
 02 =::of the network and services.
 03 =OPER SOP::
 04 =OPER SOP::This service allows you to use the following commands:
-05 =OPER SOP::    HELP         CLONE        OPERDENY     IGNORE
-06 =OPER SOP::    AKILL        MODE         PING         SETTINGS
+05 =OPER SOP::    HELP         CLONE        AKILL        IGNORE
+06 =OPER:SOP:    MODE         PING         SETTINGS
+06 =SOP::    OPERDENY     MODE         PING         SETTINGS
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
 09 =ADMIN::    KILL
@@ -2481,38 +2508,38 @@
 07 =OPER SOP::them from the AutoKill list.
 
 [OPERSERV/OPERDENY]
-01 =OPER SOP::From time to time, an oper will breech the network
-02 =OPER SOP::policies, or go insane and start harming the network.
-03 =OPER SOP::OperDeny is used to strip an oper of their oper powers
-04 =OPER SOP::until their admin can get online and deal with them.
-05 =OPER SOP::
-06A=OPER:SOP:You may view the oper deny list with:
-06B=SOP::You may mainatin the oper deny list with:
-07A=OPER:SOP:    LIST
-07B=SOP::    ADD          DEL          LIST
+01 =SOP::From time to time, an oper will breech the network
+02 =SOP::policies, or go insane and start harming the network.
+03 =SOP::OperDeny is used to strip an oper of their oper powers
+04 =SOP::until their admin can get online and deal with them.
+05 =SOP::
+06A=SOP:SADMIN:You may view the oper deny list with:
+06B=SADMIN::You may mainatin the oper deny list with:
+07A=SOP:SADMIN:    LIST
+07B=SADMIN::    ADD          DEL          LIST
 
 [OPERSERV/OPERDENY/ADD]
-01 =SOP::OPERDENY ADD <mask>
-02 =SOP::
-03 =SOP::This will add the specified mask to the Oper Deny list
-04 =SOP::effectively stopping them from setting mode +o (opering
-05 =SOP::up).  You may use wildcards in this mask.  You must
-06 =SOP::specify a full nick!user@host mask (*! will be assumed).
+01 =SADMIN::OPERDENY ADD <mask>
+02 =SADMIN::
+03 =SADMIN::This will add the specified mask to the Oper Deny list
+04 =SADMIN::effectively stopping them from setting mode +o (opering
+05 =SADMIN::up).  You may use wildcards in this mask.  You must
+06 =SADMIN::specify a full nick!user@host mask (*! will be assumed).
 
 [OPERSERV/OPERDENY/DEL]
-01 =SOP::OPERDENY DEL <mask|NUM>
-02 =SOP::
-03 =SOP::This will remove a mask from the Oper Deny list.  You
-04 =SOP::may specify a mask, and all entries matching that mask
-05 =SOP::will be removed, or you may specify a number obtained
-06 =SOP::with the OPERDENY LIST command.
+01 =SADMIN::OPERDENY DEL <mask|NUM>
+02 =SADMIN::
+03 =SADMIN::This will remove a mask from the Oper Deny list.  You
+04 =SADMIN::may specify a mask, and all entries matching that mask
+05 =SADMIN::will be removed, or you may specify a number obtained
+06 =SADMIN::with the OPERDENY LIST command.
 
 [OPERSERV/OPERDENY/LIST]
-01 =OPER SOP::OPERDENY LIST
-02 =OPER SOP::
-03 =OPER SOP::This will list all entries on the Oper Deny list,
-04 =OPER SOP::including who added them, how long the mask has been
-05 =OPER SOP::denied for, and a number that can be used to delete it.
+01 =SOP::OPERDENY LIST
+02 =SOP::
+03 =SOP::This will list all entries on the Oper Deny list,
+04 =SOP::including who added them, how long the mask has been
+05 =SOP::denied for, and a number that can be used to delete it.
 
 [OPERSERV/IGNORE]
 01 =OPER SOP::Services has 2 ignore lists, one temporary, and one

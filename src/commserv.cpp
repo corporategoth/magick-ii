@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/03/27 21:26:12  prez
+** More bug fixes due to testing, also implemented revenge.
+**
 ** Revision 1.45  2000/03/26 14:59:36  prez
 ** LOADS of bugfixes due to testing in the real-time environment
 ** Also enabled the SECURE OperServ option in the CFG file.
@@ -474,7 +477,7 @@ bool Committee::MSG_find(int number)
     if (!i_Messages.empty())
     {
 	// FIND exact nickname
-	for (iter=i_Messages.begin(), i=0; iter!=i_Messages.end() &&
+	for (iter=i_Messages.begin(), i=1; iter!=i_Messages.end() &&
 						i != number; iter++, i++);
     }
 
@@ -916,6 +919,7 @@ void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    text.Prepend("[" + IRC_Bold + committee + IRC_Off + "] ");
     CommServ::do_Memo2(source, committee, text);
     Parent->commserv.stats.i_Memo++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/MEMO"),
@@ -933,11 +937,14 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
     else
 	return;
 
-    Nick_Stored_t *me;
+    Nick_Stored_t *nick;
+    mstring realme;
     if (Parent->nickserv.IsStored(source))
-	me = &Parent->nickserv.stored[source.LowerCase()];
+	realme = source;
     else
 	return;
+    if (Parent->nickserv.stored[source.LowerCase()].Host() != "")
+	realme = Parent->nickserv.stored[source.LowerCase()].Host();
 
     if (comm->HeadCom() != "")
     {
@@ -953,11 +960,31 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	    mstring realrecipiant = Parent->nickserv.stored[comm->Head().LowerCase()].Host();
 	    if (realrecipiant == "")
 		realrecipiant = comm->Head();
-	    if (me->Host().LowerCase() != realrecipiant.LowerCase())
+	    if (realme.LowerCase() != realrecipiant.LowerCase())
 	    {
 		Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
-		    Memo_t(realrecipiant, source, "[" + IRC_Bold +
-				committee + IRC_Off + "] " + text));
+		    Memo_t(realrecipiant, source, text));
+
+		nick = &Parent->nickserv.stored[realrecipiant.LowerCase()];
+		if (nick->IsOnline())
+		    ::send(Parent->memoserv.FirstName(), realrecipiant,
+			Parent->getMessage(realrecipiant, "MS_COMMAND/NS_NEW"),
+			Parent->memoserv.nick[realrecipiant.LowerCase()].size(),
+			Parent->memoserv.FirstName().c_str(),
+			Parent->memoserv.nick[realrecipiant.LowerCase()].size());
+		unsigned int i;
+		for (i=0; i < nick->Siblings(); i++)
+		{
+		    if (Parent->nickserv.IsStored(nick->Sibling(i)) &&
+				Parent->nickserv.stored[nick->Sibling(i).LowerCase()].IsOnline())
+		    {
+			::send(Parent->memoserv.FirstName(), nick->Sibling(i),
+				Parent->getMessage(nick->Sibling(i), "MS_COMMAND/NS_NEW"),
+				Parent->memoserv.nick[realrecipiant.LowerCase()].size(),
+				Parent->memoserv.FirstName().c_str(),
+				Parent->memoserv.nick[realrecipiant.LowerCase()].size());
+		    }
+		}
 	    }
 	}
     }
@@ -970,11 +997,31 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	    mstring realrecipiant = Parent->nickserv.stored[comm->member->Entry().LowerCase()].Host();
 	    if (realrecipiant == "")
 		realrecipiant = comm->member->Entry();
-	    if (me->Host().LowerCase() != realrecipiant.LowerCase())
+	    if (realme.LowerCase() != realrecipiant.LowerCase())
 	    {
 		Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
-		    Memo_t(realrecipiant, source, "[" + IRC_Bold +
-				committee + IRC_Off + "] " + text));
+		    Memo_t(realrecipiant, source, text));
+
+		nick = &Parent->nickserv.stored[realrecipiant.LowerCase()];
+		if (nick->IsOnline())
+		    ::send(Parent->memoserv.FirstName(), realrecipiant,
+			Parent->getMessage(realrecipiant, "MS_COMMAND/NS_NEW"),
+			Parent->memoserv.nick[realrecipiant.LowerCase()].size(),
+			Parent->memoserv.FirstName().c_str(),
+			Parent->memoserv.nick[realrecipiant.LowerCase()].size());
+		unsigned int i;
+		for (i=0; i < nick->Siblings(); i++)
+		{
+		    if (Parent->nickserv.IsStored(nick->Sibling(i)) &&
+				Parent->nickserv.stored[nick->Sibling(i).LowerCase()].IsOnline())
+		    {
+			::send(Parent->memoserv.FirstName(), nick->Sibling(i),
+				Parent->getMessage(nick->Sibling(i), "MS_COMMAND/NS_NEW"),
+				Parent->memoserv.nick[realrecipiant.LowerCase()].size(),
+				Parent->memoserv.FirstName().c_str(),
+				Parent->memoserv.nick[realrecipiant.LowerCase()].size());
+		    }
+		}
 	    }
 	}
     }
@@ -1269,7 +1316,7 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
 
     Committee *comm = &Parent->commserv.list[committee];
     MLOCK(("CommServ", "list", comm->Name().LowerCase(), "message"));
-    if (comm->find(num))
+    if (comm->MSG_find(num))
     {
 	Parent->commserv.stats.i_Logon++;
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2_NUMBER"),
@@ -2119,8 +2166,11 @@ void CommServ::load_database(wxInputStream& in)
     {
 	COM(("Loading COMMITTEE entry %d ...", j));
 	in>>tmpcommitee;
-	list[tmpcommitee.Name().UpperCase()]=tmpcommitee;
-	COM(("Entry COMMITTEE %s loaded ...", tmpcommitee.Name().c_str()));
+	if (tmpcommitee.Name().Len())
+	{
+	    list[tmpcommitee.Name().UpperCase()]=tmpcommitee;
+	    COM(("Entry COMMITTEE %s loaded ...", tmpcommitee.Name().c_str()));
+	}
     }
 }
 
@@ -2180,9 +2230,9 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
     out.i_Members.clear();
     if (out.i_Name == Parent->commserv.SADMIN_Name())
     {
-	for (int j=1; j<=Parent->operserv.Services_Admin.WordCount(", "); j++)
+	for (int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
 	    out.i_Members.insert(entlist_t(
-		Parent->operserv.Services_Admin.ExtractWord(j, ", "),
+		Parent->operserv.Services_Admin().ExtractWord(j, ", "),
 		Parent->operserv.FirstName()));
     }
     else if (!(out.i_Name == Parent->commserv.ALL_Name() ||
