@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.171  2001/05/08 06:02:28  prez
+** Fixed bad KLLL_NICK_PASS and KLLL_CHAN_PASS
+**
 ** Revision 1.170  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -2222,7 +2225,7 @@ mstring Nick_Live_t::ChanIdentify(const mstring& channel, const mstring& passwor
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
-		LOG(LM_NOTICE, "OTHER/KLLL_CHAN_PASS", (
+		LOG(LM_NOTICE, "OTHER/KILL_CHAN_PASS", (
 			Mask(N_U_P_H), channel));
 		RET("");
 	    }
@@ -2321,7 +2324,7 @@ mstring Nick_Live_t::Identify(const mstring& password)
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
-		LOG(LM_NOTICE, "OTHER/KLLL_NICK_PASS", (
+		LOG(LM_NOTICE, "OTHER/KILL_NICK_PASS", (
 			Mask(N_U_P_H), i_Name));
 		RET("");
 	    }
