@@ -24,6 +24,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/03/14 10:05:16  prez
+** Added Protocol class (now we can accept multi IRCD's)
+**
 ** Revision 1.28  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -44,6 +47,44 @@ static const char *ident_server_h = "@(#) $Id$";
 #include "base.h"
 #include "mstream.h"
 #include "ircsocket.h"
+
+class Protocol
+{
+    unsigned int i_Number;
+    bool i_Globops;
+    bool i_Tokens;
+    bool i_SVS;
+    bool i_SVSHOST;
+    bool i_D12;
+
+    /* Signon Types
+     * 
+     * 0000 = USER nick user host server :realname
+     * 0001 = USER nick signon-time user host server :realname
+     * 
+     * 1000 = NICK nick hops signon-time user host server :realname
+     * 1001 = NICK nick hops signon-time user host server service :realname
+     * 1002 = NICK nick hops signon-time user host server service host :realname
+     */
+    unsigned int i_Signon;
+
+    mstring i_Server;	/* Should have %s %d %s in it */
+    mstring i_Protoctl; /* Verbatum (null if not sent) */
+public:
+    Protocol();
+    ~Protocol() {}
+    void Set(unsigned int in);
+
+    unsigned int Number()   { return i_Number; }
+    bool Globops()	    { return i_Globops; }
+    bool Tokens()	    { return i_Tokens; }
+    bool SVS()		    { return i_SVS; }
+    bool SVSHOST()	    { return i_SVSHOST; }
+    bool D12()		    { return i_D12; }
+    unsigned int Signon()   { return i_Signon; }
+    mstring Server()	    { return i_Server; }
+    mstring Protoctl()	    { return i_Protoctl; }
+};
 
 class Server
 {
@@ -114,6 +155,7 @@ private:
 
     void OurUplink(mstring server) { i_OurUplink = server; }
 public:
+    Protocol proto;
     size_t UserMax() { return i_UserMax; }
     map<mstring,Server> ServerList;
     mstring OurUplink() { return i_OurUplink; }

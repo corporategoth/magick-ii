@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2000/03/14 10:05:17  prez
+** Added Protocol class (now we can accept multi IRCD's)
+**
 ** Revision 1.63  2000/03/08 23:38:37  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -840,7 +843,7 @@ void Nick_Live_t::SendMode(mstring in)
     {
 	Parent->server.MODE(i_Name, in);
     }
-    else
+    else if (Parent->server.proto.SVS())
     {
 	Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, in);
     }
@@ -874,15 +877,15 @@ void Nick_Live_t::Mode(mstring in)
 		if (Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
 		    !IsServices())
 		{
-		    // if (Parent->ircd.Has_SVSMODE)
-		    // {
-		    SendMode("-o");
-		    // }
-		    // else
-		    // {
-		    // Parent->server.KILL(Parent->operserv.FirstName(),
-		    //		    i_Name, Parent->getMessage(i_Name, "MISC/KILL_OPERDENY"));
-		    // }
+		    if (Parent->server.proto.SVS())
+		    {
+			SendMode("-o");
+		    }
+		    else
+		    {
+			Parent->server.KILL(Parent->operserv.FirstName(),
+		    	    i_Name, Parent->getMessage(i_Name, "MISC/KILL_OPERDENY"));
+		    }
 		}
 	    }
 	    else if (modes.Contains(in[i]) && !IsServices())

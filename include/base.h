@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/03/14 10:05:16  prez
+** Added Protocol class (now we can accept multi IRCD's)
+**
 ** Revision 1.52  2000/03/02 11:59:45  prez
 ** More helpfile updates (slowly but surely writing it)
 **
@@ -59,12 +62,15 @@ class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class mBase;
     friend class mBaseTaskmessage_MO;
+
+    map<mstring,mstring> tokens;
+    mstring PreParse(const mstring& message);
 protected:
     ACE_Activation_Queue activation_queue_;
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
     void message_i(const mstring& message);
 public:
-    mBaseTask() : activation_queue_(&message_queue_) {};
+    mBaseTask();
     virtual int open(void *in=0);
     virtual int svc(void);
     void message(const mstring& message);

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2000/03/14 10:05:16  prez
+** Added Protocol class (now we can accept multi IRCD's)
+**
 ** Revision 1.88  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -218,8 +221,14 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
         ACE_INET_Addr localaddr;
 	Parent->ircsvchandler->peer().get_local_addr(localaddr);
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
+	if (Parent->server.proto.Protoctl() != "")
+	    Parent->server.raw(Parent->server.proto.Protoctl());
 	Parent->server.raw("PASS " + details.second);
-	Parent->server.raw("SERVER " + Parent->startup.Server_Name() + " 1 :" + Parent->startup.Server_Desc());
+	mstring tmp;
+	tmp.Format(Parent->server.proto.Server().c_str(),
+	    Parent->startup.Server_Name().c_str(), 1,
+	    Parent->startup.Server_Desc().c_str());
+	Parent->server.raw(tmp);
 	Parent->Connected(true);
     }
     RET(0);
@@ -716,7 +725,7 @@ int EventTask::svc(void)
 		mstring oldnick = nli->second.Name();
 		wxLogInfo(Parent->getLogMessage("EVENT/KILLPROTECT"),
 			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str());
-		if (newnick != "")
+		if (newnick != "" && Parent->server.proto.SVS())
 		    Parent->server.SVSNICK(Parent->nickserv.FirstName(),
 			oldnick, newnick);
 		else

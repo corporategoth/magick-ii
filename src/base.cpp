@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2000/03/14 10:05:16  prez
+** Added Protocol class (now we can accept multi IRCD's)
+**
 ** Revision 1.101  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -479,7 +482,10 @@ void announce(const mstring& source, const mstring &pszFormat, ...)
     message.FormatV(pszFormat.c_str(), argptr);
 
     // Put logic in here to choose GLOBOP or WALLOP
-    Parent->server.GLOBOPS(source, message);
+    if (Parent->server.proto.Globops())
+	Parent->server.GLOBOPS(source, message);
+    else
+	Parent->server.WALLOPS(source, message);
 
     va_end(argptr);
 }
@@ -490,6 +496,96 @@ void mBase::shutdown()
     int j=BaseTask.thr_count();
     for(int i=0;i<j;i++)
 	BaseTask.i_shutdown();
+}
+
+mBaseTask::mBaseTask() : activation_queue_(&message_queue_)
+{
+    tokens["!"] = "PRIVMSG";
+    tokens["\\"] = "WHO";
+    tokens["#"] = "WHOIS";
+    tokens["$"] = "WHOWAS";
+    tokens["%"] = "USER";
+    tokens["&"] = "NICK";
+    tokens["'"] = "SERVER";
+    tokens["("] = "LIST";
+    tokens[")"] = "TOPIC";
+    tokens["*"] = "INVITE";
+    tokens["+"] = "VERSION";
+    tokens[","] = "QUIT";
+    tokens["-"] = "SQUIT";
+    tokens["."] = "KILL";
+    tokens["/"] = "INFO";
+    tokens["0"] = "LINKS";
+    tokens["2"] = "STATS";
+    tokens["4"] = "HELP";
+    tokens["5"] = "ERROR";
+    tokens["6"] = "AWAY";
+    tokens["7"] = "CONNECT";
+    tokens["8"] = "PING";
+    tokens["9"] = "PONG";
+    tokens[";"] = "OPER";
+    tokens["<"] = "PASS";
+    tokens[">"] = "TIME";
+    tokens["?"] = "NAMES";
+    tokens["@"] = "ADMIN";
+    tokens["B"] = "NOTICE";
+    tokens["C"] = "JOIN";
+    tokens["D"] = "PART";
+    tokens["E"] = "LUSERS";
+    tokens["F"] = "MOTD";
+    tokens["G"] = "MODE";
+    tokens["H"] = "KICK";
+    tokens["I"] = "SERVICE";
+    tokens["J"] = "USERHOST";
+    tokens["K"] = "ISON";
+    tokens["L"] = "SQUERY";
+    tokens["M"] = "SERVLIST";
+    tokens["N"] = "SERVSET";
+    tokens["O"] = "REHASH";
+    tokens["P"] = "RESTART";
+    tokens["Q"] = "CLOSE";
+    tokens["R"] = "DIE";
+    tokens["S"] = "HASH";
+    tokens["T"] = "DNS";
+    tokens["U"] = "SILENCE";
+    tokens["V"] = "AKILL";
+    tokens["W"] = "KLINE";
+    tokens["X"] = "UNKLINE";
+    tokens["Y"] = "RAKILL";
+    tokens["Z"] = "GNOTICE";
+    tokens["["] = "GOPER";
+    tokens["]"] = "GLOBOPS";
+    tokens["LO"] = "LOCOPS";
+    tokens["_"] = "PROTOCTL";
+    tokens["`"] = "WATCH";
+    tokens["b"] = "TRACE";
+    tokens["QL"] = "QLINE";
+    tokens["Uq"] = "UNQLINE";
+    tokens["e"] = "SVSNICK";
+    tokens["f"] = "SVSNOOP";
+    tokens["g"] = "PRIVMSG NickServ :IDENTIFY";	// IDENTIFY
+    tokens["h"] = "SVSKILL";
+    tokens["i"] = "PRIVMSG NickServ";		// NICKSERV
+    tokens["j"] = "PRIVMSG ChanServ";		// CHANSERV
+    tokens["k"] = "PRIVMSG OperServ";		// OPERSERV
+    tokens["l"] = "PRIVMSG MemoServ";		// MEMOSERV
+    tokens["m"] = "SERVICES";
+    tokens["n"] = "SVSMODE";
+    tokens["o"] = "OMODE";
+    tokens["q"] = "ZLINE";
+    tokens["s"] = "OPERMOTD";
+    tokens["v"] = "RPING";
+    tokens["w"] = "RPONG";
+    tokens["{"] = "MAP";
+    tokens["|"] = "SJOIN";
+    tokens["}"] = "SNICK";
+    tokens["~"] = "GLINE";
+    tokens["^"] = "WALLOPS";
+    tokens["y"] = "SETTIME";
+    tokens["HM"] = "HTM";
+    tokens["z"] = "ADCHAT";
+    tokens["UP"] = "UPING";
+    tokens["Rz"] = "RW";
 }
 
 int mBaseTask::open(void *in)
@@ -553,14 +649,17 @@ void mBaseTask::message_i(const mstring& message)
     // NOTE: No need to handle 'non-user messages' here, because
     // anything that is not a user PRIVMSG/NOTICE goes directly
     // to the server routine anyway.
-    mstring source, type, target;
-    if (message == "")
-	return;
-    source=message.ExtractWord(1,": ");
-    type  =message.ExtractWord(2,": ").UpperCase();
-    target=message.ExtractWord(3,": ");
 
-    CH(T_Chatter::From,message);	    
+    mstring data = PreParse(message);
+
+    mstring source, type, target;
+    if (data == "")
+	return;
+    source=data.ExtractWord(1,": ");
+    type  =data.ExtractWord(2,": ").UpperCase();
+    target=data.ExtractWord(3,": ");
+
+    CH(T_Chatter::From,data);	    
 
     if (type == "PRIVMSG" || type == "NOTICE")
     {
@@ -579,42 +678,42 @@ void mBaseTask::message_i(const mstring& message)
 		// if so, Parent->doscripthandle(server,command,data);
 
 		if (Parent->operserv.IsName(target))
-		    Parent->operserv.execute(message);
+		    Parent->operserv.execute(data);
 
 		else if (Parent->nickserv.IsName(target) && Parent->nickserv.MSG())
-		    Parent->nickserv.execute(message);
+		    Parent->nickserv.execute(data);
 
 		else if (Parent->chanserv.IsName(target) && Parent->chanserv.MSG())
-		    Parent->chanserv.execute(message);
+		    Parent->chanserv.execute(data);
 
 		else if (Parent->memoserv.IsName(target) && Parent->memoserv.MSG())
-		    Parent->memoserv.execute(message);
+		    Parent->memoserv.execute(data);
 
 		else if (Parent->commserv.IsName(target) && Parent->commserv.MSG())
-		    Parent->commserv.execute(message);
+		    Parent->commserv.execute(data);
 
 		else if (Parent->servmsg.IsName(target) && Parent->servmsg.MSG())
-		    Parent->servmsg.execute(message);
+		    Parent->servmsg.execute(data);
 
 		// else check if it's script handled, might do up a list of script servers
 		// in the magick object to check against, else trash it.
 
 		else	// PRIVMSG or NOTICE to non-service
-		    Parent->server.execute(message);
+		    Parent->server.execute(data);
 	    }
 	    else
 	    {
 		// Check if we're to log ignore messages, and log them here.
 		if (Parent->operserv.Log_Ignore())
 		    wxLogInfo(Parent->getMessage("OPERSERV/IGNORED"),
-			source.c_str(), message.After(" ").c_str());
+			source.c_str(), data.After(" ").c_str());
 	    }
 	}
 	else	// Channel messages
-	    Parent->server.execute(message);
+	    Parent->server.execute(data);
     } 
     else	// Non PRIVMSG and NOTICE
-	Parent->server.execute(message);
+	Parent->server.execute(data);
 
     if(thr_count()>1&&message_queue_.message_count()<
 	    Parent->config.High_Water_Mark()*(thr_count()-2)+Parent->config.Low_Water_Mark())
@@ -624,6 +723,31 @@ void mBaseTask::message_i(const mstring& message)
 	COM(("Low water mark reached, killing thread."));
 	i_shutdown();
     }
+}
+
+mstring mBaseTask::PreParse(const mstring& message)
+{
+    FT("mBaseTask::PreParse", (message));
+    mstring data = message;
+
+    if (Parent->server.proto.Tokens())
+    {
+	if (message[0u] == ':' && 
+	    tokens.find(message.ExtractWord(2, " ")) != tokens.end())
+	{
+	    data = "";
+	    data << message.ExtractWord(1, " ") << " " <<
+		tokens[message.ExtractWord(2, " ") << " " <<
+		message.After("  ", 2);
+	}
+	else if (tokens.find(message.ExtractWord(1, " ")) != tokens.end())
+	{
+	    data = "";
+	    data << tokens[message.ExtractWord(1, " ") << " " <<
+		message.After("  ", 1);
+	}
+    }
+    RET(data);
 }
 
 void mBaseTask::i_shutdown()

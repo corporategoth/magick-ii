@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2000/03/14 10:05:17  prez
+** Added Protocol class (now we can accept multi IRCD's)
+**
 ** Revision 1.74  2000/03/14 10:02:48  prez
 ** Added SJOIN and SNICK
 **
@@ -66,6 +69,68 @@ static const char *ident = "@(#)$Id$";
 #include "server.h"
 #include "lockable.h"
 #include "magick.h"
+
+void Protocol::Protocol()
+{
+    i_Number = 0;
+    i_Globops = false;
+    i_Tokens = false;
+    i_SVS = false;
+    i_SVSHOST = false;
+    i_D12 = false;
+    i_Signon = 0000;
+    i_Server = "SERVER %s %d :%s";
+    i_Protoctl = "";
+}
+
+void Protocol::Set(unsigned int in)
+{
+    switch (in)
+    {
+    case 0: /* RFC */
+	i_Signon = 0000;
+	break;
+    case 1: /* RFC with TS8 */
+	i_Signon = 0001;
+	break;
+    case 10: /* DAL < 4.4.15 */
+	i_Signon = 1000;
+	i_Globops = true;
+	break;
+    case 11: /* DAL >= 4.4.15 */
+	i_Signon = 1001;
+	i_Globops = true;
+	i_SVS = true;
+	break;
+    case 20: /* UnderNet < 2.8.10  */
+	i_Signon = 1000;
+	break;
+    case 30: /* Aurora */
+	i_Signon = 1002;
+	i_Globops = true;
+	i_SVS = true;
+	i_SVSHOST = true;
+	break;
+    case 40: /* Elite */
+	i_Signon = 1001;
+	i_Globops = true;
+	i_SVS = true;
+	break;
+    case 50: /* Relic */
+	i_Tokens = true;
+	i_SVS = true;
+	i_Globops = true;
+	i_D12 = true;
+	i_Signon = 1001;
+	i_Server = "SERVER %s %d relic2.1 :%s";
+	i_Protoctl = "PROTOCTL TOKEN";
+	break;
+    default:
+	return;
+    }
+    i_Number = in;
+}
+
 
 Server::Server(mstring name, mstring description)
 {
@@ -390,8 +455,11 @@ void NetworkServ::Jupe(mstring server, mstring reason)
 	raw("SQUIT " + server.LowerCase() + " :JUPE command used.");
 	    // SERVER downlink hops :description
 	    // :uplink SERVER downlink hops :description
-    raw(":" + Parent->startup.Server_Name() + " SERVER " +
-		server.LowerCase() + " 1 :JUPED (" + reason + ")");
+    mstring tmp;
+    tmp.Format(proto.Server().c_str(),
+	    server.LowerCase().c_str(), 2,
+	    ("JUPED (" + reason + ")").c_str());
+    raw(tmp);
     Parent->server.ServerList[server.LowerCase()] =
 		    Server(server.LowerCase(), "JUPED (" + reason + ")");
 }
@@ -438,7 +506,10 @@ void NetworkServ::GLOBOPS(mstring nick, mstring message)
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Action();
-	raw(":" + nick + " GLOBOPS :" + message);
+	if (proto.Globops())
+	    raw(":" + nick + " GLOBOPS :" + message);
+	else
+	    raw(":" + nick + " WALLOPS :" + message);
     }
 }
 
@@ -615,8 +686,6 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 {
     FT("NetworkServ::NICK", (nick, user, host, server, realname));
 
-    // DAL4.4.15+ NICK name hops time user host server services? :real name
-
     if (Parent->nickserv.IsLive(nick))
     {
 	wxLogWarning("NICK command requested for already-existant user %s", nick.c_str());
@@ -624,9 +693,33 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
     else
     {
 	mstring send;
-	send << "NICK " << nick << " 1 " << Now().timetstring() <<
+	switch (proto.Signon())
+	{
+	case 0000:
+	    send << "USER " << nick  << " " << user << " " << host <<
+		" " << server << " :" << realname;
+	    break;
+	case 0001:
+	    send << "USER " << nick  << Now().timetstring() <<
+		" " << user << " " << host << " " << server <<
+		" :" << realname;
+	    break;
+	case 1000:
+	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
+		" " << user << " " << host << " " << server <<
+		" :" << realname;
+	    break;
+	case 1001:
+	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
 		" " << user << " " << host << " " << server <<
 		" 1 :" << realname;
+	    break;
+	case 1002:
+	    send << "NICK " << nick << " 1 " << Now().timetstring() <<
+		" " << user << " " << host << " " << server <<
+		" 1 " << host << ":" << realname;
+	    break;
+	}
 	// Sign ourselves in ...
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);
@@ -1036,10 +1129,8 @@ void NetworkServ::execute(const mstring & data)
         msgtype=data.ExtractWord(1,": ").UpperCase();
     }
 
-
     // Message names direct from RFC1459, with DAL4.4.15+
     // extensions.  Will add to for other ircd's.
-
     switch (msgtype[0U])
     {
     case '0':
@@ -1425,18 +1516,35 @@ void NetworkServ::execute(const mstring & data)
 		    }
 		}
 
-	        // hops = servers from us
-		// services = 1 for service, 0 for user
-	        // DAL4.4.15+ NICK name hops time user host server services :real name
-		Parent->nickserv.live[sourceL] =
-		    Nick_Live_t(
-			data.ExtractWord(2, ": "),
-			(time_t) atol(data.ExtractWord(4, ": ")),
-			data.ExtractWord(7, ": "),
-			data.ExtractWord(5, ": "),
-			data.ExtractWord(6, ": "),
-			data.After(":")
-		    );
+		switch (proto.Signon())
+		{
+		case 0000:
+		case 0001:
+		    break;
+		case 1000: // NICK nick hops time user host server :realname
+		case 1001: // NICK nick hops time user host server 1 :realname
+		    Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(7, ": "),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.After(":")
+			);
+		    break;
+		case 1002: // NICK nick hops time user host server 0 real-host :realname
+		    Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(7, ": "),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(9, ": "),
+			    data.After(":")
+			);
+		    break;
+		}
 		if (i_UserMax < Parent->nickserv.live.size())
 		    i_UserMax = Parent->nickserv.live.size();
 
@@ -1671,6 +1779,9 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(2, ": ").LowerCase(),
 			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
+		wxLogInfo(Parent->getLogMessage("OTHER/LINK"),
+			data.ExtractWord(3, ": ").c_str(),
+			Parent->startup.Server_Name().c_str());
 	    }
 	    else
 	    {
@@ -1997,6 +2108,99 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="USER")
 	{
+	    if (source.Contains("."))
+		return;
+
+	    // NEW USER
+	    sourceL = data.ExtractWord(2, ": ").LowerCase();
+
+	    // DONT kill when we do SQUIT protection.
+	    map<mstring,list<mstring> >::iterator i;
+	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
+	    {
+		list<mstring>::iterator k;
+		for (k=i->second.begin(); k!=i->second.end(); k++)
+		    if (*k == sourceL)
+		    {
+		        list<mstring>::iterator j = k;  j--;
+		        i->second.erase(k);
+		        k=j;
+		    }
+	    }
+
+	    if (Parent->nickserv.IsLive(sourceL))
+	    {
+	        // IF the squit server = us, and the signon time matches
+	        if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()
+	    	    && Parent->nickserv.live[sourceL].SignonTime() == mDateTime((time_t) atol(data.ExtractWord(4, ": "))))
+	        {
+	    	    Parent->nickserv.live[sourceL].ClearSquit();
+	    	    return;    // nice way to avoid repeating ones self :)
+	        }
+	        else
+	        {
+	    	    Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
+	    	    Parent->nickserv.live.erase(sourceL);
+	        }
+	    }
+
+	    switch (proto.Signon())
+	    {
+	    case 0000: // USER nick user host server :realname
+	        Parent->nickserv.live[sourceL] =
+		    Nick_Live_t(
+			data.ExtractWord(2, ": "),
+			time(NULL),
+			data.ExtractWord(5, ": "),
+			data.ExtractWord(3, ": "),
+			data.ExtractWord(4, ": "),
+			data.After(":")
+		    );
+		break;
+	    case 0001: // USER nick time user host server :realname
+	        Parent->nickserv.live[sourceL] =
+		    Nick_Live_t(
+			data.ExtractWord(2, ": "),
+			(time_t) atol(data.ExtractWord(3, ": ")),
+			data.ExtractWord(6, ": "),
+			data.ExtractWord(4, ": "),
+			data.ExtractWord(5, ": "),
+			data.After(":")
+		    );
+		break;
+	    case 1000:
+	    case 1001:
+	    case 1002:
+		break;
+	    }
+	    if (i_UserMax < Parent->nickserv.live.size())
+		i_UserMax = Parent->nickserv.live.size();
+
+	    // HAS to be AFTER the nickname is added to map.
+	    map<mstring, Committee>::iterator iter;
+	    for (iter = Parent->commserv.list.begin();
+				    iter != Parent->commserv.list.end();
+				    iter++)
+	    {
+		if (iter->second.IsOn(sourceL))
+		{
+		    for (iter->second.message = iter->second.MSG_begin();
+			    iter->second.message != iter->second.MSG_end();
+			    iter->second.message++)
+		    {
+			Parent->servmsg.send(sourceL, "[" + IRC_Bold +
+					    iter->first + IRC_Off + "] " +
+					    iter->second.message->Entry());
+		    }
+		}
+	    }
+	    if (Parent->nickserv.IsStored(sourceL) &&
+		    Parent->nickserv.stored[sourceL].Protect() &&
+		    !Parent->nickserv.stored[sourceL].IsOnline())
+	    {
+		Parent->nickserv.send(sourceL,
+			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"));
+	    }
 	}
 	else if (msgtype=="USERHOST")
 	{

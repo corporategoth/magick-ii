@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2000/03/14 10:05:17  prez
+** Added Protocol class (now we can accept multi IRCD's)
+**
 ** Revision 1.62  2000/03/08 23:38:37  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -990,13 +993,19 @@ void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
 	{
 	    if (Parent->nickserv.IsLive(target))
 	    {
-		Parent->server.SVSMODE(mynick, target, mode);
-		Parent->operserv.stats.i_Mode++;
-		announce(mynick, Parent->getMessage("MISC/NICK_MODE"),
+		if (Parent->server.proto.SVS())
+		{
+		    Parent->server.SVSMODE(mynick, target, mode);
+		    Parent->operserv.stats.i_Mode++;
+		    announce(mynick, Parent->getMessage("MISC/NICK_MODE"),
 			source.c_str(), mode.c_str(), target.c_str());
-		::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NICK_MODE"),
+		    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NICK_MODE"),
 			mode.c_str(), target.c_str());
-
+		}
+		else
+		{
+		    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOT_SUPPORTED"));
+		}
 	    }
 	    else
 	    {

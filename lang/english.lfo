@@ -64,6 +64,7 @@ ONEOPTION        =You may only specify one paramater after a group of options.
 TRACE_SYNTAX     =Paramater for --trace must be in the format of TYPE:LEVEL
 ZERO_LEVEL       =Zero or error in parsing trace level, ignoring.
 CFG_SYNTAX       =Configuration token "%s" contains a syntax error or invalid data.
+UNKNOWN_PROTO    =Unknown protocol identifier %d, default (%d) used.
 DBASE_ID         =Identification tag for database not valid.
 DBASE_VER        =Version of database is not recognized.
 

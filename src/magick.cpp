@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.203  2000/03/14 10:05:16  prez
+** Added Protocol class (now we can accept multi IRCD's)
+**
 ** Revision 1.202  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -358,8 +361,14 @@ int Magick::Start()
     ACE_INET_Addr localaddr;
     ircsvchandler->peer().get_local_addr(localaddr);
     CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
+    if (server.proto.Protoctl() != "")
+	server.raw(Parent->server.proto.Protoctl());
     server.raw("PASS " + startup.Server(tmp).second);
-    server.raw("SERVER " + startup.Server_Name() + " 1 :" + startup.Server_Desc());
+    tmp = "";
+    tmp.Format(server.proto.Server().c_str(),
+	    startup.Server_Name().c_str(), 1,
+	    startup.Server_Desc().c_str());
+    Parent->server.raw(tmp);
     i_connected = true;
         
     AUTO(true); // Activate events from here.
@@ -1315,6 +1324,17 @@ bool Magick::get_config_values()
     } while (ent!="");
     if (Server() == "" || !startup.IsServer(Server()))
 	reconnect = true;
+
+    in.Read(ts_Startup+"PROTOCOL",&value_uint,0);
+    if (value_uint != server.proto.Number())
+    {
+	server.proto.Set(value_uint);
+	if (value_uint == server.proto.Number())
+	    reconnect = true;
+	else
+	    wxLogWarning(getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
+			    value_uint, server.proto.Number());
+    }
 
     in.Read(ts_Startup+"LEVEL",&value_uint,1);
     if (value_uint > i_level)

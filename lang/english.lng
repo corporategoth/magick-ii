@@ -132,6 +132,7 @@ COFOUNDER          =Cannot set the CoFounder the same as the Founder.
 NOACCESS           =Access denied.
 DCCSENDREFUSE      =DCC SEND refused, no file transfer request in effect.
 DCCCHATREFUSE      =DCC CHAT refused, you do not have access to this feature.
+NOT_SUPPORTED      =This functionality is not supported by the IRC Server in use.
 
 ;
 ; This section contains miscellaneous outputs from Magick.  eg.
