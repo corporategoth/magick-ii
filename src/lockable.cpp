@@ -321,6 +321,8 @@ void Lock_Tokenizer::releaseLock(const mstring & lockname)
 			delete mutex_lock;
 		    LockMap.erase(lockiter);
 		    break;
+		default:
+		    // WTF?
 		}
 	    }
 	    else

@@ -3498,6 +3498,7 @@ void Server::parse_D(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_D", (source, msgtype, params));
 
+    static_cast < void > (source);
     static_cast < void > (params);
 
     LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
@@ -3506,6 +3507,8 @@ void Server::parse_D(mstring & source, const mstring & msgtype, const mstring & 
 void Server::parse_E(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_E", (source, msgtype, params));
+
+    static_cast < void > (source);
 
     if (msgtype == "END_OF_BURST" || msgtype == "EOB")
     {
@@ -3533,6 +3536,7 @@ void Server::parse_F(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_F", (source, msgtype, params));
 
+    static_cast < void > (source);
     static_cast < void > (params);
 
     LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
@@ -3541,6 +3545,8 @@ void Server::parse_F(mstring & source, const mstring & msgtype, const mstring & 
 void Server::parse_G(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_G", (source, msgtype, params));
+
+    static_cast < void > (source);
 
     if (msgtype == "GLINE")
     {
@@ -3570,6 +3576,9 @@ void Server::parse_G(mstring & source, const mstring & msgtype, const mstring & 
 void Server::parse_H(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_H", (source, msgtype, params));
+
+    static_cast < void > (source);
+    static_cast < void > (params);
 
     if (msgtype == "HELP")
     {
@@ -3756,6 +3765,8 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_L", (source, msgtype, params));
+
+    static_cast < void > (params);
 
     if (msgtype == "LINKS")
     {
@@ -4382,6 +4393,9 @@ void Server::parse_O(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_O", (source, msgtype, params));
 
+    static_cast < void > (source);
+    static_cast < void > (params);
+
     if (msgtype == "OPER")
     {
     }
@@ -4575,6 +4589,9 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
 void Server::parse_R(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_R", (source, msgtype, params));
+
+    static_cast < void > (source);
+    static_cast < void > (params);
 
     if (msgtype == "RAKILL")
     {
@@ -5886,6 +5903,8 @@ void Server::parse_V(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_V", (source, msgtype, params));
 
+    static_cast < void > (params);
+
     if (msgtype == "VERSION")
     {
 	// :source VERSION :our.server
@@ -6106,6 +6125,9 @@ void Server::parse_X(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_X", (source, msgtype, params));
 
+    static_cast < void > (source);
+    static_cast < void > (params);
+
     LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
@@ -6113,12 +6135,18 @@ void Server::parse_Y(mstring & source, const mstring & msgtype, const mstring & 
 {
     FT("Server::parse_Y", (source, msgtype, params));
 
+    static_cast < void > (source);
+    static_cast < void > (params);
+
     LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
 void Server::parse_Z(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_Z", (source, msgtype, params));
+
+    static_cast < void > (source);
+    static_cast < void > (params);
 
     if (msgtype == "ZLINE")
     {
@@ -6134,6 +6162,8 @@ void Server::parse_Z(mstring & source, const mstring & msgtype, const mstring & 
 void Server::numeric_execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::numeric_execute", (source, msgtype, params));
+
+    static_cast < void > (source);
 
     int numeric = atoi(msgtype);
 
