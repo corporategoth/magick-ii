@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.228  2000/05/17 14:08:11  prez
+** More tweaking with DCC, and getting iostream mods working ...
+**
 ** Revision 1.227  2000/05/17 09:10:35  ungod
 ** changed most wxOutputStream to ofstream and wxInputStream
 ** to ifstream
@@ -913,7 +916,7 @@ void Magick::LoadInternalMessages()
     {
 #include "language.h"
     	remove((files.TempDir()+DirSlash+"default.lng").c_str());
-        ofstream out(files.TempDir()+DirSlash+"default.lng");
+        ofstream out((files.TempDir()+DirSlash+"default.lng").c_str());
         for(i=0;i<def_langent;i++)
             out<<def_lang[i]<<endl;
     }
@@ -1022,7 +1025,7 @@ bool Magick::LoadLogMessages(mstring language)
 #include "logfile.h"
     	remove((files.TempDir()+DirSlash+"default.lfo").c_str());
 
-        ofstream out(files.TempDir()+DirSlash+"default.lfo");
+        ofstream out((files.TempDir()+DirSlash+"default.lfo").c_str());
     	for(i=0;i<def_logent;i++)
     	    out<<def_log[i]<<endl;
     }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2000/05/17 14:08:11  prez
+** More tweaking with DCC, and getting iostream mods working ...
+**
 ** Revision 1.20  2000/05/17 12:39:55  prez
 ** Fixed DCC Sending and file lookups (bypassed the DccMap for now).
 ** Still to fix DCC Receiving.  Looks like a wxFile::Length() issue.
@@ -367,7 +370,7 @@ void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if (in.WordCount("\n") == 4)
 	{
 	    type = (FileMap::FileType) atoi(in.ExtractWord(1, "\n").c_str());
-	    number = strtoul(in.ExtractWord(2, "\n").c_str(), NULL, 10);
+	    number = atoul(in.ExtractWord(2, "\n").c_str());
 	    name = in.ExtractWord(3, "\n");
 	    priv = in.ExtractWord(4, "\n");
 	    i_FileMap[type][number] = pair<mstring,mstring>(name,priv);
@@ -457,10 +460,8 @@ DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
 					"SEND");
 	return;
     }
-    if (wxFile::Exists(i_Tempfile.c_str()))
-	remove(i_Tempfile.c_str());
     ifstream fin(tmp.c_str());
-    ofstream fout(i_Tempfile.c_str());
+    ofstream fout(i_Tempfile.c_str(), ios::out|ios::trunc);
     fout << fin;
     i_File.Open(i_Tempfile.c_str(), wxFile::read);
     i_Filesize = i_File.Length();
@@ -564,24 +565,27 @@ DccXfer::~DccXfer()
 	    else if (Parent->nickserv.live[i_Source.LowerCase()].InFlight.Public())
 		filetype = FileMap::Public;
 	    unsigned long filenum = Parent->filesys.NewFile(filetype, i_Filename);
-	    if (filetype == FileMap::MemoAttach)
-		tmp.Format("%s%s%08x", Parent->files.MemoAttach().c_str(),
-			DirSlash.c_str(), filenum);
-	    else if (filetype == FileMap::Picture)
-		tmp.Format("%s%s%08x", Parent->files.Picture().c_str(),
-			DirSlash.c_str(), filenum);
-	    else if (filetype == FileMap::Public)
-		tmp.Format("%s%s%08x", Parent->files.Public().c_str(),
-			DirSlash.c_str(), filenum);
-	    if (wxFile::Exists(i_Tempfile.c_str()))
+	    if (filenum)
 	    {
-		if (wxFile::Exists(tmp.c_str()))
-		    remove(tmp.c_str());
-        ifstream fin(i_Tempfile.c_str());
-        ofstream fout(tmp.c_str());
-		fout << fin;
-		Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
-		CP(("Added entry %d to FileMap", filenum));
+		if (filetype == FileMap::MemoAttach)
+		    tmp.Format("%s%s%08x", Parent->files.MemoAttach().c_str(),
+			DirSlash.c_str(), filenum);
+		else if (filetype == FileMap::Picture)
+		    tmp.Format("%s%s%08x", Parent->files.Picture().c_str(),
+			DirSlash.c_str(), filenum);
+		else if (filetype == FileMap::Public)
+		    tmp.Format("%s%s%08x", Parent->files.Public().c_str(),
+			DirSlash.c_str(), filenum);
+		if (wxFile::Exists(i_Tempfile.c_str()))
+		{
+		    ifstream fin(i_Tempfile.c_str());
+		    ofstream fout(tmp.c_str(), ios::out|ios::trunc);
+		    fout << fin;
+		    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
+		    CP(("Added entry %d to FileMap", filenum));
+		}
+		else
+		    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
 	    }
 	    else
 		Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/05/17 14:08:12  prez
+** More tweaking with DCC, and getting iostream mods working ...
+**
 ** Revision 1.61  2000/05/15 08:43:28  ungod
 ** fix for recursion issue upon adding of two mstrings on certain platforms.
 **
@@ -829,6 +832,15 @@ const char *ltoa(long l)
 {
     mstring str;
     str << l;
+    return str.c_str();
+}
+#endif
+
+#ifdef NEED_LTOA
+const char *ultoa(unsigned long ul)
+{
+    mstring str;
+    str << ul;
     return str.c_str();
 }
 #endif

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/05/17 14:08:11  prez
+** More tweaking with DCC, and getting iostream mods working ...
+**
 ** Revision 1.27  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -457,12 +460,12 @@ void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
     if (in.WordCount(" ") > 4)
 	strsize = in.ExtractWord(5, " ");
 
-    address = strtoul(straddress.c_str(), NULL, 10);
-    longport = strtoul(strport.c_str(), NULL, 10);
+    address = atoul(straddress.c_str());
+    longport = atoul(strport.c_str());
     port = (unsigned short) longport;
     size = 0;
     if (!strsize.IsEmpty())
-	size = strtoul(strsize.c_str(), NULL, 10);
+	size = atoul(strsize.c_str());
 
     ACE_INET_Addr Server(port,address);
     if(type.UpperCase()=="CHAT")

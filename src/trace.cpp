@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2000/05/17 14:08:12  prez
+** More tweaking with DCC, and getting iostream mods working ...
+**
 ** Revision 1.90  2000/05/17 09:10:36  ungod
 ** changed most wxOutputStream to ofstream and wxInputStream
 ** to ifstream
@@ -620,6 +623,6 @@ mstring LoggerTask::logname(threadtype_enum type)
 
 void LoggerTask::logmessage_i(threadtype_enum type,const mstring& data)
 {
-    ofstream out(Parent->Services_Dir()+DirSlash+logname(type),ios_base::out|ios_base::app);
+    ofstream out((Parent->Services_Dir()+DirSlash+logname(type)).c_str(),ios::out|ios::app);
     out<<data<<endl;
 }

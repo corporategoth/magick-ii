@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2000/05/17 14:08:12  prez
+** More tweaking with DCC, and getting iostream mods working ...
+**
 ** Revision 1.91  2000/05/17 12:39:55  prez
 ** Fixed DCC Sending and file lookups (bypassed the DccMap for now).
 ** Still to fix DCC Receiving.  Looks like a wxFile::Length() issue.
@@ -3007,7 +3010,7 @@ void Nick_Stored_t::GotPic(unsigned long picnum)
     FT("Nick_Stored_t::GotPic", (picnum));
     if (Host() == "")
     {
-	if (!Parent->nickserv.PicSize())
+	if (Parent->nickserv.PicExt() != "")
 	    i_Picture = picnum;
     }
     else
@@ -4500,10 +4503,10 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
     mstring filename = 	Parent->filesys.GetName(FileMap::Picture, picnum);
     size_t filesize = Parent->filesys.GetSize(FileMap::Picture, picnum);
 
-    short port = FindAvailPort();
+    unsigned short port = FindAvailPort();
     ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
-		" " + mstring(ltoa(Parent->LocalHost())) + " " +
-		mstring(itoa(port)) + " " + mstring(ltoa(filesize))));
+		" " + mstring(ultoa(Parent->LocalHost())) + " " +
+		mstring(ultoa(port)) + " " + mstring(ultoa(filesize))));
     Parent->dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
 }
 
@@ -5251,11 +5254,17 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").CmpNoCase("NONE")==0)
     {
+	if (Parent->nickserv.stored[source.LowerCase()].PicNum())
+	    Parent->filesys.EraseFile(FileMap::Picture,
+		Parent->nickserv.stored[source.LowerCase()].PicNum());
 	Parent->nickserv.stored[source.LowerCase()].GotPic(0u);
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/REMOVED"));
     }
     else
     {
+	if (Parent->nickserv.stored[source.LowerCase()].PicNum())
+	    Parent->filesys.EraseFile(FileMap::Picture,
+		Parent->nickserv.stored[source.LowerCase()].PicNum());
 	Parent->nickserv.live[source.LowerCase()].InFlight.Picture(mynick);
     }
 }

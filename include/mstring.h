@@ -24,6 +24,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/05/17 14:08:11  prez
+** More tweaking with DCC, and getting iostream mods working ...
+**
 ** Revision 1.42  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -175,6 +178,8 @@ public:
 #define NEED_ITOA
 #define NEED_FTOA
 #define NEED_LTOA
+#define NEED_ULTOA
+#define NEED_ATOUL
 
 #ifdef NEED_ITOA
 const char *itoa(int i);
@@ -184,6 +189,12 @@ const char *ftoa(float f);
 #endif
 #ifdef NEED_LTOA
 const char *ltoa(long l);
+#endif
+#ifdef NEED_ULTOA
+const char *ultoa(unsigned long l);
+#endif
+#ifdef NEED_ATOUL
+#define atoul(x) strtoul(x, NULL, 10);
 #endif
 
 extern const mstring DirSlash;

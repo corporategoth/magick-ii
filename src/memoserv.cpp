@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/05/17 14:08:11  prez
+** More tweaking with DCC, and getting iostream mods working ...
+**
 ** Revision 1.56  2000/05/17 07:47:59  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -916,10 +919,10 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);
 		size_t filesize = Parent->filesys.GetSize(FileMap::MemoAttach, filenum);
 
-		short port = FindAvailPort();
+		unsigned short port = FindAvailPort();
 		::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
-			" " + mstring(ltoa(Parent->LocalHost())) + " " +
-			mstring(itoa(port)) + " " + mstring(ltoa(filesize))));
+			" " + mstring(ultoa(Parent->LocalHost())) + " " +
+			mstring(ultoa(port)) + " " + mstring(ultoa(filesize))));
 		Parent->dcc->Accept(port, mynick, source, FileMap::MemoAttach, filenum);
 	    }
 	}
