@@ -1603,51 +1603,52 @@ void mstring::Assemble(const list < mstring > & text, const mstring & delim)
 
 /********************************************************/
 
-/*  Direct from Magick I, credit to Andy Church for writing this.
- *
- *  match_wild:  Attempt to match a string to a pattern which might contain
- *              '*' or '?' wildcards.  Return 1 if the string matches the
- *              pattern, 0 if not.
+/*
+ * Credit to Jack Handy for writing this and to Daniel Andersson for the
+ * case sensitive and C++-ified modifications to it.
+ * Thanks to Brian King for handing me this one :)
  */
-
-bool match_wild(const char *pattern, const char *str, bool nocase)
+bool match_wild(const char *wild, const char *text, bool nocase)
 {
-    char c;
-    const char *s;
+    const char *cp, *mp;
 
-    /* This WILL eventually terminate: either by *pattern == 0, or by a
-     * trailing '*'. */
-
-    for (;;)
+    while ((*text != 0) && (*wild != '*'))
     {
-	switch (c = * pattern++)
-	{
-	case 0:
-	    if (!*str)
-		return true;
+	if ((nocase ? (tolower(*wild) != tolower(*text)) : *wild != * text) && (*wild != '?'))
 	    return false;
-	case '?':
-	    if (!*str)
-		return false;
-	    ++str;
-	    break;
-	case '*':
-	    if (!*pattern)
-		return true;	/* trailing '*' matches everything else */
-	    s = str;
-	    while (*s)
-	    {
-		if ((nocase ? (tolower(*s) == tolower(*pattern)) : *s == * pattern) && match_wild(pattern, s, nocase))
-		    return true;
-		++s;
-	    }
-	    break;
-	default:
-	    if ((nocase ? (tolower(*str++) != tolower(c)) : (*str++ != c)))
-		return false;
-	    break;
-	}			/* switch */
+
+	wild++;
+	text++;
     }
+
+    while (*text != 0)
+    {
+	if (*wild == '*')
+	{
+	    if (!*++wild)
+		return true;
+	    mp = wild;
+	    cp = text + 1;
+	}
+	else
+	{
+	    if ((nocase ? (tolower(*wild) == tolower(*text)) : (*wild == * text)) || (*wild == '?'))
+	    {
+		wild++;
+		text++;
+	    }
+	    else
+	    {
+		wild = mp;
+		text = cp++;
+	    }
+	}
+    }
+
+    while (*wild == '*')
+	wild++;
+
+    return static_cast < bool > (!*wild);
 }
 
 mstring fmstring(const char *fmt, ...)
