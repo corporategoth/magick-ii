@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.208  2000/09/22 12:26:11  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.207  2000/09/13 12:45:33  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -488,6 +491,7 @@ Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
     WLOCK(("ChanServ", "live", i_Name.LowerCase()));
     i_Name = name;
     i_Limit = 0;
+    ph_timer = 0;
     users[first_user.LowerCase()] = pair<bool,bool>(false,false);
     DumpB();
 }
@@ -497,6 +501,15 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 {
     NFT("Chan_Live_t::operator=");
     WLOCK(("ChanServ", "live", in.i_Name.LowerCase()));
+
+    i_Name=in.i_Name;
+    i_Creation_Time=in.i_Creation_Time;
+    users.clear();
+    map<mstring, pair<bool, bool> >::const_iterator k;
+    for(k=in.users.begin();k!=in.users.end();k++)
+	users.insert(*k);
+    for(k=in.squit.begin();k!=in.squit.end();k++)
+	squit.insert(*k);
     bans.clear();
     exempt.clear();
     map<mstring, mDateTime>::const_iterator i;
@@ -504,24 +517,26 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 	bans.insert(*i);
     for(i=in.exempt.begin();i!=in.exempt.end();i++)
 	exempt.insert(*i);
-    i_Creation_Time=in.i_Creation_Time;
-    i_Key=in.i_Key;
-    i_Limit=in.i_Limit;
-    i_Name=in.i_Name;
     i_Topic=in.i_Topic;
     i_Topic_Set_Time=in.i_Topic_Set_Time;
     i_Topic_Setter=in.i_Topic_Setter;
+    modes=in.modes;
+    i_Key=in.i_Key;
+    i_Limit=in.i_Limit;
+    p_modes_on=in.p_modes_on;
+    p_modes_off=in.p_modes_off;
+    p_modes_on_params.clear();
+    p_modes_on_params=in.p_modes_on_params;
+    p_modes_off_params.clear();
+    p_modes_off_params=in.p_modes_off_params;
+    ph_timer=in.ph_timer;
+    recent_parts.clear();
+    for(i=in.recent_parts.begin(); i!=in.recent_parts.end(); i++)
+	recent_parts.insert(*i);
     i_UserDef.clear();
     map<mstring,mstring>::const_iterator j;
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
 	i_UserDef.insert(*j);
-    modes=in.modes;
-    users.clear();
-    map<mstring, pair<bool, bool> >::const_iterator k;
-    for(k=in.users.begin();k!=in.users.end();k++)
-	users.insert(*k);
-    for(k=in.squit.begin();k!=in.squit.end();k++)
-	squit.insert(*k);
 }
 
 mDateTime Chan_Live_t::Creation_Time()
@@ -1298,9 +1313,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		{
 		case 'o':
 		case 'v':
+		    if (fwdargs <= wc)
+		    {
 		    Log(LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
 			add ? '+' : '-', change[i], source.c_str(),
 			in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
+		    }
 		default:
 		    fwdargs++;
 		}
@@ -1338,7 +1356,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    switch(change[i])
 	    {
 	    case 'o':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		if (IsIn(in.ExtractWord(fwdargs, ": ")))
 		{
@@ -1368,7 +1386,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		break;
 
 	    case 'v':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		if (IsIn(in.ExtractWord(fwdargs, ": ")))
 		{
@@ -1398,7 +1416,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	        break;
 
 	    case 'b':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "bans"));
 		CB(5, bans.size());
@@ -1422,7 +1440,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		break;
 
 	    case 'e':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
 		CB(5, exempt.size());
@@ -1446,7 +1464,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		break;
 
 	    case 'k':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
 		CB(5, i_Key);
@@ -1476,7 +1494,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    case 'l':
 		if (add)
 		{
-		    if (wc <= fwdargs)
+		    if (fwdargs <= wc)
 		    {
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
 		    CB(5, i_Limit);
@@ -1516,7 +1534,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		}
 		break;
 	    default:
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		    newmode += change[i];
 		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
@@ -1555,9 +1573,16 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source,
 						newmode + newmode_param);
-    if (requeue_param != "" && !source.Contains("."))
+    if (requeue_param != "")
     {
-	Parent->server.PushUser(source, requeue + requeue_param, i_Name);
+	if (source.Contains("."))
+	{
+	    mBase::push_message(requeue + requeue_param);
+	}
+	else
+	{
+	    Parent->server.PushUser(source, requeue + requeue_param, i_Name);
+	}
     }
 }
 
@@ -2204,7 +2229,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    switch(change[i])
 	    {
 	    case 'o':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		if (add)
 		{
@@ -2231,7 +2256,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		break;
 
 	    case 'v':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		if (add)
 		{
@@ -2249,7 +2274,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		break;
 
 	    case 'b':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		if (add && !setter.Contains("."))
 		{
@@ -2321,7 +2346,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		break;
 
 	    case 'k':
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Off"));
 		RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
@@ -2353,12 +2378,12 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		    }
 		}}
 
-		if (add && wc <= fwdargs)
+		if (add && fwdargs <= wc)
 		    fwdargs++;
 		break;
 
 	    default:
-		if (wc <= fwdargs)
+		if (fwdargs <= wc)
 		{
 		    fwdargs++;
 		}
@@ -6464,8 +6489,8 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(cstored->GetAccess(source, "CMDMODE") ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Mode()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Mode()].IsOn(source))))
     {
 	mstring modes = params.After(" ", 2);
 	clive->SendMode(modes);
@@ -6476,8 +6501,8 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
 	return;
     }
     else if (cstored->GetAccess(source, "VIEW") ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source)))
     {
 	mstring output;
 	output << clive->Name() << ": +" << clive->Mode();
@@ -6533,8 +6558,8 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Op()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Op()].IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -6627,8 +6652,8 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Op()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Op()].IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -6708,8 +6733,8 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Voice()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Voice()].IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -6802,8 +6827,8 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Voice()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Voice()].IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -7155,8 +7180,8 @@ void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(chan->GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Invite()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Invite()].IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -7233,8 +7258,8 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(cstored->GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Unban()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Unban()].IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
@@ -7407,8 +7432,8 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Clear()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -7481,8 +7506,8 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Clear()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -7550,8 +7575,8 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Clear()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -7625,8 +7650,8 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Clear()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -7714,8 +7739,8 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Clear()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -7786,8 +7811,8 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_CS_Clear()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -8267,8 +8292,8 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "VIEW") &&
-	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -8628,8 +8653,8 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "VIEW") &&
-	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -8895,7 +8920,9 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 3 &&
-	cstored->GetAccess(source, "OVERGREET"))
+	(cstored->GetAccess(source, "OVERGREET") ||
+	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))))
     {
 	if (params.ExtractWord(3, " ").CmpNoCase("all") == 0)
 	    all = true;
@@ -9089,7 +9116,9 @@ void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
     channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!cstored->GetAccess(source, "MESSAGE"))
+    if (!(cstored->GetAccess(source, "MESSAGE") ||
+	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -9141,8 +9170,9 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
     channel = cstored->Name();
 
-    // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
+    if (!(cstored->GetAccess(source) > Parent->chanserv.Level_Max() ||
+	(Parent->commserv.IsList(Parent->commserv.OVR_Owner()) &&
+	Parent->commserv.list[Parent->commserv.OVR_Owner()].IsOn(source))))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
@@ -9214,8 +9244,9 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
     channel = cstored->Name();
 
-    // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
+    if (!(cstored->GetAccess(source) > Parent->chanserv.Level_Max() ||
+	(Parent->commserv.IsList(Parent->commserv.OVR_Owner()) &&
+	Parent->commserv.list[Parent->commserv.OVR_Owner()].IsOn(source))))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;

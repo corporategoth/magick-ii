@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.272  2000/09/22 12:26:11  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.271  2000/09/13 12:45:34  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -625,6 +628,12 @@ int Magick::Start()
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK"));
+    Result = ACE_OS::setsid();
+/*    if (Result < 0)
+    {
+	Log(LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETSID"), Result);
+	RET(1);
+    } */
     Result = ACE::fork(i_programname);
     if (Result < 0)
     {
@@ -635,12 +644,17 @@ int Magick::Start()
     {
 	RET(0);
     }
-/*    Result = ACE_OS::setpgid (0, 0);
-    if (Result < 0)
+    Result = ACE_OS::setpgid (0, 0);
+/*    if (Result < 0)
     {
 	Log(LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETPGID"), Result);
 	RET(1);
     } */
+    Result = ACE_OS::getuid();
+    if (Result == 0)
+    {
+	Log(LM_ALERT, getLogMessage("SYS_ERRORS/RUN_AS_ROOT"));
+    }
 
     pidfile.Open(files.Pidfile(),"w");
     if(pidfile.IsOpened())
@@ -2680,12 +2694,28 @@ bool Magick::get_config_values()
     in.Read(ts_CommServ+"OPER_OPENMEMOS",commserv.oper_openmemos,true);
     in.Read(ts_CommServ+"OPER_MODEO",commserv.oper_modeo,true);
     in.Read(ts_CommServ+"OPER_SETMODE",commserv.oper_setmode,"");
+    in.Read(ts_CommServ+"OVR_VIEW",commserv.ovr_view,"OPER");
+    in.Read(ts_CommServ+"OVR_OWNER",commserv.ovr_owner,"SADMIN");
+    in.Read(ts_CommServ+"OVR_CS_MODE",commserv.ovr_cs_mode,"SOP");
+    in.Read(ts_CommServ+"OVR_CS_OP",commserv.ovr_cs_op,"SOP");
+    in.Read(ts_CommServ+"OVR_CS_VOICE",commserv.ovr_cs_voice,"SOP");
+    in.Read(ts_CommServ+"OVR_CS_INVITE",commserv.ovr_cs_invite,"SOP");
+    in.Read(ts_CommServ+"OVR_CS_UNBAN",commserv.ovr_cs_unban,"SOP");
+    in.Read(ts_CommServ+"OVR_CS_CLEAR",commserv.ovr_cs_clear,"SADMIN");
     commserv.all_name.MakeUpper();
     commserv.regd_name.MakeUpper();
     commserv.sadmin_name.MakeUpper();
     commserv.sop_name.MakeUpper();
     commserv.admin_name.MakeUpper();
     commserv.oper_name.MakeUpper();
+    commserv.ovr_view.MakeUpper();
+    commserv.ovr_owner.MakeUpper();
+    commserv.ovr_cs_mode.MakeUpper();
+    commserv.ovr_cs_op.MakeUpper();
+    commserv.ovr_cs_voice.MakeUpper();
+    commserv.ovr_cs_invite.MakeUpper();
+    commserv.ovr_cs_unban.MakeUpper();
+    commserv.ovr_cs_clear.MakeUpper();
     AddCommands();
 
     if (commserv.IsList(commserv.all_name))

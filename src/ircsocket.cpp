@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.133  2000/09/22 12:26:11  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.132  2000/09/13 12:45:33  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -778,8 +781,10 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	{
 	    if (!entry->InFlight.InProg())
 	    {
+		/* Already handled by DccXfer::DccXfer
 		send(entry->InFlight.service, entry->Name(),
 			Parent->getMessage(entry->Name(), "DCC/NOCONNECT"), "GET");
+		*/
 		entry->InFlight.Cancel();
 	    }
 	}

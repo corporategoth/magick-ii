@@ -25,6 +25,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.29  2000/09/22 12:26:10  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.28  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -137,6 +140,8 @@ static const char *ident_filesys_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
+#include "datetime.h"
+
 class mFile
 {
     FILE *fd;
@@ -156,6 +161,7 @@ public:
     size_t Read(void *buf, size_t size);
     mstring ReadLine();
     long Length();
+    mDateTime LastMod();
     bool Eof();
     void Attach(mstring name, FILE *in);
     FILE *Detach();
@@ -164,6 +170,7 @@ public:
     static bool Exists(mstring name);
     static bool Erase(mstring name);
     static long Length(mstring name);
+    static mDateTime LastMod(mstring name);
     static long Copy(mstring sin, mstring sout, bool append = false);
     static long Dump(vector<mstring> sin, mstring sout, bool append = false, bool endline = true);
     static long Dump(list<mstring> sin, mstring sout, bool append = false, bool endline = true);
@@ -173,7 +180,6 @@ public:
 };
 
 #ifndef JUST_MFILE
-#include "datetime.h"
 #include "xml/sxp.h"
 
 unsigned short FindAvailPort();
@@ -312,5 +318,5 @@ public:
     void Cancel(unsigned long DccId, bool silent = false);
 };
 
-#endif
+#endif /* JUST_MFILE */
 #endif

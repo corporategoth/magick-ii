@@ -25,6 +25,9 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/09/22 12:26:10  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.38  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -233,6 +236,14 @@ private:
     bool    oper_openmemos;
     bool    oper_modeo;
     mstring oper_setmode;
+    mstring ovr_view;
+    mstring ovr_owner;
+    mstring ovr_cs_mode;
+    mstring ovr_cs_op;
+    mstring ovr_cs_voice;
+    mstring ovr_cs_invite;
+    mstring ovr_cs_unban;
+    mstring ovr_cs_clear;
     static SXP::Tag tag_CommServ;
 
     vector<Committee *> c_array;
@@ -300,6 +311,14 @@ public:
     bool    OPER_OpenMemos()	{ return oper_openmemos; }
     bool    OPER_ModeO()	{ return oper_modeo; }
     mstring OPER_SetMode()	{ return oper_setmode; }
+    mstring OVR_View()		{ return ovr_view; }
+    mstring OVR_Owner()		{ return ovr_owner; }
+    mstring OVR_CS_Mode()	{ return ovr_cs_mode; }
+    mstring OVR_CS_Op()		{ return ovr_cs_op; }
+    mstring OVR_CS_Voice()	{ return ovr_cs_voice; }
+    mstring OVR_CS_Invite()	{ return ovr_cs_invite; }
+    mstring OVR_CS_Unban()	{ return ovr_cs_unban; }
+    mstring OVR_CS_Clear()	{ return ovr_cs_clear; }
 
     map<mstring,Committee> list;
     bool IsList(mstring in);

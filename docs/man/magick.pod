@@ -138,17 +138,17 @@ Override the B<FILES/ENCRYPTION> value in the configuration file,
 setting it to true, which tells magick to encrypt the databases
 next time it saves (depends on the F<magick.key> file existing).
 
-I<NOTE: if your F<magick.key> file was created with a different
+I<NOTE>: if your F<magick.key> file was created with a different
 f<magick_keygen> binary than the one associated with the current
 version of F<magick> you are running (including the actual COMPILE
-of it), you will essentially create corrupted databases>
+of it), you will essentially create corrupted databases.
 
 =item --decrypt, -e
 
 Override the B<FILES/ENCRYPTION> value in the configuration file,
 setting it to false, which tells magick to decrypt the databases
 on load, and not re-encrypt it when it saves them.  This requires
-your F<magick.key> file to have the correct key do decrypt the
+your F<magick.key> file to have the correct key to decrypt the
 databases (and to have been created with the F<magick_keygen> of
 the same compile set as the current F<magick> binary).
 

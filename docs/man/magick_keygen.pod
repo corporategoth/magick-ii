@@ -17,7 +17,7 @@ the output key filename (defaulting to F<magick.key>), and then it
 will ask you to enter the unencrypted key twice.
 
 You may type VERY long lines of text (by default, up to 1024 bytes)
-as your key., however it may not contain a carriage return if entered
+as your key, however it may not contain a carriage return if entered
 interactively (ie. not via. the F<plainfile>).
 
 This program is written for use with Magick IRC Services, and contains

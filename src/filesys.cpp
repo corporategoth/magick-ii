@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/09/22 12:26:11  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.51  2000/09/18 08:17:57  prez
 ** Intergrated mpatrol into the xml/des sublibs, and did
 ** some minor fixes as a result of mpatrol.
@@ -384,6 +387,18 @@ long mFile::Length()
     RET((long) st.st_size);
 }
 
+mDateTime mFile::LastMod()
+{
+    NFT("mFile::LastMod");
+    if (!IsOpened())
+	RET(0.0);
+    MLOCK(("mFile", i_name));
+    struct stat st;
+    fstat(fileno(fd), &st);
+    mDateTime retval = (time_t) ACE_Time_Value(st.st_mtime).sec();
+    RET(retval);
+}
+
 bool mFile::Eof()
 {
     NFT("mFile::Eof");
@@ -443,6 +458,18 @@ long mFile::Length(mstring name)
     struct stat st;
     stat(name.c_str(), &st);
     RET((long) st.st_size);
+}
+
+mDateTime mFile::LastMod(mstring name)
+{
+    FT("mFile::LastMod", (name));
+    if (!Exists(name))
+	RET(0.0);
+    MLOCK(("mFile", name));
+    struct stat st;
+    stat(name.c_str(), &st);
+    mDateTime retval = (time_t) ACE_Time_Value(st.st_mtime).sec();
+    RET(retval);
 }
 
 FILE *mFile::Detach()

@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.131  2000/09/22 12:26:12  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.130  2000/09/18 08:17:58  prez
 ** Intergrated mpatrol into the xml/des sublibs, and did
 ** some minor fixes as a result of mpatrol.
@@ -432,7 +435,7 @@ void Protocol::Set(unsigned int in)
 	i_Signon = 1000;
 	i_Akill = 2;
 	break;
-    case 21:
+    case 21: /* UnderNet >= 2.10.x */
 	i_Signon = 1000;
 	i_Akill = 2;
 	i_Server = "SERVER %s %d 0 0 P09 :%s";
@@ -464,7 +467,7 @@ void Protocol::Set(unsigned int in)
 	i_Server = "SERVER %s %d relic2.0 :%s";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
-    case 51: /* Relic */
+    case 51: /* Relic >= 2.1 */
 	i_NickLen = 32;
 	i_SVS = true;
 	i_Globops = true;
@@ -2556,7 +2559,19 @@ void NetworkServ::execute(const mstring & data)
 
 	    // :source JOIN :#channel
 	    for (unsigned int i=3; i<=data.WordCount(":, "); i++)
-		Parent->nickserv.live[sourceL].Join(data.ExtractWord(i, ":, "));
+	    {
+		// If we're IN channel, then we may be cycling ...
+		if (Parent->chanserv.IsLive(data.ExtractWord(i, ":, ")) &&
+		    Parent->chanserv.live[data.ExtractWord(i, ":, ").LowerCase()].IsIn(sourceL))
+		{
+		    PushUser(source, data, data.ExtractWord(i, ":, "));
+		}
+		else
+		{
+		    MLOCK(("BlockChannel", data.ExtractWord(i, ":, ").LowerCase()));
+		    Parent->nickserv.live[sourceL].Join(data.ExtractWord(i, ":, "));
+		}
+	    }
 	}
 	else
 	{
@@ -2708,6 +2723,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
 		{
+		    MLOCK(("BlockChannel", data.ExtractWord(3, ": ").LowerCase()));
 		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Mode(source, data.After(" ", 3));
 		}
 		else
@@ -3055,6 +3071,7 @@ void NetworkServ::execute(const mstring & data)
 		return;
 
 	    // :source PART #channel :reason
+	    MLOCK(("BlockChannel", data.ExtractWord(3, ": ").LowerCase()));
 	    Parent->nickserv.live[sourceL].Part(data.ExtractWord(3, ": "));
 	}
 	else if (msgtype=="PASS")
@@ -3706,6 +3723,7 @@ void NetworkServ::execute(const mstring & data)
 	    // TIME is not standard (time is optional);
 	    if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
 	    {
+		MLOCK(("BlockChannel", data.ExtractWord(3, ": ").LowerCase()));
 		if (data.ExtractWord(5, ": ") != "")
 		{ // Setting
 		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
@@ -4304,74 +4322,6 @@ void NetworkServ::numeric_execute(const mstring & data)
 
     switch (msgtype)
     {
-    case 200:     // RPL_TRACELINK
-	break;
-    case 201:     // RPL_TRACECONNECTING
-	break;
-    case 202:     // RPL_TRACEHANDSHAKE
-	break;
-    case 203:     // RPL_TRACEUNKNOWN
-	break;
-    case 204:     // RPL_TRACEOPERATOR
-	break;
-    case 205:     // RPL_TRACEUSER
-	break;
-    case 206:     // RPL_TRACESERVER
-	break;
-    case 208:     // RPL_TRACENEWTYPE
-	break;
-    case 211:     // RPL_STATSLINKINFO
-	break;
-    case 212:     // RPL_STATSCOMMANDS
-	break;
-    case 213:     // RPL_STATSCLINE
-	break;
-    case 214:     // RPL_STATSNLINE
-	break;
-    case 215:     // RPL_STATSILINE
-	break;
-    case 216:     // RPL_STATSKLINE
-	break;
-    case 218:     // RPL_STATSYLINE
-	break;
-    case 219:     // RPL_ENDOFSTATS
-	break;
-    case 221:     // RPL_UMODEIS
-	break;
-    case 241:     // RPL_STATSLLINE
-	break;
-    case 242:     // RPL_STATSUPTIME
-	break;
-    case 243:     // RPL_STATSOLINE
-	break;
-    case 244:     // RPL_STATSHLINE
-	break;
-    case 251:     // RPL_LUSERCLIENT
-	break;
-    case 252:     // RPL_LUSEROP
-	break;
-    case 253:     // RPL_LUSERUNKNOWN
-	break;
-    case 254:     // RPL_LUSERCHANNELS
-	break;
-    case 255:     // RPL_LUSERME
-	break;
-    case 256:     // RPL_ADMINME
-	break;
-    case 257:     // RPL_ADMINLOC1
-	break;
-    case 258:     // RPL_ADMINLOC2
-	break;
-    case 259:     // RPL_ADMINEMAIL
-	break;
-    case 261:     // RPL_TRACELOG
-	break;
-    case 300:     // RPL_NONE
-	break;
-    case 301:     // RPL_AWAY
-	break;
-    case 302:     // RPL_USERHOST
-	break;
     case 303:     // RPL_ISON
 	for (i=4; i<=data.WordCount(": "); i++)
 	{
@@ -4471,146 +4421,8 @@ void NetworkServ::numeric_execute(const mstring & data)
 	WaitIsOn.clear();
 	}
 	break;
-    case 305:     // RPL_UNAWAY
-	break;
-    case 306:     // RPL_NOWAWAY
-	break;
-    case 311:     // RPL_WHOISUSER
-	break;
-    case 312:     // RPL_WHOISSERVER
-	break;
-    case 313:     // RPL_WHOISOPERATOR
-	break;
-    case 314:     // RPL_WHOWASUSER
-	break;
-    case 315:     // RPL_ENDOFWHO
-	break;
-    case 317:     // RPL_WHOISIDLE
-	break;
-    case 318:     // RPL_ENDOFWHOIS
-	break;
-    case 319:     // RPL_WHOISCHANNELS
-	break;
-    case 321:     // RPL_LISTSTART
-	break;
-    case 322:     // RPL_LIST
-	break;
-    case 323:     // RPL_LISTEND
-	break;
-    case 324:     // RPL_CHANNELMODEIS
-	break;
-    case 331:     // RPL_NOTOPIC
-	break;
-    case 332:     // RPL_TOPIC
-	break;
-    case 333:     // RPL_??? (Bahamut)
-	break;
-    case 341:     // RPL_INVITING
-	break;
-    case 342:     // RPL_SUMMONING
-	break;
-    case 351:     // RPL_VERSION
-	break;
-    case 352:     // RPL_WHOREPLY
-	break;
-    case 353:     // RPL_NAMREPLY
-	break;
-    case 364:     // RPL_LINKS
-	break;
-    case 365:     // RPL_ENDOFLINKS
-	break;
-    case 366:     // RPL_ENDOFNAMES
-	break;
-    case 367:     // RPL_BANLIST
-	break;
-    case 368:     // RPL_ENDOFBANLIST
-	break;
-    case 369:     // RPL_ENDOFWHOWAS
-	break;
-    case 371:     // RPL_INFO
-	break;
-    case 372:     // RPL_MOTD
-	break;
-    case 374:     // RPL_ENDOFINFO
-	break;
-    case 375:     // RPL_MOTDSTART
-	break;
-    case 376:     // RPL_ENDOFMOTD
-	break;
-    case 381:     // RPL_YOUREOPER
-	break;
-    case 382:     // RPL_REHASHING
-	break;
-    case 391:     // RPL_TIME
-	break;
-    case 392:     // RPL_USERSSTART
-	break;
-    case 393:     // RPL_USERS
-	break;
-    case 394:     // RPL_ENDOFUSERS
-	break;
-    case 395:     // RPL_NOUSERS
-	break;
-    case 401:     // ERR_NOSUCHNICK
-	break;
-    case 402:     // ERR_NOSUCHSERVER
-	break;
-    case 403:     // ERR_NOSUCHCHANNEL
-	break;
-    case 404:     // ERR_CANNOTSENDTOCHAN
-	break;
-    case 405:     // ERR_TOOMANYCHANNELS
-	break;
-    case 406:     // ERR_WASNOSUCHNICK
-	break;
-    case 407:     // ERR_TOOMANYTARGETS
-	break;
-    case 409:     // ERR_NOORIGIN
-	break;
-    case 411:     // ERR_NORECIPIENT
-	break;
-    case 412:     // ERR_NOTEXTTOSEND
-	break;
-    case 413:     // ERR_NOTOPLEVEL
-	break;
-    case 414:     // ERR_WILDTOPLEVEL
-	break;
-    case 421:     // ERR_UNKNOWNCOMMAND
-	break;
-    case 422:     // ERR_NOMOTD
-	break;
-    case 423:     // ERR_NOADMININFO
-	break;
-    case 424:     // ERR_FILEERROR
-	break;
-    case 431:     // ERR_NONICKNAMEGIVEN
-	break;
-    case 432:     // ERR_ERRONEUSNICKNAME
-	break;
-    case 433:     // ERR_NICKNAMEINUSE
-	break;
     case 436:     // ERR_NICKCOLLISION
 	// MUST handle.
-	break;
-    case 441:     // ERR_USERNOTINCHANNEL
-	break;
-    case 442:     // ERR_NOTONCHANNEL
-	break;
-    case 443:     // ERR_USERONCHANNEL
-	break;
-    case 444:     // ERR_NOLOGIN
-	break;
-    case 445:     // ERR_SUMMONDISABLED
-	break;
-    case 446:     // ERR_USERSDISABLED
-	break;
-    case 451:     // ERR_NOTREGISTERED
-	break;
-    case 461:     // ERR_NEEDMOREPARAMS
-	break;
-    case 462:     // ERR_ALREADYREGISTRED
-	break;
-    case 463:     // ERR_NOPERMFORHOST
 	break;
     case 464:     // ERR_PASSWDMISMATCH
 	// MUST handle (Stop connecting).
@@ -4623,30 +4435,6 @@ void NetworkServ::numeric_execute(const mstring & data)
 	Log(LM_ERROR, Parent->getLogMessage("OTHER/WEAREBANNED"),
 		Parent->Server().c_str());
 	Parent->Disconnect();
-	break;
-    case 467:     // ERR_KEYSET
-	break;
-    case 471:     // ERR_CHANNELISFULL
-	break;
-    case 472:     // ERR_UNKNOWNMODE
-	break;
-    case 473:     // ERR_INVITEONLYCHAN
-	break;
-    case 474:     // ERR_BANNEDFROMCHAN
-	break;
-    case 475:     // ERR_BADCHANNELKEY
-	break;
-    case 481:     // ERR_NOPRIVILEGES
-	break;
-    case 482:     // ERR_CHANOPRIVSNEEDED
-	break;
-    case 483:     // ERR_CANTKILLSERVER
-	break;
-    case 491:     // ERR_NOOPERHOST
-	break;
-    case 501:     // ERR_UMODEUNKNOWNFLAG
-	break;
-    case 502:     // ERR_USERSDONTMATCH
 	break;
     default:
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),

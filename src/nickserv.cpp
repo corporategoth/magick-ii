@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.135  2000/09/22 12:26:11  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.134  2000/09/18 08:17:57  prez
 ** Intergrated mpatrol into the xml/des sublibs, and did
 ** some minor fixes as a result of mpatrol.
@@ -1196,6 +1199,8 @@ void Nick_Live_t::Part(mstring chan)
     MCB(joined_channels.size());
     joined_channels.erase(chan.LowerCase());
     MCE(joined_channels.size());
+    // Just incase we were cycling and need to JOIN
+    Parent->server.FlushUser(i_Name, chan);
 }
 
 void Nick_Live_t::Kick(mstring kicker, mstring chan)
@@ -5322,8 +5327,8 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
+	if (Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+		Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))
 	    target = params.ExtractWord(2, " ");
 	else
 	    target = source;
@@ -6364,8 +6369,8 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
     }}
 
     if (params.WordCount(" ") >= 3 &&
-	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
+	Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))
     {
 	    target = params.ExtractWord(3, " ");
     }
@@ -6532,8 +6537,8 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     }}
 
     if (params.WordCount(" ") >= 3 &&
-	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
+	Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))
     {
 	    target = params.ExtractWord(3, " ");
     }

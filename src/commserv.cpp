@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2000/09/22 12:26:11  prez
+** Fixed that pesky bug with chanserv not seeing modes *sigh*
+**
 ** Revision 1.74  2000/09/12 21:17:02  prez
 ** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
 **
@@ -1257,8 +1260,8 @@ void CommServ::do_List(mstring mynick, mstring source, mstring params)
 	if (iter->second.Name().LowerCase().Matches(mask))
 	{
 	    if (i < listsize && (!iter->second.Private() ||
-		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
+		(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+		Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))))
 	    {
 		::send(mynick, source, iter->second.Name() + " (" +
 				mstring(itoa(iter->second.size())) + "): " +
@@ -1747,8 +1750,8 @@ void CommServ::do_member_List(mstring mynick, mstring source, mstring params)
 
     if (Parent->commserv.list[committee].Private() &&
 	!(Parent->commserv.list[committee].IsOn(source) ||
-	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMEMBER"),
 				committee.c_str());
@@ -1957,8 +1960,8 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
     }
 
     if (!Parent->commserv.list[committee].IsHead(source) &&
-	!(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source)))
+	!(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
+	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source)))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
 				committee.c_str());
@@ -2015,8 +2018,8 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
     }
 
     if (!(Parent->commserv.list[committee].IsHead(source) ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
+	(Parent->commserv.IsList(Parent->commserv.OVR_Owner()) &&
+	 Parent->commserv.list[Parent->commserv.OVR_Owner()].IsOn(source))))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
 				committee.c_str());
@@ -2410,8 +2413,7 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
+    if (!Parent->commserv.list[committee].IsHead(source))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
 				committee.c_str());
