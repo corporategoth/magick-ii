@@ -838,15 +838,25 @@ void Chan_Live_t::LockDown()
     BTCB();
     NFT("Chan_Live_t::LockDown");
 
-    Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
+    if (!Magick::instance().chanserv.IsLive(i_Name) ||
+	!Magick::instance().chanserv.GetLive(i_Name)->IsIn(Magick::instance().chanserv.FirstName()))
+	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
+
     // Override the MLOCK checking.
-    SendMode("+s");
+    if (!modes.Contains("s"))
+	SendMode("+s");
+
     MLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "ph_timer"));
     MCB(ph_timer);
     while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    ph_timer =
-	Magick::instance().reactor().schedule_timer(&(Magick::instance().chanserv.ph), new mstring(i_Name),
+    mstring *arg;
+    if (ph_timer && Magick::instance().reactor().cancel_timer(ph_timer, reinterpret_cast < const void ** > (arg)) &&
+	arg != NULL)
+    {
+	delete arg;
+    }
+    ph_timer = Magick::instance().reactor().schedule_timer(&(Magick::instance().chanserv.ph), new mstring(i_Name),
 						    ACE_Time_Value(Magick::instance().chanserv.ChanKeep()));
     MCE(ph_timer);
     ETCB();
@@ -1845,9 +1855,8 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	{
 	    if (Magick::instance().chanserv.IsLive(i_Name))
 	    {
-		// If this user is the only user in channel
-		if (users == 1)
-		    clive->LockDown();
+		// This will extend the time we stay in channel if already active ...
+		clive->LockDown();
 
 		RLOCK2((lck_ChanServ, lck_stored, i_Name, "setting.Mlock_On"));
 		clive->SendMode("+" + setting.Mlock_On + "b " + nlive->AltMask(Magick::instance().operserv.Ignore_Method()));
@@ -2938,10 +2947,13 @@ unsigned long Chan_Stored_t::Drop()
     NFT("Chan_Stored_t::Drop");
 
     // If I'm in there, get out!
-    if (Magick::instance().chanserv.IsLive(channel) &&
-	Magick::instance().chanserv.GetLive(channel)->IsIn(Magick::instance().chanserv.FirstName()))
+    if (Magick::instance().chanserv.IsLive(i_Name))
     {
-	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
+	map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(i_Name);
+	clive->UnLock();
+
+	if (clive->IsIn(Magick::instance().chanserv.FirstName()))
+	    Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), i_Name);
     }
 
     RET(0u);
