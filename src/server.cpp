@@ -3482,7 +3482,7 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 	// NOTE: as the message has already been broadcast,
 	// we still need to acomodate for it.
 	if (!chan.empty() && !nick.empty())
-	    Magick::instance().nickserv.GetLive(nick)->Kick(chan, params.After(" :"));
+	    Magick::instance().nickserv.GetLive(nick)->Kick(nick, chan);
     }
     else if (msgtype == "KILL")
     {
