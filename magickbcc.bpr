@@ -13,14 +13,15 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
-PROJECT = src\Debug\magickbcc.exe
+PROJECT = Debug\magickbcc.exe
 OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
   Debug\confbase.obj Debug\cryptstream.obj Debug\datetime.obj Debug\dccengine.obj \
   Debug\EscLexer.obj Debug\EscParser.obj Debug\fileconf.obj Debug\ircsocket.obj \
   Debug\lockable.obj Debug\log.obj Debug\magick.obj Debug\main.obj \
   Debug\memoserv.obj Debug\mstream.obj Debug\mstring.obj Debug\nickserv.obj \
   Debug\operserv.obj Debug\server.obj Debug\servmsg.obj Debug\textfile.obj \
-  Debug\trace.obj Debug\utils.obj Debug\variant.obj Debug\convert.obj
+  Debug\trace.obj Debug\utils.obj Debug\variant.obj Debug\convert.obj \
+  Debug\filesys.obj
 RESFILES =
 RESDEPEN = $(RESFILES)
 LIBFILES = src\des\Debug\crypto.lib src\rx-1.5\rx\rx\Debug\rxbcc.lib \
@@ -47,8 +48,8 @@ SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 # ---------------------------------------------------------------------------
 CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
-  -Od -Vmp -Tkh30000 -a8 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q -tWR \
-  -tWM -c
+  -Od -Vmp -Tkh30000 -a8 -6 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q \
+  -tWR -tWM -c
 IDLCFLAGS = -Isrc -I$(BCB)\include -I$(BCB)\include\ATL -Iinclude\bob -Iinclude \
   -I..\support\ace_wrappers -I..\support\zlib -src_suffixcpp -D_DEBUG -DDEBUG \
   -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1
@@ -121,11 +122,13 @@ Count=1
 Item0=Debug
 
 [HistoryLists\hlFinalOutputDir]
-Count=4
+Count=6
 Item0=Debug
-Item1=DebugItem1=DebugItem1=Debug
+Item1=DebugItem1=Debug
 Item2=
-Item3=
+Item3=DebugItem1=DebugItem1=Debug
+Item4=
+Item5=
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl

@@ -32,6 +32,7 @@ USELIB("src\antlr\Debug\antlr.lib");
 USELIB("..\support\zlib\zlib.LIB");
 USELIB("..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib");
 USEUNIT("src\convert.cpp");
+USEUNIT("src\filesys.cpp");
 //---------------------------------------------------------------------------
 #endif // defined(__BORLANDC__)
 
