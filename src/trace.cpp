@@ -1,4 +1,4 @@
-// RCS-ID:      $Id$
+// $Id$
 //
 // Magick IRC Services
 // (c) 1997-1999 Preston A. Elder <prez@magick.tm>
