@@ -56,7 +56,7 @@
 [COMMANDLINE]
 TRANSLATED       =Preston A. Elder <prez@magick.tm>
 UNKNOWN_OPTION   =Unknown option $1, ignored.
-UNKNOWN_PARAM    =Unknown parameter $1 for option $1.
+UNKNOWN_PARAM    =Unknown parameter $1 for option $2.
 NEEDPARAM        =Option $1 requires a parameter.
 MUSTBENUMBER     =Parameter for $1 must be a positive number.
 MUSTHAVEDIGITS   =Parameter for $1 must be $2 digits between $3 and $4 (inclusive).
