@@ -1062,7 +1062,7 @@ void Magick::dump_help() const
 	"--convert X                Convert another version of services databases\n" <<
 	"                           to Magick II format, where X is the type of\n" <<
 	"                           database to convert.  Currently recognized:\n" <<
-	"                               magick (1.4), esper (4.4.8), epona (1.4.7)\n" <<
+	"                               magick (1.4), esper (4.4.8), epona (1.4.7),\n" <<
 	"                               hybserv (1.9.0)\n" <<
 #endif
 #ifdef MAGICK_TRACE_WORKS

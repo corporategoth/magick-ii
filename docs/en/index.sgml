@@ -1068,7 +1068,8 @@ again at runtime, the settings in the config file will be used.
 --convert X	Convert another version of services databases
 		to Magick II format, where X is the type of
 		database to convert.  Currently recognised:
-		magick (1.4), esper (4.4.8), epona (1.4.7)
+		magick (1.4), esper (4.4.8), epona (1.4.7),
+		hybserv (1.9.0)
 		MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
 --trace X:Y	Set the trace level on startup, equivalent of
 		using the OperServ TRACE SET command while
