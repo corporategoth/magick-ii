@@ -21,8 +21,8 @@ clean:
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
-		$(MAKE) clean $(PASSTHRU); \
 		cd $${OLDPWD}; \
+		$(MAKE) -C $$x clean $(PASSTHRU); \
 	done
 	rm -f *.$(OBJ) $(LIBNAME)
 
@@ -32,8 +32,8 @@ SUBS:
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
+		cd -C $$x $${OLDPWD}; \
 		$(MAKE) $(PASSTHRU); \
-		cd $${OLDPWD}; \
 	done
 
 RMLIB:

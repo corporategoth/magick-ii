@@ -41,8 +41,8 @@ magick:
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
-		$(MAKE) TOPDIR=$(TOPDIR); \
 		cd $${OLDPWD}; \
+		$(MAKE) -C $$x TOPDIR=$(TOPDIR); \
 	done
 	$(CC) $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
