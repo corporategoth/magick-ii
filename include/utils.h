@@ -25,6 +25,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2001/11/17 03:16:10  prez
+** Added MakeDirectory
+**
 ** Revision 1.45  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -138,7 +141,8 @@ RCSID(utils_h, "@(#) $Id$");
 #endif
 #include "crypt/md5_locl.h"
 
-vector<int> ParseNumbers(mstring what);
+vector<int> ParseNumbers(const mstring &what);
+bool MakeDirectory(const mstring &in);
 unsigned long FromHumanTime(const mstring &in);
 mstring ToHumanTime(const unsigned long in, const mstring &source = "");
 mstring ToHumanNumber(const unsigned long in);
