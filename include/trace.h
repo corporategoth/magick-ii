@@ -65,9 +65,12 @@ class ThreadID;
 // TRACE DOWN ALL Func*		4 (1 flag)
 // TRACE DOWN ALL Func* Chat*	4 + 1 (2 flags)
 //
+// Above uses threadname and Trace::levelname for translation
+// threadname follows threadtype_enum
+// Trace::levelname is a struct translating level_enum enum's
 
 enum threadtype_enum { MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
-char threadname[MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
+mstring threadname[MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
 
 class Trace
 {
@@ -115,22 +118,8 @@ public:
     struct levelname_struct {
 	mstring name;
 	level_enum level;
-    } levelname;
-    levelname = {{ "OFF", Off },
-		{ "STAT*", Stats },
-		{ "SOUR*", Source },
-		{ "SRC*", Source },
-		{ "L*CK*", Locking },
-		{ "S*CK*", Sockets },
-		{ "BIND*", Bind },
-		{ "REG*", Bind },
-		{ "HOOK*", Bind },
-		{ "EXT*", External },
-		{ "CHAT*", Chatter },
-		{ "CHE*", CheckPoint },
-		{ "C*P*", CheckPoint },
-		{ "F*NC*", Functions },
-		{ "MOD*", Modify }};
+    };
+    struct levelname_struct levelname;
 
 	// Thread* for now till we get it done
 private:

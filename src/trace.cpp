@@ -67,6 +67,23 @@ Trace::Trace()
 	tmap[levelpair(BOB,Bind)]		= BOB_Bind;
 	tmap[levelpair(BOB,Functions)]		= BOB_Functions;
 	tmap[levelpair(BOB,External)]		= BOB_External;
+
+	levelname = {{ "OFF", Off },
+		{ "STAT*", Stats },
+		{ "SOUR*", Source },
+		{ "SRC*", Source },
+		{ "L*CK*", Locking },
+		{ "S*CK*", Sockets },
+		{ "BIND*", Bind },
+		{ "REG*", Bind },
+		{ "HOOK*", Bind },
+		{ "EXT*", External },
+		{ "CHAT*", Chatter },
+		{ "CHE*", CheckPoint },
+		{ "C*P*", CheckPoint },
+		{ "F*NC*", Functions },
+		{ "MOD*", Modify }};
+
 }
 
 Trace::~Trace()
