@@ -2625,6 +2625,8 @@ long Chan_Stored_t::Access_value(mstring entry, bool looklive)
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     set<entlist_val_t<long> >::iterator iter = Access;
 
+    if (
+
     if (Access_find(entry, looklive))
 	retval=Access->Value();
     Access = iter;
@@ -2637,6 +2639,7 @@ long Chan_Stored_t::GetAccess(mstring entry)
     FT("Chan_Stored_t::GetAccess", (entry));
 
     Nick_Live_t *nlive;
+    mstring realentry;
     if (Parent->nickserv.IsLive(entry))
     {
 	nlive = &Parent->nickserv.live[entry.LowerCase()];
@@ -2651,13 +2654,24 @@ long Chan_Stored_t::GetAccess(mstring entry)
 	RET(Parent->chanserv.Level_Max() + 1);
     }
 
+    if (Parent->nickserv.IsStored(entry))
+    {
+	realentry = entry.LowerCase();
+	if (Parent->nickserv.stored[realentry].Host() != "")
+	    realentry = Parent->nickserv.stored[realentry].Host().LowerCase();
+    }
+    else
+    {
+	RET(0);
+    }
+
     if (!Secure() || (Secure() && nlive->IsIdentified()))
     {
-	if (i_Founder.LowerCase() == entry.LowerCase())
+	if (i_Founder.LowerCase() == realentry.LowerCase())
 	{
 	    RET(Parent->chanserv.Level_Max() + 1);
 	}
-	RET(Access_value(entry));
+	RET(Access_value(realentry));
     }
     RET(0);
 }
