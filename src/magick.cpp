@@ -862,7 +862,7 @@ bool Magick::get_config_values()
 	}
 	i++;
     } while (ent!="");
-    if (startup.servers.find(server.i_OurUplink) == startup.servers.end())
+    if (Server() == "" || !startup.IsServer(Server()))
 	reconnect = true;
 
     in.Read(ts_Startup+"LEVEL",&value_uint,1);
@@ -1432,14 +1432,12 @@ bool Magick::get_config_values()
 	Parent->commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
     }
 
-/*
-    if (Reconnect() && Connected())
+    if (reconnect && Connected())
     {
 	server.raw("ERROR :Closing Link: Configuration reload required restart!");
 	ircsvchandler->shutdown();
 	ACE_Reactor::instance()->schedule_timer(&rh,0,ACE_Time_Value(1));
     }
-*/
 
     RET(true);
     CP(("%s read and loaded to live configuration.", i_config_file.c_str()));
