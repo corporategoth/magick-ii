@@ -210,6 +210,43 @@ Example:
 
 ./magick --config /etc/magick.ini
 
+To use encryption, you must generate a key file with the program
+magick_keygen.  This program accepts a maximum of two arguments,
+being the output key filename, and an input file with the plain
+text version of the key respectively.  If neither argument is
+supplied, it will ask you to enter the data interactively.
+
+On unix terminals that support it, the text entered at the key
+prompts will be hidden, however to not bank on this, and always
+ensure noone can look over your shoulder of sniff your network
+traffic to find out what the clear-text password is.  The maximum
+size of a key is specified at compile time, and may be changed
+with a configure option (see INSTALL for further details).
+
+Example 1:
+
+./magick_keygen
+
+Magick IRC Services - http://www.magick.tm
+    (c) 1997-2000 Preston A. Elder <prez@magick.tm>
+    (c) 1998-2000 William King <ungod@magick.tm>
+
+Enter filename to output to [magick.key]:
+Enter database key:
+Re-Enter database key:
+Created 362 byte keyfile.
+
+Example 2:
+
+./magick_keygen magick.key magick.plain
+
+Magick IRC Services - http://www.magick.tm
+    (c) 1997-2000 Preston A. Elder <prez@magick.tm>
+    (c) 1998-2000 William King <ungod@magick.tm>
+
+Created 1024 byte keyfile.
+
+
 5. FUNCTIONALITY
 ================
 
