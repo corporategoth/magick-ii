@@ -24,6 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2000/12/10 07:49:48  prez
+** Upped to b6
+**
 ** Revision 1.110  2000/12/10 07:49:26  prez
 ** *** empty log message ***
 **
@@ -102,9 +105,9 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 0;
-const mstring BUILD_TYPE = "Windows 95/98/NT";
-const mstring BUILD_SYS = "localhost";
+const int BUILD_NUMBER = 1;
+const mstring BUILD_TYPE = "Linux 2.2.16 i686 unknown";
+const mstring BUILD_SYS = "haven";
 
 /* Versioning Information
  *
