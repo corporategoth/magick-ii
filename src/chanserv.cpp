@@ -4885,7 +4885,7 @@ void ChanServ::do_message_Del(const mstring & mynick, const mstring & source, co
 
     {
 	MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Message"));
-	if (cstored->Message_find(num))
+	if (cstored->Message_find(num - 1))
 	{
 	    cstored->Message_erase();
 	    Magick::instance().chanserv.stats.i_Message++;
