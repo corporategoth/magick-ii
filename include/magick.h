@@ -130,7 +130,7 @@ protected:
 	int Startup_LEVEL;
 	int Startup_LAGTIME;
 	int Startup_DEADTIME;
-	float Startup_GMT;
+	double Startup_GMT;
 	bool Startup_STOP;
 
 	mstring Services_NickServ;
@@ -204,7 +204,7 @@ protected:
 	bool ChanServ_LCK_RESTRICTED;
 	bool ChanServ_DEF_JOIN;
 	bool ChanServ_LCK_JOIN;
-	bool ChanServ_DEF_REVENGE;
+	mstring ChanServ_DEF_REVENGE;
 	bool ChanServ_LCK_REVENGE;
 	int ChanServ_LEVEL_MIN;
 	int ChanServ_LEVEL_MAX;
