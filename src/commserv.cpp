@@ -340,7 +340,7 @@ bool Committee_t::IsIn(const mstring & nick) const
     mstring target = Magick::instance().nickserv.GetStored(nick)->Host();
 
     if (target.empty())
-	target = nick.LowerCase();
+	target = nick;
 
     // We're a HEAD, in by DEFAULT
     {
@@ -369,9 +369,10 @@ bool Committee_t::IsIn(const mstring & nick) const
 
 	for (iter = i_Members.begin(); iter != i_Members.end(); iter++)
 	{
-	    members.push_back(iter->Entry().LowerCase());
+	    members.push_back(iter->Entry());
 	}
     }
+
     for (i = 0; i < members.size(); i++)
     {
 	if (target.IsSameAs(members[i], true))
@@ -3179,16 +3180,16 @@ void CommServ::PostLoad()
     for (iter = i_list.begin(); iter != i_list.end(); iter++)
     {
 	map_entry < Committee_t > comm(iter->second);
-	mstring lname = comm->Name().LowerCase();
+	mstring uname = comm->Name().UpperCase();
 	{
-	    MLOCK((lck_CommServ, lck_list, lname, "member"));
+	    MLOCK((lck_CommServ, lck_list, uname, "member"));
 	    for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
 	    {
 		comm->member->PostLoad();
 	    }
 	}
 	{
-	    MLOCK((lck_CommServ, lck_list, lname, "message"));
+	    MLOCK((lck_CommServ, lck_list, uname, "message"));
 	    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 	    {
 		comm->message->PostLoad();
@@ -3201,13 +3202,13 @@ void CommServ::PostLoad()
 	// saves us from data tampering, and also allows us to change
 	// committee names on the fly and have the correct knock-on effect.
 	// Also ensures magick.ini settings are correctly set.
-	if (lname == Magick::instance().commserv.SADMIN_Name())
+	if (uname == Magick::instance().commserv.SADMIN_Name())
 	{
 	    comm->i_Head.erase();
 	    comm->i_HeadCom.erase();
 	    comm->i_Members.clear();
 	    {
-		MLOCK((lck_CommServ, lck_list, lname, "member"));
+		MLOCK((lck_CommServ, lck_list, uname, "member"));
 		for (j = 1; j <= Magick::instance().operserv.Services_Admin().WordCount(", "); j++)
 		    comm->i_Members.insert(entlist_t(Magick::instance().operserv.Services_Admin().ExtractWord(j, ", "),
 						     Magick::instance().operserv.FirstName()));
@@ -3216,7 +3217,7 @@ void CommServ::PostLoad()
 	    comm->Private(SADMIN_Private());
 	    comm->OpenMemos(SADMIN_OpenMemos());
 	}
-	else if (lname == Magick::instance().commserv.SOP_Name())
+	else if (uname == Magick::instance().commserv.SOP_Name())
 	{
 	    comm->i_Head.erase();
 	    comm->i_HeadCom = Magick::instance().commserv.SADMIN_Name();
@@ -3224,7 +3225,7 @@ void CommServ::PostLoad()
 	    comm->Private(SOP_Private());
 	    comm->OpenMemos(SOP_OpenMemos());
 	}
-	else if (lname == Magick::instance().commserv.ADMIN_Name())
+	else if (uname == Magick::instance().commserv.ADMIN_Name())
 	{
 	    comm->i_Head.erase();
 	    comm->i_HeadCom = Magick::instance().commserv.SADMIN_Name();
@@ -3232,7 +3233,7 @@ void CommServ::PostLoad()
 	    comm->Private(ADMIN_Private());
 	    comm->OpenMemos(ADMIN_OpenMemos());
 	}
-	else if (lname == Magick::instance().commserv.OPER_Name())
+	else if (uname == Magick::instance().commserv.OPER_Name())
 	{
 	    comm->i_Head.erase();
 	    comm->i_HeadCom = Magick::instance().commserv.ADMIN_Name();
@@ -3240,7 +3241,7 @@ void CommServ::PostLoad()
 	    comm->Private(OPER_Private());
 	    comm->OpenMemos(OPER_OpenMemos());
 	}
-	else if (lname == Magick::instance().commserv.ALL_Name())
+	else if (uname == Magick::instance().commserv.ALL_Name())
 	{
 	    comm->i_Head.erase();
 	    comm->i_HeadCom = Magick::instance().commserv.ADMIN_Name();
@@ -3249,7 +3250,7 @@ void CommServ::PostLoad()
 	    comm->Private(true);
 	    comm->OpenMemos(false);
 	}
-	else if (lname == Magick::instance().commserv.REGD_Name())
+	else if (uname == Magick::instance().commserv.REGD_Name())
 	{
 	    comm->i_Head.erase();
 	    comm->i_HeadCom = Magick::instance().commserv.SOP_Name();
