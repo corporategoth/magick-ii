@@ -27,6 +27,11 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2001/05/05 17:33:59  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.85  2001/05/01 14:00:24  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -626,7 +631,7 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
 		ServCounts[k->second.Server()].second++;
 	}
     }}
-    ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
+    ::send(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 	    Parent->startup.Server_Name().LowerCase().c_str(), 0.0,
 	    ServCounts[""].first, ServCounts[""].second,
 	    100.0 * static_cast<float>(ServCounts[""].first) /
@@ -672,7 +677,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	    servername = Parent->server.GetList(downlinks[i]).AltName();
 	    if (i<downlinks.size()-1)
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
+		::send(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 			(previndent + "|-" + servername).c_str(), lag, users, opers,
 			100.0 * static_cast<float>(users) /
 			static_cast<float>(Parent->nickserv.LiveSize()));
@@ -680,7 +685,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	    }
 	    else
 	    {
-		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
+		::send(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 			(previndent + "`-" + servername).c_str(), lag, users, opers,
 			100.0 * static_cast<float>(users) /
 			static_cast<float>(Parent->nickserv.LiveSize()));
@@ -1193,7 +1198,7 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     set<mstring>::iterator q;
     for (q=lang.begin(); q!=lang.end(); q++)
     {
-	::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
+	::send(mynick, source, "%-20s %7s  %7s",
 		q->c_str(), ToHumanSpace(Parent->LNG_Usage(*q)).c_str(),
 		ToHumanSpace(Parent->HLP_Usage(*q)).c_str());
 	
@@ -1256,7 +1261,6 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
 		Parent->ResetTime().Ago().c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_MAXUSERS"),
 		Parent->server.UserMax());
-
     size_t opers = 0;
     NickServ::live_t::iterator k;
     for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
@@ -1464,9 +1468,9 @@ void ServMsg::do_file_Rename(const mstring &mynick, const mstring &source, const
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source, "LIST/FILES").c_str(),
     		newfile.c_str());
-    LOG((LM_INFO, Parent->getLogMessage("SERVMSG/FILE_RENAME"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	file.c_str(), newfile.c_str()));
+    LOG(LM_INFO, "SERVMSG/FILE_RENAME", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	file, newfile));
     Parent->filesys.Rename(FileMap::Public, num, newfile);
 }
 
@@ -1502,9 +1506,9 @@ void ServMsg::do_file_Priv(const mstring &mynick, const mstring &source, const m
     		Parent->getMessage(source, "LIST/FILES").c_str(),
     		Parent->getMessage(source, "LIST/ACCESS").c_str(),
     		priv.c_str());
-    LOG((LM_INFO, Parent->getLogMessage("SERVMSG/FILE_PRIV"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	file.c_str(), ((priv.empty()) ? "ALL" : priv.c_str())));
+    LOG(LM_INFO, "SERVMSG/FILE_PRIV", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	file, ((priv.empty()) ? "ALL" : priv.c_str())));
     Parent->filesys.SetPriv(FileMap::Public, num, priv);
 }
 
@@ -1630,7 +1634,7 @@ void ServMsg::do_file_Dcc(const mstring &mynick, const mstring &source, const ms
 	    // 00000001 S 000000000   0.0% xxxx.xX PreZ (blah.tgz)
 	    // 000000b2 S 000000000  48.2%         PreZ
 	    // 0000ac36 R 000000000 100.0%         PreZ
-	    ::send(mynick, source, Parent->getMessage(source, "DCC/LIST"), iter->first,
+	    ::send(mynick, source, "%08x %c %9d %5.1f%% %6.1f%c %s (%s)", iter->first,
 		((iter->second->Type() == DccXfer::Get) ? 'R' : 'S'),			
 		iter->second->Filesize(),
 		100.0 * static_cast<float>(iter->second->Total()) /
@@ -1766,9 +1770,9 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 			::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_MEMOATTACH"),
 				number, Parent->filesys.GetName(FileMap::MemoAttach, number).c_str(),
 				j->Nick().c_str(), k, j->Sender().c_str(), j->Time().Ago().c_str());
-			LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
-				Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-				number, type.c_str()));
+			LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
+				Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+				fmstring("%08x", number), type));
 	  		return;
 	    	    }
 	    	}
@@ -1789,9 +1793,9 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    	{
 		    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PICTURE"),
 	  			number, i->second.Name().c_str());
-		    LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
-			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-			number, type.c_str()));
+		    LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
+			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+			fmstring("%08x", number), type));
 	  	    return;
 	    	}
 	    }
@@ -1806,9 +1810,9 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PUBLIC"),
 	  		number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
 	  		Parent->filesys.GetPriv(FileMap::Public, number).c_str());
-	    LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		number, type.c_str()));
+	    LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		fmstring("%08x", number), type));
 	    return;
     	}
 	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_PUBLIC"),
@@ -1846,9 +1850,8 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
     Parent->servmsg.stats.i_Global++;
     announce(mynick, Parent->getMessage(source, "MISC/GLOBAL_MSG"),
 				source.c_str());
-    LOG((LM_NOTICE, Parent->getLogMessage("SERVMSG/GLOBAL"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	text.c_str()));
+    LOG(LM_NOTICE, "SERVMSG/GLOBAL", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H), text));
 }
 
 void ServMsg::do_Ask(const mstring &mynick, const mstring &source, const mstring &params)

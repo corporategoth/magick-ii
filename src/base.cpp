@@ -27,6 +27,11 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.160  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.159  2001/05/03 22:34:35  prez
 ** Fixed SQUIT protection ...
 **
@@ -851,8 +856,8 @@ int mMessage::call()
 	else if (Parent->operserv.Log_Ignore())
 	{
 	    // Check if we're to log ignore messages, and log them here.
-	    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
-			source_.c_str(), (msgtype_ + " " + params_).c_str()));
+	    LOG(LM_DEBUG, "OPERSERV/IGNORED", (
+			source_, msgtype_ + " " + params_));
 	}
     }
     else
@@ -1116,7 +1121,7 @@ void mBaseTask::message(const mstring& message)
 		Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
 	    message_queue_.low_water_mark(message_queue_.high_water_mark()); */
 
-	    LOG((LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD")));
+	    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 	}
     }
 
@@ -1174,7 +1179,7 @@ int mBaseTask::check_LWM()
 	    /* message_queue_.high_water_mark(Parent->config.High_Water_Mark() *
 		thread_count * Parent->server.proto.MaxLine());
 	    message_queue_.low_water_mark(message_queue_.high_water_mark()); */
-	    LOG((LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD")));
+	    NLOG(LM_NOTICE, "EVENT/KILL_THREAD");
 	    FLUSH();
 	    RET(-1);
     }
@@ -1464,8 +1469,8 @@ void privmsg(const mstring& source, const mstring &dest, const char *pszFormat, 
 	// scripted hosts ...
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"PRIVMSG", source.c_str()));
+	    LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"PRIVMSG", source));
 	}
     va_end(argptr);
 }
@@ -1498,8 +1503,8 @@ void notice(const mstring& source, const mstring &dest, const char *pszFormat, .
 	// scripted hosts ...
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"NOTICE", source.c_str()));
+	    LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"NOTICE", source));
 	}
     va_end(argptr);
 }
@@ -1532,8 +1537,8 @@ void send(const mstring& source, const mstring &dest, const char *pszFormat, ...
 	// scripted hosts ...
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"SEND", source.c_str()));
+	    LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"SEND", source));
 	}
 
     va_end(argptr);

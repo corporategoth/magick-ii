@@ -27,6 +27,11 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.95  2001/05/01 14:00:23  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -932,7 +937,7 @@ void CommServ::AddList(Committee_t *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_CommServ_List(E_CommServ_List::W_Add, E_CommServ_List::T_Invalid));
 #else
-	LOG((LM_CRITICAL, "Exception - Comm:List:Add:Invalid"));
+	NLOG(LM_CRITICAL, "Exception - Comm:List:Add:Invalid"));
 	return;
 #endif
     }
@@ -1351,9 +1356,9 @@ void CommServ::do_Add(const mstring &mynick, const mstring &source, const mstrin
     Parent->commserv.stats.i_Add++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/ADD"),
 				committee.c_str(), head.c_str());
-    LOG((LM_NOTICE, Parent->getLogMessage("COMMSERV/ADD"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	committee.c_str(), head.c_str()));
+    LOG(LM_NOTICE, "COMMSERV/ADD",
+	(Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	committee, head));
 }
 
 
@@ -1393,9 +1398,9 @@ void CommServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
     Parent->commserv.RemList(committee);
     Parent->commserv.stats.i_Del++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/DEL"), committee.c_str());
-    LOG((LM_NOTICE, Parent->getLogMessage("COMMSERV/DEL"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	committee.c_str()));
+    LOG(LM_NOTICE, "COMMSERV/DEL", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	committee));
 }
 
 
@@ -1526,9 +1531,9 @@ void CommServ::do_Memo(const mstring &mynick, const mstring &source, const mstri
     Parent->commserv.stats.i_Memo++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/MEMO"),
 				committee.c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/MEMO"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	committee.c_str()));
+    LOG(LM_INFO, "COMMSERV/MEMO", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	committee));
 }
 
 
@@ -1829,9 +1834,9 @@ void CommServ::do_member_Add(const mstring &mynick, const mstring &source, const
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
 				member.c_str(), committee.c_str(),
 				Parent->getMessage(source, "LIST/MEMBER").c_str());
-    LOG((LM_DEBUG, Parent->getLogMessage("COMMSERV/MEMBER_ADD"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	member.c_str(), committee.c_str()));
+    LOG(LM_DEBUG, "COMMSERV/MEMBER_ADD", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	member, committee));
 }
 
 
@@ -1890,9 +1895,9 @@ void CommServ::do_member_Del(const mstring &mynick, const mstring &source, const
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 			comm.member->Entry().c_str(), committee.c_str(),
 			Parent->getMessage(source, "LIST/MEMBER").c_str());
-	LOG((LM_DEBUG, Parent->getLogMessage("COMMSERV/MEMBER_DEL"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		comm.member->Entry().c_str(), committee.c_str()));
+	LOG(LM_DEBUG, "COMMSERV/MEMBER_DEL", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		comm.member->Entry(), committee));
 	comm.erase();
     }
     else
@@ -2057,9 +2062,9 @@ void CommServ::do_logon_Add(const mstring &mynick, const mstring &source, const 
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2_NUMBER"),
 		comm.MSG_size(), committee.c_str(),
 		Parent->getMessage(source, "LIST/MESSAGES").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/LOGON_ADD"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	committee.c_str()));
+    LOG(LM_INFO, "COMMSERV/LOGON_ADD", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	committee));
 }
 
 
@@ -2114,9 +2119,9 @@ void CommServ::do_logon_Del(const mstring &mynick, const mstring &source, const 
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2_NUMBER"),
 		num, committee.c_str(),
 		Parent->getMessage(source, "LIST/MESSAGES").c_str());
-	LOG((LM_INFO, Parent->getLogMessage("COMMSERV/LOGON_DEL"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		committee.c_str()));
+	LOG(LM_INFO, "COMMSERV/LOGON_DEL", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		committee));
 	comm.MSG_erase();
     }
     else
@@ -2273,10 +2278,10 @@ void CommServ::do_set_Head(const mstring &mynick, const mstring &source, const m
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 	Parent->getMessage(source, "COMMSERV_INFO/SET_HEAD").c_str(),
 	committee.c_str(), newhead.c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_HEAD").c_str(),
-	committee.c_str(), newhead.c_str()));
+    LOG(LM_INFO, "COMMSERV/SET", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_HEAD"),
+	committee, newhead));
 }
 
 
@@ -2327,10 +2332,10 @@ void CommServ::do_set_Description(const mstring &mynick, const mstring &source, 
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 	Parent->getMessage(source, "COMMSERV_INFO/SET_DESCRIPTION").c_str(),
 	committee.c_str(), desc.c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_DESCRIPTION").c_str(),
-	committee.c_str(), desc.c_str()));
+    LOG(LM_INFO, "COMMSERV/SET", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_DESCRIPTION"),
+	committee, desc));
 }
 
 
@@ -2398,20 +2403,20 @@ void CommServ::do_set_Email(const mstring &mynick, const mstring &source, const 
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNSET"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL").c_str(),
 		committee.c_str());
-	LOG((LM_INFO, Parent->getLogMessage("COMMSERV/UNSET"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL").c_str(),
-		committee.c_str()));
+	LOG(LM_INFO, "COMMSERV/UNSET", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL"),
+		committee));
     }
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_EMAIL").c_str(),
 		committee.c_str(), email.c_str());
-	LOG((LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage("COMMSERV_INFO/SET_EMAIL").c_str(),
-		committee.c_str(), email.c_str()));
+	LOG(LM_INFO, "COMMSERV/SET", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Parent->getMessage("COMMSERV_INFO/SET_EMAIL"),
+		committee, email));
     }
 }
 
@@ -2473,20 +2478,20 @@ void CommServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNSET"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_URL").c_str(),
 		committee.c_str());
-	LOG((LM_INFO, Parent->getLogMessage("COMMSERV/UNSET"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage(source, "COMMSERV_INFO/SET_URL").c_str(),
-		committee.c_str()));
+	LOG(LM_INFO, "COMMSERV/UNSET", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Parent->getMessage(source, "COMMSERV_INFO/SET_URL"),
+		committee));
     }
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_URL").c_str(),
 		committee.c_str(), ("http://" + url).c_str());
-	LOG((LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage("COMMSERV_INFO/SET_URL").c_str(),
-		committee.c_str(), ("http://" + url).c_str()));
+	LOG(LM_INFO, "COMMSERV/SET", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Parent->getMessage("COMMSERV_INFO/SET_URL"),
+		committee, "http://" + url));
     }
 }
 
@@ -2562,12 +2567,12 @@ void CommServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 		committee.c_str(), onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON").c_str() :
 			Parent->getMessage(source, "VALS/OFF").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_SECURE").c_str(),
-	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str()));
+    LOG(LM_INFO, "COMMSERV/SET", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_SECURE"),
+	committee, onoff.GetBool() ?
+		Parent->getMessage(source, "VALS/ON") :
+		Parent->getMessage(source, "VALS/OFF")));
 }
 
 
@@ -2642,12 +2647,12 @@ void CommServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 		committee.c_str(), onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON").c_str() :
 			Parent->getMessage(source, "VALS/OFF").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE").c_str(),
-	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str()));
+    LOG(LM_INFO, "COMMSERV/SET", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE"),
+	committee, onoff.GetBool() ?
+		Parent->getMessage(source, "VALS/ON") :
+		Parent->getMessage(source, "VALS/OFF")));
 }
 
 
@@ -2722,12 +2727,12 @@ void CommServ::do_set_OpenMemos(const mstring &mynick, const mstring &source, co
 		committee.c_str(), onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON").c_str() :
 			Parent->getMessage(source, "VALS/OFF").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS").c_str(),
-	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str()));
+    LOG(LM_INFO, "COMMSERV/SET", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS"),
+	committee, onoff.GetBool() ?
+		Parent->getMessage(source, "VALS/ON") :
+		Parent->getMessage(source, "VALS/OFF")));
 }
 
 
@@ -2797,12 +2802,12 @@ void CommServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 		committee.c_str(), onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON").c_str() :
 			Parent->getMessage(source, "VALS/OFF").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/LOCKED"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_SECURE").c_str(),
-	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str()));
+    LOG(LM_INFO, "COMMSERV/LOCKED", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_SECURE"),
+	committee, onoff.GetBool() ?
+		Parent->getMessage(source, "VALS/ON") :
+		Parent->getMessage(source, "VALS/OFF")));
 }
 
 
@@ -2872,12 +2877,12 @@ void CommServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 		committee.c_str(), onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON").c_str() :
 			Parent->getMessage(source, "VALS/OFF").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/LOCKED"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE").c_str(),
-	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str()));
+    LOG(LM_INFO, "COMMSERV/LOCKED", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE"),
+	committee, onoff.GetBool() ?
+		Parent->getMessage(source, "VALS/ON") :
+		Parent->getMessage(source, "VALS/OFF")));
 }
 
 
@@ -2947,12 +2952,12 @@ void CommServ::do_lock_OpenMemos(const mstring &mynick, const mstring &source, c
 		committee.c_str(), onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON").c_str() :
 			Parent->getMessage(source, "VALS/OFF").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/LOCKED"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS").c_str(),
-	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str()));
+    LOG(LM_INFO, "COMMSERV/LOCKED", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS"),
+	committee, onoff.GetBool() ?
+		Parent->getMessage(source, "VALS/ON") :
+		Parent->getMessage(source, "VALS/OFF")));
 }
 
 
@@ -3002,10 +3007,10 @@ void CommServ::do_unlock_Secure(const mstring &mynick, const mstring &source, co
     Parent->commserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNLOCKED"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/UNLOCKED"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_SECURE").c_str(),
-	committee.c_str()));
+    LOG(LM_INFO, "COMMSERV/UNLOCKED", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_SECURE"),
+	committee));
 }
 
 
@@ -3055,10 +3060,10 @@ void CommServ::do_unlock_Private(const mstring &mynick, const mstring &source, c
     Parent->commserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNLOCKED"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/UNLOCKED"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE").c_str(),
-	committee.c_str()));
+    LOG(LM_INFO, "COMMSERV/UNLOCKED", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE"),
+	committee));
 }
 
 
@@ -3108,10 +3113,10 @@ void CommServ::do_unlock_OpenMemos(const mstring &mynick, const mstring &source,
     Parent->commserv.stats.i_Unlock++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/UNLOCKED"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str());
-    LOG((LM_INFO, Parent->getLogMessage("COMMSERV/UNLOCKED"),
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS").c_str(),
-	committee.c_str()));
+    LOG(LM_INFO, "COMMSERV/UNLOCKED", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS"),
+	committee));
 }
 
 

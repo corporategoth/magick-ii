@@ -27,6 +27,11 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.103  2001/05/04 03:43:33  prez
 ** Fixed UMODE problems (re-oper) and problems in mstring erase
 **
@@ -1735,6 +1740,16 @@ bool match_wild (const char *pattern, const char *str, bool nocase)
 	    break;
 	}			/* switch */
     }
+}
+
+mstring fmstring (const char *fmt, ...)
+{
+    mstring tmp;
+    va_list argptr;
+    va_start(argptr, fmt);
+    tmp.FormatV(fmt, argptr);
+    va_end(argptr);
+    return tmp;
 }
 
 /********************************************************/

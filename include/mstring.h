@@ -25,6 +25,11 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.73  2001/04/09 07:52:22  prez
 ** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
 **
@@ -244,6 +249,7 @@ extern const mstring IRC_Colour;
 extern const mstring IRC_Off;
 
 bool match_wild (const char *pattern, const char *str, bool nocase);
+mstring fmstring (const char *fmt, ...);
 
 class mstring
 {

@@ -25,6 +25,11 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.40  2001/04/08 18:53:09  prez
 ** It now all compiles and RUNS with -fno-default-inline OFF.
 **
@@ -123,6 +128,7 @@ mstring ToHumanTime(const unsigned long in, const mstring &source = "");
 mstring ToHumanNumber(const unsigned long in);
 unsigned long FromHumanSpace(const mstring &in);
 mstring ToHumanSpace(const unsigned long in);
+mstring parseMessage(const mstring & message, const mVarArray& va = mVarArray::EmptyArray());
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, const int enc);
 void mHASH(unsigned char *in, const size_t size, unsigned char *out);

@@ -27,6 +27,11 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.160  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.159  2001/05/04 03:43:33  prez
 ** Fixed UMODE problems (re-oper) and problems in mstring erase
 **
@@ -440,11 +445,10 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 				static_cast<float>(htm_gap) / 1024.0);
 		htm_level++;
 		htm_gap += 2;
-		LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_ON"),
-			htm_level, htm_gap,
-			static_cast<float>(total) /
-				static_cast<float>(htm_gap) / 1024.0,
-			static_cast<float>(htm_threshold) / 1024.0));
+		LOG(LM_NOTICE, "OPERSERV/HTM_ON", (htm_level, htm_gap,
+			fmstring("%.1f", static_cast<float>(total) /
+				static_cast<float>(htm_gap) / 1024.0),
+			fmstring("%.1f", static_cast<float>(htm_threshold) / 1024.0)));
 	    }
 	}
 	else if (htm_level)
@@ -453,7 +457,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 		Parent->getMessage("MISC/HTM_OFF"));
 	    htm_level = 0;
 	    htm_gap = Parent->operserv.Init_HTM_Gap();
-	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_OFF")));
+	    NLOG(LM_NOTICE, "OPERSERV/HTM_OFF");
 	}
     }}
 
@@ -502,8 +506,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
     CP(("IrcSvcHandler closed"));
 
-    LOG((LM_ERROR, Parent->getLogMessage("OTHER/CLOSED"),
-	Parent->CurrentServer().c_str()));
+    LOG(LM_ERROR, "OTHER/CLOSED", (Parent->CurrentServer()));
 
     // We DONT want any processing once we're gone ... nowhere to send
     // back the messages (duh!).
@@ -792,7 +795,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }
     if (server.empty())
     {
-	LOG((LM_EMERGENCY, Parent->getLogMessage("OTHER/NOVALIDSERVERS")));
+	NLOG(LM_EMERGENCY, "OTHER/NOVALIDSERVERS");
     }
 
     pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > details = Parent->startup.Server(server);
@@ -811,8 +814,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Parent->ircsvchandler = NULL;
     }
     Parent->Connected(false);
-    LOG((LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
-		server.c_str(), details.second.first));
+    LOG(LM_INFO, "OTHER/CONNECTING", (server, details.second.first));
 
     IrcConnector C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
 
@@ -835,8 +837,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     		ACE_Synch_Options::defaults, laddr)==-1)
     {
 	Parent->ircsvchandler = NULL;
-	LOG((LM_ERROR, Parent->getLogMessage("OTHER/REFUSED"),
-		server.c_str(), details.second.first));
+	LOG(LM_ERROR, "OTHER/REFUSED", (server, details.second.first));
 	//okay we got a connection problem here. log it and try again
 	CP(("Refused connection, rescheduling and trying again ..."));
 	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
@@ -893,14 +894,11 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     if (Parent->server.IsList(*tmp))
     {
-	LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
-		tmp->c_str(),
-		Parent->server.GetList(tmp->LowerCase()).Uplink().c_str()));
+	LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, Parent->server.GetList(tmp->LowerCase()).Uplink()));
     }
     else
     {
-	LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
-		tmp->c_str(), "?"));
+	LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, "?"));
     }
 
     // QUIT all user's who faked it ...
@@ -1184,11 +1182,11 @@ int EventTask::svc(void)
 		    if (Parent->operserv.Akill != Parent->operserv.Akill_end())
 		    {
 			Parent->server.RAKILL(Parent->operserv.Akill->Entry());
-			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
-				Parent->operserv.Akill->Entry().c_str(),
-				Parent->operserv.Akill->Value().second.c_str(),
-				Parent->operserv.Akill->Last_Modifier().c_str(),
-				ToHumanTime(Parent->operserv.Akill->Value().first).c_str()));
+			LOG(LM_INFO, "EVENT/EXPIRE_AKILL",
+				(Parent->operserv.Akill->Entry(),
+				Parent->operserv.Akill->Value().second,
+				Parent->operserv.Akill->Last_Modifier(),
+				ToHumanTime(Parent->operserv.Akill->Value().first)));
 			announce(Parent->operserv.FirstName(),
 				Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
 				Parent->operserv.Akill->Entry().c_str(),
@@ -1241,9 +1239,8 @@ int EventTask::svc(void)
 			Nick_Stored_t &exp = Parent->nickserv.GetStored(expired_nicks[i]);
 			if (!exp.Name().empty())
 			{
-			    LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
-				exp.Name().c_str(), ((!exp.Host().empty()) ?
-				    exp.Host().c_str() : exp.Name().c_str())));
+			    LOG(LM_INFO, "EVENT/EXPIRE_NICK", (exp.Name(), ((!exp.Host().empty()) ?
+				    exp.Host() : exp.Name())));
 			}
 			exp.Drop();
 			Parent->nickserv.RemStored(expired_nicks[i]);
@@ -1296,8 +1293,7 @@ int EventTask::svc(void)
 		    Chan_Stored_t &exp = Parent->chanserv.GetStored(expired_chans[i]);
 		    if (!exp.Name().empty())
 		    {
-			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
-			    exp.Name().c_str(), exp.Founder().c_str()));
+			LOG(LM_INFO, "EVENT/EXPIRE_CHAN", (    exp.Name(), exp.Founder()));
 		    }
 		    Parent->chanserv.RemStored(expired_chans[i]);
 		}
@@ -1341,8 +1337,7 @@ int EventTask::svc(void)
 			if (!lni->NoExpire() && lni->Time().SecondsSince() >
 			    Parent->memoserv.News_Expire())
 			{
-			    LOG((LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
-					lni->Channel().c_str()));
+			    LOG(LM_DEBUG, "EVENT/EXPIRE_NEWS", (lni->Channel()));
 			    expired_news[ni->first].push_back(i);
 			    cnt++;
 			}
@@ -1482,8 +1477,7 @@ int EventTask::svc(void)
 		    nsi = Parent->nickserv.stored.find(chunked[i]);
 		    mstring newnick = Parent->nickserv.findnextnick(nli->second.Name());
 		    mstring oldnick = nli->second.Name();
-		    LOG((LM_INFO, Parent->getLogMessage("EVENT/KILLPROTECT"),
-			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str()));
+		    LOG(LM_INFO, "EVENT/KILLPROTECT", (nli->second.Mask(Nick_Live_t::N_U_P_H)));
 		    if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
 		    {
 			if (nsi->second.Forbidden())
@@ -1679,7 +1673,7 @@ int EventTask::svc(void)
 		{
 		    dead++;
 #if defined(SIGQUIT) && (SIGQUIT != 0)
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/THREAD_DEAD")));
+		    NLOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD");
 		    ACE_Thread::kill(iter->first, SIGQUIT);
 #endif
 		}
@@ -1687,7 +1681,7 @@ int EventTask::svc(void)
 	    if (dead > (thread_heartbeat.size() / 2))
 	    {
 		announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/THREAD_DEAD_HALF"));
-		LOG((LM_EMERGENCY, Parent->getLogMessage("SYS_ERRORS/THREAD_DEAD_HALF")));
+		NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
 	    }
 	    WLOCK(("Events", "last_heartbeat"));
 	    last_heartbeat = mDateTime::CurrentDateTime();
@@ -1723,13 +1717,13 @@ int EventTask::svc(void)
 	    if (avg > static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
 	    {
 		Parent->LevelUp();
-		LOG((LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_UP"), avg));
+		LOG(LM_WARNING, "EVENT/LEVEL_UP", (fmstring("%.3f", avg)));
 	    }
 	    else if (Parent->Level() > Parent->startup.Level() &&
 		avg <= static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
 	    {
 		Parent->LevelDown();
-		LOG((LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_DOWN"), avg));
+		LOG(LM_WARNING, "EVENT/LEVEL_DOWN", (fmstring("%.3f", avg)));
 	    }
 
 	    { RLOCK(("IrcSvcHandler"));
@@ -1740,7 +1734,7 @@ int EventTask::svc(void)
 		    for (si=Parent->server.ListBegin();
 				si!=Parent->server.ListEnd();si++)
 			si->second.Ping();
-		    LOG((LM_TRACE, Parent->getLogMessage("EVENT/PING")));
+		    NLOG(LM_TRACE, "EVENT/PING");
 		}
 	    }
 	    WLOCK(("Events", "last_ping"));
@@ -1934,11 +1928,11 @@ int EventTask::svc(void)
     }
     catch (exception &e)
     {
-	LOG((LM_CRITICAL, Parent->getLogMessage("EXCEPTION/UNHANDLED"), e.what()));
+	LOG(LM_CRITICAL, "EXCEPTION/UNHANDLED", ( e.what()));
     }
     catch (...)
     {
-	LOG((LM_CRITICAL, Parent->getLogMessage("EXCEPTIONS/UNKNOWN")));
+	NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
     }
 
 	FLUSH(); // Force TRACE output dump

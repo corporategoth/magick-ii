@@ -28,6 +28,11 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.170  2001/05/05 17:33:59  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.169  2001/05/04 14:13:59  prez
 ** Removed the silly msgs going to 'AUTH' on startup with some ircd's.
 **
@@ -1372,10 +1377,10 @@ void Server::FlushMsgs(const mstring& nick)
 		WALLOPS(nick, j->third.first);
 		break;
 	    default:
-		LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_UNKNOWN"),
-			static_cast<int>(j->first), i->first.c_str(), j->third.first.c_str(),
-			j->third.second.c_str(), j->third.third.c_str(),
-			ToHumanTime(j->second.SecondsSince()).c_str()));
+		LOG(LM_WARNING, "ERROR/REQ_UNKNOWN", (
+			static_cast<int>(j->first), i->first, j->third.first,
+			j->third.second, j->third.third,
+			ToHumanTime(j->second.SecondsSince())));
 		break;
 	    }
 	}
@@ -1397,7 +1402,7 @@ void Server::AddList(Server_t *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_Server_List(E_Server_List::W_Add, E_Server_List::T_Invalid));
 #else
-	LOG((LM_CRITICAL, "Exception - Server:List:Add:Invalid"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Server", "List", "Add", "Invalid"));
 	return;
 #endif
     }
@@ -1407,7 +1412,7 @@ void Server::AddList(Server_t *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_Server_List(E_Server_List::W_Add, E_Server_List::T_Blank));
 #else
-	LOG((LM_CRITICAL, "Exception - Server:List:Add:Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Server", "List", "Add", "Blank"));
 	return;
 #endif
     }
@@ -1433,7 +1438,7 @@ Server_t &Server::GetList(const mstring &in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Server:List:Get:NotFound - %s", in.c_str()));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "NotFound", in));
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }
@@ -1442,7 +1447,7 @@ Server_t &Server::GetList(const mstring &in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 //	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Invalid, in.c_str()));
 #else
-//	LOG((LM_EMERGENCY, "Exception - Server:List:Get:Invalid - %s", in.c_str()));
+//	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "Invalid", in));
 //	NRET(Server_t &, GLOB_Server_t);
 #endif
 //  }
@@ -1452,7 +1457,7 @@ Server_t &Server::GetList(const mstring &in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_Server_List(E_Server_List::W_Get, E_Server_List::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Server:List:Get:Blank - %s", in.c_str()));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "Blank", in));
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }
@@ -1477,7 +1482,7 @@ void Server::RemList(const mstring &in, bool downlinks)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_Server_List(E_Server_List::W_Rem, E_Server_List::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Server:List:Rem:NotFound - %s", in.c_str()));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Server", "List", "Rem", "NotFound", in));
 	return;
 #endif
     }
@@ -1691,13 +1696,13 @@ void Server::ANONKILL(const mstring& nick, const mstring& dest,
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"KILL", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"KILL", nick));
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"KILL", nick.c_str(), dest.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		"KILL", nick, dest));
     }
     else
     {
@@ -1719,13 +1724,13 @@ void Server::AWAY(const mstring& nick, const mstring& reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"AWAY", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
+		"AWAY", nick));
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"AWAY", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"AWAY", nick));
     }
     else
     {
@@ -1759,8 +1764,8 @@ void Server::GLOBOPS(const mstring& nick, const mstring& message)
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"GLOBOPS", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"GLOBOPS", nick));
     }
     else
     {
@@ -1796,8 +1801,8 @@ void Server::HELPOPS(const mstring& nick, const mstring& message)
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"HELPOPS", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"HELPOPS", nick));
     }
     else
     {
@@ -1829,18 +1834,18 @@ void Server::INVITE(const mstring& nick, const mstring& dest,
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"INVITE", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"INVITE", nick));
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"INVITE", nick.c_str(), dest.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		"INVITE", nick, dest));
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
-		"INVITE", nick.c_str(), channel.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
+		"INVITE", nick, channel));
     }
     else
     {
@@ -1858,13 +1863,13 @@ void Server::JOIN(const mstring& nick, const mstring& channel)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"JOIN", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
+		"JOIN", nick));
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"JOIN", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"JOIN", nick));
     }
     else
     {
@@ -1900,23 +1905,23 @@ void Server::KICK(const mstring& nick, const mstring& dest,
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"KICK", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"KICK", nick));
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"KICK", nick.c_str(), dest.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		"KICK", nick, dest));
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
-		"KICK", nick.c_str(), channel.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
+		"KICK", nick, channel));
     }
     else if (!Parent->chanserv.GetLive(channel).IsIn(dest))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_NOTINCHAN"),
-		"KICK", nick.c_str(), dest.c_str(), channel.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_NOTINCHAN", (
+		"KICK", nick, dest, channel));
     }
     else
     {
@@ -1950,13 +1955,13 @@ void Server::KILL(const mstring& nick, const mstring& dest,
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"KILL", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"KILL", nick));
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"KILL", nick.c_str(), dest.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		"KILL", nick, dest));
     }
     else
     {
@@ -1979,13 +1984,13 @@ void Server::MODE(const mstring& nick, const mstring& mode)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"MODE", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
+		"MODE", nick));
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"MODE", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"MODE", nick));
     }
     else
     {
@@ -2005,18 +2010,18 @@ void Server::MODE(const mstring& nick, const mstring& channel,
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"MODE", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
+		"MODE", nick));
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"MODE", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"MODE", nick));
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
-		"MODE", nick.c_str(), channel.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
+		"MODE", nick, channel));
     }
     else
     {
@@ -2037,8 +2042,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 
     if (Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_TOUSER"),
-		"NICK", server.c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_TOUSER", (
+		"NICK", server, nick));
     }
     else
     {
@@ -2203,13 +2208,13 @@ void Server::NICK(const mstring& oldnick, const mstring& newnick)
 
     if (!Parent->nickserv.IsLive(oldnick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"NICK", oldnick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
+		"NICK", oldnick));
     }
     else if (!Parent->nickserv.GetLive(oldnick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"NICK", oldnick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"NICK", oldnick));
     }
     else
     {
@@ -2253,8 +2258,8 @@ void Server::NOTICE(const mstring& nick, const mstring& dest,
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"NOTICE", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"NOTICE", nick));
     }
     else if (!(dest[0u] == '$' || dest[0u] == '#' ||
 		Parent->nickserv.IsLive(dest) ||
@@ -2262,13 +2267,13 @@ void Server::NOTICE(const mstring& nick, const mstring& dest,
     {
 	if (IsChan(dest))
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
-		"NOTICE", nick.c_str(), dest.c_str()));
+	    LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
+		"NOTICE", nick, dest));
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"NOTICE", nick.c_str(), dest.c_str()));
+	    LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		"NOTICE", nick, dest));
 	}
     }
     else
@@ -2289,23 +2294,23 @@ void Server::PART(const mstring& nick, const mstring& channel,
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"PART", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
+		"PART", nick));
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"PART", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"PART", nick));
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
-		"PART", nick.c_str(), channel.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
+		"PART", nick, channel));
     }
     else if (!Parent->chanserv.GetLive(channel).IsIn(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_NOTINCHAN"),
-		"KICK", nick.c_str(), nick.c_str(), channel.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_NOTINCHAN", (
+		"KICK", nick, nick, channel));
     }
     else
     {
@@ -2344,8 +2349,8 @@ void Server::PRIVMSG(const mstring& nick, const mstring& dest,
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"PRIVMSG", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"PRIVMSG", nick));
     }
     else if (!(dest[0u] == '$' || dest[0u] == '#' ||
 		Parent->nickserv.IsLive(dest) ||
@@ -2353,13 +2358,13 @@ void Server::PRIVMSG(const mstring& nick, const mstring& dest,
     {
 	if (IsChan(dest))
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
-		"PRIVMSG", nick.c_str(), dest.c_str()));
+	    LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
+		"PRIVMSG", nick, dest));
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"PRIVMSG", nick.c_str(), dest.c_str()));
+	    LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		"PRIVMSG", nick, dest));
 	}
     }
     else
@@ -2394,8 +2399,8 @@ void Server::SQLINE(const mstring& nick, const mstring& target,
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		proto.SQLINE().c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		proto.SQLINE(), nick));
     }
     else
     {
@@ -2417,13 +2422,13 @@ void Server::QUIT(const mstring& nick, const mstring& reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"QUIT", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
+		"QUIT", nick));
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"QUIT", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"QUIT", nick));
     }
     else
     {
@@ -2511,13 +2516,13 @@ void Server::SVSHOST(const mstring& mynick, const mstring& nick,
     }
     else if (!Parent->nickserv.GetLive(mynick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		proto.SVSHOST().c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		proto.SVSHOST(), nick));
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		proto.SVSHOST().c_str(), mynick.c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		proto.SVSHOST(), mynick, nick));
     }
     else
     {
@@ -2555,13 +2560,13 @@ void Server::SVSKILL(const mstring& mynick, const mstring& nick,
     }
     else if (!Parent->nickserv.GetLive(mynick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		proto.SVSKILL().c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		proto.SVSKILL(), nick));
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		proto.SVSKILL().c_str(), mynick.c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		proto.SVSKILL(), mynick, nick));
     }
     else
     {
@@ -2601,18 +2606,18 @@ void Server::SVSNICK(const mstring& mynick, const mstring& nick,
     }
     else if (!Parent->nickserv.GetLive(mynick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		proto.SVSNICK().c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		proto.SVSNICK(), nick));
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		proto.SVSNICK().c_str(), mynick.c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		proto.SVSNICK(), mynick, nick));
     }
     else if (Parent->nickserv.IsLive(newnick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_TOUSER"),
-		proto.SVSNICK().c_str(), mynick.c_str(), newnick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_TOUSER", (
+		proto.SVSNICK(), mynick, newnick));
     }
     else
     {
@@ -2639,18 +2644,18 @@ void Server::SVSNOOP(const mstring& nick, const mstring& server,
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		proto.SVSNOOP().c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
+		proto.SVSNOOP(), nick));
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		proto.SVSNOOP().c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		proto.SVSNOOP(), nick));
     }
     else if (!IsList(server))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONSERVER"),
-		proto.SVSNOOP().c_str(), nick.c_str(), server.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONSERVER", (
+		proto.SVSNOOP(), nick, server));
     }
     else
     {
@@ -2687,13 +2692,13 @@ void Server::SVSMODE(const mstring& mynick, const mstring& nick,
     }
     else if (!Parent->nickserv.GetLive(mynick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		proto.SVSMODE().c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		proto.SVSMODE(), nick));
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		proto.SVSMODE().c_str(), mynick.c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
+		proto.SVSMODE(), mynick, nick));
     }
     else
     {
@@ -2729,13 +2734,13 @@ void Server::TOPIC(const mstring& nick, const mstring& setter,
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"TOPIC", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"TOPIC", nick));
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONCHAN"),
-		"TOPIC", nick.c_str(), channel.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
+		"TOPIC", nick, channel));
     }
     else
     {
@@ -2779,8 +2784,8 @@ void Server::UNSQLINE(const mstring& nick, const mstring& target)
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		proto.UNSQLINE().c_str(), nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		proto.UNSQLINE(), nick));
     }
     else
     {
@@ -2813,8 +2818,8 @@ void Server::WALLOPS(const mstring& nick, const mstring& message)
     }
     else if (!Parent->nickserv.GetLive(nick).IsServices())
     {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"WALLOPS", nick.c_str()));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
+		"WALLOPS", nick));
     }
     else
     {
@@ -2834,8 +2839,7 @@ void Server::KillUnknownUser(const mstring& user) const
 		proto.GetNonToken("KILL") : mstring("KILL")) +
 		" " + user + " :" + Parent->startup.Server_Name() +
 		" (" + user + "(?) <- " + Parent->CurrentServer() + ")");
-    LOG((LM_ERROR, Parent->getLogMessage("OTHER/KILL_UNKNOWN"),
-	user.c_str()));
+    LOG(LM_ERROR, "OTHER/KILL_UNKNOWN", (user));
 }
 
 
@@ -2939,8 +2943,7 @@ void Server::execute(mstring& source, const mstring& msgtype, const mstring& par
 	parse_Z(source, msgtype, params);
 	break;
     default:
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	break;
     }
 }
@@ -3042,8 +3045,7 @@ void Server::parse_A(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3067,8 +3069,7 @@ void Server::parse_B(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3117,8 +3118,7 @@ void Server::parse_C(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3136,8 +3136,7 @@ void Server::parse_D(mstring &source, const mstring &msgtype, const mstring &par
 	    source = OurUplink();
     mstring sourceL(source.LowerCase());
 
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
 void Server::parse_E(mstring &source, const mstring &msgtype, const mstring &params)
@@ -3169,13 +3168,12 @@ void Server::parse_E(mstring &source, const mstring &msgtype, const mstring &par
 	else if (msgtype=="ERROR")
 	{
 	    // ERROR :This is my error
-	    LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
-		    msgtype.c_str(), params.After(":").c_str()));
+	    LOG(LM_NOTICE, "OTHER/SERVER_MSG", (
+		    msgtype, params.After(":")));
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3193,8 +3191,7 @@ void Server::parse_F(mstring &source, const mstring &msgtype, const mstring &par
 	    source = OurUplink();
     mstring sourceL(source.LowerCase());
 
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
 void Server::parse_G(mstring &source, const mstring &msgtype, const mstring &params)
@@ -3224,8 +3221,8 @@ void Server::parse_G(mstring &source, const mstring &msgtype, const mstring &par
 	else if (msgtype=="GNOTICE")
 	{
 	    // :server GNOTICE :This message
-	    LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
-		msgtype.c_str(), params.After(":").c_str()));
+	    LOG(LM_NOTICE, "OTHER/SERVER_MSG", (
+		msgtype, params.After(":")));
 	}
 	else if (msgtype=="GOPER")
 	{
@@ -3233,8 +3230,7 @@ void Server::parse_G(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3262,8 +3258,7 @@ void Server::parse_H(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3334,8 +3329,7 @@ void Server::parse_I(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3369,8 +3363,7 @@ void Server::parse_J(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3423,10 +3416,10 @@ void Server::parse_K(mstring &source, const mstring &msgtype, const mstring &par
 		// sign on services again if they're killed.
 		if (Parent->nickserv.GetLive(params.ExtractWord(1, ": ")).IsServices())
 		{
-		    LOG((LM_WARNING, Parent->getLogMessage("OTHER/KILLED"),
-			    params.ExtractWord(1, ": ").c_str(),
-			    (!Parent->nickserv.IsLive(sourceL) ? sourceL.c_str() :
-			    Parent->nickserv.GetLive(sourceL).Mask(Nick_Live_t::N_U_P_H).c_str())));
+		    LOG(LM_WARNING, "OTHER/KILLED", (
+			    params.ExtractWord(1, ": "),
+			    (!Parent->nickserv.IsLive(sourceL) ? sourceL :
+			    Parent->nickserv.GetLive(sourceL).Mask(Nick_Live_t::N_U_P_H))));
 		    WLOCK2(("Server", "WaitIsOn"));
 		    WaitIsOn.insert(params.ExtractWord(1, ": "));
 		    sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ?
@@ -3441,15 +3434,14 @@ void Server::parse_K(mstring &source, const mstring &msgtype, const mstring &par
 	    }
 	    else
 	    {
-		LOG((LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"KILL", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+		LOG(LM_ERROR, "ERROR/REC_FORNONUSER", (
+			"KILL", source, params.ExtractWord(1, ": ")));
 	    }
 
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3535,8 +3527,7 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3567,20 +3558,20 @@ void Server::parse_M(mstring &source, const mstring &msgtype, const mstring &par
 		}
 		else
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"MODE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+		    LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
+			"MODE", source, params.ExtractWord(1, ": ")));
 		}
 	    }
 	    else
 	    {
 		if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    Parent->nickserv.GetLive(params.ExtractWord(1, ": ")).Mode(params.After(" "));
+		    Parent->nickserv.GetLive(params.ExtractWord(1, ": ")).Mode(params.ExtractWord(2, ": "));
 		}
 		else
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"MODE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+		    LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
+			"MODE", source, params.ExtractWord(1, ": ")));
 		}
 	    }
 	}
@@ -3620,8 +3611,7 @@ void Server::parse_M(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -3969,15 +3959,14 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 		{ RLOCK(("IrcSvcHandler"));
 		if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
 		{
-		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"NOTICE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
+			"NOTICE", source, params.ExtractWord(1, ": ")));
 		}}
 	    }
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -4000,8 +3989,7 @@ void Server::parse_O(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -4036,8 +4024,8 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 	    // PASS :password
 	    if (params.ExtractWord(1, ": ") != Parent->startup.Server(Parent->CurrentServer()).second.second)
 	    {
-		LOG((LM_ERROR, Parent->getLogMessage("OTHER/WRONGPASS"),
-			Parent->CurrentServer().c_str()));
+		LOG(LM_ERROR, "OTHER/WRONGPASS", (
+			Parent->CurrentServer()));
 		CP(("Server password mismatch.  Closing socket."));
 		raw(((proto.Tokens() && !proto.GetNonToken("ERROR").empty()) ?
 			proto.GetNonToken("ERROR") : mstring("ERROR")) +
@@ -4079,8 +4067,8 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 		{ RLOCK(("IrcSvcHandler"));
 		if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
 		{
-		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"PRIVMSG", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
+			"PRIVMSG", source, params.ExtractWord(1, ": ")));
 		}}
 	    }
 	}
@@ -4095,8 +4083,7 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -4138,9 +4125,9 @@ void Server::parse_Q(mstring &source, const mstring &msgtype, const mstring &par
 		WLOCK2(("Server", "ToBeSquit"));
 		MCB(ToBeSquit.size());
 		ToBeSquit[params.ExtractWord(2, ": ").LowerCase()].push_back(sourceL);
-		LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_FIRST"),
-			params.ExtractWord(2, ": ").c_str(),
-			params.ExtractWord(1, ": ").c_str()));
+		LOG(LM_NOTICE, "OTHER/SQUIT_FIRST", (
+			params.ExtractWord(2, ": "),
+			params.ExtractWord(1, ": ")));
 
 		WLOCK3(("Server", "ServerSquit"));
 		if (ServerSquit.find(Parent->nickserv.GetLive(sourceL).Server()) == ServerSquit.end())
@@ -4171,8 +4158,7 @@ void Server::parse_Q(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -4205,8 +4191,7 @@ void Server::parse_R(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -4277,9 +4262,9 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			AddList(&tmp);
 		    }
 
-		    LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
-			params.ExtractWord(1, ": ").c_str(),
-			Parent->startup.Server_Name().c_str()));
+		    LOG(LM_INFO, "OTHER/LINK", (
+			params.ExtractWord(1, ": "),
+			Parent->startup.Server_Name()));
 		    Parent->GotConnect(true);
 		    SignOnAll();
 		    mMessage::CheckDependancies(mMessage::ServerExists, params.ExtractWord(1, ": "));
@@ -4292,9 +4277,9 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 //			Parent->getMessage("MISC/INVALIDLINK"),
 //			params.ExtractWord(1, ": ").c_str(),
 //			Parent->startup.Server_Name().c_str());
-		    LOG((LM_ERROR, Parent->getLogMessage("OTHER/INVALIDLINK"),
-			params.ExtractWord(1, ": ").c_str(),
-			Parent->startup.Server_Name().c_str()));
+		    LOG(LM_ERROR, "OTHER/INVALIDLINK", (
+			params.ExtractWord(1, ": "),
+			Parent->startup.Server_Name()));
 		    raw("SQUIT " + params.ExtractWord(1, ": ") + " :" +
 			Parent->getMessage("MISC/MAYNOTLINK"));
 		    Parent->Disconnect();
@@ -4317,8 +4302,8 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			    tmp.Numeric(numeric);
 			}
 			AddList(&tmp);
-			LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
-			    params.ExtractWord(1, ": ").c_str(), sourceL.c_str()));
+			LOG(LM_INFO, "OTHER/LINK", (
+			    params.ExtractWord(1, ": "), sourceL));
 			}
 
 			mMessage::CheckDependancies(mMessage::ServerExists, params.ExtractWord(1, ": "));
@@ -4327,8 +4312,8 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    }
 		    else
 		    {
-			LOG((LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONSERVER"),
-				"SERVER", params.ExtractWord(1, ": ").c_str(), sourceL.c_str()));
+			LOG(LM_ERROR, "ERROR/REC_FORNONSERVER", (
+				"SERVER", params.ExtractWord(1, ": "), sourceL));
 		    }
 		}
 		else
@@ -4336,8 +4321,8 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    announce(Parent->operserv.FirstName(),
 			Parent->getMessage("MISC/INVALIDLINK"),
 			params.ExtractWord(1, ": ").c_str(), source.c_str());
-		    LOG((LM_ERROR, Parent->getLogMessage("OTHER/INVALIDLINK"),
-			params.ExtractWord(1, ": ").c_str(), source.c_str()));
+		    LOG(LM_ERROR, "OTHER/INVALIDLINK", (
+			params.ExtractWord(1, ": "), source));
 		    sraw("SQUIT " + params.ExtractWord(1, ": ") + " :" +
 			Parent->getMessage("MISC/MAYNOTLINK"));
 		}
@@ -4466,23 +4451,23 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			}
 			else
 			{
-			    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-				"SJOIN", source.c_str(), nick.c_str()));
+			    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
+				"SJOIN", source, nick));
 			    if (oped)
-				LOG((LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-					'+', 'o', source.c_str(), nick.c_str(), chan.c_str()));
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
+					'+', 'o', source, nick, chan));
 			    if (halfoped)
-				LOG((LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-					'+', 'h', source.c_str(), nick.c_str(), chan.c_str()));
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
+					'+', 'h', source, nick, chan));
 			    if (voiced)
-				LOG((LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-					'+', 'v', source.c_str(), nick.c_str(), chan.c_str()));
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
+					'+', 'v', source, nick, chan));
 			    if (owner)
-				LOG((LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-					'+', 'q', source.c_str(), nick.c_str(), chan.c_str()));
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
+					'+', 'q', source, nick, chan));
 			    if (prot)
-				LOG((LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-					'+', 'a', source.c_str(), nick.c_str(), chan.c_str()));
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
+					'+', 'a', source, nick, chan));
 			}
 		    }
 		}
@@ -4507,8 +4492,8 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		}
 		else if (modes.length() > 1)
 		{
-		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"MODE", source.c_str(), chan.c_str()));
+		    LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", (
+			"MODE", source, chan));
 		}
 	    }
 	    else
@@ -4574,8 +4559,8 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		}
 		else
 		{
-		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"SJOIN", source.c_str(), source.c_str()));
+		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
+			"SJOIN", source, source));
 		}
 	    }
 	}
@@ -4889,9 +4874,8 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		unsigned int i;
 		vector<mstring> tlist = GetList(target).AllDownlinks();
 		tlist.push_back(target);
-		LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_SECOND"),
-		    target.c_str(),
-		    GetList(target.LowerCase()).Uplink().c_str()));
+		LOG(LM_NOTICE, "OTHER/SQUIT_SECOND", (
+		    target, GetList(target.LowerCase()).Uplink()));
 
 		RemList(target);
 
@@ -4987,20 +4971,20 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		}
 		else
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"SVSMODE", source.c_str(),  params.ExtractWord(1, ": ").c_str()));
+		    LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
+			"SVSMODE", source,  params.ExtractWord(1, ": ")));
 		}
 	    }
 	    else
 	    {
 		if (Parent->nickserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    Parent->nickserv.GetLive(params.ExtractWord(1, ": ")).Mode(params.After(" "));
+		    Parent->nickserv.GetLive(params.ExtractWord(1, ": ")).Mode(params.ExtractWord(2, ": "));
 		}
 		else
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"SVSMODE", source.c_str(),  params.ExtractWord(1, ": ").c_str()));
+		    LOG(LM_CRITICAL, "ERROR/REC_FORNONUSER", (
+			"SVSMODE", source,  params.ExtractWord(1, ": ")));
 		}
 	    }
 	}
@@ -5018,8 +5002,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -5065,8 +5048,8 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 	    }
 	    else
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"MODE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+		LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
+			"MODE", source, params.ExtractWord(1, ": ")));
 	    }
 	}
 	else if (msgtype=="TRACE")
@@ -5181,8 +5164,7 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -5451,8 +5433,7 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -5527,8 +5508,7 @@ void Server::parse_V(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -5731,8 +5711,7 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -5750,8 +5729,7 @@ void Server::parse_X(mstring &source, const mstring &msgtype, const mstring &par
 	    source = OurUplink();
     mstring sourceL(source.LowerCase());
 
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
 void Server::parse_Y(mstring &source, const mstring &msgtype, const mstring &params)
@@ -5768,8 +5746,7 @@ void Server::parse_Y(mstring &source, const mstring &msgtype, const mstring &par
 	    source = OurUplink();
     mstring sourceL(source.LowerCase());
 
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
 void Server::parse_Z(mstring &source, const mstring &msgtype, const mstring &params)
@@ -5793,8 +5770,7 @@ void Server::parse_Z(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else
 	{
-	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-			msgtype.c_str()));
+	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	}
 }
 
@@ -5971,20 +5947,19 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 	break;
     case 464:     // ERR_PASSWDMISMATCH
 	// MUST handle (Stop connecting).
-	LOG((LM_ERROR, Parent->getLogMessage("OTHER/WRONGPASS"),
-		Parent->CurrentServer().c_str()));
+	LOG(LM_ERROR, "OTHER/WRONGPASS", (
+		Parent->CurrentServer()));
 	Parent->Disconnect();
 	break;
     case 465:     // ERR_YOUREBANNEDCREEP
 	// MUST handle (Stop connecting).
-	LOG((LM_ERROR, Parent->getLogMessage("OTHER/WEAREBANNED"),
-		Parent->CurrentServer().c_str()));
+	LOG(LM_ERROR, "OTHER/WEAREBANNED", (
+		Parent->CurrentServer()));
 	Parent->Disconnect();
 	break;
     default:
 	// We dont bother with what we get back -- useless anyway.
-//	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
-//			msgtype.c_str()));
+//	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	break;
     }
 }

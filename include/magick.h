@@ -25,6 +25,11 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.158  2001/05/05 17:33:57  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.157  2001/05/03 04:40:17  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -257,9 +262,17 @@ public:
 };
 
 
-#define LOG(X)	\
+#define LOG2(X)	\
 	if (Parent->ValidateLogger(ACE_LOG_MSG)) \
 		ACE_DEBUG(X);
+#define LOG(X, Y, Z) \
+	LOG2((X, parseMessage(Parent->getLogMessage(Y), mVarArray Z)));
+#define NLOG(X, Y) \
+	LOG2((X, parseMessage(Parent->getLogMessage(Y))));
+#define SLOG(X, Y, Z) \
+	LOG2((X, parseMessage(Y, mVarArray Z)));
+#define NSLOG(X, Y) \
+	LOG2((X, parseMessage(Y)));
 
 class Logger : public ACE_Log_Msg_Callback
 {

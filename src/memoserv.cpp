@@ -27,6 +27,11 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.97  2001/05/01 14:00:24  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -717,7 +722,7 @@ void MemoServ::AddNick(nick_memo_t in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Blank));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:Nick:Add:Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Memo", "Nick", "Add", "Blank"));
 	return;
 #endif
     }
@@ -728,7 +733,7 @@ void MemoServ::AddNick(nick_memo_t in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Invalid));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:Nick:Add:Invalid"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Memo", "Nick", "Add", "Invalid"));
 	return;
 #endif
 	}
@@ -739,7 +744,7 @@ void MemoServ::AddNick(nick_memo_t in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Blank));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:Nick:Add:Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Memo", "Nick", "Add", "Blank"));
 	return;
 #endif
     }
@@ -761,7 +766,7 @@ void MemoServ::AddNickMemo(Memo_t *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Invalid));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:NickMemo:Add:Invalid"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Memo", "NickMemo", "Add", "Invalid"));
 	return;
 #endif
     }
@@ -771,7 +776,7 @@ void MemoServ::AddNickMemo(Memo_t *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Add, E_MemoServ_Nick::T_Blank));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:NickMemo:Add:Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Memo", "NickMemo", "Add", "Blank"));
 	return;
 #endif
     }
@@ -797,7 +802,7 @@ MemoServ::nick_memo_t &MemoServ::GetNick(const mstring &in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:Nick:Get:NotFound - %s", in.c_str()));
+	NLOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Memo", "Nick", "Get", "NotFound", in));
 	NRET(MemoServ::nick_memo_t &, GLOB_nick_memo_t);
 #endif
     }
@@ -806,7 +811,7 @@ MemoServ::nick_memo_t &MemoServ::GetNick(const mstring &in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:Nick:Get:Blank - %s", in.c_str()));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Memo", "Nick", "Get", "Blank", in));
 	NRET(MemoServ::nick_memo_t &, GLOB_nick_memo_t);
 #endif
     }
@@ -834,7 +839,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring &in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:NotFound - %s/%d", in.c_str(), num));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "NotFound", in, num));
 	NRET(Memo_t &, GLOB_Memo_t);
 #endif
     }
@@ -843,7 +848,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring &in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Invalid, in.c_str(), num))
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:Invalid - %s/%d", in.c_str(), num));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "Invalid", in, num));
 	NRET(Memo_t &, GLOB_Memo_t);
 #endif
     }
@@ -853,7 +858,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring &in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Blank, in.c_str(), num));
 #else
-	LOG((LM_EMERGENCY, "Exception - Memo:NickMemo:Get:Blank - %s/%d", in.c_str(), num));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "Blank", in, num));
 	NRET(Memo_t &, GLOB_Memo_t);
 #endif
     }
@@ -877,7 +882,7 @@ void MemoServ::RemNick(const mstring &in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:Nick:Rem:NotFound - %s", in.c_str()));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Memo", "Nick", "Rem", "NotFound", in));
 	return;
 #endif
     }
@@ -905,7 +910,7 @@ void MemoServ::RemNickMemo(const mstring &in, const size_t num)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:Nick:Rem:NotFound - %s/%d", in.c_str(), num));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("Memo", "Nick", "Rem", "NotFound", in, num));
 	return;
 #endif
     }
@@ -920,7 +925,7 @@ void MemoServ::RemNickMemo(const mstring &in, const size_t num)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Rem, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_CRITICAL, "Exception - Memo:NickMemo:Rem:NotFound - %s/%d", in.c_str(), num));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Rem", "NotFound", in, num));
 	return;
 #endif
     }
@@ -994,7 +999,7 @@ void MemoServ::AddChannel(channel_news_t in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Blank));
 #else
-	LOG((LM_CRITICAL, "Exception - News:Channel:Add:Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("News", "Channel", "Add", "Blank"));
 	return;
 #endif
     }
@@ -1005,7 +1010,7 @@ void MemoServ::AddChannel(channel_news_t in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Invalid));
 #else
-	LOG((LM_CRITICAL, "Exception - News:Channel:Add:Invalid"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("News", "Channel", "Add", "Invalid"));
 	return;
 #endif
 	}
@@ -1016,7 +1021,7 @@ void MemoServ::AddChannel(channel_news_t in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Blank));
 #else
-	LOG((LM_CRITICAL, "Exception - News:Channel:Add:Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("News", "Channel", "Add", "Blank"));
 	return;
 #endif
     }
@@ -1038,7 +1043,7 @@ void MemoServ::AddChannelNews(News_t *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Invalid));
 #else
-	LOG((LM_CRITICAL, "Exception - News:ChannelNews:Add:Invalid"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("News", "ChannelNews", "Add", "Invalid"));
 	return;
 #endif
     }
@@ -1048,7 +1053,7 @@ void MemoServ::AddChannelNews(News_t *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Add, E_MemoServ_Channel::T_Blank));
 #else
-	LOG((LM_CRITICAL, "Exception - News:ChannelNews:Add:Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("News", "ChannelNews", "Add", "Blank"));
 	return;
 #endif
     }
@@ -1074,7 +1079,7 @@ MemoServ::channel_news_t &MemoServ::GetChannel(const mstring &in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - News:Channel:Get:NotFound - %s", in.c_str()));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("News", "Channel", "Get", "NotFound", in));
 	NRET(MemoServ::channel_news_t &, GLOB_channel_news_t);
 #endif
     }
@@ -1083,7 +1088,7 @@ MemoServ::channel_news_t &MemoServ::GetChannel(const mstring &in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Blank, in.c_str()));
 #else
-	LOG((LM_EMERGENCY, "Exception - News:Channel:Get:Blank - %s", in.c_str()));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("News", "Channel", "Get", "Blank", in));
 	NRET(MemoServ::channel_news_t &, GLOB_channel_news_t);
 #endif
     }
@@ -1111,7 +1116,7 @@ News_t &MemoServ::GetChannelNews(const mstring &in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:NotFound - %s/%d", in.c_str(), num));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "NotFound", in, num));
 	NRET(News_t &, GLOB_News_t);
 #endif
     }
@@ -1120,7 +1125,7 @@ News_t &MemoServ::GetChannelNews(const mstring &in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Invalid, in.c_str(), num))
 #else
-	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:Invalid - %s/%d", in.c_str(), num));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "Invalid", in, num));
 	NRET(News_t &, GLOB_News_t);
 #endif
     }
@@ -1130,7 +1135,7 @@ News_t &MemoServ::GetChannelNews(const mstring &in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Blank, in.c_str(), num));
 #else
-	LOG((LM_EMERGENCY, "Exception - News:ChannelNews:Get:Blank - %s/%d", in.c_str(), num));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "Blank", in, num));
 	NRET(News_t &, GLOB_News_t);
 #endif
     }
@@ -1154,7 +1159,7 @@ void MemoServ::RemChannel(const mstring &in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound, in.c_str()));
 #else
-	LOG((LM_CRITICAL, "Exception - News:Channel:Rem:NotFound - %s", in.c_str()));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("News", "Channel", "Rem", "NotFound", in));
 	return;
 #endif
     }
@@ -1182,7 +1187,7 @@ void MemoServ::RemChannelNews(const mstring &in, const size_t num)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_CRITICAL, "Exception - News:Channel:Rem:NotFound - %s/%d", in.c_str(), num));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("News", "Channel", "Rem", "NotFound", in, num));
 	return;
 #endif
     }
@@ -1197,7 +1202,7 @@ void MemoServ::RemChannelNews(const mstring &in, const size_t num)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Rem, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
 #else
-	LOG((LM_CRITICAL, "Exception - News:ChannelNews:Rem:NotFound - %s/%d", in.c_str(), num));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Rem", "NotFound", in, num));
 	return;
 #endif
     }
@@ -2667,9 +2672,9 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	    Parent->memoserv.RemChannel(who);
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL_ALL"),
 				    who.c_str());
-	    LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL_ALL"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		who.c_str()));
+	    LOG(LM_DEBUG, "MEMOSERV/DEL_ALL", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		who));
 	}
 	else
 	{
@@ -2749,9 +2754,9 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL"),
 			    output.c_str(), who.c_str());
 		output.erase();
-		LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL"),
-			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-			adjust, who.c_str()));
+		LOG(LM_DEBUG, "MEMOSERV/DEL", (
+			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+			adjust, who));
 	    }
 	    if (nonnumeric)
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
@@ -3131,12 +3136,12 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 				Parent->getMessage("VALS/ON").c_str() :
 				Parent->getMessage("VALS/OFF").c_str());
 
-	    LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/SET_ALL"),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
-		who.c_str(), onoff.GetBool() ?
-			Parent->getMessage("VALS/ON").c_str() :
-			Parent->getMessage("VALS/OFF").c_str()));
+	    LOG(LM_DEBUG, "MEMOSERV/SET_ALL", (
+		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+		who, onoff.GetBool() ?
+			Parent->getMessage("VALS/ON") :
+			Parent->getMessage("VALS/OFF")));
 	}
 	else
 	{
@@ -3187,12 +3192,12 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 				Parent->getMessage("VALS/ON").c_str() :
 				Parent->getMessage("VALS/OFF").c_str());
 		output.erase();
-		LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/SET"),
-			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H).c_str(),
-			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE").c_str(),
-			count, who.c_str(), onoff.GetBool() ?
-				Parent->getMessage("VALS/ON").c_str() :
-				Parent->getMessage("VALS/OFF").c_str()));
+		LOG(LM_DEBUG, "MEMOSERV/SET", (
+			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+			count, who, onoff.GetBool() ?
+				Parent->getMessage("VALS/ON") :
+				Parent->getMessage("VALS/OFF")));
 	    }
 	    if (nonnumeric)
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));

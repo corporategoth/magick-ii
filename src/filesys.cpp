@@ -27,6 +27,11 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.69  2001/05/01 14:00:23  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -325,8 +330,8 @@ mFile::mFile(const mstring& name, const mstring& mode)
     MLOCK(("mFile", name));
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
-		name.c_str(), mode.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/COULDNOTOPEN", (
+		name, mode, errno, strerror(errno)));
     }
     else
 	i_name = name;
@@ -343,8 +348,8 @@ bool mFile::Open(const mstring& name, const mstring& mode)
 	opres = ACE_OS::fclose(fd);
 	if (opres != 0 && errno)
 	{
-	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fclose", i_name.c_str(), errno, strerror(errno)));
+	    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fclose", i_name, errno, strerror(errno)));
 	}
 	fd = NULL;
     }
@@ -352,8 +357,8 @@ bool mFile::Open(const mstring& name, const mstring& mode)
     MLOCK(("mFile", name));
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
-		name.c_str(), mode.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/COULDNOTOPEN", (
+		name, mode, errno, strerror(errno)));
     }
     else
 	i_name = name;
@@ -371,14 +376,14 @@ void mFile::Close()
 	opres = ACE_OS::fflush(fd);
 	if (opres != 0 && errno)
 	{
-	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fflush", i_name.c_str(), errno, strerror(errno)));
+	    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fflush", i_name, errno, strerror(errno)));
 	}
 	opres = ACE_OS::fclose(fd);
 	if (opres != 0 && errno)
 	{
-	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fclose", i_name.c_str(), errno, strerror(errno)));
+	    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fclose", i_name, errno, strerror(errno)));
 	}
 	i_name.erase();
     }
@@ -402,8 +407,8 @@ long mFile::Seek(const long offset, const int whence)
     long retpos = ACE_OS::fseek(fd, offset, whence);
     if (retpos < 0 && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fseek", i_name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fseek", i_name, errno, strerror(errno)));
     }
     RET(retpos);
 }
@@ -427,8 +432,8 @@ size_t mFile::Write(const void *buf, const size_t size)
     long written = ACE_OS::fwrite(buf, 1, size, fd);
     if (ferror(fd) && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fwrite", i_name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fwrite", i_name, errno, strerror(errno)));
     }
     RET(written);
 }
@@ -442,8 +447,8 @@ size_t mFile::Read(void *buf, const size_t size)
     long read = ACE_OS::fread(buf, 1, size, fd);
     if (ferror(fd) && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fread", i_name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fread", i_name, errno, strerror(errno)));
     }
     RET(read);
 }
@@ -465,8 +470,8 @@ mstring mFile::ReadLine()
         ACE_OS::fgets(buffer,1024,fd);
 	if (ferror(fd) && errno)
 	{
-	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fgets", i_name.c_str(), errno, strerror(errno)));
+	    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fgets", i_name, errno, strerror(errno)));
 	    clearerr(fd);
 	}
 	else
@@ -500,8 +505,8 @@ long mFile::Length() const
     opres = ACE_OS::stat(i_name, &st);
     if (opres < 0 && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fstat", i_name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fstat", i_name, errno, strerror(errno)));
     }
     else
     {
@@ -523,8 +528,8 @@ mDateTime mFile::LastMod() const
     opres = ACE_OS::stat(i_name, &st);
     if (opres < 0 && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fstat", i_name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fstat", i_name, errno, strerror(errno)));
     }
     else
     {
@@ -542,8 +547,8 @@ bool mFile::Eof() const
     bool retval = feof(fd);
     if (ferror(fd) && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"feof", i_name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"feof", i_name, errno, strerror(errno)));
     }
     RET(retval);
 }
@@ -579,8 +584,8 @@ void mFile::Flush()
 	opres = ACE_OS::fflush(fd);
 	if (opres < 0 && errno)
 	{
-	    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"fflush", i_name.c_str(), errno, strerror(errno)));
+	    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"fflush", i_name, errno, strerror(errno)));
 	}
     }
 }
@@ -607,8 +612,8 @@ bool mFile::Erase(const mstring& name)
     opres = remove(name);
     if (opres < 0 && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"remove", name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"remove", name, errno, strerror(errno)));
     }
     RET(true);
 }
@@ -626,8 +631,8 @@ long mFile::Length(const mstring& name)
     opres = ACE_OS::stat(name.c_str(), &st);
     if (opres < 0 && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"stat", name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"stat", name, errno, strerror(errno)));
     }
     else
     {
@@ -649,8 +654,8 @@ mDateTime mFile::LastMod(const mstring& name)
     opres = ACE_OS::stat(name.c_str(), &st);
     if (opres < 0 && errno)
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"stat", name.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"stat", name, errno, strerror(errno)));
     }
     else
     {
@@ -790,8 +795,8 @@ size_t mFile::DirUsage(const mstring& directory)
 		opres = ACE_OS::stat((directory + DirSlash + entry->d_name).c_str(), &st);
 		if (opres < 0 && errno)
 		{
-		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
-			"stat", (directory + DirSlash + entry->d_name).c_str(), errno, strerror(errno)));
+		    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
+			"stat", directory + DirSlash + entry->d_name, errno, strerror(errno)));
 		}
 		else
 		{
@@ -803,8 +808,8 @@ size_t mFile::DirUsage(const mstring& directory)
     }
     else
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
-		"opendir", directory.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
+		"opendir", directory, errno, strerror(errno)));
     }
 #endif
     RET(retval);
@@ -839,8 +844,8 @@ set<mstring> mFile::DirList(const mstring& directory, const mstring& filemask)
     }
     else
     {
-	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/DIROPERROR"),
-		"opendir", directory.c_str(), errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
+		"opendir", directory, errno, strerror(errno)));
     }
 #endif
     NRET(set<mstring>, retval);
@@ -861,7 +866,7 @@ unsigned long FileMap::FindAvail(const FileMap::FileType type)
 	filenum++;
     }}
 
-    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEMAPFULL"),
+    LOG(LM_ERROR, "SYS_ERRORS/FILEMAPFULL", (
 		static_cast<int>(type)));
     RET(0);
 }
@@ -893,8 +898,8 @@ bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
 	    }
 	}
 	mFile::Erase(filename);
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE1"),
-		static_cast<int>(type), num));
+	LOG(LM_CRITICAL, "SYS_ERRORS/MISSING_FILE1", (
+		static_cast<int>(type), fmstring("%08x", num)));
     }
     else
     {
@@ -905,8 +910,8 @@ bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
 	    if (fmi->second.find(num) != fmi->second.end())
 	    {
 	    	fmi->second.erase(num);
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE2"),
-			static_cast<int>(type), num));
+		LOG(LM_CRITICAL, "SYS_ERRORS/MISSING_FILE2", (
+			static_cast<int>(type), fmstring("%08x", num)));
 	    }
 	}
     }
@@ -1253,8 +1258,8 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     i_XferTotal = 0;
     i_LastData = mDateTime::CurrentDateTime();
     DumpE();
-    LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
-		i_DccId, i_Source.c_str(), "SEND"));
+    LOG(LM_DEBUG, "OTHER/DCC_INIT", (
+	fmstring("%08x", i_DccId), i_Source, "SEND"));
     CP(("DCC %d initialized", i_DccId));
 }
 
@@ -1308,8 +1313,8 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     i_XferTotal = 0;
     i_LastData = mDateTime::CurrentDateTime();
     DumpE();
-    LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
-		i_DccId, i_Source.c_str(), "GET"));
+    LOG(LM_DEBUG, "OTHER/DCC_INIT", (
+	fmstring("%08x", i_DccId), i_Source, "GET"));
     CP(("DCC %d initialized", i_DccId));
 }
 
@@ -1327,11 +1332,11 @@ DccXfer::~DccXfer()
     if ((i_Filesize > 0) ? i_Total == i_Filesize
 			  : i_Total > 0)
     {
-	LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_CLOSE"), i_DccId));
+	LOG(LM_DEBUG, "OTHER/DCC_CLOSE", (fmstring("%08x", i_DccId)));
     }
     else
     {
-	LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_CANCEL"), i_DccId));
+	LOG(LM_DEBUG, "OTHER/DCC_CANCEL", (fmstring("%08x", i_DccId)));
     }
 
     if (!i_Socket.IsConnected())
@@ -1901,7 +1906,7 @@ void DccMap::AddXfers(DccXfer *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Add, E_DccMap_Xfers::T_Invalid));
 #else
-	LOG((LM_CRITICAL, "Exception - Nick:Xfers:Add:Invalid"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Xfers", "Add", "Invalid"));
 	return;
 #endif
     }
@@ -1910,7 +1915,7 @@ void DccMap::AddXfers(DccXfer *in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Add, E_DccMap_Xfers::T_Blank));
 #else
-	LOG((LM_CRITICAL, "Exception - Nick:Xfers:Add:Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Xfers", "Add", "Blank"));
 	return;
 #endif
     }
@@ -1935,7 +1940,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_NotFound));
 #else
-	LOG((LM_EMERGENCY, "Exception - DccMap:Xfers:Get:NotFound"));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "NotFound"));
 	NRET(DccXfer &, GLOB_DccXfer);
 #endif
     }
@@ -1944,7 +1949,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
 #else
-	LOG((LM_EMERGENCY, "Exception - DccMap:Xfers:Get:Invalid"));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Invalid"));
 	NRET(DccXfer &, GLOB_DccXfer);
 #endif
     }
@@ -1953,7 +1958,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
 #else
-	LOG((LM_EMERGENCY, "Exception - DccMap:Xfers:Get:Blank"));
+	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Blank"));
 	NRET(DccXfer &, GLOB_DccXfer);
 #endif
     }
@@ -1976,7 +1981,7 @@ void DccMap::RemXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Rem, E_DccMap_Xfers::T_NotFound));
 #else
-	LOG((LM_CRITICAL, "Exception - Nick:Xfers:Rem:NotFound"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Nick", "Xfers", "Rem", "NotFound"));
 	return;
 #endif
     }
@@ -2005,7 +2010,7 @@ bool DccMap::IsXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
 #else
-	    LOG((LM_CRITICAL, "Exception - DccMap:Xfers:Get:Invalid"));
+	    LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Invalid"));
 	    RET(false);
 #endif
 	}
@@ -2014,7 +2019,7 @@ bool DccMap::IsXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
 #else
-	    LOG((LM_CRITICAL, "Exception - DccMap:Xfers:Get:Blank"));
+	    LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Blank"));
 	    RET(false);
 #endif
 	}
@@ -2042,7 +2047,7 @@ vector<unsigned long> DccMap::GetList(const mstring& in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
 #else
-	    LOG((LM_CRITICAL, "Exception - DccMap:Xfers:Get:Invalid"));
+	    LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Invalid"));
 	    continue;
 #endif
 	}
@@ -2051,7 +2056,7 @@ vector<unsigned long> DccMap::GetList(const mstring& in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	    throw(E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
 #else
-	    LOG((LM_CRITICAL, "Exception - DccMap:Xfers:Get:Blank"));
+	    LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Blank"));
 	    continue;
 #endif
 	}

@@ -27,6 +27,11 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.70  2001/05/03 04:40:17  prez
 ** Fixed locking mechanism (now use recursive mutexes) ...
 ** Also now have a deadlock/nonprocessing detection mechanism.
@@ -223,7 +228,7 @@ bool mLOCK::AcquireMapLock()
 	maplock = new mLock_Mutex("LockMap");
     if (maplock->acquire() < 0)
     {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
 		"MUTEX", "LockMap"));
 	return false;
     }
@@ -236,7 +241,7 @@ bool mLOCK::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
 		"MUTEX", "LockMap"));
 	return false;
     }
@@ -279,8 +284,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
 	    {
 		ReleaseMapLock();
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_DUP"),
-			"READ", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", (
+			"READ", lockname));
 		return;
 	    }
 	}
@@ -292,8 +297,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    if (rlock == NULL)
 	    {
 		ReleaseMapLock();
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "READ", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
+		    "READ", lockname));
 		return;
 	    }
 	    map<ACE_thread_t, locktype_enum> tmap;
@@ -305,8 +310,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (rlock->acquire() < 0)
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		    "READ", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
+		    "READ", lockname));
 		rlock = NULL;
 		if (!AcquireMapLock())
 		    return;
@@ -356,8 +361,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
 	    {
 		ReleaseMapLock();
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_DUP"),
-			"READ", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", (
+			"READ", lockname));
 		return;
 	    }
 	}
@@ -369,8 +374,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    if (rlock == NULL)
 	    {
 		ReleaseMapLock();
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "READ", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
+		    "READ", lockname));
 		return;
 	    }
 	    map<ACE_thread_t, locktype_enum> tmap;
@@ -382,8 +387,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (rlock->acquire() < 0)
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		    "READ", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
+		    "READ", lockname));
 		rlock = NULL;
 		if (!AcquireMapLock())
 		    return;
@@ -428,8 +433,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 		    break;
 		case L_Mutex:
 		    ReleaseMapLock();
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_DUP"),
-			"WRITE", lockname.c_str()));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", (
+			"WRITE", lockname));
 		    return;
 		default:
 		    break;
@@ -449,8 +454,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    if (wlock == NULL)
 	    {
 		ReleaseMapLock();
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "WRITE", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
+		    "WRITE", lockname));
 		return;
 	    }
 	    map<ACE_thread_t, locktype_enum> tmap;
@@ -461,8 +466,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (rlock->release() < 0)
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		    "READ", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
+		    "READ", lockname));
 	    }
 	    rlock = NULL;
 	}
@@ -471,8 +476,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (wlock->acquire() < 0)
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		    "WRITE", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
+		    "WRITE", lockname));
 		wlock = NULL;
 		if (!AcquireMapLock())
 		    return;
@@ -512,8 +517,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 		if (iter->second != L_Mutex)
 		{
 		    ReleaseMapLock();
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_DUP"),
-			"MUTEX", lockname.c_str()));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", (
+			"MUTEX", lockname));
 		    return;
 		}
 	    }
@@ -532,8 +537,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    if (mlock == NULL)
 	    {
 		ReleaseMapLock();
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "MUTEX", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
+		    "MUTEX", lockname));
 		return;
 	    }
 	    map<ACE_thread_t, locktype_enum> tmap;
@@ -545,8 +550,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (mlock->acquire() < 0)
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		    "MUTEX", lockname.c_str()));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
+		    "MUTEX", lockname));
 		mlock = NULL;
 		if (!AcquireMapLock())
 		    return;
@@ -631,8 +636,8 @@ mLOCK::~mLOCK()
 	    {
 		if (rlock->release() < 0)
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"READ", locks[i].c_str()));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
+			"READ", locks[i]));
 		}
 		if (killit)
 		    delete rlock;
@@ -642,8 +647,8 @@ mLOCK::~mLOCK()
 	    {
 		if (wlock->release() < 0)
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"WRITE", locks[i].c_str()));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
+			"WRITE", locks[i]));
 		}
 		if (killit)
 		    delete wlock;
@@ -653,8 +658,8 @@ mLOCK::~mLOCK()
 	    {
 		if (mlock->release() < 0)
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"MUTEX", locks[i].c_str()));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
+			"MUTEX", locks[i]));
 		}
 		if (killit)
 		    delete mlock;
@@ -671,8 +676,8 @@ mLOCK::~mLOCK()
 		    ReleaseMapLock();
 		    if (rlock->acquire() < 0)
 		    {
-			LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-			    "READ", locks[i].c_str()));
+			LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
+			    "READ", locks[i]));
 			rlock = NULL;
 			if (!AcquireMapLock())
 			    return;
@@ -1054,7 +1059,7 @@ bool mThread::AcquireMapLock()
 	maplock = new mLock_Mutex("SelfToThreadIdMap");
     if (maplock->acquire() < 0)
     {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
 		"MUTEX", "SelfToThreadIdMap"));
 	return false;
     }
@@ -1067,7 +1072,7 @@ bool mThread::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
 		"MUTEX", "SelfToThreadIdMap"));
 	return false;
     }
@@ -1111,15 +1116,10 @@ void mThread::Attach(const threadtype_enum ttype)
 {
     FT("mThread::Attach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid=new ThreadID(ttype);
-    mLock_Mutex lock("SelfToThreadMap");
-    if (lock.acquire() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "SelfToThreadMap"));
+    if (!AcquireMapLock())
 	return;
-    }
     selftothreadidmap[ACE_Thread::self()]=tmpid;
-    lock.release();
+    ReleaseMapLock();
     COM(("Thread ID has been attached."));
 }
 

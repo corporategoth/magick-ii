@@ -27,6 +27,11 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2001/05/05 17:33:58  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.69  2001/04/13 00:46:38  prez
 ** Fixec channel registering
 **
@@ -187,7 +192,7 @@ mDateTime mDateTime::CurrentTime()
 
 mDateTime::mDateTime(const mstring& src, const mDateTimeFlag flag)
 {
-    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
+    LOG(LM_ERROR, "SYS_ERRORS/NOT_IMPLEMENTED", (
 	"mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)"));
 #if 0
     if(flag==Date)
@@ -294,8 +299,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 		    Result += FormatString(LongDateFormat);
 		    break;
 		default:
-		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-			count, format[i], format.c_str()));
+		    LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (
+			count, format[i], format));
 		};
 		break;
 	    case 'm':
@@ -322,8 +327,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 		    Result += LongMonthNames[Month-1];
 		    break;
 		default:
-		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-			count, format[i], format.c_str()));
+		    LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (
+			count, format[i], format));
 		}
 		break;
 	    case 'y':
@@ -342,8 +347,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 		    Result += Year;
 		    break;
 		default:
-		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-			count, format[i], format.c_str()));
+		    LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (
+			count, format[i], format));
 		}
 		break;
 	    case 'h':
@@ -402,8 +407,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 			Result += "0";
 		    break;
 		default:
-		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-			count, format[i], format.c_str()));
+		    LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (
+			count, format[i], format));
 		}
 		Result += MSec;
 		break;
@@ -446,8 +451,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 		}
 		else
 		{
-		    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-			1, format[i], format.c_str()));
+		    LOG(LM_ERROR, "SYS_ERRORS/INVALID_FORMAT", (
+			1, format[i], format));
 		    Result += "a";
 		}
 		break;
@@ -473,8 +478,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 		Result += format[i];
 		break;
 	    default:
-		LOG((LM_TRACE, Parent->getLogMessage("SYS_ERRORS/NOT_LITERAL"),
-		    format[i], format.c_str()));
+		LOG(LM_TRACE, "SYS_ERRORS/NOT_LITERAL", (
+		    format[i], format));
 		Result += format[i];
 	    };
 	    i++;

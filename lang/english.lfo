@@ -18,33 +18,21 @@
 ;
 ; Throughout this file there are various codes that are replaced
 ; with a value direct from Magick.  See below for a table that
-; outlines the codes and their meanings.  All lines in this .Äífile
-; starting with ';' are cots.  If your response string has
+; outlines the codes and their meanings.  All lines in this file
+; starting with ';' are comments.  If your response string has
 ; leading spaces, you MUST put a '\' in front of the first space,
 ; else leading spaces are stripped.
 ;
-; The C replacement codes are used to insert a value from Magick
-; into the string.  These should NEVER be removed, they must also
-; stay in the same ORDER as they are.  If they're removed or the
-; order in which they appear is changed, the results are undefined.
-; These are also known as 'live' or 'active' codes.
+; In each string there are (or can be) $ replacement tokens,
+; where the number after the $ is the paramater to replace
+; with.  You may re-order the paramaters passed (or remove
+; them alltogether) by simply changing around these tokens.
+; Starting a token number with 0 will treat all following
+; numbers literally (useful to follow a token with a number).
+; eg. $1$0123 will output whatever is in $1, then 123 (the
+; $0 is ignored).  You cannot change the format of a token.
 ;
 ; --------------------------------------------------------------
-;
-; C replacement codes:
-;   %s = String         %c = Single Character
-;   %d = Integer        %f = Numeric (with DP's)
-;   %o = Octal          %x = Hexadecimal
-;   %% = Literal %      %g = Like %f
-; Please see the manual page on C formatting characters
-; (included with Magick, or available with the command
-; 'man format' or 'man formats' depending on the system).
-; Briefly tho, if a number is specified in between the %
-; and the letter, then it indicates the LENGTH of the
-; field in question (usually its not recommended you change
-; these).  If the number is negative, it forces it to be
-; LEFT justified.  If the number has a decimal point, then
-; it specifies how many digits appear AFTER the DP.
 ;
 
 ;
@@ -52,189 +40,189 @@
 ;
 [COMMANDLINE]
 TRANSLATED       =Preston A. Elder <prez@magick.tm>
-UNKNOWN_OPTION   =Unknown option %s, ignored.
-NEEDPARAM        =Option %s requires a parameter.
-MUSTBENUMBER     =Parameter for %s must be a positive number.
-TIMEORZERO	 =Time value specified is invalid or zero, on value %s.
-VALUETOOHIGH	 =Value specified for %s must be below or equal to %d.
-NO_CFG_FILE      =Could not read config file %s, aborting.
+UNKNOWN_OPTION   =Unknown option $1, ignored.
+NEEDPARAM        =Option $1 requires a parameter.
+MUSTBENUMBER     =Parameter for $1 must be a positive number.
+TIMEORZERO       =Time value specified is invalid or zero, on value $1.
+VALUETOOHIGH     =Value specified for $1 must be below or equal to $2.
+NO_CFG_FILE      =Could not read config file $1, aborting.
 STOP             =CONFIG: [Startup] STOP code received.
-ACTIVE           =%s is already active or stale PID file exists, please kill (or remove) it before restarting.
+ACTIVE           =$1 is already active or stale PID file exists, please kill (or remove) it before restarting.
 RECONNECT        =Reconnecting to server due to configuration change.
-CANNOT_CONVERT   =Database type %s invalid (aborting).
-NO_KEYFILE       =Key file %s does not exist.
+CANNOT_CONVERT   =Database type $1 invalid (aborting).
+NO_KEYFILE       =Key file $1 does not exist.
 NONOPTION        =Non-option arguments are not allowed.
 ONEOPTION        =You may only specify one parameter after a group of options.
 TRACE_SYNTAX     =Parameter for --trace must be in the format of TYPE:LEVEL
 ZERO_LEVEL       =Zero or error in parsing trace level, ignoring.
-CFG_SYNTAX       =Configuration token "%s" contains a syntax error or invalid data.
-UNKNOWN_PROTO    =Unknown protocol identifier %d, default (%d) used.
+CFG_SYNTAX       =Configuration token "$1" contains a syntax error or invalid data.
+UNKNOWN_PROTO    =Unknown protocol identifier $1, default ($2) used.
 START_LANG       =Loading default language file ...
 START_FORK       =Spawning into background ...
 START_EVENTS     =Starting events engine ...
 START_CALIBRATE  =Calibrating thread thresholds ...
-START_COMPLETE   =%s %s startup procedure complete.
+START_COMPLETE   =$1 $2 startup procedure complete.
 STOP_EVENTS      =Stopping events engine ...
-STOP_COMPLETE    =%s %s shutdown procedure complete.
+STOP_COMPLETE    =$1 $2 shutdown procedure complete.
 
 ;
 ; These are used when a command is executed from NickServ.
 ;
 [NICKSERV]
-REGISTER         =%s registered nickname %s.
-DROP             =%s droped nickname %s (%d slaves).
-LINK             =%s linked nickname %s to %s.
-UNLINK           =%s unlinked nickname %s from %s.
-HOST             =%s changed their host nickname from %s to %s.
-IDENTIFY         =%s identified for nickname %s.
-IDENTIFY_FAILED  =%s failed identification for nickname %s.
-GHOST            =%s killed nickname %s with the ghost command.
-RECOVER          =%s requested services to recover nickname %s.
-SUSPEND          =%s suspended nickname %s for %s.
-UNSUSPEND        =%s unsuspended nickname %s.
-FORBID           =%s forbade nickname %s from being registered.
-GETPASS          =%s retrieved the password for nickname %s (%s).
-ACCESS_ADD       =%s added hostmask %s to nickname %s.
-ACCESS_DEL       =%s removed hostmask %s from nickname %s.
-IGNORE_ADD       =%s added nickname %s to the ignore list for nickname %s.
-IGNORE_DEL       =%s removed nickname %s from the ignore list for nickname %s.
-PICTURE_ADD      =%s set a picture for nickname %s (%08x - %s).
-PICTURE_DEL      =%s removed a picture from nickname %s.
-SET_PASSWORD     =%s changed the password for nickname %s.
-SET              =%s set the value of %s for nickname %s to %s.
-UNSET            =%s unset the value of %s for nickname %s.
-LOCK             =%s locked the value of %s for nickname %s to %s.
-UNLOCK           =%s unlocked the value of %s for nickname %s.
+REGISTER         =$1 registered nickname $2.
+DROP             =$1 droped nickname $2 ($3 slaves).
+LINK             =$1 linked nickname $2 to $3.
+UNLINK           =$1 unlinked nickname $2 from $3.
+HOST             =$1 changed their host nickname from $2 to $3.
+IDENTIFY         =$1 identified for nickname $2.
+IDENTIFY_FAILED  =$1 failed identification for nickname $2.
+GHOST            =$1 killed nickname $2 with the ghost command.
+RECOVER          =$1 requested services to recover nickname $2.
+SUSPEND          =$1 suspended nickname $2 for $3.
+UNSUSPEND        =$1 unsuspended nickname $2.
+FORBID           =$1 forbade nickname $2 from being registered.
+GETPASS          =$1 retrieved the password for nickname $2 ($3).
+ACCESS_ADD       =$1 added hostmask $2 to nickname $3.
+ACCESS_DEL       =$1 removed hostmask $2 from nickname $3.
+IGNORE_ADD       =$1 added nickname $2 to the ignore list for nickname $3.
+IGNORE_DEL       =$1 removed nickname $2 from the ignore list for nickname $3.
+PICTURE_ADD      =$1 set a picture for nickname $2 ($3 - $4).
+PICTURE_DEL      =$1 removed a picture from nickname $2.
+SET_PASSWORD     =$1 changed the password for nickname $2.
+SET              =$1 set the value of $2 for nickname $3 to $4.
+UNSET            =$1 unset the value of $2 for nickname $3.
+LOCK             =$1 locked the value of $2 for nickname $3 to $4.
+UNLOCK           =$1 unlocked the value of $2 for nickname $3.
 
 ;
 ; These are used when a command is executed from ChanServ.
 ;
 [CHANSERV]
-REGISTER         =%s registered channel %s.
-DROP             =%s droped channel %s (%s).
-IDENTIFY         =%s identified as founder for channel %s.
-IDENTIFY_FAILED  =%s failed identification for channel %s.
-SUSPEND          =%s suspended channel %s for %s.
-UNSUSPEND        =%s unsuspended channel %s.
-FORBID           =%s forbade channel %s from being registered.
-GETPASS          =%s retrieved the password for channel %s (%s).
-MODE             =%s changed mode "%s" on channel %s with the MODE command.
-OP               =%s oped %s in channel %s with the OP command.
-DEOP             =%s deoped %s in channel %s with the DEOP command.
-VOICE            =%s voiced %s in channel %s with the VOICE command.
-DEVOICE          =%s devoiced %s in channel %s with the DEVOICE command.
-TOPIC            =%s set the topic on %s with the TOPIC command.
-KICK             =%s kicked %s from channel %s with the KICK command.
-ANONKICK         =%s anonymously kicked %s from channel %s with the REMOVE command.
-INVITE           =%s invited %s to channel %s with the INVITE command.
-UNBAN            =%s unbanned %s from channel %s with the UNBAN command.
-COMMAND          =%s executed the %s command for channel %s.
-LEVEL            =%s set the level of %s to %d for channel %s.
-ACCESS_ADD       =%s added %s to the access list for channel %s at level %d.
-ACCESS_CHANGE    =%s changed %s on the access list of channel %s to level %d.
-ACCESS_DEL       =%s removed %s from the access list for channel %s.
-AKICK_ADD        =%s added %s to the auto kick list for channel %s.
-AKICK_DEL        =%s removed %s from the auto kick list for channel %s.
-GREET_ADD        =%s added a greeting for %s on channel %s.
-GREET_DEL        =%s removed a greeting for %s on channel %s.
-MESSAGE_ADD      =%s added a on-join message for channel %s.
-MESSAGE_DEL      =%s removed a on-join message from channel %s.
-SET_PASSWORD     =%s changed the password for channel %s.
-SET              =%s set the value of %s for channel %s to %s.
-UNSET            =%s unset the value of %s for channel %s.
-LOCK             =%s locked the value of %s for channel %s to %s.
-UNLOCK           =%s unlocked the value of %s for channel %s.
+REGISTER         =$1 registered channel $2.
+DROP             =$1 droped channel $2 ($3).
+IDENTIFY         =$1 identified as founder for channel $2.
+IDENTIFY_FAILED  =$1 failed identification for channel $2.
+SUSPEND          =$1 suspended channel $2 for $3.
+UNSUSPEND        =$1 unsuspended channel $2.
+FORBID           =$1 forbade channel $2 from being registered.
+GETPASS          =$1 retrieved the password for channel $2 ($3).
+MODE             =$1 changed mode "$2" on channel $3 with the MODE command.
+OP               =$1 oped $2 in channel $3 with the OP command.
+DEOP             =$1 deoped $2 in channel $3 with the DEOP command.
+VOICE            =$1 voiced $2 in channel $3 with the VOICE command.
+DEVOICE          =$1 devoiced $2 in channel $3 with the DEVOICE command.
+TOPIC            =$1 set the topic on $2 with the TOPIC command.
+KICK             =$1 kicked $2 from channel $3 with the KICK command.
+ANONKICK         =$1 anonymously kicked $2 from channel $3 with the REMOVE command.
+INVITE           =$1 invited $2 to channel $3 with the INVITE command.
+UNBAN            =$1 unbanned $2 from channel $3 with the UNBAN command.
+COMMAND          =$1 executed the $2 command for channel $3.
+LEVEL            =$1 set the level of $2 to $3 for channel $4.
+ACCESS_ADD       =$1 added $2 to the access list for channel $3 at level $4.
+ACCESS_CHANGE    =$1 changed $2 on the access list of channel $3 to level $4.
+ACCESS_DEL       =$1 removed $2 from the access list for channel $3.
+AKICK_ADD        =$1 added $2 to the auto kick list for channel $3.
+AKICK_DEL        =$1 removed $2 from the auto kick list for channel $3.
+GREET_ADD        =$1 added a greeting for $2 on channel $3.
+GREET_DEL        =$1 removed a greeting for $2 on channel $3.
+MESSAGE_ADD      =$1 added a on-join message for channel $2.
+MESSAGE_DEL      =$1 removed a on-join message from channel $2.
+SET_PASSWORD     =$1 changed the password for channel $2.
+SET              =$1 set the value of $2 for channel $3 to $4.
+UNSET            =$1 unset the value of $2 for channel $3.
+LOCK             =$1 locked the value of $2 for channel $3 to $4.
+UNLOCK           =$1 unlocked the value of $2 for channel $3.
 
 ;
 ; These are used when a command is executed from MemoServ.
 ;
 [MEMOSERV]
-SEND             =%s sent a news article to %s.
-DEL              =%s removed %d news article(s) from %s.
-DEL_ALL          =%s removed all news articles from %s.
-SET              =%s set the value of %s for %d news article(s) of %s to %s.
-SET_ALL          =%s set the value of %s for all news articles of %s to %s.
-FILE             =%s sent a file attachment (%s / %08x - %s) to %s.
-GET              =%s received a file attachment (%s / %08x - %s) from %s.
+SEND             =$1 sent a news article to $2.
+DEL              =$1 removed $2 news article(s) from $3.
+DEL_ALL          =$1 removed all news articles from $2.
+SET              =$1 set the value of $2 for $3 news article(s) of $4 to $5.
+SET_ALL          =$1 set the value of $2 for all news articles of $3 to $4.
+FILE             =$1 sent a file attachment ($2 / $3 - $4) to $5.
+GET              =$1 received a file attachment ($2 / $3 - $4) from $5.
 
 ;
 ; These are used when a command is executed from CommServ.
 ;
 [COMMSERV]
-ADD              =%s created a new committee called %s with %s as its head.
-DEL              =%s deleted committee %s.
-MEMO             =%s sent a memo to all members of committee %s.
-MEMBER_ADD       =%s added nickname %s to committee %s.
-MEMBER_DEL       =%s removed nickname %s from committee %s.
-LOGON_ADD        =%s added a new logon message to committee %s.
-LOGON_DEL        =%s removed a logon message from committee %s.
-SET              =%s set the value of %s for committee %s to %s.
-UNSET            =%s unset the value of %s for committee %s.
-LOCK             =%s locked the value of %s for committee %s to %s.
-UNLOCK           =%s unlocked the value of %s for committee %s.
+ADD              =$1 created a new committee called $2 with $3 as its head.
+DEL              =$1 deleted committee $2.
+MEMO             =$1 sent a memo to all members of committee $2.
+MEMBER_ADD       =$1 added nickname $2 to committee $3.
+MEMBER_DEL       =$1 removed nickname $2 from committee $3.
+LOGON_ADD        =$1 added a new logon message to committee $2.
+LOGON_DEL        =$1 removed a logon message from committee $2.
+SET              =$1 set the value of $2 for committee $3 to $4.
+UNSET            =$1 unset the value of $2 for committee $3.
+LOCK             =$1 locked the value of $2 for committee $3 to $4.
+UNLOCK           =$1 unlocked the value of $2 for committee $3.
 
 ;
 ; These are used when a command is executed from ServMsg.
 ;
 [SERVMSG]
-GLOBAL           =%s sent message "%s" to all users.
-FILE_ADD         =%s added file %s (%08x - %s) at privilege %s to public filesystem.
-FILE_DEL         =%s has removed file %s (%08x) from the public filesystem.
-FILE_RENAME      =%s has renamed file %s to %s in the public filesystem.
-FILE_PRIV        =%s has re-secured file %s to %s in the public filesystem.
-FILE_SEND        =%s has downloaded the file %s from the public filesystem.
-FILE_LOOKUP      =%s looked up file %08x of type %s.
+GLOBAL           =$1 sent message "$2" to all users.
+FILE_ADD         =$1 added file $2 ($3 - $4) at privilege $5 to public filesystem.
+FILE_DEL         =$1 has removed file $2 ($3) from the public filesystem.
+FILE_RENAME      =$1 has renamed file $2 to $3 in the public filesystem.
+FILE_PRIV        =$1 has re-secured file $2 to $3 in the public filesystem.
+FILE_SEND        =$1 has downloaded the file $2 from the public filesystem.
+FILE_LOOKUP      =$1 looked up file $2 of type $3.
 
 ;
 ; These are used when a command is executed from OperServ.
 ;
 [OPERSERV]
-MODE             =%s set mode "%s" for %s with the MODE command.
-QLINE            =%s quarantined nickname %s.
-UNQLINE          =%s unquarantined nickname %s.
-NOOP             =%s has turned quarantine all IRC ops on server %s %s.
-KILL             =%s silently killed nickname %s with "%s".
-HIDE             =%s has changed the hostname of nickname %s to %s.
-PING             =%s triggered server pings manually.
-UPDATE           =%s triggered database update manually.
-SHUTDOWN         =%s REQUESTED A SHUTDOWN OF SERVICES.
-RELOAD           =%s reloaded the services configuration file.
-UNLOAD           =%s unloaded language %s.
-JUPE             =%s juped server %s (%s).
-ONOFF            =%s TURNED %s %s SERVICES.
-ONOFF_ONE        =%s TURNED %s %s SERVICES FOR %s.
-CLONE_ADD        =%s added host %s to the clone override list with %d clones.
-CLONE_DEL        =%s removed host %s from the clone override list.
-AKILL_ADD        =%s added mask %s to the auto kill list (%s) for "%s".
-AKILL_DEL        =%s removed mask %s from the auto kill list.
-OPERDENY_ADD     =%s added mask %s to the oper deny list (%s).
-OPERDENY_DEL     =%s removed mask %s from the oper deny list.
-IGNORE_ADD       =%s added mask %s to the services permanent ignore list.
-IGNORE_DEL       =%s removed mask %s from the services permanent ignore list.
-IGNORED          =Ignored message from %s: %s
-HTM_FORCE        =%s has forced HTM mode %s.
-HTM_ON           =HTM mode %d (%d delay) activated (%.1fKb/s > %.1fKb/s).
+MODE             =$1 set mode "$2" for $3 with the MODE command.
+QLINE            =$1 quarantined nickname $2.
+UNQLINE          =$1 unquarantined nickname $2.
+NOOP             =$1 has turned quarantine all IRC ops on server $2 $3.
+KILL             =$1 silently killed nickname $2 with "$3".
+HIDE             =$1 has changed the hostname of nickname $2 to $3.
+PING             =$1 triggered server pings manually.
+UPDATE           =$1 triggered database update manually.
+SHUTDOWN         =$1 REQUESTED A SHUTDOWN OF SERVICES.
+RELOAD           =$1 reloaded the services configuration file.
+UNLOAD           =$1 unloaded language $2.
+JUPE             =$1 juped server $2 ($3).
+ONOFF            =$1 TURNED $2 $3 SERVICES.
+ONOFF_ONE        =$1 TURNED $2 $3 SERVICES FOR $4.
+CLONE_ADD        =$1 added host $2 to the clone override list with $3 clones.
+CLONE_DEL        =$1 removed host $2 from the clone override list.
+AKILL_ADD        =$1 added mask $2 to the auto kill list ($3) for "$4".
+AKILL_DEL        =$1 removed mask $2 from the auto kill list.
+OPERDENY_ADD     =$1 added mask $2 to the oper deny list ($3).
+OPERDENY_DEL     =$1 removed mask $2 from the oper deny list.
+IGNORE_ADD       =$1 added mask $2 to the services permanent ignore list.
+IGNORE_DEL       =$1 removed mask $2 from the services permanent ignore list.
+IGNORED          =Ignored message from $1: $2
+HTM_FORCE        =$1 has forced HTM mode $2.
+HTM_ON           =HTM mode $1 ($2 delay) activated ($3Kb/s > $4Kb/s).
 HTM_OFF          =HTM mode deactivated.
-HTM_SET          =%s has set the HTM threshold to %s/s.
-HTM_IGNORE       =Ignored message from %s (HTM mode): %s
+HTM_SET          =$1 has set the HTM threshold to $2/s.
+HTM_IGNORE       =Ignored message from $1 (HTM mode): $2
 
 ;
 ; These are used when an automated event kicks off.
 ;
 [EVENT]
-EXPIRE_AKILL     =Expiring akill for %s (%s) set by %s for %s.
-EXPIRE_NICK      =Expiring nickname %s (%s).
-EXPIRE_CHAN      =Expiring channel %s (%s).
-EXPIRE_NEWS      =Expiring news article for channel %s.
+EXPIRE_AKILL     =Expiring akill for $1 ($2) set by $3 for $4.
+EXPIRE_NICK      =Expiring nickname $1 ($2).
+EXPIRE_CHAN      =Expiring channel $1 ($2).
+EXPIRE_NEWS      =Expiring news article for channel $1.
 LOAD             =Loading databases ...
 SAVE             =Databases saved.
-UNBAN            =Removed ban %s from channel %s due to timeout (%s).
-KILLPROTECT      =Killed/renamed nickname %s for failure to identify.
+UNBAN            =Removed ban $1 from channel $2 due to timeout ($3).
+KILLPROTECT      =Killed/renamed nickname $1 for failure to identify.
 PING             =Pinged all servers.
-LEVEL_UP         =LIVE LEVEL HAS INCREASED BY ONE (%.3f average lag).
-LEVEL_DOWN       =LIVE LEVEL HAS DECREASED BY ONE (%.3f average lag).
-AKICK            =Kicked user %s from channel %s for triggering AKICK (%s).
-RESTRICTED       =Kicked user %s from restricted channel %s.
+LEVEL_UP         =LIVE LEVEL HAS INCREASED BY ONE ($1 average lag).
+LEVEL_DOWN       =LIVE LEVEL HAS DECREASED BY ONE ($1 average lag).
+AKICK            =Kicked user $1 from channel $2 for triggering AKICK ($3).
+RESTRICTED       =Kicked user $1 from restricted channel $2.
 NEW_THREAD       =Starting new thread to handle excess load.
 KILL_THREAD      =Killing thread, not enough work to warrant it.
 
@@ -242,105 +230,106 @@ KILL_THREAD      =Killing thread, not enough work to warrant it.
 ; These are errors that come from system based
 ;
 [SYS_ERRORS]
-COULDNOTOPEN     =Could not open file %s (%s) - #%d: %s.
-FILEOPERROR      =Could not perform %s on file %s - #%d: %s.
-DIROPERROR       =Could not perform %s on directory %s - #%d: %s.
-OPERROR          =Could nor perform %s - #%d: %s.
-FILEMAPFULL      =Could not find an available file number for type %d!
-MISSING_FILE1    =Removed physical file type %d, #%08x that did not have a file map entry.
-MISSING_FILE2    =Removed file map entry type %d, #%08x that did not have a physical file.
-SIGNAL_IGNORE    =Caught signal #%d, ignoring.
-SIGNAL_SAVE      =Caught signal #%d, saving databases.
-SIGNAL_LOAD      =Caught signal #%d, loading configuration file.
-SIGNAL_RETRY     =Caught signal #%d, attempting to retry.
-SIGNAL_KILL      =Caught signal #%d - last function was %s, attempting to shutdown.
-SIGNAL_SIGNON    =Caught signal #%d, re-signing on all clients.
-SIGNAL_SPAWN     =Caught signal #%d, spawning a new process.
-NOT_IMPLEMENTED  =Entered %s, which is not implemented.
-INVALID_FORMAT   =Invalid date format char %d%c in %s.
-NOT_LITERAL      =Character %c should be in quotes, taken as literal in %s.
+COULDNOTOPEN     =Could not open file $1 ($2) - #$3: $4.
+FILEOPERROR      =Could not perform $1 on file $2 - #$3: $4.
+DIROPERROR       =Could not perform $1 on directory $2 - #$3: $4.
+OPERROR          =Could nor perform $1 - #$2: $3.
+FILEMAPFULL      =Could not find an available file number for type $1!
+MISSING_FILE1    =Removed physical file type $1, #$2 that did not have a file map entry.
+MISSING_FILE2    =Removed file map entry type $1, #$2 that did not have a physical file.
+SIGNAL_IGNORE    =Caught signal #$1, ignoring.
+SIGNAL_SAVE      =Caught signal #$1, saving databases.
+SIGNAL_LOAD      =Caught signal #$1, loading configuration file.
+SIGNAL_RETRY     =Caught signal #$1, attempting to retry.
+SIGNAL_KILL      =Caught signal #$1 - last function was $2, attempting to shutdown.
+SIGNAL_SIGNON    =Caught signal #$1, re-signing on all clients.
+SIGNAL_SPAWN     =Caught signal #$1, spawning a new process.
+NOT_IMPLEMENTED  =Entered $1, which is not implemented.
+INVALID_FORMAT   =Invalid date format char $1$2 in $3.
+NOT_LITERAL      =Character $1 should be in quotes, taken as literal in $2.
 RUN_AS_ROOT      =Running as a super user is a potential security risk!
-LOCK_OPEN        =Failed to open %s lock for %s.
-LOCK_ACQUIRE     =Failed to acquire %s lock for %s.
-LOCK_RELEASE     =Failed to release %s lock for %s.
-LOCK_DUP         =Duplicate %s lock %s detected where only 1 allowed!
+LOCK_OPEN        =Failed to open $1 lock for $2.
+LOCK_ACQUIRE     =Failed to acquire $1 lock for $2.
+LOCK_RELEASE     =Failed to release $1 lock for $2.
+LOCK_DUP         =Duplicate $1 lock $2 detected where only 1 allowed!
 THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!
 THREAD_DEAD_HALF =Over half of threads not processing, shutting down!
-EXCEPTION        =Exception thrown on line %d, column %d of %s.
+EXCEPTION        =Exception thrown on line $1, column $2 of $3.
 LOCKED_BIN       =System lock values do not match!  Binary recompile required!
 
 [EXCEPTIONS]
-GENERIC          =Exception - %s:%s:%s:%s - %s
-GENERIC2         =Exception - %s:%s:%s:%s - %s/%d
-UNHANDLED        =Unhandled Exception: %s.
+GENERIC          =Exception - $1:$2:$3:$4
+GENERIC1         =Exception - $1:$2:$3:$4 - $5
+GENERIC2         =Exception - $1:$2:$3:$4 - $5/$6
+UNHANDLED        =Unhandled Exception: $1.
 UNKNOWN          =Unhandled Exception: no information available.
-DCC_REMOVED      =Corrupt DCC #%d removed!
-NICK_S_REMOVED   =Corrupt stored nickname %s removed!
-NICK_L_REMOVED   =Corrupt live nickname %s removed!
-CHAN_S_REMOVED   =Corrupt stored channel %s removed!
-CHAN_L_REMOVED   =Corrupt live channel %s removed!
+DCC_REMOVED      =Corrupt DCC #$1 removed!
+NICK_S_REMOVED   =Corrupt stored nickname $1 removed!
+NICK_L_REMOVED   =Corrupt live nickname $1 removed!
+CHAN_S_REMOVED   =Corrupt stored channel $1 removed!
+CHAN_L_REMOVED   =Corrupt live channel $1 removed!
 
 ;
 ; This is a section for miscellaneous other occurrences.
 ;
 [OTHER]
-SQUIT_FIRST      =Suspected SQUIT detected, servers %s and %s, waiting ...
-SQUIT_CANCEL     =Suspected SQUIT of servers %s and %s was fake.
-SQUIT_SECOND     =SQUIT of servers %s and %s confirmed, taking appropriate action.
-KILL_CLONE       =Clone protection triggered for %s, killing user.
-KILL_AKILL       =Killing user %s on auto kill list %s (%s).
-KILL_UNKNOWN     =Killed unknown user %s.
+SQUIT_FIRST      =Suspected SQUIT detected, servers $1 and $2, waiting ...
+SQUIT_CANCEL     =Suspected SQUIT of servers $1 and $2 was fake.
+SQUIT_SECOND     =SQUIT of servers $1 and $2 confirmed, taking appropriate action.
+KILL_CLONE       =Clone protection triggered for $1, killing user.
+KILL_AKILL       =Killing user $1 on auto kill list $2 ($3).
+KILL_UNKNOWN     =Killed unknown user $1.
 NOVALIDSERVERS   =Magick aborting, no valid servers available to connect to!
-CONNECTING       =Connecting to server %s:%d ...
-CONNECTED        =Connection established and authenticated to server %s.
-WRONGPASS        =Password mismatch connecting to server %s, skipping.
-WEAREBANNED      =We are k-lined from server %s, skipping.
-REFUSED          =Connection to server %s:%d refused.
-CLOSED           =Connection to server %s closed.
-SERVER_MSG       =SERVER MESSAGE (%s): %s
-LINK             =Server %s has linked to the network via. %s.
-INVALIDLINK      =Server %s has been SQUIT from %s as it is not allowed!
-KILLED           =Service %s has been killed by %s, attempting to respawn.
-TEMP_IGNORE      =%s triggered services temporary ignore.
-PERM_IGNORE      =%s triggered services permanent ignore.
-KILL_NICK_PASS   =Killing user %s for password failures on nickname %s.
-KILL_CHAN_PASS   =Killing user %s for password failures on channel %s.
-LOAD_LANGUAGE    =Loaded %s language file.
-LOAD_HELP        =Loaded %s help file.
-REVENGE          =Taking revenge on user %s in channel %s for %s on %s.
-DCC_INIT         =DCC ID %08x initialised with %s (%s).
-DCC_CLOSE        =DCC ID %08x completed successfully.
-DCC_CANCEL       =DCC ID %08x failed to complete successfully.
+CONNECTING       =Connecting to server $1:$2 ...
+CONNECTED        =Connection established and authenticated to server $1.
+WRONGPASS        =Password mismatch connecting to server $1, skipping.
+WEAREBANNED      =We are k-lined from server $1, skipping.
+REFUSED          =Connection to server $1:$2 refused.
+CLOSED           =Connection to server $1 closed.
+SERVER_MSG       =SERVER MESSAGE ($1): $2
+LINK             =Server $1 has linked to the network via. $2.
+INVALIDLINK      =Server $1 has been SQUIT from $2 as it is not allowed!
+KILLED           =Service $1 has been killed by $2, attempting to respawn.
+TEMP_IGNORE      =$1 triggered services temporary ignore.
+PERM_IGNORE      =$1 triggered services permanent ignore.
+KILL_NICK_PASS   =Killing user $1 for password failures on nickname $2.
+KILL_CHAN_PASS   =Killing user $1 for password failures on channel $2.
+LOAD_LANGUAGE    =Loaded $1 language file.
+LOAD_HELP        =Loaded $1 help file.
+REVENGE          =Taking revenge on user $1 in channel $2 for $3 on $4.
+DCC_INIT         =DCC ID $1 initialised with $2 ($3).
+DCC_CLOSE        =DCC ID $1 completed successfully.
+DCC_CANCEL       =DCC ID $1 failed to complete successfully.
 
 ;
 ; These are errors (of varying severity) that we may encounter.
 ;
 [ERROR]
-SIGNAL           =RECEIVED SIGNAL %d, EXITING.
-REQ_BYNONUSER    =%s command requested by non-existent user %s.
-REQ_BYNONSERVICE =%s command requested by non-service %s.
-REQ_FORNONUSER   =%s command requested by %s for non-existent user %s.
-REQ_TOUSER       =%s command requested by %s to existing user %s.
-REQ_FORNONCHAN   =%s command requested by %s for non-existent channel %s.
-REQ_FORNONSERVER =%s command requested by %s for non-existent server %s.
-REQ_NOTINCHAN    =%s command requested by %s for %s who is not in channel %s.
-REQ_UNKNOWN      =Command type %d for %s (%s/%s/%s) queued %s ago, but unhandled (unknown type).
-UNKNOWN_MSG      =Unknown message from server: %s
-REC_FORNONUSER   =Received %s from %s for non-existent user %s.
-REC_FORNONCHAN   =Received %s from %s for non-existent channel %s.
-REC_NOTINCHAN    =Received %s from %s for %s who is not in channel %s.
-REC_FORNOTINCHAN =Received %s for %s who is not in channel %s.
-REC_FORNONSERVER =Received %s from %s for non-existent server %s.
-DUP_CHAN         =Duplicate %s received from %s for channel %s.
-MODE_INEFFECT    =MODE change %c%c received from %s for %s that is already in effect.
-MODE_NOTINCHAN   =MODE change %c%c received from %s for %s who is not in channel %s.
-FOUNDER_NOTREGD  =Channel %s has a founder of %s who is not registered (channel droped).
-HOST_NOTREGD     =Nickname %s was listed as the host of %s, but does not exist (rectified)!
-SLAVE_NOTREGD    =Nickname %s was listed as a slave of %s, but does not exist (rectified)!
-KEYMISMATCH      =Channel key mismatch (%s | %s) for channel %s from %s.
-NOLIMIT          =No limit specified when required for channel %s from %s.
-NOLANGTOKEN      =Invalid token %s for language %s used, error returned.
-BADSET           =Tried to set BAD data (%s) for %s on %s.
+SIGNAL           =RECEIVED SIGNAL $1, EXITING.
+REQ_BYNONUSER    =$1 command requested by non-existent user $2.
+REQ_BYNONSERVICE =$1 command requested by non-service $2.
+REQ_FORNONUSER   =$1 command requested by $2 for non-existent user $3.
+REQ_TOUSER       =$1 command requested by $2 to existing user $3.
+REQ_FORNONCHAN   =$1 command requested by $2 for non-existent channel $3.
+REQ_FORNONSERVER =$1 command requested by $2 for non-existent server $3.
+REQ_NOTINCHAN    =$1 command requested by $2 for $3 who is not in channel $4.
+REQ_UNKNOWN      =Command type $1 for $2 ($3/$4/$5) queued $6 ago, but unhandled (unknown type).
+UNKNOWN_MSG      =Unknown message from server: $1
+REC_FORNONUSER   =Received $1 from $2 for non-existent user $3.
+REC_FORNONCHAN   =Received $1 from $2 for non-existent channel $3.
+REC_NOTINCHAN    =Received $1 from $2 for $3 who is not in channel $4.
+REC_FORNOTINCHAN =Received $1 for $2 who is not in channel $3.
+REC_FORNONSERVER =Received $1 from $2 for non-existent server $3.
+DUP_CHAN         =Duplicate $1 received from $2 for channel $3.
+MODE_INEFFECT    =MODE change $1$2 received from $3 for $4 that is already in effect.
+MODE_NOTINCHAN   =MODE change $1$2 received from $3 for $4 who is not in channel $5.
+FOUNDER_NOTREGD  =Channel $1 has a founder of $2 who is not registered (channel droped).
+HOST_NOTREGD     =Nickname $1 was listed as the host of $2, but does not exist (rectified)!
+SLAVE_NOTREGD    =Nickname $1 was listed as a slave of $2, but does not exist (rectified)!
+KEYMISMATCH      =Channel key mismatch ($1 | $2) for channel $3 from $4.
+NOLIMIT          =No limit specified when required for channel $1 from $2.
+NOLANGTOKEN      =Invalid token $1 for language $2 used, error returned.
+BADSET           =Tried to set BAD data ($1) for $2 on $3.
 DB_SANITY_FAIL   =Database load failed sanity checks (usually because of invalid key).
 DB_CORRUPT       =Database load failed due to data corruption.
-INVALID_TYPE     =Invalid data type %d on message queue, ignored.
+INVALID_TYPE     =Invalid data type $1 on message queue, ignored.

@@ -27,6 +27,11 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2001/05/05 17:34:00  prez
+** Changed log outputs from printf-style to tokenized style files.
+** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
+** formatting must be done BEFORE its sent to the logger (use fmstring).
+**
 ** Revision 1.60  2001/03/20 14:22:15  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -462,6 +467,58 @@ unsigned long FromHumanSpace(const mstring &in)
 
     RET(total);
 }
+
+mstring parseMessage(const mstring & message, const mVarArray& va)
+{
+    FT("parseMessage", (message, "(const mVarArray&) va"));
+
+    mstring data, tok;
+    int start, end, toknum, length = static_cast<int>(message.length());
+
+    start = end = 0;
+    while (end < length)
+    {
+	end = message.Right(start).find("$");
+	if (end < 0)
+	{
+	    data << message.Right(start);
+	    break;
+	}
+	end += start;
+	if (end > start)
+	    data << message.SubString(start, end-1);
+	if (message[end+1] == '$')
+	{
+	    data << '$';
+	    start = end+2;
+	    continue;
+	}
+
+	tok.erase();
+	while (isdigit(message[++end]))
+	{
+	    tok << message[end];
+	    if (tok == "0")
+		break;
+	}
+	if (tok.length())
+	{
+	    toknum = atoi(tok.c_str()) - 1;
+	    if (toknum >= 0 && toknum < va.count())
+	    {
+		data << va[toknum].AsString();
+	    }
+	}
+	else
+	{
+	    data << '$';
+	}
+	start = end;
+    }
+
+    RET(data);    
+}
+
 
 void mDES(unsigned char *in, unsigned char *out, size_t size,
 	des_key_schedule key1, des_key_schedule key2, const int enc)
