@@ -191,7 +191,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
     if (fileattach)
-	::send(mynick, source, "Memo is now pending ... You have " +
+	::send(mynick, nick, "Memo is now pending ... You have " +
 	    ToHumanTime(Parent->memoserv.InFlight()) +
 	    " to begin your file transfer, continue or cancel it.");
     else
@@ -217,7 +217,7 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
-    ::send(mynick, source, "Pending memo timer reset ... You have " +
+    ::send(mynick, nick, "Pending memo timer reset ... You have " +
 	    ToHumanTime(Parent->memoserv.InFlight()) +
 	    " to continue or cancel it before it is delivered.");
 }
