@@ -491,9 +491,7 @@ mstring Magick::parseEscapes(const mstring & in)
 
 void Magick::LoadExternalMessages()
 {
-	wxFileConfig *languageini=new wxFileConfig("magick","","language.ini","");
-	// load and escparse the messages
-	mstring Names[] =
+	mstring tempstor[] =
 	{
 	/* Log stuff (NO FORMATTING HERE!) */
 	"ERR_READ_DB",
@@ -812,6 +810,20 @@ void Magick::LoadExternalMessages()
 	"OS_CLONE_HIGH",
 	"OS_CLONE_LOW",
 	""
+	}
+
+	int i=0;
+	// todo use magick.ini LANGUAGE value
+	wxFileConfig *languageini=new wxFileConfig("magick","","english.lng","");
+	// load and escparse the messages
+
+	while(tempstor[i]!="")
+	{
+		mstring name,value;
+		name=tempstor[i].After('/').Trim().Trim(false);
+		languageini.Read(
+		Messages[name]=value;
+		i++;
 	}
 
 	delete languageini;
