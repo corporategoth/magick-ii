@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2001/07/28 21:50:57  prez
+** Added trace codes ...
+**
 ** Revision 1.6  2001/07/12 04:27:47  prez
 ** Fixed problem with it cutting encrypted db's just a bit too short.
 **
@@ -52,23 +55,35 @@ RCSID(stages_cpp, "@(#)$Id$");
 
 long Stage::Consume()
 {
+    NFT("Stage::Consume");
     if (input == NULL)
-	return -1 * (long) SE_ConsumeWithoutInput;
+    {
+	RET(-1 * (long) SE_ConsumeWithoutInput);
+    }
 
     long res, total = 0;
     char buffer[DEF_STAGE_BUFFER];
+    COM(("Stage: Reading from previous stage ...")); FLUSH();
     while ((res = input->Read(buffer, sizeof(buffer))) > 0)
     {
+	CP(("Stage: Read from previous stage returned %d", res)); FLUSH();
 	total += res;
+	COM(("Stage: Reading from previous stage ...")); FLUSH();
     }
+    CP(("Stage: Read from previous stage returned %d", res)); FLUSH();
     if (res < 0)
-	return res;
+    {
+	RET(res);
+    }
     else
-	return total;
+    {
+	RET(total);
+    }
 }
 
 StringStage::StringStage(const mstring &in)
 {
+    FT("StringStage::StringStage", (in));
     input = NULL;
     tag = 0;
     offset = 0;
@@ -76,6 +91,7 @@ StringStage::StringStage(const mstring &in)
 
 StringStage::StringStage(Stage &PrevStage)
 {
+    FT("StringStage::StringStage", ("(Stage &) PrevStage"));
     input = &PrevStage;
     tag = input->GetTag();
     offset = 0;
@@ -83,36 +99,52 @@ StringStage::StringStage(Stage &PrevStage)
 
 StringStage::~StringStage()
 {
+    NFT("StringStage::~StringStage");
 }
 
 long StringStage::Consume()
 {
+    NFT("StringStage::Consume");
     if (input == NULL)
-	return -1 * (long) SE_ConsumeWithoutInput;
+    {
+	RET(-1 * (long) SE_ConsumeWithoutInput);
+    }
 
     long res, total = 0;
     char buffer[DEF_STAGE_BUFFER];
+    COM(("StringStage: Reading from previous stage ...")); FLUSH();
     while ((res = input->Read(buffer, sizeof(buffer))) > 0)
     {
+	CP(("StringStage: Read from previous stage returned %d", res)); FLUSH();
 	i_str.append(buffer, res);
 	total += res;
+	COM(("StringStage: Reading from previous stage ...")); FLUSH();
     }
+    CP(("StringStage: Read from previous stage returned %d", res)); FLUSH();
     if (res < 0)
-	return res;
+    {
+	RET(res);
+    }
     else
-	return total;
+    {
+	RET(total);
+    }
 }
 
 mstring StringStage::Result()
 {
-    return i_str; 
+    NFT("StringStage::Result");
+    RET(i_str); 
 }
 
 long StringStage::Read(char *buf, size_t size)
 {
+    FT("StringStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input != NULL)
-	return -1 * (long) SE_ReadWithInput;
+    {
+	RET(-1 * (long) SE_ReadWithInput);
+    }
 
     long retval = 0;
     mstring str = i_str.substr(offset, size);
@@ -121,11 +153,12 @@ long StringStage::Read(char *buf, size_t size)
 	retval = size;
     memcpy(buf, i_str, retval);
     offset += retval;
-    return retval;
+    RET(retval);
 }
 
 FileStage::FileStage(const mstring &name)
 {
+    FT("FileStage::FileStage", (name));
     input = NULL;
     tag = 0;
 
@@ -136,6 +169,7 @@ FileStage::FileStage(const mstring &name)
 
 FileStage::FileStage(Stage &PrevStage, const mstring &name, const mstring &mode)
 {
+    FT("FileStage::FileStage", ("(Stage &) PrevStage", name, mode));
     input = &PrevStage;
     tag = input->GetTag();
 
@@ -146,47 +180,68 @@ FileStage::FileStage(Stage &PrevStage, const mstring &name, const mstring &mode)
 
 FileStage::~FileStage()
 {
+    NFT("FileStage::~FileStage");
     file.Close();
 }
 
 long FileStage::Consume()
 {
+    NFT("FileStage::Consume");
     if (input == NULL)
-	return -1 * (long) SE_ConsumeWithoutInput;
+    {
+	RET(-1 * (long) SE_ConsumeWithoutInput);
+    }
     if (!file.IsOpened())
-	return -1 * (long) SE_FLE_NotOpened;
+    {
+	RET(-1 * (long) SE_FLE_NotOpened);
+    }
     if (!file.IsWritable())
-	return -1 * (long) SE_FLE_NotWritable;
+    {
+	RET(-1 * (long) SE_FLE_NotWritable);
+    }
 
     char buffer[DEF_STAGE_BUFFER];
-    long ret = 0, total = 0;
+    long res = 0, total = 0;
     do {
-	ret = input->Read(buffer, sizeof(buffer));
-	if (ret > 0)
+	COM(("FileStage: Reading from previous stage ...")); FLUSH();
+	res = input->Read(buffer, sizeof(buffer));	
+	CP(("FileStage: Read from previous stage returned %d", res)); FLUSH();
+	if (res > 0)
 	{
-	    file.Write(buffer, ret);
-	    total += ret;
+	    file.Write(buffer, res);
+	    total += res;
 	}
-    } while (ret > 0);
-    if (ret < 0)
-	return ret;
+    } while (res > 0);
+    if (res < 0)
+    {
+	RET(res);
+    }
     else
-	return total;
+    {
+	RET(total);
+    }
 }
 
 long FileStage::Read(char *buf, size_t size)
 {
+    FT("FileStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input != NULL)
-	return -1 * (long) SE_ReadWithInput;
+    {
+	RET(-1 * (long) SE_ReadWithInput);
+    }
     if (!file.IsOpened())
-	return -1 * (long) SE_FLE_NotOpened;
+    {
+	RET(-1 * (long) SE_FLE_NotOpened);
+    }
 
-    return file.Read(buf, size);
+    long retval = file.Read(buf, size);
+    RET(retval);
 }
 
 CryptStage::CryptStage(Stage &PrevStage, const mstring& key1, const mstring& key2)
 {
+    FT("CryptStage::CryptStage", ("(Stage &) PrevStage", "(const mstring &) key1", "(const mstring &) key2"));
     input = &PrevStage;
     tag = input->GetTag();
 
@@ -222,6 +277,7 @@ CryptStage::CryptStage(Stage &PrevStage, const mstring& key1, const mstring& key
 
 CryptStage::~CryptStage()
 {
+    NFT("CryptStage::~CryptStage");
     // Security,  dont leave keys around ...
 #ifdef HASCRYPT
     memset(&bfkey1, 0, sizeof(bfkey1));
@@ -231,11 +287,16 @@ CryptStage::~CryptStage()
 
 long CryptStage::Read(char *buf, size_t size)
 {
+    FT("CryptStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input == NULL)
-	return -1 * (long) SE_ReadWithoutInput;
+    {
+	RET(-1 * (long) SE_ReadWithoutInput);
+    }
     if (!gotkeys)
-	return -1 * (long) SE_CRY_NoKeys;
+    {
+	RET(-1 * (long) SE_CRY_NoKeys);
+    }
 
     unsigned int i=0;
     if (outbufsize)
@@ -254,12 +315,12 @@ long CryptStage::Read(char *buf, size_t size)
 	    for (; i<outbufsize; i++)
 		outbuf[i] = 0;
 	    outbufsize -= size;
-	    return size;
+	    RET(size);
 	}
     }
 
     unsigned char buf1[8], buf2[8];
-    long ret = 0;
+    long res = 0;
     for (; i<size; i+=8)
     {
 	memset(buf1, 0, 8);
@@ -268,12 +329,16 @@ long CryptStage::Read(char *buf, size_t size)
 	if (!lastpos)
 	{
 	    memset(buffer, 0, sizeof(buffer));
-	    ret = input->Read(buffer, sizeof(buffer));
-	    if (ret < 0)
-		return ret;
+	    COM(("CryptStage: Reading from previous stage ...")); FLUSH();
+	    res = input->Read(buffer, sizeof(buffer));
+	    CP(("CryptStage: Read from previous stage returned %d", res)); FLUSH();
+	    if (res < 0)
+	    {
+		RET(res);
+	    }
 	    else
 	    {
-		bufsize = ret;
+		bufsize = res;
 		// go up to even boundary ...
 		if ((bufsize % 8) != 0)
 		    bufsize += 8-(bufsize % 8);
@@ -304,11 +369,12 @@ long CryptStage::Read(char *buf, size_t size)
     }
     // Ignore trailing null's ...
     while (buf[i-2]==0) i--;
-    return i;
+    RET(i);
 }
 
 CompressStage::CompressStage(Stage &PrevStage, int level)
 {
+    FT("CompressStage::CompressStage", ("Stage &) PrevStage", level));
     input = &PrevStage;
     tag = input->GetTag();
 
@@ -342,6 +408,7 @@ CompressStage::CompressStage(Stage &PrevStage, int level)
 
 CompressStage::~CompressStage()
 {
+    NFT("CompressStage::~CompressStage");
     if (compress)
 	deflateEnd(&strm);
     else
@@ -350,25 +417,32 @@ CompressStage::~CompressStage()
 
 long CompressStage::Read(char *buf, size_t size)
 {
+    FT("CompressStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input == NULL)
-	return -1 * (long) SE_ReadWithoutInput;
+    {
+	RET(-1 * (long) SE_ReadWithoutInput);
+    }
 
     strm.next_out = reinterpret_cast<Bytef *>(buf);
     strm.avail_out = size;
 
-    long ret = 0;
-    while (ret >= 0 && strm.avail_out)
+    long res = 0;
+    while (res >= 0 && strm.avail_out)
     {
 	if (strm.avail_in == 0)
 	{
 	    memset(buffer, 0, sizeof(buffer));
-	    ret = input->Read(buffer, sizeof(buffer));
-	    if (ret < 0)
-		return ret;
+	    COM(("CompressStage: Reading from previous stage ...")); FLUSH();
+	    res = input->Read(buffer, sizeof(buffer));
+	    CP(("CompressStage: Read from previous stage returned %d", res)); FLUSH();
+	    if (res < 0)
+	    {
+		RET(res);
+	    }
 	    strm.next_in = reinterpret_cast<Bytef *>(buffer);
-	    strm.avail_in = ret;
-	    if (ret == 0)
+	    strm.avail_in = res;
+	    if (res == 0)
 	    {
 		if (compress)
 		   deflate(&strm, Z_FULL_FLUSH);		
@@ -380,22 +454,25 @@ long CompressStage::Read(char *buf, size_t size)
 	else
 	{
 	    if (compress)
-		ret = deflate(&strm, Z_NO_FLUSH);
+		res = deflate(&strm, Z_NO_FLUSH);
 	    else
-		ret = inflate(&strm, Z_NO_FLUSH);
+		res = inflate(&strm, Z_NO_FLUSH);
 
-	    if (ret < 0)
-		return ret;
-	    if (ret != Z_OK)
+	    if (res < 0)
+	    {
+		RET(res);
+	    }
+	    if (res != Z_OK)
 		strm.avail_in = 0;
 	}
     }
 
-    return size - strm.avail_out;
+    RET(size - strm.avail_out);
 }
 
 XMLStage::XMLStage(SXP::IPersistObj *pRoot, SXP::dict& attribs)
 {
+    FT("XMLStage::XMLStage", ("(SXP::IPersistObj *) pRoot", "(SXP::dict &) attribs"));
     input = NULL;
     tag = STAGE_TAG_XML;
 
@@ -415,6 +492,7 @@ XMLStage::XMLStage(SXP::IPersistObj *pRoot, SXP::dict& attribs)
 
 XMLStage::XMLStage(Stage &PrevStage, SXP::IPersistObj *pRoot)
 {
+    FT("XMLStage::XMLStage", ("(Stage &) PrevStage", "(SXP::IPersistObj *) pRoot"));
     input = &PrevStage;
     tag = input->GetTag();
     tag &= ~STAGE_TAG_XML;
@@ -428,6 +506,7 @@ XMLStage::XMLStage(Stage &PrevStage, SXP::IPersistObj *pRoot)
 
 XMLStage::~XMLStage()
 {
+    NFT("XMLStage::~XMLStage");
     if (parser != NULL)
 	delete parser;
     if (generator != NULL)
@@ -436,54 +515,81 @@ XMLStage::~XMLStage()
 
 long XMLStage::Consume()
 {
+    NFT("XMLStage::Consume");
     if (input == NULL)
-	return -1 * (long) SE_ConsumeWithoutInput;
+    {
+	RET(-1 * (long) SE_ConsumeWithoutInput);
+    }
     if (parser == NULL)
-	return -1 * (long) SE_XML_NoParser;
+    {
+	RET(-1 * (long) SE_XML_NoParser);
+    }
     if (generator != NULL)
-	return -1 * (long) SE_XML_HaveGenerator;
+    {
+	RET(-1 * (long) SE_XML_HaveGenerator);
+    }
 
     long res, xres = 1, total = 0;
     char buffer[DEF_STAGE_BUFFER];
+    COM(("XMLStage: Reading from previous stage ...")); FLUSH();
     while ((res = input->Read(buffer, sizeof(buffer))) > 0)
     {
+	CP(("XMLStage: Read from previous stage returned %d", res)); FLUSH();
 	if (res < static_cast<long>(sizeof(buffer)))
 	    xres = parser->Feed(buffer, res, 1);
 	else
 	    xres = parser->Feed(buffer, res, 0);
 	total += res;
+	COM(("XMLStage: Reading from previous stage ...")); FLUSH();
     }
+    CP(("XMLStage: Read from previous stage returned %d", res)); FLUSH();
     if (res < 0)
-	return res;
+    {
+	RET(res);
+    }
     else if (!xres)
-	return -1 * (long) SE_XML_ParseError;
+    {
+	RET(-1 * (long) SE_XML_ParseError);
+    }
     else
-	return total;
+    {
+	RET(total);
+    }
 }
 
 long XMLStage::Read(char *buf, size_t size)
 {
+    FT("XMLStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input != NULL)
-	return -1 * (long) SE_ReadWithInput;
+    {
+	RET(-1 * (long) SE_ReadWithInput);
+    }
     if (parser != NULL)
-	return -1 * (long) SE_XML_HaveParser;
+    {
+	RET(-1 * (long) SE_XML_HaveParser);
+    }
     if (generator == NULL)
-	return -1 * (long) SE_XML_NoGenerator;
+    {
+	RET(-1 * (long) SE_XML_NoGenerator);
+    }
 
     if (curpos >= generator->BufSize())
-	return 0;
+    {
+	RET(0);
+    }
 
     if (size > generator->BufSize() - curpos)
 	size = generator->BufSize() - curpos;
     memcpy(buf, &(generator->Buf())[curpos], size);
     curpos += size;
 
-    return size;
+    RET(size);
 }
 
 VerifyStage::VerifyStage(Stage &PrevStage, size_t verifyoffset, const char *verifytext, size_t verifysize)
 {
+    FT("VerifyStage::VerifyStage", ("(Stage &) PrevStage", verifyoffset, verifytext, verifysize));
     input = &PrevStage;
     tag = input->GetTag();
 
@@ -501,26 +607,36 @@ VerifyStage::VerifyStage(Stage &PrevStage, size_t verifyoffset, const char *veri
 
 VerifyStage::~VerifyStage()
 {
+    NFT("VerifyStage::~VerifyStage");
     if (text != NULL)
 	delete text;
 }
 
 long VerifyStage::Read(char *buf, size_t size)
 {
+    FT("VerifyStage::Read", ("(char *) buf", size));
     memset(buf, 0, size);
     if (input == NULL)
-	return -1 * (long) SE_ReadWithoutInput;
+    {
+	RET(-1 * (long) SE_ReadWithoutInput);
+    }
 
     size_t end, begin = total;
+    COM(("VerifyStage: Reading from previous stage ...")); FLUSH();
     long cres, res = input->Read(buf, size);
+    CP(("VerifyStage: Read from previous stage returned %d", res)); FLUSH();
     if (!vsize || res <= 0)
-	return res;
+    {
+	RET(res);
+    }
 
     total += res;    
 
     // Check condition where we missed the boat!
     if (!verified && begin > offset+vsize)
-	return -1 * (long) SE_VFY_Failed;
+    {
+	RET(-1 * (long) SE_VFY_Failed);
+    }
 
     // If the last byte ISNT below our first, and
     // the first byte ISNT above our last
@@ -536,11 +652,13 @@ long VerifyStage::Read(char *buf, size_t size)
 	cres = memcmp(&buf[begin], &text[curpos], end-begin);
 	curpos += end-begin;
 	if (cres != 0)
-	    return -1 * (long) SE_VFY_Failed;
+	{
+	    RET(-1 * (long) SE_VFY_Failed);
+	}
 	if (curpos >= vsize)
 	    verified = true;
     }
 
-    return res;    
+    RET(res);    
 }
 
