@@ -1966,7 +1966,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	clive->SendMode("+o " + nick);
     else if (Magick::instance().server.proto.ChanModeArg().Contains('h') && access >= Level_value("AUTOHALFOP"))
 	clive->SendMode("+h " + nick);
-    if (access >= Level_value("AUTOVOICE"))
+    else if (access >= Level_value("AUTOVOICE"))
 	clive->SendMode("+v " + nick);
 
     if (Suspended())
