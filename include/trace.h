@@ -10,7 +10,6 @@
 // code must be clearly documented and labelled.
 //
 // ===================================================
-
 #ifndef _TRACE_H
 #define _TRACE_H
 
@@ -60,14 +59,14 @@ public:
     ~Trace();
     bool IsOn(long level);
     TraceTypes Resolve(short level, int threadid);
-}
+};
 
-class FuncTrace() : public Trace
+class FuncTrace : public Trace
 {
 public:
-    FuncTrace(const mstring name, mVarArray &args);
+    FuncTrace(const mstring name, const mVarArray &args);
     ~FuncTrace() { indent--; }
 
-}
+};
 
 #endif /* _TRACE_H */
