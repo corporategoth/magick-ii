@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2000/12/29 15:31:55  prez
+** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
+**
 ** Revision 1.83  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -1261,11 +1264,15 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 		    return;
 		}
 
-		unsigned short port = FindAvailPort();
-		::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
+		{ RLOCK(("DCC"));
+		if (Parent->dcc != NULL)
+		{
+		    unsigned short port = FindAvailPort();
+		    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 			" " + mstring(Parent->LocalHost()) + " " +
 			mstring(port) + " " + mstring(filesize)));
-		Parent->dcc->Accept(port, mynick, source, FileMap::MemoAttach, filenum);
+		    Parent->dcc->Accept(port, mynick, source, FileMap::MemoAttach, filenum);
+		}}
 	    }
 	}
     }

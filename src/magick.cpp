@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.282  2000/12/29 15:31:55  prez
+** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
+**
 ** Revision 1.281  2000/12/29 13:55:09  prez
 ** Compiled with 5.1.11, some changes to accomodate (will work with older
 ** versions of ace still).
@@ -617,7 +620,7 @@ int Magick::Start()
     events = new EventTask;
     events->open();
     }
-    { WLOCK(("DccMap"));
+    { WLOCK(("DCC"));
     dcc = new DccMap;
     dcc->open();
     }
@@ -803,7 +806,7 @@ int Magick::Start()
 	events = NULL;
     }}
 
-    { WLOCK(("DccMap"));
+    { WLOCK(("DDCC"));
     if (dcc != NULL)
     {
 	dcc->close(0);
@@ -2872,9 +2875,13 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
-	LOG((LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SAVE"), signum));
-	announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_SAVE"), signum);
-	Parent->events->ForceSave();
+	{ RLOCK(("Events"));
+	if (Parent->events != NULL)
+	{
+	    LOG((LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SAVE"), signum));
+	    announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_SAVE"), signum);
+	    Parent->events->ForceSave();
+	}}
 	break;
 #endif
 

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/12/29 15:31:55  prez
+** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
+**
 ** Revision 1.35  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -568,5 +571,8 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 
     // Spawn this in a new thread, and we're done, it takes over.
 
-    Parent->dcc->Connect(addr, mynick, source, filename, size);
+    { RLOCK(("DCC"));
+    if (Parent->dcc != NULL)
+	Parent->dcc->Connect(addr, mynick, source, filename, size);
+    }
 }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.219  2000/12/29 15:31:55  prez
+** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
+**
 ** Revision 1.218  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -6244,9 +6247,11 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
     if (output != "")
 	::send(mynick, source, Parent->getMessage(source, "CS_INFO/OPTIONS"),
 	    output.c_str());
-    if (Parent->servmsg.ShowSync())
+    { RLOCK(("Events"));
+    if (Parent->servmsg.ShowSync() && Parent->events != NULL)
 	::send(mynick, source, Parent->getMessage("MISC/SYNC"),
 			Parent->events->SyncTime(source).c_str());
+    }
 }
 
 void ChanServ::do_List(mstring mynick, mstring source, mstring params)

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.149  2000/12/29 15:31:55  prez
+** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
+**
 ** Revision 1.148  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -1300,22 +1303,26 @@ void Nick_Live_t::Quit(mstring reason)
 	}
     }}
 
-    { RLOCK2(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
     while (joined_channels.size())
 	Part(*joined_channels.begin());
     }
 
     unsigned long i;
-    vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
-    for (i=0; i<dccs.size(); i++)
-	Parent->dcc->Cancel(dccs[i], true);
+    { RLOCK(("DCC"));
+    if (Parent->dcc != NULL)
+    {
+	vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
+        for (i=0; i<dccs.size(); i++)
+	    Parent->dcc->Cancel(dccs[i], true);
+    }}
     if (InFlight.Exists())
 	InFlight.End(0u);
 
     // We successfully ident to all channels we tried to
     // ident for before, so that they 0 our count -- we dont
     // want it carrying over to next time we log on.
-    { RLOCK3(("NickServ", "live", i_Name.LowerCase(), "try_chan_ident"));
+    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "try_chan_ident"));
     for (i=0; i<try_chan_ident.size(); i++)
 	if (Parent->chanserv.IsStored(try_chan_ident[i]))
 	    Parent->chanserv.stored[try_chan_ident[i]].CheckPass(i_Name,
@@ -1453,9 +1460,13 @@ void Nick_Live_t::Name(mstring in)
 	    wason.insert(iter2->first);
     }
 
-    vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
-    for (i=0; i<dccs.size(); i++)
-	Parent->dcc->xfers[dccs[i]]->ChgNick(in);
+    { RLOCK(("DCC"));
+    if (Parent->dcc != NULL)
+    {
+	vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
+	for (i=0; i<dccs.size(); i++)
+	    Parent->dcc->xfers[dccs[i]]->ChgNick(in);
+    }}
 
     // Carry over failed attempts (so /nick doesnt cure all!)
     // We dont care if it doesnt exist, they can drop channels *shrug*
@@ -5723,9 +5734,11 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     if (nick->IsOnline())
 	::send(mynick, source,  Parent->getMessage(source, "NS_INFO/ISONLINE"),
 		Parent->getLname(nick->Name()).c_str());
-    if (Parent->servmsg.ShowSync())
+    { RLOCK(("Events"));
+    if (Parent->servmsg.ShowSync() && Parent->events != NULL)
 	::send(mynick, source, Parent->getMessage("MISC/SYNC"),
 			Parent->events->SyncTime(source).c_str());
+    }
 }
 
 void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
@@ -6023,11 +6036,15 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    unsigned short port = FindAvailPort();
-    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
+    { RLOCK(("DCC"));
+    if (Parent->dcc != NULL)
+    {
+	unsigned short port = FindAvailPort();
+	::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 		" " + mstring(Parent->LocalHost()) + " " +
 		mstring(port) + " " + mstring(filesize)));
-    Parent->dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
+	Parent->dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
+    }}
 }
 
 void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)

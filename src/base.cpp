@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.144  2000/12/29 15:31:55  prez
+** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
+**
 ** Revision 1.143  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -362,7 +365,7 @@ int mBaseTask::svc(void)
 		transit = mblock->base();
 		if (transit != NULL)
 		{
-		    retval = message_i(mstring(transit));
+		    retval = message_i(transit);
 		    delete [] transit;
 		}
 		break;

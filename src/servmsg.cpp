@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/12/29 15:31:55  prez
+** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
+**
 ** Revision 1.75  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -1497,12 +1500,16 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    Parent->servmsg.stats.i_file_Send++;
-    unsigned short port = FindAvailPort();
-    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
+    { RLOCK(("DCC"));
+    if (Parent->dcc != NULL)
+    {
+	Parent->servmsg.stats.i_file_Send++;
+	unsigned short port = FindAvailPort();
+	::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
 		" " + mstring(Parent->LocalHost()) + " " +
 		mstring(port) + " " + mstring(filesize)));
-    Parent->dcc->Accept(port, mynick, source, FileMap::Public, filenum);
+	Parent->dcc->Accept(port, mynick, source, FileMap::Public, filenum);
+    }}
 }
 
 
@@ -1611,10 +1618,14 @@ void ServMsg::do_file_Cancel(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	Parent->dcc->Cancel(number);
-	Parent->servmsg.stats.i_file_Cancel++;
-	::send(mynick, source, Parent->getMessage(source, "DCC/CANCEL"),
+	{ RLOCK(("DCC"));
+	if (Parent->dcc != NULL)
+	{
+	    Parent->dcc->Cancel(number);
+	    Parent->servmsg.stats.i_file_Cancel++;
+	    ::send(mynick, source, Parent->getMessage(source, "DCC/CANCEL"),
 		number);
+	}}
     }
 }
 

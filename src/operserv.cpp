@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2000/12/29 15:31:55  prez
+** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
+**
 ** Revision 1.110  2000/12/23 22:22:24  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -273,7 +276,7 @@ bool OperServ::AddHost(mstring host)
 
     CP(("Finding clone list, %s = %d", host.c_str(),
 		CloneList[host.LowerCase()].first));
-    { MLOCK2(("OperServ","Clone"));
+    { MLOCK(("OperServ","Clone"));
     if ((Clone_find(host) ?
 		(CloneList[host.LowerCase()].first > Clone->Value().first) :
 		(CloneList[host.LowerCase()].first > Clone_Limit())))
@@ -293,7 +296,7 @@ bool OperServ::AddHost(mstring host)
 	{
 	    CP(("Reached MAX clone kills, adding AKILL ..."));
 
-	    MLOCK(("OperServ", "Akill"));
+	    MLOCK2(("OperServ", "Akill"));
 	    if (!Akill_find("*@" + host))
 	    {
 		map<mstring,Nick_Live_t>::iterator nlive;
@@ -1751,11 +1754,15 @@ void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
 	return;
     }}
 
-    Parent->events->ForcePing();
-    Parent->operserv.stats.i_Ping++;
-    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/PING"));
-    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/PING"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
+    { RLOCK(("Events"));
+    if (Parent->events != NULL)
+    {
+	Parent->events->ForcePing();
+	Parent->operserv.stats.i_Ping++;
+	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/PING"));
+	LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/PING"),
+	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
+    }}
 }
 
 
@@ -1763,11 +1770,16 @@ void OperServ::do_Update(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Update", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
-    Parent->events->ForceSave();
-    Parent->operserv.stats.i_Update++;
-    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UPDATE"));
-    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/UPDATE"),
-	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
+
+    { RLOCK(("Events"));
+    if (Parent->events != NULL)
+    {
+	Parent->events->ForceSave();
+	Parent->operserv.stats.i_Update++;
+	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UPDATE"));
+	LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/UPDATE"),
+	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
+    }}
 }
 
 
@@ -2139,6 +2151,11 @@ void OperServ::do_HTM(mstring mynick, mstring source, mstring params)
     else
     {
 	mstring command = params.ExtractWord(2, " ").UpperCase();
+
+	{ WLOCK(("IrcSvcHandler"));
+	if (Parent->ircsvchandler != NULL)
+	{
+
 	if (command.IsSameAs("ON", true))
 	{
 	    Parent->ircsvchandler->HTM(true);
@@ -2192,7 +2209,8 @@ void OperServ::do_HTM(mstring mynick, mstring source, mstring params)
 			(message + " " + command).c_str(), mynick.c_str(), message.c_str());
 	    return;
 	}
-	
+
+	}}	
     }
 }
 
@@ -2230,9 +2248,12 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
 		    ToHumanTime(Parent->config.Squit_Protect(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT2"),
 		    ToHumanTime(Parent->config.Squit_Cancel(), source).c_str());
-    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SYNC"),
+    { RLOCK(("Events"));
+    if (Parent->events != NULL)
+	::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SYNC"),
 		    ToHumanTime(Parent->config.Savetime(), source).c_str(),
 		    Parent->events->SyncTime(source).c_str());
+    }
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_CYCLE"),
 		    ToHumanTime(Parent->config.Cycletime(), source).c_str(),
 		    ToHumanTime(Parent->config.Checktime(), source).c_str());
