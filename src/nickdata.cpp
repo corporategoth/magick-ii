@@ -832,13 +832,87 @@ services(false), InFlight(name)
 	return;
     }
 
-    if (Magick::instance().nickserv.IsStored(i_Name))
+    DumpE();
+    ETCB();
+}
+
+void Nick_Live_t::PostSignon(const set <mstring> &wason, bool newsignon)
+{
+    BTCB();
+    FT("Nick_Live_t::PostSignon", ("(set<mstring> &) wason"));
+
+    if (newsignon && Magick::instance().nickserv.IsStored(i_Name))
     {
 	map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(i_Name);
-	if (IsRecognized() && !nstored->Secure())
-	    nstored->Signon(i_realname, Mask(U_P_H).After("!"));
+	if ((IsIdentified()) || (!nstored->Secure() && IsRecognized()))
+	{
+	    nstored->Signon(RealName(), Mask(U_P_H).After("!"));
+	}
+	else if (nstored->Forbidden())
+	{
+	    SEND(Magick::instance().nickserv.FirstName(), i_Name, "ERR_SITUATION/FORBIDDEN",
+		 (ToHumanTime(Magick::instance().nickserv.Ident(), i_Name)));
+	}
+	else if (nstored->Protect())
+	{
+	    SEND(Magick::instance().nickserv.FirstName(), i_Name, "ERR_SITUATION/PROTECTED",
+		 (ToHumanTime(Magick::instance().nickserv.Ident(), i_Name)));
+	}
     }
-    DumpE();
+
+    // Send notices for committees we were NOT on
+    mstring setmode;
+
+    {
+	CommServ::list_t::iterator iter;
+	RLOCK((lck_CommServ, lck_list));
+	for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
+	{
+	    map_entry < Committee_t > comm(iter->second);
+	    if (wason.find(comm->Name()) != wason.end())
+		continue;
+
+	    if (comm->IsOn(i_Name))
+	    {
+		if (!Magick::instance().server.proto.SVSMODE().empty())
+		{
+		    if (comm->Name() == Magick::instance().commserv.ALL_Name())
+			setmode += Magick::instance().commserv.ALL_SetMode();
+		    else if (comm->Name() == Magick::instance().commserv.REGD_Name())
+			setmode += Magick::instance().commserv.REGD_SetMode();
+		    else if (comm->Name() == Magick::instance().commserv.OPER_Name())
+			setmode += Magick::instance().commserv.OPER_SetMode();
+		    else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
+			setmode += Magick::instance().commserv.ADMIN_SetMode();
+		    else if (comm->Name() == Magick::instance().commserv.SOP_Name())
+			setmode += Magick::instance().commserv.SOP_SetMode();
+		    else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
+			setmode += Magick::instance().commserv.SADMIN_SetMode();
+		}
+
+		MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
+		for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
+		{
+		    Magick::instance().servmsg.send(i_Name, "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
+							    comm->message->Entry());
+		}
+	    }
+	}
+    }
+
+    if (!setmode.empty())
+    {
+	mstring setmode2;
+
+	for (unsigned int j = 0; j < setmode.size(); j++)
+	{
+	    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !HasMode(setmode[j]))
+		setmode2 += setmode[j];
+	}
+	if (!setmode2.empty())
+	    SendMode("+" + setmode2);
+    }
+
     ETCB();
 }
 
@@ -1335,13 +1409,6 @@ set < mstring > Nick_Live_t::Name(const mstring & in)
     }
     MCE(i_Name);
 
-    if (Magick::instance().nickserv.IsStored(i_Name))
-    {
-	map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(i_Name);
-	if (nstored->Secure() ? identified : IsRecognized())
-	    nstored->Signon(i_realname, Mask(U_P_H).After("!"));
-    }
-
     NRET(set < mstring >, wason);
     ETCB();
 }
@@ -1445,54 +1512,7 @@ void Nick_Live_t::Mode(const mstring & in)
 		    }
 		    else
 		    {
-			mstring setmode;
-
-			{
-			    RLOCK((lck_CommServ, lck_list));
-			    for (iter2 = Magick::instance().commserv.ListBegin();
-				 iter2 != Magick::instance().commserv.ListEnd(); iter2++)
-			    {
-				map_entry < Committee_t > comm(iter2->second);
-				if (comm->IsOn(i_Name) && wason.find(comm->Name()) == wason.end())
-				{
-				    if (!Magick::instance().server.proto.SVSMODE().empty())
-				    {
-					if (comm->Name() == Magick::instance().commserv.ALL_Name())
-					    setmode += Magick::instance().commserv.ALL_SetMode();
-					else if (comm->Name() == Magick::instance().commserv.REGD_Name())
-					    setmode += Magick::instance().commserv.REGD_SetMode();
-					else if (comm->Name() == Magick::instance().commserv.OPER_Name())
-					    setmode += Magick::instance().commserv.OPER_SetMode();
-					else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
-					    setmode += Magick::instance().commserv.ADMIN_SetMode();
-					else if (comm->Name() == Magick::instance().commserv.SOP_Name())
-					    setmode += Magick::instance().commserv.SOP_SetMode();
-					else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
-					    setmode += Magick::instance().commserv.SADMIN_SetMode();
-				    }
-
-				    MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
-				    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
-				    {
-					Magick::instance().servmsg.send(i_Name,
-									"[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
-									comm->message->Entry());
-				    }
-				}
-			    }
-			}
-			if (!setmode.empty())
-			{
-			    mstring setmode2;
-
-			    for (unsigned int j = 0; j < setmode.size(); j++)
-			    {
-				if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !HasMode(setmode[j]))
-				    setmode2 += setmode[j];
-			    }
-			    if (!setmode2.empty())
-				SendMode("+" + setmode2);
-			}
+			PostSignon(wason, false);
 		    }
 		}
 		else if (!add && modes.Contains(in[i]))
@@ -2100,57 +2120,9 @@ mstring Nick_Live_t::Identify(const mstring & password)
 		CE(1, failed_passwds);
 		MCE(identified);
 	    }
-	    if (nstored->Secure())
-		nstored->Signon(i_realname, Mask(U_P_H).After("!"));
 
-	    // Send notices for committees we were NOT on
-	    mstring setmode;
+	    PostSignon(wason, nstored->Secure() || !IsRecognized());
 
-	    {
-		RLOCK((lck_CommServ, lck_list));
-		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
-		{
-		    map_entry < Committee_t > comm(iter->second);
-		    if (comm->IsOn(i_Name) && wason.find(comm->Name()) == wason.end())
-		    {
-			if (!Magick::instance().server.proto.SVSMODE().empty())
-			{
-			    if (comm->Name() == Magick::instance().commserv.ALL_Name())
-				setmode += Magick::instance().commserv.ALL_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.REGD_Name())
-				setmode += Magick::instance().commserv.REGD_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.OPER_Name())
-				setmode += Magick::instance().commserv.OPER_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
-				setmode += Magick::instance().commserv.ADMIN_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.SOP_Name())
-				setmode += Magick::instance().commserv.SOP_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
-				setmode += Magick::instance().commserv.SADMIN_SetMode();
-			}
-
-			MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
-			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
-			{
-			    Magick::instance().servmsg.send(i_Name,
-							    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
-							    comm->message->Entry());
-			}
-		    }
-		}
-	    }
-	    if (!setmode.empty())
-	    {
-		mstring setmode2;
-
-		for (unsigned int j = 0; j < setmode.size(); j++)
-		{
-		    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !HasMode(setmode[j]))
-			setmode2 += setmode[j];
-		}
-		if (!setmode2.empty())
-		    SendMode("+" + setmode2);
-	    }
 	    retval = Magick::instance().getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
 	}
 	else

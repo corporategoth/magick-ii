@@ -150,6 +150,8 @@ public:
 	return (i_Name < in.i_Name);
     }
 
+    void PostSignon(const set<mstring> &wason, bool newsignon = true);
+
     bool validated() const
     {
 	return (i_Name.length() != 0 && i_Name.validated());

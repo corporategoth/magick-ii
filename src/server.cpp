@@ -3341,11 +3341,12 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 	if (Magick::instance().nickserv.IsLive(newnick))
 	{
 	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+
 	    if (nlive->Server().empty())
 	    {
-		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		mMessage::KillDependancies(mMessage::NickExists, newnick);
 		if (nlive->Numeric())
-		    mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+		    mMessage::KillDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
 		KILL(Magick::instance().nickserv.FirstName(), newnick, nlive->RealName());
 		return;
 	    }
@@ -3360,69 +3361,12 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 		}
 	    }
 
+	    set<mstring> wason;
+	    nlive->PostSignon(wason);
+
 	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
 	    if (nlive->Numeric())
 		mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
-	    // HAS to be AFTER the nickname is added to map.
-	    CommServ::list_t::iterator iter;
-	    mstring setmode;
-
-	    {
-		RLOCK2((lck_CommServ, lck_list));
-		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
-		{
-		    map_entry < Committee_t > comm(iter->second);
-		    if (comm->IsOn(newnick))
-		    {
-			if (comm->Name() == Magick::instance().commserv.ALL_Name())
-			    setmode += Magick::instance().commserv.ALL_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.REGD_Name())
-			    setmode += Magick::instance().commserv.REGD_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.OPER_Name())
-			    setmode += Magick::instance().commserv.OPER_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
-			    setmode += Magick::instance().commserv.ADMIN_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.SOP_Name())
-			    setmode += Magick::instance().commserv.SOP_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
-			    setmode += Magick::instance().commserv.SADMIN_SetMode();
-
-			MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
-			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
-			{
-			    Magick::instance().servmsg.send(newnick,
-							    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
-							    comm->message->Entry());
-			}
-		    }
-		}
-	    }
-	    if (!setmode.empty())
-	    {
-		mstring setmode2;
-
-		for (unsigned int j = 0; j < setmode.size(); j++)
-		{
-		    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
-			setmode2 += setmode[j];
-		}
-		if (!setmode2.empty())
-		    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
-	    }
-	    if (Magick::instance().nickserv.IsStored(newnick))
-	    {
-		map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
-		if (nstored->Forbidden())
-		{
-		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
-			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		}
-		else if (nstored->Protect() && !nstored->IsOnline())
-		{
-		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
-			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		}
-	    }
 	}
     }
     else if (msgtype == "CONNECT")
@@ -4211,9 +4155,9 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
 		if (nlive->Server().empty())
 		{
-		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		    mMessage::KillDependancies(mMessage::NickExists, newnick);
 		    if (nlive->Numeric())
-			mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+			mMessage::KillDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
 		    KILL(Magick::instance().nickserv.FirstName(), newnick, nlive->RealName());
 		    return;
 		}
@@ -4228,69 +4172,12 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		    }
 		}
 
+		set<mstring> wason;
+		nlive->PostSignon(wason);
+
 		mMessage::CheckDependancies(mMessage::NickExists, newnick);
 		if (nlive->Numeric())
 		    mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
-		// HAS to be AFTER the nickname is added to map.
-		CommServ::list_t::iterator iter;
-		mstring setmode;
-
-		{
-		    RLOCK2((lck_CommServ, lck_list));
-		    for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
-		    {
-			map_entry < Committee_t > comm(iter->second);
-			if (comm->IsOn(newnick))
-			{
-			    if (comm->Name() == Magick::instance().commserv.ALL_Name())
-				setmode += Magick::instance().commserv.ALL_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.REGD_Name())
-				setmode += Magick::instance().commserv.REGD_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.OPER_Name())
-				setmode += Magick::instance().commserv.OPER_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
-				setmode += Magick::instance().commserv.ADMIN_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.SOP_Name())
-				setmode += Magick::instance().commserv.SOP_SetMode();
-			    else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
-				setmode += Magick::instance().commserv.SADMIN_SetMode();
-
-			    MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
-			    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
-			    {
-				Magick::instance().servmsg.send(newnick,
-								"[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
-								comm->message->Entry());
-			    }
-			}
-		    }
-		}
-		if (!setmode.empty())
-		{
-		    mstring setmode2;
-
-		    for (unsigned int j = 0; j < setmode.size(); j++)
-		    {
-			if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
-			    setmode2 += setmode[j];
-		    }
-		    if (!setmode2.empty())
-			SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
-		}
-		if (Magick::instance().nickserv.IsStored(newnick))
-		{
-		    map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
-		    if (nstored->Forbidden())
-		    {
-			SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
-			     (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		    }
-		    else if (nstored->Protect() && !nstored->IsOnline())
-		    {
-			SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
-			     (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		    }
-		}
 	    }
 	}
 	else
@@ -4308,6 +4195,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		    nlive->setDelete(false);
 		    mMessage::CheckDependancies(mMessage::NickNoExists, source);
 		    Magick::instance().nickserv.AddLive(nlive);
+		    nlive->PostSignon(wason);
 		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
 		    if (Magick::instance().nickserv.IsRecovered(source))
 		    {
@@ -4317,69 +4205,6 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 						       Magick::instance().startup.Services_Host(),
 						       Magick::instance().startup.Server_Name(), "Nickname Enforcer");
 		    }
-
-		    CommServ::list_t::iterator iter;
-		    mstring setmode;
-
-		    {
-			RLOCK2((lck_CommServ, lck_list));
-			for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd();
-			     iter++)
-			{
-			    map_entry < Committee_t > comm(iter->second);
-			    if (wason.find(comm->Name()) == wason.end() && comm->IsOn(newnick))
-			    {
-				if (comm->Name() == Magick::instance().commserv.ALL_Name())
-				    setmode += Magick::instance().commserv.ALL_SetMode();
-				else if (comm->Name() == Magick::instance().commserv.REGD_Name())
-				    setmode += Magick::instance().commserv.REGD_SetMode();
-				else if (comm->Name() == Magick::instance().commserv.OPER_Name())
-				    setmode += Magick::instance().commserv.OPER_SetMode();
-				else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
-				    setmode += Magick::instance().commserv.ADMIN_SetMode();
-				else if (comm->Name() == Magick::instance().commserv.SOP_Name())
-				    setmode += Magick::instance().commserv.SOP_SetMode();
-				else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
-				    setmode += Magick::instance().commserv.SADMIN_SetMode();
-
-				MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
-				for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
-				{
-				    Magick::instance().servmsg.send(newnick,
-								    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
-								    comm->message->Entry());
-				}
-			    }
-			}
-		    }
-		    if (!setmode.empty())
-		    {
-			mstring setmode2;
-
-			for (unsigned int j = 0; j < setmode.size(); j++)
-			{
-			    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
-				setmode2 += setmode[j];
-			}
-			if (!setmode2.empty())
-			    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
-		    }
-
-		    if (Magick::instance().nickserv.IsStored(newnick))
-		    {
-			map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
-			if (nstored->Forbidden())
-			{
-			    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
-				 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-			}
-			else if (nstored->Protect() && !nstored->IsOnline())
-			{
-			    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
-				 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-			}
-		    }
-
 		}
 		else
 		{
@@ -5609,69 +5434,12 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 		}
 	    }
 
+	    set<mstring> wason;
+	    nlive->PostSignon(wason);
+
 	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
 	    if (nlive->Numeric())
 		mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
-	    // HAS to be AFTER the nickname is added to map.
-	    CommServ::list_t::iterator iter;
-	    mstring setmode;
-
-	    {
-		RLOCK2((lck_CommServ, lck_list));
-		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
-		{
-		    map_entry < Committee_t > comm(iter->second);
-		    if (comm->IsOn(newnick))
-		    {
-			if (comm->Name() == Magick::instance().commserv.ALL_Name())
-			    setmode += Magick::instance().commserv.ALL_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.REGD_Name())
-			    setmode += Magick::instance().commserv.REGD_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.OPER_Name())
-			    setmode += Magick::instance().commserv.OPER_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
-			    setmode += Magick::instance().commserv.ADMIN_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.SOP_Name())
-			    setmode += Magick::instance().commserv.SOP_SetMode();
-			else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
-			    setmode += Magick::instance().commserv.SADMIN_SetMode();
-
-			MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
-			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
-			{
-			    Magick::instance().servmsg.send(newnick,
-							    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
-							    comm->message->Entry());
-			}
-		    }
-		}
-	    }
-	    if (!setmode.empty())
-	    {
-		mstring setmode2;
-
-		for (unsigned int j = 0; j < setmode.size(); j++)
-		{
-		    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
-			setmode2 += setmode[j];
-		}
-		if (!setmode2.empty())
-		    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
-	    }
-	    if (Magick::instance().nickserv.IsStored(newnick))
-	    {
-		map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
-		if (nstored->Forbidden())
-		{
-		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
-			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		}
-		else if (nstored->Protect() && !nstored->IsOnline())
-		{
-		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
-			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		}
-	    }
 	}
     }
     else if (msgtype == "USERHOST")

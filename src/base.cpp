@@ -866,6 +866,86 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
     ETCB();
 }
 
+void mMessage::KillDependancies(mMessage::type_t type, const mstring & param1, const mstring & param2)
+{
+    BTCB();
+    FT("mMessage::CheckDependancies", (static_cast < int > (type), param1, param2));
+
+    if (param1.empty())
+	return;
+
+    // This dependancy will NEVER be filled, remove all messages relying on it.
+
+    mstring target;
+
+    switch (type)
+    {
+    case ServerExists:
+    case ServerNoExists:
+	if (param1[0u] == '@')
+	    target = param1;
+	else
+	    target = param1.LowerCase();
+	break;
+    case NickExists:
+    case NickNoExists:
+	if (param1[0u] == '!')
+	    target = param1;
+	else
+	    target = param1.LowerCase();
+	break;
+    case ChanExists:
+    case ChanNoExists:
+	if (!IsChan(param1))
+	    target = param1;
+	else
+	    target = param1.LowerCase();
+	break;
+    case UserInChan:
+    case UserNoInChan:
+	if (!IsChan(param1))
+	    target = param1;
+	else
+	    target = param1.LowerCase();
+	target += " ";
+	if (param2[0u] == '!')
+	    target += param2;
+	else
+	    target += param2.LowerCase();
+	break;
+    }
+
+    set < unsigned long > mydep;
+
+    {
+	MLOCK((lck_AllDeps));
+	map < type_t, map < mstring, set < unsigned long > > >::iterator i = AllDependancies.find(type);
+
+	if (i != AllDependancies.end())
+	{
+	    map < mstring, set < unsigned long > >::iterator j = i->second.find(target);
+
+	    if (j != i->second.end())
+	    {
+		mydep = j->second;
+		i->second.erase(j);
+	    }
+	}
+    }
+
+    set < unsigned long >::iterator k;
+
+    for (k = mydep.begin(); k != mydep.end(); k++)
+    {
+	{
+	    RLOCK((lck_IrcSvcHandler));
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->IsMessage(*k))
+		Magick::instance().ircsvchandler->RemMessage(*k);
+	}
+    }
+    ETCB();
+}
+
 void mMessage::DependancySatisfied(mMessage::type_t type, const mstring & param)
 {
     BTCB();

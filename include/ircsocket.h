@@ -207,6 +207,7 @@ public:
 
     bool OutstandingDependancies();
     static void CheckDependancies(type_t type, const mstring & param1, const mstring & param2 = "");
+    static void KillDependancies(type_t type, const mstring & param1, const mstring & param2 = "");
     bool RecheckDependancies();
     void DependancySatisfied(type_t type, const mstring & param);
 
