@@ -932,7 +932,7 @@ unsigned char wxDataInputStream::Read8()
 double wxDataInputStream::ReadDouble()
 {
 	mstring tmpResult;
-	tmpResult=ReadString()
+	tmpResult=ReadString();
 	return atof(tmpResult.c_str());
 
 #if 0
