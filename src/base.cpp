@@ -33,7 +33,7 @@ mBase::mBase(Magick* in_Parent)
 
 void mBase::push_message(const mstring& message)
 {
-    FT("mBase::push_message@mBase", (message));
+    FT("mBase::push_message", (message));
     if(TaskOpened==false)
     {
 	if(Parent!=NULL&&BaseTask.open(Parent)!=0)
@@ -85,53 +85,6 @@ void mBase::shutdown()
     int j=BaseTask.thr_count();
     for(int i=0;i<j;i++)
 	BaseTask.shutdown();
-}
-
-NetworkServ::NetworkServ(Magick *in_Parent) : mBase(in_Parent)
-{
-    NFT("NetworkServ::NetworkServ");
-    messages=true;
-    automation=true;
-}
-
-void NetworkServ::execute(const mstring & data)
-{
-    FT("NetworkServ::execute", (data));
-    //okay this is the main networkserv command switcher
-    mThread::Detach(tt_mBase);
-    mThread::Attach(Parent, tt_ServNet);
-
-    mstring source, msgtype, msgdata;
-    if(data[0u]==':')
-    {
-	source=data.ExtractWord(1,": ");
-	msgtype=data.ExtractWord(2,": ").UpperCase();
-	msgdata=data.After(":",2);
-    }
-    else
-    {
-	source="";
-	msgtype=data.ExtractWord(1,": ").UpperCase();
-	msgdata=data.After(":");
-    }
-    if(msgtype=="PING")
-    {
-	if(msgdata!="")
-	{
-	    if(msgdata.WordCount(" ")>1)
-		; //send_cmd(server_name,"PONG %s %s",msgdata.ExtractWord(2," "),msgdata.ExtractWord(1," "));
-	    else
-		; //send_cmd(server_name,"PONG %s %s",server_name,msgdata.ExtractWord(1," "));
-	}
-	else
-	{
-	    // error out?
-	}
-    }
-
-    mThread::Detach(tt_ServNet);
-    mThread::Attach(Parent, tt_mBase);
-   
 }
 
 int mBaseTask::open(void *in)
@@ -186,18 +139,8 @@ void mBaseTask::message(const mstring& message)
 void mBaseTask::message_i(const mstring& message)
 {
     mstring tmp[2];
-    if(message[0u]==':')
-    {
-	// with from prefix
-	tmp[0]=message.ExtractWord(2,": ").UpperCase();
-	tmp[1]=message.ExtractWord(3,": ");
-    }
-    else
-    {
-	// no from prefix
-	tmp[0]=message.ExtractWord(1,": ").UpperCase();
-	tmp[1]=message.ExtractWord(2,": ");
-    }
+    tmp[0]=message.ExtractWord(2,": ").UpperCase();
+    tmp[1]=message.ExtractWord(3,": ").UpperCase();
 	    
     // check if on ignore list and throw to the "ignore logging service" if log ignored user commands is on.
     // maybe we should have a hit count for logging? x ignores in x minutes = start logging that sucker. 
@@ -209,16 +152,17 @@ void mBaseTask::message_i(const mstring& message)
     // (and if it is, which one?)  Pass the message to them if so.
     // before even that, check if it's script overriden via Parent->checkifhandled(servername,command)
     // if so, Parent->doscripthandle(server,command,data);
-//  if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//  if ((names=" "+Parent->operserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
 //	    Parent->operserv.execute(message);
-    if ((names=" "+Parent->nickserv.getnames()+" ").Find(" "+tmp[1]+" "))
+         if ((names=" "+Parent->nickserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
 	Parent->nickserv.execute(message);
-    else if ((names=" "+Parent->chanserv.getnames()+" ").Find(" "+tmp[1]+" "))
+    else if ((names=" "+Parent->chanserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
 	Parent->chanserv.execute(message);
-//  else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//  else if ((names=" "+Parent->memoserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
 //	Parent->memoserv.execute(message);
-//  else if ((names=" "+HelpServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//  else if ((names=" "+Parent->helpserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
 //	Parent->helpserv.execute(message);
+
     // else check if it's script handled, might do up a list of script servers
     // in the magick object to check against, else trash it.
 
@@ -254,4 +198,42 @@ void mBaseTask::message_i(const mstring& message)
 void mBaseTask::shutdown()
 {
     activation_queue_.enqueue(new shutdown_MO);
+}
+NetworkServ::NetworkServ(Magick *in_Parent) : mBase(in_Parent)
+{
+    NFT("NetworkServ::NetworkServ");
+    messages=true;
+    automation=true;
+}
+
+void NetworkServ::execute(const mstring & data)
+{
+    FT("NetworkServ::execute", (data));
+    //okay this is the main networkserv command switcher
+    mThread::Detach(tt_mBase);
+    mThread::Attach(Parent, tt_ServNet);
+
+    mstring source, msgtype, msgdata;
+    source=data.ExtractWord(1,": ");
+    msgtype=data.ExtractWord(2,": ").UpperCase();
+    msgdata=data.After(":",2);
+
+    if(msgtype=="PING")
+    {
+	if(msgdata!="")
+	{
+	    if(msgdata.WordCount(" ")>1)
+		; //send_cmd(server_name,"PONG %s %s",msgdata.ExtractWord(2," "),msgdata.ExtractWord(1," "));
+	    else
+		; //send_cmd(server_name,"PONG %s %s",server_name,msgdata.ExtractWord(1," "));
+	}
+	else
+	{
+	    // error out?
+	}
+    }
+
+    mThread::Detach(tt_ServNet);
+    mThread::Attach(Parent, tt_mBase);
+   
 }

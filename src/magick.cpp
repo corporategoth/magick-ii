@@ -111,7 +111,7 @@ int Magick::Start()
 		}
 	    }
 	    else if(argv[i]=="--help" ||
-		(argv[i][1U]!='-' && argv[i].Find("?")))
+		(argv[i][1U]!='-' && argv[i].Contains("?")))
     	    {
 		dump_help(argv[0]);
 		return MAGICK_RET_NORMAL;
@@ -363,37 +363,38 @@ mstring Magick::getMessage(const mstring & name)
 
 void Magick::dump_help(mstring & progname)
 {
-    FT("Magick::dump_help", (progname));
-
     // This needs to be re-written.
-    cout
-	<<"Magick IRC Services\n"
-	<<"    (c) 1996-2000 Preston A. Elder <prez@magick.tm>.\n"
-	<<"    (c) 1999-2000 William King <ungod@magick.tm>.\n"
-	<<"\n"
-	<<"This program is free but copyrighted software; see the file COPYING for\n"
-	<<"details.  Please do not forget to read ALL the files in the doc directory.\n\n"
-	<<"\n"
-	<<"Syntax: "<<progname.c_str()<<" [opts]\n\n"
-	<<"-remote server[:port]   Connect to the specified server.\n"
-	<<"-name servername        Our server name (e.g. hell.darker.net).\n"
-	<<"-desc string            Description of us (e.g. DarkerNet Services).\n"
-	<<"-user username          Username for Services' nicks (e.g. services).\n"
-	<<"-host hostname          Hostname for Services' nicks (e.g. darker.net).\n"
-	<<"-prefix prefix          Prefix for Magick Outlet (see magick.ini)\n"
-	<<"                            (e.g. \"Magick-\").\n"
-	<<"-dir directory          Directory containing Services' data files\n"
-	<<"                            (e.g. /usr/local/lib/services).\n"
-	<<"-config filename        Config file to be used (e.g. magick.ini).\n"
-	<<"-log filename           Services log filename (e.g. magick.log).\n"
-	<<"-update secs            How often to update databases, in seconds.\n"
-	<<"-debug                  Enable debugging mode--more info sent to log.\n"
-	<<"-relink secs            Specify seconds to re-attempt link if SQUIT.\n"
-	<<"-norelink               Die on SQUIT or kill -1.\n"
-	<<"-level level            Specify services level (>1 = backup).\n"
-	<<"-offset hours           Specify the TimeZone offset for backups.\n"
-	<<"-live                   Dont fork (log screen + log file).\n"
-	<<endl;
+    cout << "\n"
+         << "Magick IRC Services\n"
+         << "    (c) 1996-2000 Preston A. Elder <prez@magick.tm>\n"
+         << "    (c) 1999-2000 William King <ungod@magick.tm>\n"
+         << "\n"
+         << "Syntax: " << ProgramName << " [ops]\n"
+         << "\n"
+         << "    -c, --connect server[:port]    Override REMOTE_SERVER and REMOTE_PORT\n"
+         << "                                   values in the config file.\n"
+         << "    -n, --name servername          Override SERVER_NAME in the config file.\n"
+         << "    -d, --desc description         Override SERVER_DESC in the config file.\n"
+         << "    -u, --user user                Override SERVICES_USER in the config file.\n"
+         << "    -o, --ownuser                  Sets OWNUSER in the config file to TRUE.\n"
+         << "    -h, --host host                Override SERVICES_HOST in the config file.\n"
+         << "    -s, --save time                Override CYCLETIME in the config file.\n"
+         << "    -v, --verbose                  Logs EVERY command to services.\n"
+         << "    -l, --level level              Override LEVEL in config file.\n"
+         << "    -g, --gmt offset               Override GMT in config file.\n"
+         << "    -f, --fg                       Output logs to console, fork() on CTRL-C.\n"
+         << "    -r, --relink time              Override SERVER_RELINK in config file.\n"
+         << "        --norelink                 Set SERVER_RELINK to 0.\n"
+         << "        --dir directory            Change working (database) directory.\n"
+         << "	--config config            Specify filename for config file.\n"
+         << "	--log logfile              Output logs to different file.\n"
+         << "	--trace type:level         Turn on tracing from the onset.\n"
+         << "\n"
+         << "For more help on the usage of Magick, please browse the docs directory.\n"
+         << "This software is free to the public, no registration or licensing fee\n"
+         << "may be charged under any circumstances.  Media charges may be imposed.\n"
+	 << "\n";
+    
 }
 
 void Magick::LoadInternalMessages()
@@ -507,6 +508,7 @@ int Magick::doparamparse()
 		--dir X
 		--config X
 		--trace X
+		--log X
 		--verbose	-v	--debug
 		--fg	   	-f	--live, --nofork
 		--relink X	-r
