@@ -387,17 +387,20 @@ int EventTask::svc(void)
 		for (nsi = Parent->nickserv.stored.begin();
 			nsi != Parent->nickserv.stored.end(); nsi++)
 		{
-		    if (nsi->second.Host() == "")
+		    if (!nsi->NoExpire())
 		    {
-			if (nsi->second.LastAllSeenTime().SecondsSince() >
-			    Parent->nickserv.Expire())
-			    expired_nicks.push_back(nsi->first);
-		    }
-		    else
-		    {
-			if (nsi->second.LastSeenTime().SecondsSince() >
-			    Parent->nickserv.Expire())
-			    expired_nicks.push_back(nsi->first);
+			if (nsi->second.Host() == "")
+			{
+			    if (nsi->second.LastAllSeenTime().SecondsSince() >
+				Parent->nickserv.Expire())
+				expired_nicks.push_back(nsi->first);
+			}
+			else
+			{
+			    if (nsi->second.LastSeenTime().SecondsSince() >
+				Parent->nickserv.Expire())
+				expired_nicks.push_back(nsi->first);
+			}
 		    }
 		}
 		for (i=0; i<expired_nicks.size(); i++)
@@ -414,9 +417,12 @@ int EventTask::svc(void)
 		for (csi = Parent->chanserv.stored.begin();
 			csi != Parent->chanserv.stored.end(); csi++)
 		{
-		    if (csi->second.LastUsed().SecondsSince() >
-			Parent->chanserv.Expire())
-			expired_chans.push_back(csi->first);
+		    if (!csi->NoExpire())
+		    {
+			if (csi->second.LastUsed().SecondsSince() >
+			    Parent->chanserv.Expire())
+			    expired_chans.push_back(csi->first);
+		    }
 		}
 		for (i=0; i<expired_chans.size(); i++)
 		    Parent->chanserv.stored.erase(expired_chans[i]);
