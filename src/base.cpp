@@ -1029,7 +1029,7 @@ int mMessage::call()
 		//     Magick::instance().checkifhandled(servername,command)
 		// if so, Magick::instance().doscripthandle(server,command,data);
 
-		mBase *serv = mBase::GetByName(src);
+		mBase *serv = mBase::GetByName(target);
 
 		if (serv != NULL && serv->MSG())
 		    serv->execute(src, msgtype_, params_);

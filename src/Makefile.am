@@ -39,11 +39,11 @@ if INCREMENT
 	$(top_srcdir)/helper/build-ver $(top_srcdir)
 endif
 
-magick.debug: helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
+magick.debug$(EXEEXT): helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
 	@rm -f magick.debug
 	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
 
-magick: magick.debug
+magick$(EXEEXT): magick.debug
 	@rm -f magick
 	cp magick.debug magick
 	strip magick

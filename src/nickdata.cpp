@@ -1505,7 +1505,8 @@ void Nick_Live_t::Mode(const mstring & in)
 				if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !HasMode(setmode[j]))
 				    setmode2 += setmode[j];
 			    }
-			    SendMode("+" + setmode2);
+			    if (!setmode2.empty())
+				SendMode("+" + setmode2);
 			}
 		    }
 		}
@@ -2138,7 +2139,8 @@ mstring Nick_Live_t::Identify(const mstring & password)
 		    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !HasMode(setmode[j]))
 			setmode2 += setmode[j];
 		}
-		SendMode("+" + setmode2);
+		if (!setmode2.empty())
+		    SendMode("+" + setmode2);
 	    }
 	    retval = Magick::instance().getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
 	}

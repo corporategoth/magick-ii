@@ -16,7 +16,7 @@ SUFFIXES = .java .class .jar
 		$(JAVAC) $(JFLAGS) $(patsubst %.class,%.java,$@); \
 	fi
 
-mct.jar: $(mct_jar_SOURCES)
+mct.jar$(EXEEXT): $(mct_jar_SOURCES)
 	@if test -n "$(JAR)"; then \
 		CLASSPATH="."; export CLASSPATH; \
 		echo "$(JAR) cfm $@ $(patsubst %.jar,%.mf,$@) *.class *.jpg"; \
