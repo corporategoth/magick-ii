@@ -21,6 +21,7 @@ class mDateTime
 {
     double Val;
 public:
+    mstring timetstring()const;
     enum mDateTimeFlag {Date, Time, DateTime};
 
     static mDateTime CurrentDate();

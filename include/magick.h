@@ -81,18 +81,18 @@ public:
 		int deadtime;
 		float gmt;
 	public:
-		mstring Remote_Server()	{ return remote_server; }
-		int Remote_Port()	{ return remote_port; }
-		mstring Password()	{ return password; }
-		mstring Server_Name()	{ return server_name; }
-		mstring Server_Desc()	{ return server_desc; }
-		mstring Services_User()	{ return services_user; }
-		mstring Services_Host()	{ return services_host; }
-		bool Ownuser()		{ return ownuser; }
-		int Level()		{ return level; }
-		int Lagtime()		{ return lagtime; }
-		int Deadtime()		{ return deadtime; }
-		float GMT()		{ return gmt; }
+		mstring Remote_Server()const	{ return remote_server; }
+		int Remote_Port()const		{ return remote_port; }
+		mstring Password()const		{ return password; }
+		mstring Server_Name()const	{ return server_name; }
+		mstring Server_Desc()const	{ return server_desc; }
+		mstring Services_User()const	{ return services_user; }
+		mstring Services_Host()const	{ return services_host; }
+		bool Ownuser()const		{ return ownuser; }
+		int Level()const		{ return level; }
+		int Lagtime()const		{ return lagtime; }
+		int Deadtime()const		{ return deadtime; }
+		float GMT()const		{ return gmt; }
 	} startup;
 
 	class files_t{
@@ -103,6 +103,7 @@ public:
 		mstring motdfile;
 		mstring language;
 		mstring commands;
+		mstring main_db;
 		mstring link_db;
 		mstring nick_db;
 		mstring chan_db;
@@ -115,22 +116,23 @@ public:
 		mstring msgs_db;
 		bool compression;
 	public:
-		mstring Pidfile()	{ return pidfile; }
-		mstring Logfile()	{ return logfile; }
-		mstring Motdfile()	{ return motdfile; }
-		mstring Language()	{ return language; }
-		mstring Commands()	{ return commands; }
-		mstring Link_DB()	{ return link_db; }
-		mstring Nick_DB()	{ return nick_db; }
-		mstring Chan_DB()	{ return chan_db; }
-		mstring Memo_DB()	{ return memo_db; }
-		mstring News_DB()	{ return news_db; }
-		mstring AKill_DB()	{ return akill_db; }
-		mstring Ignore_DB()	{ return ignore_db; }
-		mstring Clone_DB()	{ return clone_db; }
-		mstring Comm_DB()	{ return comm_db; }
-		mstring Msgs_DB()	{ return msgs_db; }
-		bool Compression()	{ return compression; }
+		mstring Pidfile()const	{ return pidfile; }
+		mstring Logfile()const	{ return logfile; }
+		mstring Motdfile()const	{ return motdfile; }
+		mstring Language()const	{ return language; }
+		mstring Commands()const	{ return commands; }
+		mstring Link_DB()const	{ return link_db; }
+		mstring Nick_DB()const	{ return nick_db; }
+		mstring Chan_DB()const	{ return chan_db; }
+		mstring Memo_DB()const	{ return memo_db; }
+		mstring News_DB()const	{ return news_db; }
+		mstring AKill_DB()const	{ return akill_db; }
+		mstring Ignore_DB()const{ return ignore_db; }
+		mstring Clone_DB()const	{ return clone_db; }
+		mstring Comm_DB()const	{ return comm_db; }
+		mstring Msgs_DB()const	{ return msgs_db; }
+		mstring Main_DB()const	{ return main_db; }
+		bool Compression()const	{ return compression; }
 	} files;
 
 	class config_t{

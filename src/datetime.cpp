@@ -668,3 +668,23 @@ mDateTime StringToDateTime(const mstring& in);
 
 #endif
 
+
+mstring mDateTime::timetstring()const
+{
+    mstring Result;
+    time_t Res2;
+	int Year,Month,Day,Hour,Min,Sec,MSec;
+	DecodeDate(Year,Month,Day);
+	DecodeTime(Hour,Min,Sec,MSec);
+	tm localtm;
+	localtm.tm_year=Year-1900;
+	localtm.tm_mon=Month;
+	localtm.tm_mday=Day;
+	localtm.tm_hour=Hour;
+	localtm.tm_min=Min;
+	localtm.tm_sec=Sec;
+	localtm.tm_isdst=0;
+	Res2=mktime(&localtm);
+    Result<<(unsigned long)Res2;
+    return Result;
+}
