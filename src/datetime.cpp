@@ -27,6 +27,9 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2001/02/03 05:16:20  prez
+** Fixed up mdatetime
+**
 ** Revision 1.63  2001/02/03 02:21:33  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -141,9 +144,9 @@ static const int MSecsPerDay		= SecsPerDay * 1000;
 static const int DateDelta		= 693594;
 
 typedef int mDayTable[12];
-static const mDayTable DayTable1	= { 31, 28, 31, 30, 31, 30,
+static mDayTable DayTable1		= { 31, 28, 31, 30, 31, 30,
 					    31, 31, 30, 31, 30, 31 };
-static const mDayTable DayTable2	= { 31, 29, 31, 30, 31, 30,
+static mDayTable DayTable2		= { 31, 29, 31, 30, 31, 30,
 					    31, 31, 30, 31, 30, 31 };
 
 /* ---------------------------------------------------------- */
@@ -200,7 +203,7 @@ static mDayTable &GetDayTable(int Year)
 	  return DayTable1;
 }
 
-static bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
+bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
 {
   int I;
   bool Result = false;
@@ -227,7 +230,7 @@ mDateTime::mDateTime(unsigned int year, unsigned int month, unsigned int day)
 	*this=tmp;
 }
 
-static bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
+bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
 {
   bool Result = false;
   if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
@@ -728,39 +731,39 @@ mDateTime StringToDate(const mstring& in)
 	int year=0,month=0,day=0;
 	int first=0,second=0,third=0;
 	mstring formatspec;
-	mstring shortdateformat=ShortDateFormat;
+	mstring shortdateformat=mDateTime::ShortDateFormat;
 	shortdateformat.MakeLower();
-	formatspec="%d"+DateSeparator+"%d"+DateSeparator+"%d";
+	formatspec="%d"+mDateTime::DateSeparator+"%d"+mDateTime::DateSeparator+"%d";
 	sscanf(in.c_str(),formatspec.c_str(),&first,&second,&third);
-	if(shortdateformat.Before(DateSeparator)=="mm"||shortdateformat.Before(DateSeparator)=="m")
+	if(shortdateformat.Before(mDateTime::DateSeparator)=="mm"||shortdateformat.Before(mDateTime::DateSeparator)=="m")
 		month=first;
-	else if(shortdateformat.Before(DateSeparator)=="dd"||shortdateformat.Before(DateSeparator)=="d")
+	else if(shortdateformat.Before(mDateTime::DateSeparator)=="dd"||shortdateformat.Before(mDateTime::DateSeparator)=="d")
 		day=first;
-	else if(shortdateformat.Before(DateSeparator)=="yyyy")
+	else if(shortdateformat.Before(mDateTime::DateSeparator)=="yyyy")
 		year=first;
-	else if(shortdateformat.Before(DateSeparator)=="yy")
+	else if(shortdateformat.Before(mDateTime::DateSeparator)=="yy")
 		if(first+100 <= mDateTime::CurrentDateTime().Year2() + 150)
 			year=first+mDateTime::CurrentDateTime().Century();
 		else
 			year=first+mDateTime::CurrentDateTime().Century()-100;
-	if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="mm"||shortdateformat.After(DateSeparator).Before(DateSeparator)=="m")
+	if(shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator)=="mm"||shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator)=="m")
 		month=second;
-	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="dd"||shortdateformat.After(DateSeparator).Before(DateSeparator)=="d")
+	else if(shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator)=="dd"||shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator)=="d")
 		day=second;
-	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="yyyy")
+	else if(shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator)=="yyyy")
 		year=second;
-	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="yy")
+	else if(shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator)=="yy")
 		if(second+100 <= mDateTime::CurrentDateTime().Year2() + 150)
 			year=second+mDateTime::CurrentDateTime().Century();
 		else
 			year=second+mDateTime::CurrentDateTime().Century()-100;
-	if(shortdateformat.After(DateSeparator).After(DateSeparator)=="mm"||shortdateformat.After(DateSeparator).After(DateSeparator)=="m")
+	if(shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator)=="mm"||shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator)=="m")
 		month=third;
-	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="dd"||shortdateformat.After(DateSeparator).After(DateSeparator)=="d")
+	else if(shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator)=="dd"||shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator)=="d")
 		day=third;
-	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="yyyy")
+	else if(shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator)=="yyyy")
 		year=third;
-	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="yy")
+	else if(shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator)=="yy")
 		if(third+100 <= mDateTime::CurrentDateTime().Year2() + 150)
 			year=third+mDateTime::CurrentDateTime().Century();
 		else

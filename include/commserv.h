@@ -25,6 +25,9 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2001/02/03 05:16:20  prez
+** Fixed up mdatetime
+**
 ** Revision 1.46  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -171,7 +174,7 @@ public:
     mstring Head() const;
     void Head(mstring newhead);
 
-    bool insert(mstring entry, mstring nick, mDateTime modtime = Now());
+    bool insert(mstring entry, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
     bool erase();
     entlist_ui begin()		{ return i_Members.begin(); }
     entlist_ui end()		{ return i_Members.end(); }
@@ -202,7 +205,7 @@ public:
     void L_Secure(bool in);
     bool L_Secure() const;
 
-    bool MSG_insert(mstring entry, mstring nick, mDateTime time = Now());
+    bool MSG_insert(mstring entry, mstring nick, mDateTime time = mDateTime::CurrentDateTime());
     bool MSG_erase();
     entlist_i MSG_begin()	{ return i_Messages.begin(); }
     entlist_i MSG_end()		{ return i_Messages.end(); }
@@ -291,7 +294,7 @@ public:
     public:
 	stats_t() { clear(); }
 	void clear() {
-	    i_ClearTime = Now();
+	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_New = i_Kill = i_AddDel = i_Memo =
 		i_Logon = i_Set = i_Lock = i_Unlock = 0; }
 	mDateTime ClearTime()const	{ return i_ClearTime; }

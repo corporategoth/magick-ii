@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2001/02/03 05:16:19  prez
+** Fixed up mdatetime
+**
 ** Revision 1.79  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -254,7 +257,7 @@ protected:
 public:
     entlist_t () {}
     entlist_t (const entlist_t& in) { *this = in; }
-    entlist_t (mstring entry, mstring nick, mDateTime modtime = Now());
+    entlist_t (mstring entry, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
     virtual ~entlist_t () {}
     void operator=(const entlist_t &in);
     bool operator==(const entlist_t &in) const
@@ -295,7 +298,7 @@ public:
     entlist_val_t () {}
     virtual ~entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (mstring entry, T value, mstring nick, mDateTime modtime = Now(), bool stupid = false)
+    entlist_val_t (mstring entry, T value, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime(), bool stupid = false)
 	: entlist_t(entry,nick,modtime)
     {
 	FT("entlist_val_t<T>::entlist_val_t", (entry, "(T) value", nick,
@@ -327,7 +330,7 @@ public:
 	else
 	{
 	    i_Value = value;
-	    i_Last_Modify_Time = Now();
+	    i_Last_Modify_Time = mDateTime::CurrentDateTime();
 	    i_Last_Modifier = nick;
 	    RET(true);
 	}
@@ -398,7 +401,7 @@ public:
     entlist_val_t () {}
     virtual ~entlist_val_t () {}
     entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (mstring entry, pair<T1,T2> value, mstring nick, mDateTime modtime = Now(), bool stupid = false)
+    entlist_val_t (mstring entry, pair<T1,T2> value, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime(), bool stupid = false)
 	: entlist_t(entry,nick,modtime)
     {
 	FT("entlist_val_t< pair<T1, T2> >::entlist_val_t", (entry, "( pair<T1,T2> ) value", nick,
@@ -430,7 +433,7 @@ public:
 	else
 	{
 	    i_Value = value;
-	    i_Last_Modify_Time = Now();
+	    i_Last_Modify_Time = mDateTime::CurrentDateTime();
 	    i_Last_Modifier = nick;
 	    RET(true);
 	}

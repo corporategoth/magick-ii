@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2001/02/03 05:16:19  prez
+** Fixed up mdatetime
+**
 ** Revision 1.53  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -185,7 +188,7 @@ public:
     mstring Name() const	{ return i_Name; }
     mDateTime Creation_Time() const;
 
-    void Topic(mstring source, mstring topic, mstring setter, mDateTime time = Now());
+    void Topic(mstring source, mstring topic, mstring setter, mDateTime time = mDateTime::CurrentDateTime());
     mstring Topic() const;
     mstring Topic_Setter() const;
     mDateTime Topic_Set_Time() const;
@@ -324,7 +327,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     void Part(mstring nick);
     void Kick(mstring nick, mstring kicker);
     void ChgNick(mstring nick, mstring newnick);
-    void Topic(mstring source, mstring topic, mstring setter, mDateTime time = Now());
+    void Topic(mstring source, mstring topic, mstring setter, mDateTime time = mDateTime::CurrentDateTime());
     void Mode(mstring setter, mstring mode);
     void defaults();
     bool DoRevenge(mstring type, mstring target, mstring source);
@@ -457,7 +460,7 @@ public:
     //     1) Entry !has @ and is reg'd nick.
     //     2) Entry has (* or ?) and @.
     //     3) Entry has @ and no (* or ?).
-    bool Access_insert(mstring entry, long value, mstring nick, mDateTime modtime = Now());
+    bool Access_insert(mstring entry, long value, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
     bool Access_erase();
     set<entlist_val_t<long> >::iterator Access_begin()
 	{ return i_Access.begin(); }
@@ -477,8 +480,8 @@ public:
     //     1) Entry !has @ and is reg'd nick.
     //     2) Entry has (* or ?) and @.
     //     3) Entry has @ and no (* or ?).
-    bool Akick_insert(mstring entry, mstring value, mstring nick, mDateTime modtime = Now());
-    bool Akick_insert(mstring entry, mstring nick, mDateTime modtime = Now());
+    bool Akick_insert(mstring entry, mstring value, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
+    bool Akick_insert(mstring entry, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
     bool Akick_erase();
     set<entlist_val_t<mstring> >::iterator Akick_begin()
 	{ return i_Akick.begin(); }
@@ -491,7 +494,7 @@ public:
 
     // FIND: Looks for EXACT MATCH of nick entry.
     // INSERT: Adds if not found.
-    bool Greet_insert(mstring entry, mstring nick, mDateTime modtime = Now());
+    bool Greet_insert(mstring entry, mstring nick, mDateTime modtime = mDateTime::CurrentDateTime());
     bool Greet_erase();
     entlist_i Greet_begin()			{ return i_Greet.begin(); }
     entlist_i Greet_end()			{ return i_Greet.end(); }
@@ -611,7 +614,7 @@ public:
     public:
 	stats_t() { clear(); }
 	void clear() {
-	    i_ClearTime = Now();
+	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Register = i_Drop = i_Identify = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Mode =
 		i_Topic = i_Op = i_Deop = i_Voice = i_Devoice =

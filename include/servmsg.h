@@ -25,6 +25,9 @@ RCSID(servmsg_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2001/02/03 05:16:20  prez
+** Fixed up mdatetime
+**
 ** Revision 1.25  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -119,7 +122,7 @@ public:
     public:
 	stats_t() { clear(); }
 	void clear() {
-	    i_ClearTime = Now();
+	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Global = i_Ask = i_Stats = i_Credits = i_file_AddDel =
 	    i_file_Send = i_file_Change = i_file_Cancel = 0; }
 	mDateTime ClearTime()const		{ return i_ClearTime; }

@@ -25,6 +25,9 @@ RCSID(operserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2001/02/03 05:16:20  prez
+** Fixed up mdatetime
+**
 ** Revision 1.49  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -210,7 +213,7 @@ public:
     public:
 	stats_t() { clear(); }
 	void clear() {
-	    i_ClearTime = Now();
+	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Trace = i_Mode = i_Qline = i_Unqline = i_Noop =
 		i_Kill = i_Hide = i_Ping = i_Update = i_Reload =
 		i_Unload = i_Jupe = i_OnOff = i_Clone =
@@ -269,7 +272,7 @@ public:
     size_t CloneList_size(unsigned int amt)const;
     size_t CloneList_Usage()const;
 
-    bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = Now());
+    bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = mDateTime::CurrentDateTime());
     bool Clone_erase();
     set<Clone_Type>::iterator Clone_begin()
 	{ return i_Clone.begin(); }
@@ -281,7 +284,7 @@ public:
     pair<unsigned int, mstring> Clone_value(mstring entry);
     set<Clone_Type>::iterator Clone;
 
-    bool Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick, mDateTime added = Now());
+    bool Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick, mDateTime added = mDateTime::CurrentDateTime());
     bool Akill_erase();
     set<Akill_Type>::iterator Akill_begin()
 	{ return i_Akill.begin(); }

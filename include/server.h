@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2001/02/03 05:16:20  prez
+** Fixed up mdatetime
+**
 ** Revision 1.59  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -392,7 +395,7 @@ public:
     void SVSNOOP(mstring nick, mstring server, bool onoff);
     void SVSKILL(mstring mynick, mstring nick, mstring reason);
     void SVSHOST(mstring mynick, mstring nick, mstring newhost);
-    void TOPIC(mstring nick, mstring setter, mstring channel, mstring topic = "", mDateTime time = Now());
+    void TOPIC(mstring nick, mstring setter, mstring channel, mstring topic = "", mDateTime time = mDateTime::CurrentDateTime());
     void UNSQLINE(mstring nick, mstring target);
     void WALLOPS(mstring nick, mstring message);
     void KillUnknownUser(mstring user) const;

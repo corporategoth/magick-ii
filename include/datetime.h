@@ -25,6 +25,9 @@ RCSID(datetime_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2001/02/03 05:16:20  prez
+** Fixed up mdatetime
+**
 ** Revision 1.33  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -88,6 +91,18 @@ public:
     static mDateTime CurrentDate();
     static mDateTime CurrentTime();
     static mDateTime CurrentDateTime();
+    static mstring DateSeparator;
+    static mstring ShortDateFormat;
+    static mstring LongDateFormat;
+    static mstring TimeSeparator;
+    static mstring TimeAMString;
+    static mstring TimePMString;
+    static mstring ShortTimeFormat;
+    static mstring LongTimeFormat;
+    static mstring ShortMonthNames[12];
+    static mstring LongMonthNames[12];
+    static mstring ShortDayNames[7];
+    static mstring LongDayNames[7];
 
     mDateTime() {Val=0.0;}
     mDateTime(const mDateTime& src) {Val=src.Val;}
@@ -255,27 +270,11 @@ public:
 
 };
 
-mstring DisectTime(long intime, mstring source = "");
-mDateTime GMT(mDateTime in, bool to);
-
-extern mDateTime Now();
-extern mDateTime Date();
-extern mDateTime Time();
+extern mstring DisectTime(long intime, mstring source = "");
+extern mDateTime GMT(mDateTime in, bool to);
 extern mDateTime StringToDate(const mstring& in);
 extern mDateTime StringToTime(const mstring& in);
 extern mDateTime StringToDateTime(const mstring& in);
 
-extern mstring DateSeparator;
-extern mstring ShortDateFormat;
-extern mstring LongDateFormat;
-extern mstring TimeSeparator;
-extern mstring TimeAMString;
-extern mstring TimePMString;
-extern mstring ShortTimeFormat;
-extern mstring LongTimeFormat;
-extern mstring ShortMonthNames[12];
-extern mstring LongMonthNames[12];
-extern mstring ShortDayNames[7];
-extern mstring LongDayNames[7];
 
 #endif

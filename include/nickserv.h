@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.58  2001/02/03 05:16:20  prez
+** Fixed up mdatetime
+**
 ** Revision 1.57  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -419,7 +422,7 @@ public:
     unsigned int Siblings();
     mstring Sibling(unsigned int count);
     bool IsSibling(mstring nick);
-    bool Slave(mstring nick, mstring password, mDateTime regtime = Now());
+    bool Slave(mstring nick, mstring password, mDateTime regtime = mDateTime::CurrentDateTime());
     bool MakeHost();
     bool Unlink();
 
@@ -566,7 +569,7 @@ public:
     public:
 	stats_t() { clear(); }
 	void clear() {
-	    i_ClearTime = Now();
+	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Register = i_Drop = i_Link = i_Unlink = i_Host =
 		i_Identify = i_Ghost = i_Recover = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Access =

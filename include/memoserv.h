@@ -25,6 +25,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2001/02/03 05:16:20  prez
+** Fixed up mdatetime
+**
 ** Revision 1.39  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -250,7 +253,7 @@ public:
     public:
 	stats_t() { clear(); }
 	void clear() {
-	    i_ClearTime = Now();
+	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Read = i_Unread = i_Send = i_Flush = i_Reply =
 		i_Forward = i_Cancel = i_Del = i_Continue =
 		i_File = 0; }
