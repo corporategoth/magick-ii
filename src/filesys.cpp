@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2001/12/27 00:40:44  prez
+** Some efficiancy changes to mstring
+**
 ** Revision 1.87  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -1917,6 +1920,7 @@ int DccMap::open(void *in)
 
 int DccMap::close(const unsigned long in)
 {
+    static_cast<void>(in);
     FT("DccMap::close", (in));
 
     bool registered = false;

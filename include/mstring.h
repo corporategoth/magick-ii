@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2001/12/27 00:40:44  prez
+** Some efficiancy changes to mstring
+**
 ** Revision 1.87  2001/12/16 00:12:44  prez
 ** Some code in mstring to make its vsnprintf more safe, if possible.
 **
@@ -467,16 +470,16 @@ class mstring
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    static char *alloc(const size_t sz) throw(mstring_noalloc);
-    static void dealloc(char * & in) throw(mstring_nodealloc);
+    static inline char *alloc(const size_t sz) throw(mstring_noalloc);
+    static inline void dealloc(char * & in) throw(mstring_nodealloc);
 #else
-    static char *alloc(const size_t sz);
-    static void dealloc(char * & in);
+    static inline char *alloc(const size_t sz);
+    static inline void dealloc(char * & in);
 #endif
-    void lock_read() const;
-    void lock_write() const;
-    void lock_rel() const;
-    void init();
+    inline void lock_read() const;
+    inline void lock_write() const;
+    inline void lock_rel() const;
+    inline void init();
     int occurances(const char *str, const size_t len) const;
 
 public:

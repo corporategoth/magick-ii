@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.121  2001/12/27 00:40:44  prez
+** Some efficiancy changes to mstring
+**
 ** Revision 1.120  2001/12/26 23:30:35  prez
 ** More fixes to see if I can fix the memory leak ...
 **
@@ -307,9 +310,9 @@ const mstring IRC_Color(static_cast<char>(3));		// ^C
 const mstring IRC_Off(static_cast<char>(15));		// ^O
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-char *mstring::alloc(const size_t sz) throw(mstring_noalloc)
+inline char *mstring::alloc(const size_t sz) throw(mstring_noalloc)
 #else
-char *mstring::alloc(const size_t sz)
+inline char *mstring::alloc(const size_t sz)
 #endif
 {
     char *out = NULL;
@@ -372,9 +375,9 @@ char *mstring::alloc(const size_t sz)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void mstring::dealloc(char * & in) throw(mstring_nodealloc)
+inline void mstring::dealloc(char * & in) throw(mstring_nodealloc)
 #else
-void mstring::dealloc(char * & in)
+inline void mstring::dealloc(char * & in)
 #endif
 {
     if (in == NULL)
@@ -405,7 +408,7 @@ void mstring::dealloc(char * & in)
     in = NULL;
 }
 
-void mstring::lock_read() const
+inline void mstring::lock_read() const
 {
 #ifdef MSTRING_LOCKS_WORK
     if (i_lock != NULL && i_lock->acquire_read() < 0)
@@ -416,7 +419,7 @@ void mstring::lock_read() const
 #endif
 }
 
-void mstring::lock_write() const
+inline void mstring::lock_write() const
 {
 #ifdef MSTRING_LOCKS_WORK
     if (i_lock != NULL && i_lock->acquire_write() < 0)
@@ -427,7 +430,7 @@ void mstring::lock_write() const
 #endif
 }
 
-void mstring::lock_rel() const
+inline void mstring::lock_rel() const
 {
 #ifdef MSTRING_LOCKS_WORK
     if (i_lock != NULL && i_lock->release() < 0)
@@ -438,7 +441,7 @@ void mstring::lock_rel() const
 #endif
 }
 
-void mstring::init()
+inline void mstring::init()
 {
 #ifdef MSTRING_LOCKS_WORK
     char lockname[30];
