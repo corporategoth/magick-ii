@@ -16,7 +16,6 @@
 #include "base.h"
 #include "mstream.h"
 #include "ircsocket.h"
-#include "convert.h"
 
 class Nick_Live_t : public mUserDef
 {

@@ -31,6 +31,7 @@
 #include "version.h"
 #include "log.h"
 #include "cryptstream.h"
+#include "convert.h"
 
 const int MAGICK_RET_NORMAL		    = 0;
 const int MAGICK_RET_RESTART		    = 1;

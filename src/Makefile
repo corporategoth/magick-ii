@@ -5,11 +5,12 @@ include $(TOPDIR)/Makefile.inc
 # UNIX compilers will be o, windows obj
 LIBNAME=magick.a
 OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) base.$(OBJ) chanserv.$(OBJ) \
-       commserv.$(OBJ) confbase.$(OBJ) cryptstream.$(OBJ) datetime.$(OBJ) \
-       dccengine.$(OBJ) fileconf.$(OBJ) ircsocket.$(OBJ) lockable.$(OBJ) \
-       log.$(OBJ) magick.$(OBJ) main.$(OBJ) memoserv.$(OBJ) mstream.$(OBJ) \
-       mstring.$(OBJ) nickserv.$(OBJ) operserv.$(OBJ) textfile.$(OBJ) \
-       trace.$(OBJ) server.$(OBJ) servmsg.$(OBJ) utils.$(OBJ) variant.$(OBJ)
+       commserv.$(OBJ) confbase.$(OBJ) convert.$(OBJ) cryptstream.$(OBJ) \
+       datetime.$(OBJ) dccengine.$(OBJ) fileconf.$(OBJ) ircsocket.$(OBJ) \
+       lockable.$(OBJ) log.$(OBJ) magick.$(OBJ) main.$(OBJ) memoserv.$(OBJ) \
+       mstream.$(OBJ) mstring.$(OBJ) nickserv.$(OBJ) operserv.$(OBJ) \
+       server.$(OBJ) servmsg.$(OBJ) textfile.$(OBJ) trace.$(OBJ) utils.$(OBJ) \
+       variant.$(OBJ)
 
 SUBDIRS=antlr des rx-1.5
 
@@ -56,6 +57,7 @@ base.$(OBJ): base.cpp
 chanserv.$(OBJ): chanserv.cpp
 commserv.$(OBJ): commserv.cpp
 confbase.$(OBJ): confbase.cpp
+convert.$(OBJ): convert.cpp
 cryptstream.$(OBJ): cryptstream.cpp
 datetime.$(OBJ): datetime.cpp
 dccengine.$(OBJ): dccengine.cpp

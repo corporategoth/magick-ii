@@ -14,7 +14,6 @@
 #define _commserv_h
 
 #include "base.h"
-#include "convert.h"
 
 class Committee : public mUserDef
 {

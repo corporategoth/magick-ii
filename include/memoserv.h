@@ -14,7 +14,6 @@
 #define _memoserv_h
 
 #include "base.h"
-#include "convert.h"
 
 struct MemoList;
 struct NewsList;

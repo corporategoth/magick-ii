@@ -15,7 +15,6 @@
 
 #include "base.h"
 #include "ircsocket.h"
-#include "convert.h"
 
 bool checkops(pair<const mstring, pair<bool,bool> > &in);
 bool checkvoices(pair<const mstring, pair<bool,bool> > &in);

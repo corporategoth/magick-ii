@@ -615,7 +615,7 @@ mstring& mstring::operator <<(float f)
 mstring& mstring::operator <<(double d)
 {
 	mstring s;
-	s.Format("%g",d);
+	s.Format("%.8g",d);
 	return *this<<s;
 }
 

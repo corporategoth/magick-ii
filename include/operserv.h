@@ -14,7 +14,7 @@
 #define _operserv_h
 
 #include "base.h"
-#include "convert.h"
+#include "nickserv.h"
 
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
