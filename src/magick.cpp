@@ -68,14 +68,10 @@ int Magick::Start()
     mstring errstring;
     for(i=1;i<argc;i++)
     {
-	/* i've taken out / command switches below cause i hate them myself,
-	courtesy of gnu we now have a common switch format -- for long, and - for short*/
-    	/*if(argv[i][0]=='/')
-	    argv[i][0]='-';*/
 	if(argv[i][0U]=='-')
 	{
 	    argv[i].MakeLower();
-	    if(argv[i]=="-dir")
+	    if(argv[i]=="--dir")
 	    {
 		i++;
 		if(i==argc||argv[i][0U]=='-')
@@ -86,7 +82,7 @@ int Magick::Start()
 		}
 		services_dir=argv[i];
 	    }
-	    else if(argv[i]=="-config")
+	    else if(argv[i]=="--config")
 	    {
 		i++;
 		if(i==argc||argv[i][0U]=='-')
@@ -97,7 +93,7 @@ int Magick::Start()
 		}
 		config_file=argv[i];
 	    }
-	    else if(argv[i]=="-help"||argv[i]=="--help"||argv[i]=="-?"||argv[i]=="-h")
+	    else if(argv[i]=="--help" || argv[i]=="-?" || argv[i]=="-h")
     	    {
 		dump_help(argv[0]);
 		RET(MAGICK_RET_NORMAL);
@@ -115,9 +111,9 @@ int Magick::Start()
 
     // need to transfer wxGetWorkingDirectory() and prepend it to config_file
 #ifdef WIN32
-    MagickIni=new wxFileConfig("magick","",wxGetCwd()+"\\"+config_file);
+    MagickIni=new wxFileConfig("magick","",services_dir+"\\"+config_file);
 #else
-    MagickIni=new wxFileConfig("magick","",wxGetCwd()+"/"+config_file);
+    MagickIni=new wxFileConfig("magick","",services_dir+"/"+config_file);
 #endif
     if(MagickIni==NULL)
     {
@@ -139,9 +135,9 @@ int Magick::Start()
 	RET(MAGICK_RET_TERMINATE);
 
 #ifdef WIN32
-    FILE *logfile = fopen((wxGetCwd()+"\\"+Files_LOGFILE).c_str(), "w+");
+    FILE *logfile = fopen((services_dir+"\\"+Files_LOGFILE).c_str(), "w+");
 #else
-    FILE *logfile = fopen((wxGetCwd()+"/"+Files_LOGFILE).c_str(), "w+");
+    FILE *logfile = fopen((services_dir+"/"+Files_LOGFILE).c_str(), "w+");
 #endif
     logger->ChangeFile(logfile);
 
@@ -150,11 +146,6 @@ int Magick::Start()
     LoadInternalMessages();
     LoadExternalMessages();
 
-
-    //todo here if !win32, freopen stdout,stdin, and stderr and spawn off.
-
-
-    //open_log();
 
 #if 0
 #ifndef WIN32
@@ -342,11 +333,14 @@ void Magick::dump_help(mstring & progname)
     FT("Magick::dump_help", (progname));
 
     // This needs to be re-written.
-    cout<<"Magick IRC Services are copyright (c) 1996-1998 Preston A. Elder, W. King.\n"
-	<<"    E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet,Prez@Effnet,Prez@DarkerNet\n"
-	<<"    E-mail: <ungod@magick.tm>   IRC: Notagod@Effnet,Ungod@DarkerNet\n"
+    cout
+	<<"Magick IRC Services\n"
+	<<"    (c) 1996-2000 Preston A. Elder <prez@magick.tm>.\n"
+	<<"    (c) 1999-2000 William King <ungod@magick.tm>.\n"
+	<<"\n"
 	<<"This program is free but copyrighted software; see the file COPYING for\n"
 	<<"details.  Please do not forget to read ALL the files in the doc directory.\n\n"
+	<<"\n"
 	<<"Syntax: "<<progname.c_str()<<" [opts]\n\n"
 	<<"-remote server[:port]   Connect to the specified server.\n"
 	<<"-name servername        Our server name (e.g. hell.darker.net).\n"
@@ -461,9 +455,9 @@ void Magick::LoadExternalMessages()
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
 #ifdef WIN32
-    wxFileConfig fconf("magick","",wxGetCwd()+"\\lang\\"+Files_LANGUAGE+".lng");
+    wxFileConfig fconf("magick","",services_dir+"\\lang\\"+Files_LANGUAGE+".lng");
 #else
-    wxFileConfig fconf("magick","",wxGetCwd()+"/lang/"+Files_LANGUAGE+".lng");
+    wxFileConfig fconf("magick","",services_dir+"/lang/"+Files_LANGUAGE+".lng");
 #endif
     int i;
     // change this to not just update the internal defaults but also to
@@ -476,16 +470,91 @@ int Magick::doparamparse()
 {
     NFT("Magick::doparamparse");
     mstring temp;
-    int argc=argv.size(),i;
+    int argc=argv.size(),i, fwdargs;
     for(i=1;i<argc;i++)
     {
-	/* i've taken out / command switches below cause i hate them myself,
-	courtesy of gnu we now have a common switch format -- for long, and - for short*/
-    	/*if(argv[i][0]=='/')
-	    argv[i][0]='-';*/
 	if(argv[i][0U]=='-')
 	{
 	    argv[i].MakeLower();
+
+
+
+#if 0
+	    // This is put on hold until we can find a REASONABLE
+	    // way to do this without writing everything twice.
+	    fwdargs=0;
+	    if (argv[i][1U]=='-')
+	    {	// Long Arguments
+		switch(argv[i])
+		{
+		case "--remote":    // -r
+		    break;
+		case "--name":	    // -n
+		    break;
+		case "--desc":	    // -d
+		    break;
+		case "--user":	    // -u
+		    break;
+		case "--host":	    // -h
+		    break;
+		case "--log":	    // -l
+		    break;
+		case "--live":	    // -b
+		case "--nofork":
+		    break;
+		case "--relink":    // -c
+		    break;
+		case "--gmt":	    // -g
+		    break;
+		case "--update":    // -w
+		    break;
+		case "--dir":
+		    i++;
+		    break;
+		case "--config":
+		    i++;
+		    break;
+		}
+
+	    }
+	    else
+	    {			// Short Arguments
+		// This will use the fwdargs veriable to determine
+		// how many arguments to skip forward for the paramater
+		// required (ie. so -uhcg is valid, and you have a
+		// user host gmt  paramater following it).
+		int j;
+		for(j=1; j<argv[i].Len(); j++)
+		{
+		    switch(argv[i][j])
+		    {
+		    case 'r':	    // --remote
+			break;
+		    case 'n':	    // --name
+			break;
+		    case 'd':	    // --desc
+			break;
+		    case 'u':	    // --user
+			break;
+		    case 'h':	    // --host
+			break;
+		    case 'l':	    // --log
+			break;
+		    case 'b':	    // --live / --nofork
+			break;
+		    case 'c':	    // --relink
+			break;
+		    case 'g':	    // --gmt
+			break;   
+		    case 'w':	    // --update
+			break;
+		    }
+		}
+	    }
+#endif
+
+
+
 	    if(argv[i]=="-remote")
 	    {
 		i++;
