@@ -123,7 +123,7 @@ UNLOCK           =$1 unlocked the value of $2 for nickname $3.
 ;
 [CHANSERV]
 REGISTER         =$1 registered channel $2.
-DROP             =$1 droped channel $2 ($3).
+DROP             =$1 dropped channel $2 ($3).
 IDENTIFY         =$1 identified as founder for channel $2.
 IDENTIFY_FAILED  =$1 failed identification for channel $2.
 SUSPEND          =$1 suspended channel $2 for $3.
@@ -361,7 +361,7 @@ REC_FORNONSERVER =Received $1 from $2 for non-existent server $3.
 DUP_CHAN         =Duplicate $1 received from $2 for channel $3.
 MODE_INEFFECT    =MODE change $1$2 received from $3 for $4 that is already in effect.
 MODE_NOTINCHAN   =MODE change $1$2 received from $3 for $4 who is not in channel $5.
-FOUNDER_NOTREGD  =Channel $1 has a founder of $2 who is not registered (channel droped).
+FOUNDER_NOTREGD  =Channel $1 has a founder of $2 who is not registered (channel dropped).
 HOST_NOTREGD     =Nickname $1 was listed as the host of $2, but does not exist (rectified)!
 SLAVE_NOTREGD    =Nickname $1 was listed as a slave of $2, but does not exist (rectified)!
 KEYMISMATCH      =Channel key mismatch ($1 | $2) for channel $3 from $4.

@@ -148,7 +148,7 @@
 03 =REGD::This will de-register your nickname.  Doing so will
 04 =REGD::remove you from all channel access lists you are on,
 05 =REGD::force all channels you are founder of to be given to
-06 =REGD::the co-founder or be droped if there is none, remove
+06 =REGD::the co-founder or be dropped if there is none, remove
 07 =REGD::all your memos (read or unread), and if done on a host
 08 =REGD::nickname, drop all slaves of it.
 09 =REGD::
@@ -1395,11 +1395,11 @@
 01 =REGD::SET <channel> COFOUNDER <co-founder>
 02 =REGD::
 03 =REGD::This will establish a 'will' for the channel, ie.
-04 =REGD::who will get it if your nickname is droped, or
+04 =REGD::who will get it if your nickname is dropped, or
 05 =REGD::expires.  The person who is co-founder has NO
 06 =REGD::extra access than what they are given on the access
 07 =REGD::list like every other user, its just a method of
-08 =REGD::ensuring that if your nick is droped, the channel
+08 =REGD::ensuring that if your nick is dropped, the channel
 09 =REGD::does not go with it.  You must identify as founder
 10 =REGD::to use this command.
 
@@ -2128,7 +2128,7 @@
 02 =REGD::
 03 =REGD::This will list out the members of the specified
 04 =REGD::committee.  DEFUNCT will appear after their nickname
-05 =REGD::if their nickname has been droped since being added.
+05 =REGD::if their nickname has been dropped since being added.
 
 [COMMSERV/LOGON]
 01 =REGD::Committee's can have LOGON notices, which will be
