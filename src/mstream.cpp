@@ -25,9 +25,11 @@
 #include "utils.h"
 #include <math.h>
 // #include <zlib.h>
+
 #include "zlib/zlib.h"
 #include <stdarg.h>
 #include "log.h"
+#include "ace/OS.h"
 
 #define BUF_TEMP_SIZE 10000
 void ConvertToIeeeExtended(double num, unsigned char *bytes);
@@ -1489,7 +1491,7 @@ off_t wxFile::Tell() const
 {
   wxASSERT( IsOpened() );
 
-  int iRc = tell(m_fd);
+  int iRc = ACE_OS::lseek((ACE_HANDLE)m_fd, 0, SEEK_CUR);
   if ( iRc == -1 ) {
     wxLogSysError(_("can't get seek position on file descriptor %d"), m_fd);
     return -1;
@@ -1506,7 +1508,7 @@ off_t wxFile::Length() const
   #if defined(  _MSC_VER ) && !defined( __MWERKS__ )
     int iRc = _filelength(m_fd);
   #else
-    int iRc = tell(m_fd);
+    int iRc = Tell();
     if ( iRc != -1 ) {
       // @ have to use const_cast :-(
       int iLen = ((wxFile *)this)->SeekEnd();
@@ -1542,7 +1544,7 @@ bool wxFile::Eof() const
     // @@ this doesn't work, of course, on unseekable file descriptors
     off_t ofsCur = Tell(),
           ofsMax = Length();
-    if ( ofsCur == wxInvalidOffset || ofsMax == wxInvalidOffset )
+    if ( ofsCur == -1 || ofsMax == -1 )
       iRc = -1;
     else
      iRc = ofsCur == ofsMax;
