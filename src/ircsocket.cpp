@@ -58,17 +58,16 @@ int IrcSvcHandler::svc(void)
 
 int IrcSvcHandler::handle_input_i(const mstring& data)
 {
-#if 0
     // relevant code in mstring needs to be coded
     if(data.Contains("\n"))
     {
 	int i;
 	for(i=0;i<data.WordCount("\n");i++)
-	    mBase::push_message(data.Word(i,"\n"));
+	    if(data.ExtractWord(i,"\n")!="")
+		mBase::push_message(data.ExtractWord(i,"\n"));
     }
     else
         mBase::push_message (data);
-#endif
     mBase::push_message (data);
     return 0;
 }

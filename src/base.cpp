@@ -95,6 +95,9 @@ void *thread_handler(void *owner)
 	    tmp[0]=message.After(" ").Before(" ");		// 2nd arg
 	    tmp[1]=message.After(" ").After(" ").Before(" ");	// 3rd arg
 	    tmp[0].MakeUpper();
+	    
+	    // check if on ignore list and throw to the "ignore logging service" if log ignored user commands is on.
+	    // maybe we should have a hit count for logging? x ignores in x minutes = start logging that sucker. 
 
 	    if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE") {
 		mstring names;

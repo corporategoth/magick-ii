@@ -67,7 +67,7 @@ public:
 	int Find(const mstring & in, int count=1)const;
 	int Find(char ch, bool bFromEnd=false)const;
 	void Empty();
-	bool Contains(const mstring& in);
+	bool Contains(const mstring& in)const;
 	mstring& Prepend(char ch, int count=1);
 	mstring& Prepend(const mstring& in);
 	mstring& Append(char ch, int count=1);
@@ -108,8 +108,9 @@ public:
 	mstring(inherited::size_type n, char c);
 	mstring(inherited::const_iterator first, inherited::const_iterator last);
 	mstring();
-	int WordCount(mstring &separators);
-	mstring Word(int count,mstring& separators);
+	int WordCount(const mstring &separators)const;
+	mstring ExtractWord(int count,const mstring& separators)const;
+	int WordPosition(int count,const mstring& separators)const;
 
 	operator const char *() const { return c_str(); }
 

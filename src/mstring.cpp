@@ -304,7 +304,7 @@ mstring& mstring::Prepend(char ch, int count)
 	return *this;
 }
 
-bool mstring::Contains(const mstring & in)
+bool mstring::Contains(const mstring & in)const
 {
 	return Find(in)!=-1;
 }
@@ -568,14 +568,57 @@ mstring operator+(const char *psz, const mstring& string)
 	mstring Result=mstring(psz)+string;
 	return Result;
 }
-int mstring::WordCount(mstring &separators)
+int mstring::WordCount(const mstring &separators)const
 {
     //
     int Result=0;
-
+    size_t i=0;
+    mstring S=*this;
+    while(i<Len())
+    {
+	while(i<Len()&&separators.Contains(S[i]))
+	    i++;
+	if(i<Len())
+	    Result++;
+	while(i<Len()&&!separators.Contains(S[i]))
+	    i++;
+    }
     return Result;
 }
-mstring mstring::Word(int count,mstring& separators)
+mstring mstring::ExtractWord(int count,const mstring& separators)const
 {
-    return "todo";
+    mstring Result;
+    mstring S=*this;
+    int i;
+    i=WordPosition(count,separators);
+    if(i!=-1)
+    {
+	while(i<Len()&&!separators.Contains(S[(unsigned int)i]))
+	{
+	    Result<<S[(unsigned int)i];
+	    i++;
+	}
+    }
+    return Result;
+}
+int mstring::WordPosition(int N,const mstring& separators)const
+{
+    unsigned int i=0,count=0;
+    mstring S=*this;
+    int Result=0;
+    while(i<Len()&&count!=N)
+    {
+	while(i<Len()&&separators.Contains(S[i]))
+	    i++;
+	if(i<Len())
+	    count++;
+	if(count!=N)
+	{
+	    while(i<Len()&&!separators.Contains(S[i]))
+		i++;
+	}
+	else
+	    Result=i;
+    }
+    return Result;
 }
