@@ -1598,6 +1598,71 @@ int PREFIX(predefinedEntityName)(const ENCODING *enc, const char *ptr, const cha
   	  if (CHAR_MATCHES(enc, ptr, ASCII_s))
 	    return ASCII_APOS;
 	}
+      } else if  (CHAR_MATCHES(enc, ptr, ASCII_s)) {
+	ptr += MINBPC(enc);
+	if (CHAR_MATCHES(enc, ptr, ASCII_c)) {
+	  char num[4];
+	  memset(num, 0, 4);
+	  ptr += MINBPC(enc);
+	  num[0] = BYTE_TO_ASCII(enc, ptr);
+	  if (isdigit(num[0]))
+	  {
+	    return atoi(num);
+	  }
+	}
+      }
+      break;
+    }
+  case 5:
+    switch (BYTE_TO_ASCII(enc, ptr)) {
+    case ASCII_a:
+      ptr += MINBPC(enc);
+      if  (CHAR_MATCHES(enc, ptr, ASCII_s)) {
+	ptr += MINBPC(enc);
+	if (CHAR_MATCHES(enc, ptr, ASCII_c)) {
+	  char num[4];
+	  memset(num, 0, 4);
+	  ptr += MINBPC(enc);
+	  num[0] = BYTE_TO_ASCII(enc, ptr);
+	  if (isdigit(num[0]))
+	  {
+	    ptr += MINBPC(enc);
+	    num[1] = BYTE_TO_ASCII(enc, ptr);
+	    if (isdigit(num[1]))
+	    {
+	      return atoi(num);
+	    }
+	  }
+        }
+      }
+      break;
+    }
+  case 6:
+    switch (BYTE_TO_ASCII(enc, ptr)) {
+    case ASCII_a:
+      ptr += MINBPC(enc);
+      if  (CHAR_MATCHES(enc, ptr, ASCII_s)) {
+	ptr += MINBPC(enc);
+	if (CHAR_MATCHES(enc, ptr, ASCII_c)) {
+	  char num[4];
+	  memset(num, 0, 4);
+	  ptr += MINBPC(enc);
+	  num[0] = BYTE_TO_ASCII(enc, ptr);
+	  if (isdigit(num[0]))
+	  {
+	    ptr += MINBPC(enc);
+	    num[1] = BYTE_TO_ASCII(enc, ptr);
+	    if (isdigit(num[1]))
+	    {
+	      ptr += MINBPC(enc);
+	      num[2] = BYTE_TO_ASCII(enc, ptr);
+	      if (isdigit(num[2]))
+	      {
+		return atoi(num);
+	      }
+	    }
+	  }
+        }
       }
       break;
     }

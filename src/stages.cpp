@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2001/12/25 11:15:29  prez
+** Fixed up my ASC hack in XML parsing
+**
 ** Revision 1.12  2001/12/25 08:43:13  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -599,10 +602,11 @@ long XMLStage::Consume()
 	RET(-1 * static_cast<long>(SE_XML_HaveGenerator));
     }
 
-    long res, xres = 1, total = 0;
+    long res = 0, total = 0, xres = SXP::err_no_error;
     char buffer[DEF_STAGE_BUFFER];
     COM(("XMLStage: Reading from previous stage ...")); FLUSH();
-    while ((res = input->Read(buffer, sizeof(buffer))) > 0)
+    while ((xres == SXP::err_no_error) &&
+	   (res = input->Read(buffer, sizeof(buffer))) > 0)
     {
 	CP(("XMLStage: Read from previous stage returned %d", res)); FLUSH();
 	if (res < static_cast<long>(sizeof(buffer)))
