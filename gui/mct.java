@@ -101,7 +101,8 @@ public class mct extends JApplet implements ActionListener
 
     public String getConfigData()
     {
-	try {
+	try
+	{
 	    String cfg = new String();
 	    cfg += "# Automatically generated configuration file for\n";
 	    cfg += "# Magick IRC Services v2.0.\n";

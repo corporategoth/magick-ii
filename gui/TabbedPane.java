@@ -391,7 +391,8 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
     protected void setFmtField(JFormattedTextField f, IniParser data, String token)
     {
 	String val = data.getValue(token);
-	try {
+	try
+	{
 	    Object o = f.getFormatter().stringToValue(val);
 	    f.setValue(o);
 	    f.commitEdit();
