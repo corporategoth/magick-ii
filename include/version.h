@@ -40,7 +40,7 @@ RCSID(version_h, "@(#) $Id$");
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 1;
+const int BUILD_NUMBER = 0;
 
 /* Versioning Information
  *
@@ -69,6 +69,7 @@ const int BUILD_NUMBER = 1;
 const mstring FULLNAME = "Magick IRC Services";
 const mstring SLOGAN = "Power to the PEOPLE!";
 const mstring EMAIL = "general@magick.tm";
+const mstring LISTSUBSCRIBE = "http://lists.sourceforge.net/lists/listinfo/magick-general";
 const mstring HOMEPAGE = "http://www.magick.tm";
 const mstring DOWNLOAD = "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/beta";
 const mstring RELEASE = "b13";
@@ -93,8 +94,7 @@ FULLNAME + " - " + SLOGAN, "  (c) 1997-2002 Preston Elder <prez@magick.tm>",
 	"The " + mstring(PACKAGE) + " home page can be found at:", "    " + HOMEPAGE + "", "",
 	mstring(PACKAGE) + " is freely downloadable from:", "    " + DOWNLOAD + "", "",
 	"The " + mstring(PACKAGE) + " public mailing list is " + EMAIL + ".",
-	"To subscribe, email majordomo@magick.tm with 'subscribe",
-	mstring(PACKAGE) + "' (no quotes) in the text of the message.", "",
+	"Yoy may subscribe to this mailing list at:", "    " + LISTSUBSCRIBE + "", "",
 	"Please type /MSG %s CONTRIB for full credits (flood).", "---EOM---"};
 
 // This gets sent with /msg HelpServ CONTRIB
@@ -107,8 +107,8 @@ FULLNAME + " - " + SLOGAN, "", "Programmers: ", "    PreZ           Preston A. E
 	"    Coca Cola Amatil     Life support ... *bleep, bleep*",
 	"    Nescafe Blend 43     See above (really, any kind of caffeine!)",
 	"    Tschaicovski         If you don't understand ... you never will.", "", "Also Thanks To:",
-	"    Kelly Hill, Emma Ellison, Marieke Bermon, Matt Heckaman", "", "Library Credits: ",
-	"    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
+	"    Kelly Hill, Emma Ellison, Marieke Bermon, Matt Heckaman", "    Brian King, Jack Handy, Daniel Andersson", "",
+	"Library Credits: ", "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
 	"    cint           http://root.cern.ch/root/Cint.html",
 	"    openssl        http://www.openssl.org (blowfish + md5)",
 	"    expat          http://www.jclark.com/xml/expat.html",

@@ -68,6 +68,7 @@ const int BUILD_NUMBER = 0;
 const mstring FULLNAME			= "Magick IRC Services";
 const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "general@magick.tm";
+const mstring LISTSUBSCRIBE             = "http://lists.sourceforge.net/lists/listinfo/magick-general";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/beta";
 const mstring RELEASE			= "b13";
@@ -98,8 +99,8 @@ mstring(PACKAGE)+" is freely downloadable from:",
 "    "+DOWNLOAD+"",
 "",
 "The "+mstring(PACKAGE)+" public mailing list is "+EMAIL+".",
-"To subscribe, email majordomo@magick.tm with 'subscribe",
-mstring(PACKAGE)+"' (no quotes) in the text of the message.",
+"Yoy may subscribe to this mailing list at:",
+"    "+LISTSUBSCRIBE+"",
 "",
 "Please type /MSG %s CONTRIB for full credits (flood).",
 "---EOM---"

@@ -21,8 +21,8 @@ it).  The alpha team is an OPEN testing team, and you may
 join it by first downloading and installing/setting up the
 current alpha version of Magick (if you cannot do this on
 your own, its recommended you do not join the alpha team),
-and then e-mailing majordomo@magick.tm with "subscribe
-alpha" (no quotes, on one line).
+and then subscribing to the alpha mailing list at:
+http://lists.sourceforge.net/lists/listinfo/magick-alpha
 
 The Magick Beta Team <beta@magick.tm> test versions
 of magick that have been through alpha testing, and are in
@@ -31,8 +31,8 @@ is to find bugs before Magick is released, so they do not
 get out into the release version of Magick.  The beta team
 is an OPEN testing team, and you may join it by first down-
 loading and installing/setting up the current beta version
-of Magick, and then e-mailing majordomo@magick.tm with
-"subscribe beta" (no quotes, on one line).
+of Magick, and subscribing to the beta mailing list at:
+http://lists.sourceforge.net/lists/listinfo/magick-beta
 
 The following people have contributed to the final product
 of Magick II (testers not included):

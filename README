@@ -64,6 +64,16 @@ distinct protocols around nowadays, however Magick has been
 designed to cope with them all, with a minimum of fuss (as long
 as they support services of this nature).
 
+The Magick home page can be found at:
+    http://www.magick.tm
+
+Magick is freely downloadable from:
+    ftp://ftp.magick.tm/pub/magick.tm/Magick-II
+
+The Magick public mailing list is general@magick.tm.
+Yoy may subscribe to this mailing list at:
+    http://lists.sourceforge.net/lists/listinfo/magick-general
+
 3. SUPPORT FILES
 ================
 
@@ -109,6 +119,11 @@ This key file should be generated with magick_keygen.  This file
 may not be used by more than one set of services (unless the binaries
 are copied), as each compile requires regenerating this file.  This
 filename is a setting in the magick.ini file, and may be changed.
+
+ircd/*.ini - These files contain the details that define how each
+IRC protocol works.  The IRC protocol (RFC1459) has been expanded
+by many different IRCD coding teams, and in many different ways,
+and these files help cope with the differences.
 
 lang - This directory is where all language files (*.lng, *.lfo and
 *.hlp) will be stored.  The path name actually used is a setting
@@ -164,10 +179,10 @@ on what each configuration item does, and what the valid settings
 for it are.
 
 The second method requires you to have the Java Runtime Environment
-installed on your machine.  Inside the gui directory, a jar file
-called mct.jar is included.  This will be installed in the same
-location as the magick binaries upon make install.  This is the
-Magick Configuration Tool.  To run it, type:
+(version 1.4.0 or greater) installed on your machine.  Inside the
+gui directory, a jar file called mct.jar is included.  This will
+be installed in the same location as the magick binaries upon make
+install.  This is the Magick Configuration Tool.  To run it, type:
     java -jar mct.jar
 
 This will load up a java applet, which allows you to create a
@@ -181,13 +196,12 @@ The third method of configuring magick is simply to go to the
 URL http://www.magick.tm/config.  If your browser does not have
 Java installed, it will prompt you to install it.  This web
 page will bring up the Magick Configuration Tool in your browser.
-You can then follow the same steps as if you were running the
-configuration tool locally to configure magick.  Once you have
-finished your configuration however, unlike running the Magick
-Configuration Tool locally, you will not be able to save it to
-a file.  Instead, you should click on the Current File tab,
-and then click 'Update', and then cut and paste the contents
-of the page into your own magick.ini file.
+The first thing it will do is prompt to verify the signature on
+the applet.  If you do not do this, you will not be able to save
+a configuration file directly, but will instead have to generate
+it in the applet (in the Current File tab), and cut and paste it
+to a file yourself.  Otherwise, the applet performs exactly like
+it would if run locally.
 
 5. GENERAL USAGE
 ================
