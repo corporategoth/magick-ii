@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.133  2000/09/12 21:17:02  prez
+** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
+**
 ** Revision 1.132  2000/09/10 09:53:43  prez
 ** Added functionality to ensure the order of messages is kept.
 **
@@ -4572,7 +4575,7 @@ mstring NickServ::findnextnick(mstring in)
 	    while (retval.Len() < Parent->server.proto.NickLen())
 	    {
 		retval << Parent->nickserv.Suffixes()[i];
-		if (!Parent->nickserv.IsLive(retval) &&
+		if (!Parent->nickserv.IsLiveAll(retval) &&
 		    !Parent->nickserv.IsStored(retval))
 		{
 		    RET(retval);
@@ -4590,7 +4593,7 @@ mstring NickServ::findnextnick(mstring in)
 	    retval.Format("%s%05d",
 		    Parent->nickserv.Suffixes().c_str(),
 		    rand() % 99999);
-	    if (!Parent->nickserv.IsLive(retval) &&
+	    if (!Parent->nickserv.IsLiveAll(retval) &&
 		!Parent->nickserv.IsStored(retval))
 	    {
 		RET(retval);
@@ -4899,7 +4902,21 @@ void NickServ::RemCommands()
 bool NickServ::IsLive(mstring in)
 {
     FT("NickServ::IsLive", (in));
-    RLOCK(("NickServ", "live"));
+    bool retval = false;
+    map<mstring, Nick_Live_t>::iterator i;
+    RLOCK(("NickServ", "live", in.LowerCase()));
+    if ((i = live.find(in.LowerCase())) != live.end())
+    {
+	if (i->second.Squit() == "")
+	    retval = true;
+    }
+    RET(retval);
+}
+
+bool NickServ::IsLiveAll(mstring in)
+{
+    FT("NickServ::IsLiveAll", (in));
+    RLOCK(("NickServ", "live", in.LowerCase()));
     bool retval = (live.find(in.LowerCase())!=live.end());
     RET(retval);
 }
@@ -4907,7 +4924,7 @@ bool NickServ::IsLive(mstring in)
 bool NickServ::IsStored(mstring in)
 {
     FT("NickServ::IsStored", (in));
-    RLOCK(("NickServ", "stored"));
+    RLOCK(("NickServ", "stored", in.LowerCase()));
     bool retval = (stored.find(in.LowerCase())!=stored.end());
     RET(retval);
 }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.131  2000/09/12 21:17:02  prez
+** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
+**
 ** Revision 1.130  2000/09/09 02:17:48  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -396,9 +399,13 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     // We DONT want any processing once we're gone ... nowhere to send
     // back the messages (duh!).
     mBase::shutdown();
+
     // Should I do this with SQUIT protection ...?
+    { WLOCK(("NickServ", "live"));
+    WLOCK2(("ChanServ", "live"));
     Parent->nickserv.live.clear();
     Parent->chanserv.live.clear();
+    }
 
     if(!(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
 	    Parent->Shutdown()) && Parent->Connected())
@@ -688,7 +695,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	CB(2, Parent->server.ToBeSquit.size());
 	for (iter=Parent->server.ToBeSquit[*tmp].begin(); iter!=Parent->server.ToBeSquit[*tmp].end(); iter++)
 	{
-	    if (Parent->nickserv.IsLive(*iter))
+	    if (Parent->nickserv.IsLiveAll(*iter))
 	    {
 		Parent->nickserv.live[*iter].Quit("FAKE SQUIT - " + *tmp);
 		WLOCK(("NickServ", "live"));
@@ -738,7 +745,7 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     }}
     for (k=SquitMe.begin(); k != SquitMe.end(); k++)
     {
-	if (Parent->nickserv.IsLive(*k))
+	if (Parent->nickserv.IsLiveAll(*k))
 	{
 	    Parent->nickserv.live[*k].Quit("SQUIT - " + *tmp);
 	    WLOCK(("NickServ", "live"));
@@ -760,7 +767,7 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     mstring *tmp = (mstring *) arg;
     Nick_Live_t *entry;
 
-    if (Parent->nickserv.IsLive(*tmp))
+    if (Parent->nickserv.IsLiveAll(*tmp))
     {
 	entry = &Parent->nickserv.live[tmp->LowerCase()];
 	if (entry->InFlight.File())
@@ -1243,7 +1250,7 @@ int EventTask::svc(void)
 			    nli != Parent->nickserv.live.end(); nli++)
 	    {
 		nsi = Parent->nickserv.stored.find(nli->first);
-		if (!nli->second.IsServices() &&
+		if (!nli->second.IsServices() && nli->second.Squit() == "" &&
 		    nsi != Parent->nickserv.stored.end() &&
 		    nsi->second.Protect() && !nsi->second.IsOnline() &&
 		    nli->second.MySignonTime().SecondsSince() >=

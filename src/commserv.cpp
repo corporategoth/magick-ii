@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/09/12 21:17:02  prez
+** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
+**
 ** Revision 1.73  2000/09/09 02:17:48  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -847,7 +850,7 @@ CommServ::CommServ()
 bool CommServ::IsList(mstring in)
 {
     FT("CommServ::IsList", (in));
-    RLOCK(("CommServ", "list"));
+    RLOCK(("CommServ", "list", in.LowerCase()));
     bool retval = (list.find(in.UpperCase())!=list.end());
     RET(retval);
 }

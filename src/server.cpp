@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.128  2000/09/12 21:17:02  prez
+** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
+**
 ** Revision 1.127  2000/09/10 09:53:43  prez
 ** Added functionality to ensure the order of messages is kept.
 **
@@ -1610,7 +1613,13 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 	    break;
 	}
 	// Sign ourselves in ...
+
 	{ WLOCK(("NickServ", "live"));
+	if (Parent->nickserv.IsLiveAll(nick.LowerCase()))
+	{
+	    Parent->nickserv.live[nick.LowerCase()].Quit("SQUIT - " + Parent->nickserv.live[nick.LowerCase()].Server());
+	    Parent->nickserv.live.erase(nick.LowerCase());
+	}
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);
 	if (proto.P12() || proto.Signon() == 1004)
@@ -1646,8 +1655,11 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
     else
     {
 	{ WLOCK(("NickServ", "live"));
-	if (!Parent->nickserv.IsLive(newnick))
+	if (Parent->nickserv.IsLiveAll(newnick.LowerCase()))
+	{
+	    Parent->nickserv.live[newnick.LowerCase()].Quit("SQUIT - " + Parent->nickserv.live[newnick.LowerCase()].Server());
 	    Parent->nickserv.live.erase(newnick.LowerCase());
+	}
 	Parent->nickserv.live[newnick.LowerCase()] =
 		Parent->nickserv.live[oldnick.LowerCase()];
 	Parent->nickserv.live.erase(oldnick.LowerCase());
@@ -2799,7 +2811,7 @@ void NetworkServ::execute(const mstring & data)
 			}
 		}}
 
-		if (Parent->nickserv.IsLive(sourceL))
+		if (Parent->nickserv.IsLiveAll(sourceL))
 		{
 		    // IF the squit server = us, and the signon time matches
 		    if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()
@@ -3370,7 +3382,7 @@ void NetworkServ::execute(const mstring & data)
 		    }
 	    }}
 
-	    if (Parent->nickserv.IsLive(sourceL))
+	    if (Parent->nickserv.IsLiveAll(sourceL))
 	    {
 		// IF the squit server = us, and the signon time matches
 		if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()
@@ -3803,7 +3815,7 @@ void NetworkServ::execute(const mstring & data)
 		    }
 	    }}
 
-	    if (Parent->nickserv.IsLive(sourceL))
+	    if (Parent->nickserv.IsLiveAll(sourceL))
 	    {
 	        // IF the squit server = us, and the signon time matches
 	        if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()

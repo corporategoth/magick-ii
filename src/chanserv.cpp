@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.206  2000/09/12 21:17:01  prez
+** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
+**
 ** Revision 1.205  2000/09/11 10:58:19  prez
 ** Now saves in in GMT
 **
@@ -2013,7 +2016,7 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
     }
     size_t users = clive->Users();
 
-    if (Parent->nickserv.IsLive(newnick))
+    if (Parent->nickserv.IsLiveAll(newnick))
 	nlive = &Parent->nickserv.live[newnick.LowerCase()];
     else
     {
@@ -5693,7 +5696,7 @@ void ChanServ::RemCommands()
 bool ChanServ::IsLive(mstring in)
 {
     FT("ChanServ::IsLive", (in));
-    RLOCK(("ChanServ", "live"));
+    RLOCK(("ChanServ", "live", in.LowerCase()));
     bool retval = live.find(in.LowerCase())!=live.end();
     RET(retval);
 }
@@ -5701,7 +5704,7 @@ bool ChanServ::IsLive(mstring in)
 bool ChanServ::IsStored(mstring in)
 {
     FT("ChanServ::IsStored", (in));
-    RLOCK(("ChanServ", "stored"));
+    RLOCK(("ChanServ", "stored", in.LowerCase()));
     bool retval = stored.find(in.LowerCase())!=stored.end();
     RET(retval);
 }

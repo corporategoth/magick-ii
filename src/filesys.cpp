@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/09/12 21:17:02  prez
+** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
+**
 ** Revision 1.48  2000/09/05 10:53:06  prez
 ** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
 ** tracing -- also modified keygen to allow for cmdline generation (ie.
@@ -1105,7 +1108,7 @@ DccXfer::~DccXfer()
     // If we know the size, verify it, else we take
     // what we get!
     if (i_Type == Get &&
-	Parent->nickserv.IsLive(i_Source) &&
+	Parent->nickserv.IsLiveAll(i_Source) &&
 	Parent->nickserv.live[i_Source.LowerCase()].InFlight.File() &&
 	Parent->nickserv.live[i_Source.LowerCase()].InFlight.InProg())
     {
@@ -1269,7 +1272,7 @@ void DccXfer::Cancel()
     NFT("DccXfer::Cancel");
     WLOCK(("DccMap", "xfers", i_DccId, "i_Total"));
     WLOCK2(("DccMap", "xfers", i_DccId, "i_File"));
-    if (Parent->nickserv.IsLive(i_Source))
+    if (Parent->nickserv.IsLiveAll(i_Source))
 	Parent->nickserv.live[i_Source.LowerCase()].InFlight.Cancel();
     MCB(i_Total);
     CB(1, i_File.Length());

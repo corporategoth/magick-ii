@@ -25,6 +25,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/09/12 21:17:01  prez
+** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
+**
 ** Revision 1.49  2000/09/01 10:54:38  prez
 ** Added Changing and implemented Modify tracing, now just need to create
 ** DumpB() and DumpE() functions in all classes, and put MCB() / MCE() calls
@@ -594,6 +597,7 @@ public:
 
     bool IsStored(mstring in);
     bool IsLive(mstring in);
+    bool IsLiveAll(mstring in);
     map<mstring,Nick_Stored_t> stored;
     map<mstring,Nick_Live_t> live;
     map<mstring,mDateTime> recovered;
