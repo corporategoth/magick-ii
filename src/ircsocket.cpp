@@ -32,7 +32,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     char data[513];
     int recvResult;
     recvResult=peer().recv_n(data,512);
-    T_Chatter chatter(T_Chatter::From,mstring("IrcServer :")+mstring(data));
+    CH(T_Chatter::From,mstring("IrcServer :")+mstring(data));
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down
     

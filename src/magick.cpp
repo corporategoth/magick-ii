@@ -38,7 +38,7 @@ int Magick::Start()
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
 
-    FILE *logfile=fopen("magick.log","w+");
+    FILE *logfile=fopen("mdebug.log","w+");
     // the below defaults to stderr if logfile cannot be opened
     wxLogStderr logger(logfile);
 
