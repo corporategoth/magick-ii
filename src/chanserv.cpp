@@ -13,6 +13,7 @@ static int highestlevel=0;
 
 void *chanserv_thread_handler(void *level)
 {
+    ACE_Local_RLock inputbufferlock("chanserv::inputbuffer");
     int ilevel=(int)level;  // 0 get's passed in for the first thread spawned, etc.
     pair<mstring,mstring> data;
 
@@ -24,7 +25,7 @@ void *chanserv_thread_handler(void *level)
 
 	// brackets are here so that the lock exists only as long as we need it.
 	{
-	    ACE_Local_RLock inputbufferlock("chanserv::inputbuffer");
+	    ACE_Guard<ACE_Local_RLock> lockguard(inputbufferlock);
 	    // check the inputbuffer
 	    if(MagickObject->chanserv.inputbuffer.size()!=0)
 	    {
@@ -59,6 +60,7 @@ void ChanServ::init()
 void ChanServ::push_message(const mstring& servicename, const mstring& message)
 {
     ACE_Local_WLock inputbufferlock("chanserv::inputbuffer");
+    ACE_Guard<ACE_Local_WLock> lockguard(inputbufferlock);
     pair<mstring,mstring> dummyvar(servicename,message);
     inputbuffer.push_back(dummyvar);
     // put this here in case the processing loop get's hung up, it just *shrugs* and 
