@@ -2188,7 +2188,7 @@
 
 [SERVMSG/STATS]
 01A=REGD:OPER SOP:STATS
-01B=OPER SOP::STATS [NICK|CHANNEL|OTHER|USAGE|ALL]
+01B=OPER SOP::STATS [NICK|CHANNEL|OTHER|OPER|USAGE|ALL]
 02 =REGD::
 03 =REGD::This will show you how long services have been up
 04 =REGD::for, how many users are online (and the maximum
@@ -2220,8 +2220,17 @@
 01 =OPER SOP::STATS OTHER
 02 =OPER SOP::
 03 =OPER SOP::This will give a large output containing general
-04 =OPER SOP::services usage (eg. how many clone overrides, akills,
-05 =OPER SOP::active committees, etc), and it will show the amount
+04 =OPER SOP::services usage (eg. active committees, outstanding
+05 =OPER SOP::memos, etc), and it will show the amount of times
+06 =OPER SOP::(since services have been up) each command has been
+07 =OPER SOP::used for MemoServ, CommServ and ServMsg.
+
+[SERVMSG/STATS/OPER]
+01 =OPER SOP::STATS OPER
+02 =OPER SOP::
+03 =OPER SOP::This will show you general information about operserv
+04 =OPER SOP::lists services usage (eg. how many akills set, how
+05 =OPER SOP::many clone overrides, etc), and it will show the amount
 06 =OPER SOP::of times (since services have been up) each command
 07 =OPER SOP::has been used.
 
