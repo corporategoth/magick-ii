@@ -1,3 +1,13 @@
+* 2003-02-15 17:50  Preston A. Elder <prez@magick.tm>
+  gui/ToolTips.java (1.11):
+  
+  Fixed tooltip
+
+* 2003-02-10 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.73):
+  
+  Created version 2.0s20030210
+
 * 2003-02-08 22:57  Preston A. Elder <prez@magick.tm>
   docs/oper.txt (1.7), docs/oper_docbook.sgml (1.6):
   
