@@ -24,9 +24,8 @@
 #include "mstream.h"
 #include "utils.h"
 #include <math.h>
-// #include <zlib.h>
+#include <zlib.h>
 
-#include "zlib/zlib.h"
 #include <stdarg.h>
 #include "log.h"
 #include "ace/OS.h"

@@ -1,7 +1,6 @@
-# Temp MakeFile (for unix users)
 # RCS-ID:      $Id$
 
-.SUFFIXES:	.o .obj .c .cpp
+include $(TOPDIR)/Makefile.inc
 
 # UNIX compilers will be o, windows obj
 LIBNAME=magick.a
@@ -9,16 +8,19 @@ OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) bob.$(OBJ) chanserv.$(OBJ) confbase.$(OB
        datetime.$(OBJ) fileconf.$(OBJ) ircsocket.$(OBJ) lockable.$(OBJ) log.$(OBJ) \
        magick.$(OBJ) main.$(OBJ) mstream.$(OBJ) mstring.$(OBJ) textfile.$(OBJ) \
        trace.$(OBJ) utils.$(OBJ) variant.$(OBJ)
-
 SUBDIRS=antlr bob
-LIBS=antlr/antlr.a bob/bob.a
-
-CFLAGS=-O2 -I.././include
-PASSTHRU=CC=$(CC) CFLAG=$(CFLAG) LFLAG=$(LFLAG) .SUFFIXES=$(.SUFFIXES) OBJ=$(OBJ)
 
 all: SUBS $(LIBNAME)
 
 clean:
+	@for x in $(SUBDIRS); \
+	do	cd $$x; \
+		if [ -f ./configure ]; \
+		then	./configure; \
+		fi; \
+		$(MAKE) clean $(PASSTHRU); \
+		cd $${OLDPWD}; \
+	done
 	rm -f *.$(OBJ) $(LIBNAME)
 
 SUBS:
@@ -27,8 +29,8 @@ SUBS:
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
-		$(MAKE) $(PASSTHRU); \
 		cd $${OLDPWD}; \
+		$(MAKE) -C $$x $(PASSTHRU); \
 	done
 
 $(LIBNAME): $(OBJS)
