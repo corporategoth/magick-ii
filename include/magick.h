@@ -12,6 +12,8 @@ using namespace std;
 #include "bob.hpp"
 #include "mstring.h"
 
+const int MAGICK_RESTART = 1;
+const int MAGICK_TERMINATE = 2;
 class Magick
 {
 	vector<mstring> argv;

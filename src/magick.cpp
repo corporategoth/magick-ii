@@ -1,5 +1,6 @@
 // RCS-ID:      $Id$
 #include "magick.h"
+#include "log.h"
 
 Magick::Magick(int inargc, char **inargv)
 {
@@ -17,6 +18,14 @@ int Magick::Start()
 		/*log that bob couldn't start*/
 		bob.bobavail=false;
 	}
-	return bob.bobavail;
-}
+	FILE *logfile=fopen("magick.log","w+");
+	// the below defaults to stderr if logfile cannot be opened
+	wxLogStderr logger(logfile);
+	// more stuff to do
 
+	
+	
+	if(logfile!=NULL)
+		fclose(logfile);
+	return MAGICK_TERMINATE;
+}
