@@ -212,6 +212,7 @@ void NetworkServ::SignOnAll()
 	sraw("ISON" + doison);
 }
 
+
 NetworkServ::NetworkServ()
 {
     NFT("NetworkServ::NetworkServ");
@@ -219,10 +220,18 @@ NetworkServ::NetworkServ()
     automation=true;
 }
 
+
 bool NetworkServ::IsServer(mstring server)
 {
     FT("NetworkServ::IsServer", (server));
     RET((ServerList.find(server.LowerCase()) != ServerList.end()));
+}
+
+
+bool NetworkServ::IsSquit(mstring server)
+{
+    FT("NetworkServ::IsSquit", (server));
+    RET((ServerSquit.find(server.LowerCase()) != ServerSquit.end()));
 }
 
 
@@ -873,10 +882,42 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    if (source.IsEmpty()) {
 		// NEW USER
+		sourceL = data.ExtractWord(2, ": ").LowerCase();
+
+		// DONT kill when we do SQUIT protection.
+		map<mstring,list<mstring> >::iterator i;
+		for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
+		{
+		    list<mstring>::iterator k;
+		    for (k=i->second.begin(); k!=i->second.end(); k++)
+			if (*k == sourceL)
+			{
+			    list<mstring>::iterator j = k;  j--;
+			    i->second.erase(k);
+			    k=j;
+			}
+		}
+
+		if (Parent->nickserv.IsLive(sourceL))
+		{
+		    // IF the squit server = us, and the signon time matches
+		    if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()
+			&& Parent->nickserv.live[sourceL].SignonTime() == mDateTime((time_t) atol(data.ExtractWord(4, ": "))))
+		    {
+			Parent->nickserv.live[sourceL].ClearSquit();
+			return;    // nice way to avoid repeating ones self :)
+		    }
+		    else
+		    {
+			Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
+			Parent->nickserv.live.erase(sourceL);
+		    }
+		}
+
 	        // hops = servers from us
 		// services = 1 for service, 0 for user
 	        // DAL4.4.15+ NICK name hops time user host server services :real name
-		Parent->nickserv.live[data.ExtractWord(2, ": ").LowerCase()] =
+		Parent->nickserv.live[sourceL] =
 		    Nick_Live_t(
 			data.ExtractWord(2, ": "),
 			(time_t) atol(data.ExtractWord(4, ": ")),
@@ -947,6 +988,10 @@ void NetworkServ::execute(const mstring & data)
 		Parent->reconnect=false;
 		Parent->ircsvchandler->shutdown();
 	    }
+            else
+            {
+		SignOnAll();
+            }
 	}
 	else if (msgtype=="PING")
 	{
@@ -986,9 +1031,37 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="QUIT")
 	{
 	    // :source QUIT :reason
+	    // :source QUIT :server server
 
-	    Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
-	    Parent->nickserv.live.erase(sourceL);
+	    // OK, 4 words (always for squit), and both words in reason
+	    // are SERVERS, and one of them is the uplink of the other.
+	    if (data.WordCount(": ")==4 && IsServer(data.ExtractWord(3, ": ")) && IsServer(data.ExtractWord(4, ": ")) &&
+		(ServerList[data.ExtractWord(3, ": ").LowerCase()].Uplink() == data.ExtractWord(4, ": ").LowerCase() ||
+		ServerList[data.ExtractWord(4, ": ").LowerCase()].Uplink() == data.ExtractWord(3, ": ").LowerCase()))
+	    {
+		/* Suspected SQUIT
+		 *
+		 * - Add user to ToBeSquit map under servername
+		 * - Add data(4) to ServerSquit map with a timer to clear
+		 *
+		 * IF no SQUIT message received, user is QUIT and server
+		 * is removed from ServerSquit map -- ie. its FAKE!
+		 */
+		Parent->nickserv.live[sourceL].SetSquit();
+		ToBeSquit[data.ExtractWord(4, ": ").LowerCase()].push_back(sourceL);
+		if (ServerSquit.find(Parent->nickserv.live[sourceL].Server().LowerCase()) == ServerSquit.end())
+		{
+		    ServerSquit[Parent->nickserv.live[sourceL].Server().LowerCase()] =
+			ACE_Reactor::instance()->schedule_timer(&tobesquit,
+				new mstring(Parent->nickserv.live[sourceL].Server().LowerCase()),
+				ACE_Time_Value(10));
+		}
+	    }
+	    else
+	    {
+		Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
+		Parent->nickserv.live.erase(sourceL);
+	    }
 	}
 	else
 	{
@@ -1025,7 +1098,6 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(2, ": ").LowerCase(),
 			atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
-		SignOnAll();
 	    }
 	    else
 	    {
@@ -1053,6 +1125,24 @@ void NetworkServ::execute(const mstring & data)
 	    // SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
 	    // SQUIT lifestone.darker.net :Ping timeout
 	    ServerList.erase(data.ExtractWord(2, ": ").LowerCase());
+	    if (ServerSquit.find(data.ExtractWord(2, ": ").LowerCase()) != ServerSquit.end())
+	    {
+		mstring *arg;
+		if (ACE_Reactor::instance()->cancel_timer(
+		    ServerSquit[data.ExtractWord(2, ": ").LowerCase()], (const void **) arg))
+		    delete arg;
+		ServerSquit[data.ExtractWord(2, ": ").LowerCase()] =
+		    ACE_Reactor::instance()->schedule_timer(&squit,
+			new mstring(data.ExtractWord(2, ": ").LowerCase()),
+			ACE_Time_Value(Parent->config.Squit_Protect()));
+	    }
+	    ToBeSquit.erase(data.ExtractWord(2, ": ").LowerCase());
+	    map<mstring,Nick_Live_t>::iterator iter;
+	    for (iter=Parent->nickserv.live.begin(); iter != Parent->nickserv.live.end(); iter++)
+	    {
+		if (iter->second.Server() == data.ExtractWord(2, ": ").LowerCase())
+		    iter->second.SetSquit();
+	    }
 	}
 	else if (msgtype=="STATS")
 	{

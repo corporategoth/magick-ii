@@ -26,8 +26,11 @@
 void Chan_Live_t::Join(mstring nick)
 {
     FT("Chan_Live_t::Join", (nick));
+
     if (users.find(nick.LowerCase())!=users.end())
-	wxLogWarning("Duplicate JOIN message for %s in %s received.", nick.c_str(), i_Name.c_str());
+    {
+	wxLogWarning("Duplicate JOIN message for %s in %s received.", nick.c_str(), i_Name.c_str());	
+    }
     else
     {
 	users[nick.LowerCase()] = pair<bool,bool>(false,false);
@@ -39,16 +42,48 @@ void Chan_Live_t::Join(mstring nick)
 int Chan_Live_t::Part(mstring nick)
 {
     FT("Chan_Live_t::Part", (nick));
-    if (users.find(nick.LowerCase())==users.end())
-	wxLogWarning("PART received for %s who is not in %s.", nick.c_str(), i_Name.c_str());
-    else
+    if (users.find(nick.LowerCase())!=users.end())
     {
 	users.erase(nick.LowerCase());
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
+    else if (squit.find(nick.LowerCase())!=squit.end())
+    {
+	squit.erase(nick.LowerCase());
+	if (Parent->chanserv.IsStored(i_Name))
+	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
+    }
+    else
+	wxLogWarning("PART received for %s who is not in %s.", nick.c_str(), i_Name.c_str());
 
-    RET(users.size());
+    RET(users.size() + squit.size());
+}
+
+void Chan_Live_t::Squit(mstring nick)
+{
+    FT("Chan_Live_t::Squit", (nick));
+    if (users.find(nick.LowerCase())!=users.end())
+    {
+	squit[nick.LowerCase()] = users[nick.LowerCase()];
+	users.erase(nick.LowerCase());
+    }
+}
+
+void Chan_Live_t::UnSquit(mstring nick)
+{
+    FT("Chan_Live_t::UnSquit", (nick));
+
+    // We'll get ALL modes if all users are squit
+    if (!users.size())
+	modes = "";
+
+    if (squit.find(nick.LowerCase())==squit.end())
+    {
+	wxLogWarning("UNSQUIT for %s received, and is not in %s.", nick.c_str(), i_Name.c_str());
+    }
+    else
+	Part(nick);
 }
 
 int Chan_Live_t::Kick(mstring nick, mstring kicker)
@@ -71,7 +106,7 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     FT("Chan_Live_t::ChgNick", (nick, newnick));
     if (users.find(nick.LowerCase())==users.end())
     {
-	wxLogWarning("NICK CHANGE for %s received, and is not in channel.", nick.c_str());
+	wxLogWarning("NICK CHANGE for %s received, and is not in %s.", nick.c_str(), i_Name.c_str());
     }
     else
     {
@@ -136,6 +171,28 @@ void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
     i_Topic_Set_Time = time;
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Topic(i_Topic, i_Topic_Setter, i_Topic_Set_Time);
+}
+
+
+int Chan_Live_t::Squit()
+{
+    NFT("Chan_Livt_t::Squit");
+    RET(squit.size());
+}
+
+
+mstring Chan_Live_t::Squit(int num)
+{
+    FT("Chan_Live_t::Squit", (num));
+    int i;
+    map<mstring, pair<bool, bool> >::const_iterator k;
+    for(i=0, k=squit.begin();k!=squit.end();k++, i++)
+	if (i==num)
+	{
+	    RET(k->first);
+	}
+
+    RET("");
 }
 
 
@@ -225,6 +282,13 @@ pair<bool,bool> Chan_Live_t::User(mstring name)
 	pair<bool,bool> tmp(false,false);
 	NRET(pair<bool.bool>, tmp);
    }
+}
+
+
+bool Chan_Live_t::IsSquit(mstring nick)
+{
+    FT("Chan_Live_t::IsSquit", (nick));
+    RET((squit.find(nick.LowerCase()) != squit.end()));
 }
 
 

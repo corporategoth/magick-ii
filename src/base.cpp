@@ -228,21 +228,15 @@ private:
 void mBaseTask::message(const mstring& message)
 {
     FT("mBaseTask::message",(message));
-CP(("CP 1"));
     if(message_queue_.is_full())
     {
 	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
 	message_queue_.high_water_mark(Parent->high_water_mark*(thr_count()+1)*sizeof(ACE_Method_Object *));
-CP(("CP 2"));
 	message_queue_.low_water_mark(message_queue_.high_water_mark());
-CP(("CP 3"));
 	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
 	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
-CP(("CP 4"));
     }
-CP(("CP 5"));
     activation_queue_.enqueue(new mBaseTaskmessage_MO(this,message));
-CP(("CP 6"));
 }
 
 void mBaseTask::message_i(const mstring& message)

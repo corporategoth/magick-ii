@@ -1770,7 +1770,7 @@ wxMemoryInputStream::wxMemoryInputStream(const unsigned char *data, size_t len)
   m_i_streambuf = new wxStreamBuffer(wxStreamBuffer::read);
   m_i_streambuf->SetBufferIO((unsigned char*) data, (unsigned char*) (data+len));
   m_i_streambuf->SetIntPosition(0); // seek to start pos
-  m_i_streambuf->Fixed(TRUE);
+  m_i_streambuf->Fixed(true);
 
   m_length = len;
 }
@@ -1811,7 +1811,7 @@ wxMemoryOutputStream::wxMemoryOutputStream(unsigned char *data, size_t len)
   if (data)
   {
     m_o_streambuf->SetBufferIO(data, data+len);
-    m_o_streambuf->Fixed(TRUE);
+    m_o_streambuf->Fixed(true);
   }
 }
 

@@ -19,6 +19,7 @@ if [ -z "`grep PATCH version.h | grep \\\"$*\\\"`" ]; then
 fi
 
 patchlevel=`grep PATCH version.h | grep \"$*\" | awk '{print $3}'`
+rm -f version.h~
 mv version.h version.h~
 sed "s/$patchlevel.*;/$patchlevel		= \"\";/" version.h~ >version.h
 exit 0

@@ -18,6 +18,7 @@ if [ -n "`grep PATCH version.h | grep \\\"$*\\\"`" ]; then
 	exit 1
 fi
 
+rm -f version.h~
 mv version.h version.h~
 if [ -n "`grep PATCH1 version.h~ | grep '""'`" ]; then
 	sed "s/PATCH1.*;/PATCH1		= \"$*\";/" version.h~ >version.h

@@ -145,3 +145,66 @@ int KillOnSignon_Handler::handle_timeout (const ACE_Time_Value &tv, const void *
     RET(0);
 }
 
+int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
+{
+    // We ONLY get here if we didnt receive a SQUIT message in <10s
+    // after any QUIT message with 2 valid servers in it
+    FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    // Nick and Reason
+    mstring *tmp = (mstring *) arg;
+
+    Parent->server.ServerSquit.erase(*tmp);
+
+    // QUIT all user's who faked it ...
+    if (Parent->server.ToBeSquit.find(*tmp) != Parent->server.ToBeSquit.end())
+    {
+	list<mstring>::iterator iter;
+	for (iter=Parent->server.ToBeSquit[*tmp].begin(); iter!=Parent->server.ToBeSquit[*tmp].end(); iter++)
+	{
+	    if (Parent->nickserv.IsLive(*iter))
+	    {
+		Parent->nickserv.live[*iter].Quit("SQUIT - " + *tmp);
+		Parent->nickserv.live.erase(*iter);
+	    }
+	}
+	Parent->server.ToBeSquit.erase(*tmp);
+    }   
+
+    delete tmp;
+    RET(0);
+}
+
+int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
+{
+    // OK -- we get here after we've passwd Squit_Protect()
+    // seconds after a REAL squit
+    FT("KillOnSignon_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    // Nick and Reason
+    mstring *tmp = (mstring *) arg;
+
+    Parent->server.ServerSquit.erase(*tmp);
+    Parent->server.ToBeSquit.erase(*tmp);
+
+    // QUIT all user's who did not come back from SQUIT
+    map<mstring,Nick_Live_t>::iterator i;
+    vector<mstring> SquitMe;
+    vector<mstring>::iterator k;
+    for (i=Parent->nickserv.live.begin(); i != Parent->nickserv.live.end(); i++)
+    {
+	if (i->second.Squit() == *tmp)
+	{
+	    SquitMe.push_back(i->first);
+	}
+    }
+    for (k=SquitMe.begin(); k != SquitMe.end(); k++)
+    {
+	if (Parent->nickserv.IsLive(*k))
+	{
+	    Parent->nickserv.live[*k].Quit("SQUIT - " + *tmp);
+	    Parent->nickserv.live.erase(*k);
+	}
+    }
+
+    delete tmp;
+    RET(0);
+}

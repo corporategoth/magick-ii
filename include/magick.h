@@ -152,11 +152,13 @@ public:
 		friend Magick;
 
 		int server_relink;
+		int squit_protect;
 		int cycletime;
 		int ping_frequency;
 		int starthresh;
 	public:
 		int Server_Relink()	{ return server_relink; }
+		int Squit_Protect()	{ return squit_protect; }
 		int Cycletime()		{ return cycletime; }
 		int Ping_Frequency()	{ return ping_frequency; }
 		int Starthresh()	{ return starthresh; }

@@ -934,6 +934,7 @@ void Magick::get_config_values()
     in.Read(ts_Files+"KEYFILE",&files.keyfile,"");
 
     in.Read(ts_Config+"SERVER_RELINK",&config.server_relink,5);
+    in.Read(ts_Config+"SQUIT_PROTECT",&config.squit_protect,120);
     in.Read(ts_Config+"CYCLETIME",&config.cycletime,300);
     in.Read(ts_Config+"PING_FREQUENCY",&config.ping_frequency,30);
     in.Read(ts_Config+"STARTHRESH",&config.starthresh, 4);
