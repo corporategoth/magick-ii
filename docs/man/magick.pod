@@ -130,6 +130,12 @@ Override the B<STARTUP/LAGTIME> value in the configuration file,
 which is the average server lag threshold to cause us to raise
 or lower our live level (but never less than B<STARTUP/LEVEL>).
 
+=item --umask, -U
+
+Override the B<FILES/UMASK> value in the configuration file,
+which is the creation modes used when creating new files and/or
+directories.  This is the same syntax as the umask command.
+
 =item --verbose, -v
 
 Override the B<FILES/VERBOSE> value in the configuration file,
