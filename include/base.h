@@ -117,6 +117,12 @@ template<class T>
 typedef set<entlist_val_t<T> >::const_iterator entlist_val_cui;
 */
 
+template<class T>
+wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in);
+
+template<class T>
+wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out);
+
 class mBase
 {
     friend mBaseTask;

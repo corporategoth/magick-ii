@@ -154,11 +154,7 @@ bool entlist_val_t<T>::Value(T value, mstring nick)
 
 
 template<class T>
-#ifdef WIN32
 wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t<T>& in)
-#else
-wxOutputStream &operator<<<T>(wxOutputStream& out,const entlist_val_t<T>& in)
-#endif
 {
     out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
 
@@ -171,11 +167,7 @@ wxOutputStream &operator<<<T>(wxOutputStream& out,const entlist_val_t<T>& in)
 
 
 template<class T>
-#ifdef WIN32
 wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out)
-#else
-wxInputStream &operator>><T>(wxInputStream& in, entlist_val_t<T>& out)
-#endif
 {
     unsigned int i,count;
     mstring dummy,dummy2;
