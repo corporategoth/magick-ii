@@ -1,3 +1,4 @@
+// RCS-ID:      $Id$
 #ifndef _MSTRING_H
 #define _MSTRING_H
 #include <string>

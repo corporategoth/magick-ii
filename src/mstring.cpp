@@ -1,3 +1,4 @@
+// RCS-ID:      $Id$
 #include "mstring.h"
 #include "ace/OS.h"
 #include <ctype.h>
