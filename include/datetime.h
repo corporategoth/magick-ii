@@ -70,17 +70,6 @@ public:
   dddddd  Displays the date using the format given by the LongDateFormat
           global variable.
 
-  g       Displays the period/era as an abbreviation (Japanese and
-          Taiwanese locales only).
-
-  gg      Displays the period/era as a full name.
-
-  e       Displays the year in the current period/era as a number without
-          a leading zero (Japanese, Korean and Taiwanese locales only).
-
-  ee      Displays the year in the current period/era as a number with
-          a leading zero (Japanese, Korean and Taiwanese locales only).
-
   m       Displays the month as a number without a leading zero (1-12). If
           the m specifier immediately follows an h or hh specifier, the
           minute rather than the month is displayed.
@@ -157,13 +146,13 @@ public:
   the string variable S. */
 
 	mstring FormatString(const mstring& format);
-	mstring DateString()const;
-	mstring TimeString()const;
-	mstring DateTimeString()const;
+	mstring DateString();
+	mstring TimeString();
+	mstring DateTimeString();
 
-	operator double()const{return Val;}
-	operator time_t()const;
-	operator mstring()const;
+	operator double(){return Val;}
+	operator time_t();
+	operator mstring();
 
 	int DayOfWeek();
 	void DecodeDate(int &year, int &month, int &day);

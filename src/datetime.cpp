@@ -1,5 +1,6 @@
 // RCS-ID:      $Id$
 #include "datetime.h"
+#include "log.h"
 
 mstring DateSeparator="/";
 mstring ShortDateFormat="m/d/yy";
@@ -238,20 +239,282 @@ bool mDateTime::operator<=(const mDateTime& in)
 		return false;
 }
 
-#if 0
 mstring mDateTime::FormatString(const mstring& format)
 {
-	
+	mstring Result;
+	int Year, Month, Day, Hour, Min, Sec, MSec;
+	int i=0;
+	int count=0;
+	int ampmtype=0;
+	char buffer[20];
+	DecodeDate(Year,Month,Day);
+	DecodeTime(Hour,Min,Sec,MSec);
+	if(format.Find("am/pm")!=-1)
+		ampmtype=1;
+	else if(format.Find("am/pm")!=-1)
+		ampmtype=2;
+	else if(format.Find("AMPM")!=-1)
+		ampmtype=3;
+
+	while(i<format.size())
+	{
+		switch(tolower(format[i]))
+		{
+		case 'c':
+			Result+=FormatString(ShortDateFormat);
+			break;
+		case 'd':
+			count=1;
+			while(i+1<format.size()&&tolower(format[i+1])=='d')
+			{
+				i++;
+				count++;
+			}
+			switch(count)
+			{
+			case 1:
+				itoa(Day,buffer,10);
+				Result+=buffer;
+				break;
+			case 2:
+				if(Day<10)
+					Result+="0";
+				itoa(Day,buffer,10);
+				Result+=buffer;
+				break;
+			case 3:
+				Result+=ShortDayNames[DayOfWeek()];
+				break;
+			case 4:
+				Result+=LongDayNames[DayOfWeek()];
+				break;
+			case 5:
+				Result+=FormatString(ShortDateFormat);
+				break;
+			case 6:
+				Result+=FormatString(LongDateFormat);
+				break;
+			default:
+				wxLogError("mDateTime::FormatString Invalid date format string");
+			};
+			break;
+		case 'm':
+			count=1;
+			while(i+1<format.size()&&tolower(format[i+1])=='m')
+			{
+				i++;
+				count++;
+			}
+			switch(count)
+			{
+			case 1:
+				itoa(Month,buffer,10);
+				Result+=buffer;
+				break;
+			case 2:
+				if(Month<10)
+					Result+="0";
+				itoa(Month,buffer,10);
+				Result+=buffer;
+				break;
+			case 3:
+				Result+=ShortMonthNames[Month-1];
+				break;
+			case 4:
+				Result+=LongMonthNames[Month-1];
+				break;
+			default:
+				wxLogError("mDateTime::FormatString Invalid month format string");
+			}
+			break;
+		case 'y':
+			count=1;
+			while(i+1<format.size()&&tolower(format[i+1])=='y')
+			{
+				i++;
+				count++;
+			}
+			switch(count)
+			{
+			case 2:
+				itoa(Year%100,buffer,10);
+				Result+=buffer;
+				break;
+			case 4:
+				itoa(Year,buffer,10);
+				Result+=buffer;
+				break;
+			default:
+				wxLogError("mDateTime::FormatString Invalid year format string");
+			}
+			break;
+		case 'h':
+			if(i+1<format.size()&&tolower(format[i+1])=='h')
+			{
+				i++;
+				if(ampmtype>0)
+				{
+					if(Hour%12<10)
+						Result+="0";
+				}
+				else
+				{
+					if(Hour<10)
+						Result+="0";
+				}
+
+			}
+			if(ampmtype>0)
+				itoa(Hour%12,buffer,10);
+			else
+				itoa(Hour,buffer,10);
+			Result+=buffer;
+			break;
+		case 'n':
+			if(i+1<format.size()&&tolower(format[i+1])=='n')
+			{
+				i++;
+				if(Min<10)
+					Result+="0";
+			}
+			itoa(Min,buffer,10);
+			Result+=buffer;
+			break;
+		case 's':
+			if(i+1<format.size()&&tolower(format[i+1])=='s')
+			{
+				i++;
+				if(Sec<10)
+					Result+="0";
+			}
+			itoa(Sec,buffer,10);
+			Result+=buffer;
+			break;
+		case 't':
+			if(i+1<format.size()&&tolower(format[i+1])=='t')
+			{
+				i++;
+				Result+=FormatString(LongTimeFormat);
+			}
+			else
+				Result+=FormatString(ShortTimeFormat);
+			break;
+		case 'a':
+			if(i+2<format.size()&&format[i+1]=='/'&&tolower(format[i+2])=='p')
+			{
+				//found a/p
+				i=i+2;
+				if(Hour<12)
+					Result+="a";
+				else
+					Result+="p";
+			}
+			else if(i+3<format.size()&&tolower(format[i+1])=='m'&&tolower(format[i+2])=='p'&&tolower(format[i+3])=='m')
+			{
+				//found ampm
+				i=i+3;
+				if(Hour<12)
+					Result+=TimeAMString;
+				else
+					Result+=TimePMString;
+			}
+			else if(i+4<format.size()&&tolower(format[i+1])=='m'&&format[i+2]=='/'&&tolower(format[i+3])=='p'&&tolower(format[i+4])=='m')
+			{
+				//found am/pm
+				i=i+2;
+				if(Hour<12)
+					Result+="am";
+				else
+					Result+="pm";
+			}
+			else
+			{
+				wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
+				Result+="a";
+			}
+			break;
+		case '/':
+			Result+=DateSeparator;
+			break;
+		case ':':
+			Result+=TimeSeparator;
+			break;
+		case '\'':
+			i++;
+			while(i<format.size()&&format[i]!='\'')
+				Result+=mstring(format[i]);
+			break;
+		case '"':
+			i++;
+			while(i<format.size()&&format[i]!='"')
+				Result+=mstring(format[i]);
+			break;
+		case ' ':
+		case '\t':
+		case '\n':
+			Result+=mstring(format[i]);
+			break;
+		default:
+			wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
+			Result+=mstring(format[i]);
+		};
+		i++;
+	}
+	return Result;
 }
-	mstring DateString()const;
-	mstring TimeString()const;
-	mstring DateTimeString()const;
+mstring mDateTime::DateString()
+{
+	return FormatString(ShortDateFormat);
+}
+mstring mDateTime::TimeString()
+{
+	return FormatString(LongTimeFormat);
+}
+mstring mDateTime::DateTimeString()
+{
+	mstring Result;
+	int Year,Month,Day,Hour,Min,Sec,MSec;
+	DecodeDate(Year,Month,Day);
+	DecodeTime(Hour,Min,Sec,MSec);
+	if(Year!=0||Month!=0||Day!=0)
+		Result=FormatString(ShortDateFormat);
+	if(Hour!=0||Min!=0||Sec!=0||MSec!=0)
+	{
+		if(Result!="")
+			Result+=" ";
+		Result+=FormatString(LongTimeFormat);
+	}
+	return Result;
+}
 
-	operator double()const{return Val;}
-	operator time_t()const;
-	operator mstring()const;
-
-	int DayOfWeek();
+mDateTime::operator time_t()
+{
+	int Year,Month,Day,Hour,Min,Sec,MSec;
+	DecodeDate(Year,Month,Day);
+	DecodeTime(Hour,Min,Sec,MSec);
+	tm localtm;
+	localtm.tm_year=Year-1900;
+	localtm.tm_mon=Month;
+	localtm.tm_mday=Day;
+	localtm.tm_hour=Hour;
+	localtm.tm_min=Min;
+	localtm.tm_sec=Sec;
+	localtm.tm_isdst=0;
+	return mktime(&localtm);
+}
+mDateTime::operator mstring()
+{
+	return DateTimeString();
+}
+int mDateTime::DayOfWeek()
+{
+	// todo this is limited to the range 1900-2036, rewrite it to use internal format
+	tm *localtm;
+	time_t localtm_t=(time_t)*this;
+	localtm=localtime(localtm_t);
+	return localtm->tm_wday;
+}
+#if 0
 	void DecodeDate(int &year, int &month, int &day);
 	void DecodeTime(int &hour, int &min, int &sec, int& msec); 
 };
