@@ -46,16 +46,16 @@ dnl -dm   Output memory stats when compile is done
 OPTFLAGS=""
 
 dnl What warnings we will give off
-dnl REMOVED: -Wshadow -Wcast-qual -Wconversion -Wunused -Wold-style-cast
-WARNFLAGS="-Wall -W -Wbad-function-cast -Wcast-align \
+dnl REMOVED: -Wshadow -Wcast-qual -Wconversion -Wunused
+dnl          -Wold-style-cast -Wcast-align
+WARNFLAGS="-Wall -W -Wbad-function-cast -Wimport -Wmain\
 	-Wcomment -Wformat -Wimplicit -Wimplicit-int \
-	-Wimplicit-function-declarations -Wimport \
-	-Wmain -Wmissing-declarations -Wmissing-prototypes \
-	-Wnested-externs -Woverloaded-virtual -Wparentheses \
-        -Wpointer-arith -Wreorder -Wreturn-type -Wsynth \
-	-Wsign-compare -Wstrict-prototypes -Wswitch \
-	-Wtraditional -Wtrigraphs -Wuninitialized \
-	-Wwrite-strings"
+	-Wimplicit-function-declarations -Wnested-externs \
+	-Wmissing-declarations -Wmissing-prototypes \
+	-Woverloaded-virtual -Wparentheses -Wpointer-arith \
+        -Wreorder -Wreturn-type -Wsynth -Wsign-compare \
+	-Wstrict-prototypes -Wswitch -Wwrite-strings \
+	-Wtraditional -Wtrigraphs -Wuninitialized"
 
 dnl Add -fno-default-inline else gcc spinlocks (not-nice)
 CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"
@@ -76,8 +76,8 @@ AC_ARG_WITH(acelib, [  --with-acelib=file      Location of ACE library file],
   [if test -f ${withval}; then
     libdir="`dirname ${withval}`"
     libfile="`echo \`basename ${withval}\` | \
-	sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,, -e s,\.sl$,, \
-		-e s,\.lib$,, -e s,\.dll$,,`"
+	sed -e s,\^lib,, -e s,\.a$,, -e s,\.so$,, \
+	    -e s,\.sl$,, -e s,\.lib$,, -e s,\.dll$,,`"
     if test ! "x$libdir" = "x$libfile"; then
       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
       export LD_LIBRARY_PATH
@@ -119,8 +119,8 @@ AC_ARG_WITH(threadlib, [  --with-threadlib=file   Location of threads library fi
   [if test -f ${withval}; then
     libdir="`dirname ${withval}`"
     libfile="`echo \`basename ${withval}\` | \
-	sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,, -e s,\.sl$,, \
-		-e s,\.lib$,, -e s,\.dll$,,`"
+	sed -e s,\^lib,, -e s,\.a$,, -e s,\.so$,, \
+	    -e s,\.sl$,, -e s,\.lib$,, -e s,\.dll$,,`"
     if test ! "x$libdir" = "x$libfile"; then
       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
       export LD_LIBRARY_PATH
@@ -150,8 +150,8 @@ AC_ARG_WITH(zlib, [  --with-zlib=file        Location of compression library fil
   [if test -f ${withval}; then
     libdir="`dirname ${withval}`"
     libfile="`echo \`basename ${withval}\` | \
-	sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,, -e s,\.sl$,, \
-		-e s,\.lib$,, -e s,\.dll$,,`"
+	sed -e s,\^lib,, -e s,\.a$,, -e s,\.so$,, \
+	    -e s,\.sl$,, -e s,\.lib$,, -e s,\.dll$,,`"
     if test ! "x$libdir" = "x$libfile"; then
       LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
       export LD_LIBRARY_PATH
@@ -390,7 +390,7 @@ AC_ARG_ENABLE(hostlock, [  --enable-hostlock       Enable binary locking to a ho
     *) AC_MSG_ERROR(bad value ${enableval} for HOSTLOCK option);;
   esac], [hostlock=true])
 
-echo $ECHO_N "configuring system lock paramaters"" ... $ECHO_C"
+echo $ECHO_N$ac_n "configuring system lock paramaters"" ... $ECHO_C$ac_c"
 if test "$hostlock" = "true"; then
   if test -z "$BUILD_NODE" -o -z "$BUILD_TYPE" -o -z "$BUILD_REL"; then
     if test -f ace_uname.cpp; then
@@ -410,17 +410,17 @@ if test "$hostlock" = "true"; then
     fi
   fi
   if test -n "$BUILD_NODE" -a -n "$BUILD_TYPE" -a -n "$BUILD_REL"; then
-    echo "${ECHO_T}done"
+    echo "${ECHO_T}${ac_t}done"
     AM_CONDITIONAL(STAMPED, test 1)
     CPPFLAGS="$CPPFLAGS -DBUILD_NODE=\"\\\"$BUILD_NODE\\\"\" \
       -DBUILD_TYPE=\"\\\"$BUILD_TYPE\\\"\" \
       -DBUILD_REL=\"\\\"$BUILD_REL\\\"\""
   else
-    echo "${ECHO_T}not done"
+    echo "${ECHO_T}${ac_t}not done"
     unset BUILD_NODE BUILD_TYPE BUILD_REL
   fi
 else
-  echo "${ECHO_T}not done"
+  echo "${ECHO_T}${ac_t}not done"
   unset BUILD_NODE BUILD_TYPE BUILD_REL
 fi
 

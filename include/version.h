@@ -25,6 +25,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.129  2001/12/16 00:07:42  prez
+** Updated configure.in to be more solaris friendly.
+**
 ** Revision 1.128  2001/12/15 23:47:55  prez
 ** *** empty log message ***
 **
@@ -137,7 +140,7 @@ RCSID(version_h, "@(#) $Id$");
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 0;
+const int BUILD_NUMBER = 1;
 
 /* Versioning Information
  *

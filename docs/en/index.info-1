@@ -1,0 +1,1188 @@
+This is index.info, produced by makeinfo version 4.0 from
+/tmp/sgmltmp.index21209.info.2.
+
+   \input texinfo
+
+
+File: index.info,  Node: Top,  Next: Introduction,  Up: (dir)
+
+The Magick Handbook
+*******************
+
+     Magick Development Team `devel@magick.tm'
+     Version 2.0, Mon Jan  1 13:15:02 EST 2001
+
+   This Handbook describes Magick Version 2.0
+
+* Menu:
+
+* Introduction::
+* Installation::
+* Usage::
+* Questions and Answers::
+* License::
+* Copyright::
+
+
+File: index.info,  Node: Introduction,  Next: Installation,  Prev: Top,  Up: Top
+
+Introduction
+************
+
+   Magick IRC Services are a program that is designed to interface with
+an Internet Relay Chat (IRC) network, and offer its users, operators
+and administrators services such as the ability to register nicknames
+so they cannot be taken by anyone else, the ability to register
+channels with pre-defined access lists and kick lists so that channels
+may not be taken over, the ability to leave offline messages for other
+users, and many network control mechanisms to stop things like
+flooding, abusive users, and many other things.
+
+   Magick services adhere to RFC 1459, and many variants of it.  The
+changes to the base protocol will not be discussed in this document, as
+there are too many of them, and so many different distinct protocols
+around nowadays, however Magick has been designed to cope with them
+all, with a minimum of fuss (as long as they support services of this
+nature).
+
+* Menu:
+
+* Dedication::
+* Authors::
+* Changes::
+
+
+File: index.info,  Node: Dedication,  Next: Authors,  Up: Introduction
+
+Dedication
+==========
+
+   Magick is dedicated to the memory of PreZ's loving sister, Stacey
+Louise Elder (1st Jan, 1975 - 25th Feb, 1998). She has been there for
+me more than anyone over the years, and I was distraught when she died,
+may her Lord love her as much as I did, and keep her safe like I could
+not. Merry Parting, Dear Sister.
+
+   Magick is also dedicated to the memory of Ungod's brother, Edward
+Kevin King (28th Aug, 1982 - 21st Nov, 1997), His life was short, but
+his memory is great, never will those who knew him forget him.
+
+
+File: index.info,  Node: Authors,  Next: Changes,  Prev: Dedication,  Up: Introduction
+
+Authors
+=======
+
+   Magick is designed and developed by the Magick Development Team
+devel@magick.tm.  Any bugs, feature requests, comments, etc should be
+directed at this mailing list.  The development team is an OPEN team,
+however certain skills are required to join, not the least of which is
+the ability to program in C and C++, and to use CVS.  To join this team,
+please e-mail prez@magick.tm for further details.
+
+   The Magick Alpha Team alpha@magick.tm test current development
+versions of Magick, finding not only bugs, but also making sure it is a
+user friendly and understandable product, so it may be changed at the
+same time its being designed if needs be (rather than going back and
+re-writing it).  The alpha team is an OPEN testing team, and you may
+join it by first downloading and installing/setting up the current
+alpha version of Magick (if you cannot do this on your own, its
+recommended you do not join the alpha team), and then e-mailing
+majordomo@magick.tm with "subscribe alpha" (no quotes, on one line).
+
+   The Magick Beta Team beta@magick.tm test versions of magick that
+have been through alpha testing, and are in the final phase of
+development.  The beta team's main goal is to find bugs before Magick
+is released, so they do not get out into the release version of Magick.
+The beta team is an OPEN testing team, and you may join it by first
+down- loading and installing/setting up the current beta version of
+Magick, and then e-mailing majordomo@magick.tm with "subscribe beta"
+(no quotes, on one line).
+
+   The following people have contributed to the final product of Magick
+II (testers not included):
+
+`Programmers'
+        * Preston Elder
+
+        * William King
+
+`Designers (some coding)'
+        * Patrick Prins
+
+`Supporters'
+        * Marieke Bermon
+
+        * Kelly Hill
+
+        * Emma Ellison
+
+        * Todd Wright
+
+        * Matt Heckaman
+
+`Supporters Who Don't Know It'
+        * Coca-Cola Amatil        - Life Support *bleep ... bleep*
+
+        * Nescafe Blend 43        - See above (any kind of caffeine!)
+
+        * Tschaicovski    - If you don't understand, you never will...
+
+
+File: index.info,  Node: Changes,  Prev: Authors,  Up: Introduction
+
+Changes
+=======
+
+* Menu:
+
+* Magick II::
+* Magick I::
+* Services 3-0::
+* Pre-Services 3-0::
+
+
+File: index.info,  Node: Magick II,  Next: Magick I,  Up: Changes
+
+Magick II
+---------
+
+   Total re-write in C++, so version .0 is merely a 'new feature' list.
+
+   * 2000/??/?? .0
+        * Fully multi-threaded (can do >1 thing at once)
+
+        * Database saves in XML and supports compression and
+          encryption. Is also no longer endian specific.
+
+        * Works on most *NIX and all Win32 platforms.
+
+        * Fully multi-lingual (log files, help, etc).
+
+        * Supports DCC file transfers and a filesystem (memo
+          attachments, nickserv pictures or public FS).
+
+        * Times saved in GMT, so timezone inspecific.
+
+        * Committee-based, can also add new committees.
+
+        * Can now lock any SET option (except text fields).
+
+        * Supports HTM (High Traffic Mode).
+
+        * Supports ALOT more IRC protocols (and alot of their more
+          specialised features) and can switch irc protocols without
+          need to recompile.
+
+        * Can now set time limits on akills.
+
+        * Supports IRC Operator Deny (ensures mask cant oper).
+
+        * Services ignore now ignores by mask, not nickname.
+
+        * Supports TRACING, for on-line debugging.
+
+        * Has SQUIT protection (to save on IDENT's).
+
+        * Many new ChanServ features like Kick On Ban, timed ban
+          removal, channel greetings, on-join messages.
+
+        * Nicknames & Channels now have a NoExpire flag.
+
+        * Time delay on memo sending to allow continuance or
+          cancellation of memos, or DCC of file attachments.
+
+        * 'Read' and 'Unread' status on memos / news articles.
+
+        * Supports multiple connection entries (aka. C/N's).
+
+        * Can bind to a single IP address.
+
+        * Supports multiple nicknames for same service.
+
+        * Limits placed on time between registrations and amount of
+          channels a user may own.
+
+        * Clone prot will auto-akill for too many triggers.
+
+        * Added the ability to output logfile to a channel.
+
+        * Expanded ON/OFF command to allow turning off of one service
+          only, just log files or the events engine.
+
+        * Added Secure Server listing ability (ie. if we dont have a
+          listing for the server, squit it!).
+
+        * MANY, MANY, MANY more enhancements.
+
+
+File: index.info,  Node: Magick I,  Next: Services 3-0,  Prev: Magick II,  Up: Changes
+
+Magick I
+--------
+
+   Renamed to this to avoid conflicting version numbers, etc and finally
+rid myself of all the excess EsperNet baggage.
+
+   * 1999/02/20 .4
+        * Added copyrights back from EsperNet, so they would stop
+          bitching at me for removing them (even though I DID modify
+          the code to an extent they no longer resemble their
+          services).  *shrug* some people.
+
+        * Added configuration file (see DOC dir) (Ungod)
+
+        * Added messages.h to customise Magick output.
+
+        * Added SYNC[lowbar]TIME (dbase save) showing option
+
+        * Made MODE strings (User, Channel, ChanInfo) DYNAMIC
+
+        * Fixed AutoUpdate on databases
+
+        * Fixed fuckloads more bugs (as usual).
+
+        * Added killing for repeated password failures.
+
+        * Added LIVE (non-fork) mode (CTRL-C forks).
+
+        * Added MS REPLY, NS ACCESS CURRENT and NS SLAVES functions.
+
+   * 1998/01/20 .3
+        * Added MLOCK +i and +k support (ChanServ will keep channel if
+          no one in it!).
+
+        * doc/Distribution - READ it (and all files in that DIR!) :)
+
+        * Removed time[lowbar]zone and added the "X time ago" formats
+
+        * Fixed lots and lots of bugs, and optimised alot of code!
+
+        * Replaced IRCOP[lowbar]OVERRIDE with OVERRIDE[lowbar]LEVEL (6
+          levels)
+
+        * Added TimeZone support for backup services (fixes timings)
+
+        * Added auto -v and -o for non-access'd people off split
+
+        * Added Nick Linking (BIG MF of an addition)
+
+        * Replaced old IGNORE with Flood Protect (smarter system!)
+
+        * Theres lots more little additions, but too many to document.
+
+   * 1997/12/30 .2
+        * Added new revenge level (REVERSE, now NONE will do NOTHING).
+
+        * Fixed a few minor bugs (with unsuspension, breakdown
+          percentages, and handling nick collides, etc).
+
+        * Moved Services OP list to a access list-style format.
+
+        * Removed the SUPER[lowbar]PASSWORD - now only the
+          SERVICES[lowbar]ADMINS (hardcoded in config.h) can do that :)
+
+        * Added removing by number to ALL lists now :)
+
+        * Added OperServ MASKLIST (like USERLIST but accepts user@host).
+
+        * Removed the magick.msg and magick.omsg in favour of the new
+          OperServ LOGONMSG and OPERMSG commands :)
+
+        * Wrote both user and oper documentation for ALL commands!
+
+   * 1997/12/15 .1
+        * Optimized code and implemented hash tables (if you dont know,
+          dont worry - just take it as a good thing!).
+
+        * Added some of Andy Church's services routines (overflow stuff,
+          some socket stuff, and the configure script mainly).
+
+        * Removed upaccess - people should have used it, or not need it.
+
+        * Added MemoServ OPERSEND.
+
+        * Fixed user/oper counting when SQUIT.
+
+        * Fixed ghost command and Channel/Nick expiry bugs.
+
+        * Added Users on Servers breakdown (OperServ)
+
+        * OFF/ON commands now close/open logs aswell.
+
+   * 1997/12/08 .0
+        * Forgot the new services.h for Services 3.0.9, included here.
+
+        * Veriable ChanServ levels implemented (finally).
+
+        * Added deletion of user from access lists, and all a user's
+          channels when a user is deleted.
+
+        * Moved names for services to config.h
+
+        * Magick know more about their own actions (dont laugh!)
+
+        * IrcOP's dont trigger clone protection (are ignored).
+
+        * Added ability to use PRIVMSG instead of NOTICE.
+
+        * Added ChanServ JOIN ability (some like it - I dont).
+
+        * Added ChanServ REVENGE module, for protecting userlist.
+
+        * AKILL and CLONE may now be removed by number.
+
+
+File: index.info,  Node: Services 3-0,  Next: Pre-Services 3-0,  Prev: Magick I,  Up: Changes
+
+Services 3-0
+------------
+
+   * 1997/11/30 .9
+        * Little maintinance (checked all various compiles, etc).
+
+        * Fixed MAJOR bug with list-duplication on re-connect.
+
+        * Minor bugfixes and adds (OFF reasons, pidfile fix, etc)
+
+   * 1997/11/26 .8
+        * Changed the way CLONE detection works (MAJORLY!)
+
+        * Added "CLONE" for allowing more than "Default max clones"
+
+        * Fixed bug that didnt reset "current online" lists.
+
+        * Added "is already there" and "kill all matching" to akill
+
+        * Added chanserv Auto-Unban for when ppls are banned on a
+          channel by someone equal to or lower than them.
+
+        * Capped the chanserv levels (to stop the "10000" bug).
+
+        * Fixed the chanserv UNBAN option so it does ALL bans.
+
+        * Added 'bounce bans on link' for def[lowbar]level(2)+ (10
+          usually).
+
+   * 1997/11/20 .7
+        * Fixed a few bugs (nickserv IDENT, Globals and Mass -v's)
+
+        * Removed SKELETON defines - obsolite by Pick 'n' Choose.
+
+        * Removed test/ directory - was old, outdated and useless!
+
+        * Added (optional) mask restrictions to USERLIST and CHANLIST.
+
+        * AKILL mask's must be >7 chars in length (stop *@*.com).
+
+        * Added Services Restart/Reconnect - see config.h for details.
+
+        * Added Services Leveling to replace READONLY - better way of
+          implementing backup services versions, etc.
+
+   * 1997/11/10 .6
+        * Fixed up the "Pick 'n' Choose" section of config.h so it now
+          actually makes the end result smaller :)
+
+        * Added ChanServ and NickServ SUSPEND/UNSUSPEND functions
+
+        * AKILL's will now expire after a time specified in config.h
+
+        * Added PAKILL - non-expiring AKILLS settable by SOP's
+
+        * Channel/Nick memos will get erased with the channel/nick
+
+        * Added ON/OFF so u can enable/disable services without QUIT
+
+        * ON, OFF, QUIT, SHUTDOWN and RAW are passworded (config.h)
+
+   * 1997/11/05 .5
+        * Implemented DAL4.4.15+ Services Support, Including:
+             * Killing users without a Killed (IrcOp (reason))
+
+             * Server and Nick quarentining via. OperServ
+
+             * Setting of nick's modes with MODE command.
+
+             * CHANGE nick instead of KILL it on nick protection
+
+        * SOP's get help for their commands in /msg OperServ HELP
+
+        * Memo Forwarding To/From Nick/Channel (in any combo)
+
+        * Message to users when they /oper (services.omsg)
+
+        * Made use of the till now unused def[lowbar]access in
+          chanserv.c
+
+   * 1997/10/30 .4
+        * Added support for DAL4.4.15+ servers.
+
+        * Moved up all chanserv levels by 5 - 5 is now auto-voice.
+
+        * Added /msg operserv listsops (FINALLY!)
+
+        * SOPS now need to be /oper'd to be SOPS (oops)
+
+        * Oper override of chanserv now [num   ]definable (in config.h)
+
+   * 1997/10/22 .3
+        * Fixed a bug in ignore (was stuffing ACCESS list)
+
+        * Added OperServ Mode [num   ]channel returning current modes
+
+        * Opers can override chanserv op/deop/invite/unban
+
+        * SOPs can override chanserv clear
+
+   * 1997/10/21 .2
+        * Added READ ALL to MemoServ (channel and nick)
+
+        * Added ability for oper to op, deop, invite, unban (ChanServ)
+
+        * Added ability for SOP to use clear (ChanServ)
+
+        * Added hard-coded /msg HelpServ Credits (so sue me).
+
+        * Added memo IGNORE list to nickserv.
+
+        * Fixed the nickserv SET IRCOP function
+
+   * 1997/09/15 .1
+        * Only Lvl 20 or sender can delete channel news
+
+        * Fixed bug in NickServ that Mis-Saved URL/NICK fields
+
+   * 1997/09/15 .0
+        * Services now respawn if /kill'd
+
+        * Message to users when logon added (services.msg)
+
+        * Disabled @* (and @*.*, etc) AKILLS except for SOPS
+
+        * Disabled @* (and @*.*, etc) AKICKS except for Level 20's
+
+        * Created FILE[lowbar]VERSION 3 (autoconverts from 2)
+
+        * Added NickServ URL and EMAIL fields (v3)
+
+        * Added ChanServ URL field (v3)
+
+        * Added NEWS system (Basically Channel MEMO's)
+
+        * Added IRC Operator NickServ flag (no nick expiry)
+
+        * Added ChanServ level 20 (can set all but PASS and FOUNDER)
+
+        * Added CURRENT TIME to info displays
+
+
+File: index.info,  Node: Pre-Services 3-0,  Prev: Services 3-0,  Up: Changes
+
+Pre-Services 3-0
+----------------
+
+   Originally, Magick was based on Services 2.2.26, by Andrew Church.
+As of Magick II, they are no longer based in any way, shape or form on
+these services.
+
+
+File: index.info,  Node: Installation,  Next: Usage,  Prev: Introduction,  Up: Top
+
+Installation
+************
+
+* Menu:
+
+* How to obtain Magick::
+* Requirements::
+* ACE Installation::
+* Basic Installation::
+* Compilers and Options::
+* Compiling For Multiple Architectures::
+* Installation Names::
+* Optional Features::
+* Specifying the System Type::
+* Sharing Defaults::
+* Operation Controls::
+* Security Tips::
+
+
+File: index.info,  Node: How to obtain Magick,  Next: Requirements,  Up: Installation
+
+How to obtain Magick
+====================
+
+   The Magick home page can be found at: urlnam
+
+   Magick is freely downloadable from: urlnam
+
+   The Magick public mailing list is magick@magick.tm To subscribe,
+email majordomo@magick.tm with `subscribe magick' (no quotes) in the
+text of the message.
+
+
+File: index.info,  Node: Requirements,  Next: ACE Installation,  Prev: How to obtain Magick,  Up: Installation
+
+Requirements
+============
+
+   To compile Magick, you will need a GOOD C++ compiler.  Ones that
+have been tested and found to work are:
+   * gcc 2.95 and above
+
+   * Borland C++ Builder 4.0 and above
+
+   Others may work, but have NOT been tested.
+
+   Before you begin compilation of Magick, you must have a fully
+compiled version of the Adaptive Communications Environment (ACE), the
+ZLIB compression library, and a threads library such as pthreads.
+
+   If you are missing any of the above, you may obtain them as follows:
+   * ACE
+
+   * ZLIB
+
+   * PTH
+
+   FreeBSD USERS - FreeBSD has inbuilt its threads library into its
+default operating system, and you do not need a separate threads
+library, however all versions before 3.4 with the standard libc[lowbar]r
+patch from FreeBSD dated 02-02-2000, or 4.0 will not work, due to a
+badly implemented threads library.
+
+   You must compile each of the above products before attempting to
+build Magick.  Magick will look for them in the configure phase.
+
+   Also, if you dont have about 128mb memory (including swap), and 150mb
+hard disk space free, I wouldnt bother to compile magick.  Our main
+philosophy is to try and get Magick as efficiant at run-time as
+possible, to this end, we've had to trade off compile-time resources
+and resulting binary size.  What this means in english is, the final
+product is very efficient, however making it will take a large chunk
+out of your available resources.
+
+   Host locking (ie. stopping magick from being run anywhere that
+doesnt have the same host and system type compiled into magick) is
+impossible with pre-compiled binaries.  If you wish to add this level
+of protection in (ie. you want to ensure that even if someone DOES get
+your binaries, they cant run them without going through some special
+measures to try and do so), then you will need to re-compile.
+Essentially the rule of thumb is 'compile if you can, use pre-compiled
+binaries if you must'.
+
+
+File: index.info,  Node: ACE Installation,  Next: Basic Installation,  Prev: Requirements,  Up: Installation
+
+ACE Installation
+================
+
+   Please note:  If you do not want to compile ACE yourself, or you are
+having troubles compiling it, pre-compiled binaries of ACE are
+available from ftp://ftp.magick.tm/pub/magick.tm/ace.  It is
+recommended you get the 'shared' version first, and 'static' only if
+the shared does not work.  If your OS is not listed, please contact the
+Magick Development Team.  Above and beyong this help file, we will not
+help you compile ACE.
+
+   I've included this section now because people seem to have troubles
+installing the ACE library obtained above.  One special note for people
+wanting to install ACE.  Do NOT use the `configure' utility.  This
+utility is still in its infancy for ACE, and tends not to work.
+
+   Instead, you should follow the instructions that are outlined in the
+ACE-INSTALL file, which is simply (from the ACE[lowbar]wrappers
+directory):
+
+     export ACE_ROOT=$PWD
+     cd ace
+     ls config*    (find the one for your system)
+     ln -s config-your-system.h config.h
+     cd ..
+     cd include/makeinclude
+     ls platform*    (find the one for your system)
+     ln -s platform_your_system.GNU platform_macros.GNU
+     cd ../..
+     make
+
+   * Linux Note: All linux systems with kernel versions 2.2.0 and beyond
+     should use the lxpthread linux configuration.
+
+   * FreeBSD Note: You should use the pthread version of this library
+     if you hope to use it with Magick.  Please read FreeBSD note above.
+
+   Note on the above.  The `export ACE[lowbar]ROOT=' command may not
+work on your shell.  csh and tcsh users will have to use `set
+ACE[lowbar]ROOT=', and on some other weird shells, just
+`ACE[lowbar]ROOT='.  Try them until you get one that doesn't error.
+Once you have one that doesn't have an error, just type `echo
+$ACE[lowbar]ROOT' to ensure it gives you your current directory, if
+not, keep trying.  I love unix standards :)
+
+   Note, If you get problems in the make with errors like:
+
+   ACE[lowbar]wrappers/include/makeinclude/wrapper[lowbar]macros.GNU,
+line 135: Missing dependency operator
+
+   Your version of make is either old or not GNU standard.  ACE requires
+a GNU standard make program to compile.  First see if the program
+`gmake' exists, and if so try it, if not, or it doesn't work, please
+download it by going to http://www.gnu.org/software/make/make.html and
+downloading it from one of their mirror sites.  Incase your wondering
+`do I need root for this?'  No, you don't.  Just download it, compile
+it, and then type:
+
+   alias make=/path/to/make-x.y/make
+
+   Where /path/to are replaced with the full path before the make
+directory (eg. /home/myuser), and the x and y in the make-x.y directory
+are substituted for the version of make you have.  Once you have
+aliased make, then try and build ACE again.
+
+   After ACE has been made, you have two options:
+
+   * As root, you can copy *.so in the ace directory to /usr/local/lib
+     and then copy *.h, *.i and *.cpp in the ace directory to
+     /usr/local/include/ace, which you will have to create.  On linux
+     systems you will have to type 'ldconfig' after this.  Don't forget
+     to make the libs chmod 755, and the includes chmod 644.
+
+   * When you don't have root, use the -with-acelib and -with-aceinc
+     options to Magick's configure script to tell it where ACE is.
+     Please note however, you will have to type the following line
+     before you will be able to execute Magick:
+
+   export
+LD[lowbar]LIBRARY[lowbar]PATH=$LD[lowbar]LIBRARY[lowbar]PATH:/path/to/ACE[lowbar]wrappers/ace
+
+   Obviously the /path/to should be replaced with the full path leading
+up to the ACE[lowbar]wrappers directory (eg. /home/myuser).  The same
+note above about `export ACE[lowbar]ROOT=' applies to the above export.
+
+
+File: index.info,  Node: Basic Installation,  Next: Compilers and Options,  Prev: ACE Installation,  Up: Installation
+
+Basic Installation
+==================
+
+   The `configure' shell script attempts to guess correct values for
+various system-dependent variables used during compilation.  It uses
+those values to create a `Makefile' in each directory of the package.
+It may also create one or more `.h' files containing system-dependent
+definitions.  Finally, it creates a shell script `config.status' that
+you can run in the future to recreate the current configuration, a file
+`config.cache' that saves the results of its tests to speed up
+reconfiguring, and a file `config.log' containing compiler output
+(useful mainly for debugging `configure').
+
+   If you need to do unusual things to compile the package, please try
+to figure out how `configure' could check whether to do them, and mail
+diffs or instructions to the address given in the `README' so they can
+be considered for the next release.  If at some point `config.cache'
+contains results you don't want to keep, you may remove or edit it.
+
+   The file `configure.in' is used to create `configure' by a program
+called `autoconf'.  You only need `configure.in' if you want to change
+it or regenerate `configure' using a newer version of `autoconf'.
+
+   The simplest way to compile this package is:
+
+   * `cd' to the directory containing the package's source code and type
+     `./configure' to configure the package for your system.  If you're
+     using `csh' on an old version of System V, you might need to type
+     `sh ./configure' instead to prevent `csh' from trying to execute
+     `configure' itself.
+
+     Running `configure' takes awhile.  While running, it prints some
+     messages telling which features it is checking for.
+
+   * Type `make' to compile the package.
+
+   * Optionally, type `make check' to run any self-tests that come with
+     the package.
+
+   * Type `make install' to install the programs and any data files and
+     documentation.
+
+   * You can remove the program binaries and object files from the
+     source code directory by typing `make clean'.  To also remove the
+     files that `configure' created (so you can compile the package for
+     a different kind of computer), type `make distclean'.  There is
+     also a `make maintainer-clean' target, but that is intended mainly
+     for the package's developers.  If you use it, you may have to get
+     all sorts of other programs in order to regenerate files that came
+     with the distribution.
+
+
+File: index.info,  Node: Compilers and Options,  Next: Compiling For Multiple Architectures,  Prev: Basic Installation,  Up: Installation
+
+Compilers and Options
+=====================
+
+   Some systems require unusual options for compilation or linking that
+the `configure' script does not know about.  You can give `configure'
+initial values for variables by setting them in the environment.  Using
+a Bourne-compatible shell, you can do that on the command line like
+this: CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
+
+   Or on systems that have the `env' program, you can do it like this:
+env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
+
+
+File: index.info,  Node: Compiling For Multiple Architectures,  Next: Installation Names,  Prev: Compilers and Options,  Up: Installation
+
+Compiling For Multiple Architectures
+====================================
+
+   You can compile the package for more than one kind of computer at the
+same time, by placing the object files for each architecture in their
+own directory.  To do this, you must use a version of `make' that
+supports the `VPATH' variable, such as GNU `make'.  `cd' to the
+directory where you want the object files and executables to go and run
+the `configure' script.  `configure' automatically checks for the
+source code in the directory that `configure' is in and in `..'.
+
+   If you have to use a `make' that does not supports the `VPATH'
+variable, you have to compile the package for one architecture at a time
+in the source code directory.  After you have installed the package for
+one architecture, use `make distclean' before reconfiguring for another
+architecture.
+
+
+File: index.info,  Node: Installation Names,  Next: Optional Features,  Prev: Compiling For Multiple Architectures,  Up: Installation
+
+Installation Names
+==================
+
+   By default, `make install' will install the package's files in
+`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+installation prefix other than `/usr/local' by giving `configure' the
+option `-prefix=PATH'.
+
+   You can specify separate installation prefixes for
+architecture-specific files and architecture-independent files.  If you
+give `configure' the option `-exec-prefix=PATH', the package will use
+PATH as the prefix for installing programs and libraries.
+Documentation and other data files will still use the regular prefix.
+
+   In addition, if you use an unusual directory layout you can give
+options like `-bindir=PATH' to specify different values for particular
+kinds of files.  Run `configure -help' for a list of the directories
+you can set and what kinds of files go in them.
+
+   If the package supports it, you can cause programs to be installed
+with an extra prefix or suffix on their names by giving `configure' the
+option `-program-prefix=PREFIX' or `-program-suffix=SUFFIX'.
+
+
+File: index.info,  Node: Optional Features,  Next: Specifying the System Type,  Prev: Installation Names,  Up: Installation
+
+Optional Features
+=================
+
+   Some packages pay attention to `-enable-FEATURE' options to
+`configure', where FEATURE indicates an optional part of the package.
+They may also pay attention to `-with-PACKAGE' options, where PACKAGE
+is something like `gnu-as' or `x' (for the X Window System).  The
+`README' should mention any `-enable-' and `-with-' options that the
+package recognises.
+
+   For packages that use the X Window System, `configure' can usually
+find the X include and library files automatically, but if it doesn't,
+you can use the `configure' options `-x-includes=DIR' and
+`-x-libraries=DIR' to specify their locations.
+
+
+File: index.info,  Node: Specifying the System Type,  Next: Sharing Defaults,  Prev: Optional Features,  Up: Installation
+
+Specifying the System Type
+==========================
+
+   There may be some features `configure' can not figure out
+automatically, but needs to determine by the type of host the package
+will run on.  Usually `configure' can figure that out, but if it prints
+a message saying it can not guess the host type, give it the
+`-host=TYPE' option.  TYPE can either be a short name for the system
+type, such as `sun4', or a canonical name with three fields:
+CPU-COMPANY-SYSTEM
+
+   See the file `config.sub' for the possible values of each field.  If
+`config.sub' isn't included in this package, then this package doesn't
+need to know the host type.
+
+   If you are building compiler tools for cross-compiling, you can also
+use the `-target=TYPE' option to select the type of system they will
+produce code for and the `-build=TYPE' option to select the type of
+system on which you are compiling the package.
+
+
+File: index.info,  Node: Sharing Defaults,  Next: Operation Controls,  Prev: Specifying the System Type,  Up: Installation
+
+Sharing Defaults
+================
+
+   If you want to set default values for `configure' scripts to share,
+you can create a site shell script called `config.site' that gives
+default values for variables like `CC', `cache[lowbar]file', and
+`prefix'.  `configure' looks for `PREFIX/share/config.site' if it
+exists, then `PREFIX/etc/config.site' if it exists.  Or, you can set the
+`CONFIG[lowbar]SITE' environment variable to the location of the site
+script.  A warning: not all `configure' scripts look for a site script.
+
+
+File: index.info,  Node: Operation Controls,  Next: Security Tips,  Prev: Sharing Defaults,  Up: Installation
+
+Operation Controls
+==================
+
+   `configure' recognises the following options to control how it
+operates.
+
+`--cache-file=FILE'
+     Use and save the results of the tests in FILE instead of
+     `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
+     debugging `configure'.
+
+`--help'
+     Print a summary of the options to `configure', and exit.
+
+`--quiet'
+     -silent -q Do not print messages saying which checks are being
+     made.  To suppress all normal output, redirect it to `/dev/null'
+     (any error messages will still be shown).
+
+`--srcdir=DIR'
+     Look for the package's source code in directory DIR.  Usually
+     `configure' can determine that directory automatically.
+
+`--version'
+     Print the version of Autoconf used to generate the `configure'
+     script, and exit.
+
+`--with-acelib=file'
+     -with-aceinc=path This specifies where the makefile should look
+     for the ACE library file, and its includes respectively.  You must
+     specify full pathnames.  Verification on what you have entered is
+     minimal (ie. will only verify the existence of the library file,
+     and OS.h in the include directory).  This should only be used if
+     Magick does not detect the ACE library.
+
+`--with-zlib=file'
+     -with-zinc=path This specifies where the makefile should look for
+     the ZLIB library file, and its includes respectively.  You must
+     specify full pathnames.  Verification on what you have entered is
+     minimal (ie. will only verify the existence of the library file,
+     and zlib.h in the include directory).  This should only be used if
+     Magick does not detect the ZLIB library.
+
+`--enable-bsdthreads'
+     This is mutually exclusive of -with-threadlib and -with-threadinc,
+     it specifies to use the -pthreads option with GCC or CC when
+     linking the magick binary.  This is used for systems where
+     pthreads is ingrained in the standard C library, specifically, BSD.
+
+`--with-threadlib=file'
+     -with-threadinc=path This specifies where the makefile should look
+     for a threads library file, and its includes respectively.  You
+     must specify full pathnames.  Verification on what you have
+     entered is minimal (ie. will only verify the existence of the
+     library file, and the include directory exists).  This should only
+     be used if Magick does not detect a threads library.
+
+`--with-locknode=node'
+     -with-locktype=type -with-lockrel=rel This will set the host lock
+     values (see -enable-hostlock below) for the purpose of building a
+     locked binary for another system.  This is mainly for people who
+     want to run magick on a system that is not capable of compiling
+     it, but dont want to use an unlocked binary.  The best way to to
+     do this is after the configuration process, type 'make
+     ace[lowbar]uname' and then execute ace[lowbar]uname, the value on
+     the 2nd line is the node, the value on the 1st and 5th line are
+     the type and should be seperated by a `/' character (ie. 1st/5th).
+     The value of the 3rd line is the rel.  Alternatively, you can try
+     using the commands `uname -n' for the 2nd line, `uname -s' for the
+     1st line, `uname -m' for the 5th line, and `uname -r' for the 3rd
+     line, but it is recommended you use ace[lowbar]uname instead (as
+     the values may not match on some systems!).  NOTE: the release is
+     currently not used in hostlock protection.
+
+`--with-include=path'
+     -with-libdir=path -with-lib=lib These will add -I, -L and -l
+     options to the compile/link options.  If you find Magick wont
+     compile on your system due to missing symbols, or undefined
+     references, it may not have been able to find a header it needed,
+     or it may not have included a required library.  The include and
+     libdir should both be directories where to find the include files
+     or libraries, where lib should be the library name with the lib
+     prefix and the .so or .a postfix truncated.  eg. libpthread.so
+     becomes pthread.
+
+`--enable-static'
+     -disable-static This determines weather the resulting Magick
+     binaries will be linked statically or dynamically.  Static
+     binaries are larger than dynamic, but may be taken across
+     differing releases (of the same operating system) without regard
+     for what specific version of things such as the C libraries are
+     installed.  Static binaries require that a static ACE, threads and
+     zlib library exist to link with.  Dynamic binaries may only be
+     used on systems that have the same library setup as the one they
+     were compiled on, and because they dont include all the extra
+     stuff needed to statically link, are much smaller.
+
+`--enable-quick'
+     -disable-quick This turns off the call to 'helper/build-ver' which
+     increments the build number displayed in Magick's version reply.
+     This is only useful if you plan to compile alot, and dont want to
+     have to re- compile the entire program each time you make a
+     change, however it means you will not have an accurate build
+     number indication.
+
+`--enable-crypt'
+     -disable-crypt This turns on or off encryption support in Magick.
+     Some versions of Magick may not be distributed with encryption, in
+     which case you will have to download it and enable it to use it.
+     The encryption of choice right now is 3BF (3 * blowfish).
+
+`--enable-trace'
+     -disable-trace This turns on or off the internal tracing functions
+     of Magick.  This can cause problems right now with large
+     databases.  It is therefore by default disabled.  It does however
+     allow debugging of Magick without the need or use of core file
+     analysis.
+
+`--enable-convert'
+     -disable-convert This enables or disables the -convert commandline
+     paramater that can be used to convert older versions of Magick
+     DB's or other services databases.  Not needed for normal running
+     of magick.
+
+`--enable-getpass'
+     -disable-getpass This enables the ChanServ and NickServ GETPASS
+     commands, as opposed to the default SETPASS commands.  By doing
+     this, passwords will be stored as they are in the database.  This
+     is disabled by default, which means only SETPASS is available, and
+     passwords are stored in a one-way hash that makes it impossible to
+     retrieve passwords.
+
+`--enable-locks'
+     -disable-locks This turns on or off thread locking.  Thread
+     locking is essential for ensuring only one thread can access a bit
+     of data at once.  On some bad thread implementations, this will
+     stop segfaults, however it is a big target asking for data
+     corruption turning this off.
+
+`--enable-hostlock'
+     -disable-hostlock This will enable or disable host and system type
+     checking on startup.  When enabled, if the binary is moved to a
+     system where the hostname or system specs are different from where
+     the binary was compiled, it will fail to operate, and a re-compile
+     will be necessary.  This is enabled by default, however if you
+     want to create a portable binary (that can be used anywhere)
+     disable this option.  This is a security feature to protect
+     against people copying your services directory (binaries and all)
+     and stealing the databases.  This is not infallable, however it
+     does help.  Disabling this will also disable automatic binary
+     'stamping' (ie.  putting random keys for keyfile encryption at
+     compile time).  It is assumed that you are making a binary ment to
+     be portable and/or distributed, in which case, the binaries should
+     be stamped by the end-user (or on each system it is deployed).
+
+`--enable-mpatrol'
+     -disable-mpatrol This turns on or off the usage of the memory
+     error checking and profiling software mpatrol
+     (http://www.cbmamiga.demon.co.uk/mpatrol).  This software is
+     useful in the fact it looks for memory access errors (eg.
+     accessing unitialised memory, exceeding memory bounds, not freeing
+     memory, etc).  However it slows the program down dramatically.
+     Turning this on causes a new log file (mpatrol.log) to be created.
+
+`--enable-efence'
+     -disable-efence This turns on or off the usage of the memory error
+     checking and profiling software Electric Fence
+     (http://ftp://ftp.perens.com/pub/ElectricFence).  This software is
+     useful in the fact it looks for memory access errors (eg.
+     accessing unitialised memory, exceeding memory bounds, not freeing
+     memory, etc).  However it slows the program down dramatically.
+     Turning this on causes the program to stop at the first memory
+     problem (so it is recommended you run this in a debugger).
+
+   `configure' also accepts some other, not widely useful, options.
+
+
+File: index.info,  Node: Security Tips,  Prev: Operation Controls,  Up: Installation
+
+Security Tips
+=============
+
+   Magick has several facilities to ensure your databases and inter-
+magick communications are kept secure and encrypted.  The main methods
+of facilitating this are:
+   * Databases and inter-magick communication is encrypted with a key
+     through 3BF.  This key resides in a key file.
+
+   * The key file itself is encrypted with two keys generated at
+     compile time, to ensure the key file is never clear text.
+
+   * EACH compile creates new key file keys, which means you must
+     re-generate the key file each time you compile, ensuring it does
+     not get stale (and becomes invalid if someone gets it!)
+
+   * You may manually replace the key file keys by using the
+     magick[lowbar]stampkeys utility that comes with magick (you will
+     have to regenerate your key file after this).
+
+   To ensure the security of your databases and communication, you
+should
+   * Chose a long and complex database key, you must remember this
+     somehow, incase you need to generate a new database key, however
+     you wont need it often.
+
+   * Use the magick[lowbar]stampkeys utility on all your binaries at
+     once and regenerate your keys every so often, so stop them becoming
+     stale.
+
+   Windows users will not automatically generate a new keyset with each
+compile.  It is recommended you create your own using the
+magick[lowbar]stampkeys utility supplied if you intend to use
+encryption.  This must be done some time before the database encryption
+key is generated.
+
+   Syntax for the magick[lowbar]stampkeys utility is:
+          magick_stampkeys <all binaries to be stamped>
+
+   You MUST do all executable files at once, so an example is:
+          (UNIX) magick_stampkeys magick magick.debug magick_keygen
+          (WIN ) magick_stampkeys magick.exe magick_keygen.exe
+
+   Keep in mind that to be able to stamp a binary, it must NOT have been
+previously stamped, so you will need a 'freshly linked' file.  All
+binary distributions contain un-stamped files, all source distributions
+can create (and auto-restamp) files with the "make reilnk" command.
+
+   REMEMBER:  If you forget your database password, then you had BETTER
+decrypt your databases (via. the config file) ASAP, as if you lose your
+key, and do not know the password to generate a new one, you may as
+well remove the file and start again.
+
+   Pre-compiled binaries will not be able to change the key file keys.
+This could be considered an advantage of compiling yourself.
+
+
+File: index.info,  Node: Usage,  Next: Questions and Answers,  Prev: Installation,  Up: Top
+
+Usage
+*****
+
+* Menu:
+
+* Support files::
+* General Usage::
+* Functionality::
+
+
+File: index.info,  Node: Support files,  Next: General Usage,  Up: Usage
+
+Support files
+=============
+
+   All files and directories listed are relative to the current
+'Services Directory'. The services directory is set with the -dir
+command line option. If none is specified, it will default to the
+current directory.
+
+`magick.ini'
+     This file is included with your Magick distribution in the docs
+     directory.  This file must either be specified on the command line
+     with the -config option, or in the services directory.  This file
+     contains all settings that Magick II will use throughout its
+     execution (these can be changed and reloaded online).
+
+`magick.mnd'
+     This is the Magick New Datafile (or mound) file.  This stores all
+     data that is stored by Magick.  This file is not human readable,
+     and is often encrypted and/or compressed.  This filename is a
+     setting in the magick.ini file, and may be changed.  This file
+     will be created if it does not exist.
+
+`magick.log'
+     This is the log file which logs all activity of note that happens
+     inside Magick.  The verbosity of this log file can vary depending
+     on the -debug option, or the VERBOSE config option.  This file may
+     be zeroed without any decremental effects, or if it is removed,
+     the OFF and ON online commands will re-establish the filehandle.
+     This filename is a setting in the magick.ini file, and may be
+     changed.  This file is created if it doesn't exist.
+
+`magick.pid'
+     This file indicates the process ID of the currently running Magick
+     on UNIX-based systems.  This may be used to easily determine if
+     Magick is running, and to kill a running copy. This filename is a
+     setting in the magick.ini file, and may be changed.  This file is
+     overwritten on Magick startup.
+
+`magick.motd'
+     This contains the text of the server motd that will be displayed
+     to any user who types /MOTD services.server in their IRC client.
+     This filename is a setting in the magick.ini file, and may be
+     changed.
+
+`magick.key'
+     This contains the key for your databases, encrypted.  This key
+     file should be generated with magick[lowbar]keygen.  This file may
+     not be used by more than one set of services (unless the binaries
+     are copied), as each compile requires regenerating this file.  This
+     filename is a setting in the magick.ini file, and may be changed.
+
+`lang'
+     This directory is where all language files (*.lng, *.lfo and
+     *.hlp) will be stored.  The path name actually used is a setting
+     in the magick.ini file.
+
+`lang\*.lng'
+     These files contain the responses Magick will send back to users
+     for any command, or output from any procedure.  These files are
+     'tokenised', and are substituted with actual values.  The default
+     language file to used is set by the DEF[lowbar]LANGUAGE parameter
+     in the magick.ini file, however languages may be set per-user.
+
+`lang\*.lfo'
+     These files contain the log file outputs Magick will use for all
+     messages going to the magick.log file.  These files are
+     'tokenised', and are substituted with actual values.  The file that
+     is used is set by the DEF[lowbar]LANGUAGE parameter in the
+     magick.ini file.
+
+`lang\*.hlp'
+     These files contain the help text that Magick uses to respond to
+     all HELP commands.  The default help file used is set by the
+     DEF[lowbar]LANGUAGE parameter in the magick.ini file, however
+     languages may be set per-user.
+
+`files\pic'
+     This directory is where all user's pictures are stored.  The files
+     themselves are stored as hexadecimal numbers, with no extension -
+     the map to real filenames is stored in the database.  The path
+     name actually used is a setting in the magick.ini file.
+
+`files\memo'
+     This directory is where all attachments are stored.  The files
+     themselves are stored as hexadecimal numbers, with no extension -
+     the map to real filenames is stored in the database.  The path
+     name actually used is a setting in the magick.ini file.
+
+`files\public'
+     This directory is where all files in the public filesystem are
+     stored.  The files themselves are stored as hexadecimal numbers,
+     with no extension - the map to real filenames is stored in the
+     database.  The path name actually used is a setting in the
+     magick.ini file.
+
+`files\temp'
+     This directory is where all files involved in DCC transfers
+     (sending or receiving) are stored.  These files are considered
+     volatile, and if Magick is not running, can safely be removed. The
+     files themselves are stored as hexadecimal numbers, with no
+     extension. The path name actually used is a setting in the
+     magick.ini file.
+
