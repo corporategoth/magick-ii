@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.143  2000/12/19 14:26:55  prez
+** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
+** several SVS command text strings, if blank, support isnt there.
+**
 ** Revision 1.142  2000/12/19 08:29:06  prez
 ** Added EOB
 **
@@ -382,6 +386,10 @@ void Protocol::SetTokens(unsigned int type)
 	tokens["ERRMSG"] = "CTCP ERRMSG"; */
 	break;
 
+    case 0003:
+	SetTokens(0001);
+	tokens["e"] = "MODNICK";
+
     case 0002: /* Relic >= 2.1 */
 	SetTokens(0001);
 	tokens.erase("1");
@@ -499,8 +507,6 @@ Protocol::Protocol()
     i_MaxLine = 450;
     i_Globops = false;
     i_Tokens = false;
-    i_SVS = false;
-    i_SVSHOST = false;
     i_P12 = false;
     i_TSora = false;
     i_Akill = 0;
@@ -509,9 +515,19 @@ Protocol::Protocol()
     i_ChanModeArg = "ovbkl";
     i_Server = "SERVER %s %d :%s";
     i_Numeric = false;
+
+    /* Leave these commented, since they do nothing ...
     i_Burst = "";
     i_EndBurst = "";
     i_Protoctl = "";
+    i_SVSNICK = "";
+    i_SVSMODE = "";
+    i_SVSKILL = "";
+    i_SVSNOOP = "";
+    i_SQLINE = "";
+    i_UNSQLINE = "";
+    i_SVSHOST = "";
+    */
 
     DumpB();
 }
@@ -550,10 +566,15 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_SVS = true;
 	i_Akill = 1;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_SVSNICK = "SVSNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
 	break;
 
@@ -561,14 +582,19 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2001;
 	i_Globops = true;
-	i_SVS = true;
 	i_Akill = 5;
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
+	i_SVSNICK = "MODNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	i_Burst = "BURST";
 	i_EndBurst = "BURST END";
-	SetTokens(0001);
+	SetTokens(0003);
 	break;
 
     case 20: /* UnderNet < 2.10.x  */
@@ -599,26 +625,35 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_SVS = true;
 	i_Akill = 1;
+	i_SVSNICK = "SVSNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
 	break;
 
     case 50: /* Relic 2.0 */
 	i_NickLen = 32;
-	i_SVS = true;
 	i_Globops = true;
 	i_Signon = 1001;
 	i_Akill = 1;
 	i_Modes = 6;
 	i_Server = "SERVER %s %d relic2.0 :%s";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_SVSNICK = "SVSNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
 	break;
 
     case 51: /* Relic 2.1 */
 	i_NickLen = 32;
-	i_SVS = true;
 	i_Globops = true;
 	i_P12 = true;
 	i_Signon = 1003;
@@ -627,6 +662,12 @@ void Protocol::Set(unsigned int in)
 	i_ChanModeArg = "ovbekl";
 	i_Server = "SERVER %s %d relic2.1 :%s";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_SVSNICK = "SVSNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0002);
 	break;
 
@@ -634,25 +675,35 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
-	i_SVS = true;
 	i_Akill = 5;
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
+	i_SVSNICK = "MODNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	i_Burst = "BURST";
-	i_EndBurst = "BURST END";
-	SetTokens(0001);
+	i_EndBurst = "EOB";
+	SetTokens(0003);
 	break;
 
     case 60: /* Aurora */
 	i_NickLen = 32;
 	i_Signon = 1002;
 	i_Globops = true;
-	i_SVS = true;
-	i_SVSHOST = true;
 	i_Akill = 1;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_SVSNICK = "SVSNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
+	i_SVSHOST = "SVSHOST";
 	SetTokens(0001);
 	break;
 
@@ -660,9 +711,14 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_SVS = true;
 	i_Akill = 1;
 	i_ChanModeArg = "ovbehkl";
+	i_SVSNICK = "SVSNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
 	break;
 
@@ -670,10 +726,15 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
-	i_SVS = true;
 	i_Akill = 1;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	i_SVSNICK = "SVSNICK";
+	i_SVSMODE = "SVSMODE";
+	i_SVSKILL = "SVSKILL";
+	i_SVSNOOP = "SVSNOOP";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	SetTokens(0001);
 	break;
 
@@ -711,16 +772,20 @@ mstring Protocol::GetNonToken(mstring in)
 
 void Protocol::DumpB()
 {
-    MB(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Tokens, i_SVS,
-	i_SVSHOST, i_P12, i_TSora, i_Akill, i_Signon, i_Modes,
-	i_ChanModeArg, i_Server, i_Protoctl, tokens.size()));
+    MB(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Tokens,
+	i_P12, i_TSora, i_Akill, i_Signon, i_Modes, i_ChanModeArg,
+	i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl));
+    MB(16, (i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE,
+	i_UNSQLINE, i_SVSHOST, tokens.size()));
 }
 
 void Protocol::DumpE()
 {
-    ME(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Tokens, i_SVS,
-	i_SVSHOST, i_P12, i_TSora, i_Akill, i_Signon, i_Modes,
-	i_ChanModeArg, i_Server, i_Protoctl, tokens.size()));
+    ME(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Tokens,
+	i_P12, i_TSora, i_Akill, i_Signon, i_Modes, i_ChanModeArg,
+	i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl));
+    ME(16, (i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE,
+	i_UNSQLINE, i_SVSHOST, tokens.size()));
 }
 
 Server::Server(mstring name, mstring description)
@@ -1925,38 +1990,6 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 }
 
 
-void NetworkServ::NOOP(mstring nick, mstring server, bool onoff)
-{
-    FT("NetworkServ::NOOP", (nick, server, onoff));
-
-    if (!Parent->server.proto.SVS())
-	return;
-
-    if (!Parent->nickserv.IsLive(nick))
-    {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
-		"NOOP", nick.c_str()));
-    }
-    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
-    {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"NOOP", nick.c_str()));
-    }
-    else if (!IsServer(server))
-    {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONSERVER"),
-		"NOOP", nick.c_str(), server.c_str()));
-    }
-    else
-    {
-	raw(":" + nick + " " +
-		((proto.Tokens() && proto.GetNonToken("NOOP") != "") ?
-			proto.GetNonToken("NOOP") : mstring("NOOP")) +
-		" " + server + " " + mstring(onoff ? "+" : "-"));
-    }
-}
-
-
 void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
 {
     FT("NetworkServ::NOTICE", (nick, dest, text));
@@ -2093,7 +2126,7 @@ void NetworkServ::SQLINE(mstring nick, mstring target, mstring reason)
 {
     FT("NetworkServ::SQLINE", (nick, target,reason));
 
-    if (!Parent->server.proto.SVS())
+    if (proto.SQLINE().empty())
 	return;
 
     if (!Parent->nickserv.IsLive(nick))
@@ -2110,14 +2143,18 @@ void NetworkServ::SQLINE(mstring nick, mstring target, mstring reason)
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"SQLINE", nick.c_str()));
+		proto.SQLINE().c_str(), nick.c_str()));
     }
     else
     {
-	raw(":" + nick + " " +
-		((proto.Tokens() && proto.GetNonToken("SQLINE") != "") ?
-			proto.GetNonToken("SQLINE") : mstring("SQLINE")) +
-		" " + target + " :" + reason);
+	mstring output;
+	output << ":" << nick << " ";
+	if (proto.Tokens() && proto.GetNonToken(proto.SQLINE()) != "")
+	    output << proto.GetNonToken(proto.SQLINE());
+	else
+	    output << proto.SQLINE();
+	output << " " << target << " :" << reason;
+	raw(output);
     }
 }
 
@@ -2201,91 +2238,11 @@ void NetworkServ::RAKILL(mstring host)
 	sraw(line);
 }
 
-void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
-{
-    FT("NetworkServ::SVSMODE", (mynick, nick, mode));
-
-    if (!Parent->server.proto.SVS())
-	return;
-
-    if (!Parent->nickserv.IsLive(mynick))
-    {
-	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
-	MCB(ToBeSent.size());
-	ToBeSent[mynick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSMODE, Now(), triplet<mstring, mstring, mstring>(
-		nick, mode, "")));
-	MCE(ToBeSent.size());
-	return;
-    }
-    else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
-    {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"SVSMODE", nick.c_str()));
-    }
-    else if (!Parent->nickserv.IsLive(nick))
-    {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"SVSMODE", mynick.c_str(), nick.c_str()));
-    }
-    else
-    {
-	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
-	raw(":" + mynick + " " +
-		((proto.Tokens() && proto.GetNonToken("SVSMODE") != "") ?
-			proto.GetNonToken("SVSMODE") : mstring("SVSMODE")) +
-		" " + nick + " " + mode);
-    }
-}
-
-
-void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
-{
-    FT("NetworkServ::SVSKILL", (mynick, nick, reason));
-
-    if (!Parent->server.proto.SVS())
-	return;
-
-    if (!Parent->nickserv.IsLive(mynick))
-    {
-	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
-	MCB(ToBeSent.size());
-	ToBeSent[mynick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSKILL, Now(), triplet<mstring, mstring, mstring>(
-		nick, reason, "")));
-	MCE(ToBeSent.size());
-	return;
-    }
-    else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
-    {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"SVSKILL", nick.c_str()));
-    }
-    else if (!Parent->nickserv.IsLive(nick))
-    {
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"SVSKILL", mynick.c_str(), nick.c_str()));
-    }
-    else
-    {
-	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
-	WLOCK(("NickServ", "live"));
-	Parent->nickserv.live.erase(nick.LowerCase());
-	raw(":" + mynick + " " +
-		((proto.Tokens() && proto.GetNonToken("SVSKILL") != "") ?
-			proto.GetNonToken("SVSKILL") : mstring("SVSKILL")) +
-		" " + nick + " :" + reason);
-    }
-}
-
-
 void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
 {
     FT("NetworkServ::SVSHOST", (mynick, nick, newhost));
 
-    if (!Parent->server.proto.SVSHOST())
+    if (proto.SVSHOST().empty())
 	return;
 
     if (!Parent->nickserv.IsLive(mynick))
@@ -2302,24 +2259,68 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"SVSHOST", nick.c_str()));
+		proto.SVSHOST().c_str(), nick.c_str()));
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"SVSHOST", mynick.c_str(), nick.c_str()));
+		proto.SVSHOST().c_str(), mynick.c_str(), nick.c_str()));
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].AltHost(newhost);
 	mstring output;
-	
 	output << ":" << mynick << " ";
-	if (proto.Tokens() && proto.GetNonToken("SVSHOST") != "")
-	    output << proto.GetNonToken("SVSHOST");
+	if (proto.Tokens() && proto.GetNonToken(proto.SVSHOST()) != "")
+	    output << proto.GetNonToken(proto.SVSHOST());
 	else
-	    output << "SVSHOST";
+	    output << proto.SVSHOST();
 	output << " " << nick << " " << newhost << " :" << time(NULL);
+	raw(output);
+    }
+}
+
+
+void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
+{
+    FT("NetworkServ::SVSKILL", (mynick, nick, reason));
+
+    if (proto.SVSKILL().empty())
+	return;
+
+    if (!Parent->nickserv.IsLive(mynick))
+    {
+	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
+	MCB(ToBeSent.size());
+	ToBeSent[mynick.LowerCase()].push_back(
+		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
+		t_SVSKILL, Now(), triplet<mstring, mstring, mstring>(
+		nick, reason, "")));
+	MCE(ToBeSent.size());
+	return;
+    }
+    else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
+    {
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		proto.SVSKILL().c_str(), nick.c_str()));
+    }
+    else if (!Parent->nickserv.IsLive(nick))
+    {
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		proto.SVSKILL().c_str(), mynick.c_str(), nick.c_str()));
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
+	WLOCK(("NickServ", "live"));
+	Parent->nickserv.live.erase(nick.LowerCase());
+	mstring output;
+	output << ":" << mynick << " ";
+	if (proto.Tokens() && proto.GetNonToken(proto.SVSKILL()) != "")
+	    output << proto.GetNonToken(proto.SVSKILL());
+	else
+	    output << proto.SVSKILL();
+	output << " " << nick << " " << reason;
 	raw(output);
     }
 }
@@ -2329,7 +2330,7 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
 {
     FT("NetworkServ::SVSNICK", (mynick, nick, newnick));
 
-    if (!Parent->server.proto.SVS())
+    if (proto.SVSNICK().empty())
 	return;
 
     if (!Parent->nickserv.IsLive(mynick))
@@ -2346,28 +2347,107 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"SVSNICK", nick.c_str()));
+		proto.SVSNICK().c_str(), nick.c_str()));
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
-		"SVSNICK", mynick.c_str(), nick.c_str()));
+		proto.SVSNICK().c_str(), mynick.c_str(), nick.c_str()));
     }
     else if (Parent->nickserv.IsLive(newnick))
     {
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_TOUSER"),
-		"SVSNICK", mynick.c_str(), newnick.c_str()));
+		proto.SVSNICK().c_str(), mynick.c_str(), newnick.c_str()));
     }
     else
     {
 	mstring output;
 	output << ":" << mynick << " ";
-	if (proto.Tokens() && proto.GetNonToken("SVSNICK") != "")
-	    output << proto.GetNonToken("SVSNICK");
+	if (proto.Tokens() && proto.GetNonToken(proto.SVSNICK()) != "")
+	    output << proto.GetNonToken(proto.SVSNICK());
 	else
-	    output << "SVSNICK";
+	    output << proto.SVSNICK();
 	output << " " << nick << " " <<
 		    newnick << " :" << time_t(NULL);
+	raw(output);
+    }
+}
+
+
+void NetworkServ::SVSNOOP(mstring nick, mstring server, bool onoff)
+{
+    FT("NetworkServ::SVSNOOP", (nick, server, onoff));
+
+    if (proto.SVSNOOP().empty())
+	return;
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
+		proto.SVSNOOP().c_str(), nick.c_str()));
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		proto.SVSNOOP().c_str(), nick.c_str()));
+    }
+    else if (!IsServer(server))
+    {
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONSERVER"),
+		proto.SVSNOOP().c_str(), nick.c_str(), server.c_str()));
+    }
+    else
+    {
+	mstring output;
+	output << ":" << nick << " ";
+	if (proto.Tokens() && proto.GetNonToken(proto.SVSNOOP()) != "")
+	    output << proto.GetNonToken(proto.SVSNOOP());
+	else
+	    output << proto.SVSNOOP();
+	output << " " + server + " " + mstring(onoff ? "+" : "-");
+	raw(output);
+    }
+}
+
+
+void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
+{
+    FT("NetworkServ::SVSMODE", (mynick, nick, mode));
+
+    if (proto.SVSMODE().empty())
+	return;
+
+    if (!Parent->nickserv.IsLive(mynick))
+    {
+	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
+	MCB(ToBeSent.size());
+	ToBeSent[mynick.LowerCase()].push_back(
+		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
+		t_SVSMODE, Now(), triplet<mstring, mstring, mstring>(
+		nick, mode, "")));
+	MCE(ToBeSent.size());
+	return;
+    }
+    else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
+    {
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		proto.SVSMODE().c_str(), nick.c_str()));
+    }
+    else if (!Parent->nickserv.IsLive(nick))
+    {
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_FORNONUSER"),
+		proto.SVSMODE().c_str(), mynick.c_str(), nick.c_str()));
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
+	mstring output;
+	output << ":" << mynick << " ";
+	if (proto.Tokens() && proto.GetNonToken(proto.SVSMODE()) != "")
+	    output << proto.GetNonToken(proto.SVSMODE());
+	else
+	    output << proto.SVSMODE();
+	output << " " << nick << " " << mode;
 	raw(output);
     }
 }
@@ -2425,7 +2505,7 @@ void NetworkServ::UNSQLINE(mstring nick, mstring target)
 {
     FT("NetworkServ::UNSQLINE", (nick, target));
 
-    if (!Parent->server.proto.SVS())
+    if (!proto.UNSQLINE().empty())
 	return;
 
     if (!Parent->nickserv.IsLive(nick))
@@ -2442,14 +2522,18 @@ void NetworkServ::UNSQLINE(mstring nick, mstring target)
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
 	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"UNSQLINE", nick.c_str()));
+		proto.UNSQLINE().c_str(), nick.c_str()));
     }
     else
     {
-	raw(":" + nick + " " +
-		((proto.Tokens() && proto.GetNonToken("UNSQLINE") != "") ?
-			proto.GetNonToken("UNSQLINE") : mstring("UNSQLINE")) +
-		" " + target);
+	mstring output;
+	output << ":" << nick << " ";
+	if (proto.Tokens() && proto.GetNonToken(proto.UNSQLINE()) != "")
+	    output << proto.GetNonToken(proto.UNSQLINE());
+	else
+	    output << proto.UNSQLINE();
+	output << " " << target;
+	raw(output);
     }
 }
 
@@ -2696,9 +2780,9 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="END_OF_BURST" || msgtype=="EOB")
 	{
 	    // Tis only nice, afterall ...
-	    Parent->server.sraw(((Parent->server.proto.Tokens() &&
-		Parent->server.proto.GetNonToken("EOB_ACK") != "") ?
-		Parent->server.proto.GetNonToken("EOB_ACK") :
+	    Parent->server.sraw(((proto.Tokens() &&
+		proto.GetNonToken("EOB_ACK") != "") ?
+		proto.GetNonToken("EOB_ACK") :
 		mstring("EOB_ACK")));
 	}
 	else if (msgtype=="EOB_ACK")
@@ -3035,6 +3119,10 @@ void NetworkServ::execute(const mstring & data)
 		    }
 		}
 	    }
+	}
+	else if (msgtype=="MODNICK")
+	{
+	    // forcably changed nicks (handle like nick)
 	}
 	else if (msgtype=="MOTD")
 	{
@@ -4758,7 +4846,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 	    Parent->ircsvchandler->EndBurst();
 	}}
 	if (proto.Burst() != "")
-	    Parent->server.sraw(((Parent->server.proto.Tokens() &&
+	    Parent->server.sraw(((proto.Tokens() &&
 		proto.GetNonToken(proto.Burst()) != "") ?
 		proto.GetNonToken(proto.Burst()) : mstring(proto.Burst())));
 	for (i=4; i<=data.WordCount(": "); i++)
@@ -4887,7 +4975,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 	WaitIsOn.clear();
 	}
 	if (proto.EndBurst() != "")
-	    Parent->server.sraw(((Parent->server.proto.Tokens() &&
+	    Parent->server.sraw(((proto.Tokens() &&
 		proto.GetNonToken(proto.EndBurst()) != "") ?
 		proto.GetNonToken(proto.EndBurst()) : mstring(proto.EndBurst())));
 	break;

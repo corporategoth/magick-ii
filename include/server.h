@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/12/19 14:26:55  prez
+** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
+** several SVS command text strings, if blank, support isnt there.
+**
 ** Revision 1.52  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -150,8 +154,6 @@ class Protocol
 
     bool i_Globops;
     bool i_Tokens;
-    bool i_SVS;
-    bool i_SVSHOST;
     bool i_P12;
     bool i_TSora;
 
@@ -207,6 +209,15 @@ class Protocol
      */
     mstring i_Protoctl; /* Verbatum (null if not sent) */
 
+    /* Strings for each of the following commands ... */
+    mstring i_SVSNICK;
+    mstring i_SVSMODE;
+    mstring i_SVSKILL;
+    mstring i_SVSNOOP;
+    mstring i_SQLINE;
+    mstring i_UNSQLINE;
+    mstring i_SVSHOST;
+
     // This is a map of real commands -> tokenized commands
     // to save bandwidth.
     map<mstring,mstring> tokens;
@@ -225,8 +236,6 @@ public:
     bool Globops()	    { return i_Globops; }
     bool Tokens()	    { return i_Tokens; }
     void Tokens(bool in)    { i_Tokens = in; }
-    bool SVS()		    { return i_SVS; }
-    bool SVSHOST()	    { return i_SVSHOST; }
     bool P12()		    { return i_P12; }
     bool TSora()	    { return i_TSora; }
     unsigned int Akill()    { return i_Akill; }
@@ -235,6 +244,13 @@ public:
     mstring ChanModeArg()   { return i_ChanModeArg; }
     mstring Server()	    { return i_Server; }
     bool Numeric()	    { return i_Numeric; }
+    mstring SVSNICK()	    { return i_SVSNICK; }
+    mstring SVSMODE()	    { return i_SVSMODE; }
+    mstring SVSKILL()	    { return i_SVSKILL; }
+    mstring SVSNOOP()	    { return i_SVSNOOP; }
+    mstring SQLINE()	    { return i_SQLINE; }
+    mstring UNSQLINE()	    { return i_UNSQLINE; }
+    mstring SVSHOST()	    { return i_SVSHOST; }
     mstring Burst()	    { return i_Burst; }
     mstring EndBurst()	    { return i_EndBurst; }
     mstring Protoctl()	    { return i_Protoctl; }
@@ -354,7 +370,6 @@ public:
     	mstring server, mstring realname);
     void NICK(mstring oldnick, mstring newnick);
     void NOTICE(mstring nick, mstring dest, mstring text);
-    void NOOP(mstring nick, mstring server, bool onoff);
     void PART(mstring nick, mstring channel, mstring reason = "");
     void PRIVMSG(mstring nick, mstring dest, mstring text);
     void QUIT(mstring nick, mstring reason = "");
@@ -362,6 +377,7 @@ public:
     void RAKILL(mstring host);
     void SVSMODE(mstring mynick, mstring nick, mstring mode);
     void SVSNICK(mstring mynick, mstring nick, mstring newnick);
+    void SVSNOOP(mstring nick, mstring server, bool onoff);
     void SVSKILL(mstring mynick, mstring nick, mstring reason);
     void SVSHOST(mstring mynick, mstring nick, mstring newhost);
     void TOPIC(mstring nick, mstring setter, mstring channel, mstring topic = "", mDateTime time = Now());

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.142  2000/12/19 14:26:55  prez
+** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
+** several SVS command text strings, if blank, support isnt there.
+**
 ** Revision 1.141  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -1552,7 +1556,7 @@ void Nick_Live_t::SendMode(mstring in)
     {
 	Parent->server.MODE(i_Name, in);
     }
-    else if (Parent->server.proto.SVS())
+    else if (!Parent->server.proto.SVSMODE().empty())
     {
 	Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, in);
     }
@@ -1614,7 +1618,7 @@ void Nick_Live_t::Mode(mstring in)
 		    Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 		    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(i_Name))))
 		{
-		    if (Parent->server.proto.SVS())
+		    if (!Parent->server.proto.SVSMODE().empty())
 		    {
 			SendMode("-o");
 			send(Parent->operserv.FirstName(), i_Name,

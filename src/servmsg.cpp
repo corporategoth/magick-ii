@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/12/19 14:26:55  prez
+** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
+** several SVS command text strings, if blank, support isnt there.
+**
 ** Revision 1.72  2000/12/19 07:24:54  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -856,11 +860,16 @@ void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD1"),
 		Parent->operserv.stats.Trace(),
 		Parent->operserv.stats.Mode());
-    if (Parent->server.proto.SVS())
+    if (!(Parent->server.proto.SQLINE().empty() ||
+	Parent->server.proto.UNSQLINE().empty()))
     {
 	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD2"),
 		Parent->operserv.stats.Qline(),
 		Parent->operserv.stats.Unqline());
+    }
+    if (!(Parent->server.proto.SVSNOOP().empty() ||
+	Parent->server.proto.SVSKILL().empty()))
+    {
 	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD3"),
 		Parent->operserv.stats.Noop(),
 		Parent->operserv.stats.Kill());
@@ -880,7 +889,7 @@ void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD8"),
 		Parent->operserv.stats.OperDeny(),
 		Parent->operserv.stats.Ignore());
-    if (Parent->server.proto.SVSHOST())
+    if (!Parent->server.proto.SVSHOST().empty())
 	::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD9"),
 		Parent->operserv.stats.Hide());
 }

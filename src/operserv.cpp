@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2000/12/19 14:26:55  prez
+** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
+** several SVS command text strings, if blank, support isnt there.
+**
 ** Revision 1.105  2000/12/19 07:24:54  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -1489,7 +1493,7 @@ void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
 	{
 	    if (Parent->nickserv.IsLive(target))
 	    {
-		if (Parent->server.proto.SVS())
+		if (!Parent->server.proto.SVSMODE().empty())
 		{
 		    Parent->server.SVSMODE(mynick, target, mode);
 		    Parent->operserv.stats.i_Mode++;
@@ -1525,7 +1529,7 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Qline", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (!Parent->server.proto.SVS())
+    if (Parent->server.proto.SQLINE().empty())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
@@ -1560,7 +1564,7 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_UnQline", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (!Parent->server.proto.SVS())
+    if (Parent->server.proto.UNSQLINE().empty())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
@@ -1592,7 +1596,7 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_NOOP", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (!Parent->server.proto.SVS())
+    if (Parent->server.proto.SVSNOOP().empty())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
@@ -1621,7 +1625,7 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    Parent->server.NOOP(mynick, target, onoff.GetBool());
+    Parent->server.SVSNOOP(mynick, target, onoff.GetBool());
     Parent->operserv.stats.i_Noop++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NOOP"),
 	    onoff.GetBool() ?
@@ -1646,7 +1650,7 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Kill", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (!Parent->server.proto.SVS())
+    if (Parent->server.proto.SVSKILL().empty())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
@@ -1687,7 +1691,7 @@ void OperServ::do_Hide(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_Hide", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (!Parent->server.proto.SVSHOST())
+    if (Parent->server.proto.SVSHOST().empty())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
@@ -3296,7 +3300,7 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 		Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 		Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(nlive->first)))
 		continue;
-	    if (Parent->server.proto.SVS())
+	    if (!Parent->server.proto.SVSMODE().empty())
 	    {
 		nlive->second.SendMode("-oAa");
 	    }
