@@ -47,8 +47,8 @@ USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_
 # ---------------------------------------------------------------------------
 CFLAG1 = -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
   -Od -H=$(BCB)\lib\vcl40.csm -wstv -wstu -w-rvl -wpin -w-par -wnod -wnak -wdef \
-  -wamb -Vmp -Tkh30000 -r- -a8 -6 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) \
-  -q -tWR -tWM -c
+  -wamb -Vmp -Tkh30000 -r- -a8 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q \
+  -tWR -tWM -c
 IDLCFLAGS = -I"..\..\Program Files\Borland\CBuilder4\Projects" -Isrc -Iinclude \
   -I..\support\ace_wrappers -I..\support\zlib -I..\include\sxp -I..\include\expat \
   -I$(BCB)\include -I$(BCB)\include\ATL -src_suffixcpp -D_DEBUG -DDEBUG -DWIN32 \
