@@ -105,6 +105,7 @@ int Magick::Start()
         RET(MAGICK_RET_INVALID_SERVICES_DIR);
     }
 
+    // need to transfer wxGetWorkingDirectory() and prepend it to config_file
     MagickIni=new wxFileConfig("magick","",config_file);
     if(MagickIni==NULL)
     {
@@ -307,6 +308,7 @@ int Magick::Start()
 mstring Magick::getMessage(const mstring & name)
 {
     FT("Magick::getMessage", (name));
+    // to be filled in this get's the message from our previously loaded internal message database.
     RET("");
 }
 
@@ -370,6 +372,7 @@ void Magick::LoadInternalMessages()
 	*fostream<<def_lang[i]<<"\n";
     fostream->Sync();
     delete fostream;
+    // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
     wxFileConfig fconf("magick","","tmplang.lng");
     bool bContGroup, bContEntries;
     long dummy1,dummy2;
@@ -419,7 +422,8 @@ void Magick::LoadExternalMessages()
     NFT("Magick::LoadExternalMessages");
     // use the previously created name array to get the names to load
     WLOCK lock("Magick","LoadMessages");
-    wxFileConfig fconf("magick","","tmplang.lng");
+    // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
+    wxFileConfig fconf("magick","","english.lng");
     int i;
     for(i=0;i<MessageNamesLong.size();i++)
     	Messages[MessageNamesShort[i]]=fconf.Read(MessageNamesLong[i],Messages[MessageNamesShort[i]]);
