@@ -328,19 +328,19 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Other", (mynick, source, params));
 
-    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_MEMO"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_MEMO"),
 		Parent->memoserv.nick.size());
-    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_NEWS"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_NEWS"),
 		Parent->memoserv.channel.size());
-    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_COMM"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_COMM"),
 		Parent->commserv.list.size());
-    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_CLONE"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CLONE"),
 		Parent->operserv.Clone_size());
-    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_AKILL"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_AKILL"),
 		Parent->operserv.Akill_size());
-    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_OPERDENY"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_OPERDENY"),
 		Parent->operserv.OperDeny_size());
-    ::send(mynick, source, Parent->getMessage(source, "STAT/OTH_IGNORE"),
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_IGNORE"),
 		Parent->operserv.Ignore_size());
     
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
