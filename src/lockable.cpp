@@ -27,6 +27,11 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2001/11/28 13:40:47  prez
+** Added UMASK option to config.  Also made the 'dead thread' protection
+** send a SIGIOT signal to try and get the thread to die gracefully, else
+** it will do the cancel it used to do.
+**
 ** Revision 1.74  2001/11/12 01:05:02  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -731,6 +736,28 @@ mLOCK::~mLOCK()
 	    ReleaseMapLock();
     }
 }
+
+list<pair<void *, locktype_enum> > mLOCK::GetLocks(ACE_thread_t thr)
+{
+    list<pair<void *, locktype_enum> > retval;
+    map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > >::iterator i;
+    map<ACE_thread_t, locktype_enum>::iterator j;
+
+    if (!AcquireMapLock())
+	return retval;
+    for (i=LockMap.begin(); i!=LockMap.end(); i++)
+    {
+	for (j=i->second.second.begin(); j!=i->second.second.end(); j++)
+	{
+	    if (j->first == thr)
+		retval.push_back(pair<void *, locktype_enum>(
+			i->second.first, j->second));
+	}
+    }
+    ReleaseMapLock();
+    return retval;
+}
+
 
 #endif /* MAGICK_LOCKS_WORK */
 

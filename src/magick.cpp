@@ -29,6 +29,11 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.330  2001/11/28 13:40:47  prez
+** Added UMASK option to config.  Also made the 'dead thread' protection
+** send a SIGIOT signal to try and get the thread to die gracefully, else
+** it will do the cancel it used to do.
+**
 ** Revision 1.329  2001/11/18 03:26:53  prez
 ** More changes re: trace names, and made the command system know the
 ** difference between 'insufficiant access' and 'unknown command'.
@@ -579,7 +584,7 @@ Magick *Parent;
 Magick::Magick(int inargc, char **inargv)
     : i_verbose(false), i_level(0), i_auto(false), i_shutdown(false),
       i_reconnect(true), i_localhost(0), i_gotconnect(false),
-      i_connected(false), i_saving(false)
+      i_connected(false), i_saving(false), dh_timer(0)
 {
     char buf[1024], *c;
     i_config_file="magick.ini";
@@ -715,6 +720,7 @@ int Magick::Start(bool firstrun)
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
 
+    ACE_OS::umask(files.umask);
 #ifndef WIN32
     mFile pidfile;
     if (firstrun && mFile::Exists(files.Pidfile()))
@@ -777,6 +783,7 @@ int Magick::Start(bool firstrun)
 	    LOG(LM_WARNING, "SYS_ERRORS/OPERROR",
 		("setpgid", errno, strerror(errno)));
 	}
+	ACE_OS::umask(files.umask);
 
 	pidfile.Open(files.Pidfile(),"w");
 	if(pidfile.IsOpened())
@@ -818,9 +825,6 @@ int Magick::Start(bool firstrun)
 #ifdef SIGFPE
     ACE_Reactor::instance()->register_handler(SIGFPE,signalhandler);
 #endif
-#ifdef SIGCHLD
-    ACE_Reactor::instance()->register_handler(SIGCHLD,signalhandler);
-#endif
 #ifdef SIGWINCH
     ACE_Reactor::instance()->register_handler(SIGWINCH,signalhandler);
 #endif
@@ -830,21 +834,29 @@ int Magick::Start(bool firstrun)
 #ifdef SIGTTOU
     ACE_Reactor::instance()->register_handler(SIGTTOU,signalhandler);
 #endif
+#ifdef SIGTSTP
+    ACE_Reactor::instance()->register_handler(SIGTSTP,signalhandler);
+#endif
 
-#if 0 // Posix threads use these grrr
+#if 0
+
+// Linux POSIX threads (pre-lxpthreads) use these ...
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
     ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
     ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
 #endif
+
+// AIX uses this for zombie protection ...
 #if defined(SIGALRM) && (SIGALRM != 0)
     ACE_Reactor::instance()->register_handler(SIGALRM,signalhandler);
 #endif
-#ifdef SIGTSTP
-    ACE_Reactor::instance()->register_handler(SIGTSTP,signalhandler);
+#ifdef SIGCHLD
+    ACE_Reactor::instance()->register_handler(SIGCHLD,signalhandler);
 #endif
-#endif
+
+#endif /* 0 */
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
@@ -937,9 +949,6 @@ int Magick::Start(bool firstrun)
 #ifdef SIGFPE
     ACE_Reactor::instance()->remove_handler(SIGFPE);
 #endif
-#ifdef SIGCHLD
-    ACE_Reactor::instance()->remove_handler(SIGCHLD);
-#endif
 #ifdef SIGWINCH
     ACE_Reactor::instance()->remove_handler(SIGWINCH);
 #endif
@@ -949,21 +958,29 @@ int Magick::Start(bool firstrun)
 #ifdef SIGTTOU
     ACE_Reactor::instance()->remove_handler(SIGTTOU);
 #endif
+#ifdef SIGTSTP
+    ACE_Reactor::instance()->remove_handler(SIGTSTP);
+#endif
 
-#if 0 // Posix threads use these, grr
+#if 0
+
+// Linux POSIX threads (pre-lxpthreads) use these ...
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
     ACE_Reactor::instance()->remove_handler(SIGUSR1);
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
     ACE_Reactor::instance()->remove_handler(SIGUSR2);
 #endif
+
+// AIX uses this for zombie protection ...
 #if defined(SIGALRM) && (SIGALRM != 0)
     ACE_Reactor::instance()->remove_handler(SIGALRM);
 #endif
-#ifdef SIGTSTP
-    ACE_Reactor::instance()->remove_handler(SIGTSTP);
+#ifdef SIGCHLD
+    ACE_Reactor::instance()->remove_handler(SIGCHLD);
 #endif
-#endif
+
+#endif /* 0 */
 
     if (signalhandler != NULL)
     {
@@ -1238,7 +1255,8 @@ void Magick::dump_help() const
 	 << "--protocol X       -P      Override [STARTUP/PROTOCOL] to X.\n"
 	 << "--level X          -l      Override [STARTUP/LEVEL] to X.\n"
 	 << "--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n"
-	 << "--verbose          -v      Override [FILES/VERBOSE] to X.\n"
+	 << "--umask            -U      Override [FILES/UMASK] to X.\n"
+	 << "--verbose          -v      Override [FILES/VERBOSE] to true.\n"
 	 << "--log X            -L      Override [FILES/LOGFILE] to X.\n"
 	 << "--logchan X        -C      Override [FILES/LOGCHAN] to X.\n"
 	 << "--dbase X          -D      Override [FILES/DATABASE] to X.\n"
@@ -1518,6 +1536,34 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
     else if(first=="--verbose" || first=="--debug")
     {
 	i_verbose = true;
+    }
+    else if(first=="--umask")
+    {
+	if(second.empty() || second[0U]=='-')
+	{
+	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
+	}
+	unsigned int i;
+	mode_t umask = 0;
+	for (i=0; i<second.length(); i++)
+	{
+	    if (!isdigit(second[i]))
+	    {
+		LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
+	    }
+	    else
+	    {
+		umask <<= 3;
+		umask += second[i] - '0';
+	    }
+	}
+	if (i != 3)
+	{
+	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTHAVEDIGITS", (first, 3, 0, 7));
+	}
+
+	files.umask = umask;
+	RET(true);
     }
     else if(first=="--log")
     {
@@ -1934,6 +1980,15 @@ bool Magick::paramshort(const mstring& first, const mstring& second)
 	else if(first[i]=='v')
 	{
 	    ArgUsed = paramlong ("--verbose", second);
+	}
+	else if(first[i]=='U')
+	{
+	    if (ArgUsed)
+	    {
+		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
+	    }
+	    else
+		ArgUsed = paramlong ("--umask", second);
 	}
 	else if(first[i]=='L')
 	{
@@ -2584,6 +2639,22 @@ bool Magick::get_config_values()
     if (!isonstr.empty())
 	server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
 		server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+
+    in.Read(ts_Files+"UMASK",value_mstring,"027");
+    files.umask = 0;
+    for (i=0; i<value_mstring.length(); i++)
+    {
+	if (!isdigit(value_mstring[i]))
+	    break;
+	else
+	{
+	    files.umask <<= 3;
+	    files.umask += value_mstring[i] - '0';
+	}
+    }
+    if (i != 3)
+	files.umask = 027;
+
 
     in.Read(ts_Files+"PIDFILE",files.pidfile,"magick.pid");
     in.Read(ts_Files+"LOGFILE",files.logfile,"magick.log");
@@ -3252,12 +3323,6 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
     // todo: fill this sucker in
     switch(signum)
     {
-    // Silent ignores (commonplace!)
-#if defined(SIGCHLD) && (SIGCHLD!=0)
-    case SIGCHLD:
-	break;
-#endif
-
 #if defined(SIGPIPE) && (SIGPIPE!=0)
     case SIGPIPE:
 	{
@@ -3274,13 +3339,88 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 	Parent->server.SignOnAll();
 	break;
 
-/*
 #if defined(SIGIOT) && (SIGIOT != 0)
-    case SIGIOT:	// abort(), exit immediately!
-	throw(E_Thread());
+    case SIGIOT:	// Thread abort ...
+    {
+	ACE_Thread_Manager *thr_mgr = NULL;
+	switch (Parent->hh.ThreadType())
+	{
+	case Heartbeat_Handler::H_Worker:
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL)
+		thr_mgr = &Parent->ircsvchandler->tm;
+	    else
+		thr_mgr = ACE_Thread_Manager::instance();
+	    }
+	    break;
+	case Heartbeat_Handler::H_IrcServer:
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL)
+		thr_mgr = Parent->ircsvchandler->thr_mgr();
+	    }
+	    if (thr_mgr == NULL)
+		thr_mgr = ACE_Thread_Manager::instance();
+	    Parent->Disconnect();
+	    if (Parent->dh_timer > 0)
+		ACE_Reactor::instance()->cancel_timer(Parent->dh_timer);
+	    Parent->dh_timer = 0;
+	    break;
+	case Heartbeat_Handler::H_Events:
+	    { WLOCK(("Events"));
+	    if (Parent->events != NULL)
+	    {
+		thr_mgr = Parent->events->thr_mgr();
+		if (!Parent->events->fini())
+		    Parent->events->close(0);
+		delete Parent->events;
+		Parent->events = NULL;
+	    }
+	    if (thr_mgr == NULL)
+		thr_mgr = ACE_Thread_Manager::instance();
+	    Parent->events = new EventTask;
+	    Parent->events->open();
+	    }
+	    break;
+	case Heartbeat_Handler::H_DCC:
+	    { WLOCK(("DCC"));
+	    if (Parent->dcc != NULL)
+	    {
+		thr_mgr = Parent->dcc->thr_mgr();
+		if (!Parent->dcc->fini())
+		    Parent->dcc->close(0);
+		delete Parent->dcc;
+		Parent->dcc = NULL;
+	    }
+	    if (thr_mgr == NULL)
+		thr_mgr = ACE_Thread_Manager::instance();
+	    Parent->dcc = new DccMap;
+	    Parent->dcc->open();
+	    }
+	    break;
+	case Heartbeat_Handler::H_Main: // Its a REAL SIGABRT ...
+	    {
+	    vector<ThreadID*> ids = mThread::findall();
+	    for (unsigned int i=0; i<ids.size(); i++)
+		if (ids[i] != NULL)
+		    ids[i]->Flush();
+	    }
+	    tid = mThread::find();
+	    LOG(LM_ALERT, "SYS_ERRORS/SIGNAL_KILL", ( signum, tid->LastFunc()));
+	    ANNOUNCE(Parent->operserv.FirstName(), "MISC/SIGNAL_KILL", ( signum, tid->LastFunc()));
+	    ACE_OS::sleep(1);
+	    Parent->Shutdown(true);
+	    Parent->Die();
+	    return -1;
+	default:
+	    // Invalid ... WTF? ignore.
+	    break;
+	}
+	Parent->hh.RemoveThread();
+	if (thr_mgr != NULL)
+	    thr_mgr->exit();
 	break;
+    }
 #endif
-*/
 
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
@@ -3757,14 +3897,28 @@ void Magick::Disconnect(const bool reconnect)
     { RLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
-	ACE_Thread_Manager *thr_mgr = Parent->ircsvchandler->thr_mgr();
-	if (thr_mgr != NULL)
-	    thr_mgr->cancel_task(Parent->ircsvchandler);
-	if (!ircsvchandler->fini())
-	    ircsvchandler->close(0);
-	WLOCK(("IrcSvcHandler"));
-	delete ircsvchandler;
-	ircsvchandler = NULL;
+	if (Parent->hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
+	{
+	    if(dh_timer == 0)
+	    {
+		ACE_Thread_Manager *thr_mgr = Parent->ircsvchandler->thr_mgr();
+		if (thr_mgr == NULL)
+		    thr_mgr = ACE_Thread_Manager::instance();
+#if defined(SIGIOT) && (SIGIOT != 0)
+		thr_mgr->kill_task(Parent->ircsvchandler, SIGIOT);
+#endif
+		dh_timer = ACE_Reactor::instance()->schedule_timer(&dh,
+					NULL, ACE_Time_Value(10));
+	    }
+	    else if (dh_timer < 0)
+	    {
+		dh.handle_timeout(ACE_Time_Value::zero, NULL);
+	    }
+	}
+	else
+	{
+	    dh.handle_timeout(ACE_Time_Value::zero, NULL);
+	}
     }}
 }
 

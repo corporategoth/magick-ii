@@ -58,6 +58,7 @@ TRANSLATED       =Preston A. Elder <prez@magick.tm>
 UNKNOWN_OPTION   =Unknown option $1, ignored.
 NEEDPARAM        =Option $1 requires a parameter.
 MUSTBENUMBER     =Parameter for $1 must be a positive number.
+MUSTHAVEDIGITS   =Parameter for $1 must be $2 digits between $3 and $4 (inclusive).
 TIMEORZERO       =Time value specified is invalid or zero, on value $1.
 VALUETOOHIGH     =Value specified for $1 must be below or equal to $2.
 NO_CFG_FILE      =Could not read config file $1, aborting.

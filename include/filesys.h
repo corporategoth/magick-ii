@@ -25,6 +25,11 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2001/11/28 13:40:47  prez
+** Added UMASK option to config.  Also made the 'dead thread' protection
+** send a SIGIOT signal to try and get the thread to die gracefully, else
+** it will do the cancel it used to do.
+**
 ** Revision 1.45  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -371,6 +376,7 @@ public:
     int open(void *in = 0);
     int close(u_long flags = 0);
     int svc(void);
+    int fini() { return 0; }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     static void AddXfers(DccXfer *in) throw(E_DccMap_Xfers);

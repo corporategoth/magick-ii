@@ -193,6 +193,7 @@ PARAMETER	SHORT	GROUP		OPTION
 --protocol X	-P	STARTUP		PROTOCOL
 --level X	-l	STARTUP		LEVEL
 --lagtime X	-g	STARTUP		LAGTIME
+--umask X	-U	FILES		UMASK
 --verbose	-v	FILES		VERBOSE=true
 --log X		-L	FILES		LOGFILE
 --logchan X	-C	FILES		LOGCHAN
@@ -238,7 +239,6 @@ SIGHUP	1	OS RELOAD	Re-loads the config file.
 SIGINT	2	OS SIGNON	Attempts to sign on all clients.
 SIGPIPE	13	IGNORE		Flushes trace output immediately.
 SIGTERM	15	OS UPDATE	Saves the databases.
-SIGCHLD	17	IGNORE		Check to see if we're alive.
 
 Some have queried me on why SIGTERM saves the databases.  During
 shutdown of many systems, the shutdown scripts will send a SIGTERM

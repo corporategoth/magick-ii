@@ -25,6 +25,11 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.169  2001/11/28 13:40:47  prez
+** Added UMASK option to config.  Also made the 'dead thread' protection
+** send a SIGIOT signal to try and get the thread to die gracefully, else
+** it will do the cancel it used to do.
+**
 ** Revision 1.168  2001/11/16 20:27:33  prez
 ** Added a MAX_THREADS option, and made the thread heartbeat a timer based
 ** operation, instead of part of the threads.
@@ -326,6 +331,7 @@ public:
 class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
+    friend class Disconnect_Handler;
 private:
     vector<mstring> argv;
     // Language, token, string
@@ -423,6 +429,7 @@ public:
     class files_t {
 	friend class Magick;
 
+	mode_t umask;
 	mstring pidfile;
 	mstring logfile;
 	mstring logchan;
@@ -460,6 +467,7 @@ public:
 		    return Parent->Services_Dir() + DirSlash + in;
 #endif
 	    }
+	mode_t Umask()const	    { return umask; }
 	mstring Pidfile()const	    { return MakePath(pidfile); }
 	mstring Logfile()const	    { return MakePath(logfile); }
 	mstring Logchan()const	    { return logchan; }
@@ -578,8 +586,11 @@ public:
     pair<mstring,mstring> GetKeys()const;
     void save_databases();
     void load_databases();
+
     Heartbeat_Handler hh;
     Reconnect_Handler rh;
+    Disconnect_Handler dh;
+    long dh_timer;
 
     operator mVariant() const
 	{

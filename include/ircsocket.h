@@ -25,6 +25,11 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2001/11/28 13:40:47  prez
+** Added UMASK option to config.  Also made the 'dead thread' protection
+** send a SIGIOT signal to try and get the thread to die gracefully, else
+** it will do the cancel it used to do.
+**
 ** Revision 1.59  2001/11/16 20:27:33  prez
 ** Added a MAX_THREADS option, and made the thread heartbeat a timer based
 ** operation, instead of part of the threads.
@@ -157,7 +162,7 @@ public:
     static const char *names[H_MAX];
 
 private:
-    typedef map<ACE_thread_t, pair<heartbeat_enum, mDateTime> > threads_t;
+    typedef map<ACE_thread_t, triplet<heartbeat_enum, mDateTime, bool> > threads_t;
     threads_t threads;
 
 public:
@@ -166,6 +171,7 @@ public:
     void AddThread(heartbeat_enum type, ACE_thread_t id = ACE_Thread::self());
     void RemoveThread(ACE_thread_t id = ACE_Thread::self());
     void Heartbeat(ACE_thread_t id = ACE_Thread::self());
+    heartbeat_enum ThreadType(ACE_thread_t id = ACE_Thread::self());
 
     size_t size();
     size_t count(heartbeat_enum type);
@@ -176,6 +182,12 @@ class Reconnect_Handler : public ACE_Event_Handler
 public:
     int handle_timeout (const ACE_Time_Value &tv, const void *arg);
     mstring Reconnect_Handler::FindNext(const mstring& i_server);
+};
+
+class Disconnect_Handler : public ACE_Event_Handler
+{
+public:
+    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
 };
 
 class ToBeSquit_Handler : public ACE_Event_Handler
@@ -226,6 +238,7 @@ public:
     int open(void *in=0);
     int close(u_long in = 0);
     int svc(void);
+    int fini() { return 0; }
     void DumpB() const;
     void DumpE() const;
 };
@@ -234,6 +247,8 @@ class mMessage;
 class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
     friend int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg);
+    friend class SignalHandler;
+
     typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
     // This takes any characters read from the socket that dont
     // end in \r or \n, and adds them to next read's run.

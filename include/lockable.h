@@ -25,6 +25,11 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2001/11/28 13:40:47  prez
+** Added UMASK option to config.  Also made the 'dead thread' protection
+** send a SIGIOT signal to try and get the thread to die gracefully, else
+** it will do the cancel it used to do.
+**
 ** Revision 1.65  2001/11/22 17:32:18  prez
 ** Some fixes to lockable for mpatrol, and mstring overwriting its own memory.
 **
@@ -206,6 +211,7 @@ public:
     bool Locked() const { return islocked; }
     size_t Locks() const { return locks.size(); }
     static size_t AllLocks() { return LockMap.size(); }
+    static list<pair<void *, locktype_enum> > mLOCK::GetLocks(ACE_thread_t thr = ACE_Thread::self());
 };
 
 /* We need to ditch these for the below operator new */

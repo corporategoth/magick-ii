@@ -27,6 +27,11 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.184  2001/11/28 13:40:47  prez
+** Added UMASK option to config.  Also made the 'dead thread' protection
+** send a SIGIOT signal to try and get the thread to die gracefully, else
+** it will do the cancel it used to do.
+**
 ** Revision 1.183  2001/11/18 01:03:29  prez
 ** Fixed up the trace names.
 **
@@ -761,13 +766,13 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 
     if (tm.count_threads())
     {
-	ACE_Time_Value tv(time(NULL)+10);
+	ACE_Time_Value tv(time(NULL)+4);
 	tm.wait(&tv);
 	if (tm.count_threads())
 	{
 #if defined(SIGIOT) && (SIGIOT != 0)
 	    tm.kill_all(SIGIOT);
-	    tv.set(time(NULL)+10);
+	    tv.set(time(NULL)+4);
 	    tm.wait(&tv);
 	    if (tm.count_threads())
 #endif
@@ -788,7 +793,8 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 		ACE_Time_Value(Parent->config.Server_Relink()));
     }
 
-    Parent->hh.RemoveThread();
+    if (Parent->hh.ThreadType() == Heartbeat_Handler::H_IrcServer)
+	Parent->hh.RemoveThread();
     this->reactor()->remove_handler(this, ACE_Event_Handler::READ_MASK);
 //  this->destroy();
     DRET(0);
@@ -1103,6 +1109,247 @@ void IrcSvcHandler::DumpE() const
 	i_synctime));
 }
 
+int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
+{
+    static_cast<void>(tv);
+    static_cast<void>(arg);
+
+    mThread::Attach(tt_MAIN);
+    FT("Heartbeat_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+
+    if (Parent->Shutdown())
+	DRET(0);
+
+    vector<ACE_thread_t> dead;
+    threads_t::iterator iter;
+    unsigned int i;
+
+    { RLOCK(("Heartbeat_Handler", "threads"));
+    CP(("Starting HEARTBEAT for %d entries (%s) ...", threads.size(),
+		mDateTime::CurrentDateTime().DateTimeString().c_str()));
+    for (iter=threads.begin(); iter!=threads.end(); iter++)
+    {
+	COM(("Checking %s thread (last checkin %s)", names[iter->second.first],
+				iter->second.second.DateTimeString().c_str()));
+	if (iter->second.second.SecondsSince() > Parent->config.Heartbeat_Time())
+	{
+	    dead.push_back(iter->first);
+	}
+    }
+    if (dead.size() > (threads.size() / 2))
+    {
+	NANNOUNCE(Parent->operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
+	NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
+    }
+    else if (dead.size())
+    {
+	for (i=0; i<dead.size(); i++)
+	{
+	    iter = threads.find(dead[i]);
+	    if (iter != threads.end())
+	    {
+		if (iter->second.first != H_Main)
+		    LOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD",
+					(names[iter->second.first]));
+		switch (iter->second.first)
+		{
+		case H_Worker:
+		    { RLOCK2(("IrcSvcHandler"));
+		    ACE_Thread_Manager *thr_mgr;
+		    if (Parent->ircsvchandler != NULL)
+			thr_mgr = &Parent->ircsvchandler->tm;
+		    else
+			thr_mgr = ACE_Thread_Manager::instance();
+#if defined(SIGIOT) && (SIGIOT != 0)
+		    if (iter->second.third)
+		    {
+			thr_mgr->kill(dead[i], SIGIOT);
+			iter->second.third = false;
+		    }
+		    else
+#endif
+		    {
+			thr_mgr->cancel(dead[i]);
+		    }}
+		    break;
+		case H_Main:
+		    NANNOUNCE(Parent->operserv.FirstName(),
+					"MISC/THREAD_DEAD_MAIN");
+		    NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_MAIN");
+		    break;
+		case H_IrcServer:
+		    { RLOCK2(("IrcSvcHandler"));
+		    if (Parent->ircsvchandler != NULL)
+		    {
+			ACE_Thread_Manager *thr_mgr = Parent->ircsvchandler->thr_mgr();
+			if (thr_mgr == NULL)
+			    thr_mgr = ACE_Thread_Manager::instance();
+#if defined(SIGIOT) && (SIGIOT != 0)
+			if (iter->second.third)
+			{
+			    thr_mgr->kill_task(Parent->ircsvchandler, SIGIOT);
+			    iter->second.third = false;
+			}
+			else
+#endif
+			{
+			    Parent->dh_timer = -1;
+			    Parent->Disconnect();
+			}
+		    }}
+		    break;
+		case H_Events:
+		    { WLOCK2(("Events"));
+		    if (Parent->events != NULL)
+		    {
+			ACE_Thread_Manager *thr_mgr = Parent->events->thr_mgr();
+			if (thr_mgr == NULL)
+			    thr_mgr = ACE_Thread_Manager::instance();
+#if defined(SIGIOT) && (SIGIOT != 0)
+			if (iter->second.third)
+			{
+			    thr_mgr->kill_task(Parent->events, SIGIOT);
+			    iter->second.third = false;
+			}
+			else
+#endif
+			{
+			    thr_mgr->cancel_task(Parent->events);
+			    { WLOCK(("Heartbeat_Handler", "threads"));
+			    threads.erase(iter);
+			    }
+			    if (!Parent->events->fini())
+				Parent->events->close(0);
+			    delete Parent->events;
+			    Parent->events = NULL;
+			}
+		    }}
+		    break;
+		case H_DCC:
+		    { WLOCK2(("DCC"));
+		    if (Parent->dcc != NULL)
+		    {
+			ACE_Thread_Manager *thr_mgr = Parent->dcc->thr_mgr();
+			if (thr_mgr == NULL)
+			    thr_mgr = ACE_Thread_Manager::instance();
+#if defined(SIGIOT) && (SIGIOT != 0)
+			if (iter->second.third)
+			{
+			    thr_mgr->kill_task(Parent->dcc, SIGIOT);
+			    iter->second.third = false;
+			}
+			else
+#endif
+			{
+			    thr_mgr->cancel_task(Parent->dcc);
+			    { WLOCK(("Heartbeat_Handler", "threads"));
+			    threads.erase(iter);
+			    }
+			    if (!Parent->dcc->fini())
+				Parent->dcc->close(0);
+			    delete Parent->dcc;
+			    Parent->dcc = NULL;
+			}
+		    }}
+		    break;
+		default:
+		    break;
+		}
+	    }
+	}
+    }}
+
+    // Ensure we always have events and DCC tasks.
+    { RLOCK(("Events"));
+    if (Parent->events == NULL)
+    {
+	WLOCK(("Events"));
+	Parent->events = new EventTask;
+	Parent->events->open();
+    }}
+
+    { RLOCK(("DCC"));
+    if (Parent->dcc == NULL)
+    {
+	WLOCK(("DCC"));
+	Parent->dcc = new DccMap;
+	Parent->dcc->open();
+    }}
+
+    // Force workers to checkin ...
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL)
+	for (i=0; i<threads.size(); i++)
+	    Parent->ircsvchandler->enqueue_test();
+    }
+    ACE_Reactor::instance()->schedule_timer(this, 0,
+		ACE_Time_Value(Parent->config.Heartbeat_Time()));
+    DRET(0);
+}
+
+void Heartbeat_Handler::AddThread(heartbeat_enum type, ACE_thread_t id)
+{
+    FT("Heartbeat_Handler::AddThread", (static_cast<int>(type), id));
+    WLOCK(("Heartbeat_Handler", "threads"));
+    threads[id] = triplet<heartbeat_enum, mDateTime, bool>(type,
+				mDateTime::CurrentDateTime(), true);
+}
+
+void Heartbeat_Handler::RemoveThread(ACE_thread_t id)
+{
+    FT("Heartbeat_Handler::RemoveThread", (id));
+    WLOCK(("Heartbeat_Handler", "threads"));
+    threads_t::iterator iter = threads.find(id);
+    if (iter != threads.end())
+	threads.erase(iter);
+}
+
+void Heartbeat_Handler::Heartbeat(ACE_thread_t id)
+{
+    FT("Heartbeat_Handler::Heartbeat", (id));
+    WLOCK(("Heartbeat_Handler", "threads"));
+    threads_t::iterator iter = threads.find(id);
+    if (iter != threads.end())
+	iter->second.second = mDateTime::CurrentDateTime();
+}
+
+Heartbeat_Handler::heartbeat_enum Heartbeat_Handler::ThreadType(ACE_thread_t id)
+{
+    FT("Heartbeat_Handler::Heartbeat", (id));
+
+    heartbeat_enum retval = H_Invalid;
+    { RLOCK(("Heartbeat_Handler", "threads"));
+    threads_t::iterator iter = threads.find(id);
+    if (iter != threads.end())
+	retval = iter->second.first;
+    }
+    RET(retval);
+}
+
+size_t Heartbeat_Handler::size()
+{
+    NFT("Heartbeat_Handler::size");
+    size_t retval = 0;
+    { RLOCK(("Heartbeat_Handler", "threads"));
+    retval = threads.size();
+    }
+    RET(retval);
+}
+
+size_t Heartbeat_Handler::count(heartbeat_enum type)
+{
+    FT("Heartbeat_Handler::count", (static_cast<int>(type)));
+    size_t retval = 0;
+    { RLOCK(("Heartbeat_Handler", "threads"));
+    threads_t::iterator iter;
+    for (iter=threads.begin(); iter!=threads.end(); iter++)
+	if (iter->second.first == type)
+	    retval++;
+    }
+
+    RET(retval);
+}
+
 mstring Reconnect_Handler::FindNext(const mstring& i_server) {
     FT("Reconnect_Handler::FindNext", (i_server));
     mstring result, server(i_server.LowerCase());
@@ -1141,162 +1388,36 @@ mstring Reconnect_Handler::FindNext(const mstring& i_server) {
     RET("");
 }
 
-int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
+int Disconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
     static_cast<void>(tv);
     static_cast<void>(arg);
 
     mThread::Attach(tt_MAIN);
-    FT("Heartbeat_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    FT("Disconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
 
-    if (Parent->Shutdown())
-	DRET(0);
-
-    vector<ACE_thread_t> dead;
-    threads_t::iterator iter;
-    unsigned int i;
-
-    { RLOCK(("Heartbeat_Handler", "threads"));
-    CP(("Starting HEARTBEAT for %d entries (%s) ...", threads.size(),
-		mDateTime::CurrentDateTime().DateTimeString().c_str()));
-    for (iter=threads.begin(); iter!=threads.end(); iter++)
-    {
-	COM(("Checking %s thread (last checkin %s)", names[iter->second.first],
-				iter->second.second.DateTimeString().c_str()));
-	if (iter->second.second.SecondsSince() > Parent->config.Heartbeat_Time())
-	{
-	    dead.push_back(iter->first);
-	}
-    }
-    if (dead.size() > (threads.size() / 2))
-    {
-	NANNOUNCE(Parent->operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
-	NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
-    }
-    else if (dead.size())
-    {
-	WLOCK(("Heartbeat_Handler", "threads"));
-	for (i=0; i<dead.size(); i++)
-	{
-	    iter = threads.find(dead[i]);
-	    if (iter != threads.end())
-	    {
-		if (iter->second.first != H_Main)
-		    LOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD",
-					(names[iter->second.first]));
-		switch (iter->second.first)
-		{
-		case H_Worker:
-		    { RLOCK2(("IrcSvcHandler"));
-		    if (Parent->ircsvchandler != NULL)
-			Parent->ircsvchandler->tm.cancel(dead[i]);
-		    }
-		    break;
-		case H_Main:
-		    NANNOUNCE(Parent->operserv.FirstName(),
-					"MISC/THREAD_DEAD_MAIN");
-		    NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_MAIN");
-		    break;
-		case H_IrcServer:
-		    Parent->Disconnect();
-		    break;
-		case H_Events:
-		    { WLOCK(("Events"));
-		    if (Parent->events != NULL)
-		    {
-			ACE_Thread_Manager *thr_mgr = Parent->events->thr_mgr();
-			if (thr_mgr != NULL)
-			    thr_mgr->cancel_task(Parent->events);
-			Parent->events->close(0);
-			delete Parent->events;
-		    }
-		    Parent->events = new EventTask;
-		    if (Parent->events != NULL)
-			Parent->events->open();
-		    }
-		    break;
-		case H_DCC:
-		    { WLOCK(("DCC"));
-		    if (Parent->dcc != NULL)
-		    {
-			ACE_Thread_Manager *thr_mgr = Parent->dcc->thr_mgr();
-			if (thr_mgr != NULL)
-			    thr_mgr->cancel_task(Parent->dcc);
-			Parent->dcc->close(0);
-			delete Parent->dcc;
-		    }
-		    Parent->dcc = new DccMap;
-		    if (Parent->dcc != NULL)
-			Parent->dcc->open();
-		    }
-		    break;
-		default:
-		    break;
-		}
-		threads.erase(iter);
-	    }
-	}
-    }}
-
-    // Force workers to checkin ...
+    Parent->dh_timer = 0;
     { RLOCK(("IrcSvcHandler"));
     if (Parent->ircsvchandler != NULL)
-	for (i=0; i<threads.size(); i++)
-	    Parent->ircsvchandler->enqueue_test();
-    }
-    ACE_Reactor::instance()->schedule_timer(this, 0,
-		ACE_Time_Value(Parent->config.Heartbeat_Time()));
+    {
+	if (Parent->hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
+	{
+	    ACE_Thread_Manager *thr_mgr = Parent->ircsvchandler->thr_mgr();
+	    if (thr_mgr == NULL)
+		thr_mgr = ACE_Thread_Manager::instance();
+	    ACE_thread_t id;
+	    thr_mgr->thread_list(Parent->ircsvchandler, &id, 1);
+	    thr_mgr->cancel_task(Parent->ircsvchandler);
+	    Parent->hh.RemoveThread(id);
+	}
+	if (!Parent->ircsvchandler->fini())
+	    Parent->ircsvchandler->close(0);
+	WLOCK(("IrcSvcHandler"));
+	delete Parent->ircsvchandler;
+	Parent->ircsvchandler = NULL;
+    }}
+
     DRET(0);
-}
-
-void Heartbeat_Handler::AddThread(heartbeat_enum type, ACE_thread_t id)
-{
-    FT("Heartbeat_Handler::AddThread", (static_cast<int>(type), id));
-    WLOCK(("Heartbeat_Handler", "threads"));
-    threads[id] = pair<heartbeat_enum, mDateTime>(type,
-				mDateTime::CurrentDateTime());
-}
-
-void Heartbeat_Handler::RemoveThread(ACE_thread_t id = ACE_Thread::self())
-{
-    FT("Heartbeat_Handler::RemoveThread", (id));
-    WLOCK(("Heartbeat_Handler", "threads"));
-    threads_t::iterator iter = threads.find(id);
-    if (iter != threads.end())
-	threads.erase(iter);
-}
-
-void Heartbeat_Handler::Heartbeat(ACE_thread_t id = ACE_Thread::self())
-{
-    FT("Heartbeat_Handler::Heartbeat", (id));
-    WLOCK(("Heartbeat_Handler", "threads"));
-    threads_t::iterator iter = threads.find(id);
-    if (iter != threads.end())
-	iter->second.second = mDateTime::CurrentDateTime();
-}
-
-size_t Heartbeat_Handler::size()
-{
-    NFT("Heartbeat_Handler::size");
-    size_t retval = 0;
-    { RLOCK(("Heartbeat_Handler", "threads"));
-    retval = threads.size();
-    }
-    RET(retval);
-}
-
-size_t Heartbeat_Handler::count(heartbeat_enum type)
-{
-    FT("Heartbeat_Handler::count", (static_cast<int>(type)));
-    size_t retval = 0;
-    { RLOCK(("Heartbeat_Handler", "threads"));
-    threads_t::iterator iter;
-    for (iter=threads.begin(); iter!=threads.end(); iter++)
-	if (iter->second.first == type)
-	    retval++;
-    }
-
-    RET(retval);
 }
 
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
@@ -1355,8 +1476,10 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     Parent->GotConnect(false);
     Parent->i_currentserver = server;
     Parent->server.proto.Tokens(false);
+
     if (Parent->Connected())
 	Parent->Disconnect();
+
     LOG(LM_INFO, "OTHER/CONNECTING", (server, details.second.first));
 
     IrcConnector C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
