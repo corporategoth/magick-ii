@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/03/02 11:59:45  prez
+** More helpfile updates (slowly but surely writing it)
+**
 ** Revision 1.31  2000/02/27 03:58:40  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -70,11 +73,11 @@ void ServMsg::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.ADMIN_Name(), ServMsg::do_Help);
+	    "HELP", Parent->commserv.ALL_Name(), ServMsg::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CRED*", Parent->commserv.ADMIN_Name(), ServMsg::do_Credits);
+	    "CRED*", Parent->commserv.ALL_Name(), ServMsg::do_Credits);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CONTRIB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Contrib);
+	    "CONTRIB*", Parent->commserv.ALL_Name(), ServMsg::do_Contrib);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
     Parent->commands.AddSystemCommand(GetInternalName(),

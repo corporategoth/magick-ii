@@ -135,7 +135,7 @@ TOPIC <channel> [topic]
     -- V
 KICK <channel> <nick> [reason]
     -- V
-ANONKICK <channel> <nick> [reason]
+REMOVE <channel> <nick> [reason]
     -- V
 USERS <channel>
 INVITE <channel> [nick]
@@ -187,6 +187,8 @@ SET <channel> MLOCK <value|RESET>
     -- V
 SET <channel> BANTIME <value|RESET>
     -- V
+SET <channel> PARTTIME <value|RESET>
+    -- V
 SET <channel> KEEPTOPIC <ON|OFF>
     -- V
 SET <channel> TOPICLOCK <ON|OFF>
@@ -211,6 +213,8 @@ LOCK <channel> MLOCK <value|RESET>
     -- V
 LOCK <channel> BANTIME <value|RESET>
     -- V
+LOCK <channel> PARTTIME <value|RESET>
+    -- V
 LOCK <channel> KEEPTOPIC <ON|OFF>
     -- V
 LOCK <channel> TOPICLOCK <ON|OFF>
@@ -234,6 +238,8 @@ LOCK <channel> REVENGE <value|RESET>
 UNLOCK <channel> MLOCK
     -- V
 UNLOCK <channel> BANTIME
+    -- V
+UNLOCK <channel> PARTTIME
     -- V
 UNLOCK <channel> KEEPTOPIC
     -- V

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/03/02 11:59:45  prez
+** More helpfile updates (slowly but surely writing it)
+**
 ** Revision 1.59  2000/03/02 07:25:11  prez
 ** Added stuff to do the chanserv greet timings (ie. only greet if a user has
 ** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
@@ -550,7 +553,7 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "*PING*", Parent->commserv.OPER_Name(), OperServ::do_Ping);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UPD*", Parent->commserv.SOP_Name(), OperServ::do_Update);
+	    "UPD*", Parent->commserv.SADMIN_Name(), OperServ::do_Update);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name(), OperServ::do_Shutdown);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -618,25 +621,25 @@ void OperServ::AddCommands()
 	    "IGN* VIEW", Parent->commserv.OPER_Name(), OperServ::do_ignore_List);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* *", Parent->commserv.OPER_Name(), NULL);
+	    "SET* *", Parent->commserv.ALL_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET*", Parent->commserv.OPER_Name(), do_1_2param);
+	    "SET*", Parent->commserv.ALL_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLONE* *", Parent->commserv.OPER_Name(), NULL);
+	    "CLONE* *", Parent->commserv.ALL_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLONE*", Parent->commserv.OPER_Name(), do_1_2param);
+	    "CLONE*", Parent->commserv.ALL_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL* *", Parent->commserv.OPER_Name(), NULL);
+	    "A*KILL* *", Parent->commserv.ALL_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL*", Parent->commserv.OPER_Name(), do_1_2param);
+	    "A*KILL*", Parent->commserv.ALL_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* *", Parent->commserv.OPER_Name(), NULL);
+	    "O*DENY* *", Parent->commserv.ALL_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY*", Parent->commserv.OPER_Name(), do_1_2param);
+	    "O*DENY*", Parent->commserv.ALL_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "IGN* *", Parent->commserv.OPER_Name(), NULL);
+	    "IGN* *", Parent->commserv.ALL_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "IGN*", Parent->commserv.OPER_Name(), do_1_2param);
+	    "IGN*", Parent->commserv.ALL_Name(), do_1_2param);
 }
 
 void OperServ::RemCommands()

@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/03/02 11:59:45  prez
+** More helpfile updates (slowly but surely writing it)
+**
 ** Revision 1.51  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -49,7 +52,7 @@ protected:
     map<mstring,mstring> i_UserDef;
 public:
     mstring UserDef(mstring type);
-    mstring UserDef(mstring type, mstring val);
+    mstring UserDef(mstring source, mstring type, mstring val);
 };
 
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>

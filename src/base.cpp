@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2000/03/02 11:59:45  prez
+** More helpfile updates (slowly but surely writing it)
+**
 ** Revision 1.99  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -73,18 +76,23 @@ mstring mUserDef::UserDef(mstring type)
 }
 
 
-mstring mUserDef::UserDef(mstring type, mstring val)
+mstring mUserDef::UserDef(mstring source, mstring type, mstring val)
 {
-    FT("mUserDef::UserDef", (type, val));
+    FT("mUserDef::UserDef", (source, type, val));
+    mstring retval;
     if (val.UpperCase() == "NONE")
     {
 	i_UserDef.erase(type.LowerCase());
-	RET("Value of " + type.UpperCase() + " has been cleared.");
+	retval.Format(Parent->getMessage(source, "MISC/ENTLIST_CLEAR"),
+			type.UpperCase().c_str());
+	RET(retval);
     }
     else
     {
 	i_UserDef[type.LowerCase()] = val;
-	RET("Value of " + type.UpperCase() + " has been set to " + val + ".");
+	retval.Format(Parent->getMessage(source, "MISC/ENTLIST_SET"),
+			type.UpperCase().c_str(), val.c_str());
+	RET(retval);
     }
 }
 
@@ -186,6 +194,7 @@ bool mBase::signon(const mstring &nickname)
 {
     FT("mBase::signon", (nickname));
 
+    RLOCK(("NickServ", "live", nickname));
     if (Parent->nickserv.IsLive(nickname))
     {
 	RET(false);
@@ -203,6 +212,7 @@ bool mBase::signoff(const mstring &nickname)
 {
     FT("mBase::signoff", (nickname));
 
+    RLOCK(("NickServ", "live", nickname));
     if (Parent->nickserv.IsLive(nickname))
     {
 	Parent->server.QUIT(nickname);
@@ -245,6 +255,9 @@ void mBase::privmsgV(const mstring &source, const mstring &dest, const mstring &
 
     mstring message;
     message.FormatV(pszFormat.c_str(), argptr);
+
+    RLOCK(("NickServ", "live", dest));
+    RLOCK(("ChanServ", "live", dest));
     if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
 	Parent->server.PRIVMSG(source, dest, message);
 }
@@ -280,6 +293,8 @@ void mBase::noticeV(const mstring &source, const mstring &dest, const mstring &p
 
     mstring message;
     message.FormatV(pszFormat.c_str(), argptr);
+    RLOCK(("NickServ", "live", dest));
+    RLOCK(("ChanServ", "live", dest));
     if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
 	Parent->server.NOTICE(source, dest, message);
 }
@@ -311,6 +326,7 @@ void mBase::sendV(const mstring &source, const mstring &dest, const mstring &psz
 {
     FT("mBase::sendV", (source, dest, pszFormat));
 
+    RLOCK(("NickServ", "live", dest));
     if (IsName(source) && Parent->nickserv.IsLive(dest))
     {
 	if (Parent->nickserv.IsStored(dest) && !Parent->nickserv.LCK_PRIVMSG() &&
@@ -347,6 +363,7 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &pszForma
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
 
+    RLOCK(("NickServ", "live", source));
     if (Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
     {
@@ -382,6 +399,7 @@ void notice(const mstring& source, const mstring &dest, const mstring &pszFormat
     va_list argptr;
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
+    RLOCK(("NickServ", "live", source));
     if (Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
     {
@@ -417,6 +435,7 @@ void send(const mstring& source, const mstring &dest, const mstring &pszFormat, 
     va_list argptr;
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
+    RLOCK(("NickServ", "live", source));
     if (Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
     {
@@ -539,6 +558,7 @@ void mBaseTask::message_i(const mstring& message)
 
     if (type == "PRIVMSG" || type == "NOTICE")
     {
+	RLOCK(("NickServ", "live", source));
 	// Split stuff for NON-CHANNEL traffic.
 	if (!IsChan(target) && Parent->nickserv.IsLive(source))
 	{
@@ -613,6 +633,7 @@ void CommandMap::AddSystemCommand(mstring service, mstring command,
 {
     FT("CommandMap::AddSystemCommand", (service, command, committees));
 
+    WLOCK(("CommandMap", "i_system"));
     i_system[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
 		    (command.UpperCase(),
 		    ((committees != "") ? committees.LowerCase() : mstring("all")),
@@ -625,6 +646,7 @@ void CommandMap::RemSystemCommand(mstring service, mstring command,
 {
     FT("CommandMap::RemSystemCommand", (service, command, committees));
 
+    WLOCK(("CommandMap", "i_system"));
     if (i_system.find(service.LowerCase()) != i_system.end())
     {
 	clist_iter iter;
@@ -650,6 +672,7 @@ void CommandMap::AddCommand(mstring service, mstring command,
 {
     FT("CommandMap::AddCommand", (service, command, committees));
 
+    WLOCK(("CommandMap", "i_user"));
     i_user[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
 		    (command.UpperCase(),
 		    ((committees != "") ? committees.LowerCase() : mstring("all")),
@@ -662,6 +685,7 @@ void CommandMap::RemCommand(mstring service, mstring command,
 {
     FT("CommandMap::RemCommand", (service, command, committees));
 
+    WLOCK(("CommandMap", "i_user"));
     if (i_user.find(service.LowerCase()) != i_user.end())
     {
 	clist_iter iter;
@@ -718,6 +742,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
     if (type == "")
 	NRET(pair<bool_functor>,retval);
 
+    RLOCK(("CommandMap", "i_user"));
     if (i_user.find(type) != i_user.end())
     {
 	for (iter=i_user[type].begin();
@@ -781,6 +806,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
     if (type == "")
 	NRET(pair<bool_functor>,retval);
 
+    RLOCK(("CommandMap", "i_system"));
     if (i_system.find(type) != i_system.end())
     {
 	for (iter=i_system[type].begin();

@@ -46,10 +46,10 @@
 01 =Preston A. Elder <prez@magick.tm>
 
 [NICKSERV]
-01 =::NickServ is a service that allows you to register your
-02 =::nickname so that it may not be taken by anyone else.
+01 =::This service allows you to register your nickname
+02 =::so that it may not be taken by anyone else.
 03 =::
-04 =::NickServ allows you to use the following commands:
+04 =::This service allows you to use the following commands:
 05 =::    HELP         REGISTER     LINK         IDENTIFY
 06 =::    INFO         GHOST        RECOVER      LIST
 07 =REGD::    DROP         UNLINK       HOST         SLAVES
@@ -61,6 +61,9 @@
 13 =::You may request help on the syntax and functionalty
 14 =::of any and all of the above commands by specifying
 15 =::the command name after the HELP request.
+16 =::NOTE: Only commands you currently may use are listed
+17 =::      above, and things such as nickname registration
+18 =::      may change what is displayed above.
 
 [NICKSERV/REGISTER]
 01 =::REGISTER <password>
@@ -524,6 +527,16 @@
 04 =REGD::to you in.  If another language is available, you
 05 =REGD::can get services to talk to you in that language.
 
+[NICKSERV/LOCK]
+01 =SOP::NickServ allows you to lock a value for a nickname,
+02 =SOP::preventing the user from overriding your setting.
+03 =SOP::Please use caution, as you are removing a users
+04 =SOP::right to change their own record.
+05 =SOP::
+06 =SOP::You may lock a users settings with these commands:
+07 =SOP::    PROTECT      SECURE       NOMEMO       PRIVATE
+08 =SOP::    PRIVMSG      LANGUAGE
+
 [NICKSERV/LOCK/PROTECT]
 01 =SOP::LOCK PROTECT <nickname> <ON|OFF>
 02 =SOP::
@@ -579,6 +592,15 @@
 07 =SOP::are removing a users right to change their own
 08 =SOP::record.
 
+[NICKSERV/LOCK]
+01 =SOP::NickServ allows you to lock a value for a nickname,
+02 =SOP::preventing the user from overriding your setting.
+03 =SOP::These commands will remove a lock placed on a user.
+04 =SOP::
+05 =SOP::You may unlock a users settings with these commands:
+06 =SOP::    PROTECT      SECURE       NOMEMO       PRIVATE
+07 =SOP::    PRIVMSG      LANGUAGE
+
 [NICKSERV/UNLOCK/PROTECT]
 01 =SOP::UNLOCK PROTECT <nickname>
 02 =SOP::
@@ -615,3 +637,750 @@
 03 =SOP::This will unlock the language services respond
 04 =SOP::to a user in, however the value will remain the
 05 =SOP::same.
+
+
+
+[CHANSERV]
+01 =::This service allows you to register your channel
+02 =::so that it may not be taken by anyone else.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =::    HELP         INFO         LIST         IDENTIFY
+06 =REGD::    REGISTER     DROP         USERS        INVITE
+07 =REGD::    OP           DEOP         VOICE        DEVOICE
+08 =REGD::    MODE         TOPIC        UNBAN        KICK
+09 =REGD::    REMOVE       SET          CLEAR        LEVEL
+10 =REGD::    ACCESS       AKICK        GREET        MESSAGE
+11 =SOP::And as a Services Operator, the following commands:
+12 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
+13 =SOP::    SUSPEND      UNSUSPEND
+14 =::
+15 =::You may request help on the syntax and functionalty
+16 =::of any and all of the above commands by specifying
+17 =::the command name after the HELP request.
+19 =::NOTE: Only commands you currently may use are listed
+20 =::      above, and things such as nickname registration
+21 =::      may change what is displayed above.
+
+[CHANSERV/REGISTER]
+01 =::REGISTER <channel> <password> <description>
+02 =::
+
+[CHANSERV/DROP]
+01 =::DROP <channel>
+02 =::
+
+[CHANSERV/IDENTIFY]
+01 =::IDENTIFY <channel> <password>
+02 =::
+
+[CHANSERV/INFO]
+01 =::INFO <channel>
+02 =::
+
+[CHANSERV/LIST]
+01 =::LIST [<mask> [<maximum>]]
+02 =::
+
+[CHANSERV/GETPASS]
+01 =::GETPASS <channel>
+02 =::
+
+[CHANSERV/SUSPEND]
+01 =::SUSPEND <channel> <reason>
+02 =::
+
+[CHANSERV/UNSUSPEND]
+01 =::UNSUSPEND <channel>
+02 =::
+
+[CHANSERV/FORBID]
+01 =::FORBID <channel>
+02 =::
+
+[CHANSERV/MODE]
+01 =::MODE <channel> [modes]
+02 =::
+
+[CHANSERV/OP]
+01 =::OP <channel> [nickname]
+02 =::
+
+[CHANSERV/DEOP]
+01 =::DEOP <channel> [nickname]
+02 =::
+
+[CHANSERV/VOICE]
+01 =::VOICE <channel> [nickname]
+02 =::
+
+[CHANSERV/DEVOICE]
+01 =::DEVOICE <channel> [nickname]
+02 =::
+
+[CHANSERV/TOPIC]
+01 =::TOPIC <channel> [topic]
+02 =::
+
+[CHANSERV/KICK]
+01 =::KICK <channel> <nickname> [reason]
+02 =::
+
+[CHANSERV/REMOVE]
+01 =::REMOVE <channel> <nickname> <reason>
+02 =::
+
+[CHANSERV/USERS]
+01 =::USERS <channel>
+02 =::
+
+[CHANSERV/INVITE]
+01 =::INVITE <channel> [nickname]
+02 =::
+
+[CHANSERV/UNBAN]
+01 =::UNBAN <channel> [nickname]
+02 =::
+
+[CHANSERV/CLEAR]
+
+[CHANSERV/CLEAR/USERS]
+01 =::CLEAR <channel> USERS
+02 =::
+
+[CHANSERV/CLEAR/MODES]
+01 =::CLEAR <channel> MODES
+02 =::
+
+[CHANSERV/CLEAR/OPS]
+01 =::CLEAR <channel> OPS
+02 =::
+
+[CHANSERV/CLEAR/VOICES]
+01 =::CLEAR <channel> VOICES
+02 =::
+
+[CHANSERV/CLEAR/BANS]
+01 =::CLEAR <channel> BANS
+02 =::
+
+[CHANSERV/CLEAR/ALL]
+01 =::CLEAR <channel> ALL
+02 =::
+
+[CHANSERV/LEVEL/SET]
+01 =::LEVEL <channel> SET <type> <level>
+02 =::
+
+[CHANSERV/LEVEL/RESET]
+01 =::LEVEL <channel> RESET <type|ALL>
+02 =::
+
+[CHANSERV/ACCESS]
+
+[CHANSERV/ACCESS/ADD]
+01 =::ACCESS <channel> ADD <nickname> <level>
+02 =::
+
+[CHANSERV/ACCESS/DEL]
+01 =::ACCESS <channel> DEL <nickname|NUM>
+02 =::
+
+[CHANSERV/ACCESS/LIST]
+01 =::ACCESS <channel> LIST
+02 =::
+
+[CHANSERV/AKICK]
+
+[CHANSERV/AKICK/ADD]
+01 =::AKICK <channel> ADD <nickname|mask> [reason]
+02 =::
+
+[CHANSERV/AKICK/DEL]
+01 =::AKICK <channel> DEL <nickname|mask|NUM>
+02 =::
+
+[CHANSERV/AKICK/LIST]
+01 =::AKICK <channel> LIST
+02 =::
+
+[CHANSERV/GREET]
+
+[CHANSERV/GREET/ADD]
+01 =::GREET <channel> ADD [!nickname] [!]<greeting>
+02 =::
+
+[CHANSERV/GREET/DEL]
+01 =::GREET <channel> DEL [nickname]
+02 =::
+
+[CHANSERV/GREET/LIST]
+01 =::GREET <channel> LIST [ALL]
+02 =::
+
+[CHANSERV/MESSAGE]
+
+[CHANSERV/MESSAGE/ADD]
+01 =::MESSAGE <channel> ADD <message>
+02 =::
+
+[CHANSERV/MESSAGE/DEL]
+01 =::MESSAGE <channel> DEL <NUM>
+02 =::
+
+[CHANSERV/MESSAGE/LIST]
+01 =::MESSAGE <channel> LIST
+02 =::
+
+[CHANSERV/SET]
+
+[CHANSERV/SET/FOUNDER]
+01 =::SET <channel> FOUNDER <founder>
+02 =::
+
+[CHANSERV/SET/COFOUNDER]
+01 =::SET <channel> COFOUNDER <cofounder>
+02 =::
+
+[CHANSERV/SET/DESCRIPTION]
+01 =::SET <channel> DESCRIPTION <description>
+02 =::
+
+[CHANSERV/SET/PASSWORD]
+01 =::SET <channel> PASSWORD <password>
+02 =::
+
+[CHANSERV/SET/EMAIL]
+01 =::SET <channel> EMAIL <email>
+02 =::
+
+[CHANSERV/SET/URL]
+01 =::SET <channel> URL <url>
+02 =::
+
+[CHANSERV/SET/COMMENT]
+01 =::SET <channel> COMMENT <comment>
+02 =::
+
+[CHANSERV/SET/MLOCK]
+01 =::SET <channel> MLOCK <modes|NONE>
+02 =::
+
+[CHANSERV/SET/BANTIME]
+01 =::SET <channel> BANTIME <bantime>
+02 =::
+
+[CHANSERV/SET/PARTTIME]
+01 =::SET <channel> PARTTIME <parttime>
+02 =::
+
+[CHANSERV/SET/KEEPTOPIC]
+01 =::SET <channel> KEEPTOPIC <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/TOPICLOCK]
+01 =::SET <channel> TOPICLOCK <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/PRIVATE]
+01 =::SET <channel> PRIVATE <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/SECUREOPS]
+01 =::SET <channel> SECUREOPS <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/SECURE]
+01 =::SET <channel> SECURE <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/NOEXPIRE]
+01 =::SET <channel> NOEXPIRE <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/ANARCHY]
+01 =::SET <channel> ANARCHY <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/RESTRICTED]
+01 =::SET <channel> RESTRICTED <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/JOIN]
+01 =::SET <channel> JOIN <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/SET/REVENGE]
+01 =::SET <channel> REVENGE <level>
+02 =::
+
+[CHANSERV/LOCK]
+
+[CHANSERV/LOCK/MLOCK]
+01 =::LOCK <channel> MLOCK <modes>
+02 =::
+
+[CHANSERV/LOCK/BANTIME]
+01 =::LOCK <channel> BANTIME <bantime>
+02 =::
+
+[CHANSERV/LOCK/PARTTIME]
+01 =::LOCK <channel> PARTTIME <parttime>
+02 =::
+
+[CHANSERV/LOCK/KEEPTOPIC]
+01 =::LOCK <channel> KEEPTOPIC <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/LOCK/TOPICLOCK]
+01 =::LOCK <channel> TOPICLOCK <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/LOCK/PRIVATE]
+01 =::LOCK <channel> PRIVATE <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/LOCK/SECUREOPS]
+01 =::LOCK <channel> SECUREOPS <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/LOCK/SECURE]
+01 =::LOCK <channel> SECURE <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/LOCK/ANARCHY]
+01 =::LOCK <channel> ANARCHY <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/LOCK/RESTRICTED]
+01 =::LOCK <channel> RESTRICTED <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/LOCK/JOIN]
+01 =::LOCK <channel> JOIN <ON|OFF|RESET>
+02 =::
+
+[CHANSERV/LOCK/REVENGE]
+01 =::LOCK <channel> REVENGE <level>
+02 =::
+
+[CHANSERV/UNLOCK]
+
+[CHANSERV/UNLOCK/MLOCK]
+01 =::UNLOCK <channel> MLOCK
+02 =::
+
+[CHANSERV/UNLOCK/BANTIME]
+01 =::UNLOCK <channel> BANTIME
+02 =::
+
+[CHANSERV/UNLOCK/PARTTIME]
+01 =::UNLOCK <channel> PARTTIME
+02 =::
+
+[CHANSERV/UNLOCK/KEEPTOPIC]
+01 =::UNLOCK <channel> KEEPTOPIC
+02 =::
+
+[CHANSERV/UNLOCK/TOPICLOCK]
+01 =::UNLOCK <channel> TOPICLOCK
+02 =::
+
+[CHANSERV/UNLOCK/PRIVATE]
+01 =::UNLOCK <channel> PRIVATE
+02 =::
+
+[CHANSERV/UNLOCK/SECUREOPS]
+01 =::UNLOCK <channel> SECUREOPS
+02 =::
+
+[CHANSERV/UNLOCK/SECURE]
+01 =::UNLOCK <channel> SECURE
+02 =::
+
+[CHANSERV/UNLOCK/ANARCHY]
+01 =::UNLOCK <channel> ANARCHY
+02 =::
+
+[CHANSERV/UNLOCK/RESTRICTED]
+01 =::UNLOCK <channel> RESTRICTED
+02 =::
+
+[CHANSERV/UNLOCK/JOIN]
+01 =::UNLOCK <channel> JOIN
+02 =::
+
+[CHANSERV/UNLOCK/REVENGE]
+01 =::UNLOCK <channel> REVENGE
+02 =::
+
+
+
+[MEMOSERV]
+01 =::This service allows you to send a memo to another
+02 =::user, or post a news article to a channel.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =:REGD:    HELP
+06 =REGD::    HELP         LIST         READ         UNREAD
+07 =REGD::    SEND         REPLY        FORWARD      FLUSH
+08 =REGD::    CONTINUE     CANCEL       DEL          FILE
+09 =::
+10 =::You may request help on the syntax and functionalty
+11 =::of any and all of the above commands by specifying
+12 =::the command name after the HELP request.
+13 =::NOTE: Only commands you currently may use are listed
+14 =::      above, and things such as nickname registration
+15 =::      may change what is displayed above.
+
+[MEMOSERV/READ]
+01 =::READ [channel] <NUM|ALL|UNREAD>
+02 =::
+
+[MEMOSERV/UNREAD]
+01 =::UNREAD [channel] <NUM|ALL>
+02 =::
+
+[MEMOSERV/LIST]
+01 =::LIST [channel]
+02 =::
+
+[MEMOSERV/SEND]
+01 =::SEND [channel] <message>
+02 =::
+
+[MEMOSERV/FLUSH]
+01 =::FLUSH
+02 =::
+
+[MEMOSERV/REPLY]
+01 =::REPLY [channel] <NUM>
+02 =::
+
+[MEMOSERV/FORWARD]
+01 =::FORWARD [channel] <NUM> <nickname|channel>
+02 =::
+
+[MEMOSERV/CANCEL]
+01 =::CANCEL
+02 =::
+
+[MEMOSERV/DEL]
+01 =::DEL [channel] <NUM|ALL|READ>
+02 =::
+
+[MEMOSERV/CONTINUE]
+01 =::CONTINUE <message>
+02 =::
+
+[MEMOSERV/FILE]
+01 =::FILE <nickname> <filename> [message]
+02 =::
+
+
+[COMMSERV]
+01 =::This service allows user to be grouped together into
+02 =::committees for various purposes.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =:REGD:    HELP         INFO
+06 =REGD::    HELP         INFO         ADD          DEL
+07 =REGD::    LIST         MEMO         LOGON        SET
+08 =SOP::And as a Services Operator, the following commands:
+09 =SOP::    NEW          KILL
+10 =::
+11 =::You may request help on the syntax and functionalty
+12 =::of any and all of the above commands by specifying
+13 =::the command name after the HELP request.
+14 =::NOTE: Only commands you currently may use are listed
+15 =::      above, and things such as nickname registration
+16 =::      may change what is displayed above.
+
+[COMMSERV/NEW]
+01 =::NEW <committee> <head> <description>
+02 =::
+
+[COMMSERV/KILL]
+01 =::KILL <committee>
+02 =::
+
+[COMMSERV/ADD]
+01 =::ADD <committee> <nickname>
+02 =::
+
+[COMMSERV/DEL]
+01 =::DEL <committee> <nickname|NUM>
+02 =::
+
+[COMMSERV/LIST]
+01 =::LIST <committee>
+02 =::
+
+[COMMSERV/MEMO]
+01 =::MEMO <committee> <message>
+02 =::
+
+[COMMSERV/INFO]
+01 =::INFO <committee>
+02 =::
+
+[COMMSERV/LOGON]
+
+[COMMSERV/LOGON/ADD]
+01 =::LOGON <committee> ADD <message>
+02 =::
+
+[COMMSERV/LOGON/DEL]
+01 =::LOGON <committee> DEL <NUM>
+02 =::
+
+[COMMSERV/LOGON/LIST]
+01 =::LOGON <committee> LIST
+02 =::
+
+[COMMSERV/SET]
+
+[COMMSERV/SET/HEAD]
+01 =::SET <committee> HEAD <head>
+02 =::
+
+[COMMSERV/SET/EMAIL]
+01 =::SET <committee> EMAIL <email>
+02 =::
+
+[COMMSERV/SET/URL]
+01 =::SET <committee> URL <url>
+02 =::
+
+[COMMSERV/SET/SECURE]
+01 =::SET <committee> SECURE <ON|OFF|RESET>
+02 =::
+
+[COMMSERV/SET/PRIVATE]
+01 =::SET <committee> PRIVATE <ON|OFF|RESET>
+02 =::
+
+[COMMSERV/SET/OPENMEMOS]
+01 =::SET <committee> OPENMEMOS <ON|OFF|RESET>
+02 =::
+
+
+
+[SERVMSG]
+01 =::This service provides many miscellaneous functions that
+02 =::just dont fit elsewhere, mostly informational.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =::    HELP         CREDITS      CONTRIB      BREAKDOWN
+06 =REGD::    STATS
+07 =ADMIN::And as a Server Admin, the following commands:
+08 =ADMIN::    GLOBAL
+09 =::
+10 =::You may request help on the syntax and functionalty
+11 =::of any and all of the above commands by specifying
+12 =::the command name after the HELP request.
+13 =::NOTE: Only commands you currently may use are listed
+14 =::      above, and things such as nickname registration
+15 =::      may change what is displayed above.
+
+[SERVMSG/BREAKDOWN]
+01 =::BREAKDOWN
+02 =::
+
+[SERVMSG/GLOBAL]
+01 =::GLOBAL <message>
+02 =::
+
+[SERVMSG/STATS]
+01A=::STATS
+01B=::STATS [NICK|CHANNEL|OTHER|USAGE|ALL]
+02 =::
+
+[SERVMSG/STATS/NICK]
+01 =::STATS NICK
+02 =::
+
+[SERVMSG/STATS/CHANNEL]
+01 =::STATS CHANNEL
+02 =::
+
+[SERVMSG/STATS/OTHER]
+01 =::STATS OTHER
+02 =::
+
+[SERVMSG/STATS/USAGE]
+01 =::STATS USAGE
+02 =::
+
+[SERVMSG/STATS/ALL]
+01 =::STATS ALL
+02 =::
+
+
+
+[OPERSERV]
+01 =::This service assists IRC Operators in keeping control
+02 =::of the network and services.
+03 =OPER SOP::
+04 =OPER::This service allows you to use the following commands:
+05 =OPER SOP::    HELP         CLONE        OPERDENY     IGNORE
+06 =OPER::    AKILL        MODE         PING         SETTINGS
+07 =ADMIN::And as a Server Admin, the following commands:
+08 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
+09 =SOP::And as a Services Operator, the following commands:
+09 =SOP::    KILL
+10 =SADMIN::And as a Services Admin, the following commands:
+11 =SADMIN::    TRACE        UNLOAD       RELOAD       IDENTIFY
+12 =SADMIN::    UPDATE       SHUTDOWN     ON           OFF
+13 =OPER SOP::
+14 =OPER SOP::You may request help on the syntax and functionalty
+15 =OPER SOP::of any and all of the above commands by specifying
+16 =OPER SOP::the command name after the HELP request.
+17 =OPER SOP::NOTE: Only commands you currently may use are listed
+18 =OPER SOP::      above, and things such as nickname registration
+19 =OPER SOP::      may change what is displayed above.
+
+[OPERSERV/TRACE]
+
+[OPERSERV/TRACE/UP]
+01 =::TRACE UP <type> <level|name> [name [...]]
+02 =::
+
+[OPERSERV/TRACE/DOWN]
+01 =::TRACE DOWN <type> <level|name> [name [...]]
+02 =::
+
+[OPERSERV/TRACE/SET]
+01 =::TRACE SET <type> <level|name> [name [...]]
+02 =::
+
+[OPERSERV/MODE]
+01 =::MODE <nick|channel> [modes]
+02 =::
+
+[OPERSERV/QLINE]
+01 =::QLINE <mask>
+02 =::
+
+[OPERSERV/UNQLINE]
+01 =::UNQLINE <mask>
+02 =::
+
+[OPERSERV/NOOP]
+01 =::NOOP <server> <ON|OFF>
+02 =::
+
+[OPERSERV/KILL]
+01 =::KILL <nickname> <reason>
+02 =::
+
+[OPERSERV/PING]
+01 =::PING
+02 =::
+
+[OPERSERV/UPDATE]
+01 =::UPDATE
+02 =::
+
+[OPERSERV/SHUTDOWN]
+01 =::SHUTDOWN <reason>
+02 =::
+
+[OPERSERV/RELOAD]
+01 =::RELOAD
+02 =::
+
+[OPERSERV/UNLOAD]
+01 =::UNLOAD <language>
+02 =::
+
+[OPERSERV/JUPE]
+01 =::JUPE <server> [reason]
+02 =::
+
+[OPERSERV/ON]
+01 =::ON [service]
+02 =::
+
+[OPERSERV/OFF]
+01 =::OFF [service] <reason>
+02 =::
+
+[OPERSERV/SETTINGS]
+
+[OPERSERV/SETTINGS/CONFIG]
+01 =::SETTINGS CONFIG
+02 =::
+
+[OPERSERV/SETTINGS/NICK]
+01 =::SETTINGS NICK
+02 =::
+
+[OPERSERV/SETTINGS/CHANNEL]
+01 =::SETTINGS CHANNEL
+02 =::
+
+[OPERSERV/SETTINGS/OTHER]
+01 =::SETTINGS OTHER
+02 =::
+
+[OPERSERV/SETTINGS/ALL]
+01 =::SETTINGS ALL
+02 =::
+
+[OPERSERV/CLONE]
+
+[OPERSERV/CLONE/ADD]
+01 =::CLONE ADD <mask> <amount> <reason>
+02 =::
+
+[OPERSERV/CLONE/DEL]
+01 =::CLONE DEL <mask|NUM>
+02 =::
+
+[OPERSERV/CLONE/LIST]
+01 =::CLONE LIST
+02 =::
+
+[OPERSERV/AKILL]
+
+[OPERSERV/AKILL/ADD]
+01 =::AKILL ADD <mask> [time] <reason>
+02 =::
+
+[OPERSERV/AKILL/DEL]
+01 =::AKILL DEL <mask|NUM>
+02 =::
+
+[OPERSERV/AKILL/LIST]
+01 =::AKILL LIST
+02 =::
+
+[OPERSERV/OPERDENY]
+
+[OPERSERV/OPERDENY/ADD]
+01 =::OPERDENY ADD <mask>
+02 =::
+
+[OPERSERV/OPERDENY/DEL]
+01 =::OPERDENY DEL <mask|NUM>
+02 =::
+
+[OPERSERV/OPERDENY/LIST]
+01 =::OPERDENY LIST
+02 =::
+
+[OPERSERV/IGNORE]
+
+[OPERSERV/IGNORE/ADD]
+01 =::IGNORE ADD <mask>
+02 =::
+
+[OPERSERV/IGNORE/DEL]
+01 =::IGNORE DEL <mask|NUM>
+02 =::
+
+[OPERSERV/IGNORE/LIST]
+01 =::IGNORE LIST
+02 =::
+
