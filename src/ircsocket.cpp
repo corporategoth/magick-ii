@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.197  2002/01/11 16:47:57  prez
+** Added ChanServ DETAIL command.  Also hopefully added some fixes for coredumps.
+**
 ** Revision 1.196  2002/01/10 19:30:38  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -490,6 +493,7 @@ void *IrcSvcHandler::worker(void *in)
 	{
 	    Magick::instance().hh.Heartbeat();
 
+	    msg = NULL;
 	    { RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL)
 	    {

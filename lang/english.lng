@@ -702,6 +702,7 @@ ISSUSPENDED        =Channel $1 is suspended.
 ISNOTSUSPENDED     =Channel $1 is not suspended.
 ISINUSE            =Channel $1 is currently in use.
 ISNOTINUSE         =Channel $1 is not currently in use.
+HASNOACCESS        =Nickname $1 does not have any access on any registered channels.
 RESTRICT           =Channel $1 is registered and has $2 set.  Access restrictions apply.
 HIGHERACCESS       =Nickname $1 is higher than you are on the $2 access list.
 NOTZERO            =You may not add someone to the the access list at level zero.

@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2002/01/11 16:47:57  prez
+** Added ChanServ DETAIL command.  Also hopefully added some fixes for coredumps.
+**
 ** Revision 1.73  2002/01/10 19:30:37  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -904,6 +907,7 @@ public:
     static void do_Invite(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Unban(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Live(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Detail(const mstring &mynick, const mstring &source, const mstring &params);
 
     static void do_clear_Users(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_clear_Modes(const mstring &mynick, const mstring &source, const mstring &params);

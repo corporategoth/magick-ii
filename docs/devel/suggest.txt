@@ -72,11 +72,6 @@ x Done
   expires without a password change, then it will be changed to a random
   password, and must be get/setpassed by a SOP.
 
-* A function to list what levels a particular user has in all channels they
-  have a non-zero access level in.
-  > Requires going through each stored channel's access list looking for
-    the user -- could be intensive, so it would have to be a SOP command.
-
 * ChanServ 'verbose' mode, that informs all ops in channel that certain
   things have happened (ie. access adds/removes/changes, settings changes,
   etc).  Requested by PFAK, seen on DALnet services.

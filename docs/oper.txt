@@ -39,6 +39,7 @@ Contents
 2.2.6	FORBID
 2.2.7	SET COMMENT
 2.2.8	SET NOEXPIRE
+2.2.9	DETAIL
 2.3	Locking and Unlocking
 2.3.1	PROTECT
 2.3.2	SECURE
@@ -599,6 +600,20 @@ due to it not being used in a pre-defined period of time.
 
 Setting this to RESET will set the value to whatever newly registered
 	nicknames are set to (ie. the default value).
+You must be on the SOP committee to use this command.
+
+
+2.2.9	DETAIL
+--------------
+
+SYNTAX: DETAIL <nickname>
+
+DETAIL will list out all channels a nickname has access to, and
+what access that nickname has in each channel.  If the nickname
+is the founder of the channel, the access level will show up as
+'F'.  If they are the co-founder of the channel, a 'C' will be
+appended to their access level in the channel.
+
 You must be on the SOP committee to use this command.
 
 

@@ -759,8 +759,8 @@
 11 =REGD::    SET          LEVEL
 12 =SOP::And as a Services Operator, the following commands:
 13 =SOP::    SETPASS      LOCK         UNLOCK       FORBID
-14 =SOP:SADMIN:    SUSPEND      UNSUSPEND    LIVE
-15 =SADMIN::    GETPASS      SUSPEND      UNSUSPEND    LIVE
+14 =SOP::    SUSPEND      UNSUSPEND    LIVE         DETAIL
+15 =SADMIN::    GETPASS
 16 =::
 17 =::You may request help on the syntax and functionality
 18 =::of any and all of the above commands by specifying
@@ -1046,6 +1046,14 @@
 06 =SOP::squit users and bans are active in channel, and
 07 =SOP::what modes the channel currently has set (including
 08 =SOP::key and limit).
+
+[CHANSERV/DETAIL]
+01 =SOP::DETAIL <nickname>
+02 =SOP::
+03 =SOP::This will list all channels that a user has access
+04 =SOP::in, and what access level they are in those channels.
+05 =SOP::Founders will show up having a level of 'F', and Co-
+06 =SOP::Founders will have a 'C' appended to their level.
 
 [CHANSERV/CLEAR]
 01 =REGD::Sometimes it is necessary (as a judicial measure,

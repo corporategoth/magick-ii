@@ -11,6 +11,9 @@ development team to be worked on, and are coming:
 
 - Per-channel clone override lists (kick if cloning)
 
+- Move storage of memos and news articles into the
+  nick and channel stored records respectively.
+
 - Add new AKILL funcitons for 3 new types:
     * Nickname matchine mask
     * Being in a channel matching mask

@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.277  2002/01/11 16:47:57  prez
+** Added ChanServ DETAIL command.  Also hopefully added some fixes for coredumps.
+**
 ** Revision 1.276  2002/01/10 19:30:38  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -6214,6 +6217,8 @@ void ChanServ::AddCommands()
 	    "UNBAN*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Unban);
     Magick::instance().commands.AddSystemCommand(GetInternalName(),
 	    "LIVE*", Magick::instance().commserv.SOP_Name(), ChanServ::do_Live);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "DETAIL*", Magick::instance().commserv.SOP_Name(), ChanServ::do_Detail);
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -6493,6 +6498,8 @@ void ChanServ::RemCommands()
 	    "UNBAN*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(),
 	    "LIVE*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "DETAIL*", Magick::instance().commserv.SOP_Name());
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -8872,6 +8879,84 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     }}
     SEND(mynick, source, "LIST/DISPLAYED", (
 							i, count));
+}
+
+void ChanServ::do_Detail(const mstring &mynick, const mstring &source, const mstring &params)
+{
+    FT("ChanServ::do_Detail", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    { RLOCK(("IrcSvcHandler"));
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
+    {
+	SEND(mynick, source, "MISC/HTM", (
+							message));
+	return;
+    }}
+
+    if (params.WordCount(" ") < 2)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
+	return;
+    }
+
+    mstring nick   = params.ExtractWord(2, " ");
+
+    if (!Magick::instance().nickserv.IsStored(nick))
+    {
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						nick));
+	return;
+    }
+    nick = Magick::instance().getSname(nick);
+
+    bool displayed = false;
+    mstring output;
+    ChanServ::stored_t::iterator iter;
+    { RLOCK(("ChanServ", "stored"));
+    for (iter = Magick::instance().chanserv.StoredBegin();
+	 iter != Magick::instance().chanserv.StoredEnd(); iter++)
+    {
+	map_entry<Chan_Stored_t> cstored(iter->second);
+	if (output.length() + cstored->Name().length() + 10 > Magick::instance().server.proto.MaxLine())
+	{
+	    displayed = true;
+	    ::send(mynick, source, nick + ": " + output);
+	    output.erase();
+	}
+
+	if (cstored->Founder().IsSameAs(nick, true))
+	{
+	    if (output.length())
+		output += ", ";
+	    output += cstored->Name() + " (F)";
+	}
+	else
+	{
+	    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+	    if (cstored->Access_find(nick))
+	    {
+		if (output.length())
+		    output += ", ";
+		output += cstored->Name() + " (" + cstored->Access->Value();
+		if (cstored->CoFounder().IsSameAs(nick, true))
+		    output += "C";
+		output += ")";
+	    }
+	    else if (cstored->CoFounder().IsSameAs(nick, true))
+	    {
+		if (output.length())
+		    output += ", ";
+		output += cstored->Name() + " (0C)";
+	    }
+	}
+    }}
+    if (output.length())
+	::send(mynick, source, nick + ": " + output);
+    else if (!displayed)
+	SEND(mynick, source, "CS_STATUS/HASNOACCESS", (nick));
 }
 
 
