@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2000/03/27 10:40:11  prez
+** Started implementing revenge
+**
 ** Revision 1.105  2000/03/24 15:35:17  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -189,6 +192,7 @@ void mBase::push_message(const mstring& message)
 	    CP(("Failed to create initial thread"));
 	    return;
 	}
+	TaskOpened = true;
     }
     CH(T_Chatter::From,message);
     BaseTask.message(message);
@@ -205,6 +209,7 @@ void mBase::init()
 	    CP(("Failed to create initial thread"));
 	    return;
 	}
+	TaskOpened = true;
     }
     BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark()*sizeof(ACE_Method_Object *));
     BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
@@ -525,7 +530,7 @@ int mBaseTask::svc(void)
     while(!Parent->Shutdown())
     {
 	auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue());
-	if(mo->call()==-1)
+	if(mo->call()<0)
 	    break;
     }
     mThread::Detach(tt_mBase);
@@ -624,17 +629,16 @@ void mBaseTask::message_i(const mstring& message)
 		else	// PRIVMSG or NOTICE to non-service
 		    Parent->server.execute(data);
 	    }
-	    else
+	    else if (Parent->operserv.Log_Ignore())
 	    {
 		// Check if we're to log ignore messages, and log them here.
-		if (Parent->operserv.Log_Ignore())
-		    wxLogInfo(Parent->getMessage("OPERSERV/IGNORED"),
+		wxLogInfo(Parent->getLogMessage("OPERSERV/IGNORED"),
 			source.c_str(), data.After(" ").c_str());
 	    }
 	}
 	else	// Channel messages
 	    Parent->server.execute(data);
-    } 
+    }
     else	// Non PRIVMSG and NOTICE
 	Parent->server.execute(data);
 

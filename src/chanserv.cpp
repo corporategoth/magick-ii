@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.153  2000/03/27 10:40:11  prez
+** Started implementing revenge
+**
 ** Revision 1.152  2000/03/26 14:59:36  prez
 ** LOADS of bugfixes due to testing in the real-time environment
 ** Also enabled the SECURE OperServ option in the CFG file.
@@ -171,7 +174,8 @@ unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
 {
     FT("Chan_Live_t::Kick", (nick, kicker));
     if (users.find(nick.LowerCase())==users.end())
-	wxLogWarning("KICK from %s received for %s who is not in %s.", kicker.c_str(), nick.c_str(), i_Name.c_str());
+	wxLogWarning(Parent->getMessage("ERROR/REC_NOTINCHAN"),
+		"KICK", kicker.c_str(), nick.c_str(), i_Name.c_str());
     else
     {
 	users.erase(nick.LowerCase());
@@ -187,7 +191,8 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     FT("Chan_Live_t::ChgNick", (nick, newnick));
     if (users.find(nick.LowerCase())==users.end())
     {
-	wxLogWarning("NICK CHANGE for %s received, and is not in %s.", nick.c_str(), i_Name.c_str());
+	wxLogWarning(Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
+		"NICK", nick.c_str(), i_Name.c_str());
     }
     else
     {
@@ -460,7 +465,7 @@ void Chan_Live_t::UnLock()
     if (Parent->chanserv.IsStored(i_Name))
     {
 	Chan_Stored_t *chan = &Parent->chanserv.stored[i_Name.LowerCase()];
-	if (!chan->Mlock_On().Contains("s"))
+	if (!chan->Mlock_On().Contains("s") && modes.Contains("s"))
 	    SendMode("-s");
     }
 
@@ -816,9 +821,9 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogWarning("Received MODE +o in %s for %s (who is not in channel) by %s",
-			i_Name.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), source.c_str());
-	    } 
+		wxLogWarning(Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+			'+', 'o', source.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
+	    }
 	    fwdargs++;
 	    break;
 
@@ -832,9 +837,9 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogWarning("Received MODE +v in %s for %s (who is not in channel) by %s",
-			i_Name.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), source.c_str());
-	    } 
+		wxLogWarning(Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+			'+', 'v', source.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
+	    }
 	    fwdargs++;
 	    break;
 
@@ -860,7 +865,9 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogWarning("Incorrect KEY on key-change from %s for %s", source.c_str(), i_Name.c_str());
+		wxLogWarning(Parent->getLogMessage("ERROR/KEYMISMATCH"),
+			i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
+			i_Name.c_str(), source.c_str());
 	    }
 	    fwdargs++;
 	    break;
@@ -870,12 +877,14 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		if (fwdargs > in.WordCount(": "))
 		{
-		    wxLogWarning("No number specified for new LIMIT for %s, set by %s", i_Name.c_str(), source.c_str());
+		    wxLogWarning(Parent->getLogMessage("ERROR/NOLIMIT"),
+				i_Name.c_str(), source.c_str());
 		    i_Limit = 0;
 		}
 		else if (!in.ExtractWord(fwdargs, ": ").IsNumber())
 		{
-		    wxLogWarning("New LIMIT for %s is not a number, set by %s", i_Name.c_str(), source.c_str());
+		    wxLogWarning(Parent->getLogMessage("ERROR/NOLIMIT"),
+				i_Name.c_str(), source.c_str());
 		    i_Limit = 0;
 		}
 		else
@@ -887,7 +896,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    else
 	    {
 		i_Limit = 0;
-	    } 
+	    }
 	    break;
 
 	default:
@@ -924,7 +933,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogDebug("MODE change %c%c received from %s for %s that is currently in effect",
+		wxLogDebug(Parent->getLogMessage("ERROR/INEFFECT"),
 			add ? '+' : '-', change[i], source.c_str(), i_Name.c_str());
 	    }
 	    break;
@@ -1078,11 +1087,13 @@ void Chan_Stored_t::Join(mstring nick)
 	{
 	    if (i_Mlock_On.Before("k").Contains("l"))
 	    {
+		// l before k
 		clive->SendMode(i_Mlock_On + " " + itoa(i_Mlock_Limit) + " " +
 						    i_Mlock_Key);
 	    }
 	    else
 	    {
+	    	// k before l
 		clive->SendMode(i_Mlock_On + " " + i_Mlock_Key + " " +
 						    itoa(i_Mlock_Limit));
 	    }
@@ -1179,10 +1190,9 @@ void Chan_Stored_t::Kick(mstring nick, mstring kicker)
 	Parent->nickserv.live[kicker.LowerCase()].IsServices())
 	return;
 
-    if (GetAccess(nick)>GetAccess(kicker))
-    {
-	// Check revenge, and do it.
-    }
+    if (DoRevenge("KICK", kicker, nick))
+	Parent->server.INVITE(Parent->chanserv.FirstName(),
+		nick, i_Name);
 }
 
 
@@ -1229,12 +1239,6 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	Parent->nickserv.live[setter.LowerCase()].IsServices())
 	    return;
 
-
-    mstring send_on;
-    mstring send_off;
-    mstring send_on_args;
-    mstring send_off_args;
-
     mstring change = mode.ExtractWord(1, ": ");
     unsigned int fwdargs = 2, i;
     bool add = true;
@@ -1258,16 +1262,15 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOOP")) &&
 			Secureops()))
 		{
-		    send_off += "o";
-		    send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o " + mode.ExtractWord(fwdargs, ": "));
 		}
 	    }
-
-	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
+	    else
 	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
-			"+" + send_on + " " + send_off_args + " " + send_on_args);
-		send_off = send_on = send_off_args = send_on_args = "";
+		if (DoRevenge("DEOP", setter, mode.ExtractWord(fwdargs, ": ")))
+		{
+		    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+o " + mode.ExtractWord(fwdargs, ": "));
+		}
 	    }
 
 	    fwdargs++;
@@ -1281,36 +1284,20 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOVOICE")) &&
 			Secureops()))
 		{
-		    send_off += "v";
-		    send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-v " + mode.ExtractWord(fwdargs, ": "));
 		}
-	    }
-
-	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
-	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
-			"+" + send_on + " " + send_off_args + " " + send_on_args);
-		send_off = send_on = send_off_args = send_on_args = "";
 	    }
 
 	    fwdargs++;
 	    break;
 
 	case 'b':
-	    if (add && (GetAccess(mode.ExtractWord(fwdargs, ": ")) != 0 ||
-			GetAccess(setter) != 0) &&
+	    if ((GetAccess(mode.ExtractWord(fwdargs, ": ")) != 0 ||
+		GetAccess(setter) != 0) &&
 		GetAccess(mode.ExtractWord(fwdargs, ": ")) >= GetAccess(setter))
 	    {
-		send_off += "b";
-		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-b " + mode.ExtractWord(fwdargs, ": "));
 		// Do Revenge
-	    }
-
-	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
-	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
-			"+" + send_on + " " + send_off_args + " " + send_on_args);
-		send_off = send_on = send_off_args = send_on_args = "";
 	    }
 
 	    fwdargs++;
@@ -1319,20 +1306,11 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	case 'k':
 	    if (add && i_Mlock_Off.Contains("k"))
 	    {
-		send_off += "k";
-		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-k " + mode.ExtractWord(fwdargs, ": "));
 	    }
 	    else if (!add && i_Mlock_Key != "")
 	    {
-		send_on += "k";
-		send_on_args += " " + i_Mlock_Key;
-	    }
-
-	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
-	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
-			"+" + send_on + " " + send_off_args + " " + send_on_args);
-		send_off = send_on = send_off_args = send_on_args = "";
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("+k " + i_Mlock_Key);
 	    }
 
 	    fwdargs++;
@@ -1343,20 +1321,12 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    {
 		if (i_Mlock_Limit)
 		{
-		    send_on += "l";
-		    send_on_args << " " << i_Mlock_Limit;
+		    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+l " + i_Mlock_Limit);
 		}
 		else
 		{
-		    send_off = "l";
+		    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-l");
 		}
-	    }
-
-	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
-	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
-			"+" + send_on + " " + send_off_args + " " + send_on_args);
-		send_off = send_on = send_off_args = send_on_args = "";
 	    }
 
 	    fwdargs++;
@@ -1364,16 +1334,10 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 
 	default:
 	    if (add && i_Mlock_Off.Contains(change[i]))
-		send_off += change[i];
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + change[i]);
 	    else if (!add && i_Mlock_On.Contains(change[i]))
-		send_on += change[i];
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode("+" + change[i]);
 	}
-    }
-    if (mstring(send_on+send_off+send_on_args+send_off_args).Len() > 0)
-    {
-	Parent->chanserv.live[i_Name.LowerCase()].SendMode("-" + send_off +
-		"+" + send_on + " " + send_off_args + " " + send_on_args);
-	send_off = send_on = send_off_args = send_on_args = "";
     }
 }
 
@@ -1495,6 +1459,116 @@ void Chan_Stored_t::defaults()
     }    
 }
 
+bool Chan_Stored_t::DoRevenge(mstring type, mstring target, mstring source)
+{
+    FT("Chan_Stored_t::DoRevenge", (type, target, source));
+
+    if (!(Parent->chanserv.IsLive(i_Name) &&
+	Parent->nickserv.IsLive(target)))
+	RET(false);
+
+    if (GetAccess(source) > GetAccess(target))
+    {
+	if (i_Revenge == "NONE")
+	{
+	    RET(false);
+	}
+	else if (i_Revenge == "REVERSE")
+	{
+	}
+	else if (i_Revenge == "DEOP")
+	{
+DoRevenge_DeOp:
+	    if (type.SubString(0, 2) == "BAN")
+		type = "BAN";
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o " + target);
+	    send(Parent->chanserv.FirstName(), target,
+			Parent->getMessage(target, "MISC/REVENGE"),
+			type.c_str(), source.c_str());
+	}
+	else if (i_Revenge == "KICK")
+	{
+DoRevenge_Kick:
+	    if (type.SubString(0, 2) == "BAN")
+		type = "BAN";
+	    mstring reason;
+	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
+			type.c_str(), source.c_str());
+	    Parent->server.KICK(Parent->chanserv.FirstName(),
+			target, i_Name, reason);
+	}
+	else if (i_Revenge == "BAN1")
+	{
+DoRevenge_Ban1:
+	    if (type.SubString(0, 2) == "BAN")
+		type = "BAN";
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o+b " + target + " " +
+		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::N));
+	    mstring reason;
+	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
+			type.c_str(), source.c_str());
+	    Parent->server.KICK(Parent->chanserv.FirstName(),
+			target, i_Name, reason);
+	}
+	else if (i_Revenge == "BAN2")
+	{
+DoRevenge_Ban2:
+	    if (type.SubString(0, 2) == "BAN")
+		type = "BAN";
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o+b " + target + " " +
+		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::U_H));
+	    mstring reason;
+	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
+			type.c_str(), source.c_str());
+	    Parent->server.KICK(Parent->chanserv.FirstName(),
+			target, i_Name, reason);
+	}
+	else if (i_Revenge == "BAN3")
+	{
+DoRevenge_Ban3:
+	    if (type.SubString(0, 2) == "BAN")
+		type = "BAN";
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o+b " + target + " " +
+		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::P_H));
+	    mstring reason;
+	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
+			type.c_str(), source.c_str());
+	    Parent->server.KICK(Parent->chanserv.FirstName(),
+			target, i_Name, reason);
+	}
+	else if (i_Revenge == "BAN4")
+	{
+DoRevenge_Ban4:
+	    if (type.SubString(0, 2) == "BAN")
+		type = "BAN";
+	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("-o+b " + target + " " +
+		Parent->nickserv.live[target.LowerCase()].Mask(Nick_Live_t::H));
+	    mstring reason;
+	    reason.Format(Parent->getMessage(source, "MISC/REVENGE").c_str(),
+			type.c_str(), source.c_str());
+	    Parent->server.KICK(Parent->chanserv.FirstName(),
+			target, i_Name, reason);
+	}
+	else if (i_Revenge == "MIRROR")
+	{
+	    if (type == "DEOP")
+		goto DoRevenge_DeOp;
+	    else if (type == "KICK")
+		goto DoRevenge_Kick;
+	    else if (type == "BAN1")
+		goto DoRevenge_Ban1;
+	    else if (type == "BAN2")
+		goto DoRevenge_Ban2;
+	    else if (type == "BAN3")
+		goto DoRevenge_Ban3;
+	    else if (type == "BAN4")
+		goto DoRevenge_Ban4;
+	}
+	RET(true);
+    }
+
+    RET(false);
+}
 
 Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, mstring desc)
 {

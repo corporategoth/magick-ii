@@ -24,6 +24,9 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/03/27 10:40:11  prez
+** Started implementing revenge
+**
 ** Revision 1.32  2000/03/08 23:38:35  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -216,6 +219,7 @@ class Chan_Stored_t : public mUserDef
     void Topic(mstring topic, mstring setter, mDateTime time);
     void Mode(mstring setter, mstring mode);
     void defaults();
+    bool DoRevenge(mstring type, mstring target, mstring source);
 public:
     Chan_Stored_t() {}
     Chan_Stored_t(const Chan_Stored_t& in) { *this = in; }
