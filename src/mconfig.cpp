@@ -27,6 +27,9 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2001/12/06 01:41:39  prez
+** Some fixes to the config file parser -- slightly more flexable now.
+**
 ** Revision 1.35  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -853,7 +856,8 @@ bool mConfigEngine::LoadFromArray(const vector<mstring> &configarray)
 	    currpath = currline.SubString(1, currline.length()-2);
 	    currpath.Trim(true);
 	    currpath.Trim(false);
-	    currpath.replace("\255", "");
+	    currpath.replace("\255", " ");
+	    currpath.replace("\254", "\t");
             Result=RootNode.CreateNode(currpath);
             currNode=RootNode.GetNode(currpath);
         }
@@ -864,8 +868,10 @@ bool mConfigEngine::LoadFromArray(const vector<mstring> &configarray)
             {
 		mstring key = currline.Before("=").Strip(true);
 		mstring data = currline.After("=").Strip(false);
-		key.replace("\255", "");
+		key.replace("\255", " ");
+		key.replace("\254", "\t");
 		data.replace("\255", "");
+		data.replace("\254", "\t");
                 Result=currNode->SetKey(key, data);
                 CSRC(currpath, key, data);
 	    }
@@ -890,6 +896,8 @@ vector<mstring> mConfigEngine::PreParse(const vector<mstring> &in)
     {
 	// Trim our left, thats safe ...
 	mstring tmp = i->Strip(false);
+	tmp.replace("\r", "");
+	tmp.replace("\n", "");
 
 	// If we're non blank, and non-comment ...
         if(tmp.length() && tmp.first() != '#' && tmp.first() != ';')
@@ -912,11 +920,12 @@ vector<mstring> mConfigEngine::PreParse(const vector<mstring> &in)
 		    switch (tmp[j+1])
 		    {
 		    case ' ':
-		    case '\n':
-		    case '\r':
+			tmp.replace(j, j+1, "\255", 1);
+			lnsp = j;
+			break;
 		    case '\t':
-			tmp.replace(j, '\255');
-			lnsp = ++j;
+			tmp.replace(j, j+1, "\254", 1);
+			lnsp = j;
 			break;
 		    case ';':	// Leave these characters alone ...
 		    case '\\':	// (ie. skip them)
@@ -925,55 +934,52 @@ vector<mstring> mConfigEngine::PreParse(const vector<mstring> &in)
 			break;
 		    case 'n':	// Insert newline ...
 		    case 'N':
-			tmp.erase(j, j);
-			tmp.replace(j, '\n');
+			tmp.replace(j, j+1, "\n", 1);
 			lnsp = j;
 			break;
 		    case 'r':	// Insert return ...
 		    case 'R':
-			tmp.erase(j, j);
-			tmp.replace(j, '\r');
+			tmp.replace(j, j+1, "\r", 1);
 			lnsp = j;
 			break;
 		    case 't':	// Insert tab ...
 		    case 'T':
-			tmp.erase(j, j);
-			tmp.replace(j, '\t');
+			tmp.replace(j, j+1, "\t", 1);
 			lnsp = j;
 			break;
 		    case 'a':	// Insert CTCP code ...
 		    case 'A':
-			tmp.erase(j, j);
-			tmp.replace(j, IRC_CTCP.first());
+			tmp.replace(j, j+1, IRC_CTCP);
+			j += (IRC_CTCP.length() - 1);
 			lnsp = j;
 			break;
 		    case 'b':	// Insert bold ...
 		    case 'B':
-			tmp.erase(j, j);
-			tmp.replace(j, IRC_Bold.first());
+			tmp.replace(j, j+1, IRC_Bold);
+			j += (IRC_Bold.length() - 1);
 			lnsp = j;
 			break;
 		    case 'c':	// Insert colour ...
 		    case 'C':
-			tmp.erase(j, j);
-			tmp.replace(j, IRC_Color.first());
+			tmp.replace(j, j+1, IRC_Color);
+			j += (IRC_Color.length() - 1);
 			lnsp = j;
 			break;
 		    case 'o':	// Insert off ...
 		    case 'O':
-			tmp.erase(j, j);
-			tmp.replace(j, IRC_Off.first());
+			tmp.replace(j, j+1, IRC_Off);
+			j += (IRC_Off.length() - 1);
 			lnsp = j;
 			break;
 		    case 'v':	// Insert reverse ...
 		    case 'V':
-			tmp.erase(j, j);
-			tmp.replace(j, IRC_Reverse.first());
+			tmp.replace(j, j+1, IRC_Reverse);
+			j += (IRC_Reverse.length() - 1);
 			lnsp = j;
 			break;
 		    case '_':	// Insert underline ...
-			tmp.erase(j, j);
-			tmp.replace(j, IRC_Underline.first());
+			tmp.replace(j, j+1, IRC_Underline);
+			j += (IRC_Underline.length() - 1);
 			lnsp = j;
 			break;
 		    default:
@@ -982,12 +988,9 @@ vector<mstring> mConfigEngine::PreParse(const vector<mstring> &in)
 		    }
 		    break;
 		case ';':	// Non-backspaced comment
-		    lnsp = j-1;
 		    tmp.Truncate(j);
 		    break;
 		case ' ':	// Space characters
-		case '\n':
-		case '\r':
 		case '\t':
 		    break;
 		default:
