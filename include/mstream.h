@@ -468,4 +468,62 @@ private:
   wxFile    m_file;     // the temporary file
 };
 
+class wxFileInputStream: public wxInputStream {
+ public:
+  wxFileInputStream(const mstring& ifileName);
+  wxFileInputStream(wxFile& file);
+  wxFileInputStream(int fd);
+  ~wxFileInputStream();
+
+  char Peek();
+  size_t StreamSize() const;
+
+  bool Ok() const { return m_file->IsOpened(); }
+
+ protected:
+  wxFileInputStream();
+
+  size_t OnSysRead(void *buffer, size_t size);
+  off_t OnSysSeek(off_t pos, wxSeekMode mode);
+  off_t OnSysTell() const;
+
+ protected:
+  wxFile *m_file;
+  bool m_file_destroy;
+};
+
+class wxFileOutputStream: public wxOutputStream {
+ public:
+  wxFileOutputStream(const mstring& fileName);
+  wxFileOutputStream(wxFile& file);
+  wxFileOutputStream(int fd);
+  virtual ~wxFileOutputStream();
+
+  // To solve an ambiguity on GCC
+  inline wxOutputStream& Write(const void *buffer, size_t size)
+     { return wxOutputStream::Write(buffer, size); }
+
+  void Sync();
+  size_t StreamSize() const;
+
+  bool Ok() const { return m_file->IsOpened(); }
+
+ protected:
+  wxFileOutputStream();
+
+  size_t OnSysWrite(const void *buffer, size_t size);
+  off_t OnSysSeek(off_t pos, wxSeekMode mode);
+  off_t OnSysTell() const;
+
+ protected:
+  wxFile *m_file;
+  bool m_file_destroy;
+};
+
+class wxFileStream: public wxFileInputStream, public wxFileOutputStream {
+ public:
+  wxFileStream(const mstring& fileName);
+};
+
+
 #endif

@@ -1625,3 +1625,124 @@ void wxTempFile::Discard()
   if ( remove(m_strTemp) != 0 )
     wxLogSysError(_("can't remove temporary file '%s'"), m_strTemp.c_str());
 }
+
+// ----------------------------------------------------------------------------
+// wxFileInputStream
+// ----------------------------------------------------------------------------
+
+wxFileInputStream::wxFileInputStream(const mstring& fileName)
+  : wxInputStream()
+{
+  m_file = new wxFile(fileName, wxFile::read);
+  m_file_destroy = true;
+  m_i_streambuf->SetBufferIO(1024);
+}
+
+wxFileInputStream::wxFileInputStream()
+  : wxInputStream()
+{
+  m_file_destroy = false;
+  m_file = NULL;
+}
+
+wxFileInputStream::~wxFileInputStream()
+{
+  if (m_file_destroy)
+    delete m_file;
+}
+
+char wxFileInputStream::Peek()
+{
+  return 0;
+}
+
+size_t wxFileInputStream::StreamSize() const
+{
+  return m_file->Length();
+}
+
+size_t wxFileInputStream::OnSysRead(void *buffer, size_t size)
+{
+  return m_file->Read(buffer, size);
+}
+
+off_t wxFileInputStream::OnSysSeek(off_t pos, wxSeekMode mode)
+{
+  return m_file->Seek(pos, mode);
+}
+
+
+off_t wxFileInputStream::OnSysTell() const
+{
+  return m_file->Tell();
+}
+
+// ----------------------------------------------------------------------------
+// wxFileOutputStream
+// ----------------------------------------------------------------------------
+
+wxFileOutputStream::wxFileOutputStream(const mstring& fileName)
+{
+  m_file = new wxFile(fileName, wxFile::write);
+  m_file_destroy = true;
+  m_o_streambuf->SetBufferIO(1024);
+}
+
+wxFileOutputStream::wxFileOutputStream(wxFile& file)
+{
+  m_file = &file;
+  m_file_destroy = false;
+  m_o_streambuf->SetBufferIO(1024);
+}
+
+wxFileOutputStream::wxFileOutputStream()
+  : wxOutputStream()
+{
+  m_o_streambuf->SetBufferIO(1024);
+  m_file_destroy = false;
+  m_file = NULL;
+}
+
+wxFileOutputStream::~wxFileOutputStream()
+{
+  if (m_file_destroy) {
+    Sync();
+    delete m_file;
+  }
+}
+
+size_t wxFileOutputStream::OnSysWrite(const void *buffer, size_t size)
+{
+  size_t ret = m_file->Write(buffer, size);
+  m_lasterror = wxStream_EOF; // TODO
+  return ret;
+}
+
+off_t wxFileOutputStream::OnSysTell() const
+{
+  return m_file->Tell();
+}
+
+off_t wxFileOutputStream::OnSysSeek(off_t pos, wxSeekMode mode)
+{
+  return m_file->Seek(pos, mode);
+}
+
+void wxFileOutputStream::Sync()
+{
+  wxOutputStream::Sync();
+  m_file->Flush();
+}
+
+size_t wxFileOutputStream::StreamSize() const
+{
+  return m_file->Length();
+}
+
+// ----------------------------------------------------------------------------
+// wxFileStream
+// ----------------------------------------------------------------------------
+wxFileStream::wxFileStream(const mstring& fileName)
+ : wxFileInputStream(fileName), wxFileOutputStream(*wxFileInputStream::m_file)
+{
+}

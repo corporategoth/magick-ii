@@ -139,16 +139,7 @@ void Magick::LoadInternalMessages()
 	/* note left side of message can have spaces before '=' that will be trimmed
 		right side will *not* be trimmed*/
 
-	int i=0;
-
-	while(tempstor[i]!="")
-	{
-		mstring name,value;
-		name=tempstor[i].Before('=').Trim().Trim(false);
-		value=tempstor[i].After('=');
-		Messages[name]=value;
-		i++;
-	}
+	ACE_Thread_Mutex_Guard guard(mutex);
 }
 
 mstring Magick::parseEscapes(const mstring & in)
@@ -174,21 +165,5 @@ void Magick::LoadExternalMessages()
 {
 
 	// use the previously created name array to get the names to load
-
-	int i=0;
-	// todo use magick.ini LANGUAGE value
-	wxFileConfig *languageini=new wxFileConfig("magick","","english.lng","");
-	// load and escparse the messages
-
-	while(tempstor[i]!="")
-	{
-		mstring name,value;
-		name=tempstor[i].After('/').Trim().Trim(false);
-		//languageini.Read(
-		Messages[name]=value;
-		i++;
-	}
-
-	delete languageini;
-
+	ACE_Thread_Mutex_Guard guard(mutex);
 }
