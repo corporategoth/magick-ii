@@ -244,28 +244,22 @@ int Magick::Start()
 #endif
 #endif
 #if defined(SIGALRM) && (SIGALRM != 0)
-    ACE_Sig_Action sigalrm (ACE_SignalHandler (SIG_IGN), SIGALRM);
-    ACE_UNUSED_ARG (sigalrm);
+    ACE_Reactor::instance()->register_handler(SIGALRM,signalhandler);
 #endif
 #ifdef SIGCHLD
-    ACE_Sig_Action sigchld (ACE_SignalHandler (SIG_IGN), SIGCHLD);
-    ACE_UNUSED_ARG (sigchld);
+    ACE_Reactor::instance()->register_handler(SIGCHLD,signalhandler);
 #endif
 #ifdef SIGWINCH
-    ACE_Sig_Action sigwinch (ACE_SignalHandler (SIG_IGN), SIGWINCH);
-    ACE_UNUSED_ARG (sigwinch);
+    ACE_Reactor::instance()->register_handler(SIGWINCH,signalhandler);
 #endif
 #ifdef SIGTTIN
-    ACE_Sig_Action sigttin (ACE_SignalHandler (SIG_IGN), SIGTTIN);
-    ACE_UNUSED_ARG (sigttin);
+    ACE_Reactor::instance()->register_handler(SIGTTIN,signalhandler);
 #endif
 #ifdef SIGTTOU
-    ACE_Sig_Action sigttou (ACE_SignalHandler (SIG_IGN), SIGTTOU);
-    ACE_UNUSED_ARG (sigttou);
+    ACE_Reactor::instance()->register_handler(SIGTTOU,signalhandler);
 #endif
 #ifdef SIGTSTP
-    ACE_Sig_Action sigttsp (ACE_SignalHandler (SIG_IGN), SIGTSTP);
-    ACE_UNUSED_ARG (sigttsp);
+    ACE_Reactor::instance()->register_handler(SIGTSTP,signalhandler);
 #endif
 
     mBase::init();
@@ -356,6 +350,25 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGUSR2);
 #endif
 #endif
+#if defined(SIGALRM) && (SIGALRM != 0)
+    ACE_Reactor::instance()->remove_handler(SIGALRM);
+#endif
+#ifdef SIGCHLD
+    ACE_Reactor::instance()->remove_handler(SIGHLD);
+#endif
+#ifdef SIGWINCH
+    ACE_Reactor::instance()->remove_handler(SIGWINCH);
+#endif
+#ifdef SIGTTIN
+    ACE_Reactor::instance()->remove_handler(SIGTTIN);
+#endif
+#ifdef SIGTTOU
+    ACE_Reactor::instance()->remove_handler(SIGTTOU);
+#endif
+#ifdef SIGTSTP
+    ACE_Reactor::instance()->remove_handler(SIGTSTP);
+#endif
+
     delete signalhandler;
     if(logger!=NULL)
 	delete logger;
@@ -1043,6 +1056,30 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
     case SIGUSR2:	// ??
+	break;
+#endif
+#if defined(SIGALRM) && (SIGALRM != 0)
+    case SIGALRM:	// Ignore
+	break;
+#endif
+#ifdef SIGCHLD
+    case SIGHLD:	// Ignore
+	break;
+#endif
+#ifdef SIGWINCH
+    case SIGWINCH:	// Ignore
+	break;
+#endif
+#ifdef SIGTTIN
+    case SIGTTIN:	// Ignore
+	break;
+#endif
+#ifdef SIGTTOU
+    case SIGTTOU:	// Ignore
+	break;
+#endif
+#ifdef SIGTSTP
+    case SIGTSTP:	// Ignore
 	break;
 #endif
     default:		// Everything else.
