@@ -2,8 +2,8 @@
 REM Magick IRC Services
 REM
 REM $Id$
-REM (c) 1997-2002 Preston Elder <prez@magick.tm>
-REM (c) 1998-2002 William King <ungod@magick.tm>
+REM "(c) 1997-2002 Preston Elder <prez@magick.tm>"
+REM "(c) 1998-2002 William King <ungod@magick.tm>"
 REM
 REM The above copywright may not be removed under any circumstances,
 REM however it may be added to if any modifications are made to this
@@ -25,30 +25,51 @@ REM N/A
 REM
 REM =======================================================================
 
-TITLE Magick IRC Services
-if "%*" == "" GOTO NeedParam
+REM This is needed for win95/98/me
+if "%1" == "" GOTO NeedParam
+set ALL_ARGS=%1
+if "%2" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %2
+if "%3" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %3
+if "%4" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %4
+if "%5" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %5
+if "%6" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %6
+if "%7" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %7
+if "%8" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %8
+if "%9" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %9
+:start
 
+IF NOT "%OS%" == "Windows_NT" GOTO CommonStartup
+TITLE Magick IRC Services - Uninstall
+set ALL_ARGS=%*
+
+:CommonStartup
 REM
 REM If its NT, remove it as a service
 REM
-IF "%OS%" == "Windows_NT" GOTO AsService
-GOTO NotAsService
+IF NOT "%OS%" == "Windows_NT" GOTO NotService
 
-:AsService
 REM
-REM Run as NT Service
+REM Runing as NT Service
 REM
 ECHO Removing service ...
 ECHO.
-"%*"\magick.exe --config "%*\magick.ini" --service stop
+"%ALL_ARGS%\magick.exe" --config "%ALL_ARGS%\magick.ini" --service stop
 IF NOT %ERRORLEVEL% == 0 GOTO Error
-"%*"\magick.exe --config "%*\magick.ini" --service remove %*
+"%ALL_ARGS%\magick.exe" --config "%ALL_ARGS%\magick.ini" --service remove
 IF NOT %ERRORLEVEL% == 0 GOTO Error
 
-:NotAsService
-uninst.exe -f"%*\Uninst.isu"
+:NotService
+uninst.exe -f"%ALL_ARGS%\Uninst.isu"
 ECHO You are about to remove all residual files in
-rd /S "%*"
+rd /S "%ALL_ARGS%"
 GOTO End
 
 :NeedParam
