@@ -319,7 +319,7 @@ class wxZlibInputStream: public wxFilterInputStream {
 
 class wxZlibOutputStream: public wxFilterOutputStream {
  public:
-  wxZlibOutputStream(wxOutputStream& stream);
+  wxZlibOutputStream(wxOutputStream& stream, int compression=6);
   virtual ~wxZlibOutputStream();
 
   void Sync();

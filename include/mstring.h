@@ -79,6 +79,7 @@ public:
 	int FormatV(const char *pszFormat, va_list argptr);
 	int Format(const char *pszFormat, ...);
 	// Matches using '*' and '?' rules
+	bool RxMatches(const mstring& in)const;
 	bool Matches(const mstring& in)const;
 	mstring& Truncate(size_t uiLine);
 	mstring& Pad(size_t nCount, char chPad=' ', bool bFromRight=true);

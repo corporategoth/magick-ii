@@ -195,7 +195,7 @@ mstring& mstring::Truncate(size_t uiLine)
 	return *this;
 }
 
-bool mstring::Matches(const mstring & in) const
+bool mstring::RxMatches(const mstring & in) const
 {
 
 // new code
@@ -706,4 +706,23 @@ re_cleanup2:
     regfree(&matchcode);
     return Result;
 
+}
+
+bool mstring::Matches(const mstring& in)const
+{
+    mstring in2;
+    unsigned int i;
+    for(i=0;i<in.length();i++)
+    {
+	if(in[i]=='.')
+	    in2=in2+"\\.";
+	else if(in[i]=='*')
+	    in2=in2+".*";
+	else if(in[i]=='?')
+	    in2=in2+".\\?";
+	else
+	    in2=in2+in[i];
+    }
+    return RxMatches(in2);
+	
 }
