@@ -66,3 +66,8 @@ void ChanServ::execute(const mstring & servicename, const mstring & message)
 {
     //okay this is the main chanserv command switcher
 }
+
+int ChanServ::listchans(vector<mstring> &args)
+{
+    return MAGICK_RET_TERMINATE;
+}

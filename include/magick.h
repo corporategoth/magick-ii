@@ -46,8 +46,25 @@ private:
 	mapstringstring Messages;
 	vector<mstring> MessageNamesLong;
 	vector<mstring> MessageNamesShort;
-	//ACE_Thread_Mutex mutex;
+	int doparamparse();
 public:
+	int lastmsgmax;
+	int flood_messages;
+	int passfail_max;
+	int read_timeout;
+	// move these to the appropriate classes later
+	bool globalnoticer_on;
+	bool outlet_on;
+	bool akill_on;
+	bool clones_on;
+	bool operserv_on;
+	int clones_allowed;
+
+
+	bool check_config();
+	int ping_frequency;
+	int update_timeout;
+	int server_relink;
 	ChanServ chanserv;
 	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
 	mDateTime StartTime;
@@ -62,6 +79,19 @@ public:
 	Bob bob;
 	Magick(int inargc, char **inargv);
 	int Start();
+protected:
+	int tz_offset;
+	int services_level;
+	bool live;
+	bool debug;
+	mstring log_filename;
+	mstring services_prefix;
+	mstring services_host;
+	mstring services_user;
+	mstring server_desc;
+	mstring server_name;
+	int remote_port;
+	mstring remote_server;
 };
 
 extern Magick *MagickObject;

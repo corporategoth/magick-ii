@@ -30,6 +30,7 @@ Magick::Magick(int inargc, char **inargv)
 int Magick::Start()
 {
     int i;
+    int Result;
     // this is our main routine, when it leaves here, this sucker's done.
     if(bob.StartBob("")==false)
     {
@@ -43,10 +44,12 @@ int Magick::Start()
     ProgramName=argv[0].RevAfter("/");
     int argc=argv.size();
     mstring errstring;
-    for(i=0;i<argc;i++)
+    for(i=1;i<argc;i++)
     {
-    	if(argv[i][0]=='/')
-	    argv[i][0]='-';
+	/* i've taken out / command switches below cause i hate them myself,
+	courtesy of gnu we now have a common switch format -- for long, and - for short*/
+    	/*if(argv[i][0]=='/')
+	    argv[i][0]='-';*/
 	if(argv[i][0]=='-')
 	{
 	    argv[i].LowerCase();
@@ -56,7 +59,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    cerr<<"-dir "<<"requires a paramter."<<endl;
+		    cerr<<"-dir"<<" requires a paramter."<<endl;
 		    return MAGICK_RET_ERROR;
 		}
 		services_dir=argv[i];
@@ -67,7 +70,7 @@ int Magick::Start()
 		if(i==argc||argv[i][0]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
-		    cerr<<"-config "<<"requires a paramter."<<endl;
+		    cerr<<"-config"<<" requires a paramter."<<endl;
 		    return MAGICK_RET_ERROR;
 		}
 		config_file=argv[i];
@@ -94,6 +97,9 @@ int Magick::Start()
 	cerr << "Major fubar, couldn't allocate memory to read config file\nAborting"<<endl;
 	return MAGICK_RET_ERROR;
     }
+    //okay, need a function here to load all the ini file defalts
+
+
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called language.ini (both local and global can be done here too)
     LoadInternalMessages();
@@ -101,8 +107,18 @@ int Magick::Start()
     StartTime=Now();
     ThreadtoTypeMap[ACE_Thread::self()]=tt_MAIN;
 
+    if(ProgramName=="listnicks")
+	return MAGICK_RET_TERMINATE/*nickserv.listnicks(argv)*/;
+    if(ProgramName=="listchans")
+	return chanserv.listchans(argv);
     //todo here if !win32, freopen stdout,stdin, and stderr and spawn off.
 
+    Result=doparamparse();
+    if(Result!=MAGICK_RET_NORMAL)
+	return Result;
+
+    if(!check_config())
+	return MAGICK_RET_TERMINATE;
 
     if(logfile!=NULL)
 	fclose(logfile);
@@ -239,4 +255,281 @@ void Magick::LoadExternalMessages()
     int i;
     for(i=0;i<MessageNamesLong.size();i++)
     	Messages[MessageNamesShort[i]]=fconf.Read(MessageNamesLong[i],Messages[MessageNamesShort[i]]);
+}
+
+int Magick::doparamparse()
+{
+    mstring temp;
+    int argc=argv.size(),i;
+    for(i=1;i<argc;i++)
+    {
+	/* i've taken out / command switches below cause i hate them myself,
+	courtesy of gnu we now have a common switch format -- for long, and - for short*/
+    	/*if(argv[i][0]=='/')
+	    argv[i][0]='-';*/
+	if(argv[i][0]=='-')
+	{
+	    argv[i].LowerCase();
+	    if(argv[i]=="-remote")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    cerr<<"-remote"<<" requires hostname[:port]"<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		if(argv[i].Contains(":"))
+		{
+		    if(argv[i].After(':').IsNumber())
+		    {
+			if(atoi(argv[i].After(':').c_str())<0)
+			    cerr<<"port must be a positive number"<<endl;
+			else
+			    remote_port=atoi(argv[i].After(':').c_str());
+		    }
+		    remote_server=argv[i].Before(':');
+		}
+	    }
+	    else if(argv[i]=="-name")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-name");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		server_name=argv[i];
+	    }
+	    else if(argv[i]=="-desc")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-desc");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		server_desc=argv[i];
+	    }
+	    else if(argv[i]=="-user")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-user");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		services_user=argv[i];
+	    }
+	    else if(argv[i]=="-host")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-host");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		services_host=argv[i];
+	    }
+	    else if(argv[i]=="-prefix")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-prefix");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		services_prefix=argv[i];
+	    }
+	    else if(argv[i]=="-dir")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-dir");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		// already handled, but we needed to i++
+	    }
+	    else if(argv[i]=="-config")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-config");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		// already handled, but we needed to i++
+	    }
+	    else if(argv[i]=="-log")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-log");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		log_filename=argv[i];
+	    }
+	    else if(argv[i]=="-debug")
+		debug=true;
+	    else if(argv[i]=="-live"||argv[i]=="nofork")
+		live=true;
+	    else if(argv[i]=="-relink")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-relink");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		if(atoi(argv[i].c_str())<0)
+		{
+		    cerr<<"-relink"<<" parameter must be positive"<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		server_relink=atoi(argv[i].c_str());
+	    }
+	    else if(argv[i]=="-level")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-level");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		if(atoi(argv[i].c_str())<0)
+		{
+		    cerr<<"-level"<<" parameter must be positive"<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		services_level=atoi(argv[i].c_str());
+	    }
+	    else if(argv[i]=="-offset")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-offset");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		if(abs(atoi(argv[i].c_str()))>24)
+		{
+		    cerr<<"-offset"<<" must be between -24 and 24"<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		tz_offset=atoi(argv[i].c_str());
+	    }
+	    else if(argv[i]=="-norelink")
+		server_relink=-1;
+	    else if(argv[i]=="-update")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-update");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		if(atoi(argv[i].c_str())<0)
+		{
+		    cerr<<"-update"<<": number of seconds must be positive"<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		update_timeout=atoi(argv[i].c_str());
+	    }
+	    else if(argv[i]=="-ping")
+	    {
+		i++;
+		if(i==argc||argv[i][0]=='-')
+		{
+		    temp.Format(getMessage("ERR_REQ_PARAM"),"-ping");
+		    cerr<<temp<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		if(atoi(argv[i].c_str())<0)
+		{
+		    cerr<<"-ping"<<": number of seconds must be positive"<<endl;
+		    return MAGICK_RET_ERROR;
+		}
+		ping_frequency=atoi(argv[i].c_str());
+	    }
+	    else
+	    {
+		temp.Format("Unknown option %s.",argv[i]);
+		cerr<<temp<<endl;
+		return MAGICK_RET_ERROR;
+	    }
+	}
+	else
+	{
+	    cerr<<"Non-option arguments not allowed"<<endl;
+	    return MAGICK_RET_ERROR;
+	}
+    }
+    return MAGICK_RET_NORMAL;
+}
+
+bool Magick::check_config()
+{
+    // change these later when the appropriate classes are set up
+    if(operserv_on==false)
+    {
+	globalnoticer_on=false;
+	outlet_on=false;
+	akill_on=false;
+	clones_on=false;
+    }
+    if(clones_allowed<1)
+	clones_on=false;
+    if (services_level < 1)
+    {
+	// change this to the logging mechanism
+        cerr<<"CONFIG: Cannot set SERVICES_LEVEL < 1"<<endl;
+        return false;
+    }
+    if (tz_offset >= 24 || tz_offset <= -24)
+    {
+	// change this to the logging mechanism
+        cerr<<"CONFIG: TZ_OFFSET must fall between -24 and 24."<<endl;
+        return false;
+    }
+    if (update_timeout < 30)
+    {
+	// change this to the logging mechanism
+        cerr<<"CONFIG: Cannot set UPDATE_TIMEOUT < 30."<<endl;
+        return false;
+    }
+    if (read_timeout < 1)
+    {
+	// change this to the logging mechanism
+        cerr<<"CONFIG: Cannot set READ_TIMEOUT < 1."<<endl;
+        return false;
+    }
+    if (passfail_max < 1)
+    {
+	// change this to the logging mechanism
+        cerr<<"CONFIG: Cannot set PASSFAIL_MAX < 1."<<endl;
+        return false;
+    }
+    if (flood_messages > lastmsgmax)
+    {
+	// change this to the logging mechanism
+	mstring temp;
+	temp.Format("CONFIG: Cannot set FLOOD_MESSAGES > %d.",lastmsgmax);
+        cerr<<temp<<endl;
+        return false;
+    }
+    return true;
+
 }
