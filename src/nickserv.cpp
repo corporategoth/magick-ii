@@ -786,6 +786,10 @@ void NickServ::do_Help(const mstring & mynick, const mstring & source, const mst
 
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
+    HelpTopic.Trim();
+    HelpTopic.Trim(false);
+    while (HelpTopic.find("  ") >= 0)
+	HelpTopic.replace("  ", " ");
     HelpTopic.replace(" ", "/");
     vector < mstring > help = Magick::instance().getHelp(source, HelpTopic.UpperCase());
 
