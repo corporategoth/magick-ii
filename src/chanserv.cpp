@@ -17,6 +17,7 @@
 
 ChanServ::ChanServ()
 {
+    NFT("ChanServ::ChanServ");
     on=false;
 }
 // ***************************************
@@ -27,6 +28,7 @@ static int highestlevel=0;
 
 void *chanserv_thread_handler(void *level)
 {
+    FT("chanserv_thread_handler", (level));
     int ilevel=(int)level;  // 0 get's passed in for the first thread spawned, etc.
     pair<mstring,mstring> data;
 
@@ -67,11 +69,13 @@ void *chanserv_thread_handler(void *level)
 
 void ChanServ::init()
 {
+    NFT("ChanServ::init()");
     ACE_Thread::spawn(chanserv_thread_handler,(void *)0);
 }
 
 void ChanServ::push_message(const mstring& servicename, const mstring& message)
 {
+    FT("ChanServ::push_message", (servicename, message));
     WLOCK lock("ChanServ","inputbuffer");
     pair<mstring,mstring> dummyvar(servicename,message);
     inputbuffer.push_back(dummyvar);
@@ -83,10 +87,12 @@ void ChanServ::push_message(const mstring& servicename, const mstring& message)
 
 void ChanServ::execute(const mstring & servicename, const mstring & message)
 {
+    FT("ChanServ::execue", (servicename, message));
     //okay this is the main chanserv command switcher
 }
 
 int ChanServ::listchans(vector<mstring> &args)
 {
-    return MAGICK_RET_TERMINATE;
+    FT("ChanServ::listchans", ("(vector<mstring>) args"));
+    RET(MAGICK_RET_TERMINATE);
 }

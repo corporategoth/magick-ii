@@ -35,6 +35,8 @@ using namespace std;
 // Set return value -- RET()
 #define RET(x) {__ft.return_value=(x); return x;}
 #define NRET(x,y) {__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); return y;}
+#define CRET(x,y,z) {mstring __ft_val; __ft_val << y; \
+    __ft.return_value=("(" + mstring(#x) + ") " + y).c_str(); return z;}
 
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }

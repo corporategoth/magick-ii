@@ -23,6 +23,7 @@ void wxSplitPath(const char *pszFileName,
                              mstring *pstrName,
                              mstring *pstrExt)
 {
+  FT("wxSplitPath", (pszFileName, pstrPath, pstrName, pstrExt));
   wxCHECK_RET( pszFileName, _("NULL file name in wxSplitPath") );
 
   const char *pDot = strrchr(pszFileName, FILE_SEP_EXT);
@@ -55,6 +56,7 @@ void wxSplitPath(const char *pszFileName,
 
 mstring &wxGetHomeDir(mstring &pstr)
 {
+  FT("wxGetHomeDir", (pstr));
   mstring& strDir = pstr;
 
   #ifdef __UNIX__
@@ -85,7 +87,7 @@ mstring &wxGetHomeDir(mstring &pstr)
         // to set HOMEPATH to something other than "\\", we suppose that he
         // knows what he is doing and use the supplied value.
         if ( strcmp(szHome, "\\") != 0 )
-          return strDir;
+          RET(strDir);
       }
 
 
@@ -105,12 +107,13 @@ mstring &wxGetHomeDir(mstring &pstr)
 
   #endif  // UNIX/Win
 
-  return strDir;
+  RET(strDir);
 }
 
 bool
 wxIsAbsolutePath (const mstring& filename)
 {
+  FT("wxIsAbsolutePath", (filename));
   if (filename != "")
     {
       if (filename[0] == '/'
@@ -122,9 +125,9 @@ wxIsAbsolutePath (const mstring& filename)
       || filename[0] == '\\' || (isalpha (filename[0]) && filename[1] == ':')
 #endif
         )
-        return TRUE;
+        RET(true);
     }
-  return FALSE;
+  RET(false);
 }
 
 // Id generation
@@ -133,15 +136,21 @@ static long wxCurrentId = 100;
 long
 wxNewId (void)
 {
-  return wxCurrentId++;
+  NFT("wxNewId");
+  RET(wxCurrentId++);
 }
 
 long
-wxGetCurrentId(void) { return wxCurrentId; }
+wxGetCurrentId(void)
+{
+  FC("wxGetCurrentId");
+  RET(wxCurrentId);
+}
 
 void
 wxRegisterId (long id)
 {
+  FC("wxRegisterId", (id));
   if (id >= wxCurrentId)
     wxCurrentId = id + 1;
 }

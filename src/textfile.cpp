@@ -56,31 +56,34 @@ wxTextFile::~wxTextFile()
 
 bool wxTextFile::Open(const mstring& strFile)
 {
+  FT("wxTextFile::Open", (strFile));
   m_strFile = strFile;
-  return Open();
+  RET(Open());
 }
 
 bool wxTextFile::Open()
 {
+  NFT("wxTextFile::Open");
   // file name must be either given in ctor or in Open(const mstring&)
   wxASSERT( !m_strFile.IsEmpty() );
 
   // open file in read-only mode
   if ( !m_file.Open(m_strFile) )
-    return FALSE;
+    RET(FALSE);
 
   // read file into memory
   bool bRet = Read();
 
   m_file.Close();
 
-  return bRet;
+  RET(bRet);
 }
 
 // analyse some lines of the file trying to guess it's type.
 // if it fails, it assumes the native type for our platform.
 wxTextFileType wxTextFile::GuessType() const
 {
+  NFT("wxTextFile::GuessType");
   // file should be opened and we must be in it's beginning
   wxASSERT( m_file.IsOpened() && m_file.Tell() == 0 );
 
@@ -125,26 +128,28 @@ wxTextFileType wxTextFile::GuessType() const
 
 // Watcom C++ doesn't seem to be able to handle the macro
 #if defined(__WATCOMC__)
-    return typeDefault;
+    CRET(wxTextFileType, (int) typeDefault, typeDefault);
 #else
     if ( nDos > nUnix )
-      return GREATER_OF(Dos, Mac);
+      CRET(wxTextFileType, (int) GREATER_OF(Dos, Mac), GREATER_OF(Dos, Mac));
     else if ( nDos < nUnix )
-      return GREATER_OF(Unix, Mac);
+      CRET(wxTextFileType, (int) GREATER_OF(Unix, Mac), GREATER_OF(Unix, Mac));
     else {
       // nDos == nUnix
-      return nMac > nDos ? wxTextFileType_Mac : typeDefault;
+      CRET(wxTextFileType, (int) (nMac > nDos ? wxTextFileType_Mac : typeDefault),
+             nMac > nDos ? wxTextFileType_Mac : typeDefault);
     }
 #endif
 
     #undef    GREATER_OF
   }
 
-  return typeDefault;
+  CRET(wxTextFileType, (int) typeDefault, typeDefault);
 }
 
 bool wxTextFile::Read()
 {
+  NFT("wxTextFile::Read");
   // file should be opened and we must be in it's beginning
   wxASSERT( m_file.IsOpened() && m_file.Tell() == 0 );
 
@@ -157,7 +162,7 @@ bool wxTextFile::Read()
     if ( nRead == -1 ) {
       // read error (error message already given in wxFile::Read)
       m_file.Close();
-      return FALSE;
+      RET(FALSE);
     }
 
     for ( n = 0; n < nRead; n++ ) {
@@ -204,16 +209,17 @@ bool wxTextFile::Read()
     m_aLines.push_back(str);
   }
 
-  return TRUE;
+  RET(TRUE);
 }
 
 bool wxTextFile::Write(wxTextFileType typeNew)
 {
+  FT("wxTextFile::Write", ("(wxTextFileType) typeNew"));
   wxTempFile fileTmp(m_strFile);
 
   if ( !fileTmp.IsOpened() ) {
     wxLogError(_("can't write file '%s' to disk."), m_strFile.c_str());
-    return FALSE;
+    RET(FALSE);
   }
 
   size_t nCount = m_aLines.size();
@@ -224,20 +230,21 @@ bool wxTextFile::Write(wxTextFileType typeNew)
   }
 
   // replace the old file with this one
-  return fileTmp.Commit();
+  RET(fileTmp.Commit());
 }
 
 const char *wxTextFile::GetEOL(wxTextFileType type)
   {
+    FT("wxTextFile::GetEOL", ("(wxTextFileType) type"));
     switch ( type ) {
-      case wxTextFileType_None: return "";
-      case wxTextFileType_Unix: return "\n";
-      case wxTextFileType_Dos:  return "\r\n";
-      case wxTextFileType_Mac:  return "\r";
+      case wxTextFileType_None: RET("");
+      case wxTextFileType_Unix: RET("\n");
+      case wxTextFileType_Dos:  RET("\r\n");
+      case wxTextFileType_Mac:  RET("\r");
 
       default:
         wxFAIL_MSG("bad file type in wxTextFile::GetEOL.");
-        return (const char *) NULL;
+        RET((const char *) NULL);
     }
   }
 

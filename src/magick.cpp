@@ -23,6 +23,7 @@ using namespace std;
 
 Magick::Magick(int inargc, char **inargv)
 {
+    FT("Magick::Magick", (inargc, "(char) **inargv"));
     services_dir=".";
     config_file="magick.ini";
     for(int i=0;i<inargc;i++)
@@ -31,6 +32,7 @@ Magick::Magick(int inargc, char **inargv)
 
 int Magick::Start()
 {
+    NFT("Magick::Start()");
     int i;
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
@@ -62,7 +64,7 @@ int Magick::Start()
 		{
 		    // use static errors here because conf directory is not known yet
 		    cerr<<"-dir"<<" requires a paramter."<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		services_dir=argv[i];
 	    }
@@ -73,14 +75,14 @@ int Magick::Start()
 		{
 		    // use static errors here because conf directory is not known yet
 		    cerr<<"-config"<<" requires a paramter."<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		config_file=argv[i];
 	    }
 	    else if(argv[i]=="-help"||argv[i]=="--help"||argv[i]=="-?"||argv[i]=="-h")
     	    {
 		dump_help(argv[0]);
-		return MAGICK_RET_NORMAL;
+		RET(MAGICK_RET_NORMAL);
 	    }
 	}
     }
@@ -90,19 +92,19 @@ int Magick::Start()
 #ifdef WIN32
         WSACleanup ();
 #endif
-        return MAGICK_RET_INVALID_SERVICES_DIR;
+        RET(MAGICK_RET_INVALID_SERVICES_DIR);
     }
 
     MagickIni=new wxFileConfig("magick","",config_file);
     if(MagickIni==NULL)
     {
 	cerr << "Major fubar, couldn't allocate memory to read config file\nAborting"<<endl;
-	return MAGICK_RET_ERROR;
+	RET(MAGICK_RET_ERROR);
     }
     //okay, need a function here to load all the ini file defalts
     get_config_values();
     if(shutdown==true)
-	return MAGICK_RET_ERROR;
+	RET(MAGICK_RET_ERROR);
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called language.ini (both local and global can be done here too)
@@ -112,17 +114,17 @@ int Magick::Start()
     ThreadtoTypeMap[ACE_Thread::self()]=tt_MAIN;
 
     if(ProgramName=="listnicks")
-	return MAGICK_RET_TERMINATE/*nickserv.listnicks(argv)*/;
+	RET(MAGICK_RET_TERMINATE); /*nickserv.listnicks(argv)*/
     if(ProgramName=="listchans")
-	return chanserv.listchans(argv);
+	RET(chanserv.listchans(argv));
     //todo here if !win32, freopen stdout,stdin, and stderr and spawn off.
 
     Result=doparamparse();
     if(Result!=MAGICK_RET_NORMAL)
-	return Result;
+	RET(Result);
 
     if(!check_config())
-	return MAGICK_RET_TERMINATE;
+	RET(MAGICK_RET_TERMINATE);
 
     if(logfile!=NULL)
 	fclose(logfile);
@@ -137,14 +139,14 @@ int Magick::Start()
 	if ((i = fork ()) < 0)
 	{
 	    //log_perror ("fork()");
-            return 1;
+            RET(1);
         }
         else if (i != 0)
-            return 0;
+            RET(0);
         if (setpgid (0, 0) < 0)
         {
             //log_perror ("setpgid()");
-            return 1;
+            RET(1);
         }
     }
 #endif
@@ -168,9 +170,15 @@ int Magick::Start()
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
 
     // calibrate the threshholds.
-    // try and see how many iterations of 500 random NickInfo's into a map occur in 60s
+    //
+    // register 250 nicks and 1000 channels (to random nicknames in the nick pool).
+    // and add access rand() % 20 random nicknames to the access list of each channel.
+    // then go through and delete each nick (it will remove access list and channel entries)
+    // This should go on for 60s. First and last 5 seconds are disgarded.
+    // 
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
-    
+    // TODO: how to work out max_thread_pool for all of magick?
+
     //tobe changed to
 
     ACE_INET_Addr addr(remote_port,remote_server);
@@ -185,16 +193,18 @@ int Magick::Start()
     ACE_Reactor::instance()->remove_handler(SIGTERM);
     delete signalhandler;
 
-    return MAGICK_RET_TERMINATE;
+    RET(MAGICK_RET_TERMINATE);
 }
 
 mstring Magick::getMessage(const mstring & name)
 {
-    return "";
+    FT("Magick::getMessage", (name));
+    RET("");
 }
 
 void Magick::dump_help(mstring & progname)
 {
+    FT("Magick::dump_help", progname);
     cout<<"Magick IRC Services are copyright (c) 1996-1998 Preston A. Elder, W. King.\n"
 	<<"    E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet,Prez@Effnet,Prez@DarkerNet\n"
 	<<"    E-mail: <ungod@magick.tm>   IRC: Notagod@Effnet,Ungod@DarkerNet\n"
@@ -224,6 +234,7 @@ void Magick::dump_help(mstring & progname)
 
 void Magick::LoadInternalMessages()
 {
+    NFT("Magick::LoadInternalMessages");
     /* This is to be replaced with language files.
        blah.lng (and magick.ini has LANGUAGE=blah
        Another file should be created for LOGMSG=blahlog
@@ -288,6 +299,7 @@ void Magick::LoadInternalMessages()
 
 mstring Magick::parseEscapes(const mstring & in)
 {
+    FT("Magick::parseEscparse", (in));
     // hmm doesn't *really* need a mutex here.
     MLOCK lock("Magick","parseEscapes");
     mstring Result;
@@ -306,12 +318,12 @@ mstring Magick::parseEscapes(const mstring & in)
 	blah.Format("Escape parser threw and exception at line: %d, column:%d of %s",E.line,E.column,E.getMessage().c_str());
 	wxLogWarning(blah);
     }
-    return lexer.retstring;
+    RET(lexer.retstring);
 }
 
 void Magick::LoadExternalMessages()
 {
-
+    NFT("Magick::LoadExternalMessages");
     // use the previously created name array to get the names to load
     WLOCK lock("Magick","LoadMessages");
     wxFileConfig fconf("magick","","tmplang.lng");
@@ -322,6 +334,7 @@ void Magick::LoadExternalMessages()
 
 int Magick::doparamparse()
 {
+    NFT("Magick::doparamparse");
     mstring temp;
     int argc=argv.size(),i;
     for(i=1;i<argc;i++)
@@ -339,7 +352,7 @@ int Magick::doparamparse()
 		if(i==argc||argv[i][0]=='-')
 		{
 		    cerr<<"-remote"<<" requires hostname[:port]"<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		if(argv[i].Contains(":"))
 		{
@@ -360,7 +373,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-name");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RER(MAGICK_RET_ERROR);
 		}
 		server_name=argv[i];
 	    }
@@ -371,7 +384,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-desc");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RER(MAGICK_RET_ERROR);
 		}
 		server_desc=argv[i];
 	    }
@@ -382,7 +395,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-user");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		services_user=argv[i];
 	    }
@@ -393,7 +406,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-host");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		services_host=argv[i];
 	    }
@@ -404,7 +417,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-prefix");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		services_prefix=argv[i];
 	    }
@@ -415,7 +428,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-dir");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		// already handled, but we needed to i++
 	    }
@@ -426,7 +439,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-config");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		// already handled, but we needed to i++
 	    }
@@ -437,7 +450,7 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-log");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		log_filename=argv[i];
 	    }
@@ -452,12 +465,12 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-relink");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
 		    cerr<<"-relink"<<" parameter must be positive"<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		server_relink=atoi(argv[i].c_str());
 	    }
@@ -468,12 +481,12 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-level");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
 		    cerr<<"-level"<<" parameter must be positive"<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		services_level=atoi(argv[i].c_str());
 	    }
@@ -484,12 +497,12 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-offset");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		if(abs(atoi(argv[i].c_str()))>24)
 		{
 		    cerr<<"-offset"<<" must be between -24 and 24"<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		tz_offset=atoi(argv[i].c_str());
 	    }
@@ -502,12 +515,12 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-update");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
 		    cerr<<"-update"<<": number of seconds must be positive"<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		update_timeout=atoi(argv[i].c_str());
 	    }
@@ -518,12 +531,12 @@ int Magick::doparamparse()
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-ping");
 		    cerr<<temp<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		if(atoi(argv[i].c_str())<0)
 		{
 		    cerr<<"-ping"<<": number of seconds must be positive"<<endl;
-		    return MAGICK_RET_ERROR;
+		    RET(MAGICK_RET_ERROR);
 		}
 		ping_frequency=atoi(argv[i].c_str());
 	    }
@@ -531,20 +544,21 @@ int Magick::doparamparse()
 	    {
 		temp.Format("Unknown option %s.",argv[i]);
 		cerr<<temp<<endl;
-		return MAGICK_RET_ERROR;
+		RET(MAGICK_RET_ERROR);
 	    }
 	}
 	else
 	{
 	    cerr<<"Non-option arguments not allowed"<<endl;
-	    return MAGICK_RET_ERROR;
+	    RET(MAGICK_RET_ERROR);
 	}
     }
-    return MAGICK_RET_NORMAL;
+    RET(MAGICK_RET_NORMAL);
 }
 
 bool Magick::check_config()
 {
+    NFT("Magick::check_config");
     // change these later when the appropriate classes are set up
     if(operserv_on==false)
     {
@@ -559,31 +573,31 @@ bool Magick::check_config()
     {
 	// change this to the logging mechanism
         cerr<<"CONFIG: Cannot set SERVICES_LEVEL < 1"<<endl;
-        return false;
+        RET(false);
     }
     if (tz_offset >= 24 || tz_offset <= -24)
     {
 	// change this to the logging mechanism
         cerr<<"CONFIG: TZ_OFFSET must fall between -24 and 24."<<endl;
-        return false;
+        RET(false);
     }
     if (update_timeout < 30)
     {
 	// change this to the logging mechanism
         cerr<<"CONFIG: Cannot set UPDATE_TIMEOUT < 30."<<endl;
-        return false;
+        RET(false);
     }
     if (read_timeout < 1)
     {
 	// change this to the logging mechanism
         cerr<<"CONFIG: Cannot set READ_TIMEOUT < 1."<<endl;
-        return false;
+        RET(false);
     }
     if (passfail_max < 1)
     {
 	// change this to the logging mechanism
         cerr<<"CONFIG: Cannot set PASSFAIL_MAX < 1."<<endl;
-        return false;
+        RET(false);
     }
     if (flood_messages > lastmsgmax)
     {
@@ -591,14 +605,15 @@ bool Magick::check_config()
 	mstring temp;
 	temp.Format("CONFIG: Cannot set FLOOD_MESSAGES > %d.",lastmsgmax);
         cerr<<temp<<endl;
-        return false;
+        RET(false);
     }
-    return true;
+    RET(true);
 
 }
 
 void Magick::get_config_values()
 {
+    NFT("Magick::get_config_values");
     if(MagickIni==NULL)
     {
 	shutdown==true;
@@ -700,7 +715,8 @@ void Magick::get_config_values()
 
 int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)
 {
+    FT("SignalHandler::handle_signal", (signum, "(siginfo_t) *siginfo", "(ucontext_t) *ucontext"));
     // todo: fill this sucker in
     // switch(signum)
-    return 0;
+    RET(0);
 }

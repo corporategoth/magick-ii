@@ -28,6 +28,7 @@
 
 mstring wxExpandEnvVars(const mstring& str)
 {
+  FT("wxExpandEnvVars", (str));
   mstring strResult;
   strResult.reserve(str.length());
 
@@ -131,13 +132,14 @@ mstring wxExpandEnvVars(const mstring& str)
     }
   }
 
-  return strResult;
+  RET(strResult);
 }
 
 
 // this function is used to properly interpret '..' in path
 void wxSplitPath(mArrayString& aParts, const mstring &sz)
 {
+  FT("wxSplitPath", ("(mArrayStrings) aParts", sz));
   aParts.clear();
 
   mstring strCurrent;
@@ -194,143 +196,158 @@ wxConfigBase::wxConfigBase(const mstring& appName, const mstring& vendorName,
     const mstring& localFilename, const mstring& globalFilename, long style):
         m_appName(appName), m_vendorName(vendorName), m_style(style)
 {
+  FT("wxConfigBase::wxConfigBase", (appName, vendorName, localFilename, globalFilename, style));
     m_bExpandEnvVars = true;
 	m_bRecordDefaults = false;
 }
 
 wxConfigBase *wxConfigBase::Set(wxConfigBase *pConfig)
 {
+  FT("wxConfigBase::Set", ("(wxConfigBase) *pConfig"));
   wxConfigBase *pOld = ms_pConfig;
   ms_pConfig = pConfig;
-  return pOld;
+  NRET(wxConfBase, pOld);
 }
 
 wxConfigBase *wxConfigBase::Create()
 {
+  NFT("wxConfigBase::Create");
   if ( ms_bAutoCreate && ms_pConfig == NULL ) 
   {
 /*    ms_pConfig =
       new wxFileConfig("magick");*/
   }
 
-  return ms_pConfig;
+  NRET(wxConfBase, ms_pConfig);
 }
 
 mstring wxConfigBase::Read(const mstring& key, const mstring& defVal) const
 {
+  FT("wxConfigBase::Read", (key, defVal));
   mstring s;
   Read(key, &s, defVal);
-  return s;
+  RET(s);
 }
 
 bool wxConfigBase::Read(const mstring& key, mstring *str, const mstring& defVal) const
 {
+    FT("wxConfigBase::Read", (key, str, defVal));
     if (!Read(key, str))
     {
         *str = ExpandEnvVars(defVal);
-        return false;
+        RET(false);
     }
     else
-        return true;
+        RET(true);
 }
 
 bool wxConfigBase::Read(const mstring& key, long *pl, long defVal) const
 {
+    FT("wxConfigBase::Read", key, pl, defVal));
     if (!Read(key, pl))
     {
         *pl = defVal;
-        return false;
+        RET(false);
     }
     else
-        return true;
+        RET(true);
 }
 
 bool wxConfigBase::Read(const mstring& key, double* val) const
 {
+    FT("wxConfigBase::Read", (key, val));
     mstring str;
     if (Read(key, & str))
     {
         *val = atof(str);
-        return true;
+        RET(true);
     }
     else
-        return false;
+        RET(false);
 }
 
 bool wxConfigBase::Read(const mstring& key, double* val, double defVal) const
 {
+    FT("wxConfigBase", (key, val, defVal));
     if (!Read(key, val))
     {
         *val = defVal;
-        return false;
+        RET(false);
     }
     else
-        return true;
+        RET(true);
 }
 
 bool wxConfigBase::Read(const mstring& key, bool* val) const
 {
+    FT("wxConfigBase::Read", (key, val));
     long l;
     if (Read(key, & l))
     {
         *val = (l != 0);
-        return true;
+        RET(true);
     }
     else
-        return false;
+        RET(false);
 }
 
 bool wxConfigBase::Read(const mstring& key, bool* val, bool defVal) const
 {
+    FT("wxConfigBase::Read", (key, val, defVal));
     if (!Read(key, val))
     {
         *val = defVal;
-        return false;
+        RET(false);
     }
     else
-        return true;
+        RET(true);
 }
 
 // Convenience functions
 
 bool wxConfigBase::Read(const mstring& key, int *pi) const
 {
+    FT("wxConfigBase::Read", (key, pi));
     long l;
     bool ret = Read(key, &l);
     if (ret)
         *pi = (int) l;
-    return ret;
+    RET(ret);
 }
 
 bool wxConfigBase::Read(const mstring& key, int *pi, int defVal) const
 {
+    FT("wxConfigBase::Read", (key, pi, defVal));
     long l;
     bool ret = Read(key, &l, (long) defVal);
     *pi = (int) l;
-    return ret;
+    RET(ret);
 }
 
 bool wxConfigBase::Write(const mstring& key, double val)
 {
+    FT("wxConfigBase::Write", (key, val));
     mstring str;
     str.Format("%f", val);
-    return Write(key, str);
+    RET(Write(key, str));
 }
 
 bool wxConfigBase::Write(const mstring& key, bool value)
 {
+    FT("wxConfBase::Write", (key, value));
     long l = (value ? 1 : 0);
-    return Write(key, l);
+    RET(Write(key, l));
 }
 
 mstring wxConfigBase::ExpandEnvVars(const mstring& str) const
 {
+    FT("wxConfigBase::ExpandEnvVars", (str));
     mstring tmp; // Required for BC++
     if (IsExpandingEnvVars())
         tmp = wxExpandEnvVars(str);
     else
         tmp = str;
-    return tmp;
+    RET(tmp);
 }
 
 // ----------------------------------------------------------------------------
@@ -340,6 +357,7 @@ mstring wxConfigBase::ExpandEnvVars(const mstring& str) const
 wxConfigPathChanger::wxConfigPathChanger(const wxConfigBase *pContainer,
                                  const mstring& strEntry)
 {
+  FT("wxConfigPathChanger::wxConfigPathChanger", ("(wxConfigBase) *pContainer", strEntry));
   m_pContainer = (wxConfigBase *)pContainer;
   mstring strPath = strEntry.Before(wxCONFIG_PATH_SEPARATOR);
 
@@ -364,6 +382,7 @@ wxConfigPathChanger::wxConfigPathChanger(const wxConfigBase *pContainer,
 
 wxConfigPathChanger::~wxConfigPathChanger()
 {
+  NFT("wxConfigPathChanger::~wxConfigPathChanger");
   // only restore path if it was changed
   if ( m_bChanged ) {
     m_pContainer->SetPath(m_strOldPath);

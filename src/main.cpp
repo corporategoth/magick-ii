@@ -19,10 +19,11 @@ Magick *MagickObject;
 
 int start_server(int argc, char **argv)
 {
+    FT("start_server", (argc, "(char **) argv"));
     Reset_Time=Now();
     Magick internalobject(argc, argv);
     MagickObject=&internalobject;
-    return internalobject.Start();
+    RET(internalobject.Start());
 }
 int main(int argc, char **argv)
 {
