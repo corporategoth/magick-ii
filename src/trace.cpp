@@ -18,110 +18,125 @@
 
 Trace::Trace()
 {
+	tmap[levelpair(MAIN,Off)]		= Off;
+	tmap[levelpair(MAIN,Stats)]		= G_Stats;
+	tmap[levelpair(MAIN,SourcrFiles)]	= G_SourceFiles;
+	tmap[levelpair(MAIN,Functions)]		= G_Functions;
+	tmap[levelpair(MAIN,Locking)]		= G_Locking;
+
+	tmap[levelpair(NickServ,Off)]		= Off;
+	tmap[levelpair(NickServ,Chatter)]	= NS_Chatter;
+	tmap[levelpair(NickServ,CheckPoint)]	= NS_CheckPoint;
+	tmap[levelpair(NickServ,Functions)]	= NS_Functions;
+	tmap[levelpair(NickServ,Modify)]	= NS_Modify;
+
+	tmap[levelpair(ChanServ,Off)]		= Off;
+	tmap[levelpair(ChanServ,Chatter)]	= CS_Chatter;
+	tmap[levelpair(ChanServ,CheckPoint)]	= CS_CheckPoint;
+	tmap[levelpair(ChanServ,Functions)]	= CS_Functions;
+	tmap[levelpair(ChanServ,Modify)]	= CS_Modify;
+
+	tmap[levelpair(MemoServ,Off)]		= Off;
+	tmap[levelpair(MemoServ,Chatter)]	= MS_Chatter;
+	tmap[levelpair(MemoServ,CheckPoint)]	= MS_CheckPoint;
+	tmap[levelpair(MemoServ,Functions)]	= MS_Functions;
+	tmap[levelpair(MemoServ,Modify)]	= MS_Modify;
+
+	tmap[levelpair(OperServ,Off)]		= Off;
+	tmap[levelpair(OperServ,Chatter)]	= OS_Chatter;
+	tmap[levelpair(OperServ,CheckPoint)]	= OS_CheckPoint;
+	tmap[levelpair(OperServ,Functions)]	= OS_Functions;
+	tmap[levelpair(OperServ,Modify)]	= OS_Modify;
+
+	tmap[levelpair(OtherServ,Off)]		= Off;
+	tmap[levelpair(OtherServ,Chatter)]	= XS_Chatter;
+	tmap[levelpair(OtherServ,CheckPoint)]	= XS_CheckPoint;
+	tmap[levelpair(OtherServ,Functions)]	= XS_Functions;
+	tmap[levelpair(OtherServ,Modify)]	= XS_Modify;
+
+	tmap[levelpair(ServNet,Off)]		= Off;
+	tmap[levelpair(ServNet,Chatter)]	= NET_Chatter;
+	tmap[levelpair(ServNet,CheckPoint)]	= NET_CheckPoint;
+	tmap[levelpair(ServNet,Functions)]	= NET_Functions;
+	tmap[levelpair(ServNet,Sockets)]	= NET_Sockets;
+
+	tmap[levelpair(BOB,Off)]		= Off;
+	tmap[levelpair(BOB,Chatter)]		= BOB_Chatter;
+	tmap[levelpair(BOB,Bind)]		= BOB_Bind;
+	tmap[levelpair(BOB,Functions)]		= BOB_Functions;
+	tmap[levelpair(BOB,External)]		= BOB_External;
 }
 
 Trace::~Trace()
 {
 }
 
-
-bool Trace::IsOn(long level)
+ThreadID::ThreadID()
 {
-    return (level & TraceLevel);
+    init();
 }
 
-TraceTypes Trace::Resolve(short level, int threadid)
+ThreadID::ThreadID(short Type, int Number)
 {
-    ThreadID *tid = ThreadMap.find(threadid);
+    init();
+    type = Type;
+    number = Number;
+}
 
-    switch (tid.type) {
-	case NickServ:
-	    switch (level) {
-		Off:		return Off;
-		Chatter:	return NS_Chatter;
-		CheckPoint:	return NS_CheckPoint;
-		Functions:	return NS_Functions;
-		Modify:		return NS_Locking;
-	    }
-	    break;
-	case ChanServ:
-	    switch (level) {
-		Off:		return Off;
-		Chatter:	return CS_Chatter;
-		CheckPoint:	return CS_CheckPoint;
-		Functions:	return CS_Functions;
-		Modify:		return CS_Locking;
-	    }
-	    break;
-	case MemoServ:
-	    switch (level) {
-		Off:		return Off;
-		Chatter:	return MS_Chatter;
-		CheckPoint:	return MS_CheckPoint;
-		Functions:	return MS_Functions;
-		Modify:		return MS_Locking;
-	    }
-	    break;
-	case OperServ:
-	    switch (level) {
-		Off:		return Off;
-		Chatter:	return OS_Chatter;
-		CheckPoint:	return OS_CheckPoint;
-		Functions:	return OS_Functions;
-		Modify:		return OS_Locking;
-	    }
-	    break;
-	case OtherServ:
-	    switch (level) {
-		Off:		return Off;
-		Chatter:	return XS_Chatter;
-		CheckPoint:	return XS_CheckPoint;
-		Functions:	return XS_Functions;
-		Modify:		return XS_Locking;
-	    }
-	    break;
-	case ServNet:
-	    switch (level) {
-		Off:		return Off;
-		Chatter:	return NET_Chatter;
-		CheckPoint:	return NET_CheckPoint;
-		Functions:	return NET_Functions;
-		Sockets:	return NET_Sockets;
-	    }
-	    break;
-	case BOB:
-	    switch (level) {
-		Off:		return Off;
-		Chatter:	return BOB_Chatter;
-		Bind:		return BOB_Bind;
-		Functions:	return BOB_Functions;
-		External:	return BOB_External;
-	    }
-	    break;
-	default:
-	    switch (level) {
-		Off:		return Off;
-		Stats:		return G_Stats;
-		Source:		return G_Source;
-		Functions:	return G_Functions;
-		Locking:	return G_Locking;
-	    }
+ThreadID::init()
+{
+    indent = 0;
+    logtext[MAIN]	= "";
+    logtext[NickServ]	= "_NS_";
+    logtext[ChanServ]	= "_CS_";
+    logtext[MemoServ]	= "_MS_";
+    logtext[OperServ]	= "_OS_";
+    logtext[OtherServ]	= "_XS_";
+    logtext[ServNet]	= "_NET_";
+    logtext[BOB]	= "_BOB_";
+}
+
+ThreadID ThreadID::assign(short Type, int Number)
+{
+    type = Type;
+    number = Number;
+    return *this;
+}
+
+mstring ThreadID::logname()
+{
+    mstring name;
+    name << "trace" << logtext[type] << number << ".log";
+    return name;
+}
+
+void ThreadID::WriteOut(short level, mstring &message)
+{
+    mstring finalout;
+    int i;
+
+    if (IsOn(level, this)) {
+	if (!out) out.open(logname(), ios::app);
+	assert(out);
+	for (i=0; i<indent; i++)
+	    finalout += "  ";
+	finalout += message;
+	out << finalout;
     }
-    return Off;
 }
 
 FuncTrace::FuncTrace(const mstring &name, mVarArray &args) {
-    indent++;
+    tid.indentup();
 
-    if (IsOn(FuncTrace)) {
+    if (IsOn(Functions, tid)) {
 	mstring message = name + "(";
 	for (int i=0; i<args.count(); i++) {
-	    message += " (" + args[i].type() + ") " + args[i];
+	    message += " (" + args[i].type() + ") " + args[i].AsString();
 	    if (i < args.count() - 1)
-		message +=", ";
+		message += ", ";
 	}
 	message += " )";
 
-	WriteOut(FuncTrace, ThreadID, message);
+	WriteOut(Functions, tid, message);
     }
 }

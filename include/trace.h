@@ -15,8 +15,10 @@
 
 class Trace
 {
+    map<pair<Thread,ShortType>,TraceTypes Type> tmap;
+    typedef pair<Thread,ShortType> levelpair;
+
     long TraceLevel;
-public:
     enum TraceTypes {
 	Off		= 0,
 	G_Stats		= 0x00000001,	// CPU/Memory and Global Flags
@@ -52,20 +54,52 @@ public:
 	BOB_Functions	= 0x40000000,	// BOB functions
 	BOB_External	= 0x80000000	// BOB external input/output
     };
-    enum { Off = 0, Stats = 1, Source = 2, Locking = 4, Sockets = 4, Bind = 2, External = 4,
-	   Chatter = 1, CheckPoint = 2, Functions = 3, Modify = 4 };
+
+    bool IsOnBig(TraceTypes level)
+	{ return (level & TraceLevel); }
+    TraceTypes Resolve(short level, ThreadID *tid)
+	{ return tmap[levelpair(level, tid.type())]; }
+
+public:
+    enum { Off = 0, Stats = 1, Source = 2, Locking = 4, Sockets = 4, Bind = 2,
+	External = 4, Chatter = 1, CheckPoint = 2, Functions = 3, Modify = 4 };
 
     Trace();
     ~Trace();
-    bool IsOn(long level);
-    TraceTypes Resolve(short level, int threadid);
+
+    bool IsOn(short level, ThreadID *tid)
+	{ return IsOnBig(Resolve(level, tid)); }
+};
+
+class ThreadID : public Trace {
+    enum { MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
+    short type;
+    int number;
+    short indent;
+    ofstream out;
+    mstring logtext[MAX];
+    
+    mstring logname();
+    init();
+
+public:
+    ThreadID();
+    ThreadID(short Type, int Number);
+    ~ThreadID();
+    ThreadID assign(short Type, int Number);
+    short type() { return type; }
+    void indentup() { indent++; }
+    void indentdown() { indent--; }
+    void WriteOut (short level, mstring &message);
 };
 
 class FuncTrace : public Trace
 {
+    ThreadID *tid;
+    FuncTrace() {} 
 public:
     FuncTrace(const mstring name, const mVarArray &args);
-    ~FuncTrace() { indent--; }
+    ~FuncTrace() { tid.indentdown(); }
 
 };
 
