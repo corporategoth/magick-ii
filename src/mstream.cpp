@@ -580,27 +580,18 @@ wxInputStream& wxInputStream::operator>>(mstring& line)
 {
   size_t size;
   Read(&size, sizeof(size_t));
-  Read(&line, size);
-
-/* If the above doesnt work ...
-
-  size_t size;
-  Read(&size, sizeof(size_t));
   line = "";
-  char buf[512];
+  char buf[513];
   while (size > 512)
   {
     Read(&buf, 512);
+    buf[512] = 0;
     line += buf;
     size -= 512;
   }
   Read(&buf, size);
+  buf[size] = 0;
   line += buf;
-*/
-
-/*  wxDataInputStream s(*this);
-
-  line = s.ReadLine(); */
 
   return *this;
 }

@@ -3234,53 +3234,32 @@ wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out)
     set<mstring>::size_type i,count;
     mstring dummy,dummy2;
 
-CP(("DEBUG 1"));
     in>>out.i_Name>>out.i_RegTime>>out.i_Password>>out.i_Email>>out.i_URL>>out.i_ICQ>>out.i_Description>>out.i_Comment>>out.i_Host;
-CP(("DEBUG 2"));
     out.i_access.clear();
-CP(("DEBUG 3"));
     in>>count;
-CP(("DEBUG 4 %d", count));
     for(i=0;i<count;i++)
     {
-CP(("DEBUG 5 %d", i));
 	in>>dummy;
-CP(("DEBUG 6"));
 	out.i_access.insert(dummy);
     }
-CP(("DEBUG 7"));
     out.i_ignore.clear();
-CP(("DEBUG 8"));
     in>>count;
-CP(("DEBUG 9 %d", count));
     for(i=0;i<count;i++)
     {
-CP(("DEBUG 10 %d", i));
 	in>>dummy;
-CP(("DEBUG 11"));
 	out.i_ignore.insert(dummy);
     }
-CP(("DEBUG 12"));
     in>>out.i_Protect>>out.i_Secure>>out.i_NoExpire>>out.i_NoMemo>>out.i_Private>>out.i_PRIVMSG>>out.i_Language>>out.i_Forbidden;
-CP(("DEBUG 13"));
     in>>out.l_Protect>>out.l_Secure>>out.l_NoExpire>>out.l_NoMemo>>out.l_Private>>out.l_PRIVMSG>>out.l_Language>>out.i_Picture;
-CP(("DEBUG 14"));
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
-CP(("DEBUG 15"));
     in>>out.i_LastSeenTime>>out.i_LastRealName>>out.i_LastMask>>out.i_LastQuit;
-CP(("DEBUG 16"));
     out.i_UserDef.clear();
-CP(("DEBUG 17"));
     in>>count;
-CP(("DEBUG 18 %d", count));
     for(i=0;i<count;i++)
     {
-CP(("DEBUG 19 %d", i));
 	in>>dummy>>dummy2;
-CP(("DEBUG 20"));
 	out.i_UserDef[dummy]=dummy2;
     }
-CP(("DEBUG 21"));
 
     return in;
 }
@@ -5749,19 +5728,14 @@ void NickServ::load_database(wxInputStream& in)
     FT("NickServ::load_database", ("(wxInputStream &) in"));
     map<mstring,Nick_Stored_t>::size_type i,count;
     in>>count;
-    CP(("NickServ Count: %d", count));
     stored.clear();
     Nick_Stored_t tmpstored;
     for(i=0;i<count;i++)
     {
-	CP(("I'm on ... %d", i));
 	in>>tmpstored;
-	CP(("OK .. read the record ..."));
 	stored[tmpstored.Name().LowerCase()]=tmpstored;
-	CP(("Pushed it onto the map ..."));
     }
 
-    CP(("OK -- got the records .. updating hosts ..."));
     // Go through the map and populate 'slaves',
     // clean up if nessicary.
     map<mstring,Nick_Stored_t>::iterator iter;
@@ -5776,5 +5750,4 @@ void NickServ::load_database(wxInputStream& in)
 	    iter->second.i_Host = "";
 	}
     }
-    CP(("All done ..."));
 }
