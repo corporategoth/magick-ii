@@ -52,6 +52,8 @@ mstring parseMessage(const mstring & message, const mVarArray & va = mVarArray::
 size_t mCRYPT(const char *in, char *out, const size_t size, const char *key1, const char *key2, const bool enc);
 void mHASH16(const char *in, const size_t size, char *out);
 void mHASH(const char *in, const size_t size, char *out);
+unsigned int sleep(const mDateTime &in);
+
 mstring sysinfo_node();
 mstring sysinfo_type();
 mstring sysinfo_rel();

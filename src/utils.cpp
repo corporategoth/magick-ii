@@ -538,6 +538,12 @@ void mHASH(const char *in, const size_t size, char *out)
     ETCB();
 }
 
+unsigned int sleep(const mDateTime &in)
+{
+	ACE_Time_Value tv(in.Second(), in.MSecond());
+	return ACE_OS::sleep(tv);
+}
+
 mstring sysinfo_node()
 {
     BTCB();

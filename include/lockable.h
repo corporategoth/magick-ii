@@ -380,17 +380,17 @@ public:
     {
 	init();
     }
-    mSocket(const ACE_INET_Addr & addr, const unsigned long timeout)
+    mSocket(const ACE_INET_Addr & addr, const mDateTime &timeout = mDateTime(0.0))
     {
 	init();
 	Connect(addr, timeout);
     }
-    mSocket(const mstring & host, const unsigned short port, const unsigned long timeout)
+    mSocket(const mstring & host, const unsigned short port, const mDateTime &timeout = mDateTime(0.0))
     {
 	init();
 	Connect(host, port, timeout);
     }
-    mSocket(const unsigned short port, const unsigned long timeout)
+    mSocket(const unsigned short port, const mDateTime &timeout = mDateTime(0.0))
     {
 	init();
 	Accept(port, timeout);
@@ -408,10 +408,10 @@ public:
     ~mSocket();
     mSocket &operator=(const mSocket & in);
 
-    bool Connect(const ACE_INET_Addr & addr, const unsigned long timeout = 0);
-    bool Connect(const unsigned long host, const unsigned short port, const unsigned long timeout = 0);
-    bool Connect(const mstring & host, const unsigned short port, const unsigned long timeout = 0);
-    bool Accept(const unsigned short port, const unsigned long timeout = 0);
+    bool Connect(const ACE_INET_Addr & addr, const mDateTime &timeout = mDateTime(0.0));
+    bool Connect(const unsigned long host, const unsigned short port, const mDateTime &timeout = mDateTime(0.0));
+    bool Connect(const mstring & host, const unsigned short port, const mDateTime &timeout = mDateTime(0.0));
+    bool Accept(const unsigned short port, const mDateTime &timeout = mDateTime(0.0));
     bool Bind(ACE_SOCK_Stream * in, const dir_enum direction = D_Unknown, const bool alloc = true);
     ACE_SOCK_Stream *Unbind();
 
@@ -427,8 +427,8 @@ public:
     int Last_Error() const;
     mstring Last_Error_String() const;
 
-    ssize_t send(void *buf, const size_t len, const unsigned long timeout = 0);
-    ssize_t recv(void *buf, const size_t len, const unsigned long timeout = 0);
+    ssize_t send(void *buf, const size_t len, const mDateTime &timeout = mDateTime(0.0));
+    ssize_t recv(void *buf, const size_t len, const mDateTime &timeout = mDateTime(0.0));
     int close();
 };
 

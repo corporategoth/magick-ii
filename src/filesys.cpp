@@ -1449,7 +1449,7 @@ void DccXfer::Action()
 	if (i_Traffic.size() &&
 	    (Magick::instance().files.Max_Speed() == 0 || Average() <= Magick::instance().files.Max_Speed()))
 	{
-	    XferAmt = i_Socket.recv(reinterpret_cast < void * > (&i_Transiant[i_XferTotal]), i_Blocksize - i_XferTotal, 1);
+	    XferAmt = i_Socket.recv(reinterpret_cast < void * > (&i_Transiant[i_XferTotal]), i_Blocksize - i_XferTotal, mDateTime(0, 100000));
 
 	    COM(("%d: Bytes Transferred - %d, RECV Response %d (%s)", i_DccId, XferAmt, i_Socket.Last_Error(),
 		 i_Socket.Last_Error_String().c_str()));
@@ -1482,7 +1482,7 @@ void DccXfer::Action()
 		    i_XferTotal = 0;
 		    memset(i_Transiant, 0, i_Blocksize);
 		    verify = htonl(i_Total);
-		    XferAmt = i_Socket.send(reinterpret_cast < void * > (&verify), 4, 1);
+		    XferAmt = i_Socket.send(reinterpret_cast < void * > (&verify), 4, mDateTime(0, 100000));
 
 		    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)", i_DccId, XferAmt, i_Socket.Last_Error(),
 			 i_Socket.Last_Error_String().c_str()));
@@ -1526,7 +1526,7 @@ void DccXfer::Action()
 	{
 	    if (i_XferTotal == i_Blocksize)
 	    {
-		XferAmt = i_Socket.recv(reinterpret_cast < void * > (&verify), 4, 1);
+		XferAmt = i_Socket.recv(reinterpret_cast < void * > (&verify), 4, mDateTime(0, 100000));
 
 		COM(("%d: Bytes Transferred - %d, RECV Response %d (%s)", i_DccId, XferAmt, i_Socket.Last_Error(),
 		     i_Socket.Last_Error_String().c_str()));
@@ -1568,7 +1568,7 @@ void DccXfer::Action()
 		i_XferTotal = 0;
 	    }
 	    CP(("Going to send %d bytes ...", TranSz));
-	    XferAmt = i_Socket.send(reinterpret_cast < void * > (&i_Transiant[i_XferTotal]), TranSz - i_XferTotal, 1);
+	    XferAmt = i_Socket.send(reinterpret_cast < void * > (&i_Transiant[i_XferTotal]), TranSz - i_XferTotal, mDateTime(0, 100000));
 	    COM(("%d: Bytes Transferred - %d, SEND Response %d (%s)", i_DccId, XferAmt, i_Socket.Last_Error(),
 		 i_Socket.Last_Error_String().c_str()));
 	}
@@ -1806,6 +1806,9 @@ int DccMap::svc(void)
 	    active.push(WorkId);
 	}
 	FLUSH();		// Force TRACE output dump
+
+	// Sleep the remainder of this second, so we dont chew CPU ...
+	sleep(mDateTime(time(NULL), 0) - mDateTime::CurrentDateTime());
     }
     Magick::instance().hh.RemoveThread();
     Magick::deregister_instance();
@@ -2005,8 +2008,7 @@ ACE_THR_FUNC_RETURN DccMap::Connect2(void *in)
     mThread::Attach(tt_MAIN);
     FT("DccMap::Connect2", ("(void *) in"));
 
-
-    mSocket DCC_SOCK(val->address, Magick::instance().files.Timeout());
+    mSocket DCC_SOCK(val->address, mDateTime(Magick::instance().files.Timeout(), 0));
 
     if (DCC_SOCK.IsConnected())
     {
@@ -2057,7 +2059,7 @@ ACE_THR_FUNC_RETURN DccMap::Accept2(void *in)
     mThread::Attach(tt_MAIN);
     FT("DccMap::Accept2", ("(void *) in"));
 
-    mSocket DCC_SOCK(val->port, Magick::instance().files.Timeout());
+    mSocket DCC_SOCK(val->port, mDateTime(Magick::instance().files.Timeout(), 0));
 
     if (DCC_SOCK.IsConnected())
     {

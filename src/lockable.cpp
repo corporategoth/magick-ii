@@ -714,7 +714,7 @@ mSocket &mSocket::operator=(const mSocket & in)
     ETCB();
 }
 
-bool mSocket::Connect(const ACE_INET_Addr & addr, const unsigned long timeout)
+bool mSocket::Connect(const ACE_INET_Addr & addr, const mDateTime &timeout)
 {
     BTCB();
     FT("mSocket::Connect", ("(ACE_INET_Addr) addr", timeout));
@@ -728,9 +728,9 @@ bool mSocket::Connect(const ACE_INET_Addr & addr, const unsigned long timeout)
 	RET(false);
 
     DestroyMe = true;
-    ACE_Time_Value tv(timeout);
+    ACE_Time_Value tv(timeout.Second(), timeout.MSecond());
     ACE_SOCK_Connector tmp;
-    int result = tmp.connect(*sock, addr, timeout ? &tv : 0);
+    int result = tmp.connect(*sock, addr, (timeout != mDateTime(0.0)) ? &tv : 0);
 
     if (result < 0)
     {
@@ -756,7 +756,7 @@ bool mSocket::Connect(const ACE_INET_Addr & addr, const unsigned long timeout)
     ETCB();
 }
 
-bool mSocket::Connect(const unsigned long host, const unsigned short port, const unsigned long timeout)
+bool mSocket::Connect(const unsigned long host, const unsigned short port, const mDateTime &timeout)
 {
     BTCB();
     FT("mSocket::Connect", (host, port, timeout));
@@ -772,7 +772,7 @@ bool mSocket::Connect(const unsigned long host, const unsigned short port, const
     ETCB();
 }
 
-bool mSocket::Connect(const mstring & host, const unsigned short port, const unsigned long timeout)
+bool mSocket::Connect(const mstring & host, const unsigned short port, const mDateTime &timeout)
 {
     BTCB();
     FT("mSocket::Connect", (host, port, timeout));
@@ -788,7 +788,7 @@ bool mSocket::Connect(const mstring & host, const unsigned short port, const uns
     ETCB();
 }
 
-bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
+bool mSocket::Accept(const unsigned short port, const mDateTime &timeout)
 {
     BTCB();
     FT("mSocket::Accept", (port, timeout));
@@ -808,9 +808,9 @@ bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
 	RET(false);
 
     DestroyMe = true;
-    ACE_Time_Value tv(timeout);
+    ACE_Time_Value tv(timeout.Second(), timeout.MSecond());
     ACE_SOCK_Acceptor tmp(addr);
-    int result = tmp.accept(*sock, NULL, timeout ? &tv : 0);
+    int result = tmp.accept(*sock, NULL, (timeout != mDateTime(0.0)) ? &tv : 0);
 
     if (result < 0)
     {
@@ -988,14 +988,14 @@ mstring mSocket::Last_Error_String() const
     ETCB();
 }
 
-ssize_t mSocket::send(void *buf, const size_t len, const unsigned long timeout)
+ssize_t mSocket::send(void *buf, const size_t len, const mDateTime &timeout)
 {
     BTCB();
     FT("mSocket::send", ("(void *) buf", len, timeout));
-    ACE_Time_Value tv(timeout);
+    ACE_Time_Value tv(timeout.Second(), timeout.MSecond());
 
     WLOCK((lck_mSocket, sockid));
-    ssize_t retval = sock->send(buf, len, timeout ? &tv : 0);
+    ssize_t retval = sock->send(buf, len, (timeout != mDateTime(0.0)) ? &tv : 0);
 
     if (retval < 0)
     {
@@ -1009,14 +1009,14 @@ ssize_t mSocket::send(void *buf, const size_t len, const unsigned long timeout)
     ETCB();
 }
 
-ssize_t mSocket::recv(void *buf, const size_t len, const unsigned long timeout)
+ssize_t mSocket::recv(void *buf, const size_t len, const mDateTime &timeout)
 {
     BTCB();
     FT("mSocket::recv", ("(void *) buf", len, timeout));
-    ACE_Time_Value tv(timeout);
+    ACE_Time_Value tv(timeout.Second(), timeout.MSecond());
 
     WLOCK((lck_mSocket, sockid));
-    ssize_t retval = sock->recv(buf, len, timeout ? &tv : 0);
+    ssize_t retval = sock->recv(buf, len, (timeout != mDateTime(0.0)) ? &tv : 0);
 
     if (retval < 0)
     {
