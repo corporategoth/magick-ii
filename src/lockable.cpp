@@ -287,3 +287,53 @@ MLOCK::~MLOCK()
     for(;count;count--)
 	lock[count-1].release();
 }
+
+void mThread::spawn(threadtype_enum type,ACE_THR_FUNC func, void *arg)
+{
+    //todo change the below to a triplet
+    pair<ACE_THR_FUNC,void *> *args=new pair<ACE_THR_FUNC,void *>;
+    args->first=func;
+    args->second=arg;
+    ACE_Thread::spawn(handler_hack,(void *)args);
+}
+void mThread::resumeself()
+{
+    ACE_hthread_t temp;
+    ACE_Thread::self(temp);
+    ACE_Thread::resume(temp);
+}
+void mThread::suspendself()
+{
+    ACE_hthread_t temp;
+    ACE_Thread::self(temp);
+    ACE_Thread::suspend(temp);
+}
+void mThread::resume(ThreadID* tid)
+{
+}
+void mThread::resume(ACE_thread_t tid)
+{
+}
+void mThread::suspend(ThreadID* tid)
+{
+}
+void mThread::suspend(ACE_thread_t tid)
+{
+}
+void mThread::yieldself()
+{
+    ACE_Thread::yield();
+}
+void *mThread::handler_hack(void *level)
+{
+    void *Result;
+    //todo change the below to a triplet
+    pair<ACE_THR_FUNC,void *> *args;
+    args=(pair<ACE_THR_FUNC,void *> *)level;
+    //todo: add ourselves to the maps
+    Result=(*(args->first))((args->second));
+    delete args;
+    //todo remove ourselves from the maps
+
+    return Result;
+}

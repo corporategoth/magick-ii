@@ -75,9 +75,29 @@ public:
 class mThread
 {
 private:
+/** Custom thread class (inherited ACE_Thread) that is constructed as
+	new thread(function, veriable, ThreadID::type_enum);
+	It should incorporate ThreadID association in the threads class, so it can
+	have 2 static find() functions (ACE_Thread *T, and (type_enum type, int level)). 
+	Also should have 2 static members, a ids[tt_MAX], and vector<ACE_Thread,ThreadID *> 
+	for 1) storing how many of each thread type there are (And choosing a new 'Thread ID' 
+	for each type of thread), and 2) for use with the find() functions.
+	This should help with the Tracing needing to know the ThreadID to be able
+	to know 1) if tracing is turned on for that type, and 2) do the write out.
+*/
     static map<ACE_thread_t,ThreadID*> selftothreadidmap;
-    static multimap<threadtype_enum,ThreadID*> threadtypetothreadidmap;
+    static map<pair<threadtype_enum,int>,ThreadID*> threadtypetothreadidmap;
     static map<threadtype_enum,int> threadtypecountmap;
+    static void *handler_hack(void *level);
+public:
+    static void spawn(threadtype_enum type,ACE_THR_FUNC func, void *arg=0);
+    static void resumeself();
+    static void suspendself();
+    static void resume(ThreadID* tid);
+    static void resume(ACE_thread_t tid);
+    static void suspend(ThreadID* tid);
+    static void suspend(ACE_thread_t tid);
+    static void yieldself();
 };
 
 #endif
