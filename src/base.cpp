@@ -39,10 +39,11 @@ void mBase::push_message(const mstring& message)
 	    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads())*sizeof(unsigned long));
 	    // below is set to the same as high_water_mark so that Buffer_Queue, doesn't block on add.
 	    Buffer_Queue.low_water_mark(Buffer_Queue.high_water_mark());
-	    if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1)
+	    if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1) {
 		CP(("High water mark reached, failed to create a new thread"));
-	    else
+	    } else {
 		COM(("High water mark reached, creating new thread"));
+	    }
 	}
 	ACE_Message_Block *mb=new ACE_Message_Block();
 	//todo: enqueue_prio
