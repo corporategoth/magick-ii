@@ -12,20 +12,23 @@
 ** circumstances, however it may be added to if any
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
-*/
-
-/* ==========================================================
-**
-** Unofficial Event History: N/A
-**
-** Official Event History: $Log$
-** Official Event History: Revision 1.92  2000/02/15 10:06:33  prez
-** Official Event History: *** empty log message ***
-** Official Event History:
 **
 ** ========================================================== */
 #pragma ident "$Id$"
-/* ========================================================== */
+/* ==========================================================
+**
+** Third Party Changes (please include e-mail address):
+**
+** N/A
+**
+** Changes by Magick Development Team <magick-devel@magick.tm>:
+**
+** $Log$
+** Revision 1.93  2000/02/15 10:11:14  prez
+** *** empty log message ***
+**
+**
+** ========================================================== */
 
 #include "base.h"
 #include "lockable.h"
