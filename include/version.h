@@ -25,9 +25,8 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.127  2001/12/12 03:31:15  prez
-** Re-wrote the occurances/find/replace functions in mstring to actually work
-** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
+** Revision 1.128  2001/12/15 23:47:55  prez
+** *** empty log message ***
 **
 ** Revision 1.36  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
@@ -168,8 +167,8 @@ const mstring FULLNAME			= "Magick IRC Services";
 const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "general@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
-const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/snapshot";
-const mstring RELEASE			= "s20011210";
+const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/beta";
+const mstring RELEASE			= "b12";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
