@@ -339,14 +339,17 @@ int Magick::Init()
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--service"));
 		    return MAGICK_RET_ERROR;
 		}
+		// Insertion & startup, run the gauntlet (parse config file)
 		if (argv[i].IsSameAs("insert", true))
 		    Result = MAGICK_RET_SERVICE_INSERT;
-		else if (argv[i].IsSameAs("remove", true))
-		    Result = MAGICK_RET_SERVICE_REMOVE;
 		else if (argv[i].IsSameAs("start", true))
 		    Result = MAGICK_RET_SERVICE_START;
+
+		// Stop & removal, we really don't care what in the config file.
 		else if (argv[i].IsSameAs("stop", true))
-		    Result = MAGICK_RET_SERVICE_STOP;
+		    return MAGICK_RET_SERVICE_STOP;
+		else if (argv[i].IsSameAs("remove", true))
+		    return MAGICK_RET_SERVICE_REMOVE;
 		else
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/UNKNOWN_PARAM", (argv[i], "--service"));
