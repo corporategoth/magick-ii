@@ -69,7 +69,7 @@ void *IrcSvcHandler::worker(void *in)
 	    }
 	    while (Magick::instance().Pause())
 		ACE_OS::sleep(1);
-	    if (msg != NULL && msg->validated())
+	    if (msg != NULL && msg->validated() && !msg->OutstandingDependancies())
 	    {
 		try
 		{
@@ -772,8 +772,7 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 		    msg->priority(static_cast < u_long > (P_Highest));
 		    break;
 		}
-	    if (!msg->OutstandingDependancies())
-		enqueue(msg);
+	    enqueue(msg);
 	}
     }
     catch (E_NickServ_Live & e)
