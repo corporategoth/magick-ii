@@ -106,7 +106,9 @@ class Chan_Stored_t : public mUserDef
     map<mstring, int> failed_passwds;
 
     mstring i_Mlock_On;
+    mstring l_Mlock_On;
     mstring i_Mlock_Off;
+    mstring l_Mlock_Off;
     mstring i_Mlock_Key;
     unsigned long i_Mlock_Limit;
     mstring i_Topic;
@@ -114,14 +116,22 @@ class Chan_Stored_t : public mUserDef
     mDateTime i_Topic_Set_Time;
     
     bool i_Keeptopic;
+    bool l_Keeptopic;
     bool i_Topiclock;
+    bool l_Topiclock;
     bool i_Private;
+    bool l_Private;
     bool i_Secureops;
+    bool l_Secureops;
     bool i_Secure;
+    bool l_Secure;
     bool i_Restricted;
+    bool l_Restricted;
     bool i_Join;
+    bool l_Join'
     bool i_Forbidden;
     mstring i_Revenge;
+    bool l_Revenge;
 
     mstring i_Suspend_By;
     mDateTime i_Suspend_Time;
@@ -173,25 +183,43 @@ public:
 
     mstring Mlock();
     mstring Mlock(mstring mode);
+    mstring L_Mlock();
+    mstring L_Mlock(mstring mode);
     mstring Mlock_Key()			{ return i_Mlock_Key; }
     int Mlock_Limit()			{ return i_Mlock_Limit; }
 
     bool Keeptopic();
     void Keeptopic(bool in);
+    bool L_Keeptopic();
+    void L_Keeptopic(bool in);
     bool Topiclock();
     void Topiclock(bool in);
+    bool L_Topiclock();
+    void L_Topiclock(bool in);
     bool Private();
     void Private(bool in);
+    bool L_Private();
+    void L_Private(bool in);
     bool Secureops();
     void Secureops(bool in);
+    bool L_Secureops();
+    void L_Secureops(bool in);
     bool Secure();
     void Secure(bool in);
+    bool L_Secure();
+    void L_Secure(bool in);
     bool Restricted();
     void Restricted(bool in);
+    bool L_Restricted();
+    void L_Restricted(bool in);
     bool Join();
     void Join(bool in);
+    bool L_Join();
+    void L_Join(bool in);
     mstring Revenge();
     bool Revenge(mstring in);
+    bool L_Revenge();
+    bool L_Revenge(mstring in);
 
     bool Suspended()			{ return (i_Suspend_By != ""); }
     mstring Suspend_By()		{ return i_Suspend_By; }

@@ -129,20 +129,22 @@ class Nick_Stored_t : public mUserDef
     mstring i_ICQ;
     mstring i_Description;
     mstring i_Comment;
-    // i_Host should not be needed or used, we have a map there, 
-    // mstring var and use the map instead. that way we have no stale pointers
-    // slaps prez's wrist *again*, eliminate all unnecessary pointers
-    // and we eliminate 99% of our sigsegv's
-    Nick_Stored_t *i_Host;
+    mstring i_Host;
     set<mstring> i_slaves; // HOST only
     set<mstring> i_access;
     set<mstring> i_ignore;
     bool i_Protect;
+    bool l_Protect;
     bool i_Secure;
+    bool l_Secure;
     bool i_NoExpire;
+    bool l_NoExpire;
     bool i_NoMemo;
+    bool l_NoMemo;
     bool i_Private;
+    bool l_Private;
     bool i_PRIVMSG;
+    bool l_PRIVMSG;
     bool i_Forbidden;
 
     mstring i_Suspend_By;
@@ -192,7 +194,7 @@ public:
     void Suspend(mstring name);
     void UnSuspend();
 
-    Nick_Stored_t *Host() { return i_Host; }
+    mstring Host() { return i_Host; }
     bool Slave(mstring nick, mstring password);
     int Siblings();
     mstring Sibling(int count);
@@ -220,16 +222,28 @@ public:
     // flags
     bool Protect();
     void Protect(bool in);
+    bool L_Protect();
+    void L_Protect(bool in);
     bool Secure();
     void Secure(bool in);
+    bool L_Protect();
+    void L_Protect(bool in);
     bool NoExpire();
     void NoExpire(bool in);
+    bool L_NoExpire();
+    void L_NoExpire(bool in);
     bool NoMemo();
     void NoMemo(bool in);
+    bool L_NoMemo();
+    void L_NoMemo(bool in);
     bool Private();
     void Private(bool in);
+    bool L_Private();
+    void L_Private(bool in);
     bool PRIVMSG();
     void PRIVMSG(bool in);
+    bool L_PRIVMSG();
+    void L_PRIVMSG(bool in);
     bool Suspended();
     mstring Suspend_By();
     mDateTime Suspend_Time();
