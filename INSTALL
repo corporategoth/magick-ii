@@ -389,6 +389,14 @@ useful if you plan to compile alot, and dont want to have to re-
 compile the entire program each time you make a change, however it
 means you will not have an accurate build number indication.
 
+`--enable-test'
+`--disable-test'
+     This creates testing binaries of Magick.  Test binaries will not
+communicate through a socket, but instead will read all input from
+standard input, and send all output to standard output.  With this
+mode, you can play back certain test scenarios, to try and catch a
+specific bug, or just verify the code still works as it should.
+
 `--enable-crypt'
 `--disable-crypt'
      This turns on or off encryption support in Magick.  Some versions
