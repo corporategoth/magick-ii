@@ -1,3 +1,45 @@
+* 2002-03-25 02:12  Preston A. Elder <prez@magick.tm>
+  gui/Files.java (1.2), gui/OperServ.java (1.2):
+  
+  Fixed 2 fields that were blank on generation, should have been
+  true/false.
+
+* 2002-03-18 15:26  Preston A. Elder <prez@magick.tm>
+  gui/mct.html (1.1):
+  
+  Added HTML file for running GUI in a browser.
+
+* 2002-03-18 15:22  Preston A. Elder <prez@magick.tm>
+  configure.in (1.55):
+  
+  Forgot to redirect java compile to /dev/null
+
+* 2002-03-18 15:19  Preston A. Elder <prez@magick.tm>
+  configure.in (1.54), gui/Makefile.am (1.2):
+  
+  Updated configure to detect javac, and see if its sufficiant.
+
+* 2002-03-18 14:47  Preston A. Elder <prez@magick.tm>
+  Makefile.am (1.12), configure.in (1.53), docs/magick.ini (1.98),
+  gui/ChanServ.java (1.1), gui/CommServ.java (1.1), gui/Config.java (1.1),
+  gui/ConfigView.java (1.1), gui/Files.java (1.1), gui/HexFormat.java
+  (1.1), gui/IpAddressFormat.java (1.1), gui/JMultiLineToolTip.java (1.1),
+  gui/MagickMain.jpg (1.1), gui/Makefile.am (1.1), gui/MemoServ.java (1.1),
+  gui/NickServ.java (1.1), gui/NumberRangeFormat.java (1.1),
+  gui/OctalFormat.java (1.1), gui/OperServ.java (1.1),
+  gui/PercentageFormat.java (1.1), gui/ServMsg.java (1.1),
+  gui/Services.java (1.1), gui/SpaceFormat.java (1.1), gui/Startup.java
+  (1.1), gui/TabbedPane.java (1.1), gui/TimeFormat.java (1.1),
+  gui/ToolTips.java (1.1), gui/mct.java (1.1), gui/mct.mf (1.1),
+  gui/myTableCellEditor.java (1.1):
+  
+  Added the Config GUI to the source tree.
+
+* 2002-03-18 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.27):
+  
+  Created version 2.0s20020318
+
 * 2002-03-11 03:00  Preston A. Elder <prez@magick.tm>
   ChangeLog (1.26):
   
