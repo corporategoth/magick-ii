@@ -13,7 +13,6 @@
 
 #include <iostream>
 #include <strstream>
-using namespace std;
 #include <ace/INET_Addr.h>
 #include "magick.h"
 #include "log.h"
