@@ -25,6 +25,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/10/07 11:00:11  ungod
+** no message
+**
 ** Revision 1.48  2000/09/30 10:48:06  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -76,15 +79,16 @@ class mstring:public string
 	typedef string inherited;
 public:
 	mstring(const mstring& in);
+	mstring(const string& in);
 	mstring(const mstring& in, inherited::size_type pos, inherited::size_type n);
 	mstring(const char *in);
 	mstring(const char *in, inherited::size_type pos);
-	mstring(char c); 
-/*	mstring(double d); 
-	mstring(float f); 
-	mstring(long l); 
-	mstring(unsigned long l); 
-	mstring(int i); 
+	mstring(char c);
+/*	mstring(double d);
+	mstring(float f);
+	mstring(long l);
+	mstring(unsigned long l);
+	mstring(int i);
 	mstring(unsigned int i);
 */
 	mstring(inherited::size_type n, char c);
@@ -102,24 +106,24 @@ public:
 	mstring& operator <<(int i);
 	mstring& operator <<(unsigned int i);
 	// non-destructive operators
-	friend mstring operator+(const mstring& string, char ch);
-	friend mstring operator+(char ch, const mstring& string);
-	friend mstring operator+(const mstring& string, const char *psz);
-	friend mstring operator+(const char *psz, const mstring& string);
-	/* friend mstring operator+(const mstring& string, const mstring& s);
-	friend mstring operator+(const mstring& s, const mstring& string); */
-	friend mstring operator+(const mstring& string, double d);
-	friend mstring operator+(double d, const mstring& string);
-	friend mstring operator+(const mstring& string, float f);
-	friend mstring operator+(float f, const mstring& string);
-	friend mstring operator+(const mstring& string, long l);
-	friend mstring operator+(long l, const mstring& string);
-	friend mstring operator+(const mstring& string, unsigned long l);
-	friend mstring operator+(unsigned long l, const mstring& string);
-	friend mstring operator+(const mstring& string, int i);
-	friend mstring operator+(int i, const mstring& string);
-	friend mstring operator+(const mstring& string, unsigned int i);
-	friend mstring operator+(unsigned int i, const mstring& string);
+	friend mstring operator+(const mstring& inp_string, char ch);
+	friend mstring operator+(char ch, const mstring& inp_string);
+	friend mstring operator+(const mstring& inp_string, const char *psz);
+	friend mstring operator+(const char *psz, const mstring& inp_string);
+	/* friend mstring operator+(const mstring& inp_string, const mstring& s);
+	friend mstring operator+(const mstring& s, const mstring& inp_string); */
+	friend mstring operator+(const mstring& inp_string, double d);
+	friend mstring operator+(double d, const mstring& inp_string);
+	friend mstring operator+(const mstring& inp_string, float f);
+	friend mstring operator+(float f, const mstring& inp_string);
+	friend mstring operator+(const mstring& inp_string, long l);
+	friend mstring operator+(long l, const mstring& inp_string);
+	friend mstring operator+(const mstring& inp_string, unsigned long l);
+	friend mstring operator+(unsigned long l, const mstring& inp_string);
+	friend mstring operator+(const mstring& inp_string, int i);
+	friend mstring operator+(int i, const mstring& inp_string);
+	friend mstring operator+(const mstring& inp_string, unsigned int i);
+	friend mstring operator+(unsigned int i, const mstring& inp_string);
 	mstring operator()(size_t start,size_t len);
 	operator const char *() const { return c_str(); }
 
@@ -172,7 +176,6 @@ public:
 	mstring Before(const mstring& in,int count=1) const;
 	mstring Right(int nCount)const;
 	mstring Left(int nCount)const;
-	mstring(const string& in);
 	mstring SubString(int from, int to)const;
 	mstring Mid(int nFirst, int nCount=npos)const;
 	bool IsSameAs(const mstring& in, bool bCase=true);

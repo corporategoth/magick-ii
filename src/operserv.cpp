@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2000/10/07 11:00:13  ungod
+** no message
+**
 ** Revision 1.102  2000/09/30 10:48:08  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -2783,7 +2786,8 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	host.Prepend("*@");
     }
 
-    unsigned int i, num;
+    unsigned int num;
+    int i;
     bool super = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source));
     for (i=host.size()-1, num=0; i>=0; i--)
@@ -2862,8 +2866,9 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host))
 	    killusers.push_back(nlive->first);
     }}
-    for (i=0; i<killusers.size(); i++)
-	Parent->server.KILL(mynick, killusers[i], reason);
+    unsigned int j;
+    for (j=0; j<killusers.size(); j++)
+	Parent->server.KILL(mynick, killusers[j], reason);
 }
 
 void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)

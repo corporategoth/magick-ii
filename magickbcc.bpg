@@ -9,8 +9,8 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = crypto.lib xml.lib magickbcc.exe whatbcc.exe docs.lib \
-  magick_keygenbcc.exe
+PROJECTS = crypto.lib xml.lib whatbcc.exe docs.lib magick_keygenbcc.exe \
+  magickbcc.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------

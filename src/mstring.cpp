@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2000/10/07 11:00:12  ungod
+** no message
+**
 ** Revision 1.69  2000/09/30 10:48:08  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -123,11 +126,11 @@ mstring const IRC_Color((char) 3);	// ^C
 mstring const IRC_Off((char) 15);	// ^O
 
 mstring::mstring(const mstring& in)
-:inherited((string) in)
+:inherited((inherited) in)
 {
 }
 mstring::mstring(const mstring& in, inherited::size_type pos, inherited::size_type n)
-:inherited((string) in,pos,n)
+:inherited((inherited) in,pos,n)
 {
 }
 mstring::mstring(const char *in)
@@ -184,7 +187,7 @@ mstring mstring::SubString(int from, int to) const
 	return Mid(from, (to - from + 1));
 }
 
-mstring::mstring(const string & in)
+mstring::mstring(const inherited & in)
 {
 	*this=in.c_str();
 }
@@ -671,135 +674,135 @@ char mstring::Last()const
 	return Result[Result.Len()-1];
 }
 
-mstring operator+(const mstring& string, char ch)
+mstring operator+(const mstring& inp_string, char ch)
 {
-	mstring Result=string+mstring(ch);
+	mstring Result=inp_string+mstring(ch);
 	return Result;
 }
 
-mstring operator+(char ch, const mstring& string)
+mstring operator+(char ch, const mstring& inp_string)
 {
-	mstring Result=mstring(ch)+string;
+	mstring Result=mstring(ch)+inp_string;
 	return Result;
 }
 
-mstring operator+(const mstring& string, const char *psz)
+mstring operator+(const mstring& inp_string, const char *psz)
 {
-	mstring Result=std::string(string)+std::string(psz);
+	mstring Result=std::string(inp_string)+std::string(psz);
 	return Result;
 }
 
-mstring operator+(const char *psz, const mstring& string)
+mstring operator+(const char *psz, const mstring& inp_string)
 {
-	mstring Result=mstring(psz)+string;
+	mstring Result=mstring(psz)+inp_string;
 	return Result;
 }
 
-/* mstring operator+(const mstring& string, const mstring& s)
+/* mstring operator+(const mstring& inp_string, const mstring& s)
 {
-	mstring Result=string+s;
+	mstring Result=inp_string+s;
 	return Result;
 }
 
-mstring operator+(const mstring& s, const mstring& string)
+mstring operator+(const mstring& s, const mstring& inp_string)
 {
-	mstring Result=s+string;
+	mstring Result=s+inp_string;
 	return Result;
 }*/
 
-mstring operator+(const mstring& string, double d)
+mstring operator+(const mstring& inp_string, double d)
 {
 	mstring s;
 	s << d;
-	mstring Result=string+s;
+	mstring Result=inp_string+s;
 	return Result;
 }
 
-mstring operator+(double d, const mstring& string)
+mstring operator+(double d, const mstring& inp_string)
 {
 	mstring s;
 	s << d;
-	mstring Result=s+string;
+	mstring Result=s+inp_string;
 	return Result;
 }
 
-mstring operator+(const mstring& string, float f)
+mstring operator+(const mstring& inp_string, float f)
 {
 	mstring s;
 	s << f;
-	mstring Result=string+s;
+	mstring Result=inp_string+s;
 	return Result;
 }
 
-mstring operator+(float f, const mstring& string)
+mstring operator+(float f, const mstring& inp_string)
 {
 	mstring s;
 	s << f;
-	mstring Result=s+string;
+	mstring Result=s+inp_string;
 	return Result;
 }
 
-mstring operator+(const mstring& string, long l)
+mstring operator+(const mstring& inp_string, long l)
 {
 	mstring s;
 	s << l;
-	mstring Result=string+s;
+	mstring Result=inp_string+s;
 	return Result;
 }
 
-mstring operator+(long l, const mstring& string)
+mstring operator+(long l, const mstring& inp_string)
 {
 	mstring s;
 	s << l;
-	mstring Result=s+string;
+	mstring Result=s+inp_string;
 	return Result;
 }
 
-mstring operator+(const mstring& string, unsigned long l)
+mstring operator+(const mstring& inp_string, unsigned long l)
 {
 	mstring s;
 	s << l;
-	mstring Result=string+s;
+	mstring Result=inp_string+s;
 	return Result;
 }
 
-mstring operator+(unsigned long l, const mstring& string)
+mstring operator+(unsigned long l, const mstring& inp_string)
 {
 	mstring s;
 	s << l;
-	mstring Result=s+string;
+	mstring Result=s+inp_string;
 	return Result;
 }
 
-mstring operator+(const mstring& string, int i)
+mstring operator+(const mstring& inp_string, int i)
 {
 	mstring s;
 	s << i;
-	mstring Result=string+s;
+	mstring Result=inp_string+s;
 	return Result;
 }
 
-mstring operator+(int i, const mstring& string)
+mstring operator+(int i, const mstring& inp_string)
 {
 	mstring s;
 	s << i;
-	mstring Result=s+string;
+	mstring Result=s+inp_string;
 	return Result;
 }
 
-mstring operator+(const mstring& string, unsigned int i)
+mstring operator+(const mstring& inp_string, unsigned int i)
 {
 	mstring s;
 	s << i;
-	mstring Result=string+s;
+	mstring Result=inp_string+s;
 	return Result;
 }
 
-mstring operator+(unsigned int i, const mstring& string)
+mstring operator+(unsigned int i, const mstring& inp_string)
 {
 	mstring s;
 	s << i;
-	mstring Result=s+string;
+	mstring Result=s+inp_string;
 	return Result;
 }
 

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.211  2000/10/07 11:00:11  ungod
+** no message
+**
 ** Revision 1.210  2000/09/30 10:48:06  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -2343,7 +2346,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 			    if (!(clive->MatchExempt(Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H)) ||
 				clive->MatchExempt(Parent->nickserv.live[clive->User(j).LowerCase()].AltMask(Nick_Live_t::N_U_P_H))))
 			    {
-				if (DidRevenge = DoRevenge(bantype, setter, clive->User(j)))
+                    DidRevenge = DoRevenge(bantype, setter, clive->User(j));
+				if (DidRevenge)
 				    clive->SendMode("-b " + mode.ExtractWord(fwdargs, ": "));
 				else
 				    tobekicked.push_back(clive->User(j));
