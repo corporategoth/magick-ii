@@ -2498,7 +2498,7 @@
 04 =SADMIN::for the IDENTIFY and ON commands.  If a service
 05 =SADMIN::is specified, it will only turn that service off.
 
-[OPERSERV/OFF]
+[OPERSERV/HTM]
 01 =SOP::HTM [ON|OFF|SET <value>]
 02 =SOP::
 03 =SOP::This will manipulate High Traffic Mode.  When services

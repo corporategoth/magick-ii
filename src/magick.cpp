@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.240  2000/05/28 02:37:16  prez
+** Minor bug fixes (help system and changing nicks)
+**
 ** Revision 1.239  2000/05/27 15:10:12  prez
 ** Misc changes, mainly re-did the makefile system, makes more sense.
 ** Also added a config.h file.
@@ -824,10 +827,11 @@ StartGetLang:
     if (Help.find(language) != Help.end() &&
 	Help[language].find(name.UpperCase()) != Help[language].end())
     {
-	bool sendline = false;
+	bool sendline;
 
 	for (j=0; j<Help[language][name.UpperCase()].size(); j++)
 	{
+	    sendline = false;
 	    if (Help[language][name.UpperCase()][j].first != "")
 	    {
 		for (i=1; !sendline && i<=Help[language][name.UpperCase()][j].first.WordCount(" "); i++)

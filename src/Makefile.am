@@ -8,7 +8,6 @@ SUBDIRS = antlr des xml
 EXTRA_DIST = EscLexer.cpp EscLexer.hpp EscLexerTokenTypes.hpp EscParser.cpp EscParser.hpp base.cpp chanserv.cpp commserv.cpp confbase.cpp convert.cpp cryptstream.cpp datetime.cpp dccengine.cpp fileconf.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp main.cpp memoserv.cpp mstream.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp textfile.cpp trace.cpp utils.cpp variant.cpp mconfig.cpp 
 
 ####### kdevelop will overwrite this part!!! (end)############
-SUBDIRS = antlr des xml
 
 mostlyclean-compile:
 	-rm -f *.o core *.core *.debug

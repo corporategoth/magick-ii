@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2000/05/28 02:37:16  prez
+** Minor bug fixes (help system and changing nicks)
+**
 ** Revision 1.98  2000/05/27 07:06:02  prez
 ** HTM actually does something now ... wooo :)
 **
@@ -780,7 +783,6 @@ void Nick_Live_t::operator=(const Nick_Live_t &in)
     InFlight.nick = i_Name;
     InFlight.init();
     InFlight=in.InFlight;
-    InFlight.ChgNick(i_Name);
 }
 
 void Nick_Live_t::Join(mstring chan)
@@ -966,6 +968,8 @@ bool Nick_Live_t::FloodTrigger()
 void Nick_Live_t::Name(mstring in)
 {
     FT("Nick_Live_t::Name", (in));
+
+    InFlight.ChgNick(in);
 
     if (i_Name.CmpNoCase(in)==0)
 	return;

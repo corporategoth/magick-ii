@@ -5,3 +5,4 @@ Makefile
 Makefile.in
 .deps
 magick
+magick.debug
