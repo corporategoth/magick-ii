@@ -137,16 +137,5 @@
     ACE_Local_Mutex lock5(x1 + "::" + x2 + "::" + x3 + "::" + x4 + "::" + x5); \
     ACE_Guard<ACE_Local_Mutex> guard5(lock5);
 
-class Lockable
-{
-private:
-	ACE_RW_Thread_Mutex m_mutex;
-public:
-	ACE_RW_Thread_Mutex& Mutex();
-	int RLOCK();
-	int RUNLOCK();
-	int WLOCK();
-	int WUNLOCK();
-};
 
 #endif
