@@ -262,9 +262,13 @@ extern const char* wxSysErrorMsg(unsigned long nErrCode = 0);
 
   // nothing to do in release modes (hopefully at this moment there are
   // no more bugs ;-)
-  #define   wxASSERT(cond)
-  #define   wxASSERT_MSG(x, m)
-
+#ifdef  DEBUG
+   #define   wxASSERT(cond)   if ( !(cond) ) wxOnAssert(__FILE__, __LINE__)
+   #define   wxASSERT_MSG(x, m)  if ( !(x) ) wxOnAssert(__FILE__, __LINE__, m)
+ #else
+   #define   wxASSERT(cond)   
+   #define   wxASSERT_MSG(x, m)  
+#endif  //__WXDEBUG__
   /// special form of assert: always triggers it (in debug mode)
 #define   wxFAIL                 wxASSERT(false)
 
