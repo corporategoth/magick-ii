@@ -28,8 +28,7 @@ ChanServ::ChanServ()
 
 void ChanServ::execute(const mstring & data)
 {
-    mThread::Detach(tt_mBase);
-    mThread::Attach(tt_ChanServ);
+    mThread::ReAttach(tt_ChanServ);
     FT("ChanServ::execute", (data));
     //okay this is the main chanserv command switcher
 
@@ -40,8 +39,7 @@ void ChanServ::execute(const mstring & data)
     message = data.After(":");
 
 
-    mThread::Detach(tt_ChanServ);
-    mThread::Attach(tt_mBase);
+    mThread::ReAttach(tt_mBase);
 }
 
 Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)

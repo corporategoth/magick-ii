@@ -88,6 +88,7 @@ public:
     static ThreadID* find(ACE_thread_t thread=ACE_Thread::self());
     static void Attach(threadtype_enum ttype);
     static void Detach(threadtype_enum ttype);
+    static void ReAttach(threadtype_enum ttype);
 };
 
 #endif

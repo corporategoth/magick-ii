@@ -202,4 +202,11 @@ public:
 extern Magick *Parent;
 extern mDateTime StartTime;
 
+inline void SendSVR(mstring message)
+{ Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " " + message); }
+
+inline void Send(mstring message)
+{ Parent->ircsvchandler->send(message); }
+
+
 #endif

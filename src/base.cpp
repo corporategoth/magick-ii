@@ -219,8 +219,7 @@ NetworkServ::NetworkServ()
 void NetworkServ::execute(const mstring & data)
 {
     //okay this is the main networkserv command switcher
-    mThread::Detach(tt_mBase);
-    mThread::Attach(tt_ServNet);
+    mThread::ReAttach(tt_ServNet);
     FT("NetworkServ::execute", (data));
 
     mstring source, msgtype;
@@ -255,14 +254,11 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="ADMIN")
 	{
 	    // :source ADMIN
-	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 256 " +
-		source + " :Administrative info about " + Parent->Startup_SERVER_NAME);
-	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 257 " +
-		source + " :" + Parent->Startup_SERVER_DESC);
-	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 258 " +
-		source + " :Admins - " + Parent->OperServ_SERVICES_ADMIN);
-	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 259 " +
-		source + " :Magick IRC Services - magick@magick.tm");
+	    SendSVR("256 " + source + " :Administrative info about " +
+		Parent->Startup_SERVER_NAME);
+	    SendSVR("257 " + source + " :" + Parent->Startup_SERVER_DESC);
+	    SendSVR("258 " + source + " :Admins - " + Parent->OperServ_SERVICES_ADMIN);
+	    SendSVR("259 " + source + " :Magick IRC Services - magick@magick.tm");
 	}
 	else if (msgtype=="AKILL")
 	{
@@ -279,8 +275,8 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="CONNECT")
 	{
 	    // :source CONNECT some.server port :our.server
-	    Parent->ircsvchandler->send("NOTICE " + source +
-		" :Connect: Host " + data.ExtractWord(3, ": ") + " not listed in irc.conf");
+	    Send("NOTICE " + source + " :Connect: Host " +
+		data.ExtractWord(3, ": ") + " not listed in irc.conf");
 	}
 	break;
     case 'D':
@@ -402,14 +398,15 @@ void NetworkServ::execute(const mstring & data)
 	    if (data.ExtractWord(2, ": ") != Parent->Startup_PASSWORD)
 	    {
 		CP(("Server password mismatch.  Closing socket."));
+		Parent->reconnect=false;
 		Parent->ircsvchandler->shutdown();
 	    }
 	}
 	else if (msgtype=="PING")
 	{
 	    // PING :some.server
-	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " PONG " +
-		Parent->Startup_SERVER_NAME + " :" + data.ExtractWord(2, ": "));
+	    SendSVR("PONG " + Parent->Startup_SERVER_NAME + " :" +
+		data.ExtractWord(2, ": "));
 	}
 	else if (msgtype=="PONG")
 	{
@@ -462,8 +459,7 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="SUMMON")
 	{
 	    // :source SUMMON user our.server *
-	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 445 " +
-		source + " :SUMMON has been disabled");
+	    SendSVR("445 " + source + " :SUMMON has been disabled");
 	}
 	else if (msgtype=="SVSKILL")
 	{
@@ -511,8 +507,7 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="USERS")
 	{
 	    // :source USERS :our.server
-	    Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " 446 " +
-		source + " :USERS has been disabled");
+	    SendSVR("446 " + source + " :USERS has been disabled");
 	}
 	break;
     case 'V':
@@ -547,8 +542,7 @@ void NetworkServ::execute(const mstring & data)
 	break;
     }
 
-    mThread::Detach(tt_ServNet);
-    mThread::Attach(tt_mBase);
+    mThread::ReAttach(tt_mBase);
    
 }
 

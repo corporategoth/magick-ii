@@ -203,10 +203,12 @@ ThreadID::ThreadID(threadtype_enum Type)
     out=NULL;
 }
 
-ThreadID ThreadID::assign(threadtype_enum Type)
+void ThreadID::assign(threadtype_enum Type)
 {
+    if(out!=NULL)
+	delete out;
     t_internaltype = Type;
-    return *this;
+    out=NULL;
 }
 
 mstring ThreadID::logname()
@@ -226,23 +228,13 @@ void ThreadID::WriteOut(const mstring &message)
     // todo: if tt_Main, write to file now, else put it into the logger task.
     //below for now till i get the operator bool happening.
     if (out==NULL||out->Ok()!=true) 
-    {
         out=new wxFileOutputStream(logname(),true); // true sets append to true.
-	// Shouldnt need to goto end if its appending ...
-        //out->SeekO(0,wxFromEnd);
-    }
-    //wxASSERT(out==NULL);
-    //wxASSERT(out->LastError()!=wxStream_NOERROR);
 
     mstring finalout = "";
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";
     finalout += message;
 
-    *out << finalout << wxEndL;
-    out->Sync();
-
-#if 0
     if(t_internaltype!=tt_MAIN&&Parent!=NULL)
 	Parent->loggertask.logmessage(out,finalout);
     else
@@ -250,7 +242,6 @@ void ThreadID::WriteOut(const mstring &message)
 	*out << finalout << wxEndL;
 	out->Sync();
     }
-#endif
 }
 
 // ===================================================

@@ -169,7 +169,7 @@ public:
     ThreadID();
     ThreadID(threadtype_enum Type);
     ~ThreadID() { if(out!=NULL) delete out;}
-    ThreadID assign(threadtype_enum Type);
+    void assign(threadtype_enum Type);
     threadtype_enum type() { return t_internaltype; }
     void indentup() { t_indent++; }
     void indentdown() { if (t_indent>0) t_indent--; }
