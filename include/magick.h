@@ -51,6 +51,7 @@ typedef map<mstring,mstring> mapstringstring;
 
 class Magick
 {
+    friend class Reconnect_Handler;
 private:
 	vector<mstring> argv;
 	mapstringstring Messages;
@@ -73,12 +74,40 @@ private:
 	mDecryptStream *cstrm;
 	mEncryptStream *ocstrm;
 
-	// Running config
-	
+//	bool Files_COMPRESS_STREAMS;
+//	mstring Password;
+
+	mstring i_services_dir;
+	mstring i_config_file;
+	mstring i_programname;
+
+	mDateTime ResetTime;
+	unsigned int i_level;
+	bool i_auto;
+	bool i_shutdown;
+
+	bool i_reconnect;
+  	IrcSvcHandler *ircsvchandler;
+	bool i_gotconnect;
+	mstring i_server;
 
 public:
-	void save_databases();
-	void load_databases();
+	// Stuff that NEEDS to be there first
+	LoggerTask loggertask;
+	CommandMap commands;
+
+	// Services ...
+	OperServ operserv;
+	ChanServ chanserv;
+	NickServ nickserv;
+	MemoServ memoserv;
+	ServMsg servmsg;
+	CommServ commserv;
+
+	// Other stuff ...
+	NetworkServ server;
+        IrcServer ACO_server;
+	EventTask events;
 
 	// Config Values
 	class startup_t {
@@ -160,71 +189,56 @@ public:
 		unsigned int High_Water_Mark()	{ return high_water_mark; }
 	} config;
 
+	mstring Services_Dir()	    { return i_services_dir; }
+	mstring Config_File()	    { return i_config_file; }
+	mstring ProgramName()	    { return i_programname; }
 
-	bool Files_COMPRESS_STREAMS;
-	mstring Password;
-	 ~Magick();
-	IrcSvcHandler *ircsvchandler;
-	void shutdown(bool in);
-	bool shutdown();
-
-	// get script to handle it.
-	void doscripthandle(const mstring& server, const mstring& command, const mstring& data);
-	// is there a script handler there?
-	bool checkifhandled(const mstring& server, const mstring& command);
-	// remove ascript function to handle commands
-	void stophandling(const mstring& server, const mstring& command, const mstring& functionname);
-	// add a script function to handle commands
-	void handle(const mstring& server, const mstring& command, const mstring& functionname);
-
-	bool MSG() { return messages; }
-	void MSG(bool on) { messages = on; }
-	bool AUTO() { return automation; }
-	void AUTO(bool on) { automation = on; }
-
-	long runflags;
-	mstring services_dir;
-	mstring config_file;
-	unsigned int level;
-	mstring ProgramName;
-	bool debug;
-	bool live;
-	bool reconnect;
-        Reconnect_Handler rh;
-        operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
-
-	bool GotConnect;
-	mstring Server;
-
-	bool get_config_values();
-	bool check_config();
-	void LoadExternalMessages();
-	mstring parseEscapes(const mstring& in);
-	bool paramlong(mstring first, mstring second);
-	bool paramshort(mstring first, mstring second);
-	void LoadInternalMessages();
-	void dump_help(mstring& progname);
-	mstring getMessage(const mstring& name);
+	// Current STATES, and switching between them.
 	Magick(int inargc, char **inargv);
 	int Start();
+	unsigned int Level()	{ return i_level; }
+	void LevelUp()
+	{
+	    i_level++;
+	}
+	void LevelDown()
+	{
+	    if (i_level > startup.Level())
+		i_level--;
+	}
+	void AUTO(bool on)	{ i_auto = on; }
+	bool AUTO()		{ return i_auto; }
+	void MSG(bool on)
+	{
+	    operserv.MSG(on);
+	    nickserv.MSG(on);
+	    chanserv.MSG(on);
+	    memoserv.MSG(on);
+	    servmsg.MSG(on);
+	    commserv.MSG(on);
+	}
+	void Shutdown(bool in)	{ i_shutdown = in; }
+	bool Shutdown()		{ return i_shutdown; }
+	 ~Magick();
 
-	// Stuff that NEEDS to be there first
-	LoggerTask loggertask;
-	CommandMap commands;
+	// Streams, etc
+	bool Reconnect()    { return i_reconnect; }
+	bool GotConnect()   { return i_gotconnect; }
+	mstring Server()    { return i_server; }
+	void save_databases();
+	void load_databases();
+        Reconnect_Handler rh;
+	operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
 
-	// Services ...
-	OperServ operserv;
-	ChanServ chanserv;
-	NickServ nickserv;
-	MemoServ memoserv;
-	ServMsg servmsg;
-	CommServ commserv;
-
-	// Other stuff ...
-	NetworkServ server;
-        IrcServer ACO_server;
-	EventTask events;
-
+	// Commandline, config, language PARSING.
+	void dump_help(mstring& progname);
+	bool paramlong(mstring first, mstring second);
+	bool paramshort(mstring first, mstring second);
+	bool get_config_values();
+	void LoadInternalMessages();
+	void LoadExternalMessages();
+	mstring getMessage(const mstring& name);
+	mstring parseEscapes(const mstring& in);
 	void AddCommands(void)
 	{
 	    operserv.AddCommands();
@@ -234,7 +248,6 @@ public:
 	    servmsg.AddCommands();
 	    commserv.AddCommands();
 	}
-
 	void RemCommands(void)
 	{
 	    operserv.RemCommands();
@@ -245,19 +258,11 @@ public:
 	    commserv.RemCommands();
 	}
 
-//protected:
-	bool i_shutdown;
-
-	mDateTime ResetTime;
+	void send(mstring text);
 };
 
 extern Magick *Parent;
 extern mDateTime StartTime;
-
-inline void KillUnknownUser(mstring user)
-{ Parent->ircsvchandler->send(":" + Parent->startup.Server_Name() + " KILL " +
-    user + " :" + Parent->startup.Server_Name() + " (" + user + "(?) <- " +
-    Parent->Server + ")"); }
 
 inline bool IsChan(mstring input)
 { return (ChanSpec.Contains(input[0U])); }

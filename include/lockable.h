@@ -57,6 +57,7 @@ private:
 public:
     static ThreadID* find(ACE_thread_t thread=ACE_Thread::self());
     static vector<ThreadID*> findall();
+    static size_t size() { return selftothreadidmap.size(); }
     static void Attach(threadtype_enum ttype);
     static void Detach(threadtype_enum ttype);
     static void ReAttach(threadtype_enum ttype);

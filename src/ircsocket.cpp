@@ -43,7 +43,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     {
 	// sleep and then reconnect
 	CP(("No data, scheduling reconnect, then closing down"));
-	if(Parent->reconnect==true||Parent->shutdown()==false)
+	if(Parent->Reconnect() || !Parent->Shutdown())
 	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
 	return -1;
     }
@@ -134,15 +134,16 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 {
     FT("Reconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
 
-    if(Parent->config.Server_Relink()<1||Parent->reconnect!=true||Parent->shutdown()==true)
+    if(Parent->config.Server_Relink()<1 || Parent->Reconnect() ||
+	    Parent->Shutdown())
 	return 0;
 
     mstring server;
     triplet<unsigned int,mstring,unsigned int> details;
-    if (Parent->GotConnect) {
+    if (Parent->GotConnect()) {
 	server = Parent->startup.PriorityList(1)[0];
     } else {
-	server = FindNext(Parent->Server);
+	server = FindNext(Parent->Server());
 	if (server == "") {
 	    server = Parent->startup.PriorityList(1)[0];
 	}
@@ -153,8 +154,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
 
-    Parent->GotConnect = false;
-    Parent->Server = server;
+    Parent->i_gotconnect = false;
+    Parent->i_server = server;
     Parent->ircsvchandler=new IrcSvcHandler;
     if(Parent->ACO_server.connect(Parent->ircsvchandler,addr)==-1)
     {
@@ -303,7 +304,7 @@ int EventTask::svc(void)
     mThread::Attach(tt_MAIN);
 
     last_expire = last_save = last_check = last_ping = Now();
-    while(!Parent->shutdown())
+    while(!Parent->Shutdown())
     {
 	// Main routine -- when we end this, we're done!!
 	map<mstring, Nick_Live_t>::iterator nli;
@@ -642,11 +643,11 @@ int EventTask::svc(void)
 	    else
 		avg = sum / pingtimes.size();
 
-	    if (avg > (Parent->startup.Lagtime() * (Parent->level - Parent->startup.Level() + 1)))
-		Parent->level++;
-	    if (Parent->level > Parent->startup.Level() &&
-		avg <= (Parent->startup.Lagtime() * (Parent->level - Parent->startup.Level() + 1)))
-		Parent->level--;		
+	    if (avg > (Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
+		Parent->LevelUp();
+	    if (Parent->Level() > Parent->startup.Level() &&
+		avg <= (Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
+		Parent->LevelDown();		
 
 	    for (si=Parent->server.ServerList.begin();
 		    si!=Parent->server.ServerList.end();si++)

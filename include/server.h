@@ -100,14 +100,18 @@ public:
     void NICK(mstring nick, mstring user, mstring host,
     	mstring server, mstring realname);
     void NOTICE(mstring nick, mstring dest, mstring text);
+    void NOOP(mstring nick, mstring server, bool onoff);
     void PART(mstring nick, mstring channel, mstring reason = "");
     void PRIVMSG(mstring nick, mstring dest, mstring text);
     void QUIT(mstring nick, mstring reason = "");
+    void QLINE(mstring nick, mstring target, mstring reason = "");
     void SVSMODE(mstring mynick, mstring nick, mstring mode);
     void SVSNICK(mstring mynick, mstring nick, mstring newnick);
     void SVSKILL(mstring mynick, mstring nick, mstring reason);
     void TOPIC(mstring nick, mstring channel, mstring topic = "");
+    void UNQLINE(mstring nick, mstring target);
     void WALLOPS(mstring nick, mstring message);    
+    void KillUnknownUser(mstring user);
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);

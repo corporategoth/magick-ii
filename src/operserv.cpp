@@ -911,18 +911,63 @@ void OperServ::do_Kick(mstring mynick, mstring source, mstring params)
 void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Qline", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring target  = params.ExtractWord(2, " ");
+    mstring reason  = params.After(" ", 2);
+    Parent->server.QLINE(mynick, target, reason);
 }
 
 
 void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_UnQline", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring target  = params.ExtractWord(2, " ");
+    Parent->server.UNQLINE(mynick, target);
 }
 
 
 void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_NOOP", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring target  = params.ExtractWord(2, " ");
+    mstring onoff   = params.ExtractWord(3, " ");
+
+    if (!Parent->server.IsServer(target))
+    {
+	::send(mynick, source, "Server specified is not linked.");
+	return;
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "You may only turn NOOP ON or OFF");
+	return;
+    }
+
+    Parent->server.NOOP(mynick, target, onoff.GetBool());
 }
 
 
@@ -974,7 +1019,7 @@ void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Shutdown", (mynick, source, params));
     ::send(mynick, source, "Shutting down ...");
-    Parent->shutdown();
+    Parent->Shutdown(true);
 }
 
 
@@ -987,7 +1032,7 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	wxLogError("Could not read magick config file %s.", Parent->config_file.c_str());
+	wxLogError("Could not read magick config file %s.", Parent->Config_File().c_str());
 	::send(mynick, source, "WARNING: Could not read config file.");
     }
 }
@@ -1040,22 +1085,14 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
 void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_Config", (mynick, source, params));
+
 /*
-CONFIG:
-    Base level is ?, Current level is ?.
-    Level is increased if lag is more than ? seconds.
 -   Databases are (not) encrypted, and compressed at level ?.
-    Services will re-link in ? seconds upon server SQUIT.
-    Squit protection lasts ? seconds.  Nicknames have ? seconds
-	to rejoin before squit protection activates.
-    Services have ? server(s) available to connect to.
-    Databases are saved every ? seconds, and sync in ...?
-    HyperActive cycle is ? seconds, and lag check is ? seconds.
 -   Minimum threads active is ?, Current threads active is ?.
 -   New thread will spawn each ? messages, and die when below ?.
 */
     ::send(mynick, source, "Base level is " + mstring(itoa(Parent->startup.Level())) +
-		    ", Current level is " + mstring(itoa(Parent->level)) + ".");
+		    ", Current level is " + mstring(itoa(Parent->Level())) + ".");
     ::send(mynick, source, "Services have " + mstring(itoa(Parent->startup.Server_size())) +
 		    " possible servers to connect to.");
     ::send(mynick, source, "Level is increased if lag is more than " +
@@ -1081,17 +1118,6 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_Nick", (mynick, source, params));
 
-/*
-NICK:
-    Nicknames will expire after ?.
-    Users have ? seconds to identify.
-    Nicks are held for ? seconds on ident failure.
-    Users are killed if they fail to ident ? times.
-    Default options are: ...
-    Maximim picture size is ? bytes.
-    Allowable picture extensions are: ?
-    Users may have a maximum of ? file attachments, of up to ? bytes each.
-*/
     ::send(mynick, source, "Nicknames will expire after " +
 			ToHumanTime(Parent->nickserv.Expire()) + ".");
     ::send(mynick, source, "Users have " +
@@ -1198,17 +1224,6 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 {
     FT("OperServ::do_settings_Channel", (mynick, source, params));
 
-/*
-CHAN:
-    Channels will expire after ?.
-    Users are killed if they fail to chan ident ? times.
-    Channels are kept for ? seconds after akick of last user.
-    Default ban time is ? seconds, Default MLOCK is: ?.
-    Default options are: ...
-    Default revenge level is: 
-    Minimum ACCESS level is ?, Maximum is ?
-    Channel news articles expire after ?.
-*/
     ::send(mynick, source, "Channels will expire after " +
 			ToHumanTime(Parent->chanserv.Expire()) + ".");
     ::send(mynick, source, "Users are killed if they fail to ident " +
@@ -1354,21 +1369,6 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_Other", (mynick, source, params));
 
-/*
-OTHER:
-    Memos are InFlight for ? seconds.
-    Default AKILL expire time is ?.
-    Maximums are (by committee):
-	x: ?
-	x: ?
-	x: ?
-	x: ?
-    A user may have up to ? clones per host, or overridden to up to ?.
-    Flood is triggered with ? messages in ? seconds.
-    Services remember old flood for triggers up to ? seconds later.
-    Ignore lasts ? seconds, and is perminant if triggered more than ? times.
-    Default committee options are: ...
-*/
     ::send(mynick, source, "Memos are InFlight for " +
 			ToHumanTime(Parent->memoserv.InFlight()) + ".");
     ::send(mynick, source, "Default AKILL exipry time is " +
@@ -1524,7 +1524,11 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
 	if (Parent->operserv.Clone != Parent->operserv.Clone_end())
 	{
 	    Parent->operserv.Clone_erase();
-	    ::send(mynick, source, "Clone entry #" + mstring(itoa(num)) + " removed.");
+	    ::send(mynick, source, "Clone entry #" + host + " removed.");
+	}
+	else
+	{
+	    ::send(mynick, source, "Clone entry #" + host + " not found");
 	}
     }
     else
@@ -1564,6 +1568,15 @@ void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
 	}
     }
 
+    if (Parent->operserv.Clone_size())
+    {
+	::send(mynick, source, "Clone Override list:");
+    }
+    else
+    {
+	::send(mynick, source, "Clone Override list is empty.");
+	return;
+    }
     unsigned int i=1;
     mstring output;
     MLOCK(("OperServ", "Clone"));
@@ -1696,7 +1709,11 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
 	if (Parent->operserv.Akill != Parent->operserv.Akill_end())
 	{
 	    Parent->operserv.Akill_erase();
-	    ::send(mynick, source, "Akill entry #" + mstring(itoa(num)) + " removed.");
+	    ::send(mynick, source, "Akill entry #" + host + " removed.");
+	}
+	else
+	{
+	    ::send(mynick, source, "Entry #" + host + " is not found on AKILL list.");
 	}
     }
     else
@@ -1741,6 +1758,15 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
 	}
     }
 
+    if (Parent->operserv.Akill_size())
+    {
+	::send(mynick, source, "AKILL list:");
+    }
+    else
+    {
+	::send(mynick, source, "AKILL list is empty.");
+	return;
+    }
     unsigned int i=1;
     mstring output;
     MLOCK(("OperServ", "Akill"));
@@ -1832,7 +1858,11 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
 	if (Parent->operserv.OperDeny != Parent->operserv.OperDeny_end())
 	{
 	    Parent->operserv.OperDeny_erase();
-	    ::send(mynick, source, "OperDeny entry #" + mstring(itoa(num)) + " removed.");
+	    ::send(mynick, source, "OperDeny entry #" + host + " removed.");
+	}
+	else
+	{
+	    ::send(mynick, source, "Entry #" + host + " not found on OperDeny");
 	}
     }
     else
@@ -1894,6 +1924,15 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
 	}
     }
 
+    if (Parent->operserv.OperDeny_size())
+    {
+	::send(mynick, source, "OperDeny list:");
+    }
+    else
+    {
+	::send(mynick, source, "OperDeny list is empty.");
+	return;
+    }
     unsigned int i=1;
     mstring output;
     MLOCK(("OperServ", "OperDeny"));
@@ -1983,7 +2022,11 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 	if (Parent->operserv.Ignore != Parent->operserv.Ignore_end())
 	{
 	    Parent->operserv.Ignore_erase();
-	    ::send(mynick, source, "Ignore entry #" + mstring(itoa(num)) + " removed.");
+	    ::send(mynick, source, "Ignore entry #" + host + " removed.");
+	}
+	else
+	{
+	    ::send(mynick, source, "Could not find entry #" + host);
 	}
     }
     else
@@ -2046,24 +2089,29 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     }
 
     unsigned int i=1;
+    bool head = false;
     mstring output;
-    MLOCK(("OperServ", "OperDeny"));
-    for (Parent->operserv.OperDeny = Parent->operserv.OperDeny_begin();
-		Parent->operserv.OperDeny != Parent->operserv.OperDeny_end();
-		Parent->operserv.OperDeny++)
+    MLOCK(("OperServ", "Ignore"));
+    for (Parent->operserv.Ignore = Parent->operserv.Ignore_begin();
+		Parent->operserv.Ignore != Parent->operserv.Ignore_end();
+		Parent->operserv.Ignore++)
     {
-	if (Parent->operserv.OperDeny->Entry().LowerCase().Matches(host) &&
-	    Parent->operserv.OperDeny->Value())
+	if (Parent->operserv.Ignore->Entry().LowerCase().Matches(host) &&
+	    Parent->operserv.Ignore->Value())
 	{
+	    if (head == false)
+		::send(mynick, source, "Services permanent ignore list:");
 	    output.Format("%3d. %s (modified %s ago by %s)", i,
-			    Parent->operserv.OperDeny->Entry().c_str(),
-			    Parent->operserv.OperDeny->Last_Modify_Time().Ago().c_str(),
-			    Parent->operserv.OperDeny->Last_Modifier().c_str());
+			    Parent->operserv.Ignore->Entry().c_str(),
+			    Parent->operserv.Ignore->Last_Modify_Time().Ago().c_str(),
+			    Parent->operserv.Ignore->Last_Modifier().c_str());
 	    ::send(mynick, source, output);
 	    output = "";
 	    i++;
 	}
     }
+    if (head == false)
+	::send(mynick, source, "Services permanent ignore list is empty.");
 }
 
 void OperServ::load_database(wxInputStream& in)

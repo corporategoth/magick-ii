@@ -345,7 +345,7 @@ int mBaseTask::svc(void)
 {
     NFT("mBaseTask::svc");
     mThread::Attach(tt_mBase);
-    while(Parent->shutdown()==false)
+    while(!Parent->Shutdown())
     {
 	auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue());
 	if(mo->call()==-1)

@@ -215,6 +215,7 @@ protected:
 public:
     mBase();
     static void init();
+    static void shutdown();
 
     virtual void load_database(wxInputStream& in) =0;
     virtual void save_database(wxOutputStream& out) =0;
@@ -256,7 +257,6 @@ public:
 	locvar.truevaluetype=GetInternalName();
 	return locvar;
     };
-    static void shutdown();
 };
 
 void privmsg(const mstring &source, const mstring &dest, const mstring &message);

@@ -180,7 +180,7 @@ Server::~Server()
 void NetworkServ::raw(mstring text)
 {
     FT("NetworkServ::raw", (text));
-    Parent->ircsvchandler->send(text);
+    Parent->send(text);
 }
 
 void NetworkServ::sraw(mstring text)
@@ -260,6 +260,8 @@ void NetworkServ::Jupe(mstring server, mstring reason)
 	    // :uplink SERVER downlink hops :description
     raw(":" + Parent->startup.Server_Name() + " SERVER " +
 		server.LowerCase() + " 1 :JUPED (" + reason + ")");
+    Parent->server.ServerList[server.LowerCase()] =
+		    Server(server.LowerCase(), "JUPED (" + reason + ")");
 }
 
 void NetworkServ::AWAY(mstring nick, mstring reason)
@@ -484,6 +486,29 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 }
 
 
+void NetworkServ::NOOP(mstring nick, mstring server, bool onoff)
+{
+    FT("NetworkServ::NOOP", (nick, server, onoff));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("NOOP command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("NOOP command requested by non-service %s", nick.c_str());
+    }
+    else if (!IsServer(server))
+    {
+	wxLogWarning("NOOP command requested for non-existant server %s", server.c_str());
+    }
+    else
+    {
+	raw(":" + nick + " NOOP " + server + " " + mstring(onoff ? "+" : "-"));
+    }
+}
+
+
 void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
 {
     FT("NetworkServ::NOTICE", (nick, dest, text));
@@ -568,6 +593,25 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
     {
 	Parent->nickserv.live[nick.LowerCase()].Action();
 	raw(":" + nick + " PRIVMSG " + dest + " :" + text);
+    }
+}
+
+
+void NetworkServ::QLINE(mstring nick, mstring target, mstring reason)
+{
+    FT("NetworkServ::QLINE", (nick, target,reason));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("QLINE command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("QLINE command requested by non-service %s", nick.c_str());
+    }
+    else
+    {
+	raw(":" + nick + " QLINE " + target + " :" + reason);
     }
 }
 
@@ -702,6 +746,25 @@ void NetworkServ::TOPIC(mstring nick, mstring channel, mstring topic)
 }
 
 
+void NetworkServ::UNQLINE(mstring nick, mstring target)
+{
+    FT("NetworkServ::UNQLINE", (nick, target));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("UNQLINE command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("UNQLINE command requested by non-service %s", nick.c_str());
+    }
+    else
+    {
+	raw(":" + nick + " UNQLINE " + target);
+    }
+}
+
+
 void NetworkServ::WALLOPS(mstring nick, mstring message)
 {
     FT("NetworkServ::WALLOPS", (nick, message));
@@ -719,6 +782,15 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
 	Parent->nickserv.live[nick.LowerCase()].Action();
 	raw(":" + nick + " WALLOPS :" + message);
     }
+}
+
+
+void NetworkServ::KillUnknownUser(mstring user)
+{
+    FT("NetworkServ::KillUnknownUser", (user));
+    raw(":" + Parent->startup.Server_Name() + " KILL " + user +
+	    " :" + Parent->startup.Server_Name() + " (" + user +
+	    "(?) <- " + Parent->Server + ")");
 }
 
 
