@@ -46,7 +46,11 @@ int Magick::Start()
     // this is our main routine, when it leaves here, this sucker's done.
 
     CP(("Magick II has been started ..."));
+#ifdef WIN32
     FILE *logfile=fopen((wxGetCwd()+"\\mdebug.log").c_str(),"w+");
+#else
+    FILE *logfile=fopen((wxGetCwd()+"/mdebug.log").c_str(),"w+");
+#endif
     // the below defaults to stderr if logfile cannot be opened
     logger=new wxLogStderr(logfile);
 
@@ -107,7 +111,11 @@ int Magick::Start()
     }
 
     // need to transfer wxGetWorkingDirectory() and prepend it to config_file
+#ifdef WIN32
     MagickIni=new wxFileConfig("magick","",wxGetCwd()+"\\"+config_file);
+#else
+    MagickIni=new wxFileConfig("magick","",wxGetCwd()+"/"+config_file);
+#endif
     if(MagickIni==NULL)
     {
 	wxLogError("Major fubar, couldn't allocate memory to read config file\nAborting");
@@ -367,13 +375,21 @@ void Magick::LoadInternalMessages()
     int i;
     remove("tmplang.lng");
 
+#ifdef WIN32
     wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+"\\tmplang.lng");
+#else
+    wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+"/tmplang.lng");
+#endif
     for(i=0;i<def_langent;i++)
 	*fostream<<def_lang[i]<<"\n";
     fostream->Sync();
     delete fostream;
     // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
+#ifdef WIN32
     wxFileConfig fconf("magick","",wxGetCwd()+"\\tmplang.lng");
+#else
+    wxFileConfig fconf("magick","",wxGetCwd()+"/tmplang.lng");
+#endif
     bool bContGroup, bContEntries;
     long dummy1,dummy2;
     mstring groupname,entryname;
@@ -426,7 +442,11 @@ void Magick::LoadExternalMessages()
     // use the previously created name array to get the names to load
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
+#ifdef WIN32
     wxFileConfig fconf("magick","",wxGetCwd()+"\\english.lng");
+#else
+    wxFileConfig fconf("magick","",wxGetCwd()+"/english.lng");
+#endif
     int i;
     // change this to not just update the internal defaults but also to
     // add new one's like loadinternal does.
