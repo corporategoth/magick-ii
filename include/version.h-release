@@ -24,6 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2000/12/10 07:49:26  prez
+** *** empty log message ***
+**
 ** Revision 1.23  2000/10/03 05:36:27  prez
 ** Updated some makefiles, helper stuff, and headers -- nothing
 ** too earth shattering.
@@ -132,7 +135,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring RELEASE			= "b5";
+const mstring RELEASE			= "b6";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";

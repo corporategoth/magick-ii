@@ -24,14 +24,17 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.109  2000/10/03 05:36:27  prez
+** Revision 1.110  2000/12/10 07:49:26  prez
+** *** empty log message ***
+**
+** Revision 1.23  2000/10/03 05:36:27  prez
 ** Updated some makefiles, helper stuff, and headers -- nothing
 ** too earth shattering.
 **
-** Revision 1.108  2000/09/27 11:21:37  prez
+** Revision 1.22  2000/09/27 11:21:37  prez
 ** Added a BURST mode ...
 **
-** Revision 1.107  2000/09/19 08:05:24  prez
+** Revision 1.21  2000/09/19 08:05:24  prez
 ** Ran text files through spell checker.
 **
 ** Revision 1.20  2000/08/22 08:43:39  prez
@@ -99,9 +102,9 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 2;
-const mstring BUILD_TYPE = "Linux 2.2.16 i686 unknown";
-const mstring BUILD_SYS = "haven";
+const int BUILD_NUMBER = 0;
+const mstring BUILD_TYPE = "Windows 95/98/NT";
+const mstring BUILD_SYS = "localhost";
 
 /* Versioning Information
  *
@@ -132,7 +135,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring RELEASE			= "b5";
+const mstring RELEASE			= "b6";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
