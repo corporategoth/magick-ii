@@ -179,6 +179,7 @@ ONOFF_ONE          =Service %s has been turned %s by %s.
 ENTLIST_CLEAR      =Value of %s has been cleared.
 ENTLIST_SET        =Value of %s has been set to %s.
 REVENGE            =REVENGE: Do not %s %s
+SYNC               =Databases will sync in %s.
 
 BREAKDOWN_HEAD     =SERVER                                        LAG  USERS (OPS)
 BREAKDOWN          ="%-40s  % 3.3fs  %5d (%3d)  %3.2f%%"
@@ -373,6 +374,7 @@ ISLOCKED           =%s option is locked.
 ISNOTLOCKED        =%s option is not locked.
 
 PICDISABLED        =Storing pictures has been DISABLED.
+INVALIDEXT         =The extension of the file you attempted to send is not a known picture format.
 
 ;
 ; These responses are ONLY for the NickServ INFO command.

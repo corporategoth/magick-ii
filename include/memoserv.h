@@ -24,6 +24,10 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2000/04/03 09:45:21  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.23  2000/03/23 10:22:24  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -129,9 +133,6 @@ private:
     unsigned int files;
     unsigned long filesize;
 
-    bool memo;
-    bool news;
-
     void AddCommands();
     void RemCommands();
 public:
@@ -175,8 +176,6 @@ public:
     unsigned long InFlight()	{ return inflight; }
     unsigned int Files()	{ return files; }
     unsigned long FileSize()	{ return filesize; }
-    bool Memo()		{ return memo; }
-    bool News()		{ return news; }
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);

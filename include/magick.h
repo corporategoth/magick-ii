@@ -24,6 +24,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.115  2000/04/03 09:45:21  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.114  2000/03/24 15:35:17  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -192,9 +196,11 @@ public:
 		mstring memoattach;
 		mstring picture;
 		mstring tempdir;
+		unsigned long filesyssize;
 		unsigned long blocksize;
 		unsigned long timeout;
-		unsigned long throughput;
+		unsigned long min_speed;
+		unsigned long max_speed;
 	public:
 		mstring Pidfile()const		    { return pidfile; }
 		mstring Logfile()const		    { return logfile; }
@@ -207,9 +213,11 @@ public:
 		mstring MemoAttach()const	    { return memoattach; }
 		mstring Picture()const		    { return picture; }
 		mstring TempDir()const		    { return tempdir; }
+		unsigned long Filesyssize()const    { return filesyssize; }
 		unsigned long Blocksize()const	    { return blocksize; }
 		unsigned long Timeout()const	    { return timeout; }
-		unsigned long Throughput()const	    { return throughput; }
+		unsigned long Min_Speed()const	    { return min_speed; }
+		unsigned long Max_Speed()const	    { return max_speed; }
 	} files;
 
 	class config_t {
@@ -224,7 +232,6 @@ public:
 		unsigned int starthresh;
 		unsigned int listsize;
 		unsigned int maxlist;
-		unsigned int startup_threads;
 		unsigned int low_water_mark;
 		unsigned int high_water_mark;
 	public:
@@ -237,7 +244,6 @@ public:
 		unsigned int Starthresh()	{ return starthresh; }
 		unsigned int Listsize()		{ return listsize; }
 		unsigned int Maxlist()		{ return maxlist; }
-		unsigned int Startup_Threads()	{ return startup_threads; }
 		unsigned int Low_Water_Mark()	{ return low_water_mark; }
 		unsigned int High_Water_Mark()	{ return high_water_mark; }
 	} config;

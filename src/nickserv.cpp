@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/04/03 09:45:24  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.75  2000/04/02 13:06:04  prez
 ** Fixed the channel TOPIC and MODE LOCK stuff ...
 **
@@ -3049,7 +3053,7 @@ mstring NickServ::findnextnick(mstring in)
 
     for (i=0; i<Parent->nickserv.Suffixes().Len(); i++)
     {
-	while (retval.Len() < Parent->nickserv.Maxlen())
+	while (retval.Len() < Parent->server.proto.NickLen())
 	{
 	    retval << Parent->nickserv.Suffixes()[i];
 	    if (!Parent->nickserv.IsLive(retval) &&
@@ -3842,6 +3846,9 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     if (nick->IsOnline())
 	::send(mynick, source,  Parent->getMessage(source, "NS_INFO/ISONLINE"),
 		Parent->getLname(nick->Name()).c_str());
+    if (Parent->servmsg.ShowSync())
+	::send(mynick, source, Parent->getMessage("MISC/SYNC"),
+			Parent->events->SyncTime().c_str());
 }
 
 void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
@@ -4787,6 +4794,12 @@ void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
 				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    if (Parent->nickserv.PicExt() == "")
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/PICDISABLED"));
 	return;
     }
 

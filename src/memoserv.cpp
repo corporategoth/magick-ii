@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/04/03 09:45:24  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.47  2000/03/29 09:41:19  prez
 ** Attempting to fix thread problem with mBase, and added notification
 ** of new memos on join of channel or signon to network.
@@ -1696,6 +1700,12 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
     }
     else
     {
+	if (Parent->memoserv.Files() == 0)
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "MS_STATUS/FILEDISABLED"));
+	    return;
+	}
+
 	if (!Parent->nickserv.IsStored(name))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),

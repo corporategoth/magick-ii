@@ -28,6 +28,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.212  2000/04/03 09:45:23  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.211  2000/03/29 14:00:18  prez
 ** Fixed the thread pool system, and the watermarks.
 **
@@ -1510,9 +1514,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    in.Read(ts_Services+"MEMO",&memoserv.memo,true);
-    in.Read(ts_Services+"NEWS",&memoserv.news,true);
-    if (!reconnect && Connected() && (memoserv.memo || memoserv.news))
+    if (!reconnect && Connected())
     {
 	for (i=0; i<memoserv.names.WordCount(" "); i++)
 	{
@@ -1564,10 +1566,6 @@ bool Magick::get_config_values()
 	    }
 	}
     }
-
-    in.Read(ts_Services+"FLOOD",&operserv.flood,true);
-    in.Read(ts_Services+"AKILL",&operserv.akill,true);
-    in.Read(ts_Services+"OPERDENY",&operserv.operdeny,true);
 
     in.Read(ts_Services+"CommServ",&value_mstring,"CommServ");
     for (i=0; i<commserv.names.WordCount(" "); i++)
@@ -1662,13 +1660,15 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"MEMOATTACH",&files.memoattach,"files/memo");
     in.Read(ts_Files+"PICTURE",&files.picture,"files/pic");
     in.Read(ts_Files+"TEMPDIR",&files.tempdir,"files/temp");
+    in.Read(ts_Files+"FILESYSSIZE",&files.filesyssize,0);
     in.Read(ts_Files+"BLOCKSIZE",&files.blocksize,1024);
     in.Read(ts_Files+"TIMEOUT",&value_mstring,"2m");
     if (FromHumanTime(value_mstring))
 	files.timeout = FromHumanTime(value_mstring);
     else
 	files.timeout = FromHumanTime("2m");
-    in.Read(ts_Files+"THROUGHPUT",&files.throughput,0);
+    in.Read(ts_Files+"MIN_SPEED",&files.min_speed,0);
+    in.Read(ts_Files+"MAX_SPEED",&files.max_speed,0);
 
     in.Read(ts_Config+"SERVER_RELINK",&value_mstring,"5s");
     if (FromHumanTime(value_mstring))
@@ -1713,13 +1713,11 @@ bool Magick::get_config_values()
 	value_uint = config.listsize;
     config.maxlist = value_uint;
 
-    in.Read(ts_Config+"STARTUP_THREADS",&config.startup_threads, 2);
     in.Read(ts_Config+"LOW_WATER_MARK",&config.low_water_mark, 20);
     in.Read(ts_Config+"HIGH_WATER_MARK",&config.high_water_mark, 25);
     if (config.high_water_mark < config.low_water_mark)
 	config.high_water_mark = config.low_water_mark;
 
-    in.Read(ts_NickServ+"MAXLEN",&nickserv.maxlen,9);
     in.Read(ts_NickServ+"SUFFIXES",&nickserv.suffixes,"_-^`");
     in.Read(ts_NickServ+"EXPIRE",&value_mstring,"4w");
     if (FromHumanTime(value_mstring))

@@ -24,6 +24,10 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2000/04/03 09:45:21  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.31  2000/03/23 10:22:24  prez
 ** Fully implemented the FileSys and DCC system, untested,
 **
@@ -372,7 +376,6 @@ class NickServ : public mBase
 private:
     // Config Entries ...
     mstring enforcer_name;	// Realname of enforcer
-    unsigned int maxlen;	// Maximum length of a nickname
     mstring suffixes;		// What to add to unidentified nicks
     unsigned long expire;	// How long to keep nicknames
     unsigned long ident;	// How long to wait for IDENT
@@ -448,7 +451,6 @@ public:
     } stats;
 
     mstring Enforcer_Name()	{ return enforcer_name; }
-    unsigned int Maxlen()	{ return maxlen; }
     mstring Suffixes()		{ return suffixes; }
     unsigned long Expire()	{ return expire; }
     unsigned long Ident()	{ return ident; }

@@ -24,6 +24,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/04/03 09:45:21  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.33  2000/04/02 13:06:03  prez
 ** Fixed the channel TOPIC and MODE LOCK stuff ...
 **
@@ -65,6 +69,7 @@ static const char *ident_server_h = "@(#) $Id$";
 class Protocol
 {
     unsigned int i_Number;
+    unsigned int i_NickLen;
     map<mstring,mstring> tokens;
 
     bool i_Globops;
@@ -72,7 +77,7 @@ class Protocol
     bool i_SVS;
     bool i_SVSHOST;
     bool i_P12;
-    
+
     /* AKILL types
      *
      * 0 = none
@@ -116,6 +121,7 @@ public:
     mstring GetToken(mstring in);
 
     unsigned int Number()   { return i_Number; }
+    unsigned int NickLen()  { return i_NickLen; }
     bool Globops()	    { return i_Globops; }
     bool Tokens()	    { return i_Tokens; }
     bool SVS()		    { return i_SVS; }

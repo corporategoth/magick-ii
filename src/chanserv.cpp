@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.160  2000/04/03 09:45:21  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.159  2000/04/02 13:06:03  prez
 ** Fixed the channel TOPIC and MODE LOCK stuff ...
 **
@@ -1051,7 +1055,8 @@ void Chan_Stored_t::Join(mstring nick)
 	clive = &Parent->chanserv.live[i_Name.LowerCase()];
     else
     {
-	wxLogWarning("channel not exist");
+	wxLogWarning(Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"JOIN", nick.c_str(), i_Name.c_str());
 	return;
     }
     size_t users = clive->Users();
@@ -1060,7 +1065,8 @@ void Chan_Stored_t::Join(mstring nick)
 	nlive = &Parent->nickserv.live[nick.LowerCase()];
     else
     {
-	wxLogWarning("non-existant user ...");
+	wxLogWarning(Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"JOIN", i_Name.c_str(), nick.c_str());
 	return;
     }
 
@@ -1274,15 +1280,15 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
 			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "] " +
 			i_Comment + " [" + IRC_Bold +
 			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]",
-			Parent->chanserv.live[i_Name.LowerCase()].Topic_Set_Time() -
-				(double) (1.0 / (60.0 * 60.0 * 24.0)));
+			time - (double) (1.0 / (60.0 * 60.0 * 24.0)));
 	return;
     }
 
     if (Topiclock())
     {
 	Parent->server.TOPIC(Parent->chanserv.FirstName(),
-			i_Topic_Setter, i_Name, i_Topic, i_Topic_Set_Time);
+			i_Topic_Setter, i_Name, i_Topic,
+			time - (double) (1.0 / (60.0 * 60.0 * 24.0)));
     }
     else
     {
@@ -4225,6 +4231,9 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
     if (output != "")
 	::send(mynick, source, Parent->getMessage(source, "CS_INFO/OPTIONS"),
 	    output.c_str());
+    if (Parent->servmsg.ShowSync())
+	::send(mynick, source, Parent->getMessage("MISC/SYNC"),
+			Parent->events->SyncTime().c_str());
 }
 
 void ChanServ::do_List(mstring mynick, mstring source, mstring params)

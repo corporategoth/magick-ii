@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/04/03 09:45:22  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.48  2000/03/28 16:20:58  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -1072,6 +1076,9 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
     if (output.size())
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/OPTIONS"),
 			output.c_str());
+    if (Parent->servmsg.ShowSync())
+	::send(mynick, source, Parent->getMessage("MISC/SYNC"),
+			Parent->events->SyncTime().c_str());
 }
 
 void CommServ::do_member_Add(mstring mynick, mstring source, mstring params)

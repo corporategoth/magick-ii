@@ -24,6 +24,10 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/04/03 09:45:21  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.30  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -67,10 +71,6 @@ private:
     unsigned long ignore_remove;
     unsigned int ignore_method;
     bool log_ignore;
-
-    bool flood;
-    bool akill;
-    bool operdeny;
 
     // Mask (H), Limit (int), Reason (mstring)
     set<entlist_val_t<pair<unsigned int, mstring> > > i_Clone;
@@ -153,10 +153,6 @@ public:
     Nick_Live_t::styles Ignore_Method()
 	{ return (Nick_Live_t::styles) ignore_method; }
     bool Log_Ignore()		    { return log_ignore; }
-
-    bool Flood()		{ return flood; }
-    bool oAkill()		{ return akill; }
-    bool oOperDeny()		{ return operdeny; }
 
     size_t CloneList_size() { return CloneList.size(); }
     size_t CloneList_sum();

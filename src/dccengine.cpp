@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2000/04/03 09:45:23  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.24  2000/03/24 12:53:04  prez
 ** FileSystem Logging
 **
@@ -521,6 +525,25 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	return;
     }
 
+
+    if (!Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
+    {
+	if (Parent->nickserv.PicExt() == "")
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/PICDISABLED"));
+	    return;
+	}
+
+	mstring extension = filename.ExtractWord(filename.WordCount("."), ".").LowerCase();
+	if (!(filename.Contains(".") &&
+	    (" " + Parent->nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
+	{
+	    send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/INVALIDEXT"));
+	    return;
+	}
+    }
+
     // Spawn this in a new thread, and we're done, it takes over.
     Parent->dcc->Connect(addr, mynick, source, filename, size);
 }
+

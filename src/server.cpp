@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2000/04/03 09:45:24  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.85  2000/04/02 13:06:04  prez
 ** Fixed the channel TOPIC and MODE LOCK stuff ...
 **
@@ -112,6 +116,7 @@ Protocol::Protocol()
 {
     NFT("Protocol::Protocol");
     i_Number = 0;
+    i_NickLen = 9;
     i_Globops = false;
     i_Tokens = false;
     i_SVS = false;
@@ -218,12 +223,14 @@ void Protocol::Set(unsigned int in)
 	i_Akill = 2;
 	break;
     case 10: /* DAL < 4.4.15 */
+	i_NickLen = 32;
 	i_Signon = 1000;
 	i_Globops = true;
 	i_Akill = 1;
 	i_Modes = 4;
 	break;
     case 11: /* DAL >= 4.4.15 */
+	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
 	i_Tokens = true;
@@ -237,6 +244,7 @@ void Protocol::Set(unsigned int in)
 	i_Akill = 3;
 	break;
     case 30: /* Aurora */
+	i_NickLen = 32;
 	i_Signon = 1002;
 	i_Globops = true;
 	i_SVS = true;
@@ -247,12 +255,14 @@ void Protocol::Set(unsigned int in)
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
     case 40: /* Elite */
+	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
 	i_SVS = true;
 	i_Akill = 1;
 	break;
     case 50: /* Relic 2.0 */
+	i_NickLen = 32;
 	i_Tokens = true;
 	i_SVS = true;
 	i_Globops = true;
@@ -263,8 +273,8 @@ void Protocol::Set(unsigned int in)
 	i_Server = "SERVER %s %d relic2.0 :%s";
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	break;
-
     case 51: /* Relic */
+	i_NickLen = 32;
 	i_Tokens = true;
 	i_SVS = true;
 	i_Globops = true;
@@ -1697,6 +1707,41 @@ void NetworkServ::execute(const mstring & data)
 		}
 	    }
 	}
+	else if (msgtype=="MOTD")
+	{
+	    if (wxFile::Exists(Parent->files.Motdfile().c_str()))
+	    {
+		sraw("375 " + source + " :Message Of The Day");
+		char buf[1024];
+		wxFile in(Parent->files.Motdfile().c_str());
+		mstring flack;
+		unsigned int i;
+		while (!in.Eof())
+		{
+		    in.Read(&buf, 1024);
+		    mstring tmp(buf);
+		    if (tmp.Contains("\n") || tmp.Contains("\r"))
+		    {
+			for (i=1; i<tmp.WordCount("\n\r"); i++)
+			{
+			    flack << tmp.ExtractWord(i, "\n\r");
+			    sraw("372 " + source + " :" + flack);
+			    flack = "";
+			}
+			flack = tmp.ExtractWord(tmp.WordCount("\n\r"), "\n\r");
+		    }
+		    else
+			flack << tmp;
+		}
+		if (flack != "")
+		    sraw("372 " + source + " :" + flack);
+		sraw("376 " + source + " :End of MOTD.");
+	    }
+	    else
+	    {
+		sraw("422 " + source + " :No MOTD exists.");
+	    }
+	}
 	else
 	{
 	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
@@ -2529,18 +2574,6 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="O";
 	    else
 		tmp+="o";
-	    if(Parent->operserv.GetNames() != "" && Parent->operserv.oAkill())
-		tmp+="A";
-	    else
-		tmp+="a";
-	    if(Parent->operserv.GetNames() != "" && Parent->operserv.Flood())
-		tmp+="F";
-	    else
-		tmp+="f";
-	    if(Parent->operserv.GetNames() != "" && Parent->operserv.oOperDeny())
-		tmp+="D";
-	    else
-		tmp+="d";
 	    if(Parent->nickserv.GetNames() != "")
 		tmp+="N";
 	    else
@@ -2549,14 +2582,14 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="C";
 	    else
 		tmp+="c";
-	    if(Parent->memoserv.GetNames() != "" && Parent->memoserv.Memo())
+	    if(Parent->memoserv.GetNames() != "")
 		tmp+="M";
 	    else
 		tmp+="m";
-	    if(Parent->memoserv.GetNames() != "" && Parent->memoserv.News())
-		tmp+="W";
+	    if(Parent->commserv.GetNames() != "")
+		tmp+="S";
 	    else
-		tmp+="w";
+		tmp+="s";
 	    if(Parent->servmsg.GetNames() != "")
 		tmp+="H";
 	    else

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/04/03 09:45:22  prez
+** Made use of some config entries that were non-used, and
+** removed some redundant ones ...
+**
 ** Revision 1.48  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -853,17 +857,17 @@ mstring DisectTime(long intime)
 	if (Days)
 	    Result << ", " << Days << " day" << (Days==1 ? "" : "s");
 	if (Hours || Minutes || Seconds)
-	    Result << ", " << (Hours>10 ? "" : "0") << Hours << ":" <<
-		    (Minutes>10 ? "" : "0") << Minutes << ":" <<
-		    (Seconds>10 ? "" : "0") << Seconds;
+	    Result << ", " << (Hours>=10 ? "" : "0") << Hours << ":" <<
+		    (Minutes>=10 ? "" : "0") << Minutes << ":" <<
+		    (Seconds>=10 ? "" : "0") << Seconds;
     }
     else if(Days>0)
     {
 	Result << Days << " day" << (Days==1 ? "" : "s");
 	if (Hours || Minutes || Seconds)
-	    Result << ", " << (Hours>10 ? "" : "0") << Hours << ":" <<
-		    (Minutes>10 ? "" : "0") << Minutes << ":" <<
-		    (Seconds>10 ? "" : "0") << Seconds;
+	    Result << ", " << (Hours>=10 ? "" : "0") << Hours << ":" <<
+		    (Minutes>=10 ? "" : "0") << Minutes << ":" <<
+		    (Seconds>=10 ? "" : "0") << Seconds;
     }
     else if(Hours>0)
     {
