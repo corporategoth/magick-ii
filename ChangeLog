@@ -1,7 +1,17 @@
+* 2003-03-24 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.80):
+  
+  Created version 2.0s20030324
+
 * 2003-03-23 01:28  Preston A. Elder <prez@magick.tm>
   src/chandata.cpp (1.35):
   
   Fixed kick on ban for services.
+
+* 2003-03-23 01:28  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.33.2.2):
+  
+  Fixed Kick On Ban for services.
 
 * 2003-03-23 01:28  Preston A. Elder <prez@magick.tm>
   src/chandata.cpp (1.33.2.2):
