@@ -1752,6 +1752,7 @@ void Magick::load_databases()
 	//input->Sync();
 	input = &finput;
 	delete dinput;
+	CP(("Data TAG: %s | %d | %d | %d", tag.c_str(), ver, compressed, encrypted));
 
 	if (tag != FileIdentificationTag)
 	    wxLogFatal("Invalid data file (not Magick II)");
@@ -1816,6 +1817,8 @@ void Magick::save_databases()
 	wxDataOutputStream *doutput;
 	wxOutputStream *output = &foutput;
 
+	CP(("Data TAG: %s | %d | %d | %d", FileIdentificationTag.c_str(),
+		FileVersionNumber, (files.Compression() != 0), files.Encryption()));
 	doutput = new wxDataOutputStream(*output);
 	output = doutput;
 	*output << FileIdentificationTag << FileVersionNumber <<

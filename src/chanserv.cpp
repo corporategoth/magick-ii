@@ -556,6 +556,7 @@ void Chan_Live_t::SendMode(mstring in)
 			}
 		    }
 		}
+		param++;
 	    }
 	    break;
 	case 'v':
@@ -587,6 +588,7 @@ void Chan_Live_t::SendMode(mstring in)
 			}
 		    }
 		}
+		param++;
 	    }
 	    break;
 	case 'b':
@@ -618,12 +620,13 @@ void Chan_Live_t::SendMode(mstring in)
 			}
 		    }
 		}
+		param++;
 	    }
 	    break;
 	case 'l':
-	    if (in.WordCount(" ") >= param)
+	    if (add)
 	    {
-		if (add)
+		if (in.WordCount(" ") >= param)
 		{
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
@@ -632,15 +635,16 @@ void Chan_Live_t::SendMode(mstring in)
 			p_modes_on += "l";
 			p_modes_on_params.push_back(in.ExtractWord(param, " "));
 		    }
+		    param++;
 		}
-		else
+	    }
+	    else
+	    {
+		if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
+		    RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
+		if (!ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
 		{
-		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
-			RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
-		    if (!ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
-		    {
-			p_modes_off += "l";
-		    }
+		    p_modes_off += "l";
 		}
 	    }
 	    break;
@@ -673,6 +677,7 @@ void Chan_Live_t::SendMode(mstring in)
 			}
 		    }
 		}
+		param++;
 	    }
 	    break;
 	default:
@@ -794,12 +799,12 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		{
 		    i_Limit = atoi(in.ExtractWord(fwdargs, ": ").c_str());
 		}
+		fwdargs++;
 	    }
 	    else
 	    {
 		i_Limit = 0;
 	    } 
-	    fwdargs++;
 	    break;
 
 	default:
@@ -3819,7 +3824,7 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
 			chan->Name().c_str(), chan->Founder().c_str());
 	Parent->chanserv.stored.erase(channel.LowerCase());
 	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
-		chan->Name().c_str());
+		channel.c_str());
 	return;
     }
 
@@ -3859,6 +3864,7 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
     Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
@@ -5186,6 +5192,7 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 		who.c_str());
 	return;
     }
+    who = Parent->getSname(who);
 
     if (!level.IsNumber() || level.Contains("."))
     {
@@ -5458,6 +5465,7 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 		channel.c_str());
 	return;
     }
+    who = Parent->getSname(who);
 
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
     if (cstored->Akick_find(who))
@@ -5686,6 +5694,7 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
     {
 	target = Parent->nickserv.stored[target.LowerCase()].Host();
     }
+    target = Parent->getSname(target);
 
     if (cstored->Greet_find(target))
     {
@@ -5744,6 +5753,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 	    {
 		target = Parent->nickserv.stored[target.LowerCase()].Host();
 	    }
+	    target = Parent->getSname(target);
 
 	    if (!cstored->Greet_find(target))
 	    {
@@ -5774,6 +5784,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 	{
 	    target = Parent->nickserv.stored[target.LowerCase()].Host();
 	}
+	target = Parent->getSname(target);
 
 	if (cstored->Greet_find(target))
 	{
@@ -5824,6 +5835,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     }
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 3 &&
@@ -5843,6 +5855,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     {
 	target = Parent->nickserv.stored[target.LowerCase()].Host();
     }
+    target = Parent->getSname(target);
 
     bool found = false;
     for (cstored->Greet = cstored->Greet_begin();
@@ -6064,8 +6077,9 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
     else if (Parent->nickserv.stored[founder.LowerCase()].Host() != "" &&
 	Parent->nickserv.IsStored(Parent->nickserv.stored[founder.LowerCase()].Host()))
     {
-	founder = Parent->nickserv.stored[Parent->nickserv.stored[founder.LowerCase()].Host()].Name();
+	founder = Parent->nickserv.stored[founder.LowerCase()].Host();
     }
+    founder = Parent->getSname(founder);
 
     cstored->Founder(founder);
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
@@ -6116,8 +6130,9 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
     else if (Parent->nickserv.stored[founder.LowerCase()].Host() != "" &&
 	Parent->nickserv.IsStored(Parent->nickserv.stored[founder.LowerCase()].Host()))
     {
-	founder = Parent->nickserv.stored[Parent->nickserv.stored[founder.LowerCase()].Host()].Name();
+	founder = Parent->nickserv.stored[founder.LowerCase()].Host();
     }
+    founder = Parent->getSname(founder);
 
     if (cstored->Founder().LowerCase() == founder.LowerCase())
     {
