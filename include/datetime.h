@@ -180,4 +180,17 @@ extern mDateTime StringToDate(const mstring& in);
 extern mDateTime StringToTime(const mstring& in);
 extern mDateTime StringToDateTime(const mstring& in);
 
+extern mstring DateSeparator;
+extern mstring ShortDateFormat;
+extern mstring LongDateFormat;
+extern mstring TimeSeparator;
+extern mstring TimeAMString;
+extern mstring TimePMString;
+extern mstring ShortTimeFormat;
+extern mstring LongTimeFormat;
+extern mstring ShortMonthNames[12];
+extern mstring LongMonthNames[12];
+extern mstring ShortDayNames[7];
+extern mstring LongDayNames[7];
+
 #endif

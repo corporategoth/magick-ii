@@ -1,6 +1,23 @@
 // RCS-ID:      $Id$
 #include "datetime.h"
 
+mstring DateSeparator="/";
+mstring ShortDateFormat="m/d/yy";
+mstring LongDateFormat="mmmm d, yyyy";
+mstring TimeSeparator=":";
+mstring TimeAMString="am";
+mstring TimePMString="pm";
+mstring ShortTimeFormat="h:mm AMPM";
+mstring LongTimeFormat="hh:mm:ss AMPM";
+mstring ShortMonthNames[12] =
+{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+mstring LongMonthNames[12] =
+{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+mstring ShortDayNames[7] =
+{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+mstring LongDayNames[7] =
+{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
 mDateTime mDateTime::CurrentDate()
 {
 	return ::Date();
@@ -224,7 +241,6 @@ bool mDateTime::operator<=(const mDateTime& in)
 #if 0
 mstring mDateTime::FormatString(const mstring& format)
 {
-	mstring Result;
 	
 }
 	mstring DateString()const;
