@@ -1110,7 +1110,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 
 	Parent->memoserv.stats.i_Reply++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
-					    false, mynick, who, text);
+					    false, mynick, who, output);
     }
     else
     {
@@ -1182,7 +1182,7 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 
 	Parent->memoserv.stats.i_Reply++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
-					    false, mynick, who, text);
+					    false, mynick, who, output);
     }
 }
 

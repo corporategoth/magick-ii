@@ -756,10 +756,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	    mstring realrecipiant = Parent->nickserv.stored[comm->Head().LowerCase()].Host();
 	    if (realrecipiant == "")
 		realrecipiant = comm->Head();
-	    if (((me->Host() != "") ? (realrecipiant != me->Host()) :
-		(realrecipiant.LowerCase() != me->Name().LowerCase())) &&
-		(comm->Head() == realrecipiant ||
-		Parent->nickserv.IsStored(realrecipiant)))
+	    if (me->Host().LowerCase() != realrecipiant.LowerCase())
 	    {
 		Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
 		    Memo_t(realrecipiant, source, "[" + IRC_Bold +
@@ -776,10 +773,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	    mstring realrecipiant = Parent->nickserv.stored[comm->member->Entry().LowerCase()].Host();
 	    if (realrecipiant == "")
 		realrecipiant = comm->member->Entry();
-	    if (((me->Host() != "") ? (realrecipiant != me->Host()) :
-		(realrecipiant.LowerCase() != me->Name().LowerCase())) &&
-	        (comm->member->Entry() == realrecipiant ||
-		Parent->nickserv.IsStored(realrecipiant)))
+	    if (me->Host().LowerCase() != realrecipiant.LowerCase())
 	    {
 		Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
 		    Memo_t(realrecipiant, source, "[" + IRC_Bold +

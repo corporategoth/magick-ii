@@ -162,6 +162,7 @@ BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (O
 BREAKDOWN          ="%-40s  % 3.3fs  %5d (%3d)  %3.2f%%"
 ON                 =ON
 OFF                =OFF
+SUSPENDED          =SUSPENDED
 
 ;
 ; This section contains the output of the STATS command.

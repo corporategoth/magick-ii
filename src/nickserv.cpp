@@ -1003,7 +1003,7 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 	    if (iter == try_chan_ident.end())
 		try_chan_ident.push_back(channel.LowerCase());
 
-	    if (failtimes > Parent->chanserv.Passfail())
+	    if (failtimes >= Parent->chanserv.Passfail())
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
@@ -1081,7 +1081,7 @@ mstring Nick_Live_t::Identify(mstring password)
 	else
 	{
 	    failed_passwds++;
-	    if (failed_passwds > Parent->nickserv.Passfail())
+	    if (failed_passwds >= Parent->nickserv.Passfail())
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
@@ -1711,13 +1711,14 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 	    csiter->second.Greet = csiter->second.Greet_end();
 	} }
     }
-
     
     map<mstring, Nick_Stored_t>::iterator niter;
     for (niter = Parent->nickserv.stored.begin();
 			niter != Parent->nickserv.stored.end(); niter++)
     {
-	if (niter->second.IsIgnore(oldnick))
+	if (niter->first != i_Name.LowerCase() &&
+	    !IsSibling(niter->first) &&
+	    niter->second.IsIgnore(oldnick))
 	{
 	    niter->second.IgnoreDel(oldnick);
 	    niter->second.IgnoreAdd(i_Name);
@@ -1755,16 +1756,17 @@ bool Nick_Stored_t::MakeHost()
 	// and finally set my host pointer to "".
 	for (unsigned int i=0; i<Parent->nickserv.stored[i_Host.LowerCase()].Siblings(); i++)
 	{
-	    if (Parent->nickserv.IsStored(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i)))
-	    {
-		Parent->nickserv.stored[Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i)].i_Host = i_Name;
-		i_slaves.insert(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i));
-	    }
-	    else
-	    {
-		wxLogWarning("Nick %s was listed as slave of %s, but does not exist!!",
+	    if (Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i).LowerCase() != i_Name.LowerCase())
+		if (Parent->nickserv.IsStored(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i)))
+		{
+		    i_slaves.insert(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i));
+		    Parent->nickserv.stored[Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i)].i_Host = i_Name;
+		}
+		else
+		{
+		    wxLogWarning("Nick %s was listed as slave of %s, but does not exist!!",
 			Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i).c_str(), i_Name.c_str());
-	    }
+		}
 	}
 	i_Password = Parent->nickserv.stored[i_Host.LowerCase()].i_Password;
 	i_Email = Parent->nickserv.stored[i_Host.LowerCase()].i_Email;
@@ -1793,8 +1795,9 @@ bool Nick_Stored_t::MakeHost()
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.clear();
 	Parent->nickserv.stored[i_Host.LowerCase()].i_Host = i_Name;
-	ChangeOver(i_Host);
+	mstring tmp = i_Host;
 	i_Host = "";
+	ChangeOver(tmp);
 	RET(true);
     }
 }
@@ -2872,7 +2875,7 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"U*LIN*", Parent->commserv.REGD_Name(), NickServ::do_UnLink);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"*HOST", Parent->commserv.REGD_Name(), NickServ::do_Host);
+		"HOST", Parent->commserv.REGD_Name(), NickServ::do_Host);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"*SLAV*", Parent->commserv.REGD_Name(), NickServ::do_Slaves);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3238,7 +3241,7 @@ void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (Parent->nickserv.stored[target.LowerCase()].IsSibling(source))
+	if (!Parent->nickserv.stored[target.LowerCase()].IsSibling(source))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTYOURS"),
 							target.c_str());
@@ -3439,7 +3442,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 
     if (nick->Forbidden())
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/FORBIDDEN"),
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
 						target.c_str());
 	return;
     }
@@ -4019,7 +4022,7 @@ void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
 
     if (hostmask.IsNumber())
     {
-	if (hostmask.Contains(".") || hostmask.Contains("-"));
+	if (hostmask.Contains(".") || hostmask.Contains("-"))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
 	    return;
@@ -4167,7 +4170,7 @@ void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 
     if (target.IsNumber())
     {
-	if (target.Contains(".") || target.Contains("-"));
+	if (target.Contains(".") || target.Contains("-"))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
 	    return;

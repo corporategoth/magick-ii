@@ -119,6 +119,7 @@ Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
     i_Name = name;
+    i_Limit = 0;
     users[first_user.LowerCase()] = pair<bool,bool>(false,false);
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Join(first_user);
@@ -1093,16 +1094,23 @@ void Chan_Stored_t::Topic(mstring topic, mstring setter, mDateTime time)
     FT("Chan_Stored_t::Topic", (topic, setter, time));
 
     // Its us re-setting it!
-    if (Parent->nickserv.IsLive(setter))
+    if (Parent->nickserv.IsLive(setter) &&
+	Parent->nickserv.live[setter.LowerCase()].IsServices())
+	return;
+
+    if (Suspended())
     {
-	if (Parent->nickserv.live[setter.LowerCase()].IsServices())
-	    return;
+	Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name,
+			"[" + IRC_Bold + Parent->getMessage("MISC/SUSPENDED") +
+			IRC_Off + "] " + i_Comment + " [" + IRC_Bold +
+			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]");
+	return;
     }
 
     if (Topiclock())
     {
 	Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name,
-		i_Topic + "(" + i_Topic_Setter + ")");
+		i_Topic + " (" + i_Topic_Setter + ")");
     }
     else
     {
@@ -1509,7 +1517,7 @@ void Chan_Stored_t::Founder(mstring in)
 {
     FT("Chan_Stored_t::Founder", (in));
 
-    if (!Parent->chanserv.IsStored(in))
+    if (!Parent->nickserv.IsStored(in))
 	return;
 
     if (i_CoFounder == in)
@@ -1523,7 +1531,7 @@ void Chan_Stored_t::CoFounder(mstring in)
 {
     FT("Chan_Stored_t::CoFounder", (in));
 
-    if (!Parent->chanserv.IsStored(in))
+    if (!Parent->nickserv.IsStored(in))
 	return;
 
     if (i_Founder == in)
@@ -3261,11 +3269,9 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLEAR*", Parent->commserv.REGD_Name(), do_1_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* *", Parent->commserv.REGD_Name(), NULL);
+	    "LEV* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK", Parent->commserv.SOP_Name(), do_1_3param);
+	    "LEV*", Parent->commserv.REGD_Name(), do_1_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "ACC* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3283,9 +3289,17 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "M*S*G*", Parent->commserv.REGD_Name(), do_1_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV* *", Parent->commserv.REGD_Name(), NULL);
+	    "SET* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV*", Parent->commserv.REGD_Name(), do_1_3param);
+	    "SET*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK *", Parent->commserv.SOP_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK", Parent->commserv.SOP_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK *", Parent->commserv.SOP_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK", Parent->commserv.SOP_Name(), do_1_3param);
 }
 
 void ChanServ::RemCommands()
@@ -3471,7 +3485,7 @@ void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
     if (!wasident)
 	Parent->chanserv.stats.i_Identify++;
     if (output != "")
-	::send(mynick, source, output);
+	::send(mynick, source, output, channel.c_str());
 }
 
 void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
@@ -3748,7 +3762,7 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
     }
 
     mstring channel   = params.ExtractWord(2, " ");
-    mstring reason    = params.After(" ", 3);
+    mstring reason    = params.After(" ", 2);
 
     if (!Parent->chanserv.IsStored(channel))
     {
@@ -3759,6 +3773,10 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
     channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()].Suspend(source, reason);
+    Parent->server.TOPIC(mynick, channel, "[" + IRC_Bold +
+			Parent->getMessage("MISC/SUSPENDED") +
+			IRC_Off + "] " + reason + " [" + IRC_Bold +
+			Parent->getMessage("MISC/SUSPENDED") + IRC_Off + "]");
     Parent->chanserv.stats.i_Suspend++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SUSPENDED"),
 	    channel.c_str());
@@ -3812,7 +3830,6 @@ void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
 		channel.c_str());
 	return;
     }
-    channel = Parent->getSname(channel);
 
     Parent->chanserv.stored[channel.LowerCase()] = Chan_Stored_t(channel);
     Parent->chanserv.stats.i_Forbid++;
@@ -3909,7 +3926,7 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
     else if (cstored->GetAccess(source, "VIEW"))
     {
 	mstring output;
-	output << clive->Name() << ": " << clive->Mode();
+	output << clive->Name() << ": +" << clive->Mode();
 	if (clive->Key() != "" && clive->Limit())
 	{
 	    if (clive->Mode().Before("l").Contains("k"))

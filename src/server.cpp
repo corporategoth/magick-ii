@@ -733,7 +733,7 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
     }
     else if (Parent->nickserv.IsLive(newnick))
     {
-	wxLogWarning("SVSNICK command requested by %s to non-existant user %s", mynick.c_str(), newnick.c_str());
+	wxLogWarning("SVSNICK command requested by %s to existing user %s", mynick.c_str(), newnick.c_str());
     }
     else
     {
@@ -757,7 +757,7 @@ void NetworkServ::TOPIC(mstring nick, mstring channel, mstring topic)
     {
 	wxLogWarning("TOPIC command requested by non-service %s", nick.c_str());
     }
-    else if (Parent->chanserv.IsLive(channel))
+    else if (!Parent->chanserv.IsLive(channel))
     {
 	wxLogWarning("TOPIC command requested by %s for non-existant channel %s",
 		nick.c_str(), channel.c_str());
@@ -765,13 +765,20 @@ void NetworkServ::TOPIC(mstring nick, mstring channel, mstring topic)
     else
     {
 	mstring send;
-	if (topic == "")
+/*	if (topic == "")
 	    send << ":" << nick << " TOPIC " << channel << " " << nick;
 	else
 	    send << ":" << nick << " TOPIC " << channel << " " <<
 		nick << " " << Now().timetstring() << " :" << topic;
+*/
+	if (topic == "")
+	    send << "TOPIC " << channel << " " << nick;
+	else
+	    send << "TOPIC " << channel << " " <<
+		nick << " " << Now().timetstring() << " :" << topic;
 
-	raw(send);
+	Parent->chanserv.live[channel.LowerCase()].Topic(topic, nick);
+	sraw(send);
     }
 }
 
@@ -1572,10 +1579,7 @@ void NetworkServ::execute(const mstring & data)
 		else
 		{ // Clearing
 		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Topic(
-		        "",
-		        data.ExtractWord(4, ": "),
-		        Now()
-		    );
+		        "", data.ExtractWord(4, ": "));
 		}
 	    }
 	}
