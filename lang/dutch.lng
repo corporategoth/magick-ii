@@ -1,7 +1,7 @@
 ; Magick IRC Services
 ; (c) 1996-1999 Preston A. Elder, W. King
 ;
-; English On-Line Language File
+; Dutch On-Line Language File
 ; Translated By: Striker Stormbringer <striker@darker.net>
 ; Please also edit the ERR_SYNTAX/TRANSLATED token to
 ; reflect the above (this is displayed when someone
@@ -84,15 +84,26 @@
 ;
 [ERR_SYNTAX]
 TRANSLATED         =Striker Stormbringer <striker@darker.net>
-UNKNOWN_COMMAND    =Commando niet herkend %s.  Tiep /msg %s HELP voor help.
-UNKNOWN_OPTION     =Optie niet herkend %s.  Tiep /msg %s HELP %s voor help.
-NEED_PARAMS        =Insufficiant paramaters specified for %s.  Type /msg %s HELP %s for help.
-MUSTCONTAIN        =Specified %s entry must contain a '%c' character.
-MAYNOTCONTAIN      =Specified %s entry may not contain a '%c' character.
-STARTHRESH         =Specified %s entry must have more than %d non-wildcard characters.
-MUSTBENUMBER       =You must specify a number between %d and %d.
+UNKNOWN_COMMAND    =Commando %s niet herkend, Tiep /msg %s HELP voor help.
+UNKNOWN_OPTION     =Optie %s niet herkend, Tiep /msg %s HELP %s voor help.
+NEED_PARAMS        =Onvoldoende parameters gespecificeerd voor %s. Tiep /msg %s HELP %s voor help.
+MUSTCONTAIN        =Gespecificeerde %s invoer moet een %s karakter bevatten.
+MAYNOTCONTAIN      =Gespecificeerde %s invoer mag niet een '%c' karakter bevatten.
+
+
+; Problem: "wildcard"
+STARTHRESH         =Gespecificeerde %s invoer moet meer dan %d non-wildcard karakters bevatten.
+
+
+MUSTBENUMBER       =Je moet een nummer tussen %d en %d specificeren.
+
+
 POSWHOLENUMBER     =You may only specify a posetive whole number.
-MUSTBEONOFF        =You may only specify "ON" or "OFF".
+
+
+MUSTBEONOFF        =Je mag alleen "AAN" of "AF" specificeren.
+
+
 NONNUMERIC         =Non-numeric arguments specified (ignored).
 ABOVELIMIT         =All entries above %d have been ignored.
 CHANFILEATTACH     =File attachments are not allowed to channels.
