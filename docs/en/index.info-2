@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index8148.info.2.
+/tmp/sgmltmp.index8129.info.2.
 
    \input texinfo
 
@@ -217,6 +217,7 @@ Questions and Answers
 
 * What is the Home Site of Magick?::
 * My IRCD isn't supported what can I do?::
+* Why dont these services work right with Hybrid?::
 * I like these services and want to pay the author!::
 
 
@@ -243,7 +244,7 @@ is very dynamic and where you should go if you have questions, or
 problems with magick - or want to see whats coming up, or who is who.
 
 
-File: index.info,  Node: My IRCD isn't supported what can I do?,  Next: I like these services and want to pay the author!,  Prev: What is the Home Site of Magick?,  Up: Questions and Answers
+File: index.info,  Node: My IRCD isn't supported what can I do?,  Next: Why dont these services work right with Hybrid?,  Prev: What is the Home Site of Magick?,  Up: Questions and Answers
 
 My IRCD isn't supported what can I do?
 ======================================
@@ -261,7 +262,35 @@ supported:
      Wrecked IRCD            DALNet >= 4.4.15
 
 
-File: index.info,  Node: I like these services and want to pay the author!,  Prev: My IRCD isn't supported what can I do?,  Up: Questions and Answers
+File: index.info,  Node: Why dont these services work right with Hybrid?,  Next: I like these services and want to pay the author!,  Prev: My IRCD isn't supported what can I do?,  Up: Questions and Answers
+
+Why dont these services work right with Hybrid?
+===============================================
+
+   Hybrid has several key features missing from what many consider a
+'modern' ircd.  There is no way to remove a network-wide kill (aka.
+GLINE), no way to rename a nickname on the network, no way to set user
+modes on people, and probably weirdest of all, users cannot OP
+themselves.  This means that many features that people often expect
+from Magick are disabled.
+
+   The most obvious thing many people will notice using Magick on a
+hybrid network is that ChanServ, if set to join a channel, will not OP
+itself - mainly because it cant, it tries, but hybrid rejects it.  Also
+all users who dont identify will be killed, not renamed, and options
+like SETMODE (under CommServ in the magick.ini file) will have no
+effect.
+
+   Not much I can do about this, hybrid was NOT designed for use with
+services, and it shows.  Hybrid, unlike alot of other IRCDs is a
+'paranoid' IRCD.  Most IRCD's out there will basically say 'If I
+receive it, unless its syntactically wrong, its already happened, so I
+cant reject it - so I'll just deal with it'.  Hybrid says 'I am going
+to make sure its not only syntactically correct, but that it adheres to
+all the rules I place on it'.
+
+
+File: index.info,  Node: I like these services and want to pay the author!,  Prev: Why dont these services work right with Hybrid?,  Up: Questions and Answers
 
 I like these services and want to pay the author!
 =================================================

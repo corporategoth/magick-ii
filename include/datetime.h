@@ -25,6 +25,9 @@ RCSID(datetime_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2001/08/04 18:32:01  prez
+** Made some changes for Hybrid 6 -- we now work with it ... mostly.
+**
 ** Revision 1.38  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -128,6 +131,7 @@ public:
     mDateTime(const mDateTime& src) {Val=src.Val;}
     mDateTime(const double src) {Val=src;}
     mDateTime(const time_t src) { *this=src; }
+    mDateTime(const struct tm src) { *this=src; }
     mDateTime(const mstring& src, const mDateTimeFlag flag=DateTime);
     mDateTime(const unsigned int year, const unsigned int month, const unsigned int day)
 	{
@@ -159,7 +163,13 @@ public:
 	{
 	    tm *tmst;
 	    tmst=localtime(&in);
-	    *this=mDateTime(tmst->tm_year+1900,tmst->tm_mon+1,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec,0);
+	    *this = *tmst;
+	    return *this;
+	}
+    mDateTime& operator=(const struct tm in)
+	{
+	    *this = mDateTime(in.tm_year+1900,in.tm_mon+1,in.tm_mday)
+	          + mDateTime(in.tm_hour,in.tm_min,in.tm_sec,0);
 	    return *this;
 	}
     mDateTime& operator+=(const mDateTime& in)
@@ -173,6 +183,11 @@ public:
 	    return *this;
 	}
     mDateTime& operator+=(const time_t in)
+	{
+	    Val+=mDateTime(in).Val;
+	    return *this;
+	}
+    mDateTime& operator+=(const struct tm in)
 	{
 	    Val+=mDateTime(in).Val;
 	    return *this;
@@ -192,7 +207,11 @@ public:
 	    Val-=mDateTime(in).Val;
 	    return *this;
 	}
-
+    mDateTime& operator-=(const struct tm in)
+	{
+	    Val-=mDateTime(in).Val;
+	    return *this;
+	}
     mDateTime operator+(const mDateTime& in) const
 	{
 	    mDateTime retval(Val);
@@ -211,6 +230,12 @@ public:
 	    retval += in;
 	    return retval;
 	}
+    mDateTime operator+(const struct tm in) const
+	{
+	    mDateTime retval(Val);
+	    retval += in;
+	    return retval;
+	}
     mDateTime operator-(const mDateTime& in) const
 	{
 	    mDateTime retval(Val);
@@ -224,6 +249,12 @@ public:
 	    return retval;
 	}
     mDateTime operator-(const time_t in) const
+	{
+	    mDateTime retval(Val);
+	    retval -= in;
+	    return retval;
+	}
+    mDateTime operator-(const struct tm in) const
 	{
 	    mDateTime retval(Val);
 	    retval -= in;

@@ -27,6 +27,9 @@ RCSID(datetime_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/08/04 18:32:02  prez
+** Made some changes for Hybrid 6 -- we now work with it ... mostly.
+**
 ** Revision 1.70  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -159,8 +162,6 @@ mstring mDateTime::LongDayNames[7]	= { "Monday", "Tuesday", "Wednesday",
 
 static const int SecsPerDay		= 24 * 60 * 60;
 static const int MSecsPerDay		= SecsPerDay * 1000;
-//Days between 1/1/0001 and 12/31/1899
-static const int DateDelta		= 693594;
 
 typedef int mDayTable[12];
 static mDayTable DayTable1		= { 31, 28, 31, 30, 31, 30,
@@ -223,9 +224,12 @@ bool DoEncodeDate(const int Year, const int Month, const int Day, mDateTime& Dat
 	(Day >= 1) && (Day <= DayTable[Month-1]))
     {
 	for(I = 1; I<Month;I++) 
+	{
 	    tmpDay+=DayTable[I-1];
-	I = Year - 1;
-	Date.Val = static_cast<double>(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
+	}
+	I = Year;
+	tmpDay += ((I * 365) + (I / 4) - (I / 100) + (I / 400));
+	Date.Val = static_cast<double>(tmpDay);
 	Result = true;
     }
     return Result;
@@ -509,6 +513,9 @@ mDateTime::operator time_t() const
 {
 	int Year,Month,Day,Hour,Min,Sec,MSec;
 	DecodeDate(Year,Month,Day);
+	if (Year < 1900)
+	    return (time_t) -1;
+
 	DecodeTime(Hour,Min,Sec,MSec);
 	tm localtm;
 	localtm.tm_year=Year-1900;
@@ -555,7 +562,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
     NumDays=LeftOver;
 
     Y=Y400*400+Y100*100+Y4*4+Y1;
-    year=Y+1900;
+    year=Y;
 
     int i=0;
     mDayTable &DayTable=GetDayTable(year);
@@ -565,7 +572,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
 	NumDays-=DayTable[i];
 	i++;
     }
-    day=NumDays;
+    day=NumDays+1;
     month=M;
 }
 
@@ -574,7 +581,6 @@ void mDateTime::DecodeTime(int &hour, int &min, int &sec, int &msec)const
 	//(Hour * 3600000 + Min * 60000 + Sec * 1000 + MSec) / MSecsPerDay;
 	int CurrentVal=static_cast<int>(fmod(Val,1.0)*static_cast<double>(MSecsPerDay));
 	int LeftOver;
-	//Time = ((double)Hour * 3600000.0 + (double)Min * 60000.0 + (double)Sec * 1000.0 + (double)MSec) / (double)MSecsPerDay;
 
 	LeftOver=CurrentVal%3600000;
 	hour=CurrentVal/3600000;
@@ -652,18 +658,20 @@ mstring mDateTime::timetstring()const
 {
     mstring Result;
     time_t Res2;
-	int Year,Month,Day,Hour,Min,Sec,MSec;
-	DecodeDate(Year,Month,Day);
-	DecodeTime(Hour,Min,Sec,MSec);
-	tm localtm;
-	localtm.tm_year=Year-1900;
-	localtm.tm_mon=Month-1;
-	localtm.tm_mday=Day;
-	localtm.tm_hour=Hour;
-	localtm.tm_min=Min;
-	localtm.tm_sec=Sec+1;
-	localtm.tm_isdst=0;
-	Res2=mktime(&localtm);
+    int Year,Month,Day,Hour,Min,Sec,MSec;
+    DecodeDate(Year,Month,Day);
+    if (Year < 1900)
+	return (time_t) -1;
+    DecodeTime(Hour,Min,Sec,MSec);
+    tm localtm;
+    localtm.tm_year=Year-1900;
+    localtm.tm_mon=Month-1;
+    localtm.tm_mday=Day;
+    localtm.tm_hour=Hour;
+    localtm.tm_min=Min;
+    localtm.tm_sec=Sec;
+    localtm.tm_isdst=-1;
+    Res2=mktime(&localtm);
     Result << static_cast<unsigned long>(Res2);
     return Result;
 }

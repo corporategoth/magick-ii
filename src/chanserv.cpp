@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.260  2001/08/04 18:32:02  prez
+** Made some changes for Hybrid 6 -- we now work with it ... mostly.
+**
 ** Revision 1.259  2001/07/12 00:28:41  prez
 ** Added propper support for Anarchy mode
 **
@@ -6513,13 +6516,15 @@ void ChanServ::do_Register(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
+    Chan_Stored_t tmp(channel, founder, password, desc);
+    Parent->chanserv.AddStored(&tmp);
+    if (tmp.Join())
+	Parent->server.JOIN(Parent->chanserv.FirstName(), channel);
     { RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     Parent->nickserv.GetLive(source).SetLastChanReg();
-    Chan_Stored_t tmp(channel, founder, password, desc);
     tmp.Topic(clive.Topic(), clive.Topic_Setter(), clive.Topic_Set_Time());
     clive.SendMode(tmp.Mlock());
-    Parent->chanserv.AddStored(&tmp);
     }
     Parent->nickserv.GetLive(source).ChanIdentify(channel, password);
     Parent->chanserv.stats.i_Register++;

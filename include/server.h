@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2001/08/04 18:32:01  prez
+** Made some changes for Hybrid 6 -- we now work with it ... mostly.
+**
 ** Revision 1.71  2001/07/29 03:12:23  prez
 ** Fixed up stuff for the NEW rn4.0
 **
@@ -221,6 +224,8 @@ class Protocol
      *        GLINE * -user@host
      * 2002 = GLINE +user@host time :reason
      *        GLINE -user@host
+     * 2003 = GLINE opernick operuser operhost operserver user host :reason
+     *        NO UNGLINE
      */
     unsigned int i_Akill;
 
@@ -265,6 +270,14 @@ class Protocol
      * UMODE2      Allow the UMODE2 command (aka. :user MODE user mode)
      * NS          Allow use of server numerics (not just server name)
      * VHP         Enable virtual host support
+     *
+     * ZIP         Compress stream to irc server using zlib  (*)
+     * QS          Quit Storm (ie. assume quit's on SQUIT)
+     * EX          Channel mode +/-e (ban exception)
+     * CHW         Allow '@' or '+' before #channel in notice/privmsg  (*)
+     * DE          Channel mode +/-d (deny, ie. regex ban)  (*)
+     *
+     * (*) = We do not support this at the moment.
      */
 
     mstring i_Protoctl; /* Verbatum (null if not sent) */

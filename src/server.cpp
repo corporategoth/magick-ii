@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.191  2001/08/04 18:32:02  prez
+** Made some changes for Hybrid 6 -- we now work with it ... mostly.
+**
 ** Revision 1.190  2001/07/29 21:22:26  prez
 ** Delayed clone akills on sync until AFTER we're synced
 **
@@ -721,16 +724,14 @@ void Protocol::SetTokens(const unsigned int type)
 	tokens["BN"] = "POST";
 	tokens["BO"] = "PRIVMSG InfoServ";
 	break;
-    default:
-	tokens.clear();
     }
 }
 
 Protocol::Protocol()
     : i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false),
       i_Helpops(false), i_Tokens(false), i_P12(false), i_TSora(false),
-      i_Akill(0), i_Signon(0), i_Modes(3), i_ChanModeArg("ovbkl"),
-      i_Server("SERVER %s %d :%s"), i_Numeric(0)
+      i_SJoin(false), i_Akill(0), i_Signon(0), i_Modes(3),
+      i_ChanModeArg("ovbkl"), i_Server("SERVER %s %d :%s"), i_Numeric(0)
 {
     NFT("Protocol::Protocol");
     DumpB();
@@ -791,6 +792,7 @@ void Protocol::Set(const unsigned int in)
 	i_Akill = 1001;
 	i_Modes = 6;
 	i_TSora = true;
+	i_SJoin = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -820,10 +822,13 @@ void Protocol::Set(const unsigned int in)
 	break;
 
     case 30: // Hybrid
+	i_NickLen = 9;
 	i_Signon = 2000;
+	i_Akill = 2003;
+	i_ChanModeArg = "ovbekld";
 	SetTokens(0000);
 	i_TSora = true;
-	i_Protoctl = "CAPAB EX DE";
+	i_Protoctl = "CAPAB QS EX";
 	break;
 
     case 40: // Elite
@@ -841,7 +846,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 50: // Relic 2.0
+    case 50: // Relic 2.0 (dreamforge based)
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Helpops = true;
@@ -859,11 +864,12 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 51: // Relic 2.1
+    case 51: // Relic 2.1 (dreamforge based)
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Helpops = true;
 	i_P12 = true;
+	i_SJoin = true;
 	i_Signon = 1003;
 	i_Akill = 2002;
 	i_Modes = 6;
@@ -879,7 +885,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0002);
 	break;
 
-    case 53: // Relic 4.0
+    case 53: // Relic 4.0 (bahamut based)
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
@@ -891,11 +897,21 @@ void Protocol::Set(const unsigned int in)
 	i_SVSMODE = "SVSMODE";
 	i_SVSKILL = "SVSKILL";
 	i_SVSNOOP = "SVSNOOP";
-	i_SQLINE = "RQLINE 0";
-	i_UNSQLINE = "UNRQLINE";
+	i_SQLINE = "SQLINE";
+	i_UNSQLINE = "UNSQLINE";
 	i_Burst = "BURST";
 	i_EndBurst = "EOB";
 	SetTokens(0003);
+	break;
+
+    case 54: // Relic 5.0 (hybrid based)
+	i_NickLen = 32;
+	i_Signon = 2000;
+	i_Akill = 2003;
+	i_ChanModeArg = "ovbekld";
+	SetTokens(0000);
+	i_TSora = true;
+	i_Protoctl = "CAPAB QS EX";
 	break;
 
     case 60: // Aurora
@@ -1734,6 +1750,19 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	else
 	    line << "GLINE";
 	line << " +" << host << " " << exptime << " :" << reason;
+	break;
+    case 2003:
+	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
+	    line << proto.GetNonToken("GLINE");
+	else
+	    line << "GLINE";
+	Nick_Live_t os;
+	if (Parent->nickserv.IsLive(Parent->operserv.FirstName()))
+	    os = Parent->nickserv.GetLive(Parent->operserv.FirstName());
+	line << os.Name() << " " << os.User() << " " << os.Host()
+		<< " " << Parent->startup.Server_Name() << " "
+		<< host.Before("@") << " " << host.After("@")
+		<< " :" << reason;
 	break;
     }
 
@@ -2607,6 +2636,9 @@ void Server::RAKILL(const mstring& host)
 	    line << "GLINE";
 	line << " -" << host;
 	break;
+    case 2003:
+	// Complete no-op.
+	break;
     }
     if (!line.empty())
 	sraw(line);
@@ -2885,7 +2917,7 @@ void Server::UNSQLINE(const mstring& nick, const mstring& target)
 {
     FT("Server::UNSQLINE", (nick, target));
 
-    if (!proto.UNSQLINE().empty())
+    if (proto.UNSQLINE().empty())
 	return;
 
     if (!Parent->nickserv.IsLive(nick))
@@ -4374,6 +4406,11 @@ void Server::parse_R(mstring &source, const mstring &msgtype, const mstring &par
 	{
 	    // Will we ever get this via. net??  ignore.
 	}
+	else if (msgtype=="RQLINE")
+	{
+	    // We will ignore RQLINES because they're not relivant to us.
+	    // we will not be qlining our own clients ;P
+	}
 	else
 	{
 	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
@@ -5373,6 +5410,11 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 	{
 	    // We will ignore GLINES because they're not relivant to us.
 	    // we will not be glining our own clients ;P
+	}
+	else if (msgtype=="UNRQLINE")
+	{
+	    // We will ignore RQLINES because they're not relivant to us.
+	    // we will not be qlining our own clients ;P
 	}
 	else if (msgtype=="UNSQLINE")
 	{

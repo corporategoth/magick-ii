@@ -44,6 +44,32 @@ IRCD                    COMPATIBLE
 Wrecked IRCD            DALNet >= 4.4.15
 
 
+Why dont these services work right with Hybrid?
+===============================================
+
+Hybrid has several key features missing from what many consider
+a 'modern' ircd.  There is no way to remove a network-wide kill
+(aka. GLINE), no way to rename a nickname on the network, no
+way to set user modes on people, and probably weirdest of all,
+users cannot OP themselves.  This means that many features that
+people often expect from Magick are disabled.
+
+The most obvious thing many people will notice using Magick on
+a hybrid network is that ChanServ, if set to join a channel,
+will not OP itself -- mainly because it cant, it tries, but
+hybrid rejects it.  Also all users who dont identify will be
+killed, not renamed, and options like SETMODE (under CommServ
+in the magick.ini file) will have no effect.
+
+Not much I can do about this, hybrid was NOT designed for use
+with services, and it shows.  Hybrid, unlike alot of other IRCDs
+is a 'paranoid' IRCD.  Most IRCD's out there will basically
+say 'If I receive it, unless its syntactically wrong, its already
+happened, so I cant reject it -- so I'll just deal with it'.
+Hybrid says 'I am going to make sure its not only syntactically
+correct, but that it adheres to all the rules I place on it'.
+
+
 I like these services and want to pay the author!
 =================================================
 
