@@ -5400,11 +5400,14 @@ void ChanServ::do_set_Mlock(const mstring & mynick, const mstring & source, cons
     channel = cstored->Name();
 
     // If you have OVR_CS_Mode, then you can still change the mlock ...
-    if (cstored->Forbidden() || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Mode()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Mode())->IsOn(source)))
+    if (cstored->Forbidden())
     {
-	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
-	return;
+	if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Mode()) &&
+	      Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Mode())->IsOn(source)))
+	{
+	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	    return;
+	}
     }
     else if (!cstored->GetAccess(source, "SET"))
     {
