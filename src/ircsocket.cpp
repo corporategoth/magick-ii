@@ -1538,7 +1538,7 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 
 	if (Magick::instance().server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
-	    Magick::instance().server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
+	    Magick::instance().server.raw("SVINFO " + mstring(Magick::instance().server.proto.TSora()) + " 1 0 :" + mDateTime::CurrentDateTime().timetstring());
 	Magick::instance().Connected(true);
 	LOG(LM_INFO, "OTHER/CONNECTED", (server.Name(), server.Port()));
 #ifndef TEST_MODE
@@ -2694,8 +2694,6 @@ void EventTask::do_modes(mDateTime & synctime)
 			COM(("i = %d (%c), j = %d, k = %d", i, chan->p_modes_off[i], j, k));
 			if (j >= Magick::instance().server.proto.Modes())
 			{
-			    if (Magick::instance().server.proto.TSora())
-				modeparam << " " << time(NULL);
 			    modelines[*iter].push_back(mode + " " + modeparam);
 			    mode.erase();
 			    modeparam.erase();
@@ -2730,8 +2728,6 @@ void EventTask::do_modes(mDateTime & synctime)
 			COM(("i = %d (%c), j = %d, k = %d", i, chan->p_modes_on[i], j, k));
 			if (j >= Magick::instance().server.proto.Modes())
 			{
-			    if (Magick::instance().server.proto.TSora())
-				modeparam << " " << time(NULL);
 			    modelines[*iter].push_back(mode + " " + modeparam);
 			    mode.erase();
 			    modeparam.erase();
@@ -2755,11 +2751,7 @@ void EventTask::do_modes(mDateTime & synctime)
 		    chan->p_modes_on_params.clear();
 		}
 		if (mode.size())
-		{
-		    if (Magick::instance().server.proto.TSora())
-			modeparam << " " << time(NULL);
 		    modelines[*iter].push_back(mode + " " + modeparam);
-		}
 	    }
 	}
     }

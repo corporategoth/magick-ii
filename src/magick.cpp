@@ -2264,7 +2264,7 @@ bool Magick::get_config_values()
     in.Read(ts_Services + "NickServ", value_mstring, "NickServ");
     for (i = 0; i < nickserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + nickserv.names.ExtractWord(i + 1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(" " + nickserv.names.ExtractWord(i + 1, " ") + " "))
 	{
 	    nickserv.signoff(nickserv.names.ExtractWord(i + 1, " "));
 	}
@@ -2287,7 +2287,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(nickserv.names.ExtractWord(i + 1, " ")))
 	    {
-		if (isonstr.length() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine() && server.proto.ISON())
 		{
 		    server.sraw(((server.proto.Tokens() &&
 				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
@@ -2306,7 +2306,7 @@ bool Magick::get_config_values()
     in.Read(ts_Services + "ChanServ", value_mstring, "ChanServ");
     for (i = 0; i < chanserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + chanserv.names.ExtractWord(i + 1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(" " + chanserv.names.ExtractWord(i + 1, " ") + " "))
 	{
 	    chanserv.signoff(chanserv.names.ExtractWord(i + 1, " "));
 	}
@@ -2329,7 +2329,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(chanserv.names.ExtractWord(i + 1, " ")))
 	    {
-		if (isonstr.length() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine() && server.proto.ISON())
 		{
 		    server.sraw(((server.proto.Tokens() &&
 				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
@@ -2346,7 +2346,7 @@ bool Magick::get_config_values()
     in.Read(ts_Services + "MemoServ", value_mstring, "MemoServ");
     for (i = 0; i < memoserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + memoserv.names.ExtractWord(i + 1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(" " + memoserv.names.ExtractWord(i + 1, " ") + " "))
 	{
 	    memoserv.signoff(memoserv.names.ExtractWord(i + 1, " "));
 	}
@@ -2369,7 +2369,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(memoserv.names.ExtractWord(i + 1, " ")))
 	    {
-		if (isonstr.length() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine() && server.proto.ISON())
 		{
 		    server.sraw(((server.proto.Tokens() &&
 				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
@@ -2386,12 +2386,13 @@ bool Magick::get_config_values()
     in.Read(ts_Services + "OperServ", value_mstring, "OperServ");
     for (i = 0; i < operserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + operserv.names.ExtractWord(i + 1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(" " + operserv.names.ExtractWord(i + 1, " ") + " "))
 	{
 	    operserv.signoff(operserv.names.ExtractWord(i + 1, " "));
 	}
     }
     operserv.names = value_mstring;
+
 
     in.Read(ts_Services + "OperServ_Name", value_mstring, "Operator Service");
     if (value_mstring != operserv.realname)
@@ -2409,7 +2410,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(operserv.names.ExtractWord(i + 1, " ")))
 	    {
-		if (isonstr.length() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine() && server.proto.ISON())
 		{
 		    server.sraw(((server.proto.Tokens() &&
 				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
@@ -2426,7 +2427,7 @@ bool Magick::get_config_values()
     in.Read(ts_Services + "CommServ", value_mstring, "CommServ");
     for (i = 0; i < commserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + commserv.names.ExtractWord(i + 1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(" " + commserv.names.ExtractWord(i + 1, " ") + " "))
 	{
 	    commserv.signoff(commserv.names.ExtractWord(i + 1, " "));
 	}
@@ -2449,7 +2450,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(commserv.names.ExtractWord(i + 1, " ")))
 	    {
-		if (isonstr.length() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine() && server.proto.ISON())
 		{
 		    server.sraw(((server.proto.Tokens() &&
 				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
@@ -2466,7 +2467,7 @@ bool Magick::get_config_values()
     in.Read(ts_Services + "ServMsg", value_mstring, "HelpServ DevNull");
     for (i = 0; i < servmsg.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + servmsg.names.ExtractWord(i + 1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains(" " + servmsg.names.ExtractWord(i + 1, " ") + " "))
 	{
 	    servmsg.signoff(servmsg.names.ExtractWord(i + 1, " "));
 	}
@@ -2489,7 +2490,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(servmsg.names.ExtractWord(i + 1, " ")))
 	    {
-		if (isonstr.length() > server.proto.MaxLine())
+		if (isonstr.length() > server.proto.MaxLine() && server.proto.ISON())
 		{
 		    server.sraw(((server.proto.Tokens() &&
 				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
@@ -2507,9 +2508,14 @@ bool Magick::get_config_values()
     in.Read(ts_Services + "QUIT_MESSAGE", startup.services_quitmsg, "");
 
     if (!isonstr.empty())
-	server.sraw(((server.proto.Tokens() &&
+    {
+	if (server.proto.ISON())
+	    server.sraw(((server.proto.Tokens() &&
 		      !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
 								   mstring("ISON")) + " :" + isonstr);
+	else
+	    server.process_eob();
+    }
 
     in.Read(ts_Files + "UMASK", value_mstring, "027");
     files.umask = 0;

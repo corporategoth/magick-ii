@@ -154,8 +154,11 @@ bool Protocol::Set(const mstring & filename)
     FT("Protocol::Set", (filename));
 
     DumpB();
-    set < unsigned int > AkillTypes, SignonTypes;
+    set < unsigned int > JoinTypes, AkillTypes, SignonTypes;
 
+    JoinTypes.insert(0000);
+    JoinTypes.insert(1000);
+    JoinTypes.insert(2000);
     AkillTypes.insert(0000);
     AkillTypes.insert(1000);
     AkillTypes.insert(1001);
@@ -176,6 +179,7 @@ bool Protocol::Set(const mstring & filename)
     SignonTypes.insert(2002);
     SignonTypes.insert(2003);
     SignonTypes.insert(3000);
+    SignonTypes.insert(4000);
 
     if (!mFile::Exists(filename))
     {
@@ -211,12 +215,20 @@ bool Protocol::Set(const mstring & filename)
     cfg.Read(ts_Protocol + "HELPOPS", i_Helpops, false);
     cfg.Read(ts_Protocol + "CHATOPS", i_Chatops, false);
     cfg.Read(ts_Protocol + "TOKENS", i_Tokens, false);
-    cfg.Read(ts_Protocol + "TSORA", i_TSora, false);
-    cfg.Read(ts_Protocol + "SJOIN", i_SJoin, false);
+    cfg.Read(ts_Protocol + "TSORA", i_TSora, 0);
     cfg.Read(ts_Protocol + "BIGTOPIC", i_BigTopic, false);
     cfg.Read(ts_Protocol + "TOPICJOIN", i_TopicJoin, false);
     cfg.Read(ts_Protocol + "TOPICCURRENT", i_TopicCurrent, false);
     cfg.Read(ts_Protocol + "SERVERMODES", i_ServerModes, false);
+    cfg.Read(ts_Protocol + "ISON", i_ISON, true);
+
+    cfg.Read(ts_Protocol + "JOIN", value_uint, 0000);
+    if (JoinTypes.find(value_uint) == JoinTypes.end())
+    {
+	NLOG(LM_WARNING, "COMMANDLINE/UNKNOWN_JOIN");
+	RET(false);
+    }
+    i_Join = value_uint;
 
     cfg.Read(ts_Protocol + "AKILL", value_uint, 0000);
     if (AkillTypes.find(value_uint) == AkillTypes.end())
@@ -330,7 +342,7 @@ void Protocol::DumpB() const
 {
     BTCB();
     MB(0,
-       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
+       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_TSora, i_Join, i_BigTopic, i_TopicJoin,
 	i_TopicCurrent, i_Akill, i_KillAfterAkill, i_Signon, i_Modes, i_ChanModeArg));
     MB(16,
        (i_Server, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE,
@@ -342,7 +354,7 @@ void Protocol::DumpE() const
 {
     BTCB();
     ME(0,
-       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
+       (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_TSora, i_Join, i_BigTopic, i_TopicJoin,
 	i_TopicCurrent, i_Akill, i_KillAfterAkill, i_Signon, i_Modes, i_ChanModeArg));
     ME(16,
        (i_Server, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE,
@@ -893,6 +905,7 @@ void Server::raw(const mstring & text) const
 void Server::sraw(const mstring & text) const
 {
     BTCB();
+    FT("Server::sraw", (text));
     mstring out;
 
     if (!proto.Numeric.Server())
@@ -910,6 +923,7 @@ void Server::sraw(const mstring & text) const
 void Server::nraw(const mstring & nick, const mstring & text) const
 {
     BTCB();
+    FT("Server::nraw", (nick, text));
     mstring out;
 
     mstring n = GetUser(nick);
@@ -991,7 +1005,7 @@ void Server::SignOnAll()
 	}
     }
 
-    if (!doison.empty())
+    if (!doison.empty() && proto.ISON())
 	sraw(((proto.Tokens() &&
 	       !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") : mstring("ISON")) + " :" + doison);
     ETCB();
@@ -1785,16 +1799,9 @@ void Server::JOIN(const mstring & nick, const mstring & channel)
 
 	// If we have SJOIN ability, then we need to join each
 	// channel individually, else we do a standard JOIN.
-	if (proto.SJoin())
+	switch (proto.Join())
 	{
-	    out << ((proto.Tokens() && !proto.GetNonToken("SJOIN").empty()) ? proto.GetNonToken("SJOIN") :
-									      mstring("SJOIN")) << " " <<
-		    mDateTime::CurrentDateTime().timetstring() << " ";
-
-	    for (ci = channels.begin(); ci != channels.end(); ci++)
-		nraw(nick, out + *ci);
-	}
-	else
+	case 0000:
 	{
 	    out << ((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ? proto.GetNonToken("JOIN") :
 									     mstring("JOIN")) << " :";
@@ -1818,6 +1825,24 @@ void Server::JOIN(const mstring & nick, const mstring & channel)
 		out << * ci;
 	    }
 	    nraw(nick, out);
+	    break;
+	}
+	case 1000:
+	    out << ((proto.Tokens() && !proto.GetNonToken("SJOIN").empty()) ? proto.GetNonToken("SJOIN") :
+									      mstring("SJOIN")) << " " <<
+		    mDateTime::CurrentDateTime().timetstring() << " ";
+
+	    for (ci = channels.begin(); ci != channels.end(); ci++)
+		nraw(nick, out + *ci);
+	    break;
+	case 2000:
+	    out << ((proto.Tokens() && !proto.GetNonToken("SJOIN").empty()) ? proto.GetNonToken("SJOIN") :
+									      mstring("SJOIN")) << " " <<
+		    mDateTime::CurrentDateTime().timetstring() << " ";
+
+	    for (ci = channels.begin(); ci != channels.end(); ci++)
+		sraw(out + *ci + " + :@" + nick);
+	    break;
 	}
 
 	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(nick);
@@ -1963,13 +1988,15 @@ void Server::MODE(const mstring & nick, const mstring & channel, const mstring &
     else
     {
 	Magick::instance().chanserv.GetLive(channel)->Mode(nick, mode);
+	mstring out;
+	out << ((proto.Tokens() && !proto.GetNonToken("MODE").empty()) ?
+		proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " + mode;
+	if (proto.TSora())
+	    out << " " << mDateTime::CurrentDateTime().timetstring();
 	if (proto.ServerModes())
-	    sraw(((proto.Tokens() &&
-		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " + mode);
+	    sraw(out);
 	else
-	    nraw(nick,
-		 ((proto.Tokens() &&
-		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " + mode);
+	    nraw(nick, out);
     }
     ETCB();
 }
@@ -2146,11 +2173,24 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    }
 	    sendmode = false;
 
-	    Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
+	    {
+		Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
 
-	    // B]AAAB == 127.0.0.1 for ipaddress.
-	    out << "B]AAAB " << proto.Numeric.ServerNumeric(svr.Numeric()) << " " <<
-		   proto.Numeric.UserNumeric(tmp->Numeric()) << " :" << name;
+		// B]AAAB == 127.0.0.1 for ipaddress.
+		out << "B]AAAB " << proto.Numeric.ServerNumeric(svr.Numeric()) << " " <<
+			proto.Numeric.UserNumeric(tmp->Numeric()) << " :" << name;
+	    }
+	    break;
+	case 4000:
+	    token = "CLIENT";
+	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
+		out << proto.GetNonToken(token);
+	    else
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << outmodes << " " << user << " " <<
+		   host << " " << server << " " << proto.Numeric.UserNumeric(tmp->Numeric()) << " :" << name;
+	    tmp->Mode(outmodes);
+	    sendmode = false;
 	    break;
 	}
 	// Sign ourselves in ...
@@ -3167,6 +3207,11 @@ void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & 
 		LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", ("MODE", source, chan));
 	    }
 	}
+	else if (params.IsSameAs("0"))
+	{
+	    if (!proto.ISON())
+		process_eob();
+	}
     }
     else
     {
@@ -3189,8 +3234,6 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 	// Bahamut version of the PROTOCTL line
 	if (tmp.Contains(" TOKEN "))
 	    proto.Tokens(true);
-//	if (tmp.Contains(" SSJOIN ") || tmp.Contains(" SJOIN ") || tmp.Contains(" SJOIN2 ") || tmp.Contains(" SJ3 "))
-//	    proto.SJoin(true);
     }
     else if (msgtype == "CHATOPS")
     {
@@ -3207,6 +3250,196 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
     }
     else if (msgtype == "CHGNAME")
     {
+    }
+    else if (msgtype == "CLIENT")
+    {
+	if (!source.Contains("."))
+	    return;
+
+	// NEW USER
+	mstring newnick = IrcParam(params, 1);
+
+	// DONT kill when we do SQUIT protection.
+	map < mstring, set < mstring > >::iterator i;
+	{
+	    RLOCK((lck_Server, "ToBeSquit"));
+	    for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
+	    {
+		WLOCK2((lck_Server, "ToBeSquit", i->first));
+		set < mstring >::iterator k = i->second.find(newnick.LowerCase());
+		if (k != i->second.end())
+		    i->second.erase(k);
+	    }
+	}
+
+	mstring server;
+	mstring modes;
+
+	switch (proto.Signon())
+	{
+	case 0000:		// USER nick user host server :realname
+	case 0001:		// USER nick time user host server :realname
+	case 1000:		// NICK nick hops time user host server :realname
+	case 1001:		// NICK nick hops time user host server 1 :realname
+	case 1002:		// NICK nick hops time user host server 0 real-host :realname
+	case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	case 2000:		// NICK nick hops time mode user host server :realname
+	case 2001:		// NICK nick hops time mode user host server 0 :realname
+	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
+	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
+	    break;
+	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
+	    modes = IrcParam(params, 4);
+	    server = IrcParam(params, 7);
+	    break;
+
+	}
+	if (proto.Numeric.Server() && !server.Contains("."))
+	    server.prepend("@");
+	server = GetServer(server);
+
+	if (Magick::instance().nickserv.IsLiveAll(newnick))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+	    COM(("Previous SQUIT checking if %s == %s and %s == %s", nlive->Squit().c_str(), server.c_str(),
+		 nlive->SignonTime().DateTimeString().c_str(),
+		 mDateTime(static_cast < time_t > (atoul(IrcParam(params, 3)))).DateTimeString().c_str()));
+	    // IF the squit server = us, and the signon time matches
+	    if (nlive->Squit().IsSameAs(server, true) &&
+		nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(IrcParam(params, 3)))))
+	    {
+		nlive->ClearSquit(modes);
+		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		if (nlive->Numeric())
+		    mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+		return;		// nice way to avoid repeating ones self :)
+	    }
+	    else
+	    {
+		nlive->Quit("SQUIT - " + nlive->Server());
+		Magick::instance().nickserv.RemLive(newnick);
+		mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
+		if (nlive->Numeric())
+		    mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+	    }
+	}
+
+	switch (proto.Signon())
+	{
+	case 0000:		// USER nick user host server :realname
+	case 0001:		// USER nick time user host server :realname
+	case 1000:		// NICK nick hops time user host server :realname
+	case 1001:		// NICK nick hops time user host server 1 :realname
+	case 1002:		// NICK nick hops time user host server 0 real-host :realname
+	case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	case 2000:		// NICK nick hops time mode user host server :realname
+	case 2001:		// NICK nick hops time mode user host server 0 :realname
+	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
+	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
+	    break;
+	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(IrcParam(params, 1),
+				    static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+				    IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
+		tmp->Mode(modes);
+		tmp->Numeric(proto.Numeric.UserNumeric(IrcParam(params, 8)));
+
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	}
+
+	if (Magick::instance().nickserv.IsLive(newnick))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+	    if (nlive->Server().empty())
+	    {
+		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		if (nlive->Numeric())
+		    mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+		KILL(Magick::instance().nickserv.FirstName(), newnick, nlive->RealName());
+		return;
+	    }
+
+	    {
+		WLOCK2((lck_Server, "i_UserMax"));
+		if (i_UserMax < Magick::instance().nickserv.LiveSize())
+		{
+		    MCB(i_UserMax);
+		    i_UserMax = Magick::instance().nickserv.LiveSize();
+		    MCE(i_UserMax);
+		}
+	    }
+
+	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
+	    if (nlive->Numeric())
+		mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+	    // HAS to be AFTER the nickname is added to map.
+	    CommServ::list_t::iterator iter;
+	    mstring setmode;
+
+	    {
+		RLOCK2((lck_CommServ, lck_list));
+		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
+		{
+		    map_entry < Committee_t > comm(iter->second);
+		    if (comm->IsOn(newnick))
+		    {
+			if (comm->Name() == Magick::instance().commserv.ALL_Name())
+			    setmode += Magick::instance().commserv.ALL_SetMode();
+			else if (comm->Name() == Magick::instance().commserv.REGD_Name())
+			    setmode += Magick::instance().commserv.REGD_SetMode();
+			else if (comm->Name() == Magick::instance().commserv.OPER_Name())
+			    setmode += Magick::instance().commserv.OPER_SetMode();
+			else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
+			    setmode += Magick::instance().commserv.ADMIN_SetMode();
+			else if (comm->Name() == Magick::instance().commserv.SOP_Name())
+			    setmode += Magick::instance().commserv.SOP_SetMode();
+			else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
+			    setmode += Magick::instance().commserv.SADMIN_SetMode();
+
+			MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
+			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
+			{
+			    Magick::instance().servmsg.send(newnick,
+							    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
+							    comm->message->Entry());
+			}
+		    }
+		}
+	    }
+	    if (!setmode.empty())
+	    {
+		mstring setmode2;
+
+		for (unsigned int j = 0; j < setmode.size(); j++)
+		{
+		    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
+			setmode2 += setmode[j];
+		}
+		if (!setmode2.empty())
+		    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
+	    }
+	    if (Magick::instance().nickserv.IsStored(newnick))
+	    {
+		map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
+		if (nstored->Forbidden())
+		{
+		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
+			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+		}
+		else if (nstored->Protect() && !nstored->IsOnline())
+		{
+		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
+			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+		}
+	    }
+	}
     }
     else if (msgtype == "CONNECT")
     {
@@ -3288,6 +3521,8 @@ void Server::parse_E(mstring & source, const mstring & msgtype, const mstring & 
 	// Tis only nice, afterall ...
 	Magick::instance().server.sraw(((proto.Tokens() && !proto.GetNonToken("EOB_ACK").empty()) ? proto.GetNonToken("EOB_ACK") :
 												    mstring("EOB_ACK")));
+	if (!proto.ISON())
+	    process_eob();
     }
     else if (msgtype == "EOB_ACK")
     {
@@ -3530,8 +3765,11 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 		{
 		    WLOCK2((lck_Server, "WaitIsOn"));
 		    WaitIsOn.insert(target);
-		    sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") :
+		    if (proto.ISON())
+			sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") :
 										   mstring("ISON")) + " :" + target);
+		    else
+			process_eob();
 		}
 		else if (Magick::instance().nickserv.IsRecovered(target))
 		    Magick::instance().nickserv.RemRecovered(target);
@@ -3548,7 +3786,9 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 	{
 	    LOG(LM_ERROR, "ERROR/REC_FORNONUSER", ("KILL", source, IrcParam(params, 1)));
 	}
-
+    }
+    else if (msgtype == "KNOCK")
+    {
     }
     else
     {
@@ -3834,6 +4074,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		    modes.erase();
 		server = source;
 		break;
+	    case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
+		break;
 	    }
 	    if (proto.Numeric.Server() && !server.Contains("."))
 		server.prepend("@");
@@ -3975,6 +4217,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 
 		    Magick::instance().nickserv.AddLive(tmp);
 		}
+		break;
+	    case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
 		break;
 	    }
 
@@ -4324,8 +4568,6 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	// Bahamut version of the PROTOCTL line
 	if (tmp.Contains(" TOKEN "))
 	    proto.Tokens(true);
-//	if (tmp.Contains(" SSJOIN ") || tmp.Contains(" SJOIN ") || tmp.Contains(" SJOIN2 ") || tmp.Contains(" SJ3 "))
-//	    proto.SJoin(true);
     }
     else
     {
@@ -4400,8 +4642,11 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
 		{
 		    WLOCK2((lck_Server, "WaitIsOn"));
 		    WaitIsOn.insert(source);
-		    sraw(((proto.Tokens() &&
+		    if (proto.ISON())
+			sraw(((proto.Tokens() &&
 			   !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") : mstring("ISON")) + " :" + source);
+		    else
+			process_eob();
 		}
 		else if (Magick::instance().nickserv.IsRecovered(source))
 		    Magick::instance().nickserv.RemRecovered(source);
@@ -5292,6 +5537,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
 	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
+	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
 	    break;
 	}
 	if (proto.Numeric.Server() && !server.Contains("."))
@@ -5353,6 +5599,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
 	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
+	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
 	    break;
 	}
 
@@ -5769,167 +6016,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
     switch (numeric)
     {
     case 303:			// RPL_ISON
-	{
-	    bool wasburst = false;
-	    {
-		RLOCK((lck_IrcSvcHandler));
-		if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->Burst())
-		{
-		    wasburst = true;
-		    Magick::instance().ircsvchandler->EndBurst();
-		    if (!proto.Burst().empty())
-			Magick::instance().server.sraw(((proto.Tokens() && !proto.GetNonToken(proto.Burst()).empty()) ?
-									   proto.GetNonToken(proto.Burst()) :
-									   mstring(proto.Burst())));
-		    LOG(LM_INFO, "EVENT/NETSYNCED", (fmstring("%.3f", Magick::instance().ircsvchandler->BurstTime())));
-		}
-	    }
-
-	    Magick::instance().operserv.CloneList_check();
-
-	    unsigned int i, wc = IrcParamCount(params);
-	    mstring nicks;
-	    for (i=1; i<=wc; i++)
-		nicks += " " + IrcParam(params, i);
-
-	    for (i = 1; i <= nicks.WordCount(" "); i++)
-	    {
-		// Remove clients from 'signon list' who are
-		// already on the network.
-		WLOCK((lck_Server, "WaitIsOn"));
-		if (WaitIsOn.find(nicks.ExtractWord(i, " ").LowerCase()) != WaitIsOn.end())
-		    WaitIsOn.erase(nicks.ExtractWord(i, " "));
-	    }
-	    if (WaitIsOn.size())
-	    {
-		set < mstring >::reverse_iterator k;
-		RLOCK((lck_Server, "WaitIsOn"));
-		for (k = WaitIsOn.rbegin(); k != WaitIsOn.rend(); k++)
-		{
-		    if (Magick::instance().operserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
-		    {
-			Magick::instance().operserv.signon(*k);
-		    }
-		    else if (Magick::instance().nickserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
-		    {
-			Magick::instance().nickserv.signon(*k);
-		    }
-		    else if (Magick::instance().chanserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
-		    {
-			Magick::instance().chanserv.signon(*k);
-
-			if (Magick::instance().chanserv.FirstName() == * k)
-			{
-			    if (Magick::instance().chanserv.Hide())
-				MODE(*k, "+i");
-			    vector < mstring > joins;
-			    ChanServ::stored_t::iterator iter;
-			    map < mstring, mstring > modes;
-			    map < mstring, triplet < mstring, mstring, mDateTime > > topics;
-
-			    // Should be fact finding ONLY ...
-			    {
-				RLOCK2((lck_ChanServ, lck_stored));
-				for (iter = Magick::instance().chanserv.StoredBegin();
-				     iter != Magick::instance().chanserv.StoredEnd(); iter++)
-				{
-				    map_entry < Chan_Stored_t > cstored(iter->second);
-				    mstring lname = cstored->Name().LowerCase();
-				    map_entry < Chan_Live_t > clive;
-				    if (Magick::instance().chanserv.IsLive(lname))
-					clive = Magick::instance().chanserv.GetLive(lname);
-
-				    // If its live and got JOIN on || not live and mlock +k or +i
-				    if ((clive != NULL && cstored->Join()) ||
-					(clive == NULL &&
-					 (!cstored->Mlock_Key().empty() || cstored->Mlock_On().Contains("i"))))
-				    {
-					joins.push_back(lname);
-					if (clive == NULL)
-					{
-					    modes[lname] = "+s";
-					    if (cstored->Mlock_On().Contains("i"))
-						modes[lname] += "i";
-					    if (!cstored->Mlock_Key().empty())
-						modes[lname] += "k " + cstored->Mlock_Key();
-					}
-				    }
-
-				    if (clive != NULL && !cstored->Last_Topic().empty() && !cstored->Suspended())
-				    {
-					if ((cstored->Topiclock() && clive->Topic() != cstored->Last_Topic()) ||
-					    (cstored->Keeptopic() && clive->Topic().empty()))
-					{
-					    topics[lname] =
-						triplet < mstring, mstring, mDateTime > (cstored->Last_Topic_Setter(),
-											 cstored->Last_Topic(),
-											 cstored->Last_Topic_Set_Time());
-					}
-				    }
-				}
-			    }
-
-			    vector < mstring >::iterator j;
-			    mstring joinline;
-
-			    for (j = joins.begin(); j != joins.end(); j++)
-			    {
-				if (joinline.length() + j->length() > proto.MaxLine())
-				{
-				    JOIN(Magick::instance().chanserv.FirstName(), joinline);
-				    joinline.erase();
-				}
-				if (joinline.length())
-				    joinline << ",";
-				joinline << * j;
-			    }
-			    if (joinline.length())
-			    {
-				JOIN(Magick::instance().chanserv.FirstName(), joinline);
-				joinline.erase();
-			    }
-
-			    map < mstring, mstring >::iterator m;
-			    for (m = modes.begin(); m != modes.end(); m++)
-			    {
-				Magick::instance().chanserv.GetLive(m->first)->SendMode(m->second);
-			    }
-
-			    map < mstring, triplet < mstring, mstring, mDateTime > >::iterator t;;
-			    for (t = topics.begin(); t != topics.end(); t++)
-			    {
-				Magick::instance().server.TOPIC(*k, t->second.first, t->first, t->second.second,
-								t->second.third);
-			    }
-			}
-		    }
-		    else if (Magick::instance().memoserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
-		    {
-			Magick::instance().memoserv.signon(*k);
-		    }
-		    else if (Magick::instance().commserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
-		    {
-			Magick::instance().commserv.signon(*k);
-		    }
-		    else if (Magick::instance().servmsg.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
-		    {
-			Magick::instance().servmsg.signon(*k);
-			if (Magick::instance().servmsg.FirstName() == * k)
-			    Magick::instance().server.MODE(*k, "+o");
-		    }
-
-		    FlushMsgs(*k);
-		}
-	    }
-	    {
-		WLOCK((lck_Server, "WaitIsOn"));
-		WaitIsOn.clear();
-	    }
-	    if (wasburst && !proto.EndBurst().empty())
-		Magick::instance().server.sraw(((proto.Tokens() && !proto.GetNonToken(proto.EndBurst()).empty()) ?
-								    proto.GetNonToken(proto.EndBurst()) :
-								    mstring(proto.EndBurst())));
-	}
+	process_eob(params);
 	break;
     case 436:			// ERR_NICKCOLLISION
 	// MUST handle.
@@ -5950,6 +6037,159 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 	break;
     }
     ETCB();
+}
+
+void Server::process_eob(const mstring &params)
+{
+    bool wasburst = false;
+    {
+	RLOCK((lck_IrcSvcHandler));
+	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->Burst())
+	{
+	    wasburst = true;
+	    Magick::instance().ircsvchandler->EndBurst();
+	    if (!proto.Burst().empty())
+		Magick::instance().server.sraw(((proto.Tokens() && !proto.GetNonToken(proto.Burst()).empty()) ?
+								   proto.GetNonToken(proto.Burst()) :
+								   mstring(proto.Burst())));
+	    LOG(LM_INFO, "EVENT/NETSYNCED", (fmstring("%.3f", Magick::instance().ircsvchandler->BurstTime())));
+	}
+    }
+
+    if (wasburst)
+	Magick::instance().operserv.CloneList_check();
+
+    unsigned int i, wc = IrcParamCount(params);
+    mstring nicks;
+    for (i=1; i<=wc; i++)
+	nicks += " " + IrcParam(params, i);
+
+    for (i = 1; i <= nicks.WordCount(" "); i++)
+    {
+	// Remove clients from 'signon list' who are
+	// already on the network.
+	WLOCK((lck_Server, "WaitIsOn"));
+	if (WaitIsOn.find(nicks.ExtractWord(i, " ").LowerCase()) != WaitIsOn.end())
+	    WaitIsOn.erase(nicks.ExtractWord(i, " "));
+    }
+    if (WaitIsOn.size())
+    {
+	set < mstring >::reverse_iterator k;
+	RLOCK((lck_Server, "WaitIsOn"));
+	for (k = WaitIsOn.rbegin(); k != WaitIsOn.rend(); k++)
+	{
+	    if (Magick::instance().nickserv.IsLive(*k))
+		continue;
+
+	    mBase *serv = mBase::GetByName(*k);
+	    if (serv == NULL)
+		continue;
+
+	    serv->signon(*k);
+	    if (serv == &Magick::instance().chanserv)
+	    {
+		if (Magick::instance().chanserv.FirstName() == * k)
+		{
+		    if (Magick::instance().chanserv.Hide())
+			MODE(*k, "+i");
+		    vector < mstring > joins;
+		    ChanServ::stored_t::iterator iter;
+		    map < mstring, mstring > modes;
+		    map < mstring, triplet < mstring, mstring, mDateTime > > topics;
+
+		    // Should be fact finding ONLY ...
+		    {
+			RLOCK2((lck_ChanServ, lck_stored));
+			for (iter = Magick::instance().chanserv.StoredBegin();
+			     iter != Magick::instance().chanserv.StoredEnd(); iter++)
+			{
+			    map_entry < Chan_Stored_t > cstored(iter->second);
+			    mstring lname = cstored->Name().LowerCase();
+			    map_entry < Chan_Live_t > clive;
+			    if (Magick::instance().chanserv.IsLive(lname))
+				clive = Magick::instance().chanserv.GetLive(lname);
+
+			    // If its live and got JOIN on || not live and mlock +k or +i
+			    if ((clive != NULL && cstored->Join()) ||
+				(clive == NULL &&
+				 (!cstored->Mlock_Key().empty() || cstored->Mlock_On().Contains("i"))))
+			    {
+				joins.push_back(lname);
+				if (clive == NULL)
+				{
+				    modes[lname] = "+s";
+				    if (cstored->Mlock_On().Contains("i"))
+					modes[lname] += "i";
+				    if (!cstored->Mlock_Key().empty())
+					modes[lname] += "k " + cstored->Mlock_Key();
+				}
+			    }
+
+			    if (clive != NULL && !cstored->Last_Topic().empty() && !cstored->Suspended())
+			    {
+				if ((cstored->Topiclock() && clive->Topic() != cstored->Last_Topic()) ||
+				    (cstored->Keeptopic() && clive->Topic().empty()))
+				{
+				    topics[lname] =
+					triplet < mstring, mstring, mDateTime > (cstored->Last_Topic_Setter(),
+										 cstored->Last_Topic(),
+										 cstored->Last_Topic_Set_Time());
+				}
+			    }
+			}
+		    }
+
+		    vector < mstring >::iterator j;
+		    mstring joinline;
+
+		    for (j = joins.begin(); j != joins.end(); j++)
+		    {
+			if (joinline.length() + j->length() > proto.MaxLine())
+			{
+			    JOIN(Magick::instance().chanserv.FirstName(), joinline);
+			    joinline.erase();
+			}
+			if (joinline.length())
+			    joinline << ",";
+			joinline << * j;
+		    }
+		    if (joinline.length())
+		    {
+			JOIN(Magick::instance().chanserv.FirstName(), joinline);
+			joinline.erase();
+		    }
+
+		    map < mstring, mstring >::iterator m;
+		    for (m = modes.begin(); m != modes.end(); m++)
+		    {
+			Magick::instance().chanserv.GetLive(m->first)->SendMode(m->second);
+		    }
+
+		    map < mstring, triplet < mstring, mstring, mDateTime > >::iterator t;;
+		    for (t = topics.begin(); t != topics.end(); t++)
+		    {
+			Magick::instance().server.TOPIC(*k, t->second.first, t->first, t->second.second,
+							t->second.third);
+		    }
+		}
+	    }
+	    else if (serv == &Magick::instance().servmsg)
+	    {
+		if (Magick::instance().servmsg.FirstName() == *k)
+		    Magick::instance().server.MODE(*k, "+o");
+	    }
+
+	    FlushMsgs(*k);
+	}
+    }
+    {
+	WLOCK((lck_Server, "WaitIsOn"));
+	WaitIsOn.clear();
+    }
+    if (wasburst && !proto.EndBurst().empty())
+	Magick::instance().server.sraw(((proto.Tokens() && !proto.GetNonToken(proto.EndBurst()).empty()) ?
+							    proto.GetNonToken(proto.EndBurst()) :
+								    mstring(proto.EndBurst())));
 }
 
 void Server::DumpB() const

@@ -49,12 +49,22 @@ class Protocol
     bool i_Helpops;		// HELPOPS supported
     bool i_Chatops;		// CHATOPS supported
     bool i_Tokens;		// Tokenized messages supported
-    bool i_TSora;		// Extra timestamping (and SVINFO line)
-    bool i_SJoin;		// Use SJOIN instead of JOIN
+    unsigned int i_TSora;	// TS version
     bool i_BigTopic;		// Topic includes setter and timestamp
     bool i_TopicJoin;		// ChanServ must join to set topic
     bool i_TopicCurrent;	// Use current time when setting topic.
     bool i_ServerModes;		// Server must set modes, not ChanServ
+    bool i_ISON;		// ISON works from remote clients
+
+    /* JOIN Types
+     *
+     * 0000 = :source JOIN :#channel,#channel,...
+     *
+     * 1000 = :source SJOIN timestamp #channel
+     *
+     * 2000 = :server SJOIN timestamp #channel modes [args] :users...
+     */
+    unsigned int i_Join;
 
     /* AKILL types
      *
@@ -98,6 +108,8 @@ class Protocol
      * 3000 series gets its server from the SOURCE ... not part of the message
      * NOTE: 3000 makes the mode OPTIONAL ... damn ircu ...
      * 3000 = NICK nick hops signon-time user host [mode] ipaddress nicknumeric :realname
+     *
+     * 4000 = CLIENT nick hops signon-time mode user host server nickid :realname
      */
     unsigned int i_Signon;
 
@@ -282,15 +294,7 @@ public:
     {
 	i_Tokens = in;
     }
-    bool SJoin() const
-    {
-	return i_SJoin;
-    }
-    void SJoin(const bool in)
-    {
-	i_SJoin = in;
-    }
-    bool TSora() const
+    unsigned int TSora() const
     {
 	return i_TSora;
     }
@@ -309,6 +313,14 @@ public:
     bool ServerModes() const
     {
 	return i_ServerModes;
+    }
+    bool ISON() const
+    {
+	return i_ISON;
+    }
+    unsigned int Join() const
+    {
+	return i_Join;
     }
     unsigned int Akill() const
     {
@@ -466,6 +478,7 @@ class Server
 
     void raw(const mstring & send) const;
     void sraw(const mstring & send) const;
+    void araw(const mstring & send) const;
     void nraw(const mstring & nick, const mstring & send) const;
 
     set < mstring > WaitIsOn;
@@ -619,6 +632,8 @@ public:
     void parse_Y(mstring & source, const mstring & msgtype, const mstring & params);
     void parse_Z(mstring & source, const mstring & msgtype, const mstring & params);
     void numeric_execute(mstring & source, const mstring & msgtype, const mstring & params);
+
+    void process_eob(const mstring &in = " :");
 
     void DumpB() const;
     void DumpE() const;
