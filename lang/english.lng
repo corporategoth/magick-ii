@@ -105,6 +105,7 @@ NOLIMIT            =No limit specified, but required (ignored).
 ; not fulfilled all the correct criteria to continue.
 ;
 [ERR_SITUATION]
+NOHELP             =Sorry, there is no help abailable for %s.
 ONYOURSELF         =You may only perform %s on yourself.
 NOTONYOURSELF      =You may not perform %s on yourself.
 ONCOMMITTEE        =You may only perform %s on a member of the %s committee.

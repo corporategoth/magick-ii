@@ -469,6 +469,90 @@ mstring Magick::getLogMessage(const mstring & name)
 			    "\", please check your language file.");
 }
 
+vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
+{
+    FT("Magick::getHelp", (nick, name));
+
+    if (nickserv.IsStored(nick) &&
+	nickserv.stored[nick.LowerCase()].IsOnline())
+    {
+	CP(("Using USER-DEIFNED language."));
+	NRET(vector<mstring>, getHelpL(nickserv.stored[nick.LowerCase()].Language(), name));
+    }
+    else
+    {
+	CP(("Using DEFAULT language."));
+	NRET(vector<mstring>, getHelpL(nickserv.DEF_Language(), name));
+    }
+}
+
+vector<mstring> Magick::getHelpL(const mstring & lang, const mstring & name)
+{
+    FT("Magick::getHelpL", (lang, name));
+
+    vector<mstring> helptext;
+
+    // Load requested language if its NOT loaded.
+    // and then look for the Help of THAT type.
+    CP(("Trying SPECIFIED language ..."));
+    if (lang != "")
+    {
+	WLOCK(("Magick","LoadHelp"));
+
+	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+lang.LowerCase()+".hlp");
+
+	bool bContEntries;
+	long dummy=0;
+	mstring entryname, tempstr;
+
+	if (fconf.HasGroup(name.UpperCase()))
+	{
+	    fconf.SetPath(name.UpperCase());
+	    bContEntries=fconf.GetFirstEntry(entryname,dummy);
+	    while(bContEntries)
+	    {
+		fconf.Read(entryname, &tempstr, "");
+		helptext.push_back(tempstr);
+		bContEntries=fconf.GetNextEntry(entryname,dummy);
+	    }
+	}
+    }
+
+    if (!helptext.size())
+    {
+	WLOCK(("Magick","LoadHelp"));
+
+	wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+nickserv.DEF_Language().LowerCase()+".hlp");
+
+	bool bContEntries;
+	long dummy=0;
+	mstring entryname, tempstr;
+
+	if (fconf.HasGroup(name.UpperCase()))
+	{
+	    fconf.SetPath(name.UpperCase());
+	    bContEntries=fconf.GetFirstEntry(entryname,dummy);
+	    while(bContEntries)
+	    {
+		fconf.Read(entryname, &tempstr, "");
+		helptext.push_back(tempstr);
+		bContEntries=fconf.GetNextEntry(entryname,dummy);
+	    }
+	}
+    }
+
+    if (!helptext.size())
+    {
+	mstring tmpstr, tmpstr2;
+	tmpstr2 = name;
+	tmpstr2.Replace(mstring("/"), mstring(" "));
+	tmpstr.Format(Parent->getMessageL(lang, "ERR_SITUATION/NOHELP"),
+	    tmpstr2.After(" ").c_str());
+	helptext.push_back(tmpstr);
+    }
+    NRET(vector<mstring>, helptext);
+}
+
 void Magick::dump_help(mstring & progname)
 {
     // This needs to be re-written.

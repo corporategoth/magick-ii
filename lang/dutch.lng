@@ -105,6 +105,7 @@ NOLIMIT            =Geen limiet gespecificeerd, maar vereist (genegeerd).
 ; not fulfilled all the correct criteria to continue.
 ;
 [ERR_SITUATION]
+NOHELP             =Sorry, there is no help abailable for %s.
 ONYOURSELF         =Je mag %s alleen op jezelf uitvoeren.
 NOTONYOURSELF      =Je mag %s niet op jezelf uitvoeren.
 ONCOMMITTEE        =Je mag %s alleen op een lid van %s committee uitvouren.

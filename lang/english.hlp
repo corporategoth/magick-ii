@@ -1,0 +1,57 @@
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
+;
+; English On-Line Language File
+; Translated By: Preston A. Elder <prez@magick.tm>
+; Please also edit the ERR_SYNTAX/TRANSLATED token to
+; reflect the above (this is displayed when someone
+; switches to your language).
+;
+; --------------------------------------------------------------
+;
+; This file is devided up into sections, each section being
+; a command that can be executed in Magick.  The section name
+; simply replaces spaces with a '/' character, and puts the
+; name of the service in front (NOT the nickname, but the
+; GetInternalName() value).
+;
+; Each entry in a section will be sorted by the tag, so please
+; ensure that ALL tags are in order -- the actual name of the
+; tags does not matter.
+;
+; Each entry contains 3 fields, First is 'committees do display
+; for', if left blank, it will assume ALL.  If this is set, a
+; user must be on this committee to see this line of the help
+; text.  The second is 'committees not to display for', if left
+; blank, it will assume none.  If this is set, if a user is on
+; this committee, then it will not display this line of the help
+; text.  The second field overrides the first.  The last field
+; is the actual text of the help file, as displayed to the user.
+;
+; It is usually not a good idea to output anything more than
+; about 15-20 lines to a user unless absolutely nessicary.  You
+; should be descriptive about what the command does, and how
+; to use it.
+;
+
+[NICKSERV/REGISTER]
+01=::REGISTER <password>
+02=::
+03=::This will make your nickname recognized with NickServ.
+04=::By doing so, NickServ will reserve your nickname for
+05=::just you, and will kill or rename any user who tries to
+06=::use it and does not come from your regular address (as
+07=::long as Kill Protection is set).  Once registered, you
+08=::can use the IDENTIFY command to be recognized from
+09=::somewhere other than your regular address, or if you have
+10=::more than one address, you can add it to the ACCESS list.
+11=::
+12=::Nickname registration is required to be added to any
+13=::channel access list, or to send a memo to another user.
+14=::Please choose a password you will remember, but that is
+15=::suitably complex when registering your nickname.  If
+16=::someone else gets your nickname, they can then exercise
+17=::total control over it, including forbidding you access
+18=::to it.  If you have lost your password, you can contact
+19=::a Services Operator to retrieve it for you.
+

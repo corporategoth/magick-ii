@@ -236,6 +236,10 @@ public:
 	    { return getMessageL(nickserv.DEF_Language(), name); }
 	mstring getMessageL(const mstring& language, const mstring& name);
 	mstring getLogMessage(const mstring& name);
+	vector<mstring> getHelp(const mstring& nick, const mstring& name);
+	vector<mstring> getHelp(const mstring& name)
+	    { return getHelpL(nickserv.DEF_Language(), name); }
+	vector<mstring> getHelpL(const mstring& language, const mstring& name);
 	mstring parseEscapes(const mstring& in);
 	void AddCommands(void)
 	{

@@ -212,6 +212,14 @@ SOURCE=.\lang\dutch.lng
 # End Source File
 # Begin Source File
 
+SOURCE=.\lang\english.hlp
+# End Source File
+# Begin Source File
+
+SOURCE=.\lang\english.lfo
+# End Source File
+# Begin Source File
+
 SOURCE=.\lang\english.lng
 # End Source File
 # Begin Source File
@@ -320,6 +328,10 @@ SOURCE=.\src\log.cpp
 # Begin Source File
 
 SOURCE=.\include\log.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\logfile.h
 # End Source File
 # Begin Source File
 
