@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/05/18 11:41:46  prez
+** Fixed minor front-end issues with the filesystem...
+**
 ** Revision 1.47  2000/05/17 14:08:12  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -788,24 +791,25 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_file_List", (mynick, source, params));
 
-    unsigned int listsize, i, j, count;
-    mstring mask;
+    unsigned int listsize, i, j, k, count;
+    bool display;
+    mstring mask, priv;
 
-    mstring message  = params.Before(" ").UpperCase();
-    if (params.WordCount(" ") < 2)
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
     {
 	mask = "*";
 	listsize = Parent->config.Listsize();
     }
-    else if (params.WordCount(" ") < 3)
+    else if (params.WordCount(" ") < 4)
     {
-	mask = params.ExtractWord(2, " ").LowerCase();
+	mask = params.ExtractWord(3, " ").LowerCase();
 	listsize = Parent->config.Listsize();
     }
     else
     {
-	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = ACE_OS::atoi(params.ExtractWord(3, " ").c_str());
+	mask = params.ExtractWord(3, " ").LowerCase();
+	listsize = ACE_OS::atoi(params.ExtractWord(4, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
 	    mstring output;
@@ -829,20 +833,37 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 
     for (j=0, i=0, count = 0; j < filelist.size(); j++)
     {
-	if (Parent->filesys.GetName(FileMap::Picture, filelist[j]).LowerCase().Matches(mask))
+	if (Parent->filesys.GetName(FileMap::Public, filelist[j]).LowerCase().Matches(mask))
 	{
 	    if (i < listsize)
 	    {
 		if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 			Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
 		    ::send(mynick, source, "%s (%s) [%s]",
-			Parent->filesys.GetName(FileMap::Picture, filelist[j]).c_str(),
-			ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, filelist[j])).c_str(),
-			Parent->filesys.GetPriv(FileMap::Picture, filelist[j]).c_str());
+			Parent->filesys.GetName(FileMap::Public, filelist[j]).c_str(),
+			ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filelist[j])).c_str(),
+			Parent->filesys.GetPriv(FileMap::Public, filelist[j]).c_str());
 		else
-		    ::send(mynick, source, "%s (%s)",
-			Parent->filesys.GetName(FileMap::Picture, filelist[j]).c_str(),
-			ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, filelist[j])).c_str());
+		{
+		    display = false;
+		    priv = Parent->filesys.GetPriv(FileMap::Public, filelist[j]);
+		    if (priv.IsEmpty())
+			display = true;
+		    else
+		    {
+			for (int k=1; k<=priv.WordCount(" "); k++)
+			    if (Parent->commserv.IsList(priv.ExtractWord(k, " ")) &&
+				Parent->commserv.list[priv.ExtractWord(k, " ").UpperCase()].IsOn(source))
+			    {
+				display = true;
+				break;
+			    }
+		    }
+		    if (display)
+			::send(mynick, source, "%s (%s)",
+				Parent->filesys.GetName(FileMap::Public, filelist[j]).c_str(),
+				ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filelist[j])).c_str());
+		}
 		
 		i++;
 	    }
@@ -868,7 +889,7 @@ void ServMsg::do_file_Add(mstring mynick, mstring source, mstring params)
 
     mstring priv;
     if (params.WordCount(" ") > 2)
-	priv = params.After(" ", 2);
+	priv = params.After(" ", 2).UpperCase();
 
     Parent->nickserv.live[source.LowerCase()].InFlight.Public(mynick, priv);
 }
@@ -949,7 +970,7 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
     mstring file = params.ExtractWord(3, " ");
     mstring priv;
     if (params.WordCount(" ") > 3)
-	priv = params.After(" ", 3);
+	priv = params.After(" ", 3).UpperCase();
     unsigned long num = Parent->filesys.GetNum(FileMap::Public, file);
 
     if (!num)
@@ -959,7 +980,7 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
  	return;
     }
 
-    ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME2"),
+    ::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_TIME"),
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source, "LIST/FILES").c_str(),
     		Parent->getMessage(source, "LIST/ACCESS").c_str(),

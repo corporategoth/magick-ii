@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2000/05/18 11:41:46  prez
+** Fixed minor front-end issues with the filesystem...
+**
 ** Revision 1.92  2000/05/17 14:08:12  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -528,8 +531,9 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	    {
 /*		if (Parent->nickserv.FileSys())
 		{ */
-		    send(service, nick, Parent->getMessage(nick, "DCC/ADDED"),
-		    	Parent->filesys.GetName(FileMap::Public, filenum).c_str());
+		    send(service, nick, Parent->getMessage(nick, "LIST/ADD"),
+    			Parent->filesys.GetName(FileMap::Public, filenum).c_str(),
+    			Parent->getMessage(nick,"LIST/FILES").c_str());
 		    Parent->filesys.SetPriv(FileMap::Public, filenum, text);
 /*		}
 		else
@@ -550,7 +554,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     {
 	if (InProg())
 	{
-	    send(service, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
+	    send(mynick, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
 	    return;
 	}
 	else
@@ -592,7 +596,7 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
     {
 	if (InProg())
 	{
-	    send(service, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
+	    send(mynick, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
 	    return;
 	}
 	else
@@ -605,14 +609,14 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
 	End(0u);
     }
 
-    if (Parent->nickserv.IsStored(nick))
+    if (!Parent->nickserv.IsStored(nick))
     {
-	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
+	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
 	return;
     }
 /*    else if (!Parent->nickserv.)
     {
-	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PUBDISABLED"));
+	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PUBDISABLED"));
     } */
 
     type = FileMap::Public;

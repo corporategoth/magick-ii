@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2000/05/18 11:41:46  prez
+** Fixed minor front-end issues with the filesystem...
+**
 ** Revision 1.22  2000/05/18 10:13:15  prez
 ** Finished off the mFile structure, and the DCC system, it all works.
 **
@@ -198,7 +201,7 @@ long mFile::Length()
     if (fd == NULL)
 	RET(-1);
     struct stat st;
-    fstat(fd->_fileno, &st);
+    fstat(fileno(fd), &st);
     RET(st.st_size);
 }
 
@@ -1041,7 +1044,6 @@ void *DccMap::Connect2(void *in)
     else
 	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
 						"GET");
-
 
     DccXfer xfer(TxnIds::Create(), DCC_SOCK, val->mynick,
 	val->source, val->filename, val->filesize, val->blocksize);
