@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2001/05/17 19:18:54  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.99  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -3263,7 +3266,7 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("Committee_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
-	pOut->BeginObject(tag_Committee_t, attribs);
+	pOut->BeginObject(tag_Committee_t);
 
 	WLOCK(("CommServ", "list", i_Name.UpperCase()));
 	pOut->WriteElement(tag_Name, i_Name);
@@ -3287,8 +3290,8 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	    entlist_ui l;
 	    for(l=i_Members.begin(); l!=i_Members.end(); l++)
 	    {
-		pOut->BeginObject(tag_Members, attribs);
-		pOut->WriteSubElement(const_cast<entlist_t *>(&(*l)), attribs);
+		pOut->BeginObject(tag_Members);
+		pOut->WriteSubElement(const_cast<entlist_t *>(&(*l)));
 		pOut->EndObject(tag_Members);
 	    }
 	}
@@ -3296,8 +3299,8 @@ void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	entlist_i k;
 	for(k=i_Messages.begin(); k!=i_Messages.end(); k++)
 	{
-	    pOut->BeginObject(tag_Messages, attribs);
-	    pOut->WriteSubElement(&(*k), attribs);
+	    pOut->BeginObject(tag_Messages);
+	    pOut->WriteSubElement(&(*k));
 	    pOut->EndObject(tag_Messages);
 	}
 
@@ -3338,12 +3341,12 @@ void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("CommServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
-    pOut->BeginObject(tag_CommServ, attribs);
+    pOut->BeginObject(tag_CommServ);
 
     CommServ::list_t::iterator iter;
     { RLOCK(("CommServ", "list"));
     for (iter = i_list.begin(); iter != i_list.end(); iter++)
-	pOut->WriteSubElement(&iter->second, attribs);
+	pOut->WriteSubElement(&iter->second);
     }
 
     pOut->EndObject(tag_CommServ);

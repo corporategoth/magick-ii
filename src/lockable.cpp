@@ -27,6 +27,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2001/05/17 19:18:54  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.71  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -260,7 +263,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 #endif
     map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > >::iterator lockiter;
     mstring lockname;
-    unsigned char hash[ACE_MAXTOKENNAMELEN];
+    char hash[33];
     mLock_Mutex *mlock;
     mLock_Write *wlock;
     mLock_Read *rlock;
@@ -291,8 +294,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	}
 	else
 	{
-	    memset(hash, 0, sizeof(hash));
-	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+	    mHASH(lockname.c_str(), lockname.length(), hash);
 	    rlock = new mLock_Read(reinterpret_cast<const char *>(hash));
 	    if (rlock == NULL)
 	    {
@@ -368,8 +370,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	}
 	else
 	{
-	    memset(hash, 0, sizeof(hash));
-	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+	    mHASH(lockname.c_str(), lockname.length(), hash);
 	    rlock = new mLock_Read(reinterpret_cast<const char *>(hash));
 	    if (rlock == NULL)
 	    {
@@ -448,8 +449,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	}
 	else
 	{
-	    memset(hash, 0, sizeof(hash));
-	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+	    mHASH(lockname.c_str(), lockname.length(), hash);
 	    wlock = new mLock_Write(reinterpret_cast<const char *>(hash));
 	    if (wlock == NULL)
 	    {
@@ -531,8 +531,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	}
 	else
 	{
-	    memset(hash, 0, sizeof(hash));
-	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+	    mHASH(lockname.c_str(), lockname.length(), hash);
 	    mlock = new mLock_Mutex(reinterpret_cast<const char *>(hash));
 	    if (mlock == NULL)
 	    {

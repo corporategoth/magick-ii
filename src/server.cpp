@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.175  2001/05/17 19:18:55  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.174  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -5505,6 +5508,11 @@ void Server::parse_V(mstring &source, const mstring &msgtype, const mstring &par
 	    tmp << "V";
 #else
 	    tmp << "v";
+#endif
+#ifdef GETPASS
+	    tmp << "G";
+#else
+	    tmp << "g";
 #endif
 #if defined(MAGICK_USE_MPATROL) || defined(MAGICK_USE_EFENCE)
 	    tmp << "D";

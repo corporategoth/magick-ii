@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.92  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -392,7 +395,7 @@ public:
     virtual SXP::Tag& GetClassTag() const { return tag_entlist_t; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     virtual void PostLoad() const;
 
     virtual size_t Usage() const;
@@ -465,11 +468,11 @@ public:
 	if( pElement->IsA(tag_Value) )    pElement->Retrieve(i_Value);
 	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
     }
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict)
     {
 	FT("entlist_val_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
-	pOut->BeginObject(tag_entlist_val_t, attribs);
-	entlist_t::WriteElement(pOut,attribs);
+	pOut->BeginObject(tag_entlist_val_t);
+	entlist_t::WriteElement(pOut);
 
 	pOut->WriteElement(tag_Value, i_Value);
 	pOut->WriteElement(tag_Stupid, i_Stupid);
@@ -570,11 +573,11 @@ public:
 	    if( pElement->IsA(tag_ValueSecond) )   pElement->Retrieve(i_Value.second);
 	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
     }
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict)
     {
 	FT("entlist_val_t< pair<T1,T2> >::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
-	pOut->BeginObject(tag_entlist_val_t, attribs);
-	entlist_t::WriteElement(pOut,attribs);
+	pOut->BeginObject(tag_entlist_val_t);
+	entlist_t::WriteElement(pOut);
 
 	pOut->WriteElement(tag_ValueFirst, i_Value.first);
 	pOut->WriteElement(tag_ValueSecond, i_Value.second);

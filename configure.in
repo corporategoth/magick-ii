@@ -202,7 +202,7 @@ where the includes are aswell, which you may do with the
 --with-aceinc=<dir> paramater (this should point to your
 ACE_wrappers directory, NOT ACE_wrappers/ace).
 
-You may obtain ACE from www.cs.wustl.edu/~schmidt/ACE.html"
+You may obtain ACE from http://www.cs.wustl.edu/~schmidt/ACE.html"
 	exit 1
 fi
 
@@ -241,7 +241,7 @@ NOTE: BSD threads are internal to libc, and so must pass
       the '-pthread' argument to gcc.  To specify BSD
       threads, use --enable-bsdthread
 
-You may obtain GNU pth from www.gnu.org/software/pth"
+You may obtain GNU pth from http://www.gnu.org/software/pth"
 	exit 1
 fi
 
@@ -271,7 +271,8 @@ the option --with-zlib=<dir>.  You may also need to specify
 where the includes are aswell, you may do this with the
 --with-zinc=<dir> paramater.
 
-You may obtain zlib from www.cdrom.com/pub/infozip/zlib"
+You may obtain zlib from
+ftp://ftp.freesoftware.com/pub/infozip/zlib/index.html"
 	exit 1
 fi
 
@@ -340,6 +341,17 @@ AC_ARG_ENABLE(convert, [  --enable-convert        Enable CONVERSION code
 	 esac], [convert=false])
 if test "$convert" = "true"; then
 	AC_DEFINE(CONVERT)
+fi
+
+AC_ARG_ENABLE(getpass, [  --enable-getpass        Enable GETPASS instead of SETPASS
+  --disable-getpass       Enable SETPASS instead of GETPASS (default)],
+	[case "${enableval}" in
+		yes) getpass=true;;
+		no) getpass=false;;
+		*) AC_MSG_ERROR(bad value ${enableval} for GETPASS option);;
+	 esac], [getpass=false])
+if test "$getpass" = "true"; then
+	AC_DEFINE(GETPASS)
 fi
 
 AC_ARG_ENABLE(locks, [  --enable-locks          Enable thread locking (default)

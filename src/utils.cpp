@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2001/05/17 19:18:55  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.64  2001/05/14 07:17:28  prez
 ** Fixed encryption :)
 **
@@ -572,24 +575,25 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
 
 	memcpy(&out[i], buf2, 8);
     }
+    out[i]=0;
 
     return i;
 #endif
 }
 
-void mHASH(unsigned char *in, const size_t size, unsigned char *out)
+void mHASH(const char *in, const size_t size, char *out)
 {
     unsigned char md[MD5_DIGEST_LENGTH];
     MD5_CTX c;
     memset(md, 0, MD5_DIGEST_LENGTH);
     MD5_Init(&c);
-    MD5_Update(&c, in, size);
+    MD5_Update(&c, const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(in)), size);
     MD5_Final(md, &c);
     memset(&c, 0, sizeof(MD5_CTX));
     memset(out, 0, (MD5_DIGEST_LENGTH*2)+1);
     for (int i=0; i<MD5_DIGEST_LENGTH; i++)
     {
-	sprintf(reinterpret_cast<char *>(&out[i*2]), "%02x", md[i]);
+	sprintf(&out[i*2], "%02x", md[i]);
     }
     memset(md, 0, MD5_DIGEST_LENGTH);
 }

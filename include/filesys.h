@@ -25,6 +25,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.39  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -240,7 +243,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_FileMap; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 private:
     filemap_t i_FileMap;

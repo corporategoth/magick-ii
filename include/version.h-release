@@ -25,6 +25,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.30  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -204,10 +207,9 @@ FULLNAME+" - "+SLOGAN,
 "Library Credits: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
 "    cint           http://root.cern.ch/root/Cint.html",
-"    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",
+"    openssl        http://www.openssl.org (blowfish + md5)",
 "    expat          http://www.jclark.com/xml/expat.html",
 "    sxp            http://www.sourceforge.net/project/?group_id=2280",
-"    zlib           http://www.cdrom.com/pub/infozip/zlib",
 "---EOM---"
 };
 

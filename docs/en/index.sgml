@@ -386,7 +386,7 @@ compression library, and a threads library such as pthreads.
 If you are missing any of the above, you may obtain them as follows:
 	<itemize>
 	<item><htmlurl url="http://www.cs.wustl.edu/~schmidt/ACE.html" name="ACE">
-	<item><htmlurl url="http://www.cdrom.com/pub/infozip/zlib" name="ZLIB">
+	<item><htmlurl url="ftp://ftp.freesoftware.com/pub/infozip/zlib/index.html" name="ZLIB">
 	<item><htmlurl url="http://www.gnu.org/pth" name="PTH">
 	</itemize>
 
@@ -782,6 +782,14 @@ the need or use of core file analysis.
 can be used to convert older versions of Magick DB's or other services
 databases.  Not needed for normal running of magick.
 
+<tag/--enable-getpass
+--disable-getpass/
+     This enables the ChanServ and NickServ GETPASS commands, as opposed
+to the default SETPASS commands.  By doing this, passwords will be stored
+as they are in the database.  This is disabled by default, which means
+only SETPASS is available, and passwords are stored in a one-way hash
+that makes it impossible to retrieve passwords.
+
 <tag/--enable-locks
 --disable-locks/
      This turns on or off thread locking.  Thread locking is essential
@@ -823,10 +831,6 @@ This software is useful in the fact it looks for memory access errors
 memory, etc).  However it slows the program down dramatically.  Turning
 this on causes the program to stop at the first memory problem (so it
 is recommended you run this in a debugger).
-
-<tag/--with-keylen=size/
-     This is the maximum size of the key file, and the input key that
-you may type in.  This defaults to 1024, and you should not need more.
 </descrip>
 
 `configure' also accepts some other, not widely useful, options.
@@ -854,9 +858,7 @@ To ensure the security of your databases and communication, you should
      <itemize>
      <item>Chose a long and complex database key, you must remember this
        somehow, incase you need to generate a new database key, however
-       you wont need it often.  Also choose long and varied key file
-       keys, they can be up to 1024 bytes long (or longer with the
-       --with-keylen parameter to configure)!
+       you wont need it often.
      <item>Use the magick_stampkeys utility on all your binaries at once
        and regenerate your keys every so often, so stop them becoming
        stale.
@@ -1085,58 +1087,32 @@ This also means that you must use kill -KILL (kill -9) to kill
 Magick once it has been started.
 
 To use encryption, you must generate a key file with the program
-magick_keygen.  This program accepts a maximum of two arguments,
-being the output key filename, and an input file with the plain
-text version of the key respectively.  If neither argument is
-supplied, it will ask you to enter the data interactively.
+magick_keygen.  This program accepts a maximum of one argument,
+being the output key filename.  If no argument is supplied, it
+will ask you to enter the filename interactively.
 
 On unix terminals that support it, the text entered at the key
 prompts will be hidden, however to not bank on this, and always
 ensure no one can look over your shoulder of sniff your network
-traffic to find out what the clear-text password is.  The maximum
-size of a key is specified at compile time, and may be changed
-with a configure option (see INSTALL for further details).
+traffic to find out what the clear-text password is.
 
-Example 1:
+Example:
 
 <tscreen><verb>
 ./magick_keygen
+
 Magick IRC Services - http://www.magick.tm
-    (c) 1997-2001 Preston A. Elder &lt;prez@magick.tm&gt;
-    (c) 1998-2001 William King &lt;ungod@magick.tm&gt;
+    (c) 1997-2001 Preston A. Elder <prez@magick.tm>
+    (c) 1998-2001 William King <ungod@magick.tm>
 
 Enter filename to output to [magick.key]:
-Enter database key:
-Re-Enter database key:
-
+NOTE: A key must be at least 16 bytes long and may be up to 72 bytes long.
+Enter database key 1:
+Re-Enter database key 1:
+Enter database key 2:
+Re-Enter database key 2:
 Created 362 byte keyfile.
 </verb></tscreen>
-
-Example 2:
-
-<tscreen><verb>
-./magick_keygen magick.key magick.plain
-Magick IRC Services - http://www.magick.tm
-    (c) 1997-2001 Preston A. Elder &lt;prez@magick.tm&gt;
-    (c) 1998-2001 William King &lt;ungod@magick.tm&gt;
-
-Created 1024 byte keyfile.
-</verb></tscreen>
-
-Tip:  Its usually a good idea to find a random file that doesnt
-change, or that you have a version of, and choose a random point
-somewhere in the middle (remember the starting point), and cut
-from that point on into a seperate file, then feed that as the
-plain magick key, and then remove your plain key file.  This way
-you will not have to remember a whole big key, just where the
-key is from, and the beginning point in the file (ensure it is
-a big file and dont tell anyone what file it is, where to get it
-or the starting point for security.  This is usually the easiest
-way to create a big key and remember it all without having to
-tax your brain, or worry about forgetting it.  NEVER EVER leave
-a plain key file (ie. your file with everything before the start
-point truncated) lying around -- and do not use a file that may
-change from version to version of wherever you got it.
 
 <sect1>Functionality
 <p>

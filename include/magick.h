@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.161  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.160  2001/05/14 04:46:31  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -628,7 +631,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_Magick; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     set<mstring> LNG_Loaded() const;
     size_t LNG_Usage(const mstring& lang) const;

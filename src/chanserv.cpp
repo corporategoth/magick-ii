@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.245  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.244  2001/05/16 15:47:13  prez
 ** Added ability to have a CS level set to MAX_LEVEL+2 (for disabled).  Also
 ** made it display 'disabled' and 'founder' nicer than just MAX_LEVEL+1/2.
@@ -2277,6 +2280,15 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 */
 }
 
+void Chan_Stored_t::Quit(const mstring& nick)
+{
+    FT("Chan_Stored_t::Quit", (nick));
+    WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
+    MCB(failed_passwds.size());
+    failed_passwds.erase(nick.LowerCase());
+    MCE(failed_passwds.size());
+}
+
 
 void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
 	const mstring& setter, const mDateTime& time)
@@ -2828,11 +2840,12 @@ Chan_Stored_t::Chan_Stored_t(const mstring& name, const mstring& founder,
 	const mstring& password, const mstring& desc)
 	: i_Name(name), i_RegTime(mDateTime::CurrentDateTime()),
 	  i_LastUsed(mDateTime::CurrentDateTime()), i_Founder(founder),
-	  i_Description(desc), i_Password(password)
+	  i_Description(desc)
 {
     FT("Chan_Stored_t::Chan_Stored_t", (name, founder, password, desc));
 
     defaults();
+    Password(password);
     DumpE();
 }
 
@@ -3039,7 +3052,13 @@ void Chan_Stored_t::Password(const mstring& in)
     FT("Chan_Stored_t::Password", (in));
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"));
     MCB(i_Password);
+#ifdef GETPASS
     i_Password = in;
+#else
+    char newpass[33];
+    mHASH(in.c_str(), in.length(), newpass);
+    i_Password = newpass;
+#endif
     MCE(i_Password);
 }
 
@@ -3103,10 +3122,17 @@ unsigned int Chan_Stored_t::CheckPass(const mstring& nick, const mstring& passwo
 {
     FT("Chan_Stored_t::CheckPass", (nick, password));
     unsigned int retval = 0;
+#ifdef GETPASS
+    mstring check(password);
+#else
+    char chkpass[33];
+    mHASH(password.c_str(), password.length(), chkpass);
+    mstring check(chkpass);
+#endif
     WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "failed_passwds"));
     MCB(failed_passwds.size());
     RLOCK_IF(("ChanServ", "stored", i_Name.LowerCase(), "i_Password"),
-	i_Password == password)
+	i_Password == check)
 	failed_passwds.erase(nick.LowerCase());
     else
     {
@@ -5143,7 +5169,27 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_Founder) )		pElement->Retrieve(i_Founder);
 	if( pElement->IsA(tag_CoFounder) )		pElement->Retrieve(i_CoFounder);
 	if( pElement->IsA(tag_Description) )		pElement->Retrieve(i_Description);
-	if( pElement->IsA(tag_Password) )		pElement->Retrieve(i_Password);
+	if( pElement->IsA(tag_Password) )
+	{
+#ifdef GETPASS
+	    if (atoi(pElement->Attrib("hash")))
+	    {
+		NLOG(LM_EMERGENCY, "ERROR/WRONG_PASS_TYPE");
+	    }
+#else
+	    // If password was stored clear, but we use one-way, change it.
+	    if (!atoi(pElement->Attrib("hash")))
+	    {
+		mstring clearpass;
+		pElement->Retrieve(clearpass);
+		char newpass[33];
+		mHASH(clearpass.c_str(), clearpass.length(), newpass);
+		i_Password = newpass;
+	    }
+#endif
+	    else
+		pElement->Retrieve(i_Password);
+	}
 	if( pElement->IsA(tag_Email) )			pElement->Retrieve(i_Email);
 	if( pElement->IsA(tag_URL) )			pElement->Retrieve(i_URL);
 	if( pElement->IsA(tag_Comment) )		pElement->Retrieve(i_Comment);
@@ -5194,7 +5240,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     entlist_i l;
 
     //TODO: Add your source code here
-	pOut->BeginObject(tag_Chan_Stored_t, attribs);
+	pOut->BeginObject(tag_Chan_Stored_t);
 
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase()));
 	pOut->WriteElement(tag_Name, i_Name);
@@ -5203,7 +5249,15 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->WriteElement(tag_Founder, i_Founder);
 	pOut->WriteElement(tag_CoFounder, i_CoFounder);
 	pOut->WriteElement(tag_Description, i_Description);
-	pOut->WriteElement(tag_Password, i_Password);
+	{
+	    SXP::dict attr;
+#ifdef GETPASS
+	    attr["hash"] = "0";
+#else
+	    attr["hash"] = "1";
+#endif
+	    pOut->WriteElement(tag_Password, i_Password, attr);
+	}
 	pOut->WriteElement(tag_Email, i_Email);
 	pOut->WriteElement(tag_URL, i_URL);
 	pOut->WriteElement(tag_Comment, i_Comment);
@@ -5249,40 +5303,40 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	{MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Level"));
 	for(j=i_Level.begin(); j!=i_Level.end(); j++)
 	{
-	    pOut->BeginObject(tag_Level, attribs);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<long> *>(&(*j)), attribs);
+	    pOut->BeginObject(tag_Level);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<long> *>(&(*j)));
 	    pOut->EndObject(tag_Level);
 	}}
 
 	{MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
 	for(j=i_Access.begin(); j!=i_Access.end(); j++)
 	{
-	    pOut->BeginObject(tag_Access, attribs);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<long> *>(&(*j)), attribs);
+	    pOut->BeginObject(tag_Access);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<long> *>(&(*j)));
 	    pOut->EndObject(tag_Access);
 	}}
 
 	{MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
 	for(k=i_Akick.begin(); k!=i_Akick.end(); k++)
 	{
-	    pOut->BeginObject(tag_Akick, attribs);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<mstring> *>(&(*k)), attribs);
+	    pOut->BeginObject(tag_Akick);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<mstring> *>(&(*k)));
 	    pOut->EndObject(tag_Akick);
 	}}
 
 	{MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
 	for(l=i_Greet.begin(); l!=i_Greet.end(); l++)
 	{
-	    pOut->BeginObject(tag_Greet, attribs);
-	    pOut->WriteSubElement(&(*l), attribs);
+	    pOut->BeginObject(tag_Greet);
+	    pOut->WriteSubElement(&(*l));
 	    pOut->EndObject(tag_Greet);
 	}}
 
 	{MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
 	for(l=i_Message.begin(); l!=i_Message.end(); l++)
 	{
-	    pOut->BeginObject(tag_Message, attribs);
-	    pOut->WriteSubElement(&(*l), attribs);
+	    pOut->BeginObject(tag_Message);
+	    pOut->WriteSubElement(&(*l));
 	    pOut->EndObject(tag_Message);
 	}}
 
@@ -5653,8 +5707,13 @@ void ChanServ::AddCommands()
 	    "UNSUSP*", Parent->commserv.SOP_Name(), ChanServ::do_UnSuspend);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FORB*", Parent->commserv.SOP_Name(), ChanServ::do_Forbid);
+#ifdef GETPASS
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GET*PASS*", Parent->commserv.SOP_Name(), ChanServ::do_Getpass);
+	    "GETPASS*", Parent->commserv.SOP_Name(), ChanServ::do_Getpass);
+#else
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SETPASS*", Parent->commserv.SOP_Name(), ChanServ::do_Setpass);
+#endif
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "MODE*", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
@@ -6934,7 +6993,7 @@ void ChanServ::do_Forbid(const mstring &mynick, const mstring &source, const mst
     }
 }
 
-
+#ifdef GETPASS
 void ChanServ::do_Getpass(const mstring &mynick, const mstring &source, const mstring &params)
 {
     FT("ChanServ::do_Getpass", (mynick, source, params));
@@ -6986,6 +7045,70 @@ void ChanServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	chan.Name(), Parent->getSname(chan.Founder())));
 }
+
+#else /* GETPASS */
+
+void ChanServ::do_Setpass(const mstring &mynick, const mstring &source, const mstring &params)
+{
+    FT("ChanServ::do_Setpass", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring password  = params.ExtractWord(3, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		channel));
+	return;
+    }
+
+    if (password.length() < 5 || password.IsSameAs(channel.After(channel[0u]), true) ||
+	password.IsSameAs(channel, true) || password.IsSameAs(source, true))
+    {
+	NSEND(mynick, source, "ERR_SITUATION/COMPLEX_PASS");
+	return;
+    }
+
+    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    channel = chan.Name();
+    if (chan.Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    if (!Parent->nickserv.IsStored(chan.Founder()))
+    {
+	LOG(LM_CRITICAL, "ERROR/FOUNDER_NOTREGD", (
+			chan.Name(), chan.Founder()));
+	Parent->chanserv.RemStored(channel);
+	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
+		channel));
+	return;
+    }
+
+    Parent->chanserv.stats.i_Getpass++;
+    chan.Password(password);
+    SEND(mynick, source, "CS_COMMAND/SETPASS", (
+			chan.Name(),
+			Parent->getSname(chan.Founder()),
+			password));
+    ANNOUNCE(mynick, "MISC/CHAN_SETPASS", (
+			source, chan.Name(),
+			Parent->getSname(chan.Founder())));
+    LOG(LM_NOTICE, "CHANSERV/SETPASS", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	chan.Name(), Parent->getSname(chan.Founder())));
+}
+#endif /* GETPASS */
 
 void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstring &params)
 {
@@ -13134,12 +13257,12 @@ void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("ChanServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
-    pOut->BeginObject(tag_ChanServ, attribs);
+    pOut->BeginObject(tag_ChanServ);
 
     ChanServ::stored_t::iterator iter;
     { RLOCK(("ChanServ", "stored"));
     for (iter = StoredBegin(); iter != StoredEnd(); iter++)
-	pOut->WriteSubElement(&iter->second, attribs);
+	pOut->WriteSubElement(&iter->second);
     }
 
     pOut->EndObject(tag_ChanServ);

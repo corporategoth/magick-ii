@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2001/05/17 19:18:54  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.72  2001/05/07 03:14:20  prez
 ** Changes to fix bsd
 **
@@ -1152,7 +1155,7 @@ void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("FileMap::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
-    pOut->BeginObject(tag_FileMap, attribs);
+    pOut->BeginObject(tag_FileMap);
 
     map<FileType, map<unsigned long, pair<mstring, mstring> > >::iterator i1;
     map<unsigned long, pair<mstring, mstring> >::iterator i2;

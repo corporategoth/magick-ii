@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.164  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.163  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -364,7 +367,7 @@ void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("entlist_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
-	pOut->BeginObject(tag_entlist_t, attribs);
+	pOut->BeginObject(tag_entlist_t);
 
 	pOut->WriteElement(tag_Entry, i_Entry);
 	pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);

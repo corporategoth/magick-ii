@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.62  2001/05/01 14:00:21  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -268,6 +271,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
 {
     friend void Nick_Live_t::Join(const mstring& chan);
     friend void Nick_Live_t::Name(const mstring& chan);
+    friend void Nick_Live_t::Quit(const mstring& reason);
     friend class Chan_Live_t;
     friend class ChanServ;
     friend Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
@@ -357,6 +361,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     void Part(const mstring& nick);
     void Kick(const mstring& nick, const mstring& kicker);
     void ChgNick(const mstring& nick, const mstring& newnick);
+    void Quit(const mstring& nick);
     void Topic(const mstring& source, const mstring& topic, const mstring& setter,
 	const mDateTime& time = mDateTime::CurrentDateTime());
     void Mode(const mstring& setter, const mstring& mode);
@@ -551,7 +556,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_Chan_Stored_t; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage() const;
     void DumpB() const;
@@ -791,7 +796,11 @@ public:
     static void do_Suspend(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_UnSuspend(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Forbid(const mstring &mynick, const mstring &source, const mstring &params);
+#ifdef GETPASS
     static void do_Getpass(const mstring &mynick, const mstring &source, const mstring &params);
+#else
+    static void do_Setpass(const mstring &mynick, const mstring &source, const mstring &params);
+#endif
 
     static void do_Mode(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Op(const mstring &mynick, const mstring &source, const mstring &params);
@@ -878,7 +887,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_ChanServ; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 };
 

@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.311  2001/05/17 19:18:55  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.310  2001/05/14 14:48:00  prez
 ** Ugh, another error in encryption fixed ...
 **
@@ -3642,17 +3645,20 @@ void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("Magick::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
-    // not sure if this is the right place to do this
-    attribs["version"]= VERSION;
-    pOut->BeginObject(tag_Magick, attribs);
 
-    SXP::dict attr;
-    pOut->WriteSubElement(&operserv, attr);
-    pOut->WriteSubElement(&nickserv, attr);
-    pOut->WriteSubElement(&chanserv, attr);
-    pOut->WriteSubElement(&memoserv, attr);
-    pOut->WriteSubElement(&commserv, attr);
-    pOut->WriteSubElement(&filesys, attr);
+    // not sure if this is the right place to do this
+    {
+	SXP::dict attr;
+	attr["version"] = VERSION;
+	pOut->BeginObject(tag_Magick, attr);
+    }
+
+    pOut->WriteSubElement(&operserv);
+    pOut->WriteSubElement(&nickserv);
+    pOut->WriteSubElement(&chanserv);
+    pOut->WriteSubElement(&memoserv);
+    pOut->WriteSubElement(&commserv);
+    pOut->WriteSubElement(&filesys);
 
     pOut->EndObject(tag_Magick);
 }
@@ -3676,8 +3682,7 @@ void Magick::save_databases()
 	    keys = GetKeys();
 	SXP::MFileOutStream o(files.Database()+".new", files.Compression(), keys);
 	o.BeginXML();
-	SXP::dict attribs;
-	WriteElement(&o, attribs);
+	WriteElement(&o);
     }
     if (mFile::Exists(files.Database()+".new"))
     {
@@ -3696,7 +3701,8 @@ void Magick::load_databases()
     {
 	NLOG(LM_STARTUP, "EVENT/LOAD");
    	SXP::CParser p( this ); // let the parser know which is the object
-	int retval = p.FeedFile(files.Database(), GetKeys());
+	pair<mstring,mstring> keys = GetKeys();
+	int retval = p.FeedFile(files.Database(), keys);
 	switch (retval)
 	{
 	case  0: // Load did not run

@@ -19,7 +19,7 @@ compression library, and a threads library such as pthreads.
 
 If you are missing any of the above, you may obtain them as follows:
 ACE 	http://www.cs.wustl.edu/~schmidt/ACE.html
-ZLIB	http://www.cdrom.com/pub/infozip/zlib
+ZLIB	ftp://ftp.freesoftware.com/pub/infozip/zlib/index.html
 PTH	http://www.gnu.org/pth
 
 FreeBSD USERS - FreeBSD has inbuilt its threads library into its
@@ -408,6 +408,14 @@ the need or use of core file analysis.
      This enables or disables the --convert commandline paramater that
 can be used to convert older versions of Magick DB's or other services
 databases.  Not needed for normal running of magick.
+
+`--enable-getpass'
+`--disable-getpass'
+     This enables the ChanServ and NickServ GETPASS commands, as opposed
+to the default SETPASS commands.  By doing this, passwords will be stored
+as they are in the database.  This is disabled by default, which means
+only SETPASS is available, and passwords are stored in a one-way hash
+that makes it impossible to retrieve passwords.
 
 `--enable-locks'
 `--disable-locks'

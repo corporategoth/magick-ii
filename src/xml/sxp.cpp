@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2001/05/17 19:18:55  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.21  2001/05/14 04:46:32  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -151,6 +154,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 
 SXP_NS_BEGIN
 
+dict blank_dict;
+pair<mstring,mstring> blank_mstring_pair;
+
 //std::string TagHashtable::table[SXP_HTSIZE];
 TagHashtable *g_pHashTable = 0;
 
@@ -205,7 +211,7 @@ void MFileOutStream::Indent()
 	}
 }
 
-MFileOutStream::MFileOutStream(const mstring &chFilename, int comp, const pair<mstring,mstring> ikey)
+MFileOutStream::MFileOutStream(const mstring &chFilename, int comp, pair<mstring,mstring> &ikey)
 	: filename(chFilename), m_nIndent(0), compress(comp), buf_sz(INIT_BUFSIZE),
 	buf_cnt(0), key1(ikey.first), key2(ikey.second)
 {
@@ -214,7 +220,7 @@ MFileOutStream::MFileOutStream(const mstring &chFilename, int comp, const pair<m
 	memset(buffer, 0, sizeof(char) * buf_sz);
 }
 
-MFileOutStream::MFileOutStream(const mstring &chFilename, FILE *fp, int comp, const pair<mstring,mstring> ikey)
+MFileOutStream::MFileOutStream(const mstring &chFilename, FILE *fp, int comp, pair<mstring,mstring> &ikey)
 	: filename(chFilename), m_nIndent(0), compress(comp), buf_sz(INIT_BUFSIZE),
 	buf_cnt(0), key1(ikey.first), key2(ikey.second)
 {
@@ -368,7 +374,7 @@ void MFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
 }
 
 
-int CParser::FeedFile(const mstring &chFilename, const pair<mstring,mstring> ikey)
+int CParser::FeedFile(const mstring &chFilename, pair<mstring,mstring> &ikey)
 {
     int retval = 0;
     mFile in(chFilename);

@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.100  2001/05/17 19:18:55  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.99  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -3359,7 +3362,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("Memo_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
-	pOut->BeginObject(tag_Memo_t, attribs);
+	pOut->BeginObject(tag_Memo_t);
 
 	WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
 	pOut->WriteElement(tag_Nick, i_Nick);
@@ -3411,7 +3414,7 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("News_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
-	pOut->BeginObject(tag_News_t, attribs);
+	pOut->BeginObject(tag_News_t);
 
 	WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
 	pOut->WriteElement(tag_Channel, i_Channel);
@@ -3472,7 +3475,7 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("MemoServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
-    pOut->BeginObject(tag_MemoServ, attribs);
+    pOut->BeginObject(tag_MemoServ);
 
     MemoServ::nick_t::iterator i1;
     MemoServ::nick_memo_t::iterator i2;
@@ -3483,7 +3486,7 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     for (i1 = NickBegin(); i1 != NickEnd(); i1++)
 	for (i2=i1->second.begin(); i2!=i1->second.end(); i2++)
 	{
-	    pOut->WriteSubElement(&(*i2), attribs);
+	    pOut->WriteSubElement(&(*i2));
 	}
     }
 
@@ -3491,7 +3494,7 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     for (j1 = ChannelBegin(); j1 != ChannelEnd(); j1++)
 	for (j2=j1->second.begin(); j2!=j1->second.end(); j2++)
 	{
-	    pOut->WriteSubElement(&(*j2), attribs);
+	    pOut->WriteSubElement(&(*j2));
 	}
     }
 

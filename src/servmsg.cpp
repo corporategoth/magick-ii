@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2001/05/17 19:18:55  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.87  2001/05/06 03:03:08  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -761,9 +764,15 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
     SEND(mynick, source, "STATS/NICK_CMD5", (
 		fmstring("%10d", Parent->nickserv.stats.Suspend()),
 		fmstring("%10d", Parent->nickserv.stats.Unsuspend())));
-    SEND(mynick, source, "STATS/NICK_CMD6", (
+#ifdef GETPASS
+    SEND(mynick, source, "STATS/NICK_CMD6A", (
 		fmstring("%10d", Parent->nickserv.stats.Forbid()),
 		fmstring("%10d", Parent->nickserv.stats.Getpass())));
+#else
+    SEND(mynick, source, "STATS/NICK_CMD6B", (
+		fmstring("%10d", Parent->nickserv.stats.Forbid()),
+		fmstring("%10d", Parent->nickserv.stats.Getpass())));
+#endif
     SEND(mynick, source, "STATS/NICK_CMD7", (
 		fmstring("%10d", Parent->nickserv.stats.Access()),
 		fmstring("%10d", Parent->nickserv.stats.Ignore())));
@@ -832,9 +841,15 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
     SEND(mynick, source, "STATS/CHAN_CMD3", (
 		fmstring("%10d", Parent->chanserv.stats.Suspend()),
 		fmstring("%10d", Parent->chanserv.stats.Unsuspend())));
-    SEND(mynick, source, "STATS/CHAN_CMD4", (
+#ifdef GETPASS
+    SEND(mynick, source, "STATS/CHAN_CMD4A", (
 		fmstring("%10d", Parent->chanserv.stats.Forbid()),
 		fmstring("%10d", Parent->chanserv.stats.Getpass())));
+#else
+    SEND(mynick, source, "STATS/CHAN_CMD4B", (
+		fmstring("%10d", Parent->chanserv.stats.Forbid()),
+		fmstring("%10d", Parent->chanserv.stats.Getpass())));
+#endif
     SEND(mynick, source, "STATS/CHAN_CMD5", (
 		fmstring("%10d", Parent->chanserv.stats.Mode()),
 		fmstring("%10d", Parent->chanserv.stats.Topic())));

@@ -25,6 +25,9 @@ RCSID(sxp_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.18  2001/05/14 04:46:31  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -110,7 +113,6 @@ const int INIT_BUFSIZE = 32 * 1024;
 const unsigned int SXP_TAG = 0x01;	// Required to force write.
 const unsigned int SXP_COMPRESS	= 0x02;
 const unsigned int SXP_ENCRYPT = 0x04;
-const pair<mstring,mstring> blank_mstring_pair("","");
 
 // configuration -- assume dos/win32 don't have GNU autoconf.
 // Don't touch any of this unless you know what you're doing.
@@ -181,6 +183,9 @@ SXP_NS_BEGIN
 #endif /* HAVE_NAMESPACES */
 	typedef std::map<string, string> dict; // for the attribs
 
+	extern pair<mstring,mstring> blank_mstring_pair;
+	extern dict blank_dict;
+
 	// Interface forwards
 
 	class IPersistObj;
@@ -227,11 +232,11 @@ SXP_NS_BEGIN
     public:
 		inline void BeginXML(void) { static_cast<T *>(this)->BeginXML(); }
 
-		inline void BeginObject(Tag& t, dict& attribs) { static_cast<T *>(this)->BeginObject(t, attribs); }
+		inline void BeginObject(Tag& t, dict& attribs = blank_dict) { static_cast<T *>(this)->BeginObject(t, attribs); }
 		inline void EndObject  (Tag& t) { static_cast<T *>(this)->EndObject(t); }
 
 		// recursively write other objects
-		inline void WriteSubElement(IPersistObj *pObj, dict& attribs) { 
+		inline void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict) { 
 			static_cast<T *>(this)->WriteSubElement(pObj, attribs); 
 		} 
 	};
@@ -595,7 +600,7 @@ SXP_NS_BEGIN
 			fprintf(m_fp, XML_STRING);
 		}
 
-		inline void BeginObject(Tag& t, dict& attribs) {
+		inline void BeginObject(Tag& t, dict& attribs = blank_dict) {
 			Indent(); m_nIndent++;
 			fprintf(m_fp, "<%s", t.ch);
 			for(dict::iterator i=attribs.begin(); i!=attribs.end(); i++) {
@@ -612,7 +617,7 @@ SXP_NS_BEGIN
 			fprintf(m_fp, "</%s>\n", t.ch);
 		}
 
-		void WriteSubElement(IPersistObj *pObj, dict& attribs); 
+		void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict); 
 	};
 
 	class MFileOutStream : public IOutStreamT<MFileOutStream>
@@ -631,13 +636,13 @@ SXP_NS_BEGIN
 		void Print(char *format, ...);
 		void PrintV(char *format, va_list argptr);
 		void Indent();
-		MFileOutStream(const mstring &chFilename, int comp = 0, const pair<mstring,mstring> ikey = blank_mstring_pair);
-		MFileOutStream(const mstring &chFilename, FILE *fp, int comp = 0, const pair<mstring,mstring> ikey = blank_mstring_pair);
+		MFileOutStream(const mstring &chFilename, int comp = 0, pair<mstring,mstring> &ikey = blank_mstring_pair);
+		MFileOutStream(const mstring &chFilename, FILE *fp, int comp = 0, pair<mstring,mstring> &ikey = blank_mstring_pair);
 		~MFileOutStream();
 		void BeginXML(void);
-		void BeginObject(Tag& t, dict& attribs);
+		void BeginObject(Tag& t, dict& attribs = blank_dict);
 		void EndObject  (Tag& t);
-		void WriteSubElement(IPersistObj *pObj, dict& attribs); 
+		void WriteSubElement(IPersistObj *pObj, dict& attribs = blank_dict); 
 	};
 
 	typedef IOutStreamT<MFileOutStream> IOutStream;
@@ -762,7 +767,7 @@ SXP_NS_BEGIN
 		}
 
 		// give the parser a food for thought the lazy way
-		int FeedFile(const mstring &chFilename, const pair<mstring,mstring> ikey = blank_mstring_pair);
+		int FeedFile(const mstring &chFilename, pair<mstring,mstring> &ikey = blank_mstring_pair);
 
 		// IParser::ReadTo -> redirect event stream into a new IPersistObj
 		inline void ReadTo( IPersistObj *pPI ) {

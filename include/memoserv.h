@@ -25,6 +25,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.50  2001/05/01 14:00:22  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -195,7 +198,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_Memo_t; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage() const;
     void DumpB() const;
@@ -246,7 +249,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_News_t; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage() const;
     void DumpB() const;
@@ -411,7 +414,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_MemoServ; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 };
 

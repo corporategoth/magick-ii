@@ -56,8 +56,8 @@
 07 =REGD::    DROP         UNLINK       HOST         SLAVES
 08 =REGD::    ACCESS       IGNORE       SET          SEND
 09 =SOP::And as a Services Operator, the following commands:
-10 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
-11 =SOP::    SUSPEND      UNSUSPEND    LIVE
+10 =SOP::    GETPASS      SETPASS      LOCK         UNLOCK
+11 =SOP::    FORBID       SUSPEND      UNSUSPEND    LIVE
 12 =::
 13 =::You may request help on the syntax and functionality
 14 =::of any and all of the above commands by specifying
@@ -278,6 +278,17 @@
 05 =SOP::global message to all IRCOPS will be broadcast!
 06 =SOP:SADMIN:You may not retrieve the password of a Services
 07 =SOP:SADMIN:Administrator.
+08 =SOP::NOTE: This may not be available if SETPASS is enabled.
+
+[NICKSERV/SETPASS]
+01 =SOP::SETPASS <nickname> <password>
+02 =SOP::
+03 =SOP::This will reset the nickname password for a user.
+04 =SOP::Please note that whenever this command is used, a
+05 =SOP::global message to all IRCOPS will be broadcast!
+06 =SOP:SADMIN:You may not reset the password of a Services
+07 =SOP:SADMIN:Administrator.
+08 =SOP::NOTE: This may not be available if GETPASS is enabled.
 
 [NICKSERV/LIVE]
 01 =SOP::LIVE [mask [maximum]]
@@ -674,8 +685,8 @@
 09 =REGD::    REMOVE       SET          CLEAR        LEVEL
 10 =REGD::    ACCESS       AKICK        GREET        MESSAGE
 11 =SOP::And as a Services Operator, the following commands:
-12 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
-13 =SOP::    SUSPEND      UNSUSPEND    LIVE
+12 =SOP::    GETPASS      SETPASS      LOCK         UNLOCK
+13 =SOP::    FORBID       SUSPEND      UNSUSPEND    LIVE
 14 =::
 15 =::You may request help on the syntax and functionality
 16 =::of any and all of the above commands by specifying
@@ -803,6 +814,16 @@
 04 =SOP::registered channel.
 05 =SOP::Please note that whenever this command is used, a
 06 =SOP::global message to all IRCOPS will be broadcast!
+07 =SOP::NOTE: This may not be available if SETPASS is enabled.
+
+[CHANSERV/SETPASS]
+01 =SOP::SETPASS <channel> <password>
+02 =SOP::
+03 =SOP::This will reset the channel password for any
+04 =SOP::registered channel.
+05 =SOP::Please note that whenever this command is used, a
+06 =SOP::global message to all IRCOPS will be broadcast!
+07 =SOP::NOTE: This may not be available if GETPASS is enabled.
 
 [CHANSERV/MODE]
 01 =REGD::MODE <channel> [modes]
@@ -1012,19 +1033,22 @@
 09 =REGD::    SET          RESET        LIST
 
 [CHANSERV/LEVEL/SET]
-01 =REGD::LEVEL <channel> SET <type> <level>
+01 =REGD::LEVEL <channel> SET <type> <level|FOUNDER|DISABLED>
 02 =REGD::
 03 =REGD::This will set the level of <type> to a number that
 04 =REGD::you specify.  There are maximum and minimum limits
-05 =REGD::as to what you may set a level to.  These are the
+05 =REGD::as to what you may set a level to, these are the
 06 =REGD::same limits as to what level you may add someone
-07 =REGD::to the access list with (except you may specify one
-08 =REGD::above the maximum here, to mean 'founder only').
-09 =REGD::Once set, users must be at or above the level you
-10 =REGD::specify to be able to access or use the feature in
-11 =REGD::question, except for AUTODEOP, where you must be
-12 =REGD::below or equal to the level specified.  You must
-13 =REGD::have founder access to use this command.
+07 =REGD::to the access list with.  You may also use the
+08 =REGD::word 'FOUNDER' or 'DISABLED' in place of a level
+09 =REGD::to either make that option founder only, or not
+10 =REGD::available at all.  These keywords map to +1 and
+11 =REGD::+2 above the maximum you may add a user to the
+12 =REGD::list at respectively.  Once set, users must be at
+13 =REGD::or above the level you specify to be able to access
+14 =REGD::or use the feature in question, except for AUTODEOP,
+15 =REGD::where you must be below or equal to the level specified.
+16 =REGD::You must have founder access to use this command.
 
 [CHANSERV/LEVEL/RESET]
 01 =REGD::LEVEL <channel> RESET <type|ALL>
@@ -1040,7 +1064,7 @@
 01 =REGD::LEVEL <channel> LIST
 02 =REGD::
 03 =REGD::If you have SET privileges or above, you this will
-04 =REGD::show you a list of TAGS, LEVELS and DESCRIPTIONS of
+04 =REGD::show you a list of LEVELS, TAGS and DESCRIPTIONS of
 05 =REGD::the access levels of the channel.  If you do not,
 06 =REGD::this will show you a line for each level you have
 07 =REGD::access to you, including the description of it.

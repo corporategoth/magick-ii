@@ -57,6 +57,11 @@
 #undef CONVERT
 #endif
 
+/* Enable two-way encryption on passwords */
+#ifndef GETPASS
+#undef GETPASS
+#endif
+
 /* Define if we are on a windows system */
 #ifndef WIN32
 #undef WIN32

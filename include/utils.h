@@ -25,6 +25,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.42  2001/05/14 04:46:31  prez
 ** Changed to use 3BF (3 * blowfish) encryption.  DES removed totally.
 **
@@ -131,7 +134,7 @@ mstring ToHumanSpace(const unsigned long in);
 mstring parseMessage(const mstring & message, const mVarArray& va = mVarArray::EmptyArray());
 size_t mCRYPT(const char *in, char *out, const size_t size,
 	const char *key1, const char *key2, const bool enc);
-void mHASH(unsigned char *in, const size_t size, unsigned char *out);
+void mHASH(const char *in, const size_t size, char *out);
 unsigned long str_to_base64(const mstring &in);
 mstring base64_to_str(unsigned long in);
 mstring sysinfo_node();

@@ -12,62 +12,95 @@
 // method which knows how many tabs to print before your tag.
 
 #include "datetime.h"
+
 template<class T>
 class IDataOutput :
 public IFilePrint<T> {
 public:
 	// add more simple type writers here
 
-	inline void WriteElement(Tag& t, bool val) {
+	inline void WriteElement(Tag& t, const bool& val, dict& attribs = blank_dict) {
 		Indent();
-		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
+		mstring param;
+		dict::iterator iter;
+		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
+		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
+		Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, int val) {
+	inline void WriteElement(Tag& t, const int& val, dict& attribs = blank_dict) {
 		Indent();
-		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
+		mstring param;
+		dict::iterator iter;
+		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
+		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
+		Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, long val) {
+	inline void WriteElement(Tag& t, const long& val, dict& attribs = blank_dict) {
 		Indent();
-		Print("<%s>%d</%s>\n", t.ch, val, t.ch);
+		mstring param;
+		dict::iterator iter;
+		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
+		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
+		Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, double val) {
+	inline void WriteElement(Tag& t, const double val, dict& attribs = blank_dict) {
 		Indent();
-		Print("<%s>%5.5f</%s>\n", t.ch, val, t.ch);
+		mstring param;
+		dict::iterator iter;
+		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
+		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
+		Print("<%s%s>%5.5f</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, unsigned int val) {
+	inline void WriteElement(Tag& t, const unsigned int& val, dict& attribs = blank_dict) {
 		Indent();
-		Print("<%s>%u</%s>\n", t.ch, val, t.ch);
+		mstring param;
+		dict::iterator iter;
+		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
+		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
+		Print("<%s%s>%u</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, unsigned long val) {
+	inline void WriteElement(Tag& t, const unsigned long& val, dict& attribs = blank_dict) {
 		Indent();
-		Print("<%s>%u</%s>\n", t.ch, val, t.ch);
+		mstring param;
+		dict::iterator iter;
+		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
+		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
+		Print("<%s%s>%u</%s>\n", t.ch, param.c_str(), val, t.ch);
 	}
 
-	inline void WriteElement(Tag& t, mstring val) {
+	inline void WriteElement(Tag& t, const mstring& val, dict& attribs = blank_dict) {
 		Indent();
+		mstring param;
+		dict::iterator iter;
+		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
+		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
 		if( !val.empty() )
-			Print("<%s>%s</%s>\n", t.ch, XMLEscape(val.c_str()).c_str(), t.ch);
+			Print("<%s%s>%s</%s>\n", t.ch, param.c_str(), XMLEscape(val.c_str()).c_str(), t.ch);
 		else
-			Print("<%s/>\n", t.ch);
+			Print("<%s%s/>\n", t.ch, param.c_str());
 	}
 
 #if HAVE_WSTRING
-	inline void WriteElement(Tag& t, wstring val) {
+	inline void WriteElement(Tag& t, const wstring& val, dict& attribs = blank_dict) {
 		Indent();
+		mstring param;
+		dict::iterator iter;
+		for (iter=attribs.begin(); iter!=attribs.end(); iter++)
+		    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
 		if( !val.empty() )
-			Print("<%s>%s</%s>\n", t.ch, XMLEscapeW(val.c_str()).c_str(), t.ch);
+			Print("<%s%s>%s</%s>\n", t.ch, param.c_str(), XMLEscapeW(val.c_str()).c_str(), t.ch);
 		else
-			Print("<%s/>\n", t.ch);
+			Print("<%s%s/>\n", t.ch, param.c_str());
 	}
 #endif /* HAVE_WSTRING */
 
-	inline void WriteElement(Tag& t, mDateTime &val) {
-		WriteElement(t,static_cast<double>(GMT(val, true)));
+	inline void WriteElement(Tag& t, const mDateTime& val, dict& attribs = blank_dict) {
+		WriteElement(t,static_cast<double>(GMT(val, true)), attribs);
 	}
 };
 

@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/05/17 19:18:53  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.68  2001/05/13 00:55:17  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -443,6 +446,7 @@ public:
     unsigned long Drop();
     mstring Password();
     void Password(const mstring& in);
+    bool CheckPass(const mstring& pass);
     mstring Email();
     void Email(const mstring& in);
     mstring URL();
@@ -536,7 +540,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_Nick_Stored_t; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
 
     size_t Usage();
     void DumpB();
@@ -754,7 +758,11 @@ public:
     static void do_Suspend(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_UnSuspend(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Forbid(const mstring &mynick, const mstring &source, const mstring &params);
+#ifdef GETPASS
     static void do_Getpass(const mstring &mynick, const mstring &source, const mstring &params);
+#else
+    static void do_Setpass(const mstring &mynick, const mstring &source, const mstring &params);
+#endif
     static void do_Live(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_LiveOper(const mstring &mynick, const mstring &source, const mstring &params);
 
@@ -795,7 +803,7 @@ public:
     SXP::Tag& GetClassTag() const { return tag_NickServ; }
     void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs = SXP::blank_dict);
     void PostLoad();
 };
 

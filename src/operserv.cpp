@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.124  2001/05/17 19:18:55  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.123  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -3880,29 +3883,29 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     set<entlist_val_t<bool> >::iterator l;
 
     //TODO: Add your source code here
-	pOut->BeginObject(tag_OperServ, attribs);
+	pOut->BeginObject(tag_OperServ);
 
 	{ MLOCK(("OperServ", "Clone"));
 	for(i=i_Clone.begin(); i!=i_Clone.end(); i++)
 	{
-	    pOut->BeginObject(tag_Clone, attribs);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<pair<unsigned int, mstring> > *>(&(*i)), attribs);
+	    pOut->BeginObject(tag_Clone);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<pair<unsigned int, mstring> > *>(&(*i)));
 	    pOut->EndObject(tag_Clone);
 	}}
 
 	{ MLOCK(("OperServ", "Akill"));
 	for(j=i_Akill.begin(); j!=i_Akill.end(); j++)
 	{
-	    pOut->BeginObject(tag_Akill, attribs);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<pair<unsigned long, mstring> > *>(&(*j)), attribs);
+	    pOut->BeginObject(tag_Akill);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<pair<unsigned long, mstring> > *>(&(*j)));
 	    pOut->EndObject(tag_Akill);
 	}}
 
 	{ MLOCK(("OperServ", "OperDeny"));
 	for(k=i_OperDeny.begin(); k!=i_OperDeny.end(); k++)
 	{
-	    pOut->BeginObject(tag_OperDeny, attribs);
-	    pOut->WriteSubElement(const_cast<entlist_val_t<mstring> *>(&(*k)), attribs);
+	    pOut->BeginObject(tag_OperDeny);
+	    pOut->WriteSubElement(const_cast<entlist_val_t<mstring> *>(&(*k)));
 	    pOut->EndObject(tag_OperDeny);
 	}}
 
@@ -3912,8 +3915,8 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	    // Only save PERM entries
 	    if (l->Value())
 	    {
-		pOut->BeginObject(tag_Ignore, attribs);
-		pOut->WriteSubElement(const_cast<entlist_val_t<bool> *>(&(*l)), attribs);
+		pOut->BeginObject(tag_Ignore);
+		pOut->WriteSubElement(const_cast<entlist_val_t<bool> *>(&(*l)));
 		pOut->EndObject(tag_Ignore);
 	    }
 	}}

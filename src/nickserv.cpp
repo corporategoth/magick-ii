@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.175  2001/05/17 19:18:55  prez
+** Added ability to chose GETPASS or SETPASS.
+**
 ** Revision 1.174  2001/05/13 22:01:36  prez
 ** Should have fixed problems with linked nicknames
 **
@@ -1420,14 +1423,11 @@ void Nick_Live_t::Quit(const mstring& reason)
     if (InFlight.Exists())
 	InFlight.End(0u);
 
-    // We successfully ident to all channels we tried to
-    // ident for before, so that they 0 our count -- we dont
-    // want it carrying over to next time we log on.
+    // Ensure our failures dont affect future users ...
     { RLOCK(("NickServ", "live", i_Name.LowerCase(), "try_chan_ident"));
     for (i=0; i<try_chan_ident.size(); i++)
 	if (Parent->chanserv.IsStored(try_chan_ident[i]))
-	    Parent->chanserv.GetStored(try_chan_ident[i]).CheckPass(i_Name,
-		Parent->chanserv.GetStored(try_chan_ident[i]).Password());
+	    Parent->chanserv.GetStored(try_chan_ident[i]).Quit(i_Name);
     }
 
     if (Parent->nickserv.IsStored(i_Name) &&
@@ -2311,7 +2311,7 @@ mstring Nick_Live_t::Identify(const mstring& password)
     }
     else if (Parent->nickserv.IsStored(i_Name))
     {
-	if (Parent->nickserv.GetStored(i_Name).Password() == password)
+	if (Parent->nickserv.GetStored(i_Name).CheckPass(password))
 	{
 	    set<mstring> wason;
 	    CommServ::list_t::iterator iter;
@@ -2590,7 +2590,7 @@ Nick_Stored_t::Nick_Stored_t()
 
 
 Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mstring& password)
-	: i_Name(nick), i_RegTime(mDateTime::CurrentDateTime()), i_Password(password),
+	: i_Name(nick), i_RegTime(mDateTime::CurrentDateTime()),
 	  i_Protect(Parent->nickserv.DEF_Protect()), l_Protect(false),
 	  i_Secure(Parent->nickserv.DEF_Secure()), l_Secure(false),
 	  i_NoExpire(Parent->nickserv.DEF_NoExpire()), l_NoExpire(false),
@@ -2602,11 +2602,11 @@ Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mstring& password)
 {
     FT("Nick_Stored_t::Nick_Stored_t", (nick, password));
 
+    Password(password);
     if (Parent->nickserv.IsLive(i_Name))
     {
 	i_LastRealName = Parent->nickserv.GetLive(i_Name).RealName();
 	i_LastMask = Parent->nickserv.GetLive(i_Name).Mask(Nick_Live_t::U_P_H).After("!");
-        Parent->nickserv.GetLive(i_Name).Identify(Password());
 	i_LastSeenTime = mDateTime::CurrentDateTime();
     }
     DumpE();
@@ -2633,7 +2633,6 @@ Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mDateTime& regtime,
     {
 	i_LastRealName = Parent->nickserv.GetLive(i_Name).RealName();
 	i_LastMask = Parent->nickserv.GetLive(i_Name).Mask(Nick_Live_t::U_P_H).After("!");
-        Parent->nickserv.GetLive(i_Name).Identify(Password());
     }
     DumpE();
 }
@@ -2995,13 +2994,37 @@ void Nick_Stored_t::Password(const mstring& in)
     {
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Password"));
 	MCB(i_Password);
+#ifdef GETPASS
 	i_Password = in;
+#else
+	char newpass[33];
+	mHASH(in.c_str(), in.length(), newpass);
+	i_Password = newpass;
+#endif
 	MCE(i_Password);
     }
     else
     {
 	Parent->nickserv.GetStored(i_Host).Password(in);
     }
+}
+
+bool Nick_Stored_t::CheckPass(const mstring& password)
+{
+    FT("Nick_Stored_t::CheckPass", (password));
+#ifdef GETPASS
+    mstring check(password);
+#else
+    char chkpass[33];
+    mHASH(password.c_str(), password.length(), chkpass);
+    mstring check(chkpass);
+#endif
+    RLOCK_IF(("NickServ", "stored", i_Name.LowerCase(), "i_Password"),
+	i_Password == check)
+    {
+	RET(true);
+    }
+    RET(false);
 }
 
 
@@ -3013,9 +3036,7 @@ bool Nick_Stored_t::Slave(const mstring& nick, const mstring& password,
     if (Host().empty())
     {
 	{ RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Forbidden"));
-	RLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_Password"));
-	CP(("Checking \"%s\" == \"%s\" ...", password.c_str(), i_Password.c_str()));
-	if (i_Forbidden || password != i_Password)
+	if (i_Forbidden || CheckPass(password))
 	{
 	    RET(false);
 	}}
@@ -4592,7 +4613,27 @@ void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Name) )		pElement->Retrieve(i_Name);
 	if( pElement->IsA(tag_RegTime) )	pElement->Retrieve(i_RegTime);
-	if( pElement->IsA(tag_Password) )	pElement->Retrieve(i_Password);
+	if( pElement->IsA(tag_Password) )
+	{
+#ifdef GETPASS
+	    if (atoi(pElement->Attrib("hash")))
+	    {
+		NLOG(LM_EMERGENCY, "ERROR/WRONG_PASS_TYPE");
+	    }
+#else
+	    // If password was stored clear, but we use one-way, change it.
+	    if (!atoi(pElement->Attrib("hash")))
+	    {
+		mstring clearpass;
+		pElement->Retrieve(clearpass);
+		char newpass[33];
+		mHASH(clearpass.c_str(), clearpass.length(), newpass);
+		i_Password = newpass;
+	    }
+#endif
+	    else
+		pElement->Retrieve(i_Password);
+	}
 	if( pElement->IsA(tag_Email) )		pElement->Retrieve(i_Email);
 	if( pElement->IsA(tag_URL) )		pElement->Retrieve(i_URL);
 	if( pElement->IsA(tag_ICQ) )		pElement->Retrieve(i_ICQ);
@@ -4639,13 +4680,21 @@ void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 void Nick_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     //TODO: Add your source code here
-	pOut->BeginObject(tag_Nick_Stored_t, attribs);
+	pOut->BeginObject(tag_Nick_Stored_t);
 
 	// Only way to ENSURE the data wont change.
 	WLOCK(("NickServ", "stored", i_Name.LowerCase()));
 	pOut->WriteElement(tag_Name, i_Name);
 	pOut->WriteElement(tag_RegTime, i_RegTime);
-	pOut->WriteElement(tag_Password, i_Password);
+	{
+	    SXP::dict attr;
+#ifdef GETPASS
+	    attr["hash"] = "0";
+#else
+	    attr["hash"] = "1";
+#endif
+	    pOut->WriteElement(tag_Password, i_Password, attr);
+	}
 	pOut->WriteElement(tag_Email, i_Email);
 	pOut->WriteElement(tag_URL, i_URL);
 	pOut->WriteElement(tag_ICQ, i_ICQ);
@@ -4962,8 +5011,13 @@ void NickServ::AddCommands()
 		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
+#ifdef GETPASS
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"GET*PASS*", Parent->commserv.SOP_Name(), NickServ::do_Getpass);
+		"GETPASS*", Parent->commserv.SOP_Name(), NickServ::do_Getpass);
+#else
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SETPASS*", Parent->commserv.SOP_Name(), NickServ::do_Setpass);
+#endif
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LIVE*", Parent->commserv.SOP_Name(), NickServ::do_Live);
 
@@ -6255,7 +6309,7 @@ void NickServ::do_Ghost(const mstring &mynick, const mstring &source, const mstr
 	return;
     }
 
-    if (pass != Parent->nickserv.GetStored(nick).Password())
+    if (!Parent->nickserv.GetStored(nick).CheckPass(pass))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NICK_WRONG_PASS");
 	return;
@@ -6312,7 +6366,7 @@ void NickServ::do_Recover(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    if (pass != Parent->nickserv.GetStored(nick).Password())
+    if (!Parent->nickserv.GetStored(nick).CheckPass(pass))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NICK_WRONG_PASS");
 	return;
@@ -6644,6 +6698,7 @@ void NickServ::do_Forbid(const mstring &mynick, const mstring &source, const mst
 	target));
 }
 
+#ifdef GETPASS
 
 void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const mstring &params)
 {
@@ -6709,6 +6764,74 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 	target, host));
 }
 
+#else /* GETPASS */
+
+void NickServ::do_Setpass(const mstring &mynick, const mstring &source, const mstring &params)
+{
+    FT("NickServ::do_Setpass", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+				message, mynick, message));
+	return;
+    }
+
+    mstring target   = params.ExtractWord(2, " ");
+    mstring password = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(target))
+    {
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
+						target));
+	return;
+    }
+
+    target = Parent->getSname(target);
+    if (Parent->nickserv.GetStored(target).Forbidden())
+    {
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
+						target));
+	return;
+    }
+
+    // If we are NOT a SADMIN, and target is a PRIV GROUP.
+    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(source)) &&
+	(Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(target) ||
+	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsIn(target)) ||
+	(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
+	Parent->commserv.GetList(Parent->commserv.ADMIN_Name()).IsIn(target)) ||
+	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target))))
+    {
+	SEND(mynick, source, "ERR_SITUATION/NOTONPRIVCOMMITTEE", (
+						message));
+	return;
+    }
+
+    mstring host;
+    { RLOCK(("NickServ", "stored", target.LowerCase()));
+    Nick_Stored_t &nick = Parent->nickserv.GetStored(target);
+    host = nick.Host();
+    if (host.empty())
+	host = nick.Name();
+    nick.Password(password);
+    }
+
+    Parent->nickserv.stats.i_Getpass++;
+    SEND(mynick, source, "NS_OTH_COMMAND/SETPASS", (
+			target, host, password));
+    ANNOUNCE(mynick, "MISC/NICK_SETPASS", (
+			source, target, host));
+    LOG(LM_NOTICE, "NICKSERV/SETPASS", (
+	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	target, host));
+}
+
+#endif /* GETPASS */
 
 void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstring &params)
 {
@@ -7609,6 +7732,7 @@ void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 		nickname));
 	return;
     }
+    nickname = Parent->getSname(nickname);
 
     if (Parent->nickserv.GetStored(nickname).Forbidden())
     {
@@ -8621,12 +8745,12 @@ void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
     FT("NickServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
-    pOut->BeginObject(tag_NickServ, attribs);
+    pOut->BeginObject(tag_NickServ);
 
     NickServ::stored_t::iterator iter;
     { RLOCK(("NickServ", "stored"));
     for (iter = StoredBegin(); iter != StoredEnd(); iter++)
-	pOut->WriteSubElement(&iter->second, attribs);
+	pOut->WriteSubElement(&iter->second);
     }
 
     pOut->EndObject(tag_NickServ);
