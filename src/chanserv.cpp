@@ -27,6 +27,12 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.237  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.236  2001/04/13 00:46:38  prez
 ** Fixec channel registering
 **
@@ -596,7 +602,6 @@ Chan_Live_t::Chan_Live_t(const mstring& name, const mstring& first_user)
 	: i_Name(name), i_Limit(0), ph_timer(0)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
-    WLOCK(("ChanServ", "live", i_Name.LowerCase()));
     users[first_user.LowerCase()] = pair<bool,bool>(false,false);
     DumpB();
 }
@@ -605,7 +610,6 @@ Chan_Live_t::Chan_Live_t(const mstring& name, const mstring& first_user)
 void Chan_Live_t::operator=(const Chan_Live_t &in)
 {
     NFT("Chan_Live_t::operator=");
-    WLOCK(("ChanServ", "live", in.i_Name.LowerCase()));
 
     i_Name=in.i_Name;
     i_Creation_Time=in.i_Creation_Time;
@@ -1404,41 +1408,11 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
     FT("Chan_Live_t::Mode", (source, in));
 
     mstring change(in.ExtractWord(1, ": "));
-    mstring newmode, newmode_param, requeue, requeue_param;
+    mstring newmode, newmode_param;
     unsigned int fwdargs = 2, i, wc;
     bool add = true;
     CP(("MODE CHANGE (%s): %s", i_Name.c_str(), in.c_str()));
     wc = in.WordCount(": ");
-
-    requeue << ":" << source << " MODE " << i_Name << " ";
-    if (source.Contains(".") &&
-	Parent->server.SeenMessage(requeue+in) >= Parent->config.MSG_Seen_Act())
-    {
-	for (i=0; i<change.size(); i++)
-	{
-	    if (change[i] == '+')
-		add = true;
-	    else if (change[i] == '-')
-		add = false;
-	    else if (Parent->server.proto.ChanModeArg().Contains(change[i]))
-	    {
-		switch(change[i])
-		{
-		case 'o':
-		case 'v':
-		    if (fwdargs <= wc)
-		    {
-			LOG((LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-				add ? '+' : '-', change[i], source.c_str(),
-				in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str()));
-		    }
-		default:
-		    fwdargs++;
-		}
-	    }
-	}
-	return;
-    }
 
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "p_modes_on"));
@@ -1456,13 +1430,11 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 	{
 	    add = true;
 	    newmode += change[i];
-	    requeue += change[i];
 	}
 	else if (change[i] == '-')
 	{
 	    add = false;
 	    newmode += change[i];
-	    requeue += change[i];
 	}
 	else if (Parent->server.proto.ChanModeArg().Contains(change[i]))
 	{
@@ -1491,8 +1463,9 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		}
 		else
 		{
-		    requeue += change[i];
-		    requeue_param += " " + in.ExtractWord(fwdargs, ": ");
+		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+			add ? '+' : '-', change[i], source.c_str(),
+			in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str()));
 		}
 		fwdargs++;
 		}
@@ -1521,8 +1494,9 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		}
 		else
 		{
-		    requeue += change[i];
-		    requeue_param += " " + in.ExtractWord(fwdargs, ": ");
+		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+			add ? '+' : '-', change[i], source.c_str(),
+			in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str()));
 		}
 		fwdargs++;
 		}
@@ -1688,17 +1662,6 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.GetStored(i_Name).Mode(source,
 						newmode + newmode_param);
-    if (!requeue_param.empty())
-    {
-	if (source.Contains("."))
-	{
-	    mBase::push_message(requeue + requeue_param);
-	}
-	else
-	{
-	    Parent->server.PushUser(source, requeue + requeue_param, i_Name);
-	}
-    }
 }
 
 bool Chan_Live_t::HasMode(const mstring& in) const
@@ -1854,7 +1817,7 @@ bool Chan_Stored_t::Join(const mstring& nick)
 			"JOIN", nick.c_str(), i_Name.c_str()));
 	RET(false);
     }
-    WLOCK(("ChanServ", "live", i_Name.LowerCase()));
+    RLOCK(("ChanServ", "live", i_Name.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(i_Name);
     size_t users = clive.Users();
 
@@ -1864,7 +1827,7 @@ bool Chan_Stored_t::Join(const mstring& nick)
 			"JOIN", i_Name.c_str(), nick.c_str()));
 	RET(false);
     }
-    WLOCK2(("NickServ", "live", nick.LowerCase()));
+    RLOCK2(("NickServ", "live", nick.LowerCase()));
     Nick_Live_t &nlive = Parent->nickserv.GetLive(nick);
 
     if (nlive.IsServices() &&
@@ -2309,7 +2272,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 	return;
     }
 
-    MLOCK(("ChanServ", "live", i_Name.LowerCase()));
+    WLOCK(("ChanServ", "live", i_Name.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(i_Name);
     if (Parent->nickserv.IsLive(setter) &&
 	Parent->nickserv.GetLive(setter).IsServices())
@@ -2748,7 +2711,6 @@ Chan_Stored_t::Chan_Stored_t(const mstring& name, const mstring& founder,
 {
     FT("Chan_Stored_t::Chan_Stored_t", (name, founder, password, desc));
 
-    WLOCK(("ChanServ", "stored", i_Name));
     defaults();
     DumpE();
 }
@@ -2760,7 +2722,6 @@ Chan_Stored_t::Chan_Stored_t(const mstring& name)
 {
     FT("Chan_Stored_t::Chan_Stored_t", (name));
 
-    WLOCK(("ChanServ", "stored", i_Name));
     defaults();
     i_Mlock_On = "nits";
     i_Forbidden = true;
@@ -2771,7 +2732,6 @@ Chan_Stored_t::Chan_Stored_t(const mstring& name)
 void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 {
     NFT("Chan_Stored_t::operator=");
-    WLOCK(("ChanServ", "stored", in.i_Name.LowerCase()));
     i_Name=in.i_Name;
     i_RegTime=in.i_RegTime;
     i_LastUsed=in.i_LastUsed;
@@ -6117,18 +6077,16 @@ bool ChanServ::IsLive(const mstring& in)const
     RET(retval);
 }
 
-void ChanServ::execute(const mstring & data)
+void ChanServ::execute(mstring& source, const mstring& msgtype, const mstring& params)
 {
     mThread::ReAttach(tt_ChanServ);
-    FT("ChanServ::execute", (data));
+    FT("ChanServ::execute", (source, msgtype, params));
     //okay this is the main chanserv command switcher
 
-    mstring source, msgtype, mynick, message, command;
-    source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
-    message = data.After(":", 2);
-    command = message.Before(" ");
+    // Nick/Server PRIVMSG/NOTICE mynick :message
+    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring message(params.After(":"));
+    mstring command(message.Before(" "));
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {
@@ -6240,7 +6198,7 @@ void ChanServ::do_Register(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    WLOCK(("ChanServ", "live", channel.LowerCase()));
+    RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     Parent->nickserv.GetLive(source).SetLastChanReg();
     Chan_Stored_t tmp(channel, founder, password, desc);
@@ -6288,9 +6246,7 @@ void ChanServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
     }
 
     mstring founder = Parent->chanserv.GetStored(channel).Founder();
-    { WLOCK(("ChanServ", "stored"));
     Parent->chanserv.RemStored(channel);
-    }
     Parent->nickserv.GetLive(source).UnChanIdentify(channel);
     Parent->chanserv.stats.i_Drop++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/DROPPED"),
@@ -6696,9 +6652,9 @@ void ChanServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
 			Parent->chanserv.GetLive(channel).Topic_Set_Time() -
 				(1.0 / (60.0 * 60.0 * 24.0)));
 
-	WLOCK(("ChanServ", "live", channel.LowerCase()));
+	RLOCK(("ChanServ", "live", channel.LowerCase()));
 	Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
-	RLOCK(("ChanServ", "stored", channel.LowerCase()));
+	RLOCK2(("ChanServ", "stored", channel.LowerCase()));
 	Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
 	clive.SendMode("-" + clive.Mode() + " " + clive.Key());
 	if (!cstored.Mlock().empty())
@@ -6884,7 +6840,7 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    WLOCK(("ChanServ", "live", channel.LowerCase()));
+    RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     channel = Parent->getSname(channel);
 
@@ -7306,7 +7262,7 @@ void ChanServ::do_Topic(const mstring &mynick, const mstring &source, const mstr
 	return;
     }
 
-    WLOCK(("ChanServ", "stored", channel.LowerCase()));
+    RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
 
@@ -7690,9 +7646,9 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
 	}
     }
 
-    WLOCK(("ChanServ", "live", channel.LowerCase()));
+    RLOCK2(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
-    RLOCK2(("ChanServ", "live", target.LowerCase()));
+    RLOCK3(("ChanServ", "live", target.LowerCase()));
     Nick_Live_t &nlive = Parent->nickserv.GetLive(target);
     unsigned int i;
     bool found = false;
@@ -7851,7 +7807,7 @@ void ChanServ::do_clear_Users(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    WLOCK(("ChanServ", "live", channel.LowerCase()));
+    RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     unsigned int i;
     vector<mstring> kickees;
@@ -7924,7 +7880,7 @@ void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    WLOCK(("ChanServ", "live", channel.LowerCase()));
+    RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     unsigned int i;
     for (i=0; i<clive.Ops(); i++)
@@ -7992,7 +7948,7 @@ void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    WLOCK(("ChanServ", "live", channel.LowerCase()));
+    RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     unsigned int i;
 
@@ -8069,7 +8025,7 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    WLOCK(("ChanServ", "live", channel.LowerCase()));
+    RLOCK2(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     unsigned int i;
     mstring mode;
@@ -8157,7 +8113,7 @@ void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    WLOCK(("ChanServ", "live", channel.LowerCase()));
+    RLOCK(("ChanServ", "live", channel.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
     unsigned int i;
 

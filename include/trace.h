@@ -25,6 +25,12 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.73  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -115,7 +121,7 @@ RCSID(trace_h, "@(#) $Id$");
 enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
 unsigned short makehex(const mstring &SLevel);
-enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_Mutex };
+enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_WriteUpgrade, L_Mutex };
 enum socktype_enum { S_Unknown = 0, S_IrcServer, S_DCC, S_DCCFile,
 			S_Client, S_Services, S_Telnet };
 enum dir_enum { D_Unknown, D_From, D_To };

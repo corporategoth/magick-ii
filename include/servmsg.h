@@ -25,6 +25,12 @@ RCSID(servmsg_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.32  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.31  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -161,7 +167,7 @@ public:
 
     threadtype_enum Get_TType() const { return tt_OtherServ; }
     mstring GetInternalName() const { return "ServMsg"; }
-    void execute(const mstring & message);
+    void execute(mstring& source, const mstring& msgtype, const mstring& params);
 
     static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Credits(const mstring &mynick, const mstring &source, const mstring &params);

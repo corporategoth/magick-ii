@@ -27,6 +27,12 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.165  2001/05/01 14:00:24  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.164  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -485,7 +491,6 @@ void Nick_Live_t::InFlight_t::ChgNick(const mstring& newnick)
 void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
 {
     NFT("Nick_Live_t::InFlight_t::operator=");
-    WLOCK(("NickServ", "live", in.nick.LowerCase(), "InFlight"));
     nick        = in.nick;
     type	= in.type;
     fileattach	= in.fileattach;
@@ -504,7 +509,6 @@ void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
 Nick_Live_t::InFlight_t::~InFlight_t()
 {
     NFT("Nick_Live_t::InFlight_t::~InFlight_t");
-    WLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
     if (Exists())
 	End(0u);
     mstring *arg = NULL;
@@ -801,7 +805,7 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			MemoServ::channel_news_t &newslist = Parent->memoserv.GetChannel(recipiant);
 			if (Parent->chanserv.IsLive(recipiant))
 			{
-			    WLOCK(("ChanServ", "live", recipiant.LowerCase()));
+			    RLOCK(("ChanServ", "live", recipiant.LowerCase()));
 			    Chan_Live_t &clive = Parent->chanserv.GetLive(recipiant);
 			    unsigned int i;
 			    for(i=0; i<clive.Users(); i++)
@@ -1165,7 +1169,6 @@ Nick_Live_t::Nick_Live_t(const mstring& name, const mDateTime& signon,
 {
     FT("Nick_Live_t::Nick_Live_t",(name, signon, server, username, hostname, realname));
 
-    WLOCK(("NickServ", "live", name.LowerCase()));
     InFlight.init();
 
     // User is on AKILL, add the mask, and No server will kill
@@ -1217,7 +1220,6 @@ Nick_Live_t::Nick_Live_t(const mstring& name, const mstring& username,
 	  failed_passwds(0), identified(true), services(true), InFlight(name)
 {
     FT("Nick_Live_t::Nick_Live_t",(name, username, hostname, realname));
-    WLOCK(("NickServ", "live", name.LowerCase()));
     InFlight.init();
     DumpE();
 }
@@ -1226,7 +1228,6 @@ Nick_Live_t::Nick_Live_t(const mstring& name, const mstring& username,
 void Nick_Live_t::operator=(const Nick_Live_t &in)
 {
     NFT("Nick_Live_t::operator=");
-    WLOCK(("NickServ", "live", in.i_Name.LowerCase()));
     i_Name=in.i_Name;
     i_Signon_Time=in.i_Signon_Time;
     i_My_Signon_Time=in.i_My_Signon_Time;
@@ -1276,7 +1277,6 @@ void Nick_Live_t::Join(const mstring& chan)
     }
     else
     {
-	WLOCK(("ChanServ", "live"));
 	Chan_Live_t tmp(chan, i_Name);
 	Parent->chanserv.AddLive(&tmp);
     }
@@ -1289,7 +1289,6 @@ void Nick_Live_t::Join(const mstring& chan)
 	MCB(joined_channels.size());
 	joined_channels.insert(chan.LowerCase());
 	MCE(joined_channels.size());
-	Parent->server.FlushUser(i_Name, chan);
     }
 }
 
@@ -1302,7 +1301,6 @@ void Nick_Live_t::Part(const mstring& chan)
 	// If this returns 0, then the channel is empty.
 	if (Parent->chanserv.GetLive(chan).Part(i_Name) == 0)
 	{
-	    WLOCK(("ChanServ", "live"));
 	    Parent->chanserv.RemLive(chan);
 	}
     }
@@ -1328,7 +1326,6 @@ void Nick_Live_t::Kick(const mstring& kicker, const mstring& chan)
 	// If this returns 0, then the channel is empty.
 	if (Parent->chanserv.GetLive(chan).Kick(i_Name, kicker) == 0)
 	{
-	    WLOCK(("ChanServ", "live"));
 	    Parent->chanserv.RemLive(chan);
 	}
     }
@@ -2525,7 +2522,6 @@ Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mstring& password)
 	  i_Forbidden(false), i_Picture(0)
 {
     FT("Nick_Stored_t::Nick_Stored_t", (nick, password));
-    WLOCK(("NickServ", "stored", nick.LowerCase()));
 
     if (Parent->nickserv.IsLive(i_Name))
     {
@@ -2542,7 +2538,6 @@ Nick_Stored_t::Nick_Stored_t(const mstring& nick)
 	  i_Forbidden(true), i_Picture(0)
 {
     FT("Nick_Stored_t::Nick_Stored_t", (nick.LowerCase()));
-    WLOCK(("NickServ", "stored", i_Name.LowerCase()));
     DumpE();
 } 
 
@@ -2553,7 +2548,6 @@ Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mDateTime& regtime,
 	  i_Forbidden(false), i_Picture(false)
 {
     FT("Nick_Stored_t::Nick_Stored_t", (nick, "(const Nick_Stored_t &) in"));
-    WLOCK(("NickServ", "stored", nick.LowerCase()));
 
     if (Parent->nickserv.IsLive(i_Name))
     {
@@ -2587,7 +2581,6 @@ unsigned long Nick_Stored_t::Drop()
 	    {
 		
 		dropped += Parent->nickserv.GetStored(nick).Drop();
-		WLOCK(("NickServ", "stored"));
 		Parent->nickserv.RemStored(nick);
 	    }
 	}
@@ -2616,7 +2609,6 @@ unsigned long Nick_Stored_t::Drop()
 	}
     }
 
-    WLOCK3(("ChanServ", "stored"));
     for (i=0; i<killchans.size(); i++)
     {
 	Parent->chanserv.RemStored(killchans[i]);
@@ -2629,7 +2621,6 @@ unsigned long Nick_Stored_t::Drop()
 void Nick_Stored_t::operator=(const Nick_Stored_t &in)
 {
     NFT("Nick_Stored_t::operator=");
-    WLOCK(("NickServ", "stored", in.i_Name.LowerCase()));
     i_Name=in.i_Name;
     i_RegTime=in.i_RegTime;
     i_Password=in.i_Password;
@@ -2953,7 +2944,6 @@ bool Nick_Stored_t::Slave(const mstring& nick, const mstring& password,
 	if (Parent->nickserv.IsStored(nick))
 	{
 	    ChangeOver(nick);
-	    WLOCK(("NickServ", "stored"));
 	    Parent->nickserv.RemStored(nick);
 	}
 
@@ -3217,7 +3207,7 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
     for (cniter = Parent->memoserv.ChannelBegin();
 			cniter != Parent->memoserv.ChannelEnd(); cniter++)
     {
-	WLOCK(("MemoServ", "channel", cniter->first));
+	RLOCK(("MemoServ", "channel", cniter->first));
 	for (cnliter = cniter->second.begin();
 			    cnliter != cniter->second.end(); cnliter++)
 	{
@@ -5377,20 +5367,16 @@ bool NickServ::IsRecovered(const mstring& in)const
 
 
 
-void NickServ::execute(const mstring & data)
+void NickServ::execute(mstring& source, const mstring& msgtype, const mstring& params)
 {
     mThread::ReAttach(tt_NickServ);
-    FT("NickServ::execute", (data));
+    FT("NickServ::execute", (source, msgtype, params));
     //okay this is the main nickserv command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-
-    mstring source, msgtype, mynick, message, command;
-    source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
-    message = data.After(":", 2);
-    command = message.Before(" ");
+    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring message(params.After(":"));
+    mstring command(message.Before(" "));
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {
@@ -5486,7 +5472,7 @@ void NickServ::do_Register(const mstring &mynick, const mstring &source, const m
 	    return;
 	}
 
-	WLOCK(("NickServ", "live", source.LowerCase()));
+	RLOCK(("NickServ", "live", source.LowerCase()));
 	Nick_Live_t &live = Parent->nickserv.GetLive(source);
 	live.SetLastNickReg();
 	Nick_Stored_t tmp(source, password);
@@ -5522,9 +5508,7 @@ void NickServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
 	{
 	    Parent->nickserv.stats.i_Drop++;
 	    dropped = Parent->nickserv.GetStored(source).Drop();
-	    { WLOCK(("NickServ", "stored"));
 	    Parent->nickserv.RemStored(source);
-	    }
 	    Parent->nickserv.GetLive(source).UnIdentify();
 	    ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/DROPPED"));
 	    LOG((LM_INFO, Parent->getLogMessage("NICKSERV/DROP"),
@@ -5544,9 +5528,7 @@ void NickServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
 	{
 	    Parent->nickserv.stats.i_Drop++;
 	    dropped = Parent->nickserv.GetStored(target).Drop();
-	    { WLOCK(("NickServ", "stored"));
 	    Parent->nickserv.RemStored(target);
-	    }
 	    if (!Parent->nickserv.IsStored(source))
 		Parent->nickserv.GetLive(source).UnIdentify();
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/DROPPED"),

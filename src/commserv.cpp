@@ -27,6 +27,12 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2001/05/01 14:00:23  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.94  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -280,7 +286,6 @@ Committee_t::Committee_t(const mstring& name, const mstring& head, const mstring
 {
     FT("Committee_t::Committee_t", (name, head, description));
 
-    WLOCK(("CommServ", "list", i_Name));
     DumpE();
 }
 
@@ -293,7 +298,6 @@ Committee_t::Committee_t(const mstring& name, const Committee_t& head, const mst
 	  i_Secure(Parent->commserv.DEF_Secure()), l_Secure(false)
 {
     FT("Committee_t::Committee_t", (name, "(Committee_t *) head", description));
-    WLOCK(("CommServ", "list", i_Name));
     DumpE();
 }
 
@@ -306,7 +310,6 @@ Committee_t::Committee_t(const mstring& name, const mstring& description)
 	  i_Secure(Parent->commserv.DEF_Secure()), l_Secure(false)
 {
     FT("Committee_t::Committee_t", (name, description));
-    WLOCK(("CommServ", "list", i_Name));
     DumpE();
 }
 
@@ -315,7 +318,6 @@ void Committee_t::operator=(const Committee_t &in)
 {
     FT("Committee_t::operator=", ("(const Committee_t &) in"));
 
-    WLOCK(("CommServ", "list", in.i_Name.UpperCase()));
     i_Name = in.i_Name;
     i_RegTime = in.i_RegTime;
     i_Head = in.i_Head;
@@ -1240,21 +1242,16 @@ void CommServ::RemCommands()
 }
 
 
-void CommServ::execute(const mstring & data)
+void CommServ::execute(mstring& source, const mstring& msgtype, const mstring& params)
 {
     mThread::ReAttach(tt_OtherServ);
-    FT("CommServ::execute", (data));
-    //okay this is the main nickserv command switcher
-
+    FT("CommServ::execute", (source, msgtype, params));
+    //okay this is the main commserv command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-
-    mstring source, msgtype, mynick, message, command;
-    source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
-    message = data.After(":", 2);
-    command = message.Before(" ");
+    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring message(params.After(":"));
+    mstring command(message.Before(" "));
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {
@@ -1393,9 +1390,7 @@ void CommServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	return;
     }
 
-    { WLOCK(("CommServ", "list"));
     Parent->commserv.RemList(committee);
-    }
     Parent->commserv.stats.i_Del++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/DEL"), committee.c_str());
     LOG((LM_NOTICE, Parent->getLogMessage("COMMSERV/DEL"),

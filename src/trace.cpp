@@ -27,6 +27,12 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.108  2001/05/01 14:00:24  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.107  2001/03/20 14:22:15  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -323,11 +329,13 @@ mstring ThreadID::logname() const
 void ThreadID::Flush()
 {
 #ifdef MAGICK_TRACE_WORKS
-    t_intrace = true;
+    ThreadID *tid = mThread::find();
+    if (tid != NULL)
+	tid->t_intrace = true;
     list<pair<threadtype_enum, mstring> >::iterator iter;
     list<pair<threadtype_enum, mstring> > ThreadMessageQueue2;
     vector<mstring> pre_messages;
-    { WLOCK(("ThreadMessageQueue"));
+    { MLOCK(("ThreadMessageQueue"));
     for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end(); iter++)
     {
     	if (iter->first == t_internaltype)
@@ -351,7 +359,8 @@ void ThreadID::Flush()
 	}
 	messages.clear();
     }
-    t_intrace = false;
+    if (tid != NULL)
+	tid->t_intrace = false;
 #endif
 }
 

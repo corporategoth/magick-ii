@@ -27,6 +27,12 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2001/05/01 14:00:23  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.68  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -845,7 +851,7 @@ unsigned long FileMap::FindAvail(const FileMap::FileType type)
     FT("FileMap::FindAvail", (static_cast<int>(type)));
 
     unsigned long filenum = 1;
-    WLOCK(("FileMap", static_cast<int>(type)));
+    { RLOCK(("FileMap", static_cast<int>(type)));
     while (filenum > 0) // Guarentee 8 digits
     {
 	if (i_FileMap[type].find(filenum) == i_FileMap[type].end())
@@ -853,7 +859,7 @@ unsigned long FileMap::FindAvail(const FileMap::FileType type)
 	    RET(filenum);
 	}
 	filenum++;
-    }
+    }}
 
     LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEMAPFULL"),
 		static_cast<int>(type)));
@@ -1201,7 +1207,6 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
 			mynick, source, static_cast<int>(filetype), filenum));
 
-    WLOCK(("DccMap", "xfers", i_DccId));
     // Setup Paramaters
     i_Transiant = NULL;
 //    i_Blocksize = Parent->files.Blocksize();
@@ -1264,7 +1269,6 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& socket,
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) socket",
 		mynick, source, filename, filesize, blocksize));
 
-    WLOCK(("DccMap", "xfers", i_DccId));
     // Setup Paramaters
     i_Transiant = NULL;
 //    i_Blocksize = Parent->files.Blocksize();
@@ -1313,7 +1317,6 @@ DccXfer::~DccXfer()
 {
     NFT("DccXfer::~DccXfer");
 
-    WLOCK(("DccMap", "xfers", i_DccId));
     if (i_Transiant != NULL)
 	delete [] i_Transiant;
     i_Transiant = NULL;
@@ -1394,7 +1397,6 @@ void DccXfer::operator=(const DccXfer &in)
 {
     FT("DccXfer::operator=", ("(const DccXfer &) in"));
 
-    WLOCK(("DccMap", "xfers", in.i_DccId));
     // i_File=in.i_File;
     i_Source=in.i_Source;
     i_Mynick=in.i_Mynick;

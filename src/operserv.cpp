@@ -27,6 +27,12 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.120  2001/05/01 14:00:24  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.119  2001/03/27 07:04:32  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -296,7 +302,7 @@ bool OperServ::AddHost(const mstring& host)
     FT("OperServ::AddHost", (host));
     bool retval = false;
 
-    WLOCK(("OperServ", "CloneList"));
+    MLOCK(("OperServ", "CloneList"));
     MCB(CloneList.size());
     if (CloneList.find(host.LowerCase()) == CloneList.end())
 	CloneList[host.LowerCase()].first = 0;
@@ -368,7 +374,7 @@ void OperServ::RemHost(const mstring& host)
 {
     FT("OperServ::RemHost", (host));
 
-    WLOCK(("OperServ", "CloneList"));
+    MLOCK(("OperServ", "CloneList"));
     MCB(CloneList.size());
     if (CloneList.find(host.LowerCase()) != CloneList.end())
     {
@@ -415,7 +421,7 @@ size_t OperServ::CloneList_Usage() const
 {
     size_t retval = 0;
     map<mstring, pair<unsigned int, list<mDateTime> > >::const_iterator i;
-    WLOCK(("OperServ", "CloneList"));
+    MLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
 	retval += i->first.capacity();
@@ -1217,21 +1223,16 @@ void OperServ::RemCommands()
 	    Parent->commserv.SOP_Name());
 }
 
-void OperServ::execute(const mstring & data)
+void OperServ::execute(mstring& source, const mstring& msgtype, const mstring& params)
 {
     mThread::ReAttach(tt_OperServ);
-    FT("OperServ::execute", (data));
+    FT("OperServ::execute", (source, msgtype, params));
     //okay this is the main operserv command switcher
 
-
     // Nick/Server PRIVMSG/NOTICE mynick :message
-
-    mstring source, msgtype, mynick, message, command;
-    source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
-    message = data.After(":", 2);
-    command = message.ExtractWord(1, " ").UpperCase();
+    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring message(params.After(":"));
+    mstring command(message.Before(" "));
 
     // We SHOULD still process THESE messages, ONLY.
     if (!MSG())
@@ -2217,7 +2218,7 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
     {
 	mstring command = params.ExtractWord(2, " ").UpperCase();
 
-	{ WLOCK(("IrcSvcHandler"));
+	{ RLOCK(("IrcSvcHandler"));
 	if (Parent->ircsvchandler != NULL)
 	{
 

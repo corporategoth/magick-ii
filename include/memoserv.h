@@ -25,6 +25,12 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.49  2001/04/13 08:50:48  prez
 ** Fixed const for unix
 **
@@ -382,7 +388,7 @@ public:
 
     threadtype_enum Get_TType() const { return tt_MemoServ; }
     mstring GetInternalName() const { return "MemoServ"; }
-    void execute(const mstring & message);
+    void execute(mstring& source, const mstring& msgtype, const mstring& params);
 
     static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Read(const mstring &mynick, const mstring &source, const mstring &params);

@@ -27,6 +27,12 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2001/05/01 14:00:24  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.84  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -437,21 +443,16 @@ void ServMsg::RemCommands()
 	    "FILE*", Parent->commserv.ALL_Name());
 }
 
-void ServMsg::execute(const mstring & data)
+void ServMsg::execute(mstring& source, const mstring& msgtype, const mstring& params)
 {
     mThread::ReAttach(tt_OtherServ);
-    FT("ServMsg::execute", (data));
-    //okay this is the main nickserv command switcher
-
+    FT("ServMsg::execute", (source, msgtype, params));
+    //okay this is the main servmsg command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-
-    mstring source, msgtype, mynick, message, command;
-    source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
-    message = data.After(":", 2);
-    command = message.Before(" ");
+    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring message(params.After(":"));
+    mstring command(message.Before(" "));
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {

@@ -25,6 +25,12 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.156  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.155  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -442,7 +448,7 @@ public:
 	unsigned int low_water_mark;
 	unsigned int high_water_mark;
 	unsigned long msg_seen_time;
-	unsigned int msg_seen_act;
+	unsigned long msg_check_time;
     public:
 	unsigned long Server_Relink()const    { return server_relink; }
 	unsigned long Squit_Protect()const    { return squit_protect; }
@@ -458,7 +464,7 @@ public:
 	unsigned int Low_Water_Mark()const    { return low_water_mark; }
 	unsigned int High_Water_Mark()const    { return high_water_mark; }
 	unsigned long MSG_Seen_Time()const    { return msg_seen_time; }
-	unsigned int MSG_Seen_Act()const    { return msg_seen_act; }
+	unsigned long MSG_Check_Time()const    { return msg_check_time; }
     } config;
 
     bool ActivateLogger();

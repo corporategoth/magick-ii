@@ -27,6 +27,12 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.97  2001/05/01 14:00:24  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.96  2001/04/13 08:50:48  prez
 ** Fixed const for unix
 **
@@ -289,7 +295,6 @@ Memo_t::Memo_t(const mstring& nick, const mstring& sender, const mstring& text,
 	  i_Text(text), i_Read(false), i_File(file)
 {
     FT("Memo_t::Memo_t", (nick, sender, text, file));
-    WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
     DumpE();
 }
 
@@ -297,7 +302,6 @@ Memo_t::Memo_t(const mstring& nick, const mstring& sender, const mstring& text,
 void Memo_t::operator=(const Memo_t &in)
 {
     FT("Memo_t::operator=", ("(const Memo_t &) in"));
-    WLOCK(("MemoServ", "nick", in.i_Nick.LowerCase()));
     i_Nick = in.i_Nick;
     i_Time = in.i_Time;
     i_Sender = in.i_Sender;
@@ -404,7 +408,6 @@ News_t::News_t(const mstring& channel, const mstring& sender, const mstring& tex
 	  i_Text(text), i_NoExpire(noexpire)
 {
     FT("News_t::News_t", (channel, sender, text));
-    WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
     DumpE();
 }
 
@@ -412,7 +415,6 @@ News_t::News_t(const mstring& channel, const mstring& sender, const mstring& tex
 void News_t::operator=(const News_t &in)
 {
     FT("News_t::operator=", ("(const News_t &) in"));
-    WLOCK(("MemoServ", "channel", in.i_Channel.LowerCase()));
     i_Channel = in.i_Channel;
     i_Time = in.i_Time;
     i_Sender = in.i_Sender;
@@ -682,9 +684,7 @@ void MemoServ::NickMemoConvert(const mstring &source, const mstring &target)
 {
     FT("MemoServ::NickMemoConvert", (source, target));
 
-    WLOCK(("MemoServ", "nick"));
-    WLOCK2(("MemoServ", "nick", source));
-    WLOCK3(("MemoServ", "nick", target));
+    WLOCK(("MemoServ", "nick", source));
 
     MemoServ::nick_t::iterator iter = nick.find(source.LowerCase());
     if (iter != nick.end())
@@ -699,6 +699,7 @@ void MemoServ::NickMemoConvert(const mstring &source, const mstring &target)
 	}
 	// DELIBERATELY dont delete the members of the MemoServ::nick_memo_t
 	// for the source nick ... we're just renaming and moving.
+	WLOCK2(("MemoServ", "nick"));
 	nick.erase(source.LowerCase());
     }
 }
@@ -1255,21 +1256,16 @@ size_t MemoServ::ChannelNewsCount(const mstring &in, const mstring &user, const 
     RET(retval);
 }
 
-void MemoServ::execute(const mstring & data)
+void MemoServ::execute(mstring& source, const mstring& msgtype, const mstring& params)
 {
     mThread::ReAttach(tt_MemoServ);
-    FT("MemoServ::execute", (data));
-    //okay this is the main nickserv command switcher
-
+    FT("MemoServ::execute", (source, msgtype, params));
+    //okay this is the main memoserv command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-
-    mstring source, msgtype, mynick, message, command;
-    source  = data.ExtractWord(1, ": ");
-    msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
-    message = data.After(":", 2);
-    command = message.Before(" ");
+    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring message(params.After(":"));
+    mstring command(message.Before(" "));
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {

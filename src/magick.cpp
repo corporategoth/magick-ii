@@ -29,6 +29,12 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.299  2001/05/01 14:00:23  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.298  2001/04/22 21:45:20  prez
 ** Fixed make / make install and RPM spec
 **
@@ -982,7 +988,6 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
     {
 	language = nickserv.GetStored(nick.LowerCase()).Language().UpperCase();
     }
-    WLOCK(("Magick","LoadHelp"));
 
 StartGetLang:
     if (Help.find(language) == Help.end() &&
@@ -2548,7 +2553,11 @@ bool Magick::get_config_values()
 	config.msg_seen_time = FromHumanTime(value_mstring);
     else
 	config.msg_seen_time = FromHumanTime("30s");
-    in.Read(ts_Config+"MSG_SEEN_ACT",config.msg_seen_act, 10U);
+    in.Read(ts_Config+"MSG_CHECK_TIME",value_mstring, "1m");
+    if (FromHumanTime(value_mstring))
+	config.msg_check_time = FromHumanTime(value_mstring);
+    else
+	config.msg_check_time = FromHumanTime("1m");
 
     in.Read(ts_NickServ+"APPEND_RENAME",nickserv.append_rename, true);
     in.Read(ts_NickServ+"SUFFIXES",nickserv.suffixes,"_-^`");
@@ -2904,7 +2913,6 @@ bool Magick::get_config_values()
     }
     else
     {
-	WLOCK(("CommServ", "list"));
 	Committee_t tmp(commserv.all_name, "All Users");
 	commserv.AddList(&tmp);
     }
@@ -2924,7 +2932,6 @@ bool Magick::get_config_values()
     }
     else
     {
-	WLOCK(("CommServ", "list"));
 	Committee_t tmp(commserv.regd_name, "Registered Users");
 	commserv.AddList(&tmp);
     }
@@ -2944,7 +2951,6 @@ bool Magick::get_config_values()
     }
     else
     {
-	WLOCK(("CommServ", "list"));
 	Committee_t tmp(commserv.sadmin_name, "Services Administrators");
 	commserv.AddList(&tmp);
     }
@@ -2960,7 +2966,6 @@ bool Magick::get_config_values()
 
     if (!commserv.IsList(commserv.sop_name))
     {
-	WLOCK(("CommServ", "list"));
 	Committee_t tmp(commserv.sop_name, commserv.GetList(commserv.sadmin_name),
 				    "Services Operators");
 	commserv.AddList(&tmp);
@@ -2971,7 +2976,6 @@ bool Magick::get_config_values()
 
     if (!commserv.IsList(commserv.admin_name))
     {
-	WLOCK(("CommServ", "list"));
 	Committee_t tmp(commserv.admin_name, commserv.GetList(commserv.sadmin_name),
 				    "Server Administrators");
 	commserv.AddList(&tmp);
@@ -2982,7 +2986,6 @@ bool Magick::get_config_values()
 
     if (!commserv.IsList(commserv.oper_name))
     {
-	WLOCK(("CommServ", "list"));
 	Committee_t tmp(commserv.oper_name, commserv.GetList(commserv.admin_name),
 				    "Server Operators");
 	commserv.AddList(&tmp);
@@ -3013,7 +3016,8 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 {
     // No trace, screws with LastFunc...
     //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
-    ThreadID *tid;
+    ThreadID *tid = mThread::find();
+printf("(%p) In signal handler - %d\n", tid, signum); fflush(stdout);
 
     // todo: fill this sucker in
     switch(signum)
@@ -3025,7 +3029,12 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #endif
 #if defined(SIGPIPE) && (SIGPIPE!=0)
     case SIGPIPE:
-	FLUSH();
+	{
+	vector<ThreadID*> ids = mThread::findall();
+	for (unsigned int i=0; i<ids.size(); i++)
+	    if (ids[i] != NULL)
+		ids[i]->Flush();
+	}
 	break;
 #endif
 
@@ -3071,8 +3080,13 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case SIGBUS:	// BUS error (fatal)
 #endif
     case SIGSEGV:	// Segmentation Fault
+	{
+	vector<ThreadID*> ids = mThread::findall();
+	for (unsigned int i=0; i<ids.size(); i++)
+	    if (ids[i] != NULL)
+		ids[i]->Flush();
+	}
 	tid = mThread::find();
-	FLUSH();
 	LOG((LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum, tid->LastFunc().c_str()));
 	announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_KILL"), signum, tid->LastFunc().c_str());
 	Parent->Shutdown(true);

@@ -25,6 +25,12 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2001/05/01 14:00:21  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.88  2001/04/09 07:52:22  prez
 ** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
 **
@@ -202,15 +208,49 @@ public:
     }
 };
 
+class mMessage : public ACE_Method_Request
+{
+    friend class EventTask;
+
+    mstring source_, msgtype_, params_;
+    mDateTime creation_;
+
+public:
+    enum type_t { ServerExists, ServerNoExists, NickExists, NickNoExists,
+	ChanExists, ChanNoExists, UserInChan, UserNoInChan };
+
+private:
+
+    list<pair<type_t, mstring> > dependancies;
+    static map<type_t, map<mstring, set<mMessage *> > > AllDependancies;
+    void AddDepend(const type_t type, const mstring& param)
+	{ dependancies.push_back(pair<type_t,mstring>(type, param)); }
+    void AddDependancies();
+
+public:
+    mMessage(const mstring& source, const mstring& msgtype, const mstring& params, const u_long priority = 0)
+	: ACE_Method_Request(priority), source_(source), msgtype_(msgtype), params_(params),
+	  creation_(mDateTime::CurrentDateTime()) {}
+
+    bool OutstandingDependancies();
+    static void CheckDependancies(type_t type, const mstring& param1, const mstring& param2 = "");
+
+    mstring source() { return source_; }
+    mstring msgtype() { return msgtype_; }
+    mstring params() { return params_; }
+    mDateTime creation() { return creation_; }
+
+    virtual int call();
+};
+
 class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class mBase;
 
     void PreParse(mstring& message) const;
 protected:
-    ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
+    ACE_Activation_Queue message_queue_;
     size_t thread_count;
-    int message_i(const mstring& message);
 public:
     mBaseTask() {}
     virtual ~mBaseTask() {}
@@ -218,6 +258,7 @@ public:
     virtual int close(unsigned long flags=0);
     virtual int svc(void);
     void message(const mstring& message);
+    int check_LWM();
     void i_shutdown();
 };
 
@@ -241,10 +282,10 @@ public:
     virtual ~mBase() {}
     static void init();
     static void shutdown();
+    static int check_LWM() { return BaseTask.check_LWM(); }
 
     static void push_message(const mstring& message);
-    static void push_message_immediately(const mstring& message);
-    virtual void execute(const mstring& message) =0;
+    virtual void execute(mstring& source, const mstring& msgtype, const mstring& params) =0;
 
     virtual mstring FirstName() const { return names.Before(" "); }
     virtual mstring GetNames() const { return names; }

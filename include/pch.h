@@ -21,6 +21,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.36  2001/04/08 18:53:09  prez
 ** It now all compiles and RUNS with -fno-default-inline OFF.
 **
@@ -244,7 +250,7 @@
 #include <ace/Log_Msg_Callback.h>
 #endif
 #include <ace/Message_Queue.h>
-#include <ace/Method_Object.h>
+#include <ace/Method_Request.h>
 #include <ace/OS.h>
 #include <ace/Reactor.h>
 #include <ace/Singleton.h>

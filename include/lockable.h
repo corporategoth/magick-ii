@@ -25,6 +25,12 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.58  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -159,21 +165,26 @@ class mLOCK
     friend class mLock_Write;
     friend class mLock_Mutex;
 
-    static map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > LockMap;
+    static mLock_Mutex *maplock;
+    static map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > > LockMap;
     static ACE_Expandable_Cached_Fixed_Allocator<ACE_Thread_Mutex> memory_area;
 
+    bool islocked;
     vector<mstring> locks;
 #ifdef MAGICK_TRACE_WORKS
     T_Locking tlock[MAX_LOCKS];
 #endif
 
+    static bool AcquireMapLock();
+    static bool ReleaseMapLock();
+
 public:
     mLOCK() {}
     mLOCK(const locktype_enum type, const mVarArray &args);
     ~mLOCK();
-    bool Locked() const;
+    bool Locked() const { return islocked; }
     size_t Locks() const { return locks.size(); }
-    static size_t AllLocks();
+    static size_t AllLocks() { return LockMap.size(); }
 };
 
 /* We need to ditch these for the below operator new */
@@ -378,6 +389,11 @@ private:
     // really should be using auto_ptr's here, *shrug* maybe later
     typedef map<ACE_thread_t,ThreadID*> selftothreadidmap_t;
     static selftothreadidmap_t selftothreadidmap;
+    static mLock_Mutex *maplock;
+
+    static bool AcquireMapLock();
+    static bool ReleaseMapLock();
+
 public:
     static ThreadID* find(const ACE_thread_t thread=ACE_Thread::self());
     static vector<ThreadID*> findall();

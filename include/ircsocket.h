@@ -25,6 +25,12 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2001/05/01 14:00:21  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.50  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -196,6 +202,7 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
     mDateTime last_save;
     mDateTime last_check;
     mDateTime last_ping;
+    mDateTime last_msgcheck;
     static void *save_databases(void *in = NULL);
 public:
     void ForceSave();

@@ -27,6 +27,12 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.154  2001/05/01 14:00:23  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.153  2001/04/13 00:46:38  prez
 ** Fixec channel registering
 **
@@ -447,10 +453,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    mstring text = data2.ExtractWord(i,"\n\r");
 	    if(!text.empty())
 	    {
-		if (text.SubString(0, 4) == "PING ")
-		    mBase::push_message_immediately(text);
-		else
-		    mBase::push_message(text);
+		mBase::push_message(text);
 	    }
 	}
 
@@ -459,10 +462,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    mstring text = data2.ExtractWord(i,"\n\r");
 	    if(!text.empty())
 	    {
-		if (text.SubString(0, 4) == "PING ")
-		    mBase::push_message_immediately(text);
-		else
-		    mBase::push_message(text);
+		mBase::push_message(text);
 	    }
 	}
 	else
@@ -492,12 +492,15 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     // Should I do this with SQUIT protection ...?
     { WLOCK(("NickServ", "live"));
     WLOCK2(("ChanServ", "live"));
+    WLOCK3(("Server", "list"));
     Parent->nickserv.live.clear();
     Parent->chanserv.live.clear();
+    Parent->server.i_list.clear();
     }
 
-    WLOCK(("IrcSvcHandler"));
+    { WLOCK(("IrcSvcHandler"));
     Parent->ircsvchandler = NULL;
+    }
 
     if(!(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
 	    Parent->Shutdown()) && Parent->Connected())
@@ -842,7 +845,6 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    if (Parent->nickserv.IsLiveAll(*iter))
 	    {
 		Parent->nickserv.GetLive(*iter).Quit("FAKE SQUIT - " + *tmp);
-		WLOCK(("NickServ", "live"));
 		Parent->nickserv.RemLive(*iter);
 	    }
 	}
@@ -909,7 +911,6 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 
     if (Parent->nickserv.IsLiveAll(*tmp))
     {
-	WLOCK(("NickServ", "live", tmp->LowerCase(), "InFlight"));
 	Nick_Live_t &entry = Parent->nickserv.GetLive(tmp->LowerCase());
 	if (entry.InFlight.File())
 	{
@@ -1016,7 +1017,8 @@ int EventTask::svc(void)
     WLOCK2(("Events", "last_save"));
     WLOCK3(("Events", "last_check"));
     WLOCK4(("Events", "last_ping"));
-    last_expire = last_save = last_check = last_ping = mDateTime::CurrentDateTime();
+    WLOCK5(("Events", "last_msgcheck"));
+    last_expire = last_save = last_check = last_ping = last_msgcheck = mDateTime::CurrentDateTime();
     }
     DumpB();
 
@@ -1261,7 +1263,6 @@ int EventTask::svc(void)
 		{ WLOCK(("MemoServ", "channel"));
 		for (iter=expired_news.begin(); iter!=expired_news.end(); iter++)
 		{
-		    WLOCK(("MemoServ", "channel", iter->first));
 		    if (iter->second.size())
 		    {
 			size_t i, adjust = 0;
@@ -1519,6 +1520,43 @@ int EventTask::svc(void)
 	    MCB(last_check);
 	    last_check = mDateTime::CurrentDateTime();
 	    MCE(last_check);
+	}}
+
+	chunked.clear();
+	{ RLOCK(("Events", "last_msgcheck"));
+	if (last_msgcheck.SecondsSince() > Parent->config.MSG_Check_Time())
+	{
+	    set<mMessage *> Ids, AllIds;
+
+	    { WLOCK(("AllDependancies"));
+	    map<mMessage::type_t, map<mstring, set<mMessage *> > >::iterator i;
+	    for (i=mMessage::AllDependancies.begin(); i!=mMessage::AllDependancies.end(); i++)
+	    {
+		map<mstring, set<mMessage *> >::iterator j;
+		for (j=i->second.begin(); j!=i->second.end(); j++)
+		{
+		    set<mMessage *>::iterator k;
+		    for (k=j->second.begin(); k!=j->second.end(); k++)
+		    {
+			if (*k == NULL || (*k)->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
+			    Ids.insert(*k);
+		    }
+		    for (k=Ids.begin(); k!=Ids.end(); k++)
+		    {
+			if (*k != NULL)
+			    AllIds.insert(*k);
+			j->second.erase(*k);
+		    }
+		    if (!j->second.size())
+			chunked.push_back(j->first);
+		}
+		for (unsigned int k=0; k<chunked.size(); k++)
+		    i->second.erase(chunked[k]);
+		chunked.clear();
+	    }}
+	    set<mMessage *>::iterator k;
+	    for (k=AllIds.begin(); k!=AllIds.end(); k++)
+		delete *k;
 	}}
 
 	{ RLOCK(("Events", "last_ping"));

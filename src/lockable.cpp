@@ -27,6 +27,12 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2001/05/01 14:00:23  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.66  2001/04/08 18:53:09  prez
 ** It now all compiles and RUNS with -fno-default-inline OFF.
 **
@@ -188,7 +194,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 
 #ifdef MAGICK_LOCKS_WORK
 
-map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > mLOCK::LockMap;
+mLock_Mutex *mLOCK::maplock = NULL;
+mLock_Mutex *mThread::maplock = NULL;
+map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > > mLOCK::LockMap;
 ACE_Expandable_Cached_Fixed_Allocator<ACE_Thread_Mutex> mLOCK::memory_area(
 	(sizeof(mLock_Read) > sizeof(mLock_Write) ?
 	    (sizeof(mLock_Read) > sizeof(mLock_Mutex) ?
@@ -198,40 +206,52 @@ ACE_Expandable_Cached_Fixed_Allocator<ACE_Thread_Mutex> mLOCK::memory_area(
 
 map<unsigned long, mSocket *> mSocket::SockMap;
 
+bool mLOCK::AcquireMapLock()
+{
+    if (maplock == NULL)
+	maplock = new mLock_Mutex("LockMap");
+    if (maplock->acquire() < 0)
+    {
+printf("(%p) Acquiring MapLock - ERROR!\n", mThread::find()); fflush(stdout);
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "LockMap"));
+	return false;
+    }
+    return true;
+}
+
+bool mLOCK::ReleaseMapLock()
+{
+    if (maplock == NULL)
+	return true;
+    if (maplock->release() < 0)
+    {
+printf("(%p) Releasing MapLock - ERROR!\n", mThread::find()); fflush(stdout);
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap"));
+	return false;
+    }
+    return true;
+}
+
 mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 {
+    islocked = false;
     if (StartTime == mDateTime(0.0) || Parent == NULL || Parent->ResetTime() == mDateTime(0.0))
 	return;
+
+printf("(%p) mLOCK::mLOCK()\n", mThread::find()); fflush(stdout);
 
     int i;
 #ifdef MAGICK_TRACE_WORKS
     int count = 0;
 #endif
-    map<mstring, pair<locktype_enum, void *> > *lockroot = NULL;
+    map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > >::iterator lockiter;
     mstring lockname;
     unsigned char hash[ACE_MAXTOKENNAMELEN];
     mLock_Mutex *mlock;
     mLock_Write *wlock;
     mLock_Read *rlock;
-
-    mLock_Mutex maplock("LockMap");
-    if (maplock.acquire() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "LockMap"));
-	return;
-    }
-
-    lockroot = &LockMap[ACE_Thread::self()];
-    if (lockroot == NULL)
-    {
-	if (maplock.release() < 0)
-	{
-	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap"));
-	}
-	return;
-    }
 
     for (i=0; i<args.count()-1; i++)
     {
@@ -240,33 +260,78 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	lockname += args[i].AsString();
 	rlock = NULL;
 
-	if ((*lockroot).find(lockname) == (*lockroot).end())
+printf("(%p) Lock String - %s\n", mThread::find(), lockname.c_str()); fflush(stdout);
+
+	if (!AcquireMapLock())
+	    return;
+	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+	{
+	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
+	    {
+		lockiter->second.second[ACE_Thread::self()] = L_Read;
+		rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+printf("(%p) Added entry - %d\n", mThread::find(), lockiter->second.second.size());
+	    }
+	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
+	    {
+		ReleaseMapLock();
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_DUP"),
+			"READ", lockname.c_str()));
+		return;
+	    }
+	    ReleaseMapLock();
+	}
+	else
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+printf("(%p) New READ lock %s (%s)\n", mThread::find(), lockname.c_str(), hash); fflush(stdout);
 	    rlock = new mLock_Read(reinterpret_cast<const char *>(hash));
-	    if (rlock != NULL)
+	    if (rlock == NULL)
 	    {
-		if (rlock->acquire() < 0)
+		ReleaseMapLock();
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "READ", lockname.c_str()));
+		return;
+	    }
+	    map<ACE_thread_t, locktype_enum> tmap;
+	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(rlock, tmap);
+	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
+printf("(%p) Added entry - %d\n", mThread::find(), LockMap[lockname].second.size());
+	    ReleaseMapLock();
+	}
+printf("(%p) RLOCK = %p\n", mThread::find(), rlock);
+	if (rlock != NULL)
+	{
+printf("(%p) Acquiring READ lock %s\n", mThread::find(), lockname.c_str()); fflush(stdout);
+	    if (rlock->acquire() < 0)
+	    {
+printf("(%p) Acquire READ lock failed for %s (%d)\n", mThread::find(), lockname.c_str(), errno); fflush(stdout);
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		    "READ", lockname.c_str()));
+		rlock = NULL;
+		if (!AcquireMapLock())
+		    return;
+		if ((lockiter = LockMap.find(lockname)) != LockMap.end())
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-			"READ", lockname.c_str()));
-		    delete rlock;
-		    rlock = NULL;
+		    lockiter->second.second.erase(ACE_Thread::self());
+		    if (!lockiter->second.second.size())
+		    {
+			rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+			if (rlock != NULL)
+			    delete rlock;
+			rlock = NULL;
+			LockMap.erase(lockiter);
+		    }
 		}
-		else
-		{
-		    (*lockroot)[lockname] = pair<locktype_enum, void *>(L_Read, rlock);
-		    locks.push_back(lockname);
-#ifdef MAGICK_TRACE_WORKS
-		    tlock[count++].open(L_Read, lockname);
-#endif
-		}
+		ReleaseMapLock();
 	    }
 	    else
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "READ", lockname.c_str()));
+		locks.push_back(lockname);
+#ifdef MAGICK_TRACE_WORKS
+		tlock[count++].open(L_Read, lockname);
+#endif
 	    }
 	}
     }
@@ -278,142 +343,260 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
     wlock = NULL;
     mlock = NULL;
 
+printf("(%p) Lock String - %s (%d)\n", mThread::find(), lockname.c_str(), (int) type); fflush(stdout);
+
     if (type == L_Read)
     {
-	if ((*lockroot).find(lockname) == (*lockroot).end())
+	if (!AcquireMapLock())
+	    return;
+	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+	{
+	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
+	    {
+		lockiter->second.second[ACE_Thread::self()] = L_Read;
+		rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+printf("(%p) Added entry - %d\n", mThread::find(), lockiter->second.second.size());
+	    }
+	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
+	    {
+		ReleaseMapLock();
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_DUP"),
+			"READ", lockname.c_str()));
+		return;
+	    }
+	    ReleaseMapLock();
+	}
+	else
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+printf("(%p) New READ lock %s (%s)\n", mThread::find(), lockname.c_str(), hash); fflush(stdout);
 	    rlock = new mLock_Read(reinterpret_cast<const char *>(hash));
-	    if (rlock != NULL)
+	    if (rlock == NULL)
 	    {
-		if (rlock->acquire() < 0)
+		ReleaseMapLock();
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "READ", lockname.c_str()));
+		return;
+	    }
+	    map<ACE_thread_t, locktype_enum> tmap;
+	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(rlock, tmap);
+	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
+printf("(%p) Added entry - %d\n", mThread::find(), LockMap[lockname].second.size());
+	    ReleaseMapLock();
+	}
+	if (rlock != NULL)
+	{
+printf("(%p) Acquiring READ lock %s\n", mThread::find(), lockname.c_str()); fflush(stdout);
+	    if (rlock->acquire() < 0)
+	    {
+printf("(%p) Acquire READ lock failed for %s (%d)\n", mThread::find(), lockname.c_str(), errno); fflush(stdout);
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		    "READ", lockname.c_str()));
+		rlock = NULL;
+		if (!AcquireMapLock())
+		    return;
+		if ((lockiter = LockMap.find(lockname)) != LockMap.end())
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-			"READ", lockname.c_str()));
-		    delete rlock;
-		    rlock = NULL;
+		    lockiter->second.second.erase(ACE_Thread::self());
+		    if (!lockiter->second.second.size())
+		    {
+			rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+			if (rlock != NULL)
+			    delete rlock;
+			rlock = NULL;
+			LockMap.erase(lockiter);
+		    }
 		}
-		else
-		{
-		    (*lockroot)[lockname] = pair<locktype_enum, void *>(L_Read, rlock);
-		    locks.push_back(lockname);
-#ifdef MAGICK_TRACE_WORKS
-		    tlock[count++].open(L_Read, lockname);
-#endif
-		}
+		ReleaseMapLock();
 	    }
 	    else
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "READ", lockname.c_str()));
+		islocked = true;
+		locks.push_back(lockname);
+#ifdef MAGICK_TRACE_WORKS
+		tlock[count++].open(L_Read, lockname);
+#endif
 	    }
 	}
     }
     else if (type == L_Write)
     {
-	if ((*lockroot).find(lockname) != (*lockroot).end() &&
-	    (*lockroot)[lockname].first == L_Read)
+	if (!AcquireMapLock())
+	    return;
+	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
 	{
-	    rlock = reinterpret_cast<mLock_Read *>((*lockroot)[lockname].second);
-	    (*lockroot)[lockname].second = NULL;
-	    if (rlock != NULL)
+	    if (lockiter->second.second.find(ACE_Thread::self()) != lockiter->second.second.end())
 	    {
-		if (rlock->release() < 0)
+	        switch (lockiter->second.second[ACE_Thread::self()])
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"READ", lockname.c_str()));
-		}
-		delete rlock;
-		rlock = NULL;
-	    }
-	    (*lockroot).erase(lockname);
-	}
-	if ((*lockroot).find(lockname) == (*lockroot).end())
-	{
-	    memset(hash, 0, sizeof(hash));
-	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
-	    wlock = new mLock_Write(reinterpret_cast<const char *>(hash));
-	    if (wlock != NULL)
-	    {
-		if (wlock->acquire() < 0)
-		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		case L_Read:
+		    lockiter->second.second[ACE_Thread::self()] = L_WriteUpgrade;
+		    rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+		    wlock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
+		    break;
+		case L_Mutex:
+		    ReleaseMapLock();
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_DUP"),
 			"WRITE", lockname.c_str()));
-		    delete wlock;
-		    wlock = NULL;
-		}
-		else
-		{
-		    (*lockroot)[lockname] = pair<locktype_enum, void *>(L_Write, wlock);
-		    locks.push_back(lockname);
-#ifdef MAGICK_TRACE_WORKS
-		    tlock[count++].open(L_Write, lockname);
-#endif
+		    return;
+		default:
+		    break;
 		}
 	    }
 	    else
 	    {
+		lockiter->second.second[ACE_Thread::self()] = L_Write;
+		wlock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
+	    }
+printf("(%p) Changed entry - %d\n", mThread::find(), lockiter->second.second.size());
+	    ReleaseMapLock();
+	}
+	else
+	{
+	    memset(hash, 0, sizeof(hash));
+	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+printf("(%p) New WRITE lock %s (%s)\n", mThread::find(), lockname.c_str(), hash); fflush(stdout);
+	    wlock = new mLock_Write(reinterpret_cast<const char *>(hash));
+	    if (wlock == NULL)
+	    {
+		ReleaseMapLock();
 		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
 		    "WRITE", lockname.c_str()));
+		return;
+	    }
+	    map<ACE_thread_t, locktype_enum> tmap;
+	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(wlock, tmap);
+	    LockMap[lockname].second[ACE_Thread::self()] = L_Write;
+printf("(%p) Added entry - %d\n", mThread::find(), LockMap[lockname].second.size());
+	    ReleaseMapLock();
+	}
+	if (rlock != NULL)
+	{
+	    if (rlock->release() < 0)
+	    {
+printf("(%p) Release READ lock failed for %s (%d)\n", mThread::find(), lockname.c_str(), errno); fflush(stdout);
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		    "READ", lockname.c_str()));
+	    }
+	    rlock = NULL;
+	}
+	if (wlock != NULL)
+	{
+printf("(%p) Acquiring WRITE lock %s\n", mThread::find(), lockname.c_str()); fflush(stdout);
+	    if (wlock->acquire() < 0)
+	    {
+printf("(%p) Acquire WRITE lock failed for %s (%d)\n", mThread::find(), lockname.c_str(), errno); fflush(stdout);
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		    "WRITE", lockname.c_str()));
+		wlock = NULL;
+		if (!AcquireMapLock())
+		    return;
+		if ((lockiter = LockMap.find(lockname)) != LockMap.end())
+		{
+		    lockiter->second.second.erase(ACE_Thread::self());
+		    if (!lockiter->second.second.size())
+		    {
+			wlock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
+			if (wlock != NULL)
+			    delete rlock;
+			wlock = NULL;
+			LockMap.erase(lockiter);
+		    }
+		}
+		ReleaseMapLock();
+	    }
+	    else
+	    {
+		islocked = true;
+		locks.push_back(lockname);
+#ifdef MAGICK_TRACE_WORKS
+		tlock[count++].open(L_Write, lockname);
+#endif
 	    }
 	}
     }
     else if (type == L_Mutex)
     {
-	if ((*lockroot).find(lockname) != (*lockroot).end() &&
-	    (*lockroot)[lockname].first == L_Read)
+	if (!AcquireMapLock())
+	    return;
+	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
 	{
-	    rlock = reinterpret_cast<mLock_Read *>((*lockroot)[lockname].second);
-	    (*lockroot)[lockname].second = NULL;
-	    if (rlock != NULL)
+	    map<ACE_thread_t, locktype_enum>::iterator iter;
+	    for (iter = lockiter->second.second.begin(); iter!=lockiter->second.second.end(); iter++)
 	    {
-		if (rlock->release() < 0)
+		if (iter->second != L_Mutex)
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"READ", lockname.c_str()));
+		    ReleaseMapLock();
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_DUP"),
+			"MUTEX", lockname.c_str()));
+		    return;
 		}
-		delete rlock;
-		rlock = NULL;
 	    }
-	    (*lockroot).erase(lockname);
+	
+	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
+	    {
+		lockiter->second.second[ACE_Thread::self()] = L_Mutex;
+		mlock = reinterpret_cast<mLock_Mutex *>(lockiter->second.first);
+printf("(%p) Added entry - %d\n", mThread::find(), lockiter->second.second.size());
+	    }
+	    ReleaseMapLock();
 	}
-	if ((*lockroot).find(lockname) == (*lockroot).end())
+	else
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH(const_cast<unsigned char *>(lockname.uc_str()), lockname.length(), hash);
+printf("(%p) New MUTEX lock %s (%s)\n", mThread::find(), lockname.c_str(), hash); fflush(stdout);
 	    mlock = new mLock_Mutex(reinterpret_cast<const char *>(hash));
-	    if (mlock != NULL)
+	    if (mlock == NULL)
 	    {
-		if (mlock->acquire() < 0)
+		ReleaseMapLock();
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "MUTEX", lockname.c_str()));
+		return;
+	    }
+	    map<ACE_thread_t, locktype_enum> tmap;
+	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(mlock, tmap);
+	    LockMap[lockname].second[ACE_Thread::self()] = L_Mutex;
+printf("(%p) Added entry - %d\n", mThread::find(), LockMap[lockname].second.size());
+	    ReleaseMapLock();
+	}
+	if (mlock != NULL)
+	{
+printf("(%p) Acquiring MUTEX lock %s\n", mThread::find(), lockname.c_str()); fflush(stdout);
+	    if (mlock->acquire() < 0)
+	    {
+printf("(%p) Acquire MUTEX lock failed for %s (%d)\n", mThread::find(), lockname.c_str(), errno); fflush(stdout);
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		    "MUTEX", lockname.c_str()));
+		mlock = NULL;
+		if (!AcquireMapLock())
+		    return;
+		if ((lockiter = LockMap.find(lockname)) != LockMap.end())
 		{
-		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-			"MUTEX", lockname.c_str()));
-		    delete mlock;
-		    mlock = NULL;
+		    lockiter->second.second.erase(ACE_Thread::self());
+		    if (!lockiter->second.second.size())
+		    {
+			mlock = reinterpret_cast<mLock_Mutex *>(lockiter->second.first);
+			if (mlock != NULL)
+			    delete mlock;
+			mlock = NULL;
+			LockMap.erase(lockiter);
+		    }
 		}
-		else
-		{
-		    (*lockroot)[lockname] = pair<locktype_enum, void *>(L_Mutex, mlock);
-		    locks.push_back(lockname);
-#ifdef MAGICK_TRACE_WORKS
-		    tlock[count++].open(L_Mutex, lockname);
-#endif
-		}
+		ReleaseMapLock();
 	    }
 	    else
 	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "MUTEX", lockname.c_str()));
+		islocked = true;
+		locks.push_back(lockname);
+#ifdef MAGICK_TRACE_WORKS
+		tlock[count++].open(L_Mutex, lockname);
+#endif
 	    }
 	}
     }
 
-    if (maplock.release() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap"));
-    }
     memset(hash, 0, sizeof(hash));
 }
 
@@ -422,155 +605,146 @@ mLOCK::~mLOCK()
     if (StartTime == mDateTime(0.0) || Parent == NULL || Parent->ResetTime() == mDateTime(0.0))
 	return;
 
+printf("(%p) mLOCK::~mLOCK()\n", mThread::find()); fflush(stdout);
+
     int i;
-    map<mstring, pair<locktype_enum, void *> > *lockroot = NULL;
-    mLock_Mutex *mlock;
-    mLock_Write *wlock;
-    mLock_Read *rlock;
-
-    mLock_Mutex maplock("LockMap");
-    if (maplock.acquire() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "LockMap"));
-	return;
-    }
-
-    lockroot = &LockMap[ACE_Thread::self()];
-    if (lockroot == NULL)
-    {
-	if (maplock.release() < 0)
-	{
-	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap"));
-	}
-	return;
-    }
+    map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > >::iterator lockiter;
+    mLock_Mutex *mlock = NULL;
+    mLock_Write *wlock = NULL;
+    mLock_Read *rlock = NULL;
 
     for (i=locks.size()-1; i>=0; i--)
     {
-	if ((*lockroot).find(locks[i]) != (*lockroot).end())
+printf("(%p) Processing lock %s\n", mThread::find(), locks[i].c_str()); fflush(stdout);
+	if (!AcquireMapLock())
+	    return;
+	if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
 	{
-
-	    if ((*lockroot)[locks[i]].first == L_Read)
+	    bool killit = false;
+	    map<ACE_thread_t, locktype_enum>::iterator iter = lockiter->second.second.find(ACE_Thread::self());
+	    if (iter != lockiter->second.second.end())
 	    {
-		rlock = reinterpret_cast<mLock_Read *>((*lockroot)[locks[i]].second);
-		(*lockroot)[locks[i]].second = NULL;
-		if (rlock != NULL)
+		switch (iter->second)
 		{
-		    if (rlock->release() < 0)
-		    {
-			LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-				"READ", locks[i].c_str()));
-		    }
+		case L_Read:
+		    rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+		    break;
+		case L_Write:
+		case L_WriteUpgrade:
+		    wlock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
+		    break;
+		case L_Mutex:
+		    mlock = reinterpret_cast<mLock_Mutex *>(lockiter->second.first);
+		    break;
+		default:
+		    break;
+		}
+		
+		if (iter->second == L_WriteUpgrade)
+		    lockiter->second.second[ACE_Thread::self()] = L_Read;
+		else
+		    lockiter->second.second.erase(ACE_Thread::self());
+
+printf("(%p) Removed entry - %d\n", mThread::find(), lockiter->second.second.size());
+		if (!lockiter->second.second.size())
+		{
+		    killit = true;
+		    LockMap.erase(lockiter);
+		}
+printf("(%p) Is still there - %d\n", mThread::find(), (LockMap.find(locks[i]) != LockMap.end()));
+	    }
+	    //ReleaseMapLock();
+
+	    if (rlock != NULL)
+	    {
+printf("(%p) Releasing READ lock %s\n", mThread::find(), locks[i].c_str()); fflush(stdout);
+		if (rlock->release() < 0)
+		{
+printf("(%p) Release READ lock failed for %s (%d)\n", mThread::find(), locks[i].c_str(), errno); fflush(stdout);
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"READ", locks[i].c_str()));
+		}
+		if (killit)
 		    delete rlock;
+		rlock = NULL;
+	    }
+	    if (wlock != NULL)
+	    {
+printf("(%p) Releasing WRITE lock %s\n", mThread::find(), locks[i].c_str()); fflush(stdout);
+		if (wlock->release() < 0)
+		{
+printf("(%p) Release WRITE lock failed for %s (%d)\n", mThread::find(), locks[i].c_str(), errno); fflush(stdout);
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"WRITE", locks[i].c_str()));
+		}
+		if (killit)
+		    delete wlock;
+		wlock = NULL;
+	    }
+	    if (mlock != NULL)
+	    {
+printf("(%p) Releasing MUTEX lock %s\n", mThread::find(), locks[i].c_str()); fflush(stdout);
+		if (mlock->release() < 0)
+		{
+printf("(%p) Release MUTEX lock failed for %s (%d)\n", mThread::find(), locks[i].c_str(), errno); fflush(stdout);
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"MUTEX", locks[i].c_str()));
+		}
+		if (killit)
+		    delete mlock;
+		mlock = NULL;
+	    }
+	    //if (!AcquireMapLock())
+		//return;
+	    if (((lockiter = LockMap.find(locks[i])) != LockMap.end()) &&
+		(iter = lockiter->second.second.find(ACE_Thread::self())) != lockiter->second.second.end())
+	    {
+		// We're still here, must have been an upgraded lock,
+		// time to downgrade it ...
+		if (iter->second == L_Read)
+		{
+		    rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+		    ReleaseMapLock();
+printf("(%p) Acquiring READ lock %s\n", mThread::find(), locks[i].c_str()); fflush(stdout);
+		    if (rlock->acquire() < 0)
+		    {
+printf("(%p) Acquire READ lock failed for %s (%d)\n", mThread::find(), locks[i].c_str(), errno); fflush(stdout);
+			LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			    "READ", locks[i].c_str()));
+			rlock = NULL;
+			if (!AcquireMapLock())
+			    return;
+			if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
+			{
+			    lockiter->second.second.erase(ACE_Thread::self());
+			    if (!lockiter->second.second.size())
+			    {
+				rlock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+				if (rlock != NULL)
+				    delete rlock;
+				rlock = NULL;
+				LockMap.erase(lockiter);
+			    }
+			}
+			ReleaseMapLock();
+		    }
 		    rlock = NULL;
 		}
-	    }
-	    else if ((*lockroot)[locks[i]].first == L_Write)
-	    {
-		wlock = reinterpret_cast<mLock_Write *>((*lockroot)[locks[i]].second);
-		(*lockroot)[locks[i]].second = NULL;
-		if (wlock != NULL)
+		else
 		{
-		    if (wlock->release() < 0)
-		    {
-			LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-				"WRITE", locks[i].c_str()));
-		    }
-		    delete wlock;
-		    wlock = NULL;
+		    ReleaseMapLock();
 		}
 	    }
-	    else if ((*lockroot)[locks[i]].first == L_Mutex)
+	    else
 	    {
-		mlock = reinterpret_cast<mLock_Mutex *>((*lockroot)[locks[i]].second);
-		(*lockroot)[locks[i]].second = NULL;
-		if (mlock != NULL)
-		{
-		    if (mlock->release() < 0)
-		    {
-			LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-				"MUTEX", locks[i].c_str()));
-		    }
-		    delete mlock;
-		    mlock = NULL;
-		}
+		ReleaseMapLock();
 	    }
-	    (*lockroot).erase(locks[i]);
 	}
-    }
-
-    if (maplock.release() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap"));
-    }
-}
-
-bool mLOCK::Locked() const
-{
-    bool retval = false;
-    if (locks.size())
-    {
-	map<mstring, pair<locktype_enum, void *> > *lockroot = NULL;
-
-	mLock_Mutex maplock("LockMap");
-	if (maplock.acquire() < 0)
+	else
 	{
-	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "LockMap"));
-	    return false;
-	}
-
-	lockroot = &LockMap[ACE_Thread::self()];
-	if (lockroot == NULL)
-	{
-	    if (maplock.release() < 0)
-	    {
-		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"MUTEX", "LockMap"));
-	    }
-	    return false;
-	}
-
-	if ((*lockroot).find(locks[locks.size()-1]) != (*lockroot).end() &&
-		(*lockroot)[locks[locks.size()-1]].first != L_Invalid &&
-		(*lockroot)[locks[locks.size()-1]].second != NULL)
-	    retval = true;
-	if (maplock.release() < 0)
-	{
-	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap"));
+	    ReleaseMapLock();
 	}
     }
-    return retval;
-}
-
-size_t mLOCK::AllLocks()
-{
-    map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > >::iterator iter;
-    size_t count = 0;
-
-    mLock_Mutex maplock("LockMap");
-    if (maplock.acquire() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-	    "MUTEX", "LockMap"));
-	return false;
-    }
-
-    for (iter=LockMap.begin(); iter!=LockMap.end(); iter++)
-    {
-	count += iter->second.size();
-    }
-
-    if (maplock.release() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap"));
-    }
-    return count;
 }
 
 #endif /* MAGICK_LOCKS_WORK */
@@ -613,10 +787,9 @@ void mSocket::init()
 mSocket::~mSocket()
 {
     NFT("mSocket::mSocket");
-    MLOCK(("mSocket", sockid));
     if (sock != NULL)
 	close();
-    MLOCK2(("SockMap"));
+    MLOCK(("SockMap"));
     SockMap.erase(sockid);
 }
 
@@ -624,7 +797,6 @@ void mSocket::operator=(const mSocket &in)
 {
     FT("mSocket::operator=", ("(const mSocket &) in"));
 
-    MLOCK(("mSocket", in.sockid));
     sockid = in.sockid;
     local = in.local;
     remote = in.remote;
@@ -645,7 +817,7 @@ bool mSocket::Connect(const ACE_INET_Addr &addr, const unsigned long timeout)
 {
     FT("mSocket::Connect", ("(ACE_INET_Addr) addr", timeout));
 
-    MLOCK(("mSocket", sockid));
+    WLOCK(("mSocket", sockid));
     if (sock != NULL)
 	close();
 
@@ -702,7 +874,7 @@ bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
     FT("mSocket::Accept", (port, timeout));
     ACE_INET_Addr addr(port, Parent->LocalHost());
 
-    MLOCK(("mSocket", sockid));
+    WLOCK(("mSocket", sockid));
     if (sock != NULL)
 	close();
 
@@ -743,7 +915,7 @@ bool mSocket::Bind(ACE_SOCK_Stream *in, const dir_enum direction, const bool all
     if (in == NULL)
 	RET(false);
 
-    MLOCK(("mSocket", sockid));
+    WLOCK(("mSocket", sockid));
     if (sock != NULL)
 	close();
 
@@ -765,7 +937,7 @@ bool mSocket::Bind(ACE_SOCK_Stream *in, const dir_enum direction, const bool all
 ACE_SOCK_Stream *mSocket::Unbind()
 {
     NFT("mSocket::Unbind");
-    MLOCK(("mSocket", sockid));
+    WLOCK(("mSocket", sockid));
 #ifdef MAGICK_TRACE_WORKS
     trace.End(Last_Error_String());
 #endif
@@ -778,7 +950,7 @@ ACE_SOCK_Stream *mSocket::Unbind()
 mstring mSocket::Local_Host() const
 {
     NFT("mSocket::Local_Host");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     mstring retval(local.get_host_addr());
     RET(retval);
 }
@@ -786,7 +958,7 @@ mstring mSocket::Local_Host() const
 unsigned long mSocket::Local_IP() const
 {
     NFT("mSocket::Local_IP");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     unsigned long retval = local.get_ip_address();
     RET(retval);
 }
@@ -794,7 +966,7 @@ unsigned long mSocket::Local_IP() const
 unsigned short mSocket::Local_Port() const
 {
     NFT("mSocket::Local_Port");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     unsigned short retval = local.get_port_number();
     RET(retval);
 }
@@ -802,7 +974,7 @@ unsigned short mSocket::Local_Port() const
 mstring mSocket::Remote_Host() const
 {
     NFT("mSocket::Remote_Host");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     mstring retval = remote.get_host_addr();
     RET(retval);
 }
@@ -810,7 +982,7 @@ mstring mSocket::Remote_Host() const
 unsigned long mSocket::Remote_IP() const
 {
     NFT("mSocket::Remote_IP");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     unsigned long retval = remote.get_ip_address();
     RET(retval);
 }
@@ -818,7 +990,7 @@ unsigned long mSocket::Remote_IP() const
 unsigned short mSocket::Remote_Port() const
 {
     NFT("mSocket::Remote_Port");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     unsigned short retval = remote.get_port_number();
     RET(retval);
 }
@@ -826,14 +998,14 @@ unsigned short mSocket::Remote_Port() const
 bool mSocket::IsConnected() const
 {
     NFT("mSocket::IsConnected");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     RET(sock != NULL);
 }
 
 void mSocket::Resolve(const socktype_enum type, const mstring &info)
 {
     FT("mSocket::Resolve", (static_cast<int>(type), info));
-    MLOCK(("mSocket", sockid));
+    WLOCK(("mSocket", sockid));
 #ifdef MAGICK_TRACE_WORKS
     trace.Resolve(type, info);
 #endif
@@ -842,14 +1014,14 @@ void mSocket::Resolve(const socktype_enum type, const mstring &info)
 int mSocket::Last_Error() const
 {
     NFT("mSocket::Last_Error");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     RET(last_error);
 }
 
 mstring mSocket::Last_Error_String() const
 {
     NFT("mSocket::Last_Error_String");
-    MLOCK(("mSocket", sockid));
+    RLOCK(("mSocket", sockid));
     mstring retval = strerror(last_error);
     RET(retval);
 }
@@ -858,7 +1030,7 @@ ssize_t mSocket::send(void *buf, const size_t len, const unsigned long timeout)
 {
     FT("mSocket::send", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
-    MLOCK(("mSocket", sockid));
+    WLOCK(("mSocket", sockid));
     ssize_t retval = sock->send(buf, len, timeout ? &tv : 0);
 
     if (retval < 0)
@@ -876,7 +1048,7 @@ ssize_t mSocket::recv(void *buf, const size_t len, const unsigned long timeout)
 {
     FT("mSocket::recv", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
-    MLOCK(("mSocket", sockid));
+    WLOCK(("mSocket", sockid));
     ssize_t retval = sock->recv(buf, len, timeout ? &tv : 0);
 
     if (retval < 0)
@@ -894,7 +1066,7 @@ int mSocket::close()
 {
     NFT("mSocket::close");
     int retval = 0;
-    MLOCK(("mSocket", sockid));
+    WLOCK(("mSocket", sockid));
     if (sock != NULL)
     {
 #ifdef MAGICK_TRACE_WORKS
@@ -914,24 +1086,49 @@ int mSocket::close()
 
 mThread::selftothreadidmap_t mThread::selftothreadidmap;
 
+bool mThread::AcquireMapLock()
+{
+    if (maplock == NULL)
+	maplock = new mLock_Mutex("SelfToThreadIdMap");
+    if (maplock->acquire() < 0)
+    {
+printf("Acquiring SelfToThreadIdMap - ERROR!\n"); fflush(stdout);
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "SelfToThreadIdMap"));
+	return false;
+    }
+    return true;
+}
+
+bool mThread::ReleaseMapLock()
+{
+    if (maplock == NULL)
+	return true;
+    if (maplock->release() < 0)
+    {
+printf("Releasing SelfToThreadIdMap - ERROR!\n"); fflush(stdout);
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "SelfToThreadIdMap"));
+	return false;
+    }
+    return true;
+}
+
+
+
 ThreadID* mThread::find(const ACE_thread_t thread)
 {
     if (StartTime == mDateTime(0.0))
 	return NULL;
 
+    if (!AcquireMapLock())
+	return NULL;
+
     ThreadID *tid = NULL;
-    mLock_Mutex lock("SelfToThreadMap");
-    if (lock.acquire() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "SelfToThreadMap"));
-	return tid;
-    }
     if(selftothreadidmap.find(thread) != selftothreadidmap.end())
-    {
 	tid = selftothreadidmap[thread];
-    }
-    lock.release();
+
+    ReleaseMapLock();
     return tid;
 }
 
@@ -939,17 +1136,14 @@ vector<ThreadID*> mThread::findall()
 {
     vector<ThreadID*> threadlist;
     selftothreadidmap_t::const_iterator iter;
-    mLock_Mutex lock("SelfToThreadMap");
-    if (lock.acquire() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "SelfToThreadMap"));
+
+    if (!AcquireMapLock())
 	return threadlist;
-    }
+
     for (iter=selftothreadidmap.begin(); iter!=selftothreadidmap.end(); iter++)
 	threadlist.push_back(iter->second);
-    lock.release();
 
+    ReleaseMapLock();
     return threadlist;
 }
 
@@ -979,15 +1173,10 @@ void mThread::Detach()
 	CP(("mThread::Detach without valid mThread::Attach..."));
 	return;
     }
-    mLock_Mutex lock("SelfToThreadMap");
-    if (lock.acquire() < 0)
-    {
-	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "SelfToThreadMap"));
+    if (!AcquireMapLock())
 	return;
-    }
     selftothreadidmap.erase(ACE_Thread::self());
-    lock.release();
+    ReleaseMapLock();
     delete tmpid;
     COM(("Thread ID has been detached."));
 }
@@ -1000,16 +1189,11 @@ void mThread::ReAttach(const threadtype_enum ttype)
     {
 	// ReAttach does an attach if it wasnt there
 	CP(("mThread::ReAttach without valid mThread::Attach... type: %s",threadname[ttype].c_str()));
-	mLock_Mutex lock("SelfToThreadMap");
-	if (lock.acquire() < 0)
-	{
-	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "SelfToThreadMap"));
-	    return;
-	}
 	tmpid=new ThreadID();
+	if (!AcquireMapLock())
+	    return;
 	selftothreadidmap[ACE_Thread::self()]=tmpid;
-	lock.release();
+	ReleaseMapLock();
     }
 #ifdef MAGICK_TRACE_WORKS	// Get rid of 'unused veriable' warning
     threadtype_enum oldtype = tmpid->type();

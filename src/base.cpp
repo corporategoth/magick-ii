@@ -27,6 +27,12 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.156  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.155  2001/04/09 07:52:22  prez
 ** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
 **
@@ -279,6 +285,7 @@ RCSID(base_cpp, "@(#)$Id$");
 
 bool mBase::TaskOpened;
 mBaseTask mBase::BaseTask;
+map<mMessage::type_t, map<mstring, set<mMessage *> > > mMessage::AllDependancies;
 
 void entlist_t::operator=(const entlist_t &in)
 {
@@ -390,136 +397,377 @@ void entlist_t::DumpE() const
 
 // --------- end of entlist_t -----------------------------------
 
-
-int mBaseTask::open(void *in)
+void mMessage::AddDependancies()
 {
-    NFT("mBaseTask::open");
-    mBase::TaskOpened=true;
-    int retval = activate();
-    RET(retval);
-}
+    NFT("mMessage::AddDependancies");
+    WLOCK(("Dependancies", this));
 
-int mBaseTask::close(unsigned long flags)
-{
-    FT("mBaseTask::close", (flags));
-    RET(0);
-}
-
-int mBaseTask::svc(void)
-{
-    mThread::Attach(tt_mBase);
-    NFT("mBaseTask::svc");
-    ACE_Message_Block *mblock;
-    ACE_Message_Block::ACE_Message_Type type = 0;
-    char *transit;
-    int retval = 0;
-    
-    while(!Parent->Shutdown() && retval >= 0)
+    if (!source_.empty())
     {
-	type = 0;
-	mblock = NULL;
-	transit = NULL;
+	if (source_[0u] == '@')
 	{
-	    MLOCK(("MessageQueue"));
-	    message_queue_.dequeue(mblock);
-	    if (mblock != NULL)
-	    {
-		type = mblock->msg_type();
-		if (mblock->data_block() != NULL)
-		    transit = mblock->base();
-		mblock->release();
-	    }
+	    mstring svr(str_to_base64(source_.After("@")));
+	    AddDepend(ServerExists, svr);
 	}
-	switch (type)
+	else if (source_.Contains("."))
 	{
-	case ACE_Message_Block::MB_DATA:
-	    if (transit != NULL)
-	    {
-		retval = message_i(transit);
-		delete [] transit;
-	    }
-	    break;
-	case ACE_Message_Block::MB_HANGUP:
-	    retval = -1;
-	    break;
-	case 0:
-	    break;
-	default:
-	    LOG((LM_ERROR, Parent->getLogMessage("ERROR/INVALID_TYPE"),
-							mblock->msg_type()));
-	}
-    }
-    DRET(retval);
-}
-
-void mBaseTask::message(const mstring& message)
-{
-    FT("mBaseTask::message",(message));
-    size_t length=message.length();
-    MLOCK(("MessageQueue"));
-    // Most likely the third condition will match most, as on a
-    // large network, average message size is about 100 bytes, a
-    // FAR cry from the 450 (default) size we're allocating per msg.
-    if (thread_count < Parent->config.Min_Threads() ||
-	message_queue_.is_full() ||
-	message_queue_.message_count() > thread_count * Parent->config.High_Water_Mark())
-    {
-	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
-	{
-	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
+	    AddDepend(ServerExists, source_.LowerCase());
 	}
 	else
 	{
-	    thread_count = thr_count();
-	    message_queue_.high_water_mark(thread_count *
-		Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
-	    message_queue_.low_water_mark(message_queue_.high_water_mark());
-
-	    LOG((LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD")));
+	    AddDepend(NickExists, source_.LowerCase());
 	}
     }
-    char *transit = new char[length+1];
-    memset(transit, 0, length+1);
-    ACE_OS::strncpy(transit, message.c_str(), length);
-    ACE_Message_Block *data = new ACE_Message_Block(length+1,
-		ACE_Message_Block::MB_DATA, 0, transit);
-    message_queue_.enqueue(data);
+
+    if (msgtype_ == "JOIN")
+    {
+	// User is NOT in channel
+	for (unsigned int i=1; i<=params_.WordCount(":, "); i++)
+	    AddDepend(UserNoInChan, params_.ExtractWord(i, ":, ").LowerCase() + ":" + source_.LowerCase());
+    }
+    else if (msgtype_ == "KICK")
+    {
+	// Channel exists
+	// Target exists
+	// Target in channel
+	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
+	AddDepend(NickExists, params_.ExtractWord(2, ": ").LowerCase());
+	AddDepend(UserInChan, params_.ExtractWord(1, ": ").LowerCase() + ":" + params_.ExtractWord(2, ": ").LowerCase());
+    }
+    else if (msgtype_ == "KILL")
+    {
+	// Target exists
+	AddDepend(NickExists, params_.ExtractWord(1, ": ").LowerCase());
+    }
+    else if ((msgtype_ == "MODE" || msgtype_ == "SVSMODE") && IsChan(params_.ExtractWord(1, ": ")))
+    {
+	// Channel exists
+	// ALL params_ that are users exist ... ?
+	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
+    }
+    else if (msgtype_ == "NICK" || msgtype_ == "SNICK" || msgtype_ == "USER")
+    {
+	// Server exists OR
+	// Target nick does NOT exist
+	if (source_.empty())
+	{
+	    switch (Parent->server.proto.Signon())
+	    {
+	    case 0000:
+		AddDepend(ServerExists, params_.ExtractWord(4, ": ").LowerCase());
+		break;
+	    case 0001:
+		AddDepend(ServerExists, params_.ExtractWord(5, ": ").LowerCase());
+		break;
+	    case 1000:
+	    case 1001:
+	    case 1002:
+		AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
+		break;
+	    case 1003:
+	    case 2000:
+	    case 2001:
+		AddDepend(ServerExists, params_.ExtractWord(7, ": ").LowerCase());
+		break;
+	    case 2002:
+		AddDepend(ServerExists, params_.ExtractWord(8, ": ").LowerCase());
+		break;
+	    case 2003:
+		AddDepend(ServerExists, params_.ExtractWord(6, ": ").LowerCase());
+		break;
+	    }
+	}
+	else
+	{
+	    AddDepend(NickNoExists, params_.ExtractWord(1, ": ").LowerCase());
+	}
+    }
+    else if (msgtype_ == "PART")
+    {
+	// Channel exists
+	// User in channel
+	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
+	AddDepend(UserInChan, params_.ExtractWord(1, ": ").LowerCase() + ":" + source_.LowerCase());
+    }
+    else if (msgtype_ == "SJOIN")
+    {
+	// ALL nick's mentioned
+	if (source_[0u] == '@' || source_.Contains("."))
+	{
+	    for (unsigned int i=1; i <= params_.After(":").WordCount(" "); i++)
+	    {
+		mstring nick(params_.After(":").ExtractWord(i, " "));
+		if (!nick.empty())
+		{
+		    char c = 0;
+		    bool IsNotNick = false;
+		    while (c != nick[0u])
+		    {
+			c = nick[0u];
+			switch(nick[0u])
+			{
+			case '@':
+			case '%':
+			case '+':
+			case '*':
+			case '~':
+			    nick.erase(0, 0);
+		            break;
+			case '&':
+			case '"':
+			    IsNotNick = true;
+			    break;
+			}
+		    }
+		    if (!IsNotNick)
+		    {
+			AddDepend(NickExists, nick.LowerCase());
+			AddDepend(UserNoInChan, params_.ExtractWord(2, ": ").LowerCase() + ":" + nick.LowerCase());
+		    }
+		}
+	    }
+	}
+	else
+	{
+	}
+    }
+    else if (msgtype_ == "SQUIT")
+    {
+	// Uplink exists
+	AddDepend(ServerExists, params_.ExtractWord(1, ": "));
+    }
+    else if (msgtype_ == "TOPIC")
+    {
+	// Channel exists
+	AddDepend(ChanExists, params_.ExtractWord(1, ": "));
+    }
+
 }
 
-int mBaseTask::message_i(const mstring& message)
+bool mMessage::OutstandingDependancies()
 {
-    FT("mBaseTask::message_i",(message));
-    // NOTE: No need to handle 'non-user messages' here, because
-    // anything that is not a user PRIVMSG/NOTICE goes directly
-    // to the server routine anyway.
+    NFT("mMessage::OutstandingDependancies");
+    bool retval = false;
+printf("(%p) DEBUG 2-1\n", mThread::find()); fflush(stdout);
 
-    mstring data(message);
-    PreParse(data);
+    RLOCK(("Dependancies", this));
+printf("(%p) DEBUG 2-2\n", mThread::find()); fflush(stdout);
+    if (!dependancies.size())
+	AddDependancies();
+printf("(%p) DEBUG 2-3\n", mThread::find()); fflush(stdout);
+    
+    WLOCK(("AllDependancies"));
 
-    mstring source, type, target;
-    if (data.empty())
-	RET(0);
+    // OK, now WE know what WE depend on, find out what we need and add ourselves
+    // to 'what we need's list of dependants.
+printf("(%p) DEBUG 2-4\n", mThread::find()); fflush(stdout);
+    list<pair<type_t, mstring> >::iterator iter;
+    for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
+    {
+printf("(%p) DEBUG 2-5\n", mThread::find()); fflush(stdout);
+	switch (iter->first)
+	{
+	case ServerExists:
+printf("(%p) DEBUG 2-6\n", mThread::find()); fflush(stdout);
+	    if (Parent->server.GetServer(iter->second).empty())
+	    {
+printf("(%p) DEBUG 2-7\n", mThread::find()); fflush(stdout);
+		AllDependancies[ServerExists][iter->second].insert(this);
+		retval = true;
+	    }
+	    break;
+	case ServerNoExists:
+printf("(%p) DEBUG 2-8\n", mThread::find()); fflush(stdout);
+	    if (!Parent->server.GetServer(iter->second).empty())
+	    {
+printf("(%p) DEBUG 2-9\n", mThread::find()); fflush(stdout);
+		AllDependancies[ServerNoExists][iter->second].insert(this);
+		retval = true;
+	    }
+	    break;
+	case NickExists:
+printf("(%p) DEBUG 2-10\n", mThread::find()); fflush(stdout);
+	    if (!Parent->nickserv.IsLive(iter->second))
+	    {
+printf("(%p) DEBUG 2-11\n", mThread::find()); fflush(stdout);
+		AllDependancies[NickExists][iter->second].insert(this);
+		retval = true;
+	    }
+	    break;
+	case NickNoExists:
+printf("(%p) DEBUG 2-12\n", mThread::find()); fflush(stdout);
+	    if (Parent->nickserv.IsLive(iter->second))
+	    {
+printf("(%p) DEBUG 2-13\n", mThread::find()); fflush(stdout);
+		AllDependancies[NickNoExists][iter->second].insert(this);
+		retval = true;
+	    }
+	    break;
+	case ChanExists:
+printf("(%p) DEBUG 2-14\n", mThread::find()); fflush(stdout);
+	    if (!Parent->chanserv.IsLive(iter->second))
+	    {
+printf("(%p) DEBUG 2-15\n", mThread::find()); fflush(stdout);
+		AllDependancies[ChanExists][iter->second].insert(this);
+		retval = true;
+	    }
+	    break;
+	case ChanNoExists:
+printf("(%p) DEBUG 2-16\n", mThread::find()); fflush(stdout);
+	    if (Parent->chanserv.IsLive(iter->second))
+	    {
+printf("(%p) DEBUG 2-17\n", mThread::find()); fflush(stdout);
+		AllDependancies[ChanNoExists][iter->second].insert(this);
+		retval = true;
+	    }
+	    break;
+	case UserInChan:
+printf("(%p) DEBUG 2-18\n", mThread::find()); fflush(stdout);
+	    if (Parent->chanserv.IsLive(iter->second.Before(":")))
+	    {
+printf("(%p) DEBUG 2-19\n", mThread::find()); fflush(stdout);
+		if (!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+		{
+printf("(%p) DEBUG 2-20\n", mThread::find()); fflush(stdout);
+		    AllDependancies[UserInChan][iter->second].insert(this);
+		    retval = true;
+		}
+	    }
+	    else
+	    {
+printf("(%p) DEBUG 2-21\n", mThread::find()); fflush(stdout);
+		AllDependancies[UserInChan][iter->second].insert(this);
+		retval = true;
+	    }
+	    break;
+	case UserNoInChan:
+printf("(%p) DEBUG 2-22\n", mThread::find()); fflush(stdout);
+	    if (Parent->chanserv.IsLive(iter->second.Before(":")) &&
+		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+	    {
+printf("(%p) DEBUG 2-23\n", mThread::find()); fflush(stdout);
+		AllDependancies[UserNoInChan][iter->second].insert(this);
+		retval = true;
+	    }
+	    break;
+	}
+    }
+printf("(%p) DEBUG 2-24\n", mThread::find()); fflush(stdout);
 
-    source=data.ExtractWord(1,": ");
-    type  =data.ExtractWord(2,": ").UpperCase();
-    target=data.ExtractWord(3,": ");
+    RET(retval);
+}
 
-    CH(D_From,data);	    
+void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, const mstring& param2)
+{
+    FT("mMessage::CheckDependancies", ((int) type, param1, param2));
+
+    if (param1.empty())
+	return;
+
+    // ONE dependancy has been filled, find ALL messages that depended on it, and
+    // check if all of its OTHER dependancies have been fulfilled, if so, execute
+    // that message.  In either case, remove all dependancies on passed condition,
+    // as this has been satisfied.
+
+    vector<mMessage *> msgs;
+
+printf("(%p) DEBUG 1 %d\n", mThread::find(), (int) type); fflush(stdout);
+    { WLOCK(("AllDependancies"));
+printf("(%p) DEBUG 2\n", mThread::find()); fflush(stdout);
+    map<type_t, map<mstring, set<mMessage *> > >::iterator i = AllDependancies.find(type);
+printf("(%p) DEBUG 3\n", mThread::find()); fflush(stdout);
+    if (i != AllDependancies.end())
+    {
+printf("(%p) DEBUG 4\n", mThread::find()); fflush(stdout);
+	mstring target;
+	if (!param2.empty())
+	    target = param1.LowerCase() + ":" + param2.LowerCase();
+	else
+	    target = param1.LowerCase();
+printf("(%p) DEBUG 5 %s\n", mThread::find(), target.c_str()); fflush(stdout);
+
+	map<mstring, set<mMessage *> >::iterator j = i->second.find(target);
+printf("(%p) DEBUG 6\n", mThread::find()); fflush(stdout);
+	if (j != i->second.end())
+	{
+printf("(%p) DEBUG 7\n", mThread::find()); fflush(stdout);
+	    set<mMessage *>::iterator k;
+	    for (k=j->second.begin(); k!=j->second.end(); k++)
+	    {
+printf("(%p) DEBUG 8 %p\n", mThread::find(), *k); fflush(stdout);
+if (*k != NULL)
+    printf("(%p) DEBUG 8a %s %s %s\n", mThread::find(), (*k)->source().c_str(),
+		(*k)->msgtype().c_str(), (*k)->params().c_str()); fflush(stdout);
+
+		if (*k != NULL && !(*k)->OutstandingDependancies())
+		{
+printf("(%p) DEBUG 9\n", mThread::find()); fflush(stdout);
+		    msgs.push_back(*k);
+		}
+	    }
+printf("(%p) DEBUG 10\n", mThread::find()); fflush(stdout);
+	    i->second.erase(j);
+	}
+    }}
+printf("(%p) DEBUG 11 %d\n", mThread::find(), msgs.size()); fflush(stdout);
+
+    for (unsigned int k=0; k<msgs.size(); k++)
+    {
+printf("(%p) DEBUG 12 %p\n", mThread::find(), msgs[k]); fflush(stdout);
+if (msgs[k] != NULL)
+    printf("(%p) DEBUG 12a %s %s %s\n", mThread::find(), msgs[k]->source().c_str(),
+		msgs[k]->msgtype().c_str(), msgs[k]->params().c_str()); fflush(stdout);
+	msgs[k]->call();
+printf("(%p) DEBUG 13\n", mThread::find()); fflush(stdout);
+	delete msgs[k];
+    }
+printf("(%p) DEBUG 14\n", mThread::find()); fflush(stdout);
+}
+
+int mMessage::call()
+{
+    NFT("mMessage::call");
+
+    if (source_ == " ")
+    {
+	if (msgtype_.IsSameAs("SHUTDOWN", false))
+	    RET(-1);
+    }
+
+    CP(("Processing message (%s) %s %s", source_.c_str(), msgtype_.c_str(), params_.c_str()));
+    { WLOCK(("AllDependancies"));
+    map<type_t, map<mstring, set<mMessage *> > >::iterator i;
+    for (i=AllDependancies.begin(); i!=AllDependancies.end(); i++)
+    {
+	vector<mstring> chunked;
+	map<mstring, set<mMessage *> >::iterator j;
+	for (j=i->second.begin(); j!=i->second.end(); j++)
+	{
+	    set<mMessage *>::iterator k = j->second.find(this);
+	    if (k != j->second.end())
+		j->second.erase(k);
+	    if (!j->second.size())
+		chunked.push_back(j->first);
+	}
+	for (unsigned int k=0; k<chunked.size(); k++)
+	    i->second.erase(chunked[k]);
+    }}
+    //CH(D_From,data);
 
     try {
 
-    if ((type == "PRIVMSG" || type == "NOTICE") && !IsChan(target) &&
-    	Parent->nickserv.IsLive(source))
+    if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Parent->nickserv.IsLive(source_) &&
+	!IsChan(params_.ExtractWord(1, ": ")))
     {
+	mstring target(params_.ExtractWord(1, ": "));
 	if (target.Contains("@"))
 	{
 	    target.Truncate(target.Find("@"));
-	    data.replace(data.find(" ", 2)+1, data.find(" ", 3)-1, target);
-	    CP(("Target changed, new data: %s", data.c_str()));
+	    params_.replace(0, params_.find(" ", 1)-1, target);
+	    CP(("Target changed, new params: %s", params_.c_str()));
 	}
 
-	if (!Parent->nickserv.GetLive(source).FloodTrigger())
+	if (!Parent->nickserv.GetLive(source_).FloodTrigger())
 	{
 	    // Find out if the target nick is one of the services 'clones'
 	    // Pass the message to them if so.
@@ -528,39 +776,39 @@ int mBaseTask::message_i(const mstring& message)
 	    // if so, Parent->doscripthandle(server,command,data);
 
 	    if (Parent->operserv.IsName(target))
-		Parent->operserv.execute(data);
+		Parent->operserv.execute(source_, msgtype_, params_);
 
 	    else if (Parent->nickserv.IsName(target) && Parent->nickserv.MSG())
-		Parent->nickserv.execute(data);
+		Parent->nickserv.execute(source_, msgtype_, params_);
 
 	    else if (Parent->chanserv.IsName(target) && Parent->chanserv.MSG())
-		Parent->chanserv.execute(data);
+		Parent->chanserv.execute(source_, msgtype_, params_);
 
 	    else if (Parent->memoserv.IsName(target) && Parent->memoserv.MSG())
-		Parent->memoserv.execute(data);
+		Parent->memoserv.execute(source_, msgtype_, params_);
 
 	    else if (Parent->commserv.IsName(target) && Parent->commserv.MSG())
-		Parent->commserv.execute(data);
+		Parent->commserv.execute(source_, msgtype_, params_);
 
 	    else if (Parent->servmsg.IsName(target) && Parent->servmsg.MSG())
-		Parent->servmsg.execute(data);
+		Parent->servmsg.execute(source_, msgtype_, params_);
 
 	    // else check if it's script handled, might do up a list of script servers
 	    // in the magick object to check against, else trash it.
 
 	    else	// PRIVMSG or NOTICE to non-service
-		Parent->server.execute(data);
+		Parent->server.execute(source_, msgtype_, params_);
 
 	}
 	else if (Parent->operserv.Log_Ignore())
 	{
 	    // Check if we're to log ignore messages, and log them here.
 	    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
-			source.c_str(), data.After(" ").c_str()));
+			source_.c_str(), (msgtype_ + " " + params_).c_str()));
 	}
     }
     else
-	Parent->server.execute(data);
+	Parent->server.execute(source_, msgtype_, params_);
 
     }
     catch (E_NickServ_Stored &e)
@@ -746,11 +994,107 @@ int mBaseTask::message_i(const mstring& message)
 	}
     }
 
+    int retval = mBase::check_LWM();
+    RET(retval);
+}
+
+int mBaseTask::open(void *in)
+{
+    NFT("mBaseTask::open");
+    mBase::TaskOpened=true;
+    int retval = activate();
+    RET(retval);
+}
+
+int mBaseTask::close(unsigned long flags)
+{
+    FT("mBaseTask::close", (flags));
+    RET(0);
+}
+
+int mBaseTask::svc(void)
+{
+    mThread::Attach(tt_mBase);
+    NFT("mBaseTask::svc");
+    mMessage *msg = NULL;
+    int retval = 0;
+    
+    while(!Parent->Shutdown() && retval >= 0)
+    {
+	{ MLOCK(("MessageQueue"));
+	msg = dynamic_cast<mMessage *>(message_queue_.dequeue());
+	}
+	if (msg != NULL)
+	{
+	    retval = msg->call();
+	    delete msg;
+	}
+    }
+    DRET(retval);
+}
+
+void mBaseTask::message(const mstring& message)
+{
+    FT("mBaseTask::message",(message));
+    // Most likely the third condition will match most, as on a
+    // large network, average message size is about 100 bytes, a
+    // FAR cry from the 450 (default) size we're allocating per msg.
+    if (thread_count < Parent->config.Min_Threads() || message_queue_.is_full() ||
+	message_queue_.method_count() > static_cast<int>(thread_count * Parent->config.High_Water_Mark()))
+    {
+	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
+	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
+	{
+	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
+	}
+	else
+	{
+	    thread_count = thr_count();
+	   /* message_queue_.high_water_mark(thread_count *
+		Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
+	    message_queue_.low_water_mark(message_queue_.high_water_mark()); */
+
+	    LOG((LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD")));
+	}
+    }
+
+    mstring data(message);
+    PreParse(data);
+
+    mstring source, msgtype, params;
+
+    if (data[0u] == ':' || data[0u] == '@')
+    {
+	source = data.ExtractWord(1,": ");
+        msgtype = data.ExtractWord(2,": ").UpperCase();
+	if (data.WordCount(" ") > 2)
+	    params = data.After(" ", 2);
+    }
+    else
+    {
+        msgtype = data.ExtractWord(1,": ").UpperCase();
+	if (data.WordCount(" ") > 1)
+	    params = data.After(" ");
+    }
+
+    mMessage *msg = new mMessage(source, msgtype, params);
+printf("(%p) DEBUG 3-1\n", mThread::find()); fflush(stdout);
+    if (!msg->OutstandingDependancies())
+    {
+printf("(%p) DEBUG 3-2\n", mThread::find()); fflush(stdout);
+	message_queue_.enqueue(msg);
+    }
+printf("(%p) DEBUG 3-3\n", mThread::find()); fflush(stdout);
+}
+
+int mBaseTask::check_LWM()
+{
+    NFT("mBaseTask::check_LWM");
+
     // Theoretically, under mutex lock, only ONE can access this
     // at once.  Under pressure tho, the thread system may need
     // to be looked at.  Could be optimization.
-    {MLOCK(("MessageQueue"));
-    size_t msgcnt = message_queue_.message_count();
+    size_t msgcnt = message_queue_.method_count();
     if (thread_count > 1)
     {
 	CP(("thread count = %d, message queue = %d, lwm = %d, hwm = %d",
@@ -770,13 +1114,13 @@ int mBaseTask::message_i(const mstring& message)
     {
 	    COM(("Low water mark reached, killing thread."));
 	    thread_count--;
-	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() *
+	    /* message_queue_.high_water_mark(Parent->config.High_Water_Mark() *
 		thread_count * Parent->server.proto.MaxLine());
-	    message_queue_.low_water_mark(message_queue_.high_water_mark());
+	    message_queue_.low_water_mark(message_queue_.high_water_mark()); */
 	    LOG((LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD")));
 	    FLUSH();
 	    RET(-1);
-    }}
+    }
     FLUSH();
     RET(0);
 }
@@ -805,9 +1149,7 @@ void mBaseTask::PreParse(mstring& data) const
 void mBaseTask::i_shutdown()
 {
     NFT("mBaseTask::i_shutdown");
-    MLOCK(("MessageQueue"));
-    message_queue_.enqueue(new ACE_Message_Block(0,
-				ACE_Message_Block::MB_HANGUP));
+    message_queue_.enqueue(new mMessage(" ", "SHUTDOWN", ""));
 }
 
 void mBase::push_message(const mstring& message)
@@ -834,42 +1176,27 @@ void mBase::push_message(const mstring& message)
     BaseTask.message(message);
 }
 
-void mBase::push_message_immediately(const mstring& message)
-{
-    FT("mBase::push_message_immediately", (message));
-    CH(D_From,message);
-    BaseTask.message_i(message);
-}
-
 void mBase::init()
 {
     NFT("mBase::init");
 
     TaskOpened = false;    
-    MLOCK(("MessageQueue"));
-    BaseTask.message_queue_.high_water_mark(Parent->config.Min_Threads() *
+    /*BaseTask.message_queue_.high_water_mark(Parent->config.Min_Threads() *
 	Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
-    BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
+    BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark()); */
 }
 
 void mBase::shutdown()
 {
     NFT("mBase::shutdown");
-    ACE_Message_Block *mblock;
-    char *transit;
+
+    mMessage *msg = NULL;
     { MLOCK(("MessageQueue"));
     while (!BaseTask.message_queue_.is_empty())
     {
-	mblock = NULL;
-	BaseTask.message_queue_.dequeue(mblock);
-	if (mblock != NULL)
-	{
-	    transit = NULL;
-	    transit = mblock->base();
-	    if (transit != NULL)
-		delete transit;
-	    delete mblock;
-	}
+	msg = dynamic_cast<mMessage *>(BaseTask.message_queue_.dequeue());
+	if (msg != NULL)
+	    delete msg;
     }}
     int j=BaseTask.thr_count();
     for(int i=0;i<j;i++)

@@ -25,6 +25,12 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2001/05/01 14:00:22  prez
+** Re-vamped locking system, and entire dependancy system.
+** Will work again (and actually block across threads), however still does not
+** work on larger networks (coredumps).  LOTS OF PRINTF's still int he code, so
+** DO NOT RUN THIS WITHOUT REDIRECTING STDOUT!  Will remove when debugged.
+**
 ** Revision 1.66  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -360,11 +366,11 @@ class Server : public mBase
     friend class Reconnect_Handler;
     friend class ToBeSquit_Handler;
     friend class Squit_Handler;
+    friend int IrcSvcHandler::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask mask);
 
     void raw(const mstring& send) const;
     void sraw(const mstring& send) const;
     set<mstring> WaitIsOn;
-    map<mstring, pair<unsigned int, mDateTime> > ReDoMessages;
 
     size_t i_UserMax;
     map<mstring,long> ServerSquit;
@@ -372,7 +378,6 @@ class Server : public mBase
     ToBeSquit_Handler tobesquit;
     Squit_Handler squit;
     mstring i_OurUplink;
-    unsigned int proc_SERVER, proc_NICK, proc_CHAN;
     
     enum send_type {
 	t_GLOBOPS, t_HELPOPS, t_INVITE, t_KICK, t_KILL, t_NOTICE,
@@ -380,7 +385,6 @@ class Server : public mBase
 	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
     void FlushMsgs(const mstring& nick);
-    map<mstring, list<triplet<mDateTime, mstring, mstring> > > ToBeDone;
 
 public:
     typedef map<mstring,Server_t> list_t;
@@ -393,10 +397,6 @@ private:
 public:
     Server();
     ~Server() {}
-    void FlushUser(const mstring& nick, const mstring& channel = "");
-    void PushUser(const mstring& nick, const mstring& message,
-		const mstring& channel = "");
-    void PopUser(const mstring& nick, const mstring& channel = "");
     void SignOnAll();
     Protocol proto;
     size_t UserMax() const;
@@ -466,34 +466,34 @@ public:
 
     threadtype_enum Get_TType() const { return tt_ServNet; }
     mstring GetInternalName() const { return "Server"; }
-    void execute(const mstring & message);
-    void parse_A(const mstring & data);
-    void parse_B(const mstring & data);
-    void parse_C(const mstring & data);
-    void parse_D(const mstring & data);
-    void parse_E(const mstring & data);
-    void parse_F(const mstring & data);
-    void parse_G(const mstring & data);
-    void parse_H(const mstring & data);
-    void parse_I(const mstring & data);
-    void parse_J(const mstring & data);
-    void parse_K(const mstring & data);
-    void parse_L(const mstring & data);
-    void parse_M(const mstring & data);
-    void parse_N(const mstring & data);
-    void parse_O(const mstring & data);
-    void parse_P(const mstring & data);
-    void parse_Q(const mstring & data);
-    void parse_R(const mstring & data);
-    void parse_S(const mstring & data);
-    void parse_T(const mstring & data);
-    void parse_U(const mstring & data);
-    void parse_V(const mstring & data);
-    void parse_W(const mstring & data);
-    void parse_X(const mstring & data);
-    void parse_Y(const mstring & data);
-    void parse_Z(const mstring & data);
-    void numeric_execute(const mstring & message);
+    void execute(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_A(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_B(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_C(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_D(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_E(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_F(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_G(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_H(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_I(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_J(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_K(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_L(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_M(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_N(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_O(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_P(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_Q(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_R(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_S(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_T(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_U(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_V(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_W(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_X(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_Y(mstring& source, const mstring& msgtype, const mstring& params);
+    void parse_Z(mstring& source, const mstring& msgtype, const mstring& params);
+    void numeric_execute(mstring& source, const mstring& msgtype, const mstring& params);
 
     void DumpB() const;
     void DumpE() const;
