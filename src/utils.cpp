@@ -35,6 +35,7 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** ======================================================================= */
 
 #include "magick.h"
+#include "build.h"
 
 vector < int > ParseNumbers(const mstring & what)
 {

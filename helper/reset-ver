@@ -34,13 +34,13 @@ if [ -z "$1" ]; then
 	exit 1
 fi
 
-if [ ! -f $1/include/version.h ]; then
+if [ ! -f $1/include/build.h ]; then
 	echo "This must be run from the MAIN COMPILE directory"
 	exit 1
 fi
 
 cd $1/include
 
-mv version.h version.h~
+mv build.h build.h~
 sed	-e "s/BUILD_NUMBER.*;/BUILD_NUMBER = 0;/" \
-	version.h~ >version.h
+	build.h~ >build.h

@@ -5,7 +5,7 @@ EXTRA_DIST = index.sgml
 magick_INFO = index.sgml
 
 SGMLCONV    = sgml2html sgml2info sgml2latex sgml2lyx sgml2rtf sgml2txt
-SGMLCONVEXT = *.htm* *.info* *.dvi *.lyx *.rtf *.txt
+SGMLCONVEXT = *.htm* *.info* *.dvi *.lyx *.rtf *.tex *.txt
 
 all-am:
 	@for x in $(SGMLCONV); do \

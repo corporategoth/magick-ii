@@ -8,7 +8,7 @@ EXTRA_DIST = magick.ini
 install-data-am:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)
-	@list=$(magick_CONF); for p in $$list; do \
+	for p in $(magick_CONF); do \
 	  if test -f $$p; then \
 	    echo "  $(INSTALL_DATA) $$p $(DESTDIR)$(sysconfdir)/$$p" ;\
 	     $(INSTALL_DATA) $$p $(DESTDIR)$(sysconfdir)/$$p ;\
@@ -17,7 +17,7 @@ install-data-am:
 
 uninstall-data-am:
 	@$(NORMAL_UNINSTALL)
-	@list=$(magick_CONF); for p in $$list; do \
+	for p in $(magick_CONF); do \
 	  rm -f $(DESTDIR)$(sysconfdir)/$$p ;\
 	done
 

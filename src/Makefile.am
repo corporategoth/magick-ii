@@ -28,6 +28,8 @@ EXTRA_DIST = base.cpp chanserv.cpp chandata.cpp commserv.cpp datetime.cpp dcceng
 
 ####### kdevelop will overwrite this part!!! (end)############
 
+PROGRAMS=relink
+
 if STAMPED
 STAMP = 1
 else
@@ -37,35 +39,29 @@ endif
 mostlyclean-compile:
 	-rm -f *.o core *.core *.debug
 
-helper:
+version_increment:
+if INCREMENT
+	$(top_srcdir)/helper/build-ver $(top_srcdir)
+endif
+
+magick.debug: $(magick_OBJECTS) $(magick_DEPENDENCIES)
+	@rm -f $@
+	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
+
+magick:
 	@echo ""
 	@echo "======================================================="
 	@echo "This will probably take a while ..."
 	@echo "May as well go grab your favourite caffiene supplement."
 	@echo "======================================================="
-if INCREMENT
-	$(top_srcdir)/helper/build-ver $(top_srcdir)
-endif
-
-magick$(EXEEXT): helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
+	@$(MAKE) $(AM_MAKEFLAGS) magick.debug
 	@rm -f $@
-	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
-	cp $@ $@.debug
+	cp magick.debug $@
 	strip $@
 
 relink:
 	@rm -f $(STAMPED_PROGS)
-	$(MAKE) $(STAMPED_PROGS)
-	@if test $(STAMP) -eq 1 ; then \
-	  echo "$(srcdir)/magick_stampkeys $(STAMPED_PROGS)" ;\
-	  $(srcdir)/magick_stampkeys $(STAMPED_PROGS) ;\
-	else \
-	  echo "Creating 'open host' binaries has disabled stamping of the keyfile keys." ;\
-	  echo "To stamp these binaries, run:" ;\
-	  echo "    $(srcdir)/magick_stampkeys $(STAMPED_PROGS)" ;\
-	fi
-
-all-am: Makefile $(PROGRAMS)
+	@$(MAKE) $(AM_MAKEFLAGS) $(bin_PROGRAMS)
 	@if test $(STAMP) -eq 1 ; then \
 	  echo "$(srcdir)/magick_stampkeys $(STAMPED_PROGS)" ;\
 	  $(srcdir)/magick_stampkeys $(STAMPED_PROGS) ;\
@@ -76,10 +72,9 @@ all-am: Makefile $(PROGRAMS)
 	fi
 
 install-binPROGRAMS:
-	$(MAKE) relink
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
+	for p in $(bin_PROGRAMS); do \
 	  if test -f $$p; then \
 	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
 	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
