@@ -9,21 +9,15 @@
 #include <vector>
 #include <string>
 using namespace std;
-extern "C" {
-#include "bob.h"
-};
+
+#include "bob.hpp"
 
 class Magick
 {
 	vector<string> argv;
-	ObjectPtr bobval;
-	UnwindTarget bobut;
-	InterpreterContextPtr bobic;
-	CompilerContext *bobcc;
-	bool bobavail;
+	Bob bob;
 public:
-	Magick(int inargc, const char **inargv);
-	void Start();
-	bool StartBob(const string& scriptname="");
+	Magick(int inargc, char **inargv);
+	int Start();
 };
 #endif

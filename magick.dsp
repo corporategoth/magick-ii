@@ -83,6 +83,14 @@ LINK32=link.exe
 # Name "magick - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\src\bob.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\bob.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\lockable.cpp
 # End Source File
 # Begin Source File
