@@ -1,3 +1,13 @@
+* 2002-03-04 22:57  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.213):
+  
+  Fixed some typos
+
+* 2002-03-04 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.25):
+  
+  Created version 2.0s20020304
+
 * 2002-03-02 20:22  Preston A. Elder <prez@magick.tm>
   acconfig.h (1.15), configure.in (1.52), include/config.h.in (1.27),
   include/config.h.win (1.21), include/filesys.h (1.58),
