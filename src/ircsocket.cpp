@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2000/05/26 11:21:28  prez
+** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
+**
 ** Revision 1.103  2000/05/22 13:00:09  prez
 ** Updated version.h and some other stuff
 **
@@ -124,6 +127,10 @@ int IrcSvcHandler::open(void *in)
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     //activate();
     // todo activate the task
+    htm_level = 0;
+    htm_gap = Parent->operserv.Init_HTM_Gap();
+    htm_threshold = Parent->operserv.Init_HTM_Thresh();
+    last_htm_check = Now();
     CP(("IrcSvcHandler activated"));
     RET(0);
 }
@@ -151,12 +158,68 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
     // Traffic Accounting ...
     map<time_t, size_t>::iterator iter;
+    time_t now = time(NULL);
     for (iter=traffic.begin(); iter != traffic.end() &&
-		iter->second < time(NULL) - 60; iter = traffic.begin())
+		iter->first < now - (Parent->operserv.Max_HTM_Gap()+2); iter = traffic.begin())
 	traffic.erase(iter->first);
-    if (traffic.find(time(NULL)) == traffic.end())
-	traffic[time(NULL)] = 0;
-    traffic[time(NULL)] += ACE_OS::strlen(data);
+    if (traffic.find(now) == traffic.end())
+	traffic[now] = 0;
+    traffic[now] += ACE_OS::strlen(data);
+
+    // Check to see if we're in HTM.
+    if (last_htm_check.SecondsSince() > htm_gap)
+    {
+	last_htm_check = Now();
+	size_t total = 0;
+	time_t i;
+	for (i = now - (htm_gap + 1); i<now; i++)
+	    if (traffic.find(i) != traffic.end())
+		total += traffic[i];
+	if (total > (htm_gap * htm_threshold))
+	{
+	    if (htm_gap > Parent->operserv.Max_HTM_Gap())
+	    {
+		announce(Parent->operserv.FirstName(),
+			Parent->getMessage("MISC/HTM_DIE"));
+		Parent->Connected(false);
+		if(Parent->Reconnect() && !Parent->Shutdown())
+		    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
+		return -1;
+	    }
+	    else
+	    {
+		if (!htm_level)
+		    announce(Parent->operserv.FirstName(),
+			Parent->getMessage("MISC/HTM_ON"),
+			(float) total / (float) htm_gap / 1024.0,
+			(float) htm_threshold / 1024.0);
+		else if (htm_level < 3)
+		    announce(Parent->operserv.FirstName(),
+			Parent->getMessage("MISC/HTM_STILL"),
+			htm_level + 1, htm_gap,
+			(float) total / (float) htm_gap / 1024.0);
+		else
+		    announce(Parent->operserv.FirstName(),
+			Parent->getMessage("MISC/HTM_TURBO"),
+			htm_level + 1, htm_gap,
+			(float) total / (float) htm_gap / 1024.0);
+		htm_level++;
+		htm_gap += 2;
+		Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_ON"),
+			htm_level, htm_gap,
+			(float) total / (float) htm_gap / 1024.0,
+			(float) htm_threshold / 1024.0);
+	    }
+	}
+	else if (htm_level)
+	{
+	    announce(Parent->operserv.FirstName(),
+		Parent->getMessage("MISC/HTM_OFF"));
+	    htm_level = 0;
+	    htm_gap = Parent->operserv.Init_HTM_Gap();
+	    Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_OFF"));
+	}
+    }    
 
     mstring data2 = flack + data;
     flack = "";
@@ -180,6 +243,43 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
         flack = data2;
 
     RET(0);
+}
+
+void IrcSvcHandler::HTM(bool in)
+{
+    FT("IrcSvcHandler::HTM", (in));
+    last_htm_check = Now();
+    if (in)
+    {
+	htm_level = 4;
+	htm_gap = Parent->operserv.HTM_On_Gap();
+    }
+    else
+    {
+	htm_level = 0;
+	htm_gap = Parent->operserv.Init_HTM_Gap();
+    }
+}
+
+size_t IrcSvcHandler::Average(time_t secs)
+{
+    NFT("IrcSvcHandler::Average");
+    time_t now = time(NULL);
+    size_t total = 0;
+    int i = 0;
+    map<time_t, size_t>::iterator iter;
+    if (secs > Parent->operserv.Max_HTM_Gap())
+	secs = 0;
+    for (iter=traffic.begin(); iter != traffic.end() &&
+			iter->first < now; iter++)
+    {
+	if (secs ? iter->first >= (now-1) - secs : 1)
+	{
+	    total += iter->second;
+	    i++;
+	}
+    }
+    RET(total / (i ? i : 1));
 }
 
 int IrcSvcHandler::send(const mstring & data)

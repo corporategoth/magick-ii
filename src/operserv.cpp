@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2000/05/26 11:21:28  prez
+** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
+**
 ** Revision 1.79  2000/05/25 08:16:39  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...
@@ -636,6 +639,8 @@ void OperServ::AddCommands()
 	    "ON", Parent->commserv.SADMIN_Name(), OperServ::do_On);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "OFF", Parent->commserv.SADMIN_Name(), OperServ::do_Off);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "HTM", Parent->commserv.SOP_Name(), OperServ::do_HTM);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* CONF*", Parent->commserv.OPER_Name() + " " +
@@ -775,6 +780,8 @@ void OperServ::RemCommands()
 	    "ON", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "OFF", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "HTM", Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SET* CONF*", Parent->commserv.OPER_Name() + " " +
@@ -1124,7 +1131,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
-			(message + action).c_str(), mynick.c_str(), message.c_str());
+			(message + " " + action).c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 
@@ -1570,6 +1577,78 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
     Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("MISC/OFF").c_str());
+}
+
+
+void OperServ::do_HTM(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_HTM", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/HTM"),
+		ToHumanSpace(Parent->ircsvchandler->HTM_Threshold()).c_str(),
+		(float) Parent->ircsvchandler->Average(Parent->ircsvchandler->HTM_Gap()) / (float) 1024);
+    }
+    else
+    {
+	mstring command = params.ExtractWord(2, " ").UpperCase();
+	if (command == "ON")
+	{
+	    Parent->ircsvchandler->HTM(true);
+	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HTM"),
+		Parent->getMessage(source, "MISC/ON").c_str());
+	    announce(mynick, Parent->getMessage("MISC/HTM_ON_FORCE"),
+		source.c_str());
+	    Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_FORCE"),
+		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->getMessage("MISC/ON").c_str());
+	}
+	else if (command == "OFF")
+	{
+	    Parent->ircsvchandler->HTM(false);
+	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HTM"),
+		Parent->getMessage(source, "MISC/OFF").c_str());
+	    announce(mynick, Parent->getMessage("MISC/HTM_OFF_FORCE"),
+		source.c_str());
+	    Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_FORCE"),
+		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		Parent->getMessage("MISC/OFF").c_str());
+	}
+	else if (command == "SET")
+	{
+	    if (params.WordCount(" ") < 3)
+	    {
+		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				(message + " " + command).c_str(), mynick.c_str(), message.c_str());
+		return;
+	    }
+	    size_t newsize = FromHumanSpace(params.ExtractWord(3, " "));
+	    if (!newsize)
+	    {
+		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBESIZE"),
+				ToHumanSpace(1).c_str());
+		return;
+	    }
+	    Parent->ircsvchandler->HTM_Threshold(newsize);
+
+	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HTM_SET"),
+		ToHumanSpace(newsize).c_str());
+	    announce(mynick, Parent->getMessage("MISC/HTM_SET"),
+		ToHumanSpace(newsize).c_str(), source.c_str());
+	    Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_SET"),
+		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
+		ToHumanSpace(newsize).c_str());
+	}
+	else
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+			(message + " " + command).c_str(), mynick.c_str(), message.c_str());
+	    return;
+	}
+	
+    }
 }
 
 

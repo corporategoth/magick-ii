@@ -201,6 +201,10 @@ OPERDENY_DEL     =%s removed mask %s fro mthe operdeny list.
 IGNORE_ADD       =%s added mask %s to the services permanent ignore list.
 IGNORE_DEL       =%s removed mask %s from the services permanent ignore list.
 IGNORED          =Ignored message from %s: %s
+HTM_FORCE        =%s has forced HTM mode %s.
+HTM_ON           =HTM mode %d (%d delay) activated (%.1fKb/s > %.1fKb/s).
+HTM_OFF          =HTM mode deactivated.
+HTM_SET          =%s has set the HTM threshold to %s/s.
 
 ;
 ; These are used when an automated event kicks off.

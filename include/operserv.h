@@ -24,6 +24,9 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/05/26 11:21:28  prez
+** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
+**
 ** Revision 1.34  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -81,6 +84,10 @@ private:
     unsigned long ignore_remove;
     unsigned int ignore_method;
     bool log_ignore;
+    unsigned long init_htm_gap;
+    unsigned long init_htm_thresh;
+    unsigned long max_htm_gap;
+    unsigned long htm_on_gap;
 
     // Mask (H), Limit (int), Reason (mstring)
     set<entlist_val_t<pair<unsigned int, mstring> > > i_Clone;
@@ -168,6 +175,10 @@ public:
     Nick_Live_t::styles Ignore_Method()
 	{ return (Nick_Live_t::styles) ignore_method; }
     bool Log_Ignore()		    { return log_ignore; }
+    unsigned long Init_HTM_Gap()    { return init_htm_gap; }
+    unsigned long Init_HTM_Thresh() { return init_htm_thresh; }
+    unsigned long Max_HTM_Gap()     { return max_htm_gap; }
+    unsigned long HTM_On_Gap()      { return htm_on_gap; }
 
     size_t CloneList_size() { return CloneList.size(); }
     size_t CloneList_sum();
@@ -239,6 +250,7 @@ public:
     static void do_Jupe(mstring mynick, mstring source, mstring params);
     static void do_On(mstring mynick, mstring source, mstring params);
     static void do_Off(mstring mynick, mstring source, mstring params);
+    static void do_HTM(mstring mynick, mstring source, mstring params);
     static void do_settings_Config(mstring mynick, mstring source, mstring params);
     static void do_settings_Nick(mstring mynick, mstring source, mstring params);
     static void do_settings_Channel(mstring mynick, mstring source, mstring params);

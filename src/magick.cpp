@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.238  2000/05/26 11:21:28  prez
+** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
+**
 ** Revision 1.237  2000/05/22 13:25:12  ungod
 ** making it compilable again after removal of log.cpp/.h
 **
@@ -2399,6 +2402,26 @@ bool Magick::get_config_values()
 
     in.Read(ts_OperServ+"IGNORE_METHOD",&operserv.ignore_method,8);
     in.Read(ts_OperServ+"LOG_IGNORE",&operserv.log_ignore,false);
+    in.Read(ts_OperServ+"INIT_HTM_GAP",&value_mstring,"5s");
+    if (FromHumanTime(value_mstring))
+	operserv.init_htm_gap = FromHumanTime(value_mstring);
+    else
+	operserv.init_htm_gap = FromHumanTime("5s");
+    in.Read(ts_OperServ+"INIT_HTM_THRESH",&value_mstring,"16k");
+    if (FromHumanSpace(value_mstring))
+	operserv.init_htm_thresh = FromHumanSpace(value_mstring);
+    else
+	operserv.init_htm_thresh = FromHumanSpace("16k");
+    in.Read(ts_OperServ+"MAX_HTM_GAP",&value_mstring,"1m");
+    if (FromHumanTime(value_mstring))
+	operserv.max_htm_gap = FromHumanTime(value_mstring);
+    else
+	operserv.max_htm_gap = FromHumanTime("1m");
+    in.Read(ts_OperServ+"HTM_ON_GAP",&value_mstring,"30s");
+    if (FromHumanTime(value_mstring))
+	operserv.htm_on_gap = FromHumanTime(value_mstring);
+    else
+	operserv.htm_on_gap = FromHumanTime("30s");
 
     RemCommands();
     in.Read(ts_CommServ+"DEF_OPENMEMOS",&commserv.def_openmemos,true);

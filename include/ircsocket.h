@@ -24,6 +24,9 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/05/26 11:21:28  prez
+** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
+**
 ** Revision 1.32  2000/05/22 13:00:08  prez
 ** Updated version.h and some other stuff
 **
@@ -88,12 +91,24 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     // This takes any characters read from the socket that dont
     // end in \r or \n, and adds them to next read's run.
     mstring flack;
+
     map<time_t, size_t> traffic;
+    mDateTime last_htm_check;
+    unsigned short htm_level;
+    time_t htm_gap;
+    size_t htm_threshold;
 public:
     virtual int close(unsigned long in);
     int send(const mstring& data);
     virtual int open(void *);
     virtual int handle_input(ACE_HANDLE handle);
+
+    time_t HTM_Gap() { return htm_gap; }
+    unsigned short HTM_Level() { return htm_level; }
+    size_t HTM_Threshold() { return htm_threshold; }
+    void HTM_Threshold(size_t in) { htm_threshold = in; }
+    void HTM(bool in);
+    size_t Average(time_t secs = 0);
 };
 
 typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcServer;

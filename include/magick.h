@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.128  2000/05/26 11:21:28  prez
+** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
+**
 ** Revision 1.127  2000/05/21 04:49:38  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -174,7 +177,6 @@ private:
 	bool i_shutdown;
 
 	bool i_reconnect;
-	IrcSvcHandler *ircsvchandler;
 	unsigned long i_localhost;
 	bool i_gotconnect;
 	mstring i_server;
@@ -184,6 +186,7 @@ private:
 public:
 	EventTask *events;
 	DccMap *dcc;
+	IrcSvcHandler *ircsvchandler;
 
 	// Stuff that NEEDS to be there first
 	CommandMap commands;

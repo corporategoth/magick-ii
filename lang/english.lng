@@ -100,6 +100,7 @@ MULTI_MODE         =Multiple +/-%c modes specified (ignored).
 NOKEY              =No key specified, but required (ignored).
 NOLIMIT            =No limit specified, but required (ignored).
 MUSTBEHEX          =You may only specify characters 0-f, %d digits long.
+MUSTBESIZE         =You must specify a size %s or above.
 
 ;
 ; This section describes SITUATION errors, ie. errors where you have
@@ -187,6 +188,15 @@ RELOAD             =%s just reloaded the server configuration file.
 JUPE               =%s just JUPED server %s.
 ONOFF              =Services have been turned %s by %s.
 ONOFF_ONE          =Service %s has been turned %s by %s.
+HTM_ON             =Entering high-traffic mode - (%.1fKb/s > %.1fKb/s)
+HTM_STILL          =Still high-traffic mode %d (%d delay): %.1fKb/s
+HTM_TURBO          =Still high-traffic mode %d (TURBO) (%d delay): %.1fKb/s
+HTM_ON_FORCE       =Entering high-traffic mode forced by %s
+HTM_DIE            =Cannot recover from high-traffic mode, terminating connection.
+HTM_OFF            =Resuming standard operation...
+HTM_OFF_FORCE      =Resuming standard operation forced by %s...
+HTM_SET            =HTM threshold has been set to %s/s by %s.
+
 ENTLIST_CLEAR      =Value of %s has been cleared.
 ENTLIST_SET        =Value of %s has been set to %s.
 REVENGE            =REVENGE: Do not %s %s
@@ -703,6 +713,7 @@ ISLANG             =Language %s is already loaded.
 ISNOTLANG          =Language %s is not loaded.
 NOLANG             =Language %s does not exist.
 ISOPERDENY         =You may not set mode +o, you are on OperDeny.
+HTM                =HTM will trigger at %s, Current average traffic is %.1fKb.
 
 ;
 ; These are the output lines for the OperServ SETTINGS command ONLY.
@@ -768,6 +779,8 @@ UNLOAD             =Language %s has been unloaded.
 JUPE               =Server %s has been juped.
 ONOFF              =Services have been turned %s.
 ONOFF_ONE          =Service %s has been turned %s.
+HTM                =High Traffic Mode has been turned %s.
+HTM_SET            =HTM Threshold has been reset to %s.
 
 ;
 ; These are MemoServ status responses.
