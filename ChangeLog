@@ -1,3 +1,35 @@
+* 2001-12-09 06:25  Preston A. Elder <prez@magick.tm>
+  magick.dsp (1.74), magick_stampkeys.dsp (1.5), what.dsp (1.5),
+  src/magick_keygen.c (1.23), src/utils.cpp (1.74):
+  
+  Some windows compilation fixes ...
+
+* 2001-12-06 21:51  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.81), src/mstring.cpp (1.115):
+  
+  Added doxygen comments to mstring, and removed doxygen generated stuff
+  from CVS -- you can now just generate it yourself with the config file.
+
+* 2001-12-05 20:41  Preston A. Elder <prez@magick.tm>
+  src/mconfig.cpp (1.36):
+  
+  Some fixes to the config file parser -- slightly more flexable now.
+
+* 2001-12-04 20:53  Preston A. Elder <prez@magick.tm>
+  helper/cvs2cl.pl (1.2):
+  
+  Fixed up truncating log problem
+
+* 2001-12-04 20:42  Preston A. Elder <prez@magick.tm>
+  Makefile.dist (1.5):
+  
+  Ditched .bak files
+
+* 2001-12-04 20:37  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.10):
+  
+  Updated ChangeLog
+
 * 2001-12-04 19:48  Preston A. Elder <prez@magick.tm>
   AUTHORS (1.7), ChangeLog (1.9), ChangeLog.1999 (1.1), ChangeLog.2000
   (1.1), ChangeLog.old (1.1), Magick.spec (1.7), Makefile.dist (1.4),
