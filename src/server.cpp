@@ -906,7 +906,7 @@ void NetworkServ::execute(const mstring & data)
 	    }
 	    else
 	    {
-		SignOnAll();
+		// Start timer to SignOnAll();
 	    }
 	}
 	else if (msgtype=="PING")

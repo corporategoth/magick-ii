@@ -35,6 +35,7 @@ rmexec:
 	rm -f magick magick.debug
 
 magick:
+	helper/build-ver
 	@for x in $(SUBDIRS) ./src; \
 	do	cd $$x; \
 		if [ -f ./configure ]; \
@@ -43,7 +44,6 @@ magick:
 		cd $${OLDPWD}; \
 		$(MAKE) -C $$x TOPDIR=$(TOPDIR); \
 	done
-	helper/build-ver
 	$(CC) $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
 	strip magick
