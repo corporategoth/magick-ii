@@ -25,12 +25,3 @@ void ChanServ::execute(const mstring & servicename, const mstring & message)
     FT("ChanServ::execute", (servicename, message));
     //okay this is the main chanserv command switcher
 }
-
-threadtype_enum ChanServ::Get_TType() const
-{
-    return tt_ChanServ;
-}
-mstring ChanServ::GetInternalName() const
-{
-    return "ChanServ";
-}
