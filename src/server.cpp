@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.173  2001/05/08 06:28:28  prez
+** Added convert to version info
+**
 ** Revision 1.172  2001/05/08 03:38:41  prez
 ** Fixed bahamut back to SVSNICK
 **
@@ -5492,6 +5495,11 @@ void Server::parse_V(mstring &source, const mstring &msgtype, const mstring &par
 	    tmp << "E";
 #else
 	    tmp << "e";
+#endif
+#ifdef CONVERT
+	    tmp << "V";
+#else
+	    tmp << "v";
 #endif
 #if defined(MAGICK_USE_MPATROL) || defined(MAGICK_USE_EFENCE)
 	    tmp << "D";
