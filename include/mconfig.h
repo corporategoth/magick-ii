@@ -25,6 +25,10 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2001/12/12 03:31:15  prez
+** Re-wrote the occurances/find/replace functions in mstring to actually work
+** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
+**
 ** Revision 1.22  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -117,6 +121,7 @@ public:
     bool operator==(const ceNode &in)const;
     bool operator<(const ceNode &in)const
 	{ return (i_Name < in.i_Name); }
+    mstring Name() { return i_Name; }
     bool SetKey(const mstring &KeyName, const mstring &Value);
     bool DeleteKey(const mstring &KeyName);
     bool CreateNode(const mstring &NodeName);
@@ -142,6 +147,8 @@ public:
 	    i_FileName=FileName;
 	    LoadFile();
 	}
+
+    mstring FileName() { return i_FileName; }
     bool LoadFile();
     bool LoadFromString(const mstring& configstring);
     bool LoadFromArray(const vector<mstring> &configarray);

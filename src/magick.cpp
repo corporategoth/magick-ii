@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.333  2001/12/12 03:31:15  prez
+** Re-wrote the occurances/find/replace functions in mstring to actually work
+** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
+**
 ** Revision 1.332  2001/11/30 09:01:56  prez
 ** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
 ** Pause(bool) functions. This should help if/when we decide to implement
@@ -613,9 +617,11 @@ Magick::Magick(int inargc, char **inargv)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR",
 		("getcwd", ".", errno, strerror(errno)));
+	return;
     }
     else
 	i_services_dir=buf;
+    CurrentState = Constructed;
 }
 
 static bool firstrun;

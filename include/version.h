@@ -25,8 +25,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.126  2001/11/22 17:32:18  prez
-** Some fixes to lockable for mpatrol, and mstring overwriting its own memory.
+** Revision 1.127  2001/12/12 03:31:15  prez
+** Re-wrote the occurances/find/replace functions in mstring to actually work
+** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
 **
 ** Revision 1.36  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
@@ -137,7 +138,7 @@ RCSID(version_h, "@(#) $Id$");
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 3;
+const int BUILD_NUMBER = 0;
 
 /* Versioning Information
  *
@@ -167,8 +168,8 @@ const mstring FULLNAME			= "Magick IRC Services";
 const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "general@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
-const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/beta";
-const mstring RELEASE			= "b12";
+const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/snapshot";
+const mstring RELEASE			= "s20011210";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";

@@ -27,6 +27,10 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.116  2001/12/12 03:31:15  prez
+** Re-wrote the occurances/find/replace functions in mstring to actually work
+** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
+**
 ** Revision 1.115  2001/12/07 02:51:39  prez
 ** Added doxygen comments to mstring, and removed doxygen generated stuff
 ** from CVS -- you can now just generate it yourself with the config file.
@@ -812,7 +816,7 @@ int mstring::find_first_of(const char *str, const size_t len) const
 
     for (i=0; i < len; i++)
     {
-	char *ptr = strchr(i_str, str[i]);
+	char *ptr = static_cast<char *>(memchr(i_str, str[i], i_len));
 	if (ptr != NULL && ptr - i_str < retval)
 	    retval = ptr - i_str;
     }
@@ -872,7 +876,7 @@ int mstring::find_first_not_of(const char *str, const size_t len) const
 
     for (i=0; i<i_len; i++)
     {
-	if (strchr(tmp, i_str[i])==NULL)
+	if (memchr(tmp, i_str[i], len)==NULL)
 	{
 	    retval = i;
 	    break;
@@ -908,7 +912,7 @@ int mstring::find_last_not_of(const char *str, const size_t len) const
 
     for (i=i_len-1; i>=0; i--)
     {
-	if (strchr(tmp, i_str[i])==NULL)
+	if (memchr(tmp, i_str[i], len)==NULL)
 	{
 	    retval = i;
 	    break;
@@ -924,17 +928,33 @@ int mstring::find_last_not_of(const char *str, const size_t len) const
 /* PRIVATE METHOD - NO LOCKING! */
 int mstring::occurances(const char *str, const size_t len) const
 {
-    int count = 0;
-    char *ptr;
+    size_t consumed = 0, count = 0;
+    char *start, *end;
 
     if (i_str == NULL || str == NULL || len < 1)
 	return 0;
 
-    ptr = strstr(i_str, str);
-    while (ptr != NULL)
+    start = i_str;
+    end = strstr(i_str, str);
+    while (consumed < i_len)
     {
-	count++;
-	ptr = strstr(ptr+len, str);
+	// Find each instance of the search pattern, at least, up until
+	// the first binary 0 we encounter ...
+	while (end != NULL)
+	{
+	    count++;
+	    consumed += (end-start) + len;
+	    start = end + len;
+	    end = strstr(start, str);
+	}
+	// Accomodate for any binary 0's, by moving past the next binary
+	// zero, checking to see if we've used the entire contents, and
+	// if we havn't, resuming the above while.
+	consumed += strlen(start) + 1;
+	start += strlen(start) + 1;
+	if (consumed >= i_len)
+	    break;
+	end = strstr(start, str);
     }
     return count;
 }
@@ -942,8 +962,8 @@ int mstring::occurances(const char *str, const size_t len) const
 // Find occurance of full string
 int mstring::find(const mstring &str, int occurance) const
 {
-    int i, retval = -1;
-    char *ptr;
+    int count = 0, retval = -1;
+    char *start, *end;
 
     if (str.empty())
 	return -1;
@@ -958,18 +978,38 @@ int mstring::find(const mstring &str, int occurance) const
     if (occurance < 1)
 	occurance = 1;
 
-    ptr = strstr(i_str, str.c_str());
-    if (ptr != NULL)
+    size_t consumed = 0;
+    start = i_str;
+    end = strstr(i_str, str.c_str());
+    // While we're not at the end of the WHOLE string ...
+    while (consumed < i_len)
     {
-	for (i=1; i < occurance; i++)
+	// Find each instance of the search pattern, at least, up until
+	// the first binary 0 we encounter ... Break when we got what
+	// we want.
+	while (end != NULL)
 	{
-	    ptr = strstr(ptr+str.length(), str.c_str());
-	    if (ptr == NULL)
+	    count++;
+	    if (occurance == count)
 		break;
+	    consumed += (end-start) + str.length();
+	    start = end + str.length();
+	    end = strstr(start, str.c_str());
 	}
+	// if we're done, break ...
+	if (end != NULL)
+	    break;
+	// Accomodate for any binary 0's, by moving past the next binary
+	// zero, checking to see if we've used the entire contents, and
+	// if we havn't, resuming the above while.
+	consumed += strlen(start) + 1;
+	start += strlen(start) + 1;
+	if (consumed >= i_len)
+	    break;
+	end = strstr(start, str.c_str());
     }
-    if (ptr != NULL)
-	retval = ptr - i_str;
+    if (end != NULL)
+	retval = end - i_str;
 
     lock_rel();
     return retval;
@@ -1000,10 +1040,8 @@ int mstring::rfind(const mstring &str, int occurance) const
 // Replace find string with replace string (optionally for all)
 void mstring::replace(const mstring &i_find, const mstring &i_replace, const bool all)
 {
-    int i, j, old_len, amt_replace = 0;
+    size_t old_len, amt_replace = 0;
     char *tmp, *start, *end;
-    vector<pair<char *, int> > ptrs;
-    vector<pair<char *, int> >::iterator iter;
 
     if (i_find.empty())
 	return;
@@ -1016,22 +1054,13 @@ void mstring::replace(const mstring &i_find, const mstring &i_replace, const boo
     }
     old_len = i_len;
 
-    start=i_str;
-    end=strstr(i_str, i_find.c_str());
-    while (end != NULL)
-    {
-	ptrs.push_back(pair<char *, int>(start, end-start));
-	end += i_find.length();
-	start = end;
-	amt_replace++;
-	if (!all)
-	    break;
-	end = strstr(start, i_find.c_str());
-    }
-    ptrs.push_back(pair<char *, int>(start,-1));
+    amt_replace = occurances(i_find.c_str(), i_find.length());
+    if (amt_replace < 1)
+	return;
 
     i_len += (amt_replace * (i_replace.length() - i_find.length()));
-    if (i_len == 0)
+
+    if (i_len <= 0)
     {
 	i_res = 0;
 	dealloc(i_str);
@@ -1053,24 +1082,50 @@ void mstring::replace(const mstring &i_find, const mstring &i_replace, const boo
     }
     memset(tmp, 0, i_res);
 
-    i = j = 0;
-    for (iter=ptrs.begin(); iter!=ptrs.end(); iter++)
+    start = i_str;
+    end = strstr(i_str, i_find.c_str());
+    size_t i=0, consumed = 0;
+    while (consumed < old_len)
     {
-	if (iter->second >= 0)
+	// Find each instance of the search pattern, at least, up until
+	// the first binary 0 we encounter ... Break after the first
+	// replace if !all ...
+	while (end != NULL)
 	{
-	    memcpy(&tmp[j], iter->first, iter->second);
-	    j += iter->second;
+	    if ((end-start) > 0)
+	    {
+		memcpy(&tmp[i], start, (end-start));
+		i += (end-start);
+	    }
 	    if (i_replace.length())
 	    {
-		memcpy(&tmp[j], i_replace.c_str(), i_replace.length());
-		j += i_replace.length();
+		memcpy(&tmp[i], i_replace.c_str(), i_replace.length());
+		i += i_replace.length();
 	    }
-	    i += iter->second + i_find.length();
+	    consumed += (end-start) + i_find.length();
+	    start = end + i_find.length();
+	    if (!all)
+		break;
+	    end = strstr(start, i_find.c_str());
 	}
-	else
+	// Accomodate the situation where !all, simply copy the rest
+	// of the REAL string, and be done with it.
+	if (end != NULL)
 	{
-	    memcpy(&tmp[j], iter->first, old_len - i);
+	    if (old_len-(start-i_str) > 0)
+		memcpy(&tmp[i], start, old_len-(start-i_str));
+	    break;
 	}
+	// Accomodate for any binary 0's, by moving past the next binary
+	// zero, checking to see if we've used the entire contents, and
+	// if we havn't, resuming the above while.
+	consumed += strlen(start) + 1;
+	memcpy(&tmp[i], start, strlen(start)+1);
+	i += strlen(start);
+	start += strlen(start) + 1;
+	if (consumed >= old_len)
+	    break;
+	end = strstr(start, i_find.c_str());
     }
     dealloc(i_str);
     i_str = tmp;

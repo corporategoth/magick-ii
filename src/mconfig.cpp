@@ -27,6 +27,10 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2001/12/12 03:31:15  prez
+** Re-wrote the occurances/find/replace functions in mstring to actually work
+** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
+**
 ** Revision 1.36  2001/12/06 01:41:39  prez
 ** Some fixes to the config file parser -- slightly more flexable now.
 **
@@ -430,6 +434,7 @@ mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue) const
     FT("ceNode::GetKey", (KeyName,DefValue));
     mstring temppath;
     mstring Result=DefValue;
+
     if(KeyName.first()=='/')
         temppath=KeyName.After("/");
     else
@@ -622,6 +627,7 @@ bool mConfigEngine::Read(const mstring &key, bool &outvar, const bool Default) c
     mstring tmp;
     bool Result=true;
     tmp=RootNode.GetKey(key,Default ? "true" : "false");
+
     if (tmp.IsBool())
 	outvar=tmp.GetBool();
     else
@@ -902,7 +908,7 @@ vector<mstring> mConfigEngine::PreParse(const vector<mstring> &in)
 	// If we're non blank, and non-comment ...
         if(tmp.length() && tmp.first() != '#' && tmp.first() != ';')
         {
-	    unsigned int j, lnsp = 0; // lnsp = last non space
+	    unsigned int j, lnsp = tmp.length(); // lnsp = last non space
 	    bool cont = false;
 	    for (j=0; j<tmp.length(); j++)
 	    {
