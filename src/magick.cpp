@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.192  2000/02/16 10:24:39  prez
+** Updated HELP outputs
+**
 ** Revision 1.191  2000/02/15 13:27:03  prez
 ** *** empty log message ***
 **
@@ -554,14 +557,14 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		if (text == "")
 		    text = " ";
 		if (yescom != "")
-		    for (i=0; sendline && i<yescom.WordCount(" "); i++)
+		    for (i=1; sendline && i<=yescom.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(yescom.ExtractWord(i, " ")) &&
 			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
 			    sendline = false;
 		    }
 		if (nocom != "")
-		    for (i=0; sendline && i<nocom.WordCount(" "); i++)
+		    for (i=1; sendline && i<=nocom.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(nocom.ExtractWord(i, " ")) &&
 			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
@@ -606,14 +609,14 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		if (text == "")
 		    text = " ";
 		if (yescom != "")
-		    for (i=0; sendline && i<yescom.WordCount(" "); i++)
+		    for (i=1; sendline && i<=yescom.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(yescom.ExtractWord(i, " ")) &&
 			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
 			    sendline = false;
 		    }
 		if (nocom != "")
-		    for (i=0; sendline && i<nocom.WordCount(" "); i++)
+		    for (i=1; sendline && i<=nocom.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(nocom.ExtractWord(i, " ")) &&
 			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
