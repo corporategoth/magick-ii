@@ -48,7 +48,7 @@ AC_CANONICAL_HOST
 dnl Test for java.
 AC_CHECK_PROG(JAVAC, javac, javac)
 if test -n "$JAVAC"; then
-    echo $ECHO_N$ac_n "checking whether Java compiler is sufficiant"" ... $ECHO_C$ac_c"
+    echo $ECHO_N$ac_n "checking whether Java compiler is sufficient"" ... $ECHO_C$ac_c"
     cat >jtest.java <<EOT
 import javax.swing.JFormattedTextField;
 class jtest extends JFormattedTextField
