@@ -80,7 +80,7 @@ unsigned int Server::Users()
     map<mstring,Nick_Live_t>::iterator k;
     for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
 	if (k->second.Server() == i_Name) count++;
-    return count;
+    RET(count);
 }
 
 unsigned int Server::Opers()
@@ -91,7 +91,7 @@ unsigned int Server::Opers()
     map<mstring,Nick_Live_t>::iterator k;
     for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
 	if (k->second.Server() == i_Name && k->second.HasMode("o")) count++;
-    return count;
+    RET(count);
 }
 
 vector<mstring> Server::Downlinks()

@@ -176,6 +176,109 @@ bool mBase::signoff(const mstring &nickname)
     }
 }
 
+
+void mBase::privmsg(const mstring &source, const mstring &dest, const mstring &message)
+{
+    FT("mBase::privmsg", (source, dest, message));
+
+    if (IsName(source) && Parent->nickserv.IsLive(dest))
+	Parent->server.PRIVMSG(source, dest, message);
+}
+
+
+void mBase::privmsg(const mstring &dest, const mstring &message)
+{
+    FT("mBase::privmsg", (dest, message));
+
+    if (Parent->nickserv.IsLive(dest))
+	Parent->server.PRIVMSG(FirstName(), dest, message);
+}
+
+
+void mBase::notice(const mstring &source, const mstring &dest, const mstring &message)
+{
+    FT("mBase::notice", (source, dest, message));
+
+    if (IsName(source) && Parent->nickserv.IsLive(dest))
+	Parent->server.NOTICE(source, dest, message);
+}
+
+
+void mBase::notice(const mstring &dest, const mstring &message)
+{
+    FT("mBase::notice", (dest, message));
+
+    if (Parent->nickserv.IsLive(dest))
+	Parent->server.NOTICE(FirstName(), dest, message);
+}
+
+
+void mBase::send(const mstring &source, const mstring &dest, const mstring &message)
+{
+    FT("mBase::send", (source, dest, message));
+
+    if (IsName(source) && Parent->nickserv.IsLive(dest))
+    {
+	if (Parent->nickserv.IsStored(dest) &&
+		Parent->nickserv.live[dest.LowerCase()].IsRecognized() ||
+		Parent->nickserv.live[dest.LowerCase()].IsIdentified())
+	{
+	    if (Parent->nickserv.stored[dest.LowerCase()].PRIVMSG()) {
+		privmsg(source, dest, message);
+	    }
+	    else
+	    {
+		notice(source, dest, message);
+	    }
+	}
+	else
+	{
+	    if (Parent->nickserv.DEF_PRIVMSG())
+	    {
+		privmsg(source, dest, message);
+	    }
+	    else
+	    {
+		notice(source, dest, message);
+	    }
+	}
+    }
+}
+
+
+void mBase::send(const mstring &dest, const mstring &message)
+{
+    FT("mBase::send", (dest, message));
+
+    if (Parent->nickserv.IsLive(dest))
+    {
+	if (Parent->nickserv.IsStored(dest) &&
+		Parent->nickserv.live[dest.LowerCase()].IsRecognized() ||
+		Parent->nickserv.live[dest.LowerCase()].IsIdentified())
+	{
+	    if (Parent->nickserv.stored[dest.LowerCase()].PRIVMSG()) {
+		privmsg(dest, message);
+	    }
+	    else
+	    {
+		notice(dest, message);
+	    }
+	}
+	else
+	{
+	    if (Parent->nickserv.DEF_PRIVMSG())
+	    {
+		privmsg(dest, message);
+	    }
+	    else
+	    {
+		notice(dest, message);
+	    }
+	}
+    }
+}
+
+
 void mBase::shutdown()
 {
     NFT("mBase::shutdown");

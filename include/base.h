@@ -235,10 +235,12 @@ public:
 
     bool signon(const mstring& nickname);
     bool signoff(const mstring& nickname);
-    void privmsg(const mstring source, mstring dest, mstring message);
-    void privmsg(mstring dest, mstring message); // FIRST nick
-    void notice(const mstring& source, mstring dest, mstring message);
-    void notice(mstring dest, mstring message); // FIRST nick
+    void privmsg(const mstring& source, const mstring &dest, const mstring &message);
+    void privmsg(const mstring &dest, const mstring &message); // FIRST nick
+    void notice(const mstring& source, const mstring &dest, const mstring &message);
+    void notice(const mstring &dest, const mstring &message); // FIRST nick
+    void send(const mstring& source, const mstring &dest, const mstring &message);
+    void send(const mstring &dest, const mstring &message); // FIRST nick
 
     operator mVariant() const
     {

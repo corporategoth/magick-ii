@@ -16,6 +16,7 @@
 #include "mstring.h"
 #include "variant.h"
 #include "base.h"
+#include "nickserv.h"
 
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
@@ -79,7 +80,8 @@ public:
     int Ignore_Time()		{ return ignore_time; }
     int Ignore_Limit()		{ return ignore_limit; }
     int Ignore_Remove()		{ return ignore_remove; }
-    int Ignore_Method()		{ return ignore_method; }
+    Nick_Live_t::styles Ignore_Method()
+	{ return (Nick_Live_t::styles) ignore_method; }
 
     bool Flood()		{ return flood; }
     bool oAkill()		{ return akill; }

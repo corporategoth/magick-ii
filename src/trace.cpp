@@ -451,12 +451,14 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 //      :- W NickInfo::PreZ::Flags
 //      :- M Magick::LoadMessages
 
-T_Locking::~T_Locking() {
+T_Locking::~T_Locking()
+{
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     ShortLevel(Locking);
     if (IsOn(tid)) {
-	if (!name.IsEmpty()) {
+	if (!name.IsEmpty())
+	{
     	    mstring message;
 	    if(locktype == Read)
 	        message << ":- " << "R " << name;
@@ -479,6 +481,34 @@ T_Locking::~T_Locking() {
 //      |- 3: Socket Timeout
 
 // T_Sockets::T_Sockets() {}
+/*
+T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
+{
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
+    ShortLevel(Sockets);
+    if (IsOn(tid)) 
+    {
+	mstring message;
+	message << "|+ " << local << " / " << remote << " (" << host << ")";
+	tid->WriteOut(message);
+    }
+}
+
+T_Sockets::End(mstring reason)
+{
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
+    ShortLevel(Sockets);
+    if (IsOn(tid)) 
+    {
+	mstring message;
+	message << "|- " << reason;
+	tid->WriteOut(message);
+    }
+}
+
+*/
 
 // ===================================================
 
@@ -488,6 +518,8 @@ T_Locking::~T_Locking() {
 //      !! FUNC- user_process( (char *) source, (char *) message )
 //      !! BIND+ MSG "SET USERINFO" user_process
 //      !! BIND- MSG "SET USERINFO" user_process
+//      !! SERV+ new_service nick nick ...
+//      !! SERV- new_service
 
 // T_Bind::T_Bind() {}
 
@@ -499,6 +531,8 @@ T_Locking::~T_Locking() {
 //      ?? CLOSE   /tmp/output
 
 // T_External::T_External() {}
+
+// ===================================================
 
 int LoggerTask::open(void *in)
 {

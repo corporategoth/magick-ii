@@ -147,8 +147,8 @@ bool OperServ::Akill_insert(mstring entry, long value, mstring reason, mstring n
 {
     FT("OperServ::Akill_insert", (entry, value, reason, nick));
 
-    // Wildcards but no @
-    if (entry.Contains("@") || entry.Contains("!"))
+    // no @
+    if (!entry.Contains("@") || entry.Contains("!"))
     {
 	    RET(false);
     }
@@ -188,6 +188,12 @@ bool OperServ::Akill_erase()
 bool OperServ::Akill_find(mstring entry)
 {
     FT("OperServ::Akill_find", (entry));
+
+    // no @
+    if (!entry.Contains("@") || entry.Contains("!"))
+    {
+	    RET(false);
+    }
 
 //  entlist_val_ui<pair<long, mstring> > iter = i_Akill.end();
     set<entlist_val_t<pair<long, mstring> > >::iterator iter = i_Akill.end();
@@ -231,11 +237,15 @@ bool OperServ::OperDeny_insert(mstring entry, mstring value, mstring nick)
 {
     FT("OperServ::OperDeny_insert", (entry, value, nick));
 
-    // Wildcards but no @
-    if (entry.Contains("@") || entry.Contains("!"))
+    // no @
+    if (!entry.Contains("@"))
     {
 	    RET(false);
     }
+
+    // Pre-pend *! if its missed
+    if (!entry.Contains("!"))
+	entry.Prepend("*!");
 
     if (!OperDeny_find(entry))
     {
@@ -272,6 +282,16 @@ bool OperServ::OperDeny_erase()
 bool OperServ::OperDeny_find(mstring entry)
 {
     FT("OperServ::OperDeny_find", (entry));
+
+    // no @
+    if (!entry.Contains("@"))
+    {
+	    RET(false);
+    }
+
+    // Pre-pend *! if its missed
+    if (!entry.Contains("!"))
+	entry.Prepend("*!");
 
 //  entlist_val_ui<mstring> iter = i_OperDeny.end();
     set<entlist_val_t<mstring> >::iterator iter = i_OperDeny.end();
@@ -316,11 +336,15 @@ bool OperServ::Ignore_insert(mstring entry, mDateTime value, bool perm, mstring 
 {
     FT("OperServ::Ignore_insert", (entry, value, perm, nick));
 
-    // Wildcards but no @
-    if (entry.Contains("@") || entry.Contains("!"))
+    // no @
+    if (!entry.Contains("@"))
     {
 	    RET(false);
     }
+
+    // Pre-pend *! if its missed
+    if (!entry.Contains("!"))
+	entry.Prepend("*!");
 
     if (!Ignore_find(entry))
     {
@@ -358,12 +382,26 @@ bool OperServ::Ignore_find(mstring entry)
 {
     FT("OperServ::Ignore_find", (entry));
 
+    // no @
+    if (!entry.Contains("@"))
+    {
+	    RET(false);
+    }
+
+    // Pre-pend *! if its missed
+    if (!entry.Contains("!"))
+	entry.Prepend("*!");
+
 //  entlist_val_ui<pair<mDateTime, bool> > iter = i_Ignore.end();
     set<entlist_val_t<pair<mDateTime, bool> > >::iterator iter = i_Ignore.end();
+
     if (!i_Ignore.empty())
 	for (iter=i_Ignore.begin(); iter!=i_Ignore.end(); iter++)
+	{
+	    CP(( ("ENT: " + entry.LowerCase() + " matches " + iter->Entry().LowerCase()).c_str() ));
 	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
 		break;
+	}
 
     if (iter != i_Ignore.end())
     {
