@@ -288,6 +288,7 @@ public class CommServ extends TabbedPane
 		{ new String("CS HalfOp"), new String("ADMIN") }, 
 		{ new String("CS Voice"), new String("OPER") }, 
 		{ new String("CS Invite"), new String("SOP") }, 
+		{ new String("CS Kick"), new String("SOP") }, 
 		{ new String("CS Unban"), new String("SOP") }, 
 		{ new String("CS Clear"), new String("SADMIN") }, 
 		};
