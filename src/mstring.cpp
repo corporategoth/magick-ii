@@ -27,6 +27,10 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.115  2001/12/07 02:51:39  prez
+** Added doxygen comments to mstring, and removed doxygen generated stuff
+** from CVS -- you can now just generate it yourself with the config file.
+**
 ** Revision 1.114  2001/11/23 21:02:56  prez
 ** Fixed problem in FormatV that caused corruptions in strings.
 **
@@ -735,18 +739,6 @@ const unsigned char *mstring::uc_str() const
     return static_cast<const unsigned char *>(retval);
 }
 
-const char mstring::operator[] (const size_t offs) const
-{
-    char retval = 0;
-
-    lock_read();
-    if (i_str != NULL && offs < i_len)
-	retval = i_str[offs];
-    lock_rel();
-
-    return static_cast<const char>(retval);
-}
-
 const char mstring::first(size_t off) const
 {
     char retval = 0;
@@ -1133,7 +1125,10 @@ bool mstring::IsWord() const
     lock_read();
 
     if (i_str == NULL)
-	retval = false;
+    {
+	lock_rel();
+	return false;
+    }
 
     for (size_t i=0; i<i_len; i++)
 	if (!isalpha(i_str[i]))
@@ -1145,8 +1140,14 @@ bool mstring::IsWord() const
 
 bool mstring::IsNumber() const
 {
-    bool retval = true, gotnum = false;
+    bool retval = false;
     lock_read();
+
+    if (i_str == NULL)
+    {
+	lock_rel();
+	return false;
+    }
 
     // Accepts: [-|+]###.###  Must have at least one #
     // Accepts multipal decimal places, so an IP address
@@ -1155,26 +1156,26 @@ bool mstring::IsNumber() const
     /* Required this way else will coredump on a blank
      * string (ie. accessing i_str[i] of NULL) */
     size_t i=0;
-    if (i_str == NULL)
-	retval = false;
-    else if (i_str[i] == '-' || i_str[i] == '+')
+    if (i_str[i] == '-' || i_str[i] == '+')
 	i++;
 
+    bool gotdec = false;
     for (; i<i_len; i++)
-	if (i_str[i] == '.')
+    {
+	if (i_str[i] == '.' && !gotdec)
 	{
+	    gotdec = true;
 	}
 	else if (isdigit(i_str[i]))
 	{
-	    gotnum = true;
+	    retval = true;
 	}
 	else
 	{
 	    retval = false;
 	    break;
 	}
-    if (!gotnum)
-	retval = false;
+    }
 
     lock_rel();
     return retval;
