@@ -109,6 +109,14 @@ SOURCE=.\include\bob.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\chanserv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\chanserv.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\antlr\CharBuffer.cpp
 # End Source File
 # Begin Source File

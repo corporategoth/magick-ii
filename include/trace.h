@@ -73,9 +73,9 @@ class ThreadID;
 // then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
 // then it gives a syntax error.
 
-enum threadtype_enum { MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
+enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_BOB, tt_MAX };
 // note to prez, don't initialize in a header it fucks the compiler up on multiple includes
-extern mstring threadname[MAX];
+extern mstring threadname[tt_MAX];
 
 // Trace Codes
 //   \\  Down Function (T_Functions)

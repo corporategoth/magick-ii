@@ -17,60 +17,60 @@
 #include "trace.h"
 
 long Trace::TraceLevel=0;
-mstring threadname[MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
+mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
 
 
 Trace::Trace()
 {
 	SLevel = Off;
 
-	tmap[levelpair(MAIN,Off)]		= TT_Off;
-	tmap[levelpair(MAIN,Stats)]		= G_Stats;
-	tmap[levelpair(MAIN,Source)]		= G_SourceFiles;
-	tmap[levelpair(MAIN,Functions)]		= G_Functions;
-	tmap[levelpair(MAIN,Locking)]		= G_Locking;
+	tmap[levelpair(tt_MAIN,Off)]		= TT_Off;
+	tmap[levelpair(tt_MAIN,Stats)]		= G_Stats;
+	tmap[levelpair(tt_MAIN,Source)]		= G_SourceFiles;
+	tmap[levelpair(tt_MAIN,Functions)]		= G_Functions;
+	tmap[levelpair(tt_MAIN,Locking)]		= G_Locking;
 
-	tmap[levelpair(NickServ,Off)]		= TT_Off;
-	tmap[levelpair(NickServ,Chatter)]	= NS_Chatter;
-	tmap[levelpair(NickServ,CheckPoint)]	= NS_CheckPoint;
-	tmap[levelpair(NickServ,Functions)]	= NS_Functions;
-	tmap[levelpair(NickServ,Modify)]	= NS_Modify;
+	tmap[levelpair(tt_NickServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_NickServ,Chatter)]	= NS_Chatter;
+	tmap[levelpair(tt_NickServ,CheckPoint)]	= NS_CheckPoint;
+	tmap[levelpair(tt_NickServ,Functions)]	= NS_Functions;
+	tmap[levelpair(tt_NickServ,Modify)]	= NS_Modify;
 
-	tmap[levelpair(ChanServ,Off)]		= TT_Off;
-	tmap[levelpair(ChanServ,Chatter)]	= CS_Chatter;
-	tmap[levelpair(ChanServ,CheckPoint)]	= CS_CheckPoint;
-	tmap[levelpair(ChanServ,Functions)]	= CS_Functions;
-	tmap[levelpair(ChanServ,Modify)]	= CS_Modify;
+	tmap[levelpair(tt_ChanServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_ChanServ,Chatter)]	= CS_Chatter;
+	tmap[levelpair(tt_ChanServ,CheckPoint)]	= CS_CheckPoint;
+	tmap[levelpair(tt_ChanServ,Functions)]	= CS_Functions;
+	tmap[levelpair(tt_ChanServ,Modify)]	= CS_Modify;
 
-	tmap[levelpair(MemoServ,Off)]		= TT_Off;
-	tmap[levelpair(MemoServ,Chatter)]	= MS_Chatter;
-	tmap[levelpair(MemoServ,CheckPoint)]	= MS_CheckPoint;
-	tmap[levelpair(MemoServ,Functions)]	= MS_Functions;
-	tmap[levelpair(MemoServ,Modify)]	= MS_Modify;
+	tmap[levelpair(tt_MemoServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_MemoServ,Chatter)]	= MS_Chatter;
+	tmap[levelpair(tt_MemoServ,CheckPoint)]	= MS_CheckPoint;
+	tmap[levelpair(tt_MemoServ,Functions)]	= MS_Functions;
+	tmap[levelpair(tt_MemoServ,Modify)]	= MS_Modify;
 
-	tmap[levelpair(OperServ,Off)]		= TT_Off;
-	tmap[levelpair(OperServ,Chatter)]	= OS_Chatter;
-	tmap[levelpair(OperServ,CheckPoint)]	= OS_CheckPoint;
-	tmap[levelpair(OperServ,Functions)]	= OS_Functions;
-	tmap[levelpair(OperServ,Modify)]	= OS_Modify;
+	tmap[levelpair(tt_OperServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_OperServ,Chatter)]	= OS_Chatter;
+	tmap[levelpair(tt_OperServ,CheckPoint)]	= OS_CheckPoint;
+	tmap[levelpair(tt_OperServ,Functions)]	= OS_Functions;
+	tmap[levelpair(tt_OperServ,Modify)]	= OS_Modify;
 
-	tmap[levelpair(OtherServ,Off)]		= TT_Off;
-	tmap[levelpair(OtherServ,Chatter)]	= XS_Chatter;
-	tmap[levelpair(OtherServ,CheckPoint)]	= XS_CheckPoint;
-	tmap[levelpair(OtherServ,Functions)]	= XS_Functions;
-	tmap[levelpair(OtherServ,Modify)]	= XS_Modify;
+	tmap[levelpair(tt_OtherServ,Off)]		= TT_Off;
+	tmap[levelpair(tt_OtherServ,Chatter)]	= XS_Chatter;
+	tmap[levelpair(tt_OtherServ,CheckPoint)]	= XS_CheckPoint;
+	tmap[levelpair(tt_OtherServ,Functions)]	= XS_Functions;
+	tmap[levelpair(tt_OtherServ,Modify)]	= XS_Modify;
 
-	tmap[levelpair(ServNet,Off)]		= TT_Off;
-	tmap[levelpair(ServNet,Chatter)]	= NET_Chatter;
-	tmap[levelpair(ServNet,CheckPoint)]	= NET_CheckPoint;
-	tmap[levelpair(ServNet,Functions)]	= NET_Functions;
-	tmap[levelpair(ServNet,Sockets)]	= NET_Sockets;
+	tmap[levelpair(tt_ServNet,Off)]		= TT_Off;
+	tmap[levelpair(tt_ServNet,Chatter)]	= NET_Chatter;
+	tmap[levelpair(tt_ServNet,CheckPoint)]	= NET_CheckPoint;
+	tmap[levelpair(tt_ServNet,Functions)]	= NET_Functions;
+	tmap[levelpair(tt_ServNet,Sockets)]	= NET_Sockets;
 
-	tmap[levelpair(BOB,Off)]		= TT_Off;
-	tmap[levelpair(BOB,Chatter)]		= BOB_Chatter;
-	tmap[levelpair(BOB,Bind)]		= BOB_Bind;
-	tmap[levelpair(BOB,Functions)]		= BOB_Functions;
-	tmap[levelpair(BOB,External)]		= BOB_External;
+	tmap[levelpair(tt_BOB,Off)]		= TT_Off;
+	tmap[levelpair(tt_BOB,Chatter)]		= BOB_Chatter;
+	tmap[levelpair(tt_BOB,Bind)]		= BOB_Bind;
+	tmap[levelpair(tt_BOB,Functions)]		= BOB_Functions;
+	tmap[levelpair(tt_BOB,External)]		= BOB_External;
 
 }
 //todo change this to a vector< >
