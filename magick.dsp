@@ -261,6 +261,14 @@ SOURCE=.\src\antlr\TokenBuffer.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\trace.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\trace.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\antlr\TreeParser.cpp
 # End Source File
 # Begin Source File
