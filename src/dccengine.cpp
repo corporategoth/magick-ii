@@ -26,6 +26,10 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2000/02/23 14:29:05  prez
+** Added beginnings of a File Map for stored files.
+** Also updated Help files (finished nickserv).
+**
 ** Revision 1.20  2000/02/23 12:21:03  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -462,7 +466,7 @@ void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
 void DccEngine::DoDccChat(const mstring& mynick, const mstring& source,
 			  ACE_INET_Addr addr)
 {
-    //todo: check if we should accept this dcc (ie is it an oper?)
+    // todo: check if we should accept this dcc (ie is it an oper?)
 
     // create a new threaded connection that is nothing more than a standard
     // tcp/ip socket connection for two way chatting.
@@ -481,7 +485,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 			  ACE_INET_Addr addr, mstring filename,
 			  size_t size)
 {
-    //todo: check if we should accept this dcc (ie is it an oper?)
+    // todo: check if we should accept this dcc (ie is it an oper?)
     // create a new threaded connection that is nothing more than a standard
     // tcp/ip socket connection for sending files
     // upon receiving each packet, we transmit a 4byte "received bytes" count.
@@ -495,5 +499,15 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     // threshold (which sould be checked in the actual memoserv
     // FILE command).  If we will allow the DCC, then add it to
     // the file map (file # -> name & user)
+    if (!Parent->nickserv.IsLive(source))
+	return;
+
+    if (!Parent->nickserv.live[source.LowerCase()].InFlight.File())
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/DCCSENDREFUSE"));
+	return;
+    }
+
+
 
 }

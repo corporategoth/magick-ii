@@ -307,6 +307,14 @@ SOURCE=.\include\fileconf.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\filesys.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\filesys.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\ircsocket.cpp
 # End Source File
 # Begin Source File

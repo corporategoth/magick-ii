@@ -28,6 +28,10 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.197  2000/02/23 14:29:05  prez
+** Added beginnings of a File Map for stored files.
+** Also updated Help files (finished nickserv).
+**
 ** Revision 1.196  2000/02/23 12:21:03  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -1543,6 +1547,8 @@ bool Magick::get_config_values()
 	files.compression = 9;
     in.Read(ts_Files+"KEYFILE",&files.keyfile,"magick.key");
     in.Read(ts_Files+"ENCRYPTION",&files.encryption,false);
+    in.Read(ts_Files+"MEMOATTACH",&files.memoattach,"files/memo");
+    in.Read(ts_Files+"PICTURE",&files.picture,"files/pic");
 
     in.Read(ts_Config+"SERVER_RELINK",&value_mstring,"5s");
     if (FromHumanTime(value_mstring))

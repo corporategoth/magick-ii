@@ -130,6 +130,8 @@ NOATTACH           =Cannot send file attachments to channels.
 FILEINPROG         =Cannot begin a new memo or file transfer while a file transfer is in progress.
 COFOUNDER          =Cannot set the CoFounder the same as the Founder.
 NOACCESS           =Access denied.
+DCCSENDREFUSE      =DCC SEND refused, no file transfer request in effect.
+DCCCHATREFUSE      =DCC CHAT refused, you do not have access to this feature.
 
 ;
 ; This section contains miscellaneous outputs from Magick.  eg.

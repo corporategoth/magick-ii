@@ -24,6 +24,10 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.109  2000/02/23 14:29:05  prez
+** Added beginnings of a File Map for stored files.
+** Also updated Help files (finished nickserv).
+**
 ** Revision 1.108  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -46,6 +50,7 @@ static const char *ident_magick_h = "@(#) $Id$";
 #include "trace.h"
 #include "server.h"
 #include "utils.h"
+#include "filesys.h"
 #include "nickserv.h"
 #include "chanserv.h"
 #include "operserv.h"
@@ -108,6 +113,7 @@ public:
 	
 	// Stuff that NEEDS to be there first
 	CommandMap commands;
+	FileMap filemap;
 
 	// Services ...
 	OperServ operserv;
@@ -160,6 +166,8 @@ public:
 		unsigned int compression;
 		mstring keyfile;
 		bool encryption;
+		mstring memoattach;
+		mstring picture;
 	public:
 		mstring Pidfile()const		    { return pidfile; }
 		mstring Logfile()const		    { return logfile; }
@@ -169,6 +177,8 @@ public:
 		unsigned int Compression()const	    { return compression; }
 		mstring KeyFile()const		    { return keyfile; }
 		bool Encryption()const		    { return encryption; }
+		mstring MemoAttach()const	    { return memoattach; }
+		mstring Picture()const		    { return picture; }
 	} files;
 
 	class config_t {
