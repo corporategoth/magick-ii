@@ -25,6 +25,9 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/10/07 11:01:13  prez
+** Took out placement new's from lockable.cpp, now using derived classes.
+**
 ** Revision 1.44  2000/10/04 10:52:07  prez
 ** Fixed the memory pool and removed printf's.
 **
@@ -175,17 +178,16 @@ public:
 
 #ifdef MAGICK_LOCKS_WORK
 
-
-typedef ACE_RW_Thread_Mutex	mLock_Read;
-typedef ACE_RW_Thread_Mutex	mLock_Write;
-typedef ACE_Thread_Mutex	mLock_Mutex;
-
 #define MAX_LOCKS 16 /* Max variants */
 #define LOCK_SEGMENT 8 /* Amount of lock memory to alloc */
 class mLOCK
 {
+    friend class mLock_Read;
+    friend class mLock_Write;
+    friend class mLock_Mutex;
+
     static map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > LockMap;
-    static MemCluster<mLock_Mutex> memory_area;
+    static MemCluster<ACE_Thread_Mutex> memory_area;
 
     vector<mstring> locks;
 #ifdef MAGICK_TRACE_WORKS
@@ -199,6 +201,52 @@ public:
     size_t Locks() { return locks.size(); }
     static size_t AllLocks();
 };
+
+class mLock_Read : public ACE_RW_Thread_Mutex
+{
+	typedef ACE_RW_Thread_Mutex base;
+public:
+	mLock_Read (LPCTSTR name = 0, void *arg = 0)
+		: base(name, arg) {}
+
+	int acquire()		{ return acquire_read(); }
+	int tryacquire()	{ return tryacquire_read(); }
+
+	void *operator new (size_t size)
+		{ return mLOCK::memory_area.alloc(); }
+	void operator delete (void *ptr)
+		{ mLOCK::memory_area.dealloc(ptr); }
+};
+
+class mLock_Write : public ACE_RW_Thread_Mutex
+{
+	typedef ACE_RW_Thread_Mutex base;
+public:
+	mLock_Write (LPCTSTR name = 0, void *arg = 0)
+		: base(name, arg) {}
+
+	int acquire()		{ return acquire_write(); }
+	int tryacquire()	{ return tryacquire_write(); }
+
+	void *operator new (size_t size)
+		{ return mLOCK::memory_area.alloc(); }
+	void operator delete (void *ptr)
+		{ mLOCK::memory_area.dealloc(ptr); }
+};
+
+class mLock_Mutex : public ACE_Thread_Mutex
+{
+	typedef ACE_Thread_Mutex base;
+public:
+	mLock_Mutex (LPCTSTR name = 0, void *arg = 0)
+		: base(name, arg) {}
+
+	void *operator new (size_t size)
+		{ return mLOCK::memory_area.alloc(); }
+	void operator delete (void *ptr)
+		{ mLOCK::memory_area.dealloc(ptr); }
+};
+
 
 #define RLOCK(y)   mVarArray __lockR1_VarArray y; mLOCK __lockR1(L_Read,  __lockR1_VarArray)
 #define RLOCK2(y)  mVarArray __lockR2_VarArray y; mLOCK __lockR2(L_Read,  __lockR2_VarArray)

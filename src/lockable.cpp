@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/10/07 11:01:13  prez
+** Took out placement new's from lockable.cpp, now using derived classes.
+**
 ** Revision 1.52  2000/10/04 10:52:08  prez
 ** Fixed the memory pool and removed printf's.
 **
@@ -136,7 +139,7 @@ static const char *ident = "@(#)$Id$";
 #ifdef MAGICK_LOCKS_WORK
 
 map<ACE_thread_t, map<mstring, pair<locktype_enum, void *> > > mLOCK::LockMap;
-MemCluster<mLock_Mutex> mLOCK::memory_area(
+MemCluster<ACE_Thread_Mutex> mLOCK::memory_area(
 	(sizeof(mLock_Read) > sizeof(mLock_Write) ?
 	    (sizeof(mLock_Read) > sizeof(mLock_Mutex) ?
 		sizeof(mLock_Read) : sizeof(mLock_Mutex)) :
@@ -185,14 +188,14 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
-	    rlock = new (memory_area.alloc()) mLock_Read((const char *) hash);
+	    rlock = new mLock_Read((const char *) hash);
 	    if (rlock != NULL)
 	    {
-		if (rlock->acquire_read() < 0)
+		if (rlock->acquire() < 0)
 		{
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"READ", lockname.c_str());
-		    memory_area.dealloc(rlock);
+		    delete rlock;
 		    rlock = NULL;
 		}
 		else
@@ -223,14 +226,14 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
-	    rlock = new (memory_area.alloc()) mLock_Read((const char *) hash);
+	    rlock = new mLock_Read((const char *) hash);
 	    if (rlock != NULL)
 	    {
-		if (rlock->acquire_read() < 0)
+		if (rlock->acquire() < 0)
 		{
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"READ", lockname.c_str());
-		    memory_area.dealloc(rlock);
+		    delete rlock;
 		    rlock = NULL;
 		}
 		else
@@ -261,7 +264,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 			"READ", lockname.c_str());
 		}
-		memory_area.dealloc(rlock);
+		delete rlock;
 		rlock = NULL;
 	    }
 	    (*lockroot).erase(lockname);
@@ -270,14 +273,14 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
-	    wlock = new (memory_area.alloc()) mLock_Write((const char *) hash);
+	    wlock = new mLock_Write((const char *) hash);
 	    if (wlock != NULL)
 	    {
-		if (wlock->acquire_write() < 0)
+		if (wlock->acquire() < 0)
 		{
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"WRITE", lockname.c_str());
-		    memory_area.dealloc(wlock);
+		    delete wlock;
 		    (*lockroot)[lockname].second;
 		    wlock = NULL;
 		}
@@ -309,7 +312,7 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 			"READ", lockname.c_str());
 		}
-		memory_area.dealloc(rlock);
+		delete rlock;
 		rlock = NULL;
 	    }
 	    (*lockroot).erase(lockname);
@@ -318,14 +321,14 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	{
 	    memset(hash, 0, sizeof(hash));
 	    mHASH((unsigned char *) lockname.c_str(), lockname.Len(), hash);
-	    mlock = new (memory_area.alloc()) mLock_Mutex((const char *) hash);
+	    mlock = new mLock_Mutex((const char *) hash);
 	    if (mlock != NULL)
 	    {
 		if (mlock->acquire() < 0)
 		{
 		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 			"MUTEX", lockname.c_str());
-		    memory_area.dealloc(mlock);
+		    delete mlock;
 		    mlock = NULL;
 		}
 		else
@@ -394,7 +397,7 @@ mLOCK::~mLOCK()
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"READ", locks[i].c_str());
 		    }
-		    memory_area.dealloc(rlock);
+		    delete rlock;
 		    rlock = NULL;
 		}
 	    }
@@ -409,7 +412,7 @@ mLOCK::~mLOCK()
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"WRITE", locks[i].c_str());
 		    }
-		    memory_area.dealloc(wlock);
+		    delete wlock;
 		    wlock = NULL;
 		}
 	    }
@@ -424,7 +427,7 @@ mLOCK::~mLOCK()
 			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 				"MUTEX", locks[i].c_str());
 		    }
-		    memory_area.dealloc(mlock);
+		    delete mlock;
 		    mlock = NULL;
 		}
 	    }
