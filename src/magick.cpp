@@ -169,11 +169,14 @@ int Magick::Start()
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler=new SignalHandler;
     ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
+#if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
-#ifdef SIGPIPE
-    ACE_Reactor::instance()->register_handler(SIGPIPE,signalhandler);
 #endif
-#ifdef SIGQUIT
+#if defined(SIGPIPE) && (SIGPIPE != 0)
+    ACE_Sig_Action sigpipe (ACE_SignalHandler (SIG_IGN), SIGPIPE);
+    ACE_UNUSED_ARG (sigpipe);
+#endif
+#if defined(SIGQUIT) && (SIGQUIT != 0)
     ACE_Reactor::instance()->register_handler(SIGQUIT,signalhandler);
 #endif
     ACE_Reactor::instance()->register_handler(SIGSEGV,signalhandler);
@@ -183,6 +186,48 @@ int Magick::Start()
 #ifdef SIGHUP
     ACE_Reactor::instance()->register_handler(SIGHUP,signalhandler);
 #endif
+    ACE_Reactor::instance()->register_handler(SIGILL,signalhandler);
+#ifdef SIGTRAP
+    ACE_Reactor::instance()->register_handler(SIGTRAP,signalhandler);
+#endif
+#ifdef SIGIOT
+    ACE_Reactor::instance()->register_handler(SIGIOT,signalhandler);
+#endif
+#ifdef SIGFPE
+    ACE_Reactor::instance()->register_handler(SIGFPE,signalhandler);
+#endif
+#if defined(SIGALRM) && (SIGALRM != 0)
+    ACE_Sig_Action sigalrm (ACE_SignalHandler (SIG_IGN), SIGALRM);
+    ACE_UNUSED_ARG (sigalrm);
+#endif
+#if defined(SIGUSR2) && (SIGUSR2 != 0)
+    ACE_Sig_Action sigusr2 (ACE_SignalHandler (SIG_IGN), SIGUSR2);
+    ACE_UNUSED_ARG (sigusr2);
+#endif
+#ifdef SIGCHLD
+    ACE_Sig_Action sigchld (ACE_SignalHandler (SIG_IGN), SIGCHLD);
+    ACE_UNUSED_ARG (sigchld);
+#endif
+#ifdef SIGWINCH
+    ACE_Sig_Action sigwinch (ACE_SignalHandler (SIG_IGN), SIGWINCH);
+    ACE_UNUSED_ARG (sigwinch);
+#endif
+#ifdef SIGTTIN
+    ACE_Sig_Action sigttin (ACE_SignalHandler (SIG_IGN), SIGTTIN);
+    ACE_UNUSED_ARG (sigttin);
+#endif
+#ifdef SIGTTOU
+    ACE_Sig_Action sigttou (ACE_SignalHandler (SIG_IGN), SIGTTOU);
+    ACE_UNUSED_ARG (sigttou);
+#endif
+#ifdef SIGTSTP
+    ACE_Sig_Action sigttsp (ACE_SignalHandler (SIG_IGN), SIGTTSP);
+    ACE_UNUSED_ARG (sigttsp);
+#endif
+#if defined(SIGUSR1) && (SIGUSR1 != 0)
+    ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
+#endif
+
 
     // etc.
 
@@ -217,8 +262,34 @@ int Magick::Start()
     while(shutdown!=true)
 	ACE_Reactor::instance()->handle_events();
 
+    //todo work out some way to "ignore" signals
     ACE_Reactor::instance()->remove_handler(SIGINT);
+#if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->remove_handler(SIGTERM);
+#endif
+#if defined(SIGQUIT) && (SIGQUIT != 0)
+    ACE_Reactor::instance()->remove_handler(SIGQUIT);
+#endif
+    ACE_Reactor::instance()->remove_handler(SIGSEGV);
+#ifdef SIGBUS
+    ACE_Reactor::instance()->remove_handler(SIGBUS);
+#endif
+#ifdef SIGHUP
+    ACE_Reactor::instance()->remove_handler(SIGHUP);
+#endif
+    ACE_Reactor::instance()->remove_handler(SIGILL);
+#ifdef SIGTRAP
+    ACE_Reactor::instance()->remove_handler(SIGTRAP);
+#endif
+#ifdef SIGIOT
+    ACE_Reactor::instance()->remove_handler(SIGIOT);
+#endif
+#ifdef SIGFPE
+    ACE_Reactor::instance()->remove_handler(SIGFPE);
+#endif
+#if defined(SIGUSR1) && (SIGUSR1 != 0)
+    ACE_Reactor::instance()->remove_handler(SIGUSR1);
+#endif
     delete signalhandler;
 
     RET(MAGICK_RET_TERMINATE);
@@ -739,6 +810,48 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 {
     FT("SignalHandler::handle_signal", (signum, "(siginfo_t) *siginfo", "(ucontext_t) *ucontext"));
     // todo: fill this sucker in
-    // switch(signum)
+    switch(signum)
+    {
+    case 0:
+	break;  // this is here to show up clashes for badly defined signal constants
+    case SIGINT:
+	break;
+#if defined(SIGTERM) && (SIGTERM != 0)
+    case SIGTERM:
+	break;
+#endif
+#if defined(SIGQUIT) && (SIGQUIT != 0)
+    case SIGQUIT:
+	break;
+#endif
+    case SIGSEGV:
+	break;
+#ifdef SIGBUS
+    case SIGBUS:
+	break;
+#endif
+#if defined(SIGHUP) && (SIGHUP != 0)
+    case SIGHUP:
+	break;
+#endif
+    case SIGILL:
+	break;
+#ifdef SIGTRAP
+    case SIGTRAP:
+	break;
+#endif
+#ifdef SIGIOT
+    case SIGIOT:
+	break;
+#endif
+    case SIGFPE:
+	break;
+#if defined(SIGUSR1) && (SIGUSR1 != 0)
+    case SIGUSR1:
+	break;
+#endif
+    default:
+	;//ignore (todo log that we got it and we're ignoring it)
+    }
     RET(0);
 }

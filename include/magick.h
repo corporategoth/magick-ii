@@ -35,11 +35,26 @@ using namespace std;
 #include "ircsocket.h"
 #include "variant.h"
 
-const int MAGICK_RET_NORMAL = 0;
-const int MAGICK_RET_RESTART = 1;
-const int MAGICK_RET_TERMINATE = 2;
-const int MAGICK_RET_ERROR = -1;
-const int MAGICK_RET_INVALID_SERVICES_DIR = -20;
+const int MAGICK_RET_NORMAL		    = 0;
+const int MAGICK_RET_RESTART		    = 1;
+const int MAGICK_RET_TERMINATE		    = 2;
+const int MAGICK_RET_ERROR		    = -1;
+const int MAGICK_RET_INVALID_SERVICES_DIR   = -20;
+
+#if 0
+const int RUN_STARTED	    =0x00000001;
+const int RUN_MODE	    =0x00000002;
+const int RUN_LOG_IS_OPEN   =0x00000004;
+const int RUN_DEBUG	    =0x00000008;
+const int RUN_SIGTERM	    =0x00000010;
+const int RUN_SAVE_DATA	    =0x00000020;
+const int RUN_SEND_PINGS    =0x00000040;
+const int RUN_NOSEND	    =0x00000080;
+const int RUN_QUITTING	    =0x00000100;
+const int RUN_TERMINATING   =0x00000200;
+const int RUN_NOSLEEP	    =0x00000400;
+const int RUN_LIVE	    =0x00000800;
+#endif
 
 class SignalHandler : public ACE_Event_Handler
 {
@@ -59,6 +74,7 @@ private:
 	SignalHandler *signalhandler;
 	IrcSvcHandler *ircsvchandler;
 public:
+	int runflags;
 	int high_water_mark;
 	int low_water_mark;
         operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
