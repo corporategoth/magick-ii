@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.87  2000/06/21 09:00:06  prez
+** Fixed bug in mFile
+**
 ** Revision 1.86  2000/06/18 12:49:27  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -1110,7 +1113,9 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		    Trace::TurnSet((threadtype_enum) i, makehex(levels[0U]));
 		    output.Format("%s SET: Trace level set to %#06x.",
 			Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) i));
+		    { MLOCK(("ThreadMessageQueue"));
 		    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) i, output));
+		    }
 		}
 	    }
 	    else
@@ -1118,7 +1123,9 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		Trace::TurnSet(type, makehex(levels[0U]));
 		output.Format("%s SET: Trace level set to %#06x.",
 		    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+		{ MLOCK(("ThreadMessageQueue"));
 		ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+		}
 	    }
 	}
 	else
@@ -1142,7 +1149,9 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 				Trace::TurnUp((threadtype_enum) k, Trace::levelname[j].level);
 				output.Format("%s SET: Trace level set to %#06x.",
 				    Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+				{ MLOCK(("ThreadMessageQueue"));
 				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+				}
 			    }
 			}
 			else
@@ -1155,7 +1164,9 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 				Trace::TurnUp(type, Trace::levelname[j].level);
 				output.Format("%s SET: Trace level set to %#06x.",
 				    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+				{ MLOCK(("ThreadMessageQueue"));
 				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+				}
 			}
 			break;
 		    }
@@ -1181,7 +1192,9 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 			    Trace::TurnUp((threadtype_enum) k, Trace::levelname[j].level);
 			    output.Format("%s UP: Trace level set to %#06x.",
 				Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+			    { MLOCK(("ThreadMessageQueue"));
 			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+			    }
 			}
 		    }
 		    else
@@ -1189,7 +1202,9 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 			Trace::TurnUp(type, Trace::levelname[j].level);
 			output.Format("%s UP: Trace level set to %#06x.",
 			    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+			{ MLOCK(("ThreadMessageQueue"));
 			ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+			}
 		    }
 		    break;
 		}
@@ -1214,7 +1229,9 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 			    Trace::TurnDown((threadtype_enum) k, Trace::levelname[j].level);
 			    output.Format("%s DOWN: Trace level set to %#06x.",
 				Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+			    { MLOCK(("ThreadMessageQueue"));
 			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+			    }
 			}
 		    }
 		    else
@@ -1222,7 +1239,9 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 			Trace::TurnDown(type, Trace::levelname[j].level);
 			output.Format("%s DOWN: Trace level set to %#06x.",
 			    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+			{ MLOCK(("ThreadMessageQueue"));
 			ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+			}
 		    }
 		    break;
 		}

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.126  2000/06/21 09:00:05  prez
+** Fixed bug in mFile
+**
 ** Revision 1.125  2000/06/18 13:31:47  prez
 ** Fixed the casings, now ALL locks should set 'dynamic' values to the
 ** same case (which means locks will match eachother, yippee!)
@@ -708,7 +711,6 @@ int mBaseTask::message_i(const mstring& message)
 	    // Execute if we DONT (or havnt) trigger ignore
 	    if (!Parent->nickserv.live[source.LowerCase()].FloodTrigger())
 	    {
-
 		// Find out if the target nick is one of the services 'clones'
 		// Pass the message to them if so.
 		// before even that, check if it's script overriden via
@@ -738,6 +740,7 @@ int mBaseTask::message_i(const mstring& message)
 
 		else	// PRIVMSG or NOTICE to non-service
 		    Parent->server.execute(data);
+
 	    }
 	    else if (Parent->operserv.Log_Ignore())
 	    {
@@ -752,7 +755,7 @@ int mBaseTask::message_i(const mstring& message)
     else	// Non PRIVMSG and NOTICE
 	Parent->server.execute(data);
 
-    MLOCK(("MessageQueue"));
+    {MLOCK(("MessageQueue"));
     if (thr_count() > 1)
     {
 	CP(("thr_count = %d, message queue = %d, lwm = %d, hwm = %d",
@@ -775,7 +778,7 @@ int mBaseTask::message_i(const mstring& message)
 	message_queue_.low_water_mark(message_queue_.high_water_mark());
 	Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
 	RET(-1);
-    }
+    }}
     FLUSH();
     RET(0);
 }

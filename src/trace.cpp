@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2000/06/21 09:00:06  prez
+** Fixed bug in mFile
+**
 ** Revision 1.93  2000/05/20 15:17:00  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -274,21 +277,34 @@ mstring ThreadID::logname()
     name << ".log";
     return name;
 }
-                                
+
+// ONLY trace function with trace codes, so people
+// dont wonder why the ThreadMessageQueue and mFile
+// locks are being set/removed.                                
 void ThreadID::Flush()
 {
     list<pair<threadtype_enum, mstring> >::iterator iter, iter2;
-    for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end();)
-	if (iter->first == t_internaltype)
-	{
-	    iter2=iter;
-	    iter2++;
-	    messages.push_front(iter->second);
-	    ThreadMessageQueue.erase(iter);
-	    iter = iter2;
-	}
-	else
-	    iter++;
+    { WLOCK(("ThreadMessageQueue"));
+    iter = ThreadMessageQueue.end();
+    if (iter != ThreadMessageQueue.begin())
+    {
+	iter--;
+	do {
+	    if (iter->first == t_internaltype)
+	    {
+		iter2=iter;
+		iter2++;
+		messages.push_front(iter->second);
+		ThreadMessageQueue.erase(iter);
+		if (iter2 != ThreadMessageQueue.begin())
+		    iter2--;
+		iter = iter2;
+	    }
+	    else
+		iter--;
+	} while (iter != ThreadMessageQueue.begin());
+    }}
+    COM(("Trace transaction completed ..."));
     if (!messages.size())
 	return;
 

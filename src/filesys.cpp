@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/06/21 09:00:05  prez
+** Fixed bug in mFile
+**
 ** Revision 1.35  2000/06/18 12:49:27  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -165,10 +168,13 @@ static const char *ident = "@(#)$Id$";
 queue<unsigned long> DccMap::active;
 map<unsigned long, DccXfer *> DccMap::xfers;
 
-mFile::mFile(FILE *in)
+mFile::mFile(mstring name, FILE *in)
 {
-    FT("mFile::mFile", ("(FILE *) in"));
+    FT("mFile::mFile", (name, "(FILE *) in"));
+    MLOCK(("mFile", name));
     fd = in;
+    if (fd != NULL)
+	i_name = name;
 }
 
 mFile::mFile(mstring name, mstring mode)
@@ -176,12 +182,6 @@ mFile::mFile(mstring name, mstring mode)
     FT("mFile::mFile", (name, mode));
     
     MLOCK(("mFile", name));
-    i_name = "";
-    if (fd != NULL)
-    {
-	ACE_OS::fclose(fd);
-	fd = NULL;
-    }
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
 	Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
@@ -195,13 +195,13 @@ bool mFile::Open(mstring name, mstring mode)
 {
     FT("mFile::Open", (name, mode));
 
-    MLOCK(("mFile", name));
     i_name = "";
     if (fd != NULL)
     {
 	ACE_OS::fclose(fd);
 	fd = NULL;
     }
+    MLOCK(("mFile", name));
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
 	Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),

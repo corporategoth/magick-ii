@@ -25,6 +25,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2000/06/21 09:00:05  prez
+** Fixed bug in mFile
+**
 ** Revision 1.22  2000/06/18 12:49:26  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -124,7 +127,7 @@ class mFile
     mstring i_name;
 public:
     mFile() { fd = NULL; }
-    mFile(FILE *in);
+    mFile(mstring name, FILE *in);
     mFile(mstring name, mstring mode = "r");
     ~mFile() { Close(); }
     mstring Name()		{ return i_name; }
