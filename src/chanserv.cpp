@@ -950,9 +950,9 @@ void Chan_Stored_t::Join(mstring nick)
 
     if (Parent->chanserv.IsLive(i_Name))
     {
-	if (Access_value(nick) >= Access_Level_value("AUTOOP"))
+	if (GetAccess(nick, "AUTOOP"))
 	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+o " + nick);
-	else if (Access_value(nick) >= Access_Level_value("AUTOVOICE"))
+	else if (GetAccess(nick, "AUTOVOICE"))
 	    Parent->chanserv.live[i_Name.LowerCase()].SendMode("+v " + nick);
     }
 
@@ -1063,8 +1063,9 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    if (add)
 	    {
 		if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Access_Level_value("AUTODEOP") ||
-			(Access_value(mode.ExtractWord(fwdargs, ": ")) < Access_Level_value("CMDOP") &&
-			Secureops()))		
+			(!(GetAccess(mode.ExtractWord(fwdargs, ": "), "CMDOP") ||
+			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOOP")) &&
+			Secureops()))
 		send_off += "o";
 		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
 	    }
@@ -1083,7 +1084,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    if (add)
 	    {
 		if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Access_Level_value("AUTODEOP") ||
-			(Access_value(mode.ExtractWord(fwdargs, ": ")) < Access_Level_value("CMDVOICE") &&
+			(!(GetAccess(mode.ExtractWord(fwdargs, ": "), "CMDVOICE") ||
+			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOVOICE")) &&
 			Secureops()))
 		send_off += "v";
 		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
@@ -2305,6 +2307,7 @@ bool Chan_Stored_t::Access_Level_change(mstring entry, long value, mstring nick)
 {
     FT("Chan_Stored_t::Access_Level_change", (entry, value, nick));
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access_Level"));
     if (Access_Level_find(entry))
     {
 	i_Access.erase(Access_Level);
@@ -2324,13 +2327,14 @@ bool Chan_Stored_t::Access_Level_find(mstring entry)
 {
     FT("Chan_Stored_t::Access_Level_find", (entry));
 
-//  entlist_val_ui<long> iter = i_Access_Level.end();
+    //  entlist_val_ui<long> iter = i_Access_Level.end();
     set<entlist_val_t<long> >::iterator iter = i_Access_Level.end();
     if (!i_Access_Level.empty())
 	for (iter=i_Access_Level.begin(); iter!=i_Access_Level.end(); iter++)
 	    if (iter->Entry().LowerCase() == entry.LowerCase())
 		break;
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access_Level"));
     if (iter != i_Access_Level.end())
     {
 	Access_Level = iter;
@@ -2392,6 +2396,7 @@ bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick, mDate
 	    entry.Prepend("*!");
     }
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     if (!Access_find(entry))
     {
 	entlist_val_t<long> tmp(entry, value, nick, modtime);
@@ -2410,6 +2415,7 @@ bool Chan_Stored_t::Access_erase()
 {
     NFT("Chan_Stored_t::Access_erase");
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     if (Access != i_Access.end())
     {
 	i_Access.erase(Access);
@@ -2461,6 +2467,7 @@ bool Chan_Stored_t::Access_find(mstring entry, bool livelook)
 	}
     }
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     if (iter != i_Access.end())
     {
 	Access = iter;
@@ -2556,6 +2563,7 @@ bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick, mDa
 	    entry.Prepend("*!");
     }
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (!Akick_find(entry))
     {
 	entlist_val_t<mstring> tmp(entry, value, nick, modtime);
@@ -2579,6 +2587,7 @@ bool Chan_Stored_t::Akick_erase()
 {
     NFT("Chan_Stored_t::Akick_erase");
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (Akick != i_Akick.end())
     {
 	i_Akick.erase(Akick);
@@ -2630,6 +2639,7 @@ bool Chan_Stored_t::Akick_find(mstring entry, bool livelook)
 	}
     }
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (iter != i_Akick.end())
     {
 	Akick = iter;
@@ -2663,6 +2673,7 @@ bool Chan_Stored_t::Greet_insert(mstring entry, mstring nick, mDateTime modtime)
 {
     FT("Chan_Stored_t::Greet_insert", (entry, nick, modtime));
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
     if (!Greet_find(entry))
     {
 	entlist_t tmp(entry, nick, modtime);
@@ -2681,6 +2692,7 @@ bool Chan_Stored_t::Greet_erase()
 {
     NFT("Chan_Stored_t::Greet_erase");
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
     if (Greet != i_Greet.end())
     {
 	i_Greet.erase(Greet);
@@ -2705,6 +2717,7 @@ bool Chan_Stored_t::Greet_find(mstring nick)
 	    if (nick.LowerCase() == iter->Last_Modifier().LowerCase())
 		break;
 
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
     if (iter != i_Greet.end())
     {
 	Greet = iter;
@@ -2890,9 +2903,9 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LEV* RESET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Reset);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV LIST", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
+	    "LEV* LIST", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV VIEW", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
+	    "LEV* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "ACC* ADD", Parent->commserv.REGD_Name(), ChanServ::do_access_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -4542,22 +4555,25 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
     mstring output;
     if (cstored->GetAccess(source, "SET"))
     {
-	output.Format("%30s  %l", "Title", "Level");
+	output.Format("%30s  %s", "Title", "Level");
 	::send(mynick, source, output);
     }
+    long myaccess = cstored->GetAccess(source);
+    bool haveset = cstored->GetAccess(source, "SET");
+
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access_Level"));
     for (cstored->Access_Level = cstored->Access_Level_begin();
 		    cstored->Access_Level != cstored->Access_Level_end();
 		    cstored->Access_Level++)
     {
-	if (cstored->GetAccess(source, "SET"))
+	if (haveset)
 	{
 	    mstring output;
 	    output.Format("%30s  %l", cstored->Access_Level->Entry().c_str(),
 					cstored->Access_Level->Value());
 	    ::send(mynick, source, output);
 	}
-	else if(cstored->Access_Level->Value() >= cstored->GetAccess(source))
+	else if(cstored->Access_Level->Value() >= myaccess)
 	{
 	    ::send(mynick, source, "You have " + cstored->Access_Level->Entry() +
 					    " access.");
@@ -4737,7 +4753,7 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
     int i;
     for (i=1, cstored->Access = cstored->Access_begin();
-	cstored->Access == cstored->Access_end(); cstored->Access++, i++)
+	cstored->Access != cstored->Access_end(); cstored->Access++, i++)
     {
 	::send(mynick, source, mstring(itoa(i)) + ". " + cstored->Access->Entry() +
 				    "  " +  cstored->Access->Value());
