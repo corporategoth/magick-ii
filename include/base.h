@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2001/04/09 07:52:22  prez
+** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
+**
 ** Revision 1.87  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -203,7 +206,7 @@ class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class mBase;
 
-    mstring PreParse(const mstring& message) const;
+    void PreParse(mstring& message) const;
 protected:
     ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
     size_t thread_count;

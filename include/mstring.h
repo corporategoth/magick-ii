@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2001/04/09 07:52:22  prez
+** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
+**
 ** Revision 1.72  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -428,7 +431,7 @@ public:
     void Truncate(const size_t pos, const bool right = true)
 	{
 	    if (right)
-		erase(right);
+		erase(pos);
 	    else
 		erase(0, pos);
 	}

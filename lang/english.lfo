@@ -270,6 +270,7 @@ LOCKED_BIN       =System lock values do not match!  Binary recompile required!
 GENERIC          =Exception - %s:%s:%s:%s - %s
 GENERIC2         =Exception - %s:%s:%s:%s - %s/%d
 UNHANDLED        =Unhandled Exception: %s.
+UNKNOWN          =Unhandled Exception: no information available.
 DCC_REMOVED      =Corrupt DCC #%d removed!
 NICK_S_REMOVED   =Corrupt stored nickname %s removed!
 NICK_L_REMOVED   =Corrupt live nickname %s removed!

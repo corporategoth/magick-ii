@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.152  2001/04/09 07:52:22  prez
+** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
+**
 ** Revision 1.151  2001/03/27 07:04:31  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -1045,6 +1048,9 @@ int EventTask::svc(void)
 	unsigned int i;
 	vector<mstring> chunked;
 
+    try
+    {
+
 	// This is mainly used for 'only do this if users have had
 	// enough time to rectify the situation since sync' ...
 	{ RLOCK(("IrcSvcHandler"));
@@ -1060,6 +1066,7 @@ int EventTask::svc(void)
 	    CP(("Starting EXPIRATION check ..."));
 
 	    // akills
+	    //try
 	    {
 		vector<mstring> expired_akills;
 		MLOCK(("OperServ","Akill"));
@@ -1100,8 +1107,12 @@ int EventTask::svc(void)
 		    }
 		}
 	    }
+	    //catch(...)
+	    //{
+	    //}
 
 	    // nicknames
+	    try
 	    {
 		vector<mstring> expired_nicks;
 		{ RLOCK2(("NickServ", "stored"));
@@ -1132,20 +1143,46 @@ int EventTask::svc(void)
 		WLOCK(("NickServ", "stored"));
 		for (i=0; i<expired_nicks.size(); i++)
 		{
-		    if (!Parent->nickserv.GetStored(expired_nicks[i]).Name().empty())
+		    if (Parent->nickserv.IsStored(expired_nicks[i]))
 		    {
-			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
-			    Parent->nickserv.GetStored(expired_nicks[i]).Name().c_str(),
-			    ((!Parent->nickserv.GetStored(expired_nicks[i]).Host().empty()) ?
-				Parent->nickserv.GetStored(expired_nicks[i]).Host().c_str() :
-				Parent->nickserv.GetStored(expired_nicks[i]).Name().c_str())));
+			RLOCK2(("NickServ", "stored", expired_nicks[i]));
+			Nick_Stored_t &exp = Parent->nickserv.GetStored(expired_nicks[i]);
+			if (!exp.Name().empty())
+			{
+			    LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
+				exp.Name().c_str(), ((!exp.Host().empty()) ?
+				    exp.Host().c_str() : exp.Name().c_str())));
+			}
+			exp.Drop();
+			Parent->nickserv.RemStored(expired_nicks[i]);
 		    }
-		    Parent->nickserv.GetStored(expired_nicks[i]).Drop();
-		    Parent->nickserv.RemStored(expired_nicks[i]);
+		}
+	    }
+	    catch (E_NickServ_Stored &e)
+	    {
+		switch(e.where())
+		{
+		    case E_NickServ_Stored::W_Get:
+			switch (e.type())
+			{
+			case E_NickServ_Stored::T_Invalid:
+			case E_NickServ_Stored::T_Blank:
+			    if (strlen(e.what()))
+			    {
+				Parent->nickserv.RemStored(e.what());
+			    }
+			    break;
+			default:
+			    break;
+			}
+			break;
+		    default:
+			break;
 		}
 	    }
 
 	    // channels
+	    try
 	    {
 		vector<mstring> expired_chans;
 		{ RLOCK2(("ChanServ", "stored"));
@@ -1163,17 +1200,41 @@ int EventTask::svc(void)
 		WLOCK(("ChanServ", "stored"));
 		for (i=0; i<expired_chans.size(); i++)
 		{
-		    if (!Parent->chanserv.GetStored(expired_chans[i]).Name().empty())
+		    RLOCK(("ChanServ", "stored", expired_chans[i]));
+		    Chan_Stored_t &exp = Parent->chanserv.GetStored(expired_chans[i]);
+		    if (!exp.Name().empty())
 		    {
 			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
-			    Parent->chanserv.GetStored(expired_chans[i]).Name().c_str(),
-			    Parent->chanserv.GetStored(expired_chans[i]).Founder().c_str()));
+			    exp.Name().c_str(), exp.Founder().c_str()));
 		    }
 		    Parent->chanserv.RemStored(expired_chans[i]);
 		}
 	    }
+	    catch (E_ChanServ_Stored &e)
+	    {
+		switch(e.where())
+		{
+		    case E_ChanServ_Stored::W_Get:
+			switch (e.type())
+			{
+			case E_ChanServ_Stored::T_Invalid:
+			case E_ChanServ_Stored::T_Blank:
+			    if (strlen(e.what()))
+			    {
+				Parent->chanserv.RemStored(e.what());
+			    }
+			    break;
+			default:
+			    break;
+			}
+			break;
+		    default:
+			break;
+		}
+	    }
 
 	    // news articles
+	    try
 	    {
 		map<mstring, vector<size_t> > expired_news;
 		map<mstring, vector<size_t> >::iterator iter;
@@ -1217,6 +1278,9 @@ int EventTask::svc(void)
 			Parent->memoserv.RemChannel(iter->first);
 		    }
 		}}
+	    }
+	    catch (E_MemoServ_Channel &e)
+	    {
 	    }
 
 	    WLOCK(("Events", "last_expire"));
@@ -1512,7 +1576,199 @@ int EventTask::svc(void)
 	    last_ping = mDateTime::CurrentDateTime();
 	    MCE(last_ping);
 	}}}
-	
+
+    }
+    catch (E_NickServ_Stored &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Stored::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Stored::T_Invalid:
+		case E_NickServ_Stored::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->nickserv.RemStored(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_NickServ_Live &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Live::T_Invalid:
+		case E_NickServ_Live::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->nickserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_NickServ_Recovered &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Recovered::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Recovered::T_Invalid:
+		case E_NickServ_Recovered::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->nickserv.RemRecovered(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_ChanServ_Stored &e)
+    {
+	switch(e.where())
+	{
+	    case E_ChanServ_Stored::W_Get:
+		switch (e.type())
+		{
+		case E_ChanServ_Stored::T_Invalid:
+		case E_ChanServ_Stored::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->chanserv.RemStored(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_ChanServ_Live &e)
+    {
+	switch(e.where())
+	{
+	    case E_ChanServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_ChanServ_Live::T_Invalid:
+		case E_ChanServ_Live::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->chanserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_CommServ_List &e)
+    {
+	switch(e.where())
+	{
+	    case E_CommServ_List::W_Get:
+		switch (e.type())
+		{
+		case E_CommServ_List::T_Invalid:
+		case E_CommServ_List::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->commserv.RemList(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_Server_List &e)
+    {
+	switch(e.where())
+	{
+	    case E_Server_List::W_Get:
+		switch (e.type())
+		{
+		case E_Server_List::T_Invalid:
+		case E_Server_List::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->server.RemList(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_MemoServ_Nick &e)
+    {
+    }
+    catch (E_MemoServ_Channel &e)
+    {
+    }
+    catch (E_DccMap_Xfers &e)
+    {
+	switch(e.where())
+	{
+	    case E_DccMap_Xfers::W_Get:
+		switch (e.type())
+		{
+		case E_DccMap_Xfers::T_Invalid:
+		case E_DccMap_Xfers::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			DccMap::RemXfers(atoi(e.what()));
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (exception &e)
+    {
+	LOG((LM_CRITICAL, Parent->getLogMessage("EXCEPTION/UNHANDLED"), e.what()));
+    }
+    catch (...)
+    {
+	LOG((LM_CRITICAL, Parent->getLogMessage("EXCEPTIONS/UNKNOWN")));
+    }
+
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);
     }

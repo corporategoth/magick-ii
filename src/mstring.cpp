@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2001/04/09 07:52:22  prez
+** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
+**
 ** Revision 1.101  2001/04/08 18:53:10  prez
 ** It now all compiles and RUNS with -fno-default-inline OFF.
 **
@@ -599,7 +602,7 @@ void mstring::insert(const size_t pos, const char *in, const size_t length)
     if (pos > 0)
     {
 	memcpy(tmp, i_str, pos);
-	i += pos+1;
+	i += pos;
     }
     memcpy(&tmp[i], in, length);
     i += length;

@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.155  2001/04/09 07:52:22  prez
+** Fixed /nickserv.  Fixed cordump in nick expiry.  Fixed slight bugs in mstring.
+**
 ** Revision 1.154  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -491,7 +494,8 @@ int mBaseTask::message_i(const mstring& message)
     // anything that is not a user PRIVMSG/NOTICE goes directly
     // to the server routine anyway.
 
-    mstring data(PreParse(message));
+    mstring data(message);
+    PreParse(data);
 
     mstring source, type, target;
     if (data.empty())
@@ -510,8 +514,8 @@ int mBaseTask::message_i(const mstring& message)
     {
 	if (target.Contains("@"))
 	{
-	    target = target.Before("@");
-	    data = data.Before(" ", 2) + " " + target + " " + data.After(" ", 3);
+	    target.Truncate(target.Find("@"));
+	    data.replace(data.find(" ", 2)+1, data.find(" ", 3)-1, target);
 	    CP(("Target changed, new data: %s", data.c_str()));
 	}
 
@@ -777,30 +781,25 @@ int mBaseTask::message_i(const mstring& message)
     RET(0);
 }
 
-mstring mBaseTask::PreParse(const mstring& message) const
+void mBaseTask::PreParse(mstring& data) const
 {
-    FT("mBaseTask::PreParse", (message));
-    mstring data(message);
+    FT("mBaseTask::PreParse", (data));
 
     if (Parent->server.proto.Tokens())
     {
-	if (((message[0u] == '@' && Parent->server.proto.Numeric()) ||
-	    message[0u] == ':') &&
-	   !Parent->server.proto.GetToken(message.ExtractWord(2, " ")).empty())
+	if (((data[0u] == '@' && Parent->server.proto.Numeric()) ||
+	    data[0u] == ':') &&
+	   !Parent->server.proto.GetToken(data.ExtractWord(2, " ")).empty())
 	{
-	    data.erase();
-	    data << message.ExtractWord(1, " ") << " " <<
-		Parent->server.proto.GetToken(message.ExtractWord(2, " ")) <<
-		" " << message.After(" ", 2);
+	    data.replace(data.find(" ", 1)+1, data.find(" ", 2)-1, 
+		Parent->server.proto.GetToken(data.ExtractWord(2, " ")));
 	}
-	else if (!Parent->server.proto.GetToken(message.ExtractWord(1, " ")).empty())
+	else if (!Parent->server.proto.GetToken(data.ExtractWord(1, " ")).empty())
 	{
-	    data.erase();
-	    data << Parent->server.proto.GetToken(message.ExtractWord(1, " ")) <<
-		" " << message.After(" ", 1);
+	    data.replace(0, data.find(" ", 1)-1, 
+		Parent->server.proto.GetToken(data.ExtractWord(1, " ")));
 	}
     }
-    RET(data);
 }
 
 void mBaseTask::i_shutdown()
