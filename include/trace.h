@@ -23,6 +23,10 @@ using namespace std;
 #include "string.h"
 #include "variant.h"
 
+// NOTE: The following classes cannot be traced:
+// mstring
+// mVariant and mVarArray (AOC)
+// wxOutputStream
 
 // FunctionTrace -- FT("...", ());
 #define FT(x,y) T_Functions __ft(x,AOC(y))
