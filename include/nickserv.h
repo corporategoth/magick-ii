@@ -19,6 +19,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/02/21 03:27:38  prez
+** Updated language files ...
+**
 ** Revision 1.25  2000/02/15 10:37:47  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
@@ -472,6 +475,7 @@ public:
     static void do_Ghost(mstring mynick, mstring source, mstring params);
     static void do_Recover(mstring mynick, mstring source, mstring params);
     static void do_List(mstring mynick, mstring source, mstring params);
+    static void do_Send(mstring mynick, mstring source, mstring params);
     static void do_Suspend(mstring mynick, mstring source, mstring params);
     static void do_UnSuspend(mstring mynick, mstring source, mstring params);
     static void do_Forbid(mstring mynick, mstring source, mstring params);

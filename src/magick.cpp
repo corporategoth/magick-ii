@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.195  2000/02/21 03:27:39  prez
+** Updated language files ...
+**
 ** Revision 1.194  2000/02/17 12:55:05  ungod
 ** still working on borlandization
 **
@@ -529,6 +532,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
     FT("Magick::getHelp", (nick, name));
 
     vector<mstring> helptext;
+    bool found = false;
 
     // Load requested language if its NOT loaded.
     // and then look for the Help of THAT type.
@@ -551,12 +555,14 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 
 	if (fconf.HasGroup(name.UpperCase()))
 	{
+	    found = true;
 	    fconf.SetPath(name.UpperCase());
 	    bContEntries=fconf.GetFirstEntry(entryname,dummy);
 	    while(bContEntries)
 	    {
 		fconf.Read(entryname.UpperCase(), &tempstr, "");
 		sendline = true;
+		yescom = nocom = text = "";
 		yescom = tempstr.ExtractWord(1, ":");
 		nocom  = tempstr.ExtractWord(2, ":");
 		text   = tempstr.After(":", 2);
@@ -566,14 +572,14 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		    for (i=1; sendline && i<=yescom.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(yescom.ExtractWord(i, " ")) &&
-			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
+			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			    sendline = false;
 		    }
 		if (nocom != "")
 		    for (i=1; sendline && i<=nocom.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(nocom.ExtractWord(i, " ")) &&
-			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
+			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			    sendline = false;
 		    }
 		if (sendline)
@@ -585,7 +591,9 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	wxConfigBase::CreateOnDemand(oldCOD);
     }
 
-    if (!helptext.size())
+    // we use a found veriable because we MAY have found
+    // it, just the access to read it may have been changed.
+    if (!found)
     {
 	CP(("Trying DEFAULT language ..."));
 	WLOCK(("Magick","LoadHelp"));
@@ -609,6 +617,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	    {
 		fconf.Read(entryname.UpperCase(), &tempstr, "");
 		sendline = true;
+		yescom = nocom = text = "";
 		yescom = tempstr.ExtractWord(1, ":");
 		nocom  = tempstr.ExtractWord(2, ":");
 		text   = tempstr.After(":", 2);
@@ -618,14 +627,14 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		    for (i=1; sendline && i<=yescom.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(yescom.ExtractWord(i, " ")) &&
-			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
+			    !Parent->commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			    sendline = false;
 		    }
 		if (nocom != "")
 		    for (i=1; sendline && i<=nocom.WordCount(" "); i++)
 		    {
 			if (Parent->commserv.IsList(nocom.ExtractWord(i, " ")) &&
-			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsIn(nick))
+			    Parent->commserv.list[nocom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
 			    sendline = false;
 		    }
 		if (sendline)

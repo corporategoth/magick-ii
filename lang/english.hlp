@@ -42,56 +42,56 @@
 ;
 
 [TRANSLATED]
-01=Preston A. Elder <prez@magick.tm>
+01 =Preston A. Elder <prez@magick.tm>
 
 [NICKSERV]
-01=::NickServ is a service that allows you to register your
-02=::nickname so that it may not be taken by anyone else.
-03=::
-04=::NickServ allows you to use the following commands:
-05=::    HELP         REGISTER     LINK         IDENTIFY
-06=::    INFO         GHOST        RECOVER      LIST
-07=REGD::    DROP         UNLINK       HOST         SLAVES
-08=REGD::    ACCESS       IGNORE       SET
-09=SOP::And as a Services Operator, the following commands:
-10=SOP::    GETPASS      FORBID       LOCK         UNLOCK
-11=SOP::    SUSPEND      UNSUSPEND
-12=::
-13=::You may request help on the syntax and functionalty
-14=::of any and all of the above commands by specifying
-15=::the command name after the HELP request.
+01 =::NickServ is a service that allows you to register your
+02 =::nickname so that it may not be taken by anyone else.
+03 =::
+04 =::NickServ allows you to use the following commands:
+05 =::    HELP         REGISTER     LINK         IDENTIFY
+06 =::    INFO         GHOST        RECOVER      LIST
+07 =REGD::    DROP         UNLINK       HOST         SLAVES
+08 =REGD::    ACCESS       IGNORE       SET          SEND
+09 =SOP::And as a Services Operator, the following commands:
+10 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
+11 =SOP::    SUSPEND      UNSUSPEND
+12 =::
+13 =::You may request help on the syntax and functionalty
+14 =::of any and all of the above commands by specifying
+15 =::the command name after the HELP request.
 
 [NICKSERV/REGISTER]
-01=::REGISTER <password>
-02=::
-03=::This will make your nickname recognized with NickServ.
-04=::By doing so, NickServ will reserve your nickname for
-05=::just you, and will kill or rename any user who tries to
-06=::use it and does not come from your regular address (as
-07=::long as Kill Protection is set).  Once registered, you
-08=::can use the IDENTIFY command to be recognized from
-09=::somewhere other than your regular address, or if you have
-10=::more than one address, you can add it to the ACCESS list.
-11=::
-12=::Nickname registration is required to be added to any
-13=::channel access list, or to send a memo to another user.
-14=::Please choose a password you will remember, but that is
-15=::suitably complex when registering your nickname.  If
-16=::someone else gets your nickname, they can then exercise
-17=::total control over it, including forbidding you access
-18=::to it.  If you have lost your password, you can contact
-19=::a Services Operator to retrieve it for you.
+01 =::REGISTER <password>
+02 =::
+03 =::This will make your nickname recognized with NickServ.
+04 =::By doing so, NickServ will reserve your nickname for
+05 =::just you, and will kill or rename any user who tries to
+06 =::use it and does not come from your regular address (as
+07 =::long as Kill Protection is set).  Once registered, you
+08 =::can use the IDENTIFY command to be recognized from
+09 =::somewhere other than your regular address, or if you have
+10 =::more than one address, you can add it to the ACCESS list.
+11 =::
+12 =::Nickname registration is required to be added to any
+13 =::channel access list, or to send a memo to another user.
+14 =::Please choose a password you will remember, but that is
+15 =::suitably complex when registering your nickname.  If
+16 =::someone else gets your nickname, they can then exercise
+17 =::total control over it, including forbidding you access
+18 =::to it.  If you have lost your password, you can contact
+19 =::a Services Operator to retrieve it for you.
 
 [NICKSERV/DROP]
-01=REGD::DROP [nickname]
-02=REGD::
-03=REGD::This will de-register your nickname.  Doing so will
-04=REGD::remove you from all channel access lists you are on,
-05=REGD::force all channels you are founder of to be given to
-06=REGD::the co-founder or be dropped if there is none, remove
-07=REGD::all your memos (read or unread), and if done on a host
-08=REGD::nickname, drop all slaves of it.
-09=REGD::
+01 =REGD::DROP [nickname]
+02 =REGD::
+03 =REGD::This will de-register your nickname.  Doing so will
+04 =REGD::remove you from all channel access lists you are on,
+05 =REGD::force all channels you are founder of to be given to
+06 =REGD::the co-founder or be dropped if there is none, remove
+07 =REGD::all your memos (read or unread), and if done on a host
+08 =REGD::nickname, drop all slaves of it.
+09 =REGD::
 10a=REGD:SOP:If you specify a nickname after the drop command, and
 11a=REGD:SOP:the nickname is linked to you, it will drop it, if not,
 12a=REGD:SOP:it will drop your current nickname.
@@ -100,316 +100,517 @@
 12b=SOP::Otherwise it will drop your current nickname.
 
 [NICKSERV/LINK]
-01=::LINK <nickname> <password>
-02=::
-03=::This will link your current nickname to another, making
-04=::it your host nickname.  From that point, both nicknames
-05=::will be considered equivliant, they will share access
-06=::lists (both nickname and channel), if one is added to a
-07=::committee they will all be members of it, they will
-08=::share the same memo list, etc.
-09=::
-10=::IMPORTANT: IF YOUR CURRENT NICKNAME IS REGISTERED,
-11=::IT WILL BE DROPPED BEFORE BEING LINKED TO YOUR HOST.
+01 =::LINK <nickname> <password>
+02 =::
+03 =::This will link your current nickname to another, making
+04 =::it your host nickname.  From that point, both nicknames
+05 =::will be considered equivliant, they will share access
+06 =::lists (both nickname and channel), if one is added to a
+07 =::committee they will all be members of it, they will
+08 =::share the same memo list, etc.
+09 =::
+10 =::IMPORTANT: IF YOUR CURRENT NICKNAME IS REGISTERED,
+11 =::IT WILL BE DROPPED BEFORE BEING LINKED TO YOUR HOST.
 
 [NICKSERV/UNLINK]
-01=REGD::UNLINK [nick]
-02=REGD::
-03=REGD::This will unlink your nick from your host nick, first
-04=REGD::duplicating all settings, the access and ignore lists.
-05=REGD::Any modifications made to your nickname after this
-06=REGD::command is executed will NOT be reciprocated on the
-07=REGD::host nickname.  You will also be removing yourself
-08=REGD::from all access lists that the host nickname is on.
-09=REGD::
-10=REGD::If a nickname is specified after the unlink command,
-11=REGD::and it is linked to you, it will be unlinked instead.
+01 =REGD::UNLINK [nick]
+02 =REGD::
+03 =REGD::This will unlink your nick from your host nick, first
+04 =REGD::duplicating all settings, the access and ignore lists.
+05 =REGD::Any modifications made to your nickname after this
+06 =REGD::command is executed will NOT be reciprocated on the
+07 =REGD::host nickname.  You will also be removing yourself
+08 =REGD::from all access lists that the host nickname is on.
+09 =REGD::
+10 =REGD::If a nickname is specified after the unlink command,
+11 =REGD::and it is linked to you, it will be unlinked instead.
 
 [NICKSERV/HOST]
-01=REGD::HOST [nickname]
-02=REGD::
-03=REGD::This will change your host nickname to your current
-04=REGD::nickname, or the nickname specified after the host
-05=REGD::command if it is linked to you.  Doing so will not
-06=REGD::change anything regarding your access to channels,
-07=REGD::memos, or committee membership, however you will
-08=REGD::show up as the new host nickname as founder of any
-09=REGD::channels you own, and on all access lists you are on.
+01 =REGD::HOST [nickname]
+02 =REGD::
+03 =REGD::This will change your host nickname to your current
+04 =REGD::nickname, or the nickname specified after the host
+05 =REGD::command if it is linked to you.  Doing so will not
+06 =REGD::change anything regarding your access to channels,
+07 =REGD::memos, or committee membership, however you will
+08 =REGD::show up as the new host nickname as founder of any
+09 =REGD::channels you own, and on all access lists you are on.
 
 [NICKSERV/SLAVES]
 01a=REGD:OPER:SLAVES
 01b=OPER::SLAVES [nick]
-02=REGD::
-03=REGD::This will list out all of your linked nicknames.
-04=OPER::If you specify a nickname, it will list theirs instead.
-05=REGD::
-06=REGD::Slave nicknames are created with the LINK command.
+02 =REGD::
+03 =REGD::This will list out all of your linked nicknames.
+04 =OPER::If you specify a nickname, it will list theirs instead.
+05 =REGD::
+06 =REGD::Slave nicknames are created with the LINK command.
 
 [NICKSERV/IDENTIFY]
-01=::IDENTIFY <password>
-02=::
-03=::This will identify you to your nickname.  This is
-04=::required if you have Kill Protection on, and try to
-05=::use your nickname from a host that is not in your
-06=::access list, or wish to change your password.  It
-07=::is also required to use your nick at all (regardless
-08=::of your access list) if you have Secure on.  It is
-09=::also required if you wish to make use of your access
-10=::on any channels or committees that have Secure on.
-11=::
-12=::The password you specify should be the same as the
-13=::one you set with the REGISTER or SET PASSWORD command.
+01 =::IDENTIFY <password>
+02 =::
+03 =::This will identify you to your nickname.  This is
+04 =::required if you have Kill Protection on, and try to
+05 =::use your nickname from a host that is not in your
+06 =::access list, or wish to change your password.  It
+07 =::is also required to use your nick at all (regardless
+08 =::of your access list) if you have Secure on.  It is
+09 =::also required if you wish to make use of your access
+10 =::on any channels or committees that have Secure on.
+11 =::
+12 =::The password you specify should be the same as the
+13 =::one you set with the REGISTER or SET PASSWORD command.
 
 [NICKSERV/INFO]
-01=::INFO <nickname>
-02=::
-03=::This will give you various information about a given
-04=::nickname.  This includes information such as their
-05=::e-mail address, web address, ICQ UIN, and physical
-06=::description if they have set them, the time they were
-07=::last online and where they came from (If they do not
-08=::have the Private option set on).  It will also tell
-09=::you what options they have set, what committees they
-10=::are on, and wether they have a downloadable picture.
-11=OPER::
-12=OPER::As an oper, you may also see a comment about that
-13=OPER::user, which has been set by a SOP either as a prior
-14=OPER::suspend reason, or manually.  Please be advised that
-15=OPER::normal users CANNOT see this field.
+01 =::INFO <nickname>
+02 =::
+03 =::This will give you various information about a given
+04 =::nickname.  This includes information such as their
+05 =::e-mail address, web address, ICQ UIN, and physical
+06 =::description if they have set them, the time they were
+07 =::last online and where they came from (If they do not
+08 =::have the Private option set on).  It will also tell
+09 =::you what options they have set, what committees they
+10 =::are on, and wether they have a downloadable picture.
+11 =OPER::
+12 =OPER::As an oper, you may also see a comment about that
+13 =OPER::user, which has been set by a SOP either as a prior
+14 =OPER::suspend reason, or manually.  Please be advised that
+15 =OPER::normal users CANNOT see this field.
 
 [NICKSERV/GHOST]
-01=::GHOST <nickname> <password>
-02=::
-03=::This will kill a user (or service) that is holding
-04=::your nickname from the network.  This is used to
-05=::regain your nickname after you have timed out, and
-06=::your nickname has not, or you have failed to identify
-07=::in time, and services have taken your nickname.
-08=::
-09=::The password you specify should be the same as the
-10=::one you set with the REGISTER or SET PASSWORD command.
+01 =::GHOST <nickname> <password>
+02 =::
+03 =::This will kill a user (or service) that is holding
+04 =::your nickname from the network.  This is used to
+05 =::regain your nickname after you have timed out, and
+06 =::your nickname has not, or you have failed to identify
+07 =::in time, and services have taken your nickname.
+08 =::
+09 =::The password you specify should be the same as the
+10 =::one you set with the REGISTER or SET PASSWORD command.
 
 [NICKSERV/RECOVER]
-01=::RECOVER <nickname> <password>
-02=::
-03=::This will kill a user that is using your nickname
-04=::and services will take it themselves.  If you do not
-05=::have Kill Protection on, or your access list happens
-06=::to cover another user aswell as yourself, it is
-07=::possible they could use your nickname without being
-08=::challenged and renamed/killed for doing so.  It is
-09=::recommended you set Secure on if this is the case.
-10=::To get rid of services using your nickname, you must
-11=::use the GHOST command.
-12=::
-13=::The password you specify should be the same as the
-14=::one you set with the REGISTER or SET PASSWORD command.
+01 =::RECOVER <nickname> <password>
+02 =::
+03 =::This will kill a user that is using your nickname
+04 =::and services will take it themselves.  If you do not
+05 =::have Kill Protection on, or your access list happens
+06 =::to cover another user aswell as yourself, it is
+07 =::possible they could use your nickname without being
+08 =::challenged and renamed/killed for doing so.  It is
+09 =::recommended you set Secure on if this is the case.
+10 =::To get rid of services using your nickname, you must
+11 =::use the GHOST command.
+12 =::
+13 =::The password you specify should be the same as the
+14 =::one you set with the REGISTER or SET PASSWORD command.
 
 [NICKSERV/LIST]
-01=::LIST [mask [maximum]]
-02=::
-03=::This will list all registered nicknames that match
-04=::the mask you have specified and their last hosts or
-05=::"ONLINE" up to a default maximum number of entries
-06=::set by the Services Admins.  You override the maximum
-07=::amount of entries displayed up to an absolute maximum
-08=::also specified by the Services Admins.  Users marked
+01 =::LIST [mask [maximum]]
+02 =::
+03 =::This will list all registered nicknames that match
+04 =::the mask you have specified and their last hosts or
+05 =::"ONLINE" up to a default maximum number of entries
+06 =::set by the Services Admins.  You override the maximum
+07 =::amount of entries displayed up to an absolute maximum
+08 =::also specified by the Services Admins.  Users marked
 09a=:OPER:as private will not be displayed in the list.
 09b=OPER::as private will be displayed in the list.
 
+[NICKSERV/LIST]
+01 =REGD::SEND <nickname>
+02 =REGD::
+03 =REGD::If the nickname specified has a picture in their
+04 =REGD::nickserv record, this command will allow you to
+05 =REGD::download it.  Services will start a DCC file
+06 =REGD::transfer with you of that file, named as the
+07 =REGD::users nickname, and the file extension.
+
 [NICKSERV/SUSPEND]
-01=SOP::SUSPEND <nickname> <reason>
-02=SOP::
-03=SOP::This will stop a user from being able to identify to
-04=SOP::their nickname, however it will NOT stop them from
-05=SOP::using it unless they have Secure on.  Because they
-06=SOP::cannot ident, they also cannot drop their nick, or
-07=SOP::change their password.  This is ment to be a short
-08=SOP::term diciplinary measure while a complaint is under
-09=SOP::review against this user, or to caution them rather
-10=SOP::than just dropping or akilling them from the network.
+01 =SOP::SUSPEND <nickname> <reason>
+02 =SOP::
+03 =SOP::This will stop a user from being able to identify to
+04 =SOP::their nickname, however it will NOT stop them from
+05 =SOP::using it unless they have Secure on.  Because they
+06 =SOP::cannot ident, they also cannot drop their nick, or
+07 =SOP::change their password.  This is ment to be a short
+08 =SOP::term diciplinary measure while a complaint is under
+09 =SOP::review against this user, or to caution them rather
+10 =SOP::than just dropping or akilling them from the network.
 
 [NICKSERV/UNSUSPEND]
-01=SOP::UNSUSPEND <nickname>
-02=SOP::
-03=SOP::This will essentially reverse the suspend command,
-04=SOP::allowing the user to use their nickname as normal.
-05=SOP::The suspend reason will however remain as a comment
-06=SOP::on the users nickname record, to remove this you
-07=SOP::must use the SET COMMENT command.
+01 =SOP::UNSUSPEND <nickname>
+02 =SOP::
+03 =SOP::This will essentially reverse the suspend command,
+04 =SOP::allowing the user to use their nickname as normal.
+05 =SOP::The suspend reason will however remain as a comment
+06 =SOP::on the users nickname record, to remove this you
+07 =SOP::must use the SET COMMENT command.
 
 [NICKSERV/FORBID]
-01=SOP::FORBID <nickname>
-02=SOP::
-03=SOP::This will forbid a nickname from being used on the
-04=SOP::network, and will force any user who attempts to use
-05=SOP::it to change their nick or be killed/renamed.
+01 =SOP::FORBID <nickname>
+02 =SOP::
+03 =SOP::This will forbid a nickname from being used on the
+04 =SOP::network, and will force any user who attempts to use
+05 =SOP::it to change their nick or be killed/renamed.
 
 [NICKSERV/GETPASS]
-01=SOP::GETPASS <nickname>
-02=SOP::
-03=SOP::This will retrieve the nickname password for a user.
-04=SOP::Please note that whenever this command is used, a
-05=SOP::global message to all IRCOPS will be broadcast!
-06=SOP:SADMIN:You may not retrieve the password of a Services
-07=SOP:SADMIN:Administrator.
+01 =SOP::GETPASS <nickname>
+02 =SOP::
+03 =SOP::This will retrieve the nickname password for a user.
+04 =SOP::Please note that whenever this command is used, a
+05 =SOP::global message to all IRCOPS will be broadcast!
+06 =SOP:SADMIN:You may not retrieve the password of a Services
+07 =SOP:SADMIN:Administrator.
 
 [NICKSERV/ACCESS]
-01=REGD::Your access list is a method to be able to come in
-02=REGD::from more than one hostmask, without having to
-03=REGD::re-identify yourself every time you log on.  Unless
-04=REGD::you have Secure on, you will be recognized without
-05=REGD::identifying when coming from any of the hosts in your
-06=REGD::access list.
-07=REGD::
-08=REGD::You maintain your access list with these commands:
-09=REGD::    CURRENT      ADD          DEL          LIST
+01 =REGD::Your access list is a method to be able to come in
+02 =REGD::from more than one hostmask, without having to
+03 =REGD::re-identify yourself every time you log on.  Unless
+04 =REGD::you have Secure on, you will be recognized without
+05 =REGD::identifying when coming from any of the hosts in your
+06 =REGD::access list.
+07 =REGD::
+08 =REGD::You maintain your access list with these commands:
+09 =REGD::    CURRENT      ADD          DEL          LIST
 
 [NICKSERV/ACCESS/CURRENT]
-01=REGD::ACCESS CURRENT
-02=REGD::
-03=REGD::This will add your current hostmask (*user@*.host) to
-04=REGD::your access list.  This is just a shortcut to typing
-05=REGD::out the full add command.
+01 =REGD::ACCESS CURRENT
+02 =REGD::
+03 =REGD::This will add your current hostmask (*user@*.host) to
+04 =REGD::your access list.  This is just a shortcut to typing
+05 =REGD::out the full add command.
 
 [NICKSERV/ACCESS/ADD]
-01=REGD::ACCESS ADD <mask>
-02=REGD::
-03=REGD::This will add the hostmask you specify to your access
-04=REGD::list.  You may use wildcards in your hostmask (ie. *
-05=REGD::and ? characters). You must include a '@' character
-06=REGD::in your hostmask, and may not include a '!' character.
-07=REGD::
-08=REGD::A typical entry would be *myident@*.myisp.com
+01 =REGD::ACCESS ADD <mask>
+02 =REGD::
+03 =REGD::This will add the hostmask you specify to your access
+04 =REGD::list.  You may use wildcards in your hostmask (ie. *
+05 =REGD::and ? characters). You must include a '@' character
+06 =REGD::in your hostmask, and may not include a '!' character.
+07 =REGD::
+08 =REGD::A typical entry would be *myident@*.myisp.com
 
 [NICKSERV/ACCESS/DEL]
-01=REGD::ACCESS DEL <mask|NUM>
-02=REGD::
-03=REGD::This will remove a hostmask (or more than one) from
-04=REGD::your access list.  If you specify a number, then it
-05=REGD::will be assumed to be an entry number that corrisponds
-06=REGD::to the numbers printed with the ACCESS LIST command.
-07=REGD::Otherwise it will delete all hostmasks matching the
-08=REGD::mask you specify (which may be multiple entries).
+01 =REGD::ACCESS DEL <mask|NUM>
+02 =REGD::
+03 =REGD::This will remove a hostmask (or more than one) from
+04 =REGD::your access list.  If you specify a number, then it
+05 =REGD::will be assumed to be an entry number that corrisponds
+06 =REGD::to the numbers printed with the ACCESS LIST command.
+07 =REGD::Otherwise it will delete all hostmasks matching the
+08 =REGD::mask you specify (which may be multiple entries).
 
 
 [NICKSERV/ACCESS/LIST]
-01=REGD::ACCESS LIST
-02=REGD::
-03=REGD::This will list out the contents of your access list,
-04=REGD::and give each entry an index number that can be used
-05=REGD::with the DEL command to quickly delete an entry.
+01 =REGD::ACCESS LIST
+02 =REGD::
+03 =REGD::This will list out the contents of your access list,
+04 =REGD::and give each entry an index number that can be used
+05 =REGD::with the DEL command to quickly delete an entry.
 
 [NICKSERV/IGNORE]
-01=REGD::Your ignore list will block any memos that are sent
-02=REGD::you by all nicknames on it.  If you do not wish to
-03=REGD::associate with a person anymore, and they keep sending
-04=REGD::you memos, or you are getting memo bombed, then just
-05=REGD::add the offending nickname to your ignore list.
-06=REGD::
-07=REGD::When used in conjunction with the No Memo option, it
-08=REGD::will reverse the functionality of this list.  It will
-09=REGD::become a list of people to ACCEPT memos from.
-10=REGD::
-11=REGD::You maintain your ignore list with these commands:
-12=REGD::    ADD          DEL          LIST
+01 =REGD::Your ignore list will block any memos that are sent
+02 =REGD::you by all nicknames on it.  If you do not wish to
+03 =REGD::associate with a person anymore, and they keep sending
+04 =REGD::you memos, or you are getting memo bombed, then just
+05 =REGD::add the offending nickname to your ignore list.
+06 =REGD::
+07 =REGD::When used in conjunction with the No Memo option, it
+08 =REGD::will reverse the functionality of this list.  It will
+09 =REGD::become a list of people to ACCEPT memos from.
+10 =REGD::
+11 =REGD::You maintain your ignore list with these commands:
+12 =REGD::    ADD          DEL          LIST
 
 
 [NICKSERV/IGNORE/ADD]
-01=REGD::IGNORE ADD <nickname>
-02=REGD::
-03=REGD::This will add a nickname to your ignore list, and
-04=REGD::you will no longer accept memos from them (or you
-05=REGD::WILL start accepting memos from them if the No Memo
-06=REGD::option is set on).  You may only specify a registered
-07=REGD::nickname.
+01 =REGD::IGNORE ADD <nickname>
+02 =REGD::
+03 =REGD::This will add a nickname to your ignore list, and
+04 =REGD::you will no longer accept memos from them (or you
+05 =REGD::WILL start accepting memos from them if the No Memo
+06 =REGD::option is set on).  You may only specify a registered
+07 =REGD::nickname.
 
 [NICKSERV/IGNORE/DEL]
-01=REGD::IGNORE DEL <nick|NUM>
-02=REGD::
-03=REGD::This will remove a nickname from your memo ignore
-04=REGD::list, abd you will one again accept or deny memos
-05=REGD::from them, depending on your No Memo setting.  If
-06=REGD::a number is specified, it will be assumed to be an
-07=REGD::entry number that corrisponds to the numbers printed
-08=REGD::with the IGNORE LIST command.
+01 =REGD::IGNORE DEL <nick|NUM>
+02 =REGD::
+03 =REGD::This will remove a nickname from your memo ignore
+04 =REGD::list, abd you will one again accept or deny memos
+05 =REGD::from them, depending on your No Memo setting.  If
+06 =REGD::a number is specified, it will be assumed to be an
+07 =REGD::entry number that corrisponds to the numbers printed
+08 =REGD::with the IGNORE LIST command.
 
 
 [NICKSERV/IGNORE/LIST]
-01=REGD::IGNORE LIST
-02=REGD::
-03=REGD::This will list out the contents of your ignore list,
-04=REGD::and give each entry an index number that can be used
-05=REGD::with the DEL command to quickly delete an entry.
+01 =REGD::IGNORE LIST
+02 =REGD::
+03 =REGD::This will list out the contents of your ignore list,
+04 =REGD::and give each entry an index number that can be used
+05 =REGD::with the DEL command to quickly delete an entry.
 
 [NICKSERV/SET]
-01=REGD::NickServ maintains many settings on your nick
-02=REGD::record, ranging from your password, to an e-mail
-03=REGD::address you specify, to options that effect how
-04=REGD::services treat your nickname.  Some of these you
-05=REGD::must identify to set, others being recognized is
-06=REGD::enough (which is the same thing if Secure is set).
-07=REGD::
-08=REGD::You may alter your settings with these commands:
-09=REGD::    PASSWORD     EMAIL        URL          ICQ
-10=REGD::    DESCRIPTION  PICTURE      PROTECT      SECURE
-11=REGD::    NOMEMO       PRIVATE      PRIVMSG      LANGUAGE
-12=SOP::As a SOP you may also use the following commands:
-13=SOP::    COMMENT      NOEXPIRE
+01 =REGD::NickServ maintains many settings on your nick
+02 =REGD::record, ranging from your password, to an e-mail
+03 =REGD::address you specify, to options that effect how
+04 =REGD::services treat your nickname.  Some of these you
+05 =REGD::must identify to set, others being recognized is
+06 =REGD::enough (which is the same thing if Secure is set).
+07 =REGD::
+08 =REGD::You may alter your settings with these commands:
+09 =REGD::    PASSWORD     EMAIL        URL          ICQ
+10 =REGD::    DESCRIPTION  PICTURE      PROTECT      SECURE
+11 =REGD::    NOMEMO       PRIVATE      PRIVMSG      LANGUAGE
+12 =SOP::As a SOP you may also use the following commands:
+13 =SOP::    COMMENT      NOEXPIRE
 
 [NICKSERV/SET/PASSWORD]
-01=::SET PASSWORD <password>
-02=::
+01 =REGD::SET PASSWORD <password>
+02 =REGD::
+03 =REGD::This will change your nickname password.  This
+04 =REGD::password is required for the IDENTIFY command (ie.
+05 =REGD::to use your nickname from somewhere not on your
+06 =REGD::access list).  It is also required for the GHOST
+07 =REGD::and RECOVER commands.  If you have secure set on,
+08 =REGD::this password is need to USE your nickname.  You
+09 =REGD::must identify before you may use this command.
+10 =REGD::
+11 =REGD::Please choose a password you will remember, but that is
+12 =REGD::suitably complex when registering your nickname.  If
+14 =REGD::someone else gets your nickname, they can then exercise
+15 =REGD::total control over it, including forbidding you access
+16 =REGD::to it.  If you have lost your password, you can contact
+17 =REGD::a Services Operator to retrieve it for you.
 
 [NICKSERV/SET/EMAIL]
-01=::SET EMAIL <email>
-02=::
+01 =REGD::SET EMAIL <email>
+02 =REGD::
+03 =REGD::This is a field provided ro represent your e-mail
+04 =REGD::address.  Right now, it is a free-text field, however
+05 =REGD::it is recommended you ensure the data you put in this
+06 =REGD::is a valid email address, as it may be used later for
+07 =REGD::such things as network announcements, etc.
+08 =REGD::
+09 =REGD::This value will display as-is in your INFO display.
+10 =REGD::Setting this value to "NONE" will clear it.
 
 [NICKSERV/SET/URL]
-01=::SET URL <url>
-02=::
+01 =REGD::SET URL <url>
+02 =REGD::
+03 =REGD::This is a field provided ro represent your web page
+04 =REGD::address.  Right now, it is a free-text field, however
+05 =REGD::it is recommended you ensure the data you put in this
+06 =REGD::is a valid web page address, as it may be used later
+07 =REGD::for such things as users links page, etc.
+08 =REGD::
+09 =REGD::This value will display as-is in your INFO display.
+10 =REGD::Setting this value to "NONE" will clear it.
 
 [NICKSERV/SET/ICQ]
-01=::SET ICQ <uin>
-02=::
+01 =REGD::SET ICQ <uin>
+02 =REGD::
+03 =REGD::This is a field provided to represent your ICQ UIN.
+04 =REGD::Right now, it is a free-text field, however it is
+05 =REGD::recommended you ensure the data you put in this is
+06 =REGD::a valid ICQ UIN, as it may be used later for such
+07 =REGD::things as current users status, etc.
+08 =REGD::
+09 =REGD::This value will display as-is in your INFO display.
+10 =REGD::Setting this value to "NONE" will clear it.
 
 [NICKSERV/SET/DESCRIPTION]
-01=::SET DESCRIPTION <description>
-02=::
+01 =REGD::SET DESCRIPTION <description>
+02 =REGD::
+03 =REGD::This field is provided to provide others with a
+04 =REGD::physical description of yourself, or stats about
+05 =REGD::yourself (age, sex, location, etc).  Please also
+06 =REGD::see help on the SET PICTURE command if you have
+07 =REGD::picture of yourself you dont mind sharing around.
+08 =REGD::
+09 =REGD::This value will display as-is in your INFO display.
+10 =REGD::Setting this value to "NONE" will clear it.
 
 [NICKSERV/SET/COMMENT]
-01=::SET COMMENT <nickname> <comment>
-02=::
+01 =SOP::SET COMMENT <nickname> <comment>
+02 =SOP::
+03 =SOP::This will set (or clear) a comment on a users INFO
+04 =SOP::record.  Normal users will not be able to see this
+05 =SOP::comment, however all members of the OPER committee
+06 =SOP::will.  When a user is suspended, the suspend reason
+07 =SOP::is set as the comment automatically, and this will
+08 =SOP::remain even after the user is unsuspended.
+09 =SOP::
+10 =SOP::Setting this value to "NONE" will clear it.
 
 [NICKSERV/SET/PICTURE]
-01=::SET PICTURE [NONE]
-02=::
+01 =REGD::SET PICTURE [NONE]
+02 =REGD::
+03 =REGD::This will setup services to recieve a DCC file
+04 =REGD::from you, which will be set as your picture.
+05 =REGD::Both the file extension, and file size may be
+06 =REGD::restricted, to find out what extensions you
+07 =REGD::may send, or the maximum file size, please
+08 =REGD::contact any IRC Operator.
+09 =REGD::
+10 =REGD::Once the DCC completes, any user may download
+11 =REGD::your picture with the SEND command.  If you
+12 =REGD::specify "NONE" after the SET PICTURE command,
+13 =REGD::your picture will be removed from your record.
 
 [NICKSERV/SET/PROTECT]
-01=::SET PROTECT <ON|OFF>
-02=::
+01 =REGD::SET PROTECT <ON|OFF>
+02 =REGD::
+03 =REGD::This will turn on or off Kill Protection.
+04 =REGD::When this option is on, if anyone attempts to use
+05 =REGD::your nickname from a hostmask not in your access
+06 =REGD::list, they will be asked to identify, or be renamed
+07 =REGD::or killed.
 
 [NICKSERV/SET/SECURE]
-01=::SET SECURE <ON|OFF>
-02=::
+01 =REGD::SET SECURE <ON|OFF>
+02 =REGD::
+03 =REGD::This will turn on or off Secure.
+04 =REGD::When this option is on, you must use the identify
+05 =REGD::command to be recognized (essentially turning on
+06 =REGD::paranoia mode, disregarding your access list).  It
+07 =REGD::will also mean you need to ident to get any access
+08 =REGD::on any channel you join, to read your memos, etc.
 
 [NICKSERV/SET/NOTEXPIRE]
-01=::SET NOEXPIRE <nickname> <ON|OFF>
-02=::
+01 =SOP::SET NOEXPIRE <nickname> <ON|OFF>
+02 =SOP::
+03 =SOP::When you set this on a nickname, that nickname will
+04 =SOP::not be subject to nickname expiration if it is not
+05 =SOP::used after a period of time.  Please use this very
+06 =SOP::cautiously, as nickname expiration guarentees that
+07 =SOP::nicknames dont get held up if they're not being used.
 
 [NICKSERV/SET/NOMEMO]
-01=::SET NOMEMO <ON|OFF>
-02=::
+01 =REGD::SET NOMEMO <ON|OFF>
+02 =REGD::
+03 =REGD::This will turn on or off No Memos.
+04 =REGD::When this option is on, you will automatically
+05 =REGD::ignore all memos to your nickname, however your
+06 =REGD::ignore list will turn into an allow list, and you
+07 =REGD::will still accept memos from people on that list.
+
 
 [NICKSERV/SET/PRIVATE]
-01=::SET PRIVATE <ON|OFF>
-02=::
+01 =REGD::SET PRIVATE <ON|OFF>
+02 =REGD::
+03 =REGD::This will turn on or off Private.
+04 =REGD::When this option is on, your last hostmask and
+05 =REGD::online times will not be displayed on your info
+06 =REGD::display, and you will not show up when someone
+07 =REGD::does a list of all nicknames.
 
 [NICKSERV/SET/PRIVMSG]
-01=::SET PRIVMSG <ON|OFF>
-02=::
+01 =REGD::SET PRIVMSG <ON|OFF>
+02 =REGD::
+03 =REGD::This will turn on or off PRIVMSG.
+04 =REGD::When this option is on, services will use PRIVMSG
+05 =REGD::(aka. a query) to send you anything they need to
+06 =REGD::send you, rather than using NOTICE.  You WILL still
+07 =REGD::get notices if you are not recognized, or for any
+08 =REGD::kind of global notice.
 
 [NICKSERV/SET/LANGUAGE]
-01=::SET LANGUAGE <language>
-02=::
+01 =REGD::SET LANGUAGE <language>
+02 =REGD::
+03 =REGD::This setting defines what language services talk
+04 =REGD::to you in.  If another language is available, you
+05 =REGD::can get services to talk to you in that language.
 
+[NICKSERV/LOCK/PROTECT]
+01 =SOP::LOCK PROTECT <nickname> <ON|OFF>
+02 =SOP::
+03 =SOP::This will lock the value of Kill Protect for a
+04 =SOP::user to whatever you set it to.  Doing this, will
+05 =SOP::prevent the user from being able to override this
+06 =SOP::setting, so please use with caution, as you are
+07 =SOP::removing a users right to change their own record.
+
+[NICKSERV/LOCK/SECURE]
+01 =SOP::LOCK SECURE <nickname> <ON|OFF>
+02 =SOP::
+03 =SOP::This will lock the value of Secure for a user to
+04 =SOP::whatever you set it to.  Doing this, will prevent
+05 =SOP::the user from being able to override this setting,
+06 =SOP::so please use with caution, as you are removing
+07 =SOP::a users right to change their own record.
+
+[NICKSERV/LOCK/NOMEMO]
+01 =SOP::LOCK NOMEMO <nickname> <ON|OFF>
+02 =SOP::
+03 =SOP::This will lock the value of No Memos for a user to
+04 =SOP::whatever you set it to.  Doing this, will prevent
+05 =SOP::the user from being able to override this setting,
+06 =SOP::so please use with caution, as you are removing
+07 =SOP::a users right to change their own record.
+
+[NICKSERV/LOCK/PRIVATE]
+01 =SOP::LOCK PRIVATE <nickname> <ON|OFF>
+02 =SOP::
+03 =SOP::This will lock the value of Private for a user to
+04 =SOP::whatever you set it to.  Doing this, will prevent
+05 =SOP::the user from being able to override this setting,
+06 =SOP::so please use with caution, as you are removing
+07 =SOP::a users right to change their own record.
+
+[NICKSERV/LOCK/PRIVMSG]
+01 =SOP::LOCK PRIVMSG <nickname> <ON|OFF>
+02 =SOP::
+03 =SOP::This will lock the value of PRIVMSG for a user to
+04 =SOP::whatever you set it to.  Doing this, will prevent
+05 =SOP::the user from being able to override this setting,
+06 =SOP::so please use with caution, as you are removing
+07 =SOP::a users right to change their own record.
+
+[NICKSERV/LOCK/LANGUAGE]
+01 =SOP::LOCK LANGUAGE <nickname> <language>
+02 =SOP::
+03 =SOP::This will lock the language services respond to
+04 =SOP::a user in to whatever you set it to.  Doing this,
+05 =SOP::will prevent the user from being able to override
+06 =SOP::this setting, so please use with caution, as you
+07 =SOP::are removing a users right to change their own
+08 =SOP::record.
+
+[NICKSERV/UNLOCK/PROTECT]
+01 =SOP::UNLOCK PROTECT <nickname>
+02 =SOP::
+03 =SOP::This will unlock the value of Kill Protect for a
+04 =SOP::user, however the value will remain the same.
+
+[NICKSERV/UNLOCK/SECURE]
+01 =SOP::UNLOCK SECURE <nickname>
+02 =SOP::
+03 =SOP::This will unlock the value of Secure for a
+04 =SOP::user, however the value will remain the same.
+
+[NICKSERV/UNLOCK/NOMEMO]
+01 =SOP::UNLOCK NOMEMO <nickname>
+02 =SOP::
+03 =SOP::This will unlock the value of No Memos for a
+04 =SOP::user, however the value will remain the same.
+
+[NICKSERV/UNLOCK/PRIVATE]
+01 =SOP::UNLOCK PRIVATE <nickname>
+02 =SOP::
+03 =SOP::This will unlock the value of Private for a
+04 =SOP::user, however the value will remain the same.
+
+[NICKSERV/UNLOCK/PRIVMSG]
+01 =SOP::UNLOCK PRIVMSG <nickname>
+02 =SOP::
+03 =SOP::This will unlock the value of PRIVMSG for a
+04 =SOP::user, however the value will remain the same.
+
+[NICKSERV/UNLOCK/LANGUAGE]
+01 =SOP::UNLOCK LANGUAGE <nickname>
+02 =SOP::
+03 =SOP::This will unlock the language services respond
+04 =SOP::to a user in, however the value will remain the
+05 =SOP::same.

@@ -26,6 +26,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2000/02/21 03:27:39  prez
+** Updated language files ...
+**
 ** Revision 1.58  2000/02/17 12:55:06  ungod
 ** still working on borlandization
 **
@@ -2934,6 +2937,8 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LIST*", Parent->commserv.ALL_Name(), NickServ::do_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"SEND*", Parent->commserv.ALL_Name(), NickServ::do_Send);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"SUSP*", Parent->commserv.SOP_Name(), NickServ::do_Suspend);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
@@ -3823,6 +3828,30 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
     }
     ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
 							i, count);
+}
+
+void NickServ::do_Send(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Send", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring target   = params.ExtractWord(2, " ");
+
+    if (!Parent->nickserv.IsStored(target))
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+							target.c_str());
+	return;
+    }
+    target = Parent->getSname(target);
+
 }
 
 void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)

@@ -26,6 +26,8 @@ GHOST <nick> <password>
 RECOVER <nick> <password>
     -- V
 LIST [mask [maximum]]
+SEND <nick>
+    -- I
 SUSPEND <nick> <reason>
     -- I
 UNSUSPEND <nick>
