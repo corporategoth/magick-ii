@@ -128,6 +128,19 @@ enum bool
 #else
 #  include <list.h>
 #endif
+#if defined(HAVE_EXT_HASH_MAP)
+#  include <ext/hash_map>
+#  define STL_EXT_NAMESPACE __gnu_cxx
+#elif defined(HAVE_EXT_HASH_MAP_H)
+#  include <ext/hash_map.h>
+#  define STL_EXT_NAMESPACE __gnu_cxx
+#elif defined(HAVE_HASH_MAP)
+#  include <hash_map>
+#elif defined(HAVE_HASH_MAP_H)
+#  include <hash_map.h>
+#else
+#  define NO_HASH_MAP 1
+#endif
 #ifdef HAVE_MAP
 #  include <map>
 #else
@@ -247,6 +260,9 @@ typedef struct utsname ACE_utsname;
 // # define bcmp        ACE_OS::bcmp
 #endif
 
+#ifdef STL_EXT_NAMESPACE
+using namespace STL_EXT_NAMESPACE;
+#endif
 using namespace std;
 
 #else /* __cplusplus */

@@ -1396,8 +1396,8 @@ void NickServ::do_Info(const mstring & mynick, const mstring & source, const mst
 		continue;
 
 	    // AND committee is not ALL or REGD
-	    if (iter->first == Magick::instance().commserv.ALL_Name() ||
-		iter->first == Magick::instance().commserv.REGD_Name())
+	    if (comm->Name() == Magick::instance().commserv.ALL_Name() ||
+		comm->Name() == Magick::instance().commserv.REGD_Name())
 		continue;
 
 	    // AND if it has a headcom, we're not in it
@@ -4051,14 +4051,14 @@ void NickServ::PostLoad()
 	{
 	    if (IsStored(nstored->i_Host))
 	    {
-		COM(("Nickname %s has been linked to %s ...", iter->first.c_str(), nstored->i_Host.c_str()));
+		COM(("Nickname %s has been linked to %s ...", nstored->i_Name.c_str(), nstored->i_Host.c_str()));
 		WLOCK((lck_NickServ, lck_stored, nstored->i_Host));
-		GetStored(nstored->i_Host)->i_slaves.insert(iter->first);
+		GetStored(nstored->i_Host)->i_slaves.insert(nstored->i_Name.LowerCase());
 	    }
 	    else
 	    {
-		LOG(LM_WARNING, "ERROR/HOST_NOTREGD", (nstored->i_Host, iter->first));
-		WLOCK((lck_NickServ, lck_stored, iter->first));
+		LOG(LM_WARNING, "ERROR/HOST_NOTREGD", (nstored->i_Host, nstored->i_Name));
+		WLOCK((lck_NickServ, lck_stored, nstored->i_Name));
 		nstored->i_Host.erase();
 	    }
 	}

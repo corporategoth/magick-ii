@@ -527,8 +527,13 @@ private:
 
     vector < Nick_Stored_t * > ns_array;
 public:
+#ifdef NO_HASH_MAP
     typedef map < mstring, Nick_Stored_t * > stored_t;
     typedef map < mstring, Nick_Live_t * > live_t;
+#else
+    typedef hash_map < mstring, Nick_Stored_t * > stored_t;
+    typedef hash_map < mstring, Nick_Live_t * > live_t;
+#endif
     typedef map < mstring, mDateTime > recovered_t;
 
 private:

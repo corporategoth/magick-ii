@@ -1253,7 +1253,7 @@ set < mstring > Nick_Live_t::Name(const mstring & in)
 	{
 	    map_entry < Committee_t > comm(iter2->second);
 	    if (comm->IsOn(i_Name))
-		wason.insert(iter2->first);
+		wason.insert(comm->Name());
 	}
     }
 
@@ -1421,7 +1421,7 @@ void Nick_Live_t::Mode(const mstring & in)
 			{
 			    map_entry < Committee_t > comm(iter2->second);
 			    if (comm->IsOn(i_Name))
-				wason.insert(iter2->first);
+				wason.insert(comm->Name());
 			}
 		    }
 
@@ -1468,25 +1468,25 @@ void Nick_Live_t::Mode(const mstring & in)
 				 iter2 != Magick::instance().commserv.ListEnd(); iter2++)
 			    {
 				map_entry < Committee_t > comm(iter2->second);
-				if (comm->IsOn(i_Name) && wason.find(iter2->first) == wason.end())
+				if (comm->IsOn(i_Name) && wason.find(comm->Name()) == wason.end())
 				{
 				    if (!Magick::instance().server.proto.SVSMODE().empty())
 				    {
-					if (iter2->first == Magick::instance().commserv.ALL_Name())
+					if (comm->Name() == Magick::instance().commserv.ALL_Name())
 					    setmode += Magick::instance().commserv.ALL_SetMode();
-					else if (iter2->first == Magick::instance().commserv.REGD_Name())
+					else if (comm->Name() == Magick::instance().commserv.REGD_Name())
 					    setmode += Magick::instance().commserv.REGD_SetMode();
-					else if (iter2->first == Magick::instance().commserv.OPER_Name())
+					else if (comm->Name() == Magick::instance().commserv.OPER_Name())
 					    setmode += Magick::instance().commserv.OPER_SetMode();
-					else if (iter2->first == Magick::instance().commserv.ADMIN_Name())
+					else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
 					    setmode += Magick::instance().commserv.ADMIN_SetMode();
-					else if (iter2->first == Magick::instance().commserv.SOP_Name())
+					else if (comm->Name() == Magick::instance().commserv.SOP_Name())
 					    setmode += Magick::instance().commserv.SOP_SetMode();
-					else if (iter2->first == Magick::instance().commserv.SADMIN_Name())
+					else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
 					    setmode += Magick::instance().commserv.SADMIN_SetMode();
 				    }
 
-				    MLOCK((lck_CommServ, lck_list, iter2->first, "message"));
+				    MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
 				    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 				    {
 					Magick::instance().servmsg.send(i_Name,
@@ -2102,7 +2102,7 @@ mstring Nick_Live_t::Identify(const mstring & password)
 		{
 		    map_entry < Committee_t > comm(iter->second);
 		    if (comm->IsOn(i_Name))
-			wason.insert(iter->first);
+			wason.insert(comm->Name());
 
 		}
 	    }
@@ -2127,25 +2127,25 @@ mstring Nick_Live_t::Identify(const mstring & password)
 		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		{
 		    map_entry < Committee_t > comm(iter->second);
-		    if (comm->IsOn(i_Name) && wason.find(iter->first) == wason.end())
+		    if (comm->IsOn(i_Name) && wason.find(comm->Name()) == wason.end())
 		    {
 			if (!Magick::instance().server.proto.SVSMODE().empty())
 			{
-			    if (iter->first == Magick::instance().commserv.ALL_Name())
+			    if (comm->Name() == Magick::instance().commserv.ALL_Name())
 				setmode += Magick::instance().commserv.ALL_SetMode();
-			    else if (iter->first == Magick::instance().commserv.REGD_Name())
+			    else if (comm->Name() == Magick::instance().commserv.REGD_Name())
 				setmode += Magick::instance().commserv.REGD_SetMode();
-			    else if (iter->first == Magick::instance().commserv.OPER_Name())
+			    else if (comm->Name() == Magick::instance().commserv.OPER_Name())
 				setmode += Magick::instance().commserv.OPER_SetMode();
-			    else if (iter->first == Magick::instance().commserv.ADMIN_Name())
+			    else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
 				setmode += Magick::instance().commserv.ADMIN_SetMode();
-			    else if (iter->first == Magick::instance().commserv.SOP_Name())
+			    else if (comm->Name() == Magick::instance().commserv.SOP_Name())
 				setmode += Magick::instance().commserv.SOP_SetMode();
-			    else if (iter->first == Magick::instance().commserv.SADMIN_Name())
+			    else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
 				setmode += Magick::instance().commserv.SADMIN_SetMode();
 			}
 
-			MLOCK((lck_CommServ, lck_list, iter->first, "message"));
+			MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
 			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
 			    Magick::instance().servmsg.send(i_Name,
@@ -2579,7 +2579,7 @@ unsigned long Nick_Stored_t::Drop()
 		    cstored->Founder(cstored->CoFounder());
 		}
 		else
-		    killchans.push_back(iter->first);
+		    killchans.push_back(cstored->Name().LowerCase());
 	    }
 	    else if (cstored->CoFounder().IsSameAs(i_Name, true))
 	    {
@@ -2588,7 +2588,7 @@ unsigned long Nick_Stored_t::Drop()
 		else
 		    cstored->CoFounder("");
 	    }
-	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Access"));
+	    MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Access"));
 	    if (cstored->Access_find(i_Name))
 	    {
 		// It must be specifically ours, not a sibling/hosts
@@ -3259,11 +3259,11 @@ void Nick_Stored_t::ChangeOver(const mstring & oldnick)
 	{
 	    map_entry < Committee_t > comm(citer->second);
 	    found = false;
-	    if (citer->first != Magick::instance().commserv.ALL_Name() &&
-		citer->first != Magick::instance().commserv.REGD_Name() &&
-		citer->first != Magick::instance().commserv.SADMIN_Name())
+	    if (comm->Name() != Magick::instance().commserv.ALL_Name() &&
+		comm->Name() != Magick::instance().commserv.REGD_Name() &&
+		comm->Name() != Magick::instance().commserv.SADMIN_Name())
 	    {
-		MLOCK((lck_CommServ, lck_list, citer->first, "member"));
+		MLOCK((lck_CommServ, lck_list, comm->Name(), "member"));
 		if (comm->find(i_Name))
 		{
 		    modifier = comm->member->Last_Modifier();
@@ -3311,7 +3311,7 @@ void Nick_Stored_t::ChangeOver(const mstring & oldnick)
 		cstored->CoFounder(i_Name);
 	    }
 	    {
-		MLOCK((lck_ChanServ, lck_stored, csiter->first, "Access"));
+		MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Access"));
 		found = false;
 		valueL = 0;
 		if (cstored->Access_find(i_Name))
@@ -3338,7 +3338,7 @@ void Nick_Stored_t::ChangeOver(const mstring & oldnick)
 		}
 	    }
 	    {
-		MLOCK((lck_ChanServ, lck_stored, csiter->first, "Akick"));
+		MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Akick"));
 		found = false;
 		if (cstored->Akick_find(i_Name))
 		{
@@ -3363,7 +3363,7 @@ void Nick_Stored_t::ChangeOver(const mstring & oldnick)
 		}
 	    }
 	    {
-		MLOCK((lck_ChanServ, lck_stored, csiter->first, "Greet"));
+		MLOCK((lck_ChanServ, lck_stored, cstored->Name().LowerCase(), "Greet"));
 		found = false;
 		if (cstored->Greet_find(i_Name))
 		{

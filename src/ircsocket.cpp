@@ -385,13 +385,14 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 	    RLOCK((lck_Server, lck_list));
 	    for (si = Magick::instance().server.ListBegin(); si != Magick::instance().server.ListEnd(); si++)
 	    {
-		RLOCK2((lck_Server, lck_list, si->first));
-		if (Magick::instance().server.ToBeSquit.find(si->first) != Magick::instance().server.ToBeSquit.end())
-		    Magick::instance().server.ToBeSquit.erase(si->first);
-		if (Magick::instance().server.ServerSquit.find(si->first) != Magick::instance().server.ServerSquit.end())
+		map_entry < Server_t > serv (si->second);
+		RLOCK2((lck_Server, lck_list, serv->Name().LowerCase()));
+		if (Magick::instance().server.ToBeSquit.find(serv->Name().LowerCase()) != Magick::instance().server.ToBeSquit.end())
+		    Magick::instance().server.ToBeSquit.erase(serv->Name().LowerCase());
+		if (Magick::instance().server.ServerSquit.find(serv->Name().LowerCase()) != Magick::instance().server.ServerSquit.end())
 		{
 		    mstring *arg = NULL;
-		    if (Magick::instance().reactor().cancel_timer(Magick::instance().server.ServerSquit[si->first],
+		    if (Magick::instance().reactor().cancel_timer(Magick::instance().server.ServerSquit[serv->Name().LowerCase()],
 								   reinterpret_cast < const void ** > (arg)) && arg != NULL)
 			delete arg;
 		}
@@ -401,8 +402,8 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 			ACE_OS::sleep(1);
 
 		    CP(("Scheduling SQUIT protect timer..."));
-		    Magick::instance().server.ServerSquit[si->first] = Magick::instance().reactor().schedule_timer(
-								&Magick::instance().server.squit, new mstring(si->first),
+		    Magick::instance().server.ServerSquit[serv->Name().LowerCase()] = Magick::instance().reactor().schedule_timer(
+								&Magick::instance().server.squit, new mstring(serv->Name().LowerCase()),
 								ACE_Time_Value(Magick::instance().config.Squit_Protect()));
 		}
 	    }
@@ -422,7 +423,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 	    map_entry < Nick_Live_t > nlive(iter->second);
 	    if (nlive->IsServices())
 	    {
-		chunked.push_back(iter->first);
+		chunked.push_back(nlive->Name());
 	    }
 	    else if (Magick::instance().server.IsList(nlive->Server()))
 	    {
@@ -1531,8 +1532,8 @@ int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 	for (i = Magick::instance().nickserv.LiveBegin(); i != Magick::instance().nickserv.LiveEnd(); i++)
 	{
 	    map_entry < Nick_Live_t > nlive(i->second);
-	    if (nlive->Squit() == * tmp)
-		SquitMe.push_back(i->first);
+	    if (nlive->Squit() == *tmp)
+		SquitMe.push_back(nlive->Name());
 	}
     }
     vector < mstring >::iterator k;
@@ -2379,9 +2380,9 @@ void EventTask::do_check(mDateTime & synctime)
 	    bool found = false;
 	    unsigned long bantime = 0, parttime = 0;
 
-	    if (Magick::instance().chanserv.IsStored(cli->first))
+	    if (Magick::instance().chanserv.IsStored(clive->Name()))
 	    {
-		map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(cli->first);
+		map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(clive->Name());
 		bantime = cstored->Bantime();
 		parttime = cstored->Parttime();
 		found = true;
@@ -2396,7 +2397,7 @@ void EventTask::do_check(mDateTime & synctime)
 		    vector < mstring > rem;
 		    vector < mstring >::iterator ri;
 		    {
-			RLOCK2((lck_ChanServ, lck_live, cli->first, "bans"));
+			RLOCK2((lck_ChanServ, lck_live, clive->Name().LowerCase(), "bans"));
 			for (di = clive->bans.begin(); di != clive->bans.end(); di++)
 			{
 			    if (di->second.SecondsSince() > bantime)
@@ -2416,7 +2417,7 @@ void EventTask::do_check(mDateTime & synctime)
 	    chunked.clear();
 	    if (found)
 	    {
-		WLOCK((lck_ChanServ, lck_live, cli->first, "recent_parts"));
+		WLOCK((lck_ChanServ, lck_live, clive->Name().LowerCase(), "recent_parts"));
 		for (di = clive->recent_parts.begin(); di != clive->recent_parts.end(); di++)
 		{
 		    if (di->second.SecondsSince() > parttime)
@@ -2427,7 +2428,7 @@ void EventTask::do_check(mDateTime & synctime)
 	    }
 	    else if (clive->recent_parts.size())
 	    {
-		WLOCK((lck_ChanServ, lck_live, cli->first, "recent_parts"));
+		WLOCK((lck_ChanServ, lck_live, clive->Name().LowerCase(), "recent_parts"));
 		clive->recent_parts.clear();
 	    }
 	}
@@ -2445,9 +2446,9 @@ void EventTask::do_check(mDateTime & synctime)
 	    for (nli = Magick::instance().nickserv.LiveBegin(); nli != Magick::instance().nickserv.LiveEnd(); nli++)
 	    {
 		map_entry < Nick_Live_t > nlive(nli->second);
-		if (Magick::instance().nickserv.IsStored(nli->first))
+		if (Magick::instance().nickserv.IsStored(nlive->Name()))
 		{
-		    map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(nli->first);
+		    map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(nlive->Name());
 		    if (!nstored->IsOnline() && nstored->Protect() && !nlive->IsServices() && nlive->Squit().empty() &&
 			nlive->MySignonTime().SecondsSince() >= Magick::instance().nickserv.Ident())
 		    {

@@ -1183,6 +1183,18 @@ public:
     void Assemble(const list < mstring > & text, const mstring & delim = " ");
 };
 
+#ifndef NO_HASH_MAP
+namespace STL_EXT_NAMESPACE { 
+  template<> struct hash<mstring>
+  {
+    size_t operator()(const mstring &__s) const {
+	static struct hash<const char *> strhash;
+	return strhash(__s.c_str());
+    }
+  };
+};
+#endif
+
 /** @defgroup overloads Operator Overloads
  * @{
  */

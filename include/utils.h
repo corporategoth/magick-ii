@@ -146,12 +146,20 @@ public:
     map_entry() : entry_ptr(NULL), lock(NULL)
     {
     }
+#ifdef NO_HASH_MAP
     map_entry(const map < mstring, T * > & map_ptr, const mstring & map_key) : entry_ptr(NULL), lock(NULL)
+#else
+    map_entry(const hash_map < mstring, T * > & map_ptr, const mstring & map_key) : entry_ptr(NULL), lock(NULL)
+#endif
     {
 	if (map_key.empty())
 	    return;
 
+#ifdef NO_HASH_MAP
 	typename map < mstring, T * >::const_iterator iter = map_ptr.find(map_key);
+#else
+	typename hash_map < mstring, T * >::const_iterator iter = map_ptr.find(map_key);
+#endif
 
 	if (iter == map_ptr.end())
 	    return;

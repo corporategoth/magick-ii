@@ -610,7 +610,7 @@ vector < mstring > Server_t::Downlinks() const
 	{
 	    map_entry < Server_t > server(iter->second);
 	    if (!i_Name.empty() && server->Uplink().IsSameAs(i_Name, true))
-		downlinks.push_back(iter->first);
+		downlinks.push_back(server->Name().LowerCase());
 	}
     }
     NRET(vector < mstring >, downlinks);
@@ -632,8 +632,8 @@ vector < mstring > Server_t::AllDownlinks() const
 	    map_entry < Server_t > server(iter->second);
 	    if (server->Uplink().IsSameAs(i_Name, true))
 	    {
-		downlinks.push_back(iter->first);
-		uplinks.push_back(iter->first);
+		downlinks.push_back(server->Name().LowerCase());
+		uplinks.push_back(server->Name().LowerCase());
 		found = true;
 	    }
 	}
@@ -650,8 +650,8 @@ vector < mstring > Server_t::AllDownlinks() const
 		map_entry < Server_t > server(iter->second);
 		if (server->Uplink().IsSameAs(uplinks[i], true))
 		{
-		    downlinks.push_back(iter->first);
-		    uplinks2.push_back(iter->first);
+		    downlinks.push_back(server->Name().LowerCase());
+		    uplinks2.push_back(server->Name().LowerCase());
 		    found = true;
 		}
 	    }
@@ -3049,7 +3049,7 @@ void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & 
 		    map_entry < Committee_t > comm(iter->second);
 		    if (comm->IsOn(source))
 		    {
-			MLOCK((lck_CommServ, lck_list, iter->first, "message"));
+			MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
 			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
 			    Magick::instance().servmsg.send(source,
@@ -3756,7 +3756,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 		{
 		    list < mstring >::iterator k;
-		    WLOCK2((lck_Server, "ToBeSquit", i->first.LowerCase()));
+		    WLOCK2((lck_Server, "ToBeSquit", i->first));
 		    for (k = i->second.begin(); k != i->second.end(); k++)
 			if (k->IsSameAs(newnick, true))
 			{
@@ -3984,20 +3984,20 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 			map_entry < Committee_t > comm(iter->second);
 			if (comm->IsOn(newnick))
 			{
-			    if (iter->first == Magick::instance().commserv.ALL_Name())
+			    if (comm->Name() == Magick::instance().commserv.ALL_Name())
 				setmode += Magick::instance().commserv.ALL_SetMode();
-			    else if (iter->first == Magick::instance().commserv.REGD_Name())
+			    else if (comm->Name() == Magick::instance().commserv.REGD_Name())
 				setmode += Magick::instance().commserv.REGD_SetMode();
-			    else if (iter->first == Magick::instance().commserv.OPER_Name())
+			    else if (comm->Name() == Magick::instance().commserv.OPER_Name())
 				setmode += Magick::instance().commserv.OPER_SetMode();
-			    else if (iter->first == Magick::instance().commserv.ADMIN_Name())
+			    else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
 				setmode += Magick::instance().commserv.ADMIN_SetMode();
-			    else if (iter->first == Magick::instance().commserv.SOP_Name())
+			    else if (comm->Name() == Magick::instance().commserv.SOP_Name())
 				setmode += Magick::instance().commserv.SOP_SetMode();
-			    else if (iter->first == Magick::instance().commserv.SADMIN_Name())
+			    else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
 				setmode += Magick::instance().commserv.SADMIN_SetMode();
 
-			    MLOCK((lck_CommServ, lck_list, iter->first, "message"));
+			    MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
 			    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			    {
 				Magick::instance().servmsg.send(newnick,
@@ -4069,22 +4069,22 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 			     iter++)
 			{
 			    map_entry < Committee_t > comm(iter->second);
-			    if (wason.find(iter->first) == wason.end() && comm->IsOn(newnick))
+			    if (wason.find(comm->Name()) == wason.end() && comm->IsOn(newnick))
 			    {
-				if (iter->first == Magick::instance().commserv.ALL_Name())
+				if (comm->Name() == Magick::instance().commserv.ALL_Name())
 				    setmode += Magick::instance().commserv.ALL_SetMode();
-				else if (iter->first == Magick::instance().commserv.REGD_Name())
+				else if (comm->Name() == Magick::instance().commserv.REGD_Name())
 				    setmode += Magick::instance().commserv.REGD_SetMode();
-				else if (iter->first == Magick::instance().commserv.OPER_Name())
+				else if (comm->Name() == Magick::instance().commserv.OPER_Name())
 				    setmode += Magick::instance().commserv.OPER_SetMode();
-				else if (iter->first == Magick::instance().commserv.ADMIN_Name())
+				else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
 				    setmode += Magick::instance().commserv.ADMIN_SetMode();
-				else if (iter->first == Magick::instance().commserv.SOP_Name())
+				else if (comm->Name() == Magick::instance().commserv.SOP_Name())
 				    setmode += Magick::instance().commserv.SOP_SetMode();
-				else if (iter->first == Magick::instance().commserv.SADMIN_Name())
+				else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
 				    setmode += Magick::instance().commserv.SADMIN_SetMode();
 
-				MLOCK((lck_CommServ, lck_list, iter->first, "message"));
+				MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
 				for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 				{
 				    Magick::instance().servmsg.send(newnick,
@@ -4832,7 +4832,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		    map_entry < Nick_Live_t > nlive(iter->second);
 		    if (nlive->IsServices() && ListSize() == 0)
 		    {
-			chunked.push_back(iter->first);
+			chunked.push_back(nlive->Name().LowerCase());
 		    }
 		    else
 		    {
@@ -5181,7 +5181,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	    for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 	    {
 		list < mstring >::iterator k;
-		WLOCK2((lck_Server, "ToBeSquit", i->first.LowerCase()));
+		WLOCK2((lck_Server, "ToBeSquit", i->first));
 		for (k = i->second.begin(); k != i->second.end(); k++)
 		    if (k->IsSameAs(newnick, true))
 		    {
@@ -5315,20 +5315,20 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 		    map_entry < Committee_t > comm(iter->second);
 		    if (comm->IsOn(newnick))
 		    {
-			if (iter->first == Magick::instance().commserv.ALL_Name())
+			if (comm->Name() == Magick::instance().commserv.ALL_Name())
 			    setmode += Magick::instance().commserv.ALL_SetMode();
-			else if (iter->first == Magick::instance().commserv.REGD_Name())
+			else if (comm->Name() == Magick::instance().commserv.REGD_Name())
 			    setmode += Magick::instance().commserv.REGD_SetMode();
-			else if (iter->first == Magick::instance().commserv.OPER_Name())
+			else if (comm->Name() == Magick::instance().commserv.OPER_Name())
 			    setmode += Magick::instance().commserv.OPER_SetMode();
-			else if (iter->first == Magick::instance().commserv.ADMIN_Name())
+			else if (comm->Name() == Magick::instance().commserv.ADMIN_Name())
 			    setmode += Magick::instance().commserv.ADMIN_SetMode();
-			else if (iter->first == Magick::instance().commserv.SOP_Name())
+			else if (comm->Name() == Magick::instance().commserv.SOP_Name())
 			    setmode += Magick::instance().commserv.SOP_SetMode();
-			else if (iter->first == Magick::instance().commserv.SADMIN_Name())
+			else if (comm->Name() == Magick::instance().commserv.SADMIN_Name())
 			    setmode += Magick::instance().commserv.SADMIN_SetMode();
 
-			MLOCK((lck_CommServ, lck_list, iter->first, "message"));
+			MLOCK((lck_CommServ, lck_list, comm->Name(), "message"));
 			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
 			    Magick::instance().servmsg.send(newnick,
@@ -5757,23 +5757,24 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 				     iter != Magick::instance().chanserv.StoredEnd(); iter++)
 				{
 				    map_entry < Chan_Stored_t > cstored(iter->second);
+				    mstring lname = cstored->Name().LowerCase();
 				    map_entry < Chan_Live_t > clive;
-				    if (Magick::instance().chanserv.IsLive(iter->first))
-					clive = Magick::instance().chanserv.GetLive(iter->first);
+				    if (Magick::instance().chanserv.IsLive(lname))
+					clive = Magick::instance().chanserv.GetLive(lname);
 
 				    // If its live and got JOIN on || not live and mlock +k or +i
 				    if ((clive.entry() != NULL && cstored->Join()) ||
 					(clive.entry() == NULL &&
 					 (!cstored->Mlock_Key().empty() || cstored->Mlock_On().Contains("i"))))
 				    {
-					joins.push_back(iter->first);
+					joins.push_back(lname);
 					if (clive.entry() == NULL)
 					{
-					    modes[iter->first] = "+s";
+					    modes[lname] = "+s";
 					    if (cstored->Mlock_On().Contains("i"))
-						modes[iter->first] += "i";
+						modes[lname] += "i";
 					    if (!cstored->Mlock_Key().empty())
-						modes[iter->first] += "k " + cstored->Mlock_Key();
+						modes[lname] += "k " + cstored->Mlock_Key();
 					}
 				    }
 
@@ -5782,7 +5783,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 					if ((cstored->Topiclock() && clive->Topic() != cstored->Last_Topic()) ||
 					    (cstored->Keeptopic() && clive->Topic().empty()))
 					{
-					    topics[iter->first] =
+					    topics[lname] =
 						triplet < mstring, mstring, mDateTime > (cstored->Last_Topic_Setter(),
 											 cstored->Last_Topic(),
 											 cstored->Last_Topic_Set_Time());

@@ -221,7 +221,11 @@ private:
     static SXP::Tag tag_CommServ;
 
 public:
+#ifdef NO_HASH_MAP
     typedef map < mstring, Committee_t * > list_t;
+#else
+    typedef hash_map < mstring, Committee_t * > list_t;
+#endif
 
 private:
 

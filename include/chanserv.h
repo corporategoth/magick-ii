@@ -617,8 +617,13 @@ private:
     static SXP::Tag tag_ChanServ;
 
 public:
+#ifdef NO_HASH_MAP
     typedef map < mstring, Chan_Stored_t * > stored_t;
     typedef map < mstring, Chan_Live_t * > live_t;
+#else
+    typedef hash_map < mstring, Chan_Stored_t * > stored_t;
+    typedef hash_map < mstring, Chan_Live_t * > live_t;
+#endif
 
 private:
 

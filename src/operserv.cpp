@@ -87,7 +87,7 @@ bool OperServ::AddHost(const mstring & host)
 			{
 			    map_entry < Nick_Live_t > nlive(iter->second);
 			    if (nlive->Host().IsSameAs(host, true))
-				killusers.push_back(iter->first);
+				killusers.push_back(nlive->Name());
 			}
 		    }
 
@@ -223,7 +223,7 @@ void OperServ::CloneList_check()
 		    {
 			map_entry < Nick_Live_t > nlive(iter2->second);
 			if (nlive->Host().IsSameAs(iter->first, true))
-			    killusers.push_back(iter2->first);
+			    killusers.push_back(nlive->Name());
 		    }
 		}
 
@@ -2870,7 +2870,7 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
 		{
 		    map_entry < Nick_Live_t > nlive(iter->second);
 		    if (!nlive->IsServices() && nlive->Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host, true))
-			killusers.push_back(iter->first);
+			killusers.push_back(nlive->Name());
 		}
 	    }
 
@@ -3128,9 +3128,9 @@ void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, c
 	    if (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(host, true))
 	    {
 		// IF user is recognized and on sadmin, ignore.
-		if (Magick::instance().nickserv.IsStored(iter->first) &&
-		    Magick::instance().nickserv.GetStored(iter->first)->IsOnline() && sadmin.entry() != NULL &&
-		    sadmin->IsIn(iter->first))
+		if (Magick::instance().nickserv.IsStored(nlive->Name()) &&
+		    Magick::instance().nickserv.GetStored(nlive->Name())->IsOnline() && sadmin.entry() != NULL &&
+		    sadmin->IsIn(nlive->Name()))
 		    continue;
 		if (!Magick::instance().server.proto.SVSMODE().empty())
 		{
@@ -3138,7 +3138,7 @@ void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, c
 		}
 		else
 		{
-		    killusers.push_back(iter->first);
+		    killusers.push_back(nlive->Name());
 		}
 	    }
 	}

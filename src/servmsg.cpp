@@ -418,7 +418,7 @@ void ServMsg::do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >
 	{
 	    map_entry < Server_t > svr(iter->second);
 	    if (!svr->Name().empty() && svr->Uplink().IsSameAs(Magick::instance().startup.Server_Name(), true))
-		downlinks.push_back(iter->first);
+		downlinks.push_back(svr->Name().LowerCase());
 	}
     }
     else
@@ -1651,7 +1651,8 @@ void ServMsg::do_Global(const mstring & mynick, const mstring & source, const ms
     RLOCK((lck_Server, lck_list));
     for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
     {
-	Magick::instance().server.NOTICE(Magick::instance().servmsg.FirstName(), "$" + iter->first, text);
+	map_entry < Server_t > serv(iter->second);
+	Magick::instance().server.NOTICE(Magick::instance().servmsg.FirstName(), "$" + serv->Name(), text);
     }
     Magick::instance().servmsg.stats.i_Global++;
     ANNOUNCE(mynick, "MISC/GLOBAL_MSG", (source));

@@ -483,7 +483,11 @@ class Server
     void FlushMsgs(const mstring & nick);
 
 public:
+#ifdef NO_HASH_MAP
     typedef map < mstring, Server_t * > list_t;
+#else
+    typedef hash_map < mstring, Server_t * > list_t;
+#endif
 
 private:
 

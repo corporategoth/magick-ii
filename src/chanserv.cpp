@@ -7921,36 +7921,37 @@ void ChanServ::PostLoad()
     for (iter = StoredBegin(); iter != StoredEnd(); iter++)
     {
 	map_entry < Chan_Stored_t > cstored(iter->second);
+	mstring lname = cstored->Name().LowerCase();
 	{
-	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Level"));
+	    MLOCK((lck_ChanServ, lck_stored, lname, "Level"));
 	    for (cstored->Level = cstored->Level_begin(); cstored->Level != cstored->Level_end(); cstored->Level++)
 	    {
 		cstored->Level->PostLoad();
 	    }
 	}
 	{
-	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Access"));
+	    MLOCK((lck_ChanServ, lck_stored, lname, "Access"));
 	    for (cstored->Access = cstored->Access_begin(); cstored->Access != cstored->Access_end(); cstored->Access++)
 	    {
 		cstored->Access->PostLoad();
 	    }
 	}
 	{
-	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Akick"));
+	    MLOCK((lck_ChanServ, lck_stored, lname, "Akick"));
 	    for (cstored->Akick = cstored->Akick_begin(); cstored->Akick != cstored->Akick_end(); cstored->Akick++)
 	    {
 		cstored->Akick->PostLoad();
 	    }
 	}
 	{
-	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Greet"));
+	    MLOCK((lck_ChanServ, lck_stored, lname, "Greet"));
 	    for (cstored->Greet = cstored->Greet_begin(); cstored->Greet != cstored->Greet_end(); cstored->Greet++)
 	    {
 		cstored->Greet->PostLoad();
 	    }
 	}
 	{
-	    MLOCK((lck_ChanServ, lck_stored, iter->first, "Message"));
+	    MLOCK((lck_ChanServ, lck_stored, lname, "Message"));
 	    for (cstored->Message = cstored->Message_begin(); cstored->Message != cstored->Message_end(); cstored->Message++)
 	    {
 		cstored->Message->PostLoad();
