@@ -4992,29 +4992,36 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!level.IsNumber() || level.Contains(".") ||
-	atol(level.c_str()) < Parent->chanserv.Level_Min() ||
-	atol(level.c_str()) > Parent->chanserv.Level_Max()+1)
+    if (!level.IsNumber() || level.Contains("."))
     {
-	mstring output;
-	output << "Levels may only be a whole number between " <<
-		Parent->chanserv.Level_Min() << " and " <<
-		Parent->chanserv.Level_Max()+1 << ".";
-	::send(mynick, source, output);
+        ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	return;
+    }
+    long num = atol(level.c_str());
+
+    if (num < Parent->chanserv.Level_Min() ||
+	num > Parent->chanserv.Level_Max()+1)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+		Parent->chanserv.Level_Min(),
+		Parent->chanserv.Level_Max()+1);
 	return;
     }
 
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Level"));
     if (cstored->Level_find(what))
     {
-	cstored->Level_change(cstored->Level->Entry(),
-					    atol(level.c_str()), source);
-	::send(mynick, source, "Level for " + cstored->Level->Entry() +
-				    " has now been set to " + level + ".");
+	cstored->Level_change(cstored->Level->Entry(), num, source);
+	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_LEVEL"),
+		    cstored->Level->Entry().c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/LEVEL").c_str(),
+		    cstored->Level->Value());
     }
     else
     {
-	::send(mynick, source, "No such level type " + what + ".");
+	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+		    what.c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/LEVEL").c_str());
     }
 }
 
@@ -5058,14 +5065,16 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
     {
 	cstored->Level_change(cstored->Level->Entry(),
 				    Parent->chanserv.LVL(what), source);
-	::send(mynick, source, "Level for " +
-				    cstored->Level->Entry() +
-				    " has now been set to " +
-				    ltoa(cstored->Level->Value()) + ".");
+	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_LEVEL"),
+		    cstored->Level->Entry().c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/LEVEL").c_str(),
+		    cstored->Level->Value());
     }
     else
     {
-	::send(mynick, source, "No such default level type " + what + ".");
+	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+		    what.c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/LEVEL").c_str());
     }
 }
 
@@ -5098,11 +5107,10 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
     channel = cstored->Name();
 
-    mstring output = "";
     if (cstored->GetAccess(source, "SET"))
     {
-	output.Format("%s  %s", "Level", "Title");
-	::send(mynick, source, output);
+	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LEVEL_HEAD"),
+		channel.c_str());
     }
     long myaccess = cstored->GetAccess(source);
     bool haveset = cstored->GetAccess(source, "SET");
@@ -5114,15 +5122,17 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
     {
 	if (haveset)
 	{
-	    output = "";
-	    output.Format("%5d  %s", cstored->Level->Value(),
-					cstored->Level->Entry().c_str());
-	    ::send(mynick, source, output);
+	    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LEVEL_LIST"),
+		    cstored->Level->Value(),
+		    cstored->Level->Entry().c_str(),
+		    Parent->getMessage(source, "CS_SET/LVL_" + cstored->Level->Entry()).c_str());
 	}
-	else if(cstored->Level->Value() >= myaccess)
+	else if(cstored->Level->Value() >= 0 &&
+		cstored->Level->Value() <= myaccess)
 	{
-	    ::send(mynick, source, "You have " + cstored->Level->Entry() +
-					    " access.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LEVEL_HAVE"),
+		    Parent->getMessage(source, "CS_SET/LVL_" + cstored->Level->Entry()).c_str(),
+		    channel.c_str());
 	}
     }
 }
@@ -5169,15 +5179,19 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!level.IsNumber() || level.Contains(".") ||
-	atol(level.c_str()) < Parent->chanserv.Level_Min() ||
-	atol(level.c_str()) > Parent->chanserv.Level_Max())
+    if (!level.IsNumber() || level.Contains("."))
     {
-	mstring output;
-	output << "Levels may only be a whole number between " <<
-		Parent->chanserv.Level_Min() << " and " <<
-		Parent->chanserv.Level_Max() << ".";
-	::send(mynick, source, output);
+        ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	return;
+    }
+    long num = atol(level.c_str());
+
+    if (num < Parent->chanserv.Level_Min() ||
+	num > Parent->chanserv.Level_Max())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+		Parent->chanserv.Level_Min(),
+		Parent->chanserv.Level_Max());
 	return;
     }
 
@@ -5186,15 +5200,19 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
     {
 	mstring entry = cstored->Access->Entry();
 	cstored->Access_erase();
-	cstored->Access_insert(entry, atol(level.c_str()), source);
-	::send(mynick, source, "Level for " + cstored->Access->Entry() +
-				    " has now been changed to " + level + ".");
+	cstored->Access_insert(entry, num, source);
+	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE2_LEVEL"),
+		    cstored->Access->Entry().c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/ACCESS").c_str(),
+		    num);
     }
     else
     {
-	cstored->Access_insert(who, atol(level.c_str()), source);
-	::send(mynick, source, who + " has been added to access level of " +
-					channel + " at level " + level + ".");
+	cstored->Access_insert(who, num, source);
+	::send(mynick, source, Parent->getMessage(source, "LIST/ADD2_LEVEL"),
+		    cstored->Access->Entry().c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/ACCESS").c_str(),
+		    num);
     }
 }
 
@@ -5234,30 +5252,29 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 
     if (who.IsNumber())
     {
-	if (who.Contains("."))
+	if (who.Contains(".") || who.Contains("-"))
 	{
-	    ::send(mynick, source, "You may only specify integers as entry numbers");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/POSWHOLENUMBER"));
 	    return;
 	}
-	else if (atoi(who) > cstored->Access_size())
-	{
-	    ::send(mynick, source, "Entry #" + who + " not found on access list for " +
-							channel + ".");
-	    return;
-	}
-	unsigned int i;
+	unsigned int i, num = atoi(who);
+
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
 	for (i=1, cstored->Access = cstored->Access_begin();
-				i<atoi(who) && cstored->Access != cstored->Access_end();
+				i<num && cstored->Access != cstored->Access_end();
 				i++, cstored->Access++) ;
 	if (cstored->Access != cstored->Access_end())
 	{
-		cstored->Access_erase();
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
+		    cstored->Access->Entry().c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/ACCESS").c_str());
+	    cstored->Access_erase();
 	}
 	else
 	{
-	    ::send(mynick, source, "Entry #" + who + " was not found on " + channel +
-							" access list.");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2_NUMBER"),
+		    num, channel.c_str(),
+		    Parent->getMessage(source, "LIST/ACCESS").c_str());
 	}
     }
     else
@@ -5265,14 +5282,16 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
 	if (cstored->Access_find(who))
 	{
-	    ::send(mynick, source, cstored->Access->Entry() +
-				" has been removed from  " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
+		    cstored->Access->Entry().c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/ACCESS").c_str());
 	    cstored->Access_erase();
 	}
 	else
 	{
-	    ::send(mynick, source, who + " was not found on " + channel +
-							" access list.");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+		    who, channel.c_str(),
+		    Parent->getMessage(source, "LIST/ACCESS").c_str());
 	}
     }
 }
@@ -5314,21 +5333,30 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
 
     if (cstored->Access_size())
     {
-	::send(mynick, source, "Access list for " + channel + ":");
+	::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
+		    channel.c_str(),
+		    Parent->getMessage(source, "LIST/ACCESS").c_str());
     }
     else
     {
-	::send(mynick, source, "Access List is empty for channel " + channel);
+	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
+		    channel.c_str(),
+		    Parent->getMessage(source, "LIST/ACCESS").c_str());
 	return;
     }
 
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
-    int i;
+    unsigned int i;
+    mstring format = "%4d. %3d %s (" +
+		    Parent->getMessage(source, "LIST/LASTMOD") + ")";
+
     for (i=1, cstored->Access = cstored->Access_begin();
 	cstored->Access != cstored->Access_end(); cstored->Access++, i++)
     {
-	::send(mynick, source, mstring(itoa(i)) + ". " + cstored->Access->Entry() +
-				    "  " +  cstored->Access->Value());
+	::send(mynick, source, format, i, cstored->Access->Value(),
+		    cstored->Access->Entry().c_str(),
+		    cstored->Access->Last_Modify_Time().Ago().c_str(),
+		    cstored->Access->Last_Modifier().c_str());
     }
 }
 
@@ -5373,7 +5401,8 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
     {
 	if (!who.Contains("@"))
 	{
-	    ::send(mynick, source, "When specifying a mask, you MUST include a '@' symbol");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
+		    Parent->getMessage(source, "LIST/AKICK").c_str(), '@');
 	    return;
 	}
 	else if (!who.Contains("!"))
@@ -5403,15 +5432,15 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 	// IF we have less than 1 char for 
 	if (!super && num <= Parent->config.Starthresh())
 	{
-	    ::send(mynick, source, "You must have more than " +
-			    mstring(itoa(Parent->config.Starthresh())) +
-			    " non-wildcard characters in an AKILL host.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/AKICK").c_str(),
+			Parent->config.Starthresh());
 	    return;
 	}
 	else if (num <= 1)
 	{
-	    ::send(mynick, source, mstring("You must have more than 1") +
-			    " non-wildcard characters in an AKILL mask.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/STARTHRESH"),
+			Parent->getMessage(source, "LIST/AKICK").c_str(), 1);
 	    return;
 	}
     }
@@ -5425,14 +5454,16 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
     if (cstored->Akick_find(who))
     {
-	::send(mynick, source, "AKICK " + cstored->Access->Entry() +
-						    " already exists.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/EXISTS2"),
+		who.c_str(), channel.c_str(),
+		Parent->getMessage(source, "LIST/AKICK").c_str());
     }
     else
     {
 	cstored->Akick_insert(who, reason, source);
-	::send(mynick, source, who + " has been added to AKICK list of " +
-							    channel + ".");
+	::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
+		who.c_str(), channel.c_str(),
+		Parent->getMessage(source, "LIST/AKICK").c_str());
     }
 }
 
@@ -5472,37 +5503,37 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 
     if (who.IsNumber())
     {
-	if (who.Contains("."))
+	if (who.Contains(".") || who.Contains("-"))
 	{
-	    ::send(mynick, source, "You may only specify integers as entry numbers");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_STYNTAX/POSWHOLENUMBER"));
 	    return;
 	}
-	else if (atoi(who) > cstored->Akick_size())
-	{
-	    ::send(mynick, source, "Entry #" + who + " not found on access list for " +
-							channel + ".");
-	    return;
-	}
-	unsigned int i;
+	unsigned int i, num = atoi(who);
+
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
 	for (i=1, cstored->Akick = cstored->Akick_begin();
-				i<atoi(who) && cstored->Akick != cstored->Akick_end();
+				i<num && cstored->Akick != cstored->Akick_end();
 				i++, cstored->Akick++) ;
 	if (cstored->Akick != cstored->Akick_end())
 	{
-		cstored->Akick_erase();
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
+		    cstored->Akick->Entry().c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/AKICK").c_str());
+	    cstored->Akick_erase();
 	}
 	else
 	{
-	    ::send(mynick, source, "Entry #" + who + " was not found on " + channel +
-							" access list.");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2_NUMBER"),
+		    num, channel.c_str(),
+		    Parent->getMessage(source, "LIST/AKICK").c_str());
 	}
     }
     else
     {
 	if (!who.Contains("@"))
 	{
-	    ::send(mynick, source, "When specifying a mask, you MUST include a '@' symbol");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
+		    Parent->getMessage(source, "LIST/AKICK").c_str(), '@');
 	    return;
 	}
 	else if (!who.Contains("!"))
@@ -5513,14 +5544,16 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
 	if (cstored->Akick_find(who))
 	{
-	    ::send(mynick, source, cstored->Akick->Entry() +
-				" has been removed from  " + channel + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
+		    cstored->Akick->Entry().c_str(), channel.c_str(),
+		    Parent->getMessage(source, "LIST/AKICK").c_str());
 	    cstored->Akick_erase();
 	}
 	else
 	{
-	    ::send(mynick, source, who + " was not found on " + channel +
-							" access list.");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+		    who, channel.c_str(),
+		    Parent->getMessage(source, "LIST/AKICK").c_str());
 	}
     }
 }
@@ -5562,21 +5595,29 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
 
     if (cstored->Akick_size())
     {
-	::send(mynick, source, "AKICK list for " + channel + ":");
+	::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
+		    channel.c_str(),
+		    Parent->getMessage(source, "LIST/AKICK").c_str());
     }
     else
     {
-	::send(mynick, source, "AKICK List is empty for channel " + channel);
+	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
+		    channel.c_str(),
+		    Parent->getMessage(source, "LIST/AKICK").c_str());
 	return;
     }
 
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+    mstring format = "%4d. %s (" +
+		    Parent->getMessage(source, "LIST/LASTMOD") + ")";
     int i;
     for (i=1, cstored->Akick = cstored->Akick_begin();
 	cstored->Akick == cstored->Akick_end(); cstored->Akick++, i++)
     {
-	::send(mynick, source, mstring(itoa(i)) + ". " + mstring(cstored->Akick->Entry()) +
-				    "  " + mstring(cstored->Akick->Value()));
+	::send(mynick, source, format, i, cstored->Akick->Entry().c_str(),
+		    cstored->Akick->Last_Modify_Time().Ago().c_str(),
+		    cstored->Akick->Last_Modifier().c_str());
+	::send(mynick, source, "      %s", cstored->Akick->Value().c_str());
     }
 }
 
@@ -5643,33 +5684,16 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 	if (cstored->Greet->Entry()[0U] == '!' && source == target &&
 	    !cstored->GetAccess(source, "OVERGREET"))
 	{
-	    ::send(mynick, source, "Your channel greeting for " +
-			    cstored->Name() + " is locked.");
+	    ::send(mynick, source, Parent->getMessage(source, "CS_STATUS/LOCKGREET"),
+		    channel.c_str());
 	    return;
 	}
 	cstored->Greet_erase();
     }
     cstored->Greet_insert(option, target);
-    if (target != source)
-    {
-	if (option[0U] == '!')
-	{
-	    ::send(mynick, source, "Greeting for " + target + " on channel " +
-				cstored->Name() + " has been locked to " +
-				IRC_Bold + option.After("!") + IRC_Off);
-	}
-	else
-	{
-	    ::send(mynick, source, "Greeting for " + target + " on channel " +
-				cstored->Name() + " has been set to " +
-				IRC_Bold + option + IRC_Off);
-	}
-    }
-    else
-    {
-	::send(mynick, source, "Your greeting for channel " + cstored->Name() +
-			" has been set to " + IRC_Bold + option + IRC_Off);
-    }
+    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
+		target.c_str(), channel.c_str(),
+		Parent->getMessage(source, "LIST/GREET").c_str());
 }
 
 void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
@@ -5715,8 +5739,9 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 
 	    if (!cstored->Greet_find(target))
 	    {
-		::send(mynick, source, "Nick " + target + " does not have " +
-		    "a channel greeting for " + cstored->Name() + ".");
+		::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+			target.c_str(), channel.c_str(),
+			Parent->getMessage(source, "LIST/GREET").c_str());
 		return;
 	    }
 	}
@@ -5730,8 +5755,9 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
     if (source != target)
     {
 	cstored->Greet_erase();
-	::send(mynick, source, "Greeting for nick " + target + " removed " +
-				    "for channel " + cstored->Name() + ".");
+	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
+			target.c_str(), channel.c_str(),
+			Parent->getMessage(source, "LIST/GREET").c_str());
     }
     else
     {
@@ -5746,18 +5772,20 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 	    if (cstored->Greet->Entry()[0U] == '!' &&
 		!cstored->GetAccess(source, "OVERGREET"))
 	    {
-		::send(mynick, source, "Your channel greeting for " +
-			    cstored->Name() + " is locked.");
+		::send(mynick, source, Parent->getMessage(source, "CS_STATUS/LOCKGREET"),
+			    channel.c_str());
 		return;
 	    }
 	    cstored->Greet_erase();
-	    ::send(mynick, source, "Your greeting for channel " +
-				    cstored->Name() + " has been unset.");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
+			target.c_str(), channel.c_str(),
+			Parent->getMessage(source, "LIST/GREET").c_str());
 	}
 	else
 	{
-	    ::send(mynick, source, "You do not have a greeting for channel " +
-							cstored->Name());
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+			target.c_str(), channel.c_str(),
+			Parent->getMessage(source, "LIST/GREET").c_str());
 	}
     }
 }
@@ -5793,7 +5821,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 3 &&
 	cstored->GetAccess(source, "OVERGREET"))
     {
-	if (params.ExtractWord(3, " ").LowerCase() == "all")
+	if (params.ExtractWord(3, " ").CmpNoCase("all") == 0)
 	    all = true;
     }
     else if (!cstored->GetAccess(source, "GREET"))
@@ -5808,15 +5836,24 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 	target = Parent->nickserv.stored[target.LowerCase()].Host();
     }
 
+    bool found = false;
     for (cstored->Greet = cstored->Greet_begin();
 		    cstored->Greet != cstored->Greet_end(); cstored->Greet++)
     {
 	if (cstored->Greet->Last_Modifier().LowerCase() == target.LowerCase()
 	    || all)
 	{
-	    ::send(mynick, source, "[" + cstored->Greet->Last_Modifier() +
-				"] " + cstored->Greet->Entry());
+	    ::send(mynick, source, "[%s] %s",
+				cstored->Greet->Last_Modifier().c_str(),
+				cstored->Greet->Entry().c_str());
+	    found = true;
 	}
+    }
+    if (!found)
+    {
+	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+			target.c_str(), channel.c_str(),
+			Parent->getMessage(source, "LIST/GREET").c_str());
     }
 }
 
@@ -5855,8 +5892,9 @@ void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Message_insert(text, source);
-    ::send(mynick, source, "On-Join message #" + mstring(itoa(cstored->Message_size())) +
-			" has been added for channel " + cstored->Name());
+    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2_NUMBER"),
+		cstored->Message_size(), channel.c_str(),
+		Parent->getMessage(source, "LIST/JOINMSG").c_str());
 }
 
 void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
@@ -5895,24 +5933,31 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 
     if (!target.IsNumber() || target.Contains("."))
     {
-	::send(mynick, source, "Entry must be a posetive whole number.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/POSWHOLENUMBER"));
+	return;
+    }
+    int num = atoi(target);
+
+    if (!cstored->Message_size())
+    {
+	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
+		channel.c_str(),
+		Parent->getMessage(source, "LIST/JOINMSG").c_str());
 	return;
     }
 
-    if (atoi(target) <= 0 || atoi(target) > cstored->Message_size())
-    {
-	::send(mynick, source, "Entry may only be between 1 and " +
-			mstring(itoa(cstored->Message_size())) + ".");
-	return;
-    }
-    if (cstored->Message_find(atoi(target)))
+    if (cstored->Message_find(num))
     {
         cstored->Message_erase();
-	::send(mynick, source, "Entry #" + target + " has been removed.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2_NUMBER"),
+		num, channel.c_str(),
+		Parent->getMessage(source, "LIST/JOINMSG").c_str());
     }
     else
     {
-	::send(mynick, source, "Entry #" + target + " is not found.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2_NUMBER"),
+		num, channel.c_str(),
+		Parent->getMessage(source, "LIST/JOINMSG").c_str());
     }
 }
 
@@ -5949,12 +5994,22 @@ void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    if (!cstored->Message_size())
+    {
+	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
+		channel.c_str(),
+		Parent->getMessage(source, "LIST/JOINMSG").c_str());
+	return;
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
+	    channel.c_str(), Parent->getMessage(source, "LIST/JOINMSG").c_str());
     int i;
     for (i=1, cstored->Message = cstored->Message_begin();
 				cstored->Message != cstored->Message_end();
 				cstored->Message++, i++)
     {
-        ::send(mynick, source, mstring(itoa(i)) + ". " + cstored->Message->Entry());
+        ::send(mynick, source, "%d. %s", i, cstored->Message->Entry().c_str());
     }
 }
 
@@ -6005,8 +6060,9 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
     }
 
     cstored->Founder(founder);
-    ::send(mynick, source, "Founder for channel " + cstored->Name() +
-			" has been set to " + IRC_Bold + founder + IRC_Off);
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/FOUNDER").c_str(),
+	    channel.c_str(), founder.c_str());
 }
 
 void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
@@ -6057,13 +6113,14 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
 
     if (cstored->Founder().LowerCase() == founder.LowerCase())
     {
-	::send(mynick, source, "Cannot demote current founder of " + channel + ".");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COFOUNDER"));
 	return;
     }
 
     cstored->CoFounder(founder);
-    ::send(mynick, source, "CoFounder for channel " + cstored->Name() +
-			" has been set to " + IRC_Bold + founder + IRC_Off);
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/COFOUNDER").c_str(),
+	    channel.c_str(), founder.c_str());
 }
 
 void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params)
@@ -6101,8 +6158,9 @@ void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params
     }
 
     cstored->Description(option);
-    ::send(mynick, source, "Description for channel " + cstored->Name() +
-			" has been set to " + IRC_Bold + option + IRC_Off);
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/DESCRIPTION").c_str(),
+	    channel.c_str(), option.c_str());
 }
 
 void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
@@ -6142,13 +6200,14 @@ void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
     if (password.Len() < 5 || password.CmpNoCase(cstored->Name()) == 0 ||
 	password.CmpNoCase(source) == 0)
     {
-	::send(mynick, source, "Please choose a more complex password.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/COMPLEX_PASS"));
 	return;
     }
 
     cstored->Password(password);
-    ::send(mynick, source, "Password for channel " + cstored->Name() +
-			" has been set to " + IRC_Bold + password + IRC_Off);
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/PASSWORD").c_str(),
+	    channel.c_str(), password.c_str());
 }
 
 void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
@@ -6189,11 +6248,13 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
 	option = "";
     cstored->Email(option);
     if (option == "")
-	::send(mynick, source, "E-Mail for channel " + cstored->Name() +
-			" has been unset.");
+	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
+	    Parent->getMessage(source, "CS_SET/EMAIL").c_str(),
+	    channel.c_str());
     else
-	::send(mynick, source, "E-Mail for channel " + cstored->Name() +
-			" has been set to " + IRC_Bold + option + IRC_Off);
+	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/EMAIL").c_str(),
+	    channel.c_str(), option.c_str());
 }
 
 void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
@@ -6234,11 +6295,13 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
 	option = "";
     cstored->URL(option);
     if (option == "")
-	::send(mynick, source, "URL for channel " + cstored->Name() +
-			" has been unset.");
+	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
+	    Parent->getMessage(source, "CS_SET/URL").c_str(),
+	    channel.c_str());
     else
-	::send(mynick, source, "URL for channel " + cstored->Name() +
-			" has been set to " + IRC_Bold + option + IRC_Off);
+	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/URL").c_str(),
+	    channel.c_str(), option.c_str());
 }
 
 void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
@@ -6272,11 +6335,13 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 	option = "";
     cstored->Comment(option);
     if (option == "")
-	::send(mynick, source, "Comment for channel " + cstored->Name() +
-			" has been unset.");
+	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
+	    Parent->getMessage(source, "CS_SET/COMMENT").c_str(),
+	    channel.c_str());
     else
-	::send(mynick, source, "Comment for channel " + cstored->Name() +
-			" has been set to " + IRC_Bold + option + IRC_Off);
+	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/COMMENT").c_str(),
+	    channel.c_str(), option.c_str());
 }
 
 void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
@@ -6359,19 +6424,17 @@ void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Bantime())
     {
-	::send(mynick, source, "Bantime is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
+		channel.c_str());
 	return;
     }
 
-    if (!value.IsNumber() || atol(value) < 0)
-    {
-	::send(mynick, source, "Value specified muse be a number >= 0");
-	return;
-    }
-
-    cstored->Bantime(atol(value));
-    ::send(mynick, source, "Bantime for channel " + cstored->Name() +
-	" has been set to " + value + ".");
+    unsigned long num = FromHumanTime(value);
+    cstored->Bantime(num);
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
+	    channel.c_str(), ToHumanTime(num).c_str());
 }
 
 void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
@@ -6410,7 +6473,9 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Keeptopic())
     {
-	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6424,13 +6489,16 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->Keeptopic(onoff.GetBool());
-    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
@@ -6469,7 +6537,9 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Topiclock())
     {
-	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6483,13 +6553,16 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->Topiclock(onoff.GetBool());
-    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
@@ -6528,7 +6601,9 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Private())
     {
-	::send(mynick, source, "Private is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6542,13 +6617,16 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->Private(onoff.GetBool());
-    ::send(mynick, source, "Private for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
@@ -6587,7 +6665,9 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Secureops())
     {
-	::send(mynick, source, "SecureOps is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6601,13 +6681,16 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->Secureops(onoff.GetBool());
-    ::send(mynick, source, "SecureOps for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
@@ -6646,7 +6729,9 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Secure())
     {
-	::send(mynick, source, "Secure is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/SECURE").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6660,13 +6745,16 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->Secure(onoff.GetBool());
-    ::send(mynick, source, "Secure for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/SECURE").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
@@ -6698,7 +6786,9 @@ void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_NoExpire())
     {
-	::send(mynick, source, "NoExpire is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/NOEXPIRE").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6712,13 +6802,16 @@ void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->NoExpire(onoff.GetBool());
-    ::send(mynick, source, "NoExpire for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/NOEXPIRE").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
@@ -6757,7 +6850,9 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Anarchy())
     {
-	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6771,13 +6866,16 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->Anarchy(onoff.GetBool());
-    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
@@ -6816,7 +6914,9 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Restricted())
     {
-	::send(mynick, source, "Restricted is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6830,13 +6930,16 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->Restricted(onoff.GetBool());
-    ::send(mynick, source, "Restricted for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
@@ -6875,7 +6978,9 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Join())
     {
-	::send(mynick, source, "Join is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/JOIN").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6889,13 +6994,16 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->Join(onoff.GetBool());
-    ::send(mynick, source, "Join for channel " + cstored->Name() +
-	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/JOIN").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
     if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
 	!Parent->chanserv.live[channel.LowerCase()].IsIn(
 		Parent->chanserv.FirstName()))
@@ -6937,7 +7045,6 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
     channel = cstored->Name();
-
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored->GetAccess(source, "SET"))
     {
@@ -6947,7 +7054,9 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
 
     if (cstored->L_Revenge())
     {
-	::send(mynick, source, "Revenge is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -6959,8 +7068,9 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
     // checking to see if its valid.
 
     cstored->Revenge(option.UpperCase());
-    ::send(mynick, source, "Revenge for channel " + cstored->Name() +
-	" has been set to " + option.UpperCase() + ".");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
+	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
+	    channel.c_str(), option.UpperCase());
 }
 
 void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
@@ -7029,21 +7139,19 @@ void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Bantime())
     {
-	::send(mynick, source, "Bantime is a SERVICES LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
+		channel.c_str());
 	return;
     }
 
-    if (!value.IsNumber() || atol(value) < 0)
-    {
-	::send(mynick, source, "Value specified muse be a number >= 0");
-	return;
-    }
-
+    unsigned long num = FromHumanTime(value);
     cstored->L_Bantime(false);
-    cstored->Bantime(atol(value));
+    cstored->Bantime(num);
     cstored->L_Bantime(true);
-    ::send(mynick, source, "Bantime for channel " + cstored->Name() +
-	" has been locked to " + value + ".");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
+	    channel.c_str(), ToHumanTime(num).c_str());
 }
 
 void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
@@ -7075,7 +7183,9 @@ void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Keeptopic())
     {
-	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7089,15 +7199,18 @@ void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->L_Keeptopic(false);
     cstored->Keeptopic(onoff.GetBool());
     cstored->L_Keeptopic(true);
-    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
-	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
@@ -7129,7 +7242,9 @@ void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Topiclock())
     {
-	::send(mynick, source, "TopicLock is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7143,15 +7258,18 @@ void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->L_Topiclock(false);
     cstored->Topiclock(onoff.GetBool());
     cstored->L_Topiclock(true);
-    ::send(mynick, source, "TopicLock for channel " + cstored->Name() +
-	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
@@ -7183,7 +7301,9 @@ void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Private())
     {
-	::send(mynick, source, "Private is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7197,15 +7317,18 @@ void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->L_Private(false);
     cstored->Private(onoff.GetBool());
     cstored->L_Private(true);
-    ::send(mynick, source, "Private for channel " + cstored->Name() +
-	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
@@ -7237,7 +7360,9 @@ void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Secureops())
     {
-	::send(mynick, source, "SecureOps is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7251,15 +7376,18 @@ void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->L_Secureops(false);
     cstored->Secureops(onoff.GetBool());
     cstored->L_Secureops(true);
-    ::send(mynick, source, "SecureOps for channel " + cstored->Name() +
-	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
@@ -7291,7 +7419,9 @@ void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Secure())
     {
-	::send(mynick, source, "Secure is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/SECURE").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7305,15 +7435,18 @@ void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->L_Secure(false);
     cstored->Secure(onoff.GetBool());
     cstored->L_Secure(true);
-    ::send(mynick, source, "Secure for channel " + cstored->Name() +
-	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/SECURE").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
@@ -7345,7 +7478,9 @@ void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Anarchy())
     {
-	::send(mynick, source, "Anarchy is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7359,15 +7494,18 @@ void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->L_Anarchy(false);
     cstored->Anarchy(onoff.GetBool());
     cstored->L_Anarchy(true);
-    ::send(mynick, source, "Anarchy for channel " + cstored->Name() +
-	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params)
@@ -7399,7 +7537,9 @@ void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params
 
     if (Parent->chanserv.LCK_Restricted())
     {
-	::send(mynick, source, "Restricted is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7413,15 +7553,18 @@ void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->L_Restricted(false);
     cstored->Restricted(onoff.GetBool());
     cstored->L_Restricted(true);
-    ::send(mynick, source, "Restricted for channel " + cstored->Name() +
-	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
@@ -7453,7 +7596,9 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Join())
     {
-	::send(mynick, source, "Join is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/JOIN").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7467,15 +7612,18 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 
     if (!onoff.IsBool())
     {
-	::send(mynick, source, "The value you have entered is not valid.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEONOFF"));
 	return;
     }
 
     cstored->L_Join(false);
     cstored->Join(onoff.GetBool());
     cstored->L_Join(true);
-    ::send(mynick, source, "Join for channel " + cstored->Name() +
-	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/JOIN").c_str(),
+	    channel.c_str(), onoff.GetBool() ?
+		Parent->getMessage(source, "MISC/ON").c_str() :
+		Parent->getMessage(source, "MISC/OFF").c_str());
 }
 
 void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
@@ -7507,7 +7655,9 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Revenge())
     {
-	::send(mynick, source, "Revenge is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
+		channel.c_str());
 	return;
     }
 
@@ -7523,8 +7673,9 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
     cstored->L_Revenge(false);
     cstored->Revenge(option.UpperCase());
     cstored->L_Revenge(true);
-    ::send(mynick, source, "Revenge for channel " + cstored->Name() +
-	" has been locked to " + option.UpperCase() + ".");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
+	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
+	    channel.c_str(), option.UpperCase());
 }
 
 void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
@@ -7586,13 +7737,16 @@ void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Bantime())
     {
-	::send(mynick, source, "Bantime is a SERVICES LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Bantime(false);
-    ::send(mynick, source, "Bantime for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring params)
@@ -7623,13 +7777,16 @@ void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.LCK_Keeptopic())
     {
-	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Keeptopic(false);
-    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring params)
@@ -7661,13 +7818,16 @@ void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.LCK_Topiclock())
     {
-	::send(mynick, source, "TopicLock is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Topiclock(false);
-    ::send(mynick, source, "TopicLock for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
@@ -7698,13 +7858,16 @@ void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Private())
     {
-	::send(mynick, source, "Private is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Private(false);
-    ::send(mynick, source, "Private for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring params)
@@ -7735,13 +7898,16 @@ void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring param
 
     if (Parent->chanserv.LCK_Secureops())
     {
-	::send(mynick, source, "SecureOps is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Secureops(false);
-    ::send(mynick, source, "SecureOps for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
@@ -7772,13 +7938,16 @@ void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Secure())
     {
-	::send(mynick, source, "Secure is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/SECURE").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Secure(false);
-    ::send(mynick, source, "Secure for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/SECURE").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
@@ -7809,13 +7978,16 @@ void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Anarchy())
     {
-	::send(mynick, source, "Anarchy is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Anarchy(false);
-    ::send(mynick, source, "Anarchy for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring params)
@@ -7846,13 +8018,16 @@ void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring para
 
     if (Parent->chanserv.LCK_Restricted())
     {
-	::send(mynick, source, "Restricted is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Restricted(false);
-    ::send(mynick, source, "Restricted for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
@@ -7883,13 +8058,16 @@ void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Join())
     {
-	::send(mynick, source, "Join is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/JOIN").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Join(false);
-    ::send(mynick, source, "Join for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/JOIN").c_str(),
+	    channel.c_str());
 }
 
 void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
@@ -7920,13 +8098,16 @@ void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.LCK_Revenge())
     {
-	::send(mynick, source, "Revenge is a LOCKED value.");
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISLOCKED"),
+		Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
+		channel.c_str());
 	return;
     }
 
     cstored->L_Revenge(false);
-    ::send(mynick, source, "Revenge for channel " + cstored->Name() +
-						" has been unlocked.");
+    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
+	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
+	    channel.c_str());
 }
 
 

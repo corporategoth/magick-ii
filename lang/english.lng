@@ -85,6 +85,7 @@ UNKNOWN_OPTION     =Unrecognized option %s.  Type /msg %s HELP %s for help.
 NEED_PARAMS        =Insufficiant paramaters specified for %s.  Type /msg %s HELP %s for help.
 MUSTCONTAIN        =Specified %s entry must contain a '%c' character.
 MAYNOTCONTAIN      =Specified %s entry may not contain a '%c' character.
+STARTHRESH         =Specified %s entry must have more than %d non-wildcard characters.
 MUSTBENUMBER       =You must specify a number between %d and %d.
 POSWHOLENUMBER     =You may only specify a posetive whole number.
 MUSTBEONOFF        =You may only specify "ON" or "OFF".
@@ -121,6 +122,7 @@ AKILLTOOHIGH       =You may only specify a maximum of %s for an AKILL time limit
 NOFLUSH            =Memos with file attachments may not be flushed.
 NOATTACH           =Cannot send file attachments to channels.
 FILEINPROG         =Cannot begin a new memo or file transfer while a file transfer is in progress.
+COFOUNDER          =Cannot set the CoFounder the same as the Founder.
 NOACCESS           =Access denied.
 
 [MISC]
@@ -192,7 +194,7 @@ ADD2_NUMBER        =Added entry #%d to %s %s list.
 ADD2_LEVEL         =Added entry %s to %s %s list at level %d.
 ADD2_TIME          =Added entry %s to %s %s list for %s.
 CHANGE2_LEVEL      =Changed entry %s on %s %s list to level %d.
-CHSNGE2_TIME       =Changed entry %s on %s %s list to %s.
+CHANGE2_TIME       =Changed entry %s on %s %s list to %s.
 DEL2               =Deleted entry %s from %s %s list.
 DEL2_MATCH         =Deleted %d entries matching %s from %s %s list.
 DEL2_NUMBER        =Deleted entry #%s from %s %s list.
@@ -397,6 +399,38 @@ RESTRICTED         =Restricted
 JOIN               =Services Join
 REVENGE            =Revenge level
 
+LVL_AUTODEOP       =Automatic DeOp/Voice
+LVL_AUTOVOICE      =Automatic Voice
+LVL_AUTOOP         =Automatic Op
+LVL_READMEMO       =Read News
+LVL_WRITEMEMO      =Write News
+LVL_DELMEMO        =Delete News
+LVL_GREET          =Set Greeting
+LVL_OVERGREET      =Lock Greeting
+LVL_MESSAGE        =Write On-Join Message
+LVL_AKICK          =AutoKick Maintinance
+LVL_SUPER          =SuperOp
+LVL_UNBAN          =Unban Server Bans
+LVL_ACCESS         =Access List Maintinance
+LVL_SET            =SET Modification
+LVL_VIEW           =Channel View
+LVL_CMDINVITE      =INVITE Command
+LVL_CMDUNBAN       =UNBAN Command
+LVL_CMDVOICE       =VOICE Command
+LVL_CMDOP          =OP Command
+LVL_CMDKICK        =KICK Command
+LVL_CMDMODE        =MODE Command
+LVL_CMDCLEAR       =CLEAR Command
+
+REV_NONE           =Disabled
+REV_MIRROR         =Mirror Activity
+REV_DEOP           =DeOp Only
+REV_KICK           =Kick Only
+REV_BAN1           =Nick (nick!*@*) Ban
+REV_BAN2           =Mask (*!*user@*.host) Ban
+REV_BAN3           =Port (*!*@port.host) Ban
+REV_BAN4           =Host (*!*@*.host) Ban
+
 
 [CS_STATUS]
 ISSTORED           =Channel %s is already registered.
@@ -424,11 +458,19 @@ ISINUSE            =Channel %s is currently in use.
 ISNOTINUSE         =Channel %s is not currently in use.
 RESTRICT           =Channel %s is registered and has %s set.  Access restrictions apply.
 HIGHERACCESS       =Nickname %s is higher than you are on the %s access list.
+LOCKGREET          =Your greeting for channel %s is locked.
+NOTLOCKGREET       =Your greeting for channel %s is not locked.
+ISLOCKED           =%s for channel %s is locked.
+ISNOTLOCKED        =%s for channel %s is not locked.
 
 [CS_COMMAND]
 REGISTERED         =Channel %s has been registered with founder %s.
 DROPPED            =Channel %s has been dropped.
 IDENTIFIED         =Password accepted - you are now identified as founder of %s.
+SET_TO             =%s for channel %s has been set to %s.
+UNSET              =%s for channel %s has been unset.
+LOCKED             =%s for channel %s has been LOCKED to .%s..
+UNLOCKED           =%s for channel %s has been UNLOCKED.
 MLOCK_REVERSED     =Mode lock has reversed %s.
 MLOCK_FORCED       =Mode lock has forced %s.
 MLOCK_SET          =Mode lock for channel %s has been set to %s.
@@ -445,6 +487,9 @@ OTH_INVITE         =You have been invited to channel %s by %s.
 UNBANNED           =You have been unbanned from channel %s.
 OTH_UNBANNED       =Nickname %s has been unbanned from channel %s.
 CLEAR              =%s command has been used by %s for channel %s.
+LEVEL_HEAD         =Level  TAG        Title (%s)
+LEVEL_LIST         =%5d  %-9s  %s
+LEVEL_HAVE         =You have %s access on channel %s.
 
 [COMMSERV]
 ISSTORED           =Committee %s already exists.
