@@ -33,6 +33,7 @@ using namespace std;
 #include "trace.h"
 #include "chanserv.h"
 #include "ircsocket.h"
+#include "variant.h"
 
 const int MAGICK_RET_NORMAL = 0;
 const int MAGICK_RET_RESTART = 1;
@@ -57,6 +58,7 @@ private:
 	int doparamparse();
 	SignalHandler *signalhandler;
 public:
+	operator mVariant() const { return mVariant("Magick object"); };
 	void get_config_values();
 	bool check_config();
 	int ping_frequency;
@@ -70,7 +72,7 @@ public:
 	Magick(int inargc, char **inargv);
 	int Start();
 
-	IrcSocket socket;
+	IrcSocket serversocket;
 	ChanServ chanserv;
 	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
 	Bob bob;
