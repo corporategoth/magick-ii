@@ -68,8 +68,6 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     }
 }
 
-
-
 // Public functions
 
 Chan_Live_t::Chan_Live_t()
@@ -136,7 +134,7 @@ bool Chan_Live_t::operator<(const Chan_Live_t &in) const
 mstring Chan_Live_t::Name()
 {
     NFT("Chan_Live_t::Name");
-    RET("");
+    RET(i_Name);
 }
 
 
@@ -196,6 +194,10 @@ int Chan_Live_t::Users()
 mstring Chan_Live_t::User(int num)
 {
     FT("Chan_Live_t::Users", (num));
+    map<mstring, pair<bool, bool> >::const_iterator k;
+    for(int i=0, k=users.begin();k!=users.end();k++, i++)
+	if (i==num) RET(users->first);
+ 
     RET("");
 }
 
@@ -210,6 +212,14 @@ int Chan_Live_t::Ops()
 mstring Chan_Live_t::Op(int num)
 {
     FT("Chan_Live_t::Op", (num));
+    map<mstring, pair<bool, bool> >::const_iterator k;
+    for(int i=0, k=users.begin();k!=users.end();k++)
+	if (IsOp(users->first))
+	{
+	    if (i==num) RET(users->first);
+	    i++;
+	}
+ 
     RET("");
 }
 
@@ -224,22 +234,31 @@ int Chan_Live_t::Voices()
 mstring Chan_Live_t::Voice(int num)
 {
     FT("Chan_Live_t::Voice", (num));
+    map<mstring, pair<bool, bool> >::const_iterator k;
+    for(int i=0, k=users.begin();k!=users.end();k++)
+	if (IsVoice(users->first))
+	{
+	    if (i==num) RET(users->first);
+	    i++;
+	}
     RET("");
 }
 
 
 
-// What the hell do I do with this? --Striker
-// pair<bool, bool> User(mstring name);
-// See below for attempt.
-//
-// pair<bool,bool> Chan_Live_t::User(mstring name);
-// {
-//    FT("Chan_Live_t::User", (name));
-// }
-///////////////////////////////////////////////////////////////////
-
-
+pair<bool,bool> Chan_Live_t::User(mstring name)
+{
+   FT("Chan_Live_t::User", (name));
+   if (IsIn(name))
+   {
+	NRET(pair<bool.bool>, users[name.LowerCase()]);
+   }
+   else
+   {
+	pair<bool,bool> tmp(false,false);
+	NRET(pair<bool.bool>, tmp);
+   }
+}
 
 
 bool Chan_Live_t::IsIn(mstring nick)
@@ -412,27 +431,25 @@ bool Chan_Live_t::HasMode(mstring in)
 }
 
 
-
 mstring Chan_Live_t::Mode()
 {
     NFT("Chan_Live_t::Mode");
-    RET("");
+    RET(modes);
 }
 
 
 mstring Chan_Live_t::Key()
 {
     NFT("Chan_Live_t::Key");
-    RET("");
+    RET(i_Key);
 }
 
 
 int Chan_Live_t::Limit()
 {
     NFT("Chan_Live_t::Limit");
-    RET(0);
+    RET(i_Limit);
 }
-
 
 
 mstring Chan_Live_t::UserDef(mstring type)
@@ -440,7 +457,6 @@ mstring Chan_Live_t::UserDef(mstring type)
     FT("Chan_Live_t::UserDef", (type));
     RET("");
 }
-
 
 mstring Chan_Live_t::UserDef(mstring type, mstring val)
 {
@@ -480,16 +496,30 @@ bool checkvoices(pair<mstring, pair<bool,bool> > &in)
     }
 }
 
+// --------- start of entlist_t -----------------------------------
 
-userlist_t::userlist_t(const userlist_t& in)
+entlist_t::entlist_t()
 {
-    NFT("userlist_t::userlist_t");
+    NFT("entlist_t::entlist_t");
+}
+
+entlist_t::entlist_t(mstring entry, mstring nick)
+{
+    FT("entlist_t::entlist_t", entry, nick);
+    i_Entry = entry;
+    i_Last_Modify_Time = Now();
+    i_Last_Modifier = nick;
+}
+
+entlist_t::entlist_t(const entlist_t& in)
+{
+    FT("entlist_t::entlist_t", ("(const entlist_t &) in"));
     *this=in;
 }
 
-void userlist_t::operator=(const userlist_t &in)
+void entlist_t::operator=(const entlist_t &in)
 {
-    NFT("userlist_t::operator=");
+    FT("entlist_t::operator=", ("(const entlist_t &) in"));
     i_Entry=in.i_Entry;
     i_Last_Modify_Time=in.i_Last_Modify_Time;
     i_Last_Modifier=in.i_Last_Modifier;
@@ -499,18 +529,171 @@ void userlist_t::operator=(const userlist_t &in)
 	i_UserDef[i->first]=i->second;
 }
 
-bool userlist_t::operator==(const userlist_t &in) const
+bool entlist_t::operator==(const entlist_t &in) const
 {
-    NFT("userlist_t::operator==");
+    FT("entlist_t::operator==", ("(const entlist_t &) in"));
     RET(i_Entry==in.i_Entry&&i_Last_Modify_Time==in.i_Last_Modify_Time&&
 	i_Last_Modifier==in.i_Last_Modifier&&i_UserDef==in.i_UserDef);
 }
+
+bool entlist_t::Change(mstring entry, mstring nick)
+{
+    FT("entlist_t::Change", (entry, nick);
+    i_Entry = entry;
+    i_Last_Modify_Time = Now();
+    i_Last_Modifier = nick;
+    RET(true);
+}
+
+mstring entlist_t::Entry()
+{
+    NFT("entlist_t::Entry");
+    RET(i_Entry);
+}
+
+mDateTime entlist_t::Last_Modify_Time()
+{
+    NFT("entlist_t::Last_Modify_Time");
+    RET(i_Last_Modify_Time);
+}
+
+mstring entlist_t::Last_Modifier()
+{
+    NFT("entlist_t::Last_Modifier");
+    RET(i_Modifier);
+}
+
+mstring entlist_t::UserDef(mstring type)
+{
+    FT("entlist_t::UserDef", (type));
+    RET("");
+}
+
+mstring entlist_t::UserDef(mstring type, mstring val)
+{
+    FT("entlist_t::UserDef", (type, val));
+    RET("");
+}
+
+// --------- start of entlist_val_t -----------------------------------
+
+entlist_val_t::entlist_val_t()
+{
+    NFT("entlist_val_t::entlist_val_t");
+}
+
+entlist_val_t::entlist_val_t(mstring entry, long value, mstring nick)
+{
+    FT("entlist_val_t::entlist_val_t", (entry, value, nick));
+    i_Entry = entry;
+    i_Value = value;
+    i_Last_Modify_Time = Now();
+    i_Last_Modifier = nick;
+}
+
+entlist_val_t::entlist_val_t(const entlist_val_t& in)
+{
+    FT("entlist_val_t::entlist_val_t", ("(const entlist_val_t &) in"));
+    *this=in;
+}
+
+void entlist_val_t::operator=(const entlist_val_t &in)
+{
+    FT("entlist_val_t::operator=", ("(const entlist_val_t &) in"));
+    i_Entry=in.i_Entry;
+    i_Value=in.i_Value;
+    i_Last_Modify_Time=in.i_Last_Modify_Time;
+    i_Last_Modifier=in.i_Last_Modifier;
+    map<mstring,mstring>::const_iterator i;
+    i_UserDef.clear();
+    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
+	i_UserDef[i->first]=i->second;
+}
+
+bool entlist_val_t::operator==(const entlist_val_t &in) const
+{
+    FT("entlist_val_t::operator==", ("(const entlist_val_t &) in"));
+    RET(i_Entry==in.i_Entry);
+}
+
+bool entlist_val_t::operator<(const entlist_val_t &in) const
+{
+    FT("entlist_val_t::operator<", ("(const entlist_val_t &) in"));
+    RET(i_Entry<in.i_Entry);
+}
+
+bool entlist_val_t::Change(mstring entry, mstring nick)
+{
+    FT("entlist_val_t::Change", (newent, nick);
+    i_Entry = newent;
+    i_Last_Modify_Time = Now();
+    i_Last_Modifier = nick;
+    RET(true);
+}
+
+bool entlist_val_t::Change(long value, mstring nick)
+{
+    FT("entlist_val_t::Change", (value, nick);
+    i_Value = value;
+    i_Last_Modify_Time = Now();
+    i_Last_Modifier = nick;
+    RET(true);
+}
+
+bool entlist_val_t::Change(mstring entry, long value, mstring nick)
+{
+    FT("entlist_val_t::Change", (entry, value, nick);
+    i_Entry = entry;
+    i_Value = value;
+    i_Last_Modify_Time = Now();
+    i_Last_Modifier = nick;
+    RET(true);
+}
+
+mstring entlist_val_t::Entry()
+{
+    NFT("entlist_val_t::Entry");
+    RET(i_Entry);
+}
+
+long entlist_val_t::Value()
+{
+    NFT("entlist_val_t::Value");
+    RET(i_Value);
+}
+
+mDateTime entlist_val_t::Last_Modify_Time()
+{
+    NFT("entlist_val_t::Last_Modify_Time");
+    RET(i_Last_Modify_Time);
+}
+
+mstring entlist_val_t::Last_Modifier()
+{
+    NFT("entlist_val_t::Last_Modifier");
+    RET(i_Modifier);
+}
+
+mstring entlist_val_t::UserDef(mstring type)
+{
+    FT("entlist_val_t::UserDef", (type));
+    RET("");
+}
+
+mstring entlist_val_t::UserDef(mstring type, mstring val)
+{
+    FT("entlist_val_t::UserDef", (type, val));
+    RET("");
+}
+
+// --------- end of entlist_val_t -----------------------------------
 
 Chan_Stored_t::Chan_Stored_t(const Chan_Stored_t& in)
 {
     NFT("Chan_Stored_t::Chan_Stored_t");
     *this=in;
 }
+
 
 void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 {
@@ -526,19 +709,21 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Mlock_Key=in.i_Mlock_Key;
     i_Mlock_Limit=in.i_Mlock_Limit;
 
-    list<userlist_t>::const_iterator j;
+    list<entlist_val_t>::const_iterator j;
     i_Access_Level.clear();
     for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
 	i_Access_Level.push_back(*j);
     i_Access.clear();
     for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
 	i_Access.push_back(*j);
+
+    list<entlist_t>::const_iterator k;
     i_Akick.clear();
-    for(j=in.i_Akick.begin();j!=in.i_Akick.end();j++)
-	i_Akick.push_back(*j);
+    for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
+	i_Akick.push_back(*k);
     i_Greet.clear();
-    for(j=in.i_Greet.begin();j!=in.i_Greet.end();j++)
-	i_Greet.push_back(*j);
+    for(k=in.i_Greet.begin();k!=in.i_Greet.end();k++)
+	i_Greet.push_back(*k);
 
     i_UserDef.clear();
     map<mstring, mstring>::const_iterator i;
@@ -597,24 +782,26 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     out<<in.i_Name<<in.i_RegTime<<in.i_Description<<in.i_Password<<in.i_URL;
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Limit;
 
-    list<userlist_t>::iterator i;
+    list<entlist_val_t>::iterator j;
     out<<in.i_Access_Level.size();
-    for(i=in.i_Access_Level.begin();i!=in.i_Access_Level.end();i++)
-	out<<*i;
+    for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
+	out<<*j;
     out<<in.i_Access.size();
-    for(i=in.i_Access.begin();i!=in.i_Access.end();i++)
-	out<<*i;
-    out<<in.i_Akick.size();
-    for(i=in.i_Akick.begin();i!=in.i_Akick.end();i++)
-	out<<*i;
-    out<<in.i_Greet.size();
-    for(i=in.i_Greet.begin();i!=in.i_Greet.end();i++)
-	out<<*i;
+    for(j=in.i_Access.begin();j!=in.i_Access.end();j++)
+	out<<*j;
 
-    map<mstring,mstring>::iterator j;
+    list<entlist_t>::iterator k;
+    out<<in.i_Akick.size();
+    for(k=in.i_Akick.begin();k!=in.i_Akick.end();k++)
+	out<<*k;
+    out<<in.i_Greet.size();
+    for(k=in.i_Greet.begin();k!=in.i_Greet.end();k++)
+	out<<*k;
+
+    map<mstring,mstring>::iterator i;
     out<<in.i_UserDef.size();
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	out<<(mstring)j->first<<(mstring)j->second;
+    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
+	out<<(mstring)i->first<<(mstring)i->second;
     return out;
 }
 
@@ -622,7 +809,7 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
 {
     unsigned int i,count;
     mstring dummy,dummy2;
-    userlist_t udummy;
+    entlist_t udummy;
     in>>out.i_Name>>out.i_RegTime>>out.i_Description>>out.i_Password>>out.i_URL;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
 
@@ -665,7 +852,7 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     return in;
 }
 
-wxOutputStream &operator<<(wxOutputStream& out,userlist_t& in)
+wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in)
 {
     out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
 
@@ -674,9 +861,9 @@ wxOutputStream &operator<<(wxOutputStream& out,userlist_t& in)
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
 	out<<(mstring)j->first<<(mstring)j->second;
     return out;
-    return out;
 }
-wxInputStream &operator>>(wxInputStream& in, userlist_t& out)
+
+wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
 {
     unsigned int i,count;
     mstring dummy,dummy2;
@@ -693,12 +880,32 @@ wxInputStream &operator>>(wxInputStream& in, userlist_t& out)
     return in;
 }
 
-userlist_t::userlist_t ()
+wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in)
 {
-    // these are probably not needed but best to be safe.
-    i_Entry=i_Last_Modifier="";
-    i_Last_Modify_Time=mDateTime(0.0);
-    i_UserDef.clear();
+    out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
+
+    map<mstring,mstring>::iterator j;
+    out<<in.i_UserDef.size();
+    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
+	out<<(mstring)j->first<<(mstring)j->second;
+    return out;
+}
+
+wxInputStream &operator>>(wxInputStream& in, entlist_val_t& out)
+{
+    unsigned int i,count;
+    mstring dummy,dummy2;
+
+    in>>out.i_Entry>>out.i_Value>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
+
+    out.i_UserDef.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>dummy>>dummy2;
+	out.i_UserDef[dummy]=dummy2;
+    }
+    return in;
 }
 
 void ChanServ::load_database(void)
