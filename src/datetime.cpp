@@ -88,30 +88,29 @@ typedef int mDayTable[12];
 mDayTable DayTable1={31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 mDayTable DayTable2={31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-mDayTable *GetDayTable(int Year)
+mDayTable &GetDayTable(int Year)
 {
   if(IsLeapYear(Year))
-	  return &DayTable2;
+	  return DayTable2;
   else 
-	  return &DayTable1;
+	  return DayTable1;
 }
 
 bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
 {
   int I;
-  mDayTable *DayTable;
   bool Result;
   int tmpDay=Day;
 
   Result = false;
-  DayTable = GetDayTable(Year);
+  mDayTable &DayTable = GetDayTable(Year);
   if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) &&
-    (Day >= 1) && (Day <= *DayTable[Month]))
+    (Day >= 1) && (Day <= DayTable[Month]))
   {
     for(I = 1; I<Month;I++) 
-		tmpDay+=*DayTable[I];
-    I = Year - 1;
-    Date = (double)(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
+		tmpDay+=DayTable[I];
+    I = Year - 1.0;
+    Date.Val = (double)(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
     Result = true;
   }
   return Result;
@@ -130,7 +129,7 @@ bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time)
   bool Result = false;
   if ((Hour < 24) && (Min < 60) && (Sec < 60) && (MSec < 1000))
   {
-    Time = (double)((Hour * 3600000 + Min * 60000 + Sec * 1000 + MSec) / MSecsPerDay);
+    Time = ((double)Hour * 3600000.0 + (double)Min * 60000.0 + (double)Sec * 1000.0 + (double)MSec) / (double)MSecsPerDay;
     Result = true;
   }
   return Result;
@@ -157,7 +156,7 @@ mDateTime& mDateTime::operator=(time_t in)
 {
 	tm *tmst;
 	tmst=localtime(&in);
-	*this=mDateTime(tmst->tm_year+1900,tmst->tm_mon,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec,0);
+	*this=mDateTime(tmst->tm_year+1900,tmst->tm_mon+1,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec,0);
 	return *this;
 }
 mDateTime& mDateTime::operator+=(const mDateTime& in)
@@ -566,12 +565,12 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)
   Y=Y400*400+Y100*100+Y4*4+Y1;
 
   int i=0;
-  mDayTable *DayTable=GetDayTable(Y);
-  while(*DayTable[i]>NumDays)
+  mDayTable &DayTable=GetDayTable(Y);
+  while(DayTable[i]>NumDays)
   {
 	  M++;
 	  i++;
-	  NumDays-=*DayTable[i];
+	  NumDays-=DayTable[i];
   }
   D=NumDays;
   year=Y;
