@@ -1,3 +1,22 @@
+* 2002-03-02 20:22  Preston A. Elder <prez@magick.tm>
+  acconfig.h (1.15), configure.in (1.52), include/config.h.in (1.27),
+  include/config.h.win (1.21), include/filesys.h (1.58),
+  include/ircsocket.h (1.68), src/ircsocket.cpp (1.212), src/magick.cpp
+  (1.355):
+  
+  Added TEST_MODE, for testing without any IRC communication (all
+  STDIN/STDOUT).
+
+* 2002-03-02 15:34  Preston A. Elder <prez@magick.tm>
+  include/filesys.h (1.57):
+  
+  Added more initialization code.
+
+* 2002-02-25 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.24):
+  
+  Created version 2.0s20020225
+
 * 2002-02-20 23:23  Preston A. Elder <prez@magick.tm>
   KNOWN-BUGS (1.20), README (1.22), docs/en/index.sgml (1.34),
   lang/english.lfo (1.50), src/ircsocket.cpp (1.211), src/magick.cpp
