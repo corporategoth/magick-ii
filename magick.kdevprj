@@ -4,6 +4,11 @@ install_location=
 dist=true
 install=false
 type=SOURCE
+[src/nickdata.cpp]
+install_location=
+dist=true
+install=false
+type=SOURCE
 [docs/Makefile.am]
 files=docs/magick.ini,
 type=normal
@@ -345,7 +350,7 @@ dist=true
 install=false
 type=SOURCE
 [src/Makefile.am]
-files=src/base.cpp,src/chanserv.cpp,src/commserv.cpp,src/convert_magick.cpp,src/convert_esper.cpp,src/datetime.cpp,src/dccengine.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstring.cpp,src/nickserv.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/stages.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,src/mconfig.cpp,src/magick_keygen.c,src/genrankeys.c,
+files=src/base.cpp,src/chanserv.cpp,src/chandata.cpp,src/commserv.cpp,src/convert_magick.cpp,src/convert_esper.cpp,src/datetime.cpp,src/dccengine.cpp,src/filesys.cpp,src/ircsocket.cpp,src/lockable.cpp,src/magick.cpp,src/main.cpp,src/memoserv.cpp,src/mstring.cpp,src/nickserv.cpp,src/nickdata.cpp,src/operserv.cpp,src/server.cpp,src/servmsg.cpp,src/stages.cpp,src/trace.cpp,src/utils.cpp,src/variant.cpp,src/mconfig.cpp,src/magick_keygen.c,src/genrankeys.c,
 type=prog_main
 sub_dirs=crypt,xml,
 [include/base.h]
@@ -538,6 +543,11 @@ dist=true
 install=false
 type=SOURCE
 [src/chanserv.cpp]
+install_location=
+dist=true
+install=false
+type=SOURCE
+[src/chandata.cpp]
 install_location=
 dist=true
 install=false

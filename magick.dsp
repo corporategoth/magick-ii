@@ -96,6 +96,10 @@ SOURCE=.\src\chanserv.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\chandata.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\commserv.cpp
 # End Source File
 # Begin Source File
@@ -153,6 +157,10 @@ SOURCE=.\src\mstring.cpp
 # Begin Source File
 
 SOURCE=.\src\nickserv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\nickdata.cpp
 # End Source File
 # Begin Source File
 
