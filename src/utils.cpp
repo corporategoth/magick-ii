@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/06/28 18:52:42  prez
+** OOps, forgot to #include des/spr.h
+**
 ** Revision 1.40  2000/06/28 12:20:50  prez
 ** Lots of encryption stuff, but essentially, we now have random
 ** key generation for the keyfile keys, and we can actually encrypt
@@ -96,6 +99,9 @@ static const char *ident = "@(#)$Id$";
 #include "utils.h"
 #include "trace.h"
 #include "magick.h"
+#ifdef HASCRYPT
+#include "des/spr.h"
+#endif
 
 void wxSplitPath(const char *pszFileName,
                              mstring *pstrPath,
