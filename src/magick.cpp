@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.284  2000/12/31 17:55:13  prez
+** Moved SIGALRM to the ignored signals.
+**
 ** Revision 1.283  2000/12/29 15:46:13  prez
 ** fixed up log validation
 **
@@ -659,9 +662,6 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->register_handler(SIGFPE,signalhandler);
 #endif
-#if defined(SIGALRM) && (SIGALRM != 0)
-    ACE_Reactor::instance()->register_handler(SIGALRM,signalhandler);
-#endif
 #ifdef SIGCHLD
     ACE_Reactor::instance()->register_handler(SIGCHLD,signalhandler);
 #endif
@@ -681,6 +681,9 @@ int Magick::Start()
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
     ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
+#endif
+#if defined(SIGALRM) && (SIGALRM != 0)
+    ACE_Reactor::instance()->register_handler(SIGALRM,signalhandler);
 #endif
 #ifdef SIGTSTP
     ACE_Reactor::instance()->register_handler(SIGTSTP,signalhandler);
@@ -776,9 +779,6 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->remove_handler(SIGFPE);
 #endif
-#if defined(SIGALRM) && (SIGALRM != 0)
-    ACE_Reactor::instance()->remove_handler(SIGALRM);
-#endif
 #ifdef SIGCHLD
     ACE_Reactor::instance()->remove_handler(SIGCHLD);
 #endif
@@ -791,12 +791,16 @@ int Magick::Start()
 #ifdef SIGTTOU
     ACE_Reactor::instance()->remove_handler(SIGTTOU);
 #endif
+
 #if 0 // Posix threads use these, grr
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
     ACE_Reactor::instance()->remove_handler(SIGUSR1);
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
     ACE_Reactor::instance()->remove_handler(SIGUSR2);
+#endif
+#if defined(SIGALRM) && (SIGALRM != 0)
+    ACE_Reactor::instance()->remove_handler(SIGALRM);
 #endif
 #ifdef SIGTSTP
     ACE_Reactor::instance()->remove_handler(SIGTSTP);
