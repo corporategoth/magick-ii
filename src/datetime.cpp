@@ -43,7 +43,7 @@ mDateTime mDateTime::CurrentTime()
 
 mDateTime mDateTime::CurrentDateTime()
 {
-	return ::Now();
+	return mDateTime(time(NULL));
 }
 
 mDateTime::mDateTime(time_t src)

@@ -84,7 +84,7 @@ mstring& mstring::operator =(const mstring & in)
 
 mstring& mstring::operator =(const string & in)
 {
-	*this=in;
+	string(*this)=in;
 	return *this;
 }
 
