@@ -171,6 +171,14 @@ public:
     void DecodeDate(int &year, int &month, int &day)const;
     void DecodeTime(int &hour, int &min, int &sec, int& msec)const;
 
+    int MSecond();
+    int Second();
+    int Minute();
+    int Hour();
+    int Day();
+    int Month();
+    int Year();
+
     friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
     friend bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time);
     friend wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);

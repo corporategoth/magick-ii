@@ -687,3 +687,46 @@ mstring mDateTime::timetstring()const
     Result<<(unsigned long)Res2;
     return Result;
 }
+
+int mDateTime::MSecond()
+{
+    int Hours,Seconds,Minutes,Msecs;
+    DecodeTime(Hours,Seconds,Minutes,Msecs);
+    return Msecs;
+}
+int mDateTime::Second()
+{
+    int Hours,Seconds,Minutes,Msecs;
+    DecodeTime(Hours,Seconds,Minutes,Msecs);
+    return Seconds;
+}
+int mDateTime::Minute()
+{
+    int Hours,Seconds,Minutes,Msecs;
+    DecodeTime(Hours,Seconds,Minutes,Msecs);
+    return Minutes;
+}
+int mDateTime::Hour()
+{
+    int Hours,Seconds,Minutes,Msecs;
+    DecodeTime(Hours,Seconds,Minutes,Msecs);
+    return Hours;
+}
+int mDateTime::Day()
+{
+    int Year,Month,Day;
+    DecodeDate(Year,Month,Day);
+    return Day;
+}
+int mDateTime::Month()
+{
+    int Year,Month,Day;
+    DecodeDate(Year,Month,Day);
+    return Month;
+}
+int mDateTime::Year()
+{
+    int Year,Month,Day;
+    DecodeDate(Year,Month,Day);
+    return Year;
+}
