@@ -1,3 +1,41 @@
+* 2002-09-06 12:42  Preston A. Elder <prez@magick.tm>
+  COPYING (1.5):
+  
+  Updated license to 2.0beta5
+
+* 2002-09-06 01:29  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.92), ircd/ircd.aurora.ini (1.6),
+  ircd/ircd.bahamut.ini (1.6), ircd/ircd.dal.ini (1.5),
+  ircd/ircd.dal4.4.15.ini (1.6), ircd/ircd.hybrid5.ini (1.5),
+  ircd/ircd.hybrid7.ini (1.5), ircd/ircd.ircu.ini (1.5),
+  ircd/ircd.ircu2.10.ini (1.7), ircd/ircd.ircu2.10ext.ini (1.7),
+  ircd/ircd.rfc1459+ts8.ini (1.5), ircd/ircd.rfc1459.ini (1.5),
+  ircd/ircd.unreal.ini (1.8), lang/english.lng (1.90), src/chandata.cpp
+  (1.14), src/chanserv.cpp (1.300), src/ircsocket.cpp (1.232),
+  src/server.cpp (1.244):
+  
+  Fixed some channel mode bugs and a revenge bug.  Also added FounderMode.
+
+* 2002-09-03 02:23  Preston A. Elder <prez@magick.tm>
+  src/nickserv.cpp (1.217):
+  
+  Changed && into || (for NS INFO's listing of committees)
+
+* 2002-09-02 22:52  Preston A. Elder <prez@magick.tm>
+  magick.kdevprj (1.30):
+  
+  Updated project.
+
+* 2002-09-02 21:18  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.243):
+  
+  Windows fixes.
+
+* 2002-09-02 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.47):
+  
+  Created version 2.0s20020902
+
 * 2002-08-31 09:30  Preston A. Elder <prez@magick.tm>
   include/pch.h (1.57):
   
