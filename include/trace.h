@@ -80,7 +80,7 @@
 // then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
 // then it gives a syntax error.
 
-enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_CommServ, tt_LOST, tt_MAX };
+enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
 extern unsigned short makehex(mstring SLevel);
 
