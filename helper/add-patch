@@ -2,7 +2,7 @@
 #
 # Add a patch version
 
-if [ -z "$1" ]; then
+if [ -z "$*" ]; then
 	echo "Must specify patch name"
 	exit 1
 fi
@@ -13,54 +13,59 @@ if [ ! -f include/version.h ]; then
 fi
 
 cd include
+if [ -n "`grep PATCH version.h | grep \\\"$*\\\"`" ]; then
+	echo "Patch has been previously applied.  Please remove first."
+	exit 1
+fi
+
 mv version.h version.h~
-if [ -n "`grep PATCH1 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH1.*;/PATCH1 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH1 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH1.*;/PATCH1		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH2 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH2.*;/PATCH2 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH2 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH2.*;/PATCH2		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH3 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH3.*;/PATCH3 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH3 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH3.*;/PATCH3		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH4 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH4.*;/PATCH4 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH4 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH4.*;/PATCH4		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH5 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH5.*;/PATCH5 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH5 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH5.*;/PATCH5		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH6 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH6.*;/PATCH6 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH6 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH6.*;/PATCH6		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH7 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH7.*;/PATCH7 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH7 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH7.*;/PATCH7		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH8 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH8.*;/PATCH8 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH8 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH8.*;/PATCH8		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH9 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH9.*;/PATCH9 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH9 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH9.*;/PATCH9		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH0 version.h~ | grep \"\"`" ]; then
-	sed "s/PATCH0.*;/PATCH0 = \"$1\";/" version.h~ >version.h
+if [ -n "`grep PATCH0 version.h~ | grep '""'`" ]; then
+	sed "s/PATCH0.*;/PATCH0		= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
