@@ -70,28 +70,37 @@ class Trace
     };
 
 public:
-    enum level_enum{ LT_Off = 0, Stats = 1, Source = 2, Locking = 4, Sockets = 4, Bind = 2,
+    enum level_enum { Off = 0, Stats = 1, Source = 2, Locking = 4, Sockets = 4, Bind = 2,
 	External = 4, Chatter = 1, CheckPoint = 2, Functions = 3, Modify = 4 };
 
 	// Thread* for now till we get it done
 private:
 
+    level_enum SLevel;
     map<pair<threadtype_enum,level_enum>,TraceTypes> tmap;
     typedef pair<threadtype_enum,level_enum> levelpair;
 
     bool IsOnBig(TraceTypes level)
 	{ return (level & TraceLevel!=0); }
-	Trace::TraceTypes Resolve(Trace::level_enum level, ThreadID *tid);
+
+    TraceTypes Resolve(Trace::level_enum level, ThreadID *tid);
 
 public:
     Trace();
     ~Trace();
+    
+    level_enum ShortLevel(level_enum level) { return (SLevel = level); }
+    level_enum ShortLevel() { return SLevel; }
 
+    bool IsOn(ThreadID *tid)
+	{ return IsOnBig(resolve(SLevel, tid)); }
     bool IsOn(level_enum level, ThreadID *tid)
-	{ return IsOnBig(Resolve(level, tid)); }
+	{ return IsOnBig(resolve(level, tid); }
 };
 
-class ThreadID : public Trace {
+// ===================================================
+
+class ThreadID {
 private:
     threadtype_enum internaltype;
     int number;
@@ -112,6 +121,8 @@ public:
     void indentdown() { indent--; }
     void WriteOut (Trace::level_enum level, mstring &message);
 };
+
+// ===================================================
 
 class FuncTrace : public Trace
 {

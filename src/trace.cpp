@@ -18,49 +18,51 @@
 
 Trace::Trace()
 {
-	tmap[levelpair(MAIN,LT_Off)]		= TT_Off;
+	SLevel = Off;
+
+	tmap[levelpair(MAIN,Off)]		= TT_Off;
 	tmap[levelpair(MAIN,Stats)]		= G_Stats;
-	tmap[levelpair(MAIN,Source)]	= G_SourceFiles;
+	tmap[levelpair(MAIN,Source)]		= G_SourceFiles;
 	tmap[levelpair(MAIN,Functions)]		= G_Functions;
 	tmap[levelpair(MAIN,Locking)]		= G_Locking;
 
-	tmap[levelpair(NickServ,LT_Off)]		= TT_Off;
+	tmap[levelpair(NickServ,Off)]		= TT_Off;
 	tmap[levelpair(NickServ,Chatter)]	= NS_Chatter;
 	tmap[levelpair(NickServ,CheckPoint)]	= NS_CheckPoint;
 	tmap[levelpair(NickServ,Functions)]	= NS_Functions;
 	tmap[levelpair(NickServ,Modify)]	= NS_Modify;
 
-	tmap[levelpair(ChanServ,LT_Off)]		= TT_Off;
+	tmap[levelpair(ChanServ,Off)]		= TT_Off;
 	tmap[levelpair(ChanServ,Chatter)]	= CS_Chatter;
 	tmap[levelpair(ChanServ,CheckPoint)]	= CS_CheckPoint;
 	tmap[levelpair(ChanServ,Functions)]	= CS_Functions;
 	tmap[levelpair(ChanServ,Modify)]	= CS_Modify;
 
-	tmap[levelpair(MemoServ,LT_Off)]		= TT_Off;
+	tmap[levelpair(MemoServ,Off)]		= TT_Off;
 	tmap[levelpair(MemoServ,Chatter)]	= MS_Chatter;
 	tmap[levelpair(MemoServ,CheckPoint)]	= MS_CheckPoint;
 	tmap[levelpair(MemoServ,Functions)]	= MS_Functions;
 	tmap[levelpair(MemoServ,Modify)]	= MS_Modify;
 
-	tmap[levelpair(OperServ,LT_Off)]		= TT_Off;
+	tmap[levelpair(OperServ,Off)]		= TT_Off;
 	tmap[levelpair(OperServ,Chatter)]	= OS_Chatter;
 	tmap[levelpair(OperServ,CheckPoint)]	= OS_CheckPoint;
 	tmap[levelpair(OperServ,Functions)]	= OS_Functions;
 	tmap[levelpair(OperServ,Modify)]	= OS_Modify;
 
-	tmap[levelpair(OtherServ,LT_Off)]		= TT_Off;
+	tmap[levelpair(OtherServ,Off)]		= TT_Off;
 	tmap[levelpair(OtherServ,Chatter)]	= XS_Chatter;
 	tmap[levelpair(OtherServ,CheckPoint)]	= XS_CheckPoint;
 	tmap[levelpair(OtherServ,Functions)]	= XS_Functions;
 	tmap[levelpair(OtherServ,Modify)]	= XS_Modify;
 
-	tmap[levelpair(ServNet,LT_Off)]		= TT_Off;
+	tmap[levelpair(ServNet,Off)]		= TT_Off;
 	tmap[levelpair(ServNet,Chatter)]	= NET_Chatter;
 	tmap[levelpair(ServNet,CheckPoint)]	= NET_CheckPoint;
 	tmap[levelpair(ServNet,Functions)]	= NET_Functions;
 	tmap[levelpair(ServNet,Sockets)]	= NET_Sockets;
 
-	tmap[levelpair(BOB,LT_Off)]		= TT_Off;
+	tmap[levelpair(BOB,Off)]		= TT_Off;
 	tmap[levelpair(BOB,Chatter)]		= BOB_Chatter;
 	tmap[levelpair(BOB,Bind)]		= BOB_Bind;
 	tmap[levelpair(BOB,Functions)]		= BOB_Functions;
@@ -70,6 +72,13 @@ Trace::Trace()
 Trace::~Trace()
 {
 }
+
+Trace::TraceTypes Trace::Resolve(Trace::level_enum level, ThreadID *tid)
+{ 
+	return tmap[levelpair(tid->type(),level)]; 
+}
+
+// ===================================================
 
 ThreadID::ThreadID()
 {
@@ -110,32 +119,30 @@ mstring ThreadID::logname()
     return name;
 }
 
-void ThreadID::WriteOut(Trace::level_enum level, mstring &message)
+void ThreadID::WriteOut(mstring &message)
 {
-    mstring finalout;
-    int i;
-
-    if (IsOn(level, this)) 
+	//below for now till i get the operator bool happening.
+	if (out.LastError()!=wxStream_NOERROR) 
 	{
-		//below for now till i get the operator bool happening.
-		if (out.LastError()!=wxStream_NOERROR) 
-		{
-			out=wxFileOutputStream(logname());
-			out.SeekO(0,wxFromEnd);
-		}
-		assert(out.LastError()==wxStream_NOERROR);
-		for (i=0; i<indent; i++)
-			finalout += "  ";
-		finalout += message;
-		out << finalout;
-    }
+	    out=wxFileOutputStream(logname());
+	    out.SeekO(0,wxFromEnd);
+	}
+	assert(out.LastError()==wxStream_NOERROR);
+	mstring finalout;
+	for (int i=0; i<indent; i++)
+	    finalout += "  ";
+	finalout += message;
+	out << finalout;
 }
+
+// ===================================================
 
 FuncTrace::FuncTrace(const mstring &name, const mVarArray &args)
 {
     tid->indentup();
+    ShortLevel(Functions);
 
-    if (IsOn(Functions, tid)) {
+    if (IsOn(tid)) {
 	mstring message = name + "(";
 	for (int i=0; i<args.count(); i++) {
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
@@ -143,14 +150,6 @@ FuncTrace::FuncTrace(const mstring &name, const mVarArray &args)
 		message += ", ";
 	}
 	message += " )";
-
-	// write out from where? either declare it in this object, or use tid->WriteOut(
-	//WriteOut(Functions, tid, message);
+	tid->WriteOut(message);
     }
-}
-
-// enum is declared inside object so to access enum type it's objecttype::enumtype
-Trace::TraceTypes Trace::Resolve(Trace::level_enum level, ThreadID *tid)
-{ 
-	return tmap[levelpair(tid->type(),level)]; 
 }
