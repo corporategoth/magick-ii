@@ -50,6 +50,10 @@ char* wxGetWorkingDirectory(char *buf = (char *) NULL,int sz = 1000);
 // NB: can't have the same name because of overloading ambiguity
 mstring wxGetCwd();
 
+
+
+vector<int> ParseNumbers(mstring what);
+
 // extrapolated from the ms's pair<T1,T2> template code
 
 template<class T1, class T2, class T3> class triplet 

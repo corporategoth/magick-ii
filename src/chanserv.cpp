@@ -2811,7 +2811,7 @@ void ChanServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.ALL_Name(), ChanServ::do_Help);
+	    "H*LP", Parent->commserv.ALL_Name(), ChanServ::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "REG*", Parent->commserv.REGD_Name(), ChanServ::do_Register);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -3352,6 +3352,70 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
 void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_Mode", (mynick, source, params));
+
+    mstring message = params.Before(" ");
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsLive(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not in use.");
+	return;
+    }
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+    Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (params.WordCount(" ") > 2 && 
+	(cstored->GetAccess(source, "CMDMODE") ||
+	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
+    {
+	mstring modes = params.After(" ", 2);
+	clive->SendMode(modes);
+	return;
+    }
+    else if (cstored->GetAccess(source, "VIEW"))
+    {
+	mstring output;
+	output << clive->Name() << ": " << clive->Mode();
+	if (clive->Key() != "" && clive->Limit())
+	{
+	    if (clive->Mode().Before("l").Contains("k"))
+	    {
+		output << " " << clive->Key() << " " << clive->Limit();
+	    }
+	    else
+	    {
+		output << " " << clive->Limit() << " " << clive->Key();
+	    }
+	}
+	else if (clive->Key() != "")
+	{
+	    output << " " << clive->Key();
+	}
+	else if (clive->Limit())
+	{
+	    output << " " << clive->Limit();
+	}
+
+	::send(mynick, source, output);
+	return;
+    }
+
+    ::send(mynick, source, "Access Denied.");
 }
 
 void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
@@ -3388,7 +3452,7 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsIn(source))))
     {
-	target = params.ExtractWord(2, " ");
+	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
 	    ::send(mynick, source, "Nickname " + target + " is not online.");
@@ -3668,6 +3732,37 @@ void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_Topic", (mynick, source, params));
 
+    mstring message = params.Before(" ");
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring topic     = params.After(" ", 2);
+
+    if (!Parent->chanserv.IsLive(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not in use.");
+	return;
+    }
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (!chan->GetAccess(source, "CMDMODE"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    Parent->server.TOPIC(mynick, channel, topic);
 }
 
 void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
@@ -4452,31 +4547,390 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
 void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_access_Add", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 5)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring who       = params.ExtractWord(4, " ");
+    mstring level     = params.ExtractWord(5, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "ACCESS"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (!Parent->nickserv.IsStored(who))
+    {
+	::send(mynick, source, "Nickname " + who + "is not registered.");
+	return;
+    }
+
+    if (!level.IsNumber() || level.Contains(".") ||
+	atol(level.c_str()) < Parent->chanserv.Level_Min() ||
+	atol(level.c_str()) > Parent->chanserv.Level_Max())
+    {
+	mstring output;
+	output << "Levels may only be a whole number between " <<
+		Parent->chanserv.Level_Min() << " and " <<
+		Parent->chanserv.Level_Max() << ".";
+	::send(mynick, source, output);
+	return;
+    }
+
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+    if (cstored->Access_find(who))
+    {
+	cstored->Access->Value(atol(level.c_str()), source);
+	::send(mynick, source, "Level for " + cstored->Access->Entry() +
+				    " has now been changed to " + level + ".");
+    }
+    else
+    {
+	cstored->Access_insert(who, atol(level.c_str()), source);
+	::send(mynick, source, who + " has been added to access level of " +
+					channel + " at level " + level + ".");
+    }
 }
 
 void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_access_Del", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring who       = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "ACCESS"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (who.IsNumber())
+    {
+	if (who.Contains("."))
+	{
+	    ::send(mynick, source, "You may only specify integers as entry numbers");
+	    return;
+	}
+	else if (atoi(who) > cstored->Access_size())
+	{
+	    ::send(mynick, source, "Entry #" + who + " not found on access list for " +
+							channel + ".");
+	    return;
+	}
+    }
+
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+    if (cstored->Access_find(who))
+    {
+	::send(mynick, source, cstored->Access->Entry() +
+				" has been removed from  " + channel + ".");
+	cstored->Access_erase();
+    }
+    else
+    {
+	::send(mynick, source, who + " was not found on " + channel +
+							" access list.");
+    }
 }
 
 void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_access_List", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "ACCESS") &&
+	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->Access_size())
+    {
+	::send(mynick, source, "Access list for " + channel + ":");
+    }
+    else
+    {
+	::send(mynick, source, "Access List is empty for channel " + channel);
+	return;
+    }
+
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+    int i;
+    for (i=1, cstored->Access = cstored->Access_begin();
+	cstored->Access == cstored->Access_end(); cstored->Access++, i++)
+    {
+	::send(mynick, source, mstring(itoa(i)) + ". " + cstored->Access->Entry() +
+				    "  " +  cstored->Access->Value());
+    }
 }
 
 void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_akick_Add", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring who       = params.ExtractWord(4, " ");
+    mstring reason    = Parent->chanserv.DEF_Akick_Reason();
+    if (params.WordCount(" ") > 4)
+	reason        = params.After(" ", 4);
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "AKICK"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (who.Contains("!") || who.Contains("@"))
+    {
+	if (!who.Contains("@"))
+	{
+	    ::send(mynick, source, "When specifying a mask, you MUST include a '@' symbol");
+	    return;
+	}
+	else if (!who.Contains("!"))
+	{
+	    who.Prepend("*!");
+	}
+
+	unsigned int i, num;
+	bool super = cstored->GetAccess(source, "SUPER");
+	for (i=who.size()-1, num=0; i>=0; i--)
+	{
+	    switch (who[i])
+	    {
+	    case '@':
+		if (!super)
+		    i=0;
+		break;
+	    case '!':	// ALL these constitute wildcards.
+	    case '*':
+	    case '?':
+	    case '.':
+		break;
+	    default:
+		num++;
+	    }
+	}
+	// IF we have less than 1 char for 
+	if (!super && num <= Parent->config.Starthresh())
+	{
+	    ::send(mynick, source, "You must have more than " +
+			    mstring(itoa(Parent->config.Starthresh())) +
+			    " non-wildcard characters in an AKILL host.");
+	    return;
+	}
+	else if (num <= 1)
+	{
+	    ::send(mynick, source, mstring("You must have more than 1") +
+			    " non-wildcard characters in an AKILL mask.");
+	    return;
+	}
+    }
+    else if (!Parent->nickserv.IsStored(who))
+    {
+	::send(mynick, source, "Nickname " + who + "is not registered.");
+	return;
+    }
+
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+    if (cstored->Akick_find(who))
+    {
+	::send(mynick, source, "AKICK " + cstored->Access->Entry() +
+						    " already exists.");
+    }
+    else
+    {
+	cstored->Akick_insert(who, reason, source);
+	::send(mynick, source, who + " has been added to AKICK list of " +
+							    channel + ".");
+    }
 }
 
 void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_akick_Del", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring who       = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "AKICK"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (who.IsNumber())
+    {
+	if (who.Contains("."))
+	{
+	    ::send(mynick, source, "You may only specify integers as entry numbers");
+	    return;
+	}
+	else if (atoi(who) > cstored->Akick_size())
+	{
+	    ::send(mynick, source, "Entry #" + who + " not found on access list for " +
+							channel + ".");
+	    return;
+	}
+    }
+
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+    if (cstored->Akick_find(who))
+    {
+	::send(mynick, source, "AKICK for " + cstored->Akick->Entry() +
+				" has been removed from  " + channel + ".");
+	cstored->Akick_erase();
+    }
+    else
+    {
+	::send(mynick, source, "AKICK for " + who + " was not found on " +
+					    channel + " access list.");
+    }
 }
 
 void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_akick_List", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "AKICK") &&
+	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->Akick_size())
+    {
+	::send(mynick, source, "AKICK list for " + channel + ":");
+    }
+    else
+    {
+	::send(mynick, source, "AKICK List is empty for channel " + channel);
+	return;
+    }
+
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+    int i;
+    for (i=1, cstored->Akick = cstored->Akick_begin();
+	cstored->Akick == cstored->Akick_end(); cstored->Akick++, i++)
+    {
+	::send(mynick, source, mstring(itoa(i)) + ". " + mstring(cstored->Akick->Entry()) +
+				    "  " + mstring(cstored->Akick->Value()));
+    }
 }
 
 void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)

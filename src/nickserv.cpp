@@ -1695,6 +1695,22 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 	    niter->second.IgnoreAdd(i_Name);
 	}
     }
+
+    map<mstring, list<News_t> >::iterator cniter;
+    list<News_t>::iterator cnliter;
+    for (cniter = Parent->memoserv.channel.begin();
+			cniter != Parent->memoserv.channel.end(); cniter++)
+    {
+	for (cnliter = cniter->second.begin();
+			    cnliter != cniter->second.end(); cnliter++)
+	{
+	    if (cnliter->IsRead(oldnick))
+	    {
+		cnliter->Unread(oldnick);
+		cnliter->Read(i_Name);
+	    }
+	}
+    }
 }
 
 bool Nick_Stored_t::MakeHost()
@@ -3148,7 +3164,7 @@ void NickServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"HELP", Parent->commserv.ALL_Name(), NickServ::do_Help);
+		"H*LP", Parent->commserv.ALL_Name(), NickServ::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"REG*", Parent->commserv.ALL_Name(), NickServ::do_Register);
     Parent->commands.AddSystemCommand(GetInternalName(),

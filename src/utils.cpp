@@ -178,3 +178,44 @@ mstring wxGetCwd()
     mstring str(buf);
     return str;
 }
+
+vector<int> ParseNumbers(mstring what)
+{
+    FT("ParseNumbers", (what));
+    vector<int> numbers;
+    int i;
+    mstring tmp;
+
+    what.Replace(",", " ");
+    for (i=1; i<=what.WordCount(" "); i++)
+    {
+	tmp = what.ExtractWord(i, " ");
+	if (!tmp.IsNumber() || tmp[0U] == '-' ||
+	    tmp[tmp.size()-1] == '-' || tmp.WordCount("-") > 2)
+	{
+	    numbers.push_back(-1);
+	}
+	else if (tmp.Contains("-"))
+	{
+	    int j, limit;
+	    j = atoi(tmp.Before("-").c_str());
+	    limit = atoi(tmp.After("-").c_str());
+	    if (limit >= j)
+	    {
+		for (; j<=limit; j++)
+		    numbers.push_back(j);
+	    }
+	    else
+	    {
+		for (; j>=limit; j--)
+		    numbers.push_back(j);
+	    }
+	}
+	else
+	{
+	    numbers.push_back(atoi(tmp.c_str()));
+	}
+    }
+    NRET(vector<int>, numbers);
+}
+

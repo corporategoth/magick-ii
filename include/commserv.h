@@ -148,10 +148,13 @@ public:
     virtual mstring GetInternalName() const { return "CommServ"; };
     virtual void execute(const mstring & message);
 
+    static void do_Help(mstring mynick, mstring source, mstring params);
     static void do_AddComm(mstring mynick, mstring source, mstring params);
     static void do_DelComm(mstring mynick, mstring source, mstring params);
     static void do_Add(mstring mynick, mstring source, mstring params);
     static void do_Del(mstring mynick, mstring source, mstring params);
+    static void do_Memo(mstring mynick, mstring source, mstring params);
+    static void do_Memo2(mstring source, mstring committee, mstring text);
     static void do_List(mstring mynick, mstring source, mstring params);
     static int do_List2(mstring mynick, mstring source, mstring committee, bool first, int number);
     static void do_Info(mstring mynick, mstring source, mstring params);

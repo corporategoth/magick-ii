@@ -318,6 +318,8 @@ void CommServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"H*LP", Parent->commserv.ALL_Name(), CommServ::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"NEW", Parent->commserv.SOP_Name(), CommServ::do_AddComm);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"KILL", Parent->commserv.SOP_Name(), CommServ::do_DelComm);
@@ -327,6 +329,8 @@ void CommServ::AddCommands()
 		"DEL*", Parent->commserv.REGD_Name(), CommServ::do_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"ERA*", Parent->commserv.REGD_Name(), CommServ::do_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEM*", Parent->commserv.REGD_Name(), CommServ::do_Memo);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LIST", Parent->commserv.REGD_Name(), CommServ::do_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -408,6 +412,12 @@ void CommServ::execute(const mstring & data)
     }
 
     mThread::ReAttach(tt_mBase);
+
+}
+
+void CommServ::do_Help(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_Help", (mynick, source, params));
 
 }
 
@@ -599,6 +609,114 @@ void CommServ::do_Del(mstring mynick, mstring source, mstring params)
 	}
     }
 }
+
+void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_Memo", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring text      = params.After(" ", 2);
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, "Committee " + committee + " does not exist.");
+	return;
+    }
+
+    if (committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, "Committee " + committee + " is a dynamic committee.");
+	return;
+    }
+
+    if (!Parent->commserv.list[committee].IsOn(source))
+    {
+	::send(mynick, source, "You are not on committee " + committee + ".");
+	return;
+    }
+
+    if (!Parent->commserv.list[committee].OpenMemos() &&
+	!Parent->commserv.list[committee].IsHead(source))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    CommServ::do_Memo2(source, committee, text);
+    ::send(mynick, source, "Memo sent to all members of " + committee + ".");
+}
+
+
+void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
+{
+    FT("CommServ::do_Memo2", (source, committee, text));
+
+    Committee *comm;
+    if (Parent->commserv.IsList(committee))
+	comm = &Parent->commserv.list[committee.UpperCase()];
+    else
+	return;
+
+    Nick_Stored_t *me;
+    if (Parent->nickserv.IsStored(source))
+	me = &Parent->nickserv.stored[source.LowerCase()];
+    else
+	return;
+
+    if (comm->HeadCom() != "")
+    {
+	if (Parent->commserv.IsList(comm->HeadCom()))
+	{
+	    CommServ::do_Memo2(source, comm->HeadCom(), text);
+	}
+    }
+    else if (comm->Head() != "")
+    {
+	if (Parent->nickserv.IsStored(comm->Head()))
+	{
+	    mstring realrecipiant = Parent->nickserv.stored[comm->Head().LowerCase()].Host();
+	    if (realrecipiant == "")
+		realrecipiant = comm->Head();
+	    if (((me->Host() != "") ? (realrecipiant != me->Host()) :
+		(realrecipiant.LowerCase() != me->Name().LowerCase())) &&
+		(comm->Head() == realrecipiant ||
+		Parent->nickserv.IsStored(realrecipiant)))
+	    {
+		Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
+		    Memo_t(realrecipiant, source, "[" + IRC_Bold +
+				committee + IRC_Off + "] " + text));
+	    }
+	}
+    }
+
+    for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
+    {
+	if (Parent->nickserv.IsStored(comm->member->Entry()))
+	{
+	    mstring realrecipiant = Parent->nickserv.stored[comm->member->Entry().LowerCase()].Host();
+	    if (realrecipiant == "")
+		realrecipiant = comm->member->Entry();
+	    if (((me->Host() != "") ? (realrecipiant != me->Host()) :
+		(realrecipiant.LowerCase() != me->Name().LowerCase())) &&
+	        (comm->member->Entry() == realrecipiant ||
+		Parent->nickserv.IsStored(realrecipiant)))
+	    {
+		Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
+		    Memo_t(realrecipiant, source, "[" + IRC_Bold +
+				committee + IRC_Off + "] " + text));
+	    }
+	}
+    }
+}
+
 
 void CommServ::do_List(mstring mynick, mstring source, mstring params)
 {

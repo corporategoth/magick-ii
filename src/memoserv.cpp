@@ -89,8 +89,38 @@ void MemoServ::AddCommands()
     NFT("MemoServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-//  Parent->commands.AddSystemCommand(GetInternalName(),
-//		    "TRACE", "ALL", OperServ::do_Trace);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "H*LP", Parent->commserv.ALL_Name(), MemoServ::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "READ*", Parent->commserv.REGD_Name(), MemoServ::do_Read);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNREAD*", Parent->commserv.REGD_Name(), MemoServ::do_UnRead);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LIST*", Parent->commserv.REGD_Name(), MemoServ::do_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "VIEW*", Parent->commserv.REGD_Name(), MemoServ::do_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SEND*", Parent->commserv.REGD_Name(), MemoServ::do_Send);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FORW*", Parent->commserv.REGD_Name(), MemoServ::do_Forward);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "F*W*D", Parent->commserv.REGD_Name(), MemoServ::do_Forward);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "REP*", Parent->commserv.REGD_Name(), MemoServ::do_Reply);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CAN*", Parent->commserv.REGD_Name(), MemoServ::do_Cancel);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ABOR*", Parent->commserv.REGD_Name(), MemoServ::do_Cancel);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "DEL*", Parent->commserv.REGD_Name(), MemoServ::do_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ERA*", Parent->commserv.REGD_Name(), MemoServ::do_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CONT*", Parent->commserv.REGD_Name(), MemoServ::do_Continue);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE*", Parent->commserv.REGD_Name(), MemoServ::do_File);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*ATTACH", Parent->commserv.REGD_Name(), MemoServ::do_File);
 }
 
 void MemoServ::RemCommands()
@@ -147,6 +177,602 @@ void MemoServ::execute(const mstring & data)
     mThread::ReAttach(tt_mBase);
 
 }
+
+void MemoServ::do_Help(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Help", (mynick, source, params));
+
+}
+
+void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Read", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    if (IsChan(params.ExtractWord(2, " ")))
+    {
+	if (params.WordCount(" ") < 3)
+	{
+	    ::send(mynick, source, "Not enough paramaters");
+	    return;
+	}
+	mstring who = params.ExtractWord(2, " ");
+	mstring what = params.After(" ", 2);
+	mstring whoami = source.LowerCase();
+	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
+	{
+	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
+	}
+
+	if (!Parent->chanserv.IsStored(who))
+	{
+	    ::send(mynick, source, "No such channel " + who + ".");
+	    return;
+	}
+
+	if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "READMEMO"))
+	{
+	    ::send(mynick, source, "Access denied.");
+	    return;
+	}
+
+	if (!Parent->memoserv.IsChannel(who))
+	{
+	    ::send(mynick, source, "Channel " + who + " has no memos.");
+	    return;
+	}
+
+	if (what.CmpNoCase("all"))
+	{
+	    list<News_t>::iterator iter;
+	    int i = 1;
+	    mstring output;
+	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
+		    iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
+	    {
+		iter->Read(whoami);
+		output << "#" << i << " from " << iter->Sender() << " to "
+		    << iter->Channel() << " sent " << iter->Time().Ago();
+		::send(mynick, source, output);
+		output = "";
+		unsigned int sentsize = 0;
+		for (sentsize=0; sentsize < iter->Text().size(); sentsize+=450)
+		{
+		    if (sentsize + 450 < iter->Text().size())
+		    {
+			if (sentsize > 0)
+			    output << "...";
+			output << iter->Text().SubString(sentsize, sentsize+450)
+			       << "...";
+		    }
+		    else
+		    {
+			output << "...";
+			output << iter->Text().SubString(sentsize, iter->Text().size()-1);
+		    }
+		    ::send(mynick, source, "    " + output);
+		    output = "";
+		}
+	    }
+	}
+	else
+	{
+	    vector<int> numbers = ParseNumbers(what);
+	    int i, j=1;
+	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
+	    mstring output;
+	    for (i=0; i<numbers.size(); i++)
+	    {
+		if (numbers[i] <= 0)
+		    nonnumeric = true;
+		else if (numbers[i] > Parent->memoserv.channel[who.LowerCase()].size())
+		    triedabove = true;
+		else
+		{
+		    while (numbers[i] < j &&
+			iter != Parent->memoserv.channel[who.LowerCase()].begin())
+		    {
+			j--;
+			iter--;
+		    }
+		    while (numbers[i] > j &&
+			iter != Parent->memoserv.channel[who.LowerCase()].end())
+		    {
+			j++;
+			iter++;
+		    }
+		    if (iter != Parent->memoserv.channel[who.LowerCase()].end())
+		    {
+			iter->Read(whoami);
+			output << "#" << i << " from " << iter->Sender() << " to "
+			    << iter->Channel() << " sent " << iter->Time().Ago();
+			::send(mynick, source, output);
+			output = "";
+			unsigned int sentsize = 0;
+			for (sentsize=0; sentsize < iter->Text().size(); sentsize+=450)
+			{
+			    if (sentsize + 450 < iter->Text().size())
+			    {
+				if (sentsize > 0)
+				    output << "...";
+				output << iter->Text().SubString(sentsize, sentsize+450)
+				    << "...";
+			    }
+			    else
+			    {
+				output << "...";
+				output << iter->Text().SubString(sentsize, iter->Text().size()-1);
+			    }
+			    ::send(mynick, source, "    " + output);
+			    output = "";
+			}
+			displayed = true;
+		    }
+		}
+	    }
+	    if (nonnumeric)
+		output << "Non-numeric arguments specified, ignored.";
+	    if (triedabove)
+		output << "All entries above " <<
+			Parent->memoserv.channel[who.LowerCase()].size() <<
+			" ignored.";
+	    if (output != "")
+		::send(mynick, source, output);
+	}
+    }
+    else
+    {
+	mstring who = source;
+	mstring what = params.After(" ", 1);
+
+	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
+	{
+	    who = Parent->nickserv.stored[source.LowerCase()].Host();
+	}
+
+	if (!Parent->memoserv.IsNick(who))
+	{
+	    ::send(mynick, source, "You have no memos.");
+	    return;
+	}
+
+	if (what.CmpNoCase("all"))
+	{
+	    list<Memo_t>::iterator iter;
+	    int i = 1;
+	    mstring output;
+	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
+		    iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
+	    {
+		iter->Read();
+		output << "#" << i << " from " << iter->Sender() <<
+		    " sent " << iter->Time().Ago();
+		::send(mynick, source, output);
+		output = "";
+		unsigned int sentsize = 0;
+		for (sentsize=0; sentsize < iter->Text().size(); sentsize+=450)
+		{
+		    if (sentsize + 450 < iter->Text().size())
+		    {
+			if (sentsize > 0)
+			    output << "...";
+			output << iter->Text().SubString(sentsize, sentsize+450)
+			       << "...";
+		    }
+		    else
+		    {
+			output << "...";
+			output << iter->Text().SubString(sentsize, iter->Text().size()-1);
+		    }
+		    ::send(mynick, source, "    " + output);
+		    output = "";
+		}
+	    }
+	}
+	else
+	{
+	    vector<int> numbers = ParseNumbers(what);
+	    int i, j=1;
+	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
+	    mstring output;
+	    for (i=0; i<numbers.size(); i++)
+	    {
+		if (numbers[i] <= 0)
+		    nonnumeric = true;
+		else if (numbers[i] > Parent->memoserv.nick[who.LowerCase()].size())
+		    triedabove = true;
+		else
+		{
+		    while (numbers[i] < j &&
+			iter != Parent->memoserv.nick[who.LowerCase()].begin())
+		    {
+			j--;
+			iter--;
+		    }
+		    while (numbers[i] > j &&
+			iter != Parent->memoserv.nick[who.LowerCase()].end())
+		    {
+			j++;
+			iter++;
+		    }
+		    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
+		    {
+			iter->Read();
+			output << "#" << j << " from " << iter->Sender() <<
+			    " sent " << iter->Time().Ago();
+			::send(mynick, source, output);
+			output = "";
+			unsigned int sentsize = 0;
+			for (sentsize=0; sentsize < iter->Text().size(); sentsize+=450)
+			{
+			    if (sentsize + 450 < iter->Text().size())
+			    {
+				if (sentsize > 0)
+				    output << "...";
+				output << iter->Text().SubString(sentsize, sentsize+450)
+				    << "...";
+			    }
+			    else
+			    {
+				output << "...";
+				output << iter->Text().SubString(sentsize, iter->Text().size()-1);
+			    }
+			    ::send(mynick, source, "    " + output);
+			    output = "";
+			}
+			displayed = true;
+		    }
+		}
+	    }
+	    if (nonnumeric)
+		output << "Non-numeric arguments specified, ignored.";
+	    if (triedabove)
+		output << "All entries above " <<
+			Parent->memoserv.nick[who.LowerCase()].size() <<
+			" ignored.";
+	    if (output != "")
+		::send(mynick, source, output);
+	}
+    }
+}
+
+
+void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_UnRead", (mynick, source, params));
+
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    if (IsChan(params.ExtractWord(2, " ")))
+    {
+	if (params.WordCount(" ") < 3)
+	{
+	    ::send(mynick, source, "Not enough paramaters");
+	    return;
+	}
+	mstring who = params.ExtractWord(2, " ");
+	mstring what = params.After(" ", 2);
+	mstring whoami = source.LowerCase();
+	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
+	{
+	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
+	}
+
+	if (!Parent->chanserv.IsStored(who))
+	{
+	    ::send(mynick, source, "No such channel " + who + ".");
+	    return;
+	}
+
+	if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "READMEMO"))
+	{
+	    ::send(mynick, source, "Access denied.");
+	    return;
+	}
+
+	if (!Parent->memoserv.IsChannel(who))
+	{
+	    ::send(mynick, source, "Channel " + who + " has no memos.");
+	    return;
+	}
+
+	if (what.CmpNoCase("all"))
+	{
+	    list<News_t>::iterator iter;
+	    int i = 1;
+	    mstring output;
+	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
+		    iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
+	    {
+		iter->Unread(whoami);
+		::send(mynick, source, "All news articles for channel " +
+				    who + " have been marked unread.");
+	    }
+	}
+	else
+	{
+	    vector<int> numbers = ParseNumbers(what);
+	    int i, j=1;
+	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
+	    mstring output;
+	    for (i=0; i<numbers.size(); i++)
+	    {
+		if (numbers[i] <= 0)
+		    nonnumeric = true;
+		else if (numbers[i] > Parent->memoserv.channel[who.LowerCase()].size())
+		    triedabove = true;
+		else
+		{
+		    while (numbers[i] < j &&
+			iter != Parent->memoserv.channel[who.LowerCase()].begin())
+		    {
+			j--;
+			iter--;
+		    }
+		    while (numbers[i] > j &&
+			iter != Parent->memoserv.channel[who.LowerCase()].end())
+		    {
+			j++;
+			iter++;
+		    }
+		    if (iter != Parent->memoserv.channel[who.LowerCase()].end())
+		    {
+			iter->Unread(whoami);
+			if (output != "")
+			    output << ", ";
+			output << j;
+			displayed = true;
+		    }
+		}
+	    }
+	    if (output != "")
+	    {
+		::send(mynick, source, "News articles for channel " +
+					    who + " (" + output +
+					    ") have been marked unread.");
+		output = "";
+	    }
+	    if (nonnumeric)
+		output << "Non-numeric arguments specified, ignored.";
+	    if (triedabove)
+		output << "All entries above " <<
+			Parent->memoserv.channel[who.LowerCase()].size() <<
+			" ignored.";
+	    if (output != "")
+		::send(mynick, source, output);
+	}
+    }
+    else
+    {
+	mstring who = source;
+	mstring what = params.After(" ", 1);
+
+	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
+	{
+	    who = Parent->nickserv.stored[source.LowerCase()].Host();
+	}
+
+	if (!Parent->memoserv.IsNick(who))
+	{
+	    ::send(mynick, source, "You have no memos.");
+	    return;
+	}
+
+	if (what.CmpNoCase("all"))
+	{
+	    list<Memo_t>::iterator iter;
+	    int i = 1;
+	    mstring output;
+	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
+		    iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
+	    {
+		iter->Unread();
+		::send(mynick, source, "All your memos have been marked unread.");
+	    }
+	}
+	else
+	{
+	    vector<int> numbers = ParseNumbers(what);
+	    int i, j=1;
+	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
+	    mstring output;
+	    for (i=0; i<numbers.size(); i++)
+	    {
+		if (numbers[i] <= 0)
+		    nonnumeric = true;
+		else if (numbers[i] > Parent->memoserv.nick[who.LowerCase()].size())
+		    triedabove = true;
+		else
+		{
+		    while (numbers[i] < j &&
+			iter != Parent->memoserv.nick[who.LowerCase()].begin())
+		    {
+			j--;
+			iter--;
+		    }
+		    while (numbers[i] > j &&
+			iter != Parent->memoserv.nick[who.LowerCase()].end())
+		    {
+			j++;
+			iter++;
+		    }
+		    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
+		    {
+			iter->Unread();
+			if (output != "")
+			    output << ", ";
+			output << j;
+			displayed = true;
+		    }
+		}
+	    }
+	    if (output != "")
+	    {
+		::send(mynick, source, "Your memos (" + output +
+					    ") have been marked unread.");
+		output = "";
+	    }
+	    if (nonnumeric)
+		output << "Non-numeric arguments specified, ignored.";
+	    if (triedabove)
+		output << "All entries above " <<
+			Parent->memoserv.nick[who.LowerCase()].size() <<
+			" ignored.";
+	    if (output != "")
+		::send(mynick, source, output);
+	}
+    }
+}
+
+
+void MemoServ::do_List(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_List", (mynick, source, params));
+}
+
+
+void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Send", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring name = params.ExtractWord(2, " ");
+    mstring text = params.After(" ", 2);
+
+    if (IsChan(name))
+    {
+	if (!Parent->chanserv.IsStored(name))
+	{
+	    ::send(mynick, source, "Channel " + name + " is not registered.");
+	    return;
+	}
+
+	Chan_Stored_t *chan = &Parent->chanserv.stored[name.LowerCase()];
+	if (!chan->GetAccess(source, "WRITEMEMO"))
+	{
+	    ::send(mynick, source, "Access denied.");
+	    return;
+	}
+    }
+    else if (!Parent->nickserv.IsStored(name))
+    {
+	::send(mynick, source, "Nickname " + name + " is not registered.");
+	return;
+    }
+
+    if (text.size() > 450)
+    {
+	text.Truncate(450);
+	::send(mynick, source, "Message truncated.  Last characters of message were \"" +
+				text.SubString(430, 450) + "\".");
+	::send(mynick, source, "Use /MSG " + mynick +
+			    " CONTINUE <message>    to extend message.");
+    }
+
+    Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
+					    false, mynick, name, text);
+}
+
+
+void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Forward", (mynick, source, params));
+}
+
+
+void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Reply", (mynick, source, params));
+}
+
+
+void MemoServ::do_Cancel(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Cancel", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
+    {
+	Parent->nickserv.live[source.LowerCase()].InFlight.Cancel();
+    }
+    else
+    {
+	::send(mynick, source, "No memos are pending to be sent.");
+    }
+}
+
+
+void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Del", (mynick, source, params));
+}
+
+
+void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Continue", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring text = params.After(" ", 1);
+
+    if (text.size() > 450)
+    {
+	text.Truncate(450);
+	::send(mynick, source, "Message truncated.  Last characters of message were \"" +
+			    text.SubString(430, 450) + "\".");
+	::send(mynick, source, "Use /MSG " + mynick +
+			    " CONTINUE <message>    to extend message.");
+    }
+
+    if (Parent->nickserv.live[source.LowerCase()].InFlight.IsMemo())
+    {
+	Parent->nickserv.live[source.LowerCase()].InFlight.Continue(text);
+    }
+    else
+    {
+	::send(mynick, source, "No memos are pending to be sent.");
+    }
+}
+
+
+void MemoServ::do_File(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_File", (mynick, source, params));
+}
+
 
 void MemoServ::load_database(wxInputStream& in)
 {

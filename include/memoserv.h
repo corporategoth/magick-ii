@@ -124,6 +124,18 @@ public:
     virtual threadtype_enum Get_TType() const { return tt_MemoServ; }
     virtual mstring GetInternalName() const { return "MemoServ"; }
     virtual void execute(const mstring & message);
+
+    static void do_Help(mstring mynick, mstring source, mstring params);
+    static void do_Read(mstring mynick, mstring source, mstring params);
+    static void do_UnRead(mstring mynick, mstring source, mstring params);
+    static void do_List(mstring mynick, mstring source, mstring params);
+    static void do_Send(mstring mynick, mstring source, mstring params);
+    static void do_Reply(mstring mynick, mstring source, mstring params);
+    static void do_Forward(mstring mynick, mstring source, mstring params);
+    static void do_Cancel(mstring mynick, mstring source, mstring params);
+    static void do_Del(mstring mynick, mstring source, mstring params);
+    static void do_Continue(mstring mynick, mstring source, mstring params);
+    static void do_File(mstring mynick, mstring source, mstring params);
 };
 
 #endif
