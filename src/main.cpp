@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 #ifdef DEBUG
 	TraceObject->TurnSet(0xffffffff); // Full tracing.
 #else
-	TraceObject->TurnSet(0xffffffff&(~ALL_Functions)); // Full tracing - functions.
+	TraceObject->TurnSet(0xffffffff&(~Trace::ALL_Functions)); // Full tracing - functions.
 #endif
 	// todo make it insert itself into the ThreadID data structures.
 	mThread::Attach(tt_MAIN, 1);

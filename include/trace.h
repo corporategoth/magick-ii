@@ -184,11 +184,11 @@ class Trace
 	BOB_Chatter	= 0x10000000,	// BOB messages
 	BOB_Bind	= 0x20000000,	// BOB Hooks, Binds & Registers
 	BOB_Functions	= 0x40000000,	// BOB functions
-	BOB_External	= 0x80000000,	// BOB external input/output
-	ALL_Functions   = G_Functions | NS_Functions | CS_Functions | MS_Functions | OS_Functions | XS_Functions | NET_Functions | BOB_Functions
+	BOB_External	= 0x80000000	// BOB external input/output
     };
 
 public:
+    static const long ALL_Functions   = G_Functions | NS_Functions | CS_Functions | MS_Functions | OS_Functions | XS_Functions | NET_Functions | BOB_Functions;
     enum level_enum { Off = 0,
     	Stats = 1,
 	Chatter = 1,

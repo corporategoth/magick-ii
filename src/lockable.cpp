@@ -13,7 +13,7 @@
 
 #include "lockable.h"
 #include "utils.h"
-#include <ACE/Thread_Manager.h>
+#include <ace/Thread_Manager.h>
 
 RLOCK::RLOCK(mstring x1)
 {

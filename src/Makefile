@@ -7,7 +7,9 @@ LIBNAME=magick.a
 OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) bob.$(OBJ) chanserv.$(OBJ) confbase.$(OBJ) \
        datetime.$(OBJ) fileconf.$(OBJ) ircsocket.$(OBJ) lockable.$(OBJ) log.$(OBJ) \
        magick.$(OBJ) main.$(OBJ) mstream.$(OBJ) mstring.$(OBJ) textfile.$(OBJ) \
-       trace.$(OBJ) utils.$(OBJ) variant.$(OBJ)
+       trace.$(OBJ) utils.$(OBJ) variant.$(OBJ) dccengine.$(OBJ) nickserv.$(OBJ) \
+       base.$(OBJ)
+
 SUBDIRS=antlr bob des
 
 all: SUBS RMLIB $(LIBNAME)
@@ -47,10 +49,12 @@ $(LIBNAME): $(OBJS)
 
 EscLexer.$(OBJ): EscLexer.cpp
 EscParser.$(OBJ): EscParser.cpp
+base.$(OBJ): base.cpp
 bob.$(OBJ): bob.cpp
 chanserv.$(OBJ): chanserv.cpp
 confbase.$(OBJ): confbase.cpp
 datetime.$(OBJ): datetime.cpp
+dccengine.$(OBJ): dccengine.cpp
 fileconf.$(OBJ): fileconf.cpp
 ircsocket.$(OBJ): ircsocket.cpp
 lockable.$(OBJ): lockable.cpp
@@ -59,8 +63,8 @@ magick.$(OBJ): magick.cpp
 main.$(OBJ): main.cpp
 mstream.$(OBJ): mstream.cpp
 mstring.$(OBJ): mstring.cpp
+nickserv.$(OBJ): nickserv.cpp
 textfile.$(OBJ): textfile.cpp
 trace.$(OBJ): trace.cpp
 utils.$(OBJ): utils.cpp
 variant.$(OBJ): variant.cpp
-
