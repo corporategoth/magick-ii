@@ -27,6 +27,9 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2001/03/04 02:04:14  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.1  2001/02/03 02:22:34  prez
 ** added conversion for ESPERNET
 **
@@ -1528,9 +1531,9 @@ Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni)
 	if (ni->url != NULL && strlen(ni->url))
 	    out.i_URL = mstring(ni->url);
 	if (out.i_URL.Contains("http://"))
-	    out.i_URL.replace("http://", "", false);
+	    out.i_URL.Remove("http://", false);
 	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.replace("HTTP://", "", false);
+	    out.i_URL.Remove("HTTP://", false);
 	if (ni->last_realname != NULL && strlen(ni->last_realname))
 	    out.i_LastRealName = mstring(ni->last_realname);
 	if (ni->last_usermask != NULL && strlen(ni->last_usermask))
@@ -1647,9 +1650,9 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	if (ci->url != NULL && strlen(ci->url))
 	    out.i_URL = mstring(ci->url);
 	if (out.i_URL.Contains("http://"))
-	    out.i_URL.replace("http://", "", false);
+	    out.i_URL.Remove("http://", false);
 	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.replace("HTTP://", "", false);
+	    out.i_URL.Remove("HTTP://", false);
 	out.i_RegTime = mDateTime(ci->time_registered);
 	out.i_LastUsed = mDateTime(ci->last_used);
 
@@ -1706,8 +1709,8 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	if (ci->mlock_on || ci->mlock_key != NULL || ci->mlock_limit)
 	{
 	    mstring modes = getmodes(ci->mlock_on);
-	    modes.Replace("k", "");
-	    modes.Replace("l", "");
+	    modes.Remove("k");
+	    modes.Remove("l");
 	    modelock << "+" << modes <<
 		    (ci->mlock_key != NULL ? "k" : "") <<
 		    (ci->mlock_limit ? "l" : "");

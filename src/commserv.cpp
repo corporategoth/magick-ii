@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2001/03/04 02:04:14  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.90  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -1412,7 +1415,7 @@ void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    text.Prepend("[" + IRC_Bold + committee + IRC_Off + "] ");
+    text.prepend("[" + IRC_Bold + committee + IRC_Off + "] ");
     CommServ::do_Memo2(source, committee, text);
     Parent->commserv.stats.i_Memo++;
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/MEMO"),

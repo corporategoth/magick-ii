@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2001/03/04 02:04:15  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.116  2001/03/02 05:24:42  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -651,7 +654,7 @@ bool OperServ::OperDeny_insert(mstring entry, mstring value, mstring nick)
 
     // Pre-pend *! if its missed
     if (!entry.Contains("!"))
-	entry.Prepend("*!");
+	entry.prepend("*!");
 
     MLOCK(("OperServ", "OperDeny"));
     if (!OperDeny_find(entry))
@@ -720,7 +723,7 @@ bool OperServ::OperDeny_find(mstring entry)
 
     // Pre-pend *! if its missed
     if (!entry.Contains("!"))
-	entry.Prepend("*!");
+	entry.prepend("*!");
 
     MLOCK(("OperServ", "OperDeny"));
 //  entlist_val_ui<mstring> iter = i_OperDeny.end();
@@ -772,7 +775,7 @@ bool OperServ::Ignore_insert(mstring entry, bool perm, mstring nick)
 
     // Pre-pend *! if its missed
     if (!entry.Contains("!"))
-	entry.Prepend("*!");
+	entry.prepend("*!");
 
     MLOCK(("OperServ", "Ignore"));
     if (!Ignore_find(entry))
@@ -841,7 +844,7 @@ bool OperServ::Ignore_find(mstring entry)
 
     // Pre-pend *! if its missed
     if (!entry.Contains("!"))
-	entry.Prepend("*!");
+	entry.prepend("*!");
 
     MLOCK(("OperServ", "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = i_Ignore.end();
@@ -3050,7 +3053,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 
     if (!host.Contains("@"))
     {
-	host.Prepend("*@");
+	host.prepend("*@");
     }
 
     unsigned int num;
@@ -3321,7 +3324,7 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
     }
     else if (!host.Contains("!"))
     {
-	host.Prepend("*!");
+	host.prepend("*!");
     }
 
     unsigned int i, num;
@@ -3453,7 +3456,7 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
 	}
 	else if (!host.Contains("!"))
         {
-	    host.Prepend("*!");
+	    host.prepend("*!");
 	}
 
 	int count = 0;
@@ -3521,7 +3524,7 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
 	}
 	else if (!host.Contains("!"))
 	{
-	    host.Prepend("*!");
+	    host.prepend("*!");
 	}
     }
 
@@ -3581,7 +3584,7 @@ void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
     }
     else if (!host.Contains("!"))
     {
-	host.Prepend("*!");
+	host.prepend("*!");
     }
 
     unsigned int i, num;
@@ -3690,7 +3693,7 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 	}
 	else if (!host.Contains("!"))
         {
-	    host.Prepend("*!");
+	    host.prepend("*!");
 	}
 
 	int count = 0;
@@ -3758,7 +3761,7 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	}
 	else if (!host.Contains("!"))
 	{
-	    host.Prepend("*!");
+	    host.prepend("*!");
 	}
     }
 

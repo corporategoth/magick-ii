@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.228  2001/03/04 02:04:14  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.227  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -4427,7 +4430,7 @@ bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick, mDate
     else
     {
 	if (!entry.Contains("!"))
-	    entry.Prepend("*!");
+	    entry.prepend("*!");
     }
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
@@ -4649,7 +4652,7 @@ bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick, mDa
     else
     {
 	if (!entry.Contains("!"))
-	    entry.Prepend("*!");
+	    entry.prepend("*!");
     }
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
@@ -8543,7 +8546,7 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 	}
 	else if (!who.Contains("!"))
 	{
-	    who.Prepend("*!");
+	    who.prepend("*!");
 	}
 
 	unsigned int i, num;
@@ -8760,7 +8763,7 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 	}
 	else if (!who.Contains("!"))
 	{
-	    who.Prepend("*!");
+	    who.prepend("*!");
 	}
 
 	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));

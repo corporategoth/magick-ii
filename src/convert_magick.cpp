@@ -27,6 +27,9 @@ RCSID(convert_magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2001/03/04 02:04:14  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.1  2001/02/03 02:22:34  prez
 ** added conversion for ESPERNET
 **
@@ -412,9 +415,9 @@ CreateNickEntry(NickInfo_CUR *ni)
 	if (ni->url != NULL)
 	    out.i_URL = mstring(ni->url);
 	if (out.i_URL.Contains("http://"))
-	    out.i_URL.replace("http://", "", false);
+	    out.i_URL.Remove("http://", false);
 	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.replace("HTTP://", "", false);
+	    out.i_URL.Remove("HTTP://", false);
 	if (ni->last_realname != NULL)
 	    out.i_LastRealName = mstring(ni->last_realname);
 	out.i_RegTime = mDateTime(ni->time_registered);
@@ -1059,9 +1062,9 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	if (ci->url != NULL)
 	    out.i_URL = mstring(ci->url);
 	if (out.i_URL.Contains("http://"))
-	    out.i_URL.replace("http://", "", false);
+	    out.i_URL.Remove("http://", false);
 	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.replace("HTTP://", "", false);
+	    out.i_URL.Remove("HTTP://", false);
 	out.i_RegTime = mDateTime(ci->time_registered);
 	out.i_LastUsed = mDateTime(ci->last_used);
 	mstring modelock;

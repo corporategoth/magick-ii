@@ -27,6 +27,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2001/03/04 02:04:15  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.17  2001/03/02 05:24:42  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -279,7 +282,7 @@ MFileOutStream::~MFileOutStream()
 	    outbuf = NULL;
 	    
 	}
-	if (key != "")
+	if (!key.empty())
 	{
 	    des_key_schedule key1, key2;
 	    des_cblock ckey1, ckey2;
@@ -394,7 +397,7 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 
 	if (tag & SXP_TAG)
 	{
-	    if ((tag & SXP_ENCRYPT) && ikey != "")
+	    if ((tag & SXP_ENCRYPT) && !ikey.empty())
 	    {
 		des_key_schedule key1, key2;
 		des_cblock ckey1, ckey2;

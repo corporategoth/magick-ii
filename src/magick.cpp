@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.290  2001/03/04 02:04:14  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.289  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -2031,8 +2034,8 @@ bool Magick::get_config_values()
     startup.bind = value_mstring;
 
     in.Read(ts_Startup+"SETMODE",value_mstring, "");
-    value_mstring.replace("+", "");
-    value_mstring.replace(" ", "");
+    value_mstring.Remove("+");
+    value_mstring.Remove(" ");
     if (value_mstring != startup.setmode)
 	reconnect_clients = true;
     startup.setmode = value_mstring;

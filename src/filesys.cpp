@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2001/03/04 02:04:14  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.63  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -447,8 +450,8 @@ mstring mFile::ReadLine()
 	else
 	{
 	    Result=buffer;
-	    Result.replace("\n", "");
-	    Result.replace("\r", "");
+	    Result.Remove("\n");
+	    Result.Remove("\r");
 	}
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
@@ -838,11 +841,11 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
     filename.Format("%08x", num);
 
     if (type == MemoAttach)
-	filename.Prepend(Parent->files.MemoAttach() + DirSlash);
+	filename.prepend(Parent->files.MemoAttach() + DirSlash);
     else if (type == Picture)
-	filename.Prepend(Parent->files.Picture() + DirSlash);
+	filename.prepend(Parent->files.Picture() + DirSlash);
     else if (type == Public)
-    	filename.Prepend(Parent->files.Public() + DirSlash);
+    	filename.prepend(Parent->files.Public() + DirSlash);
 
     if (mFile::Exists(filename))
     {
@@ -900,11 +903,11 @@ mstring FileMap::GetRealName(FileMap::FileType type, unsigned long num)
 	filename.Format("%08x", num);
 
 	if (type == MemoAttach)
-	    filename.Prepend(Parent->files.MemoAttach() + DirSlash);
+	    filename.prepend(Parent->files.MemoAttach() + DirSlash);
 	else if (type == Picture)
-	    filename.Prepend(Parent->files.Picture() + DirSlash);
+	    filename.prepend(Parent->files.Picture() + DirSlash);
 	else if (type == Public)
-    	    filename.Prepend(Parent->files.Public() + DirSlash);
+    	    filename.prepend(Parent->files.Public() + DirSlash);
     	RET(filename);
     }
     RET("");

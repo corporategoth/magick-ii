@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2001/03/04 02:04:14  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.95  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -409,6 +412,7 @@ void mstring::copy(const char *in, size_t length)
     }
     else
     {
+	i_str = NULL;
 	i_len = 0;
 	i_res = 0;
     }
@@ -880,15 +884,12 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 
 
 /* PRIVATE METHOD - NO LOCKING! */
-int mstring::occurances(const char *str) const
+int mstring::occurances(const char *str, size_t length) const
 {
-    int count = 0, length;
+    int count = 0;
     char *ptr;
 
-    if (i_str == NULL || str == NULL)
-	return 0;
-    length = strlen(str);
-    if (length < 1)
+    if (i_str == NULL || str == NULL || length < 1)
 	return 0;
 
     ptr = strstr(i_str, str);
@@ -901,16 +902,12 @@ int mstring::occurances(const char *str) const
 }
 
 // Find occurance of full string
-int mstring::find(const char *str, int occurance) const
+int mstring::find(const mstring &str, int occurance) const
 {
-    int i, retval = -1, length;
+    int i, retval = -1;
     char *ptr;
 
-    if (str == NULL)
-	return -1;
-
-    length = strlen(str);
-    if (length < 1)
+    if (str.empty())
 	return -1;
 
     lock_read();
@@ -923,12 +920,12 @@ int mstring::find(const char *str, int occurance) const
     if (occurance < 1)
 	occurance = 1;
 
-    ptr = strstr(i_str, str);
+    ptr = strstr(i_str, str.c_str());
     if (ptr != NULL)
     {
 	for (i=1; i < occurance; i++)
 	{
-	    ptr = strstr(ptr+length, str);
+	    ptr = strstr(ptr+str.length(), str.c_str());
 	    if (ptr == NULL)
 		break;
 	}
@@ -942,35 +939,35 @@ int mstring::find(const char *str, int occurance) const
 
 
 // Reverse Find occurance of full string
-int mstring::rfind(const char *str, int occurance) const
+int mstring::rfind(const mstring &str, int occurance) const
 {
     int occ, retval = -1;
+
+    if (str.empty())
+	return -1;
 
     if (occurance < 1)
 	occurance = 1;
 
     lock_read();
-    occ = occurances(str);
+    occ = occurances(str.c_str(), str.length());
     lock_rel();
     if (occurance <= occ)
-	retval = find(str, occ - occurance + 1);
+	retval = find(str.c_str(), occ - occurance + 1);
 
     return retval;
 }
 
 
 // Replace find string with replace string (optionally for all)
-void mstring::replace(const char *i_find, const char *i_replace, bool all)
+void mstring::replace(const mstring &i_find, const mstring &i_replace, bool all)
 {
-    int i, j, old_len, find_len, amt_replace = 0, replace_len = 0;
+    int i, j, old_len, amt_replace = 0;
     char *tmp, *start, *end;
     vector<pair<char *, int> > ptrs;
     vector<pair<char *, int> >::iterator iter;
 
-    if (i_find == NULL)
-	return;
-    find_len = strlen(i_find);
-    if (find_len < 1)
+    if (i_find.empty())
 	return;
 
     lock_write();
@@ -981,26 +978,21 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     }
     old_len = i_len;
 
-    if (i_replace == NULL)
-	replace_len = 0;
-    else
-	replace_len = strlen(i_replace);
-
     start=i_str;
-    end=strstr(i_str, i_find);
+    end=strstr(i_str, i_find.c_str());
     while (end != NULL)
     {
 	ptrs.push_back(pair<char *, int>(start, end-start));
-	end += find_len;
+	end += i_find.length();
 	start = end;
 	amt_replace++;
 	if (!all)
 	    break;
-	end = strstr(start, i_find);
+	end = strstr(start, i_find.c_str());
     }
     ptrs.push_back(pair<char *, int>(start,-1));
 
-    i_len += (amt_replace * (replace_len - find_len));
+    i_len += (amt_replace * (i_replace.length() - i_find.length()));
     if (i_len == 0)
     {
 	i_res = 0;
@@ -1030,12 +1022,12 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	{
 	    memcpy(&tmp[j], iter->first, iter->second);
 	    j += iter->second;
-	    if (replace_len)
+	    if (i_replace.length())
 	    {
-		memcpy(&tmp[j], i_replace, replace_len);
-		j += replace_len;
+		memcpy(&tmp[j], i_replace.c_str(), i_replace.length());
+		j += i_replace.length();
 	    }
-	    i += iter->second + find_len;
+	    i += iter->second + i_find.length();
 	}
 	else
 	{
@@ -1047,10 +1039,10 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     lock_rel();
 }
 
-void mstring::replace(int begin, int end, char *replace, size_t length)
+void mstring::replace(int begin, int end, const char *i_replace, size_t length)
 {
     erase(begin, end);
-    insert(begin, replace, length);
+    insert(begin, i_replace, length);
 }
 
 bool mstring::replace(size_t offs, char c)
@@ -1245,12 +1237,12 @@ int mstring::Occurances(const mstring &in, bool NoCase) const
 	 * created by the system (and out of our control).
 	 */
 	mstring tmp(in);
-	retval = UpperCase().occurances(tmp.UpperCase().c_str());
+	retval = UpperCase().occurances(tmp.UpperCase().c_str(), tmp.length());
     }
     else
     {
 	lock_read();
-	retval = occurances(in.c_str());
+	retval = occurances(in.c_str(), in.length());
 	lock_rel();
     }
     return retval;
@@ -1294,6 +1286,14 @@ int mstring::Cmp(const mstring &in, bool NoCase) const
 bool mstring::Matches(const mstring &in, bool NoCase) const
 {
     return match_wild(in.c_str(), c_str(), NoCase);
+}
+
+void mstring::Truncate(size_t pos, bool right)
+{
+    if (right)
+	erase(right);
+    else
+	erase(0, pos);
 }
 
 void mstring::Trim(bool right, const mstring &delims)
@@ -1556,7 +1556,107 @@ list<mstring> mstring::List(const mstring &delim, bool assemble) const
     return Result;
 }
 
+void mstring::Assemble(const vector<mstring> text, const mstring &delim)
+{
+    size_t offs = 0;
+    vector<mstring>::const_iterator iter;
 
+    lock_write();
+
+    if (i_str != NULL)
+	dealloc(i_str);
+
+    if (text.size())
+    {
+	i_len += text.size()-1 * delim.length();
+	for (iter=text.begin(); iter != text.end(); iter++)
+	    i_len += iter->length();
+
+	i_res = 2;
+	while (i_res <= i_len)
+	    i_res *= 2;
+	i_str = alloc(i_res);
+	if (i_str == NULL)
+	{
+	    lock_rel();
+	    return;
+	}
+	
+	memset(i_str, 0, i_res);
+
+	iter = text.begin();
+	memcpy(i_str, iter->c_str(), iter->length());
+	offs += iter->length();
+	iter++;
+	while (iter != text.end())
+	{
+	    memcpy(&i_str[offs], delim.c_str(), delim.length());
+	    offs += delim.length();
+	    memcpy(&i_str[offs], iter->c_str(), iter->length());
+	    offs += iter->length();
+	    iter++;
+	}
+    }
+    else
+    {
+	i_str = NULL;
+	i_len = 0;
+	i_res = 0;
+    }
+
+    lock_rel();
+}
+
+void mstring::Assemble(const list<mstring> text, const mstring &delim)
+{
+    size_t offs = 0;
+    list<mstring>::const_iterator iter;
+
+    lock_write();
+
+    if (i_str != NULL)
+	dealloc(i_str);
+
+    if (text.size())
+    {
+	i_len += text.size()-1 * delim.length();
+	for (iter=text.begin(); iter != text.end(); iter++)
+	    i_len += iter->length();
+
+	i_res = 2;
+	while (i_res <= i_len)
+	    i_res *= 2;
+	i_str = alloc(i_res);
+	if (i_str == NULL)
+	{
+	    lock_rel();
+	    return;
+	}
+	
+	memset(i_str, 0, i_res);
+
+	iter = text.begin();
+	memcpy(i_str, iter->c_str(), iter->length());
+	offs += iter->length();
+	iter++;
+	while (iter != text.end())
+	{
+	    memcpy(&i_str[offs], delim.c_str(), delim.length());
+	    offs += delim.length();
+	    memcpy(&i_str[offs], iter->c_str(), iter->length());
+	    offs += iter->length();
+	    iter++;
+	}
+    }
+    else
+    {
+	i_str = NULL;
+	i_len = 0;
+	i_res = 0;
+    }
+
+    lock_rel();
+}
 
 /********************************************************/
 
@@ -1937,7 +2037,6 @@ mstring operator+ (const double lhs, const mstring &rhs)
     str.append(rhs.c_str(), rhs.length());
     return str;
 }
-
 
 /********************************************************/
 

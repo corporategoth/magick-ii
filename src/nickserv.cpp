@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.158  2001/03/04 02:04:14  prez
+** Made mstring a little more succinct ... and added vector/list operations
+**
 ** Revision 1.157  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -6380,7 +6383,7 @@ void NickServ::do_Live(mstring mynick, mstring source, mstring params)
 	return;
     }
     else if (!mask.Contains("!"))
-	mask.Prepend("*!");
+	mask.prepend("*!");
 
     ::send(mynick, source, Parent->getMessage(source, "LIST/NICK_LIST"),
 					mask.c_str());
