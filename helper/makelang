@@ -22,6 +22,9 @@ if [ -f include/language.h ]; then
 	DATE=`date`
 
 	cat >include/language.h <<EOF
+#ifndef WIN32
+#pragma interface
+#endif
 /*  Magick IRC Services
 **
 ** (c) 1997-2000 Preston Elder <prez@magick.tm>
@@ -32,9 +35,11 @@ if [ -f include/language.h ]; then
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
 **
-** ==========================================================
-#pragma ident "\$Id\$"
-** ==========================================================
+** ========================================================== **
+#ifndef _LANGUAGE_H
+#define _LANGUAGE_H
+static const char *ident = "@(#) \$Id\$";
+** ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
@@ -46,8 +51,6 @@ if [ -f include/language.h ]; then
 **
 ** ========================================================== */
 
-#ifndef _LANGUAGE_H
-#define _LANGUAGE_H
 
 /* Automatically generated hard-coded language file.
  * Based upon $LANG.

@@ -1,6 +1,10 @@
 #include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
+#else
+#pragma implementation
+#pragma implementation "language.h"
+#pragma implementation "logfile.h"
 #endif
 
 /*  Magick IRC Services
@@ -14,9 +18,7 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-#ifndef WIN32
-#pragma ident "$Id$"
-#endif
+static const char *ident = "@(#) $Id$";
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -26,6 +28,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.196  2000/02/23 12:21:03  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
 ** Revision 1.195  2000/02/21 03:27:39  prez
 ** Updated language files ...
 **
@@ -563,8 +571,8 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		fconf.Read(entryname.UpperCase(), &tempstr, "");
 		sendline = true;
 		yescom = nocom = text = "";
-		yescom = tempstr.ExtractWord(1, ":");
-		nocom  = tempstr.ExtractWord(2, ":");
+		yescom = tempstr.ExtractWord(1, ":", false);
+		nocom  = tempstr.ExtractWord(2, ":", false);
 		text   = tempstr.After(":", 2);
 		if (text == "")
 		    text = " ";
@@ -590,7 +598,6 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	}
 	wxConfigBase::CreateOnDemand(oldCOD);
     }
-
     // we use a found veriable because we MAY have found
     // it, just the access to read it may have been changed.
     if (!found)
@@ -618,8 +625,8 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		fconf.Read(entryname.UpperCase(), &tempstr, "");
 		sendline = true;
 		yescom = nocom = text = "";
-		yescom = tempstr.ExtractWord(1, ":");
-		nocom  = tempstr.ExtractWord(2, ":");
+		yescom = tempstr.ExtractWord(1, ":", false);
+		nocom  = tempstr.ExtractWord(2, ":", false);
 		text   = tempstr.After(":", 2);
 		if (text == "")
 		    text = " ";

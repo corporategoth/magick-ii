@@ -1,3 +1,6 @@
+#ifndef WIN32
+#pragma interface
+#endif
 /*  Magick IRC Services
 **
 ** (c) 1997-2000 Preston Elder <prez@magick.tm>
@@ -8,9 +11,11 @@
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
 **
-** ==========================================================
-#pragma ident "$Id$"
-** ==========================================================
+** ========================================================== */
+#ifndef _TRACE_H
+#define _TRACE_H
+static const char *ident_trace_h = "@(#) $Id$";
+/* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
@@ -19,6 +24,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/02/23 12:21:02  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
 ** Revision 1.55  2000/02/15 10:37:47  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from
@@ -27,8 +38,6 @@
 **
 ** ========================================================== */
 
-#ifndef _TRACE_H
-#define _TRACE_H
 
 #include "mstream.h"
 #include "string.h"

@@ -1,6 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
+#else
+#pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -14,9 +16,7 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-#ifndef WIN32
-#pragma ident "$Id$"
-#endif
+static const char *ident = "@(#) $Id$";
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -26,6 +26,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/02/23 12:21:03  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
 ** Revision 1.56  2000/02/17 12:55:06  ungod
 ** still working on borlandization
 **
@@ -791,7 +797,7 @@ mstring operator+(unsigned int i, const mstring& string)
 	return Result;
 }
 
-unsigned int mstring::WordCount(const mstring &separators)const
+unsigned int mstring::WordCount(const mstring &separators, bool assemble)const
 {
     //
     int Result=0;
@@ -799,24 +805,24 @@ unsigned int mstring::WordCount(const mstring &separators)const
     mstring S=*this;
     while(i<Len())
     {
-	while(i<Len()&&separators.Contains(S[i]))
+	while(i<Len()&& assemble && separators.Contains(S[i]))
 	    i++;
 	if(i<Len())
 	    Result++;
-	while(i<Len()&&!separators.Contains(S[i]))
+	while(i<Len() && !separators.Contains(S[i]))
 	    i++;
     }
     return Result;
 }
-mstring mstring::ExtractWord(int count,const mstring& separators)const
+mstring mstring::ExtractWord(int count,const mstring& separators, bool assemble)const
 {
     mstring Result;
     mstring S=*this;
     int i;
-    i=WordPosition(count,separators);
+    i=WordPosition(count,separators, assemble);
     if(i!=-1)
     {
-	while(i<Len()&&!separators.Contains(S[(unsigned int)i]))
+	while(i<Len() && !separators.Contains(S[(unsigned int)i]))
 	{
 	    Result<<S[(unsigned int)i];
 	    i++;
@@ -824,21 +830,23 @@ mstring mstring::ExtractWord(int count,const mstring& separators)const
     }
     return Result;
 }
-unsigned int mstring::WordPosition(unsigned int N,const mstring& separators)const
+unsigned int mstring::WordPosition(unsigned int N,const mstring& separators, bool assemble)const
 {
     unsigned int i=0,count=0;
     mstring S=*this;
     int Result=0;
-    while(i<Len()&&count!=N)
+    while(i<Len() && count!=N)
     {
-	while(i<Len()&&separators.Contains(S[i]))
+	// Skip past multi-seperators IF we assemble them.
+	while (i<Len() && assemble && separators.Contains(S[i]))
 	    i++;
 	if(i<Len())
 	    count++;
 	if(count!=N)
 	{
-	    while(i<Len()&&!separators.Contains(S[i]))
+	    while(i<Len() && !separators.Contains(S[i]))
 		i++;
+	    i++;
 	}
 	else
 	    Result=i;

@@ -1,17 +1,38 @@
-// $Id$
-//
-// Magick IRC Services
-// (c) 1997-1999 Preston A. Elder <prez@magick.tm>
-// (c) 1998-1999 W. King <ungod@magick.tm>
-//
-// The above copywright may not be removed under any
-// circumstances, however it may be added to if any
-// modifications are made to this file.  All modified
-// code must be clearly documented and labelled.
-//
-// ===================================================
-#ifndef _commserv_h
-#define _commserv_h
+#ifndef WIN32
+#pragma interface
+#endif
+/*  Magick IRC Services
+**
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
+**
+** The above copywright may not be removed under any
+** circumstances, however it may be added to if any
+** modifications are made to this file.  All modified
+** code must be clearly documented and labelled.
+**
+** ========================================================== */
+#ifndef _COMMSERV_H
+#define _COMMSERV_H
+static const char *ident_commserv_h = "@(#) $Id$";
+/* ========================================================== **
+**
+** Third Party Changes (please include e-mail address):
+**
+** N/A
+**
+** Changes by Magick Development Team <magick-devel@magick.tm>:
+**
+** $Log$
+** Revision 1.24  2000/02/23 12:21:01  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
+**
+** ========================================================== */
+
 
 #include "base.h"
 

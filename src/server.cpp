@@ -1,6 +1,9 @@
 #include "pch.h"
 #ifdef WIN32
 #pragma hdrstop
+#else
+#pragma implementation
+#pragma implementation "version.h"
 #endif
 
 /*  Magick IRC Services
@@ -14,9 +17,7 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-#ifndef WIN32
-#pragma ident "$Id$"
-#endif
+static const char *ident = "@(#) $Id$";
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -26,6 +27,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2000/02/23 12:21:04  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
 ** Revision 1.69  2000/02/17 12:55:07  ungod
 ** still working on borlandization
 **

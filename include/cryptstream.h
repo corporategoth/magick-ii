@@ -1,3 +1,6 @@
+#ifndef WIN32
+#pragma interface
+#endif
 /*  Magick IRC Services
 **
 ** (c) 1997-2000 Preston Elder <prez@magick.tm>
@@ -8,9 +11,11 @@
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
 **
-** ==========================================================
-#pragma ident "$Id$"
-** ==========================================================
+** ========================================================== */
+#ifndef _CRYPTSTREAM_H
+#define _CRYPTSTREAM_H
+static const char *ident_cryptstream_h = "@(#) $Id$";
+/* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
@@ -19,6 +24,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2000/02/23 12:21:01  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
 ** Revision 1.8  2000/02/16 12:59:37  ungod
 ** fixing for borland compilability
 **
@@ -30,8 +41,6 @@
 **
 ** ========================================================== */
 
-#ifndef _CRYPTSTREAM_H
-#define _CRYPTSTREAM_H
 #include "mstream.h"
 #include "mstring.h"
 extern "C"

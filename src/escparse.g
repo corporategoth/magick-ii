@@ -10,9 +10,9 @@ header {
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
 **
-** ========================================================== */
-#pragma ident "$Id$"
-/* ==========================================================
+** ========================================================== **
+static const char *ident = "$Id$";
+** ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
@@ -21,6 +21,12 @@ header {
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/02/23 12:21:03  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
 ** Revision 1.5  2000/02/15 10:37:49  prez
 ** Added standardized headers to ALL Magick source files, including
 ** a #pragma ident, and history log.  ALL revisions of files from

@@ -1,3 +1,6 @@
+#ifndef WIN32
+#pragma interface
+#endif
 /*  Magick IRC Services
 **
 ** (c) 1997-2000 Preston Elder <prez@magick.tm>
@@ -8,9 +11,11 @@
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
 **
-** ==========================================================
-#pragma ident "$Id$"
-** ==========================================================
+** ========================================================== */
+#ifndef _MSTRING_H
+#define _MSTRING_H
+static const char *ident_mstring_h = "@(#) $Id$";
+/* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
@@ -19,6 +24,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/02/23 12:21:02  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
 ** Revision 1.40  2000/02/17 12:55:03  ungod
 ** still working on borlandization
 **
@@ -30,8 +41,6 @@
 **
 ** ========================================================== */
 
-#ifndef _MSTRING_H
-#define _MSTRING_H
 
 /////////////////////////////////////////////////////////////////////////////
 // Name:        string.cpp
@@ -157,9 +166,9 @@ public:
 	bool IsSameAs(const mstring& in, bool bCase=true);
 	int CmpNoCase(const mstring& in);
 	int Cmp(const mstring& in);
-	unsigned int WordCount(const mstring &separators)const;
-	mstring ExtractWord(int count,const mstring& separators)const;
-	unsigned int WordPosition(unsigned int count,const mstring& separators)const;
+	unsigned int WordCount(const mstring &separators, bool assemble = true)const;
+	mstring ExtractWord(int count,const mstring& separators, bool assemble = true)const;
+	unsigned int WordPosition(unsigned int count,const mstring& separators, bool assemble = true)const;
 	pair<int,int> RegFind(const mstring& pattern)const;
 };
 

@@ -17,7 +17,8 @@
 ;
 ; Each entry in a section will be sorted by the tag, so please
 ; ensure that ALL tags are in order -- the actual name of the
-; tags does not matter.
+; tags does not matter, however PLEASE ENSURE THE TAG IS IN
+; UPPER CASE!  The detection engine is CASE SENSATIVE.
 ;
 ; Each entry has 3 fields, seperated by a colon (':').
 ;    1. Committees to display for:
@@ -92,12 +93,12 @@
 07 =REGD::all your memos (read or unread), and if done on a host
 08 =REGD::nickname, drop all slaves of it.
 09 =REGD::
-10a=REGD:SOP:If you specify a nickname after the drop command, and
-11a=REGD:SOP:the nickname is linked to you, it will drop it, if not,
-12a=REGD:SOP:it will drop your current nickname.
-10b=SOP::If you specify a nickname after the drop command, it
-11b=SOP::will drop that nickname (wether you own it or not).
-12b=SOP::Otherwise it will drop your current nickname.
+10A=REGD:SOP:If you specify a nickname after the drop command, and
+11A=REGD:SOP:the nickname is linked to you, it will drop it, if not,
+12A=REGD:SOP:it will drop your current nickname.
+10B=SOP::If you specify a nickname after the drop command, it
+11B=SOP::will drop that nickname (wether you own it or not).
+12B=SOP::Otherwise it will drop your current nickname.
 
 [NICKSERV/LINK]
 01 =::LINK <nickname> <password>
@@ -137,8 +138,8 @@
 09 =REGD::channels you own, and on all access lists you are on.
 
 [NICKSERV/SLAVES]
-01a=REGD:OPER:SLAVES
-01b=OPER::SLAVES [nick]
+01A=REGD:OPER:SLAVES
+01B=OPER::SLAVES [nick]
 02 =REGD::
 03 =REGD::This will list out all of your linked nicknames.
 04 =OPER::If you specify a nickname, it will list theirs instead.
@@ -214,10 +215,10 @@
 06 =::set by the Services Admins.  You override the maximum
 07 =::amount of entries displayed up to an absolute maximum
 08 =::also specified by the Services Admins.  Users marked
-09a=:OPER:as private will not be displayed in the list.
-09b=OPER::as private will be displayed in the list.
+09A=:OPER:as private will not be displayed in the list.
+09B=OPER::as private will be displayed in the list.
 
-[NICKSERV/LIST]
+[NICKSERV/SEND]
 01 =REGD::SEND <nickname>
 02 =REGD::
 03 =REGD::If the nickname specified has a picture in their

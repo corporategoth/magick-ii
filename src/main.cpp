@@ -14,9 +14,7 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-#ifndef WIN32
-#pragma ident "$Id$"
-#endif
+static const char *ident = "@(#) $Id$";
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -26,6 +24,12 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/02/23 12:21:03  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
 ** Revision 1.36  2000/02/16 12:59:39  ungod
 ** fixing for borland compilability
 **

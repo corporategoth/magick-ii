@@ -1,14 +1,38 @@
-/* Data Files header for Services.
- *
- * Magick IRC Services are copyright (c) 1996-1998 Preston A. Elder.
- *     E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet
- * Originally based on EsperNet services (c) 1996-1998 Andy Church
- * This program is free but copyrighted software; see the file COPYING for
- * details.
- */
-
+#ifndef WIN32
+#pragma interface
+#endif
+/*  Magick IRC Services
+**
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
+**
+** The above copywright may not be removed under any
+** circumstances, however it may be added to if any
+** modifications are made to this file.  All modified
+** code must be clearly documented and labelled.
+**
+** ========================================================== */
 #ifndef _CONVERT_H
 #define _CONVERT_H
+static const char *ident_convert_h = "@(#) $Id$";
+/* ========================================================== **
+**
+** Third Party Changes (please include e-mail address):
+**
+** N/A
+**
+** Changes by Magick Development Team <magick-devel@magick.tm>:
+**
+** $Log$
+** Revision 1.3  2000/02/23 12:21:01  prez
+** Fixed the Magick Help System (needed to add to ExtractWord).
+** Also replaced #pragma ident's with static const char *ident's
+** that will be picked up by what or version, and we can now
+** dump from a binary what versions of each file were used.
+**
+**
+** ========================================================== */
+
 
 #include "nickserv.h"
 #include "chanserv.h"
