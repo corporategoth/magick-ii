@@ -165,7 +165,7 @@ wxLog::wxLog()
 {
   m_bHasMessages = false;
   m_bVerbose     = false;
-  m_szTimeFormat = "[%d/%b/%y %H:%M:%S] ";
+  m_szTimeFormat = "%d %b %Y %H:%M:%S | ";
 }
 
 wxLog *wxLog::GetActiveTarget()

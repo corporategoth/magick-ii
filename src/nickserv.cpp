@@ -4816,7 +4816,8 @@ void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 
     if (!Parent->nickserv.IsStored(target))
     {
-	::send(mynick, source, "Nickname " + target + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+		target.c_str());
 	return;
     }
 
@@ -4951,7 +4952,8 @@ void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 
     if (!Parent->nickserv.IsStored(nickname))
     {
-	::send(mynick, source, "Nickname " + nickname + " is not registered.");
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+		nickname.c_str());
 	return;
     }
 

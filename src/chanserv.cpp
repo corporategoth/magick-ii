@@ -3372,6 +3372,7 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
 		Parent->chanserv.live[channel.LowerCase()].Topic_Setter(),
 		Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time());
     Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, password);
+    Parent->chanserv.live[channel.LowerCase()].SendMode(Parent->chanserv.stored[channel.LowerCase()].Mlock());
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/REGISTERED"),
 		channel.c_str(), founder.c_str());
 }

@@ -910,7 +910,8 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
 
     mstring output;
     Committee *comm = &Parent->commserv.list[committee];
-    ::send(mynick, source, committee + " is " + comm->Description());
+    ::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/DESCRIPTION"),
+		committee.c_str(), comm->Description().c_str());
     if (comm->HeadCom() != "")
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/HEADCOM"),
