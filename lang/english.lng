@@ -1,6 +1,62 @@
-; English On-Line Language File
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
 ;
-; Translated By: Preston A. Elder
+; English On-Line Language File
+; Translated By: Preston A. Elder <prez@magick.tm>
+;
+; --------------------------------------------------------------
+;
+; Throughout this file there are verious codes used for various
+; purposed, from making it look prettier on IRC, to replacing
+; the code with a value direct from Magick.  There are three
+; tables listed below which outline the codes and their meanings.
+;
+; The C replacement codes are used to insert a value from Magick
+; into the string.  These should NEVER be removed, they mey be
+; moved around, but NOT removed (if removed, results are very
+; unpredictable!).  These are also known as 'live' codes.
+;
+; The IRC beautifying codes are generally accepted codes that
+; have a certain function, on ALL IRC clients.  The codes listed
+; are all 'control' codes, meaning you hold control then push
+; the key listed to insert the code.
+;
+; The mIRC colour codes are here for convenience, but it is NOT
+; recommended you use them, as there are alot of IRC clients
+; (especially unix based) that will not be able to understand
+; them and make the output unreadable.  When using these codes,
+; to change just the foreground you use ^C# where # is the colour
+; code.  For foreground and background, you use ^C#,#.  To reset
+; the text back to 'no colour' you just use ^C.
+;
+; --------------------------------------------------------------
+;
+; C replacement codes:
+;   %s = String		%c = Single Character
+;   %d = Integer	%l = Numeric (with DP's)
+;   %o = Octal		%x = Hexidecimal
+;   %% = Literal %
+; The DP in %l can be moved by telling it how many numbers
+; are to appear before and after the DP.  eg. %3.2l for 3
+; numbers before, and 2 after the decimal point.
+;
+; IRC beautifying codes:
+;   ^B () = BOLD	- Make text between look brighter
+;   ^_ () = UNDERLINE	- Underline text between
+;   ^V () = REVERSE	- Switch foreground and background
+;   ^O () = CANCEL	- Back to non-bold/underline/reverse
+;   ^C () = COLOUR	- See below
+;
+; mIRC colour codes:
+;   0 = White		8  = Yellow
+;   1 = Black		9  = Bright Green
+;   2 = Blue		10 = Cyan
+;   3 = Green		11 = Bright Cyan
+;   4 = Red		12 = Bright Blue
+;   5 = Orange		13 = Bright Magenta
+;   6 = Magenta		14 = Grey
+;   7 = Bright Red	15 = Bright Grey
+; 
 
 ; Command syntax errors.
 [ERR/SYNTAX]
@@ -9,7 +65,6 @@ UNKNOWN_OPTION     =Unrecognized option %s.  Type /msg %s HELP %s for help.
 MORE_INFO          =Type /msg %s HELP %s for more information.
 NOHELP             =No help available for command %s.
 STARTHRESH         =Entry must have at least %d non-*, ? or . characters.
-REQ_PARAM          =%s requires a parameter.\n
 NEED_MLOCK_PARAM   =Paramater required for MLOCK +%c.
 MLOCK_POSITIVE     =Paramater for MLOCK +%c must be positive.
 MLOCK_UNKNOWN      =Unknown MLOCK character %c ignored.
