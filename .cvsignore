@@ -13,6 +13,8 @@ magick
 magick.debug
 what
 err.out
+stamp-h
+config.h
 *.log
 *.ini
 *.dsk
