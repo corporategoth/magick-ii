@@ -27,6 +27,11 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.272  2001/12/24 07:06:53  prez
+** Made hostmasking more intelligent (ie. a narrower mask will take priority
+** over a broader one on the access/akick list), and if a user is on more than
+** one committee, the one with the highest level attached will be returned.
+**
 ** Revision 1.271  2001/12/23 20:46:03  prez
 ** Added cleanup code for committee entries in channel access list.
 **
@@ -4835,7 +4840,12 @@ bool Chan_Stored_t::Access_insert(const mstring& i_entry, const long value,
     }
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
-    if (!Access_find(entry))
+    bool rv = Access_find(entry);
+    // Result is false if its a mask, but not the same one
+    if (rv && entry.Contains("@") && entry[0u] != '@' &&
+	!Access->Entry().IsSameAs(entry, true))
+	rv = false;
+    if (!rv)
     {
 	pair<set<entlist_val_t<long> >::iterator, bool> tmp;
 	MCB(i_Access.size());
@@ -4908,34 +4918,49 @@ bool Chan_Stored_t::Access_find(const mstring& entry,
 	    // Check if user is on a committee on the acess list ...
 	    if (commstat != C_None && iter == i_Access.end())
 	    {
+		set<entlist_val_t<long> >::iterator iter2 = i_Access.end();
+
 		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
+		    // It is indeed a committee entry ...
 		    if (iter->Entry()[0u] == '@' &&
 			Magick::instance().commserv.IsList(iter->Entry().After("@")))
+			// Verify that we do the right check ...
 			if ((commstat == C_IsIn &&
 			     Magick::instance().commserv.GetList(iter->Entry().After("@")).IsIn(tmp)) ||
 			    (commstat == C_IsOn &&
 			     Magick::instance().commserv.GetList(iter->Entry().After("@")).IsOn(tmp)))
-			    break;
+			    // Update iter2 if we have a higher value
+			    if (iter2 == i_Access.end() || iter->Value() > iter2->Value())
+				iter2 = iter;
+		iter = iter2;
 	    }
 	}
 
 	// Not exact or host, try either match or live lookup
 	if (iter == i_Access.end())
 	{
+	    set<entlist_val_t<long> >::iterator iter2 = i_Access.end();
 	    if (entry.Contains("@"))
 	    {
 		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
+		    // Its a hostmask matching what we were passed
 		    if (iter->Entry().Contains("@") && entry.Matches(iter->Entry(), true))
-			break;
+			// It is more specific that what we have already
+			if (iter2 == i_Access.end() || iter->Entry().Matches(iter2->Entry()))
+			    iter2 = iter;
 	    }
 	    else if (livelook && Magick::instance().nickserv.IsLive(entry))
 	    {
 		mstring mask = Magick::instance().nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H);
 
 		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
+		    // Its a hostmask matching the user
 		    if (iter->Entry().Contains("@") && mask.Matches(iter->Entry(), true))
-			break;
+			// It is more specific that what we have already
+			if (iter2 == i_Access.end() || iter->Entry().Matches(iter2->Entry()))
+			    iter2 = iter;
 	    }
+	    iter = iter2;
 	}
     }
 
@@ -5019,16 +5044,17 @@ long Chan_Stored_t::GetAccess(const mstring& entry)
 	    RET(retval); 
 	}
     }
+	
 
     if (Secure() ? Magick::instance().nickserv.GetLive(entry).IsIdentified() : 1)
     {
-	if (i_Founder.LowerCase() == realentry.LowerCase())
+	if (!realentry.empty() && Founder().IsSameAs(realentry, true))
 	{
 	    retval = Magick::instance().chanserv.Level_Max() + 1;
 	}
 	else
 	{
-	    retval = Access_value(realentry, C_IsOn, true);
+	    retval = Access_value(entry, C_IsOn, true);
 	}
     }
     RET(retval);
@@ -5084,7 +5110,12 @@ bool Chan_Stored_t::Akick_insert(const mstring& i_entry, const mstring& value,
     }
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
-    if (!Akick_find(entry))
+    bool rv = Akick_find(entry);
+    // Result is false if its a mask, but not the same one
+    if (rv && entry.Contains("@") && entry[0u] != '@' &&
+	!Akick->Entry().IsSameAs(entry, true))
+	rv = false;
+    if (!rv)
     {
 	pair<set<entlist_val_t<mstring> >::iterator, bool> tmp;
 	MCB(i_Akick.size());
@@ -5180,11 +5211,14 @@ bool Chan_Stored_t::Akick_find(const mstring& entry,
 	// Not exact or host, try either match or live lookup
 	if (iter == i_Akick.end())
 	{
+	    set<entlist_val_t<mstring> >::iterator iter2 = i_Akick.end();
 	    if (entry.Contains("@"))
 	    {
 		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
 		    if (iter->Entry().Contains("@") && entry.Matches(iter->Entry(), true))
-			break;
+			// It is more specific that what we have already
+			if (iter2 == i_Akick.end() || iter->Entry().Matches(iter2->Entry()))
+			    iter2 = iter;
 	    }
 	    else if (livelook && Magick::instance().nickserv.IsLive(entry))
 	    {
@@ -5192,8 +5226,11 @@ bool Chan_Stored_t::Akick_find(const mstring& entry,
 
 		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
 		    if (iter->Entry().Contains("@") && mask.Matches(iter->Entry(), true))
-			break;
+			// It is more specific that what we have already
+			if (iter2 == i_Akick.end() || iter->Entry().Matches(iter2->Entry()))
+			    iter2 = iter;
 	    }
+	    iter = iter2;
 	}
     }
 
@@ -9831,7 +9868,12 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
 	}
     }
 
-    if (cstored.Access_find(who))
+    bool rv = cstored.Access_find(who);
+    // Result is false if its a mask, but not the same one
+    if (rv && who.Contains("@") && who[0u] != '@' &&
+	!cstored.Access->Entry().IsSameAs(who, true))
+	rv = false;
+    if (rv)
     {
 	mstring entry = cstored.Access->Entry();
 	if (entry[0u] == '@')
@@ -9976,7 +10018,12 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
 	    }
 	}
 
-	if (cstored.Access_find(who))
+	bool rv = cstored.Access_find(who);
+	// Result is false if its a mask, but not the same one
+	if (rv && who.Contains("@") && who[0u] != '@' &&
+	    !cstored.Access->Entry().IsSameAs(who, true))
+	    rv = false;
+	if (rv)
 	{
 	    Magick::instance().chanserv.stats.i_Access++;
 	    mstring entry = cstored.Access->Entry();
@@ -10221,7 +10268,12 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
     }
 
     { MLOCK(("ChanServ", "stored", channel.LowerCase(), "Akick"));
-    if (cstored.Akick_find(who))
+    bool rv = cstored.Akick_find(who);
+    // Result is false if its a mask, but not the same one
+    if (rv && who.Contains("@") && who[0u] != '@' &&
+	!cstored.Akick->Entry().IsSameAs(who, true))
+	rv = false;
+    if (rv)
     {
 	SEND(mynick, source, "LIST/EXISTS2", (
 		who, channel,
@@ -10397,7 +10449,12 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	}
 
 	MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Akick"));
-	if (cstored.Akick_find(who))
+	bool rv = cstored.Akick_find(who);
+	// Result is false if its a mask, but not the same one
+	if (rv && who.Contains("@") && who[0u] != '@' &&
+	    !cstored.Akick->Entry().IsSameAs(who, true))
+	    rv = false;
+	if (rv)
 	{
 	    Magick::instance().chanserv.stats.i_Akick++;
 	    mstring entry = cstored.Akick->Entry();
