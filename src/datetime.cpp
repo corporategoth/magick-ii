@@ -263,7 +263,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 	int ampmtype=0;
 	DecodeDate(Year,Month,Day);
 	DecodeTime(Hour,Min,Sec,MSec);
-	wxLogDebug("mDateTime::FormatString values Hour: %d, Min: %d, Sec: %d MSec: %d",Hour,Min,Sec,MSec);
+	wxLogWarning("mDateTime::FormatString values Hour: %d, Min: %d, Sec: %d MSec: %d",Hour,Min,Sec,MSec);
 	Hour=abs(Hour);
 	Min=abs(Min);
 	Sec=abs(Sec);
