@@ -275,12 +275,10 @@ mstring ToHumanSpace(const unsigned long in)
     FT("ToHumanSpace", (in));
     mstring retval;
 
-    retval.Format("%ub", in);
-
     unsigned long value = 1024;
     unsigned int power = 0;
 
-    while (in > value)
+    while (in >= value)
     {
 	value *= 1024;
 	power++;
