@@ -337,3 +337,19 @@ void *mThread::handler_hack(void *level)
 
     return Result;
 }
+
+ThreadID* mThread::find(ACE_thread_t thread)
+{
+    return NULL;
+}
+
+int mThread::typecount(threadtype_enum ttype)
+{
+    return 0;
+}
+
+int mThread::findbytype(threadtype_enum ttype, int level)
+{
+    return 0;
+}
+

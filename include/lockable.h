@@ -98,6 +98,9 @@ public:
     static void suspend(ThreadID* tid);
     static void suspend(ACE_thread_t tid);
     static void yieldself();
+    static ThreadID* find(ACE_thread_t thread=ACE_Thread::self());
+    static int typecount(threadtype_enum ttype);
+    static int findbytype(threadtype_enum ttype, int level=1);
 };
 
 #endif

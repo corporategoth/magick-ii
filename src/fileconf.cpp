@@ -1822,7 +1822,7 @@ void LineList::SetNext(LineList *pNext)
 
 void LineList::SetPrev(LineList *pPrev)  
 {
-    FT("LineList::SetPtev", (pPrev));
+    FT("LineList::SetPrev", (pPrev));
     m_pPrev = pPrev; 
 }
 
