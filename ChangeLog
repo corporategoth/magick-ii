@@ -1,3 +1,13 @@
+* 2002-10-14 19:24  Preston A. Elder <prez@magick.tm>
+  lang/english.lfo (1.57), lang/french.lfo (1.7), lang/swedish.lfo (1.4):
+  
+  Changed IP address display appearance.
+
+* 2002-10-14 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.53):
+  
+  Created version 2.0s20021014
+
 * 2002-10-11 01:07  Preston A. Elder <prez@magick.tm>
   include/memoserv.h (1.65), src/memoserv.cpp (1.128):
   
