@@ -158,16 +158,16 @@ void ThreadID::WriteOut(const mstring &message)
     for (int i=0; i<indent; i++)
         finalout += "  ";
     finalout += message;
-    out << finalout;
+    out << finalout << endl;
 }
 
 // ===================================================
 
-FuncTrace::FuncTrace(const mstring &name, const mVarArray &args)
+T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     ShortLevel(Functions);
     if (IsOn(tid)) {
-	mstring message = "` " + name + "(";
+	mstring message = "\\ " + name + "(";
 	for (int i=0; i<args.count(); i++) {
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
 	    if (i < args.count() - 1)
@@ -181,12 +181,12 @@ FuncTrace::FuncTrace(const mstring &name, const mVarArray &args)
 
 // ===================================================
 
-CheckPoint::CheckPoint()
+T_CheckPoint::T_CheckPoint()
 {
-    common("CheckPoint Reached");
+    common("T_CheckPoint Reached");
 }
 
-CheckPoint::CheckPoint(const char *fmt, ...)
+T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 {
     va_list args;
     va_start (args, fmt);
@@ -196,9 +196,9 @@ CheckPoint::CheckPoint(const char *fmt, ...)
     common(output.c_str());
 }
 
-void CheckPoint::common(const char *input)
+void T_CheckPoint::common(const char *input)
 {
-    ShortLevel(Trace::CheckPoint);
+    ShortLevel(Trace::T_CheckPoint);
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
@@ -208,9 +208,9 @@ void CheckPoint::common(const char *input)
 
 // ===================================================
 
-Modify::Modify(const mVarArray &args)
+T_Modify::T_Modify(const mVarArray &args)
 {
-    ShortLevel(Trace::Modify);
+    ShortLevel(Trace::T_Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -220,9 +220,9 @@ Modify::Modify(const mVarArray &args)
     }
 }
 
-void Modify::EndModify(const mVarArray &args)
+void T_Modify::End(const mVarArray &args)
 {
-    ShortLevel(Trace::Modify);
+    ShortLevel(Trace::T_Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -234,18 +234,38 @@ void Modify::EndModify(const mVarArray &args)
 
 // ===================================================
 
-Chatter::Chatter(dir_enum direction, const mstring &input)
+T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
-    ShortLevel(Trace::Chatter);
+    ShortLevel(Trace::T_Chatter);
     if (IsOn(tid)) {
 	mstring message;
 	if (direction == From)
 	    message << "<- " << input;
-	else
+	else (direction == To)
 	    message << "-> " << input;
+	else
+	    message << "-- " << input; // Confused
 	tid->WriteOut(message);
     }
 }
 
 // ===================================================
+
+// T_Stats::T_Stats() {}
+
+// ===================================================
+
+// T_Locking::T_Locking() {}
+
+// ===================================================
+
+// T_Sockets::T_Sockets() {}
+
+// ===================================================
+
+// T_Bind::T_Bind() {}
+
+// ===================================================
+
+// T_External::T_External() {}
 

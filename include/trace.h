@@ -24,11 +24,11 @@ using namespace std;
 #include "variant.h"
 
 
-#define FT(x) FuncTrace __ft(#x);
-#define CP(x) { CheckPoint __cp(#x); }
-#define MB(x) Modify __mod(#x);
-#define ME(x) __mod.EndModify(#x);
-#define CH(x) { Chatter __ch(#x); }
+#define FT(x) T_Functions __ft(#x);
+#define CP(x) { T_CheckPoint __cp(#x); }
+#define MB(x) T_Modify __mod(#x);
+#define ME(x) __mod.End(#x);
+#define CH(x) { T_Chatter __ch(#x); }
 
 // forward declarations till we get them done
 class Thread;
@@ -68,13 +68,31 @@ class ThreadID;
 // Above uses threadname and Trace::levelname for translation
 // threadname follows threadtype_enum
 // Trace::levelname is a struct translating level_enum enum's
+//
+// input[3] is first checked in reverse order against threadname,
+// then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
+// then it gives a syntax error.
 
 enum threadtype_enum { MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
 mstring threadname[MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
 
+// Trace Codes
+//   \   Down Function (T_Functions)
+//   /   Up Function (T_Functions)
+//   **  CheckPoint (T_CheckPoint)
+//   ->  Outbound Traffic (T_Chatter)
+//   <-  Inbound Traffic (T_Chatter)
+//   --  Unknown Traffic (T_Chatter)
+//   <<  Before changes (T_Modify)
+//   >>  After Changes (T_Modify)
+//   ::  Read/Write Locking (T_Locking)
+//   %%  CPU/Memory Stats (T_Stats)
+//   ||  Sockets - DCC/Telnet/ServNet (T_Sockets)
+//   !!  BOB Binds, Registrations (T_Bind)
+//   ??  External commands (T_External)
+
 class Trace
 {
-
     static long TraceLevel;
     enum TraceTypes {
 	TT_Off		= 0,
@@ -184,6 +202,16 @@ public:
 
 // ===================================================
 
+// TODO: Method needed to tell FuncClass, CheckPoint, etc
+// that thread ID its working with.  ie. need a method
+// to set this, BEFORE going into those functions, and
+// telling the functions to point to the last thread.
+// I DONT want to have to specify which thread its using
+// int he calling syntax (ie. I want:
+//     T_Functions("FuncName", AOC((param, param)));
+// NOT:
+//     T_Functions("FuncName, tid, AOC((param, param)));
+
 class ThreadID {
 private:
     threadtype_enum internaltype;
@@ -206,51 +234,85 @@ public:
 
 // ===================================================
 
-class FuncTrace : public Trace
+// TODO: A method of displaying the return value.  I was
+// thinking #define RET(x) __ft.EndFunc(#s); return #s;
+// but that could leave us out of sync if we forget to
+// use it, as it should do the indentdown() before printing
+// the return value (so you end up with:
+//     \ FuncName ( (char) c, (int) 23 )
+//       ...
+//     / (char *) c23
+// Also thinkinf of changing WriteOut to have |'s down the
+// lines so you can follow function lines without counting
+// spaces.  Ideas?
+
+class T_Functions : public Trace
 {
     ThreadID *tid;
-    FuncTrace() {} 
+    T_Functions() {} 
 public:
-    FuncTrace(const mstring &name, const mVarArray &args);
-    ~FuncTrace() { tid->indentdown(); }
+    T_Functions(const mstring &name, const mVarArray &args);
+    ~T_Functions() { tid->indentdown(); }
 };
 
 // ===================================================
 
-class CheckPoint : public Trace
+class T_CheckPoint : public Trace
 {
     ThreadID *tid;
     void common(const char *input);
 public:
-    CheckPoint();
-    CheckPoint(const char *fmt, ...);
-    ~CheckPoint() {}
+    T_CheckPoint();
+    T_CheckPoint(const char *fmt, ...);
+    ~T_CheckPoint() {}
 };
 
 // ===================================================
 
-class Modify : public Trace
+class T_Modify : public Trace
 {
     ThreadID *tid;
-    Modify() {} 
+    T_Modify() {}
 public:
-    Modify(const mVarArray &args);
-    void EndModify(const mVarArray &args);
-    ~Modify() {}
+    T_Modify(const mVarArray &args);
+    void End(const mVarArray &args);
+    ~T_Modify() {}
 };
 
 // ===================================================
 
-class Chatter : public Trace
+class T_Chatter : public Trace
 {
     ThreadID *tid;
-    Chatter() {} 
+    T_Chatter() {} 
 public:
     enum dir_enum { From, To };
-    Chatter(dir_enum direction, const mstring &input);
-    ~Chatter() {}
+    T_Chatter(dir_enum direction, const mstring &input);
+    ~T_Chatter() {}
 };
 
 // ===================================================
+
+// class T_Stats : public Trace {};
+
+// ===================================================
+
+// TODO: State when you get a read, and a write lock.
+// ALSO state what class its on, and the class.id()
+
+// class T_Locking : public Trace {};
+
+// ===================================================
+
+// class T_Sockets : public Trace {};
+
+// ===================================================
+
+// class T_Bind : public Trace {};
+
+// ===================================================
+
+// class T_External : public Trace {};
+
 
 #endif /* _TRACE_H */
