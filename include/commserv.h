@@ -28,8 +28,11 @@ class Committee : public mUserDef
 
     set<entlist_t> i_Members;
     bool i_Private;
+    bool l_Private;
     bool i_OpenMemos;
+    bool l_OpenMemos;
     bool i_Secure;
+    bool l_Secure;
     list<entlist_t> i_Messages;
 
 public:
@@ -67,10 +70,16 @@ public:
     // If TRUE, all members can do a /MS COMMITTEE 
     void Private(bool in)	{ i_Private = in; }
     bool Private()const		{ return i_Private; }
+    void L_Private(bool in)	{ l_Private = in; }
+    bool L_Private()const	{ return l_Private; }
     void OpenMemos(bool in)	{ i_OpenMemos = in; }
     bool OpenMemos()const	{ return i_OpenMemos; }
+    void L_OpenMemos(bool in)	{ l_OpenMemos = in; }
+    bool L_OpenMemos()const	{ return l_OpenMemos; }
     void Secure(bool in)	{ i_Secure = in; }
     bool Secure()const		{ return i_Secure; }
+    void L_Secure(bool in)	{ l_Secure = in; }
+    bool L_Secure()const	{ return l_Secure; }
 
     bool MSG_insert(mstring entry, mstring nick);
     bool MSG_erase();
@@ -89,8 +98,11 @@ class CommServ : public mBase
     friend class Magick;
 private:
     bool    def_openmemos;
+    bool    lck_openmemos;
     bool    def_private;
+    bool    lck_private;
     bool    def_secure;
+    bool    lck_secure;
     mstring all_name;
     mstring regd_name;
     mstring sadmin_name;
@@ -115,8 +127,11 @@ private:
 protected:
 public:
     bool    DEF_OpenMemos()	{ return def_openmemos; }
+    bool    LCK_OpenMemos()	{ return lck_openmemos; }
     bool    DEF_Private()	{ return def_private; }
+    bool    LCK_Private()	{ return lck_private; }
     bool    DEF_Secure()	{ return def_secure; }
+    bool    LCK_Secure()	{ return lck_secure; }
     mstring ALL_Name()		{ return all_name; }
     mstring REGD_Name()		{ return regd_name; }
     mstring SADMIN_Name()	{ return sadmin_name; }

@@ -27,8 +27,11 @@ Committee::Committee(mstring name, mstring head, mstring description)
     i_HeadCom = "";
     i_Description = description;
     i_OpenMemos = Parent->commserv.DEF_OpenMemos();
+    l_OpenMemos = false;
     i_Secure = Parent->commserv.DEF_Secure();
+    l_Secure = false;
     i_Private = Parent->commserv.DEF_Private();
+    l_Private = false;
 }
 
 
@@ -40,8 +43,11 @@ Committee::Committee(mstring name, Committee *head, mstring description)
     i_HeadCom = head->Name();
     i_Description = description;
     i_OpenMemos = Parent->commserv.DEF_OpenMemos();
+    l_OpenMemos = false;
     i_Secure = Parent->commserv.DEF_Secure();
+    l_Secure = false;
     i_Private = Parent->commserv.DEF_Private();
+    l_Private = false;
 }
 
 
@@ -53,8 +59,11 @@ Committee::Committee(mstring name, mstring description)
     i_HeadCom = "";
     i_Description = description;
     i_OpenMemos = Parent->commserv.DEF_OpenMemos();
+    l_OpenMemos = false;
     i_Secure = Parent->commserv.DEF_Secure();
+    l_Secure = false;
     i_Private = Parent->commserv.DEF_Private();
+    l_Private = false;
 }
 
 
@@ -67,8 +76,11 @@ void Committee::operator=(const Committee &in)
     i_HeadCom = in.i_HeadCom;
     i_Description = in.i_Description;
     i_OpenMemos = in.i_OpenMemos;
+    l_OpenMemos = in.l_OpenMemos;
     i_Secure = in.i_Secure;
+    l_Secure = in.l_Secure;
     i_Private = in.i_Private;
+    l_Private = in.l_Private;
 
     map<mstring, mstring>::const_iterator j;
     i_UserDef.clear();
@@ -1297,6 +1309,7 @@ wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
 	out<<(*in.member);
 
     out<<in.i_OpenMemos<<in.i_Private<<in.i_Secure;
+    out<<in.l_OpenMemos<<in.l_Private<<in.l_Secure;
 
     out<<in.i_Messages.size();
     for(in.message=in.i_Messages.begin();in.message!=in.i_Messages.end();in.message++)
@@ -1321,6 +1334,7 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
     }
 
     in>>out.i_OpenMemos>>out.i_Private>>out.i_Secure;
+    in>>out.l_OpenMemos>>out.l_Private>>out.l_Secure;
 
     in>>locsize;
     out.i_Messages.clear();

@@ -185,9 +185,7 @@ public:
 	long runflags;
 	mstring services_dir;
 	mstring config_file;
-	int level;
-	int high_water_mark;
-	int low_water_mark;
+	unsigned int level;
 	mstring ProgramName;
 	bool debug;
 	bool live;

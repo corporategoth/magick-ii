@@ -1092,6 +1092,105 @@ NICK:
     Allowable picture extensions are: ?
     Users may have a maximum of ? file attachments, of up to ? bytes each.
 */
+    ::send(mynick, source, "Nicknames will expire after " +
+			ToHumanTime(Parent->nickserv.Expire()) + ".");
+    ::send(mynick, source, "Users have " +
+			ToHumanTime(Parent->nickserv.Ident()) +
+			" to identify.");
+    ::send(mynick, source, "Nicknames are held for " +
+			ToHumanTime(Parent->nickserv.Release()) +
+			" on failure to ident.");
+    ::send(mynick, source, "Users are killed if they fail to ident " +
+			mstring(itoa(Parent->nickserv.Passfail())) +
+			" times.");
+    mstring output = "";
+
+    if (Parent->nickserv.DEF_Protect())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->nickserv.LCK_Protect())
+	    output << IRC_Bold;
+	output << "Kill Protect";
+	if (Parent->nickserv.LCK_Protect())
+	    output << IRC_Off;
+    }
+
+    if (Parent->nickserv.DEF_Secure())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->nickserv.LCK_Secure())
+	    output << IRC_Bold;
+	output << "Secure";
+	if (Parent->nickserv.LCK_Secure())
+	    output << IRC_Off;
+    }
+
+    if (Parent->nickserv.DEF_NoExpire())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->nickserv.LCK_NoExpire())
+	    output << IRC_Bold;
+	output << "No Expire";
+	if (Parent->nickserv.LCK_NoExpire())
+	    output << IRC_Off;
+    }
+
+    if (Parent->nickserv.DEF_NoMemo())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->nickserv.LCK_NoMemo())
+	    output << IRC_Bold;
+	output << "Ignoring Memos";
+	if (Parent->nickserv.LCK_NoMemo())
+	    output << IRC_Off;
+    }
+
+    if (Parent->nickserv.DEF_Private())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->nickserv.LCK_Private())
+	    output << IRC_Bold;
+	output << "Private";
+	if (Parent->nickserv.LCK_Private())
+	    output << IRC_Off;
+    }
+
+    if (Parent->nickserv.DEF_PRIVMSG())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->nickserv.LCK_PRIVMSG())
+	    output << IRC_Bold;
+	output << "PRIVMSG";
+	if (Parent->nickserv.LCK_PRIVMSG())
+	    output << IRC_Off;
+    }
+
+    ::send(mynick, source, "Default options are: " + output);
+
+    output = "";
+    if (Parent->nickserv.LCK_Language())
+	output << IRC_Bold;
+    output << Parent->nickserv.DEF_Language();
+    if (Parent->nickserv.LCK_Language())
+	output << IRC_Off;    
+
+    ::send(mynick, source, "Default language is: " + output);
+
+    ::send(mynick, source, "Maximum picture size is " +
+		    mstring(ltoa(Parent->nickserv.PicSize())) + " bytes.");
+    ::send(mynick, source, "Allowable picture extensions are: " +
+		    Parent->nickserv.PicExt());
+    ::send(mynick, source, "Users may have a maximum of " +
+		    mstring(itoa(Parent->memoserv.Files())) +
+		    " files of up to " +
+		    mstring(ltoa(Parent->memoserv.FileSize())) +
+		    " bytes each.");
 }
 
 
@@ -1110,6 +1209,144 @@ CHAN:
     Minimum ACCESS level is ?, Maximum is ?
     Channel news articles expire after ?.
 */
+    ::send(mynick, source, "Channels will expire after " +
+			ToHumanTime(Parent->chanserv.Expire()) + ".");
+    ::send(mynick, source, "Users are killed if they fail to ident " +
+			mstring(itoa(Parent->chanserv.Passfail())) +
+			" times.");
+    ::send(mynick, source, "Channels are kept for " +
+			ToHumanTime(Parent->chanserv.ChanKeep()) +
+			" after akick of last user.");
+
+    mstring output = "";
+    if (Parent->chanserv.LCK_Bantime())
+	output << IRC_Bold;
+    output << ToHumanTime(Parent->chanserv.DEF_Bantime());
+    if (Parent->chanserv.LCK_Bantime())
+	output << IRC_Off;    
+    ::send(mynick, source, "Default ban time is: " + output);
+
+    ::send(mynick, source, "Default MLOCK is \"" +
+			Parent->chanserv.DEF_MLock() + "\" and locked is \"" +
+			Parent->chanserv.LCK_MLock() + "\".");
+
+    output = "";
+
+    if (Parent->chanserv.DEF_Keeptopic())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_Keeptopic())
+	    output << IRC_Bold;
+	output << "Keep Topic";
+	if (Parent->chanserv.LCK_Keeptopic())
+	    output << IRC_Off;
+    }
+
+    if (Parent->chanserv.DEF_Topiclock())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_Topiclock())
+	    output << IRC_Bold;
+	output << "Topic Lock";
+	if (Parent->chanserv.LCK_Topiclock())
+	    output << IRC_Off;
+    }
+
+    if (Parent->chanserv.DEF_Private())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_Private())
+	    output << IRC_Bold;
+	output << "Private";
+	if (Parent->chanserv.LCK_Private())
+	    output << IRC_Off;
+    }
+
+    if (Parent->chanserv.DEF_Secureops())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_Secureops())
+	    output << IRC_Bold;
+	output << "Secure Ops";
+	if (Parent->chanserv.LCK_Secureops())
+	    output << IRC_Off;
+    }
+
+    if (Parent->chanserv.DEF_Secure())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_Secure())
+	    output << IRC_Bold;
+	output << "Secure";
+	if (Parent->chanserv.LCK_Secure())
+	    output << IRC_Off;
+    }
+
+    if (Parent->chanserv.DEF_NoExpire())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_NoExpire())
+	    output << IRC_Bold;
+	output << "NoExpire";
+	if (Parent->chanserv.LCK_NoExpire())
+	    output << IRC_Off;
+    }
+
+    if (Parent->chanserv.DEF_Anarchy())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_Anarchy())
+	    output << IRC_Bold;
+	output << "Anarchy";
+	if (Parent->chanserv.LCK_Anarchy())
+	    output << IRC_Off;
+    }
+
+    if (Parent->chanserv.DEF_Restricted())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_Restricted())
+	    output << IRC_Bold;
+	output << "Restricted";
+	if (Parent->chanserv.LCK_Restricted())
+	    output << IRC_Off;
+    }
+
+    if (Parent->chanserv.DEF_Join())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->chanserv.LCK_Join())
+	    output << IRC_Bold;
+	output << "Join";
+	if (Parent->chanserv.LCK_Join())
+	    output << IRC_Off;
+    }
+
+    ::send(mynick, source, "Default options are: " + output);
+
+    output = "";
+    if (Parent->chanserv.LCK_Revenge())
+	output << IRC_Bold;
+    output << Parent->chanserv.DEF_Revenge();
+    if (Parent->chanserv.LCK_Revenge())
+	output << IRC_Off;    
+    ::send(mynick, source, "Default ban time is: " + output);
+
+    ::send(mynick, source, "Minimum access level is " +
+		    mstring(ltoa(Parent->chanserv.Level_Min())) +
+		    " and maximum is " +
+		    mstring(ltoa(Parent->chanserv.Level_Max())) + ".");
+    ::send(mynick, source, "Channel news articles expire after " +
+		    ToHumanTime(Parent->memoserv.News_Expire()) + ".");
 }
 
 
@@ -1132,6 +1369,69 @@ OTHER:
     Ignore lasts ? seconds, and is perminant if triggered more than ? times.
     Default committee options are: ...
 */
+    ::send(mynick, source, "Memos are InFlight for " +
+			ToHumanTime(Parent->memoserv.InFlight()) + ".");
+    ::send(mynick, source, "Default AKILL exipry time is " +
+			ToHumanTime(Parent->operserv.Def_Expire()) + ".");
+    ::send(mynick, source, "Maximum AKILL expire times (by committee):");
+    ::send(mynick, source, "    " + Parent->commserv.SADMIN_Name() + ": " +
+			ToHumanTime(Parent->operserv.Expire_SAdmin()));
+    ::send(mynick, source, "    " + Parent->commserv.SOP_Name() + ": " +
+			ToHumanTime(Parent->operserv.Expire_Sop()));
+    ::send(mynick, source, "    " + Parent->commserv.ADMIN_Name() + ": " +
+			ToHumanTime(Parent->operserv.Expire_Admin()));
+    ::send(mynick, source, "    " + Parent->commserv.OPER_Name() + ": " +
+			ToHumanTime(Parent->operserv.Expire_Oper()));
+    ::send(mynick, source, "A user may have up to " +
+			mstring(itoa(Parent->operserv.Clone_Limit())) +
+			" clones per host, which can be overridden up to " +
+			mstring(itoa(Parent->operserv.Max_Clone())) + ".");
+
+    ::send(mynick, source, "Flood is triggered with " +
+			mstring(itoa(Parent->operserv.Flood_Msgs())) + " in " +
+			ToHumanTime(Parent->operserv.Flood_Time()) + ".");
+    ::send(mynick, source, "Services remember old flood triggers for up to " +
+			ToHumanTime(Parent->operserv.Ignore_Remove()) + " later.");
+    ::send(mynick, source, "Ignore lasts for " +
+			ToHumanTime(Parent->operserv.Ignore_Time()) +
+			" and is permanent if triggered " +
+			mstring(itoa(Parent->operserv.Ignore_Limit())) +
+			" times.");
+    mstring output = "";
+
+    if (Parent->commserv.DEF_OpenMemos())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->commserv.LCK_OpenMemos())
+	    output << IRC_Bold;
+	output << "OpenMemos";
+	if (Parent->commserv.LCK_OpenMemos())
+	    output << IRC_Off;
+    }
+
+    if (Parent->commserv.DEF_Private())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->commserv.LCK_Private())
+	    output << IRC_Bold;
+	output << "Private";
+	if (Parent->commserv.LCK_Private())
+	    output << IRC_Off;
+    }
+
+    if (Parent->commserv.DEF_Secure())
+    {
+	if (output != "")
+	    output << ", ";
+	if (Parent->commserv.LCK_Secure())
+	    output << IRC_Bold;
+	output << "Secure";
+	if (Parent->commserv.LCK_Secure())
+	    output << IRC_Off;
+    }
+    ::send(mynick, source, "Default committee options are: " + output);
 }
 
 

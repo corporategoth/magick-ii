@@ -140,7 +140,7 @@ void mBase::init()
 	    return;
 	}
     }
-    BaseTask.message_queue_.high_water_mark(Parent->high_water_mark*sizeof(ACE_Method_Object *));
+    BaseTask.message_queue_.high_water_mark(Parent->config.High_Water_Mark()*sizeof(ACE_Method_Object *));
     BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
 }
 
@@ -381,7 +381,7 @@ void mBaseTask::message(const mstring& message)
     if(message_queue_.is_full())
     {
 	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	message_queue_.high_water_mark(Parent->high_water_mark*(thr_count()+1)*sizeof(ACE_Method_Object *));
+	message_queue_.high_water_mark(Parent->config.High_Water_Mark()*(thr_count()+1)*sizeof(ACE_Method_Object *));
 	message_queue_.low_water_mark(message_queue_.high_water_mark());
 	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
 	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
@@ -455,9 +455,9 @@ void mBaseTask::message_i(const mstring& message)
 	Parent->server.execute(message);
 
     if(thr_count()>1&&message_queue_.message_count()<
-	    Parent->high_water_mark*(thr_count()-2)+Parent->low_water_mark)
+	    Parent->config.High_Water_Mark()*(thr_count()-2)+Parent->config.Low_Water_Mark())
     {
-	message_queue_.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(ACE_Method_Object *));
+	message_queue_.high_water_mark(Parent->config.High_Water_Mark()*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(ACE_Method_Object *));
 	message_queue_.low_water_mark(message_queue_.high_water_mark());
 	COM(("Low water mark reached, killing thread."));
 	i_shutdown();

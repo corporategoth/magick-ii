@@ -38,8 +38,6 @@ Magick::Magick(int inargc, char **inargv)
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
 
-    low_water_mark=20;   // To be deciphered at runtime later
-    high_water_mark=25;
     reconnect=true;
     loggertask.open();
     events.open();
@@ -1365,8 +1363,11 @@ sleep(1);
     
     RemCommands();
     in->Read(ts_CommServ+"DEF_OPENMEMOS",&commserv.def_openmemos,true);
+    in->Read(ts_CommServ+"LCK_OPENMEMOS",&commserv.lck_openmemos,false);
     in->Read(ts_CommServ+"DEF_SECURE",&commserv.def_secure,false);
+    in->Read(ts_CommServ+"LCK_SECURE",&commserv.lck_secure,false);
     in->Read(ts_CommServ+"DEF_PRIVATE",&commserv.def_private,false);
+    in->Read(ts_CommServ+"LCK_PRIVATE",&commserv.lck_private,false);
     in->Read(ts_CommServ+"ALL_NAME",&commserv.all_name,"ALL");
     in->Read(ts_CommServ+"REGD_NAME",&commserv.regd_name,"REGD");
     in->Read(ts_CommServ+"SADMIN_NAME",&commserv.sadmin_name,"SADMIN");
