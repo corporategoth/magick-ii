@@ -861,7 +861,7 @@ void OperServ::AddCommands()
 						 OperServ::do_UnQline);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "NO*OP*", Magick::instance().commserv.ADMIN_Name(),
 						 OperServ::do_NOOP);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*", Magick::instance().commserv.SOP_Name(),
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "KILL*", Magick::instance().commserv.ADMIN_Name(),
 						 OperServ::do_Kill);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "HIDE*", Magick::instance().commserv.ADMIN_Name(),
 						 OperServ::do_Hide);
@@ -1011,7 +1011,7 @@ void OperServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "Q*LINE*", Magick::instance().commserv.ADMIN_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNQ*LINE*", Magick::instance().commserv.ADMIN_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "NO*OP*", Magick::instance().commserv.ADMIN_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "KILL*", Magick::instance().commserv.ADMIN_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "HIDE*", Magick::instance().commserv.ADMIN_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "*PING*",
 						 Magick::instance().commserv.OPER_Name() + " " +
