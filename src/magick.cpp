@@ -18,6 +18,7 @@
 using namespace std;
 #include "EscLexer.hpp"
 #include "EscParser.hpp"
+#include "lockable.h"
 
 Magick::Magick(int inargc, char **inargv)
 {
@@ -229,8 +230,7 @@ void Magick::LoadInternalMessages()
 	right side will *not* be trimmed*/
 
     //ACE_Thread_Mutex_Guard guard(mutex);
-    ACE_Local_WLock lock("Magick::LoadMessages");
-    ACE_Guard<ACE_Local_WLock> lockguard(lock);
+    WLOCK lock("Magick","LoadMessages");
     // so that the language file strings are only loaded in memory while this function is in effect.
 #include "language.h"
     int i;
@@ -280,8 +280,7 @@ void Magick::LoadInternalMessages()
 mstring Magick::parseEscapes(const mstring & in)
 {
     // hmm doesn't *really* need a mutex here.
-    ACE_Local_Mutex lock("Magick::parseEscapes");
-    ACE_Guard<ACE_Local_Mutex> guard(lock);
+    MLOCK lock("Magick","parseEscapes");
     mstring Result;
     strstream inputstream;
     inputstream<<in.c_str();
@@ -305,8 +304,7 @@ void Magick::LoadExternalMessages()
 {
 
     // use the previously created name array to get the names to load
-    ACE_Local_WLock lock("Magick::LoadMessages");
-    ACE_Guard<ACE_Local_WLock> guard(lock);
+    WLOCK lock("Magick","LoadMessages");
     wxFileConfig fconf("magick","","tmplang.lng");
     int i;
     for(i=0;i<MessageNamesLong.size();i++)
