@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.126  2000/05/20 17:00:18  prez
+** Added in the VERBOSE mode, now we mimic old logging
+**
 ** Revision 1.125  2000/05/20 15:16:59  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -157,6 +160,7 @@ private:
 	SignalHandler *signalhandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
 
+	bool i_verbose;
 	mstring i_services_dir;
 	mstring i_config_file;
 	mstring i_programname;
@@ -347,6 +351,7 @@ public:
 
 	// Commandline, config, language PARSING.
 	void dump_help();
+	bool verbose() { return i_verbose; }
 	bool paramlong(mstring first, mstring second);
 	bool paramshort(mstring first, mstring second);
 	bool get_config_values();

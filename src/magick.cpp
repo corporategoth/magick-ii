@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.234  2000/05/20 17:00:18  prez
+** Added in the VERBOSE mode, now we mimic old logging
+**
 ** Revision 1.233  2000/05/20 16:05:07  prez
 ** Finished off the log conversion (still via. wrappers)
 **
@@ -267,10 +270,12 @@ void wxLogVerbose(const char *message, ...)
 
 void wxLogDebug(const char *message, ...)
 {
+#ifdef DEBUG
     va_list argptr;
     va_start(argptr, message);
     Parent->LogV(LM_TRACE, message, argptr);
     va_end(argptr);
+#endif
 }
 
 void wxLogSysError(const char *message, ...)
@@ -289,8 +294,9 @@ size_t Magick::Log(ACE_Log_Priority priority, const char *message, ...)
 
     va_list argptr;
     va_start(argptr, message);
-    LogV(priority, message, argptr);
+    size_t retval = LogV(priority, message, argptr);
     va_end(argptr);
+    RET(retval);
 }
 
 size_t Magick::LogV(ACE_Log_Priority priority, const char *message, va_list argptr)
@@ -303,9 +309,14 @@ size_t Magick::LogV(ACE_Log_Priority priority, const char *message, va_list argp
     {
     case LM_TRACE:
 	text_priority = "TRACE    ";
+#ifndef DEBUG
+	RET(0);
+#endif
 	break;
     case LM_DEBUG:
 	text_priority = "DEBUG    ";
+	if (!i_verbose)
+	    RET(0);
 	break;
     case LM_INFO:
 	text_priority = "INFO     ";
@@ -342,9 +353,10 @@ size_t Magick::LogV(ACE_Log_Priority priority, const char *message, va_list argp
 	ace___->restart (), ace___->msg_ostream (), ace___->msg_callback ());
 
     text.FormatV(message, argptr);
-    ace___->log(priority, "%s | %s | %s\n",
+    size_t retval = ace___->log(priority, "%s | %s | %s\n",
 	Now().FormatString("dd mmm yyyy hh:nn:ss").c_str(),
 	text_priority.c_str(), text.c_str());
+    RET(retval);
 }
 
 Magick::Magick(int inargc, char **inargv)
@@ -365,6 +377,7 @@ Magick::Magick(int inargc, char **inargv)
     i_gotconnect = false;
     i_connected = false;
     i_auto = false;
+    i_verbose = false;
 
     ACE_LOG_MSG->open(i_programname.c_str());
 }
@@ -1368,7 +1381,7 @@ bool Magick::paramlong(mstring first, mstring second)
     }
     else if(first=="--verbose" || first=="--debug")
     {
-	//logger->SetVerbose(true);
+	i_verbose = true;
     }
     else if(first=="--log")
     {
@@ -2183,8 +2196,7 @@ bool Magick::get_config_values()
 
     in.Read(ts_Files+"PIDFILE",&files.pidfile,"magick.pid");
     in.Read(ts_Files+"LOGFILE",&files.logfile,"magick.log");
-    in.Read(ts_Files+"VERBOSE", &value_bool, false);
-    //logger->SetVerbose(value_bool);
+    in.Read(ts_Files+"VERBOSE", &i_verbose, false);
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
     in.Read(ts_Files+"LANGDIR",&files.langdir,"lang");
     in.Read(ts_Files+"DATABASE",&files.database,"magick.mnd");
