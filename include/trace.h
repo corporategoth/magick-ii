@@ -24,16 +24,17 @@ using namespace std;
 #include "variant.h"
 
 
-// FunctionTrace -- FT("...", AOC(()));
-#define FT(x,y) T_Functions __ft(x,y);
-// Set return value -- RET();
-#define RET(x) __ft.return_value(x); return x;
+// FunctionTrace -- FT("...", ());
+#define FT(x,y) T_Functions __ft(x,AOC(y))
+// Set return value -- RET()
+#define RET(x) __ft.return_value(x); return x
+#define NRET(x,y) __ft.return_value("(" + #x + ") " + #y); return y
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }
-// Modify begin -- MB(AOC(()));
-#define MB(x) T_Modify __mod(x);
-// Modify end -- ME(AOC(()));
-#define ME(x) __mod.End(x);
+// Modify begin -- MB(AOC());
+#define MB(x) T_Modify __mod(AOC(x))
+// Modify end -- ME(());
+#define ME(x) __mod.End(AOC(x))
 // In or Out chatter -- CH(enum, "...");
 #define CH(x) { T_Chatter __ch(x); }
 
@@ -211,19 +212,8 @@ public:
 
 // ===================================================
 
-// TODO: Method needed to tell FuncClass, CheckPoint, etc
-// that thread ID its working with.  ie. need a method
-// to set this, BEFORE going into those functions, and
-// telling the functions to point to the last thread.
-// I DONT want to have to specify which thread its using
-// int he calling syntax (ie. I want:
-//     T_Functions("FuncName", AOC((param, param)));
-// NOT:
-//     T_Functions("FuncName, tid, AOC((param, param)));
-
-// from ungod: lol, easy as pie, both pthreads and msvc have a "what's my thread id" call, we just backwards map it to the object that owns it.
-// eg 	to set it:  MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=MAIN;
-// to get the threadtype_enum: return MagickObject->ThreadtoTypeMap[ACE_Thread::self()];
+// ToDo -- A method to get the current ThreadID number
+// in here, without specifying it everywhere.
 class ThreadID {
 private:
     threadtype_enum internaltype;
@@ -246,18 +236,6 @@ public:
 };
 
 // ===================================================
-
-// TODO: A method of displaying the return value.  I was
-// thinking #define RET(x) __ft.EndFunc(#s); return #s;
-// but that could leave us out of sync if we forget to
-// use it, as it should do the indentdown() before printing
-// the return value (so you end up with:
-//     \ FuncName ( (char) c, (int) 23 )
-//       ...
-//     / (char *) c23
-// Also thinkinf of changing WriteOut to have |'s down the
-// lines so you can follow function lines without counting
-// spaces.  Ideas?
 
 class T_Functions : public Trace
 {
