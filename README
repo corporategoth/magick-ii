@@ -164,6 +164,7 @@ again at runtime, the settings in the config file will be used.
 --dir X		Set the initial services directory.
 --config X	Set the name (and/or path) of the config file.
 --nofork	Do not become a daemon process (dont fork()).
+		This option is not valid on Windows installations.
 --convert X	Convert another version of services databases
 		to Magick II format, where X is the type of
 		database to convert.  Currently recognised:

@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index12567.info.2.
+/tmp/sgmltmp.index5846.info.2.
 
    \input texinfo
 
@@ -18,6 +18,7 @@ runtime, the settings in the config file will be used.
      --dir X         Set the initial services directory.
      --config X      Set the name of the config file.
      --nofork        Do not become a daemon process (dont fork()).
+                     This option is not valid on Windows installations.
      --convert X     Convert another version of services databases
                      to Magick II format, where X is the type of
                      database to convert.  Currently recognised:

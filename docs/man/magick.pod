@@ -44,6 +44,12 @@ for any files specified within it that do not have absolute paths.
 Set the name of the config file, if not specified, F<magick.ini>
 will be used, and looked for in the services directory.
 
+=item --nofork
+
+This will stop Magick from becoming a background process (ie. leave
+it in the foreground).  This option is not available on Windows
+versions of Magick.
+
 =item --convert X
 
 THIS OPTION WILL ONLY APPEAR IF COMPILED INTO THE BINARY!
