@@ -101,7 +101,7 @@ void *IrcSvcHandler::worker(void *in)
 				break;
 			}
 		    }
-		    if (msg.entry() != NULL)
+		    if (msg != NULL)
 		    {
 			try
 			{

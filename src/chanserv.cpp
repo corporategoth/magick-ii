@@ -527,7 +527,7 @@ void ChanServ::AddStored(Chan_Stored_t * in)
 
     WLOCK((lck_ChanServ, lck_stored));
     map_entry < Chan_Stored_t > old_entry(stored, in->Name().LowerCase());
-    if (old_entry.entry() != NULL)
+    if (old_entry != NULL)
     {
 	old_entry->setDelete();
 	stored.erase(in->Name().LowerCase());
@@ -651,7 +651,7 @@ void ChanServ::AddLive(Chan_Live_t * in)
 
     WLOCK((lck_ChanServ, lck_live));
     map_entry < Chan_Live_t > old_entry(live, in->Name().LowerCase());
-    if (old_entry.entry() != NULL)
+    if (old_entry != NULL)
     {
 	old_entry->setDelete();
 	live.erase(in->Name().LowerCase());
@@ -1583,7 +1583,7 @@ void ChanServ::do_Mode(const mstring & mynick, const mstring & source, const mst
     if (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
 	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))
     {
-	if (cstored.entry() != NULL)
+	if (cstored != NULL)
 	    channel = cstored->Name();
 	else
 	    channel = Magick::instance().getLname(channel);
@@ -1595,7 +1595,7 @@ void ChanServ::do_Mode(const mstring & mynick, const mstring & source, const mst
     }
     else
     {
-	if (cstored.entry() == NULL)
+	if (cstored == NULL)
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
 	    return;
@@ -2294,7 +2294,7 @@ void ChanServ::do_Kick(const mstring & mynick, const mstring & source, const mst
     if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Kick()) &&
 	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Kick())->IsOn(source)))
     {
-	if (cstored.entry() == NULL)
+	if (cstored == NULL)
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
 	    return;
@@ -2537,7 +2537,7 @@ void ChanServ::do_Invite(const mstring & mynick, const mstring & source, const m
     }
     else
     {
-	if (cstored.entry() == NULL)
+	if (cstored == NULL)
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
 	    return;
@@ -2626,7 +2626,7 @@ void ChanServ::do_Unban(const mstring & mynick, const mstring & source, const ms
     }
     else
     {
-	if (cstored.entry() == NULL)
+	if (cstored == NULL)
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
 	    return;
@@ -7868,7 +7868,7 @@ void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (iter = StoredBegin(); iter != StoredEnd(); iter++)
 	{
 	    map_entry < Chan_Stored_t > cstored(iter->second);
-	    pOut->WriteSubElement(cstored.entry());
+	    pOut->WriteSubElement(cstored);
 	}
     }
 

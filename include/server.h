@@ -516,10 +516,6 @@ public:
     {
 	AddList(new Server_t(in));
     }
-    void AddList(const map_entry < Server_t > & in) throw(E_Server_List)
-    {
-	AddList(in.entry());
-    }
     map_entry < Server_t > GetList(const mstring & in) const throw(E_Server_List);
     void RemList(const mstring & in, bool downlinks = true) throw(E_Server_List);
 #else
@@ -527,10 +523,6 @@ public:
     void AddList(const Server_t & in)
     {
 	AddList(new Server_t(in));
-    }
-    void AddList(const map_entry < Server_t > & in)
-    {
-	AddList(in.entry());
     }
     map_entry < Server_t > GetList(const mstring & in);
     void RemList(const mstring & in, bool downlinks = true);

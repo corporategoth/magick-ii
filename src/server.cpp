@@ -1209,7 +1209,7 @@ void Server::AddList(Server_t * in)
 
     WLOCK((lck_Server, lck_list));
     map_entry < Server_t > old_entry(i_list, in->Name().LowerCase());
-    if (old_entry.entry() != NULL)
+    if (old_entry != NULL)
     {
 	old_entry->setDelete();
 	i_list.erase(in->Name().LowerCase());
@@ -5862,12 +5862,12 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 					clive = Magick::instance().chanserv.GetLive(lname);
 
 				    // If its live and got JOIN on || not live and mlock +k or +i
-				    if ((clive.entry() != NULL && cstored->Join()) ||
-					(clive.entry() == NULL &&
+				    if ((clive != NULL && cstored->Join()) ||
+					(clive == NULL &&
 					 (!cstored->Mlock_Key().empty() || cstored->Mlock_On().Contains("i"))))
 				    {
 					joins.push_back(lname);
-					if (clive.entry() == NULL)
+					if (clive == NULL)
 					{
 					    modes[lname] = "+s";
 					    if (cstored->Mlock_On().Contains("i"))
@@ -5877,7 +5877,7 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 					}
 				    }
 
-				    if (clive.entry() != NULL && !cstored->Last_Topic().empty() && !cstored->Suspended())
+				    if (clive != NULL && !cstored->Last_Topic().empty() && !cstored->Suspended())
 				    {
 					if ((cstored->Topiclock() && clive->Topic() != cstored->Last_Topic()) ||
 					    (cstored->Keeptopic() && clive->Topic().empty()))

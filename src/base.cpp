@@ -859,7 +859,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 		msg = Magick::instance().ircsvchandler->GetMessage(*k);
 	}
 
-	if (msg.entry() != NULL)
+	if (msg != NULL)
 	{
 	    msg->DependancySatisfied(type, target);
 	    if (!msg->OutstandingDependancies())

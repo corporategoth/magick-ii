@@ -891,7 +891,7 @@ void CommServ::AddList(Committee_t * in)
 
     WLOCK((lck_CommServ, lck_list));
     map_entry < Committee_t > old_entry(i_list, in->Name().LowerCase());
-    if (old_entry.entry() != NULL)
+    if (old_entry != NULL)
     {
 	old_entry->setDelete();
 	i_list.erase(in->Name().LowerCase());
@@ -1253,7 +1253,7 @@ void CommServ::do_Add(const mstring & mynick, const mstring & source, const mstr
 	    return;
 	}
 
-	tmp = new Committee_t(committee, *(Magick::instance().commserv.GetList(head).entry()), desc);
+	tmp = new Committee_t(committee, *(Magick::instance().commserv.GetList(head)), desc);
     }
     else
     {
@@ -3139,7 +3139,7 @@ void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (iter = ListBegin(); iter != ListEnd(); iter++)
 	{
 	    map_entry < Committee_t > comm(iter->second);
-	    pOut->WriteSubElement(comm.entry());
+	    pOut->WriteSubElement(comm);
 	}
     }
 

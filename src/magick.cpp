@@ -3075,7 +3075,7 @@ bool Magick::get_config_values()
 	comm = commserv.GetList(commserv.sop.Name);
     else
     {
-	comm = map_entry < Committee_t > (new Committee_t(commserv.sop.Name, *(commserv.GetList(commserv.sadmin.Name).entry()),
+	comm = map_entry < Committee_t > (new Committee_t(commserv.sop.Name, *(commserv.GetList(commserv.sadmin.Name)),
 							  "Services Operators"));
 	commserv.AddList(comm);
     }
@@ -3087,7 +3087,7 @@ bool Magick::get_config_values()
 	comm = commserv.GetList(commserv.admin.Name);
     else
     {
-	comm = map_entry < Committee_t > (new Committee_t(commserv.admin.Name, *(commserv.GetList(commserv.sadmin.Name).entry()),
+	comm = map_entry < Committee_t > (new Committee_t(commserv.admin.Name, *(commserv.GetList(commserv.sadmin.Name)),
 							  "Server Administrators"));
 	commserv.AddList(comm);
     }
@@ -3099,7 +3099,7 @@ bool Magick::get_config_values()
 	comm = commserv.GetList(commserv.oper.Name);
     else
     {
-	comm = map_entry < Committee_t > (new Committee_t(commserv.oper.Name, *(commserv.GetList(commserv.admin.Name).entry()),
+	comm = map_entry < Committee_t > (new Committee_t(commserv.oper.Name, *(commserv.GetList(commserv.admin.Name)),
 							  "Server Operators"));
 	commserv.AddList(comm);
     }
@@ -3119,7 +3119,7 @@ bool Magick::get_config_values()
     }
     else
     {
-	comm = map_entry < Committee_t > (new Committee_t(commserv.all.Name, *(commserv.GetList(commserv.admin.Name).entry()),
+	comm = map_entry < Committee_t > (new Committee_t(commserv.all.Name, *(commserv.GetList(commserv.admin.Name)),
 							  "All Users"));
 	commserv.AddList(comm);
     }
@@ -3139,7 +3139,7 @@ bool Magick::get_config_values()
     }
     else
     {
-	comm = map_entry < Committee_t >(new Committee_t(commserv.regd.Name, *(commserv.GetList(commserv.sop.Name).entry()),
+	comm = map_entry < Committee_t >(new Committee_t(commserv.regd.Name, *(commserv.GetList(commserv.sop.Name)),
 							 "Registered Users"));
 	commserv.AddList(comm);
     }

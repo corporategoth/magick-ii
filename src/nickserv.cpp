@@ -406,7 +406,7 @@ void NickServ::AddStored(Nick_Stored_t * in)
 
     WLOCK((lck_NickServ, lck_stored));
     map_entry < Nick_Stored_t > old_entry(stored, in->Name().LowerCase());
-    if (old_entry.entry() != NULL)
+    if (old_entry != NULL)
     {
 	old_entry->setDelete();
 	stored.erase(in->Name().LowerCase());
@@ -540,7 +540,7 @@ void NickServ::AddLive(Nick_Live_t * in)
 
     WLOCK((lck_NickServ, lck_live));
     map_entry < Nick_Live_t > old_entry(live, in->Name().LowerCase());
-    if (old_entry.entry() != NULL)
+    if (old_entry != NULL)
     {
 	old_entry->setDelete();
 	live.erase(in->Name().LowerCase());
@@ -628,7 +628,7 @@ bool NickServ::IsLive(const mstring & in) const
     FT("NickServ::IsLive", (in));
     RLOCK((lck_NickServ, lck_live));
     map_entry < Nick_Live_t > ent(live, in.LowerCase());
-    if (ent.entry() != NULL && ent->Squit().empty())
+    if (ent != NULL && ent->Squit().empty())
 	RET(true);
     RET(false);
     ETCB();
@@ -895,7 +895,7 @@ void NickServ::do_Drop(const mstring & mynick, const mstring & source, const mst
 	map_entry < Committee_t > comm;
 	if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()))
 	    comm = Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name());
-	if (comm.entry() != NULL && comm->IsOn(source))
+	if (comm != NULL && comm->IsOn(source))
 	{
 	    // NOT our sibling, and its either a sop or oper ...
 	    if ((comm->IsIn(target)) ||
@@ -1326,7 +1326,7 @@ void NickServ::do_Info(const mstring & mynick, const mstring & source, const mst
 	output.erase();
 	bool isonline = false;
 
-	if (host.entry() != NULL && host->IsOnline())
+	if (host != NULL && host->IsOnline())
 	    output = Magick::instance().nickserv.GetLive(nick->Host())->Name() + " ";
 	for (i = 0; i < nick->Siblings(); i++)
 	{
@@ -4006,7 +4006,7 @@ void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	for (iter = StoredBegin(); iter != StoredEnd(); iter++)
 	{
 	    map_entry < Nick_Stored_t > nstored(iter->second);
-	    pOut->WriteSubElement(nstored.entry());
+	    pOut->WriteSubElement(nstored);
 	}
     }
 

@@ -780,10 +780,6 @@ public:
     {
 	AddStored(new Nick_Stored_t(in));
     }
-    void AddStored(const map_entry < Nick_Stored_t > & in) throw(E_NickServ_Stored)
-    {
-	AddStored(in.entry());
-    }
     map_entry < Nick_Stored_t > GetStored(const mstring & in) const throw(E_NickServ_Stored);
     void RemStored(const mstring & in) throw(E_NickServ_Stored);
 #else
@@ -791,10 +787,6 @@ public:
     void AddStored(const Nick_Stored_t & in)
     {
 	AddStored(new Nick_Stored_t(in));
-    }
-    void AddStored(const map_entry < Nick_Stored_t > & in)
-    {
-	AddStored(in.entry());
     }
     map_entry < Nick_Stored_t > GetStored(const mstring & in);
     void RemStored(const mstring & in);
@@ -827,10 +819,6 @@ public:
     {
 	AddLive(new Nick_Live_t(in));
     }
-    void AddLive(const map_entry < Nick_Live_t > & in) throw(E_NickServ_Live)
-    {
-	AddLive(in.entry());
-    }
     map_entry < Nick_Live_t > GetLive(const mstring & in) const throw(E_NickServ_Live);
     void RemLive(const mstring & in) throw(E_NickServ_Live);
 #else
@@ -838,10 +826,6 @@ public:
     void AddLive(const Nick_Live_t & in)
     {
 	AddLive(new Nick_Live_t(in));
-    }
-    void AddLive(const map_entry < Nick_Live_t > & in)
-    {
-	AddLive(in.entry());
     }
     map_entry < Nick_Live_t > GetLive(const mstring & in) const;
     void RemLive(const mstring & in);

@@ -1438,11 +1438,11 @@ void Nick_Live_t::Mode(const mstring & in)
 			nstored = Magick::instance().nickserv.GetStored(i_Name);
 		    if_MLOCK ((lck_OperServ, "OperDeny"),
 			      (Magick::instance().operserv.SecureOper() &&
-			       !(nstored.entry() != NULL && nstored->IsOnline() &&
+			       !(nstored != NULL && nstored->IsOnline() &&
 				 Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
 				 Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsIn(i_Name)))
 			      || (Magick::instance().operserv.OperDeny_find(Mask(N_U_P_H)) &&
-				  !(nstored.entry() != NULL && nstored->IsOnline() &&
+				  !(nstored != NULL && nstored->IsOnline() &&
 				    Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
 				    Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsIn(i_Name))))
 		    {

@@ -491,10 +491,6 @@ public:
     {
 	AddList(new Committee_t(in));
     }
-    void AddList(const map_entry < Committee_t > & in) throw(E_CommServ_List)
-    {
-	AddList(in.entry());
-    }
     map_entry < Committee_t > GetList(const mstring & in) const throw(E_CommServ_List);
     void RemList(const mstring & in) throw(E_CommServ_List);
 #else
@@ -502,10 +498,6 @@ public:
     void AddList(const Committee_t & in)
     {
 	AddList(new Committee_t(in));
-    }
-    void AddList(const map_entry < Committee_t > & in)
-    {
-	AddList(in.entry());
     }
     map_entry < Committee_t > GetList(const mstring & in);
     void RemList(const mstring & in);

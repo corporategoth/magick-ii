@@ -3143,7 +3143,7 @@ void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, c
 	    {
 		// IF user is recognized and on sadmin, ignore.
 		if (Magick::instance().nickserv.IsStored(nlive->Name()) &&
-		    Magick::instance().nickserv.GetStored(nlive->Name())->IsOnline() && sadmin.entry() != NULL &&
+		    Magick::instance().nickserv.GetStored(nlive->Name())->IsOnline() && sadmin != NULL &&
 		    sadmin->IsIn(nlive->Name()))
 		    continue;
 		if (!Magick::instance().server.proto.SVSMODE().empty())

@@ -191,11 +191,15 @@ public:
     {
 	End();
     }
-    T *entry() const
+    T *operator->() const
     {
 	return entry_ptr;
     }
-    T *operator->() const
+    T& operator*() const
+    {
+	return *entry_ptr;
+    }
+    operator T*() const
     {
 	return entry_ptr;
     }

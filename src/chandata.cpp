@@ -1921,7 +1921,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	MLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "Akick"));
 	bool rv = Akick_find(nick, C_IsOn, true);
 
-	if (rv && ((Akick->Entry().Contains("@")) || (nstored.entry() != NULL && nstored->IsOnline())))
+	if (rv && ((Akick->Entry().Contains("@")) || (nstored != NULL && nstored->IsOnline())))
 	{
 	    if (Magick::instance().chanserv.IsLive(i_Name))
 	    {
@@ -2054,7 +2054,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 
     mstring target;
 
-    if (nstored.entry() != NULL)
+    if (nstored != NULL)
     {
 	target = nstored->Host();
 	if (target.empty())
@@ -2191,7 +2191,7 @@ void Chan_Stored_t::ChgNick(const mstring & nick, const mstring & newnick)
 	    ((Akick->Entry().Contains("@")) ||
 	     (Magick::instance().nickserv.IsStored(nick) && Magick::instance().nickserv.GetStored(nick)->IsOnline())))
 	{
-	    if (clive.entry() != NULL)
+	    if (clive != NULL)
 	    {
 		// If this user is the only user in channel
 		if (users == 1)
@@ -2511,7 +2511,7 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 			    map_entry < Nick_Live_t > nlive;
 			    if (Magick::instance().nickserv.IsLive(clive->User(j)))
 				nlive = Magick::instance().nickserv.GetLive(clive->User(j));
-			    if (nlive.entry() != NULL &&
+			    if (nlive != NULL &&
 				(nlive->Mask(Nick_Live_t::N_U_P_H).Matches(arg, true) ||
 				 nlive->AltMask(Nick_Live_t::N_U_P_H).Matches(arg, true)))
 			    {
@@ -3555,7 +3555,7 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 	if (!setting.Mlock_Off.empty())
 	    modes << "-" << setting.Mlock_Off;
 
-	if (nlive.entry() != NULL)
+	if (nlive != NULL)
 	{
 	    LOG(LM_DEBUG, "CHANSERV/SET",
 		(nlive->Mask(Nick_Live_t::N_U_P_H), Magick::instance().getMessage("CS_SET/MLOCK"), i_Name, modes));
@@ -3570,7 +3570,7 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 	output = parseMessage(Magick::instance().getMessage(source, "CS_COMMAND/MLOCK_SET"), mVarArray(i_Name, modes));
 	retval.push_back(output);
 
-	if (clive.entry() != NULL)
+	if (clive != NULL)
 	{
 	    mstring modes_param;
 
@@ -3605,7 +3605,7 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 		modes << "+l";
 		modes_param << " " << setting.Mlock_Limit;
 	    }
-	    if (modes.length() > 2 && clive.entry() != NULL)
+	    if (modes.length() > 2 && clive != NULL)
 		clive->SendMode(modes + modes_param);
 	}
     }

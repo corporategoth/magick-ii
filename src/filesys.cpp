@@ -1233,7 +1233,7 @@ DccXfer::~DccXfer()
     if (Magick::instance().nickserv.IsLiveAll(i_Source))
 	nlive = Magick::instance().nickserv.GetLive(i_Source);
 
-    if (i_Type == Get && nlive.entry() != NULL && nlive->InFlight.File() && nlive->InFlight.InProg())
+    if (i_Type == Get && nlive != NULL && nlive->InFlight.File() && nlive->InFlight.InProg())
     {
 	if ((i_Filesize > 0) ? i_Total == i_Filesize : i_Total > 0)
 	{

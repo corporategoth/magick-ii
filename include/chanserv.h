@@ -977,10 +977,6 @@ public:
     {
 	AddStored(new Chan_Stored_t(in));
     }
-    void AddStored(const map_entry < Chan_Stored_t > & in) throw(E_ChanServ_Stored)
-    {
-	AddStored(in.entry());
-    }
     map_entry < Chan_Stored_t > GetStored(const mstring & in) const throw(E_ChanServ_Stored);
     void RemStored(const mstring & in) throw(E_ChanServ_Stored);
 #else
@@ -988,10 +984,6 @@ public:
     void AddStored(const Chan_Stored_t & in)
     {
 	AddStored(new Chan_Stored_t(in));
-    }
-    void AddStored(const map_entry < Chan_Stored_t > & in)
-    {
-	AddStored(in.entry());
     }
     map_entry < Chan_Stored_t > GetStored(const mstring & in);
     void RemStored(const mstring & in);
@@ -1024,10 +1016,6 @@ public:
     {
 	AddLive(new Chan_Live_t(in));
     }
-    void AddLive(const map_entry < Chan_Live_t > & in) throw(E_ChanServ_Live)
-    {
-	AddLive(in.entry());
-    }
     map_entry < Chan_Live_t > GetLive(const mstring & in) const throw(E_ChanServ_Live);
     void RemLive(const mstring & in) throw(E_ChanServ_Live);
 #else
@@ -1035,10 +1023,6 @@ public:
     void AddLive(const Chan_Live_t & in)
     {
 	AddLive(new Chan_Live_t(in));
-    }
-    void AddLive(const map_entry < Chan_Live_t > & in)
-    {
-	AddLive(in.entry());
     }
     map_entry < Chan_Live_t > GetLive(const mstring & in) const;
     void RemLive(const mstring & in);
