@@ -94,7 +94,7 @@ bool entlist_t::Change(mstring entry, mstring nick)
 }
 
 
-wxOutputStream &operator<<(wxOutputStream& out,entlist_t& in)
+wxOutputStream &operator<<(wxOutputStream& out,const entlist_t& in)
 {
     out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
 
@@ -203,7 +203,7 @@ bool entlist_val_t::Change(mstring entry, long value, mstring nick)
 }
 
 
-wxOutputStream &operator<<(wxOutputStream& out,entlist_val_t& in)
+wxOutputStream &operator<<(wxOutputStream& out,const entlist_val_t& in)
 {
     out<<in.i_Entry<<in.i_Value<<in.i_Last_Modify_Time<<in.i_Last_Modifier<<in.i_Stupid;
 
