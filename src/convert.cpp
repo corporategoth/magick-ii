@@ -18,6 +18,16 @@
 #include "magick.h"
 #include "convert.h"
 
+const int file_version = 5;
+const char *nickserv_db = "nick.db";
+const char *chanserv_db = "chan.db";
+const char *memoserv_db = "memo.db";
+const char *newsserv_db = "news.db";
+const char *sop_db = "sop.db";
+const char *message_db = "message.db";
+const char *akill_db = "akill.db";
+const char *clone_db = "clone.db";
+
 int
 get_file_version (FILE * f, const char *filename)
 {

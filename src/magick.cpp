@@ -21,6 +21,7 @@
 #include "lockable.h"
 #include "utils.h"
 #include "mstream.h"
+#include "convert.h"
 
 //#define ACE_DEBUGGING
 

@@ -37,16 +37,15 @@
  * nick.db
  ****************************************************************************/
 
-const int file_version = 5;
-const char *nickserv_db = "nick.db";
-const char *chanserv_db = "chan.db";
-const char *memoserv_db = "memo.db";
-const char *newsserv_db = "news.db";
-const char *sop_db = "sop.db";
-const char *message_db = "message.db";
-const char *akill_db = "akill.db";
-const char *clone_db = "clone.db";
-
+extern const int file_version;
+extern const char *nickserv_db;
+extern const char *chanserv_db;
+extern const char *memoserv_db;
+extern const char *newsserv_db;
+extern const char *sop_db;
+extern const char *message_db;
+extern const char *akill_db;
+extern const char *clone_db;
 
 /* Maximum length of a channel name */
 #define	CHANMAX		64
