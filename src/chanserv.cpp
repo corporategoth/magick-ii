@@ -27,6 +27,10 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.244  2001/05/16 15:47:13  prez
+** Added ability to have a CS level set to MAX_LEVEL+2 (for disabled).  Also
+** made it display 'disabled' and 'founder' nicer than just MAX_LEVEL+1/2.
+**
 ** Revision 1.243  2001/05/13 22:01:36  prez
 ** Should have fixed problems with linked nicknames
 **
@@ -8522,19 +8526,31 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    if (!level.IsNumber() || level.Contains("."))
+    long num = 0;
+    if (level.Matches("F*ND*R", true))
     {
-        NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
+	num = Parent->chanserv.Level_Max()+1;
+    }
+    else if (level.Matches("DIS*", true))
+    {
+	num = Parent->chanserv.Level_Max()+2;
+    }
+    else if (!level.IsNumber() || level.Contains("."))
+    {
+	NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	return;
     }
-    long num = atol(level.c_str());
+    else
+    {
+	num = atol(level.c_str());
+    }
 
     if (num < Parent->chanserv.Level_Min() ||
-	num > Parent->chanserv.Level_Max()+1)
+	num > Parent->chanserv.Level_Max()+2)
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
 		Parent->chanserv.Level_Min(),
-		Parent->chanserv.Level_Max()+1));
+		Parent->chanserv.Level_Max()+2));
 	return;
     }
 
@@ -8706,9 +8722,15 @@ void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const
     {
 	if (haveset)
 	{
-	    ::send(mynick, source, "%5d  %-9s  %s",
-		    cstored.Level->Value(),
-		    cstored.Level->Entry().c_str(),
+	    mstring value;
+	    if (cstored.Level->Value() == Parent->chanserv.Level_Max()+2)
+		value = Parent->getMessage(source, "VALS/LVL_DISABLED");
+	    else if (cstored.Level->Value() == Parent->chanserv.Level_Max()+1)
+		value = Parent->getMessage(source, "VALS/LVL_FOUNDER");
+	    else
+		value = cstored.Level->Value();
+	    ::send(mynick, source, "%10s  %-15s  %s",
+		    value.c_str(), cstored.Level->Entry().c_str(),
 		    Parent->getMessage(source, "CS_SET/LVL_" + cstored.Level->Entry()).c_str());
 	}
 	else if(cstored.Level->Entry() != "AUTODEOP" &&
@@ -9029,7 +9051,7 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
 	cstored.Access != cstored.Access_end(); cstored.Access++, i++)
     {
 	::send(mynick, source, "%4d. %3d %s (%s)", i, cstored.Access->Value(),
-		    cstored.Access->Entry().c_str(),
+		    Parent->getSname(cstored.Access->Entry()).c_str(),
 		    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
 		    mVarArray(cstored.Access->Last_Modify_Time().Ago(),
 		    cstored.Access->Last_Modifier())).c_str());

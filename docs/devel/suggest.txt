@@ -75,3 +75,16 @@ x Done
   > Becomes difficult because a user@host clone override should not effect
     an @host clone limit -- so 8 users from one user@host should not stop
     another user from the same @host signing on.
+
+* Allow committees to be added somehow to a channel access list, with direct
+  entries for users on the list overriding their committee listign.
+  > Probably best method would be to maintain a seperate 'com_access' list
+    same as access list, but with committees.  Would mean searching through
+    ALL these committees during GetAccess (used alot, including on join).
+  > Would also have to do cleanup, removing committees from access lists
+    when they're dropped.
+
+* Have a per-channel 'bad words' list that will kick on mention of them
+  > Requires chanserv to be in channel, or epona-style 'botserv'.  I
+    dislike the idea of botserv in main services, so will prollie end
+    up leaving this to the scripting language.
