@@ -161,10 +161,13 @@ int Magick::Start()
     //write_log ("All systems nominal");
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
-
+    signalhandler=new SignalHandler;
+    ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
+    ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
     
     // temporary placeholder
-    while(shutdown!=true);
+    while(shutdown!=true)
+	ACE_Reactor::instance()->handle_events();
 
     return MAGICK_RET_TERMINATE;
 }
@@ -177,8 +180,8 @@ mstring Magick::getMessage(const mstring & name)
 void Magick::dump_help(mstring & progname)
 {
     cout<<"Magick IRC Services are copyright (c) 1996-1998 Preston A. Elder, W. King.\n"
-	<<"    E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet\n"
-	<<"    E-mail: <ungod@magick.tm>   IRC: Notagod@Effnet\n"
+	<<"    E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet,Prez@Effnet,Prez@DarkerNet\n"
+	<<"    E-mail: <ungod@magick.tm>   IRC: Notagod@Effnet,Ungod@DarkerNet\n"
 	<<"This program is free but copyrighted software; see the file COPYING for\n"
 	<<"details.  Please do not forget to read ALL the files in the doc directory.\n\n"
 	<<"Syntax: "<<progname.c_str()<<" [opts]\n\n"
@@ -677,4 +680,11 @@ void Magick::get_config_values()
     //in.Read(ts_DevNull+"Ignore_Time",&devnull.ignore_time,20);
     //in.Read(ts_DevNull+"Ignore_Offences",&devnull.ignore_offences,5);
     //in.Read(ts_DevNull+"Msg_Threshhold",&devnull.msg_thresh,250);
+}
+
+int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)
+{
+    // todo: fill this sucker in
+    // switch(signum)
+    return 0;
 }

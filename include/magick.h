@@ -24,6 +24,8 @@ using namespace std;
 //#include <ace/Synch.h>
 #include <ace/Thread.h>
 #include <ace/Local_Tokens.h>
+#include <ace/Reactor.h>
+#include <ace/Event_Handler.h>
 #include "bob.hpp"
 #include "mstring.h"
 #include "fileconf.h"
@@ -37,6 +39,11 @@ const int MAGICK_RET_TERMINATE = 2;
 const int MAGICK_RET_ERROR = -1;
 const int MAGICK_RET_INVALID_SERVICES_DIR = -20;
 
+class SignalHandler : public ACE_Event_Handler
+{
+    int handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext); 
+};
+
 typedef map<mstring,mstring> mapstringstring;
 class Magick
 {
@@ -47,6 +54,7 @@ private:
 	vector<mstring> MessageNamesLong;
 	vector<mstring> MessageNamesShort;
 	int doparamparse();
+	SignalHandler *signalhandler;
 public:
 	int StarThresh;
 	int override_level;
