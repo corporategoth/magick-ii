@@ -15,6 +15,7 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 public:
     int open(void *);
     int handle_input(ACE_HANDLE);
+    int svc(void);
 };
 
 typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcServer;
