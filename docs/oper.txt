@@ -188,10 +188,10 @@ Magick Translators	- translators@magick.tm
 Magick User List	- general@magick.tm
 
 Snail Mail:		Magick Team
-			PO Box 893
-			SUTHERLAND,
-			NSW, 2232
-			AUSTRALIA
+			PO Box 215
+			THORNWOOD,
+			NY, 10594
+			USA
 
 
 1.2	Obtaining Magick
