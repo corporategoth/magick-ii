@@ -12,7 +12,7 @@
 // ===================================================
 
 #include "ircsocket.h"
-#include "trace.h"
+#include "magick.h"
 #include <ace/Auto_Ptr.h>
 
 int IrcSvcHandler::open(void *in)
@@ -73,19 +73,27 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
 	// We pass to services all except target.
 	// We send target as a seperate argument.
 	mstring pass=tmp[0]+tmp[1]+data.After(" ").After(" ").After(" ");
+	mstring names;
 
-//	if (OperServ::names.Find(tmp[2]))
-//	    OperServ.push_message(tmp[2], pass);
-	if (NickServ::names.Find(tmp[2]))
-	    NickServ.push_message(tmp[2], pass);
-	else if (ChanServ::names.Find(tmp[2]))
-	    ChanServ.push_message(tmp[2], pass);
-//	else if (MemoServ::names.Find(tmp[2]))
-//	    MemoServ.push_message(tmp[2], pass);
-//	else if (HelpServ::names.Find(tmp[2]))
-//	    HelpServ.push_message(tmp[2], pass);
+	// Find out if the target nick is one of the services 'clones'
+	// (and if it is, which one?)  Pass the message to them if so.
+//	if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[2]+" "))
+//	    MagickObject->operserv.push_message(tmp[2], pass);
+	     if ((names=" "+NickServ::getnames()+" ").Find(" "+tmp[2]+" "))
+	    MagickObject->nickserv.push_message(tmp[2], pass);
+	else if ((names=" "+ChanServ::getnames()+" ").Find(" "+tmp[2]+" "))
+	    MagickObject->chanserv.push_message(tmp[2], pass);
+//	else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[2]+" "))
+//	    MagickObject->memoserv.push_message(tmp[2], pass);
+//	else if ((names=" "+HelpServ::getnames()+" ").Find(" "+tmp[2]+" "))
+//	    MagickObject->helpserv.push_message(tmp[2], pass);
 
 	// How do we want to handle custom services (BOB created)?
+
+	// Not a MSG/NOTICE to services, fall through
+	// (it could be to a channel, or unrecognised nick).
+//	else
+//	    Server.push_message (data);
 
     } else {
 	// This handles all non-msgs/notices.

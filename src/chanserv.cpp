@@ -15,6 +15,7 @@
 #include "lockable.h"
 #include "magick.h"
 
+mstring ChanServ::names = "";
 ChanServ::ChanServ()
 {
     NFT("ChanServ::ChanServ");
