@@ -1,0 +1,7 @@
+*~
+*.~jav
+*.jar
+*.class
+Makefile
+Makefile.in
+.deps
