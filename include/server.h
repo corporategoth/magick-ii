@@ -68,22 +68,22 @@ private:
     void sraw(mstring send);
     void SignOnAll();
     set<mstring> WaitIsOn;
-    mstring i_OurUplink;
 
     map<mstring,long> ServerSquit;
     map<mstring,list<mstring> > ToBeSquit;
     ToBeSquit_Handler tobesquit;
     Squit_Handler squit;
+    mstring i_OurUplink;
 
-    void OurUplink(mstring in) { i_OurUplink = in; }
+    void OurUplink(mstring server) { i_OurUplink = server; }
 public:
     map<mstring,Server> ServerList;
+    mstring OurUplink() { return i_OurUplink; }
     bool IsServer(mstring server);
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's
     // squit, REGARDLESS of wether it is currently connected or not.
     bool IsSquit(mstring server);
-    mstring OurUplink() { return i_OurUplink; }
 
     void AWAY(mstring nick, mstring reason = "");
     void GLOBOPS(mstring nick, mstring message);

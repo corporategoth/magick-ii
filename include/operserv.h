@@ -82,8 +82,8 @@ public:
     int Ignore_Method()		{ return ignore_method; }
 
     bool Flood()		{ return flood; }
-    bool Akill()		{ return akill; }
-    bool OperDeny()		{ return operdeny; }
+    bool oAkill()		{ return akill; }
+    bool oOperDeny()		{ return operdeny; }
 
     bool Clone_insert(mstring entry, int value, mstring reason, mstring nick);
     bool Clone_erase();
@@ -95,9 +95,51 @@ public:
 	{ return i_Clone.end(); }
     size_t Clone_size()				{ return i_Clone.size(); }
     bool Clone_find(mstring entry);
-    pair<int,mstring> Clone_value(mstring entry);
+    pair<int, mstring> Clone_value(mstring entry);
 //  entlist_val_ui<int> Clone;
     set<entlist_val_t<pair<int, mstring> > >::iterator Clone;
+
+    bool Akill_insert(mstring entry, long value, mstring reason, mstring nick);
+    bool Akill_erase();
+//  entlist_val_ui<long, mstring> Akill_begin()	{ return i_Akill.begin(); }
+    set<entlist_val_t<pair<long, mstring> > >::iterator Akill_begin()
+	{ return i_Akill.begin(); }
+//  entlist_val_ui<long, mstring> Akill_end()	{ return i_Akill.end(); }
+    set<entlist_val_t<pair<long, mstring> > >::iterator Akill_end()
+	{ return i_Akill.end(); }
+    size_t Akill_size()				{ return i_Akill.size(); }
+    bool Akill_find(mstring entry);
+    pair<long, mstring> Akill_value(mstring entry);
+//  entlist_val_ui<int> Akill;
+    set<entlist_val_t<pair<long, mstring> > >::iterator Akill;
+
+    bool OperDeny_insert(mstring entry, mstring value, mstring nick);
+    bool OperDeny_erase();
+//  entlist_val_ui<mstring> OperDeny_begin()	{ return i_OperDeny.begin(); }
+    set<entlist_val_t<mstring> >::iterator OperDeny_begin()
+	{ return i_OperDeny.begin(); }
+//  entlist_val_ui<mstring> OperDeny_end()	{ return i_OperDeny.end(); }
+    set<entlist_val_t<mstring> >::iterator OperDeny_end()
+	{ return i_OperDeny.end(); }
+    size_t OperDeny_size()				{ return i_OperDeny.size(); }
+    bool OperDeny_find(mstring entry);
+    mstring OperDeny_value(mstring entry);
+//  entlist_val_ui<int> OperDeny;
+    set<entlist_val_t<mstring > >::iterator OperDeny;
+
+    bool Ignore_insert(mstring entry, mDateTime value, bool perm, mstring nick);
+    bool Ignore_erase();
+//  entlist_val_ui<mDateTime, bool> Ignore_begin()	{ return i_Ignore.begin(); }
+    set<entlist_val_t<pair<mDateTime, bool> > >::iterator Ignore_begin()
+	{ return i_Ignore.begin(); }
+//  entlist_val_ui<mDateTime, bool> Ignore_end()	{ return i_Ignore.end(); }
+    set<entlist_val_t<pair<mDateTime, bool> > >::iterator Ignore_end()
+	{ return i_Ignore.end(); }
+    size_t Ignore_size()				{ return i_Ignore.size(); }
+    bool Ignore_find(mstring entry);
+    pair<mDateTime, bool> Ignore_value(mstring entry);
+//  entlist_val_ui<int> Ignore;
+    set<entlist_val_t<pair<mDateTime, bool> > >::iterator Ignore;
 
 
     virtual void load_database(wxInputStream& in);

@@ -142,13 +142,282 @@ pair<int,mstring> OperServ::Clone_value(mstring entry)
     return retval;
 }
 
+
+bool OperServ::Akill_insert(mstring entry, long value, mstring reason, mstring nick)
+{
+    FT("OperServ::Akill_insert", (entry, value, reason, nick));
+
+    // Wildcards but no @
+    if (entry.Contains("@") || entry.Contains("!"))
+    {
+	    RET(false);
+    }
+
+    if (!Akill_find(entry))
+    {
+	entlist_val_t<pair<long, mstring> > tmp(entry, pair<long, mstring>(value, reason), nick);
+	Akill = i_Akill.insert(i_Akill.end(), tmp);
+	RET(true);
+    }
+    else
+    {
+	Akill = i_Akill.end();
+	RET(false);
+    }
+}
+
+
+bool OperServ::Akill_erase()
+{
+    NFT("OperServ::Akill_erase");
+
+    if (Akill != i_Akill.end())
+    {
+	i_Akill.erase(Akill);
+	Akill = i_Akill.end();
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+
+}
+
+
+bool OperServ::Akill_find(mstring entry)
+{
+    FT("OperServ::Akill_find", (entry));
+
+//  entlist_val_ui<pair<long, mstring> > iter = i_Akill.end();
+    set<entlist_val_t<pair<long, mstring> > >::iterator iter = i_Akill.end();
+    if (!i_Akill.empty())
+	for (iter=i_Akill.begin(); iter!=i_Akill.end(); iter++)
+	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+		break;
+
+    if (iter != i_Akill.end())
+    {
+	Akill = iter;
+	RET(true);
+    }
+    else
+    {
+	Akill = i_Akill.end();
+	RET(false);
+    }
+}
+
+
+pair<long,mstring> OperServ::Akill_value(mstring entry)
+{
+    FT("OperServ::Akill_value", (entry));
+
+    pair<long,mstring> retval = pair<long,mstring>(0,"");
+    {
+    MLOCK("OperServ", "Akill");
+//  entlist_val_ui<pair<long, mstring> > iter = Akill;
+    set<entlist_val_t<pair<long, mstring> > >::iterator iter = Akill;
+
+    if (Akill_find(entry))
+	retval=Akill->Value();
+    Akill = iter;
+    }
+    return retval;
+}
+
+
+bool OperServ::OperDeny_insert(mstring entry, mstring value, mstring nick)
+{
+    FT("OperServ::OperDeny_insert", (entry, value, nick));
+
+    // Wildcards but no @
+    if (entry.Contains("@") || entry.Contains("!"))
+    {
+	    RET(false);
+    }
+
+    if (!OperDeny_find(entry))
+    {
+	entlist_val_t<mstring> tmp(entry, value, nick);
+	OperDeny = i_OperDeny.insert(i_OperDeny.end(), tmp);
+	RET(true);
+    }
+    else
+    {
+	OperDeny = i_OperDeny.end();
+	RET(false);
+    }
+}
+
+
+bool OperServ::OperDeny_erase()
+{
+    NFT("OperServ::OperDeny_erase");
+
+    if (OperDeny != i_OperDeny.end())
+    {
+	i_OperDeny.erase(OperDeny);
+	OperDeny = i_OperDeny.end();
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+
+}
+
+
+bool OperServ::OperDeny_find(mstring entry)
+{
+    FT("OperServ::OperDeny_find", (entry));
+
+//  entlist_val_ui<mstring> iter = i_OperDeny.end();
+    set<entlist_val_t<mstring> >::iterator iter = i_OperDeny.end();
+    if (!i_OperDeny.empty())
+	for (iter=i_OperDeny.begin(); iter!=i_OperDeny.end(); iter++)
+	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+		break;
+
+    if (iter != i_OperDeny.end())
+    {
+	OperDeny = iter;
+	RET(true);
+    }
+    else
+    {
+	OperDeny = i_OperDeny.end();
+	RET(false);
+    }
+}
+
+
+mstring OperServ::OperDeny_value(mstring entry)
+{
+    FT("OperServ::OperDeny_value", (entry));
+
+    mstring retval = mstring(0,"");
+    {
+    MLOCK("OperServ", "OperDeny");
+//  entlist_val_ui<mstring> iter = OperDeny;
+    set<entlist_val_t<mstring> >::iterator iter = OperDeny;
+
+    if (OperDeny_find(entry))
+	retval=OperDeny->Value();
+    OperDeny = iter;
+    }
+    return retval;
+}
+
+
+
+bool OperServ::Ignore_insert(mstring entry, mDateTime value, bool perm, mstring nick)
+{
+    FT("OperServ::Ignore_insert", (entry, value, perm, nick));
+
+    // Wildcards but no @
+    if (entry.Contains("@") || entry.Contains("!"))
+    {
+	    RET(false);
+    }
+
+    if (!Ignore_find(entry))
+    {
+	entlist_val_t<pair<mDateTime, bool> > tmp(entry, pair<mDateTime, bool>(value, perm), nick);
+	Ignore = i_Ignore.insert(i_Ignore.end(), tmp);
+	RET(true);
+    }
+    else
+    {
+	Ignore = i_Ignore.end();
+	RET(false);
+    }
+}
+
+
+bool OperServ::Ignore_erase()
+{
+    NFT("OperServ::Ignore_erase");
+
+    if (Ignore != i_Ignore.end())
+    {
+	i_Ignore.erase(Ignore);
+	Ignore = i_Ignore.end();
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+
+}
+
+
+bool OperServ::Ignore_find(mstring entry)
+{
+    FT("OperServ::Ignore_find", (entry));
+
+//  entlist_val_ui<pair<mDateTime, bool> > iter = i_Ignore.end();
+    set<entlist_val_t<pair<mDateTime, bool> > >::iterator iter = i_Ignore.end();
+    if (!i_Ignore.empty())
+	for (iter=i_Ignore.begin(); iter!=i_Ignore.end(); iter++)
+	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+		break;
+
+    if (iter != i_Ignore.end())
+    {
+	Ignore = iter;
+	RET(true);
+    }
+    else
+    {
+	Ignore = i_Ignore.end();
+	RET(false);
+    }
+}
+
+
+pair<mDateTime,bool> OperServ::Ignore_value(mstring entry)
+{
+    FT("OperServ::Ignore_value", (entry));
+
+    pair<mDateTime,bool> retval = pair<mDateTime,bool>((long) 0,"");
+    {
+    MLOCK("OperServ", "Ignore");
+//  entlist_val_ui<pair<mDateTime, bool> > iter = Ignore;
+    set<entlist_val_t<pair<mDateTime, bool> > >::iterator iter = Ignore;
+
+    if (Ignore_find(entry))
+	retval=Ignore->Value();
+    Ignore = iter;
+    }
+    return retval;
+}
+
+
+
+
+
 void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server)
 {
     FT("OperServ::DoDownlinks", (mynick, source, previndent, server));
-    vector<mstring> downlinks = Parent->server.ServerList[server].Downlinks();
+    vector<mstring> downlinks;
     mstring out;
     unsigned int users, opers;
     float lag;
+
+    if (server.LowerCase() == Parent->startup.Server_Name().LowerCase())
+    {
+	if (Parent->server.OurUplink())
+	    downlinks.push_back(Parent->server.OurUplink());
+    }
+    else
+    {
+	if (Parent->server.IsServer(server))
+	    downlinks = Parent->server.ServerList[server].Downlinks();
+    }
+
     for (int i=0; i<downlinks.size(); i++)
     {
 	if (Parent->server.IsServer(downlinks[i]))
@@ -233,31 +502,12 @@ void OperServ::execute(const mstring & data)
 		    opers++;
 	    }
 	}
-
 	out.Format("%-40s    0.000s  %5d (%3d)  %3.2f%%",
 		Parent->startup.Server_Name().LowerCase().c_str(), users, opers,
 		((float) users / (float) Parent->nickserv.live.size()) * 100.0);
 	Parent->server.NOTICE(mynick, source, out);
-	if (Parent->server.IsServer(Parent->server.OurUplink()))
-	{
-	    users = Parent->server.ServerList[Parent->server.OurUplink()].Users();
-	    opers = Parent->server.ServerList[Parent->server.OurUplink()].Opers();
-	    lag = Parent->server.ServerList[Parent->server.OurUplink()].Lag();
-	    if (lag < 10.0)
-		out.Format("%-40s    %1.3fs  %5d (%3d)  %3.2f%%",
-			("`-" + Parent->server.OurUplink()).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-	    else if (lag < 100.0)
-		out.Format("%-40s   %2.3fs  %5d (%3d)  %3.2f%%",
-			("`-" + Parent->server.OurUplink()).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-	    else
-		out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-			("`-" + Parent->server.OurUplink()).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-	    Parent->server.NOTICE(mynick, source, out);
-	    DoBreakdown(mynick, source, "  ", Parent->server.OurUplink());
-	}
+
+	DoBreakdown(mynick, source, "", Parent->startup.Server_Name());
     }
 
     mThread::ReAttach(tt_mBase);

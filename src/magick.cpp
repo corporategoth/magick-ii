@@ -165,7 +165,7 @@ int Magick::Start()
     if(!check_config())
 	RET(MAGICK_RET_TERMINATE);
 
-    FILE *logfile = fopen((services_dir+DirSlash+files.Logfile()).c_str(), "w+");
+    FILE *logfile = fopen((services_dir+DirSlash+files.Logfile()).c_str(), "a");
     logger->ChangeFile(logfile);
 
     // load the local messages database and internal "default messages"
@@ -405,8 +405,6 @@ void Magick::dump_help(mstring & progname)
          << "\n"
          << "Syntax: " << ProgramName << " [ops]\n"
          << "\n"
-         << "    -c, --connect server[:port]    Override REMOTE_SERVER and REMOTE_PORT\n"
-         << "                                   values in the config file.\n"
          << "    -n, --name servername          Override SERVER_NAME in the config file.\n"
          << "    -d, --desc description         Override SERVER_DESC in the config file.\n"
          << "    -u, --user user                Override SERVICES_USER in the config file.\n"
@@ -532,7 +530,6 @@ int Magick::doparamparse()
 	if(argv[i][0U]=='-')
 	{
 	    /*	COMMAND		SHORT	ALIASES
-		--connect X	-c	--remote
 		--name X	-n
 		--desc X	-d
 		--user X	-u
@@ -715,13 +712,6 @@ bool Magick::paramshort(mstring first, mstring second)
 	{
 	    // Already handled
 	}
-	else if (first[i]=='c')
-	{
-	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
-	    else
-		ArgUsed = paramlong ("--connect", second);
-	}
 	else if(first[i]=='n')
 	{
 	    if (ArgUsed)
@@ -886,8 +876,10 @@ void Magick::get_config_values()
 		tmp[1]=ent.ExtractWord(2, ":");
 		tmp[2]=ent.ExtractWord(3, ":");
 		tmp[3]=ent.ExtractWord(4, ":");
-		if (tmp[1].IsNumber() && tmp[3].IsNumber())
+		if (ent.WordCount(":") == 4 && tmp[1].IsNumber() && tmp[3].IsNumber())
 		    startup.servers[tmp[0].LowerCase()] = triplet<int,mstring,int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
+		else
+		    wxLogWarning("REMOTE entry for %s contained incorrect syntax, ignored!", tmp[0].c_str());
 	}
 	i++;
     } while (ent!="");

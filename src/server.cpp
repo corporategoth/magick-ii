@@ -158,6 +158,8 @@ Server::~Server()
     COM(("Destroying %d more servers", Kill.size()));
     for (int i=0; i<Kill.size(); i++)
 	Parent->server.ServerList.erase(Kill[i]);
+    if (Kill.size() && Parent->server.OurUplink() == i_Name)
+	Parent->server.OurUplink("");
 }
 
 void NetworkServ::raw(mstring text)
@@ -1348,7 +1350,7 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="O";
 	    else
 		tmp+="o";
-	    if(Parent->operserv.GetNames() != "" && Parent->operserv.Akill())
+	    if(Parent->operserv.GetNames() != "" && Parent->operserv.oAkill())
 		tmp+="A";
 	    else
 		tmp+="a";
@@ -1356,7 +1358,7 @@ void NetworkServ::execute(const mstring & data)
 		tmp+="F";
 	    else
 		tmp+="f";
-	    if(Parent->operserv.GetNames() != "" && Parent->operserv.OperDeny())
+	    if(Parent->operserv.GetNames() != "" && Parent->operserv.oOperDeny())
 		tmp+="D";
 	    else
 		tmp+="d";
