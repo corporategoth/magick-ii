@@ -495,9 +495,9 @@ void Chan_Live_t::SendMode(mstring in)
     
     bool add = true;
 
-    for (i=0; i<in.size(); i++)
+    for (i=0; i<mode.size(); i++)
     {
-	switch (in[i])
+	switch (mode[i])
 	{
 	case '+':
 	    add = true;
@@ -656,18 +656,18 @@ void Chan_Live_t::SendMode(mstring in)
 	default:
 		if (add)
 		{
-		    if (ModeExists(p_modes_off, p_modes_off_params, false, in[i]))
-			RemoveMode(p_modes_off, p_modes_off_params, false, in[i]);
-		    if (!ModeExists(p_modes_on, p_modes_on_params, true, in[i]))
-			p_modes_on += in[i];
+		    if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
+			RemoveMode(p_modes_off, p_modes_off_params, false, mode[i]);
+		    if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
+			p_modes_on += mode[i];
 		}
 		else
 		{
-		    if (ModeExists(p_modes_on, p_modes_on_params, true, in[i]))
-			RemoveMode(p_modes_on, p_modes_on_params, true, in[i]);
-		    if (!ModeExists(p_modes_off, p_modes_off_params, false, in[i]))
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
+			RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
+		    if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
 		    {
-			p_modes_off += in[i];
+			p_modes_off += mode[i];
 		    }
 		}
 	    break;
