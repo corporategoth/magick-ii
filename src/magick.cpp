@@ -14,6 +14,7 @@
 #include <iostream>
 #include <strstream>
 #include <ace/INET_Addr.h>
+#include <ace/Log_Msg.h>
 #include "magick.h"
 #include "log.h"
 #include "EscLexer.hpp"
@@ -23,6 +24,7 @@
 
 #include <algorithm>
 using namespace std;
+#define ACE_DEBUGGING
 
 wxLogStderr *logger;
 
@@ -44,6 +46,10 @@ int Magick::Start()
     int i;
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
+#ifdef ACE_DEBUGGING
+    ACE_Log_Msg::instance()->open("Magick");
+    ACE_Log_Msg::enable_debug_messages();
+#endif
 
     CP(("Magick II has been started ..."));
 #ifdef WIN32
