@@ -9,8 +9,11 @@ OBJS = bob.$(OBJ) confbase.$(OBJ) fileconf.$(OBJ) lockable.$(OBJ) log.$(OBJ) \
        magick.$(OBJ) main.$(OBJ) mstream.$(OBJ) mstring.$(OBJ) textfile.$(OBJ) \
        trace.$(OBJ) utils.$(OBJ)
 
-CFLAGS=-O2 -I.././include -I../../support/bob -I../../support/ACE_wrappers/include
+SUBDIRS=antlr bob
+LIBS=antlr/antlr.a bob/bob.a
 
+CFLAGS=-O2 -I.././include
+PASSTHRU=CC=$(CC) CFLAG=$(CFLAG) LFLAG=$(LFLAG) .SUFFIXES=$(.SUFFIXES) OBJ=$(OBJ)
 
 all: $(LIBNAME)
 
@@ -18,9 +21,18 @@ clean:
 	rm -f *.$(OBJ) $(LIBNAME)
 
 $(LIBNAME): $(OBJS)
-#	@ar rcs $@ $(OBJS) || \
-#	( ar rc $@ $(OBJS) && \
-#	  ranlib $@ )
+	@for x in $(SUBDIRS); \
+	do	cd $$x; \
+		if [ -f ./configure ]; \
+		then	./configure; \
+		fi; \
+		cd $${OLDPWD}; \
+		$(MAKE) $(PASSTHRU) -C $$x; \
+	done
+
+	@ar rcs $@ $(OBJS) $(LIBS) || \
+	( ar rc $@ $(OBJS) $(LIBS) && \
+	  ranlib $@ )
 
 .cpp.$(OBJ):
 	$(CC) $(CFLAGS) -c $<

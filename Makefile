@@ -12,10 +12,6 @@
 ACEDIR=../support/ACE_wrappers
 LIBACE=$(ACEDIR)/libace.a
 
-# Scripting Language (BOB)
-BOBDIR=../support/bob
-LIBBOB=$(BOB)/bob.a
-
 # Cryptographic Library
 CRYPTDIR=../support/cryptlib21
 LIBCRYPT=$(CRYPTDIR)/libcrypt.a
@@ -33,7 +29,7 @@ LIBCRYPT=$(CRYPTDIR)/libcrypt.a
 CC=gcc
 
 # What directories to enter and compile.
-SUBDIRS=$(BOBDIR) $(CRYPTDIR)
+SUBDIRS=$(ACEDIR) $(CRYPTDIR)
 
 # Compilation flags to give the compiler
 CFLAGS=-O2 -I$${PWD}/./include -I$${PWD}/../support/bob -I$${PWD}/../support/ACE_wrappers/include
@@ -42,7 +38,7 @@ CFLAGS=-O2 -I$${PWD}/./include -I$${PWD}/../support/bob -I$${PWD}/../support/ACE
 LFLAGS=
 
 # What third-party libraries to include in link
-LIBS=$(LIBACE) $(LIBBOB) $(LIBCRYPT) $(LIBZ) ./src/magick.a
+LIBS=$(LIBACE) $(LIBCRYPT) $(LIBZ) ./src/magick.a
 
 # What are source and object files
 .SUFFIXES:	.o .obj .cpp .c
@@ -58,7 +54,7 @@ all: magick
 
 magick:
 	rm -f ./include/bob ./include/ace
-	ln -s $${PWD}/$(BOBDIR) ./include/bob
+	ln -s $$PWD/src/bob ./include/bob
 	ln -s $${PWD}/$(ACEDIR)/ace ./include/ace
 	@for x in $(SUBDIRS) ./src; \
 	do	cd $$x; \
