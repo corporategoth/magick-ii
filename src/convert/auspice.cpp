@@ -585,22 +585,6 @@ FILE *auspice_open_db(const char *service, const char *filename, const char *mod
 
 void auspice_close_db(FILE *dbfile, const char *filename)
 {
-    int flags;
-
-    flags = fcntl(fileno(dbfile), F_GETFL);
-    if ((flags != -1) &&
-		(((flags & O_ACCMODE) == O_WRONLY) ||
-		 ((flags & O_ACCMODE) == O_RDWR)))
-    {
-	char namebuf[NAME_MAX+1];
-#ifndef CYGWIN
-	snprintf(namebuf, sizeof(namebuf), "%s.save", filename);
-#else
-	snprintf(namebuf, sizeof(namebuf), "save-%s", filename);
-#endif
-	if (*namebuf && strcmp(namebuf, filename) != 0)
-	    remove(namebuf);
-    }
     fclose(dbfile);
 }
 
@@ -959,7 +943,7 @@ int auspice_delnick(auspice_NickInfo *ni)
       free(ni->forward);
     if (ni->hold)
       free(ni->hold);
-    if (ni->mark);
+    if (ni->mark)
       free(ni->mark);
     if (ni->forbid)
       free(ni->forbid);
@@ -1705,7 +1689,7 @@ void auspice_load_memo()
 
     if (!(f = auspice_open_db("MemoServ", MEMOSERV_DB, "r", 1)))
 	return;
-    switch ((size_t) i = auspice_get_file_version(f, MEMOSERV_DB)) {
+    switch ((size_t) (i = auspice_get_file_version(f, MEMOSERV_DB))) {
       case 6:
       case 5:
       case 4:
@@ -2300,7 +2284,7 @@ Nick_Stored_t *Convert::auspice_CreateNickEntry(auspice_NickInfo * ni)
     ETCB();
 }
 
-Chan_Stored_t *Convert::Convert::auspice_CreateChanEntry(auspice_ChanInfo * ci)
+Chan_Stored_t *Convert::auspice_CreateChanEntry(auspice_ChanInfo * ci)
 {
     BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))
@@ -2551,7 +2535,7 @@ MemoServ::nick_memo_t Convert::auspice_CreateMemoEntry(auspice_MemoList * ml)
     ETCB();
 }
 
-MemoServ::channel_news_t Convert::auspice_CreateNewsEntry(size_t count, char **list, const char *chan)
+MemoServ::channel_news_t Convert::auspice_CreateNewsEntry(size_t count, char **news, const char *chan)
 {
     BTCB();
     size_t i;
@@ -2561,10 +2545,10 @@ MemoServ::channel_news_t Convert::auspice_CreateNewsEntry(size_t count, char **l
 
     for (i = 0; i < count; ++i)
     {
-	if (list[i] == NULL)
+	if (news[i] == NULL)
 	    continue;
 
-	tmp = new News_t(mstring(chan), Magick::instance().chanserv.FirstName(), mstring(list[i]));
+	tmp = new News_t(mstring(chan), Magick::instance().chanserv.FirstName(), mstring(news[i]));
 	out.push_back(*tmp);
 	delete tmp;
     }

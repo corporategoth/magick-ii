@@ -485,9 +485,9 @@ struct trircd_dbFILE {
 
 #define trircd_read_db(f,buf,len)	(fread((buf),1,(len),(f)->fp))
 #define trircd_getc_db(f)		(fgetc((f)->fp))
-#define trircd_read_buffer(buf,f)	(trircd_read_db((f),(buf),sizeof(buf)) == sizeof(buf))
-#define trircd_read_buflen(buf,len,f)	(trircd_read_db((f),(buf),(len)) == (len))
-#define trircd_read_variable(var,f)	(trircd_read_db((f),&(var),sizeof(var)) == sizeof(var))
+#define trircd_read_buffer(buf,f)	(trircd_read_db((f),(buf),sizeof(buf)) == sizeof(buf) ? 0 : -1)
+#define trircd_read_buflen(buf,len,f)	(trircd_read_db((f),(buf),(len)) == (len) ? 0 : -1)
+#define trircd_read_variable(var,f)	(trircd_read_db((f),&(var),sizeof(var)) == sizeof(var) ? 0 : -1)
 
 int trircd_get_file_version(trircd_dbFILE *f)
 {
@@ -545,12 +545,6 @@ trircd_dbFILE *trircd_open_db(const char *service, const char *filename, const c
 
 void trircd_close_db(trircd_dbFILE *f)
 {
-    if (f->mode == 'w' && *f->backupname
-			&& strcmp(f->backupname, f->filename) != 0) {
-	if (f->backupfp)
-	    fclose(f->backupfp);
-	unlink(f->backupname);
-    }
     fclose(f->fp);
     free(f);
 }
@@ -2557,7 +2551,7 @@ void Convert::trircd_UpdateNickEntry(trircd_NickExt * ne, const char *name)
     ETCB();
 }
 
-Chan_Stored_t *Convert::Convert::trircd_CreateChanEntry(trircd_ChanInfo * ci)
+Chan_Stored_t *Convert::trircd_CreateChanEntry(trircd_ChanInfo * ci)
 {
     BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))

@@ -1337,7 +1337,7 @@ void magick_delchan(magick_ChanInfo * ci)
     ETCB();
 }
 
-Chan_Stored_t *Convert::Convert::magick_CreateChanEntry(magick_ChanInfo * ci)
+Chan_Stored_t *Convert::magick_CreateChanEntry(magick_ChanInfo * ci)
 {
     BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))

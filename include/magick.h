@@ -55,9 +55,8 @@ enum {
 	MAGICK_RET_LOCKED = -2,
 	MAGICK_RET_STATE = -3,
 	MAGICK_RET_SERVICE_INSERT = -10,
-	MAGICK_RET_SERVICE_REMOVE = -11,
-	MAGICK_RET_SERVICE_START = -12,
-	MAGICK_RET_SERVICE_STOP = -13
+	MAGICK_RET_SERVICE_START = -11,
+	MAGICK_RET_SERVICE_COMMAND = -12,
 };
 
 #ifdef WIN32
@@ -105,6 +104,8 @@ public:
     }
 };
 
+class Flow_Control;
+
 class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
@@ -133,6 +134,7 @@ private:
 
     map < pair < mstring, mstring >, vector < mstring > > handlermap;
 
+    Flow_Control *fc;
     Logger *logger;
 
     set < ACE_Log_Msg * > LogInstances;
@@ -548,7 +550,7 @@ public:
     // Start should be called after Init or Stop
     // Run should only be called after Start
     // Stop should only be called after Start or Run
-    int Init();
+    int Init(Flow_Control *flow);
     int Start();
     int Run();
     int Stop();
@@ -681,8 +683,8 @@ public:
 
     // Commandline, config, language PARSING.
     void dump_help() const;
-    bool paramlong(const mstring & first, const mstring & second);
-    bool paramshort(const mstring & first, const mstring & second);
+    int paramlong(const mstring & first, const mstring & second);
+    int paramshort(const mstring & first, const mstring & second);
     bool get_config_values();
     void LoadInternalMessages();
     bool LoadExternalMessages(const mstring & language);
@@ -804,6 +806,9 @@ public:
     virtual void stop_requested(DWORD control_code);
     virtual void pause_requested(DWORD control_code);
     virtual void continue_requested(DWORD control_code);
+
+    virtual int dependancy(const char *dep);
+    virtual int user(const char *u, const char *p);
 };
 
 #endif

@@ -447,9 +447,9 @@ int ptlink_get_file_version(ptlink_dbFILE *f)
 #define ptlink_read_db(f,buf,len)	(fread((buf),1,(len),(f)->fp))
 #define ptlink_getc_db(f)		(fgetc((f)->fp))
 #define ptlink_read_int8(ret,f)	((*(ret)=fgetc((f)->fp))==EOF ? -1 : 0)
-#define ptlink_read_buffer(buf,f)	(ptlink_read_db((f),(buf),sizeof(buf)) == sizeof(buf))
-#define ptlink_read_buflen(buf,len,f)	(ptlink_read_db((f),(buf),(len)) == (len))
-#define ptlink_read_variable(var,f)	(ptlink_read_db((f),&(var),sizeof(var)) == sizeof(var))
+#define ptlink_read_buffer(buf,f)	(ptlink_read_db((f),(buf),sizeof(buf)) == sizeof(buf) ? 0 : -1)
+#define ptlink_read_buflen(buf,len,f)	(ptlink_read_db((f),(buf),(len)) == (len) ? 0 : -1)
+#define ptlink_read_variable(var,f)	(ptlink_read_db((f),&(var),sizeof(var)) == sizeof(var) ? 0 : -1)
 
 ptlink_dbFILE *ptlink_open_db_read(const char *service, const char *filename)
 {
@@ -493,12 +493,6 @@ ptlink_dbFILE *ptlink_open_db(const char *service, const char *filename, const c
 
 void ptlink_close_db(ptlink_dbFILE *f)
 {
-    if (f->mode == 'w' && *f->backupname
-			&& strcmp(f->backupname, f->filename) != 0) {
-	if (f->backupfp)
-	    fclose(f->backupfp);
-	unlink(f->backupname);
-    }
     fclose(f->fp);
     free(f);
 }
@@ -1632,7 +1626,7 @@ Nick_Stored_t *Convert::ptlink_CreateNickEntry(ptlink_NickInfo * ni)
     ETCB();
 }
 
-Chan_Stored_t *Convert::Convert::ptlink_CreateChanEntry(ptlink_ChanInfo * ci)
+Chan_Stored_t *Convert::ptlink_CreateChanEntry(ptlink_ChanInfo * ci)
 {
     BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))

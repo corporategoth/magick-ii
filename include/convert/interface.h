@@ -133,7 +133,7 @@ public:
     static Nick_Stored_t *auspice_CreateNickEntry(auspice_NickInfo *ni);
     static Chan_Stored_t *auspice_CreateChanEntry(auspice_ChanInfo *ci);
     static MemoServ::nick_memo_t auspice_CreateMemoEntry(auspice_MemoList *ml);
-    static MemoServ::channel_news_t auspice_CreateNewsEntry(size_t count, char **list, const char *chan);
+    static MemoServ::channel_news_t auspice_CreateNewsEntry(size_t count, char **news, const char *chan);
 
     static Nick_Stored_t *bolivia_CreateNickEntry(bolivia_NickInfo *ni);
     static Chan_Stored_t *bolivia_CreateChanEntry(bolivia_ChanInfo *ci);

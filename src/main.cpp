@@ -90,12 +90,12 @@ int main(int argc, char **argv)
 
     Magick::register_instance(instance);
 
-    int Result = instance->Init();
     Flow_Control *fc = new Flow_Control(instance);
-
 #ifdef WIN32
     fc->name(ACE_TEXT(PACKAGE), ACE_TEXT(FULLNAME));
 #endif
+
+    int Result = instance->Init(fc);
 
     switch (Result)
     {
@@ -110,16 +110,11 @@ int main(int argc, char **argv)
 	}
 	Result = MAGICK_RET_NORMAL;
 	break;
-    case MAGICK_RET_SERVICE_REMOVE:
-	fc->remove();
-	Result = MAGICK_RET_NORMAL;
-	break;
     case MAGICK_RET_SERVICE_START:
 	fc->start_svc();
 	Result = MAGICK_RET_NORMAL;
 	break;
-    case MAGICK_RET_SERVICE_STOP:
-	fc->stop_svc();
+    case MAGICK_RET_SERVICE_COMMAND:
 	Result = MAGICK_RET_NORMAL;
 	break;
 #endif /* WIN32 */
@@ -204,7 +199,7 @@ int Flow_Control::svc()
 	    magick_instance = new Magick(argv);
 	    Magick::register_instance(magick_instance);
 
-	    Result = magick_instance->Init();
+	    Result = magick_instance->Init(this);
 	    if (Result == MAGICK_RET_NORMAL)
 		Result = svc();
 	}
@@ -266,3 +261,42 @@ void Flow_Control::continue_requested(DWORD control_code)
     report_status(SERVICE_RUNNING);
 #endif
 }
+
+int Flow_Control::dependancy(const char *deps)
+{
+    SC_HANDLE svc = this->svc_sc_handle ();
+    if (svc == 0)
+	return -1;
+
+    BOOL ok = ChangeServiceConfig (svc,
+	(DWORD) SERVICE_NO_CHANGE,// No change to service type
+	(DWORD) SERVICE_NO_CHANGE,// New startup type
+	(DWORD) SERVICE_NO_CHANGE,// No change to error ctrl
+	0,                        // No change to pathname
+	0,                        // No change to load group
+	0,                        // No change to tag
+	deps,                     // No change to dependencies
+	0, 0,                     // No change to acct/passwd
+	0);                       // No change to name
+    return ok ? 0 : -1;
+}
+
+int Flow_Control::user(const char *u, const char *p)
+{
+    SC_HANDLE svc = this->svc_sc_handle ();
+    if (svc == 0)
+	return -1;
+
+    BOOL ok = ChangeServiceConfig (svc,
+	(DWORD) SERVICE_NO_CHANGE,// No change to service type
+	(DWORD) SERVICE_NO_CHANGE,// New startup type
+	(DWORD) SERVICE_NO_CHANGE,// No change to error ctrl
+	0,                        // No change to pathname
+	0,                        // No change to load group
+	0,                        // No change to tag
+	0,                        // No change to dependencies
+	u, p,                     // No change to acct/passwd
+	0);                       // No change to name
+    return ok ? 0 : -1;
+}
+

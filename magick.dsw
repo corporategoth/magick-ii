@@ -3,6 +3,18 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "convert"=".\convert.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "crypt"=".\crypt.dsp" - Package Owner=<4>
 
 Package=<5>
@@ -28,6 +40,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name xml
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name convert
     End Project Dependency
 }}}
 

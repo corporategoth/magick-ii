@@ -1055,7 +1055,7 @@ void wrecked_load_chan()
 		    if (old_ci->url)
 		    {
 			ci->url = wrecked_read_string(f, wrecked_chanserv_db);
-			if (!ACE_OS::strlen(old_ci->url) > 0)
+			if (!ACE_OS::strlen(old_ci->url))
 			{
 			    free(ci->url);
 			    ci->url = NULL;
@@ -1432,7 +1432,7 @@ void wrecked_delchan(wrecked_ChanInfo * ci)
     ETCB();
 }
 
-Chan_Stored_t *Convert::Convert::wrecked_CreateChanEntry(wrecked_ChanInfo * ci)
+Chan_Stored_t *Convert::wrecked_CreateChanEntry(wrecked_ChanInfo * ci)
 {
     BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))

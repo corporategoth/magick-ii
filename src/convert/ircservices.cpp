@@ -437,9 +437,9 @@ struct ircservices_dbFILE {
 #define ircservices_read_db(f,buf,len)	(fread((buf),1,(len),(f)->fp))
 #define ircservices_getc_db(f)		(fgetc((f)->fp))
 
-#define ircservices_read_buffer(buf,f)	(ircservices_read_db((f),(buf),sizeof(buf)) == sizeof(buf))
-#define ircservices_read_buflen(buf,len,f)	(ircservices_read_db((f),(buf),(len)) == (len))
-#define ircservices_read_variable(var,f)	(ircservices_read_db((f),&(var),sizeof(var)) == sizeof(var))
+#define ircservices_read_buffer(buf,f)	(ircservices_read_db((f),(buf),sizeof(buf)) == sizeof(buf) ? 0 : -1)
+#define ircservices_read_buflen(buf,len,f)	(ircservices_read_db((f),(buf),(len)) == (len) ? 0 : -1)
+#define ircservices_read_variable(var,f)	(ircservices_read_db((f),&(var),sizeof(var)) == sizeof(var) ? 0 : -1)
 
 int32 ircservices_get_file_version(ircservices_dbFILE *f)
 {
@@ -503,15 +503,6 @@ ircservices_dbFILE *ircservices_open_db(const char *filename, const char *mode, 
 int ircservices_close_db(ircservices_dbFILE *f)
 {
     fclose(f->fp);
-    if (f->mode=='w' && *f->tempname && strcmp(f->tempname,f->filename)!=0) {
-	if (rename(f->tempname, f->filename) < 0) {
-#ifndef CONVERT_DB
-	    SLOG(LM_ERROR, "Unable to move new data to database file %s;"
-			      " new data NOT saved.",( f->filename));
-#endif
-	    remove(f->tempname);
-	}
-    }
     free(f);
     return 0;
 }
@@ -1013,7 +1004,7 @@ static int load_one_channel(ircservices_dbFILE *f, int32 ver)
     ircservices_SAFE(ircservices_read_string(&ci->founder, f));
     if (ver >= 7) {
 	ircservices_SAFE(ircservices_read_string(&ci->successor, f));
-	if (strcasecmp(ci->founder, ci->successor)==0)
+	if ((mstring(ci->founder)).IsSameAs(ci->successor, true))
 	{
 	    free(ci->successor);
 	    ci->successor = 0;
@@ -1859,7 +1850,7 @@ static mstring ircservices_getmodes(int32 modes)
 }
 
 
-Chan_Stored_t *Convert::Convert::ircservices_CreateChanEntry(ircservices_ChanInfo * ci)
+Chan_Stored_t *Convert::ircservices_CreateChanEntry(ircservices_ChanInfo * ci)
 {
     BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))

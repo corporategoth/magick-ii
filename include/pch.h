@@ -101,6 +101,7 @@
 #ifdef WIN32
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
+#  define PATH_MAX _MAX_PATH
 #endif
 
 /* Standard C++ Extensions ... */

@@ -584,9 +584,9 @@ struct epona_dbFILE {
 #define epona_getc_db(f)		(fgetc((f)->fp))
 
 #define epona_read_int8(ret,f)	((*(ret)=fgetc((f)->fp))==EOF ? -1 : 0)
-#define epona_read_buffer(buf,f)	(epona_read_db((f),(buf),sizeof(buf)) == sizeof(buf))
-#define epona_read_buflen(buf,len,f)	(epona_read_db((f),(buf),(len)) == (len))
-#define epona_read_variable(var,f)	(epona_read_db((f),&(var),sizeof(var)) == sizeof(var))
+#define epona_read_buffer(buf,f)	(epona_read_db((f),(buf),sizeof(buf)) == sizeof(buf) ? 0 : -1)
+#define epona_read_buflen(buf,len,f)	(epona_read_db((f),(buf),(len)) == (len) ? 0 : -1)
+#define epona_read_variable(var,f)	(epona_read_db((f),&(var),sizeof(var)) == sizeof(var) ? 0 : -1)
 
 int epona_get_file_version(epona_dbFILE *f)
 {
@@ -655,12 +655,6 @@ epona_dbFILE *epona_open_db(const char *service, const char *filename, const cha
 
 void epona_close_db(epona_dbFILE *f)
 {
-    if (f->mode == 'w' && *f->backupname
-			&& strcmp(f->backupname, f->filename) != 0) {
-	if (f->backupfp)
-	    fclose(f->backupfp);
-	unlink(f->backupname);
-    }
     fclose(f->fp);
     free(f);
 }
@@ -1107,7 +1101,7 @@ void epona_load_nick()
 	// First, add all core nicknames with the same display name as their alias
 	for (nai = aliaslist.begin(); nai != aliaslist.end(); nai++)
 	{
-	    if (strcasecmp(nai->second->nick, nai->second->nc)==0)
+	    if ((mstring(nai->second->nick)).IsSameAs(nai->second->nc, true))
 	    {
 		nci = corelist.find(nai->second->nc);
 		Nick_Stored_t *nick = Convert::epona_CreateNickEntry(nai->second, nci->second);
@@ -1128,7 +1122,7 @@ void epona_load_nick()
 	// For hosts with a different name, we change the 'name' to the first matching alias.
 	for (nai = aliaslist.begin(); nai != aliaslist.end(); nai++)
 	{
-	    if (strcasecmp(nai->second->nick, nai->second->nc)!=0)
+	    if (!(mstring(nai->second->nick)).IsSameAs(nai->second->nc, true))
 	    {
 		nci = corelist.find(nai->second->nc);
 		if (Magick::instance().nickserv.IsStored(nci->second->display))

@@ -240,7 +240,7 @@ Magick::~Magick()
 
 static bool firstrun;
 
-int Magick::Init()
+int Magick::Init(Flow_Control *flow)
 {
     BTCB();
     if (CurrentState != Constructed)
@@ -252,6 +252,7 @@ int Magick::Init()
     unsigned int i = 0;
     int j = 0;
     int Result = MAGICK_RET_NORMAL;
+    fc = flow;
 
     // this is our main routine, when it leaves here, this sucker's done.
 
@@ -343,11 +344,100 @@ int Magick::Init()
 		else if (argv[i].IsSameAs("start", true))
 		    Result = MAGICK_RET_SERVICE_START;
 
-		// Stop & removal, we really don't care what in the config file.
+		// Everything else, we just do what we want, and leave.
 		else if (argv[i].IsSameAs("stop", true))
-		    return MAGICK_RET_SERVICE_STOP;
+		{
+		    fc->stop_svc();
+		    Result = MAGICK_RET_SERVICE_COMMAND;
+		}
 		else if (argv[i].IsSameAs("remove", true))
-		    return MAGICK_RET_SERVICE_REMOVE;
+		{
+		    fc->remove();
+		    Result = MAGICK_RET_SERVICE_COMMAND;
+		}
+		else if (argv[i].IsSameAs("change", true))
+		{
+		    i++;
+		    if (i == argc || argv[i][0U] == '-')
+		    {
+			LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--service change"));
+			return MAGICK_RET_ERROR;
+		    }
+		    else if (argv[i].IsSameAs("startup", true))
+		    {
+			i++;
+			if (i == argc || argv[i] [0U] == '-')
+			{
+			    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--service change startup"));
+			    return MAGICK_RET_ERROR;
+			}
+			else if (argv[i].IsSameAs("auto", true))
+			{
+			    if (fc->startup(SERVICE_AUTO_START) < 0)
+				return MAGICK_RET_ERROR;
+			    Result = MAGICK_RET_SERVICE_COMMAND;
+			}
+			else if (argv[i].IsSameAs("manual", true))
+			{
+			    if (fc->startup(SERVICE_DEMAND_START) < 0)
+				return MAGICK_RET_ERROR;
+			    Result = MAGICK_RET_SERVICE_COMMAND;
+			}
+			else if (argv[i].IsSameAs("disabled", true))
+			{
+			    if (fc->startup(SERVICE_DISABLED) < 0)
+				return MAGICK_RET_ERROR;
+			    Result = MAGICK_RET_SERVICE_COMMAND;
+			}
+			else
+			{
+			    LOG(LM_EMERGENCY, "COMMANDLINE/UNKNOWN_PARAM", (argv[i], "--service change startup"));
+			    return MAGICK_RET_ERROR;
+			}
+		    }
+		    else if (argv[i].IsSameAs("depend", true))
+		    {
+			i++;
+			if (i == argc || argv[i] [0U] == '-')
+			{
+			    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--service change depend"));
+			    return MAGICK_RET_ERROR;
+			}
+
+			if (argv[i].IsSameAs("none", true))
+			    argv[i].erase();
+			char c = 0;
+			argv[i].append(&c, 1);
+			if (fc->dependancy(argv[i].c_str()) < 0)
+			    return MAGICK_RET_ERROR;
+			Result = MAGICK_RET_SERVICE_COMMAND;
+		    }
+		    else if (argv[i].IsSameAs("user", true))
+		    {
+			i++;
+			if (i == argc || argv[i] [0U] == '-')
+			{
+			    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--service change user"));
+			    return MAGICK_RET_ERROR;
+			}
+			if (argv[i].IsSameAs("default", true))
+			{
+			    if (fc->user("LocalSystem", "") < 0)
+				return MAGICK_RET_ERROR;
+			}
+			else
+			{
+			    if (fc->user(argv[i].Before(":").c_str(), argv[i].After(":").c_str()) < 0)
+				return MAGICK_RET_ERROR;
+			}
+			Result = MAGICK_RET_SERVICE_COMMAND;
+		    }
+		    else
+		    {
+			LOG(LM_EMERGENCY, "COMMANDLINE/UNKNOWN_PARAM", (argv[i], "--service change"));
+			return MAGICK_RET_ERROR;
+		    }
+		}
 		else
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/UNKNOWN_PARAM", (argv[i], "--service"));
@@ -367,6 +457,10 @@ int Magick::Init()
 	    }
 	}
     }
+
+    if (Result == MAGICK_RET_SERVICE_COMMAND)
+	return Result;
+
     NFT("Magick::Init");
     j = ACE_OS::chdir(Services_Dir());
     if (j < 0 && errno)
@@ -1052,8 +1146,18 @@ void Magick::dump_help() const
 	"--config X                 Set the name of the config file.\n" <<
 	"--nofork                   Do not become a daemon/service process.\n" <<
 #ifdef WIN32
-	"--service X                Manipulate Magick's NT Service settings.\n" <<
-	"                               Values are: insert, start, stop, remove.\n" <<
+	"--service X [Y Z]          Manipulate Magick's NT Service settings, where\n" <<
+	"                           X is one of insert, start, stop, remove, or change.\n" <<
+	"                           If X is change, you must specify what property to\n" <<
+	"                           change and what to change it to (Y and Z).\n" <<
+	"                           If Y = startup, Z = auto, manual or disabled.\n" <<
+	"                           If Y = depend, Z = another service (magick will\n" <<
+	"                               not startup if this service is not running.\n" <<
+	"                               Setting this to none removes any dependancy.\n" <<
+	"                           If Y = user, Z = the username Magick will run as,\n" <<
+	"                               and the password for that user (separated by\n" <<
+	"                               a colon (:)). eg. somebody:mypassword.\n" <<
+	"                               Setting this to default means system user.\n" <<
 #endif
 #ifdef CONVERT
 	"--convert X                Convert another version of services databases\n" <<
@@ -1062,9 +1166,9 @@ void Magick::dump_help() const
 	"                           services to convert is the version that the\n" <<
         "                           conversion utilities were taken from (you can\n" <<
         "                           usually assume previous versions will also work).\n" <<
-	"                               magick (1.4), ircservices (5.0.6), epona (1.4.14),\n" <<
+	"                               magick (1.4), ircservices (5.0.6), sirv (2.9.0),\n" <<
 	"                               hybserv (1.9.0), auspice (2.8), ptlink (2.22.3),\n" <<
-	"                               sirv (2.9.0), wrecked (1.2.0), trircd (4.26),\n" <<
+	"                               epona (1.4.14), wrecked (1.2.0), trircd (4.26),\n" <<
 	"                               cygnus (0.1.1), bolivia (1.2.0).\n" <<
 #endif
 #ifdef MAGICK_TRACE_WORKS
@@ -1271,15 +1375,14 @@ int Magick::doparamparse()
     {
 	if (argv[i] [0U] == '-')
 	{
-	    bool ArgUsed = false;
+	    int ArgUsed = 0;
 
 	    if (argv[i] [1U] == '-')
 		ArgUsed = paramlong(argv[i], (i + 1 < argc) ? argv[i + 1].c_str() : "");
 	    else
 		ArgUsed = paramshort(argv[i], (i + 1 < argc) ? argv[i + 1].c_str() : "");
 
-	    if (ArgUsed)
-		i++;
+	    i += ArgUsed;
 	}
 	else
 	{
@@ -1290,14 +1393,21 @@ int Magick::doparamparse()
     ETCB();
 }
 
-bool Magick::paramlong(const mstring & first, const mstring & second)
+int Magick::paramlong(const mstring & first, const mstring & second)
 {
     BTCB();
     FT("Magick::paramlong", (first, second));
-    if (first == "--dir" || first == "--config" || first == "--trace" || first == "--service")
+    if (first == "--dir" || first == "--config" || first == "--trace")
     {
 	// already handled, but we needed to i++
-	RET(true);
+	RET(1);
+    }
+    if (first == "--service")
+    {
+	if (second.IsSameAs("change", true))
+	    RET(3);
+	else
+	    RET(1);
     }
     else if (first == "--name")
     {
@@ -1306,7 +1416,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	startup.server_name = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--desc")
     {
@@ -1315,7 +1425,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	startup.server_name = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--user")
     {
@@ -1324,7 +1434,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	startup.services_user = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--ownuser")
     {
@@ -1352,7 +1462,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 		LOG(LM_ERROR, "COMMANDLINE/UNKNOWN_PROTO", (second));
 	    }
 	}
-	RET(true);
+	RET(1);
     }
     else if (first == "--level")
     {
@@ -1365,7 +1475,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
 	startup.level = atoi(second.c_str());
-	RET(true);
+	RET(1);
     }
     else if (first == "--maxlevel")
     {
@@ -1378,7 +1488,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
 	startup.max_level = atoi(second.c_str());
-	RET(true);
+	RET(1);
     }
     else if (first == "--lagtime")
     {
@@ -1427,7 +1537,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	}
 
 	files.umask = umask;
-	RET(true);
+	RET(1);
     }
     else if (first == "--log")
     {
@@ -1436,7 +1546,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	files.logfile = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--logchan")
     {
@@ -1445,7 +1555,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	files.logchan = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--dbase" || first == "--database")
     {
@@ -1454,7 +1564,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	files.database = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--langdir")
     {
@@ -1463,7 +1573,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	files.langdir = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--encrypt")
     {
@@ -1484,7 +1594,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NO_KEYFILE", (second));
 	}
 	files.keyfile = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--compress" || first == "--compression")
     {
@@ -1501,7 +1611,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/VALUETOOHIGH", (first, 9));
 	}
 	files.compression = atoi(second.c_str());
-	RET(true);
+	RET(1);
     }
     else if (first == "--relink")
     {
@@ -1514,7 +1624,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
 	config.server_relink = FromHumanTime(second);
-	RET(true);
+	RET(1);
     }
     else if (first == "--norelink")
     {
@@ -1531,7 +1641,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
 	config.cycletime = FromHumanTime(second);
-	RET(true);
+	RET(1);
     }
     else if (first == "--save" || first == "--update")
     {
@@ -1544,7 +1654,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
 	config.savetime = FromHumanTime(second);
-	RET(true);
+	RET(1);
     }
     else if (first == "--check" || first == "--hyperactive")
     {
@@ -1557,7 +1667,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
 	config.checktime = FromHumanTime(second);
-	RET(true);
+	RET(1);
     }
     else if (first == "--ping")
     {
@@ -1570,7 +1680,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
 	config.ping_frequency = FromHumanTime(second);
-	RET(true);
+	RET(1);
     }
     else if (first == "--minthreads")
     {
@@ -1587,7 +1697,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    config.min_threads = 1;
 	if (config.max_threads < config.min_threads)
 	    config.max_threads = config.min_threads;
-	RET(true);
+	RET(1);
     }
     else if (first == "--maxthreads")
     {
@@ -1602,7 +1712,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	config.max_threads = atoi(second.c_str());
 	if (config.max_threads < config.min_threads)
 	    config.max_threads = config.min_threads;
-	RET(true);
+	RET(1);
     }
     else if (first == "--lwm" || first == "--low_water_mark")
     {
@@ -1617,7 +1727,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	config.low_water_mark = atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
 	    config.high_water_mark = config.low_water_mark;
-	RET(true);
+	RET(1);
     }
     else if (first == "--hwm" || first == "--high_water_mark")
     {
@@ -1632,7 +1742,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	config.high_water_mark = atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
 	    config.high_water_mark = config.low_water_mark;
-	RET(true);
+	RET(1);
     }
     else if (first == "--append")
     {
@@ -1653,7 +1763,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
 	nickserv.ident = FromHumanTime(second);
-	RET(true);
+	RET(1);
     }
     else if (first == "--language")
     {
@@ -1662,7 +1772,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	nickserv.def.Language = second;
-	RET(true);
+	RET(1);
     }
     else if (first == "--nodcc")
     {
@@ -1680,7 +1790,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
 	nickserv.ident = FromHumanTime(second);
-	RET(true);
+	RET(1);
     }
     else if (first == "--logignore")
     {
@@ -1701,7 +1811,7 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    LOG(LM_EMERGENCY, "COMMANDLINE/VALUETOOHIGH", (first, 9));
 	}
 	operserv.ignore_method = atoi(second.c_str());
-	RET(true);
+	RET(1);
     }
 #ifdef CONVERT
     else if (first == "--convert")
@@ -1724,22 +1834,22 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/CANNOT_CONVERT", (second));
 	}
-	RET(true);
+	RET(1);
     }
 #endif
     else
     {
 	LOG(LM_ERROR, "COMMANDLINE/UNKNOWN_OPTION", (first));
     }
-    RET(false);
+    RET(0);
     ETCB();
 }
 
-bool Magick::paramshort(const mstring & first, const mstring & second)
+int Magick::paramshort(const mstring & first, const mstring & second)
 {
     BTCB();
     FT("Magick::paramshort", (first, second));
-    bool ArgUsed = false;
+    int ArgUsed = 0;
 
     for (unsigned int i = 1; i < first.length(); i++)
     {

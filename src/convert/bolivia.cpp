@@ -370,18 +370,6 @@ FILE *bolivia_open_db(const char *service, const char *filename, const char *mod
 
 void bolivia_close_db(FILE *dbfile, const char *filename)
 {
-    int flags;
-
-    flags = fcntl(fileno(dbfile), F_GETFL);
-    if ((flags != -1) &&
-		(((flags & O_ACCMODE) == O_WRONLY) ||
-		 ((flags & O_ACCMODE) == O_RDWR)))
-    {
-	char namebuf[NAME_MAX+1];
-	snprintf(namebuf, sizeof(namebuf), "%s.save", filename);
-	if (*namebuf && strcmp(namebuf, filename) != 0)
-	    remove(namebuf);
-    }
     fclose(dbfile);
 }
 
@@ -625,7 +613,7 @@ void bolivia_load_chan()
                             --ci->accesscount;
                             free(access->name);
                             if (j < ci->accesscount)
-                                bcopy(access+1, access, sizeof(*access) *
+                                memcpy(access+1, access, sizeof(*access) *
                                                         (ci->accesscount - j));
                         } else {
 #ifdef bolivia_COMPATIBILITY_V2
@@ -663,7 +651,7 @@ void bolivia_load_chan()
                             if (akick->reason)
                                 free(akick->reason);
                             if (j < ci->akickcount)
-                                bcopy(akick+1, akick, sizeof(*akick) *
+                                memcpy(akick+1, akick, sizeof(*akick) *
                                                         (ci->akickcount - j));
                         } else {
                             ++j; ++akick;
@@ -766,7 +754,7 @@ void bolivia_load_chan()
 			    --ci->accesscount;
 			    free(access->name);
 			    if (j < ci->accesscount)
-				bcopy(access+1, access,	sizeof(*access) *
+				memcpy(access+1, access,	sizeof(*access) *
 							(ci->accesscount - j));
 			} else {
 #ifdef bolivia_COMPATIBILITY_V2
@@ -804,7 +792,7 @@ void bolivia_load_chan()
 			    if (akick->reason)
 				free(akick->reason);
 			    if (j < ci->akickcount)
-				bcopy(akick+1, akick, sizeof(*akick) *
+				memcpy(akick+1, akick, sizeof(*akick) *
 							(ci->akickcount - j));
 			} else {
 			    ++j; ++akick;
@@ -1405,7 +1393,7 @@ Nick_Stored_t *Convert::bolivia_CreateNickEntry(bolivia_NickInfo * ni)
     ETCB();
 }
 
-Chan_Stored_t *Convert::Convert::bolivia_CreateChanEntry(bolivia_ChanInfo * ci)
+Chan_Stored_t *Convert::bolivia_CreateChanEntry(bolivia_ChanInfo * ci)
 {
     BTCB();
     if (ci == NULL || ci->name == NULL || !strlen(ci->name))
