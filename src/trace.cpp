@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma hdrstop
 #endif
 // $Id$
@@ -18,7 +18,7 @@
 // Tracing functions -- Include making TraceMap's and
 // receiving all trace information.
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable:4786)
 #endif
 

@@ -27,7 +27,7 @@
 #ifndef _TEXTFILE_H
 #define _TEXTFILE_H
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable:4786)
 #endif
 

@@ -13,7 +13,7 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable:4786)
 #endif
 

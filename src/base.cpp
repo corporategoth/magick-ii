@@ -1,5 +1,5 @@
 #include "pch.h"
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma hdrstop
 #endif
 // $Id$

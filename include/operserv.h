@@ -13,7 +13,7 @@
 #ifndef _operserv_h
 #define _operserv_h
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable:4786)
 #endif
 
