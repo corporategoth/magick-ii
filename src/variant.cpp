@@ -60,7 +60,7 @@ mVariant::mVariant(const char * in)
 
 mVariant::mVariant(bool in)
 {
-	valuetype=VarBoolean;
+	valuetype=VarBool;
 	value.BoolValue=in;
 }
 
@@ -144,7 +144,7 @@ bool mVariant::operator==(const mVariant& in)const
 		else 
 			return false;
 	case VarString:
-		if(mstring(value)==mstring(in.value))
+		if(mstring(value.StringValue)==mstring(in.value.StringValue))
 			return true;
 		else 
 			return false;
@@ -154,12 +154,25 @@ bool mVariant::operator==(const mVariant& in)const
 		else 
 			return false;
 	}
+	return false;
 }
 bool mVariant::operator<(const mVariant& in)const
 {
 	if(in.valuetype!=valuetype)
 		return false;
+#if NotDoneSoDontCompile
 	switch(valuetype)
 	{
 	}
+#endif
+	return false;
+}
+mstring& mVariant::AsString()const
+{
+    return mstring("Not Done Yet");
+}
+	
+mstring& mVariant::type()const
+{
+    return mstring("Empty");
 }

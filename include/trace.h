@@ -116,8 +116,11 @@ public:
     enum level_enum { Off = 0, Stats = 1, Source = 2, Locking = 8, Sockets = 8, Bind = 2,
 	External = 8, Chatter = 1, CheckPoint = 2, Functions = 4, Modify = 8 };
     struct levelname_struct {
-	const mstring name;
+	mstring name;
 	level_enum level;
+	levelname_struct() {name=""; level=Off;};
+	levelname_struct(const mstring& in, level_enum lin) {name=in; level=lin;};
+	levelname_struct& operator=(const levelname_struct& in) {name=in.name; level=in.level; return *this;};
     };
     const static struct levelname_struct levelname[];
 
@@ -232,7 +235,7 @@ class Modify : public Trace
     Modify() {} 
 public:
     Modify(const mVarArray &args);
-    EndModify(const mVarArray &args);
+    void EndModify(const mVarArray &args);
     ~Modify() {}
 };
 

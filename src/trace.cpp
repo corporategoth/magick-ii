@@ -16,6 +16,8 @@
 
 #include "trace.h"
 
+long Trace::TraceLevel=0;
+
 Trace::Trace()
 {
 	SLevel = Off;
@@ -69,24 +71,28 @@ Trace::Trace()
 	tmap[levelpair(BOB,External)]		= BOB_External;
 
 }
-
+//todo change this to a vector< >
 const struct Trace::levelname_struct Trace::levelname[] = {
-		{ "OFF", Off },
-		{ "STAT*", Stats },
-		{ "SOUR*", Source },
-		{ "SRC*", Source },
-		{ "L*CK*", Locking },
-		{ "S*CK*", Sockets },
-		{ "BIND*", Bind },
-		{ "REG*", Bind },
-		{ "HOOK*", Bind },
-		{ "EXT*", External },
-		{ "CHAT*", Chatter },
-		{ "CHE*", CheckPoint },
-		{ "C*P*", CheckPoint },
-		{ "F*NC*", Functions },
-		{ "MOD*", Modify },
-		NULL };
+		levelname_struct( "OFF", Off ),
+		levelname_struct( "STAT*", Stats ),
+		levelname_struct( "SOUR*", Source ),
+		levelname_struct( "SRC*", Source ),
+		levelname_struct( "L*CK*", Locking ),
+		levelname_struct( "S*CK*", Sockets ),
+		levelname_struct( "BIND*", Bind ),
+		levelname_struct( "REG*", Bind ),
+		levelname_struct( "HOOK*", Bind ),
+		levelname_struct( "EXT*", External ),
+		levelname_struct( "CHAT*", Chatter ),
+		levelname_struct( "CHE*", CheckPoint ),
+		levelname_struct( "C*P*", CheckPoint ),
+		levelname_struct( "F*NC*", Functions ),
+		levelname_struct( "MOD*", Modify ) };
+// prez: with this the NULL is unneeded, besides, you can't have a NULL static
+int levelname_count()
+{
+    return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
+}
 
 Trace::~Trace() {}
 
@@ -192,7 +198,7 @@ CheckPoint::CheckPoint(const char *fmt, ...)
 
 void CheckPoint::common(const char *input)
 {
-    ShortLevel(CheckPoint);
+    ShortLevel(Trace::CheckPoint);
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
@@ -204,7 +210,7 @@ void CheckPoint::common(const char *input)
 
 Modify::Modify(const mVarArray &args)
 {
-    ShortLevel(Modify);
+    ShortLevel(Trace::Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -214,9 +220,9 @@ Modify::Modify(const mVarArray &args)
     }
 }
 
-Modify::EndModify(const mVarArray &args)
+void Modify::EndModify(const mVarArray &args)
 {
-    ShortLevel(Modify);
+    ShortLevel(Trace::Modify);
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -230,7 +236,7 @@ Modify::EndModify(const mVarArray &args)
 
 Chatter::Chatter(dir_enum direction, const mstring &input)
 {
-    ShortLevel(Chatter);
+    ShortLevel(Trace::Chatter);
     if (IsOn(tid)) {
 	mstring message;
 	if (direction == From)

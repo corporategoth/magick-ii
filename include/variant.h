@@ -40,7 +40,7 @@ private:
 	} value;
 public:
 	enum typeenum { VarEmpty, VarShort, VarInt, VarChar, 
-		VarFloat, VarDouble, VarString, VarNull, VarDate, VarBoolean, VarUChar, VarUShort, VarUInt, VarPtr};
+		VarFloat, VarDouble, VarString, VarNull, VarDate, VarBool, VarUChar, VarUShort, VarUInt, VarPtr};
 private:
 	typeenum valuetype;
 public:
@@ -61,17 +61,18 @@ public:
 	 mVariant& operator=(const mVariant& in);
 	 bool operator==(const mVariant& in)const;
 	 bool operator<(const mVariant& in)const;
-	 mstring &AsString();
-	
-	 mstring &type();
+
+	 mstring &AsString()const;
+	 mstring &type()const;
 };
 
 class mVarArray
 {
 	vector<mVariant> values;
 public:
-	int count()const;
-	mVariant &operator[](int position)const;
+	int count()const{return values.size();};
+	const mVariant &operator[](int position)const{return values[position];};
+	mVariant &operator[](int position){return values[position];};
 };
 
 // todo
