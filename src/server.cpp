@@ -220,8 +220,7 @@ bool Protocol::Set(const mstring & filename)
     cfg.Read(ts_Protocol + "TOKENS", i_Tokens, false);
 
     // If they were set on specifically, lock them.
-    if (i_Tokens)
-	l_Tokens = true;
+    l_Tokens = i_Tokens;
 
     cfg.Read(ts_Protocol + "TSORA", i_TSora, 0);
     cfg.Read(ts_Protocol + "BIGTOPIC", i_BigTopic, false);
