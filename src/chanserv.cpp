@@ -29,7 +29,11 @@ void Chan_Live_t::Join(mstring nick)
     if (users.find(nick.LowerCase())!=users.end())
 	wxLogWarning("Duplicate JOIN message for %s in %s received.", nick.c_str(), i_Name.c_str());
     else
+    {
 	users[nick.LowerCase()] = pair<bool,bool>(false,false);
+//	if (Parent->chanserv.IsStored(i_Name))
+//	    Parent->chanserv.stored[i_Name.LowerCase()].Join(nick);
+    }
 }
 
 int Chan_Live_t::Part(mstring nick)
@@ -38,7 +42,11 @@ int Chan_Live_t::Part(mstring nick)
     if (users.find(nick.LowerCase())==users.end())
 	wxLogWarning("PART received for %s who is not in %s.", nick.c_str(), i_Name.c_str());
     else
+    {
 	users.erase(nick.LowerCase());
+	if (Parent->chanserv.IsStored(i_Name))
+	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
+    }
 
     RET(users.size());
 }
@@ -49,7 +57,11 @@ int Chan_Live_t::Kick(mstring nick, mstring kicker)
     if (users.find(nick.LowerCase())==users.end())
 	wxLogWarning("KICK from %s received for %s who is not in %s.", kicker.c_str(), nick.c_str(), i_Name.c_str());
     else
+    {
 	users.erase(nick.LowerCase());
+	if (Parent->chanserv.IsStored(i_Name))
+	    Parent->chanserv.stored[i_Name.LowerCase()].Kick(nick, kicker);
+    }
 
     RET(users.size());
 }
@@ -74,6 +86,8 @@ Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
     i_Name = name;
     users[first_user.LowerCase()] = pair<bool,bool>(false,false);
+    if (Parent->chanserv.IsStored(i_Name))
+	Parent->chanserv.stored[i_Name.LowerCase()].Join(first_user);
 }
 
 
@@ -109,6 +123,8 @@ void Chan_Live_t::Topic(mstring topic, mstring setter)
     i_Topic = topic;
     i_Topic_Setter = setter;
     i_Topic_Set_Time = Now();
+    if (Parent->chanserv.IsStored(i_Name))
+	Parent->chanserv.stored[i_Name.LowerCase()].Topic(i_Topic, i_Topic_Setter, i_Topic_Set_Time);
 }
 
 
@@ -118,6 +134,8 @@ void Chan_Live_t::Topic(mstring topic, mstring setter, mDateTime time)
     i_Topic = topic;
     i_Topic_Setter = setter;
     i_Topic_Set_Time = time;
+    if (Parent->chanserv.IsStored(i_Name))
+	Parent->chanserv.stored[i_Name.LowerCase()].Topic(i_Topic, i_Topic_Setter, i_Topic_Set_Time);
 }
 
 
@@ -394,6 +412,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    break;
 	}
     }
+    if (Parent->chanserv.IsStored(i_Name))
+	Parent->chanserv.stored[i_Name.LowerCase()].Mode(in);
 }
 
 
@@ -441,6 +461,123 @@ void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
 }
 
 
+void Chan_Stored_t::Join(mstring nick)
+{
+    FT("Chan_Stored_t::Join", (nick));
+
+/*
+    if (IsNickAkick(nick))
+    {
+	// If this user is the only user in channel
+	if (Parent->chanserv.IsLive(i_Name))
+	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
+		Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+
+	if (Parent->nickserv.IsLive(NickAkick(nick).first))
+	    Parent->chanserv[i_Name.LowerCase()].Mode("+b " +
+		Parent->nickserv.live[nick.LowerCase()].Mask(Nick_Live_t::P_H));
+	else
+	    Parent->chanserv[i_Name.LowerCase()].Mode("+b " +
+		NickAkick(nick).first);
+
+	if (NickAkick(nick).second != "")
+	    Parent->server.KICK(Parent->chanserv.FirstName(), nick,
+		i_Name, NickAkick(nick).second);
+	else
+	    Parent->server.KICK(Parent->chanserv.FirstName(), nick,
+		i_Name, Parent->chanserv.DEF_Akick_Reason());
+		
+	if (Parent->chanserv.IsLive(i_Name))
+	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
+	    {
+		Parent->chanserv.live[i_Name.LowerCase()].Mode("+s");
+		// Activate timer to PART in ? seconds ...
+		// Probably should set something in live to say that
+		// chanserv is only there to keep the channel (and probably
+		// should store the timer ID that will make magick leave)
+		// just incase someone else joins before it goes off.
+	    }
+		
+
+	return;
+    }
+*/
+
+/*
+    if (Secure() && Restricted() && NickAccess(nick).second < 1)
+    {
+    }
+*/
+
+/*
+    if (IsNickAccess(nick))
+    {
+    }
+*/
+
+    // Carry over topic ..
+    if (Parent->chanserv.IsLive(i_Name))
+    {
+	if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1 &&
+		Keeptopic() && i_Topic != "")
+	{
+	    if (i_Topic_Setter != "")
+	    {
+		Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name,
+			i_Topic + "(" + i_Topic_Setter + ")");
+	    }
+	    else
+	    {
+		Parent->server.TOPIC(Parent->chanserv.FirstName(), i_Name, i_Topic);
+	    }
+	}
+    }
+
+}
+
+
+void Chan_Stored_t::Part(mstring nick)
+{
+    FT("Chan_Stored_t::Part", (nick));
+/*
+    if (NickAccess(nick)>0)
+    {
+	i_LastUsed = Now();
+    }
+*/
+}
+
+
+void Chan_Stored_t::Kick(mstring nick, mstring kicker)
+{
+    FT("Chan_Stored_t::Kick", (nick, kicker));
+/*
+    if (NickAccess(nick)>NickAccess(kicker))
+    {
+	// Check revenge, and do it.
+    }
+*/
+}
+
+
+void Chan_Stored_t::Topic(mstring topic, mstring setter, mDateTime time)
+{
+    FT("Chan_Stored_t::Topic", (topic, setter, time));
+    if (!Topiclock())
+    {
+	i_Topic = topic;
+	i_Topic_Setter = setter;
+	i_Topic_Set_Time = time;
+    }
+}
+
+
+void Chan_Stored_t::Mode(mstring mode)
+{
+    FT("Chan_Stored_t::Mode", (mode));
+}
+
+
 void Chan_Stored_t::defaults()
 {
     NFT("Chan_Stored_t::defaults");
@@ -452,7 +589,7 @@ void Chan_Stored_t::defaults()
     i_Secure = Parent->chanserv.DEF_Secure();
     i_Restricted = Parent->chanserv.DEF_Restricted();
     i_Join = Parent->chanserv.DEF_Join();
-    i_Suspended = false;
+    i_Revenge = Parent->chanserv.DEF_Revenge();
 
     mstring defaulted = Parent->chanserv.DEF_MLock();
     mstring locked = Parent->chanserv.LCK_MLock();
@@ -597,7 +734,8 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Secure=in.i_Secure;
     i_Restricted=in.i_Restricted;
     i_Join=in.i_Join;
-    i_Suspended=in.i_Suspended;
+    i_Suspend_By=in.i_Suspend_By;
+    i_Suspend_Time=in.i_Suspend_Time;
     i_Forbidden=in.i_Forbidden;
 
     entlist_val_cui j;
@@ -639,6 +777,21 @@ int Chan_Stored_t::CheckPass(mstring nick, mstring password)
 	failed_passwds[nick.LowerCase()]++;
 	RET(failed_passwds[nick.LowerCase()]);
     }
+}
+
+
+void Chan_Stored_t::Suspend(mstring name)
+{
+    FT("Chan_Stored_t::Suspend", (name));
+    i_Suspend_By = name;
+    i_Suspend_Time = Now();
+}
+
+
+void Chan_Stored_t::UnSuspend()
+{
+    NFT("Chan_Stored_t::UnSuspend");
+    i_Suspend_By = "";
 }
 
 
@@ -791,6 +944,86 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	    break;
 	}
     }
+
+    mstring locked = Parent->chanserv.LCK_MLock();
+    mstring override_on;
+    mstring override_off;
+    mstring forced_on;
+    mstring forced_off;
+    add = true;
+    for (i; i<locked.size(); i++)
+    {
+	switch (locked[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+	case '-':
+	    add = false;
+	    break;
+	case 'o':
+	case 'v':
+	case 'b':
+	    break;
+	default:
+	    if (add)
+	    {
+		// CANT force mlock +k or +l !!
+		if (locked[i] == 'k' || locked[i] == 'l')
+		    break;
+		if (!i_Mlock_On.Contains(locked[i]))
+		{
+		    forced_on += locked[i];
+		    i_Mlock_On += locked[i];
+		}
+		if (i_Mlock_Off.Contains(locked[i]))
+		{
+		    override_off += locked[i];
+		    i_Mlock_Off.Remove((mstring) locked[i]);
+		}
+	    }
+	    else
+	    {
+		if (locked[i] == 'k')
+		    i_Mlock_Key = "";
+		if (locked[i] == 'l')
+		    i_Mlock_Limit = 0;
+		if (!i_Mlock_Off.Contains(locked[i]))
+		{
+		    forced_off += locked[i];
+		    i_Mlock_Off += locked[i];
+		}
+		if (i_Mlock_On.Contains(locked[i]))
+		{
+		    override_on += locked[i];
+		    i_Mlock_On.Remove((mstring) locked[i]);
+		}
+	    }
+	    break;
+	}
+    }
+
+
+    if (retval != "")
+	retval += ", ";
+    if (override_on != "" || override_off != "")
+    {
+	retval += "MODE LOCK has reversed ";
+	if (override_on != "")
+	    retval += "+" + override_on;
+	if (override_off != "")
+	    retval += "-" + override_off;
+    }
+    if (retval != "")
+	retval += ", ";
+    if (forced_on != "" || forced_off != "")
+    {
+	retval += "MODE LOCK has forced ";
+	if (forced_on != "")
+	    retval += "+" + forced_on;
+	if (forced_off != "")
+	    retval += "-" + forced_off;
+    }
     if (retval != "")
 	retval += ", ";
     if (i_Mlock_On != "" || i_Mlock_Off != "")
@@ -812,12 +1045,168 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 }
 
 
+void Chan_Stored_t::Keeptopic(bool in)
+{
+    FT("Chan_Stored_t::KeepTopic", (in));
+    if (!Parent->chanserv.LCK_Keeptopic())
+	i_Keeptopic = in;
+}
+
+
+bool Chan_Stored_t::Keeptopic()
+{
+    NFT("Chan_Stored_t::KeepTopic");
+    if (!Parent->chanserv.LCK_Keeptopic())
+    {
+	RET(i_Keeptopic);
+    }
+    RET(Parent->chanserv.DEF_Keeptopic());
+}
+
+
+void Chan_Stored_t::Topiclock(bool in)
+{
+    FT("Chan_Stored_t::Topiclock", (in));
+    if (!Parent->chanserv.LCK_Topiclock())
+	i_Topiclock = in;
+}
+
+
+bool Chan_Stored_t::Topiclock()
+{
+    NFT("Chan_Stored_t::Topiclock");
+    if (!Parent->chanserv.LCK_Topiclock())
+    {
+	RET(i_Topiclock);
+    }
+    RET(Parent->chanserv.DEF_Topiclock());
+}
+
+
+void Chan_Stored_t::Private(bool in)
+{
+    FT("Chan_Stored_t::Private", (in));
+    if (!Parent->chanserv.LCK_Private())
+	i_Private = in;
+}
+
+
+bool Chan_Stored_t::Private()
+{
+    NFT("Chan_Stored_t::Private");
+    if (!Parent->chanserv.LCK_Private())
+    {
+	RET(i_Private);
+    }
+    RET(Parent->chanserv.DEF_Private());
+}
+
+
+void Chan_Stored_t::Secureops(bool in)
+{
+    FT("Chan_Stored_t::Secureops", (in));
+    if (!Parent->chanserv.LCK_Secureops())
+	i_Secureops = in;
+}
+
+
+bool Chan_Stored_t::Secureops()
+{
+    NFT("Chan_Stored_t::Secureops");
+    if (!Parent->chanserv.LCK_Secureops())
+    {
+	RET(i_Secureops);
+    }
+    RET(Parent->chanserv.DEF_Secureops());
+}
+
+
+void Chan_Stored_t::Secure(bool in)
+{
+    FT("Chan_Stored_t::Secure", (in));
+    if (!Parent->chanserv.LCK_Secure())
+	i_Secure = in;
+}
+
+
+bool Chan_Stored_t::Secure()
+{
+    NFT("Chan_Stored_t::Secure");
+    if (!Parent->chanserv.LCK_Secure())
+    {
+	RET(i_Secure);
+    }
+    RET(Parent->chanserv.DEF_Secure());
+}
+
+
+void Chan_Stored_t::Restricted(bool in)
+{
+    FT("Chan_Stored_t::Restricted", (in));
+    if (!Parent->chanserv.LCK_Restricted())
+	i_Restricted = in;
+}
+
+
+bool Chan_Stored_t::Restricted()
+{
+    NFT("Chan_Stored_t::Restricted");
+    if (!Parent->chanserv.LCK_Restricted())
+    {
+	RET(i_Restricted);
+    }
+    RET(Parent->chanserv.DEF_Restricted());
+}
+
+
+void Chan_Stored_t::Join(bool in)
+{
+    FT("Chan_Stored_t::Join", (in));
+    if (!Parent->chanserv.LCK_Join())
+	i_Join = in;
+}
+
+
+bool Chan_Stored_t::Join()
+{
+    NFT("Chan_Stored_t::Join");
+    if (!Parent->chanserv.LCK_Join())
+    {
+	RET(i_Join);
+    }
+    RET(Parent->chanserv.DEF_Join());
+}
+
+
+bool Chan_Stored_t::Revenge(mstring in)
+{
+    FT("Chan_Stored_t::Revenge", (in));
+    if (!Parent->chanserv.LCK_Revenge())
+    {
+	// Sanity checks (valid case)
+	i_Revenge = in;
+    }
+}
+
+
+mstring Chan_Stored_t::Revenge()
+{
+    NFT("Chan_Stored_t::Revenge");
+    if (!Parent->chanserv.LCK_Revenge())
+    {
+	RET(i_Revenge);
+    }
+    RET(Parent->chanserv.DEF_Revenge());
+}
+
+
 wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 {
-    out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_Description<<in.i_Password<<in.i_URL;
+    out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit;
     out<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<
-	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Suspended<<in.i_Forbidden;
+	in.i_Secure<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
+    out<<in.i_Suspend_By<<in.i_Suspend_Time;
 
     entlist_val_cui j;
     out<<in.i_Access_Level.size();
@@ -852,10 +1241,11 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     mstring dummy,dummy2;
     entlist_t edummy;
     entlist_val_t evdummy;
-    in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_Description>>out.i_Password>>out.i_URL;
+    in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
     in>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>
-	out.i_Secure>>out.i_Restricted>>out.i_Join>>out.i_Suspended>>out.i_Forbidden;
+	out.i_Secure>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
+    in>>out.i_Suspend_By>>out.i_Suspend_Time;
 
     out.i_Access_Level.clear();
     in>>count;

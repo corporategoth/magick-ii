@@ -813,6 +813,11 @@ bool Magick::check_config()
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: Cannot set [NickServ] PASSFAIL < 1.");
     }
+    if (chanserv.Passfail() < 1)
+    {
+	// change this to the logging mechanism
+        wxLogFatal("CONFIG: Cannot set [ChanServ] PASSFAIL < 1.");
+    }
     RET(true);
 
 }
@@ -904,6 +909,8 @@ void Magick::get_config_values()
     in.Read(ts_NickServ+"LCK_SECURE",&nickserv.lck_secure,false);
     in.Read(ts_NickServ+"DEF_NOEXPIRE",&nickserv.def_noexpire,false);
     in.Read(ts_NickServ+"LCK_NOEXPIRE",&nickserv.lck_noexpire,false);
+    in.Read(ts_NickServ+"DEF_NOMEMO",&nickserv.def_nomemo,false);
+    in.Read(ts_NickServ+"LCK_NOMEMO",&nickserv.lck_nomemo,false);
     in.Read(ts_NickServ+"DEF_PRIVATE",&nickserv.def_private,false);
     in.Read(ts_NickServ+"LCK_PRIVATE",&nickserv.lck_private,false);
     in.Read(ts_NickServ+"DEF_PRIVMSG",&nickserv.def_privmsg,false);
@@ -911,6 +918,7 @@ void Magick::get_config_values()
 
     in.Read(ts_ChanServ+"EXPIRE",&chanserv.expire,14);
     in.Read(ts_ChanServ+"DEF_AKICK",&chanserv.def_akick_reason,"You have been banned from channel");
+    in.Read(ts_ChanServ+"PASSFAIL",&chanserv.passfail,5);
     in.Read(ts_ChanServ+"CHANKEEP",&chanserv.chankeep,15);
     in.Read(ts_ChanServ+"DEF_MLOCK",&chanserv.def_mlock,"+nt");
     in.Read(ts_ChanServ+"LCK_MLOCK",&chanserv.lck_mlock,"+");

@@ -443,7 +443,7 @@ bool mstring::IsNumber() const
 	    return false;
 	while(*s)
 	{
-		if(!isdigit(*s))
+		if(!(isdigit(*s) || *s == '.'))
 			return false;
 		s++;
 	}

@@ -224,6 +224,7 @@ void NetworkServ::GLOBOPS(mstring nick, mstring message)
     }
     else
     {
+	Parent->nickserv.live[nick.LowerCase()].Action();
 	raw(":" + nick + " GLOBOPS :" + message);
     }
 }
@@ -385,6 +386,7 @@ void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
     }
     else
     {
+	Parent->nickserv.live[nick.LowerCase()].Action();
 	raw(":" + nick + " NOTICE " + dest + " :" + text);
     }
 }
@@ -444,6 +446,7 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
     }
     else
     {
+	Parent->nickserv.live[nick.LowerCase()].Action();
 	raw(":" + nick + " PRIVMSG " + dest + " :" + text);
     }
 }
@@ -514,6 +517,7 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
     }
     else
     {
+	Parent->nickserv.live[nick.LowerCase()].Action();
 	raw(":" + nick + " WALLOPS :" + message);
     }
 }
