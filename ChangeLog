@@ -1,3 +1,29 @@
+* 2002-06-18 03:36  Preston A. Elder <prez@magick.tm>
+  gui/Files.java (1.6), src/magick.cpp (1.357):
+  
+  Fixed reading of dir size limits
+
+* 2002-06-18 03:28  Preston A. Elder <prez@magick.tm>
+  FAQ (1.7), docs/magick.ini (1.99), docs/en/index.sgml (1.37),
+  gui/CommServ.java (1.5), src/magick.cpp (1.356):
+  
+  Fixed default for OP and VOICE for CS overrides.
+
+* 2002-06-18 02:41  Preston A. Elder <prez@magick.tm>
+  lang/english.hlp (1.48):
+  
+  Added REGISTER help to OperServ
+
+* 2002-06-18 02:31  Preston A. Elder <prez@magick.tm>
+  src/operserv.cpp (1.145):
+  
+  Added Register to OperServ for 'operserv only' modes :)
+
+* 2002-06-17 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.36):
+  
+  Created version 2.0s20020617
+
 * 2002-06-14 10:19  Preston A. Elder <prez@magick.tm>
   include/version.h (1.134), include/version.h-release (1.38):
   
