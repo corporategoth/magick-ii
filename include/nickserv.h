@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/05/28 11:17:33  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.70  2001/05/25 01:59:31  prez
 ** Changed messaging system ...
 **
@@ -302,7 +305,7 @@ public:
     bool FloodTrigger();
 
     // Data maintinance
-    void Name(const mstring& in);
+    set<mstring> Name(const mstring& in);
     mstring Name() const	{ return i_Name; }
 
     void SendMode(const mstring& in);

@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.165  2001/05/28 11:17:34  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.164  2001/05/25 01:59:31  prez
 ** Changed messaging system ...
 **
@@ -601,6 +604,10 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     }}
     for (int i=0; i<tm.count_threads(); i++)
 	enqueue_shutdown();
+
+    { WLOCK(("AllDependancies"));
+    mMessage::AllDependancies.clear();
+    }
 
     // Should I do this with SQUIT protection ...?
     { WLOCK(("NickServ", "recovered"));
@@ -1694,13 +1701,15 @@ int EventTask::svc(void)
 			if (Parent->nickserv.IsLive(di->first) &&
 				Parent->nickserv.GetLive(di->first).IsServices())
 			{
-			    Parent->server.QUIT(di->first, "RECOVER period expired");
 			    chunked.push_back(di->first);
 			}
 		    }
 		}}
 		for (i=0; i<chunked.size(); i++)
+		{
 		    Parent->nickserv.RemRecovered(chunked[i]);
+		    Parent->server.QUIT(chunked[i], "RECOVER period expired");
+		}
 	    }
 	    WLOCK(("Events", "last_check"));
 	    MCB(last_check);

@@ -27,6 +27,9 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2001/05/28 11:17:34  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.4  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -340,7 +343,8 @@ void ESP_load_old_ns_dbase(ESP_dbFILE *f, int ver)
 	    }
 
 	    nick = ESP_CreateNickEntry(ni);
-	    Parent->nickserv.AddStored(&nick);
+	    if (!nick.Name().empty())
+		Parent->nickserv.AddStored(&nick);
 	    ESP_delnick(ni);
 	} /* while (ESP_getc_db(f) != 0) */
     } /* for (i) */
@@ -450,6 +454,10 @@ void ESP_load_ns_dbase(void)
 			    SAFE(ESP_read_string(&memos->text, f));
 			}
 		    }
+		    else
+		    {
+			ni->memos.memos = NULL;
+		    }
 		    SAFE(ESP_read_int16(&ni->channelcount, f));
 		    SAFE(ESP_read_int16(&ni->channelmax, f));
 		    if (ver == 5) {
@@ -463,7 +471,8 @@ void ESP_load_ns_dbase(void)
 		ni->id_timestamp = 0;
 
 		nick = ESP_CreateNickEntry(ni);
-		Parent->nickserv.AddStored(&nick);
+		if (!nick.Name().empty())
+		    Parent->nickserv.AddStored(&nick);
 		memo = ESP_CreateMemoEntry(&ni->memos, ni->nick);
 		if (memo.size())
 		    Parent->memoserv.AddNick(memo);
@@ -752,7 +761,8 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
 	    ci->memos.memomax = ESP_MSMaxMemos;
 
 	    chan = ESP_CreateChanEntry(ci);
-	    Parent->chanserv.AddStored(&chan);
+	    if (!chan.Name().empty())
+		Parent->chanserv.AddStored(&chan);
 	    ESP_delchan(ci);
 	} /* while (ESP_getc_db(f) != 0) */
     } /* for (i) */
@@ -896,11 +906,16 @@ void ESP_load_cs_dbase(void)
 			SAFE(ESP_read_string(&memos->text, f));
 		    }
 		}
+		else
+		{
+		    ci->memos.memos = NULL;
+		}
 
 		SAFE(ESP_read_string(&ci->entry_message, f));
 
 		chan = ESP_CreateChanEntry(ci);
-		Parent->chanserv.AddStored(&chan);
+		if (!chan.Name().empty())
+		    Parent->chanserv.AddStored(&chan);
 		news = ESP_CreateNewsEntry(&ci->memos, ci->name);
 		if (news.size())
 		    Parent->memoserv.AddChannel(news);
@@ -942,6 +957,14 @@ int ESP_delchan(ESP_ChannelInfo *ci)
 {
     int i;
 
+    if (ci->founder)
+	free(ci->founder);
+    if (ci->successor)
+	free(ci->successor);
+    if (ci->url)
+	free(ci->url);
+    if (ci->email)
+	free(ci->email);
     if (ci->desc)
 	free(ci->desc);
     if (ci->mlock_key)
@@ -979,6 +1002,8 @@ int ESP_delchan(ESP_ChannelInfo *ci)
 	}
 	free(ci->memos.memos);
     }
+    if (ci->entry_message)
+	free(ci->entry_message);
     free(ci);
     return 1;
 }
@@ -1121,6 +1146,9 @@ void ESP_load_news()
 	}
 
 	for (i = 0; i < ESP_nnews; i++) {
+	    if (news[i].text == NULL)
+		continue;
+
 	    if (news[i].type == ESP_NEWS_LOGON &&
 		Parent->commserv.IsList(Parent->commserv.ALL_Name()))
 	    {
@@ -1186,24 +1214,23 @@ void ESP_load_os_dbase(void)
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
-		/* if (s && i < MAX_SERVADMINS)
-		   services_admins[i] = findnick(s); */
+		if (s == NULL)
+		    continue;
 
  		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
 		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
 		    mstring(s), Parent->commserv.FirstName());
-		if (s)
-		    free(s); 
+		free(s); 
 	    }
 	}
 	else
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
+		if (s)
+		    free(s);
 	    }
-	    if (s)
-		free(s);
 	}
 	if (!failed)
 	    SAFE(ESP_read_int16(&n, f));
@@ -1211,24 +1238,23 @@ void ESP_load_os_dbase(void)
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
-		/* if (s && i < MAX_SERVOPERS)
-		    services_opers[i] = findnick(s); */
+		if (s == NULL)
+		    continue;
 
  		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
 		    Parent->commserv.GetList(Parent->commserv.OPER_Name()).insert(
 		    mstring(s), Parent->commserv.FirstName());
-		if (s)
-		    free(s);
+		free(s);
 	    }
 	}
 	else
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
+		if (s)
+		    free(s);
 	    }
-	    if (s)
-		free(s);
 	}
 /*	if (ver >= 7) {
 	    int32 tmp32;
@@ -1245,24 +1271,23 @@ void ESP_load_os_dbase(void)
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
-		/* if (s && i < MAX_SERVADMINS)
-		    services_admins[i] = findnick(s); */
+		if (s == NULL)
+		    continue;
 
  		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
 		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
 		    mstring(s), Parent->commserv.FirstName());
-		if (s)
-		    free(s);
+		free(s);
 	    }
 	}
 	else
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
+		if (s)
+		    free(s);
 	    }
-	    if (s)
-		free(s);
 	}
 	break;
 
@@ -1325,13 +1350,17 @@ void ESP_load_akill(void)
 
 	for (i = 0; i < ESP_nakill; ++i)
 	{
-	    Parent->operserv.Akill_insert(mstring(akills[i].mask),
+	    if (akills[i].mask != NULL && akills[i].reason != NULL)
+	    {
+		Parent->operserv.Akill_insert(mstring(akills[i].mask),
 		    time(NULL)-akills[i].expires,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
-
-	    free(akills[i].mask);
-	    free(akills[i].reason);
+	    }
+	    if (akills[i].mask)
+		free(akills[i].mask);
+	    if (akills[i].reason)
+		free(akills[i].reason);
 	}
 	free(akills);
 
@@ -1361,13 +1390,17 @@ void ESP_load_akill(void)
 
 	for (i = 0; i < ESP_nakill; ++i)
 	{
-	    Parent->operserv.Akill_insert(mstring(akills[i].mask),
+	    if (akills[i].mask != NULL && akills[i].reason != NULL)
+	    {
+		Parent->operserv.Akill_insert(mstring(akills[i].mask),
 		    time(NULL)-akills[i].expires,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
-
-	    free(akills[i].mask);
-	    free(akills[i].reason);
+	    }
+	    if (akills[i].mask)
+		free(akills[i].mask);
+	    if (akills[i].reason)
+		free(akills[i].reason);
 	}
 	free(akills);
 	break;
@@ -1394,13 +1427,17 @@ void ESP_load_akill(void)
 
 	for (i = 0; i < ESP_nakill; ++i)
 	{
-	    Parent->operserv.Akill_insert(mstring(akills[i].mask),
-		    Parent->operserv.Def_Expire(),
+	    if (akills[i].mask != NULL && akills[i].reason != NULL)
+	    {
+		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		    time(NULL)-akills[i].expires,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
-
-	    free(akills[i].mask);
-	    free(akills[i].reason);
+	    }
+	    if (akills[i].mask)
+		free(akills[i].mask);
+	    if (akills[i].reason)
+		free(akills[i].reason);
 	}
 	free(akills);
 	break;
@@ -1426,13 +1463,17 @@ void ESP_load_akill(void)
 
 	for (i = 0; i < ESP_nakill; ++i)
 	{
-	    Parent->operserv.Akill_insert(mstring(akills[i].mask),
-		    Parent->operserv.Def_Expire(),
+	    if (akills[i].mask != NULL && akills[i].reason != NULL)
+	    {
+		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		    time(NULL)-akills[i].expires,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
-
-	    free(akills[i].mask);
-	    free(akills[i].reason);
+	    }
+	    if (akills[i].mask)
+		free(akills[i].mask);
+	    if (akills[i].reason)
+		free(akills[i].reason);
 	}
 	free(akills);
 	break;
@@ -1493,9 +1534,12 @@ void ESP_load_exceptions()
         }
 
         for (i = 0; i < ESP_nexceptions; i++) {
-	    Parent->operserv.Clone_insert(mstring(exceptions[i].mask),
+	    if (exceptions[i].mask != NULL && exceptions[i].reason != NULL)
+	    {
+		Parent->operserv.Clone_insert(mstring(exceptions[i].mask),
 		    exceptions[i].limit, mstring(exceptions[i].reason),
 		    mstring(exceptions[i].who), mDateTime(exceptions[i].time));
+	    }
 	    if (exceptions[i].mask)
 		free(exceptions[i].mask);
 	    if (exceptions[i].reason)
@@ -1522,7 +1566,7 @@ Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni)
 	Nick_Stored_t out(ni->nick);
 	return out;
     }
-    else if (strlen(ni->link))
+    else if (ni->link != NULL && strlen(ni->link))
     {
 	Nick_Stored_t tmp(ni->link);
 	Nick_Stored_t out(ni->nick, mDateTime(ni->time_registered), tmp);
@@ -1604,7 +1648,7 @@ Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni)
     }
 }
 
-mstring getmodes(int16 modes)
+mstring ESP_getmodes(int16 modes)
 {
     mstring retval;
 
@@ -1636,8 +1680,6 @@ mstring getmodes(int16 modes)
 
 Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 {
-    Chan_Stored_t out;
-
     if (ci->flags & ESP_CI_VERBOTEN)
     {
 	Chan_Stored_t out(mstring(ci->name));
@@ -1648,6 +1690,12 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	ESP_ChanAccess *access;
 	ESP_AutoKick *akick;
 	int i;
+
+	if (ci->founder == NULL || ci->desc == NULL)
+	{
+	    Chan_Stored_t out;
+	    return out;
+	}
 
 	Chan_Stored_t out(mstring(ci->name), mstring(ci->founder),
 		    mstring(ci->founderpass), mstring(ci->desc));
@@ -1664,13 +1712,34 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	out.i_RegTime = mDateTime(ci->time_registered);
 	out.i_LastUsed = mDateTime(ci->last_used);
 
+	long newlevel;
+	float mod = (float) Parent->chanserv.Level_Max() / (float) ESP_ACCESS_FOUNDER;
 	for (i=0, access = ci->access; i<ci->accesscount; ++i, ++access)
 	{
-	    out.Access_insert(access->nick, access->level,
+	    if (access->nick == NULL)
+		continue;
+	    if (access->level < 0)
+		newlevel = -1;
+	    else
+		newlevel = (long) ((float) access->level * mod);
+	    if (newlevel == 0)
+		newlevel = 1;
+	    out.Access_insert(access->nick, newlevel,
 			Parent->chanserv.FirstName());
 	}
 	for (i=0, akick = ci->akick; i<ci->akickcount; ++i, ++akick)
 	{
+	    if (akick->is_nick)
+	    {
+		if (akick->u.nick == NULL)
+		    continue;
+	    }
+	    else
+	    {
+		if (akick->u.mask == NULL)
+		    continue;
+	    }
+
 	    if (akick->reason != NULL)
 	    {
 		if (akick->is_nick)
@@ -1716,7 +1785,7 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	mstring modelock;
 	if (ci->mlock_on || ci->mlock_key != NULL || ci->mlock_limit)
 	{
-	    mstring modes = getmodes(ci->mlock_on);
+	    mstring modes = ESP_getmodes(ci->mlock_on);
 	    modes.Remove("k");
 	    modes.Remove("l");
 	    modelock << "+" << modes <<
@@ -1725,7 +1794,7 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	}
 	if (ci->mlock_off)
 	{
-	    modelock << "-" << getmodes(ci->mlock_off);
+	    modelock << "-" << ESP_getmodes(ci->mlock_off);
 	}
 	if (ci->mlock_key != NULL)
 	{
@@ -1742,58 +1811,59 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	{
 	    for (i=0; i<ESP_CA_SIZE; ++i)
 	    {
+		newlevel = (long) ((float) ci->levels[i] * mod);
 		switch (i)
 		{
 		case ESP_CA_INVITE:
-		    out.Level_change("CMDINVITE", ci->levels[i],
+		    out.Level_change("CMDINVITE", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_AKICK:
-		    out.Level_change("AKICK", ci->levels[i],
+		    out.Level_change("AKICK", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_SET:
-		    out.Level_change("SET", ci->levels[i],
+		    out.Level_change("SET", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_UNBAN:
-		    out.Level_change("UNBAN", ci->levels[i],
+		    out.Level_change("UNBAN", newlevel,
 			Parent->chanserv.FirstName());
-		    out.Level_change("CMDUNBAN", ci->levels[i],
+		    out.Level_change("CMDUNBAN", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_AUTOOP:
-		    out.Level_change("AUTOOP", ci->levels[i],
+		    out.Level_change("AUTOOP", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_AUTODEOP:
-		    out.Level_change("AUTODEOP", ci->levels[i],
+		    out.Level_change("AUTODEOP", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_AUTOVOICE:
-		    out.Level_change("AUTOVOICE", ci->levels[i],
+		    out.Level_change("AUTOVOICE", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_OPDEOP:
-		    out.Level_change("CMDOP", ci->levels[i],
+		    out.Level_change("CMDOP", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_ACCESS_LIST:
-		    out.Level_change("VIEW", ci->levels[i],
+		    out.Level_change("VIEW", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_CLEAR:
-		    out.Level_change("CMDCLEAR", ci->levels[i],
+		    out.Level_change("CMDCLEAR", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_NOJOIN:
 		    break;
 		case ESP_CA_ACCESS_CHANGE:
-		    out.Level_change("ACCESS", ci->levels[i],
+		    out.Level_change("ACCESS", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		case ESP_CA_MEMO:
-		    out.Level_change("WRITEMEMO", ci->levels[i],
+		    out.Level_change("WRITEMEMO", newlevel,
 			Parent->chanserv.FirstName());
 		    break;
 		}
@@ -1814,6 +1884,9 @@ MemoServ::nick_memo_t ESP_CreateMemoEntry(ESP_MemoInfo *ml, char *nick)
     memos = ml->memos;
     for (i = 0; i < ml->memocount; ++i, ++memos)
     {
+	if (memos->text == NULL)
+	    continue;
+
 	tmp = new Memo_t(mstring(nick), mstring(memos->sender),
 		    mstring(memos->text));
 	tmp->i_Time = mDateTime(memos->time);
@@ -1835,6 +1908,9 @@ MemoServ::channel_news_t ESP_CreateNewsEntry(ESP_MemoInfo *nl, char *chan)
     memos = nl->memos;
     for (i = 0; i < nl->memocount; ++i, ++memos)
     {
+	if (memos->text == NULL)
+	    continue;
+
 	tmp = new News_t(mstring(chan), mstring(memos->sender),
 		    mstring(memos->text));
 	tmp->i_Time = mDateTime(memos->time);

@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.179  2001/05/28 11:17:34  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.178  2001/05/23 02:43:48  prez
 ** Fixed the NOACCESS bug, the chanserv getpass/setpass bug and nickserv failed
 ** passwords kill bug.
@@ -1544,27 +1547,25 @@ bool Nick_Live_t::FloodTrigger()
 }
 
 
-void Nick_Live_t::Name(const mstring& in)
+set<mstring> Nick_Live_t::Name(const mstring& in)
 {
     FT("Nick_Live_t::Name", (in));
 
     InFlight.ChgNick(in);
+    set<mstring> wason;
 
     RLOCK(("NickServ", "live", in.LowerCase()));
     if (i_Name.IsSameAs(in, true))
     {
 	i_Name = in;
-	return;
+	NRET(set<mstring>, wason);
     }
 
-    set<mstring>::iterator iter;
-    vector<mstring> chunked;
     unsigned long i;
 
     // Store what committee's we WERE on ...
     // This is needed to send logon notices ONLY for committees
     // we have joined by a nick change.
-    set<mstring> wason;
     CommServ::list_t::iterator iter2;
     for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
 								iter2++)
@@ -1595,7 +1596,7 @@ void Nick_Live_t::Name(const mstring& in)
     {
 	// We are not related (by brotherhood, or parentage)
 	if (!(Parent->nickserv.GetStored(i_Name).IsSibling(in) ||
-	    Parent->nickserv.GetStored(i_Name).Host().IsSameAs(i_Name)))
+	    Parent->nickserv.GetStored(i_Name).Host().IsSameAs(in, true)))
 	{
 	    WLOCK(("NickServ", "live", i_Name.LowerCase(), "identified"));
 	    WLOCK2(("NickServ", "live", i_Name.LowerCase(), "chans_founder_identd"));
@@ -1623,6 +1624,8 @@ void Nick_Live_t::Name(const mstring& in)
     CE(1, i_My_Signon_Time);
     }
 
+    set<mstring>::iterator iter;
+    vector<mstring> chunked;
     // Rename ourselves in all channels ...
     { RLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
     for (iter=joined_channels.begin(); iter!=joined_channels.end(); iter++)
@@ -1646,64 +1649,15 @@ void Nick_Live_t::Name(const mstring& in)
 	joined_channels.erase(chunked[i]);
     CE(5, joined_channels.size());
     }
-
     MCE(i_Name);
+
     if (Parent->nickserv.IsStored(i_Name))
     {
-	if (Parent->nickserv.GetStored(i_Name).Forbidden())
-	{
-	    Parent->nickserv.send(Parent->nickserv.FirstName(),
-		i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/FORBIDDEN"),
-		ToHumanTime(Parent->nickserv.Ident(), i_Name).c_str());
-	    return;
-	}
-	else if (Parent->nickserv.GetStored(i_Name).IsOnline())
+	if (IsRecognized() && !Parent->nickserv.GetStored(i_Name).Secure())
 	    Parent->nickserv.GetStored(i_Name).Signon(i_realname, Mask(U_P_H).After("!"));
-	else if (Parent->nickserv.GetStored(i_Name).Protect())
-	    Parent->nickserv.send(Parent->nickserv.FirstName(),
-		i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PROTECTED"),
-		ToHumanTime(Parent->nickserv.Ident(), i_Name).c_str());
     }
 
-    // Send notices for committees we were NOT on
-    mstring setmode;
-    for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
-								iter2++)
-    {
-	if (iter2->second.IsOn(i_Name) && wason.find(iter2->first) == wason.end())
-	{
-	    if (iter2->first == Parent->commserv.ALL_Name())
-		setmode += Parent->commserv.ALL_SetMode();
-	    else if (iter2->first == Parent->commserv.REGD_Name())
-		setmode += Parent->commserv.REGD_SetMode();
-	    else if (iter2->first == Parent->commserv.OPER_Name())
-		setmode += Parent->commserv.OPER_SetMode();
-	    else if (iter2->first == Parent->commserv.ADMIN_Name())
-		setmode += Parent->commserv.ADMIN_SetMode();
-	    else if (iter2->first == Parent->commserv.SOP_Name())
-		setmode += Parent->commserv.SOP_SetMode();
-	    else if (iter2->first == Parent->commserv.SADMIN_Name())
-		setmode += Parent->commserv.SADMIN_SetMode();
-
-	    for (iter2->second.message = iter2->second.MSG_begin();
-		iter2->second.message != iter2->second.MSG_end(); iter2->second.message++)
-	    {
-		Parent->servmsg.send(i_Name, "[" + IRC_Bold + iter2->first + IRC_Off +
-					    "] " + iter2->second.message->Entry());
-	    }
-	}
-    }
-    if (!setmode.empty())
-    {
-	mstring setmode2;
-	for (i=0; i<setmode.size(); i++)
-	{
-	    if (setmode[i] != '+' && setmode[i] != '-' &&
-		setmode[i] != ' ' && !HasMode(setmode[i]))
-	        setmode2 += setmode[i];
-	}
-	Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, "+" + setmode2);
-    }
+    NRET(set<mstring>, wason);
 }
 
 

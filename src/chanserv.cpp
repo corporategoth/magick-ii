@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.248  2001/05/28 11:17:33  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.247  2001/05/23 02:47:10  prez
 ** *** empty log message ***
 **
@@ -3455,9 +3458,12 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	if (!i_Mlock_Off.empty())
 	    modes << "-" << i_Mlock_Off;
 
-	LOG(LM_DEBUG, "CHANSERV/SET", (
+	if (Parent->nickserv.IsLive(source))
+	{
+	    LOG(LM_DEBUG, "CHANSERV/SET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("CS_SET/MLOCK"), i_Name, modes));
+	}
 
 	if (!i_Mlock_Key.empty())
 	    modes << " " << i_Mlock_Key;
@@ -3516,9 +3522,12 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 				mVarArray(i_Name));
 	retval.push_back(output);
 
-	LOG(LM_DEBUG, "CHANSERV/UNSET", (
+	if (Parent->nickserv.IsLive(source))
+	{
+	    LOG(LM_DEBUG, "CHANSERV/UNSET", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage("CS_SET/MLOCK"), i_Name));
+	}
     }
     CE(1, i_Mlock_Off);
     CE(2, i_Mlock_Key);

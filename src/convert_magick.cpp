@@ -27,6 +27,9 @@ RCSID(convert_magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2001/05/28 11:17:34  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.4  2001/05/05 17:33:58  prez
 ** Changed log outputs from printf-style to tokenized style files.
 ** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
@@ -228,7 +231,8 @@ load_ns_dbase (void)
 	    }
 
 	    nick = CreateNickEntry(ni);
-	    Parent->nickserv.AddStored(&nick);
+	    if (!nick.Name().empty())
+		Parent->nickserv.AddStored(&nick);
 	    delnick(ni);
 	}
 	break;
@@ -292,7 +296,8 @@ load_ns_dbase (void)
 		}
 
 		nick = CreateNickEntry(ni);
-		Parent->nickserv.AddStored(&nick);
+		if (!nick.Name().empty())
+		    Parent->nickserv.AddStored(&nick);
 		delnick(ni);
 	    }
 	break;
@@ -336,7 +341,8 @@ load_ns_dbase (void)
 		}
 
 		nick = CreateNickEntry(ni);
-		Parent->nickserv.AddStored(&nick);
+		if (!nick.Name().empty())
+		    Parent->nickserv.AddStored(&nick);
 		delnick(ni);
 	    }
 	break;
@@ -382,23 +388,6 @@ delnick (NickInfo * ni)
 Nick_Stored_t
 CreateNickEntry(NickInfo_CUR *ni)
 {
-    /*
-    NickInfo *next, *prev;
-    char nick[NICKMAX];
-    char pass[PASSMAX];
-    char *email;
-    char *url;
-    char *last_usermask;
-    char *last_realname;
-    time_t time_registered;
-    time_t last_seen;
-    long accesscount;
-    char **access;
-    long ignorecount;
-    char **ignore;
-    long flags;
-    long reserved[4]; */
-
     int i;
     char **string;
 
@@ -418,15 +407,15 @@ CreateNickEntry(NickInfo_CUR *ni)
     else
     {
 	Nick_Stored_t out(mstring(ni->nick), mstring(ni->pass));
-	if (ni->email != NULL)
+	if (ni->email != NULL && strlen(ni->email))
 	    out.i_Email = mstring(ni->email);
-	if (ni->url != NULL)
+	if (ni->url != NULL && strlen(ni->url))
 	    out.i_URL = mstring(ni->url);
 	if (out.i_URL.Contains("http://"))
 	    out.i_URL.Remove("http://", false);
 	if (out.i_URL.Contains("HTTP://"))
 	    out.i_URL.Remove("HTTP://", false);
-	if (ni->last_realname != NULL)
+	if (ni->last_realname != NULL && strlen(ni->last_realname))
 	    out.i_LastRealName = mstring(ni->last_realname);
 	out.i_RegTime = mDateTime(ni->time_registered);
 	out.i_LastSeenTime = mDateTime(ni->last_seen);
@@ -452,12 +441,12 @@ CreateNickEntry(NickInfo_CUR *ni)
 	{
 	    out.i_Suspend_By = Parent->nickserv.FirstName();
 	    out.i_Suspend_Time = mDateTime::CurrentDateTime();
-	    if (ni->last_usermask != NULL)
+	    if (ni->last_usermask != NULL && strlen(ni->last_usermask))
 		out.i_Comment = mstring(ni->last_usermask);
 	}
 	else
 	{
-	    if (ni->last_usermask != NULL)
+	    if (ni->last_usermask != NULL && strlen(ni->last_usermask))
 		out.i_LastMask = mstring(ni->last_usermask);
 	}
 
@@ -621,7 +610,8 @@ load_cs_dbase (void)
 		}
 
 		chan = CreateChanEntry(ci);
-		Parent->chanserv.AddStored(&chan);
+		if (!chan.Name().empty())
+		    Parent->chanserv.AddStored(&chan);
 		delchan(ci);
 	    }			/* while (fgetc(f) == 1) */
 	break;			/* case 5, etc. */
@@ -801,7 +791,8 @@ load_cs_dbase (void)
 		free (old_ci);
 
 		chan = CreateChanEntry(ci);
-		Parent->chanserv.AddStored(&chan);
+		if (!chan.Name().empty())
+		    Parent->chanserv.AddStored(&chan);
 		delchan(ci);
 	    }			/* while (fgetc(f) == 1) */
 	break;			/* case 3, etc. */
@@ -968,7 +959,8 @@ load_cs_dbase (void)
 		free (old_ci);
 
 		chan = CreateChanEntry(ci);
-		Parent->chanserv.AddStored(&chan);
+		if (!chan.Name().empty())
+		    Parent->chanserv.AddStored(&chan);
 		delchan(ci);
 	    }
 	break;			/* case 1, etc. */
@@ -1031,28 +1023,6 @@ delchan (ChanInfo * ci)
 Chan_Stored_t
 CreateChanEntry(ChanInfo_CUR *ci)
 {
-    /* ChanInfo *next, *prev;
-    char name[CHANMAX];
-    char founder[NICKMAX];
-    char founderpass[PASSMAX];
-    char *desc;
-    char *url;
-    time_t time_registered;
-    time_t last_used;
-    long accesscount;
-    ChanAccess *access;
-    long akickcount;
-    AutoKick *akick;
-    char mlock_on[64], mlock_off[64];
-    long mlock_limit;
-    char *mlock_key;
-    char *last_topic;
-    char last_topic_setter[NICKMAX];
-    time_t last_topic_time;
-    long flags;
-    short *cmd_access;
-    long reserved[3]; */
-
     if (ci->flags & CI_VERBOTEN)
     {
 	Chan_Stored_t out(mstring(ci->name));
@@ -1064,10 +1034,16 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	AutoKick *akick;
 	int i;
 
+	if (ci->desc == NULL)
+	{
+	    Chan_Stored_t out;
+	    return out;
+	}
+
 	Chan_Stored_t out(mstring(ci->name), mstring(ci->founder),
 		    mstring(ci->founderpass), mstring(ci->desc));
 
-	if (ci->url != NULL)
+	if (ci->url != NULL && strlen(ci->url))
 	    out.i_URL = mstring(ci->url);
 	if (out.i_URL.Contains("http://"))
 	    out.i_URL.Remove("http://", false);
@@ -1098,6 +1074,8 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	    out.Mlock(Parent->chanserv.FirstName(), modelock);
 	for (i=0, access = ci->access; i<ci->accesscount; ++i, ++access)
 	{
+	    if (access->name == NULL)
+		continue;
 	    if (access->is_nick > 0)
 	    {
 		out.Access_insert(access->name, access->level,
@@ -1106,6 +1084,8 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	}
 	for (i=0, akick = ci->akick; i<ci->akickcount; ++i, ++akick)
 	{
+	    if (akick->name == NULL)
+		continue;
 	    if (akick->reason != NULL)
 		out.Akick_insert(akick->name, akick->reason,
 			Parent->chanserv.FirstName());
@@ -1165,17 +1145,17 @@ CreateChanEntry(ChanInfo_CUR *ci)
 
 	if (ci->flags & CI_SUSPENDED)
 	{
-	    if (ci->last_topic != NULL)
+	    if (ci->last_topic != NULL && strlen(ci->last_topic))
 		out.i_Comment = mstring(ci->last_topic);
-	    if (ci->last_topic_setter != NULL)
+	    if (ci->last_topic_setter != NULL && strlen(ci->last_topic_setter))
 		out.i_Suspend_By = mstring(ci->last_topic_setter);
 	    out.i_Suspend_Time = mDateTime(ci->last_topic_time);
 	}
 	else
 	{
-	    if (ci->last_topic != NULL)
+	    if (ci->last_topic != NULL && strlen(ci->last_topic))
 		out.i_Topic = mstring(ci->last_topic);
-	    if (ci->last_topic_setter != NULL)
+	    if (ci->last_topic_setter != NULL && strlen(ci->last_topic_setter))
 		out.i_Topic_Setter = mstring(ci->last_topic_setter);
 	    out.i_Topic_Set_Time = mDateTime(ci->last_topic_time);
 	}
@@ -1401,18 +1381,6 @@ del_newslist (NewsList * nl)
 MemoServ::nick_memo_t
 CreateMemoEntry(MemoList_CUR *ml)
 {
-/*  char sender[NICKMAX];
-    long number;
-    time_t time;
-    char *text;
-    long reserved[4];
-
-    MemoList *next, *prev;
-    char nick[NICKMAX];
-    long n_memos;
-    Memo *memos;
-    long reserved[4]; */
-
     int i;
     MemoServ::nick_memo_t out;
     Memo_t *tmp;
@@ -1421,6 +1389,9 @@ CreateMemoEntry(MemoList_CUR *ml)
     memos = ml->memos;
     for (i = 0; i < ml->n_memos; ++i, ++memos)
     {
+	if (memos->text == NULL)
+	    continue;
+
 	tmp = new Memo_t(mstring(ml->nick), mstring(memos->sender),
 		    mstring(memos->text));
 	tmp->i_Time = mDateTime(memos->time);
@@ -1433,18 +1404,6 @@ CreateMemoEntry(MemoList_CUR *ml)
 MemoServ::channel_news_t
 CreateNewsEntry(NewsList_CUR *nl)
 {
-/*  char sender[NICKMAX];
-    long number;
-    time_t time;
-    char *text;
-    long reserved[4];
-
-    NewsList *next, *prev;
-    char chan[CHANMAX];
-    long n_newss;
-    Memo *newss;
-    long reserved[4]; */
-
     int i;
     MemoServ::channel_news_t out;
     News_t *tmp;
@@ -1453,6 +1412,8 @@ CreateNewsEntry(NewsList_CUR *nl)
     newss = nl->newss;
     for (i = 0; i < nl->n_newss; ++i, ++newss)
     {
+	if (newss->text == NULL)
+	    continue;
 	tmp = new News_t(mstring(nl->chan), mstring(newss->sender),
 		    mstring(newss->text));
 	tmp->i_Time = mDateTime(newss->time);
@@ -1556,7 +1517,10 @@ load_message ()
 
 	for (j = 0; j < nmessage; ++j)
 	{
-	    if (messages[j].type == M_SLOGON &&
+	    if (messages[j].text == NULL)
+		continue;
+
+	    if (messages[j].type == M_LOGON &&
 		Parent->commserv.IsList(Parent->commserv.ALL_Name()))
 	    {
 		Parent->commserv.GetList(Parent->commserv.ALL_Name()).MSG_insert(
@@ -1621,29 +1585,29 @@ load_akill ()
 	    akills[j].reason = read_string (f, akill_db);
 	}
 
-/*  char *mask;
-    char *reason;
-    char who[NICKMAX];
-    time_t time; */
-
 	for (j = 0; j < nakill; ++j)
 	{
-	    if (akills[j].time == 0)
+	    if (akills[j].mask != NULL && akills[j].reason != NULL)
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[j].mask),
-		    Parent->operserv.Expire_Sop(),
-		    mstring(akills[j].reason), mstring(akills[j].who));
-	    }
-	    else
-	    {
-		Parent->operserv.Akill_insert(mstring(akills[j].mask),
-		    Parent->operserv.Def_Expire(),
-		    mstring(akills[j].reason), mstring(akills[j].who),
-		    mDateTime(akills[j].time));
+		if (akills[j].time == 0)
+		{
+		    Parent->operserv.Akill_insert(mstring(akills[j].mask),
+			Parent->operserv.Expire_Sop(),
+			mstring(akills[j].reason), mstring(akills[j].who));
+		}
+		else
+		{
+		    Parent->operserv.Akill_insert(mstring(akills[j].mask),
+			Parent->operserv.Def_Expire(),
+			mstring(akills[j].reason), mstring(akills[j].who),
+			mDateTime(akills[j].time));
+		}
 	    }
 
-	    free(akills[j].mask);
-	    free(akills[j].reason);
+	    if (akills[j].mask)
+		free(akills[j].mask);
+	    if (akills[j].reason)
+		free(akills[j].reason);
 	}
 	free(akills);
 	break;
@@ -1679,29 +1643,29 @@ load_akill ()
 	    }
 	}			/* case 1 */
 
-/*  char *mask;
-    char *reason;
-    char who[NICKMAX];
-    time_t time; */
-
 	for (j = 0; j < nakill; ++j)
 	{
-	    if (akills[j].time == 0)
+	    if (akills[j].mask != NULL && akills[j].reason != NULL)
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[j].mask),
-		    Parent->operserv.Expire_Sop(),
-		    mstring(akills[j].reason), mstring(akills[j].who));
-	    }
-	    else
-	    {
-		Parent->operserv.Akill_insert(mstring(akills[j].mask),
-		    Parent->operserv.Def_Expire(),
-		    mstring(akills[j].reason), mstring(akills[j].who),
-		    mDateTime(akills[j].time));
+		if (akills[j].time == 0)
+		{
+		    Parent->operserv.Akill_insert(mstring(akills[j].mask),
+			Parent->operserv.Expire_Sop(),
+			mstring(akills[j].reason), mstring(akills[j].who));
+		}
+		else
+		{
+		    Parent->operserv.Akill_insert(mstring(akills[j].mask),
+			Parent->operserv.Def_Expire(),
+			mstring(akills[j].reason), mstring(akills[j].who),
+			mDateTime(akills[j].time));
+		}
 	    }
 
-	    free(akills[j].mask);
-	    free(akills[j].reason);
+	    if (akills[j].mask)
+		free(akills[j].mask);
+	    if (akills[j].reason)
+		free(akills[j].reason);
 	}
 	free(akills);
 
@@ -1754,19 +1718,18 @@ load_clone ()
 	    clones[j].reason = read_string (f, clone_db);
 	}
 
-/*  char *host;
-    int amount;
-    char *reason;
-    char who[NICKMAX];
-    time_t time; */
-
 	for (j = 0; j < nclone; ++j)
 	{
-	    Parent->operserv.Clone_insert(mstring(clones[j].host),
+	    if (clones[j].host != NULL && clones[j].reason != NULL)
+	    {
+		Parent->operserv.Clone_insert(mstring(clones[j].host),
 		    clones[j].amount, mstring(clones[j].reason),
 		    mstring(clones[j].who), mDateTime(clones[j].time));
-	    free(clones[j].host);
-	    free(clones[j].reason);
+	    }
+	    if (clones[j].host)
+		free(clones[j].host);
+	    if (clones[j].reason)
+		free(clones[j].reason);
 	}
 	free(clones);
 	break;

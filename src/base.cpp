@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.166  2001/05/28 11:17:33  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.165  2001/05/25 01:59:31  prez
 ** Changed messaging system ...
 **
@@ -612,7 +615,6 @@ void mMessage::AddDependancies()
 	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
     }
 
-    WLOCK2(("AllDependancies"));
     list<triplet<type_t, mstring, bool> >::iterator iter;
     for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
     {
@@ -621,6 +623,7 @@ void mMessage::AddDependancies()
 	case ServerExists:
 	    if (Parent->server.GetServer(iter->second).empty())
 	    {
+		WLOCK2(("AllDependancies"));
 		AllDependancies[ServerExists][iter->second].insert(this);
 	    }
 	    else
@@ -631,6 +634,7 @@ void mMessage::AddDependancies()
 	case ServerNoExists:
 	    if (!Parent->server.GetServer(iter->second).empty())
 	    {
+		WLOCK2(("AllDependancies"));
 		AllDependancies[ServerNoExists][iter->second].insert(this);
 	    }
 	    else
@@ -641,6 +645,7 @@ void mMessage::AddDependancies()
 	case NickExists:
 	    if (!Parent->nickserv.IsLive(iter->second))
 	    {
+		WLOCK2(("AllDependancies"));
 		AllDependancies[NickExists][iter->second].insert(this);
 	    }
 	    else
@@ -651,6 +656,7 @@ void mMessage::AddDependancies()
 	case NickNoExists:
 	    if (Parent->nickserv.IsLive(iter->second))
 	    {
+		WLOCK2(("AllDependancies"));
 		AllDependancies[NickNoExists][iter->second].insert(this);
 	    }
 	    else
@@ -661,6 +667,7 @@ void mMessage::AddDependancies()
 	case ChanExists:
 	    if (!Parent->chanserv.IsLive(iter->second))
 	    {
+		WLOCK2(("AllDependancies"));
 		AllDependancies[ChanExists][iter->second].insert(this);
 	    }
 	    else
@@ -671,6 +678,7 @@ void mMessage::AddDependancies()
 	case ChanNoExists:
 	    if (Parent->chanserv.IsLive(iter->second))
 	    {
+		WLOCK2(("AllDependancies"));
 		AllDependancies[ChanNoExists][iter->second].insert(this);
 	    }
 	    else
@@ -683,6 +691,7 @@ void mMessage::AddDependancies()
 	    {
 		if (!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 		{
+		    WLOCK2(("AllDependancies"));
 		    AllDependancies[UserInChan][iter->second].insert(this);
 		}
 		else
@@ -692,6 +701,7 @@ void mMessage::AddDependancies()
 	    }
 	    else
 	    {
+		WLOCK2(("AllDependancies"));
 		AllDependancies[UserInChan][iter->second].insert(this);
 	    }
 	    break;
@@ -699,6 +709,7 @@ void mMessage::AddDependancies()
 	    if (Parent->chanserv.IsLive(iter->second.Before(":")) &&
 		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 	    {
+		WLOCK2(("AllDependancies"));
 		AllDependancies[UserNoInChan][iter->second].insert(this);
 	    }
 	    else
@@ -742,37 +753,40 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
     // that message.  In either case, remove all dependancies on passed condition,
     // as this has been satisfied.
 
+    mstring target;
+    if (!param2.empty())
+	target = param1.LowerCase() + ":" + param2.LowerCase();
+    else
+	target = param1.LowerCase();
+    set<mMessage *> mydep;
+
     { WLOCK(("AllDependancies"));
     map<type_t, map<mstring, set<mMessage *> > >::iterator i = AllDependancies.find(type);
     if (i != AllDependancies.end())
     {
-	mstring target;
-	if (!param2.empty())
-	    target = param1.LowerCase() + ":" + param2.LowerCase();
-	else
-	    target = param1.LowerCase();
-
 	map<mstring, set<mMessage *> >::iterator j = i->second.find(target);
 	if (j != i->second.end())
 	{
-	    set<mMessage *>::iterator k;
-	    for (k=j->second.begin(); k!=j->second.end(); k++)
-	    {
-		if (*k != NULL)
-		{
-		    (*k)->DependancySatisfied(type, target);
-		    if (!(*k)->OutstandingDependancies())
-		    {
-			(*k)->priority(static_cast<u_long>(P_DepFilled));
-			RLOCK(("IrcSvcHandler"));
-			if (Parent->ircsvchandler != NULL)
-			    Parent->ircsvchandler->enqueue(*k);
-		    }
-		}
-	    }
+	    mydep = j->second;
 	    i->second.erase(j);
 	}
     }}
+
+    set<mMessage *>::iterator k;
+    for (k=mydep.begin(); k!=mydep.end(); k++)
+    {
+	if (*k != NULL)
+	{
+	    (*k)->DependancySatisfied(type, target);
+	    if (!(*k)->OutstandingDependancies())
+	    {
+		(*k)->priority(static_cast<u_long>(P_DepFilled));
+		RLOCK(("IrcSvcHandler"));
+		if (Parent->ircsvchandler != NULL)
+		    Parent->ircsvchandler->enqueue(*k);
+	    }
+	}
+    }
 }
 
 void mMessage::DependancySatisfied(mMessage::type_t type, const mstring& param)
@@ -815,7 +829,8 @@ int mMessage::call()
     CP(("Processing message (%s) %s %s", source_.c_str(), msgtype_.c_str(), params_.c_str()));
 
     // Remove ourselves from other's oustanding dependancy lists
-    { WLOCK(("AllDependancies"));
+    // Code removed as it should not be necessary (note: SHOULD ;P)
+    /* { WLOCK(("AllDependancies"));
     map<type_t, map<mstring, set<mMessage *> > >::iterator i;
     for (i=AllDependancies.begin(); i!=AllDependancies.end(); i++)
     {
@@ -831,7 +846,7 @@ int mMessage::call()
 	}
 	for (unsigned int k=0; k<chunked.size(); k++)
 	    i->second.erase(chunked[k]);
-    }}
+    }} */
 
     try {
 

@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2001/05/28 11:17:33  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.37  2001/05/01 14:00:22  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -236,33 +239,17 @@
 /* ACE Extensions */
 #include <ace/config.h>
 #include <ace/Version.h>
-#include <ace/Activation_Queue.h>
-#include <ace/Auto_Ptr.h>
+#include <ace/Reactor.h>
 #include <ace/Connector.h>
-#include <ace/Event_Handler.h>
-#include <ace/INET_Addr.h>
-#include <ace/Local_Tokens.h>
-#include <ace/Log_Msg.h>
+#include <ace/SOCK_Acceptor.h>
+#include <ace/SOCK_Connector.h>
+#include <ace/Activation_Queue.h>
 /* Added in 5.1.11, so accomodate it ... */
 #if ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
 	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \
 	ACE_BETA_VERSION >= 11)))
 #include <ace/Log_Msg_Callback.h>
 #endif
-#include <ace/Message_Queue.h>
-#include <ace/Method_Request.h>
-#include <ace/OS.h>
-#include <ace/Reactor.h>
-#include <ace/Singleton.h>
-#include <ace/SOCK_Acceptor.h>
-#include <ace/SOCK_Connector.h>
-#include <ace/SOCK_Stream.h>
-#include <ace/Svc_Handler.h>
-#include <ace/Synch_T.h>
-#include <ace/Synch.h>
-#include <ace/Task.h>
-#include <ace/Thread_Manager.h>
-#include <ace/Thread.h>
 
 /* Alter this when it is intergrated
  * Below is an example if it was implemented in 6.5 */

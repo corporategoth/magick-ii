@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2001/05/28 11:17:33  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.94  2001/05/25 01:59:31  prez
 ** Changed messaging system ...
 **
@@ -231,6 +234,7 @@ public:
 class mMessage : public ACE_Method_Request
 {
     friend class EventTask;
+    friend class IrcSvcHandler;
 
     mstring source_, msgtype_, params_;
     mDateTime creation_;

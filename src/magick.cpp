@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.313  2001/05/28 11:17:34  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.312  2001/05/22 22:57:10  prez
 ** Fixed nick linking/idetify, and recognition of committee heads.
 **
@@ -1719,6 +1722,7 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
 	}
 	if (second.IsSameAs("magick", true))
 	{
+	    NLOG(LM_STARTUP, "COMMANDLINE/START_CONVERT");
 	    load_ns_dbase();
 	    load_cs_dbase();
 	    load_ms_dbase();
@@ -1730,6 +1734,7 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
 	}
 	else if (second.IsSameAs("esper", true))
 	{
+	    NLOG(LM_STARTUP, "COMMANDLINE/START_CONVERT");
 	    ESP_load_ns_dbase();
 	    ESP_load_cs_dbase();
 	    ESP_load_os_dbase();

@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.176  2001/05/28 11:17:35  prez
+** Added some more anti-deadlock stuff, and fixed nick ident warnings
+**
 ** Revision 1.175  2001/05/17 19:18:55  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -3863,6 +3866,7 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 			MCE(i_UserMax);
 		    }}
 
+		    mMessage::CheckDependancies(mMessage::NickExists, sourceL);
 		    // HAS to be AFTER the nickname is added to map.
 		    CommServ::list_t::iterator iter;
 		    mstring setmode;
@@ -3900,13 +3904,15 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 		    if (!setmode.empty())
 		    {
 			mstring setmode2;
+			{ RLOCK(("NickServ", "live", sourceL));
+			Nick_Live_t &nick = Parent->nickserv.GetLive(source);
 			for (unsigned int j=0; j<setmode.size(); j++)
 			{
 			    if (setmode[j] != '+' && setmode[j] != '-' &&
 				setmode[j] != ' ' &&
-				!Parent->nickserv.GetLive(sourceL).HasMode(setmode[j]))
+				!nick.HasMode(setmode[j]))
 			        setmode2 += setmode[j];
-			}
+			}}
 			SVSMODE(Parent->nickserv.FirstName(), sourceL, "+" + setmode2);
 		    }
 		    if (Parent->nickserv.IsStored(sourceL))
@@ -3923,7 +3929,6 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 				(ToHumanTime(Parent->nickserv.Ident(), sourceL)));
 			}
 		    }
-		    mMessage::CheckDependancies(mMessage::NickExists, sourceL);
 		}
 	    }
 	    else
@@ -3933,13 +3938,13 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 		    // CHANGE NICK
 		   if (!sourceL.IsSameAs(params.ExtractWord(1, ": ")))
 		   {
+			mstring newnick(params.ExtractWord(1, ": "));
 			Nick_Live_t tmp(Parent->nickserv.GetLive(sourceL));
-			tmp.Name(params.ExtractWord(1, ": "));
-			Parent->nickserv.RemLive(sourceL);
-			Parent->nickserv.AddLive(&tmp);
-			// We just did a SVSNICK ...
+			set<mstring> wason = tmp.Name(newnick);
+			Parent->nickserv.RemLive(source);
 			mMessage::CheckDependancies(mMessage::NickNoExists, sourceL);
-			mMessage::CheckDependancies(mMessage::NickExists, params.ExtractWord(1, ": "));
+			Parent->nickserv.AddLive(&tmp);
+			mMessage::CheckDependancies(mMessage::NickExists, newnick);
 			if (Parent->nickserv.IsRecovered(source))
 			{
 			    Parent->server.NICK(source,
@@ -3949,6 +3954,70 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 				Parent->startup.Server_Name(),
 				"Nickname Enforcer");
 			}
+
+			CommServ::list_t::iterator iter;
+			mstring setmode;
+			{ RLOCK2(("CommServ", "list"));
+			for (iter = Parent->commserv.ListBegin();
+				    iter != Parent->commserv.ListEnd();
+				    iter++)
+			{
+			    if (wason.find(iter->first) == wason.end() && iter->second.IsOn(newnick))
+			    {
+				if (iter->first == Parent->commserv.ALL_Name())
+				    setmode += Parent->commserv.ALL_SetMode();
+				else if (iter->first == Parent->commserv.REGD_Name())
+				    setmode += Parent->commserv.REGD_SetMode();
+				else if (iter->first == Parent->commserv.OPER_Name())
+				    setmode += Parent->commserv.OPER_SetMode();
+				else if (iter->first == Parent->commserv.ADMIN_Name())
+				    setmode += Parent->commserv.ADMIN_SetMode();
+				else if (iter->first == Parent->commserv.SOP_Name())
+				    setmode += Parent->commserv.SOP_SetMode();
+				else if (iter->first == Parent->commserv.SADMIN_Name())
+				    setmode += Parent->commserv.SADMIN_SetMode();
+
+				MLOCK(("CommServ", "list", iter->first, "message"));
+				for (iter->second.message = iter->second.MSG_begin();
+					iter->second.message != iter->second.MSG_end();
+					iter->second.message++)
+				{
+				    Parent->servmsg.send(newnick, "[" + IRC_Bold +
+					    iter->first + IRC_Off + "] " +
+					    iter->second.message->Entry());
+				}
+			    }
+			}}
+			if (!setmode.empty())
+			{
+			    mstring setmode2;
+			    { RLOCK(("NickServ", "live", newnick.LowerCase()));
+			    Nick_Live_t &nick = Parent->nickserv.GetLive(newnick);
+			    for (unsigned int j=0; j<setmode.size(); j++)
+			    {
+				if (setmode[j] != '+' && setmode[j] != '-' &&
+					setmode[j] != ' ' &&
+					!nick.HasMode(setmode[j]))
+			        setmode2 += setmode[j];
+			    }}
+			    SVSMODE(Parent->nickserv.FirstName(), newnick, "+" + setmode2);
+			}
+
+			if (Parent->nickserv.IsStored(newnick))
+			{
+			    if (Parent->nickserv.GetStored(newnick).Forbidden())
+			    {
+				SEND(Parent->nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
+					(ToHumanTime(Parent->nickserv.Ident(), newnick)));
+			    }
+			    else if (Parent->nickserv.GetStored(newnick).Protect() &&
+				!Parent->nickserv.GetStored(newnick).IsOnline())
+			    {
+				SEND(Parent->nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
+					(ToHumanTime(Parent->nickserv.Ident(), newnick)));
+			    }
+			}
+
 		    }
 		    else
 		    {
