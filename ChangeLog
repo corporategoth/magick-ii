@@ -1,3 +1,16 @@
+* 2002-04-22 02:42  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.84), src/base.cpp (1.189), src/chanserv.cpp (1.283),
+  src/ircsocket.cpp (1.214), src/nickserv.cpp (1.205), src/server.cpp
+  (1.210):
+  
+  Added most of the ircu2.10+ support.	It pretty much works, only a few
+  kinks still to be worked out.
+
+* 2002-04-15 03:01  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.31):
+  
+  Created version 2.0s20020415
+
 * 2002-04-11 20:24  Preston A. Elder <prez@magick.tm>
   gui/ChanServ.java (1.4), gui/CommServ.java (1.4), gui/Config.java (1.4),
   gui/Files.java (1.5), gui/MemoServ.java (1.4), gui/NickServ.java (1.4),
