@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.171  2000/05/27 07:06:01  prez
+** HTM actually does something now ... wooo :)
+**
 ** Revision 1.170  2000/05/25 08:16:38  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...
@@ -4301,6 +4304,13 @@ void ChanServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     mstring HelpTopic = Parent->chanserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
@@ -4462,6 +4472,14 @@ void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
 
     mstring message = params.Before(" ").UpperCase();
     mstring output;
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -5489,6 +5507,14 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
     FT("ChanServ::do_Users", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -5739,6 +5765,14 @@ void ChanServ::do_Live(mstring mynick, mstring source, mstring params)
     mstring mask;
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	mask = "*";
@@ -5799,6 +5833,14 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -5855,6 +5897,14 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -5914,6 +5964,14 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -5979,6 +6037,14 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -6038,6 +6104,14 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -6100,6 +6174,14 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -6285,6 +6367,13 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     if (params.WordCount(" ") < 3)
     {
@@ -6528,6 +6617,13 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     if (params.WordCount(" ") < 3)
     {
@@ -6805,6 +6901,13 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -7055,6 +7158,13 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -7235,6 +7345,13 @@ void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     if (params.WordCount(" ") < 3)
     {
@@ -8477,6 +8594,13 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 4)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -9288,6 +9412,13 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     if (params.WordCount(" ") < 4)
     {

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2000/05/27 07:06:02  prez
+** HTM actually does something now ... wooo :)
+**
 ** Revision 1.97  2000/05/25 08:16:39  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...
@@ -3767,6 +3770,13 @@ void NickServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     mstring HelpTopic = Parent->nickserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
@@ -4164,6 +4174,14 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_Info", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -4503,6 +4521,14 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
     mstring mask;
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	mask = "*";
@@ -4558,6 +4584,14 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_Send", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -4778,6 +4812,14 @@ void NickServ::do_Live(mstring mynick, mstring source, mstring params)
     mstring mask;
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	mask = "*!*@*";
@@ -4988,6 +5030,13 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
     mstring message  = params.Before(" ", 2).UpperCase();
     mstring target = source;
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") >= 3 &&
 	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
@@ -5128,6 +5177,13 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ", 2).UpperCase();
     mstring target = source;
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     if (params.WordCount(" ") >= 3 &&
 	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
@@ -5772,6 +5828,14 @@ void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_set_Language", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -6130,6 +6194,14 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
     FT("NickServ::do_lock_Language", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 4)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),

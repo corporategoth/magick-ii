@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/05/27 07:06:03  prez
+** HTM actually does something now ... wooo :)
+**
 ** Revision 1.50  2000/05/25 08:16:39  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...
@@ -305,6 +308,13 @@ void ServMsg::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     mstring HelpTopic = Parent->servmsg.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
@@ -321,6 +331,14 @@ void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_Credits", (mynick, source, params));
 
+    mstring message  = params.Before(" ").UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; credits[i] != "---EOM---"; i++)
 	if (credits[i].Len())
@@ -333,6 +351,14 @@ void ServMsg::do_Credits(mstring mynick, mstring source, mstring params)
 void ServMsg::do_Contrib(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_Contrib", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     Parent->servmsg.stats.i_Credits++;
     for (int i=0; contrib[i] != "---EOM---"; i++)
@@ -348,6 +374,14 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_BreakDown", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN_HEAD"));
     mstring out;
     unsigned int users = 0, opers = 0;
@@ -424,6 +458,14 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Nick", (mynick, source, params));
 
+    mstring message = params.Before(" ", 2);
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     unsigned long linked = 0, suspended = 0, forbidden = 0;
     map<mstring,Nick_Stored_t>::iterator i;
     for (i=Parent->nickserv.stored.begin();
@@ -478,6 +520,14 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Channel", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2);
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     unsigned long suspended = 0, forbidden = 0;
     map<mstring,Chan_Stored_t>::iterator i;
@@ -546,6 +596,14 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Other", (mynick, source, params));
 
+    mstring message = params.Before(" ", 2);
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_MEMO"),
 		Parent->memoserv.nick.size());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_NEWS"),
@@ -598,6 +656,14 @@ void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Oper", (mynick, source, params));
 
+    mstring message = params.Before(" ", 2);
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CLONE"),
 		Parent->operserv.Clone_size());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_AKILL"),
@@ -645,6 +711,14 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_Usage", (mynick, source, params));
     int count;
+
+    mstring message = params.Before(" ", 2);
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_LIVE"),
 		Parent->nickserv.live.size(),
@@ -746,6 +820,14 @@ void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_stats_All", (mynick, source, params));
 
+    mstring message = params.Before(" ", 2);
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     do_Stats(mynick, source, params.ExtractWord(1, " "));
     do_stats_Nick(mynick, source, params);
     do_stats_Channel(mynick, source, params);
@@ -765,6 +847,14 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
 	Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
     {
 	do_1_2param(mynick, source, params);
+	return;
+    }
+
+    mstring message = params.Before(" ");
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
 	return;
     }
 
@@ -803,6 +893,14 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
     mstring mask, priv;
 
     mstring message  = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	mask = "*";
@@ -887,6 +985,14 @@ void ServMsg::do_file_Add(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_file_Add", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1007,6 +1113,14 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_file_Send", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/05/27 07:06:02  prez
+** HTM actually does something now ... wooo :)
+**
 ** Revision 1.59  2000/05/25 08:16:39  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...
@@ -350,6 +353,13 @@ void MemoServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     mstring HelpTopic = Parent->memoserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
@@ -366,6 +376,14 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_Read", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -665,6 +683,14 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_UnRead", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -860,6 +886,14 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_Get", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -949,6 +983,14 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_List", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 1)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1065,6 +1107,14 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_Send", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1152,6 +1202,14 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_Forward", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1327,6 +1385,14 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_Reply", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1501,6 +1567,14 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_Del", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1789,6 +1863,14 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
     FT("MemoServ::do_File", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),

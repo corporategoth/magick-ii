@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/05/27 07:06:01  prez
+** HTM actually does something now ... wooo :)
+**
 ** Revision 1.56  2000/05/25 08:16:39  prez
 ** Most of the LOGGING for commands is complete, now have to do mainly
 ** backend stuff ...
@@ -773,6 +776,13 @@ void CommServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     mstring HelpTopic = Parent->commserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
@@ -887,6 +897,14 @@ void CommServ::do_List(mstring mynick, mstring source, mstring params)
     mstring mask;
 
     mstring message  = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	mask = "*";
@@ -940,6 +958,14 @@ void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
     FT("CommServ::do_Memo", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1096,6 +1122,14 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
     FT("CommServ::do_Info", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1354,6 +1388,14 @@ void CommServ::do_member_List(mstring mynick, mstring source, mstring params)
     FT("CommServ::do_member_List", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1557,6 +1599,14 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),

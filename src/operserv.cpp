@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2000/05/27 07:06:03  prez
+** HTM actually does something now ... wooo :)
+**
 ** Revision 1.80  2000/05/26 11:21:28  prez
 ** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
 **
@@ -931,6 +934,13 @@ void OperServ::do_Help(mstring mynick, mstring source, mstring params)
 
     mstring message  = params.Before(" ").UpperCase();
 
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     mstring HelpTopic = Parent->operserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
@@ -1232,13 +1242,13 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Qline", (mynick, source, params));
 
+    mstring message = params.Before(" ").UpperCase();
     if (!Parent->server.proto.SVS())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
     }
 
-    mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1265,13 +1275,13 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_UnQline", (mynick, source, params));
 
+    mstring message = params.Before(" ").UpperCase();
     if (!Parent->server.proto.SVS())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
     }
 
-    mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1297,13 +1307,13 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_NOOP", (mynick, source, params));
 
+    mstring message = params.Before(" ").UpperCase();
     if (!Parent->server.proto.SVS())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
     }
 
-    mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1351,13 +1361,13 @@ void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Kill", (mynick, source, params));
 
+    mstring message = params.Before(" ").UpperCase();
     if (!Parent->server.proto.SVS())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
     }
 
-    mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1392,13 +1402,13 @@ void OperServ::do_Hide(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Hide", (mynick, source, params));
 
+    mstring message = params.Before(" ").UpperCase();
     if (!Parent->server.proto.SVSHOST())
     {
 	::send(mynick, source, Parent->getMessage("ERR_SITUATION/NOT_SUPPORTED"));
 	return;
     }
 
-    mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -1432,6 +1442,15 @@ void OperServ::do_Hide(mstring mynick, mstring source, mstring params)
 void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Ping", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     Parent->events->ForcePing();
     Parent->operserv.stats.i_Ping++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/PING"));
@@ -1443,6 +1462,7 @@ void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
 void OperServ::do_Update(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Update", (mynick, source, params));
+    mstring message = params.Before(" ").UpperCase();
     Parent->events->ForceSave();
     Parent->operserv.stats.i_Update++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UPDATE"));
@@ -1454,6 +1474,7 @@ void OperServ::do_Update(mstring mynick, mstring source, mstring params)
 void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Shutdown", (mynick, source, params));
+    mstring message = params.Before(" ").UpperCase();
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/SHUTDOWN"));
     announce(mynick, Parent->getMessage("MISC/SHUTDOWN"), source.c_str());
     Log(LM_CRITICAL, Parent->getLogMessage("OPERSERV/SHUTDOWN"),
@@ -1467,6 +1488,15 @@ void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
 void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Reload", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (Parent->get_config_values())
     {
 	Parent->operserv.stats.i_Reload++;
@@ -1487,6 +1517,13 @@ void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Unload", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     if (params.WordCount(" ") < 2)
     {
@@ -1548,6 +1585,7 @@ void OperServ::do_On(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_On", (mynick, source, params));
 
+    mstring message = params.Before(" ").UpperCase();
     // Later, make the ability to turn on/off specific services
     // also the ability to turn of either MSG, or AUTO or BOTH
     Parent->MSG(true);
@@ -1566,6 +1604,7 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Off", (mynick, source, params));
 
+    mstring message = params.Before(" ").UpperCase();
     // Later, make the ability to turn on/off specific services
     // also the ability to turn of either MSG, or AUTO or BOTH
     Parent->MSG(false);
@@ -1656,6 +1695,14 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
 {
     FT("OperServ::do_settings_Config", (mynick, source, params));
 
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
 /*
 -   Databases are (not) encrypted, and compressed at level ?.
 -   Minimum threads active is ?, Current threads active is ?.
@@ -1684,6 +1731,14 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
 void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_Nick", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_EXPIRE"),
 			ToHumanTime(Parent->nickserv.Expire()).c_str());
@@ -1787,6 +1842,14 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
 void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_Channel", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_EXPIRE"),
 		    ToHumanTime(Parent->chanserv.Expire()).c_str());
@@ -1951,6 +2014,14 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_Other", (mynick, source, params));
 
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_INFLIGHT"),
 		    ToHumanTime(Parent->memoserv.InFlight()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL1"),
@@ -2021,6 +2092,14 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 void OperServ::do_settings_All(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_settings_All", (mynick, source, params));
+
+    mstring message = params.Before(" ", 2).UpperCase();
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
 
     do_settings_Config(mynick, source, params);
     do_settings_Nick(mynick, source, params);
@@ -2228,6 +2307,14 @@ void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_clone_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -2534,6 +2621,14 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_akill_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -2769,6 +2864,14 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_operdeny_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
@@ -2996,6 +3099,14 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     FT("OperServ::do_ignore_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
+
+    if (Parent->ircsvchandler->HTM_Level() > 3)
+    {
+	::send(mynick, source, Parent->getMessage(source, "MISC/HTM"),
+							message.c_str());
+	return;
+    }
+
     if (params.WordCount(" ") < 2)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),

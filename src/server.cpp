@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2000/05/27 07:06:03  prez
+** HTM actually does something now ... wooo :)
+**
 ** Revision 1.98  2000/05/22 13:00:10  prez
 ** Updated version.h and some other stuff
 **
@@ -1493,6 +1496,15 @@ void NetworkServ::execute(const mstring & data)
     case 'A':
 	if (msgtype=="ADMIN")
 	{
+
+	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    {
+		mstring tmp;
+		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
+								msgtype.c_str());
+		raw("NOTICE " + source + " :" + tmp.c_str());
+		return;
+	    }
 	    // :source ADMIN
 	    sraw("256 " + source + " :Administrative info about " +
 		Parent->startup.Server_Name());
@@ -1629,8 +1641,17 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="INFO")
 	{
 	    // :source INFO :server/nick
-	    for (int i=0; i<sizeof(contrib)/sizeof(mstring); i++)
-		sraw("371 " + source + " :" + contrib[i]);
+	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    {
+		mstring tmp;
+		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
+								msgtype.c_str());
+		raw("NOTICE " + source + " :" + tmp.c_str());
+		return;
+	    }
+	    else
+		for (int i=0; i<sizeof(contrib)/sizeof(mstring); i++)
+		    sraw("371 " + source + " :" + contrib[i]);
 	    sraw("374 " + source + " :End of /INFO report");
 	}
 	else if (msgtype=="INVITE")
@@ -1745,14 +1766,26 @@ void NetworkServ::execute(const mstring & data)
 	    //:ChanServ LINKS :temple.magick.tm
 	    //:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
 	    //:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
-	    sraw("364 " + source + " " + Parent->startup.Server_Name() + " " +
-		Parent->startup.Server_Name() + " :0 " + Parent->startup.Server_Desc());
 
-	    map<mstring,Server>::iterator serv;
-	    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
+	    if (Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		sraw("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
+		mstring tmp;
+		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
+								msgtype.c_str());
+		raw("NOTICE " + source + " :" + tmp.c_str());
+		return;
+	    }
+	    else
+	    {
+		sraw("364 " + source + " " + Parent->startup.Server_Name() + " " +
+		    Parent->startup.Server_Name() + " :0 " + Parent->startup.Server_Desc());
+
+		map<mstring,Server>::iterator serv;
+		for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
+		{
+		    sraw("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
 			+ " :" + serv->second.Hops() + " " + serv->second.Description());
+		}
 	    }
 
 	    sraw("365 " + source + " " + Parent->startup.Server_Name() + " :End of /LINKS list.");
@@ -1762,11 +1795,22 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    sraw("321 " + source + " Channel :Users  Name");
 
-	    map<mstring,Chan_Live_t>::iterator chan;
-	    for (chan=Parent->chanserv.live.begin(); chan!=Parent->chanserv.live.end(); chan++)
+	    if (Parent->ircsvchandler->HTM_Level() > 3)
 	    {
-		sraw("322 " + source + " " + chan->first + " " + mstring(chan->second.Users()) + 
-		    " :" + chan->second.Topic());
+		mstring tmp;
+		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
+								msgtype.c_str());
+		raw("NOTICE " + source + " :" + tmp.c_str());
+		return;
+	    }
+	    else
+	    {
+		map<mstring,Chan_Live_t>::iterator chan;
+		for (chan=Parent->chanserv.live.begin(); chan!=Parent->chanserv.live.end(); chan++)
+		{
+		    sraw("322 " + source + " " + chan->first + " " + mstring(chan->second.Users()) + 
+			" :" + chan->second.Topic());
+		}
 	    }
 
 	    sraw("323 " + source + " :End of /LIST");
@@ -1813,29 +1857,21 @@ void NetworkServ::execute(const mstring & data)
 	    if (mFile::Exists(Parent->files.Motdfile()))
 	    {
 		sraw("375 " + source + " :Message Of The Day");
-		char buf[1024];
-		mFile in(Parent->files.Motdfile());
-		mstring flack;
-		unsigned int i;
-		while (!in.Eof())
+		if (Parent->ircsvchandler->HTM_Level() > 3)
 		{
-		    in.Read(&buf, 1024);
-		    mstring tmp(buf);
-		    if (tmp.Contains("\n") || tmp.Contains("\r"))
-		    {
-			for (i=1; i<tmp.WordCount("\n\r"); i++)
-			{
-			    flack << tmp.ExtractWord(i, "\n\r");
-			    sraw("372 " + source + " :" + flack);
-			    flack = "";
-			}
-			flack = tmp.ExtractWord(tmp.WordCount("\n\r"), "\n\r");
-		    }
-		    else
-			flack << tmp;
+		    mstring tmp;
+		    tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
+								msgtype.c_str());
+		    raw("NOTICE " + source + " :" + tmp.c_str());
+		    return;
 		}
-		if (flack != "")
-		    sraw("372 " + source + " :" + flack);
+		else
+		{
+		    vector<mstring> tmp = mFile::UnDump(Parent->files.Motdfile());
+		    int i;
+		    for (i=0; i<tmp.size(); i++)
+			sraw("372 " + source + " :" + tmp[i].c_str());
+		}
 		sraw("376 " + source + " :End of MOTD.");
 	    }
 	    else
@@ -2583,6 +2619,14 @@ void NetworkServ::execute(const mstring & data)
 //:vampire.darker.net 209 ChanServ Class 50 :1
 //:vampire.darker.net 209 ChanServ Class 10 :1
 //:vampire.darker.net 209 ChanServ Class 1 :7
+	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    {
+		mstring tmp;
+		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
+								msgtype.c_str());
+		raw("NOTICE " + source + " :" + tmp.c_str());
+		return;
+	    }
 
 
 
@@ -2721,7 +2765,7 @@ void NetworkServ::execute(const mstring & data)
 			"*=-" +
 			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].User() +
 			"@" +
-			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Host());
+			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].AltHost());
 		}
 		else
 		{
@@ -2875,6 +2919,14 @@ void NetworkServ::execute(const mstring & data)
 //:soul.darker.net 352 ChanServ #chatzone ~jason axe.net.au vampire.darker.net Wau|oK G%@ :2 Nothing really matters..
 //:soul.darker.net 352 ChanServ #operzone satan680 pc134.net19.ktv.koping.se vampire.darker.net Alien G*@ :2 am I GOD ?
 //:soul.darker.net 315 ChanServ vampire.darker.net :End of /WHO list.
+	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    {
+		mstring tmp;
+		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
+								msgtype.c_str());
+		raw("NOTICE " + source + " :" + tmp.c_str());
+		return;
+	    }
 
 	}
 	else if (msgtype=="WHOIS")
@@ -2893,7 +2945,16 @@ void NetworkServ::execute(const mstring & data)
 
 	    mstring target = data.ExtractWord(3, ": ");
 	    mstring targetL = target.LowerCase();
-	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    if (Parent->ircsvchandler->HTM_Level() > 3)
+	    {
+		mstring tmp;
+		tmp.Format(Parent->getMessage(source, "MISC/HTM").c_str(),
+								msgtype.c_str());
+		raw("NOTICE " + source + " :" + tmp.c_str());
+		sraw("318 " + source + " " + target + " :End of /WHOIS list.");
+		return;
+	    }
+	    else if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
 	    {
 		sraw("311 " + source + " " + target + " " + Parent->nickserv.live[targetL].User() +
 			" " + Parent->nickserv.live[targetL].Host() + " * :" +

@@ -196,6 +196,7 @@ HTM_DIE            =Cannot recover from high-traffic mode, terminating connectio
 HTM_OFF            =Resuming standard operation...
 HTM_OFF_FORCE      =Resuming standard operation forced by %s...
 HTM_SET            =HTM threshold has been set to %s/s by %s.
+HTM                =Cannot execute command %s, currently in high-traffic mode - Please try again later.
 
 ENTLIST_CLEAR      =Value of %s has been cleared.
 ENTLIST_SET        =Value of %s has been set to %s.

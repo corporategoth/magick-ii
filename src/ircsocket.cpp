@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2000/05/27 07:06:01  prez
+** HTM actually does something now ... wooo :)
+**
 ** Revision 1.104  2000/05/26 11:21:28  prez
 ** Implemented HTM (High Traffic Mode) -- Can be used at a later date.
 **
@@ -976,10 +979,13 @@ int EventTask::svc(void)
 		Log(LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_DOWN"), avg);
 	    }
 
-	    for (si=Parent->server.ServerList.begin();
-		    si!=Parent->server.ServerList.end();si++)
-		si->second.Ping();
-	    Log(LM_DEBUG, Parent->getLogMessage("EVENT/PING"));
+	    if (Parent->ircsvchandler->HTM_Level() <= 3)
+	    {
+		for (si=Parent->server.ServerList.begin();
+			si!=Parent->server.ServerList.end();si++)
+		    si->second.Ping();
+		Log(LM_DEBUG, Parent->getLogMessage("EVENT/PING"));
+	    }
 	    last_ping = Now();
 	}
 	
