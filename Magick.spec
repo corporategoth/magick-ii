@@ -39,7 +39,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 %doc AUTHORS COPYING ChangeLog* FAQ INSTALL KNOWN-BUGS NEWS README TODO rtfm
 %doc docs/en docs/rfcs
-%config /etc/magick.ini
+%config docs/magick.ini
 
 /usr/bin/magick
 /usr/bin/magick_keygen
