@@ -134,7 +134,7 @@ public:
     ThreadID assign(threadtype_enum Type, int Number);
     threadtype_enum type() { return t_internaltype; }
     void indentup() { t_indent++; }
-    void indentdown() { t_indent--; }
+    void indentdown() { if (t_indent>0) t_indent--; }
     int number() { return t_number;  }
     short indent() { return t_indent; }
 

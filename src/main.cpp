@@ -38,10 +38,13 @@ int main(int argc, char **argv)
 #endif
 	// todo make it insert itself into the ThreadID data structures.
 	mThread::Attach(tt_MAIN, 1);
+
 #ifdef DEBUG
-	Trace::TurnSet(tt_MAIN, 0xffff); // Full tracing.
+	for (int i=tt_MAIN; i<tt_MAX; i++)
+	    Trace::TurnSet((threadtype_enum) i, 0xffff); // Full tracing.
 #else
-	Trace::TurnSet(tt_MAIN, 0xffff&(~Trace::Functions)); // Full tracing - !functions.
+	for (int i=tt_MAIN; i<tt_MAX; i++)
+	    Trace::TurnSet((threadtype_enum) i, 0xffff&(~Trace::Functions)); // Full tracing - !functions.
 #endif
 
 	Start_Time=Now();

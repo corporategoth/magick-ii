@@ -57,10 +57,13 @@ void *thread_handler(void *owner)
     FT("thread_handler@"+Owner->GetInternalName(), (owner));
     int ilevel=mThread::find()->number();
     pair<mstring,mstring> data;
+    bool gotdata;
+    Owner->on=true; // temporary force.
 
     while(Owner->on==true)
     {
 
+	gotdata=false;
 	// brackets are here so that the lock exists only as long as we need it.
 	{
 	    RLOCK lock(Owner->GetInternalName(),"inputbuffer");
@@ -69,10 +72,13 @@ void *thread_handler(void *owner)
 	    {
 		data=Owner->inputbuffer.front();
 		Owner->inputbuffer.pop_front();
+		gotdata=true;
 	    }
 
 	}
-	Owner->execute(data.first,data.second);
+	if (gotdata)
+	    Owner->execute(data.first,data.second);
+
 	// less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
         if(mThread::typecount(Owner->Get_TType())!=1 && ilevel==mThread::typecount(Owner->Get_TType()) && Owner->inputbuffer.size() <
 		(mThread::typecount(Owner->Get_TType()) - 1) * MagickObject->high_water_mark + MagickObject->low_water_mark)
