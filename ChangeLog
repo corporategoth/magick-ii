@@ -1,3 +1,333 @@
+* 2002-07-29 02:53  Preston A. Elder <prez@magick.tm>
+  README (1.27), docs/en/index.sgml (1.43), src/magick.cpp (1.369),
+  src/operserv.cpp (1.152), src/trace.cpp (1.127):
+  
+  Some minot trace fixes, extra tracing of the RemHost and no more sirv.
+
+* 2002-07-28 11:52  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.229):
+  
+  Dont spit out an error on a global message.
+
+* 2002-07-28 11:30  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.225):
+  
+  Made dependancy checking something done when a message is pulled OFF the
+  queue.
+
+* 2002-07-28 09:33  William King <ungod@magick.tm>
+  src/servmsg.cpp (1.104), src/stages.cpp (1.22), src/trace.cpp (1.126),
+  src/utils.cpp (1.86):
+  
+  Adding BTCB/ETCB blocks.
+
+* 2002-07-28 09:25  William King <ungod@magick.tm>
+  src/operserv.cpp (1.151), src/server.cpp (1.228):
+  
+  Adding BTCB/ETCB blocks
+
+* 2002-07-28 09:21  Preston A. Elder <prez@magick.tm>
+  include/language.h (1.40), include/logfile.h (1.30), include/trace.h
+  (1.93), src/trace.cpp (1.125):
+  
+  Extern'd strNonC__Exception and updated language headers.
+
+* 2002-07-28 09:08  William King <ungod@magick.tm>
+  src/Makefile.am (1.32):
+  
+  Removed the redundant declarations warning due to too much garbage
+  warnings.
+
+* 2002-07-28 08:57  Preston A. Elder <prez@magick.tm>
+  magick.dsp (1.75), magick.kdevprj (1.29), src/Makefile.am (1.31),
+  src/chandata.cpp (1.1), src/chanserv.cpp (1.288), src/nickdata.cpp (1.1),
+  src/nickserv.cpp (1.210):
+  
+  Split nickserv.cpp and chanserv.cpp in half
+
+* 2002-07-28 08:53  William King <ungod@magick.tm>
+  src/nickserv.cpp (1.209):
+  
+  Adding BTCB/ETCB blocks
+
+* 2002-07-28 08:47  William King <ungod@magick.tm>
+  src/lockable.cpp (1.91), src/magick.cpp (1.368), src/mconfig.cpp (1.45),
+  src/memoserv.cpp (1.117):
+  
+  Adding BTCB/ETCB blocks
+
+* 2002-07-28 07:49  Preston A. Elder <prez@magick.tm>
+  COPYING (1.4):
+  
+  Fixed COPYING
+
+* 2002-07-28 07:09  Preston A. Elder <prez@magick.tm>
+  COPYING (1.3), Magick.spec (1.10), ace_uname.cpp (1.4), configure.in
+  (1.65), what.c (1.10), docs/oper.txt (1.5), docs/oper_docbook.sgml (1.4),
+  docs/user.txt (1.6), docs/user_docbook.sgml (1.4), docs/en/index.sgml
+  (1.42), docs/man/magick.pod (1.15), docs/man/magick_keygen.pod (1.12),
+  docs/man/magick_stampkeys.pod (1.4), gui/ChanServ.java (1.6),
+  gui/CommServ.java (1.7), gui/Config.java (1.6), gui/ConfigView.java
+  (1.5), gui/Files.java (1.11), gui/HexFormat.java (1.4),
+  gui/IniParser.java (1.4), gui/IpAddressFormat.java (1.4),
+  gui/JMultiLineToolTip.java (1.3), gui/MemoServ.java (1.6),
+  gui/NickServ.java (1.6), gui/NumberRangeFormat.java (1.4),
+  gui/OctalFormat.java (1.4), gui/OperServ.java (1.7),
+  gui/PercentageFormat.java (1.4), gui/ServMsg.java (1.6),
+  gui/Services.java (1.5), gui/SpaceFormat.java (1.4), gui/Startup.java
+  (1.7), gui/TabbedPane.java (1.8), gui/TimeFormat.java (1.4),
+  gui/ToolTips.java (1.4), gui/mct.java (1.14), gui/myTableCellEditor.java
+  (1.3), helper/add-patch (1.8), helper/blank-patch (1.6), helper/build-ver
+  (1.9), helper/commit.bat (1.2), helper/makelang (1.12), helper/makelog
+  (1.8), helper/rem-patch (1.8), helper/reset-ver (1.7), helper/run_gui.bat
+  (1.5), helper/run_magick.bat (1.5), helper/run_magick_keygen.bat (1.3),
+  helper/servicesbkup (1.3), helper/serviceschk (1.8), helper/servicescycle
+  (1.3), helper/uninstall.bat (1.3), helper/update.bat (1.2),
+  include/ace_memory.h (1.13), include/base.h (1.113), include/chanserv.h
+  (1.83), include/commserv.h (1.70), include/config.h.in (1.29),
+  include/config.h.top (1.6), include/config.h.win (1.22),
+  include/convert_epona.h (1.9), include/convert_esper.h (1.11),
+  include/convert_magick.h (1.8), include/datetime.h (1.47),
+  include/dccengine.h (1.22), include/filesys.h (1.61), include/ircsocket.h
+  (1.70), include/language.h (1.39), include/lockable.h (1.76),
+  include/logfile.h (1.29), include/magick.h (1.186), include/mconfig.h
+  (1.29), include/memoserv.h (1.63), include/mexceptions.h (1.15),
+  include/mstring.h (1.98), include/nickserv.h (1.86), include/operserv.h
+  (1.67), include/pch.h (1.55), include/server.h (1.90), include/servmsg.h
+  (1.38), include/stages.h (1.12), include/trace.h (1.92), include/utils.h
+  (1.57), include/variant.h (1.45), include/version.h (1.138),
+  include/version.h-release (1.41), include/xml/sxp.h (1.36), src/base.cpp
+  (1.195), src/chanserv.cpp (1.287), src/commserv.cpp (1.120),
+  src/convert_epona.cpp (1.15), src/convert_esper.cpp (1.19),
+  src/convert_magick.cpp (1.15), src/datetime.cpp (1.81), src/dccengine.cpp
+  (1.56), src/filesys.cpp (1.102), src/ircsocket.cpp (1.224),
+  src/lockable.cpp (1.90), src/magick.cpp (1.367), src/magick_keygen.c
+  (1.26), src/magick_stampkeys.c (1.10), src/main.cpp (1.68),
+  src/mconfig.cpp (1.44), src/memoserv.cpp (1.116), src/mstring.cpp
+  (1.135), src/nickserv.cpp (1.208), src/operserv.cpp (1.150),
+  src/server.cpp (1.227), src/servmsg.cpp (1.103), src/stages.cpp (1.21),
+  src/trace.cpp (1.124), src/utils.cpp (1.85), src/variant.cpp (1.54),
+  src/xml/sxp.cpp (1.42):
+  
+  GLOBAL CHANGE - changed the license from the GNU General Public License
+  to the Artistic License 2.0 or better.
+
+* 2002-07-28 05:26  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.194), src/ircsocket.cpp (1.223):
+  
+  lck_AllDependancies -> lck_AllDeps
+
+* 2002-07-28 05:22  Preston A. Elder <prez@magick.tm>
+  src/base.cpp (1.193), src/chanserv.cpp (1.286), src/commserv.cpp (1.119),
+  src/filesys.cpp (1.101), src/ircsocket.cpp (1.222), src/lockable.cpp
+  (1.89), src/magick.cpp (1.366), src/memoserv.cpp (1.115),
+  src/nickserv.cpp (1.207), src/operserv.cpp (1.149), src/server.cpp
+  (1.226), src/servmsg.cpp (1.102), src/trace.cpp (1.123):
+  
+  Replaced a mess of strings with lck_X constants
+
+* 2002-07-28 05:21  Preston A. Elder <prez@magick.tm>
+  include/lockable.h (1.75):
+  
+  Added a bunch of fixed strings to replace strings in LOCK entries
+
+* 2002-07-28 04:21  William King <ungod@magick.tm>
+  src/chanserv.cpp (1.285), src/convert_epona.cpp (1.14),
+  src/convert_esper.cpp (1.18), src/convert_magick.cpp (1.14),
+  src/dccengine.cpp (1.55), src/filesys.cpp (1.100), src/ircsocket.cpp
+  (1.221):
+  
+  Added BTCB/ETCB blocks
+
+* 2002-07-28 04:19  William King <ungod@magick.tm>
+  include/trace.h (1.91):
+  
+  moved "Non C++ Exception" into a const char * to reduce compile overhead
+
+* 2002-07-28 01:38  Preston A. Elder <prez@magick.tm>
+  AUTHORS (1.10), README (1.26), docs/en/index.sgml (1.41),
+  include/version.h (1.137), include/version.h-release (1.40):
+  
+  Documentation updates.
+
+* 2002-07-28 00:50  Preston A. Elder <prez@magick.tm>
+  include/datetime.h (1.46), src/datetime.cpp (1.80), src/ircsocket.cpp
+  (1.220):
+  
+  created the asX functions in datetime, and made BurstTime use them.
+
+* 2002-07-27 23:00  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.219):
+  
+  Fixed problem with the BurstTime.
+
+* 2002-07-27 22:50  William King <ungod@magick.tm>
+  src/commserv.cpp (1.118):
+  
+  Added BTCB/ETCB blocks
+
+* 2002-07-27 22:25  Preston A. Elder <prez@magick.tm>
+  gui/mct.java (1.13):
+  
+  Added stuff to check if we have security or not in an applet, and enable
+  the filesystem operations if so.
+
+* 2002-07-27 20:55  Preston A. Elder <prez@magick.tm>
+  include/trace.h (1.90):
+  
+  Fixed the ETCB trace so it actually instances something ;P
+
+* 2002-07-27 20:45  Preston A. Elder <prez@magick.tm>
+  include/datetime.h (1.45), include/ircsocket.h (1.69), include/server.h
+  (1.89), include/xml/sxp_data.h (1.25), lang/english.lfo (1.54),
+  src/datetime.cpp (1.79), src/ircsocket.cpp (1.218), src/server.cpp
+  (1.225), src/trace.cpp (1.122):
+  
+  Fixed the microseconds support in mDateTime, and got rid of gettimeofday
+  calls except in our own use.
+
+* 2002-07-27 10:32  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.bahamut.ini (1.4):
+  
+  Fixed bahamut PROTOCOL string
+
+* 2002-07-27 08:44  Preston A. Elder <prez@magick.tm>
+  src/main.cpp (1.67):
+  
+  Fixed crash on stop
+
+* 2002-07-27 05:38  Preston A. Elder <prez@magick.tm>
+  helper/run_gui.bat (1.4):
+  
+  Changes to add files directories if they do not exist.
+
+* 2002-07-26 10:53  Preston A. Elder <prez@magick.tm>
+  gui/ChanServ.java (1.5), gui/CommServ.java (1.6), gui/Config.java (1.5),
+  gui/ConfigView.java (1.4), gui/Files.java (1.10), gui/HexFormat.java
+  (1.3), gui/IpAddressFormat.java (1.3), gui/MemoServ.java (1.5),
+  gui/NickServ.java (1.5), gui/NumberRangeFormat.java (1.3),
+  gui/OctalFormat.java (1.3), gui/OperServ.java (1.6),
+  gui/PercentageFormat.java (1.3), gui/ServMsg.java (1.5),
+  gui/SpaceFormat.java (1.3), gui/Startup.java (1.6), gui/TabbedPane.java
+  (1.7), gui/TimeFormat.java (1.3), gui/mct.java (1.12):
+  
+  Added in checking to ensure values are correct both on parse and
+  generate.  Also made the boarder turn red if its not right, and it fails
+  to generate.
+
+* 2002-07-26 07:26  Preston A. Elder <prez@magick.tm>
+  src/main.cpp (1.66):
+  
+  Fixed typo
+
+* 2002-07-26 05:20  Preston A. Elder <prez@magick.tm>
+  gui/Files.java (1.9), gui/IniParser.java (1.3), gui/TabbedPane.java
+  (1.6), gui/mct.java (1.11):
+  
+  Some more patches to the GUI to make file browsing more enjoyable.
+
+* 2002-07-26 01:56  Preston A. Elder <prez@magick.tm>
+  ircd/.cvsignore (1.1):
+  
+  Added cvs ignore
+
+* 2002-07-26 00:19  Preston A. Elder <prez@magick.tm>
+  include/mexceptions.h (1.14):
+  
+  Added default 'reasons' as the type of exception
+
+* 2002-07-26 00:13  Preston A. Elder <prez@magick.tm>
+  include/lockable.h (1.74), include/magick.h (1.185),
+  include/mexceptions.h (1.13), include/trace.h (1.89), src/magick.cpp
+  (1.365), src/main.cpp (1.65), src/trace.cpp (1.121):
+  
+  Changed the exception logging to be a trace thing, moved around the trace
+  levels, and moved logger to trace.cpp/h
+
+* 2002-07-25 22:51  William King <ungod@magick.tm>
+  src/base.cpp (1.192), src/trace.cpp (1.120):
+  
+  Beginning of BTCB/ETCB code.
+
+* 2002-07-25 22:51  William King <ungod@magick.tm>
+  include/base.h (1.112), include/magick.h (1.184), include/trace.h (1.88):
+  
+  Beggining of BTCB/ETCB code
+
+* 2002-07-25 17:37  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.224):
+  
+  Fixed PRIVMSG/NOTICE (they wouldnt do a server-message)
+
+* 2002-07-24 22:13  Preston A. Elder <prez@magick.tm>
+  docs/user.txt (1.5), docs/user_docbook.sgml (1.3), lang/english.hlp
+  (1.51), lang/english.lng (1.89):
+  
+  Corrected verbiage for MSN Messenger
+
+* 2002-07-24 22:09  Preston A. Elder <prez@magick.tm>
+  docs/user.txt (1.4), docs/user_docbook.sgml (1.2), include/nickserv.h
+  (1.85), lang/english.hlp (1.50), lang/english.lng (1.88),
+  src/nickserv.cpp (1.206):
+  
+  Added MSN and Yahoo! ID's to the NS Info list.
+
+* 2002-07-24 20:46  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.223):
+  
+  Forgot to add akill type to list.
+
+* 2002-07-23 10:08  Preston A. Elder <prez@magick.tm>
+  include/server.h (1.88), ircd/ircd.aurora.ini (1.3),
+  ircd/ircd.bahamut.ini (1.3), ircd/ircd.dal.ini (1.3),
+  ircd/ircd.dal4.4.15.ini (1.3), ircd/ircd.hybrid5.ini (1.3),
+  ircd/ircd.hybrid7.ini (1.3), ircd/ircd.ircu.ini (1.3),
+  ircd/ircd.ircu2.10.ini (1.4), ircd/ircd.ircu2.10ext.ini (1.4),
+  ircd/ircd.rfc1459+ts8.ini (1.3), ircd/ircd.rfc1459.ini (1.3),
+  ircd/ircd.unreal.ini (1.4), src/server.cpp (1.222):
+  
+  Added unreal's AKILL type.
+
+* 2002-07-23 02:52  William King <ungod@magick.tm>
+  .cvsignore (1.14):
+  
+  update cvsignore list
+
+* 2002-07-23 02:47  William King <ungod@magick.tm>
+  lang/english.lfo (1.53), lang/example.lfo (1.5):
+  
+  Added a new error key for the unhandled exceptions error
+
+* 2002-07-22 08:21  Preston A. Elder <prez@magick.tm>
+  ircd/ircd.unreal.ini (1.3):
+  
+  Changed unreal to use AKILL type 2002 by default
+
+* 2002-07-22 05:12  Preston A. Elder <prez@magick.tm>
+  src/operserv.cpp (1.148):
+  
+  Did some nickname beautification
+
+* 2002-07-22 05:03  Preston A. Elder <prez@magick.tm>
+  Makefile.am (1.13):
+  
+  Forgot 'ircd' in main makefile
+
+* 2002-07-22 04:36  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.221):
+  
+  Added ':' to SVSKILL
+
+* 2002-07-22 03:19  Preston A. Elder <prez@magick.tm>
+  configure.in (1.64), ircd/Makefile.am (1.1):
+  
+  Added Makefile.am to ircd directory so it will install.
+
+* 2002-07-22 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.41):
+  
+  Created version 2.0s20020722
+
 * 2002-07-22 02:52  Preston A. Elder <prez@magick.tm>
   gui/IniParser.java (1.2), gui/mct.java (1.10):
   
