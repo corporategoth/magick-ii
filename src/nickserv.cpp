@@ -1056,17 +1056,17 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mDateTime regtime, const Nick_Stored_
 }
 
 
-Nick_Stored_t::~Nick_Stored_t()
+void Nick_Stored_t::Drop()
 {
-    NFT("Nick_Stored_t::~Nick_Stored_t");
-    unsigned int i;
+    NFT("Nick_Stored_t::Drop");
 
     // When we go, we take all our slaves with us!
+    unsigned int i;
     if (i_Host == "")
     {
 	for (i=0; i<Siblings(); i++)
 	{
-	    Parent->nickserv.live.erase(Sibling(i));
+	    Parent->nickserv.stored.erase(Sibling(i));
 	}
     }
     else if (Parent->nickserv.IsStored(i_Host))
@@ -3255,6 +3255,7 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
 	     !(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	     Parent->commserv.list[Parent->commserv.OPER_Name()].IsIn(target))))
 	{
+	    Parent->nickserv.stored[params.ExtractWord(2, " ").LowerCase()].Drop();
 	    Parent->nickserv.stored.erase(params.ExtractWord(2, " ").LowerCase());
 	    ::send(mynick, source, "Nickname " + params.ExtractWord(2, " ") + " has been dropped.");
 	}
@@ -3457,7 +3458,9 @@ void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
     }
 
     mstring password = params.ExtractWord(2, " ");
-    ::send(mynick, source, Parent->nickserv.live[source.LowerCase()].Identify(password));
+    mstring output = Parent->nickserv.live[source.LowerCase()].Identify(password);
+    if (output != "")
+	::send(mynick, source, output);
 }
 
 void NickServ::do_Info(mstring mynick, mstring source, mstring params)
@@ -3754,12 +3757,12 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
     }
     else if (params.WordCount(" ") < 3)
     {
-	mask = params.ExtractWord(2, " ");
+	mask = params.ExtractWord(2, " ").LowerCase();
 	listsize = Parent->config.Listsize();
     }
     else
     {
-	mask = params.ExtractWord(2, " ");
+	mask = params.ExtractWord(2, " ").LowerCase();
 	listsize = atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
@@ -3777,7 +3780,7 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
     for (iter = Parent->nickserv.stored.begin(), i=0, count = 0;
 			iter != Parent->nickserv.stored.end(); iter++)
     {
-	if (iter->second.Name().Matches(mask))
+	if (iter->second.Name().LowerCase().Matches(mask))
 	{
 	    if (i < listsize && iter->second.Host() == "" && (!iter->second.Private() ||
 		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&

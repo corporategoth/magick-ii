@@ -171,7 +171,6 @@ public:
     Chan_Stored_t(const Chan_Stored_t& in) { *this = in; }
     Chan_Stored_t(mstring name, mstring founder, mstring password, mstring desc);
     Chan_Stored_t(mstring name); // Forbidden
-    ~Chan_Stored_t() {}
     void operator=(const Chan_Stored_t &in);
     bool operator==(const Chan_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
@@ -260,17 +259,13 @@ public:
     // FIND: Looks for EXACT MATCH of passed entry.
 //  bool Access_Level_insert(mstring entry, long value, mstring nick);
 //  bool Access_Level_erase();
-
-//  entlist_val_ui<long> Access_Level_begin()	{ return i_Access_Level.begin(); }
     set<entlist_val_t<long> >::iterator Access_Level_begin()
 	{ return i_Access_Level.begin(); }
-//  entlist_val_ui<long> Access_Level_end()	{ return i_Access_Level.end(); }
     set<entlist_val_t<long> >::iterator Access_Level_end()
 	{ return i_Access_Level.end(); }
     size_t Access_Level_size()			{ return i_Access_Level.size(); }
     bool Access_Level_find(mstring entry);
     long Access_Level_value(mstring entry);
-//  entlist_val_ui<long> Access_Level;
     set<entlist_val_t<long> >::iterator Access_Level;
 
     // FIND: Looks for EXACT MATCH of passed entry, if !found,
@@ -282,16 +277,13 @@ public:
     //     3) Entry has @ and no (* or ?).
     bool Access_insert(mstring entry, long value, mstring nick);
     bool Access_erase();
-//  entlist_val_ui<long> Access_begin()		{ return i_Access.begin(); }
     set<entlist_val_t<long> >::iterator Access_begin()
 	{ return i_Access.begin(); }
-//  entlist_val_ui<long> Access_end()		{ return i_Access.end(); }
     set<entlist_val_t<long> >::iterator Access_end()
 	{ return i_Access.end(); }
     size_t Access_size()			{ return i_Access.size(); }
     bool Access_find(mstring entry);
     long Access_value(mstring entry);
-//  entlist_val_ui<long> Access;
     set<entlist_val_t<long> >::iterator Access;
 
     // FIND: Looks for EXACT MATCH of passed entry, if !found,
@@ -304,16 +296,13 @@ public:
     bool Akick_insert(mstring entry, mstring value, mstring nick);
     bool Akick_insert(mstring entry, mstring nick);
     bool Akick_erase();
-//  entlist_val_ui<mstring> Akick_begin()	{ return i_Akick.begin(); }
     set<entlist_val_t<mstring> >::iterator Akick_begin()
 	{ return i_Akick.begin(); }
-//  entlist_val_ui<mstring> Akick_end()		{ return i_Akick.end(); }
     set<entlist_val_t<mstring> >::iterator Akick_end()
 	{ return i_Akick.end(); }
     size_t Akick_size()				{ return i_Akick.size(); }
     bool Akick_find(mstring entry);
     mstring Akick_string(mstring entry);
-//  entlist_val_ui<mstring> Akick;
     set<entlist_val_t<mstring> >::iterator Akick;
 
     // FIND: Looks for REGEX MATCH of passed entry.

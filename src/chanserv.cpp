@@ -1321,24 +1321,25 @@ void Chan_Stored_t::defaults()
 Chan_Stored_t::Chan_Stored_t(mstring name, mstring founder, mstring password, mstring desc)
 {
     FT("Chan_Stored_t::Chan_Stored_t", (name, founder, password, desc));
+    defaults();
+
     i_Name = name;
     i_RegTime = Now();
     i_Founder = founder;
     i_Password = password;
     i_Description = desc;
 
-    defaults();
 }
 
 
 Chan_Stored_t::Chan_Stored_t(mstring name)
 {
     FT("Chan_Stored_t::Chan_Stored_t", (name));
+    defaults();
+
     i_Name = name;
     i_RegTime = Now();
     i_Forbidden = true;
-
-    defaults();
 }
 
 
@@ -3029,7 +3030,8 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
     }
 
     Parent->chanserv.stored[channel.LowerCase()] =
-			Chan_Stored_t(channel, source, password, desc);
+		Chan_Stored_t(channel, source, password, desc);
+    Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, password);
     ::send(mynick, source, "Channel " + channel + " has been registered.");
 }
 
@@ -3082,8 +3084,9 @@ void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    ::send(mynick, source,
-	Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, pass));
+    mstring output = Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, pass);
+    if (output != "")
+	::send(mynick, source, output);
 }
 
 void ChanServ::do_Info(mstring mynick, mstring source, mstring params)
@@ -3107,12 +3110,12 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
     }
     else if (params.WordCount(" ") < 3)
     {
-	mask = params.ExtractWord(2, " ");
+	mask = params.ExtractWord(2, " ").LowerCase();
 	listsize = Parent->config.Listsize();
     }
     else
     {
-	mask = params.ExtractWord(2, " ");
+	mask = params.ExtractWord(2, " ").LowerCase();
 	listsize = atoi(params.ExtractWord(3, " ").c_str());
 	if (listsize > Parent->config.Maxlist())
 	{
@@ -3130,7 +3133,7 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
     for (iter = Parent->chanserv.stored.begin(), i=0, count = 0;
 			iter != Parent->chanserv.stored.end(); iter++)
     {
-	if (iter->second.Name().Matches(mask))
+	if (iter->second.Name().LowerCase().Matches(mask))
 	{
 	    if (i < listsize && (!iter->second.Private() ||
 		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&

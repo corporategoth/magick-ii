@@ -210,7 +210,6 @@ public:
     Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
     Nick_Stored_t(mstring nick, mstring password);
     Nick_Stored_t(mstring nick); // Services Only (forbidden)
-    ~Nick_Stored_t();
     void operator=(const Nick_Stored_t &in);
     bool operator==(const Nick_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
@@ -222,6 +221,7 @@ public:
     mstring Name() { return i_Name; }
     mDateTime RegTime() { return i_RegTime; }
 
+    void Drop();
     mstring Password();
     void Password(mstring in);
     mstring Email();
