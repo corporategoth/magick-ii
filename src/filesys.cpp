@@ -27,6 +27,10 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2001/11/17 03:16:02  prez
+** Extra logging, actually made DCC identify as a DCC thread, and fixed some
+** mkdir failures ...
+**
 ** Revision 1.82  2001/11/16 20:24:52  prez
 ** Moved heartbeat to a timer based operation, NOT part of the events thread
 **
@@ -1922,7 +1926,7 @@ int DccMap::svc(void)
 {
     mThread::Attach(tt_MAIN);
     NFT("DccMap::svc");
-    Parent->hh.AddThread(Heartbeat_Handler::H_Events);
+    Parent->hh.AddThread(Heartbeat_Handler::H_DCC);
 
     unsigned long WorkId;
     while (!Parent->Shutdown())

@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.327  2001/11/17 03:16:02  prez
+** Extra logging, actually made DCC identify as a DCC thread, and fixed some
+** mkdir failures ...
+**
 ** Revision 1.326  2001/11/16 20:27:33  prez
 ** Added a MAX_THREADS option, and made the thread heartbeat a timer based
 ** operation, instead of part of the threads.
@@ -2146,7 +2150,6 @@ bool Magick::get_config_values()
     bool reconnect = false;
     bool reconnect_clients = false;
     unsigned int i;
-    int j;
     mstring isonstr;
 
     if (!mFile::Exists(Config_File()))
@@ -2590,12 +2593,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files+"KEYFILE",files.keyfile,"magick.key");
     in.Read(ts_Files+"ENCRYPTION",files.encryption,false);
     in.Read(ts_Files+"MEMOATTACH",files.memoattach,"files/memo");
-    j = ACE_OS::mkdir(files.memoattach.c_str());
-    if (j < 0 && errno)
-    {
-	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
-		"mkdir", files.memoattach, errno, strerror(errno)));
-    }
+    MakeDirectory(files.memoattach.c_str());
 
     in.Read(ts_Files+"MEMOATTACHSIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))
@@ -2603,12 +2601,7 @@ bool Magick::get_config_values()
     else
 	files.memoattachsize = FromHumanSpace("0");
     in.Read(ts_Files+"PICTURE",files.picture,"files/pic");
-    j = ACE_OS::mkdir(files.picture.c_str());
-    if (j < 0 && errno)
-    {
-	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
-		"mkdir", files.picture, errno, strerror(errno)));
-    }
+    MakeDirectory(files.picture.c_str());
 
     in.Read(ts_Files+"PICTURESIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))
@@ -2616,12 +2609,7 @@ bool Magick::get_config_values()
     else
 	files.picturesize = FromHumanSpace("0");
     in.Read(ts_Files+"PUBLIC",files.i_public,"files/public");
-    j = ACE_OS::mkdir(files.i_public.c_str());
-    if (j < 0 && errno)
-    {
-	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
-		"mkdir", files.i_public, errno, strerror(errno)));
-    }
+    MakeDirectory(files.i_public.c_str());
 
     in.Read(ts_Files+"PUBLICSIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))
@@ -2629,12 +2617,7 @@ bool Magick::get_config_values()
     else
 	files.publicsize = FromHumanSpace("0");
     in.Read(ts_Files+"TEMPDIR",files.tempdir,"files/temp");
-    j = ACE_OS::mkdir(files.tempdir.c_str());
-    if (j < 0 && errno)
-    {
-	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
-		"mkdir", files.tempdir, errno, strerror(errno)));
-    }
+    MakeDirectory(files.tempdir.c_str());
 
     in.Read(ts_Files+"TEMPDIRSIZE",value_mstring,"0");
     if (FromHumanSpace(value_mstring))

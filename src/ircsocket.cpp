@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.182  2001/11/17 03:16:02  prez
+** Extra logging, actually made DCC identify as a DCC thread, and fixed some
+** mkdir failures ...
+**
 ** Revision 1.181  2001/11/16 20:27:33  prez
 ** Added a MAX_THREADS option, and made the thread heartbeat a timer based
 ** operation, instead of part of the threads.
@@ -1137,15 +1141,17 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if (Parent->Shutdown())
 	DRET(0);
 
-    CP(("Starting HEARTBEAT ..."));
-
     vector<ACE_thread_t> dead;
     threads_t::iterator iter;
     unsigned int i;
 
     { RLOCK(("Heartbeat_Handler", "threads"));
+    CP(("Starting HEARTBEAT for %d entries (%s) ...", threads.size(),
+		mDateTime::CurrentDateTime().DateTimeString().c_str()));
     for (iter=threads.begin(); iter!=threads.end(); iter++)
     {
+	COM(("Checking %s thread (last checkin %s)", names[iter->second.first],
+				iter->second.second.DateTimeString().c_str()));
 	if (iter->second.second.SecondsSince() > Parent->config.Heartbeat_Time())
 	{
 	    dead.push_back(iter->first);

@@ -27,6 +27,10 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2001/11/17 03:16:02  prez
+** Extra logging, actually made DCC identify as a DCC thread, and fixed some
+** mkdir failures ...
+**
 ** Revision 1.72  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -221,17 +225,16 @@ RCSID(utils_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-vector<int> ParseNumbers(mstring what)
+vector<int> ParseNumbers(const mstring &what)
 {
     FT("ParseNumbers", (what));
     vector<int> numbers;
     unsigned int i;
     mstring tmp;
 
-    what.replace(",", " ");
-    for (i=1; i<=what.WordCount(" "); i++)
+    for (i=1; i<=what.WordCount(", "); i++)
     {
-	tmp = what.ExtractWord(i, " ");
+	tmp = what.ExtractWord(i, ", ");
 	if (!tmp.IsNumber() || tmp[0U] == '-' ||
 	    tmp[tmp.size()-1] == '-' || tmp.WordCount("-") > 2)
 	{
@@ -260,6 +263,57 @@ vector<int> ParseNumbers(mstring what)
     }
     NRET(vector<int>, numbers);
 }
+
+bool MakeDirectory(const mstring &in)
+{
+    FT("MakeDirectory", (in));
+
+    int i, occ = in.Occurances(DirSlash);
+
+    for (i=0; i<=occ; i++)
+    {
+	mstring path(in);
+	int pos = in.find(DirSlash, i + 1);
+	if (pos >= 1)
+	    path.Truncate(pos);
+	else if (pos == 0)
+	    path = DirSlash;
+#ifdef WIN32
+	else if (pos == 2 && path[1] == ':')
+	{
+	    // We got X:\ (for windows), handle it.
+	    path.Truncate(3);
+	    pos = 0;
+	}
+#endif
+
+	int j = ACE_OS::access(path.c_str(), X_OK);
+	if (j < 0)
+	{
+	    // Its the root, forget it ... *sigh*
+	    if (pos == 0)
+	    {
+		RET(false);
+	    }
+
+	    // Doesnt exist, try and create it ...
+	    j = ACE_OS::mkdir(in.c_str());
+	    if (j < 0 && errno)
+	    {
+		LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
+			"mkdir", in, errno, strerror(errno)));
+		RET(false);
+	    }
+	}
+    }
+    // After all that, make sure we can create files in the target dir.
+    if (ACE_OS::access(in.c_str(), W_OK) < 0)
+    {
+	RET(false);
+    }
+    RET(true);
+}
+
 
 unsigned long FromHumanTime(const mstring &in)
 {
