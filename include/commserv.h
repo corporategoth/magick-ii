@@ -27,6 +27,7 @@ class Committee : public mUserDef
     mstring i_Description;
 
     set<entlist_t> i_Members;
+    bool i_Private;
     bool i_OpenMemos;
     list<entlist_t> i_Messages;
 
@@ -60,6 +61,8 @@ public:
     bool IsHead(mstring nick);
 
     // If TRUE, all members can do a /MS COMMITTEE 
+    void Private(bool in)	{ i_Private = in; }
+    bool Private()const		{ return i_Private; }
     void OpenMemos(bool in)	{ i_OpenMemos = in; }
     bool OpenMemos()const	{ return i_OpenMemos; }
 

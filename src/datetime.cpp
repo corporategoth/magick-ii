@@ -733,68 +733,60 @@ int mDateTime::Year()
 
 mstring mDateTime::Ago(bool call)
 {
-    mDateTime dummyvar=Now()-(*this);
-    // what the fuck does !! do exactly? not not???
-    // how to get GMT hmm.
-    //if(call)
-	//add GMT offset
-    return dummyvar.Disect(false);
-    
-}
-mstring mDateTime::Disect(bool call)
-{
     mstring Result="";
-    int Years,Months,Days,Hours,Minutes,Seconds,MSecs;
+    int Seconds = SecondsSince();
+    int Years = Seconds / (60 * 60 * 24 * 365.25);
+    Seconds -= Years * 60 * 60 * 24 * 365.25;
+    int Days = Seconds / (60 * 60 * 24);
+    Seconds -= Days * 60 * 60 * 24;
+    int Hours = Seconds / (60 * 60);
+    Seconds -= Hours * 60 * 60;
+    int Minutes = Seconds / 60;
+    Seconds -= Minutes * 60;
+
     // what the fuck does !! do exactly? not not???
     // how to get GMT hmm.
     //if(call)
 	//add GMT offset
-    DecodeDate(Years,Months,Days);
-    DecodeTime(Hours,Minutes,Seconds,MSecs);
     if(Years>0)
     {
-	Result<<
-	    Years<<" year"<<(Years==1?"":"s")<<" "<<
-	    Months<<" month"<<(Months==1?"":"s")<<" "<<
-	    Days<<" day"<<(Days==1?"":"s")<<" "<<
-	    (Hours>10?"":"0")<<Hours<<":"<<
-	    (Minutes>10?"":"0")<<Minutes<<":"<<
-	    (Seconds>10?"":"0")<<Seconds<<":";
-    }
-    else if(Months>0)
-    {
-	Result<<
-	    Months<<" month"<<(Months==1?"":"s")<<" "<<
-	    Days<<" day"<<(Days==1?"":"s")<<" "<<
-	    (Hours>10?"":"0")<<Hours<<":"<<
-	    (Minutes>10?"":"0")<<Minutes<<":"<<
-	    (Seconds>10?"":"0")<<Seconds<<":";
+	Result << Years << " year" << (Years==1 ? "" : "s");
+	if (Days)
+	    Result << ", " << Days << " day" << (Days==1 ? "" : "s");
+	if (Hours || Minutes || Seconds)
+	    Result << ", " << (Hours>10 ? "" : "0") << Hours << ":" <<
+		    (Minutes>10 ? "" : "0") << Minutes << ":" <<
+		    (Seconds>10 ? "" : "0") << Seconds << ":";
     }
     else if(Days>0)
     {
-	Result<<
-	    Days<<" day"<<(Days==1?"":"s")<<" "<<
-	    (Hours>10?"":"0")<<Hours<<":"<<
-	    (Minutes>10?"":"0")<<Minutes<<":"<<
-	    (Seconds>10?"":"0")<<Seconds<<":";
+	Result << " " << Days << " day" << (Days==1 ? "" : "s");
+	if (Hours || Minutes || Seconds)
+	    Result << ", " << (Hours>10 ? "" : "0") << Hours << ":" <<
+		    (Minutes>10 ? "" : "0") << Minutes << ":" <<
+		    (Seconds>10 ? "" : "0") << Seconds << ":";
     }
     else if(Hours>0)
     {
-	Result<<
-	    Hours<<" hour"<<(Hours==1?"":"s")<<" "<<
-	    Minutes<<" minute"<<(Minutes==1?"":"s")<<" "<<
-	    Seconds<<" second"<<(Seconds==1?"":"s")<<" ";
+	Result << Hours << " hour" << (Hours==1 ? "" : "s");
+	if (Minutes)
+	    Result << ", " << Minutes << " minute" << (Minutes==1 ? "" : "s");
+	if (Seconds)
+	    Result << ", " << Seconds << " second" << (Seconds==1 ? "" : "s");
     }
     else if(Minutes>0)
     {
-	Result<<
-	    Minutes<<" minute"<<(Minutes==1?"":"s")<<" "<<
-	    Seconds<<" second"<<(Seconds==1?"":"s")<<" ";
+	Result << Minutes << " minute" << (Minutes==1 ? "" : "s");
+	if (Seconds)
+	    Result << ", " << Seconds << " second" << (Seconds==1 ? "" : "s");
     }
     else if(Seconds>0)
     {
-	Result<<
-	    Seconds<<" second"<<(Seconds==1?"":"s")<<" ";
+	Result << Seconds << " second" << (Seconds==1 ? "" : "s");
+    }
+    else
+    {
+	Result << "Now";
     }
     return Result;
 }

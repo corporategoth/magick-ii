@@ -178,8 +178,7 @@ public:
     int Day();
     int Month();
     int Year();
-    mstring Ago(bool call);
-    mstring Disect(bool call);
+    mstring Ago(bool call = false);
     int MSecondsSince();
     int SecondsSince();
     int MinutesSince();

@@ -201,13 +201,13 @@ class Nick_Stored_t : public mUserDef
     mstring i_LastMask;
     mstring i_LastQuit;
 
+    Nick_Stored_t(mstring nick, mDateTime regtime, const Nick_Stored_t &host); // Slave
     void Signon(mstring realname, mstring mask);
     void ChgNick(mstring nick);
 public:
     Nick_Stored_t();
     Nick_Stored_t(const Nick_Stored_t &in) { *this = in; }
     Nick_Stored_t(mstring nick, mstring password);
-    Nick_Stored_t(mstring nick, const Nick_Stored_t &host); // Slave
     Nick_Stored_t(mstring nick); // Services Only (forbidden)
     ~Nick_Stored_t();
     void operator=(const Nick_Stored_t &in);
@@ -240,12 +240,11 @@ public:
     void UnSuspend();
 
     mstring Host() { return i_Host; }
-    bool Slave(mstring nick, mstring password);
     int Siblings();
     mstring Sibling(int count);
     bool IsSibling(mstring nick);
+    bool Slave(mstring nick, mstring password, mDateTime regtime = Now());
     bool MakeHost();
-    bool Link(mstring nick, mstring password);
     bool Unlink();
 
     int Access();
@@ -419,5 +418,12 @@ public:
     static void do_set_Private(mstring mynick, mstring source, mstring params);
     static void do_set_PRIVMSG(mstring mynick, mstring source, mstring params);
     static void do_set_Language(mstring mynick, mstring source, mstring params);
+    static void do_lock_Protect(mstring mynick, mstring source, mstring params);
+    static void do_lock_Secure(mstring mynick, mstring source, mstring params);
+    static void do_lock_NoExpire(mstring mynick, mstring source, mstring params);
+    static void do_lock_NoMemo(mstring mynick, mstring source, mstring params);
+    static void do_lock_Private(mstring mynick, mstring source, mstring params);
+    static void do_lock_PRIVMSG(mstring mynick, mstring source, mstring params);
+    static void do_lock_Language(mstring mynick, mstring source, mstring params);
 };
 #endif
