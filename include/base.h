@@ -201,7 +201,7 @@ public:
     virtual void send(const mstring & dest, const mstring & message) const;
     virtual void send(const mstring & source, const mstring & dest, const mstring & message) const;
 
-    virtual operator      mVariant() const
+    virtual operator       mVariant() const
     {
 	mVariant locvar(GetInternalName());
 

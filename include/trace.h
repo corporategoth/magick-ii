@@ -112,14 +112,14 @@ public:
 	ThreadID *tid = mThread::find(); \
 	if (tid != NULL) tid->LastFunc(x); \
 	} while (0)
-#define RET(x) return x
-#define NRET(x,y) return y
-#define DRET(x) return x
-#define NDRET(x,y) return y
-#define TRET(x) do { ACE_Thread::exit(x); return x; } while (0)
-#define NTRET(x,y) do { ACE_Thread::exit(y); return y; } while (0)
-#define DTRET(x) do { ACE_Thread::exit(x); return x; } while (0)
-#define NDTRET(x,y) do { ACE_Thread::exit(y); return y; } while (0)
+#define RET(x) return (x)
+#define NRET(x,y) return (y)
+#define DRET(x) return (x)
+#define NDRET(x,y) return (y)
+#define TRET(x) do { ACE_Thread::exit(x); return (x); } while (0)
+#define NTRET(x,y) do { ACE_Thread::exit(y); return (y); } while (0)
+#define DTRET(x) do { ACE_Thread::exit(x); return (x); } while (0)
+#define NDTRET(x,y) do { ACE_Thread::exit(y); return (y); } while (0)
 #define CP(x)
 #define COM(x)
 #define SRC(x)
@@ -141,49 +141,49 @@ public:
 // mDateTime
 
 // FunctionTrace -- FT("...", ());
-#define FT(x,y) T_Functions __ft(x, mVarArray y)
+#define FT(x,y) mVarArray __ft_data y; T_Functions __ft(x, __ft_data)
 #define NFT(x) T_Functions __ft(x)
 
 // Set return value -- RET()
 #define RET(x) do { \
 	__ft.return_value=mVariant(x); \
-	return x; \
+	return (x); \
 	} while (0)
 #define NRET(x,y) do { \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
-	return y; \
+	return (y); \
 	} while (0)
 #define DRET(x) do { \
 	__ft.return_value=mVariant(x); \
 	mThread::Detach(); \
-	return x; \
+	return (x); \
 	} while (0)
 #define NDRET(x,y) do { \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
 	mThread::Detach(); \
-	return y; \
+	return (y); \
 	} while (0)
 #define TRET(x) do { \
 	__ft.return_value=mVariant(x); \
 	ACE_Thread::exit(x); \
-	return x; \
+	return (x); \
 	} while (0)
 #define NTRET(x,y) do { \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
 	ACE_Thread::exit(y); \
-	return y; \
+	return (y); \
 	} while (0)
 #define DTRET(x) do { \
 	__ft.return_value=mVariant(x); \
 	mThread::Detach(); \
 	ACE_Thread::exit(x); \
-	return x; \
+	return (x); \
 	} while (0)
 #define NTDRET(x,y) do { \
 	__ft.return_value=("(" + mstring(#x) + ") " + mstring(#y)).c_str(); \
 	mThread::Detach(); \
 	ACE_Thread::exit(y); \
-	return y; \
+	return (y); \
 	} while (0)
 
 // CheckPoint definition -- CP(());

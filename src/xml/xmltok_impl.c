@@ -1705,8 +1705,6 @@ static int PREFIX(charRefNumber) (const ENCODING * enc, const char *ptr)
 
 static int PREFIX(predefinedEntityName) (const ENCODING * enc, const char *ptr, const char *end)
 {
-    char num[4];
-
     switch ((end - ptr) / MINBPC(enc))
     {
     case 2:

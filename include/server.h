@@ -212,7 +212,7 @@ public:
 	{
 	    return i_Channel;
 	}
-	bool Field() const
+	int Field() const
 	{
 	    return i_Field;
 	}
