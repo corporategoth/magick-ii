@@ -1222,8 +1222,6 @@ wxZlibInputStream::wxZlibInputStream(wxInputStream& stream)
   int err;
 
   // I need a private stream buffer.
-  m_i_streambuf = new wxStreamBuffer(*this, wxStreamBuffer::read);
-  m_i_destroybuf = true;
   m_inflate = new z_stream_s;
 
   m_inflate->zalloc = (alloc_func)0;
@@ -1232,6 +1230,7 @@ wxZlibInputStream::wxZlibInputStream(wxInputStream& stream)
 
   err = inflateInit(m_inflate);
   if (err != Z_OK) {
+  // prez, can we put some sort of logging here?
     inflateEnd(m_inflate);
     delete m_inflate;
     return;
@@ -1249,6 +1248,7 @@ wxZlibInputStream::~wxZlibInputStream()
   inflateEnd(m_inflate);
   delete m_inflate;
 }
+
 size_t wxZlibInputStream::OnSysRead(void *buffer, size_t size)
 {
   int err;
@@ -1269,6 +1269,7 @@ size_t wxZlibInputStream::OnSysRead(void *buffer, size_t size)
     err = inflate(m_inflate, Z_FINISH);
     if (err == Z_STREAM_END)
       return (size - m_inflate->avail_in);
+  // prez: we need an error trace here too. if (err!=Z_OK&&err!=Z_STREAM_END)
   }
 
   return size-m_inflate->avail_in;
@@ -1283,8 +1284,6 @@ wxZlibOutputStream::wxZlibOutputStream(wxOutputStream& stream, int compression)
 {
   int err;
 
-  m_o_streambuf = new wxStreamBuffer(*this, wxStreamBuffer::write);
-  m_o_destroybuf = true;
   m_deflate = new z_stream_s;
 
   m_deflate->zalloc = (alloc_func)0;
@@ -1293,6 +1292,7 @@ wxZlibOutputStream::wxZlibOutputStream(wxOutputStream& stream, int compression)
 
   err = deflateInit(m_deflate, compression);
   if (err != Z_OK) {
+  // prez: we need an error trace here too.
     deflateEnd(m_deflate);
     return;
   }
@@ -1314,6 +1314,7 @@ wxZlibOutputStream::~wxZlibOutputStream()
   err = deflate(m_deflate, Z_FINISH);
   if (err != Z_STREAM_END)
   {
+	// prez: change this to *our* tracing mechanism
     wxLogDebug( "wxZlibOutputStream: an error occured while closing the stream.\n" );
     return;
   }
@@ -1333,8 +1334,23 @@ void wxZlibOutputStream::Sync()
 
   err = deflate(m_deflate, Z_FULL_FLUSH);
   if (err != Z_OK) {
+  // prez: we need an error trace here too. if (err!=Z_OK)
     return;
   }
+
+  // Fixed by "Stefan Csomor" <csomor@advancedconcepts.ch>
+  while( m_deflate->avail_out == 0 )
+  {
+     m_parent_o_stream->Write(m_z_buffer, m_z_size );
+     m_deflate->next_out  = m_z_buffer;
+     m_deflate->avail_out = m_z_size;
+     err = deflate(m_deflate, Z_FULL_FLUSH);
+     if (err != Z_OK) {
+  // prez: we need an error trace here too. if (err!=Z_OK)
+        return;
+     }
+  }
+  // End
 
   m_parent_o_stream->Write(m_z_buffer, m_z_size-m_deflate->avail_out);
   m_deflate->next_out  = m_z_buffer;
@@ -1361,6 +1377,7 @@ size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
 
     err = deflate(m_deflate, Z_NO_FLUSH);
     if (err != Z_OK)
+  // prez: we need an error trace here too. if (err!=Z_OK)
       return (size - m_deflate->avail_in);
   }
   return size;
