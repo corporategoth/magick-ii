@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2001/07/12 04:27:47  prez
+** Fixed problem with it cutting encrypted db's just a bit too short.
+**
 ** Revision 1.5  2001/06/07 06:21:06  prez
 ** Think I fixed staging encryption layer ... ugh.
 **
@@ -300,7 +303,7 @@ long CryptStage::Read(char *buf, size_t size)
 	}
     }
     // Ignore trailing null's ...
-    while (buf[i-1]==0) i--;
+    while (buf[i-2]==0) i--;
     return i;
 }
 
