@@ -29,6 +29,11 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.332  2001/11/30 09:01:56  prez
+** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+** Pause(bool) functions. This should help if/when we decide to implement
+** Magick running as an NT service.
+**
 ** Revision 1.331  2001/11/30 07:30:07  prez
 ** Added some windows stuff ...
 **
@@ -585,9 +590,9 @@ mDateTime StartTime;
 Magick *Parent;
 
 Magick::Magick(int inargc, char **inargv)
-    : i_verbose(false), i_level(0), i_auto(false), i_shutdown(false),
-      i_reconnect(true), i_localhost(0), i_gotconnect(false),
-      i_connected(false), i_saving(false), dh_timer(0)
+    : i_verbose(false), i_level(0), i_pause(false), i_auto(false),
+      i_shutdown(false), i_reconnect(true), i_localhost(0),
+      i_gotconnect(false), i_connected(false), i_saving(false), dh_timer(0)
 {
     char buf[1024], *c;
     i_config_file="magick.ini";
@@ -613,8 +618,15 @@ Magick::Magick(int inargc, char **inargv)
 	i_services_dir=buf;
 }
 
-int Magick::Start(bool firstrun)
+static bool firstrun;
+
+int Magick::Init()
 {
+    if (CurrentState != Constructed)
+    {
+	return MAGICK_RET_STATE;
+    }
+
     unsigned int i = 0;
     int j = 0;
     int Result;
@@ -694,7 +706,7 @@ int Magick::Start(bool firstrun)
 	    }
 	}
     }
-    NFT("Magick::Start");
+    NFT("Magick::Init");
     j = ACE_OS::chdir(Services_Dir());
     if (j < 0 && errno)
     {
@@ -719,7 +731,24 @@ int Magick::Start(bool firstrun)
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
 
+    firstrun = true;
+    CurrentState = Initialized;
+    RET(MAGICK_RET_NORMAL);
+}
+
+int Magick::Start()
+{
+    NFT("Magick::Start");
+    if (CurrentState != Initialized && CurrentState != Stopped)
+    {
+	RET(MAGICK_RET_STATE);
+    }
+
+    int Result;
+
     ACE_OS::umask(files.umask);
+    ACE_Reactor::reset_event_loop();
+
 #ifndef WIN32
     mFile pidfile;
     if (firstrun && mFile::Exists(files.Pidfile()))
@@ -738,9 +767,8 @@ int Magick::Start(bool firstrun)
 	    mFile::Erase(files.Pidfile());
 	}
     }
-#endif
 
-#ifdef WIN32
+#else /* !WIN32 */
     // Must do this BEFORE the logger is started ...
     NLOG(LM_INFO, "COMMANDLINE/START_NOFORK");
 #endif
@@ -774,6 +802,7 @@ int Magick::Start(bool firstrun)
 	{
 	    RET(MAGICK_RET_NORMAL);
 	}
+	firstrun = false;
 	ACE_LOG_MSG->sync(ProgramName().c_str());
 	errno = 0;
 	Result = ACE_OS::setpgid (0, 0);
@@ -866,20 +895,6 @@ int Magick::Start(bool firstrun)
     load_databases();
     FLUSH();
 
-    ACE_Reactor::instance()->schedule_timer(&Parent->hh, 0,
-		ACE_Time_Value(Parent->config.Heartbeat_Time()));
-
-    // Can only open these after fork if we want then to live
-    NLOG(LM_STARTUP, "COMMANDLINE/START_EVENTS");
-    { WLOCK(("Events"));
-    events = new EventTask;
-    events->open();
-    }
-    { WLOCK(("DCC"));
-    dcc = new DccMap;
-    dcc->open();
-    }
-
     //NLOG(LM_STARTUP, "COMMANDLINE/START_CALIBRATE");
     // calibrate the threshholds.
     //
@@ -891,8 +906,48 @@ int Magick::Start(bool firstrun)
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
 
+    LOG(LM_STARTUP, "COMMANDLINE/START_COMPLETE", (
+		PACKAGE, VERSION));
+    // Can only open these after fork if we want then to live
+    { WLOCK(("Events"));
+    events = new EventTask;
+    if (events == NULL)
+    {
+	RET(MAGICK_RET_ERROR);
+    }}
+    { WLOCK(("DCC"));
+    dcc = new DccMap;
+    if (dcc == NULL)
+    {
+	RET(MAGICK_RET_ERROR);
+    }}
+
+    CurrentState = Started;
+    RET(MAGICK_RET_NORMAL);
+}
+
+int Magick::Run()
+{
+    NFT("Magick::Run");
+    if (CurrentState != Started)
+    {
+	RET(MAGICK_RET_STATE);
+    }
+
     // Use the reconnect handler to get a connection
 
+    NLOG(LM_STARTUP, "COMMANDLINE/START_EVENTS");
+    { WLOCK(("Events"));
+    if (events != NULL)
+	events->open();
+    }
+    { WLOCK(("DCC"));
+    if (dcc != NULL)
+	dcc->open();
+    }
+
+    ACE_Reactor::instance()->schedule_timer(&Parent->hh, 0,
+		ACE_Time_Value(Parent->config.Heartbeat_Time()));
     ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value::zero);
     AUTO(true); // Activate events from here.
 
@@ -902,13 +957,33 @@ int Magick::Start(bool firstrun)
     // This is the main loop.  When we get a Shutdown(),
     // we wait for everything to shutdown cleanly.
     // All that will be left is US and the LOGGER.
-    LOG(LM_STARTUP, "COMMANDLINE/START_COMPLETE", (
-		PACKAGE, VERSION));
 
     DumpB();
+    CurrentState = Running;
     ACE_Reactor::run_event_loop();
     DumpE();
     FLUSH();
+
+    CurrentState = RunCompleted;
+    RET(MAGICK_RET_NORMAL);
+}
+
+int Magick::Stop()
+{
+    NFT("Magick::Stop");
+    if (CurrentState != Started && CurrentState != Running &&
+	CurrentState != RunCompleted)
+    {
+	RET(MAGICK_RET_STATE);
+    }
+
+    if (CurrentState == Running)
+    {
+	ACE_Reactor::end_event_loop();
+	RET(MAGICK_RET_NORMAL);
+    }
+
+    int Result;
 
     if (Shutdown())
 	Result = MAGICK_RET_NORMAL;
@@ -1013,7 +1088,18 @@ int Magick::Start(bool firstrun)
 
     DeactivateLogger();
 
+    CurrentState = Stopped;
     RET(Result);
+}
+
+int Magick::Finish()
+{
+    NFT("Magick::Finish");
+    if (CurrentState != Initialized && CurrentState != Stopped)
+    {
+	RET(MAGICK_RET_STATE);
+    }
+    RET(MAGICK_RET_NORMAL);
 }
 
 mstring Magick::getMessage(const mstring & nick, const mstring & name)
@@ -3906,6 +3992,8 @@ void Magick::Disconnect(const bool reconnect)
 #if defined(SIGIOT) && (SIGIOT != 0)
 		thr_mgr->kill_task(Parent->ircsvchandler, SIGIOT);
 #endif
+		while (Parent->Pause())
+		    ACE_OS::sleep(1);
 		dh_timer = ACE_Reactor::instance()->schedule_timer(&dh,
 					NULL, ACE_Time_Value(10));
 	    }
@@ -4287,17 +4375,17 @@ void Magick::DumpB() const
 {
     MB(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
 	handlermap.size(), i_verbose, i_services_dir, i_config_file,
-	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
-	i_localhost, i_gotconnect));
-    MB(16, (i_currentserver, i_connected, i_saving));
+	i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown,
+	i_reconnect, i_localhost));
+    MB(16, (i_gotconnect, i_currentserver, i_connected, i_saving));
 }
 
 void Magick::DumpE() const
 {
     ME(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
 	handlermap.size(), i_verbose, i_services_dir, i_config_file,
-	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
-	i_localhost, i_gotconnect));
-    ME(16, (i_currentserver, i_connected, i_saving));
+	i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown,
+	i_reconnect, i_localhost));
+    ME(16, (i_gotconnect, i_currentserver, i_connected, i_saving));
 }
 

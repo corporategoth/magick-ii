@@ -27,6 +27,11 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.185  2001/11/30 09:01:56  prez
+** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+** Pause(bool) functions. This should help if/when we decide to implement
+** Magick running as an NT service.
+**
 ** Revision 1.184  2001/11/28 13:40:47  prez
 ** Added UMASK option to config.  Also made the 'dead thread' protection
 ** send a SIGIOT signal to try and get the thread to die gracefully, else
@@ -451,6 +456,8 @@ void *IrcSvcHandler::worker(void *in)
 		MLOCK(("MessageQueue"));
 	    	msg = dynamic_cast<mMessage *>(Parent->ircsvchandler->message_queue.dequeue());
 	    }}
+	    while (Parent->Pause())
+		ACE_OS::sleep(1);
 	    if (msg != NULL)
 	    {
 		int rv = msg->call();
@@ -722,6 +729,9 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 	}
 	if (!Parent->Shutdown())
 	{
+	    while (Parent->Pause())
+		ACE_OS::sleep(1);
+
 	    CP(("Scheduling SQUIT protect timer..."));
 	    Parent->server.ServerSquit[si->first] =
 		ACE_Reactor::instance()->schedule_timer(&Parent->server.squit,
@@ -789,6 +799,9 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 	Parent->config.Server_Relink() >= 1)
     {
 	CP(("Scheduling reconnect"));
+	while (Parent->Pause())
+	    ACE_OS::sleep(1);
+
 	ACE_Reactor::instance()->schedule_timer(&(Parent->rh), NULL, 
 		ACE_Time_Value(Parent->config.Server_Relink()));
     }
@@ -1282,6 +1295,10 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	for (i=0; i<threads.size(); i++)
 	    Parent->ircsvchandler->enqueue_test();
     }
+
+    while (Parent->Pause())
+	ACE_OS::sleep(1);
+
     ACE_Reactor::instance()->schedule_timer(this, 0,
 		ACE_Time_Value(Parent->config.Heartbeat_Time()));
     DRET(0);
@@ -1510,6 +1527,9 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	LOG(LM_ERROR, "OTHER/REFUSED", (server, details.second.first));
 	//okay we got a connection problem here. log it and try again
 	CP(("Refused connection, rescheduling and trying again ..."));
+
+	while (Parent->Pause())
+	    ACE_OS::sleep(1);
 	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
     }
     else
@@ -1943,14 +1963,9 @@ int EventTask::svc(void)
     {
 	Parent->hh.Heartbeat();
 
-	CP(("TIMERS:  Current time: %ld,  Earliest Timer: %ld",
-		ACE_OS::gettimeofday().sec(),
-		ACE_Reactor::instance()->timer_queue()->is_empty() ? 0 :
-		ACE_Reactor::instance()->timer_queue()->earliest_time().sec()));
-
 	proc = true;
 	// Make sure we're turned on ...
-	if (!Parent->AUTO())
+	if (!Parent->AUTO() || Parent->Pause())
 	    proc = false;
 	else
 	{
@@ -1968,6 +1983,10 @@ int EventTask::svc(void)
 	    continue;
 	}
 
+	CP(("TIMERS:  Current time: %ld,  Earliest Timer: %ld",
+		ACE_OS::gettimeofday().sec(),
+		ACE_Reactor::instance()->timer_queue()->is_empty() ? 0 :
+		ACE_Reactor::instance()->timer_queue()->earliest_time().sec()));
 
 	try
         {

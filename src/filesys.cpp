@@ -27,6 +27,11 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.84  2001/11/30 09:01:56  prez
+** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+** Pause(bool) functions. This should help if/when we decide to implement
+** Magick running as an NT service.
+**
 ** Revision 1.83  2001/11/17 03:16:02  prez
 ** Extra logging, actually made DCC identify as a DCC thread, and fixed some
 ** mkdir failures ...
@@ -1934,7 +1939,7 @@ int DccMap::svc(void)
 	/*COM(("Active Size is %d", active.size()));*/
 
 	Parent->hh.Heartbeat();
-	if (!active.size())
+	if (!active.size() || Parent->Pause())
 	{
 	    ACE_OS::sleep(1);
 	    continue;

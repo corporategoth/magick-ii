@@ -27,6 +27,11 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.191  2001/11/30 09:01:56  prez
+** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+** Pause(bool) functions. This should help if/when we decide to implement
+** Magick running as an NT service.
+**
 ** Revision 1.190  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -566,6 +571,8 @@ void Nick_Live_t::InFlight_t::ChgNick(const mstring& newnick)
 	{
 	    delete arg;
 	}
+	while (Parent->Pause())
+	    ACE_OS::sleep(1);
 	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
@@ -754,6 +761,8 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     }
 
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
+    while (Parent->Pause())
+	ACE_OS::sleep(1);
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
@@ -797,6 +806,8 @@ void Nick_Live_t::InFlight_t::Continue(const mstring& message)
 	{
 	    delete arg;
 	}
+	while (Parent->Pause())
+	    ACE_OS::sleep(1);
 	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
@@ -1091,6 +1102,8 @@ void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
     }
 
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
+    while (Parent->Pause())
+	ACE_OS::sleep(1);
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
@@ -1145,6 +1158,8 @@ void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& commi
     }
 
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
+    while (Parent->Pause())
+	ACE_OS::sleep(1);
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));

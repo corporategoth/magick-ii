@@ -28,6 +28,11 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.196  2001/11/30 09:01:56  prez
+** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+** Pause(bool) functions. This should help if/when we decide to implement
+** Magick running as an NT service.
+**
 ** Revision 1.195  2001/11/18 01:54:04  prez
 ** Fixed up trace levels (again)
 **
@@ -4578,6 +4583,8 @@ void Server::parse_Q(mstring &source, const mstring &msgtype, const mstring &par
 		if (ServerSquit.find(Parent->nickserv.GetLive(sourceL).Server()) == ServerSquit.end())
 		{
 		    CB(1, ServerSquit.size());
+		    while (Parent->Pause())
+			ACE_OS::sleep(1);
 		    ServerSquit[Parent->nickserv.GetLive(sourceL).Server()] =
 			ACE_Reactor::instance()->schedule_timer(&tobesquit,
 				new mstring(Parent->nickserv.GetLive(sourceL).Server()),
@@ -5343,6 +5350,8 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 				&& arg != NULL)
 			    delete arg;
 		    }
+		    while (Parent->Pause())
+			ACE_OS::sleep(1);
 		    ServerSquit[tlist[i]] =
 			ACE_Reactor::instance()->schedule_timer(&squit,
 			new mstring(tlist[i]),

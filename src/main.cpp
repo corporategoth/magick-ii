@@ -25,6 +25,11 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2001/11/30 09:01:56  prez
+** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+** Pause(bool) functions. This should help if/when we decide to implement
+** Magick running as an NT service.
+**
 ** Revision 1.51  2001/11/30 07:30:07  prez
 ** Added some windows stuff ...
 **
@@ -150,9 +155,10 @@ int main(int argc, char **argv)
 
 	int Result = MAGICK_RET_RESTART;
 	mThread::Attach(tt_MAIN);
-	bool firstrun = true;
 	while (Result == MAGICK_RET_RESTART)
 	{
+	    if (Parent != NULL)
+		delete Parent;
 	    Parent = new Magick(argc, argv);
 	    if (Parent == NULL)
 	    {
@@ -162,10 +168,40 @@ int main(int argc, char **argv)
 		break;
 	    }
 	    ACE_Reactor::close_singleton();
-	    Result = Parent->Start(firstrun);
+
+	    Result = Parent->Init();
+	    if (Result != MAGICK_RET_NORMAL)
+		continue;
+
+	    Result = Parent->Start();
+	    if (Result != MAGICK_RET_NORMAL)
+	    {
+		Parent->Finish();
+		continue;
+	    }
+	    Result = Parent->Run();
+	    if (Result != MAGICK_RET_NORMAL)
+	    {
+		Parent->Stop();
+		Parent->Finish();
+		continue;
+	    }
+	
+	    Result = Parent->Stop();
+	    if (Result != MAGICK_RET_NORMAL)
+	    {
+		Parent->Finish();
+		continue;
+	    }
+
+	    Result = Parent->Finish();
+	    if (Result != MAGICK_RET_NORMAL)
+		continue;
+	}
+	if (Parent != NULL)
+	{
 	    delete Parent;
 	    Parent = NULL;
-	    firstrun = false;
 	}
 	mThread::Detach();
 

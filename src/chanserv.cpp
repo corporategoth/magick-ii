@@ -27,6 +27,11 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.266  2001/11/30 09:01:56  prez
+** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+** Pause(bool) functions. This should help if/when we decide to implement
+** Magick running as an NT service.
+**
 ** Revision 1.265  2001/11/17 07:18:12  prez
 ** Fixed up unbanning, so it gets ALL bans ...
 **
@@ -1189,6 +1194,8 @@ void Chan_Live_t::LockDown()
     SendMode("+s");
     MLOCK(("ChanServ", "live", i_Name.LowerCase(), "ph_timer"));
     MCB(ph_timer);
+    while (Parent->Pause())
+	ACE_OS::sleep(1);
     ph_timer = ACE_Reactor::instance()->schedule_timer(&(Parent->chanserv.ph),
 			    new mstring(i_Name),
 			    ACE_Time_Value(Parent->chanserv.ChanKeep()));

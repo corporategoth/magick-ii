@@ -25,6 +25,11 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.170  2001/11/30 09:02:17  prez
+** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
+** Pause(bool) functions. This should help if/when we decide to implement
+** Magick running as an NT service.
+**
 ** Revision 1.169  2001/11/28 13:40:47  prez
 ** Added UMASK option to config.  Also made the 'dead thread' protection
 ** send a SIGIOT signal to try and get the thread to die gracefully, else
@@ -280,10 +285,11 @@ RCSID(magick_h, "@(#) $Id$");
 #include "ircsocket.h"
 #include "version.h"
 
-const int MAGICK_RET_NORMAL		    = 0;
-const int MAGICK_RET_RESTART		    = 1;
-const int MAGICK_RET_ERROR		    = -1;
-const int MAGICK_RET_LOCKED		    = -2;
+const int MAGICK_RET_NORMAL		= 0;
+const int MAGICK_RET_RESTART		= 1;
+const int MAGICK_RET_ERROR		= -1;
+const int MAGICK_RET_LOCKED		= -2;
+const int MAGICK_RET_STATE		= -3;
 
 class Magick; // fwd reference, leave it here
 const mstring ChanSpec = "#&+!";
@@ -333,6 +339,9 @@ class Magick : public SXP::IPersistObj
     friend class Reconnect_Handler;
     friend class Disconnect_Handler;
 private:
+    enum { Unknown = 0, Constructed, Initialized, Started,
+		Running, RunCompleted, Stopped, Finished } CurrentState;
+
     vector<mstring> argv;
     // Language, token, string
     map<mstring, map<mstring, mstring> > Messages;
@@ -354,6 +363,7 @@ private:
 
     mDateTime i_ResetTime;
     unsigned int i_level;
+    bool i_pause;
     bool i_auto;
     bool i_shutdown;
 
@@ -545,7 +555,19 @@ public:
     Magick(int inargc, char **inargv);
     ~Magick() {}
 
-    int Start(bool firstrun = true);
+    // Init and Finish are only EVER called once
+    // Start should be called after Init or Stop
+    // Run should only be called after Start
+    // Stop should only be called after Start or Run
+    int Init();
+    int Start();
+    int Run();
+    int Stop();
+    int Finish();
+
+    void Pause(bool in)	{ i_pause = in; }
+    bool Pause()	{ return i_pause; }
+
     mDateTime ResetTime()const    { return i_ResetTime; }
     unsigned int Level()const    { return i_level; }
     void LevelUp()
@@ -558,7 +580,7 @@ public:
 	i_level--;
     }
     void AUTO(const bool on)    { i_auto = on; }
-    bool AUTO()const	{ return i_auto; }
+    bool AUTO()const		{ return i_auto; }
     void MSG(const bool on)
     {
         operserv.MSG(on);
