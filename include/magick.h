@@ -121,7 +121,7 @@ protected:
 
 	// Config Values
 	mstring Startup_REMOTE_SERVER;
-	mstring Startup_REMOTE_PORT;
+	int Startup_REMOTE_PORT;
 	mstring Startup_PASSWORD;
 	mstring Startup_SERVER_NAME;
 	mstring Startup_SERVER_DESC;

@@ -43,9 +43,11 @@ using namespace std;
     __ft.return_value=("(" + mstring(#x) + ") " + y).c_str(); return z;}
 #endif
 
-
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }
+
+// Comments definition -- COM(());
+#define COM(x) { T_Comments __com x; }
 
 // Modify begin -- MB(AOC());
 #define MB(x) mVarArray __mb_VarArray x; T_Modify __mod(__mb_VarArray)
@@ -89,9 +91,10 @@ enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_Op
 extern mstring threadname[tt_MAX];
 
 // Trace Codes
-//   \\  Down Function (T_Functions)
-//   //  Up Function (T_Functions)
+//   \   Down Function (T_Functions)
+//   /   Up Function (T_Functions)
 //   **  CheckPoint (T_CheckPoint)
+//   ##  Comments (T_Comments)
 //   ->  Outbound Traffic (T_Chatter)
 //   <-  Inbound Traffic (T_Chatter)
 //   --  Unknown Traffic (T_Chatter)
@@ -141,7 +144,7 @@ public:
 class Trace
 {
 public:
-    // For expansion -- 0x4C48
+    // For expansion -- 0x4C08
     enum level_enum {
 	Off		= 0x0000,
 
@@ -151,9 +154,10 @@ public:
 	Bind		= 0x0004,	// Binding/Registering
 
 	// Code Tracing
-	CheckPoint	= 0x0100,	// CP(()) entries
-	Locking		= 0x0200,	// READ/WRITE/MUTEX
-	Functions	= 0x0800,	// Function Tracing
+	CheckPoint	= 0x0010,	// CP(()) entries
+	Comments	= 0x0020,	// More verbose checkpoints
+	Locking		= 0x0040,	// READ/WRITE/MUTEX
+	Functions	= 0x0080,	// Function Tracing
 
 	// Data Tracing
 	Changing	= 0x0100,	// WHATS being changed
@@ -247,6 +251,19 @@ public:
     T_CheckPoint();
     T_CheckPoint(const char *fmt, ...);
     ~T_CheckPoint() {}
+};
+
+// ===================================================
+
+class T_Comments : public Trace
+{
+    ThreadID *tid;
+    void common(const char *input);
+    T_Comments();
+
+public:
+    T_Comments(const char *fmt, ...);
+    ~T_Comments() {}
 };
 
 // ===================================================

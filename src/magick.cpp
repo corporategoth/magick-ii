@@ -685,7 +685,7 @@ void Magick::get_config_values()
     mstring ts_ServMsg=mstring("ServMsg/");
 
     in.Read(ts_Startup+"REMOTE_SERVER",&Startup_REMOTE_SERVER,"127.0.0.1");
-    in.Read(ts_Startup+"REMOTE_PORT",&Startup_REMOTE_PORT,"9666");
+    in.Read(ts_Startup+"REMOTE_PORT",&Startup_REMOTE_PORT,9666);
     in.Read(ts_Startup+"PASSWORD",&Startup_PASSWORD,"");
     in.Read(ts_Startup+"SERVER_NAME",&Startup_SERVER_NAME,"services.magick.tm");
     in.Read(ts_Startup+"SERVER_DESC",&Startup_SERVER_DESC,"Magick IRC Services");

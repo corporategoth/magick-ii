@@ -38,6 +38,7 @@ const struct Trace::levelname_struct Trace::levelname[] = {
 	levelname_struct( "CHAT*", Chatter ),
 	levelname_struct( "CHE*", CheckPoint ),
 	levelname_struct( "C*P*", CheckPoint ),
+	levelname_struct( "COM*", CheckPoint ),
 	levelname_struct( "F*NC*", Functions ),
 	levelname_struct( "MOD*", Modify ),
 	levelname_struct( "CHANG*", Changing )
@@ -186,6 +187,31 @@ void T_CheckPoint::common(const char *input)
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
+	tid->WriteOut(message);
+    }
+}
+
+// ===================================================
+
+//      ## Loading value blah ...
+T_Comments::T_Comments(const char *fmt, ...)
+{
+    va_list args;
+    va_start (args, fmt);
+
+    mstring output;
+    output.FormatV(fmt, args);
+    common(output.c_str());
+}
+
+void T_Comments::common(const char *input)
+{
+    ShortLevel(Comments);
+    if (!(tid = mThread::find()))
+	return; // should throw an exception later
+    if (IsOn(tid)) {
+	mstring message;
+	message << "## " << input;
 	tid->WriteOut(message);
     }
 }

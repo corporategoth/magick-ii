@@ -60,6 +60,39 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
     // this is sitting inside the thread, so just parse off hand off to
     // wherever needed and return from this function.
     // return -1 if we want to shutdown the socket, 0 if all's okay.
+    // <nick/server> <command> <params ...>
+
+    mstring tmp[3];
+    tmp[0]=data.Before(" ");				// 1st arg
+    tmp[1]=data.After(" ").Before(" ");			// 2nd arg
+    tmp[2]=data.After(" ").After(" ").Before(" ");	// 3rd arg
+    tmp[1].MakeUpper();
+
+    // This is all we really care about for splitting.
+    if (tmp[1] == "PRIVMSG" || tmp[1] == "NOTICE") {
+	// We pass to services all except target.
+	// We send target as a seperate argument.
+	mstring pass=tmp[0]+tmp[1]+data.After(" ").After(" ").After(" ");
+
+//	if (OperServ::names.Find(tmp[2]))
+//	    OperServ.push_message(tmp[2], pass);
+	if (NickServ::names.Find(tmp[2]))
+	    NickServ.push_message(tmp[2], pass);
+	else if (ChanServ::names.Find(tmp[2]))
+	    ChanServ.push_message(tmp[2], pass);
+//	else if (MemoServ::names.Find(tmp[2]))
+//	    MemoServ.push_message(tmp[2], pass);
+//	else if (HelpServ::names.Find(tmp[2]))
+//	    HelpServ.push_message(tmp[2], pass);
+
+	// How do we want to handle custom services (BOB created)?
+
+    } else {
+	// This handles all non-msgs/notices.
+//	Server.push_message (data);
+
+    }
+
     return 0;
 }
 
