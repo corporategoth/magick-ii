@@ -1,6 +1,6 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 
-SUBDIRS = docs src gui include lang 
+SUBDIRS = docs ircd src gui include lang 
 
 EXTRA_DIST = magick.kdevprj AUTHORS COPYING ChangeLog INSTALL README TODO magick.lsm FAQ NEWS acconfig.h KNOWN-BUGS rtfm Magick.spec 
 
