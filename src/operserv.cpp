@@ -60,6 +60,20 @@ void OperServ::RemHost(mstring host)
     }
 }
 
+unsigned int OperServ::CloneList_sum()
+{
+    NFT("OperServ::Clones");
+
+    map<mstring, unsigned int>::iterator i;
+    unsigned int value = 0;
+
+    for (i=CloneList.begin(); i!=CloneList.end(); i++)
+    {
+	value += i->second;
+    }
+    RET(value);
+}
+
 
 bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added)
 {

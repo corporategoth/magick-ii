@@ -483,7 +483,34 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 	// Sign ourselves in ...
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);
+	if (i_UserMax < Parent->nickserv.live.size())
+	    i_UserMax = Parent->nickserv.live.size();
 	raw(send);
+    }
+}
+
+
+void NetworkServ::NICK(mstring oldnick, mstring newnick)
+{
+    FT("NetworkServ::NICK", (oldnick, newnick));
+
+    if (!Parent->nickserv.IsLive(oldnick))
+    {
+	wxLogWarning("NICK command requested by non-existant user %s", oldnick.c_str());
+    }
+    else if (!Parent->nickserv.live[oldnick.LowerCase()].IsServices())
+    {
+	wxLogWarning("NICK command requested by non-service %s", oldnick.c_str());
+    }
+    else
+    {
+	if (!Parent->nickserv.IsLive(newnick))
+	    Parent->nickserv.live.erase(newnick.LowerCase());
+	Parent->nickserv.live[newnick.LowerCase()] =
+		Parent->nickserv.live[oldnick.LowerCase()];
+	Parent->nickserv.live.erase(oldnick.LowerCase());
+	Parent->nickserv.live[newnick.LowerCase()].Name(newnick);
+	raw(":" + oldnick + " NICK " + newnick);
     }
 }
 
@@ -1176,6 +1203,8 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(6, ": "),
 			data.After(":")
 		    );
+		if (i_UserMax < Parent->nickserv.live.size())
+		    i_UserMax = Parent->nickserv.live.size();
 
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
@@ -1200,7 +1229,7 @@ void NetworkServ::execute(const mstring & data)
 		    !Parent->nickserv.stored[sourceL].IsOnline())
 		{
 		    Parent->nickserv.send(sourceL,
-			"Please identify or you will be killed.");
+			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"));
 		}
 	    }
 	    else
@@ -2147,9 +2176,11 @@ void NetworkServ::numeric_execute(const mstring & data)
 	break;
     case 464:     // ERR_PASSWDMISMATCH
 	// MUST handle (Stop connecting).
+	Parent->Disconnect();
 	break;
     case 465:     // ERR_YOUREBANNEDCREEP
 	// MUST handle (Stop connecting).
+	Parent->Disconnect();
 	break;
     case 467:     // ERR_KEYSET
 	break;

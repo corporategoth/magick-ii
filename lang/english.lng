@@ -166,15 +166,23 @@ OFF                =OFF
 ; This section contains the output of the STATS command.
 ;
 [STATS]
-NS_LIVE            =Live Nicknames      %5d (%dkb)
-CS_LIVE            =Live Channels       %5d (%dkb)
-NS_STORED          =Stored Nicknames    %5d (%dkb)
-CS_STORED          =Stored Channels     %5d (%dkb)
-MEMO               =User Memos          %5d (%dkb)
-NEWS               =News Articles       %5d (%dkb)
-COMMITTEE          =Committees          %5d (%dkb)
-OPERSERV           =OperServ Lists      %5d (%dkb)
-OTHER              =Other               %5d (%dkb)
+GEN_UPTIME         =Services up for %s.
+GEN_RESET          =Services last reset %s ago.
+GEN_MAXUSERS       =Maximum Users : %d
+GEN_USERS          =Current Users : %d (%d ops)
+GEN_CLONES         =Current Clones: %d (%d hosts)
+
+USE_NS_LIVE        =Live Nicknames      %5d (%dkb)
+USE_CS_LIVE        =Live Channels       %5d (%dkb)
+USE_NS_STORED      =Stored Nicknames    %5d (%dkb)
+USE_CS_STORED      =Stored Channels     %5d (%dkb)
+USE_MEMO           =User Memos          %5d (%dkb)
+USE_NEWS           =News Articles       %5d (%dkb)
+USE_COMMITTEE      =Committees          %5d (%dkb)
+USE_OPERSERV       =OperServ Lists      %5d (%dkb)
+USE_OTHER          =Other               %5d (%dkb)
+USE_TOTAL          =TOTAL               %5d (%dkb)
+
 
 ;
 ; This section contains ALL output from list modifying commands.

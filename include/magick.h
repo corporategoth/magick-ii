@@ -67,7 +67,7 @@ private:
 	mstring i_config_file;
 	mstring i_programname;
 
-	mDateTime ResetTime;
+	mDateTime i_ResetTime;
 	unsigned int i_level;
 	bool i_auto;
 	bool i_shutdown;
@@ -183,6 +183,7 @@ public:
 	// Current STATES, and switching between them.
 	Magick(int inargc, char **inargv);
 	int Start();
+	mDateTime ResetTime()	{ return i_ResetTime; }
 	unsigned int Level()	{ return i_level; }
 	void LevelUp()
 	{

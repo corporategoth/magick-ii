@@ -254,7 +254,7 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     CP((PRODUCT + " II has been started ..."));
-    ResetTime=Now();
+    i_ResetTime=Now();
     load_databases();
 
     //this little piece of code creates the actual connection from magick

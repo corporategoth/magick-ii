@@ -3447,7 +3447,6 @@ void NickServ::RemCommands()
 {
     NFT("NickServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
-
 }
 
 

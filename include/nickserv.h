@@ -327,7 +327,6 @@ class NickServ : public mBase
 {
     friend class Magick;
 private:
-
     // Config Entries ...
     unsigned int maxlen;	// Maximum length of a nickname
     mstring suffixes;		// What to add to unidentified nicks

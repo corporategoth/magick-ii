@@ -516,73 +516,77 @@ int EventTask::svc(void)
 		    }
 		}
 
-		// Sending pending modes ...
-		if (cli->second.p_modes_on != "" || cli->second.p_modes_off != "")
+		// Send pending ChanServ modes ...
+		// Make sure we got someone to send them first.
+		if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
 		{
-		    unsigned int modesperline = 4, j, k;
-		    vector<mstring> modelines;
-		    mstring mode;
-		    mstring modeparam;
+		    if (cli->second.p_modes_on != "" || cli->second.p_modes_off != "")
+		    {
+			unsigned int modesperline = 4, j, k;
+			vector<mstring> modelines;
+			mstring mode;
+			mstring modeparam;
 
-		    for (i=0, j=0, k=0; i<cli->second.p_modes_off.size(); i++, j++)
-		    {
-			if (j>=modesperline)
+			for (i=0, j=0, k=0; i<cli->second.p_modes_off.size(); i++, j++)
 			{
-			    modelines.push_back(mode + " " + modeparam);
-			    mode = modeparam = "";
-			    j=0;
+			    if (j>=modesperline)
+			    {
+				modelines.push_back(mode + " " + modeparam);
+				mode = modeparam = "";
+				j=0;
+			    }
+			    if (mode == "")
+				mode += "-";
+			    mode += cli->second.p_modes_off[i];
+			    switch (cli->second.p_modes_off[i])
+			    {
+			    case 'o':
+			    case 'v':
+			    case 'b':
+			    case 'k':
+				if (modeparam != "")
+				    modeparam += " ";
+				modeparam +=  cli->second.p_modes_off_params[k];
+				k++;
+			    }
 			}
-			if (mode == "")
-			    mode += "-";
-			mode += cli->second.p_modes_off[i];
-			switch (cli->second.p_modes_off[i])
-			{
-			case 'o':
-			case 'v':
-			case 'b':
-			case 'k':
-			    if (modeparam != "")
-				modeparam += " ";
-			    modeparam +=  cli->second.p_modes_off_params[k];
-			    k++;
-			}
-		    }
-		    cli->second.p_modes_off = "";
-		    cli->second.p_modes_off_params.clear();
-		    if (j>0 && cli->second.p_modes_on.size())
-			mode += "+";
-		    for (i=0, k=0; i<cli->second.p_modes_on.size(); i++, j++)
-		    {
-			if (j>=modesperline)
-			{
-			    modelines.push_back(mode + " " + modeparam);
-			    mode = modeparam = "";
-			    j=0;
-			}
-			if (mode == "")
+			cli->second.p_modes_off = "";
+			cli->second.p_modes_off_params.clear();
+			if (j>0 && cli->second.p_modes_on.size())
 			    mode += "+";
-			mode += cli->second.p_modes_on[i];
-			switch (cli->second.p_modes_on[i])
+			for (i=0, k=0; i<cli->second.p_modes_on.size(); i++, j++)
 			{
-			case 'o':
-			case 'v':
-			case 'b':
-			case 'k':
-			case 'l':
-			    if (modeparam != "")
-				modeparam += " ";
-			    modeparam += cli->second.p_modes_on_params[k];
-			    k++;
+			    if (j>=modesperline)
+			    {
+				modelines.push_back(mode + " " + modeparam);
+				mode = modeparam = "";
+				j=0;
+			    }
+			    if (mode == "")
+				mode += "+";
+			    mode += cli->second.p_modes_on[i];
+			    switch (cli->second.p_modes_on[i])
+			    {
+			    case 'o':
+			    case 'v':
+			    case 'b':
+			    case 'k':
+			    case 'l':
+				if (modeparam != "")
+				    modeparam += " ";
+				modeparam += cli->second.p_modes_on_params[k];
+				k++;
+			    }
 			}
-		    }
-		    cli->second.p_modes_on = "";
-		    cli->second.p_modes_on_params.clear();
-		    if (j>0)
-			modelines.push_back(mode + " " + modeparam);
-		    for (i=0; i<modelines.size(); i++)
-		    {
-			Parent->server.MODE(Parent->chanserv.FirstName(),
-			    cli->first, modelines[i]);
+			cli->second.p_modes_on = "";
+			cli->second.p_modes_on_params.clear();
+			if (j>0)
+			    modelines.push_back(mode + " " + modeparam);
+			for (i=0; i<modelines.size(); i++)
+			{
+			    Parent->server.MODE(Parent->chanserv.FirstName(),
+				cli->first, modelines[i]);
+			}
 		    }
 		}
 	    }

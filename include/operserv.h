@@ -47,7 +47,7 @@ private:
 
     // Mask (H), Limit (int), Reason (mstring)
     set<entlist_val_t<pair<unsigned int, mstring> > > i_Clone;
-    map<mstring, int> CloneList;
+    map<mstring, unsigned int> CloneList;
 
     // Mask (U_H), Expire (long), Reason (mstring)
     set<entlist_val_t<pair<unsigned long, mstring> > > i_Akill;
@@ -85,6 +85,9 @@ public:
     bool Flood()		{ return flood; }
     bool oAkill()		{ return akill; }
     bool oOperDeny()		{ return operdeny; }
+
+    size_t CloneList_size() { return CloneList.size(); }
+    unsigned int CloneList_sum();
 
     bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = Now());
     bool Clone_erase();

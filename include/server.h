@@ -72,6 +72,7 @@ private:
     void SignOnAll();
     set<mstring> WaitIsOn;
 
+    size_t i_UserMax;
     map<mstring,long> ServerSquit;
     map<mstring,list<mstring> > ToBeSquit;
     ToBeSquit_Handler tobesquit;
@@ -80,6 +81,7 @@ private:
 
     void OurUplink(mstring server) { i_OurUplink = server; }
 public:
+    size_t UserMax() { return i_UserMax; }
     map<mstring,Server> ServerList;
     mstring OurUplink() { return i_OurUplink; }
     bool IsServer(mstring server);
@@ -99,6 +101,7 @@ public:
     void MODE(mstring nick, mstring channel, mstring mode);
     void NICK(mstring nick, mstring user, mstring host,
     	mstring server, mstring realname);
+    void NICK(mstring oldnick, mstring newnick);
     void NOTICE(mstring nick, mstring dest, mstring text);
     void NOOP(mstring nick, mstring server, bool onoff);
     void PART(mstring nick, mstring channel, mstring reason = "");
