@@ -1,6 +1,10 @@
 #include "chanserv.h"
 #include "magick.h"
 
+ChanServ::ChanServ()
+{
+    terminate_requested=false;
+}
 // ***************************************
 // NOTE:this function has to be re-entrant
 // ***************************************
@@ -12,7 +16,7 @@ void *chanserv_thread_handler(void *level)
 
     highestlevel=ilevel;
     MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
-    while(false) // fix this a bit later to a proper check
+    while(MagickObject->chanserv.terminate_requested==false)
     {
 
 	// brackets are here so that the lock exists only as long as we need it.
@@ -40,12 +44,13 @@ void *chanserv_thread_handler(void *level)
 	    }
 	}
 	MagickObject->chanserv.execute(data.first,data.second);
+	// if theres leftover time in the timeslice, yield it up to the processor.
 	ACE_Thread::yield();
     }
     return NULL;
 }
 
-void init_chanserv()
+void ChanServ::init()
 {
     ACE_Thread::spawn(chanserv_thread_handler,(void *)0);
 }
