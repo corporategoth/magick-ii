@@ -65,7 +65,7 @@ SUBDIRS = antlr des xml
 LDADD = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a
 INCLUDES = -I$(top_srcdir)/include
 bin_PROGRAMS = magick
-magick_SOURCES =  base.cpp         convert.cpp      EscLexer.cpp     ircsocket.cpp    main.cpp         nickserv.cpp     textfile.cpp chanserv.cpp     cryptstream.cpp  EscParser.cpp    lockable.cpp     memoserv.cpp     operserv.cpp     trace.cpp    commserv.cpp     datetime.cpp     fileconf.cpp     log.cpp          mstream.cpp      server.cpp       utils.cpp    confbase.cpp     dccengine.cpp    filesys.cpp      magick.cpp       mstring.cpp      servmsg.cpp      variant.cpp
+magick_SOURCES =  base.cpp         chanserv.cpp     commserv.cpp     confbase.cpp convert.cpp      cryptstream.cpp  datetime.cpp     dccengine.cpp EscLexer.cpp     EscParser.cpp    fileconf.cpp     filesys.cpp ircsocket.cpp    lockable.cpp     log.cpp          magick.cpp main.cpp         memoserv.cpp     mstream.cpp      mstring.cpp nickserv.cpp     operserv.cpp     server.cpp       servmsg.cpp textfile.cpp     trace.cpp        utils.cpp        variant.cpp
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
@@ -76,11 +76,11 @@ DEFS =  -DMAGICK_HAS_EXCEPTIONS=1 -DHASCRYPT=1  -I. -I$(srcdir)
 CPPFLAGS =  -fno-default-inline
 LDFLAGS = 
 LIBS =  -lACE -lpthread -lz
-magick_OBJECTS =  base.o convert.o EscLexer.o ircsocket.o main.o \
-nickserv.o textfile.o chanserv.o cryptstream.o EscParser.o lockable.o \
-memoserv.o operserv.o trace.o commserv.o datetime.o fileconf.o log.o \
-mstream.o server.o utils.o confbase.o dccengine.o filesys.o magick.o \
-mstring.o servmsg.o variant.o
+magick_OBJECTS =  base.o chanserv.o commserv.o confbase.o convert.o \
+cryptstream.o datetime.o dccengine.o EscLexer.o EscParser.o fileconf.o \
+filesys.o ircsocket.o lockable.o log.o magick.o main.o memoserv.o \
+mstream.o mstring.o nickserv.o operserv.o server.o servmsg.o textfile.o \
+trace.o utils.o variant.o
 magick_LDADD = $(LDADD)
 magick_DEPENDENCIES =  ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a
 magick_LDFLAGS = 

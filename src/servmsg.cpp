@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/04/16 14:29:44  prez
+** Added stats for usage, and standardized grabbing paths, etc.
+**
 ** Revision 1.37  2000/04/04 03:21:36  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -560,6 +563,39 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 		Parent->server.ServerList.size(),
 		(Parent->server.ServerList.size() * sizeof(mstring) +
 		Parent->server.ServerList.size() * sizeof(Server)) / 1024);
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANGHEAD"));
+     vector<mstring> displayed;
+     map<mstring, map<mstring, mstring> >::iterator i;
+     map<mstring, map<mstring, mstring, mstring> >::iterator k;
+     for (i=Parent->Messages.begin(); i!=Parent->Messages.end(); i++)
+     {
+/*	if (Parent->Help.find(i->first) != Parent->Help.end())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
+			i->first,
+			Parent->Messages[i->first].size() * sizeof(map<mstring, mstring>) / 1024,
+			Parent->Help[i->first].size() * sizeof(map<mstring, mstring, mstring>) / 1024);
+	    displayed.push_back(i->first);
+	}
+	else
+	{ */
+	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
+			i->first.c_str(), 
+			Parent->Messages[i->first].size() * sizeof(map<mstring, mstring>) / 1024,
+			0);
+/*	} */
+     }
+/*   for (k=Parent->Help.begin(); k!=Parent->Help.end(); k++)
+     {
+	if (displayed.find(k->first) != displayed.end())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
+			k->first, 0, 
+			Parent->Help[i->first].size() * sizeof(map<mstring, mstring, mstring>) / 1024);
+	}
+     } */
+
 }
 
 void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.162  2000/04/16 14:29:43  prez
+** Added stats for usage, and standardized grabbing paths, etc.
+**
 ** Revision 1.161  2000/04/04 03:13:50  prez
 ** Added support for masking hostnames.
 **
@@ -5887,6 +5890,12 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    if (num >= cstored->GetAccess(source))
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ONLYBELOW"));
+	return;
+    }
+
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
     if (cstored->Access_find(who))
     {
@@ -7868,7 +7877,6 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
     {
 	Parent->server.PART(Parent->chanserv.FirstName(), channel);
     }
-
 }
 
 void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
@@ -8597,6 +8605,18 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "MISC/ON").c_str() :
 		Parent->getMessage(source, "MISC/OFF").c_str());
+    if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
+	!Parent->chanserv.live[channel.LowerCase()].IsIn(
+		Parent->chanserv.FirstName()))
+    {
+	Parent->server.JOIN(Parent->chanserv.FirstName(), channel);
+    }
+    else if (!onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
+	Parent->chanserv.live[channel.LowerCase()].IsIn(
+		Parent->chanserv.FirstName()))
+    {
+	Parent->server.PART(Parent->chanserv.FirstName(), channel);
+    }
 }
 
 void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)

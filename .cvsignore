@@ -1,7 +1,14 @@
 Debug
 Release
+Makefile
+Makefile.in
+configure
+config.status
+config.cache
+.deps
 magick.pid
 magick.mnd
+magick.key
 magick
 magick.debug
 what
@@ -27,4 +34,3 @@ err.out
 *.~c
 *$$$
 errors.txt
-magickbcc.dsp

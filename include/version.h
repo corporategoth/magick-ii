@@ -24,6 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2000/04/16 14:29:43  prez
+** Added stats for usage, and standardized grabbing paths, etc.
+**
 ** Revision 1.84  2000/04/06 12:44:09  prez
 ** Removed SXP and EXPAT directories
 **
@@ -81,7 +84,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 111;
+const int BUILD_NUMBER = 124;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;

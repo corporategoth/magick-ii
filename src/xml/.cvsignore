@@ -1,5 +1,10 @@
 Debug
 Release
-*~
-*.~??
-xml.lib
+xml.plg
+*.*~
+xml.dsk
+xml$$$
+vctobpr.log
+Makefile
+Makefile.in
+.deps

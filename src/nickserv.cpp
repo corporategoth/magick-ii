@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2000/04/16 14:29:44  prez
+** Added stats for usage, and standardized grabbing paths, etc.
+**
 ** Revision 1.79  2000/04/16 06:12:13  prez
 ** Started adding body to the documentation...
 **
@@ -3977,6 +3980,13 @@ void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
     mstring nick = params.ExtractWord(2, " ");
     mstring pass = params.ExtractWord(3, " ");
 
+    if (nick.CmpNoCase(source)==0)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONYOURSELF"),
+						message.c_str());
+	return;
+    }
+
     if (!Parent->nickserv.IsStored(nick))
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
@@ -4022,6 +4032,13 @@ void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
 
     mstring nick = params.ExtractWord(2, " ");
     mstring pass = params.ExtractWord(3, " ");
+
+    if (nick.CmpNoCase(source)==0)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONYOURSELF"),
+						message.c_str());
+	return;
+    }
 
     if (!Parent->nickserv.IsStored(nick))
     {

@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.216  2000/04/16 14:29:44  prez
+** Added stats for usage, and standardized grabbing paths, etc.
+**
 ** Revision 1.215  2000/04/16 06:12:13  prez
 ** Started adding body to the documentation...
 **
@@ -139,6 +142,21 @@ wxLogStderr *logger;
 mDateTime StartTime;
 Magick *Parent;
 
+mstring Magick::files_t::MakePath(mstring in)
+{
+#ifdef WIN32
+	if (in[1u] == ':' && mstring(in[2u]) == DirSlash)
+	    return in;
+	else
+	    return Parent->Services_Dir() + DirSlash + in;
+#else
+	if (mstring(in[0u]) == DirSlash)
+	    return in;
+	else
+	    return Parent->Services_Dir() + DirSlash + in;
+#endif
+}
+
 Magick::Magick(int inargc, char **inargv)
 {
     Parent=this;
@@ -197,7 +215,7 @@ int Magick::Start()
 		{
 		    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--dir");
 		}
-		i_services_dir=argv[i];
+		i_services_dir=files.MakePath(argv[i]);
 	    }
 	    else if(argv[i]=="--config")
 	    {
@@ -243,9 +261,9 @@ int Magick::Start()
 	}
     }
     NFT("Magick::Start");
-    if (chdir (i_services_dir) < 0)
+    if (chdir (Services_Dir()) < 0)
     {
-        perror (i_services_dir);
+        perror (Services_Dir());
 #ifdef WIN32
         WSACleanup ();
 #endif
@@ -264,7 +282,7 @@ int Magick::Start()
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
 
-    FILE *logfile = fopen((i_services_dir+DirSlash+files.Logfile()).c_str(), "a");
+    FILE *logfile = fopen((files.Logfile()).c_str(), "a");
     logger->ChangeFile(logfile);
 
     // load the local messages database and internal "default messages"
@@ -787,47 +805,47 @@ void Magick::dump_help()
 	 << "\n"
 	 << "Syntax: " << i_programname << " [options]\n"
 	 << "\n"
-	 << "--help		-?     	Help output (summary of the below).\n"
-	 << "--dir X			Set the initial services directory.\n"
-	 << "--config X			Set the name of the config file.\n"
-	 << "--convert X		Convert another version of services databases\n"
-	 << "				to Magick II format, where X is the type of\n"
-	 << "				database to convert.  Currently recognized:\n"
-	 << "					magick\n"
-	 << "--trace X:Y		Set the trace level on startup, equivilant of\n"
-	 << "				using the OperServ TRACE SET command while\n"
-	 << "				running, where X is the trace type (or ALL),\n"
-	 << "				and Y is the trace level in hex.\n"
-	 << "--name X		-n	Override [STARTUP/SERVER_NAME] to X.\n"
-	 << "--desc X		-d	Override [STARTUP/SERVER_DESC] to X.\n"
-	 << "--user X		-u	Override [STARTUP/SERVICES_USER] to X.\n"
-	 << "--host X		-h	Override [STARTUP/SERVICES_HOST] to X.\n"
-	 << "--ownuser		-o	Override [STARTUP/OWNUSER] to X.\n"
-	 << "--protocol X	-P	Override [STARTUP/PROTOCOL] to X.\n"
-	 << "--level X		-l	Override [STARTUP/LEVEL] to X.\n"
-	 << "--lagtime X	-g	Override [STARTUP/LAGTIME] to X.\n"
-	 << "--verbose		-v	Override [FILES/VERBOSE] to X.\n"
-	 << "--log X		-L	Override [FILES/LOGFILE] to X.\n"
-	 << "--dbase X		-D	Override [FILES/DATABASE] to X.\n"
-	 << "--langdir X	-S	Override [FILES/LANGDIR] to X.\n"
-	 << "--encrypt		-E	Override [FILES/ENCRYPTION] to true.\n"
-	 << "--decrypt		-e	Override [FILES/ENCRYPTION] to false.\n"
-	 << "--keyfile X	-K	Override [FILES/KEYFILE] to X.\n"
-	 << "--compress X	-c	Override [FILES/COMPRESSION] to X.\n"
-	 << "--relink X		-r	Override [CONFIG/SERVER_RELINK] to X.\n"
-	 << "--cycle X		-t	Override [CONFIG/CYCLETIME] to X.\n"
-	 << "--check X		-T 	Override [CONFIG/CHECKTIME] to X.\n"
-	 << "--ping X		-p	Override [CONFIG/PING_FREQUENCY] to X.\n"
-	 << "--lwm X		-m	Override [CONFIG/LOW_WATER_MARK] to X.\n"
-	 << "--hwm X		-M	Override [CONFIG/HIGH_WATER_MARK] to X.\n"
-	 << "--append		-a	Override [NICKSERV/APPEND_RENAME] to true.\n"
-	 << "--rename		-A	Override [NICKSERV/APPEND_RENAME] to false.\n"
-	 << "--ident X		-R	Override [NICKSERV/IDENT] to X.\n"
+	 << "--help             -?     	Help output (summary of the below).\n"
+	 << "--dir X                    Set the initial services directory.\n"
+	 << "--config X                 Set the name of the config file.\n"
+	 << "--convert X                Convert another version of services databases\n"
+	 << "                           to Magick II format, where X is the type of\n"
+	 << "                           database to convert.  Currently recognized:\n"
+	 << "                               magick\n"
+	 << "--trace X:Y                Set the trace level on startup, equivilant of\n"
+	 << "                           using the OperServ TRACE SET command while\n"
+	 << "                           running, where X is the trace type (or ALL),\n"
+	 << "                           and Y is the trace level in hex.\n"
+	 << "--name X           -n      Override [STARTUP/SERVER_NAME] to X.\n"
+	 << "--desc X           -d      Override [STARTUP/SERVER_DESC] to X.\n"
+	 << "--user X           -u      Override [STARTUP/SERVICES_USER] to X.\n"
+	 << "--host X           -h      Override [STARTUP/SERVICES_HOST] to X.\n"
+	 << "--ownuser          -o      Override [STARTUP/OWNUSER] to X.\n"
+	 << "--protocol X       -P      Override [STARTUP/PROTOCOL] to X.\n"
+	 << "--level X          -l      Override [STARTUP/LEVEL] to X.\n"
+	 << "--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n"
+	 << "--verbose          -v      Override [FILES/VERBOSE] to X.\n"
+	 << "--log X            -L      Override [FILES/LOGFILE] to X.\n"
+	 << "--dbase X          -D      Override [FILES/DATABASE] to X.\n"
+	 << "--langdir X        -S      Override [FILES/LANGDIR] to X.\n"
+	 << "--encrypt          -E      Override [FILES/ENCRYPTION] to true.\n"
+	 << "--decrypt          -e      Override [FILES/ENCRYPTION] to false.\n"
+	 << "--keyfile X        -K      Override [FILES/KEYFILE] to X.\n"
+	 << "--compress X       -c      Override [FILES/COMPRESSION] to X.\n"
+	 << "--relink X         -r      Override [CONFIG/SERVER_RELINK] to X.\n"
+	 << "--cycle X          -t      Override [CONFIG/CYCLETIME] to X.\n"
+	 << "--check X          -T      Override [CONFIG/CHECKTIME] to X.\n"
+	 << "--ping X           -p      Override [CONFIG/PING_FREQUENCY] to X.\n"
+	 << "--lwm X            -m      Override [CONFIG/LOW_WATER_MARK] to X.\n"
+	 << "--hwm X            -M      Override [CONFIG/HIGH_WATER_MARK] to X.\n"
+	 << "--append           -a      Override [NICKSERV/APPEND_RENAME] to true.\n"
+	 << "--rename           -A      Override [NICKSERV/APPEND_RENAME] to false.\n"
+	 << "--ident X          -R      Override [NICKSERV/IDENT] to X.\n"
 	 << "--language X       -s      Override [NICKSERV/DEF_LANGUAGE] to X.\n"
 	 << "--nodcc            -x      Override [NICKSERV/PICEXT] to "" and\n"
 	 << "                           Override [MEMOSERV/FILES] to 0.\n"
 	 << "--inflight X       -f      Override [MEMOSERV/INFLIGHT] to X.\n"
-	 << "--logignore	-i      Override [OPERSERV/LOG_IGNORE] to true.\n"
+	 << "--logignore        -i      Override [OPERSERV/LOG_IGNORE] to true.\n"
 	 << "--ignore X         -I      Override [OPERSERV/IGNORE_METHOD] to X.\n"
 	 << "\n"
 	 << "For more help on the usage of " + PRODUCT + ", please browse the docs directory.\n"
@@ -1639,10 +1657,7 @@ bool Magick::get_config_values()
     mstring isonstr;
 
     // Check for \ or / or ?: in first chars.
-    if ((errstring = i_config_file[0u]) == DirSlash || i_config_file[1u] == ':')
-	errstring=i_config_file;
-    else
-	errstring=i_services_dir+DirSlash+i_config_file;
+    errstring=Config_File();
 
     {
 	FILE *TmpHand;

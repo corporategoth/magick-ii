@@ -105,7 +105,7 @@ NOLIMIT            =No limit specified, but required (ignored).
 ; not fulfilled all the correct criteria to continue.
 ;
 [ERR_SITUATION]
-NOHELP             =Sorry, there is no help abailable for %s.
+NOHELP             =Sorry, there is no help available for %s.
 ONYOURSELF         =You may only perform %s on yourself.
 NOTONYOURSELF      =You may not perform %s on yourself.
 ONCOMMITTEE        =You may only perform %s on a member of the %s committee.
@@ -273,6 +273,8 @@ USE_COMMITTEE      =Committees          %5d (%dkb)
 USE_OPERSERV       =OperServ Lists      %5d (%dkb)
 USE_OTHER          =Other               %5d (%dkb)
 USE_TOTAL          =TOTAL               %5d (%dkb)
+USE_LANGHEAD       =Language                LNG      HLP
+USE_LANG           =%-20s %5dkb  %5dkb
 
 
 ;
@@ -589,6 +591,7 @@ ISINUSE            =Channel %s is currently in use.
 ISNOTINUSE         =Channel %s is not currently in use.
 RESTRICT           =Channel %s is registered and has %s set.  Access restrictions apply.
 HIGHERACCESS       =Nickname %s is higher than you are on the %s access list.
+ONLYBELOW          =You may only add people to the access at a lower level than yourself.
 LOCKGREET          =Your greeting for channel %s is locked.
 NOTLOCKGREET       =Your greeting for channel %s is not locked.
 ISLOCKED           =%s for channel %s is locked.

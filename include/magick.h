@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.118  2000/04/16 14:29:43  prez
+** Added stats for usage, and standardized grabbing paths, etc.
+**
 ** Revision 1.117  2000/04/16 06:12:13  prez
 ** Started adding body to the documentation...
 **
@@ -112,6 +115,7 @@ public:
 class Magick
 {
     friend class Reconnect_Handler;
+    friend class ServMsg;
 private:
 	vector<mstring> argv;
 	// Language, longname, string
@@ -208,17 +212,18 @@ public:
 		unsigned long min_speed;
 		unsigned long max_speed;
 	public:
-		mstring Pidfile()const		    { return pidfile; }
-		mstring Logfile()const		    { return logfile; }
-		mstring Motdfile()const		    { return motdfile; }
-		mstring Langdir()const		    { return langdir; }
-		mstring Database()const		    { return database; }
+		mstring MakePath(mstring in);
+		mstring Pidfile()		    { return MakePath(pidfile); }
+		mstring Logfile()		    { return MakePath(logfile); }
+		mstring Motdfile()		    { return MakePath(motdfile); }
+		mstring Langdir()		    { return MakePath(langdir); }
+		mstring Database()		    { return MakePath(database); }
 		unsigned int Compression()const	    { return compression; }
-		mstring KeyFile()const		    { return keyfile; }
+		mstring KeyFile()		    { return MakePath(keyfile); }
 		bool Encryption()const		    { return encryption; }
-		mstring MemoAttach()const	    { return memoattach; }
-		mstring Picture()const		    { return picture; }
-		mstring TempDir()const		    { return tempdir; }
+		mstring MemoAttach()		    { return MakePath(memoattach); }
+		mstring Picture()		    { return MakePath(picture); }
+		mstring TempDir()		    { return MakePath(tempdir); }
 		unsigned long Filesyssize()const    { return filesyssize; }
 		unsigned long Blocksize()const	    { return blocksize; }
 		unsigned long Timeout()const	    { return timeout; }
@@ -255,7 +260,7 @@ public:
 	} config;
 
 	mstring Services_Dir()	    { return i_services_dir; }
-	mstring Config_File()	    { return i_config_file; }
+	mstring Config_File()	    { return files.MakePath(i_config_file); }
 	mstring ProgramName()	    { return i_programname; }
 
 	// Current STATES, and switching between them.

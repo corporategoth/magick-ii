@@ -3,7 +3,10 @@ LDADD = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a
 INCLUDES = -I$(top_srcdir)/include
 bin_PROGRAMS = magick
 magick_SOURCES = \
-base.cpp         convert.cpp      EscLexer.cpp     ircsocket.cpp    main.cpp         nickserv.cpp     textfile.cpp \
-chanserv.cpp     cryptstream.cpp  EscParser.cpp    lockable.cpp     memoserv.cpp     operserv.cpp     trace.cpp    \
-commserv.cpp     datetime.cpp     fileconf.cpp     log.cpp          mstream.cpp      server.cpp       utils.cpp    \
-confbase.cpp     dccengine.cpp    filesys.cpp      magick.cpp       mstring.cpp      servmsg.cpp      variant.cpp
+base.cpp         chanserv.cpp     commserv.cpp     confbase.cpp \
+convert.cpp      cryptstream.cpp  datetime.cpp     dccengine.cpp \
+EscLexer.cpp     EscParser.cpp    fileconf.cpp     filesys.cpp \
+ircsocket.cpp    lockable.cpp     log.cpp          magick.cpp \
+main.cpp         memoserv.cpp     mstream.cpp      mstring.cpp \
+nickserv.cpp     operserv.cpp     server.cpp       servmsg.cpp \
+textfile.cpp     trace.cpp        utils.cpp        variant.cpp

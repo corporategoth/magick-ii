@@ -1,4 +1,7 @@
 *~
 *.~cp
 *.~hp
-
+Makefile
+Makefile.in
+.deps
+magick
