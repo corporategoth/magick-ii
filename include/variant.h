@@ -17,8 +17,6 @@
 #pragma warning(disable:4786)
 #endif
 
-#include <vector>
-using namespace std;
 #include "mstring.h"
 #include "datetime.h"
 #include "textfile.h"

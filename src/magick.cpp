@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -11,10 +15,6 @@
 //
 // ===================================================
 
-#include <iostream>
-#include <strstream>
-#include <ace/INET_Addr.h>
-#include <ace/Log_Msg.h>
 #include "magick.h"
 #include "log.h"
 #include "EscLexer.hpp"
@@ -22,14 +22,12 @@
 #include "lockable.h"
 #include "utils.h"
 
-#include <algorithm>
-using namespace std;
-#define ACE_DEBUGGING
+//#define ACE_DEBUGGING
 
 wxLogStderr *logger;
 mDateTime StartTime, ResetTime;
 
-Magick::Magick(int inargc, char **inargv)
+Magick::Magick(int inargc, char **inargv) : chanserv(this), nickserv(this), server(this)
 {
     FT("Magick::Magick", (inargc, "(char **) inargv"));
     i_shutdown = false;
@@ -57,11 +55,6 @@ int Magick::Start()
     // We log to STDERR until we find our logfile...
     logger=new wxLogStderr();
 
-    if(bob.StartBob("")==false)
-    {
-    	/*log that bob couldn't start*/
-	bob.bobavail=false;
-    }
     // more stuff to do
     ProgramName=argv[0].RevAfter("/");
     int argc=argv.size();
@@ -110,11 +103,7 @@ int Magick::Start()
     }
 
     // need to transfer wxGetWorkingDirectory() and prepend it to config_file
-#ifdef WIN32
-    MagickIni=new wxFileConfig("magick","",services_dir+"\\"+config_file);
-#else
-    MagickIni=new wxFileConfig("magick","",services_dir+"/"+config_file);
-#endif
+    MagickIni=new wxFileConfig("magick","",services_dir+DirSlash+config_file);
     if(MagickIni==NULL)
     {
 	wxLogFatal("Major fubar, couldn't allocate memory to read config file\nAborting");
@@ -134,11 +123,7 @@ int Magick::Start()
     if(!check_config())
 	RET(MAGICK_RET_TERMINATE);
 
-#ifdef WIN32
-    FILE *logfile = fopen((services_dir+"\\"+Files_LOGFILE).c_str(), "w+");
-#else
-    FILE *logfile = fopen((services_dir+"/"+Files_LOGFILE).c_str(), "w+");
-#endif
+    FILE *logfile = fopen((services_dir+DirSlash+Files_LOGFILE).c_str(), "w+");
     logger->ChangeFile(logfile);
 
     // load the local messages database and internal "default messages"
@@ -179,7 +164,7 @@ int Magick::Start()
 	log_perror ("Warning: cannot write to PID file %s", Files_PIDFILE);*/
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
-    signalhandler=new SignalHandler;
+    signalhandler=new SignalHandler(this);
     ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
 #if defined(SIGTERM) && (SIGTERM != 0)
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
@@ -208,11 +193,13 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->register_handler(SIGFPE,signalhandler);
 #endif
+#if 0 // Posix threads use these grrr
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
     ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
     ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
+#endif
 #endif
 #if defined(SIGALRM) && (SIGALRM != 0)
     ACE_Sig_Action sigalrm (ACE_SignalHandler (SIG_IGN), SIGALRM);
@@ -239,7 +226,7 @@ int Magick::Start()
     ACE_UNUSED_ARG (sigttsp);
 #endif
 
-    mBase::init();
+    mBase::init(this);
 #if 0
     if(!nickserv.getnames().IsEmpty())
 	nickserv.init();
@@ -306,11 +293,13 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->remove_handler(SIGFPE);
 #endif
+#if 0 // Posix threads use these, grr
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
     ACE_Reactor::instance()->remove_handler(SIGUSR1);
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
     ACE_Reactor::instance()->remove_handler(SIGUSR2);
+#endif
 #endif
     delete signalhandler;
     if(logger!=NULL)
@@ -386,21 +375,13 @@ void Magick::LoadInternalMessages()
     int i;
     remove("tmplang.lng");
 
-#ifdef WIN32
-    wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+"\\tmplang.lng");
-#else
-    wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+"/tmplang.lng");
-#endif
+    wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+DirSlash+"tmplang.lng");
     for(i=0;i<def_langent;i++)
 	*fostream<<def_lang[i]<<"\n";
     fostream->Sync();
     delete fostream;
     // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
-#ifdef WIN32
-    wxFileConfig fconf("magick","",wxGetCwd()+"\\tmplang.lng");
-#else
-    wxFileConfig fconf("magick","",wxGetCwd()+"/tmplang.lng");
-#endif
+    wxFileConfig fconf("magick","",wxGetCwd()+DirSlash+"tmplang.lng");
     bool bContGroup, bContEntries;
     long dummy1,dummy2;
     mstring groupname,entryname,combined;
@@ -454,11 +435,7 @@ void Magick::LoadExternalMessages()
     // use the previously created name array to get the names to load
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
-#ifdef WIN32
-    wxFileConfig fconf("magick","",services_dir+"\\lang\\"+Files_LANGUAGE+".lng");
-#else
-    wxFileConfig fconf("magick","",services_dir+"/lang/"+Files_LANGUAGE+".lng");
-#endif
+    wxFileConfig fconf("magick","",services_dir+DirSlash+"lang"+DirSlash+Files_LANGUAGE+".lng");
     int i;
     // change this to not just update the internal defaults but also to
     // add new one's like loadinternal does.
@@ -927,7 +904,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case 0:		// this is here to show up clashes for badly defined signal constants
 	break;
     case SIGINT:	// CTRL-C, Background.
-	MagickObject->shutdown(true);	// Temp, we just kill on CTRL-C
+	Parent->shutdown(true);	// Temp, we just kill on CTRL-C
 	break;
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
@@ -997,11 +974,11 @@ bool Magick::checkifhandled(const mstring & server, const mstring & command)
        return false;
 }
 
-void Magick::dobobhandle(const mstring& server, const mstring& command, const mstring& data)
+void Magick::doscripthandle(const mstring& server, const mstring& command, const mstring& data)
 {
     if(checkifhandled(server,command)==true)
     {
-	bob.Call((handlermap[pair<mstring,mstring>(server,command)])[0],1,data.c_str());
+	//todo
     }
 }
 

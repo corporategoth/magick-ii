@@ -1,36 +1,14 @@
-// $Id$
-//
-// Magick IRC Services
-// (c) 1997-1999 Preston A. Elder <prez@magick.tm>
-// (c) 1998-1999 W. King <ungod@magick.tm>
-//
-// The above copywright may not be removed under any
-// circumstances, however it may be added to if any
-// modifications are made to this file.  All modified
-// code must be clearly documented and labelled.
-//
-// ===================================================
 /*
  * ANTLR-generated file resulting from grammar escparse.g
  * 
  * Terence Parr, MageLang Institute
  * with John Lilley, Empathy Software
- * ANTLR Version 2.5.0; 1996,1997,1998
+ * ANTLR Version 2.6.1; 1996-1999
  */
-
-
-/* Escape parsing subsystem
- *
- * Magick IRC Services are copyright (c) 1996-1998 Preston A. Elder, W. King
- *     E-mail: <prez@magick.tm>   IRC: PreZ@RelicNet
- * This program is free but copyrighted software; see the file COPYING for
- * details.
- */
-#include "mstring.h"
 
 #include "EscLexer.hpp"
-#include "EscLexerTokenTypes.hpp"
 #include "antlr/ScannerException.hpp"
+#include "antlr/CharBuffer.hpp"
 
 EscLexer::EscLexer(std::istream& in)
 	: CharScanner(new CharBuffer(in))
@@ -39,8 +17,15 @@ EscLexer::EscLexer(std::istream& in)
 	initLiterals();
 }
 
-EscLexer::EscLexer(CharBuffer& cb)
-	: CharScanner(cb)
+EscLexer::EscLexer(InputBuffer& ib)
+	: CharScanner(ib)
+{
+	setCaseSensitive(true);
+	initLiterals();
+}
+
+EscLexer::EscLexer(const LexerSharedInputState& state)
+	: CharScanner(state)
 {
 	setCaseSensitive(true);
 	initLiterals();
@@ -62,81 +47,107 @@ RefToken EscLexer::nextToken()
 		int _ttype = Token::INVALID_TYPE;
 		resetText();
 		try {   // for error handling
-			if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('n'))) {
-				mSlashn(true);
+			switch ( LA(1)) {
+			case static_cast<unsigned char>('X'):
+			case static_cast<unsigned char>('x'):
+			{
+				mHEXDIGIT(true);
 				_rettoken=_returnToken;
+				break;
 			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('t'))) {
-				mSlasht(true);
+			case static_cast<unsigned char>('0'):
+			case static_cast<unsigned char>('1'):
+			case static_cast<unsigned char>('2'):
+			case static_cast<unsigned char>('3'):
+			case static_cast<unsigned char>('4'):
+			case static_cast<unsigned char>('5'):
+			case static_cast<unsigned char>('6'):
+			case static_cast<unsigned char>('7'):
+			{
+				mOCTALDIGIT(true);
 				_rettoken=_returnToken;
+				break;
 			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('v'))) {
-				mSlashv(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('b'))) {
-				mSlashb(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('r'))) {
-				mSlashr(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('f'))) {
-				mSlashf(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('a'))) {
-				mSlasha(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('\\'))) {
-				mSlashslash(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('?'))) {
-				mSlashquestion(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('\''))) {
-				mSlashsinglequote(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('"'))) {
-				mSlashdoublequote(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('X')||LA(2)==static_cast<unsigned char>('x'))) {
-				mSlashhexidecimal(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && ((LA(2) >= static_cast<unsigned char>('0') && LA(2) <= static_cast<unsigned char>('7')))) {
-				mSlashoctal(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\\')) && (_tokenSet_0.member(LA(2)))) {
-				mSlashtrash(true);
-				_rettoken=_returnToken;
-			}
-			else if ((LA(1)==static_cast<unsigned char>('\n')||LA(1)==static_cast<unsigned char>('\r'))) {
+			case static_cast<unsigned char>('\n'):
+			case static_cast<unsigned char>('\r'):
+			{
 				mNewLine(true);
 				_rettoken=_returnToken;
+				break;
 			}
+			default:
+				if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('n'))) {
+					mSlashn(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('t'))) {
+					mSlasht(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('v'))) {
+					mSlashv(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('b'))) {
+					mSlashb(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('r'))) {
+					mSlashr(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('f'))) {
+					mSlashf(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('a'))) {
+					mSlasha(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('\\'))) {
+					mSlashslash(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('?'))) {
+					mSlashquestion(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('\''))) {
+					mSlashsinglequote(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('"'))) {
+					mSlashdoublequote(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (LA(2)==static_cast<unsigned char>('X')||LA(2)==static_cast<unsigned char>('x'))) {
+					mSlashhexidecimal(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && ((LA(2) >= static_cast<unsigned char>('0') && LA(2) <= static_cast<unsigned char>('7')))) {
+					mSlashoctal(true);
+					_rettoken=_returnToken;
+				}
+				else if ((LA(1)==static_cast<unsigned char>('\\')) && (_tokenSet_0.member(LA(2)))) {
+					mSlashtrash(true);
+					_rettoken=_returnToken;
+				}
 			else {
-				if (LA(1)!=EOF) throw ScannerException(std::string("no viable alt for char: ")+charName(LA(1)),getLine());_returnToken = makeToken(Token::EOF_TYPE);
+				if (LA(1)==EOF_CHAR) {_returnToken = makeToken(Token::EOF_TYPE);}
+				else {throw ScannerException(std::string("no viable alt for char: ")+charName(LA(1)),getLine());}
 			}
-			
+			}
+			if ( !_returnToken ) goto tryAgain; // found SKIP token
 			_ttype = _returnToken->getType();
 			_ttype = testLiteralsTable(_ttype);
-			if ( _ttype!=Token::SKIP ) {
-				_returnToken->setType(_ttype);
-				return _returnToken;
-			}
+			_returnToken->setType(_ttype);
+			return _returnToken;
 		}
 		catch (ScannerException& e) {
-			consume();
 			reportError(e);
+			consume();
 		}
+tryAgain:;
 	}
 }
 
@@ -147,7 +158,7 @@ void EscLexer::mSlashn(bool _createToken) {
 	
 	match("\\n");
 	retstring=retstring+mstring("\n");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -161,7 +172,7 @@ void EscLexer::mSlasht(bool _createToken) {
 	
 	match("\\t");
 	retstring=retstring+mstring("\t");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -175,7 +186,7 @@ void EscLexer::mSlashv(bool _createToken) {
 	
 	match("\\v");
 	retstring=retstring+mstring("\\v");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -189,7 +200,7 @@ void EscLexer::mSlashb(bool _createToken) {
 	
 	match("\\b");
 	retstring=retstring+mstring("\b");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -203,7 +214,7 @@ void EscLexer::mSlashr(bool _createToken) {
 	
 	match("\\r");
 	retstring=retstring+mstring("\r");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -217,7 +228,7 @@ void EscLexer::mSlashf(bool _createToken) {
 	
 	match("\\f");
 	retstring=retstring+mstring("\f");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -231,7 +242,7 @@ void EscLexer::mSlasha(bool _createToken) {
 	
 	match("\\a");
 	retstring=retstring+mstring("\\a");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -245,7 +256,7 @@ void EscLexer::mSlashslash(bool _createToken) {
 	
 	match("\\\\");
 	retstring=retstring+mstring("\\");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -259,7 +270,7 @@ void EscLexer::mSlashquestion(bool _createToken) {
 	
 	match("\\?");
 	retstring=retstring+mstring("\\?");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -273,7 +284,7 @@ void EscLexer::mSlashsinglequote(bool _createToken) {
 	
 	match("\\'");
 	retstring=retstring+mstring("\'");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -287,7 +298,7 @@ void EscLexer::mSlashdoublequote(bool _createToken) {
 	
 	match("\\\"");
 	retstring=retstring+mstring("\"");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -298,7 +309,7 @@ void EscLexer::mSlashhexidecimal(bool _createToken) {
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashhexidecimal;
 	int _saveIndex;
-	RefToken b(0);
+	RefToken b;
 	
 	_saveIndex=text.length();
 	match("\\");
@@ -306,7 +317,7 @@ void EscLexer::mSlashhexidecimal(bool _createToken) {
 	mHEXDIGIT(true);
 	b=_returnToken;
 	int ival; sscanf(b->getText().c_str(),"%x",&ival); retstring=retstring+mstring((char)ival);
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -322,12 +333,12 @@ void EscLexer::mHEXDIGIT(bool _createToken) {
 	switch ( LA(1)) {
 	case static_cast<unsigned char>('x'):
 	{
-		match('x');
+		match(static_cast<unsigned char>('x'));
 		break;
 	}
 	case static_cast<unsigned char>('X'):
 	{
-		match('X');
+		match(static_cast<unsigned char>('X'));
 		break;
 	}
 	default:
@@ -337,36 +348,50 @@ void EscLexer::mHEXDIGIT(bool _createToken) {
 	}
 	}
 	{
-	do {
+	for (;;) {
 		if ((LA(1)==static_cast<unsigned char>('0'))) {
-			match('0');
+			match(static_cast<unsigned char>('0'));
 		}
 		else {
-			goto _loop22;
+			goto _loop21;
 		}
 		
-	} while (true);
-	_loop22:;
+	}
+	_loop21:;
 	}
 	{
 	switch ( LA(1)) {
-	case static_cast<unsigned char>('1'):  case static_cast<unsigned char>('2'):  case static_cast<unsigned char>('3'):  case static_cast<unsigned char>('4'):
-	case static_cast<unsigned char>('5'):  case static_cast<unsigned char>('6'):  case static_cast<unsigned char>('7'):  case static_cast<unsigned char>('8'):
+	case static_cast<unsigned char>('1'):
+	case static_cast<unsigned char>('2'):
+	case static_cast<unsigned char>('3'):
+	case static_cast<unsigned char>('4'):
+	case static_cast<unsigned char>('5'):
+	case static_cast<unsigned char>('6'):
+	case static_cast<unsigned char>('7'):
+	case static_cast<unsigned char>('8'):
 	case static_cast<unsigned char>('9'):
 	{
-		matchRange('1','9');
+		matchRange(static_cast<unsigned char>('1'),static_cast<unsigned char>('9'));
 		break;
 	}
-	case static_cast<unsigned char>('a'):  case static_cast<unsigned char>('b'):  case static_cast<unsigned char>('c'):  case static_cast<unsigned char>('d'):
-	case static_cast<unsigned char>('e'):  case static_cast<unsigned char>('f'):
+	case static_cast<unsigned char>('a'):
+	case static_cast<unsigned char>('b'):
+	case static_cast<unsigned char>('c'):
+	case static_cast<unsigned char>('d'):
+	case static_cast<unsigned char>('e'):
+	case static_cast<unsigned char>('f'):
 	{
-		matchRange('a','f');
+		matchRange(static_cast<unsigned char>('a'),static_cast<unsigned char>('f'));
 		break;
 	}
-	case static_cast<unsigned char>('A'):  case static_cast<unsigned char>('B'):  case static_cast<unsigned char>('C'):  case static_cast<unsigned char>('D'):
-	case static_cast<unsigned char>('E'):  case static_cast<unsigned char>('F'):
+	case static_cast<unsigned char>('A'):
+	case static_cast<unsigned char>('B'):
+	case static_cast<unsigned char>('C'):
+	case static_cast<unsigned char>('D'):
+	case static_cast<unsigned char>('E'):
+	case static_cast<unsigned char>('F'):
 	{
-		matchRange('A','F');
+		matchRange(static_cast<unsigned char>('A'),static_cast<unsigned char>('F'));
 		break;
 	}
 	default:
@@ -377,23 +402,38 @@ void EscLexer::mHEXDIGIT(bool _createToken) {
 	}
 	{
 	switch ( LA(1)) {
-	case static_cast<unsigned char>('0'):  case static_cast<unsigned char>('1'):  case static_cast<unsigned char>('2'):  case static_cast<unsigned char>('3'):
-	case static_cast<unsigned char>('4'):  case static_cast<unsigned char>('5'):  case static_cast<unsigned char>('6'):  case static_cast<unsigned char>('7'):
-	case static_cast<unsigned char>('8'):  case static_cast<unsigned char>('9'):
+	case static_cast<unsigned char>('0'):
+	case static_cast<unsigned char>('1'):
+	case static_cast<unsigned char>('2'):
+	case static_cast<unsigned char>('3'):
+	case static_cast<unsigned char>('4'):
+	case static_cast<unsigned char>('5'):
+	case static_cast<unsigned char>('6'):
+	case static_cast<unsigned char>('7'):
+	case static_cast<unsigned char>('8'):
+	case static_cast<unsigned char>('9'):
 	{
-		matchRange('0','9');
+		matchRange(static_cast<unsigned char>('0'),static_cast<unsigned char>('9'));
 		break;
 	}
-	case static_cast<unsigned char>('a'):  case static_cast<unsigned char>('b'):  case static_cast<unsigned char>('c'):  case static_cast<unsigned char>('d'):
-	case static_cast<unsigned char>('e'):  case static_cast<unsigned char>('f'):
+	case static_cast<unsigned char>('a'):
+	case static_cast<unsigned char>('b'):
+	case static_cast<unsigned char>('c'):
+	case static_cast<unsigned char>('d'):
+	case static_cast<unsigned char>('e'):
+	case static_cast<unsigned char>('f'):
 	{
-		matchRange('a','f');
+		matchRange(static_cast<unsigned char>('a'),static_cast<unsigned char>('f'));
 		break;
 	}
-	case static_cast<unsigned char>('A'):  case static_cast<unsigned char>('B'):  case static_cast<unsigned char>('C'):  case static_cast<unsigned char>('D'):
-	case static_cast<unsigned char>('E'):  case static_cast<unsigned char>('F'):
+	case static_cast<unsigned char>('A'):
+	case static_cast<unsigned char>('B'):
+	case static_cast<unsigned char>('C'):
+	case static_cast<unsigned char>('D'):
+	case static_cast<unsigned char>('E'):
+	case static_cast<unsigned char>('F'):
 	{
-		matchRange('A','F');
+		matchRange(static_cast<unsigned char>('A'),static_cast<unsigned char>('F'));
 		break;
 	}
 	default:
@@ -401,7 +441,7 @@ void EscLexer::mHEXDIGIT(bool _createToken) {
 		}
 	}
 	}
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -412,7 +452,7 @@ void EscLexer::mSlashoctal(bool _createToken) {
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashoctal;
 	int _saveIndex;
-	RefToken c(0);
+	RefToken c;
 	
 	_saveIndex=text.length();
 	match("\\");
@@ -420,7 +460,7 @@ void EscLexer::mSlashoctal(bool _createToken) {
 	mOCTALDIGIT(true);
 	c=_returnToken;
 	int ival; sscanf(c->getText().c_str(),"%o",&ival); retstring=retstring+mstring((char)ival);
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -434,33 +474,33 @@ void EscLexer::mOCTALDIGIT(bool _createToken) {
 	
 	if (((LA(1) >= static_cast<unsigned char>('0') && LA(1) <= static_cast<unsigned char>('7'))) && ((LA(2) >= static_cast<unsigned char>('0') && LA(2) <= static_cast<unsigned char>('7'))) && ((LA(3) >= static_cast<unsigned char>('0') && LA(3) <= static_cast<unsigned char>('7')))) {
 		{
-		matchRange('0','7');
+		matchRange(static_cast<unsigned char>('0'),static_cast<unsigned char>('7'));
 		}
 		{
-		matchRange('0','7');
+		matchRange(static_cast<unsigned char>('0'),static_cast<unsigned char>('7'));
 		}
 		{
-		matchRange('0','7');
+		matchRange(static_cast<unsigned char>('0'),static_cast<unsigned char>('7'));
 		}
 	}
 	else if (((LA(1) >= static_cast<unsigned char>('0') && LA(1) <= static_cast<unsigned char>('7'))) && ((LA(2) >= static_cast<unsigned char>('0') && LA(2) <= static_cast<unsigned char>('7')))) {
 		{
-		matchRange('0','7');
+		matchRange(static_cast<unsigned char>('0'),static_cast<unsigned char>('7'));
 		}
 		{
-		matchRange('0','7');
+		matchRange(static_cast<unsigned char>('0'),static_cast<unsigned char>('7'));
 		}
 	}
 	else if (((LA(1) >= static_cast<unsigned char>('0') && LA(1) <= static_cast<unsigned char>('7')))) {
 		{
-		matchRange('0','7');
+		matchRange(static_cast<unsigned char>('0'),static_cast<unsigned char>('7'));
 		}
 	}
 	else {
 		throw ScannerException(std::string("no viable alt for char: ")+charName(LA(1)),getLine());
 	}
 	
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -471,67 +511,93 @@ void EscLexer::mSlashtrash(bool _createToken) {
 	int _ttype; RefToken _token; int _begin=text.length();
 	_ttype = Slashtrash;
 	int _saveIndex;
-	RefToken d(0);
+	RefToken d;
 	
 	_saveIndex=text.length();
 	match("\\");
 	text.erase(_saveIndex);
 	{
 	switch ( LA(1)) {
-	case static_cast<unsigned char>('c'):  case static_cast<unsigned char>('d'):  case static_cast<unsigned char>('e'):
+	case static_cast<unsigned char>('c'):
+	case static_cast<unsigned char>('d'):
+	case static_cast<unsigned char>('e'):
 	{
-		matchRange('c','e');
+		matchRange(static_cast<unsigned char>('c'),static_cast<unsigned char>('e'));
 		break;
 	}
-	case static_cast<unsigned char>('g'):  case static_cast<unsigned char>('h'):  case static_cast<unsigned char>('i'):  case static_cast<unsigned char>('j'):
-	case static_cast<unsigned char>('k'):  case static_cast<unsigned char>('l'):  case static_cast<unsigned char>('m'):
+	case static_cast<unsigned char>('g'):
+	case static_cast<unsigned char>('h'):
+	case static_cast<unsigned char>('i'):
+	case static_cast<unsigned char>('j'):
+	case static_cast<unsigned char>('k'):
+	case static_cast<unsigned char>('l'):
+	case static_cast<unsigned char>('m'):
 	{
-		matchRange('g','m');
+		matchRange(static_cast<unsigned char>('g'),static_cast<unsigned char>('m'));
 		break;
 	}
-	case static_cast<unsigned char>('o'):  case static_cast<unsigned char>('p'):  case static_cast<unsigned char>('q'):
+	case static_cast<unsigned char>('o'):
+	case static_cast<unsigned char>('p'):
+	case static_cast<unsigned char>('q'):
 	{
-		matchRange('o','q');
+		matchRange(static_cast<unsigned char>('o'),static_cast<unsigned char>('q'));
 		break;
 	}
 	case static_cast<unsigned char>('u'):
 	{
-		match('u');
+		match(static_cast<unsigned char>('u'));
 		break;
 	}
 	case static_cast<unsigned char>('w'):
 	{
-		match('w');
+		match(static_cast<unsigned char>('w'));
 		break;
 	}
 	case static_cast<unsigned char>('y'):
 	{
-		match('y');
+		match(static_cast<unsigned char>('y'));
 		break;
 	}
 	case static_cast<unsigned char>('z'):
 	{
-		match('z');
+		match(static_cast<unsigned char>('z'));
 		break;
 	}
-	case static_cast<unsigned char>('A'):  case static_cast<unsigned char>('B'):  case static_cast<unsigned char>('C'):  case static_cast<unsigned char>('D'):
-	case static_cast<unsigned char>('E'):  case static_cast<unsigned char>('F'):  case static_cast<unsigned char>('G'):  case static_cast<unsigned char>('H'):
-	case static_cast<unsigned char>('I'):  case static_cast<unsigned char>('J'):  case static_cast<unsigned char>('K'):  case static_cast<unsigned char>('L'):
-	case static_cast<unsigned char>('M'):  case static_cast<unsigned char>('N'):  case static_cast<unsigned char>('O'):  case static_cast<unsigned char>('P'):
-	case static_cast<unsigned char>('Q'):  case static_cast<unsigned char>('R'):  case static_cast<unsigned char>('S'):  case static_cast<unsigned char>('T'):
-	case static_cast<unsigned char>('U'):  case static_cast<unsigned char>('V'):  case static_cast<unsigned char>('W'):
+	case static_cast<unsigned char>('A'):
+	case static_cast<unsigned char>('B'):
+	case static_cast<unsigned char>('C'):
+	case static_cast<unsigned char>('D'):
+	case static_cast<unsigned char>('E'):
+	case static_cast<unsigned char>('F'):
+	case static_cast<unsigned char>('G'):
+	case static_cast<unsigned char>('H'):
+	case static_cast<unsigned char>('I'):
+	case static_cast<unsigned char>('J'):
+	case static_cast<unsigned char>('K'):
+	case static_cast<unsigned char>('L'):
+	case static_cast<unsigned char>('M'):
+	case static_cast<unsigned char>('N'):
+	case static_cast<unsigned char>('O'):
+	case static_cast<unsigned char>('P'):
+	case static_cast<unsigned char>('Q'):
+	case static_cast<unsigned char>('R'):
+	case static_cast<unsigned char>('S'):
+	case static_cast<unsigned char>('T'):
+	case static_cast<unsigned char>('U'):
+	case static_cast<unsigned char>('V'):
+	case static_cast<unsigned char>('W'):
 	{
-		matchRange('A','W');
+		matchRange(static_cast<unsigned char>('A'),static_cast<unsigned char>('W'));
 		break;
 	}
 	case static_cast<unsigned char>('Y'):
 	{
-		match('Y');
+		match(static_cast<unsigned char>('Y'));
 		break;
 	}
 	case static_cast<unsigned char>('Z'):
 	{
-		match('Z');
+		match(static_cast<unsigned char>('Z'));
 		break;
 	}
 	default:
@@ -541,7 +607,7 @@ void EscLexer::mSlashtrash(bool _createToken) {
 	}
 	}
 	retstring=retstring+mstring(d->getText());
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
@@ -558,10 +624,10 @@ void EscLexer::mNewLine(bool _createToken) {
 		match("\r\n");
 	}
 	else if ((LA(1)==static_cast<unsigned char>('\r'))) {
-		match('\r');
+		match(static_cast<unsigned char>('\r'));
 	}
 	else if ((LA(1)==static_cast<unsigned char>('\n'))) {
-		match('\n');
+		match(static_cast<unsigned char>('\n'));
 	}
 	else {
 		throw ScannerException(std::string("no viable alt for char: ")+charName(LA(1)),getLine());
@@ -569,23 +635,23 @@ void EscLexer::mNewLine(bool _createToken) {
 	
 	}
 	newline(); retstring=retstring+mstring("\n");
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}
 	_returnToken = _token;
 }
 
-void EscLexer::mIGNORE(bool _createToken) {
+void EscLexer::mMignore(bool _createToken) {
 	int _ttype; RefToken _token; int _begin=text.length();
-	_ttype = IGNORE;
+	_ttype = Mignore;
 	int _saveIndex;
 	char  a = '\0';
 	
 	a = LA(1);
-	matchNot(EOF);
+	matchNot(EOF/*_CHAR*/);
 	retstring=retstring+mstring(a);
-	if ( _createToken && _token==0 ) {
+	if ( _createToken && _token==nullToken && _ttype!=Token::SKIP ) {
 	   _token = makeToken(_ttype);
 	   _token->setText(text.substr(_begin, text.length()-_begin));
 	}

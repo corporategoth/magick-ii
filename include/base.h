@@ -14,29 +14,51 @@
 #define _base_h
 #include "mstring.h"
 #include "trace.h"
-#include <algorithm>
-#include <queue>
-#include <utility>
-#include <ace/Message_Queue.h>
-#include <ace/Singleton.h>
-#include <ace/Synch_T.h>
-using namespace std;
+
+class Magick;
+
+// fucking hell, the parent causes major breakage, gotta turn this into
+// an ACE_Task active object.
+
+class mBaseTask : public ACE_Task<ACE_MT_SYNCH>
+{
+    friend class mBase;
+    friend class mBaseTaskmessage_MO;
+protected:
+    ACE_Activation_Queue activation_queue_;
+    ACE_Message_Queue<ACE_MT_SYNCH> message_queue_;
+    Magick *Parent;
+    void message_i(const mstring& message);
+public:
+    mBaseTask() : activation_queue_(&message_queue_) {};
+    virtual int open(void *in=0);
+    virtual int svc(void);
+    void message(const mstring& message);
+    void shutdown();
+};
+
 
 class mBase
 {
     friend void *thread_handler(void *dummyvar);
 protected:
     //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
+    static Magick *Parent;
+    static bool TaskOpened;
+    static mBaseTask BaseTask;
 public:
+	void send_cmd(const mstring& source, const mstring& fmt, ...);
+#if 0
     static map<unsigned long,mstring > Buffer_Tuple;
     static ACE_Message_Queue<ACE_MT_SYNCH> Buffer_Queue;
     //static ACE_Singleton<Buffer_Queue, ACE_Mutex> Request_Queue;
     // todo, create a static map of message_id's and buffer_tuple's. message_id get's put on the message_queue, 
     // which then is used to pull the message off the queue, this looks to be the easiest way to use
     // message_queue'ing with variable sized messages.
-    mBase();
+#endif
+    mBase(Magick *in_Parent);
     static void push_message(const mstring& message);
-    static void init();
+    static void init(Magick *in);
 
     virtual bool MSG() =0;
     virtual void MSG(bool on) =0;
@@ -48,7 +70,11 @@ public:
     //virtual mBase *GetOwner()=0;
     virtual mstring GetInternalName() const=0;
     operator mVariant() const { mVariant locvar(GetInternalName()); locvar.truevaluetype=GetInternalName(); return locvar; };
-    
+    void shutdown();
+#if 0
+    static void *thread_handler(void *owner);
+#endif
+   
 };
 
 class NetworkServ : public mBase
@@ -73,7 +99,7 @@ public:
     bool AUTO() { return automation; }
     void AUTO(bool on) { automation = on; }
 
-    NetworkServ();
+    NetworkServ(Magick *in_Parent);
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }
     virtual mstring GetInternalName() const { return "NetworkServ"; }
     void execute(const mstring & message);

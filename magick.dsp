@@ -41,8 +41,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "include\bob" /I "include" /I "..\ace_wrappers" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MD /W3 /Gi /GX /O2 /I "include\bob" /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib-1.1.3" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /YX"pch.h" /FD /c
 # ADD BASE RSC /l 0xc09 /d "NDEBUG"
 # ADD RSC /l 0xc09 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -50,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ace.lib zlib.lib /nologo /subsystem:console /machine:I386 /libpath:"..\ace_wrappers\ace"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ace.lib zlib.lib /nologo /subsystem:console /machine:I386 /libpath:"..\support\ace_wrappers\ace" /libpath:"..\support\zlib-1.1.3"
 
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
@@ -66,8 +65,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "include" /I "..\ace_wrappers" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /Fr /FD /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "include" /I "..\support\ace_wrappers" /I "..\support\zlib-1.1.3" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /Fr /YX"pch.h" /FD /c
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -75,7 +73,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib aced.lib zlib.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"..\ace_wrappers\ace"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib aced.lib zlib.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"..\support\ace_wrappers\ace" /libpath:"..\support\zlib-1.1.3"
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
@@ -86,43 +84,11 @@ LINK32=link.exe
 # Name "magick - Win32 Debug"
 # Begin Source File
 
-SOURCE=.\src\antlr\ANTLRException.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\AST.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\ASTFactory.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\base.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\include\base.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\BitSet.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\bob.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\bob.hpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\des\cbc_cksm.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\des\cfb_enc.c
 # End Source File
 # Begin Source File
 
@@ -134,15 +100,7 @@ SOURCE=.\include\chanserv.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\antlr\CharBuffer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\CharScanner.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\CommonToken.cpp
+SOURCE=.\docs\communication.txt
 # End Source File
 # Begin Source File
 
@@ -178,19 +136,22 @@ SOURCE=.\include\dccengine.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\des\des_enc.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\docs\develop
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\EscLexer.cpp
-# End Source File
-# Begin Source File
 
-SOURCE=.\include\EscLexer.hpp
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+# SUBTRACT CPP /YX
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -199,10 +160,17 @@ SOURCE=.\src\escparse.g
 # Begin Source File
 
 SOURCE=.\src\EscParser.cpp
-# End Source File
-# Begin Source File
 
-SOURCE=.\include\EscParser.hpp
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+# SUBTRACT CPP /YX
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -219,10 +187,6 @@ SOURCE=.\src\ircsocket.cpp
 # Begin Source File
 
 SOURCE=.\include\ircsocket.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\LLkParser.cpp
 # End Source File
 # Begin Source File
 
@@ -254,10 +218,6 @@ SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\antlr\MismatchedTokenException.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\mstream.cpp
 # End Source File
 # Begin Source File
@@ -282,35 +242,11 @@ SOURCE=.\include\nickserv.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\antlr\NoViableAltException.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\Parser.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\ParserException.cpp
+SOURCE=.\include\pch.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\docs\policy
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\ScannerException.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\des\set_key.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\des\str2key.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\String.cpp
 # End Source File
 # Begin Source File
 
@@ -322,23 +258,11 @@ SOURCE=.\include\textfile.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\antlr\Token.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\TokenBuffer.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\src\trace.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\include\trace.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\antlr\TreeParser.cpp
 # End Source File
 # Begin Source File
 

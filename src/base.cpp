@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -15,17 +19,37 @@
 #include "magick.h"
 #include "log.h"
 
+#if 0
 map<unsigned long,mstring > mBase::Buffer_Tuple;
 ACE_Message_Queue<ACE_MT_SYNCH> mBase::Buffer_Queue;
+#endif
 
-mBase::mBase()
+Magick *mBase::Parent;
+bool mBase::TaskOpened;
+mBaseTask mBase::BaseTask;
+
+mBase::mBase(Magick* in_Parent)
 {
     NFT("mBase::mBase");
+    Parent=in_Parent;
+    TaskOpened=false;
 }
 
 void mBase::push_message(const mstring& message)
 {
     FT("mBase::push_message@mBase", (message));
+    if(TaskOpened==false)
+    {
+	if(Parent!=NULL&&BaseTask.open(Parent)!=0)
+	{
+	    CP(("Failed to create initial thread"));
+	    return;
+	}
+    }
+    BaseTask.message(message);
+
+
+#if 0
     static unsigned long counter=0;
     // Braces, so that if we spawn/resume a thread, we make sure it can process
     {
@@ -39,7 +63,7 @@ void mBase::push_message(const mstring& message)
 	if(Buffer_Queue.is_full())
 	{
 	    // set new water marks and spawn off a new thread.
-	    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads())*sizeof(unsigned long));
+	    Buffer_Queue.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads())*sizeof(unsigned long));
 	    // below is set to the same as high_water_mark so that Buffer_Queue, doesn't block on add.
 	    Buffer_Queue.low_water_mark(Buffer_Queue.high_water_mark());
 	    if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1) {
@@ -53,31 +77,70 @@ void mBase::push_message(const mstring& message)
 	mb->copy((const char *)&counter,sizeof(unsigned long));
 	Buffer_Queue.enqueue(mb);
     }
+#endif
 }
 
-void mBase::init()
+void mBase::init(Magick *in)
 {
-    //NFT("mBase::init@"+GetInternalName());
+    NFT("mBase::init");
+
+    if(TaskOpened==false)
+    {
+	if(BaseTask.open((void *)in)!=0)
+	{
+	    CP(("Failed to create initial thread"));
+	    return;
+	}
+    }
+    BaseTask.message_queue_.high_water_mark(Parent->high_water_mark*sizeof(ACE_Method_Object *));
+    BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
+#if 0
     //mThread::spawn(Get_TType(),thread_handler,(void *)this);
     //todo: setup the first high water mark and first low water mark
     //and spawn off x threads.
-    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*sizeof(unsigned long));
+    Buffer_Queue.high_water_mark(Parent->high_water_mark*sizeof(unsigned long));
     // below is set to the same as high_water_mark so that Buffer_Queue, doesn't block on add.
     Buffer_Queue.low_water_mark(Buffer_Queue.high_water_mark());
     if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1)
 	CP(("Failed to create initial thread"));
+#endif
 }
 
-void *thread_handler(void *owner)
+void mBase::send_cmd(const mstring & source, const mstring & fmt, ...)
 {
+    FT("send_cmd", (source, fmt));
+    va_list args;
+    va_start(args,fmt);
+    //if(runflags & RUN_NOSEND)
+	//return;
+    mstring data1;
+    data1.FormatV(fmt,args);
+    va_end(args);
+
+    if(source!="")
+    {
+    }
+    else
+    {
+    }
+}
+
+void mBase::shutdown()
+{
+}
+
+#if 0
+void *mBase::thread_handler(void *owner)
+{
+    NFT("thread_handler");
     //todo ugh, major revamp Owner will be unknown till we figure out who
     // the thread is to go to (via the message)
     // we then execute the message, finally we (locked) check if we are below
     // low water mark, if so, then we return.
     // if Owner->MSG() == false then we toss message, else we execute it.
-    while(MagickObject->shutdown()==false)
+    while(Parent->shutdown()==false)
     {
-	NFT("thread_handler");
+	COM(("Attempting to read another thread ..."));
         ACE_Message_Block *mb;
 	mBase::Buffer_Queue.dequeue(mb);
 	if(mb!=NULL)
@@ -92,7 +155,6 @@ void *thread_handler(void *owner)
 	    }
 
 	    mstring tmp[2];
-	    //
 	    if(message[0u]==':')
 	    {
 		// with from prefix
@@ -115,26 +177,26 @@ void *thread_handler(void *owner)
 		// Find out if the target nick is one of the services 'clones'
 		// (and if it is, which one?)  Pass the message to them if so.
 //		     if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[1]+" "))
-//		    MagickObject->operserv.execute(message);
-		     if ((names=" "+MagickObject->nickserv.getnames()+" ").Find(" "+tmp[1]+" "))
-		    MagickObject->nickserv.execute(message);
-		else if ((names=" "+MagickObject->chanserv.getnames()+" ").Find(" "+tmp[1]+" "))
-		    MagickObject->chanserv.execute(message);
+//		    Parent->operserv.execute(message);
+		     if ((names=" "+Parent->nickserv.getnames()+" ").Find(" "+tmp[1]+" "))
+		    Parent->nickserv.execute(message);
+		else if ((names=" "+Parent->chanserv.getnames()+" ").Find(" "+tmp[1]+" "))
+		    Parent->chanserv.execute(message);
 //		else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[1]+" "))
-//		    MagickObject->memoserv.execute(message);
+//		    Parent->memoserv.execute(message);
 //		else if ((names=" "+HelpServ::getnames()+" ").Find(" "+tmp[1]+" "))
-//		    MagickObject->helpserv.execute(message);
+//		    Parent->helpserv.execute(message);
 
 		// How do we want to handle custom services (BOB created)?
 
 		// Not a MSG/NOTICE to services, fall through
 		// (it could be to a channel, or unrecognised nick).
 		else
-		    MagickObject->Server.execute (message);
+		    Parent->Server.execute (message);
 
 	    } else {
 		// This handles all non-msgs/notices.
-//		Server.execute (message);
+		Parent->Server.execute (message);
 	    }
 
 	    /* Locking here because we dont want two threads
@@ -145,9 +207,9 @@ void *thread_handler(void *owner)
 	    {
 		MLOCK("thread_handler", "LWM");
 		if(mBase::Buffer_Queue.message_count()<
-			MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)*sizeof(unsigned long)+MagickObject->low_water_mark*sizeof(unsigned long))
+			Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)*sizeof(unsigned long)+Parent->low_water_mark*sizeof(unsigned long))
 		{
-		    mBase::Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(unsigned long));
+		    mBase::Buffer_Queue.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(unsigned long));
 		    mBase::Buffer_Queue.low_water_mark(mBase::Buffer_Queue.high_water_mark());
 		    COM(("Low water mark reached, killing thread."));
 		    return NULL;
@@ -155,60 +217,12 @@ void *thread_handler(void *owner)
 	    }
 	}
     }
-
-#if 0
-    mBase *Owner=(mBase *)owner;
-    wxASSERT(Owner);
-    FT("thread_handler@"+Owner->GetInternalName(), (owner));
-    int ilevel=mThread::find()->number();
-    pair<mstring,mstring> data;
-    bool gotdata;
-
-    while(Owner->MSG())
-    {
-
-	gotdata=false;
-	// brackets are here so that the lock exists only as long as we need it.
-	{
-	    RLOCK lock(Owner->GetInternalName(),"inputbuffer");
-	    // check the inputbuffer
-	    if(Owner->inputbuffer.size()!=0)
-	    {
-		data=Owner->inputbuffer.front();
-		Owner->inputbuffer.pop_front();
-		gotdata=true;
-	    }
-
-	}
-	if (gotdata)
-	    Owner->execute(data.first,data.second);
-
-	// less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
-        if(mThread::typecount(Owner->Get_TType())!=1 && ilevel==mThread::typecount(Owner->Get_TType()) && Owner->inputbuffer.size() <
-		(mThread::typecount(Owner->Get_TType()) - 1) * MagickObject->high_water_mark + MagickObject->low_water_mark)
-        {
-    	    CP(("%s has reached lowtide mark, dropping a thread", Owner->GetInternalName().c_str()));
-	    return NULL;
-	}
-
-	// if theres leftover time in the timeslice, yield it up to the processor.
-        if(mThread::typecount(Owner->Get_TType()) == 1 && Owner->inputbuffer.size() == 0)
-        {
-            COM(("%s has no more messages left going to suspended state...", Owner->GetInternalName().c_str()));
-	    mThread::suspend();
-//	    VERY VERY temporary measure!!
-#ifdef WIN32
-	    Sleep(1000);
-#else
-	    sleep(1);
-#endif
-	}
-    }
-#endif
+    CP(("Shutdown code received, killing thread."));
     return NULL;
 }
+#endif
 
-NetworkServ::NetworkServ()
+NetworkServ::NetworkServ(Magick *in_Parent) : mBase(in_Parent)
 {
     NFT("NetworkServ::NetworkServ");
     if (mThread::findbytype(Get_TType(), 1) == NULL) {
@@ -216,6 +230,7 @@ NetworkServ::NetworkServ()
 	automation=true;
     }
 }
+
 void NetworkServ::execute(const mstring & data)
 {
     FT("NetworkServ::execute", (data));
@@ -239,9 +254,9 @@ void NetworkServ::execute(const mstring & data)
 	if(msgdata!="")
 	{
 	    if(msgdata.WordCount(" ")>1)
-		; //MagickObject->send_cmd(server_name,"PONG %s %s",msgdata.ExtractWord(2," "),msgdata.ExtractWord(1," "));
+		; //send_cmd(server_name,"PONG %s %s",msgdata.ExtractWord(2," "),msgdata.ExtractWord(1," "));
 	    else
-		; //MagickObject->send_cmd(server_name,"PONG %s %s",server_name,msgdata.ExtractWord(1," "));
+		; //send_cmd(server_name,"PONG %s %s",server_name,msgdata.ExtractWord(1," "));
 	}
 	else
 	{
@@ -249,4 +264,60 @@ void NetworkServ::execute(const mstring & data)
 	}
     }
 	
+}
+
+int mBaseTask::open(void *in)
+{
+    Parent=(Magick *)in;
+    return activate(/* todo enter the number of initial threads here*/);
+}
+
+int mBaseTask::svc(void)
+{
+    while(1)
+    {
+	auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue());
+	if(mo->call()==-1)
+	    break;
+    }
+    return 0;
+}
+
+class mBaseTaskmessage_MO : public ACE_Method_Object
+{
+public:
+    mBaseTaskmessage_MO(mBaseTask *parent, const mstring& data)
+    {
+	i_parent=parent;
+	i_data=data;
+    }
+    virtual int call()
+    {
+	i_parent->message_i(i_data);
+	return 0;
+    }
+private:
+    mBaseTask *i_parent;
+    mstring i_data;
+};
+
+void mBaseTask::message(const mstring& message)
+{
+    if(message_queue_.is_full())
+    {
+	message_queue_.high_water_mark(Parent->high_water_mark*(thr_count()+1)*sizeof(ACE_Method_Object *));
+	message_queue_.low_water_mark(message_queue_.high_water_mark());
+	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
+	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
+    }
+    activation_queue_.enqueue(new mBaseTaskmessage_MO(this,message));
+}
+
+void mBaseTask::message_i(const mstring& message)
+{
+}
+
+void mBaseTask::shutdown()
+{
+    activation_queue_.enqueue(new shutdown_MO);
 }

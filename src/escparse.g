@@ -12,7 +12,8 @@ header {
 // code must be clearly documented and labelled.
 //
 // ===================================================
-
+#include <string>
+using namespace std;
 #include "mstring.h"
 }
 
@@ -23,7 +24,7 @@ language="Cpp";
 class EscLexer extends Lexer;
 options{
 k=3;
-filter=IGNORE;
+//filter=Mignore;
 charVocabulary = '\3'..'\377';
 }
 {
@@ -81,20 +82,21 @@ NewLine:
 		{ newline(); retstring=retstring+mstring("\n"); }
 	;
 
-protected
-IGNORE: 
-	a:. {retstring=retstring+mstring(a); }
-	;
-
-protected
 HEXDIGIT: ('x'|'X') ('0')* ('1'..'9'|'a'..'f'|'A'..'F') ('0'..'9'|'a'..'f'|'A'..'F')?;
 
-protected
 OCTALDIGIT: ('0'..'7') | ('0'..'7')('0'..'7') | ('0'..'7')('0'..'7')('0'..'7');
+
+protected
+Mignore: a:.
+	{ retstring=retstring+mstring(a); }
+;
 
 class EscParser extends Parser;
 
-expr: ( slashexpr | IGNORE | NewLine)*;
+expr: (expr1)*;
+
+expr1: slashexpr 
+	| NewLine;
 
 slashexpr:
 	(Slashn) => Slashn

@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -39,9 +43,6 @@
 #else
 #include <errno.h>
 #endif
-#include <time.h>
-#include <ctype.h>
-#include <signal.h>
 #include "log.h"
 
 // ----------------------------------------------------------------------------

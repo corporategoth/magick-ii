@@ -31,9 +31,6 @@
 #pragma warning(disable:4786)
 #endif
 
-#include <string>
-using namespace std;
-
 class mstring:public string
 {
 	typedef string inherited;
@@ -111,6 +108,7 @@ public:
 	int WordCount(const mstring &separators)const;
 	mstring ExtractWord(int count,const mstring& separators)const;
 	int WordPosition(int count,const mstring& separators)const;
+	pair<int,int> RegFind(const mstring& pattern)const;
 
 	operator const char *() const { return c_str(); }
 
@@ -125,5 +123,7 @@ public:
   friend mstring operator+(const char *psz, const mstring& string);
 
 };
+
+extern const mstring DirSlash;
 
 #endif

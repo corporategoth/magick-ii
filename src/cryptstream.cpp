@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services

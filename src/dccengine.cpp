@@ -1,9 +1,24 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
+// $Id$
+//
+// Magick IRC Services
+// (c) 1997-1999 Preston A. Elder <prez@magick.tm>
+// (c) 1998-1999 W. King <ungod@magick.tm>
+//
+// The above copywright may not be removed under any
+// circumstances, however it may be added to if any
+// modifications are made to this file.  All modified
+// code must be clearly documented and labelled.
+//
+// ===================================================
+
 #ifdef _MSC_VER
 #pragma warning(disable:4786)
 #endif
 #include "dccengine.h"
-#include <algorithm>
-using namespace std;
 #include "trace.h"
 
 const char CTCP_DELIM_CHAR='\001';

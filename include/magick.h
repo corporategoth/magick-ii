@@ -18,14 +18,6 @@
 #pragma warning(disable:4786)
 #endif
 
-#include <vector>
-#include <map>
-using namespace std;
-//#include <ace/Synch.h>
-#include <ace/Thread.h>
-#include <ace/Local_Tokens.h>
-#include <ace/Reactor.h>
-#include <ace/Event_Handler.h>
 #include "bob.hpp"
 #include "mstring.h"
 #include "fileconf.h"
@@ -57,9 +49,15 @@ const int RUN_NOSLEEP	    =0x00000400;
 const int RUN_LIVE	    =0x00000800;
 #endif
 
+class Magick; // fwd reference, leave it here
+
 class SignalHandler : public ACE_Event_Handler
 {
-    int handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext); 
+protected:
+    Magick *Parent;
+public:
+    SignalHandler(Magick* in_Parent) {Parent=in_Parent;}
+    int handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext);
 };
 
 typedef map<mstring,mstring> mapstringstring;
@@ -72,22 +70,22 @@ private:
 	vector<mstring> MessageNamesShort;
 	int doparamparse();
 	SignalHandler *signalhandler;
-	IrcSvcHandler *ircsvchandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
 
 	bool messages;		// Wether to process /MSG, /NOTICE.
 	bool automation;		// Wether to do automatic tasks.
 public:
+	IrcSvcHandler *ircsvchandler;
 	void shutdown(bool in);
 	bool shutdown();
 
-	// get bob to handle it.
-	void dobobhandle(const mstring& server, const mstring& command, const mstring& data);
-	// is there a bob handler there?
+	// get script to handle it.
+	void doscripthandle(const mstring& server, const mstring& command, const mstring& data);
+	// is there a script handler there?
 	bool checkifhandled(const mstring& server, const mstring& command);
-	// remove a bob function to handle commands
+	// remove ascript function to handle commands
 	void stophandling(const mstring& server, const mstring& command, const mstring& functionname);
-	// add a bob function to handle commands
+	// add a script function to handle commands
 	void handle(const mstring& server, const mstring& command, const mstring& functionname);
 
 	bool MSG() { return messages; }
@@ -120,9 +118,8 @@ public:
 	int Start();
 
 	ChanServ chanserv;
-	Bob bob;
 	NickServ nickserv;
-	NetworkServ Server;
+	NetworkServ server;
 
 protected:
 	bool i_shutdown;
@@ -199,7 +196,7 @@ protected:
 	bool CommServ_SECURE_OPER;
 };
 
-extern Magick *MagickObject;
+//extern Magick *MagickObject;
 extern mDateTime StartTime;
 extern mDateTime ResetTime;
 

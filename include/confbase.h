@@ -31,8 +31,6 @@
 #endif
 
 #include "mstring.h"
-#include <vector>
-using namespace std;
 
 /// shall we be case sensitive in parsing variable names?
 const bool  wxCONFIG_CASE_SENSITIVE       =false;

@@ -13,13 +13,6 @@
 #ifndef _TRACE_H
 #define _TRACE_H
 
-#ifdef _MSC_VER
-#pragma warning(disable:4786)
-#endif
-
-#include <map>
-#include <utility>
-using namespace std;
 #include "mstream.h"
 #include "string.h"
 #include "variant.h"
@@ -87,7 +80,7 @@ using namespace std;
 // then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
 // then it gives a syntax error.
 
-enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_BOB, tt_MAX };
+enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_BOB, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
 
 // Trace Codes
@@ -110,6 +103,27 @@ extern mstring threadname[tt_MAX];
 //   ??  External commands (T_External)
 
 // ===================================================
+class LoggerTask : public ACE_Task<ACE_MT_SYNCH>
+{
+private:
+    ACE_Activation_Queue activation_queue_;
+    map<threadtype_enum, queue<mstring> > buffers;
+public:
+    int open(void *in);
+    int close(unsigned long in);
+    int svc(void);
+    int shutdown();
+};
+
+class shutdown_MO : public ACE_Method_Object
+{
+public:
+    virtual int call()
+    {
+	return -1;
+    }
+};
+
 
 // ToDo -- A method to get the current ThreadID number
 

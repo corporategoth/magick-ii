@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -13,7 +17,6 @@
 
 #include "lockable.h"
 #include "utils.h"
-#include <ace/Thread_Manager.h>
 
 RLOCK::RLOCK(mstring x1)
 {

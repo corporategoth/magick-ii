@@ -31,9 +31,6 @@
 #pragma warning(disable:4786)
 #endif
 
-#include <assert.h>
-#include <vector>
-using namespace std;
 #include "mstring.h"
 #include "mstream.h"
 //#include "log.h"

@@ -20,7 +20,6 @@
 
 #include "mstring.h"
 #include "mstream.h"
-#include <time.h>
 
 class mDateTime
 {

@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -21,10 +25,6 @@
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
-#include "ace/OS.h"
-#include <math.h>
-#include <zlib.h>
-#include <stdarg.h>
 #include "mstream.h"
 #include "utils.h"
 #include "log.h"

@@ -18,12 +18,8 @@
 #pragma warning(disable:4786)
 #endif
 
-#include <ace/Local_Tokens.h>
-#include <ace/Thread.h>
 #include "mstring.h"
 #include "trace.h"
-#include <map>
-using namespace std;
 
 class RLOCK
 {

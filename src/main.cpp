@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -11,15 +15,13 @@
 //
 // ===================================================
 
-#include <exception>
-using namespace std;
 #include "magick.h"
 #include "datetime.h"
 #include "lockable.h"
 
 mDateTime Start_Time, Reset_Time;
 
-Magick *MagickObject;
+//Magick *MagickObject;
 
 int main(int argc, char **argv)
 {
@@ -43,7 +45,6 @@ int main(int argc, char **argv)
 restart:
 	{
 	    Magick internalobject(argc, argv);
-	    MagickObject=&internalobject;
 	    ResetTime=Now();
 	    Result=internalobject.Start();
 	}

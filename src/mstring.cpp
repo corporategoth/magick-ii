@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -24,12 +28,14 @@
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
-#include "ace/OS.h"
-#include <ctype.h>
-#include <stdarg.h>
-#include <algorithm>
-using namespace std;
 #include "mstring.h"
+#include "rx/rxposix.h"
+
+#ifdef WIN32
+mstring const DirSlash="\\";
+#else
+mstring const DirSlash="/";
+#endif
 
 mstring::mstring(const mstring& in)
 :inherited(in)
@@ -190,7 +196,30 @@ mstring& mstring::Truncate(size_t uiLine)
 
 bool mstring::Matches(const mstring & in)
 {
-	const char *psztext,*pszmask;
+
+// new code
+    bool Result=false;
+    regex_t matchcode;
+    regmatch_t matches[1];
+    if(regcomp(&matchcode,in.c_str(),0)!=0)
+    {
+	Result=false;
+	goto re_cleanup;
+    }
+    if(regexec(&matchcode,this->c_str(),1,matches,0)!=0)
+	Result=false;
+    else
+    {
+	// check the matches value for start offset of 0, length == length of this.
+	if(matches[0].rm_so!=0||(matches[0].rm_eo-matches[0].rm_so)!=Len())
+	    Result=false;
+	else
+	    Result=true;
+    }
+re_cleanup:
+    regfree(&matchcode);
+    return Result;
+/*	const char *psztext,*pszmask;
 	for(psztext=c_str(),pszmask=in.c_str();*pszmask!='\0';psztext++,pszmask++)
 	{
 		switch(*pszmask)
@@ -228,6 +257,7 @@ bool mstring::Matches(const mstring & in)
 		}
 	}
 	return *psztext=='\0';
+*/
 }
 
 int mstring::Format(const char * pszFormat, ...)
@@ -621,4 +651,32 @@ int mstring::WordPosition(int N,const mstring& separators)const
 	    Result=i;
     }
     return Result;
+}
+
+pair<int,int> mstring::RegFind(const mstring& pattern)const
+{
+    pair<int,int> Result;
+    regex_t matchcode;
+    regmatch_t matches[1];
+    if(regcomp(&matchcode,pattern.c_str(),0)!=0)
+    {
+	Result.first=0;
+	Result.second=0;
+	goto re_cleanup2;
+    }
+    if(regexec(&matchcode,this->c_str(),1,matches,0)!=0)
+    {
+	Result.first=0;
+	Result.second=0;
+    }
+    else
+    {
+	// check the matches value for start offset of 0, length == length of this.
+        Result.first=matches[0].rm_so;
+	Result.second=matches[0].rm_eo-matches[0].rm_so;
+    }
+re_cleanup2:
+    regfree(&matchcode);
+    return Result;
+
 }

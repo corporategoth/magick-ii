@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -14,10 +18,14 @@
 // Tracing functions -- Include making TraceMap's and
 // receiving all trace information.
 
+#ifdef _MSC_VER
+#pragma warning(disable:4786)
+#endif
+
 #include "trace.h"
 #include "lockable.h"
 
-mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
+mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB", "LOST" };
 Trace::level_enum Trace::SLevel = Off;
 unsigned short Trace::traces[tt_MAX] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -87,6 +95,7 @@ mstring ThreadID::logname()
 
 void ThreadID::WriteOut(const mstring &message)
 {
+    // this stuff all has to be rewritten to use the new task object.
     
     //below for now till i get the operator bool happening.
     if (out==NULL||out->Ok()!=true) 
@@ -362,3 +371,33 @@ T_Locking::~T_Locking() {
 
 // T_External::T_External() {}
 
+int LoggerTask::open(void *in)
+{
+    return activate();
+    return 0;
+}
+int LoggerTask::close(unsigned long in)
+{
+    // dump all and close open file handles.
+    return 0;
+}
+int LoggerTask::svc(void)
+{
+    // main service routine
+    //this->activation_queue_.enqueue(new logMsg_MO(this,msg,resultant_future));
+    while(1)
+    {
+	// Destructor automatically deletes it.
+        auto_ptr<ACE_Method_Object> mo(this->activation_queue_.dequeue ());
+	// Call it.
+	if (mo->call () == -1)
+	    break;
+    }
+    return 0;
+}
+
+int LoggerTask::shutdown()
+{
+    activation_queue_.enqueue(new shutdown_MO);
+    return 0;
+}

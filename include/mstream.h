@@ -29,8 +29,6 @@
 #pragma warning(disable:4786)
 #endif
 
-#include <ace/OS.h>
-#include <stdio.h>
 #include "mstring.h"
 
 class wxStreamBase;

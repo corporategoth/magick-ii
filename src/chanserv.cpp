@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -15,7 +19,7 @@
 #include "lockable.h"
 #include "magick.h"
 
-ChanServ::ChanServ()
+ChanServ::ChanServ(Magick *in_Parent) : mBase(in_Parent)
 {
     NFT("ChanServ::ChanServ");
     if (mThread::findbytype(Get_TType(), 1) == NULL) {

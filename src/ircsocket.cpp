@@ -1,3 +1,7 @@
+#include "pch.h"
+#ifdef _MSC_VER
+#pragma hdrstop
+#endif
 // $Id$
 //
 // Magick IRC Services
@@ -13,14 +17,49 @@
 
 #include "ircsocket.h"
 #include "magick.h"
-#include <ace/Auto_Ptr.h>
+
+class handle_input_MO : public ACE_Method_Object
+{
+public:
+    handle_input_MO(IrcSvcHandler *parent, const mstring& data)
+    {
+	i_parent=parent;
+	i_data=data;
+    }
+    virtual int call()
+    {
+	i_parent->handle_input_i(i_data);
+	return 0;
+    }
+private:
+    IrcSvcHandler *i_parent;
+    mstring i_data;
+};
+
+class send_MO : public ACE_Method_Object
+{
+public:
+    send_MO(IrcSvcHandler *parent, const mstring& data)
+    {
+	i_parent=parent;
+	i_data=data;
+    }
+    virtual int call()
+    {
+	i_parent->send_i(i_data);
+	return 0;
+    }
+private:
+    IrcSvcHandler *i_parent;
+    mstring i_data;
+};
 
 int IrcSvcHandler::open(void *in)
 {
     FT("IrcSvcHandler::open", (in));
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     // todo activate the task
-    activate(0,1);
+    activate(THR_NEW_LWP | THR_JOINABLE,1);
 
     RET(0);
 }
@@ -72,13 +111,21 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
     return 0;
 }
 
-handle_input_MO::handle_input_MO(IrcSvcHandler *parent, const mstring& data)
+int IrcSvcHandler::send(const mstring & data)
 {
-    i_parent=parent;
-    i_data=data;
+    activation_queue_.enqueue(new send_MO(this,mstring(data)));
+    return 0;
 }
-int handle_input_MO::call()
+
+int IrcSvcHandler::send_i(const mstring & data)
 {
-    i_parent->handle_input_i(i_data);
+    int recvResult;
+    recvResult=peer().send(data.c_str(),data.Len());
+    return 0;
+}
+
+int IrcSvcHandler::shutdown()
+{
+    activation_queue_.enqueue(new shutdown_MO);
     return 0;
 }
