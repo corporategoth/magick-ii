@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2001/11/16 20:24:52  prez
+** Moved heartbeat to a timer based operation, NOT part of the events thread
+**
 ** Revision 1.81  2001/11/12 01:05:02  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -1919,13 +1922,14 @@ int DccMap::svc(void)
 {
     mThread::Attach(tt_MAIN);
     NFT("DccMap::svc");
+    Parent->hh.AddThread(Heartbeat_Handler::H_Events);
 
     unsigned long WorkId;
-    FLUSH();
     while (!Parent->Shutdown())
     {
 	/*COM(("Active Size is %d", active.size()));*/
 
+	Parent->hh.Heartbeat();
 	if (!active.size())
 	{
 	    ACE_OS::sleep(1);
@@ -1985,6 +1989,7 @@ int DccMap::svc(void)
 	}
 	FLUSH(); // Force TRACE output dump
     }
+    Parent->hh.RemoveThread();
     DRET(0);
 }
 
