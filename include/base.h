@@ -77,6 +77,7 @@ class mMessage : public ACE_Method_Request
     friend class IrcSvcHandler;
 
     unsigned long msgid_;
+    bool sourceToken_;
     mstring source_, msgtype_, params_;
     mDateTime creation_;
 
@@ -201,7 +202,7 @@ public:
     virtual void send(const mstring & dest, const mstring & message) const;
     virtual void send(const mstring & source, const mstring & dest, const mstring & message) const;
 
-    virtual operator       mVariant() const
+    virtual operator        mVariant() const
     {
 	mVariant locvar(GetInternalName());
 

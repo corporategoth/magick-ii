@@ -2806,6 +2806,13 @@
 13 =SOP::changed here.  The threshold value should be in
 14 =SOP::Standard Space Format.
 
+[OPERSERV/IDENTIFY]
+01 =SADMIN::IDENTIFY <password>
+02 =SADMIN::
+03 =SADMIN::This is an alias for the NickServ IDENTIFY command, and
+04 =SADMIN::has the same syntax.  This alias is available even when
+05 =SADMIN::all services (including OperServ) are OFF.
+
 [OPERSERV/SETTINGS]
 01 =OPER SOP::Services has many settings set with its configuration
 02 =OPER SOP::file.  You may view these settings for informational
