@@ -42,7 +42,7 @@ Magick::Magick(int inargc, char **inargv) : chanserv(this), nickserv(this), serv
 
 int Magick::Start()
 {
-    int i;
+    unsigned int i;
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
 #ifdef ACE_DEBUGGING
@@ -55,7 +55,7 @@ int Magick::Start()
 
     // more stuff to do
     ProgramName=argv[0].RevAfter("/");
-    int argc=argv.size();
+    unsigned int argc=argv.size();
     mstring errstring;
     for(i=1;i<argc;i++)
     {
@@ -102,12 +102,11 @@ int Magick::Start()
 		}
 		else
 		{
-		    if (argv[i].Before(":").UpperCase()=="MAIN" ||
-			    argv[i].Before(":").UpperCase()=="ALL")
+		    mstring type=argv[i].Before(":").UpperCase();
+		    if (type=="MAIN" || type=="ALL")
 			Trace::TurnSet(tt_MAIN, level);
 		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
-			if (argv[i].Before(":").UpperCase()==threadname[i] ||
-				argv[i].Before(":").UpperCase()=="ALL")
+			if (type==threadname[i] || type=="ALL")
 			    Trace::TurnSet((threadtype_enum) i, level);
 		}
 	    }
@@ -131,14 +130,24 @@ int Magick::Start()
 
     // Check for \ or / or ?: in first chars.
     if ((errstring = config_file[0u]) == DirSlash || config_file[1u] == ':')
-	MagickIni=new wxFileConfig("magick","",config_file);
+	errstring=config_file;
     else
-	MagickIni=new wxFileConfig("magick","",services_dir+DirSlash+config_file);
+	errstring=services_dir+DirSlash+config_file;
+
+    {
+	FILE *TmpHand;
+	if ((TmpHand = fopen(errstring, "r")) == NULL)
+	    wxLogFatal("Configuration file (%s) not found.", errstring.c_str());
+	else
+	    fclose(TmpHand);
+	MagickIni=new wxFileConfig("magick","",errstring);
+    }
+    MagickIni=new wxFileConfig("magick","",errstring);
     errstring = "";
 
     if(MagickIni==NULL)
     {
-	wxLogFatal("Major fubar, couldn't allocate memory to read config file\nAborting");
+	wxLogFatal("Major fubar, couldn't allocate memory to read config file.");
     }
     //okay, need a function here to load all the ini file defalts
     get_config_values();

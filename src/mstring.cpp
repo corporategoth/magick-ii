@@ -108,6 +108,7 @@ bool mstring::IsSameAs(const mstring & in, bool bCaseSensitive)
 
 mstring mstring::Mid(size_t nFirst, size_t nCount) const
 {
+	if (nCount==-1) nCount=npos;
 	return substr(nFirst, nCount);
 }
 
@@ -155,18 +156,18 @@ mstring mstring::RevAfter(const mstring & in) const
 
 void mstring::MakeUpper()
 {
-	int i;
+	unsigned int i;
 	for(i=0;i<this->size();i++)
-		if(islower(*this[i]))
-			at(i)=(char)toupper(*this[i]);
+		if(islower((*this)[i]))
+			at(i)=(char)toupper((*this)[i]);
 }
 
 void mstring::MakeLower()
 {
-	int i;
+	unsigned int i;
 	for(i=0;i<this->size();i++)
-		if(isupper(*this[i]))
-			at(i)=(char)tolower(*this[i]);
+		if(isupper((*this)[i]))
+			at(i)=(char)tolower((*this)[i]);
 }
 
 mstring& mstring::Trim(bool bFromRight)

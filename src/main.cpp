@@ -37,20 +37,13 @@ restart:
 	{
 	    Magick internalobject(argc, argv);
 	    mThread::Attach(&internalobject, tt_MAIN);
-
-#ifdef DEBUG
-	    for (int i=tt_MAIN; i<tt_MAX; i++)
-		Trace::TurnSet((threadtype_enum) i, 0xffff); // Full tracing.
-#else
-	    for (int i=tt_MAIN; i<tt_MAX; i++)
-		Trace::TurnSet((threadtype_enum) i, 0xffff&(~Trace::Functions)); // Full tracing - !functions.
-#endif
 	    ResetTime=Now();
 	    Result=internalobject.Start();
 	}
-	if(Result==MAGICK_RET_RESTART)
+	if(Result==MAGICK_RET_RESTART) {
+	    mThread::Detach(tt_MAIN);
 	    goto restart;
-	mThread::Detach(tt_MAIN);
+	}
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }

@@ -231,7 +231,6 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
   switch ( level ) {
     case wxLOG_Fatal:
       DoLogString(str << "Fatal: " << szString);
-      DoLogString("Program aborted.");
       Flush();
       exit(-1);
       break;
