@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2001/11/23 21:02:56  prez
+** Fixed problem in FormatV that caused corruptions in strings.
+**
 ** Revision 1.113  2001/11/22 17:54:09  prez
 ** Fixed potential fatal error in mstring insert
 **
@@ -1361,34 +1364,36 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 {
     int len = -1, sz = sizeof(int);
     char *buffer;
-    buffer = alloc(sz);
-    if (buffer == NULL)
+    while (1)
     {
-	lock_rel();
-	return -1;
-    }
-    while (buffer != NULL)
-    {
-	len = mstring::vsnprintf(buffer, sz-1, fmt, argptr);
-	if (len < sz)
-	    break;
-	dealloc(buffer);
-	sz *= 2;
 	buffer = alloc(sz);
 	if (buffer == NULL)
-	{
-	    lock_rel();
 	    return -1;
+
+	memset(buffer, 0, sz);
+	len = mstring::vsnprintf(buffer, sz, fmt, argptr);
+	if (buffer[sz-1] == 0 && len >= 0 && len < sz)
+	{
+	    if (len == 0)
+	    {
+		dealloc(buffer);
+		buffer = NULL;
+	    }
+	    break;
 	}
-    }
-    if (buffer && len < 1)
-    {
+
 	dealloc(buffer);
+	buffer = NULL;
+	// Must happen at least once ...
+	do {
+	    sz *= 2;
+	} while (len > sz);
     }
     if (buffer)
     {
 	copy(buffer, len);
 	dealloc(buffer);
+	buffer = NULL;
     }
     else
 	copy(NULL, 0);
