@@ -447,6 +447,7 @@ void NetworkServ::execute(const mstring & data)
     case 'Z':
 	break;
     default:
+	break;
     }
 
     mThread::Detach(tt_ServNet);
@@ -706,5 +707,6 @@ void NetworkServ::numeric_execute(const mstring & data)
     case 502:     // ERR_USERSDONTMATCH
 	break;
     default:
+	break;
     }
 }

@@ -59,8 +59,16 @@ int IrcSvcHandler::open(void *in)
     FT("IrcSvcHandler::open", (in));
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     // todo activate the task
+    CP(("Socket opened"));
     activate(THR_NEW_LWP | THR_JOINABLE,1);
-
+    CP(("SvcHandler activated"));
+    // do we do the server command here?
+    mstring passcmd="PASS "+Parent->Startup_PASSWORD;
+    peer().send(passcmd.c_str(),passcmd.Len());
+    CH(T_Chatter::To,passcmd);
+    mstring servercmd="SERVER "+Parent->Startup_SERVER_NAME+" 1 :["+Parent->Startup_SERVER_DESC+"]";
+    peer().send(servercmd.c_str(),servercmd.Len());
+    CH(T_Chatter::To,servercmd);
     RET(0);
 }
 
@@ -71,10 +79,15 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     // might set this up to be an active object here.
     char data[513];
     int recvResult;
+    memset(data,0,513);
     recvResult=peer().recv(data,512);
     // possibly mstring(data,0,recvResult); rather than mstring(data)
     // depends on null terminators etc.
-    CH(T_Chatter::From,mstring("IrcServer :")+mstring(data));
+    int i;
+    mstring data2(data);
+    for(i=0;i<data2.WordCount("\n");i++)
+        if(data2.ExtractWord(i,"\n")!="")
+	    CH(T_Chatter::From,mstring("IrcServer :")+data2.ExtractWord(i,"\n"));
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down    
 
@@ -127,5 +140,11 @@ int IrcSvcHandler::send_i(const mstring & data)
 int IrcSvcHandler::shutdown()
 {
     activation_queue_.enqueue(new shutdown_MO);
+    return 0;
+}
+
+int IrcSvcHandler::close(unsigned long in)
+{
+    CP(("Socket closed"));
     return 0;
 }

@@ -123,7 +123,7 @@ public:
 	NetworkServ server;
 	LoggerTask loggertask;
 
-protected:
+//protected:
 	bool i_shutdown;
 
 	// Config Values

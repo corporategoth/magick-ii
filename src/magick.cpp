@@ -140,7 +140,6 @@ int Magick::Start()
 	    wxLogFatal("Configuration file (%s) not found.", errstring.c_str());
 	else
 	    fclose(TmpHand);
-	MagickIni=new wxFileConfig("magick","",errstring);
     }
     MagickIni=new wxFileConfig("magick","",errstring);
     errstring = "";
@@ -265,12 +264,6 @@ int Magick::Start()
 #endif
 
     mBase::init(this);
-#if 0
-    if(!nickserv.getnames().IsEmpty())
-	nickserv.init();
-    if(!chanserv.getnames().IsEmpty())
-	chanserv.init();
-#endif
 
     // etc.
 
@@ -292,13 +285,19 @@ int Magick::Start()
 
     ACE_INET_Addr addr(Startup_REMOTE_PORT,Startup_REMOTE_SERVER);
     IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
+    //IrcServer server(ACE_Reactor::instance());
     ircsvchandler=new IrcSvcHandler;
+    ircsvchandler->Parent=this;
     if(server.connect(ircsvchandler,addr)==-1)
     {
 	//okay we got a connection problem here. log it and shutdown
 	RET(MAGICK_RET_TERMINATE);
     }
-    
+    // if the blocking version is used, use below
+    /*
+    ircsvchandler->send(mstring); // ie server line.
+    */
+
     // next thing to be done here is set up the acceptor mechanism to listen
     // for incoming "magickgui" connections and handle them.
 
