@@ -24,7 +24,7 @@ Committee::Committee(mstring name, mstring head, mstring description)
     FT("Committee::Committee", (name, head, description));
     i_Name = name;
     i_Head = head.LowerCase();
-    i_HeadCom = NULL;
+    i_HeadCom = "";
     i_Description = description;
     i_OpenMemos = true;
 }
@@ -35,7 +35,7 @@ Committee::Committee(mstring name, Committee *head, mstring description)
     FT("Committee::Committee", (name, "(Committee *) head", description));
     i_Name = name;
     i_Head = "";
-    i_HeadCom = head;
+    i_HeadCom = head->Name().LowerCase();
     i_Description = description;
     i_OpenMemos = true;
 }
@@ -46,7 +46,7 @@ Committee::Committee(mstring name, mstring description)
     FT("Committee::Committee", (name, description));
     i_Name = name;
     i_Head = "";
-    i_HeadCom = NULL;
+    i_HeadCom = "";
     i_Description = description;
     i_OpenMemos = true;
 }
@@ -132,11 +132,14 @@ bool Committee::IsHead(mstring nick)
     {
 	RET(true);
     }
-    else if (i_HeadCom != NULL && i_HeadCom->IsIn(nick))
+    else if (i_HeadCom != "" && Parent->commserv.IsList(i_HeadCom))
     {
-	RET(true);
+	if (Parent->commserv.list[i_HeadCom].IsIn(nick))
+	{
+	    RET(true);
+	}
     }
-    else if (i_Head == "" && i_HeadCom == NULL)
+    else if (i_Head == "" && i_HeadCom == "")
     {
 	RET(IsIn(nick));
     }
@@ -233,12 +236,7 @@ void CommServ::save_database(wxOutputStream& out)
 
 wxOutputStream &operator<<(wxOutputStream& out,Committee& in)
 {
-    out<<in.i_Name;
-    if(in.i_HeadCom!=NULL)
-	out<<in.i_HeadCom->i_Name;
-    else
-	out<<mstring("");
-    out<<in.i_Head<<in.i_Description;
+    out<<in.i_Name<<in.i_HeadCom<<in.i_Head<<in.i_Description;
 
     out<<in.i_Members.size();
     for(in.member=in.i_Members.begin();in.member!=in.i_Members.end();in.member++)
@@ -258,9 +256,7 @@ wxInputStream &operator>>(wxInputStream& in, Committee& out)
     entlist_t locent;
     // need to write lock out.
 
-    in>>out.i_Name;
-    in>>out.i_HeadCom->i_Name;
-    in>>out.i_Head>>out.i_Description;
+    in>>out.i_Name>>out.i_HeadCom>>out.i_Head>>out.i_Description;
 
     in>>locsize;
     out.i_Members.clear();

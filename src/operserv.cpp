@@ -421,7 +421,7 @@ pair<mDateTime,bool> OperServ::Ignore_value(mstring entry)
 {
     FT("OperServ::Ignore_value", (entry));
 
-    pair<mDateTime,bool> retval = pair<mDateTime,bool>((long) 0,"");
+    pair<mDateTime,bool> retval = pair<mDateTime,bool>((long) 0,false);
     {
     MLOCK("OperServ", "Ignore");
 //  entlist_val_ui<pair<mDateTime, bool> > iter = Ignore;
@@ -434,9 +434,202 @@ pair<mDateTime,bool> OperServ::Ignore_value(mstring entry)
     return retval;
 }
 
+void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::ToggleTrace", (mynick, source, params));
 
+    if (params.WordCount(" ") < 4)
+    {
+	Parent->server.NOTICE(mynick, source, "Not enough paramaters");
+	return;
+    }
 
+    unsigned short i, j, k;
+    mstring output;
+    mstring message = params.ExtractWord(1, " ").UpperCase();
+    mstring action  = params.ExtractWord(2, " ").UpperCase();
+    mstring ttype   = params.ExtractWord(3, " ").UpperCase();
+    threadtype_enum type;
+    vector<mstring> levels;
+    for (i=4; i < params.WordCount(" ")+1; i++)
+	levels.push_back(params.ExtractWord(i, " ").UpperCase());
 
+    if (ttype == "ALL")
+    {
+	type = tt_MAX;
+	ttype = "ALL";
+    }
+    else if (ttype == "MAIN")
+    {
+	type = tt_MAIN;
+	ttype = "MAIN";
+    }
+    else
+    {
+        for (i=tt_MAIN+1; i<tt_MAX; i++)
+	    if (ttype == threadname[i])
+		break;
+	if (i<tt_MAX)
+	{
+	    type = (threadtype_enum) i;
+	}
+	else
+	{
+	    Parent->server.NOTICE(mynick, source, mstring("Invalid thread type \"") + ttype + mstring("\" is not valid."));
+	    return;
+	}
+    }
+
+    if (action == "SET")
+    {
+	if (levels[0U].RxMatches("0X[0-9A-F]\\{4\\}") || levels[0U] == "0")
+	{
+	    if (type == tt_MAX)
+	    {
+		for (i=tt_MAIN; i<tt_MAX; i++)
+		{
+		    Trace::TurnSet((threadtype_enum) i, makehex(levels[0U]));
+		    output.Format("%s SET: Trace level set to %#06x.",
+			Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) i));
+		    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) i, output));
+		}
+	    }
+	    else
+	    {
+		Trace::TurnSet(type, makehex(levels[0U]));
+		output.Format("%s SET: Trace level set to %#06x.",
+		    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+		ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+	    }
+	}
+	else
+	{
+	    bool gotone = false;
+	    for (i=0; i<levels.size(); i++)
+	    {
+		for (j=0; j<Trace::levelname.size(); j++)
+		{
+		    if (levels[i].Matches(Trace::levelname[j].name.UpperCase()))
+		    {
+			if (type == tt_MAX)
+			{
+			    for (k=tt_MAIN; k<tt_MAX; k++)
+			    {
+				if (k==tt_MAIN)
+				{
+				    Trace::TurnSet((threadtype_enum) k, 0U);
+				    gotone = true;
+				}
+				Trace::TurnUp((threadtype_enum) k, Trace::levelname[j].level);
+				output.Format("%s SET: Trace level set to %#06x.",
+				    Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+			    }
+			}
+			else
+			{
+				if (!gotone)
+				{
+				    Trace::TurnSet(type, 0U);
+				    gotone = true;
+				}
+				Trace::TurnUp(type, Trace::levelname[j].level);
+				output.Format("%s SET: Trace level set to %#06x.",
+				    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+			}
+			break;
+		    }
+		}
+		if (j>=Trace::levelname.size())
+	   	    Parent->server.NOTICE(mynick, source, mstring("Trace level \"") + levels[i] +
+		        mstring("\" is not valid, ignored."));
+	    }
+	}
+    }
+    else if (action == "UP")
+    {
+	for (i=0; i<levels.size(); i++)
+	{
+	    for (j=0; j<Trace::levelname.size(); j++)
+	    {
+		if (levels[i].Matches(Trace::levelname[j].name.UpperCase()))
+		{
+		    if (type == tt_MAX)
+		    {
+			for (k=tt_MAIN; k<tt_MAX; k++)
+			{
+			    Trace::TurnUp((threadtype_enum) k, Trace::levelname[j].level);
+			    output.Format("%s UP: Trace level set to %#06x.",
+				Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+			}
+		    }
+		    else
+		    {
+			Trace::TurnUp(type, Trace::levelname[j].level);
+			output.Format("%s UP: Trace level set to %#06x.",
+			    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+			ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+		    }
+		    break;
+		}
+	    }
+	    if (j>=Trace::levelname.size())
+		Parent->server.NOTICE(mynick, source, mstring("Trace level \"") + levels[i] +
+		    mstring("\" is not valid, ignored."));
+	}
+    }
+    else if (action == "DOWN")
+    {
+	for (i=0; i<levels.size(); i++)
+	{
+	    for (j=0; j<Trace::levelname.size(); j++)
+	    {
+		if (levels[i].Matches(Trace::levelname[j].name.UpperCase()))
+		{
+		    if (type == tt_MAX)
+		    {
+			for (k=tt_MAIN; k<tt_MAX; k++)
+			{
+			    Trace::TurnDown((threadtype_enum) k, Trace::levelname[j].level);
+			    output.Format("%s DOWN: Trace level set to %#06x.",
+				Now().DateTimeString().c_str(), Trace::TraceLevel((threadtype_enum) k));
+			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>((threadtype_enum) k, output));
+			}
+		    }
+		    else
+		    {
+			Trace::TurnDown(type, Trace::levelname[j].level);
+			output.Format("%s DOWN: Trace level set to %#06x.",
+			    Now().DateTimeString().c_str(), Trace::TraceLevel(type));
+			ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+		    }
+		    break;
+		}
+	    }
+	    if (j>=Trace::levelname.size())
+		Parent->server.NOTICE(mynick, source, mstring("Trace level \"") + levels[i] +
+		    mstring("\" is not valid, ignored."));
+	}
+    }
+    else
+    {
+	Parent->server.NOTICE(mynick, source, "Incorrect TRACE option.");
+	return;
+    }
+
+    mstring line1, line2, tmp;
+    for (i=tt_MAIN; i<tt_MAX; i++)
+    {
+	tmp.Format("%6s  ", (i == tt_MAIN) ? "MAIN" : threadname[i].c_str());
+	line1 += tmp;
+	tmp.Format("%#06x  ", Trace::TraceLevel((threadtype_enum) i));
+	line2 += tmp;
+    }
+    Parent->server.NOTICE(mynick, source, line1);
+    Parent->server.NOTICE(mynick, source, line2);
+}
 
 void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server)
 {
@@ -516,11 +709,12 @@ void OperServ::execute(const mstring & data)
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
 
-    mstring source, msgtype, mynick, message;
+    mstring source, msgtype, mynick, message, command;
     source  = data.ExtractWord(1, ": ");
     msgtype = data.ExtractWord(2, ": ").UpperCase();
     mynick  = data.ExtractWord(3, ": ");
     message = data.After(":", 2);
+    command = message.ExtractWord(1, " ").UpperCase();
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {
@@ -529,14 +723,17 @@ void OperServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (message.UpperCase()=="BREAKDOWN")
+    else if (command == "TRACE")
+    {
+	ToggleTrace(mynick, source, message);
+    }
+    else if (command == "BREAKDOWN")
     {
 
 	Parent->server.NOTICE(mynick, source,
 		"SERVER                                         LAG  USERS (OPS)");
 	mstring out;
  	unsigned int users = 0, opers = 0;
-	float lag;
 
 	map<mstring,Nick_Live_t>::iterator k;
 	for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)

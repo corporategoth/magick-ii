@@ -25,30 +25,8 @@
 mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE", "LOST" };
 Trace::level_enum Trace::SLevel = Off;
 unsigned short Trace::traces[tt_MAX] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-
-//todo change this to a vector< >
-const struct Trace::levelname_struct Trace::levelname[] = {
-	levelname_struct( "OFF", Off ),
-	levelname_struct( "FULL", Full ),
-	levelname_struct( "ALL", Full ),
-	levelname_struct( "STAT*", Stats ),
-	levelname_struct( "SOUR*", Source ),
-	levelname_struct( "SRC*", Source ),
-	levelname_struct( "L*CK*", Locking ),
-	levelname_struct( "S*CK*", Sockets ),
-	levelname_struct( "BIND*", Bind ),
-	levelname_struct( "REG*", Bind ),
-	levelname_struct( "HOOK*", Bind ),
-	levelname_struct( "EXT*", External ),
-	levelname_struct( "CHAT*", Chatter ),
-	levelname_struct( "CHE*", CheckPoint ),
-	levelname_struct( "C*P*", CheckPoint ),
-	levelname_struct( "COM*", CheckPoint ),
-	levelname_struct( "F*NC*", Functions ),
-	levelname_struct( "MOD*", Modify ),
-	levelname_struct( "CHANG*", Changing )
-	};
-
+vector<Trace::levelname_struct> Trace::levelname; // Initialised in main.cpp
+list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 
 int levelname_count()
 {
@@ -57,7 +35,8 @@ int levelname_count()
 
 unsigned short makehex (mstring SLevel)
 {
-    if (SLevel[0u]!='0' || SLevel[1u]!='x' || SLevel.Len() != 6)
+    if (SLevel.Len() != 6 || SLevel[0u]!='0' ||
+		    (SLevel[1u]!='x' && SLevel[1u]!='X'))
 	return 0;
 
     short level;
@@ -189,54 +168,38 @@ ThreadID::ThreadID()
 {
     t_indent = 0;
     t_internaltype = tt_MAIN;
-    out=NULL;
 }
 
 ThreadID::ThreadID(threadtype_enum Type)
 {
     t_indent = 0;
     t_internaltype = Type;
-    out=NULL;
 }
 
 void ThreadID::assign(threadtype_enum Type)
 {
-    if(out!=NULL)
-	delete out;
     t_internaltype = Type;
-    out=NULL;
-}
-
-mstring ThreadID::logname()
-{
-    mstring name;
-    if (t_internaltype==tt_MAIN)
-	name << "trace.log";
-    else
-	name << "trace_" << threadname[t_internaltype] << ".log";
-    return name;
 }
 
 void ThreadID::WriteOut(const mstring &message)
 {
-    // this stuff all has to be rewritten to use the new task object.
-    
-    // todo: if tt_Main, write to file now, else put it into the logger task.
-    //below for now till i get the operator bool happening.
-    if (out==NULL||out->Ok()!=true) 
-        out=new wxFileOutputStream(logname(),true); // true sets append to true.
-
     mstring finalout = "";
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";
     finalout += message;
 
-    if(t_internaltype!=tt_MAIN&&Parent!=NULL)
-	Parent->loggertask.logmessage(this,finalout);
-    else
+    list<pair<threadtype_enum, mstring> >::iterator iter;
+    if(Parent!=NULL)
     {
-	*out << finalout << wxEndL;
-	out->Sync();
+	//MLOCK("ThreadMessageQueue");
+	for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end(); iter++)
+	    if (iter->first == t_internaltype)
+	    {
+		Parent->loggertask.logmessage(t_internaltype, iter->second);
+		ThreadMessageQueue.erase(iter);
+		iter = ThreadMessageQueue.begin();
+	    }
+	Parent->loggertask.logmessage(t_internaltype,finalout);
     }
 }
 
@@ -571,18 +534,23 @@ void LoggerTask::i_shutdown()
     activation_queue_.enqueue(new shutdown_MO);
 }
 
-void LoggerTask::logmessage(ThreadID *out,const mstring& data)
+void LoggerTask::logmessage(threadtype_enum type,const mstring& data)
 {
-    activation_queue_.enqueue(new LoggerTask_logmessage_MO(this,out,data));
+    activation_queue_.enqueue(new LoggerTask_logmessage_MO(this,type,data));
 }
 
-void LoggerTask::logmessage_i(ThreadID *out,const mstring& data)
+mstring LoggerTask::logname(threadtype_enum type)
 {
-    out->WriteOut2(data);
+    mstring name;
+    if (type==tt_MAIN)
+	name << "trace.log";
+    else
+	name << "trace_" << threadname[type] << ".log";
+    return name;
 }
 
-void ThreadID::WriteOut2(const mstring & message)
+void LoggerTask::logmessage_i(threadtype_enum type,const mstring& data)
 {
-    wxFileOutputStream out(logname(),true); // true sets append to true.
-    out << message.c_str() << wxEndL;
+    wxFileOutputStream out(logname(type),true); // true sets append to true.
+    out << data.c_str() << wxEndL;
 }

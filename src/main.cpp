@@ -25,6 +25,27 @@ mDateTime Start_Time, Reset_Time;
 
 int main(int argc, char **argv)
 {
+
+    Trace::levelname.push_back(Trace::levelname_struct( "OFF", Trace::Off ));
+    Trace::levelname.push_back(Trace::levelname_struct( "FULL", Trace::Full ));
+    Trace::levelname.push_back(Trace::levelname_struct( "ALL", Trace::Full ));
+    Trace::levelname.push_back(Trace::levelname_struct( "STAT*", Trace::Stats ));
+    Trace::levelname.push_back(Trace::levelname_struct( "SOUR*", Trace::Source ));
+    Trace::levelname.push_back(Trace::levelname_struct( "SRC*", Trace::Source ));
+    Trace::levelname.push_back(Trace::levelname_struct( "L*CK*", Trace::Locking ));
+    Trace::levelname.push_back(Trace::levelname_struct( "S*CK*", Trace::Sockets ));
+    Trace::levelname.push_back(Trace::levelname_struct( "BIND*", Trace::Bind ));
+    Trace::levelname.push_back(Trace::levelname_struct( "REG*", Trace::Bind ));
+    Trace::levelname.push_back(Trace::levelname_struct( "HOOK*", Trace::Bind ));
+    Trace::levelname.push_back(Trace::levelname_struct( "EXT*", Trace::External ));
+    Trace::levelname.push_back(Trace::levelname_struct( "CHAT*", Trace::Chatter ));
+    Trace::levelname.push_back(Trace::levelname_struct( "CHE*", Trace::CheckPoint ));
+    Trace::levelname.push_back(Trace::levelname_struct( "C*P*", Trace::CheckPoint ));
+    Trace::levelname.push_back(Trace::levelname_struct( "COM*", Trace::CheckPoint ));
+    Trace::levelname.push_back(Trace::levelname_struct( "F*NC*", Trace::Functions ));
+    Trace::levelname.push_back(Trace::levelname_struct( "MOD*", Trace::Modify ));
+    Trace::levelname.push_back(Trace::levelname_struct( "CHANG*", Trace::Changing ));
+
 #ifdef MAGICK_HAS_EXCEPTIONS
     try
     {

@@ -64,6 +64,7 @@ private:
     bool AddHost(mstring host);
     void RemHost(mstring host);
     void DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server);
+    void ToggleTrace(mstring mynick, mstring source, mstring params);
 public:
     mstring Services_Admin()	{ return services_admin; }
     bool Secure()		{ return secure; }

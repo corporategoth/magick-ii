@@ -303,12 +303,22 @@ ThreadID* mThread::find(ACE_thread_t thread)
     return NULL;
 }
 
+vector<ThreadID*> mThread::findall()
+{
+    vector<ThreadID*> threadlist;
+    selftothreadidmap_t::iterator iter;
+    for (iter=selftothreadidmap.begin(); iter!=selftothreadidmap.end(); iter++)
+	threadlist.push_back(iter->second);
+
+    return threadlist;
+}
+
 void mThread::Attach(threadtype_enum ttype)
 {
     FT("mThread::Attach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid=new ThreadID(ttype);
     selftothreadidmap[ACE_Thread::self()]=tmpid;
-    COM(("%s Thread ID has been attached.", threadname[ttype].c_str()));
+    COM(("Thread ID has been attached."));
 }
 
 void mThread::Detach(threadtype_enum ttype)
@@ -323,20 +333,21 @@ void mThread::Detach(threadtype_enum ttype)
     }
     selftothreadidmap.erase(ACE_Thread::self());
     delete tmpid;
-    COM(("%s Thread ID has been detached.", threadname[ttype].c_str()));
+    COM(("Thread ID has been detached."));
 }
 
 void mThread::ReAttach(threadtype_enum ttype)
 {
     FT("mThread::ReAttach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid=find();
+    threadtype_enum oldtype = tmpid->type();
     if(tmpid==NULL)
     {
 	// ReAttach does an attach if it wasnt there
 	CP(("mThread::ReAttach without valid mThread::Attach... type: %s",threadname[ttype].c_str()));
 	tmpid=new ThreadID();
     }
-    COM(("%s Thread ID has been re-attached to %s.", threadname[tmpid->type()].c_str(),
-	threadname[ttype].c_str()));
+    COM(("Thread ID has been re-attached to %s.", threadname[ttype].c_str()));
     tmpid->assign(ttype);
+    COM(("Thread ID has been re-attached from %s.", threadname[oldtype].c_str()));
 }

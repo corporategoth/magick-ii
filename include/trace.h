@@ -59,16 +59,12 @@
 // TRACE SET ALL 0x00B0		Just 3 flags (0 works)
 // TRACE SET ALL Func*		Just 1 flag
 // TRACE SET ALL Func* Chat*	Just 2 flags
-// TRACE UP NS 0x00B0		8 + 2 + 1 (3 flags) (0 works)
 // TRACE UP NS Func*		4 (1 flag)
 // TRACE UP NS Func* Chat*	4 + 1 (2 flags)
-// TRACE UP ALL 0x00B0		8 + 2 + 1 (3 flags) (0 works)
 // TRACE UP ALL Func*		4 (1 flag)
 // TRACE UP ALL Func* Chat*	4 + 1 (2 flags)
-// TRACE DOWN NS 0x00B0		8 + 2 + 1 (3 flags) (0 works)
 // TRACE DOWN NS Func*		4 (1 flag)
 // TRACE DOWN NS Func* Chat*	4 + 1 (2 flags)
-// TRACE DOWN ALL 0x00B0	8 + 2 + 1 (3 flags) (0 works)
 // TRACE DOWN ALL Func*		4 (1 flag)
 // TRACE DOWN ALL Func* Chat*	4 + 1 (2 flags)
 //
@@ -83,6 +79,7 @@
 enum threadtype_enum { tt_MAIN = 0, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_LOST, tt_MAX };
 extern mstring threadname[tt_MAX];
 extern unsigned short makehex(mstring SLevel);
+extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 
 // Trace Codes
 //   \   Down Function (T_Functions)
@@ -102,9 +99,10 @@ extern unsigned short makehex(mstring SLevel);
 //   |-  Socket Dropout (T_Sockets)
 //   !!  BOB Binds, Registrations (T_Bind)
 //   ??  External commands (T_External)
+//   ()  Trace Level Changes.
 
 // ===================================================
-class ThreadID;
+
 class LoggerTask : public ACE_Task<ACE_MT_SYNCH>
 {
     friend class LoggerTask_logmessage_MO;
@@ -112,13 +110,14 @@ private:
     ACE_Activation_Queue activation_queue_;
     //map<threadtype_enum, queue<mstring> > buffers;
     // todo later buffer these up until a dump is done.
-    void logmessage_i(ThreadID *out,const mstring& data);
+    void logmessage_i(threadtype_enum type,const mstring& data);
+    mstring logname(threadtype_enum type);
 public:
     virtual int open(void *in=0);
     virtual int close(unsigned long in);
     virtual int svc(void);
     void i_shutdown();
-    void logmessage(ThreadID *out,const mstring& data);
+    void logmessage(threadtype_enum type,const mstring& data);
 };
 
 class shutdown_MO : public ACE_Method_Object
@@ -134,18 +133,19 @@ class LoggerTask_logmessage_MO : public ACE_Method_Object
 {
 private:
     LoggerTask *i_loggertask;
-    ThreadID *i_out;
+    threadtype_enum i_type;
     mstring i_data;
+
 public:
-    LoggerTask_logmessage_MO(LoggerTask *loggertask, ThreadID *out,const mstring& data)
+    LoggerTask_logmessage_MO(LoggerTask *loggertask, threadtype_enum type,const mstring& data)
     {
-	i_out=out;
+	i_type=type;
 	i_data=data;
 	i_loggertask=loggertask;
     }
     virtual int call()
     {
-	i_loggertask->logmessage_i(i_out,i_data);
+	i_loggertask->logmessage_i(i_type,i_data);
 	return 0;
     }
 };
@@ -156,21 +156,16 @@ class ThreadID {
 private:
     threadtype_enum t_internaltype;
     short t_indent;
-    wxFileOutputStream *out;
     
-    mstring logname();
-
 public:
-    void WriteOut2(const mstring& message);
     ThreadID();
     ThreadID(threadtype_enum Type);
-    ~ThreadID() { if(out!=NULL) delete out;}
+    ~ThreadID() {}
     void assign(threadtype_enum Type);
     threadtype_enum type() { return t_internaltype; }
     void indentup() { t_indent++; }
     void indentdown() { if (t_indent>0) t_indent--; }
     short indent() { return t_indent; }
-
     void WriteOut (const mstring &message);
 };
 
@@ -216,7 +211,8 @@ public:
 	levelname_struct(const mstring& in, level_enum lin) {name=in; level=lin;};
 	levelname_struct& operator=(const levelname_struct& in) {name=in.name; level=in.level; return *this;};
     };
-    const static struct levelname_struct levelname[];
+    // This is initialised in main.cpp
+    static vector<levelname_struct> levelname;
 
     Trace() {};
     ~Trace() {};
@@ -224,6 +220,8 @@ public:
     static level_enum ShortLevel(level_enum level) { return (SLevel = level); }
     static level_enum ShortLevel() { return SLevel; }
 
+    static unsigned short TraceLevel(threadtype_enum type)
+	{ return traces[type]; }
     static bool IsOn(threadtype_enum type, level_enum level)
 	{ return (traces[type] & level) ? true : false; }
     static void TurnUp(threadtype_enum type, level_enum param)

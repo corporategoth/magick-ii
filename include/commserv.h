@@ -22,12 +22,7 @@ class Committee : public mUserDef
     friend wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
     friend wxInputStream &operator>>(wxInputStream& in, Committee& out);
     mstring i_Name;
-    // PREZ: why not an mstring? makes late data binding possible on loading.
-    // *otherwise* i have to go through a second time and recreate the links
-    // rather than just loading and storing the string which can be used to 
-    // search the map in commserv anyway.
-    mstring i_nameheadcom;
-    Committee *i_HeadCom;
+    mstring i_HeadCom;
     mstring i_Head;
     mstring i_Description;
 
@@ -50,7 +45,7 @@ public:
     	{ return (i_Name < in.i_Name); }
 
     mstring Name()const		{ return i_Name; }
-    Committee *HeadCom()const	{ return i_HeadCom; }
+    mstring HeadCom()const	{ return i_HeadCom; }
     mstring Head()const		{ return i_Head; }
     mstring Description()const	{ return i_Description; }
 
