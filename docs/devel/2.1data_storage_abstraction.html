@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+<head>
+
+<title>Magick Specification: Data Storage Abstration</title>
+
+<meta name="keywords" content="magick,magick.tm,magick irc services,irc,irc services,services,internet relay chat,network,irc network services,network services,chat,irc operater,ircop,oper,operserv,nickserv,chanserv,memoserv,akill,ban,download,magick 2.0,magick 1.4,version 2,documentation,gpl,open source,c++">
+<meta name="description" content="Magick IRC Services">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="utils.js"></script>
+
+<link rel="stylesheet" type="text/css" href="magick.css">
+
+<link rel="shortcut icon" href="favicon.ico">
+
+</head>
+<body>
+
+<table class="center collapse" width="780" cellpadding="0" cellspacing="0" border="1">
+ <tr class="medium">
+  <td><div class="center"><img src="images/logo1.jpg" width="160" height="110" alt="Magick Logo"><img src="images/logo2.jpg" alt="Magick Logo" height="110" width="600"></div></td>
+ </tr>
+</table>
+
+<br />
+
+<table class="center collapse medium" width="780" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td>
+   <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+    <tr>
+     <td width="200" valign="top">
+      <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+       <tr>
+        <td>
+         <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="0">
+          <tr class="dark">
+           <td><b class="light-margin">Contents</b></td></tr>
+          <tr>
+           <td><br /></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Home'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#0'" class="hand"><p class="menu-side"><a href="#0">Home:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Summary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#1'" class="hand"><p class="menu-side"><a href="#1">Summary:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Justification'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#2'" class="hand"><p class="menu-side"><a href="#2">Justification:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Pre-Requisites'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#3'" class="hand"><p class="menu-side"><a href="#3">Pre-Requisites:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Implementation'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#4'" class="hand"><p class="menu-side"><a href="#4">Implementation:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Potential Problems'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#5'" class="hand"><p class="menu-side"><a href="#5">Potential Problems:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Test Plan'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#6'" class="hand"><p class="menu-side"><a href="#6">Test Plan:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Glossary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#7'" class="hand"><p class="menu-side"><a href="#7">Glossary:</a></p></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/spacer.gif" alt="" height="750" width="1"></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/logo3.jpg" alt="Magick Logo" height="300" width="190"></td></tr>
+         </table>
+        </td>
+       </tr>
+      </table>
+     </td>
+     <td width="580" valign="top">&nbsp;
+      <table width="580" cellpadding="2" cellspacing="2" border="0">
+       <tr>
+        <td><div class="center">
+         <table width="490" cellpadding="2" cellspacing="2" border="0" class="center">
+          <tr>
+           <td><h1><a name="0">Data Storage Abstraction</a></h1></td></tr>
+          <tr>
+	   <td><table border="0" class="medium">
+            <tr><td><p>Project Number	</td><td><p>	2				</p></td></tr>
+            <tr><td><p>Slated Release	</td><td><p>	2.1				</p></td></tr>
+            <tr><td><p>Author		</td><td><p>	<a href="mailto:prez@magick.tm">Preston A. Elder</a>	</p></td></tr>
+            <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
+            <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
+			<br />$Log$
+			<br />Revision 1.1  2002/07/31 21:26:40  prez
+			<br />Added the data storage abstraction spec.
+			<br />
+            </code></p></td></tr>
+           </table></td></tr>
+          <tr>
+           <td><br />
+
+            <h2><a name="1">Summary</a></h2>
+            <p>
+			The Data Abstraction Layer will be part of Mantra that will convert the current method of data
+			storage into an abstract API that Magick will use, regardless of how the data is actually stored.
+            </p><br />
+
+            <h2><a name="2">Justification</a></h2>
+            <p>
+			The current way Magick stores its database requires the XML parser/generator code to be very
+			intergrated with the Magick classes themselves.  This makes it hard for us to be able to change
+			the method or format in which the data inside or generated by magick is stored.  By creating a
+			data storage abstraction layer, we will be able to change how and where data is stored at will.
+			This allows for us to be able to do such things as use an SQL database as a back end, or any
+			other kind of storage we wish to write a driver for.
+            </p><br />
+
+            <h2><a name="3">Pre-Requisites</a></h2>
+            <p>
+			Mantra must be created.
+            </p><br />
+
+            <h2><a name="4">Implementation</a></h2>
+            <p>
+			The Data Abstraction Layer should have two parts.  The first to handle how data is accessed and
+			updated by the application, and the second to handle how that data is stored to whatever medium it
+			will use as its backend (which should be changable).
+            </p><p>
+			The first part (how the data is accessed and updated by the application) will be facilitated by
+			the creation of a properties system, to replace all the hard-coded veriables used in Magick now.
+			The properties system will simply be a class with a series of function calls that are used to
+			retrieve data and update it.  These functions will enforce the typing of data, and raise an
+			exception if the wrong type of data is submitted, or if there was a problem updating the data.
+			These functions will essentially be wrappers around the data storage layer, and should do little
+			more than remember 'where' the data that is currently being retrieved or saved is in relation to
+			the rest of the system, and do checking to ensure the correct type is being used for the data.
+			There will also be special functions for accessing and updating all properties at once.
+            </p><p>
+			The second part (how the data is being stored) is the real heart and soul of the data abstraction
+			layer.  A standard 'Storage API' will have to be implemented, which all data storage drivers must
+			implement.  The Storage API will consist of:
+			<ul>
+			<li>	A constructor and destructor to establish the relevant data handles (eg. connect to
+				the SQL database, or store the database file name, etc), and clean up those handles
+				respectively.
+			</li>
+			<li>	A method for discovering what data (including type information) is valid from the
+				underlying storage mechanism.  This will probably have to be supplied via. some form
+				of customized DTD from the application.
+			</li>
+			<li>	A method for retrieving data (and its type) from the underlying storage mechanism, and
+				passing that on to the properties system.  If the storage mechanism is not a 'live'
+				storage mechanism, it must store this data itself for retrieval.
+			</li>
+			<li>	A method for accepting data (and its type) from the properties system for updating on
+				the storage medium.  If the storage mechanism is not a 'live' storage mechanism, this
+				will mean updating the internal data storage for saving later on.
+			</li>
+			<li>	A method for retrieving ALL data/type pairs (at once) from the underlying storage
+				mechanism and passing it to the properties system.
+			</li>
+			<li>	A method for accepting ALL data/type pairs (at once) from the properties system, and
+				storing a complete record into the storage mechanism.
+			</li>
+			<li>	A method for triggering a save of data.  For a 'live' storage mechanism, this does not
+				need to be implemented, as the default action is a no-op.  This will be called when the
+				application wishes to ensure the database is saved.
+			</li>
+			<li>	A method for triggering a retrieve of data.  Once again, for 'live' storage mechanisms,
+				this does not need to be implemented, as it is a no-op.  This will be called when the
+				application wishes to dump all data currently known, and have it re-loaded from the
+				physical storage medium (presumably because the application has either just started, or
+				the data itself has been manually changed).
+			</li>
+			</ul>
+            </p><p>
+			Magick will have to be changed to have all the veriables currently used to store the data for
+			each nick, channel, etc. record, to instead use the properties system.  The properties system
+			must be used for EVERY data retrieval, as the back end for storage may be an SQL database that
+			could be changed at any time, and not necessarily by Magick.
+            </p><br />
+
+            <h2><a name="5">Potential Problems</a></h2>
+            <p>
+			N/A
+            </p><br />
+
+            <h2><a name="6">Test Plan</a></h2>
+            <p>
+			1. Magick must work as it currently does, loading and saving a compressed encrypted XML file.
+            </p><p>
+			2. Any other storage mechanisms developed should be tested to ensure data integrity.
+            </p><br />
+
+            <h2><a name="7">Glossary</a></h2>
+            <p>
+			N/A
+            </p><br />
+
+           </td></tr>
+         </table></div>
+        </td>
+       </tr>
+       </div>
+      </table>  
+     </td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+</table>
+<p class="center-sm">Copyright &copy;2001-2002 Magick.tm. All rights reserved.</p>
+&nbsp;
+</body>
+
+</html>
