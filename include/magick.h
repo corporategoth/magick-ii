@@ -62,6 +62,8 @@ private:
 
 
 public:
+	void save_databases();
+	void load_databases();
 	// Config Values
         class statup_t{
 		friend Magick;

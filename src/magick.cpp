@@ -1144,3 +1144,13 @@ Magick::~Magick()
 {
     loggertask.i_shutdown();
 }
+
+void Magick::load_databases()
+{
+    // to buggered to think about it tonight, maybe tommorow night.
+}
+
+void Magick::save_databases()
+{
+    // to buggered to think about it tonight, maybe tommorow night.
+}
