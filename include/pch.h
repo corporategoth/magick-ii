@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/12/09 11:15:11  prez
+** Changed string.h -> strings.h for sunos compliance.
+**
 ** Revision 1.25  2000/10/18 18:46:33  prez
 ** Well, mstring still coredumps, but it gets past the initial loading of
 ** all the STATIC (or const) strings, etc -- now its coring on loading a
@@ -123,7 +126,7 @@
 #ifdef STDC_HEADERS
 #  include <stdlib.h>
 #  include <stdarg.h>
-#  include <string.h>
+#  include <strings.h>
 #endif
 
 #ifdef WIN32
