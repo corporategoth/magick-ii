@@ -1172,6 +1172,107 @@ bool mstring::IsIpv6Address() const
     return retval;
 }
 
+bool mstring::IsIpv6Ipv4Address(bool mapped) const
+{
+    bool retval = true;
+
+    lock_read();
+
+    if (i_str == NULL)
+    {
+	lock_rel();
+	return false;
+    }
+
+    /* Required this way else will coredump on a blank
+     * string (ie. accessing i_str[i] of NULL) */
+    size_t i, firstnum=0, deccount = 0;
+    bool haddouble = false, gotffff = false;
+
+    for (i = 0; i < i_len; i++)
+    {
+	if (i_str[i] == ':')
+	{
+	    if (gotffff)
+	    {
+		retval = false;
+		break;
+	    }
+
+	    if (i > 0 && firstnum == 0 && i_str[i-1] == ':')
+	    {
+		if (haddouble)
+		{
+		    retval = false;
+		    break;
+		}
+		else
+		    haddouble = true;
+	    }
+
+	    if (deccount >= 6 || (firstnum != 0 && i-firstnum > 4))
+	    {
+		retval = false;
+		break;
+	    }
+
+	    if (i && (firstnum || !deccount))
+	    {
+		size_t j, fcount = 0;
+		for (j=firstnum; j<i; j++)
+		    if (i_str[j] == 'f' || i_str[j] == 'F')
+			fcount++;
+		if (mapped && fcount == 4)
+		    gotffff = true;
+		else if (fcount)
+		{
+		    retval = false;
+		    break;
+		}
+		
+	    }
+
+	    firstnum = 0;
+	    deccount++;
+	}
+	else if (i_str[i] == '.')
+	{
+	    if (mapped && !gotffff)
+		retval = false;
+	    break;
+	}
+	else if (i_str[i] == '0' || i_str[i] <= 'F' || i_str[i] == 'f')
+	{
+	    if (!firstnum)
+		firstnum = i;
+	}
+	else if (i_str[i] >= '1' && i_str[1] <= '9')
+	{
+	    if (mapped && !gotffff)
+	    {
+		retval = false;
+		break;
+	    }
+
+	    if (!firstnum)
+		firstnum = i;
+	    break;
+	}
+	else
+	{
+	    retval = false;
+	    break;
+	}
+    }
+
+    lock_rel();
+
+    if (!retval || deccount < 2)
+	return false;
+
+    return SubString(firstnum).IsIpv4Address();
+}
+
 bool mstring::IsHostName() const
 {
     bool retval = true;

@@ -1818,7 +1818,7 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
 	    user = user.After("~");
 	if (i_host.IsIpv6Address())
 	    retval = i_Name + "!*" + user + "@" + i_host.Before(":", i_host.Occurances(":")) + ":*";
-	else if (i_host.IsIpv4Address())
+	else if (i_host.IsAnyIpv4Address())
 	    retval = i_Name + "!*" + user + "@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = i_Name + "!*" + user + "@*." + i_host.After(".");
@@ -1833,7 +1833,7 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
     case N_H:			// nick!*@*.host
 	if (i_host.IsIpv6Address())
 	    retval = i_Name + "!*@" + i_host.Before(":", i_host.Occurances(":")) + ":*";
-	else if (i_host.IsIpv4Address())
+	else if (i_host.IsAnyIpv4Address())
 	    retval = i_Name + "!*@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = i_Name + "!*@*." + i_host.After(".");
@@ -1850,7 +1850,7 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
 	    user = user.After("~");
 	if (i_host.IsIpv6Address())
 	    retval = "*!*" + user + "@" + i_host.Before(":", i_host.Occurances(":")) + ":*";
-	else if (i_host.IsIpv4Address())
+	else if (i_host.IsAnyIpv4Address())
 	    retval = "*!*" + user + "@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = "*!*" + user + "@*." + i_host.After(".");
@@ -1865,7 +1865,7 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
     case H:			// *!*@*.host
 	if (i_host.IsIpv6Address())
 	    retval = "*!*@" + i_host.Before(":", i_host.Occurances(":")) + ":*";
-	else if (i_host.IsIpv4Address())
+	else if (i_host.IsAnyIpv4Address())
 	    retval = "*!*@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = "*!*@*." + i_host.After(".");
@@ -1915,7 +1915,7 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
 	    user = user.After("~");
 	if (i_alt_host.IsIpv6Address())
 	    retval = i_Name + "!*" + user + "@" + i_alt_host.Before(":", i_alt_host.Occurances(":")) + ":*";
-	else if (i_alt_host.IsIpv4Address())
+	else if (i_alt_host.IsAnyIpv4Address())
 	    retval = i_Name + "!*" + user + "@" + i_alt_host.Before(".", 3) + ".*";
 	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
 	    retval = i_Name + "!*" + user + "@*." + i_alt_host.After(".");
@@ -1930,7 +1930,7 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
     case N_H:			// nick!*@*.host
 	if (i_alt_host.IsIpv6Address())
 	    retval = i_Name + "!*@" + i_alt_host.Before(":", i_alt_host.Occurances(":")) + ":*";
-	else if (i_alt_host.IsIpv4Address())
+	else if (i_alt_host.IsAnyIpv4Address())
 	    retval = i_Name + "!*@" + i_alt_host.Before(".", 3) + ".*";
 	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
 	    retval = i_Name + "!*@*." + i_alt_host.After(".");
@@ -1947,7 +1947,7 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
 	    user = user.After("~");
 	if (i_alt_host.IsIpv6Address())
 	    retval = "*!*" + user + "@" + i_alt_host.Before(":", i_alt_host.Occurances(":")) + ":*";
-	else if (i_alt_host.IsIpv4Address())
+	else if (i_alt_host.IsAnyIpv4Address())
 	    retval = "*!*" + user + "@" + i_alt_host.Before(".", 3) + ".*";
 	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
 	    retval = "*!*" + user + "@*." + i_alt_host.After(".");
@@ -1962,7 +1962,7 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
     case H:			// *!*@*.host
 	if (i_alt_host.IsIpv6Address())
 	    retval = "*!*@" + i_alt_host.Before(":", i_alt_host.Occurances(":")) + ":*";
-	else if (i_alt_host.IsIpv4Address())
+	else if (i_alt_host.IsAnyIpv4Address())
 	    retval = "*!*@" + i_alt_host.Before(".", 3) + ".*";
 	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
 	    retval = "*!*@*." + i_alt_host.After(".");

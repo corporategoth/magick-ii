@@ -371,6 +371,7 @@ class mstring
     }
 
     int occurances(const char *str, const size_t len) const;
+    bool IsIpv6Ipv4Address(bool mapped) const;
 
 public:
     //@{
@@ -900,11 +901,32 @@ public:
 	be consistant with an IPV6 IP address. */
     bool IsIpv6Address() const;
 
+    /** @return true if the current contents contain a value that would,
+	be consistent with an IPV4-Mapped IPV6 address. */
+    bool IsIpv4MappedAddress() const
+    {
+	return IsIpv6Ipv4Address(true);
+    }
+
+    /** @return true if the current contents contain a value that would,
+	be consistent with an IPV4-Compatible IPV6 address. */
+    bool IsIpv4CompatibleAddress() const
+    {
+	return IsIpv6Ipv4Address(false);
+    }
+
+    /** @return true if the current contents contains a value that would,
+	be consistant with an IPV4 or IPV6 IP address. */
+    bool IsAnyIpv4Address() const
+    {
+	return IsIpv4Address() || IsIpv4MappedAddress() || IsIpv4CompatibleAddress();
+    }
+
     /** @return true if the current contents contains a value that would,
 	be consistant with an IPV4 or IPV6 IP address. */
     bool IsIpAddress() const
     {
-	return IsIpv4Address() || IsIpv6Address();
+	return IsIpv6Address() || IsAnyIpv4Address();
     }
 
     /** @return true if the current contents contains a name that would be valid
