@@ -170,7 +170,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
     ShortLevel(Functions);
     m_name=name;
     if (IsOn(tid)) {
-	mstring message = "Entering: " + m_name + "(";
+	mstring message = "\\\\ " + m_name + "(";
 	for (int i=0; i<args.count(); i++) {
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
 	    if (i < args.count() - 1)
@@ -184,7 +184,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 
 T_Functions::~T_Functions()
 { 
-    mstring message="Leaving: "+m_name+"()";
+    mstring message="// "+m_name+"()";
     tid->WriteOut(message);
     tid->indentdown(); 
 }

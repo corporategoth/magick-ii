@@ -78,8 +78,8 @@ enum threadtype_enum { MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherSe
 extern mstring threadname[MAX];
 
 // Trace Codes
-//   \   Down Function (T_Functions)
-//   /   Up Function (T_Functions)
+//   \\  Down Function (T_Functions)
+//   //  Up Function (T_Functions)
 //   **  CheckPoint (T_CheckPoint)
 //   ->  Outbound Traffic (T_Chatter)
 //   <-  Inbound Traffic (T_Chatter)
@@ -143,7 +143,6 @@ public:
     };
     const static struct levelname_struct levelname[];
 
-	// Thread* for now till we get it done
 private:
 
     level_enum SLevel;
@@ -213,7 +212,7 @@ public:
 // NOT:
 //     T_Functions("FuncName, tid, AOC((param, param)));
 
-// ungod: lol, easy as pie, both pthreads and msvc have a "what's my thread id" call, we just backwards map it to the object that owns it.
+// from ungod: lol, easy as pie, both pthreads and msvc have a "what's my thread id" call, we just backwards map it to the object that owns it.
 class ThreadID {
 private:
     threadtype_enum internaltype;
