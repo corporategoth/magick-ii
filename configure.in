@@ -55,7 +55,7 @@ class jtest extends JFormattedTextField
 {
 }
 EOT
-    javac jtest.java
+    javac jtest.java >/dev/null 2>&1
     if test -f jtest.class; then
 	echo "${ECHO_T}${ac_t}yes"
     else
