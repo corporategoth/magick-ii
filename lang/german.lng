@@ -1,0 +1,884 @@
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
+;
+; German On-Line Language File
+; Translated By: Babelfish (http://babelfish.altavista.com)
+; Please also edit the ERR_SYNTAX/TRANSLATED token to
+; reflect the above (this is displayed when someone
+; switches to your language).
+;
+; ----------------------------(enc _ 6)---------------------------------
+;
+; Diese Datei wird oben in Kapitel aufgespaltet.  Diese Kapitel sind so
+; daß wir logisch die zusammen gruppieren können Antworten.  WENN Sie ändern
+; das Kapitel names, oder die Antwort 'tags' innerhalb them, dann
+; Sie brechen wahrscheinlich Magick's-Antworten.  WENN Sie sind
+; Entwickler und das Hinzufügen neues sections, beachten bitte, daß sie können
+; A '/' (forward-slash) oder Platz in ihrem Namen NICHT haben.
+;
+; Während dieser Datei gibt es die verschiedenen Codes, die verwendet werden für verschiedenes
+; purposes, vom Bilden es des Blickes hübscher auf IRC, zum Ersetzen
+; die Codes mit einem Wert verweisen von Magick.  Es gibt drei
+; Tabellen listeten im folgenden auf, welche umreiß die Codes und ihre Bedeutungen.
+; Alle Zeilen in dieser Datei beginnend mit ';' sind Kommentar.  Wenn Ihr
+; Wartezeichenkette hat das Führen spaces, Sie MUSS a '\' in Frontseite einsetzen
+; von den ersten space, sonst führenden Platz werden entfernt.
+;
+; Die c-Wiedereinbaucodes werden verwendet, um einen Wert von Magick einzusetzen
+; in die Zeichenkette.  Diese sollten removed, sie NIE sein müssen auch
+; bleiben Sie in der gleichen ORDNUNG, die sie sind.  Wenn they're gelöscht oder
+; Ordnung, in der sie erscheinen, ist changed, die Resultate sind unbestimmt.
+; Diese bekannt auch wie 'live' oder Codes 'active'.
+;
+; The IRC beautifying codes are generally accepted codes that
+; haben Sie bestimmte Funktionen auf ALLEN IRCKLIENTEN.  Die Codes geausdruckt
+; sind alles 'control' codes,, das, Sie bedeutend drücken Haltsteuerung dann
+; die Taste druckte aus, um den Code einzusetzen.
+;
+; Die mIRC-Farbe Codes sind hier für convenience,, aber es ist NICHT
+; empfohlen Ihnen verwenden Sie them,, da es gibt eine Menge IRCKLIENTEN
+; (besonders UNIX gegründet) das nicht kann zu verstehen
+; sie und bilden die Ausgabe unlesbar.  Wenn Verwenden dieses codes,
+; um gerade den Vordergrund zu ändern verwenden Sie ^C#, wo # ist die Farbe
+; Code.  Für Vordergrund und background, Sie Gebrauch ^C#,#.  Zurücksetzen
+; der Text zurück zu 'no colour' Sie gerader Gebrauch ^C.
+;
+; ----------------------------(enc _ 6)---------------------------------
+;
+; C-Wiedereinbaucodes:
+;   %s = Zeichenkette %c = einzelnes Zeichen
+;   %d = Ganzzahl %f = numerisch (mit DP's)
+;   %o = oktal %x = Hexadecimal
+;   %% = Literal % %g = wie %f
+; Sehen Sie bitte die manuelle Seite auf c-Formatierung Zeichen
+; (umfaßt mit Magick, oder vorhanden mit dem Befehl
+; 'man format' oder 'man formats' abhängig von dem System).
+; Tho, kurz, wenn eine Zahl zwischen spezifiziert wird %
+; und letter, dann anzeigt es die LÄNGE von e
+; Feld in der Frage (normalerweise sein Sie nicht empfohlen Änderung
+; diese).  Wenn die Zahl negative, ist, erzwingt sie es, um zu sein
+; LINKS ausgeschlossen.  Wenn die Zahl hat dezimales point, dann
+; es spezifiziert, wieviele Digits NACH dem DP erscheinen.
+;
+; Beautifying Codes IRC:
+;   ^B () = FETT - bilden Text zwischen Blick heller
+;   ^ _ () = Text Unterstreichung der UNTERSTREICHUNG - zwischen
+;   ^V () = Schaltervordergrund und -hintergrund der RÜCKSEITE -
+;   ^O () = CANCEL     - Back to non-bold/underline/reverse
+;   ^C () = COLOUR     - See below
+;
+; mIRC-Farbe Codes:
+;   0 = Weiß 8 = Gelb
+;   1 = Schwarzes 9 = Hellgrün
+;   2 = Blau 10 = Cyan-blau
+;   3 = Grün 11 = Helles Cyan-blaues
+;   4 = Rot 12 = Helles Blau
+;   5 = Orange 13 = Helle Magenta
+;   6 = Magenta 14 = Grau
+;   7 = Helles Rot 15 = Helles Grau
+; 
+
+;
+; Dieses Kapitel beschreibt IE-Fehler der SYNTAX errors,, in denen Sie haben
+; gab das falsche data, oder die Menge von Daten ein.
+;
+[ERR_SYNTAX]
+TRANSLATED         =Babelfish (http://babelfish.altavista.com)
+UNKNOWN_COMMAND    =Unerkannter Befehl %s.  Schreiben Sie /MSG %s HELP für Hilfe.
+UNKNOWN_OPTION     =Unerkannte Option %s.  Schreiben Sie /MSG %s-cHilfe %s für Hilfe.
+NEED_PARAMS        =Unzulängliche Parameter spezifiziert für %s.  Schreiben Sie /MSG %s-cHilfe %s für Hilfe.
+MUSTCONTAIN        =Spezifiziert %s-Eintrag muß Zeichen a '%c' enthalten.
+MAYNOTCONTAIN      =Spezifiziert %s-Eintrag kann möglicherweise nicht Zeichen a '%c' enthalten.
+MUSTCONTAINONE     =Spezifiziert %s-Eintrag muß ein Zeichen '%c' mit Text nur enthalten auf jeder Seite.
+STARTHRESH         =Spezifiziert %s-Eintrag muß mehr als haben (Zeichen enc_1)d non-wildcard.
+MUSTBENUMBER       =Sie müssen eine Zahl zwischen spezifizieren %d und %d.
+WHOLENUMBER        =Sie können eine vollständige Zahl nur spezifizieren.
+MUSTBEONOFF        =Sie können nur spezifizieren "ON" oder "OFF".
+NONNUMERIC         =Non-numeric-Argumente spezifizierten (ignoriert).
+ABOVELIMIT         =Alle Einträge oben %d sind ignoriert worden.
+CHANFILEATTACH     =Dateizubehöre werden nicht zu den Führungen erlaubt.
+MULTI_MODE         =Mehrfach +/-%c-Modi spezifiziert (ignoriert).
+NOKEY              =Kein Schlüsselspecified, aber benötigt (ignoriert).
+NOLIMIT            =Keine Begrenzung specified, aber benötigt (ignoriert).
+MUSTBEHEX          =Sie können Zeichen nur spezifizieren 0-f, %d-Digits lang.
+MUSTBESIZE         =Sie müssen eine Größe spezifizieren %s oder oben.
+
+;
+; Dieses Kapitel beschreibt IE-Fehler der SITUATION errors,, in denen Sie haben
+; nicht erfüllt allen korrekten Kriterien zum Fortfahren.
+;
+[ERR_SITUATION]
+NOHELP             =Sorry, dort ist keine Hilfe, die für vorhanden ist %s.
+ONYOURSELF         =Sie können %s auf selbst nur durchführen.
+NOTONYOURSELF      =Sie können nicht %s auf selbst durchführen.
+ONCOMMITTEE        =Sie können %s auf einem Bauteil von nur durchführen %s-Ausschuß.
+NOTONCOMMITTEE     =Sie können nicht %s auf einem Bauteil von durchführen %s-Ausschuß.
+ONPRIVCOMMITTEE    =Sie können %s auf einem Bauteil der privilegierten Ausschüsse nur durchführen.
+NOTONPRIVCOMMITTEE =Sie können nicht %s auf einem Bauteil der privilegierten Ausschüsse durchführen.
+ONDYNAMIC          =Sie können %s auf einem dynamischen Ausschuß nur durchführen.
+NOTONDYNAMIC       =Sie können nicht %s auf einem dynamischen Ausschuß durchführen.
+NEED_NICK_IDENT    =Sie müssen für %s kennzeichnen.  Schreiben Sie /MSG %s KENNZEICHNEN, < password> dann versuchen noch einmal.
+NEED_CHAN_IDENT    =Sie müssen für %s kennzeichnen.  Schreiben Sie /MSG %s KENNZEICHNEN %s < password> dann versuchen noch einmal.
+COMPLEX_PASS       =Wählen Sie bitte ein komplizierteres Kennwort.
+NOTYET             =Sie können nicht %s für andere durchführen %s.
+NICK_WRONG_PASS    =Kennwort falsch.  Ihr Versuch ist protokolliert worden.
+CHAN_WRONG_PASS    =Kennwort falsch für Führung %s. Ihr Versuch ist protokolliert worden.
+IGNORE_TRIGGER     =Sie haben Dienstleistungen IGNORIEREN gestartet (%d-message(s) innen %s).
+TEMP_IGNORE        =Dieses ist Ihr %s ignorieren (von einem Maximum %d). Dienstleistungen reagieren nicht für %s.
+PERM_IGNORE        =Ihnen sind das Maximum ignoriert worden %d-Zeiten. Dienstleistungen reagieren nicht mehr.
+PROTECTED          =Dieser Nickname hat den aktivierten ABBRUCH Schutz.  Wenn Sie nicht in KENNZEICHNEN %s, werden Sie beendet.
+FORBIDDEN          =Dieser Nickname ist verboten.  Wenn Sie nicht Ihren Einschnitt in ändern %s, werden Sie beendet.
+DEFCOMMITTEE       =Rückstellung Ausschüsse können möglicherweise NICHT geändert werden.
+AKILLTOOHIGH       =Sie können ein Maximum von nur spezifizieren %s für eine AKILL-Grenzzeit.
+NOFLUSH            =Protokolle mit Dateizubehören können möglicherweise nicht geleert werden.
+NOATTACH           =Kann nicht Dateizubehöre zu den Führungen schicken.
+FILEINPROG         =Kann nicht ein neues Protokoll oder eine Dateiübertragung anfangen, während eine Dateiübertragung in Bewegung ist.
+COFOUNDER          =Nicht das Co-Founder einstellen kann dasselbe wie der Gründer.
+NOACCESS           =Zugriff verweigert.
+NOT_SUPPORTED      =Diese Funktionalität wird nicht durch den IRCSERVER im Gebrauch unterstützt.
+
+;
+; Dieses Kapitel beschäftigt DCC-Tätigkeiten.
+;
+[DCC]
+COMPLETED          =Dcc %s durchgeführt (%d-Bytes übertragen).
+NOACCESS           =Dcc %s abgelehnt (Zugriff verweigert).
+NOREQUEST          =Dcc %s abgelehnt (kein Antrag aktiv).
+TOOBIG             =Dcc %s lehnte ab (die Datei zu groß).
+NOFILE             =Dcc %s fiel aus (fehlende Datei).
+NOCONNECT          =Dcc %s verlassen (kein Anschluß hergestellt).
+FAILED             =Dcc %s verlassen (interner Server Fehler).
+TIMEOUT            =Dcc %s abgebrochen (Unterbrechung).
+SOCKERR            =Dcc %s brach ab (Einfaßung Fehler %d - %s).
+TOOSLOW            =Dcc %s abgebrochen (Übertragung zu langsam).
+
+LOOKUP_MEMOATTACH  =Vor Protokollzubehör %08x ist %s und gehört Protokoll %s, #%d (gesendet durch %s, %s).
+LOOKUP_PICTURE     =Abbildung %08x gehört %s.
+LOOKUP_PUBLIC      =Allgemeine Datei %08x ist %s, für vorhanden %s.
+NLOOKUP_MEMOATTACH =Protokollzubehör %08x existierent nicht.
+NLOOKUP_PICTURE    =Abbildung %08x existierent nicht.
+NLOOKUP_PUBLIC     =Allgemeine Datei %08x existierent nicht.
+NLOOKUP_OTHER      =Unbekannte Dateikategorie %s.
+NOSPACE            =Nicht genügend Platz für file, gelöscht.
+NOSPACE2           =Nicht genügend Platz für temporäres file, versuchen bitte noch einmal später.
+
+LIST_HEAD          =Benutzer Prog Speed/s Größe Identifikation D (Dateiname)
+;                   > < | > < > < > < >,
+LIST               =%08x %c %9d %5.1f%% %6.1f%c %s (%s)
+NOACTIVE           =Keine DCC-Dateiübertragungen aktiv.
+NODCCID            =Keine DCC-Übertragung mit Identifikation %08x aktiv.
+CANCEL             =Dcc Identifikation %08x ist beendet worden.
+
+[VALS]
+TIME_SEC           =an zweiter Stelle
+TIME_SECS          =Sekunden
+TIME_MIN           =Minute
+TIME_MINS          =Minuten
+TIME_HOUR          =Stunde
+TIME_HOURS         =Stunden
+TIME_DAY           =Tag
+TIME_DAYS          =Tage
+TIME_WEEK          =Woche
+TIME_WEEKS         =Wochen
+TIME_YEAR          =Jahr
+TIME_YEARS         =Jahre
+TIME_NOW           =jetzt
+TIME_UNLIMITED     =unbegrenzt
+TIME_NONE          =keines
+ON                 =AUF
+OFF                =WEG VON
+ONLINE             =ONLINE
+SUSPENDED          =VERSCHOBEN
+
+;
+; Dieses Kapitel enthält Verschiedene Ausgaben von Magick.  z.B..
+; beenden Sie und treten Sie messages, announcements, und ein generisches Verzeichnis.
+;
+[MISC]
+KILL_PASS_FAIL     =Zu viele Kennwortausfälle
+KILL_GHOST         =GEIST-Befehl verwendet
+KILL_RECOVER       =WIEDERHERSTELLEN Sie den verwendeten Befehl rstellen
+KILL_OPERDENY      =Versucht /OPER, wenn sie VERWEIGERT werden
+KICK_RESTRICTED    =Diese Führung ist eingeschränkt.
+RENAMED_IDENT      =Sie sind umbenannt worden, damit Störung kennzeichnet.
+RENAMED_FORBID     =Sie umbenannt worden e, da Ihr Nickname verboten.
+
+NICK_GETPASS       =%s führte gerade ein GETPASS auf Nickname %s durch (%s).
+CHAN_GETPASS       =%s führte gerade ein GETPASS auf Führung %s durch (%s).
+GLOBAL_MSG         =%s schickte ALLEN Benutzern gerade eine Meldung.
+FLOOD_TEMP         =%s ist ÜBERSCHWEMMUNG-Dienstleistungen.  Plaziert auf temporäres ignorieren Sie.
+FLOOD_PERM         =%s ist ÜBERSCHWEMMUNG-Dienstleistungen.  Plaziert auf Permanente ignorieren Sie.
+CHAN_MODE          =%s führte gerade einen Betriebsartenwechsel durch (%s) auf Führung %s.
+NICK_MODE          =%s durchführte gerade einen Betriebsartenwechsel _1)s (%s) auf Nickname %s.
+AKILL_ADD          =%s fügte gerade AKILL auf Hauptrechner %s für hinzu %s (%s).
+AKILL_EXTEND       =%s dehnte gerade das AKILL auf Hauptrechner %s vorbei aus %s.
+OPERDENY_ADD       =%s hinzufügte gerade Operation verweigern auf Hauptrechner %s gern.
+QLINE              =%s drehte gerade sich %s eine Quarantäne auf den Nicknames, die %s zusammenbringen.
+NOOP               =%s drehte gerade sich %s-cIrcbedienerquarantäne auf Server %s.
+KILL               =%s gerade beendete still Benutzer %s.
+HIDE               =%s änderte gerade den Hauptrechner von %s zu %s.
+SHUTDOWN           =ABSCHALTUNG Befehl empfangen von %s.
+RELOAD             =%s lud gerade die Server Konfiguration Datei neu.
+JUPE               =(gerader JUPED Server %s enc_1)s.
+ONOFF              =Dienstleistungen sind gedreht worden %s durch %s.
+ONOFF_ONE          =Halten Sie instand %s ist gedreht worden %s durch %s.
+HTM_ON             =Hereinkommender high-traffic-Modus - (%.1fKb/s > %.1fKb/s)
+HTM_STILL          =Noch high-traffic-Modus %d (%d-Verzögerung): %.1fKb/s
+HTM_TURBO          =Noch high-traffic-Modus %d (TURBO) (%d-Verzögerung):  %.1fKb/s
+HTM_ON_FORCE       =Hereinkommender high-traffic-Modus vorbei erzwungen %s
+HTM_DIE            =Nicht von high-traffic mode, sich erholen kann das Abbrechen des Anschlußes.
+HTM_OFF            =Standardoperation wieder aufnehmen...,
+HTM_OFF_FORCE      =Die Standardoperation wieder aufnehmen vorbei erzwungen %s...,
+HTM_SET            =Htm-Schwellwert ist auf eingestellt worden %s/s vorbei %s.
+HTM                =Kann nicht Befehl %s, aktuell im high-traffic-Modus - durchführen versuchen bitte noch einmal später.
+SIGNAL_LOAD        =Empfangene Datei Konfiguration Server des Signals #%d, lud neu.
+SIGNAL_SAVE        =Empfangene Datenbank des Signals #%d, außer gestartet.
+SIGNAL_KILL        =PANIK!  Empfangene letzte Funktion des Signals #%d, war %s, Abschalten!
+
+ENTLIST_CLEAR      =Wert von %s ist löschte gewesen.
+ENTLIST_SET        =Wert von %s ist auf eingestellt worden %s.
+REVENGE            =RACHE:  nicht %s %s
+SYNC               =Datenbanken willen Synchronisierung innen %s.
+LANG_LIST          =Vorhandene Sprachen sind:
+LANG_NOLIST        =Fehler, der Liste der vorhandenen Sprachen festlegt.
+BREAKDOWN_HEAD     =SERVER STRÄFLINGCBenutzer (OPS)
+BREAKDOWN          =%-35s % 3.3fs %5d (%3d) %3.2f%%
+
+;
+; Dieses Kapitel enthält die Ausgabe des STATS-Befehls.
+;
+[STATS]
+GEN_UPTIME         =Dienstleistungen oben für %s.
+GEN_RESET          =Vor Dienstleistungen dauern Rücksetzen %s.
+GEN_MAXUSERS       =Maximale Benutzer:  %d
+GEN_USERS          =Aktuelle Benutzer:  %d (%d-op(s))
+GEN_CLONES         =Strom Klont:  %d (%d-host(s))
+
+NICK_REGD          =Aktuell Registriert:  %d (%d gebunden)
+NICK_DENIED        =Aktuell Verschoben:  %d (%d verboten)
+NICK_CMD           =Erfolgreicher Befehl Verbrauch:
+NICK_CMD1          =REGISTRIEREN Sie, TROPFEN %10d / %10d
+NICK_CMD2          =LINK %10d / LÖSEN %10d
+NICK_CMD3          =HAUPTRECHNER %10d / KENNZEICHNEN %10d
+NICK_CMD4          =GEIST %10d / STELLEN wiederher %10d
+NICK_CMD5          =VERSCHIEBEN Sie %10d / UNSUSPEND %10d
+NICK_CMD6          =VERBOTEN %10d / GETPASS %10d
+NICK_CMD7          =ZUGRIFF %10d / IGNORIEREN %10d
+NICK_CMD8          =STELLEN Sie ein %10d / NOEXPIRE %10d
+NICK_CMD9          =VERRIEGELUNG %10d / ENTSPERREN %10d
+
+CHAN_REGD          =Aktuell Registriert:  %d
+CHAN_DENIED        =Aktuell Verschoben:  %d (%d verboten)
+CHAN_CMD           =Erfolgreicher Befehl Verbrauch:
+CHAN_CMD1          =REGISTRIEREN Sie, TROPFEN %10d / %10d
+CHAN_CMD2          =KENNZEICHNEN Sie %10d
+CHAN_CMD3          =VERSCHIEBEN Sie %10d / UNSUSPEND %10d
+CHAN_CMD4          =VERBOTEN %10d / GETPASS %10d
+CHAN_CMD5          =MODUS, THEMA %10d / %10d
+CHAN_CMD6          =OP %10d / DEOP %10d
+CHAN_CMD7          =ÄUSSERN Sie %10d / DEVOICE %10d
+CHAN_CMD8          =TRETEN Sie %10d / ANONKICK %10d
+CHAN_CMD9          =LADEN Sie ein %10d / UNBAN %10d
+CHAN_CMD10         =LÖSCHEN Sie %10d / AKICK %10d
+CHAN_CMD11         =EBNEN Sie, ZUGRIFF %10d / %10d
+CHAN_CMD12         =GRÜSSEN Sie, MELDUNG %10d / %10d
+CHAN_CMD13         =EINSTELLEN Sie 0d %10d / NOEXPIRE %10d
+CHAN_CMD14         =VERRIEGELUNG %10d / ENTSPERREN %10d
+
+OPER_CLONE         =Clone Override entries     : %d
+OPER_AKILL         =Selbstabbruch Einträge:  %d
+OPER_OPERDENY      =Operation verweigern Einträge:  %d
+OPER_IGNORE        =Ignorieren Sie Einträge:  %d
+OPER_CMD           =Erfolgreicher Befehl Verbrauch:
+OPER_CMD1          =VERFOLGEN Sie, MODUS %10d / %10d
+OPER_CMD2          =QLINE %10d / UNQLINE %10d
+OPER_CMD3          =NOOP, ABBRUCH %10d / %10d
+OPER_CMD4          =PING, AKTUALISIERUNGSVORGANG %10d / %10d
+OPER_CMD5          =UMLADEN %10d / AUS DEM PROGRAMM NEHMEN %10d
+OPER_CMD6          =JUPE %10d / ON/OFF %10d
+OPER_CMD7          =KLONEN Sie %10d / AKILL %10d
+OPER_CMD8          =OPERDENY %10d / IGNORIEREN %10d
+OPER_CMD9          =FELL %10d
+
+OTH_MEMO           =Benutzer mit Warteprotokollen:  %d
+OTH_NEWS           =Führungen mit Nachrichten Artikeln:  %d
+OTH_COMM           =Aktive Ausschüsse:  %d
+
+OTH_CMD            =Erfolgreich %s-Befehl Verbrauch:
+OTH_CMD1           =GELESEN %10d / UNREAD %10d
+OTH_CMD2           =SENDEN Sie %10d / LEEREN %10d
+OTH_CMD3           =ANTWORTEN Sie %10d / VORWÄRTS %10d
+OTH_CMD4           =CANCEL %10d / DEL %10d
+OTH_CMD5           =FAHREN Sie fort %10d / FILE/GET %10d
+
+OTH_CMD6           =NEU, ABBRUCH %10d / %10d
+OTH_CMD7           =ADD/DEL, PROTOKOLL %10d / %10d
+OTH_CMD8           =LOGON %10d / STELLTE ein %10d
+OTH_CMD9           =VERRIEGELUNG %10d / ENTSPERREN %10d
+
+OTH_CMD10          =GLOBAL, GUTSCHRIFTEN %10d / %10d
+OTH_CMD11          =DATEI ADD/DEL, DATEI %10d / SENDEN %10d
+OTH_CMD12          =DATEICÄnderung, DATEICCancel %10d / %10d
+
+USE_CPU            =CPU-Verbrauch %s-System und %s-Benutzer.
+USE_TRAFFIC        =Gesendet %s (%s/s) und empfangen %s (%s/s) innen %s.
+USE_NS_LIVE        =Phasennicknames %5d (%s)
+USE_CS_LIVE        =Phasenführungen %5d (%s)
+USE_NS_STORED      =Gespeicherte Nicknames %5d (%s)
+USE_CS_STORED      =Gespeicherte Führungen %5d (%s)
+USE_MEMO           =Benutzerprotokolle %5d (%s)
+USE_NEWS           =Nachrichten Artikel %5d (%s)
+USE_COMMITTEE      =Ausschüsse %5d (%s)
+USE_OPERSERV       =OperServ druckt aus %5d (%s)
+USE_OTHER          =Anderes %5d (%s)
+USE_TOTAL          =GESAMTMENGE %5d (%s)
+USE_LANGHEAD       =Sprach-Lng Hlp
+USE_LANG           =%-20s %7s %7s
+
+
+;
+; Dieses Kapitel enthält ALLE Ausgabe von Liste ändernden Befehlen.
+;
+[LIST]
+LASTMOD            =Vor Last modified %s vorbei %s
+MAXLIST            =Sie können nur bis ausdrucken %d-Einträge sofort.
+NICK_LIST          =Anzeigen der Nicknames, die %s zusammenbringen:
+CHAN_LIST          =Anzeigen der Führungen, die %s zusammenbringen:
+COMM_LIST          =Anzeigen der Ausschüsse, die %s zusammenbringen:
+DISPLAYED          =%d von %d-Einträge anzeigten n.
+
+DISPLAY            =Alle Einträge an anzeigen %s-Liste:
+DISPLAY_MATCH      =Die Einträge anzeigen, die an %s zusammenbringen %s-Liste:
+ADD                =Zusätzlicher Eintrag %s zu %s-Liste.
+ADD_NUMBER         =Zusätzlicher Eintrag #%d zu %s-Liste.
+ADD_LEVEL          =Zusätzlicher Eintrag %s zu %s-Liste an %d.
+ADD_TIME           =Zusätzlicher Eintrag %s zu %s-Liste für %s.
+CHANGE_LEVEL       =Geänderter Eintrag %s an %s-Liste zur Stufe %d.
+CHANGE_TIME        =Geänderter Eintrag %s an %s-Liste zu %s.
+DEL                =Gelöschter Eintrag %s von %s-Liste.
+DEL_MATCH          =Gelöscht %d-Einträge, die %s von zusammenbringen %s-Liste.
+DEL_NUMBER         =Gelöschter Eintrag #%d von %s-Liste.
+EXISTS             =Eintrag %s bereits existierent oder ist an einschließlich %s-Liste.
+NOTEXISTS          =Keine Einträge, die an %s zusammenbringen %s-Liste.
+NOTEXISTS_NUMBER   =Kein Eintrag #%d existierent an %s-Liste.
+EMPTY              =Keine Einträge innen %s-Liste.
+
+DISPLAY2           =Alle Einträge an anzeigen %s %s-Liste:
+DISPLAY2_MATCH     =Die Einträge anzeigen, die an %s zusammenbringen %s %s-Liste:
+ADD2               =Zusätzlicher Eintrag %s zu %s %s-Liste.
+ADD2_NUMBER        =Zusätzlicher Eintrag #%d zu %s %s-Liste.
+ADD2_LEVEL         =Zusätzlicher Eintrag %s zu %s %s-Liste auf Stufe %d.
+ADD2_TIME          =Zusätzlicher Eintrag %s zu %s %s-Liste für %s.
+CHANGE2_LEVEL      =Geänderter Eintrag %s an %s %s-Liste zur Stufe %d.
+CHANGE2_TIME       =Changed entry %s on %s %s list to %s.
+DEL2               =Gelöschter Eintrag %s von %s %s-Liste.
+DEL2_MATCH         =Gelöscht %d-Einträge, die %s von zusammenbringen %s %s-Liste.
+DEL2_NUMBER        =Gelöschter Eintrag #%d von %s %s-Liste.
+EXISTS2            =Eintrag %s bereits existierent oder ist an einschließlich %s %s-Liste.
+NOTEXISTS2         =Keine Einträge, die an %s zusammenbringen %s %s-Liste.
+NOTEXISTS2_NUMBER  =Kein Eintrag #%d existierent an %s %s-Liste.
+EMPTY2             =Keine Einträge innen %s %s-Liste.
+
+ACCESS             =Zugriff
+IGNORE             =Protokoll ignorieren
+LEVEL              =Zugriffsebene
+AKICK              =automatischer Stoß
+GREET              =Führung Gruß
+JOINMSG            =on-join-Meldungen
+MEMBER             =Bauteil
+MESSAGES           =Signonmeldungen
+CLONE              =Klonübersteuerung
+AKILL              =automatischer Abbruch
+OPERDENY           =IRCBEDIENER verweigern
+SIGNORE            =Dienstleistungen ignorieren
+CHANNEL            =Führung
+NICKNAME           =Nicknames
+FILES              =vorhandene Dateien
+
+;
+; Dieses Kapitel definiert STATUS-Antworten über ANDERE Nicknames.
+;
+[NS_OTH_STATUS]
+ISSTORED           =Nickname %s wird bereits registriert oder gebunden.
+ISREGD             =Nickname %s wird bereits registriert.
+ISLINKED           =Nickname %s wird bereits gebunden.
+ISNOTSTORED        =Nickname %s wird registriert nicht oder gebunden.
+ISNOTREGD          =Nickname %s wird nicht registriert.
+ISNOTLINKED        =Nickname %s gebunden nicht.
+ISFORBIDDEN        =Nickname %s ist verboten.
+ISSUSPENDED        =Nickname %s wird verschoben.
+ISNOTSUSPENDED     =Nickname %s wird nicht verschoben.
+ISHOST             =Nickname %s ist ein Hauptrechner.
+ISNOTHOST          =Nickname %s ist nicht ein Hauptrechner.
+IDENTIFIED         =Sie gekennzeichnet bereits für Nickname %s.
+ISLOCKED           =%s-Option für Nickname %s ist verschlossen.
+ISNOTLOCKED        =%s-Option für Nickname %s ist nicht verschlossen.
+
+NOPIC              =Nickname %s hat nicht eine eingestellte Abbildung.
+ISNOTYOURS         =Nickname %s wird nicht mit Ihnen gebunden.
+ISINUSE            =Nickname %s ist aktuell innen Gebrauch.
+ISNOTINUSE         =Nickname %s ist nicht aktuell im Gebrauch.
+
+;
+; Dieses Kapitel definiert STATUS-Antworten über IHRE Nicknames.
+;
+[NS_YOU_STATUS]
+ISSTORED           =Ihr Nickname wird bereits registriert oder gebunden.
+ISREGD             =Ihr Nickname wird bereits registriert.
+ISLINKED           =Ihr Nickname wird bereits gebunden.
+ISNOTSTORED        =Ihr Nickname registriert nicht oder gebunden.
+ISNOTREGD          =Ihr Nickname registriert nicht.
+ISNOTLINKED        =Ihr Nickname gebunden nicht.
+ISFORBIDDEN        =Ihr Nickname ist verboten.
+ISSUSPENDED        =Ihr Nickname wird verschoben.
+ISNOTSUSPENDED     =Ihr Nickname wird nicht verschoben.
+ISHOST             =Ihr Nickname ist ein Hauptrechner.
+ISNOTHOST          =Ihr Nickname ist nicht ein Hauptrechner.
+IDENTIFIED         =Sie werden bereits gekennzeichnet.
+ISLOCKED           =%s-Option ist verschlossen.
+ISNOTLOCKED        =%s-Option ist nicht verschlossen.
+
+PICDISABLED        =Storing pictures has been DISABLED.
+INVALIDEXT         =Die Extension der Datei, die Sie versuchten zu senden, ist nicht ein bekanntes Abbildung Format.
+
+;
+; Diese Antworten sind NUR für den NickServ-cInfo-Befehl.
+;
+[NS_INFO]
+REALNAME           =%s ist %s
+HOST               =\  Hauptrechnereinschnitt:  %s
+REGISTERED         =\  Registriert:  %s%s
+ONLINEAS           =\  Online wie:  %s
+LASTALLMASK        =Letztes Online Wie:  %s
+LASTALLSEEN        =\  Letztes Online:  %s
+LASTMASK           =\  Letztes wie gesehen worden:  %s
+LASTSEEN           =\  Letztes gesehen:  %s
+QUITMSG            =\  Beenden Sie MSG:  %s
+SUSPEND            =\  Verschoben:  vor %s vorbei %s
+SUSPENDFOR         =\  Für:  %s
+EMAIL              =\  E-Mail:  %s
+URL                =\      WWW Page: http://%s
+ICQ                =\  ICQ #:  %s
+DESCRIPTION        =\  Beschreibung:  %s
+COMMENT            =\  Kommentar:  %s
+COMMITTEES         =\  Ausschüsse:  %s
+OPTIONS            =\  Optionen:  %s
+HASPIC             =Dieser Benutzer hat eine vorhandene Abbildung (%s).  Schreiben Sie /MSG %s SENDEN %s zum Downloaden es.
+ISONLINE           =Dieser Benutzer sein aktuell online.  Schreiben Sie /whois %s zu mehr Information.
+NOEXPIRE           =non-expiring
+
+;
+; Strukturelle Namen für das vorhandene SET's (NickServ).
+;
+[NS_SET]
+PASSWORD           =Kennwort
+EMAIL              =E-Mail-Adresse
+URL                =WWWSeite
+ICQ                =Icq-Zahl
+DESCRIPTION        =Körperliche Beschreibung
+COMMENT            =Kommentar
+PROTECT            =Abbruch Schutz
+SECURE             =Sicher
+NOEXPIRE           =Kein Laufen Sie ab
+NOMEMO             =VerweigernProtokolle
+PRIVATE            =Privat
+PRIVMSG            =PRIVMSG
+LANGUAGE           =Sprache
+
+;
+; Dieses Kapitel enthält die Ausgabe, die benutzt am Ende von ERFOLGREICHEM
+; NickServ-Befehl durchgeführt an ANDEREN Nicknames.
+;
+[NS_OTH_COMMAND]
+REGISTERED         =Nickname %s wird jetzt unter Hauptrechner %s registriert.
+LINKED             =Nickname %s wird jetzt mit %s gebunden.
+DROPPED            =Nickname %s ist droped gewesen.
+UNLINKED           =Nickname %s ist gelöst worden.
+NEWHOST            =Nickname %s ist jetzt der Hauptrechner.
+IDENTIFIED         =Kennwort nahm - Sie werden gekennzeichnet jetzt für Nickname an %s.
+SET_TO             =%s für Nickname %s eingestellt worden auf %s en.
+UNSET              =%s für Nickname %s ist unset gewesen.
+OPT_SET_TO         =%s-Option für Nickname %s ist auf %s eingestellt worden.
+
+RELEASED           =Der Klient, der Nickname %s verwendet, ist beendet worden.
+HELD               =Nickname %s wird jetzt durch Dienstleistungen angehalten.
+SUSPENDED          =Nickname %s ist verschoben worden.
+UNSUSPENDED        =Nickname %s ist unsuspended gewesen.
+FORBIDDEN          =Nickname %s ist verboten worden.
+GETPASS            =Kennwort für Nickname %s (%s) ist %s.
+LOCKED             =%s für Nickname %s GESPERRT WORDEN zu %s.
+UNLOCKED           =%s für Nickname %s ist ENTSPERRT WORDEN.
+OPT_LOCKED         =%s-Option für Nickname %s ist zu %s GESPERRT WORDEN.
+OPT_UNLOCKED       =%s-Option für Nickname %s ist ENTSPERRT WORDEN.
+
+;
+; Dieses Kapitel enthält die Ausgabe, die benutzt wird am Ende von ERFOLGREICHEM
+; NickServ-Befehl führte an IHREN Nicknames durch.
+;
+[NS_YOU_COMMAND]
+REGISTERED         =Ihr Nickname wird jetzt unter Hauptrechner %s registriert.
+LINKED             =Ihr Nickname wird jetzt mit %s gebunden.
+DROPPED            =Ihr Nickname ist droped gewesen.
+UNLINKED           =Ihr Nickname ist gelöst worden.
+NEWHOST            =Ihr Nickname ist jetzt der Hauptrechner.
+IDENTIFIED         =Kennwort nahm - Sie werden gekennzeichnet jetzt an.
+SET_TO             =Ihr %s ist auf %s eingestellt worden.
+UNSET              =Ihr %s ist unset gewesen.
+OPT_SET_TO         =%s-Option ist auf %s eingestellt worden.
+
+PENDING            =Fangen Sie bitte an, Ihre Abbildung jetzt zu senden.
+PUB_PENDING        =Fangen Sie bitte an, Ihre Datei jetzt zu senden.
+SAVED              =Ihre Abbildung ist gesichert worden.
+REMOVED            =Ihre Abbildung ist gelöscht worden.
+TOOBIG             =Ihre Abbildung ist zu big, bitte Antriebskraft ein kleinere Abbildung.
+NOSPACE            =Nicht genügend Platz zum Speichern Ihr picture, gelöscht.
+
+
+;
+; Antworten NUR für den ChanServ-cInfo-Befehl.
+;
+[CS_INFO]
+IS                 =Informationen ungefähr %s:
+FOUNDER            =\  Gründer:  %s
+COFOUNDER          =\  Co-Founder:  %s
+DESCRIPTION        =Beschreibung:  %s
+REGISTERED         =\  Registriert:  %s%s
+INUSEBY            =\  Im Gebrauch vorbei:  %s
+LASTUSED           =\  Letztes benutzt:  %s
+EMAIL              =\  E-Mail:  %s
+URL                =\   WWW Page: http://%s
+SUSPEND            =\  Verschoben:  vor %s vorbei %s
+SUSPENDFOR         =\  Für:  %s
+COMMENT            =\  Kommentar:  %s
+TOPIC              =\  Letztes Thema:  %s
+TOPICBY            =\  Set:  vor %s vorbei %s
+MLOCK              =\  Modusverriegelung:  %s
+REVENGE            =\  Rache:  %s
+BANTIME            =VerbotAbbau:  %s
+PARTTIME           =Grüßen Sie Verzögerung:  %s
+OPTIONS            =\  Optionen:  %s
+
+NOEXPIRE           =non-expiring
+OPS                =op(s)
+VOICES             =voice(s)
+USERS              =user(s)
+SPLIT_USERS        =aufgeteiltes user(s)
+
+
+;
+; Strukturelle Namen für das vorhandene SET's (NickServ).
+;
+[CS_SET]
+FOUNDER            =Gründer
+COFOUNDER          =Co-Founder
+PASSWORD           =Kennwort
+EMAIL              =E-Mail-Adresse
+URL                =WWWSeite
+DESCRIPTION        =Beschreibung
+COMMENT            =Kommentar
+TOPIC              =Thema
+MLOCK              =ModusVerriegelung
+BANTIME            =VerbotZeit
+PARTTIME           =Teilzeitlich
+KEEPTOPIC          =UnterhaltThema
+TOPICLOCK          =ThemaVerriegelung
+PRIVATE            =Privat
+SECUREOPS          =Sichern Sie Ops
+SECURE             =Sicher
+NOEXPIRE           =Kein Laufen Sie ab
+ANARCHY            =Anarchy
+KICKONBAN          =Stoß Auf Verbot
+RESTRICTED         =Eingeschränkt
+JOIN               =Dienstleistungen Verbinden
+REVENGE            =Rache Waagerecht ausgerichtet
+
+LVL_AUTODEOP       =Automatische Deop/Devoice
+LVL_AUTOVOICE      =Automatische Stimme
+LVL_AUTOOP         =Automatisches OP
+LVL_READMEMO       =Lesen Sie Nachrichten
+LVL_WRITEMEMO      =Schreiben Sie Nachrichten
+LVL_DELMEMO        =LöschungNachrichten
+LVL_GREET          =Stellen Sie Gruß Ein
+LVL_OVERGREET      =Sperren Sie Gruß
+LVL_MESSAGE        =Schreiben Sie On-Join-Meldung
+LVL_AKICK          =SelbstStoßWartung
+LVL_SUPER          =SupercOp
+LVL_UNBAN          =Verbote Server Unban
+LVL_ACCESS         =Greifen Sie Liste Wartung Zu
+LVL_SET            =Stellen Sie Änderung Ein
+LVL_VIEW           =Führung Ansicht
+LVL_CMDINVITE      =Laden Sie Befehl Ein
+LVL_CMDUNBAN       =Unban-Befehl
+LVL_CMDVOICE       =SprachBefehl
+LVL_CMDOP          =OPBefehl
+LVL_CMDKICK        =Stoß-Befehl
+LVL_CMDMODE        =Modus-Befehl
+LVL_CMDCLEAR       =Freier Befehl
+
+REV_NONE           =Untauglich
+REV_REVERSE        =RückAktivität
+REV_DEOP           =Nur Deop
+REV_KICK           =Nur Stoß
+REV_BAN1           =Verbot des Einschnittes (nick!*@*)
+REV_BAN2           =Schablone (*!*user@*.host-) Verbot
+REV_BAN3           =Kanal (*!*@port.host-) Verbot
+REV_BAN4           =Hauptrechner (*!*@*.host-) Verbot
+REV_MIRROR         =SpiegelAktivität
+
+;
+; Dieses Kapitel definiert STATUS-Antworten über Führungen.
+;
+[CS_STATUS]
+ISSTORED           =Führung %s wird bereits registriert.
+ISNOTSTORED        =Führung %s wird nicht registriert.
+IN                 =Sie sind bereits in der Führung %s.
+NOTIN              =Sie sind nicht in der Führung %s.
+OTH_IN             =Nickname %s ist bereits in der Führung %s.
+OTH_NOTIN          =Nickname %s ist nicht in der Führung %s.
+OPPED              =Sie sind oped bereits in der Führung %s.
+NOTOPPED           =Sie sind nicht oped in der Führung %s.
+OTH_OPPED          =Nickname %s ist oped bereits in der Führung %s.
+OTH_NOTOPPED       =Nickname %s ist nicht oped in der Führung %s.
+VOICED             =Sie geäußert bereits in der Führung %s.
+NOTVOICED          =Sie werden nicht in der Führung geäußert %s.
+OTH_VOICED         =Nickname %s wird bereits in der Führung geäußert %s.
+OTH_NOTVOICED      =Nickname %s wird nicht in der Führung geäußert %s.
+BANNED             =Sie werden bereits von der Führung verboten %s.
+NOTBANNED          =Sie werden nicht von der Führung verboten %s.
+OTH_BANNED         =Nickname %s wird bereits von der Führung verboten %s.
+OTH_NOTBANNED      =Nickname %s wird nicht von der Führung verboten %s.
+TOOMANY            =Sie sind Gründer oder Co-Founder zu vieler Führungen.
+OTH_TOOMANY        =Nickname %s ist Gründer oder Co-Founder zu vieler Führungen.
+IDENTIFIED         =Sie werden bereits für Führung gekennzeichnet %s.
+ISFORBIDDEN        =Führung %s ist verboten.
+ISNOTFORBIDDEN     =Führung %s ist nicht verboten.
+ISINUSE            =Führung %s ist aktuell innen Gebrauch.
+ISNOTINUSE         =Führung %s ist nicht aktuell im Gebrauch.
+RESTRICT           =Führung %s registriert und hat %s eingestellt.  Zugriff Beschränkungen zutreffen n.
+HIGHERACCESS       =Nickname %s ist höher, als Sie auf sind %s-Zugriff Liste.
+NOTZERO            =Sie können nicht jemand der Zugriff Liste auf Stufe null hinzufügen.
+ONLYBELOW          =Sie können jemand der Zugriff Liste auf einer untereren Stufe als nur hinzufügen sich.
+LOCKGREET          =Ihr Gruß für Führung %s ist verschlossen.
+NOTLOCKGREET       =Ihr Gruß für Führung %s ist nicht verschlossen.
+ISLOCKED           =%s für Führung %s ist verschlossen.
+ISNOTLOCKED        =%s für Führung %s ist nicht verschlossen.
+NOREVENGE          =Rache waagerecht ausgerichtet %s ist unzulässig.
+
+;
+; Dieses Kapitel enthält die Ausgabe, die benutzt wird am Ende von ERFOLGREICHEM
+; ChanServ-Befehle.
+;
+[CS_COMMAND]
+REGISTERED         =Führung %s ist mit Gründer %s registriert worden.
+DROPPED            =Führung %s ist droped gewesen.
+IDENTIFIED         =Kennwort nahm - Sie werden gekennzeichnet jetzt als Gründer von an %s.
+SET_TO             =%s für Führung %s ist auf %s eingestellt worden.
+UNSET              =%s für Führung %s ist unset gewesen.
+LOCKED             =%s für Führung %s ist zu %s GESPERRT WORDEN.
+UNLOCKED           =%s für Führung %s ENTSPERRT WORDEN.
+MLOCK_REVERSED     =Modusverriegelung hat %s aufgehoben.
+MLOCK_FORCED       =Modusverriegelung hat %s erzwungen.
+MLOCK_SET          =Modusverriegelung für Führung %s ist auf %s eingestellt worden.
+MLOCK_UNSET        =Modusverriegelung für Führung %s ist gelöscht worden.
+MLOCK_LOCK         =Modusverriegelung für Führung %s ist zu %s gesperrt worden.
+MLOCK_UNLOCK       =Modusverriegelung für Führung %s ist entsperrt worden.
+SUSPENDED          =Führung %s ist verschoben worden.
+UNSUSPENDED        =Führung %s ist unsuspended gewesen.
+FORBIDDEN          =Führung %s ist verboten worden.
+GETPASS            =Kennwort für Führung %s (%s) ist %s.
+KICK               =Angefordert durch %s (%s)
+INVITE             =Sie sind eingeladen worden zu lenken %s.
+OTH_INVITE         =Sie sind eingeladen worden zu lenken %s vorbei %s.
+UNBANNED           =Sie sind unbanned von der Führung gewesen %s.
+OTH_UNBANNED       =Nickname %s ist unbanned von der Führung gewesen %s.
+CLEAR              =%s-Befehl ist vorbei verwendet worden %s für Führung %s.
+LEVEL_HEAD         =Waagerecht ausgerichteter MARKE Name (%s)
+LEVEL_LIST         =%5d %-9s %s
+LEVEL_HAVE         =Sie haben %s-Zugriff auf Führung %s.
+
+;
+; Dieses Kapitel enthält die Ausgabe, die benutzt wird am Ende von ERFOLGREICHEM
+; CommServ commands, sowie alle Statusausgaben.
+;
+[COMMSERV]
+ISSTORED           =Ausschuß %s existierent bereits.
+ISNOTSTORED        =Ausschuß %s existierent nicht.
+NOTMODIFY          =Ausschuß %s kann möglicherweise nicht online geändert werden.
+MULTI_HEAD         =Ausschuß %s hat mehr als einen Kopf und kann nicht re-assigned sein.
+MEMBER             =Sie sind auf %s-Ausschuß.
+NOTMEMBER          =Sie sind nicht auf %s-Ausschuß.
+HEAD               =Sie sind Kopf von %s-Ausschuß.
+NOTHEAD            =Sie sind nicht Kopf von %s-Ausschuß.
+OTH_MEMBER         =%s ist auf %s-Ausschuß.
+OTH_NOTMEMBER      =%s ist nicht auf %s-Ausschuß.
+OTH_HEAD           =%s ist Kopf von %s-Ausschuß.
+OTH_NOTHEAD        =%s ist nicht Kopf von %s-Ausschuß.
+NEW                =Ausschuß %s ist mit Kopf %s erstellt worden.
+KILL               =Ausschuß %s ist gelöscht worden.
+MEMO               =Protokoll geschickt allen Bauteilen von %s-Ausschuß.
+ISLOCKED           =%s für Ausschuß %s ist verschlossen.
+ISNOTLOCKED        =%s für Ausschuß %s ist nicht verschlossen.
+SET_TO             =%s für Ausschuß %s eingestellt worden auf %s en.
+UNSET              =%s für Ausschuß %s ist unset gewesen.
+LOCKED             =%s für Ausschuß %s ist zum %s. gesperrt worden.
+UNLOCKED           =%s für Ausschuß %s ist entsperrt worden.
+DEFUNCT            =VERSTORBEN
+
+;
+; Diese sind die Ausgaben für NUR den CommServ-cInfo-Befehl.
+;
+[COMMSERV_INFO]
+DESCRIPTION        =%s ist %s
+REGISTERED         =Registriert:  %s
+HEADCOM            =\  Kopf:  %s
+HEAD               =\  Kopf:  %s
+EMAIL              =\  E-Mail:  %s
+URL                =\  WWW Page: http://%s
+STATS              =\  Stats:  %s
+OPTIONS            =\  Optionen:  %s
+MEMBERS            =Bauteile
+MESSAGES           =Meldungen
+SET_HEAD           =Kopf
+SET_EMAIL          =E-Mail-Adresse
+SET_URL            =WWWSeite
+SET_SECURE         =Sicher
+SET_PRIVATE        =Privat
+SET_OPENMEMOS      =Öffnen Sie Protokolle
+
+;
+; Diese sind Statusausgabeleitungen für OperServ
+;
+[OS_STATUS]
+INVALID_THREAD     =Gewindeart %s ist unzulässig.
+INVALID_LEVEL      =Spur Stufe %s ist unzulässig (ignoriert).
+ISLINKED           =Server %s wird bereits gebunden.
+ISNOTLINKED        =Server %s wird nicht gebunden.
+ISLANG             =Sprache %s wird bereits geladen.
+ISNOTLANG          =Sprache %s wird nicht geladen.
+NOLANG             =Sprache %s existierent nicht.
+ISOPERDENY         =Sie können nicht gesetzter Modus +o,, das Sie auf Operation verweigern sind.
+HTM                =Htm startet %s/s, am aktuellen durchschnittlichen Verkehr ist %.1fKb/s.
+
+;
+; Diese sind die Ausgabeleitungen für die OperServ-cEinstellungen befehlen NUR.
+;
+[OS_SETTINGS]
+CFG_LEVEL          =Niedrige Stufe ist %d, aktuelle Stufe ist %d.
+CFG_LAG            =Stufe wird erhöht, wenn Sträfling mehr als ist %s.
+CFG_LAGCHECK       =Server Sträfling ist überprüftes jedes %s.
+CFG_SERVERS        =Dienstleistungen haben (das mögliche server(s) enc_1)d zum Anschließen an.
+CFG_RELINK         =Instandhält relink innen dhält %s wenn SQUIT.
+CFG_SQUIT1         =SQUIT-Schutzletzte %s.
+CFG_SQUIT2         =Benutzer haben %s zum Wieder anschließen, bevor SQUIT-Schutz aktiviert.
+CFG_SYNC           =Datenbanken sichern jedes %s, und Synchronisierung innen %s.
+CFG_CYCLE          =Aktive Schleife ist %s, und Hyperactive Schleife ist %s.
+CFG_DCC1           =Dcc-Blockgröße ist %s und setzt heraus innen Zeit fest %s.
+CFG_DCC2           =Minimale DCC-Geschwindigkeit ist %s und Maximum ist %s rüber %s.
+
+NICK_EXPIRE        =Nicknames laufen nach ab %s.
+NICK_IDENT         =Benutzer haben (zu kennzeichnendes enc_1)s.
+NICK_HOLD          =Nicknames werden für angehalten %s auf Störung zu kennzeichnen.
+NICK_PASS          =Benutzer werden beendet, wenn sie kennzeichnen nicht können %d-time(s).
+NICK_OPTIONS       =Rückstellung Nicknameoptionen sind:  %s
+NICK_LANG          =Rückstellung Sprache ist %s.
+NICK_PICSIZE       =Maximale Abbildung Größe ist %s.
+NICK_PICEXT        =Gültige Abbildung Extensionen sind:  %s
+NICK_FILES         =Benutzer können bis haben %d-file(s) von bis %s jedes.
+
+CHAN_EXPIRE        =Führungen laufen nach ab %s.
+CHAN_IDENT         =Benutzer werden beendet, wenn sie kennzeichnen nicht können %d-time(s).
+CHAN_KEEPTIME      =Führungen werden für gehalten %s nach AKICKing der letzte Benutzer.
+CHAN_BANTIME       =Rückstellung Verbot-Unterhaltzeit ist %s.
+CHAN_PARTTIME      =Rückstellung grüßen Verzögerung Zeit ist %s.
+CHAN_MLOCK         =Standardartverriegelung ist Modi "%s", "%s" sind vorverlegt.
+CHAN_OPTIONS       =Rückstellung Führung Optionen sind:  %s
+CHAN_REVENGE       =Rückstellung Rachestufe ist %s.
+CHAN_ACCESS        =Minimale Zugriffsebene ist %d, und Maximum ist %d.
+CHAN_NEWS          =Nachrichten Artikel laufen nach ab %s.
+
+MISC_INFLIGHT      =Protokolle sind in-flight für %s.
+MISC_AKILL1        =Rückstellung ist Selbstabbruch Zeit %s.
+MISC_AKILL2        =Maximale Selbstabbruch Zeiten (durch Ausschuß) sind:
+MISC_AKILL3        =%s:  %s
+MISC_CLONES        =Benutzer können bis haben %d-clone(s) pro host,, über das bis ausser Kraft gesetzt werden kann %d.
+MISC_FLOOD1        =Flut gestartet mit %d-message(s) ist %s.
+MISC_FLOOD2        =Dienstleistungen erinnern sich an alte Flutauslöser für %s.
+MISC_IGNORE        =Ignorieren Sie dauert für %s, und wird gebildet permanent, wenn Sie gestartet werden %d-time(s).
+MISC_COMM_OPT      =Rückstellung Ausschussoptionen sind:  %s
+
+
+;
+; Dieses Kapitel enthält die Ausgabe, die benutzt wird am Ende von ERFOLGREICHEM
+; OperServ-Befehle.
+;
+[OS_COMMAND]
+CHAN_MODE          =Betriebsartenwechsel %s ist für Führung gesendet worden %s.
+NICK_MODE          =Betriebsartenwechsel %s ist für Nickname gesendet worden %s.
+QLINE              =Quarantäne für das Nicknameszusammenbringen %s ist gedrehtes %s gewesen.
+NOOP               =IRCBEDIENERQUARANTÄNE gewesen gedrehtes %s für Server %s.
+KILL               =Benutzer %s ist beendet worden (still).
+HIDE               =Geänderter Hauptrechner von Nickname %s zu %s.
+PING               =PING-Meldung, die zu allen Servers gesendet wird.
+UPDATE             =Einsparungdatenbanken.
+SHUTDOWN           =Abschalten...,
+RELOAD             =Konfiguration Datei neu geladen.
+RELOAD_FAIL        =WARNING:  Konnte nicht Konfiguration Datei lesen.
+SIGNON             =Unterzeichnet auf allem non-active hält Klienten instand.
+UNLOAD             =Sprache %s aus dem Programm genommen worden.
+JUPE               =Server %s gewesen juped.
+ONOFF              =Dienstleistungen sind gedrehte %s gewesen.
+ONOFF_ONE          =Halten Sie instand %s ist gedrehtes %s gewesen.
+HTM                =Hoher Verkehr Modus ist gedrehtes %s gewesen.
+HTM_SET            =Htm-Schwellwert ist zu zurückgesetzt worden %s.
+
+;
+; Diese sind MemoServ-Statusantworten.
+;
+[MS_STATUS]
+CS_EMPTY           =Führung %s hat keine Nachrichten Artikel.
+CS_UNREAD          =Führung %s hat (neues article(s) Nachrichten enc_1)d. Schreiben Sie /MSG %s-cListe %s zum Ausdrucken sie.
+CS_NOUNREAD        =Führung %s hat keine unreadnachrichten Artikel.
+NS_EMPTY           =Sie haben keine Protokolle.
+NS_UNREAD          =Sie haben (neues memo(s) enc_1)d.  Schreiben Sie /MSG %s LIST zum Ausdrucken sie.
+NS_NOUNREAD        =Sie haben keine Nachrichten Protokolle.
+IGNORE             =Nickname %s ignoriert Ihre Protokolle.
+TRUNCATE           =Meldung spaltete an ab "... %s".  Schreiben Sie /MSG %s FAHREN < das text> zum Fortsetzen der Meldung fort.
+PENDING            =Sie haben die zu sendenden Protokolle schwebend.
+NOPENDING          =Sie haben keine zu sendenden Protokolle schwebend.
+FILEDISABLED       =Dateizubehöre in den Protokollen GESPERRT WORDEN.
+ATTACHLIMIT        =Nickname %s hat ihre Begrenzung auf Dateizubehöre erreicht.
+FORWARD            =[FORWARD: %s] %s
+FORWARD_ARG        =[FORWARD(%s):  %s] %s
+REPLY              =[REPLY:  "%s"] %s
+REPLY_ARG          =[REPLY(%s):  "%s"] %s
+
+;
+; Dieses Kapitel enthält die Ausgabe, die benutzt wird am Ende von ERFOLGREICHEM
+; MemoServ-Befehle.
+;
+[MS_COMMAND]
+NEWS               =vor #%d von %s zu %s gesendet %s.
+NEWS_LIST          =vor %c#%d von %s zu %s sendete %s - "%s"
+MEMO               =vor #%d von %s gesendet %s.
+MEMO_FILE          =vor #%d von %s sendete %s hat %s (%s) angebracht.
+MEMO_LIST          =vor %c#%d von %s sendete %s - "%s"
+MEMO_LIST_FILE     =vor %c#%d von %s sendete %s - "%s" [%s (%s)]
+CS_UNREAD          =Nachrichten article(s) %s für Führung %s gewesen unread.
+CS_UNREAD_ALL      =Alle Nachrichten Artikel für Führung %s sind unread gewesen.
+NS_UNREAD          =Ihr memo(s) %s gewesen unread.
+NS_UNREAD_ALL      =Alle Ihre Protokolle sind unread gewesen.
+CS_NOTDEL          =Nachrichten article(s) %s für Führung %s sind NICHT gelöscht worden.
+CS_DEL             =Nachrichten article(s) %s für Führung %s sind gelöscht worden.
+CS_DEL_ALL         =Alle Nachrichten Artikel für Führung %s gelöscht worden.
+NS_DEL             =Ihr memo(s) %s sind gelöscht worden.
+NS_DEL_ALL         =Alle Ihre Protokolle gelöscht worden.
+CANCEL             =Während Protokoll ist beendet worden.
+PENDING            =Protokoll ist jetzt schwebend.  Sie haben %s zum Fortsetzen oder Beenden es.
+PENDING_FILE       =Protokoll ist jetzt schwebend.  Sie haben %s zum Anfangen Ihrer Datei transfer, fortsetzen zen oder beenden sie.
+TOOBIG             =Ihr Protokollzubehör ist zu big, schwebendes Protokoll ist beendet worden.
+NOSPACE            =Nicht genügend Platz zum Speichern Ihres Protokolls attachment, während Protokoll ist beendet worden.
+CONTINUE           =Während Protokolltimer-Rücksetzen.  Sie haben %s zum Fortsetzen oder Beenden es.
+SENT               =Protokoll ist zu geschickt worden %s (%s).
+CS_NEW             =Es gibt einen neuen Nachrichten Artikel (#%d) für Führung %s von %s.-Art /MSG %s GELESEN %s %d zum Lesen es.
+NS_NEW             =Sie haben ein neues Protokoll (#%d).  Schreiben Sie /MSG %s GELESEN %d zum Lesen es.
+

@@ -1,0 +1,323 @@
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
+;
+; French Log Output Language File
+; Translated By: Babelfish (http://babelfish.altavista.com)
+; Please also edit the COMMANDLINE/TRANSLATED token
+; to reflect the above (this is displayed on startup).
+;
+; ----------------------------(enc _ 6)---------------------------------
+;
+; Ce fichier est fractionné dans des sections.  Ces sections sont ainsi
+; que nous pouvons logiquement grouper des réponses ensemble.  SI vous changez
+; la section names, ou la réponse 'tags' à moins de them, alors
+; vous casserez probablement des réponses de Magick's.  SI vous êtes
+; le réalisateur et additionner nouveau sections, notent s'il vous plaît qu'ils peuvent
+; Ne pas avoir a '/' (forward-slash) ou espace dans leur nom.
+;
+; Dans tout ce fichier il y a de divers codes qui sont substitués
+; avec une valeur directement de Magick.  Voir ci-dessous pour une table cela
+; trace les grandes lignes des codes et de leurs significations.  Toutes les lignes dans ce Äífile
+; commençant par ';' sont les cots.  Si votre chaîne de caractères de réponse a
+; vous mener spaces, DOIT mettre a '\' devant space, le premier
+; les principaux espaces d'autre sont éliminés.
+;
+; Les codes de remplacement de C sont employés pour insérer une valeur de Magick
+; dans la chaîne de caractères.  Ceux-ci devraient JAMAIS être removed, elles doivent également
+; restez dans la même COMMANDE comme ils sont.  Si they're retirés ou
+; la commande dans laquelle ils apparaissent est changed, les résultats sont non définie.
+; Ceux-ci sont également connus comme 'live' ou les codes 'active'.
+;
+; ----------------------------(enc _ 6)---------------------------------
+;
+; Codes de remplacement de C:
+;   %s = chaîne de caractères %c = simple caractère
+;   %d = nombre entier %f = numérique (avec DP's)
+;   %o = octal %x = hexadécimal
+;   %% = coquille % %g = comme %f
+; Veuillez voir le page-manuel sur des caractères de formatage de C
+; (inclus avec Magick, ou disponible avec la commande
+; 'man format' ou 'man formats' selon le système).
+; Brièvement tho, si un nombre est indiqué entre %
+; et letter, alors il indique la LONGUEUR des
+; zone en question (habituellement son non recommandé vous changement
+; ceux-ci).  Si le nombre est negative, il le force à être
+; La GAUCHE a justifié.  Si le nombre a un point, décimal alors
+; il indique combien de chiffres apparaissent APRÈS le DP.
+;
+
+;
+; Ce sont des réponses aux options de ligne de commande ou aux options de config.
+;
+[COMMANDLINE]
+TRANSLATED       =Babelfish (http://babelfish.altavista.com)
+UNKNOWN_OPTION   =L'option inconnue %s, a ignoré.
+NEEDPARAM        =Option %s exige un paramètre.
+MUSTBENUMBER     =Paramètre pour %s doit être un nombre positif.
+TIMEORZERO	 =La valeur de temps indiquée est incorrecte ou zero, sur la valeur %s.
+VALUETOOHIGH	 =Valeur indiquée pour %s doit être inférieur ou égal à %d.
+NO_CFG_FILE      =Ne pourrait pas lire s'interrompre du fichier de config %s,.
+STOP             =CONFIG:  [Startup]  Code d'cArrêt reçu.
+ACTIVE           =%s est déjà en activité ou le fichier éventé de PID exists, le détruisent s'il vous plaît (ou retirez) avant de relancer.
+RECONNECT        =Rebranchement au serveur dû au changement de configuration.
+CANNOT_CONVERT   =Type de base de données %s incorrect (s'interrompant).
+NO_KEYFILE       =Fichier principal %s n'existe pas.
+NONOPTION        =On ne permet pas des arguments de Non-option.
+ONEOPTION        =Vous pouvez seulement indiquer un paramètre après un groupe d'options.
+TRACE_SYNTAX     =Paramètre pour --trace doit être dans le format de TYPE:LEVEL
+ZERO_LEVEL       =Zéro ou erreur dans la trace d'analyse level, ignorant.
+CFG_SYNTAX       =La marque de configuration "%s" contient une erreur de syntaxe ou des données incorrectes.
+UNKNOWN_PROTO    =Défaut inconnu de l'identificateur de protocole %d, (%d) utilisé.
+START_LANG       =Fichier de chargement de langage de défaut...
+START_FORK       =Engendrer dans le fond...
+START_EVENTS     =Mettant en marche le moteur d'événements...
+START_CALIBRATE  =Seuils de calibrage d'amorçage...
+START_COMPLETE   =%s (procédé de démarrage d'enc_1)s complet.
+STOP_EVENTS      =Arrêtant le moteur d'événements...
+STOP_COMPLETE    =%s (procédé d'arrêt d'enc_1)s complet.
+
+;
+; Ceux-ci sont utilisés quand on exécute une commande de NickServ.
+;
+[NICKSERV]
+REGISTER         =(surnom registre par enc_1)s %s.
+DROP             =%s droped le surnom %s ((des esclaves d'enc_1)d).
+LINK             =(surnom joint par enc_1)s %s à %s.
+UNLINK           =(surnom séparer/ par enc_1)s %s de %s.
+HOST             =%s a changé leur surnom de centre serveur de %s à %s.
+IDENTIFY         =%s identifié pour surnom %s.
+GHOST            =%s a détruit le surnom %s avec la commande d'ordinateur de secours.
+RECOVER          =%s a invité des services pour récupérer le surnom %s.
+SUSPEND          =(surnom suspendu par enc_1)s %s pour %s.
+UNSUSPEND        =%s unsuspended le surnom %s.
+FORBID           =%s a interdit le surnom %s à partir de l'registre.
+GETPASS          =%s a recherché le mot de passe pour le surnom %s (%s).
+ACCESS_ADD       =(hostmask ajouté par enc_1)s %s à surnom %s.
+ACCESS_DEL       =(hostmask enlevé par enc_1)s %s de surnom %s.
+IGNORE_ADD       =%s a ajouté le surnom %s à la liste d'ignorer pour surnom %s.
+IGNORE_DEL       =(surnom retiré par enc_1)s %s de la liste d'ignorer pour surnom %s.
+PICTURE_ADD      =%s a placé une image pour le surnom %s (%08x - %s).
+PICTURE_DEL      =%s a retiré une image du surnom %s.
+SET_PASSWORD     =%s a changé le mot de passe pour le surnom %s.
+SET              =%s a placé la valeur de %s pour surnom %s à %s.
+UNSET            =%s a supprimé la valeur de %s pour surnom %s.
+LOCK             =%s a verrouillé la valeur de %s pour surnom %s à %s.
+UNLOCK           =%s a déverrouillé la valeur de %s pour surnom %s.
+
+;
+; Ceux-ci sont utilisés quand on exécute une commande de ChanServ.
+;
+[CHANSERV]
+REGISTER         =(canal registre par enc_1)s %s.
+DROP             =%s droped le canal %s (%s).
+IDENTIFY         =%s identifié comme fondateur pour canal %s.
+SUSPEND          =(canal suspendu par enc_1)s %s pour %s.
+UNSUSPEND        =%s unsuspended le canal %s.
+FORBID           =%s a interdit le canal %s à partir de l'registre.
+GETPASS          =%s a recherché le mot de passe pour le canal %s (%s).
+MODE             =%s a changé le mode "%s" sur le canal %s avec la commande de MODE.
+OP               =%s oped %s dans canal %s avec la commande OP.
+DEOP             =%s deoped %s dans canal %s avec la commande de DEOP.
+VOICE            =%s exprimé %s dans canal %s avec la commande de VOIX.
+DEVOICE          =%s devoiced %s dans canal %s avec la commande de DEVOICE.
+TOPIC            =%s a placé le sujet en fonction %s avec la commande de SUJET.
+KICK             =%s donné un coup de pied %s de canal %s avec la commande de COUP-DE-PIED.
+ANONKICK         =%s anonymously donné un coup de pied %s de canal %s avec la commande de RETIRER.
+INVITE           =%s invité %s à creuser des rigoles %s avec la commande d'cInvitation.
+UNBAN            =%s unbanned %s de canal %s avec la commande d'cUnban.
+COMMAND          =%s a exécuté (commande d'enc_1)s pour canal %s.
+LEVEL            =%s a placé le niveau de %s à %d pour canal %s.
+ACCESS_ADD       =%s ajouté %s à la liste d'accès pour canal %s à niveau %d.
+ACCESS_CHANGE    =%s changé %s sur la liste d'accès de canal %s à niveau %d.
+ACCESS_DEL       =%s retiré %s de la liste d'accès pour canal %s.
+AKICK_ADD        =%s ajouté %s à la liste automatique de coup-de-pied pour canal %s.
+AKICK_DEL        =%s a retiré %s de la liste automatique de coup-de-pied pour canal %s.
+GREET_ADD        =%s a ajouté une salutation pour %s sur canal %s.
+GREET_DEL        =%s a retiré une salutation pour %s sur canal %s.
+MESSAGE_ADD      =%s a ajouté un message d'on-join pour le canal %s.
+MESSAGE_DEL      =%s a retiré un message d'on-join du canal %s.
+SET_PASSWORD     =%s changed the password for channel %s.
+SET              =%s a placé la valeur de %s pour canal %s à %s.
+UNSET            =%s a supprimé la valeur de %s pour canal %s.
+LOCK             =%s a verrouillé la valeur de %s pour canal %s à %s.
+UNLOCK           =%s a déverrouillé la valeur de %s pour canal %s.
+
+;
+; Ceux-ci sont utilisés quand on exécute une commande de MemoServ.
+;
+[MEMOSERV]
+SEND             =%s a envoyé un article de nouvelles à %s.
+DEL              =%s a retiré (article(s) de nouvelles d'enc_1)d de %s.
+DEL_ALL          =%s a retiré tous les articles de nouvelles de %s.
+FILE             =%s a envoyé une connexion de fichier (%s / %08x - %s) à %s.
+GET              =%s a reçu une connexion de fichier (%s / %08x - %s) de %s.
+
+;
+; Ceux-ci sont utilisés quand on exécute une commande de CommServ.
+;
+[COMMSERV]
+ADD              =%s a créé un nouveau comité appelé %s avec %s en tant que sa tête.
+DEL              =(comité effacé par enc_1)s %s.
+MEMO             =%s sent a memo to all members of committee %s.
+MEMBER_ADD       =%s added nickname %s to committee %s.
+MEMBER_DEL       =(surnom retiré par enc_1)s %s de comité %s.
+LOGON_ADD        =%s a ajouté un nouveau message de procédure de connexion au comité %s.
+LOGON_DEL        =%s a retiré un message de procédure de connexion du comité %s.
+SET              =%s a placé la valeur de %s pour comité %s à %s.
+UNSET            =%s a supprimé la valeur de %s pour comité %s.
+LOCK             =%s a verrouillé la valeur de %s pour comité %s à %s.
+UNLOCK           =%s a déverrouillé la valeur de %s pour comité %s.
+
+;
+; Ceux-ci sont utilisés quand on exécute une commande de ServMsg.
+;
+[SERVMSG]
+GLOBAL           =%s a envoyé le message "%s" à tous les utilisateurs.
+FILE_ADD         =%s a ajouté le fichier %s (%08x - %s) au privilège %s au filesystem public.
+FILE_DEL         =%s a retiré le fichier %s (%08x) du filesystem public.
+FILE_RENAME      =%s a renommé le fichier %s %s dans le filesystem public.
+FILE_PRIV        =%s a le fichier de re-secured %s %s dans le filesystem public.
+FILE_SEND        =%s a téléchargé le fichier %s du filesystem public.
+FILE_LOOKUP      =%s a recherché le fichier %08x de type %s.
+
+;
+; These are used when a command is executed from OperServ.
+;
+[OPERSERV]
+MODE             =%s set mode "%s" for %s with the MODE command.
+QLINE            =%s quarantined le surnom %s.
+UNQLINE          =%s unquarantined le surnom %s.
+NOOP             =%s a tourné la quarantaine tous les ops d'cIrc sur le serveur %s %s.
+KILL             =%s a silencieusement détruit le surnom %s avec "%s".
+HIDE             =%s a changé le hostname du surnom %s %s.
+PING             =%s a déclenché des cinglements de serveur manuellement.
+UPDATE           =(mise à jour de base de données déclenchée par enc_1)s manuellement.
+SHUTDOWN         =%s A DEMANDÉ Un ARRÊT DES SERVICES.
+RELOAD           =%s a rechargé le fichier de configuration de services.
+UNLOAD           =(langage déchargé par enc_1)s %s.
+JUPE             =%s juped le serveur %s (%s).
+ONOFF            =(SERVICES TOURNÉS par enc_1)s %s.
+ONOFF_SERVICE    =(SERVICE TOURNÉ par enc_1)s %s %s.
+CLONE_ADD        =%s a ajouté le centre serveur %s à la liste de priorité de clone avec %d copie.
+CLONE_DEL        =(centre serveur retiré par enc_1)s %s de la liste de priorité de clone.
+AKILL_ADD        =%s a ajouté le masque %s à la liste automatique de mise à mort (%s) pour "%s".
+AKILL_DEL        =(masque retiré par enc_1)s %s de la liste automatique de mise à mort.
+OPERDENY_ADD     =%s a ajouté le masque %s à l'exécution nient la liste (%s).
+OPERDENY_DEL     =(masque retiré par enc_1)s %s de l'exécution nient la liste.
+IGNORE_ADD       =%s a ajouté le masque %s à la constante de services ignorent la liste.
+IGNORE_DEL       =(masque retiré par enc_1)s %s de la constante de services ignorent la liste.
+IGNORED          =Message ignoré de %s:  %s
+HTM_FORCE        =%s a forcé le mode de htm %s.
+HTM_ON           =Mode de htm %d ((retard d'enc_1)d) lancé (%.1fKb/s > %.1fKb/s).
+HTM_OFF          =Le mode de htm a mis.
+HTM_SET          =%s a placé le seuil de htm à %s/s.
+HTM_IGNORE       =Message ignoré de %s (mode de htm):  %s
+
+;
+; Ceux-ci sont utilisés quand un événement automatisé donne un coup de pied hors fonction.
+;
+[EVENT]
+EXPIRE_AKILL     =Akill expirant pour %s (%s) placez près %s pour %s.
+EXPIRE_NICK      =Surnom expirant %s (%s).
+EXPIRE_CHAN      =Canal expirant %s (%s).
+EXPIRE_NEWS      =Article expirant de nouvelles pour le canal %s.
+LOAD             =Bases de données de chargement...
+SAVE             =Bases de données sauvegardées.
+UNBAN            =Interdiction retirée %s de canal %s dû à la minuterie (%s).
+KILLPROTECT      =Surnom de Killed/renamed %s pour que le manque identifie.
+PING             =Ont cinglé tous les serveurs.
+LEVEL_UP         =Le NIVEAU DE PHASE A AUGMENTÉ D'COn ((retard de moyenne d'enc_1).3f).
+LEVEL_DOWN       =Le NIVEAU DE PHASE A DIMINUÉ D'COn ((retard de moyenne d'enc_1).3f).
+AKICK            =Kicked user %s from channel %s for triggering AKICK (%s).
+RESTRICTED       =Utilisateur donné un coup de pied %s de canal restreint %s.
+NEW_THREAD       =Commencer le nouvel amorçage pour manipuler le chargement excessif.
+KILL_THREAD      =Le massacre thread, pas assez travaillent pour le justifier.
+
+;
+; Ce sont des erreurs qui viennent du système basé
+;
+[SYS_ERRORS]
+COULDNOTOPEN     =Ne pourrait pas ouvrir le fichier %s (%s).
+FILEMAPFULL      =Ne pourrait pas trouver un nombre de fichier disponible pour le type %d!
+MISSING_FILE1    =Type physique enlevé de fichier %d, #%08x qui n'a pas eu une entrée de carte de fichier.
+MISSING_FILE2    =Type enlevé d'entrée de carte de fichier %d, #%08x qui n'a pas eu un fichier physique.
+SIGNAL_IGNORE    =Ignorer attrapé du signal #%d,.
+SIGNAL_SAVE      =Bases de données attrapées d'économie du signal #%d,.
+SIGNAL_LOAD      =Fichier attrapé de configuration de chargement du signal #%d,.
+SIGNAL_RETRY     =Signal attrapé #%d, essayant de relancer.
+SIGNAL_KILL      =Signal attrapé la dernière fonction (d'enc_9)%d - %s, essayait à l'arrêt.
+SIGNAL_SIGNON    =Signal attrapé #%d, re-signing sur tous les clients.
+SIGNAL_SPAWN     =Signal attrapé #%d, engendrant un nouveau processus.
+NOT_IMPLEMENTED  =Entré %s, qui n'est pas mis en application.
+INVALID_FORMAT   =Char incorrect de format de date %d%c dedans %s.
+NOT_LITERAL      =Caractère %c devrait être dans quotes, pris en tant que coquille dedans %s.
+OUTOFTXNIDS      =Ne peut créer plus de transaction ID's
+FAILED_FORK      =N'a pas bifurqué nouveau processus avec %d, la terminaison.
+FAILED_SETPGID   =N'a pas placé des permissions sur le processus avec %d, la terminaison.
+FAILED_SETSID    =N'est pas devenu amorce de processus de session avec %d, la terminaison.
+RUN_AS_ROOT      =L'exécution en tant qu'utilisateur superbe est un risque potentiel de sécurité!
+LOCK_OPEN        =Ne s'est pas ouvert (serrure d'enc_1)s pour %s.
+LOCK_ACQUIRE     =N'a pas saisi (serrure d'enc_1)s pour %s.
+LOCK_RELEASE     =N'a pas libéré (serrure d'enc_1)s pour %s.
+EXCEPTION        =Exception jetée sur la colonne de la ligne %d, %d de %s.
+
+;
+; C'est une section pour divers d'autres occurrences.
+;
+[OTHER]
+SQUIT_FIRST      =Serveurs suspectés de SQUIT detected, %s et %s, attente...
+SQUIT_CANCEL     =SQUIT suspecté des serveurs %s et %s était article truqué.
+SQUIT_SECOND     =SQUIT des serveurs %s et %s confirmed, prenant une mesure appropriée.
+KILL_CLONE       =Copiez la protection déclenchée pour l'utilisateur du massacre %s,.
+KILL_AKILL       =Utilisateur de massacre %s sur liste automatique de mise à mort %s (%s).
+KILL_UNKNOWN     =Utilisateur inconnu détruit %s.
+CONNECTING       =Se relier au serveur %s:%d...
+CONNECTED        =Connexion établie et authentifiée au serveur %s.
+WRONGPASS        =Erreur d'assortiment de mot de passe se reliant à sauter du serveur %s,.
+WEAREBANNED      =Nous sommes k-lined de sauter du serveur %s,.
+REFUSED          =Connexion au serveur %s:%d refusé.
+SERVER_MSG       =MESSAGE de SERVEUR (%s):  %s
+LINK             =Serveur %s a joint au réseau par l'intermédiaire de %s.
+KILLED           =Service %s a été détruit %s, en essayant au respawn.
+TEMP_IGNORE      =%s déclenché entretient provisoire ignore.
+PERM_IGNORE      =%s déclenché entretient la constante ignore.
+KILL_NICK_PASS   =Utilisateur de massacre %s pour des pannes de mot de passe sur surnom %s.
+KILL_CHAN_PASS   =Utilisateur de massacre %s pour des pannes de mot de passe sur canal %s.
+LOAD_LANGUAGE    =Chargé (fichier de langage d'enc_1)s.
+LOAD_HELP        =Chargé (fichier d'aide d'enc_1)s.
+REVENGE          =Prise de la vengeance sur l'utilisateur %s dans canal %s pour %s en fonction %s.
+DCC_INIT         =Identification de DCC %08x initialisé avec %s (%s).
+DCC_CLOSE        =Identification de DCC %08x terminé avec succès.
+DCC_CANCEL       =Identification de DCC %08x ne sont pas terminés avec succès.
+
+;
+; Ce sont des erreurs (de sévérité variable) ces nous peuvent rencontrer.
+;
+[ERROR]
+SIGNAL           =QUITTER REÇU du SIGNAL %d,.
+REQ_BYNONUSER    =(commande d'enc_1)s demandée par utilisateur de non-existent %s.
+REQ_BYNONSERVICE =(commande d'enc_1)s demandée par non-service %s.
+REQ_FORNONUSER   =(commande d'enc_1)s demandée près %s pour utilisateur de non-existent %s.
+REQ_TOUSER       =(commande d'enc_1)s demandée près %s à utilisateur existant %s.
+REQ_FORNONCHAN   =(commande d'enc_1)s demandée près %s pour canal de non-existent %s.
+REQ_FORNONSERVER =(commande d'enc_1)s demandée près %s pour serveur de non-existent %s.
+REQ_NOTINCHAN    =(commande d'enc_1)s demandée près %s pour %s qui n'est pas dans le canal %s.
+REQ_UNKNOWN      =Commandez le type %d pour %s (%s/%s/%s) aligné %s ago, mais unhandled (type inconnu).
+UNKNOWN_MSG      =Message inconnu de serveur:  %s
+REC_FORNONUSER   =Reçu %s de %s pour utilisateur de non-existent %s.
+REC_FORNONCHAN   =Reçu %s de %s pour canal de non-existent %s.
+REC_NOTINCHAN    =Reçu %s de %s pour %s qui n'est pas dans le canal %s.
+REC_FORNOTINCHAN =Reçu %s pour %s qui n'est pas dans le canal %s.
+REC_FORNONSERVER =Reçu %s de %s pour serveur de non-existent %s.
+DUP_CHAN         =Double %s reçu de %s pour canal %s.
+MODE_INEFFECT    =Changement de MODE %c%c reçu de %s pour %s qui est déjà en effet.
+MODE_NOTINCHAN   =Changement de MODE %c%c reçu de %s pour %s qui n'est pas dans le canal %s.
+FOUNDER_NOTREGD  =La Manche %s a un fondateur de %s qui pas registre (canal droped).
+HOST_NOTREGD     =Surnom %s a été énuméré car le centre serveur de %s, mais n'existe pas (rectifié)!
+SLAVE_NOTREGD    =Surnom %s a été énuméré car un esclave de %s, mais n'existe pas (rectifié)!
+KEYMISMATCH      =Erreur d'assortiment de clé de la Manche (%s | %s) pour le canal %s de %s.
+NOLIMIT          =Aucune limite n'a indiqué une fois requis pour le canal %s de %s.
+NOLANGTOKEN      =Marque incorrecte %s pour langage (erreur d'enc_1)s used, retournée.
+BADSET           =Essayé de placer de MAUVAISES données (%s) pour %s en fonction %s.
+CORRUPT_DB       =Clé altérée ou incorrecte de fichier de base de données dans le fichier principal.
+INVALID_TYPE     =Type incorrect de données %d sur le message queue, a ignoré.
