@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2000/03/28 09:42:11  prez
+** Changed CommServ, ADD/DEL/LIST -> MEMBER ADD/DEL/LIST
+** and NEW/KILL -> ADD/DEL and created a new LIST
+**
 ** Revision 1.68  2000/03/27 21:26:13  prez
 ** More bug fixes due to testing, also implemented revenge.
 **
@@ -2036,6 +2040,9 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 		    entry.c_str(),
 		    Parent->getMessage(source, "LIST/AKILL").c_str(),
 		    ToHumanTime(time).c_str());
+	announce(mynick, Parent->getMessage("MISC/AKILL_EXTEND"),
+		    source.c_str(), entry.c_str(),
+		    ToHumanTime(time).c_str());
     }
     else
     {
@@ -2045,6 +2052,9 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 		    host.c_str(),
 		    Parent->getMessage(source, "LIST/AKILL").c_str(),
 		    ToHumanTime(time).c_str());
+	announce(mynick, Parent->getMessage("MISC/AKILL_ADD"),
+		    source.c_str(), host.c_str(),
+		    ToHumanTime(time).c_str(), reason.c_str());
     }
 
     Parent->server.AKILL(host, reason, time);
@@ -2253,6 +2263,8 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
     Parent->operserv.stats.i_OperDeny++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
 	host.c_str(), Parent->getMessage(source, "LIST/OPERDENY").c_str());
+    announce(mynick, Parent->getMessage("MISC/OPERDENY_ADD"),
+		source.c_str(), host.c_str());
 
     map<mstring,Nick_Live_t>::iterator nlive;
     for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)

@@ -165,6 +165,9 @@ FLOOD_TEMP         =%s is FLOODING services.  Placed on temporary ignore.
 FLOOD_PERM         =%s is FLOODING services.  Placed on permanent ignore.
 CHAN_MODE          =%s just performed a mode change (%s) on channel %s.
 NICK_MODE          =%s just performed a mode change (%s) on nickname %s.
+AKILL_ADD          =%s just added AKILL on host %s for %s (%s).
+AKILL_EXTEND       =%s just extended the AKILL on host %s by %s.
+OPERDENY_ADD       =%s just added OperDeny on host %s.
 QLINE              =%s just turned %s a quarantine on nicknames matching %s.
 NOOP               =%s just turned %s IRC Operator quarantine on server %s.
 KILL               =%s just silently killed user %s.
@@ -276,6 +279,7 @@ LASTMOD            =Last modified %s ago by %s.
 MAXLIST            =You may only list up to %d entries at once.
 NICK_LIST          =Displaying nicknames matching %s:
 CHAN_LIST          =Displaying channels matching %s:
+COMM_LIST          =Displaying committees matching %s:
 DISPLAYED          =%d of %d entries displayed.
 
 DISPLAY            =Displaying all entries on %s list:

@@ -1803,11 +1803,11 @@
 02 =::committees for various purposes.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =:REGD:    HELP         INFO
-06 =REGD::    HELP         INFO         ADD          DEL
-07 =REGD::    LIST         MEMO         LOGON        SET
+05 =:REGD:    HELP         INFO         LIST
+06 =REGD::    HELP         INFO         LIST         MEMBER
+07 =REGD::    MEMO         LOGON        SET
 08 =SOP::And as a Services Operator, the following commands:
-09 =SOP::    NEW          KILL
+09 =SOP::    ADD          DEL
 10 =::
 11 =::You may request help on the syntax and functionalty
 12 =::of any and all of the above commands by specifying
@@ -1816,8 +1816,8 @@
 15 =::      above, and things such as nickname registration
 16 =::      may change what is displayed above.
 
-[COMMSERV/NEW]
-01 =SOP::NEW <committee> <head> <description>
+[COMMSERV/ADD]
+01 =SOP::ADD <committee> <head> <description>
 02 =SOP::
 03 =SOP::This will create a new committee.  You must assign
 04 =SOP::a committee head and decription for the committee on
@@ -1827,33 +1827,24 @@
 08 =SOP::another head, etc. without any way to intervene except
 09 =SOP::to KILL the committee.
 
-[COMMSERV/KILL]
-01 =SOP::KILL <committee>
+[COMMSERV/DEL]
+01 =SOP::DEL <committee>
 02 =SOP::
 03 =SOP::This will remove a committee.  This will also remove
 04 =SOP::any access from users that they gained by being in
 05 =SOP::this committee.
 
-[COMMSERV/ADD]
-01 =REGD::ADD <committee> <nickname>
-02 =REGD::
-03 =REGD::This will add a member to a committee, granting them
-04 =REGD::any access the committe itself has.  You may only
-05 =REGD::specify a registered nickname.
-
-[COMMSERV/DEL]
-01 =REGD::DEL <committee> <nickname|NUM>
-02 =REGD::
-03 =REGD::This will remove a member from a committee.  You
-04 =REGD::may either specify the users nickname, or a number
-05 =REGD::obtained from the LIST command.
-
 [COMMSERV/LIST]
-01 =REGD::LIST <committee>
-02 =REGD::
-03 =REGD::This will list out the members of the specified
-04 =REGD::committee.  DEFUNCT will appear after their nickname
-05 =REGD::if their nickname has been dropped since being added.
+01 =::LIST [mask [maximum]]
+02 =::
+03 =::This will list all committees that match the mask you
+04 =::have specified, how many members are on it, and its
+05 =::description up to a default maximum number of entries
+06 =::set by the Services Admins.  You override the maximum
+07 =::amount of entries displayed up to an absolute maximum
+08 =::also specified by the Services Admins.  Committees
+09A=:OPER:marked as private will not be displayed in the list.
+09B=OPER::marked as private will be displayed in the list.
 
 [COMMSERV/MEMO]
 01 =REGD::MEMO <committee> <message>
@@ -1869,6 +1860,34 @@
 04 =::This will display information about a committee,
 05 =::including who its head is, its mailing list address,
 06 =::web address, and options it currently has set.
+
+[COMMSERV/MEMBER]
+01 =REGD::Each committee is made up of a head, and members.
+02 =REGD::The head can add or remove members at will.
+03 =REGD::
+04 =REGD::You may maintain the committee member list with:
+05 =REGD::    ADD          DEL          LIST
+
+[COMMSERV/MEMBER/ADD]
+01 =REGD::MEMBER <committee> ADD <nickname>
+02 =REGD::
+03 =REGD::This will add a member to a committee, granting them
+04 =REGD::any access the committe itself has.  You may only
+05 =REGD::specify a registered nickname.
+
+[COMMSERV/MEMBER/DEL]
+01 =REGD::MEMBER <committee> DEL <nickname|NUM>
+02 =REGD::
+03 =REGD::This will remove a member from a committee.  You
+04 =REGD::may either specify the users nickname, or a number
+05 =REGD::obtained from the LIST command.
+
+[COMMSERV/MEMBER/LIST]
+01 =REGD::MEMBER <committee> LIST
+02 =REGD::
+03 =REGD::This will list out the members of the specified
+04 =REGD::committee.  DEFUNCT will appear after their nickname
+05 =REGD::if their nickname has been dropped since being added.
 
 [COMMSERV/LOGON]
 01 =REGD::Committee's can have LOGON noticies, which will be

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2000/03/28 09:42:11  prez
+** Changed CommServ, ADD/DEL/LIST -> MEMBER ADD/DEL/LIST
+** and NEW/KILL -> ADD/DEL and created a new LIST
+**
 ** Revision 1.46  2000/03/27 21:26:12  prez
 ** More bug fixes due to testing, also implemented revenge.
 **
@@ -513,24 +517,28 @@ void CommServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"H*LP", Parent->commserv.ALL_Name(), CommServ::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"NEW", Parent->commserv.SOP_Name(), CommServ::do_AddComm);
+		"ADD*", Parent->commserv.SOP_Name(), CommServ::do_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"KILL", Parent->commserv.SOP_Name(), CommServ::do_DelComm);
+		"DEL*", Parent->commserv.SOP_Name(), CommServ::do_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"ADD", Parent->commserv.REGD_Name(), CommServ::do_Add);
+		"ERA*", Parent->commserv.SOP_Name(), CommServ::do_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"DEL*", Parent->commserv.REGD_Name(), CommServ::do_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ERA*", Parent->commserv.REGD_Name(), CommServ::do_Del);
+		"LIST", Parent->commserv.ALL_Name(), CommServ::do_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"MEM*", Parent->commserv.REGD_Name(), CommServ::do_Memo);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"LIST", Parent->commserv.REGD_Name(), CommServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"VIEW", Parent->commserv.REGD_Name(), CommServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
 		"INFO", Parent->commserv.ALL_Name(), CommServ::do_Info);
 
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEMB* ADD", Parent->commserv.REGD_Name(), CommServ::do_member_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEMB* DEL*", Parent->commserv.REGD_Name(), CommServ::do_member_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEMB* ERA*", Parent->commserv.REGD_Name(), CommServ::do_member_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEMB* LIST", Parent->commserv.REGD_Name(), CommServ::do_member_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEMB* VIEW", Parent->commserv.REGD_Name(), CommServ::do_member_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOG* ADD", Parent->commserv.REGD_Name(), CommServ::do_logon_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -571,6 +579,10 @@ void CommServ::AddCommands()
     // it, you must add a terminator command (ie. "CMD* *"
     // in the command map, and NULL as the function).
     // This must be BEFORE the wildcarded map ("CMD*")
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEMB* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEMB*", Parent->commserv.REGD_Name(), do_1_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOG* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -649,9 +661,9 @@ void CommServ::do_Help(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, help[i]);
 }
 
-void CommServ::do_AddComm(mstring mynick, mstring source, mstring params)
+void CommServ::do_Add(mstring mynick, mstring source, mstring params)
 {
-    FT("CommServ::do_AddComm", (mynick, source, params));
+    FT("CommServ::do_Add", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 4)
@@ -699,9 +711,9 @@ void CommServ::do_AddComm(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_DelComm(mstring mynick, mstring source, mstring params)
+void CommServ::do_Del(mstring mynick, mstring source, mstring params)
 {
-    FT("CommServ::do_DelComm", (mynick, source, params));
+    FT("CommServ::do_Del", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
@@ -738,140 +750,60 @@ void CommServ::do_DelComm(mstring mynick, mstring source, mstring params)
 }
 
 
-void CommServ::do_Add(mstring mynick, mstring source, mstring params)
+void CommServ::do_List(mstring mynick, mstring source, mstring params)
 {
-    FT("CommServ::do_Add", (mynick, source, params));
+    FT("CommServ::do_List", (mynick, source, params));
 
-    mstring message = params.Before(" ").UpperCase();
-    if (params.WordCount(" ") < 3)
+    unsigned int listsize, i, count;
+    mstring mask;
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
     {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
-	return;
+	mask = "*";
+	listsize = Parent->config.Listsize();
     }
-
-    mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring member    = params.ExtractWord(3, " ");
-
-    if (!Parent->commserv.IsList(committee))
+    else if (params.WordCount(" ") < 3)
     {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
-				committee.c_str());
-	return;
-    }
-
-    if (committee == Parent->commserv.SADMIN_Name() ||
-	committee == Parent->commserv.ALL_Name() ||
-	committee == Parent->commserv.REGD_Name())
-    {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
-				committee.c_str());
-	return;
-    }
-
-    if (!Parent->commserv.list[committee].IsHead(source))
-    {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
-				committee.c_str());
-	return;
-    }
-
-    if (!Parent->nickserv.IsStored(member))
-    {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-				member.c_str());
-	return;
-    }
-
-    member = Parent->getSname(member);
-    if (Parent->commserv.list[committee].IsIn(member))
-    {
-	::send(mynick, source, Parent->getMessage(source, "LIST/EXISTS2"),
-				member.c_str(), committee.c_str(),
-				Parent->getMessage(source, "LIST/MEMBER").c_str());
-	return;
-    }
-
-    Committee *comm = &Parent->commserv.list[committee];
-    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
-    comm->insert(member, source);
-    Parent->commserv.stats.i_AddDel++;
-    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
-				member.c_str(), committee.c_str(),
-				Parent->getMessage(source, "LIST/MEMBER").c_str());
-}
-
-
-void CommServ::do_Del(mstring mynick, mstring source, mstring params)
-{
-    FT("CommServ::do_Del", (mynick, source, params));
-
-    mstring message = params.Before(" ").UpperCase();
-    if (params.WordCount(" ") < 3)
-    {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
-	return;
-    }
-
-    mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring member    = params.ExtractWord(3, " ");
-
-    if (!Parent->commserv.IsList(committee))
-    {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
-					committee.c_str());
-	return;
-    }
-
-    if (committee == Parent->commserv.SADMIN_Name() ||
-	committee == Parent->commserv.ALL_Name() ||
-	committee == Parent->commserv.REGD_Name())
-    {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
-					committee.c_str());
-	return;
-    }
-
-    if (!Parent->commserv.list[committee].IsHead(source))
-    {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
-					committee.c_str());
-	return;
-    }
-
-    if (!Parent->commserv.list[committee].IsIn(member))
-    {
-	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
-				member.c_str(), committee.c_str(),
-				Parent->getMessage(source, "LIST/MEMBER").c_str());
-	return;
-    }
-
-    if (Parent->commserv.list[committee].IsHead(member))
-    {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/OTH_HEAD"),
-				member.c_str(), 
-				Parent->getMessage(source, "LIST/MEMBER").c_str());
-	return;
-    }
-
-    Committee *comm = &Parent->commserv.list[committee];
-    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
-    if (comm->find(member))
-    {
-	Parent->commserv.stats.i_AddDel++;
-	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
-			comm->member->Entry().c_str(), committee.c_str(),
-			Parent->getMessage(source, "LIST/MEMBER").c_str());
-	comm->erase();
+	mask = params.ExtractWord(2, " ").LowerCase();
+	listsize = Parent->config.Listsize();
     }
     else
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
-				member.c_str(), committee.c_str(),
-				Parent->getMessage(source, "LIST/MEMBER").c_str());
+	mask = params.ExtractWord(2, " ").LowerCase();
+	listsize = atoi(params.ExtractWord(3, " ").c_str());
+	if (listsize > Parent->config.Maxlist())
+	{
+	    mstring output;
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/MAXLIST"),
+					Parent->config.Maxlist());
+	    return;
+	}
     }
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/COMM_LIST"),
+					mask.c_str());
+    map<mstring, Committee>::iterator iter;
+
+    for (iter = Parent->commserv.list.begin(), i=0, count = 0;
+			iter != Parent->commserv.list.end(); iter++)
+    {
+	if (iter->second.Name().LowerCase().Matches(mask))
+	{
+	    if (i < listsize && (!iter->second.Private() ||
+		(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
+	    {
+		::send(mynick, source, iter->second.Name() + " (" +
+				mstring(itoa(iter->second.size())) + "): " +
+				iter->second.Description());
+		i++;
+	    }
+	    count++;
+	}
+    }
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAYED"),
+							i, count);
 }
 
 void CommServ::do_Memo(mstring mynick, mstring source, mstring params)
@@ -1027,101 +959,6 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
     }
 }
 
-
-void CommServ::do_List(mstring mynick, mstring source, mstring params)
-{
-    FT("CommServ::do_List", (mynick, source, params));
-
-    mstring message = params.Before(" ").UpperCase();
-    if (params.WordCount(" ") < 2)
-    {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
-				message.c_str(), mynick.c_str(), message.c_str());
-	return;
-    }
-
-    mstring committee = params.ExtractWord(2, " ").UpperCase();
-
-    if (!Parent->commserv.IsList(committee))
-    {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
-				committee.c_str());
-	return;
-    }
-
-    if (committee == Parent->commserv.ALL_Name() ||
-	committee == Parent->commserv.REGD_Name())
-    {
-	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONDYNAMIC"),
-				message.c_str());
-	return;
-    }
-
-    if (Parent->commserv.list[committee].Private() &&
-	!(Parent->commserv.list[committee].IsOn(source) ||
-	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
-    {
-	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMEMBER"),
-				committee.c_str());
-	return;
-    }
-
-    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
-		committee.c_str(), Parent->getMessage(source, "LIST/MEMBER").c_str());
-    CommServ::do_List2(mynick, source, committee, true, 1);
-}
-
-
-int CommServ::do_List2(mstring mynick, mstring source, mstring committee, bool first, int number)
-{
-    FT("CommServ::do_List2", (mynick, source, committee, first, number));
-
-    int nextnum = number;
-    mstring output;
-    Committee *comm;
-
-    if (Parent->commserv.IsList(committee))
-    {
-	comm = &Parent->commserv.list[committee.UpperCase()];
-    }
-    else
-    {
-	RET(0);
-    }
-
-    if (comm->HeadCom() != "")
-    {
-	if (Parent->commserv.IsList(comm->HeadCom()))
-	{
-	    nextnum += CommServ::do_List2(mynick, source, comm->HeadCom(), false, nextnum);
-	}
-    }
-    else if (comm->Head() != "")
-    {
-	output = "";
-	output << nextnum++ << ". " << IRC_Bold << comm->Head() << IRC_Off;
-	if (!Parent->nickserv.IsStored(comm->Head()))
-		output << " [" << Parent->getMessage(source, "COMMSERV/DEFUNCT") << "]";
-	::send(mynick, source, output);
-    }
-
-    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
-    for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
-    {
-	output = "";
-	output << nextnum++ << ". " << (first ? Blank : IRC_Bold) <<
-		comm->member->Entry() << (first ? Blank : IRC_Off);
-	if (!Parent->nickserv.IsStored(comm->member->Entry()))
-	    output << " [" << Parent->getMessage(source, "COMMSERV/DEFUNCT") << "]";
-	::send(mynick, source, output);
-	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD"),
-		ToHumanTime(comm->member->Last_Modify_Time().SecondsSince()).c_str(),
-		comm->member->Last_Modifier().c_str());
-    }
-    RET(nextnum-number);
-}
-
 void CommServ::do_Info(mstring mynick, mstring source, mstring params)
 {
     FT("CommServ::do_Info", (mynick, source, params));
@@ -1229,6 +1066,238 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
     if (output.size())
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/OPTIONS"),
 			output.c_str());
+}
+
+void CommServ::do_member_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_member_Add", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring member    = params.ExtractWord(4, " ");
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+				committee.c_str());
+	return;
+    }
+
+    if (!Parent->commserv.list[committee].IsHead(source))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
+				committee.c_str());
+	return;
+    }
+
+    if (!Parent->nickserv.IsStored(member))
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+				member.c_str());
+	return;
+    }
+
+    member = Parent->getSname(member);
+    if (Parent->commserv.list[committee].IsIn(member))
+    {
+	::send(mynick, source, Parent->getMessage(source, "LIST/EXISTS2"),
+				member.c_str(), committee.c_str(),
+				Parent->getMessage(source, "LIST/MEMBER").c_str());
+	return;
+    }
+
+    Committee *comm = &Parent->commserv.list[committee];
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
+    comm->insert(member, source);
+    Parent->commserv.stats.i_AddDel++;
+    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
+				member.c_str(), committee.c_str(),
+				Parent->getMessage(source, "LIST/MEMBER").c_str());
+}
+
+
+void CommServ::do_member_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_member_Del", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " +
+		params.ExtractWord(3, " ")).UpperCase();
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+    mstring member    = params.ExtractWord(4, " ");
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+					committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.SADMIN_Name() ||
+	committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMODIFY"),
+					committee.c_str());
+	return;
+    }
+
+    if (!Parent->commserv.list[committee].IsHead(source))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
+					committee.c_str());
+	return;
+    }
+
+    if (!Parent->commserv.list[committee].IsIn(member))
+    {
+	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+				member.c_str(), committee.c_str(),
+				Parent->getMessage(source, "LIST/MEMBER").c_str());
+	return;
+    }
+
+    if (Parent->commserv.list[committee].IsHead(member))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/OTH_HEAD"),
+				member.c_str(), 
+				Parent->getMessage(source, "LIST/MEMBER").c_str());
+	return;
+    }
+
+    Committee *comm = &Parent->commserv.list[committee];
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
+    if (comm->find(member))
+    {
+	Parent->commserv.stats.i_AddDel++;
+	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
+			comm->member->Entry().c_str(), committee.c_str(),
+			Parent->getMessage(source, "LIST/MEMBER").c_str());
+	comm->erase();
+    }
+    else
+    {
+	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+				member.c_str(), committee.c_str(),
+				Parent->getMessage(source, "LIST/MEMBER").c_str());
+    }
+}
+
+void CommServ::do_member_List(mstring mynick, mstring source, mstring params)
+{
+    FT("CommServ::do_member_List", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring committee = params.ExtractWord(2, " ").UpperCase();
+
+    if (!Parent->commserv.IsList(committee))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/ISNOTSTORED"),
+				committee.c_str());
+	return;
+    }
+
+    if (committee == Parent->commserv.ALL_Name() ||
+	committee == Parent->commserv.REGD_Name())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONDYNAMIC"),
+				message.c_str());
+	return;
+    }
+
+    if (Parent->commserv.list[committee].Private() &&
+	!(Parent->commserv.list[committee].IsOn(source) ||
+	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTMEMBER"),
+				committee.c_str());
+	return;
+    }
+
+    ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
+		committee.c_str(), Parent->getMessage(source, "LIST/MEMBER").c_str());
+    CommServ::do_member_List2(mynick, source, committee, true, 1);
+}
+
+
+int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee, bool first, int number)
+{
+    FT("CommServ::do_member_List2", (mynick, source, committee, first, number));
+
+    int nextnum = number;
+    mstring output;
+    Committee *comm;
+
+    if (Parent->commserv.IsList(committee))
+    {
+	comm = &Parent->commserv.list[committee.UpperCase()];
+    }
+    else
+    {
+	RET(0);
+    }
+
+    if (comm->HeadCom() != "")
+    {
+	if (Parent->commserv.IsList(comm->HeadCom()))
+	{
+	    nextnum += CommServ::do_member_List2(mynick, source, comm->HeadCom(), false, nextnum);
+	}
+    }
+    else if (comm->Head() != "")
+    {
+	output = "";
+	output << nextnum++ << ". " << IRC_Bold << comm->Head() << IRC_Off;
+	if (!Parent->nickserv.IsStored(comm->Head()))
+		output << " [" << Parent->getMessage(source, "COMMSERV/DEFUNCT") << "]";
+	::send(mynick, source, output);
+    }
+
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
+    for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
+    {
+	output = "";
+	output << nextnum++ << ". " << (first ? Blank : IRC_Bold) <<
+		comm->member->Entry() << (first ? Blank : IRC_Off);
+	if (!Parent->nickserv.IsStored(comm->member->Entry()))
+	    output << " [" << Parent->getMessage(source, "COMMSERV/DEFUNCT") << "]";
+	::send(mynick, source, output);
+	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD"),
+		ToHumanTime(comm->member->Last_Modify_Time().SecondsSince()).c_str(),
+		comm->member->Last_Modifier().c_str());
+    }
+    RET(nextnum-number);
 }
 
 void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)

@@ -24,6 +24,10 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/03/28 09:42:10  prez
+** Changed CommServ, ADD/DEL/LIST -> MEMBER ADD/DEL/LIST
+** and NEW/KILL -> ADD/DEL and created a new LIST
+**
 ** Revision 1.25  2000/03/15 08:23:51  prez
 ** Added locking stuff for commserv options, and other stuff
 **
@@ -216,15 +220,16 @@ public:
     virtual void execute(const mstring & message);
 
     static void do_Help(mstring mynick, mstring source, mstring params);
-    static void do_AddComm(mstring mynick, mstring source, mstring params);
-    static void do_DelComm(mstring mynick, mstring source, mstring params);
     static void do_Add(mstring mynick, mstring source, mstring params);
     static void do_Del(mstring mynick, mstring source, mstring params);
+    static void do_List(mstring mynick, mstring source, mstring params);
     static void do_Memo(mstring mynick, mstring source, mstring params);
     static void do_Memo2(mstring source, mstring committee, mstring text);
-    static void do_List(mstring mynick, mstring source, mstring params);
-    static int do_List2(mstring mynick, mstring source, mstring committee, bool first, int number);
     static void do_Info(mstring mynick, mstring source, mstring params);
+    static void do_member_Add(mstring mynick, mstring source, mstring params);
+    static void do_member_Del(mstring mynick, mstring source, mstring params);
+    static void do_member_List(mstring mynick, mstring source, mstring params);
+    static int do_member_List2(mstring mynick, mstring source, mstring committee, bool first, int number);
     static void do_logon_Add(mstring mynick, mstring source, mstring params);
     static void do_logon_Del(mstring mynick, mstring source, mstring params);
     static void do_logon_List(mstring mynick, mstring source, mstring params);

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.155  2000/03/28 09:42:10  prez
+** Changed CommServ, ADD/DEL/LIST -> MEMBER ADD/DEL/LIST
+** and NEW/KILL -> ADD/DEL and created a new LIST
+**
 ** Revision 1.154  2000/03/27 21:26:12  prez
 ** More bug fixes due to testing, also implemented revenge.
 **
@@ -1619,6 +1623,8 @@ DoRevenge_Ban4:
 	    else if (type == "BAN4")
 		goto DoRevenge_Ban4;
 	}
+	wxLogInfo("Taking revenge on user %s in channel %s for %s on %s.",
+			target.c_str(), i_Name.c_str(), type.c_str(), source.c_str());
 	RET(true);
     }
 
