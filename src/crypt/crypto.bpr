@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="crypto.lib"/>
-    <OBJFILES value="debug\crypto.obj debug\bf_enc.obj debug\bf_skey.obj debug\md5_dgst.obj"/>
+    <OBJFILES value="crypto.obj bf_enc.obj bf_skey.obj md5_dgst.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
@@ -22,7 +22,7 @@
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="TLib"/>
     <USERDEFINES value="WIN32;_DEBUG;_WINDOWS"/>
-    <SYSDEFINES value="_NO_VCL;_ASSERTE;NO_STRICT;_VIS_NOLIB"/>
+    <SYSDEFINES value="_NO_VCL;_ASSERTE;NO_STRICT;_VIS_NOLIB;_RTLDLL"/>
     <MAINSOURCE value="crypto.cpp"/>
     <INCLUDEPATH value="$(BCB)\include;$(BCB)\include\ATL;..\..\include;..\..\..\support\zlib"/>
     <LIBPATH value=""/>
@@ -33,9 +33,9 @@
   <OPTIONS>
     <IDLCFLAGS value="-I$(BCB)\include -I$(BCB)\include\ATL -I..\..\include 
       -I..\..\..\support\zlib -src_suffix cpp -DWIN32 -D_DEBUG -D_WINDOWS -boa"/>
-    <CFLAG1 value="-vGc -vGt -vGd -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -w 
-      -Tkh30000 -X- -r- -a8 -6 -b -d -k -y -v -vi- -q -tWR -tWM -c"/>
-    <PFLAGS value="-N2debug -N0debug -$YD -$W -$O-"/>
+    <CFLAG1 value="-Od -H=vcl50.csm -Q -w -Tkh30000 -X- -r- -a8 -6 -b -d -k -y -v -vi- -q 
+      -tWR -tWM -c"/>
+    <PFLAGS value="-$YD -$W -$O-"/>
     <RFLAGS value="/i$(BCB)\include;$(BCB)\include\mfc"/>
     <AFLAGS value="/mx /w2 /zi"/>
     <LFLAGS value="/E"/>
@@ -43,7 +43,7 @@
   <LINKER>
     <ALLOBJ value="$(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
-    <ALLLIB value="cg32.lib $(LIBFILES) $(LIBRARIES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES)"/>
   </LINKER>
   <IDEOPTIONS>
 [Version Info]
@@ -121,7 +121,7 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=1
-LinkCGLIB=1
+LinkCGLIB=0
 
 [CORBA]
 AddServerUnit=1
