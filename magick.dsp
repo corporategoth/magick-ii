@@ -323,6 +323,14 @@ SOURCE=.\include\pch.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\server.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\server.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\textfile.cpp
 # End Source File
 # Begin Source File
