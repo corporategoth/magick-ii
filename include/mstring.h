@@ -25,6 +25,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/12/12 02:52:14  prez
+** Moved the do_nothing function
+**
 ** Revision 1.59  2000/12/09 20:16:41  prez
 ** Fixed SubString and Left to have correct count/end possitions.  Also
 ** adjusted rest of source to follow suit.
@@ -157,6 +160,8 @@ static const char *ident_mstring_h = "@(#) $Id$";
  * in the existance of C++ ;P */
 
 class mstring;
+
+inline int do_nothing() { return 1; }
 
 #ifndef HAVE_ITOA
 const char *itoa(int i);

@@ -25,6 +25,9 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2000/12/12 02:51:58  prez
+** Moved the do_nothing function
+**
 ** Revision 1.66  2000/10/14 04:25:31  prez
 ** Added mmemory.h -- MemCluster and the MemoryManager are now in it.
 ** TODO - make mstring use MemoryManager.
@@ -123,8 +126,6 @@ public:
     void WriteOut (const mstring &message);
     void Flush();
 };
-
-inline int do_nothing() { return 1; }
 
 #ifndef MAGICK_TRACE_WORKS
 
