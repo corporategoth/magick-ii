@@ -431,9 +431,12 @@ void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
     FT("Chan_Stored_t::ChgAttempt", (nick, newnick));
 
     map<mstring, int>::iterator iter;
+
+    // Create a new one if we find the entry
     for (iter=failed_passwds.begin(); iter!=failed_passwds.end(); iter++)
 	if (iter->first == nick.LowerCase())
-	    iter->first = newnick.LowerCase();
+	    failed_passwds[newnick.LowerCase()] = iter->second;
+    failed_passwds.erase(nick.LowerCase());
 }
 
 

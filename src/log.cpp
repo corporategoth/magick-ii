@@ -230,27 +230,29 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
 
   switch ( level ) {
     case wxLOG_Fatal:
-      DoLogString(str << "Fatal: " << szString);
+      DoLogString(str << "FATAL   | " << szString);
       Flush();
       exit(-1);
       break;
 
     case wxLOG_Error:
-      DoLogString(str << "Error: " << szString);
+      DoLogString(str << "ERROR   | " << szString);
       break;
 
     case wxLOG_Warning:
-      DoLogString(str << "Warning: " << szString);
+      DoLogString(str << "WARNING | " << szString);
+      break;
+
+    case wxLOG_Notice:
+      DoLogString(str << "NOTICE  | " << szString);
       break;
 
     case wxLOG_Info:
-      if ( GetVerbose() )
-    case wxLOG_Notice:
-        DoLogString((str + szString).c_str());
-      // fall through
+      DoLogString(str << "INFO    | " << szString);
+      break;
 
     case wxLOG_Debug:
-      // nothing to do
+      DoLogString(str << "DEBUG   | " << szString);
       break;
 
     default:
