@@ -132,6 +132,8 @@ wxIsAbsolutePath (const mstring& filename)
   RET(false);
 }
 
+const unsigned long TxnIds::min = 1000000000;
+const unsigned long TxnIds::keeptime = 60 * 60 * 24;
 map<unsigned long, mDateTime> TxnIds::i_Ids;
 unsigned long TxnIds::i_Current = TxnIds::min;
 

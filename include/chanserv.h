@@ -214,9 +214,9 @@ public:
     mstring Mlock_Off()			{ return i_Mlock_Off + l_Mlock_Off; }
     mstring Mlock_On()			{ return i_Mlock_On + l_Mlock_On; }
     mstring Mlock();
-    mstring Mlock(mstring mode);
+    vector<mstring> Mlock(mstring source, mstring mode);
     mstring L_Mlock();
-    mstring L_Mlock(mstring mode);
+    vector<mstring> L_Mlock(mstring source, mstring mode);
     mstring Mlock_Key()			{ return i_Mlock_Key; }
     unsigned int Mlock_Limit()		{ return i_Mlock_Limit; }
     mstring Last_Topic()		{ return i_Topic; }

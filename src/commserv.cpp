@@ -872,9 +872,9 @@ int CommServ::do_List2(mstring mynick, mstring source, mstring committee, bool f
 	if (!Parent->nickserv.IsStored(comm->member->Entry()))
 	    output << " [" << Parent->getMessage(source, "COMMSERV/DEFUNCT") << "]";
 	::send(mynick, source, output);
-	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD),
-		ToHumanTime(comm->member->Last_Modify_Time()),
-		comm->member->Last_Modifier());
+	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD"),
+		ToHumanTime(comm->member->Last_Modify_Time().SecondsSince()).c_str(),
+		comm->member->Last_Modifier().c_str());
     }
     RET(nextnum-number);
 }
@@ -1125,9 +1125,9 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
 	output = "";
 	output << i << ". " << comm->message->Entry();
 	::send(mynick, source, output);
-	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD),
-		ToHumanTime(comm->message->Last_Modify_Time()),
-		comm->message->Last_Modifier());
+	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD"),
+		ToHumanTime(comm->message->Last_Modify_Time().SecondsSince()).c_str(),
+		comm->message->Last_Modifier().c_str());
     }
 }
 

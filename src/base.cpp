@@ -182,7 +182,8 @@ void mBase::privmsg(const mstring &source, const mstring &dest, const mstring &p
     FT("mBase::privmsg", (source, dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     privmsgV(source, dest, pszFormat, argptr);
     va_end(argptr);
 }
@@ -193,7 +194,8 @@ void mBase::privmsg(const mstring &dest, const mstring &pszFormat, ...)
     FT("mBase::privmsg", (dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     privmsgV(FirstName(), dest, pszFormat, argptr);
     va_end(argptr);
 }
@@ -215,7 +217,8 @@ void mBase::notice(const mstring &source, const mstring &dest, const mstring &ps
     FT("mBase::notice", (source, dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     noticeV(source, dest, pszFormat, argptr);
     va_end(argptr);
 }
@@ -226,7 +229,8 @@ void mBase::notice(const mstring &dest, const mstring &pszFormat, ...)
     FT("mBase::notice", (dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     privmsgV(FirstName(), dest, pszFormat, argptr);
     va_end(argptr);
 }
@@ -248,7 +252,8 @@ void mBase::send(const mstring &source, const mstring &dest, const mstring &pszF
     FT("mBase::send", (source, dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     sendV(source, dest, pszFormat, argptr);
     va_end(argptr);
 }
@@ -258,7 +263,8 @@ void mBase::send(const mstring &dest, const mstring &pszFormat, ...)
     FT("mBase::send", (dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     sendV(FirstName(), dest, pszFormat, argptr);
     va_end(argptr);
 }
@@ -300,7 +306,8 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &pszForma
     FT("privmsg", (source, dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
 
     if (Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
@@ -335,7 +342,8 @@ void notice(const mstring& source, const mstring &dest, const mstring &pszFormat
     FT("notice", (source, dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     if (Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
     {
@@ -369,7 +377,8 @@ void send(const mstring& source, const mstring &dest, const mstring &pszFormat, 
     FT("send", (source, dest, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     if (Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
     {
@@ -403,7 +412,8 @@ void announce(const mstring& source, const mstring &pszFormat, ...)
     FT("announce", (source, pszFormat));
 
     va_list argptr;
-    va_start(argptr, pszFormat.c_str());
+    const char *str = pszFormat.c_str();
+    va_start(argptr, str);
     mstring message;
     message.FormatV(pszFormat.c_str(), argptr);
 

@@ -961,7 +961,7 @@ void Chan_Stored_t::Join(mstring nick)
 
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
-		i_Name, "This channel is restricted.");
+		i_Name, Parent->getMessage(nick, "MISC/KICK_RESTRICTED"));
 
 	return;
     }
@@ -1559,14 +1559,14 @@ mstring Chan_Stored_t::Mlock()
 }
 
 
-mstring Chan_Stored_t::Mlock(mstring mode)
+vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 {
-    FT("Chan_Stored_t::Mlock", (mode));
+    FT("Chan_Stored_t::Mlock", (source, mode));
 
     i_Mlock_On = i_Mlock_Off = i_Mlock_Key = "";
     i_Mlock_Limit = 0;
-    mstring retval = "";
-    mstring change = mode.ExtractWord(1, ": ");
+    vector<mstring> retval;
+    mstring output, change = mode.ExtractWord(1, ": ");
     unsigned int i, fwdargs = 2;
     bool add = true;
     bool ignorek = false;
@@ -1575,16 +1575,18 @@ mstring Chan_Stored_t::Mlock(mstring mode)
     if (change.WordCount("k") > 2)
     {
 	ignorek = true;
-	if (retval != "")
-	    retval += ", ";
-	retval += "Multiple +/-k modes specified - ignoring";
+	output = "";
+	output.Format(Parent->getMessage(source, "ERR_SYNTAX/MULTI_MODE").c_str(),
+		    'k');
+	retval.push_back(output);
     }
     if (change.WordCount("l") > 2)
     {
 	ignorel = true;
-	if (retval != "")
-	    retval += ", ";
-	retval += "Multiple +/-l modes specified - ignoring";
+	output = "";
+	output.Format(Parent->getMessage(source, "ERR_SYNTAX/MULTI_MODE").c_str(),
+		    'l');
+	retval.push_back(output);
     }
 
     for (i=0; i<change.size(); i++)
@@ -1609,9 +1611,9 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	    {
 		if (fwdargs > mode.WordCount(": "))
 		{
-		    if (retval != "")
-			retval += ", ";
-		    retval += "No key specified for +k - ignoring";
+		    output = "";
+		    output.Format(Parent->getMessage(source, "ERR_SYNTAX/NOKEY").c_str());
+		    retval.push_back(output);
 		    fwdargs--;
 		}
 		else
@@ -1627,22 +1629,24 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	    {
 		if (fwdargs > mode.WordCount(": "))
 		{
-		    if (retval != "")
-			retval += ", ";
-		    retval += "No limit specified for +l - ignoring";
+		    output = "";
+		    output.Format(Parent->getMessage(source, "ERR_SYNTAX/NOLIMIT").c_str());
+		    retval.push_back(output);
 		    fwdargs--;
 		}
-		else if (!mode.ExtractWord(fwdargs, ": ").IsNumber())
+		else if (!mode.ExtractWord(fwdargs, ": ").IsNumber() ||
+			mode.ExtractWord(fwdargs, ": ").Contains("."))
 		{
-		    if (retval != "")
-			retval += ", ";
-		    retval += "Specified limit is not a number - ignoring";
+		    output = "";
+		    output.Format(Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER").c_str());
+		    retval.push_back(output);
 		}
 		else if (atol(mode.ExtractWord(fwdargs, ": ")) < 1)
 		{
-		    if (retval != "")
-			retval += ", ";
-		    retval += "Specified limit is less than one - ignoring";
+		    output = "";
+		    output.Format(Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER").c_str(),
+			    1, 32768);
+		    retval.push_back(output);
 		}
 		else
 		{
@@ -1758,45 +1762,47 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	}
     }
 
-
-    if (retval != "")
-	retval += ", ";
+    mstring output2 = "";
     if (override_on != "" || override_off != "")
-    {
-	retval += "MODE LOCK has reversed ";
-	if (override_on != "")
-	    retval += "+" + override_on;
-	if (override_off != "")
-	    retval += "-" + override_off;
+    {	
+	if (output2 != "")
+	    output2 += "  ";
+	output = "";
+	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_REVERSED").c_str(),
+	    ((override_on  != "" ? ("+" + override_on ) : mstring("")) +
+	     (override_off != "" ? ("-" + override_off) : mstring(""))).c_str());
+	output2 += output;
     }
-    if (retval != "")
-	retval += ", ";
     if (forced_on != "" || forced_off != "")
     {
-	retval += "MODE LOCK has forced ";
-	if (forced_on != "")
-	    retval += "+" + forced_on;
-	if (forced_off != "")
-	    retval += "-" + forced_off;
+	if (output2 != "")
+	    output2 += "  ";
+	output = "";
+	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_FORCED").c_str(),
+	    ((forced_on  != "" ? ("+" + forced_on ) : mstring("")) +
+	     (forced_off != "" ? ("-" + forced_off) : mstring(""))).c_str());
+	output2 += output;
     }
-    if (retval != "")
-	retval += ", ";
+    if (output2 != "")
+	retval.push_back(output2);
     if (i_Mlock_On != "" || i_Mlock_Off != "")
     {
-	retval += "MLOCK has been set to ";
-	if(i_Mlock_On!="")
-	    retval += "+" + i_Mlock_On;
-	if(i_Mlock_Off!="")
-	    retval += "-" + i_Mlock_Off;
-	if (i_Mlock_Limit)
-	    retval << " " << i_Mlock_Limit;
+	output = "";
+	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_SET").c_str(),
+	    i_Name.c_str(),
+	    ((i_Mlock_On  != "" ? ("+" + i_Mlock_On )  : mstring("")) +
+	     (i_Mlock_Off != "" ? ("-" + i_Mlock_Off)  : mstring("")) +
+	     (i_Mlock_Limit ? (" " + mstring(ltoa(i_Mlock_Limit))) : mstring(""))).c_str());
+	retval.push_back(output);
     }
     else
-    {
-	retval += "MLOCK has been turned off";
+    {	
+	output = "";
+	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_UNSET").c_str(),
+	    i_Name.c_str());
+	retval.push_back(output);
     }
-    retval += ".";
-    RET(retval);
+    NRET(vector<mstring>, retval);
 }
 
 
@@ -1853,13 +1859,13 @@ mstring Chan_Stored_t::L_Mlock()
 }
 
 
-mstring Chan_Stored_t::L_Mlock(mstring mode)
+vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 {
-    FT("Chan_Stored_t::L_Mlock", (mode));
+    FT("Chan_Stored_t::L_Mlock", (source, mode));
 
     l_Mlock_On = l_Mlock_Off = "";
-    mstring retval = "";
-    mstring change = mode.ExtractWord(1, ": ");
+    vector<mstring> retval;
+    mstring output, change = mode.ExtractWord(1, ": ");
     bool add = true;
     unsigned int i;
 
@@ -1946,32 +1952,31 @@ mstring Chan_Stored_t::L_Mlock(mstring mode)
     }
 
 
-    if (retval != "")
-	retval += ", ";
     if (override_on != "" || override_off != "")
     {
-	retval += "MODE LOCK has reversed ";
-	if (override_on != "")
-	    retval += "+" + override_on;
-	if (override_off != "")
-	    retval += "-" + override_off;
+	output = "";
+	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_REVERSED").c_str(),
+	    ((override_on  != "" ? ("+" + override_on ) : mstring("")) +
+	     (override_off != "" ? ("-" + override_off) : mstring(""))).c_str());
+	retval.push_back(output);
     }
-    if (retval != "")
-	retval += ", ";
     if (l_Mlock_On != "" || l_Mlock_Off != "")
     {
-	retval += "MLOCK has been set to ";
-	if(l_Mlock_On!="")
-	    retval += "+" + l_Mlock_On;
-	if(l_Mlock_Off!="")
-	    retval += "-" + l_Mlock_Off;
+	output = "";
+	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_LOCK").c_str(),
+	    i_Name.c_str(),
+	    ((l_Mlock_On  != "" ? ("+" + l_Mlock_On )  : mstring("")) +
+	     (l_Mlock_Off != "" ? ("-" + l_Mlock_Off)  : mstring(""))).c_str());
+	retval.push_back(output);
     }
     else
     {
-	retval += "MLOCK has been turned off";
+	output = "";
+	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_UNLOCK").c_str(),
+	    i_Name.c_str());
+	retval.push_back(output);
     }
-    retval += ".";
-    RET(retval);
+    NRET(vector<mstring>, retval);
 }
 
 
@@ -6101,7 +6106,9 @@ void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
 	option = Parent->chanserv.DEF_MLock();
     }
 
-    ::send(mynick, source, cstored->Mlock(option));
+    vector<mstring> retval = cstored->Mlock(source, option);
+    for (unsigned int i=0; i<retval.size(); i++)
+	::send(mynick, source, retval[i]);
 }
 
 void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
@@ -6751,9 +6758,10 @@ void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
     {
 	option = Parent->chanserv.DEF_MLock();
     }
-    else if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
 
-    ::send(mynick, source, cstored->L_Mlock(option));
+    vector<mstring> retval = cstored->L_Mlock(source, option);
+    for (unsigned int i=0; i<retval.size(); i++)
+	::send(mynick, source, retval[i]);
 }
 
 void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
@@ -7287,7 +7295,9 @@ void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
-    ::send(mynick, source, cstored->L_Mlock(""));
+    vector<mstring> retval = cstored->L_Mlock(source, "");
+    for (unsigned int i=0; i<retval.size(); i++)
+	::send(mynick, source, retval[i]);
 }
 
 void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)

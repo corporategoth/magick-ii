@@ -37,8 +37,8 @@ extern bool wxIsAbsolutePath (const mstring& filename);
 // you have 3294967295 possible TxnIds.
 class TxnIds
 {
-    static const unsigned long min = 1000000000;
-    static const unsigned long keeptime = 60 * 60 * 24;
+    static const unsigned long min;
+    static const unsigned long keeptime;
 
     static map<unsigned long, mDateTime> i_Ids;
     static unsigned long i_Current;

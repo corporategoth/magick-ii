@@ -88,7 +88,12 @@ MAYNOTCONTAIN      =Specified %s entry may not contain a '%c' character.
 MUSTBENUMBER       =You must specify a number between %d and %d.
 POSWHOLENUMBER     =You may only specify a posetive whole number.
 MUSTBEONOFF        =You may only specify "ON" or "OFF".
-
+NONNUMERIC         =Non-numeric arguments specified (ignored).
+ABOVELIMIT         =All entries above %d have been ignored.
+CHANFILEATTACH     =File attachments are not allowed to channels.
+MULTI_MODE         =Multiple +/-%c modes specified (ignored).
+NOKEY              =No key specified, but required (ignored).
+NOLIMIT            =No limit specified, but required (ignored).
 ;
 ; This section describes SITUATION errors, ie. errors where you have
 ; not fulfilled all the correct criteria to continue.
@@ -112,6 +117,10 @@ TEMP_IGNORE        =This is your %s ignore (of a maximum %d).  Services will not
 PERM_IGNORE        =You have been ignored the maximum %d times.  Services will no longer respond.
 PROTECTED          =This nickname has KILL protection enabled.  If you do not IDENTIFY, you will be killed.
 DEFCOMMITTEE       =Default committees may NOT be modified.
+AKILLTOOHIGH       =You may only specify a maximum of %s for an AKILL time limit.
+NOFLUSH            =Memos with file attachments may not be flushed.
+NOATTACH           =Cannot send file attachments to channels.
+FILEINPROG         =Cannot begin a new memo or file transfer while a file transfer is in progress.
 NOACCESS           =Access denied.
 
 [MISC]
@@ -119,6 +128,9 @@ KILL_PASS_FAIL     =Too many password failures
 KILL_GHOST         =GHOST command used
 KILL_RECOVER       =RECOVER command used
 KILL_OPERDENY      =Tried to /OPER when DENIED
+
+KICK_RESTRICTED    =This channel is restricted.
+
 NICK_GETPASS       =%s just performed a GETPASS on nickname %s (%s).
 CHAN_GETPASS       =%s just performed a GETPASS on channel %s (%s).
 GLOBAL_MSG         =%s just sent a message to ALL users.
@@ -134,7 +146,9 @@ RELOAD             =%s just reloaded the server configuration file.
 JUPE               =%s just JUPED server %s.
 ONOFF              =Services have been turned %s by %s.
 ONOFF_ONE          =Service %s has been turned %s by %s.
+
 BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (OPS)
+BREAKDOWN          ="%-40s  % 3.3fs  %5d (%3d)  %3.2f%%"
 ON                 =ON
 OFF                =OFF
 
@@ -160,10 +174,10 @@ DISPLAY            =Displaying all entries on %s list:
 DISPLAY_MATCH      =Displaying entries matching %s on %s list:
 ADD                =Added entry %s to %s list.
 ADD_NUMBER         =Added entry #%d to %s list.
-ADD_LEVEL          =Added entry %s to %s list at level %d.
+ADD_LEVEL          =Added entry %s to %s list at %d.
 ADD_TIME           =Added entry %s to %s list for %s.
-CHANGE_LEVEL       =Changed entry %s on %s list to level %d.
-CHSNGE_TIME        =Changed entry %s on %s list to %s.
+CHANGE_LEVEL       =Changed entry %s on %s list to %d.
+CHANGE_TIME        =Changed entry %s on %s list to %s.
 DEL                =Deleted entry %s from %s list.
 DEL_MATCH          =Deleted %d entries matching %s from %s list.
 DEL_NUMBER         =Deleted entry #%s from %s list.
@@ -242,6 +256,8 @@ ISNOTHOST          =Your nickname is not a host.
 IDENTIFIED         =You are are already identified.
 ISLOCKED           =%s option is locked.
 ISNOTLOCKED        =%s option is not locked.
+
+PICDISABLED        =Storing pictures has been DISABLED.
 
 ;
 ; These responses are ONLY for the NickServ INFO command.
@@ -329,6 +345,10 @@ SET_TO             =Your %s has been set to %s.
 UNSET              =Your %s has been unset.
 OPT_SET_TO         =%s option has been set to %s.
 
+PENDING            =Please begin sending your picture now.
+CANCEL             =Pending file transfer cancelled.
+SAVED              =Your picture has been saved.
+REMOVED            =Your picture has been removed.
 
 [CS_STATUS]
 ISSTORED           =Channel %s is already registered.
@@ -339,6 +359,13 @@ ISNOTINUSE         =Channel %s is not currently in use.
 
 [CS_COMMAND]
 IDENTIFIED         =Password accepted - you are now identified as founder of %s.
+MLOCK_REVERSED     =Mode lock has reversed %s.
+MLOCK_FORCED       =Mode lock has forced %s.
+MLOCK_SET          =Mode lock for channel %s has been set to %s.
+MLOCK_UNSET        =Mode lock for channel %s has been removed.
+MLOCK_LOCK         =Mode lock for channel %s has been locked to %s.
+MLOCK_UNLOCK       =Mode lock for channel %s has been unlocked.
+
 
 [COMMSERV]
 ISSTORED           =Committee %s already exists.
@@ -440,3 +467,42 @@ UNLOAD             =Language %s has been unloaded.
 JUPE               =Server %s has been juped.
 ONOFF              =Services have been turned %s.
 ONOFF_ONE          =Service %s has been turned %s.
+
+[MS_STATUS]
+CS_EMPTY           =Channel %s has no news articles.
+CS_UNREAD          =Channel %s has %d new news article%s.  Type /msg %s LIST %s to list them.
+CS_NOUNREAD        =Channel %s has no unread news articles.
+NS_EMPTY           =You have no memos.
+NS_UNREAD          =You have %d new memo%s.  Type /msg %s LIST to list them.
+NS_NOUNREAD        =You have no news memos.
+IGNORE             =Nickname %s is ignoring your memos.
+TRUNCATE           =Message truncated at "...%s".  Type /msg %s CONTINUE <text> to continue message.
+PENDING            =You have memos pending to be sent.
+NOPENDING          =You have no memos pending to be sent.
+FILEDISABLED       =File attachments in memos have been DISABLED.
+FORWARD            =[FORWARD: %s] %s
+FORWARD_ARG        =[FORWARD(%s): %s] %s
+REPLY              =[REPLY: "%s"] %s
+REPLY_ARG          =[REPLY(%s): "%s"] %s
+
+[MS_COMMAND]
+NEWS               =#%d from %s to %s sent %s ago.
+NEWS_LIST          =%c#%d from %s to %s sent %s ago - "%s"
+MEMO               =#%d from %s sent %s ago.
+NEWS_LIST          =%c#%d from %s sent %s ago - "%s"
+CS_UNREAD          =News articles %s for channel %s have been unread.
+CS_UNREAD_ALL      =All news articles for channel %s have been unread.
+NS_UNREAD          =Your memos %s have been unread.
+NS_UNREAD_ALL      =All your memos have been unread.
+CS_NOTDEL          =News articles %s for channel %s have NOT been deleted.
+CS_DEL             =News articles %s for channel %s have been deleted.
+CS_DEL_ALL         =All news articles for channel %s have been deleted.
+NS_DEL             =Your memos %s have been deleted.
+NS_DEL_ALL         =All your memos have been deleted.
+CANCEL             =Pending memo has been cancelled.
+PENDING            =Memo is now pending.  You have %s to continue or cancel it.
+PENDING_FILE       =Memo is now pending.  You have %s to begin your file transfer, continue or cancel it.
+CONTINUE           =Pending memo timer reset.  You have %s to continue or cancel it.
+SENT               =Memo has been sent to %s (%s).
+CS_NEW             =There is a new news article (#%d) for channel %s from %s.  Type /msg %s READ %s %d to read it.
+NS_NEW             =You have a new memo (#%d).  Type /msg %s READ %d to read it.

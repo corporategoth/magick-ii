@@ -734,7 +734,7 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		    }
 		}
 		if (j>=Trace::levelname.size())
-		    ::send(mynick, source, Paren->getMessage(soruce, "OS_STATUS/INVALID_LEVEL"),
+		    ::send(mynick, source, Parent->getMessage(source, "OS_STATUS/INVALID_LEVEL"),
 								levels[i].c_str());
 	    }
 	}
@@ -950,7 +950,7 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
 
     if (!Parent->server.IsServer(target))
     {
-	::send(mynick, source, Parent->getMesage(source, "OS_STATUS/ISNOTLINKED"),
+	::send(mynick, source, Parent->getMessage(source, "OS_STATUS/ISNOTLINKED"),
 			target.c_str());
 	return;
     }
@@ -1284,7 +1284,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 		    output.c_str());
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_MLOCK"),
-		    Parent->chanserv.DEF_MLock().c_str()
+		    Parent->chanserv.DEF_MLock().c_str(),
 		    Parent->chanserv.LCK_MLock().c_str());
 
     output = "";
@@ -1505,15 +1505,30 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
     mstring amount = params.ExtractWord(4, " ");
     mstring reason = params.After(" ", 4);
 
-    if (host.Contains("!") || host.Contains("@"))
+    if (host.Contains("!"))
     {
-	::send(mynick, source, "Host may not contain a \'!\' or \'@\' character.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/CLONE").c_str(), '!');
+	return;
+    }
+    else if (host.Contains("@"))
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/CLONE").c_str(), '@');
 	return;
     }
 
-    if (!amount.IsNumber() || amount.Contains(".") || atoi(amount.c_str()) <= 0)
+    if (!amount.IsNumber() || amount.Contains("."))
     {
-	::send(mynick, source, "Amount must be a posetive whole number.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/POSWHOLENUMBER"));
+	return;
+    }
+
+    unsigned int num = atoi(amount.c_str());
+    if (num < 1 || num > Parent->operserv.Max_Clone())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+				1, Parent->operserv.Max_Clone());
 	return;
     }
 
@@ -1522,13 +1537,19 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
     {
 	mstring entry = Parent->operserv.Clone->Entry();
 	Parent->operserv.Clone_erase();
-	Parent->operserv.Clone_insert(entry, atoi(amount.c_str()), reason, source);
-	::send(mynick, source, "Entry " + entry + " changed to " + amount + ".");
+	Parent->operserv.Clone_insert(entry, num, reason, source);
+	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_LEVEL"),
+		    entry.c_str(),
+		    Parent->getMessage(source, "LIST/CLONE").c_str(),
+		    num);
     }
     else
     {
-	Parent->operserv.Clone_insert(host, atoi(amount.c_str()), reason, source);
-	::send(mynick, source, "Entry " + host + " added with " + amount + ".");
+	Parent->operserv.Clone_insert(host, num, reason, source);
+	::send(mynick, source, Parent->getMessage(source, "LIST/ADD_LEVEL"),
+		    host.c_str(),
+		    Parent->getMessage(source, "LIST/CLONE").c_str(),
+		    num);
     }
 }
 
@@ -1546,9 +1567,16 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
 
     mstring host   = params.ExtractWord(3, " ").LowerCase();
 
-    if (host.Contains("!") || host.Contains("@"))
+    if (host.Contains("!"))
     {
-	::send(mynick, source, "Host may not contain a \'!\' or \'@\' character.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/CLONE").c_str(), '!');
+	return;
+    }
+    else if (host.Contains("@"))
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/CLONE").c_str(), '@');
 	return;
     }
 
@@ -1558,8 +1586,8 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
 	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Clone_size())
 	{
-	    ::send(mynick, source, "Entry number must be between 0 and " +
-				    mstring(itoa(Parent->operserv.Clone_size())));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+				1, Parent->operserv.Clone_size());
 	    return;
 	}
 
@@ -1568,24 +1596,34 @@ void OperServ::do_clone_Del(mstring mynick, mstring source, mstring params)
 		i++, Parent->operserv.Clone++) ;
 	if (Parent->operserv.Clone != Parent->operserv.Clone_end())
 	{
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
+			Parent->operserv.Clone->Entry().c_str(),
+			Parent->getMessage(source, "LIST/CLONE").c_str());
 	    Parent->operserv.Clone_erase();
-	    ::send(mynick, source, "Clone entry #" + host + " removed.");
 	}
 	else
 	{
-	    ::send(mynick, source, "Clone entry #" + host + " not found");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS_NUMBER"),
+			num, Parent->getMessage(source, "LIST/CLONE").c_str());
 	}
     }
     else
     {
-	if (Parent->operserv.Clone_find(host))
-	{
+	int count = 0;
+	while (Parent->operserv.Clone_find(host))
 	    Parent->operserv.Clone_erase();
-	    ::send(mynick, source, "Clone entry matching " + host + " removed.");
+
+	if (count)
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
+			count, host.c_str(),
+			Parent->getMessage(source, "LIST/CLONE").c_str());
 	}
 	else
 	{
-	    ::send(mynick, source, "No such clone entry matching " + host + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+			host.c_str(),
+			Parent->getMessage(source, "LIST/CLONE").c_str());
 	}
     }
 }
@@ -1607,24 +1645,32 @@ void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
     {
 	host   = params.ExtractWord(3, " ").LowerCase();
 
-	if (host.Contains("!") || host.Contains("@"))
+	if (host.Contains("!"))
 	{
-	    ::send(mynick, source, "Host may not contain a \'!\' or \'@\' character.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/CLONE").c_str(), '!');
+	    return;
+	}
+	else if (host.Contains("@"))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/CLONE").c_str(), '@');
 	    return;
 	}
     }
 
     if (Parent->operserv.Clone_size())
     {
-	::send(mynick, source, "Clone Override list:");
+	::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
+		host.c_str(), Parent->getMessage(source, "LIST/CLONE").c_str());
     }
     else
     {
-	::send(mynick, source, "Clone Override list is empty.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
+		Parent->getMessage(source, "LIST/CLONE").c_str());
 	return;
     }
     unsigned int i=1;
-    mstring output;
     MLOCK(("OperServ", "Clone"));
     for (Parent->operserv.Clone = Parent->operserv.Clone_begin();
 		Parent->operserv.Clone != Parent->operserv.Clone_end();
@@ -1632,16 +1678,13 @@ void OperServ::do_clone_List(mstring mynick, mstring source, mstring params)
     {
 	if (Parent->operserv.Clone->Entry().LowerCase().Matches(host))
 	{
-	    output.Format("%3d. %s (modified %s ago by %s)", i,
-			    Parent->operserv.Clone->Entry().c_str(),
+	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
+			    i, Parent->operserv.Clone->Entry().c_str(),
 			    Parent->operserv.Clone->Last_Modify_Time().Ago().c_str(),
 			    Parent->operserv.Clone->Last_Modifier().c_str());
-	    ::send(mynick, source, output);
-	    output = "";
-	    output.Format("     [%4d] %s", Parent->operserv.Clone->Value().first,
+	    ::send(mynick, source, "     [%4d] %s",
+			    Parent->operserv.Clone->Value().first,
 			    Parent->operserv.Clone->Value().second.c_str());
-	    ::send(mynick, source, output);
-	    output = "";
 	    i++;
 	}
     }
@@ -1676,26 +1719,43 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	reason = reason.After(" ");
     }
 
-    if ((Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+    if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source) &&
-	time > Parent->operserv.Expire_SAdmin()) ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source) &&
-	time > Parent->operserv.Expire_Sop()) ||
-	(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
-	Parent->commserv.list[Parent->commserv.ADMIN_Name().UpperCase()].IsOn(source) &&
-	time > Parent->operserv.Expire_Admin()) ||
-	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name().UpperCase()].IsOn(source) &&
-	time > Parent->operserv.Expire_Oper()))
+	time > Parent->operserv.Expire_SAdmin())
     {
-	::send(mynick, source, "Akill time limit specified is too great for your privilage level.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
+		    ToHumanTime(Parent->operserv.Expire_SAdmin()).c_str());
+	return;
+    }
+    else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.list[Parent->commserv.SOP_Name().UpperCase()].IsOn(source) &&
+	time > Parent->operserv.Expire_Sop())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
+		    ToHumanTime(Parent->operserv.Expire_Sop()).c_str());
+	return;
+    }
+    else if (Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.ADMIN_Name().UpperCase()].IsOn(source) &&
+	time > Parent->operserv.Expire_Admin())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
+		    ToHumanTime(Parent->operserv.Expire_Admin()).c_str());
+	return;
+    }
+    else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name().UpperCase()].IsOn(source) &&
+	time > Parent->operserv.Expire_Oper())
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
+		    ToHumanTime(Parent->operserv.Expire_Oper()).c_str());
 	return;
     }
 	
     if (host.Contains("!"))
     {
-	::send(mynick, source, "Host may not contain a \'!\' character.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/AKILL").c_str(), '!');
 	return;
     }
 
@@ -1710,14 +1770,18 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	mstring entry = Parent->operserv.Akill->Entry();
 	Parent->operserv.Akill_erase();
 	Parent->operserv.Akill_insert(entry, time, reason, source);
-	::send(mynick, source, "Entry " + entry + " extended for another " +
-							ltoa(time) + " seconds.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME"),
+		    entry.c_str(),
+		    Parent->getMessage(source, "LIST/AKILL").c_str(),
+		    ToHumanTime(time).c_str());
     }
     else
     {
 	Parent->operserv.Akill_insert(host, time, reason, source);
-	::send(mynick, source, "Entry " + host + " added for " + ltoa(time) +
-								    " seconds.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/ADD_TIME"),
+		    host.c_str(),
+		    Parent->getMessage(source, "LIST/AKILL").c_str(),
+		    ToHumanTime(time).c_str());
     }
 }
 
@@ -1737,7 +1801,8 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
 
     if (host.Contains("!"))
     {
-	::send(mynick, source, "Host may not contain a \'!\' character.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/AKILL").c_str(), '!');
 	return;
     }
 
@@ -1747,8 +1812,8 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
 	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Akill_size())
 	{
-	    ::send(mynick, source, "Entry number must be between 0 and " +
-				    mstring(itoa(Parent->operserv.Akill_size())));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+				1, Parent->operserv.Akill_size());
 	    return;
 	}
 
@@ -1757,29 +1822,34 @@ void OperServ::do_akill_Del(mstring mynick, mstring source, mstring params)
 		i++, Parent->operserv.Akill++) ;
 	if (Parent->operserv.Akill != Parent->operserv.Akill_end())
 	{
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
+			Parent->operserv.Akill->Entry().c_str(),
+			Parent->getMessage(source, "LIST/AKILL").c_str());
 	    Parent->operserv.Akill_erase();
-	    ::send(mynick, source, "Akill entry #" + host + " removed.");
 	}
 	else
 	{
-	    ::send(mynick, source, "Entry #" + host + " is not found on AKILL list.");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS_NUMBER"),
+			num, Parent->getMessage(source, "LIST/AKILL").c_str());
 	}
     }
     else
     {
-	if (!host.Contains("@"))
-	{
-	    host.Prepend("*@");
-	}
-
-	if (Parent->operserv.Akill_find(host))
-	{
+	int count = 0;
+	while (Parent->operserv.Akill_find(host))
 	    Parent->operserv.Akill_erase();
-	    ::send(mynick, source, "Akill entry matching " + host + " removed.");
+
+	if (count)
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
+			count, host.c_str(),
+			Parent->getMessage(source, "LIST/AKILL").c_str());
 	}
 	else
 	{
-	    ::send(mynick, source, "No such akill entry matching " + host + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+			host.c_str(),
+			Parent->getMessage(source, "LIST/AKILL").c_str());
 	}
     }
 }
@@ -1803,22 +1873,24 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
 
 	if (host.Contains("!"))
 	{
-	    ::send(mynick, source, "Host may not contain a \'!\' character.");
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MAYNOTCONTAIN"),
+		    Parent->getMessage(source, "LIST/AKILL").c_str(), '!');
 	    return;
 	}
     }
 
     if (Parent->operserv.Akill_size())
     {
-	::send(mynick, source, "AKILL list:");
+	::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
+		host.c_str(), Parent->getMessage(source, "LIST/AKILL").c_str());
     }
     else
     {
-	::send(mynick, source, "AKILL list is empty.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
+		Parent->getMessage(source, "LIST/AKILL").c_str());
 	return;
     }
     unsigned int i=1;
-    mstring output;
     MLOCK(("OperServ", "Akill"));
     for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
 		Parent->operserv.Akill != Parent->operserv.Akill_end();
@@ -1826,16 +1898,13 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
     {
 	if (Parent->operserv.Akill->Entry().LowerCase().Matches(host))
 	{
-	    output.Format("%3d. %s (modified %s ago by %s)", i,
-			    Parent->operserv.Akill->Entry().c_str(),
+	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
+			    i, Parent->operserv.Akill->Entry().c_str(),
 			    Parent->operserv.Akill->Last_Modify_Time().Ago().c_str(),
 			    Parent->operserv.Akill->Last_Modifier().c_str());
-	    ::send(mynick, source, output);
-	    output = "";
-	    output.Format("     [%8l] %s", Parent->operserv.Akill->Value().first,
+	    ::send(mynick, source, "     [%s] %s",
+			    ToHumanTime(Parent->operserv.Akill->Value().first).c_str(),
 			    Parent->operserv.Akill->Value().second.c_str());
-	    ::send(mynick, source, output);
-	    output = "";
 	    i++;
 	}
     }
@@ -1860,7 +1929,8 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
     {
 	if (!Parent->nickserv.IsLive(host))
 	{
-	    ::send(mynick, source, "Nickname " + host + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+			    host.c_str());
 	    return;
 	}
 	host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
@@ -1876,7 +1946,8 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
 	Parent->operserv.OperDeny_erase();
     }
     Parent->operserv.OperDeny_insert(host, reason, source);
-    ::send(mynick, source, "Entry " + host + " added to OperDeny list.");
+    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
+	host.c_str(), Parent->getMessage(source, "LIST/OPERDENY").c_str());
 }
 
 void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
@@ -1899,8 +1970,8 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
 	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.OperDeny_size())
 	{
-	    ::send(mynick, source, "Entry number must be between 0 and " +
-				    mstring(itoa(Parent->operserv.OperDeny_size())));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+				1, Parent->operserv.OperDeny_size());
 	    return;
 	}
 
@@ -1909,12 +1980,15 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
 		i++, Parent->operserv.OperDeny++) ;
 	if (Parent->operserv.OperDeny != Parent->operserv.OperDeny_end())
 	{
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
+			Parent->operserv.OperDeny->Entry().c_str(),
+			Parent->getMessage(source, "LIST/OPERDENY").c_str());
 	    Parent->operserv.OperDeny_erase();
-	    ::send(mynick, source, "OperDeny entry #" + host + " removed.");
 	}
 	else
 	{
-	    ::send(mynick, source, "Entry #" + host + " not found on OperDeny");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS_NUMBER"),
+			num, Parent->getMessage(source, "LIST/OPERDENY").c_str());
 	}
     }
     else
@@ -1923,24 +1997,32 @@ void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
 	{
 	    if (!Parent->nickserv.IsLive(host))
 	    {
-		::send(mynick, source, "Nickname " + host + " is not online.");
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+			    host.c_str());
 		return;
 	    }
 	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
-	{
+        {
 	    host.Prepend("*!");
 	}
 
-	if (Parent->operserv.OperDeny_find(host))
-	{
+	int count = 0;
+	while (Parent->operserv.OperDeny_find(host))
 	    Parent->operserv.OperDeny_erase();
-	    ::send(mynick, source, "OperDeny entry matching " + host + " removed.");
+
+	if (count)
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
+			count, host.c_str(),
+			Parent->getMessage(source, "LIST/OPERDENY").c_str());
 	}
 	else
 	{
-	    ::send(mynick, source, "No such operdeny entry matching " + host + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+			host.c_str(),
+			Parent->getMessage(source, "LIST/OPERDENY").c_str());
 	}
     }
 }
@@ -1966,7 +2048,8 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
 	{
 	    if (!Parent->nickserv.IsLive(host))
 	    {
-		::send(mynick, source, "Nickname " + host + " is not online.");
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+			    host.c_str());
 		return;
 	    }
 	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
@@ -1979,15 +2062,16 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
 
     if (Parent->operserv.OperDeny_size())
     {
-	::send(mynick, source, "OperDeny list:");
+	::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
+		host.c_str(), Parent->getMessage(source, "LIST/OPERDENY").c_str());
     }
     else
     {
-	::send(mynick, source, "OperDeny list is empty.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
+		Parent->getMessage(source, "LIST/OPERDENY").c_str());
 	return;
     }
     unsigned int i=1;
-    mstring output;
     MLOCK(("OperServ", "OperDeny"));
     for (Parent->operserv.OperDeny = Parent->operserv.OperDeny_begin();
 		Parent->operserv.OperDeny != Parent->operserv.OperDeny_end();
@@ -1995,15 +2079,12 @@ void OperServ::do_operdeny_List(mstring mynick, mstring source, mstring params)
     {
 	if (Parent->operserv.OperDeny->Entry().LowerCase().Matches(host))
 	{
-	    output.Format("%3d. %s (modified %s ago by %s)", i,
-			    Parent->operserv.OperDeny->Entry().c_str(),
+	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
+			    i, Parent->operserv.OperDeny->Entry().c_str(),
 			    Parent->operserv.OperDeny->Last_Modify_Time().Ago().c_str(),
 			    Parent->operserv.OperDeny->Last_Modifier().c_str());
-	    ::send(mynick, source, output);
-	    output = "";
-	    output.Format("     %s", Parent->operserv.OperDeny->Value().c_str());
-	    ::send(mynick, source, output);
-	    output = "";
+	    ::send(mynick, source, "     %s",
+			    Parent->operserv.Akill->Value().second.c_str());
 	    i++;
 	}
     }
@@ -2027,7 +2108,8 @@ void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
     {
 	if (!Parent->nickserv.IsLive(host))
 	{
-	    ::send(mynick, source, "Nickname " + host + " is not online.");
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+			    host.c_str());
 	    return;
 	}
 	host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
@@ -2043,7 +2125,8 @@ void OperServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
 	Parent->operserv.Ignore_erase();
     }
     Parent->operserv.Ignore_insert(host, true, source);
-    ::send(mynick, source, "Entry " + host + " added to Ignore list.");
+    ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
+	    host.c_str(), Parent->getMessage(source, "LIST/SIGNORE").c_str());
 }
 
 void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
@@ -2066,8 +2149,8 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 	unsigned int i, num = atoi(host.c_str());
 	if (num <= 0 || num > Parent->operserv.Ignore_size())
 	{
-	    ::send(mynick, source, "Entry number must be between 0 and " +
-				    mstring(itoa(Parent->operserv.Ignore_size())));
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+				1, Parent->operserv.Ignore_size());
 	    return;
 	}
 
@@ -2076,12 +2159,15 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 		i++, Parent->operserv.Ignore++) ;
 	if (Parent->operserv.Ignore != Parent->operserv.Ignore_end())
 	{
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL"),
+			Parent->operserv.Ignore->Entry().c_str(),
+			Parent->getMessage(source, "LIST/SIGNORE").c_str());
 	    Parent->operserv.Ignore_erase();
-	    ::send(mynick, source, "Ignore entry #" + host + " removed.");
 	}
 	else
 	{
-	    ::send(mynick, source, "Could not find entry #" + host);
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS_NUMBER"),
+			num, Parent->getMessage(source, "LIST/SIGNORE").c_str());
 	}
     }
     else
@@ -2090,24 +2176,32 @@ void OperServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
 	{
 	    if (!Parent->nickserv.IsLive(host))
 	    {
-		::send(mynick, source, "Nickname " + host + " is not online.");
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+			    host.c_str());
 		return;
 	    }
 	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
-	{
+        {
 	    host.Prepend("*!");
 	}
 
-	if (Parent->operserv.Ignore_find(host))
-	{
+	int count = 0;
+	while (Parent->operserv.Ignore_find(host))
 	    Parent->operserv.Ignore_erase();
-	    ::send(mynick, source, "Ignore entry matching " + host + " removed.");
+
+	if (count)
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL_MATCH"),
+			count, host.c_str(),
+			Parent->getMessage(source, "LIST/SIGNORE").c_str());
 	}
 	else
 	{
-	    ::send(mynick, source, "No such ignore entry matching " + host + ".");
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+			host.c_str(),
+			Parent->getMessage(source, "LIST/SIGNORE").c_str());
 	}
     }
 }
@@ -2133,7 +2227,8 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	{
 	    if (!Parent->nickserv.IsLive(host))
 	    {
-		::send(mynick, source, "Nickname " + host + " is not online.");
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTINUSE"),
+			    host.c_str());
 		return;
 	    }
 	    host = Parent->nickserv.live[host.LowerCase()].Mask(Parent->operserv.Ignore_Method());
@@ -2146,7 +2241,6 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 
     unsigned int i=1;
     bool head = false;
-    mstring output;
     MLOCK(("OperServ", "Ignore"));
     for (Parent->operserv.Ignore = Parent->operserv.Ignore_begin();
 		Parent->operserv.Ignore != Parent->operserv.Ignore_end();
@@ -2156,18 +2250,19 @@ void OperServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	    Parent->operserv.Ignore->Value())
 	{
 	    if (head == false)
-		::send(mynick, source, "Services permanent ignore list:");
-	    output.Format("%3d. %s (modified %s ago by %s)", i,
-			    Parent->operserv.Ignore->Entry().c_str(),
+		::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY_MATCH"),
+			host.c_str(),
+			Parent->getMessage(source, "LIST/SIGNORE").c_str());
+	    ::send(mynick, source, "%3d. %s (" + Parent->getMessage(source, "LIST/LASTMOD") + ")",
+			    i, Parent->operserv.Ignore->Entry().c_str(),
 			    Parent->operserv.Ignore->Last_Modify_Time().Ago().c_str(),
 			    Parent->operserv.Ignore->Last_Modifier().c_str());
-	    ::send(mynick, source, output);
-	    output = "";
 	    i++;
 	}
     }
     if (head == false)
-	::send(mynick, source, "Services permanent ignore list is empty.");
+	::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY"),
+		Parent->getMessage(source, "LIST/SIGNORE").c_str());
 }
 
 void OperServ::load_database(wxInputStream& in)

@@ -131,15 +131,12 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     {
 	if (InProg())
 	{
-	    send(service, nick,
-		"Cannot begin a new memo while a file is in progress.");
+	    send(service, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
 	    return;
 	}
 	else
 	{
 	    Cancel();
-	    send(service, nick,
-		"Previous pending file transfer ABORTED.");
 	}
     }
     else if (Exists())
@@ -149,8 +146,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 
     if (!Parent->nickserv.IsStored(nick))
     {
-	send(mynick, nick,
-	    "You must register your nickname before you can send a memo.");
+	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
 	return;
     }
 
@@ -158,14 +154,14 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     {
 	if (!Parent->chanserv.IsStored(who))
 	{
-	    send(mynick, nick,
-		"Channel " + who + " is not registered, cannot send memo.");
+	    send(mynick, nick, Parent->getMessage(nick, "CS_STATUS/ISNOTSTORED"),
+		    who.c_str());
 	    return;
 	}
 
 	if (file)
 	{
-	    send(mynick, nick, "File attachments are not allowed to channels.");
+	    send(mynick, nick, Parent->getMessage(nick, "ERR_SYNTAX/CHANFILEATTACH"));
 	    return;
 	}
     }
@@ -173,14 +169,14 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     {
 	if (!Parent->nickserv.IsStored(who))
 	{
-	    send(mynick, nick,
-		"Nickname " + who + " is not registered, cannot send memo.");
+	    send(mynick, nick, Parent->getMessage(nick, "NS_OTH_STATUS/ISNOTSTORED"),
+			who.c_str());
 	    return;
 	}
 
 	if (file && !Parent->memoserv.Files())
 	{
-	    send(mynick, nick, "File attachments in MEMOs have been disabled.");
+	    send(mynick, nick, Parent->getMessage(nick, "MS_SYNTAX/FILEDISABLED"));
 	    return;
 	}
     }
@@ -197,13 +193,11 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
     if (fileattach)
-	::send(service, nick, "Memo is now pending ... You have " +
-	    ToHumanTime(Parent->memoserv.InFlight()) +
-	    " to begin your file transfer, continue or cancel it.");
+	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING_FILE"),
+	    ToHumanTime(Parent->memoserv.InFlight()).c_str());
     else
-	::send(service, nick, "Memo is now pending ... You have " +
-	    ToHumanTime(Parent->memoserv.InFlight()) +
-	    " to continue or cancel it before it is delivered.");
+	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING"),
+	    ToHumanTime(Parent->memoserv.InFlight()).c_str());
 }
 
 
@@ -211,8 +205,12 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 void Nick_Live_t::InFlight_t::Continue(mstring message)
 {
     FT("Nick_Live_t::InFlight_t::Continue", (message));
-    if (memo)
-  	text += message;
+    if (!memo)
+    {
+	send(service, nick, Parent->getMessage(nick, "MS_STATUS/NOPENDING"));
+	return;
+    }
+    text += message;
 /*
     mstring *arg;
     if (timer)
@@ -225,9 +223,8 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
 			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
 */
-    ::send(service, nick, "Pending memo timer reset ... You have " +
-	    ToHumanTime(Parent->memoserv.InFlight()) +
-	    " to continue or cancel it before it is delivered.");
+    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CONTINUE"),
+	    ToHumanTime(Parent->memoserv.InFlight()).c_str());
 }
 
 
@@ -246,9 +243,9 @@ void Nick_Live_t::InFlight_t::Cancel()
 	}
 */
     if (memo)
-	send(service, nick, "Memo has been cancelled.");
+	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CANCEL"));
     else
-	send(service, nick, "Picture transfer has been cancelled.");
+	send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/CANCEL"));
     init();
 }
 
@@ -295,8 +292,9 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		    {
 			Parent->memoserv.channel[recipiant.LowerCase()].push_back(
 			    News_t(recipiant, sender, text));
-			send(service, nick, "Memo has been sent to " + recipiant + " (" +
-			    Parent->chanserv.stored[recipiant.LowerCase()].Founder() + ").");
+			send(service, nick, Parent->getMessage(nick, "MS_COMMAND/SENT"),
+			    recipiant.c_str(),
+			    Parent->chanserv.stored[recipiant.LowerCase()].Founder().c_str());
 			if (Parent->chanserv.IsLive(recipiant))
 			{
 			    Chan_Live_t *chan = &Parent->chanserv.live[recipiant.LowerCase()];
@@ -305,8 +303,11 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			    {
 				if (Parent->chanserv.stored[recipiant.LowerCase()].GetAccess(chan->User(i), "READMEMO"))
 				{
-				    send(service, nick, "There is a new channel news article (#" +
-					mstring(itoa(Parent->memoserv.channel[recipiant.LowerCase()].size())) + ").");
+				    send(service, chan->User(i), Parent->getMessage(chan->User(i), "MS_COMMAND/CS_NEW"),
+					    Parent->memoserv.channel[recipiant.LowerCase()].size(),
+					    recipiant.c_str(), nick.c_str(),
+					    service.c_str(), recipiant.c_str(),
+					    Parent->memoserv.channel[recipiant.LowerCase()].size());
 				}
 			    }
 			}
@@ -324,10 +325,27 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			{
 			    Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
 				Memo_t(realrecipiant, sender, text, filenum));
-			    send(service, nick, "Memo has been sent to " + recipiant + " (" + realrecipiant + ").");
-			    if (Parent->nickserv.stored[realrecipiant.LowerCase()].IsOnline())
-				send(service, nick, "You have a new memo from " + sender + " (#" +
-					mstring(itoa(Parent->memoserv.nick[realrecipiant.LowerCase()].size())) + ").");
+			    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/SENT"),
+				recipiant.c_str(), realrecipiant.c_str());
+
+			    Nick_Stored_t *nick = &Parent->nickserv.stored[realrecipiant.LowerCase()];
+			    if (nick->IsOnline())
+				send(service, realrecipiant, Parent->getMessage(realrecipiant, "MS_COMMAND/NS_NEW"),
+				    Parent->memoserv.nick[realrecipiant.LowerCase()].size(),
+				    service.c_str(),
+				    Parent->memoserv.nick[realrecipiant.LowerCase()].size());
+			    unsigned int i;
+			    for (i=0; i < nick->Siblings(); i++)
+			    {
+				if (Parent->nickserv.IsStored(nick->Sibling(i)) &&
+				    Parent->nickserv.stored[nick->Sibling(i).LowerCase()].IsOnline())
+				{
+				    send(service, nick->Sibling(i), Parent->getMessage(nick->Sibling(i), "MS_COMMAND/NS_NEW"),
+					Parent->memoserv.nick[realrecipiant.LowerCase()].size(),
+					service.c_str(),
+					Parent->memoserv.nick[realrecipiant.LowerCase()].size());
+				}
+			    }
 			}
 			else if (File())
 			{
@@ -345,7 +363,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		if (Parent->nickserv.PicSize())
 		{
 		    Parent->nickserv.stored[sender.LowerCase()].GotPic(filenum);
-		    send(service, nick, "Your picture has been saved.");
+		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/SAVED"));
 		}
 		else
 		{
@@ -365,15 +383,12 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     {
 	if (InProg())
 	{
-	    send(service, nick,
-		"Cannot begin picture transfer while a file is in progress.");
+	    send(service, nick, Parent->getMessage(nick, "ERR_SITUATION/FILEINPROG"));
 	    return;
 	}
 	else
 	{
 	    Cancel();
-	    send(service, nick,
-		"Previous pending file transfer ABORTED.");
 	}
     }
     else if (Exists())
@@ -383,14 +398,12 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 
     if (Parent->nickserv.IsStored(nick))
     {
-	send(service, nick,
-	    "Your nickname is not registered.");
+	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
 	return;
     }
     else if (!Parent->nickserv.PicSize())
     {
-	send(service, nick,
-	    "Setting pictures has been disabled.");
+	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
     }
 
     memo = false;
@@ -400,7 +413,7 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
-    send(service, nick, "Please send your picture now.");
+    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PENDING"));
 }
 
 

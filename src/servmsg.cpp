@@ -106,11 +106,9 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
 		opers++;
 	}
     }
-    out.Format("%-40s    0.000s  %5d (%3d)  %3.2f%%",
-	    Parent->startup.Server_Name().LowerCase().c_str(), users, opers,
+    ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
+	    Parent->startup.Server_Name().LowerCase().c_str(), 0.0, users, opers,
 	    ((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-    ::send(mynick, source, out);
-
     do_BreakDown2(mynick, source, "", "");
 }
 
@@ -148,36 +146,16 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 	    lag = Parent->server.ServerList[downlinks[i]].Lag();
 	    if (i<downlinks.size()-1)
 	    {
-		if (lag < 10.0)
-		    out.Format("%-40s    %1.3fs  %5d (%3d)  %3.2f%%",
+		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
 			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		else if (lag < 100.0)
-		    out.Format("%-40s   %2.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		else
-		    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		::send(mynick, source, out);
 		do_BreakDown2(mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
 	    {
-		if (lag < 10.0)
-		    out.Format("%-40s    %1.3fs  %5d (%3d)  %3.2f%%",
+		::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN"),
 			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
 			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		else if (lag < 100.0)
-		    out.Format("%-40s   %2.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		else
-		    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		::send(mynick, source, out);
 		do_BreakDown2(mynick, source, previndent + "  ", downlinks[i]);
 	    }
 	}
