@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2000/06/15 13:29:58  ungod
+** #ifdef out of DirUsage for win32 until a viable alternative can be written
+**
 ** Revision 1.33  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -398,6 +401,10 @@ mstring mFile::ReadLine()
 size_t mFile::DirUsage(mstring directory)
 {
     FT("mFile::DirUsage", (directory));
+#ifdef WIN32
+    size_t retval = -1;
+    //todo: change over to findfirst/findnext (in io.h)
+#else
     size_t retval = 0;
 
     DIR *dir = NULL;
@@ -419,7 +426,7 @@ size_t mFile::DirUsage(mstring directory)
 	}
 	ACE_OS::closedir(dir);
     }
-
+#endif
     RET(retval);
 }
 
