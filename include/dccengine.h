@@ -27,8 +27,8 @@ public:
     static void DoDccChat(const mstring& mynick, const mstring& source,
 		   ACE_INET_Addr addr);
     static void GotDCC(const mstring& mynick, const mstring& source,
-		mstring& in);
-    static mstring encode(const mstring type, mstring& in = (mstring)"");
+		mstring in);
+    static mstring encode(const mstring type, const mstring& in = "");
     static void decodeReply(const mstring& mynick, const mstring& source,
 		mstring& in);
     static void decodeRequest(const mstring& mynick, const mstring& source,

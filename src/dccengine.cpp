@@ -371,7 +371,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 
 }
 
-mstring DccEngine::encode(const mstring type, mstring & in)
+mstring DccEngine::encode(const mstring type, const mstring & in)
 {
     FT("DccEngine::encode",((in)));
     mstring Result;
@@ -386,7 +386,7 @@ mstring DccEngine::encode(const mstring type, mstring & in)
 }
 
 void DccEngine::GotDCC(const mstring& mynick, const mstring& source,
-		       mstring & in)
+		       mstring in)
 {
     mstring type,argument,straddress,strport,strsize;
     unsigned short port;
