@@ -83,6 +83,9 @@
             <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
             <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
 			<br />$Log$
+			<br />Revision 1.6  2002/08/12 16:55:23  prez
+			<br />Added the 'language data' pane.
+			<br />
 			<br />Revision 1.5  2002/08/01 01:04:46  prez
 			<br />Take 2 (same as last message)
 			<br />
@@ -167,6 +170,29 @@
 			<li><p>	The log tail screen.  This will display the current log file, and allow the user to scroll
 				through and view it.  This display will keep growing, and the user will be able to always
 				scroll to the bottom and see the most recent log output.
+			</p></li>
+			<li><p>	The language data screen.  This will have at its top, a dropdown box with all current
+				languages that are installed on the server (with the option to add a new one).  It will
+				then have 3 tabs underneeth, "User Responses", "Help Text" and "Log File Output".  Each
+				should open up into a dual pane, with a tree on the left (with which the user can browse
+				the sections and token names in that file, or create a new one), and a text window on the
+				right, which will allow the user to edit the text of that language token.  The text edit
+				window should have vertical and horizontal scroll bars, and only on a '\n' in the language
+				file should a line be put onto the second line.  For help, the text window will be broken
+				up into 3 columns, the first is the 'must be on' column, which lists (for each line) all
+				the committees a user may be on to see that line of text.  The second is 'must not be on'
+				column, which lists all the committees that, if the user is in, will stop the user from
+				seeing that line of thext, and the last is the actual line of text.  Each line of text
+				should be broken up in this manner (which means that the tree for help files will only
+				contain section names, not tokens).  Obviously, in both cases, new lines of text should
+				be able to be inserted at will, and lines erased, etc.  In each case, there should also
+				be a little tool bar above the text entry pane, which will do things such as make text
+				bold, underlined, etc.  This will have to be interpereted both ways when sending to and
+				from the Inter-Magick protocol.  As a side-note, it might be nice to be able to have an
+				option to both duplicate a language (so you can then go and just replace the existing
+				text for every item), and to be able to see an example of the token in use (which means
+				an example would have to exist for the token being modified, however an example language
+				file exists for just such a purpose).
 			</p></li>
 			<li><p>	The data edit screen.  This, like the configuration screen will have many tabs of its own,
 				representing each record type.  This will allow direct viewing and/or modification of the
