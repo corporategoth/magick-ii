@@ -434,9 +434,9 @@ pair<mDateTime,bool> OperServ::Ignore_value(mstring entry)
     return retval;
 }
 
-void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
+void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 {
-    FT("OperServ::ToggleTrace", (mynick, source, params));
+    FT("OperServ::do_Trace", (mynick, source, params));
 
     if (params.WordCount(" ") < 4)
     {
@@ -635,75 +635,26 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, line2);
 }
 
-void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server)
-{
-    FT("OperServ::DoDownlinks", (mynick, source, previndent, server));
-    vector<mstring> downlinks;
-    mstring out;
-    unsigned int users, opers;
-    float lag;
-
-    if (server.LowerCase() == Parent->startup.Server_Name().LowerCase())
-    {
-	if (Parent->server.OurUplink())
-	    downlinks.push_back(Parent->server.OurUplink());
-    }
-    else
-    {
-	if (Parent->server.IsServer(server))
-	    downlinks = Parent->server.ServerList[server].Downlinks();
-    }
-
-    for (int i=0; i<downlinks.size(); i++)
-    {
-	if (Parent->server.IsServer(downlinks[i]))
-	{
-	    users = Parent->server.ServerList[downlinks[i]].Users();
-	    opers = Parent->server.ServerList[downlinks[i]].Opers();
-	    lag = Parent->server.ServerList[downlinks[i]].Lag();
-	    if (i<downlinks.size()-1)
-	    {
-		if (lag < 10.0)
-		    out.Format("%-40s    %1.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		else if (lag < 100.0)
-		    out.Format("%-40s   %2.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		else
-		    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		send(mynick, source, out);
-		DoBreakdown(mynick, source, previndent + "| ", downlinks[i]);
-	    }
-	    else
-	    {
-		if (lag < 10.0)
-		    out.Format("%-40s    %1.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		else if (lag < 100.0)
-		    out.Format("%-40s   %2.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		else
-		    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
-			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
-			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		send(mynick, source, out);
-		DoBreakdown(mynick, source, previndent + "  ", downlinks[i]);
-	    }
-	}
-    }
-}
-
-
 OperServ::OperServ()
 {
+}
+
+void OperServ::AddCommands()
+{
+    NFT("OperServ::AddCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
     Parent->commands.AddSystemCommand(GetInternalName(),
-	"TRACE", "ALL", OperServ::ToggleTrace);
+		    "TRACE", "ALL", OperServ::do_Trace);
+}
+
+void OperServ::RemCommands()
+{
+    NFT("OperServ::RemCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		    "TRACE", "ALL");
 }
 
 void OperServ::execute(const mstring & data)
@@ -733,35 +684,6 @@ void OperServ::execute(const mstring & data)
     {
 	// Invalid command or not enough privs.
 	send(mynick, source, "Invalid command.");
-    }
-    //else if (command == "TRACE")
-    //{
-	//ToggleTrace(mynick, source, message);
-    //}
-    else if (command == "BREAKDOWN")
-    {
-
-	send(mynick, source,
-		"SERVER                                         LAG  USERS (OPS)");
-	mstring out;
- 	unsigned int users = 0, opers = 0;
-
-	map<mstring,Nick_Live_t>::iterator k;
-	for (k=Parent->nickserv.live.begin(); k!=Parent->nickserv.live.end(); k++)
-	{
-	    if (k->second.IsServices() && k->second.Name() != "")
-	    {
-		users++;
-		if (k->second.HasMode("o"))
-		    opers++;
-	    }
-	}
-	out.Format("%-40s    0.000s  %5d (%3d)  %3.2f%%",
-		Parent->startup.Server_Name().LowerCase().c_str(), users, opers,
-		((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-	send(mynick, source, out);
-
-	DoBreakdown(mynick, source, "", Parent->startup.Server_Name());
     }
 
     mThread::ReAttach(tt_mBase);

@@ -25,6 +25,8 @@ class ServMsg : public mBase
 private:
     bool showsync;
 
+    void AddCommands();
+    void RemCommands();
 public:
     bool ShowSync() { return showsync; }
 
@@ -34,6 +36,10 @@ public:
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; }
     virtual mstring GetInternalName() const { return "ServMsg"; }
     virtual void execute(const mstring & message);
+
+    static void do_BreakDown(mstring mynick, mstring source, mstring params);
+    static void do_BreakDown2(mstring mynick, mstring source, mstring previndent, mstring server);
+
 };
 
 #endif

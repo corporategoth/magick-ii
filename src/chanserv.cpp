@@ -2715,6 +2715,24 @@ ChanServ::ChanServ()
     automation=true;
 }
 
+void ChanServ::AddCommands()
+{
+    NFT("ChanServ::AddCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+//  Parent->commands.AddSystemCommand(GetInternalName(),
+//		    "TRACE", "ALL", OperServ::do_Trace);
+}
+
+void ChanServ::RemCommands()
+{
+    NFT("ChanServ::RemCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+//  Parent->commands.RemSystemCommand(GetInternalName(),
+//		    "TRACE", "ALL");
+}
+
 bool ChanServ::IsLive(mstring in)
 {
     FT("ChanServ::IsLive", (in));
@@ -2733,11 +2751,12 @@ void ChanServ::execute(const mstring & data)
     FT("ChanServ::execute", (data));
     //okay this is the main chanserv command switcher
 
-    mstring source, msgtype, mynick, message;
+    mstring source, msgtype, mynick, message, command;
     source  = data.ExtractWord(1, ": ");
     msgtype = data.ExtractWord(2, ": ").UpperCase();
     mynick  = data.ExtractWord(3, ": ");
     message = data.After(":", 2);
+    command = message.Before(" ");
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {
@@ -2746,6 +2765,12 @@ void ChanServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
+    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    {
+	// Invalid command or not enough privs.
+	send(mynick, source, "Invalid command.");
+    }
+
 
     mThread::ReAttach(tt_mBase);
 }

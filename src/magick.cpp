@@ -43,6 +43,13 @@ Magick::Magick(int inargc, char **inargv)
     reconnect=true;
     events.open();
     loggertask.open();
+
+    operserv.AddCommands();
+    nickserv.AddCommands();
+    chanserv.AddCommands();
+    memoserv.AddCommands();
+    commserv.AddCommands();
+    servmsg.AddCommands();
 }
 
 int Magick::Start()

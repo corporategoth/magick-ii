@@ -80,6 +80,9 @@ class CommServ : public mBase
     friend class Magick;
 private:
     bool secure_oper;
+
+    void AddCommands();
+    void RemCommands();
 protected:
 public:
     bool Secure_Oper() { return secure_oper; }

@@ -60,10 +60,11 @@ private:
     // Mask (N_U_H), AddTime (mDateTime), Permanent (bool)
     set<entlist_val_t<pair<mDateTime, bool> > > i_Ignore;
 
+    void AddCommands();
+    void RemCommands();
     // Returns TRUE if KILL
     bool AddHost(mstring host);
     void RemHost(mstring host);
-    void DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server);
 public:
     mstring Services_Admin()	{ return services_admin; }
     bool Secure()		{ return secure; }
@@ -131,7 +132,6 @@ public:
     pair<mDateTime, bool> Ignore_value(mstring entry);
     set<entlist_val_t<pair<mDateTime, bool> > >::iterator Ignore;
 
-    static void ToggleTrace(mstring mynick, mstring source, mstring params);
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);
@@ -139,6 +139,8 @@ public:
     virtual threadtype_enum Get_TType() const { return tt_OperServ; }
     virtual mstring GetInternalName() const { return "OperServ"; }
     virtual void execute(const mstring & message);
+
+    static void do_Trace(mstring mynick, mstring source, mstring params);
 };
 
 #endif

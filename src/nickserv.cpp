@@ -2845,6 +2845,28 @@ NickServ::NickServ()
     automation=true;
 }
 
+void NickServ::AddCommands()
+{
+    NFT("NickServ::AddCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "REG*", "ALL", NickServ::do_Register);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "ID*", "ALL", NickServ::do_Identify);
+}
+
+void NickServ::RemCommands()
+{
+    NFT("NickServ::RemCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		    "REG*", "ALL");
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		    "ID*", "ALL");
+}
+
 
 bool NickServ::IsLive(mstring in)
 {
@@ -2866,11 +2888,12 @@ void NickServ::execute(const mstring & data)
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
 
-    mstring source, msgtype, mynick, message;
+    mstring source, msgtype, mynick, message, command;
     source  = data.ExtractWord(1, ": ");
     msgtype = data.ExtractWord(2, ": ").UpperCase();
     mynick  = data.ExtractWord(3, ": ");
     message = data.After(":", 2);
+    command = message.Before(" ");
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {
@@ -2879,11 +2902,58 @@ void NickServ::execute(const mstring & data)
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
+    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    {
+	// Invalid command or not enough privs.
+	send(mynick, source, "Invalid command.");
+    }
 
     mThread::ReAttach(tt_mBase);
-
 }
 
+void NickServ::do_Register(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Register", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring password = params.ExtractWord(2, " ").UpperCase();
+
+    if (Parent->nickserv.IsStored(source))
+    {
+	::send(mynick, source, "Your nickname is already registered or linked.");
+    }
+    else if (password.Len() < 5 || !password.CmpNoCase(source))
+    {
+	::send(mynick, source, "Please choose a more complex password.");
+    }
+    else
+    {
+	Parent->nickserv.stored[source.LowerCase()] = Nick_Stored_t(source, password);
+	::send(mynick, source, "Your nickname has been registered.");
+    }
+}
+
+void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Identify", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring password = params.ExtractWord(2, " ").UpperCase();
+    ::send(mynick, source, Parent->nickserv.live[source.LowerCase()].Identify(password));
+}
+    
 void NickServ::save_database(wxOutputStream& out)
 {
 	//

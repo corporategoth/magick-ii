@@ -15,6 +15,7 @@
 #include "mstring.h"
 #include "trace.h"
 #include "dccengine.h"
+#include "utils.h"
 
 class mUserDef
 {
@@ -207,6 +208,8 @@ protected:
     //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
     static bool TaskOpened;
     static mBaseTask BaseTask;
+    virtual void AddCommands() {};
+    virtual void RemCommands() {};
 
 public:
     mBase();
@@ -265,12 +268,12 @@ class CommandMap
     friend class MemoServ;
     friend class CommServ;
     friend class ServMsg;
+    // friend class scripted;
 
     typedef void (*functor)(mstring, mstring, mstring);
     // map<service, map<command, pair<committees, functor> > >
-    typedef map<mstring, map<mstring, pair<mstring, functor> > > cmap;
-    typedef map<mstring, map<mstring, pair<mstring, functor> > >::iterator cmap_iter1;
-    typedef map<mstring, pair<mstring, functor> >::iterator cmap_iter2;
+    typedef map<mstring, list<triplet<mstring, mstring, functor> > > cmap;
+    typedef list<triplet<mstring, mstring, functor> >::iterator clist_iter;
     cmap i_user;
     cmap i_system;
 
@@ -282,10 +285,6 @@ public:
     void AddCommand(mstring service, mstring command,
 	    mstring committees, functor function);
     void RemCommand(mstring service, mstring command,
-	    mstring committees);
-    bool IsSystemCommand(mstring service, mstring command,
-	    mstring committees);
-    bool IsUserCommand(mstring service, mstring command,
 	    mstring committees);
     pair<bool, functor> GetSystemCommand(mstring service, mstring command,
 	    mstring user);

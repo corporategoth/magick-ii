@@ -338,6 +338,8 @@ private:
     int picsize;		// MAX size of a personal pic
     mstring picext;		// Valid PIC extensions
 
+    void AddCommands();
+    void RemCommands();
 public:
     int Expire()	{ return expire; }
     int Ident()		{ return ident; }
@@ -371,5 +373,8 @@ public:
     virtual threadtype_enum Get_TType() const { return tt_NickServ; }
     virtual mstring GetInternalName() const { return "NickServ"; }
     virtual void execute(const mstring & message);
+
+    static void do_Register(mstring mynick, mstring source, mstring params);
+    static void do_Identify(mstring mynick, mstring source, mstring params);
 };
 #endif

@@ -520,7 +520,10 @@ void CommandMap::AddSystemCommand(mstring service, mstring command,
 {
     FT("CommandMap::AddSystemCommand", (service, command, committees));
 
-    i_system[service.LowerCase()][command.UpperCase()] = pair<mstring, functor>(committees, function);
+    i_system[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
+		    (command.UpperCase(),
+		    (committees != "") ? committees.LowerCase() : "all",
+		    function));
 }
 
 
@@ -528,11 +531,23 @@ void CommandMap::RemSystemCommand(mstring service, mstring command,
 	    mstring committees)
 {
     FT("CommandMap::RemSystemCommand", (service, command, committees));
-    if (IsSystemCommand(service, command, committees))
+
+    if (i_system.find(service.LowerCase()) != i_system.end())
     {
-	i_system[service.LowerCase()].erase(command.LowerCase());
-	if (!service.size())
-	    i_system.erase(service);
+	clist_iter iter;
+	for (iter = i_system[service.LowerCase()].begin();
+		iter != i_system[service.LowerCase()].end(); iter++)
+	{
+	    if (iter->first == command.UpperCase() &&
+		    mstring(" " + iter->second + " ").Contains(
+		    mstring(" " + committees.LowerCase() + " ")))
+	    {
+		i_system[service.LowerCase()].erase(iter);
+		if (!i_system[service.LowerCase()].size())
+		    i_system.erase(service.LowerCase());
+		return;
+	    }
+	}
     }
 }
 
@@ -542,7 +557,10 @@ void CommandMap::AddCommand(mstring service, mstring command,
 {
     FT("CommandMap::AddCommand", (service, command, committees));
 
-    i_user[service.LowerCase()][command.UpperCase()] = pair<mstring, functor>(committees, function);
+    i_user[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
+		    (command.UpperCase(),
+		    (committees != "") ? committees.LowerCase() : "all",
+		    function));
 }
 
 
@@ -550,82 +568,24 @@ void CommandMap::RemCommand(mstring service, mstring command,
 	    mstring committees)
 {
     FT("CommandMap::RemCommand", (service, command, committees));
-    if (IsUserCommand(service, command, committees))
-    {
-	i_user[service.LowerCase()].erase(command.LowerCase());
-	if (!service.size())
-	    i_user.erase(service);
-    }
-}
-
-
-bool CommandMap::IsSystemCommand(mstring service, mstring command,
-	    mstring committees)
-{
-    FT("CommandMap::IsExactSystemCommand", (service, command, committees));
-    int i;
-
-    // IF i_system exists
-    //   IF command (exact) exists
-    //     IF (" " + cmd_committees + " ") contains ANY OF committees
-    //       RETURN true
-    //     ENDIF
-    //   ENDIF
-    // ENDIF
-    // RETURN false;
-
-    if (i_system.find(service.LowerCase()) != i_system.end())
-    {
-	if (i_system[service.LowerCase()].find(command.UpperCase()) !=
-		i_system[service.LowerCase()].end())
-	{
-	    for (i=1; i <= committees.WordCount(" "); i++)
-	    {
-		if (mstring(" " +
-		    i_system[service.LowerCase()][command.UpperCase()].first.UpperCase() +
-		    " ").Contains(" " + committees.ExtractWord(i, " ").UpperCase() + " "))
-		{
-		    RET(true);
-		}
-	    }
-	}
-    }
-    RET(false)
-}
-
-
-bool CommandMap::IsUserCommand(mstring service, mstring command,
-	    mstring committees)
-{
-    FT("CommandMap::IsExactUserCommand", (service, command, committees));
-    int i;
-
-    // IF i_system exists
-    //   IF command (exact) exists
-    //     IF (" " + cmd_committees + " ") contains ANY OF committees
-    //       RETURN true
-    //     ENDIF
-    //   ENDIF
-    // ENDIF
-    // RETURN false;
 
     if (i_user.find(service.LowerCase()) != i_user.end())
     {
-	if (i_user[service.LowerCase()].find(command.UpperCase()) !=
-		i_user[service.LowerCase()].end())
+	clist_iter iter;
+	for (iter = i_user[service.LowerCase()].begin();
+		iter != i_user[service.LowerCase()].end(); iter++)
 	{
-	    for (i=1; i <= committees.WordCount(" "); i++)
+	    if (iter->first == command.UpperCase() &&
+		    mstring(" " + iter->second + " ").Contains(
+		    mstring(" " + committees.LowerCase() + " ")))
 	    {
-		if (mstring(" " +
-		    i_user[service.LowerCase()][command.UpperCase()].first.UpperCase() +
-		    " ").Contains(" " + committees.ExtractWord(i, " ").UpperCase() + " "))
-		{
-		    RET(true);
-		}
+		i_user[service.LowerCase()].erase(iter);
+		if (!i_user[service.LowerCase()].size())
+		    i_user.erase(service.LowerCase());
+		return;
 	    }
 	}
     }
-    RET(false);
 }
 
 
@@ -635,8 +595,8 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
     FT("CommandMap::GetUserCommand", (service, command, user));
     int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
-    cmap_iter2 iter;
-    mstring type, nickname, list, cmd;
+    clist_iter iter;
+    mstring type, nickname, list;
     if (Parent->nickserv.IsStored(user) &&
 	Parent->nickserv.stored[user.LowerCase()].IsOnline())
 	    nickname = user;
@@ -673,13 +633,11 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
 	for (iter=i_user[type].begin();
 		iter!=i_user[type].end(); iter++)
 	{
-	    if (iter->first.Matches(command))
+	    if (command.UpperCase().Matches(iter->first))
 	    {
-		cmd = iter->first.UpperCase();
-		for (i=1; i <= i_user[type][cmd].first.WordCount(" "); i++)
+		for (i=1; i <= iter->second.WordCount(" "); i++)
 		{
-		    list = i_user[type][cmd].first.ExtractWord(i, " ").LowerCase();
-
+		    list = iter->second.ExtractWord(i, " ").LowerCase();
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
@@ -688,7 +646,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
 			 && Parent->commserv.list[list].IsIn(nickname)))
 		    {
 			retval.first = true;
-			retval.second = i_user[type][cmd].second;
+			retval.second = iter->third;
 			NRET(pair<bool_functor>,retval);
 		    }
 		}
@@ -704,8 +662,8 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
     FT("CommandMap::GetSystemCommand", (service, command, user));
     int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
-    cmap_iter2 iter;
-    mstring type, nickname, list, cmd;
+    clist_iter iter;
+    mstring type, nickname, list;
     if (Parent->nickserv.IsStored(user) &&
 	Parent->nickserv.stored[user.LowerCase()].IsOnline())
 	    nickname = user;
@@ -742,22 +700,20 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
 	for (iter=i_system[type].begin();
 		iter!=i_system[type].end(); iter++)
 	{
-	    if (iter->first.Matches(command))
+	    if (command.UpperCase().Matches(iter->first))
 	    {
-		cmd = iter->first.UpperCase();
-		for (i=1; i <= i_system[type][cmd].first.WordCount(" "); i++)
+		for (i=1; i <= iter->second.WordCount(" "); i++)
 		{
-		    list = i_system[type][cmd].first.ExtractWord(i, " ").LowerCase();
-
-		    // If its a command for "ALL" i_systems, OR
-		    // its a valid committee AND a valid (reg'd + online) i_system
-		    //       AND that i_system is on the committee
+		    list = iter->second.ExtractWord(i, " ").LowerCase();
+		    // If its a command for "ALL" users, OR
+		    // its a valid committee AND a valid (reg'd + online) user
+		    //       AND that user is on the committee
 		    if (list == "all" ||
 			(nickname != "" && Parent->commserv.IsList(list)
 			 && Parent->commserv.list[list].IsIn(nickname)))
 		    {
 			retval.first = true;
-			retval.second = i_system[type][cmd].second;
+			retval.second = iter->third;
 			NRET(pair<bool_functor>,retval);
 		    }
 		}

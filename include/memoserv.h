@@ -103,6 +103,8 @@ private:
     bool memo;
     bool news;
 
+    void AddCommands();
+    void RemCommands();
 public:
     bool IsNick(mstring nick);
     bool IsChannel(mstring channel);

@@ -374,6 +374,8 @@ private:
     int lvl_cmdop;		// Default level for CMDOP
     int lvl_cmdclear;		// Default level for CMDCLEAR
 
+    void AddCommands();
+    void RemCommands();
 protected:
 
 public:

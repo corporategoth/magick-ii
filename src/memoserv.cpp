@@ -84,6 +84,23 @@ void News_t::Unread(mstring name)
     i_Read.erase(name.LowerCase());
 }
 
+void MemoServ::AddCommands()
+{
+    NFT("MemoServ::AddCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+//  Parent->commands.AddSystemCommand(GetInternalName(),
+//		    "TRACE", "ALL", OperServ::do_Trace);
+}
+
+void MemoServ::RemCommands()
+{
+    NFT("MemoServ::RemCommands");
+    // Put in ORDER OF RUN.  ie. most specific to least specific.
+
+//  Parent->commands.RemSystemCommand(GetInternalName(),
+//		    "TRACE", "ALL");
+}
 
 bool MemoServ::IsNick(mstring in)
 {
@@ -106,11 +123,12 @@ void MemoServ::execute(const mstring & data)
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
 
-    mstring source, msgtype, mynick, message;
+    mstring source, msgtype, mynick, message, command;
     source  = data.ExtractWord(1, ": ");
     msgtype = data.ExtractWord(2, ": ").UpperCase();
     mynick  = data.ExtractWord(3, ": ");
     message = data.After(":", 2);
+    command = message.Before(" ");
 
     if (message[0U] == CTCP_DELIM_CHAR)
     {
@@ -118,6 +136,11 @@ void MemoServ::execute(const mstring & data)
 	    DccEngine::decodeRequest(mynick, source, message);
 	else
 	    DccEngine::decodeReply(mynick, source, message);
+    }
+    else if (!Parent->commands.DoCommand(mynick, source, command, message))
+    {
+	// Invalid command or not enough privs.
+	send(mynick, source, "Invalid command.");
     }
 
 
