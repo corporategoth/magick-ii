@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/03/23 10:22:24  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.11  2000/03/19 08:50:53  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -64,7 +67,9 @@
 #include <ace/OS.h>
 #include <ace/Reactor.h>
 #include <ace/Singleton.h>
+#include <ace/SOCK_Acceptor.h>
 #include <ace/SOCK_Connector.h>
+#include <ace/SOCK_Stream.h>
 #include <ace/Svc_Handler.h>
 #include <ace/Synch_T.h>
 #include <ace/Synch.h>

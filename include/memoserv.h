@@ -24,6 +24,9 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2000/03/23 10:22:24  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.22  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -185,6 +188,7 @@ public:
     static void do_Help(mstring mynick, mstring source, mstring params);
     static void do_Read(mstring mynick, mstring source, mstring params);
     static void do_UnRead(mstring mynick, mstring source, mstring params);
+    static void do_Get(mstring nick, mstring source, mstring params);
     static void do_List(mstring mynick, mstring source, mstring params);
     static void do_Send(mstring mynick, mstring source, mstring params);
     static void do_Flush(mstring mynick, mstring source, mstring params);

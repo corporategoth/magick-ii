@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2000/03/23 10:22:24  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.22  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -89,7 +92,7 @@ mstring DccEngine::lowDequote(mstring& in)
 	if(*pos==CTCP_MQUOTE_CHAR)
 	{
 	    if(*(pos+1)=='0')
-    	    {
+	    {
 		Result<<'\0';
 		pos++;
 	    }
@@ -316,7 +319,6 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 
 	    Parent->server.NOTICE(mynick, source, encode("SOURCE",
 		    "ftp.magick.tm:/pub/Magick:Magick-"+tmp+".tar.gz"));
-	    Parent->server.NOTICE(mynick, source, encode("SOURCE"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="USERINFO")
 	{
@@ -505,12 +507,12 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     if (!Parent->nickserv.IsLive(source))
 	return;
 
-    if (!Parent->nickserv.live[source.LowerCase()].InFlight.File())
+    if (!(Parent->nickserv.live[source.LowerCase()].InFlight.File() &&
+	!Parent->nickserv.live[source.LowerCase()].InFlight.InProg()))
     {
 	send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/DCCSENDREFUSE"));
 	return;
     }
 
-
-
+    Parent->dcc->Connect(addr, mynick, source, filename, size);
 }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/03/23 10:22:25  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.43  2000/03/19 08:50:55  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -147,6 +150,8 @@ void MemoServ::AddCommands()
 	    "READ*", Parent->commserv.REGD_Name(), MemoServ::do_Read);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNREAD*", Parent->commserv.REGD_Name(), MemoServ::do_UnRead);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GET*", Parent->commserv.REGD_Name(), MemoServ::do_Get);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LIST*", Parent->commserv.REGD_Name(), MemoServ::do_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -718,6 +723,107 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	}
     }
 }
+
+
+void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
+{
+    FT("MemoServ::do_Get", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    mstring who = source;
+    mstring what = params.After(" ", 1);
+
+    if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
+    {
+	who = Parent->nickserv.stored[source.LowerCase()].Host();
+    }
+
+    if (!Parent->memoserv.IsNick(who))
+    {
+	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/NS_EMPTY"));
+	return;
+    }
+
+    vector<int> numbers = ParseNumbers(what);
+    unsigned int i;
+    int j=1;
+    bool triedabove = false, nonnumeric = false, nonfiles = false;
+    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
+    mstring output;
+    for (i=0; i<numbers.size(); i++)
+    {
+	if (numbers[i] <= 0)
+	    nonnumeric = true;
+	else if (numbers[i] > Parent->memoserv.nick[who.LowerCase()].size())
+	    triedabove = true;
+	else
+	{
+	    while (numbers[i] < j &&
+		iter != Parent->memoserv.nick[who.LowerCase()].begin())
+	    {
+		j--;
+		iter--;
+	    }
+	    while (numbers[i] > j &&
+		iter != Parent->memoserv.nick[who.LowerCase()].end())
+	    {
+		j++;
+		iter++;
+	    }
+	    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
+	    {
+		unsigned long filenum = iter->File();
+		if (!filenum)
+		{
+		    nonfiles = true;
+		    continue;
+		}
+
+		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);
+		if (filename == "")
+		{
+		    nonfiles = true;
+		}
+
+		mstring sourcefile;
+		sourcefile.Format("%s%s%08x", Parent->files.MemoAttach().c_str(),
+					DirSlash.c_str(), filenum);
+		if (!wxFile::Exists(sourcefile.c_str()))
+		{
+		    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+		    nonfiles = true;
+		    return;
+		}
+
+		size_t filesize;
+		wxFile file(sourcefile.c_str());
+		filesize = file.Length();
+		file.Close();
+
+		short port = FindAvailPort();
+		::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
+			" " + mstring(ltoa(Parent->LocalHost())) + " " +
+			mstring(itoa(port)) + " " + mstring(ltoa(filesize))));
+		Parent->dcc->Accept(port, mynick, source, FileMap::MemoAttach, filenum);
+	    }
+	}
+    }
+    if (nonnumeric)
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));
+    if (triedabove)
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/ABOVELIMIT"),
+		Parent->memoserv.channel[who.LowerCase()].size());
+    if (nonfiles)
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONFILES"));
+ }
 
 
 void MemoServ::do_List(mstring mynick, mstring source, mstring params)
@@ -1431,7 +1537,6 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	if (what.CmpNoCase("all")==0)
 	{
 	    list<Memo_t>::iterator iter;
-	    int i = 1;
 	    mstring output;
 	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
 		    iter != Parent->memoserv.nick[who.LowerCase()].end();)

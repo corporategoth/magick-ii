@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.206  2000/03/23 10:22:25  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.205  2000/03/19 08:50:55  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -254,6 +257,8 @@ int Magick::Start()
     loggertask->open();
     events = new EventTask;
     events->open();
+    dcc = new DccMap;
+    dcc->open();
 
     wxFile pidfile;
     pidfile.Create(files.Pidfile().Strip(mstring::stBoth),true);
@@ -368,6 +373,7 @@ int Magick::Start()
     ACE_INET_Addr localaddr;
     ircsvchandler->peer().get_local_addr(localaddr);
     CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
+    i_localhost = localaddr.get_ip_address();
     if (server.proto.Protoctl() != "")
 	server.raw(Parent->server.proto.Protoctl());
     server.raw("PASS " + startup.Server(tmp).second);
@@ -467,6 +473,12 @@ int Magick::Start()
     {
 	events->close(0);
 	delete events;
+    }
+
+    if (dcc != NULL)
+    {
+	dcc->close(0);
+	delete dcc;
     }
 
     delete signalhandler;

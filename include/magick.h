@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.113  2000/03/23 10:22:24  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.112  2000/03/19 08:50:53  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -112,7 +115,8 @@ private:
 	bool i_shutdown;
 
 	bool i_reconnect;
-  	IrcSvcHandler *ircsvchandler;
+	IrcSvcHandler *ircsvchandler;
+	unsigned long i_localhost;
 	bool i_gotconnect;
 	mstring i_server;
 	bool i_connected;
@@ -120,7 +124,8 @@ private:
 public:
 	LoggerTask *loggertask;
 	EventTask *events;
-	
+	DccMap *dcc;
+
 	// Stuff that NEEDS to be there first
 	CommandMap commands;
 	FileMap filesys;
@@ -269,6 +274,7 @@ public:
 	bool Reconnect()	    { return i_reconnect; }
 	bool GotConnect()	    { return i_gotconnect; }
 	void GotConnect(bool in)    { i_gotconnect = in; }
+	unsigned long LocalHost()   { return i_localhost; }
 	mstring Server()	    { return i_server; }
 	bool Connected()	    { return i_connected; }
 	void Connected(bool in)	    { i_connected = in; }

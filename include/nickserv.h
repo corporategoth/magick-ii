@@ -24,6 +24,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/03/23 10:22:24  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.30  2000/03/19 08:50:53  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -84,7 +87,7 @@ public:
 
     class InFlight_t {
 	friend class Nick_Live_t;
-	friend class DccEngine;
+	friend class DccXfer;
 	friend class InFlight_Handler;
 
 	mstring nick;

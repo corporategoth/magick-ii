@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2000/03/23 10:22:24  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.6  2000/03/19 08:50:52  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -47,6 +50,8 @@ static const char *ident_filesys_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
+unsigned short FindAvailPort();
+
 class FileMap
 {
 public:
@@ -57,6 +62,7 @@ public:
     mstring GetName(FileType type, unsigned long num);
     bool GetFile(FileType type, unsigned long num, mstring recipiant);
     unsigned long NewFile(FileType type, mstring filename);
+    void EraseFile(FileType type, unsigned long num);
 
     void load_database(wxInputStream& in);
     void save_database(wxOutputStream& in);
@@ -64,37 +70,79 @@ private:
     map<FileType, map<unsigned long, mstring> > i_FileMap;
 };
 
-class DccXfer : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
+class DccXfer
 {
-    typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
-public:
-    enum XferType { Send, Get };
-    DccXfer(XferType type, ACE_INET_Addr addr, mstring source,
-	    mstring filename, FileMap::FileType filetype);
-    ~DccXfer();
-
-    virtual int close(unsigned long in);
-    virtual int open(void * = 0);
-    virtual int handle_input(ACE_HANDLE handle);
-    bool Established();
+    enum XF_Type { Get, Send };
 
 private:
-    XferType i_type;
-    ACE_INET_Addr i_addr;
-    mstring i_filename;
-    FileMap::FileType i_filetype;
-    mstring tmpfile;
-    mstring buffer;
-    unsigned long blocksize, total;
-    wxFileOutputStream *fout;
-    wxFileInputStream *fin;
 
-    // Timers to wait for confirmation and/or data,
-    // and the connection to be established.
-    unsigned long T_Confirmation, T_Established;
+    // We dont care HOW we got the socket, just
+    // that we now have it.  This way we can just
+    // concentrate on getting the job done.
+    auto_ptr<ACE_SOCK_Stream> i_Socket;
+    auto_ptr<wxFile> i_File;
+    mstring i_Source;
+    mstring i_Mynick;
+    mstring i_Tempfile;
+    mstring i_Filename;
+    size_t i_Blocksize;
+    size_t i_XferTotal;
+    size_t i_Total;
+    size_t i_Filesize;
+    XF_Type i_Type;
+    unsigned long i_DccId;
+    unsigned char *i_Transiant;
+    mDateTime i_LastData;
 
-    // Did we get correct checksum packet ...
-    bool confirmation;
+public:
+    DccXfer() {}
+    DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
+	mstring mynick, mstring source,
+	FileMap::FileType filetype, unsigned long filenum);
+    DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
+	mstring mynick, mstring source, mstring filename,
+	size_t filesize, size_t blocksize);
+    DccXfer(const DccXfer &in)
+	{ *this = in; }
+    void operator=(const DccXfer &in);
+
+    ~DccXfer();
+
+    bool Ready()		{ return i_File->IsOpened(); }
+    unsigned long DccId()	{ return i_DccId; }
+    XF_Type Type()		{ return i_Type; }
+    mstring Source()		{ return i_Source; }
+    mstring Filename()		{ return i_Filename; }
+    size_t Filesize()		{ return i_Filesize; }
+    size_t Total()		{ return i_Total; }
+    mDateTime LastData()	{ return i_LastData; }
+
+    void ChgNick(mstring in)	{ i_Source = in; }
+    void Cancel()		{ i_Total = 0;
+				  i_File->Close(); }
+    void Action();	// Do what we want!
+
+};
+
+class DccMap : public ACE_Task<ACE_MT_SYNCH>
+{
+    queue<unsigned long> active;
+public:
+    virtual int open(void *in=0);
+    virtual int close(unsigned long in);
+    virtual int svc(void);
+
+    map<unsigned long, DccXfer> xfers;
+    vector<unsigned long> GetList(mstring in);
+
+    // These start in their own threads.
+    unsigned long Connect(ACE_INET_Addr address,
+	mstring mynick, mstring source, mstring filename,
+	size_t filesize = 0, size_t blocksize = 0);
+    unsigned long Accept(unsigned short port, mstring mynick,
+	mstring source, FileMap::FileType filetype,
+	unsigned long filenum);
+    void Close(unsigned long DccId);
 };
 
 #endif

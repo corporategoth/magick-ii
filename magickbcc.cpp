@@ -35,6 +35,36 @@ USELIB("src\des\crypto.lib");
 USELIB("src\expat\xmltok\xmltoklib.lib");
 USELIB("src\expat\xmlparse\xmlparselib.lib");
 USELIB("src\sxp\sxplib.lib");
+USEFILE("include\base.h");
+USEFILE("include\version.h-release");
+USEFILE("include\commserv.h");
+USEFILE("include\confbase.h");
+USEFILE("include\convert.h");
+USEFILE("include\cryptstream.h");
+USEFILE("include\datetime.h");
+USEFILE("include\dccengine.h");
+USEFILE("include\fileconf.h");
+USEFILE("include\filesys.h");
+USEFILE("include\ircsocket.h");
+USEFILE("include\language.h");
+USEFILE("include\lockable.h");
+USEFILE("include\log.h");
+USEFILE("include\logfile.h");
+USEFILE("include\magick.h");
+USEFILE("include\memoserv.h");
+USEFILE("include\mstream.h");
+USEFILE("include\mstring.h");
+USEFILE("include\nickserv.h");
+USEFILE("include\operserv.h");
+USEFILE("include\pch.h");
+USEFILE("include\server.h");
+USEFILE("include\servmsg.h");
+USEFILE("include\textfile.h");
+USEFILE("include\trace.h");
+USEFILE("include\utils.h");
+USEFILE("include\variant.h");
+USEFILE("include\version.h");
+USEFILE("include\chanserv.h");
 //---------------------------------------------------------------------------
 #endif // defined(__BORLANDC__)
 

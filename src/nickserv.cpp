@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2000/03/23 10:22:25  prez
+** Fully implemented the FileSys and DCC system, untested,
+**
 ** Revision 1.66  2000/03/19 08:50:55  prez
 ** More Borlandization -- Added WHAT project, and fixed a bunch
 ** of minor warnings that appear in borland.
@@ -661,13 +664,17 @@ void Nick_Live_t::Quit(mstring reason)
     while (joined_channels.size())
 	Part(*joined_channels.begin());
 
+    unsigned long i;
+    vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
+    for (i=0; i<dccs.size(); i++)
+	Parent->dcc->Close(dccs[i]);
     if (InFlight.Exists())
 	InFlight.End(0u);
 
     // We successfully ident to all channels we tried to
     // ident for before, so that they 0 our count -- we dont
     // want it carrying over to next time we log on.
-    for (unsigned int i=0; i<try_chan_ident.size(); i++)
+    for (i=0; i<try_chan_ident.size(); i++)
 	if (Parent->chanserv.IsStored(try_chan_ident[i]))
 	    Parent->chanserv.stored[try_chan_ident[i]].CheckPass(i_Name,
 		Parent->chanserv.stored[try_chan_ident[i]].Password());
@@ -767,7 +774,7 @@ void Nick_Live_t::Name(mstring in)
 
     set<mstring>::iterator iter;
     vector<mstring> chunked;
-    unsigned int i;
+    unsigned long i;
 
     // Store what committee's we WERE on ...
     // This is needed to send logon notices ONLY for committees
@@ -796,6 +803,10 @@ void Nick_Live_t::Name(mstring in)
     // Clean up non-existant channels ...
     for (i=0; i<chunked.size(); i++)
 	joined_channels.erase(chunked[i]);
+
+    vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
+    for (i=0; i<dccs.size(); i++)
+	Parent->dcc->xfers[dccs[i]].ChgNick(in);
 
     // Carry over failed attempts (so /nick doesnt cure all!)
     for (i=0; i<try_chan_ident.size(); i++)
@@ -3885,6 +3896,44 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
     }
     target = Parent->getSname(target);
 
+    unsigned long picnum = Parent->nickserv.stored[target.LowerCase()].PicNum();
+    if (!picnum)
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/NOPIC"),
+							target.c_str());
+	return;
+    }
+
+    mstring filename = 	Parent->filesys.GetName(FileMap::Picture, picnum);
+    if (filename == "")
+    {
+	Parent->nickserv.stored[target.LowerCase()].GotPic(0);
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/NOPIC"),
+							target.c_str());
+	return;
+    }
+
+    mstring sourcefile;
+    sourcefile.Format("%s%s%08x", Parent->files.Picture().c_str(),
+					DirSlash.c_str(), picnum);
+    if (!wxFile::Exists(sourcefile.c_str()))
+    {
+	Parent->filesys.EraseFile(FileMap::Picture, picnum);
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/NOPIC"),
+							target.c_str());
+	return;
+    }
+
+    size_t filesize;
+    wxFile file(sourcefile.c_str());
+    filesize = file.Length();
+    file.Close();
+
+    short port = FindAvailPort();
+    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
+		" " + mstring(ltoa(Parent->LocalHost())) + " " +
+		mstring(itoa(port)) + " " + mstring(ltoa(filesize))));
+    Parent->dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
 }
 
 void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)
