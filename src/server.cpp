@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.199  2001/12/16 02:21:16  prez
+** Missed 1 unused param
+**
 ** Revision 1.198  2001/12/16 01:30:46  prez
 ** More changes to fix up warnings ... added some new warning flags too!
 **
@@ -6258,6 +6261,7 @@ void Server::parse_Z(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_Z", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
