@@ -1,3 +1,47 @@
+* 2003-02-08 22:57  Preston A. Elder <prez@magick.tm>
+  docs/oper.txt (1.7), docs/oper_docbook.sgml (1.6):
+  
+  Added KILLCHAN commands.
+
+* 2003-02-08 20:39  Preston A. Elder <prez@magick.tm>
+  lang/english.lng (1.95):
+  
+  Fixed token.
+
+* 2003-02-08 20:06  Preston A. Elder <prez@magick.tm>
+  include/base.h (1.121), include/operserv.h (1.70), lang/english.hlp
+  (1.56), lang/english.lfo (1.65), lang/english.lng (1.94),
+  src/nickdata.cpp (1.29), src/nickserv.cpp (1.229), src/operserv.cpp
+  (1.172):
+  
+  Added KillChan.
+
+* 2003-02-07 08:36  Preston A. Elder <prez@magick.tm>
+  configure.in (1.76), include/config.h.in (1.36), include/config.h.win
+  (1.28), include/pch.h (1.68):
+  
+  Added check for crypt.h when descrypt or md5crypt is enabled.
+
+* 2003-02-05 22:48  Preston A. Elder <prez@magick.tm>
+  src/nickdata.cpp (1.28):
+  
+  Added foundermode to identify modes.
+
+* 2003-02-05 00:51  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.33):
+  
+  Fixed -k+k issue.
+
+* 2003-02-04 08:02  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.32):
+  
+  Added 'else if'.
+
+* 2003-02-03 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.72):
+  
+  Created version 2.0s20030203
+
 * 2003-02-02 19:47  Preston A. Elder <prez@magick.tm>
   README (1.33), docs/en/index.sgml (1.51), include/convert/ircservices.h
   (1.5), src/magick.cpp (1.392), src/convert/ircservices.cpp (1.5):
