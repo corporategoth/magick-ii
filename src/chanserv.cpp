@@ -2519,6 +2519,11 @@ bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick, mDate
 	{
 	    RET(false);
 	}
+	else
+	{
+	    if (Parent->nickserv.stored[entry.LowerCase()].Host() != "")
+		entry = Parent->nickserv.stored[Parent->nickserv.stored[entry.LowerCase()].Host().LowerCase()].Name();
+	}
     }
     else
     {
