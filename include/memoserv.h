@@ -25,6 +25,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2001/04/13 08:50:48  prez
+** Fixed const for unix
+**
 ** Revision 1.48  2001/04/13 03:10:02  ungod
 ** more changes to make borland compilable
 ** (still not so in ide, but command line compile works)
@@ -367,7 +370,7 @@ public:
     channel_news_t::const_iterator ChannelNewsBegin(const mstring &in) const { return GetChannel(in).begin(); }
     channel_news_t::const_iterator ChannelNewsEnd(const mstring &in)  const { return GetChannel(in).end(); }
     size_t ChannelNewsSize(const mstring &in) const { return GetChannel(in).size(); }
-    size_t ChannelNewsCount(const mstring &in, const mstring &user, const bool read = false) const;
+    size_t ChannelNewsCount(const mstring &in, const mstring &user, const bool read = false);
     bool IsChannel(const mstring &in) const;
     bool IsChannelNews(const mstring &in, const size_t num) const;
 

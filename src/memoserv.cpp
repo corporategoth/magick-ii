@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2001/04/13 08:50:48  prez
+** Fixed const for unix
+**
 ** Revision 1.95  2001/04/13 03:10:02  ungod
 ** more changes to make borland compilable
 ** (still not so in ide, but command line compile works)
@@ -1233,16 +1236,16 @@ bool MemoServ::IsChannelNews(const mstring &in, const size_t num) const
     RET(false);
 }
 
-size_t MemoServ::ChannelNewsCount(const mstring &in, const mstring &user, const bool read) const
+size_t MemoServ::ChannelNewsCount(const mstring &in, const mstring &user, const bool read)
 {
     FT("MemoServ::ChannelNewsCount", (in, user, read));
 
     size_t retval = 0;
     RLOCK(("MemoServ", "channel", in.LowerCase()));
-    MemoServ::channel_t::const_iterator iter = channel.find(in.LowerCase());
+    MemoServ::channel_t::iterator iter = channel.find(in.LowerCase());
     if (iter != channel.end())
     {
-	MemoServ::channel_news_t::const_iterator iter2;
+	MemoServ::channel_news_t::iterator iter2;
 	for (iter2=iter->second.begin(); iter2 != iter->second.end(); iter2++)
 	{
 	    if (iter2->IsRead(user) == read)
