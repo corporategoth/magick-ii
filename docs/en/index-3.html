@@ -25,28 +25,20 @@
 --dir commandline option. If none is specified, it will default
 to the current directory.
 <P>
-<PRE>
-magick.ini
-</PRE>
-This file is included with your Magick distribution
+<DL>
+<DT><B>magick.ini</B><DD><P>This file is included with your Magick distribution
 in the docs directory.  This file must either be specified on the
 commandline with the --config option, or in the services directory.
 This file contains all settings that Magick II will use throughout
 its execution (these can be changed and reloaded online).
 <P>
-<PRE>
-magick.mnd
-</PRE>
-This is the Magick New Datafile (or mound) file.  This
+<DT><B>magick.mnd</B><DD><P>This is the Magick New Datafile (or mound) file.  This
 stores all data that is stored by Magick.  This file is not human
 readable, and is often encrypted and/or compressed.  This filename
 is a setting in the magick.ini file, and may be changed.  This file
 will be created if it does not exist.
 <P>
-<PRE>
-magick.log
-</PRE>
-This is the logfile which logs all activity of note
+<DT><B>magick.log</B><DD><P>This is the logfile which logs all activity of note
 that happens inside Magick.  The verbosity of this log file can
 vary depending on the --debug option, or the VERBOSE config option.
 This file may be zero'd without any detremental effects, or if
@@ -54,82 +46,62 @@ it is removed, the OFF and ON online commands will re-establish
 the filehandle. This filename is a setting in the magick.ini file,
 and may be changed.  This file is created if it doesnt exist.
 <P>
-<PRE>
-magick.pid
-</PRE>
-This file indicates the process ID of the currently
+<DT><B>magick.pid</B><DD><P>This file indicates the process ID of the currently
 running Magick on UNIX-based systems.  This may be used to easily
 determine if Magick is running, and to kill a running copy. This
 filename is a setting in the magick.ini file, and may be changed.
 This file is overwritten on Magick startup.
 <P>
-<PRE>
-magick.motd
-</PRE>
-This contains the text of the server motd that will
+<DT><B>magick.motd</B><DD><P>This contains the text of the server motd that will
 be displayed to any user who types /MOTD services.server in their
 IRC client. This filename is a setting in the magick.ini file, and
 may be changed.
 <P>
-<PRE>
-magick.key
-</PRE>
-This contains the key for your databases, encrypted.
+<DT><B>magick.key</B><DD><P>This contains the key for your databases, encrypted.
 This key file should be generated with magick_keygen.  This file
 may not be used by more than one set of services (unless the binaries
 are copied), as each compile requires regenerating this file.  This
 filename is a setting in the magick.ini file, and may be changed.
 <P>
-<PRE>
-lang/*.lng
-</PRE>
-These files contain the responses Magick will send back
+<DT><B>lang\*.lng</B><DD><P>These files contain the responses Magick will send back
 to users for any command, or output from any procedure.  These files
 are 'tokenized', and are substituted with actual values.  The default
 language file to used is set by the DEF_LANGUAGE paramater in the
 magick.ini file, however languages may be set per-user.
 <P>
-<PRE>
-lang/*.lfo
-</PRE>
-These files contain the log file outputs Magick will
+<DT><B>lang\*.lfo</B><DD><P>These files contain the log file outputs Magick will
 use for all messages going to the magick.log file.  These files are
 'tokenized', and are substituted with actual values.  The file that
 is used is set by the DEF_LANGUAGE paramater in the magick.ini file.
 <P>
-<PRE>
-lang/*.hlp
-</PRE>
-These files contain the help text that Magick uses to
+<DT><B>lang\*.hlp</B><DD><P>These files contain the help text that Magick uses to
 respond to all HELP commands.  The default help file used is set by
 the DEF_LANGUAGE paramater in the magick.ini file, however languages
 may be set per-user.
 <P>
-<PRE>
-files/pic
-</PRE>
-This directory is where all user's pictures are stored.
+<DT><B>files\pic</B><DD><P>This directory is where all user's pictures are stored.
 The files themselves are stored as hexidecimal numbers, with no
 extension -- the map to real filenames is stored in the database.
 The path name actually used is a setting in the magick.ini file.
 <P>
-<PRE>
-files/memo
-</PRE>
-This directory is where all attachments are stored.
+<DT><B>files\memo</B><DD><P>This directory is where all attachments are stored.
 The files themselves are stored as hexidecimal numbers, with no
 extension -- the map to real filenames is stored in the database.
 The path name actually used is a setting in the magick.ini file.
 <P>
-<PRE>
-files/temp
-</PRE>
-This directory is where all files involved in DCC
+<DT><B>files\public</B><DD><P>This directory is where all files in the public
+filesystem are stored.
+The files themselves are stored as hexidecimal numbers, with no
+extension -- the map to real filenames is stored in the database.
+The path name actually used is a setting in the magick.ini file.
+<P>
+<DT><B>files\temp</B><DD><P>This directory is where all files involved in DCC
 transfers (sending or receiving) are stored.  These files are
 considered volatile, and if Magick is not running, can safely be
 removed. The files themselves are stored as hexidecimal numbers,
 with no extension. The path name actually used is a setting in the
 magick.ini file.
+</DL>
 <P>
 <H2><A NAME="ss3.2">3.2 General Usage</A>
 </H2>
@@ -140,26 +112,29 @@ a number of command-line options that override the settings of
 their equivilants on load.  NOTE: If the config file is loaded
 again at runtime, the settings in the config file will be used.
 <P>
-<BLOCKQUOTE>
+<BLOCKQUOTE><CODE>
+<PRE>
 --help (or -?)  Help output (summary of the below).
 --dir X         Set the initial services directory.
 --config X      Set the name of the config file.
 --convert X     Convert another version of services databases
-to Magick II format, where X is the type of
-database to convert.  Currently recognized:
-magick
+                to Magick II format, where X is the type of
+                database to convert.  Currently recognized:
+                        magick
 --trace X:Y     Set the trace level on startup, equivilant of
-using the OperServ TRACE SET command while
-running, where X is the trace type (or ALL), and
-Y is the trace level in hex.
-</BLOCKQUOTE>
+                using the OperServ TRACE SET command while
+                running, where X is the trace type (or ALL), and
+                Y is the trace level in hex.
+</PRE>
+</CODE></BLOCKQUOTE>
 <P>All other command line options just override the configuration
 file settings.  Below is a list of the overrides available, and
 the settings they override in the configuration file.  Please see
 the configuration file's comments for more information on each
 option, and what it does.
 <P>
-<BLOCKQUOTE>
+<BLOCKQUOTE><CODE>
+<PRE>
 PARAMATER       SHORT   GROUP           OPTION
 ---------       -----   -----           ------
 --name X        -n      STARTUP         SERVER_NAME
@@ -191,11 +166,58 @@ PARAMATER       SHORT   GROUP           OPTION
 --ident X       -R      NICKSERV        IDENT
 --language X    -s      NICKSERV        DEF_LANGUAGE
 --nodcc         -x      NICKSERV        PICEXT=  (nothing)
-MEMOSERV        FILES=0
+                        MEMOSERV        FILES=0
 --inflight X    -f      MEMOSERV        INFLIGHT
 --logignore     -i      OPERSERV        LOG_IGNORE=true
 --ignore X      -I      OPERSERV        IGNORE_METHOD
-</BLOCKQUOTE>
+</PRE>
+</CODE></BLOCKQUOTE>
+<P>Example:
+<P>
+<BLOCKQUOTE><CODE>
+<PRE>
+./magick --config /etc/magick.ini
+</PRE>
+</CODE></BLOCKQUOTE>
+<P>To use encryption, you must generate a key file with the program
+magick_keygen.  This program accepts a maximum of two arguments,
+being the output key filename, and an input file with the plain
+text version of the key respectively.  If neither argument is
+supplied, it will ask you to enter the data interactively.
+<P>On unix terminals that support it, the text entered at the key
+prompts will be hidden, however to not bank on this, and always
+ensure noone can look over your shoulder of sniff your network
+traffic to find out what the clear-text password is.  The maximum
+size of a key is specified at compile time, and may be changed
+with a configure option (see INSTALL for further details).
+<P>Example 1:
+<P>
+<BLOCKQUOTE><CODE>
+<PRE>
+./magick_keygen
+Magick IRC Services - http://www.magick.tm
+    (c) 1997-2000 Preston A. Elder &lt;prez@magick.tm&gt;
+    (c) 1998-2000 William King &lt;ungod@magick.tm&gt;
+
+Enter filename to output to [magick.key]:
+Enter database key:
+Re-Enter database key:
+
+Created 362 byte keyfile.
+</PRE>
+</CODE></BLOCKQUOTE>
+<P>Example 2:
+<P>
+<BLOCKQUOTE><CODE>
+<PRE>
+./magick_keygen magick.key magick.plain
+Magick IRC Services - http://www.magick.tm
+    (c) 1997-2000 Preston A. Elder &lt;prez@magick.tm&gt;
+    (c) 1998-2000 William King &lt;ungod@magick.tm&gt;
+
+Created 1024 byte keyfile.
+</PRE>
+</CODE></BLOCKQUOTE>
 <P>
 <H2><A NAME="ss3.3">3.3 Functionality</A>
 </H2>
@@ -239,37 +261,21 @@ common interest, or can alter a user's access to certain features
 of services.  You may also send memos to all members of a committee
 or set logon messages for committees that all members will see
 on signon.  Services has 6 'default' committees:
-<PRE>
-SADMIN
-</PRE>
-Services Adminstrators - Members of this
+<DL>
+<DT><B>SADMIN</B><DD><P>Services Adminstrators - Members of this
 committee are hard-coded into the Magick
 configuration file.
-<PRE>
-SOP
-</PRE>
-Services Operators - Members of this committee
+<DT><B>SOP</B><DD><P>Services Operators - Members of this committee
 are added by members of the SADMIN committee.
-<PRE>
-ADMIN
-</PRE>
-Server Administrators - Members of this committee
+<DT><B>ADMIN</B><DD><P>Server Administrators - Members of this committee
 are added by members of the SADMIN committee.
-<PRE>
-OPER
-</PRE>
-IRC Operators - Members of this committee are
+<DT><B>OPER</B><DD><P>IRC Operators - Members of this committee are
 added by members of the ADMIN committee.
-<PRE>
-REGD
-</PRE>
-All Registered Users - This committee may not be
+<DT><B>REGD</B><DD><P>All Registered Users - This committee may not be
 modified, and its members are dynamic.
-<PRE>
-ALL
-</PRE>
-All Users - This committee may not be modified,
+<DT><B>ALL</B><DD><P>All Users - This committee may not be modified,
 and its members are dynamic.
+</DL>
 <P>OperServ is a services that allows IRC Operators to keep control
 on the network.  This service offers functions like an Automatic
 Kill list, Clone Protection (and overriding), Services Ignore,

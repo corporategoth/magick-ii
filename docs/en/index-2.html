@@ -268,117 +268,57 @@ A warning: not all `configure' scripts look for a site script.
 <P>`configure' recognizes the following options to control how it
 operates.
 <P>
-<PRE>
---cache-file=FILE
-</PRE>
-
-Use and save the results of the tests in FILE instead of
+<DL>
+<DT><B>--cache-file=FILE</B><DD><P>Use and save the results of the tests in FILE instead of
 `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
 debugging `configure'.
 <P>
-<PRE>
---help
-</PRE>
-
-Print a summary of the options to `configure', and exit.
+<DT><B>--help</B><DD><P>Print a summary of the options to `configure', and exit.
 <P>
-<PRE>
---quiet
-</PRE>
-
-<PRE>
+<DT><B>--quiet
 --silent
-</PRE>
-
-<PRE>
--q
-</PRE>
-
-Do not print messages saying which checks are being made.  To
+-q</B><DD><P>Do not print messages saying which checks are being made.  To
 suppress all normal output, redirect it to `/dev/null' (any error
 messages will still be shown).
 <P>
-<PRE>
---srcdir=DIR
-</PRE>
-
-Look for the package's source code in directory DIR.  Usually
+<DT><B>--srcdir=DIR</B><DD><P>Look for the package's source code in directory DIR.  Usually
 `configure' can determine that directory automatically.
 <P>
-<PRE>
---version
-</PRE>
-
-Print the version of Autoconf used to generate the `configure'
+<DT><B>--version</B><DD><P>Print the version of Autoconf used to generate the `configure'
 script, and exit.
 <P>
-<PRE>
---with-acelib=file
-</PRE>
-
-<PRE>
---with-aceinc=path
-</PRE>
-
-This specifies where the makefile should look for the ACE library
+<DT><B>--with-acelib=file
+--with-aceinc=path</B><DD><P>This specifies where the makefile should look for the ACE library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and OS.h in the include directory).
 This should only be used if Magick does not detect the ACE library.
 <P>
-<PRE>
---with-zlib=file
-</PRE>
-
-<PRE>
---with-zinc=path
-</PRE>
-
-This specifies where the makefile should look for the ZLIB library
+<DT><B>--with-zlib=file
+--with-zinc=path</B><DD><P>This specifies where the makefile should look for the ZLIB library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and zlib.h in the include directory).
 This should only be used if Magick does not detect the ZLIB library.
 <P>
-<PRE>
---enable-bsdthreads
-</PRE>
-
-This is mutually exclusive of --with-threadlib and --with-threadinc,
+<DT><B>--enable-bsdthreads</B><DD><P>This is mutually exclusive of --with-threadlib and --with-threadinc,
 it specifies to use the -pthreads option with GCC or CC when linking the
 magick binary.  This is used for systems where pthreads is ingrained in
 the standard C library, specifically, BSD.
 <P>
-<PRE>
---with-threadlib=file
-</PRE>
-
-<PRE>
---with-threadinc=path
-</PRE>
-
-This specifies where the makefile should look for a threads library
+<DT><B>--with-threadlib=file
+--with-threadinc=path</B><DD><P>This specifies where the makefile should look for a threads library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
 <P>
-<PRE>
---enable-des
-</PRE>
-
-<PRE>
---disable-des
-</PRE>
-
-This turns on or off encryption support in Magick.
+<DT><B>--enable-des
+--disable-des</B><DD><P>This turns on or off encryption support in Magick.
 <P>
-<PRE>
---with-keylen=size
-</PRE>
-
-This is the maximum size of the key file, and the input key that
+<DT><B>--with-keylen=size</B><DD><P>This is the maximum size of the key file, and the input key that
 you may type in.  This defaults to 1024, and you should not need more.
+</DL>
 <P>`configure' also accepts some other, not widely useful, options.
 <P>
 <H2><A NAME="ss2.12">2.12 Security Tips</A>

@@ -81,18 +81,19 @@ of Magick, and then e-mailing <htmlurl url="mailto:majordomo@magick.tm" name="ma
 The following people have contributed to the final product
 of Magick II (testers not included):
 
-<verb>Programmers</verb>
+<descrip>
+<tag/Programmers/
 <itemize>
 <item><htmlurl url="mailto:prez@magick.tm" name="Preston Elder">
 <item><htmlurl url="mailto:ungod@magick.tm" name="William King">
 </itemize>
 
-<verb>Designers (some coding)</verb>
+<tag/Designers (some coding)/
 <itemize>
 <item><htmlurl url="mailto:striker@magick.tm" name="Patrick Prins">
 </itemize>
 
-<verb>Supporters</verb>
+<tag/Supporters/
 <itemize>
 <item>Marieke Bermon
 <item>Kelly Hill
@@ -101,12 +102,13 @@ of Magick II (testers not included):
 <item>Matt Heckaman
 </itemize>
 
-<verb>Supporters Who Dont Know It</verb>
+<tag/Supporters Who Dont Know It/
 <itemize>
 <item>Coca-Cola Amatil	- Life Support *bleep ... bleep*
 <item>Nescafe Blend 43	- See above (any kind of caffiene!)
 <item>Tschaicovski	- If you dont understand, you never will...
 </itemize>
+</descrip>
 
 <sect1>Changes
 <p>
@@ -572,66 +574,68 @@ A warning: not all `configure' scripts look for a site script.
    `configure' recognizes the following options to control how it
 operates.
 
-<verb>--cache-file=FILE</verb>
+<descrip>
+<tag/--cache-file=FILE/
      Use and save the results of the tests in FILE instead of
      `./config.cache'.  Set FILE to `/dev/null' to disable caching, for
      debugging `configure'.
 
-<verb>--help</verb>
+<tag/--help/
      Print a summary of the options to `configure', and exit.
 
-<verb>--quiet</verb>
-<verb>--silent</verb>
-<verb>-q</verb>
+<tag/--quiet
+--silent
+-q/
      Do not print messages saying which checks are being made.  To
      suppress all normal output, redirect it to `/dev/null' (any error
      messages will still be shown).
 
-<verb>--srcdir=DIR</verb>
+<tag/--srcdir=DIR/
      Look for the package's source code in directory DIR.  Usually
      `configure' can determine that directory automatically.
 
-<verb>--version</verb>
+<tag/--version/
      Print the version of Autoconf used to generate the `configure'
      script, and exit.
 
-<verb>--with-acelib=file</verb>
-<verb>--with-aceinc=path</verb>
+<tag/--with-acelib=file
+--with-aceinc=path/
      This specifies where the makefile should look for the ACE library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and OS.h in the include directory).
 This should only be used if Magick does not detect the ACE library.
 
-<verb>--with-zlib=file</verb>
-<verb>--with-zinc=path</verb>
+<tag/--with-zlib=file
+--with-zinc=path/
      This specifies where the makefile should look for the ZLIB library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and zlib.h in the include directory).
 This should only be used if Magick does not detect the ZLIB library.
 
-<verb>--enable-bsdthreads</verb>
+<tag/--enable-bsdthreads/
      This is mutually exclusive of --with-threadlib and --with-threadinc,
 it specifies to use the -pthreads option with GCC or CC when linking the
 magick binary.  This is used for systems where pthreads is ingrained in
 the standard C library, specifically, BSD.
 
-<verb>--with-threadlib=file</verb>
-<verb>--with-threadinc=path</verb>
+<tag/--with-threadlib=file
+--with-threadinc=path/
      This specifies where the makefile should look for a threads library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
 
-<verb>--enable-des</verb>
-<verb>--disable-des</verb>
+<tag/--enable-des
+--disable-des/
      This turns on or off encryption support in Magick.
 
-<verb>--with-keylen=size</verb>
+<tag/--with-keylen=size/
      This is the maximum size of the key file, and the input key that
 you may type in.  This defaults to 1024, and you should not need more.
+</descrip>
 
 `configure' also accepts some other, not widely useful, options.
 
@@ -689,19 +693,20 @@ All files and directories listed are relative to the current
 --dir commandline option. If none is specified, it will default
 to the current directory.
 
-<verb>magick.ini</verb>This file is included with your Magick distribution
+<descrip>
+<tag/magick.ini/ This file is included with your Magick distribution
 in the docs directory.  This file must either be specified on the
 commandline with the --config option, or in the services directory.
 This file contains all settings that Magick II will use throughout
 its execution (these can be changed and reloaded online).
 
-<verb>magick.mnd</verb>This is the Magick New Datafile (or mound) file.  This
+<tag/magick.mnd/ This is the Magick New Datafile (or mound) file.  This
 stores all data that is stored by Magick.  This file is not human
 readable, and is often encrypted and/or compressed.  This filename
 is a setting in the magick.ini file, and may be changed.  This file
 will be created if it does not exist.
 
-<verb>magick.log</verb>This is the logfile which logs all activity of note
+<tag/magick.log/ This is the logfile which logs all activity of note
 that happens inside Magick.  The verbosity of this log file can
 vary depending on the --debug option, or the VERBOSE config option.
 This file may be zero'd without any detremental effects, or if
@@ -709,55 +714,62 @@ it is removed, the OFF and ON online commands will re-establish
 the filehandle. This filename is a setting in the magick.ini file,
 and may be changed.  This file is created if it doesnt exist.
 
-<verb>magick.pid</verb>This file indicates the process ID of the currently
+<tag/magick.pid/ This file indicates the process ID of the currently
 running Magick on UNIX-based systems.  This may be used to easily
 determine if Magick is running, and to kill a running copy. This
 filename is a setting in the magick.ini file, and may be changed.
 This file is overwritten on Magick startup.
 
-<verb>magick.motd</verb>This contains the text of the server motd that will
+<tag/magick.motd/ This contains the text of the server motd that will
 be displayed to any user who types /MOTD services.server in their
 IRC client. This filename is a setting in the magick.ini file, and
 may be changed.
 
-<verb>magick.key</verb>This contains the key for your databases, encrypted.
+<tag/magick.key/ This contains the key for your databases, encrypted.
 This key file should be generated with magick_keygen.  This file
 may not be used by more than one set of services (unless the binaries
 are copied), as each compile requires regenerating this file.  This
 filename is a setting in the magick.ini file, and may be changed.
 
-<verb>lang/*.lng</verb>These files contain the responses Magick will send back
+<tag/lang\*.lng/ These files contain the responses Magick will send back
 to users for any command, or output from any procedure.  These files
 are 'tokenized', and are substituted with actual values.  The default
 language file to used is set by the DEF_LANGUAGE paramater in the
 magick.ini file, however languages may be set per-user.
 
-<verb>lang/*.lfo</verb>These files contain the log file outputs Magick will
+<tag/lang\*.lfo/ These files contain the log file outputs Magick will
 use for all messages going to the magick.log file.  These files are
 'tokenized', and are substituted with actual values.  The file that
 is used is set by the DEF_LANGUAGE paramater in the magick.ini file.
 
-<verb>lang/*.hlp</verb>These files contain the help text that Magick uses to
+<tag/lang\*.hlp/ These files contain the help text that Magick uses to
 respond to all HELP commands.  The default help file used is set by
 the DEF_LANGUAGE paramater in the magick.ini file, however languages
 may be set per-user.
 
-<verb>files/pic</verb>This directory is where all user's pictures are stored.
+<tag/files\pic/ This directory is where all user's pictures are stored.
 The files themselves are stored as hexidecimal numbers, with no
 extension -- the map to real filenames is stored in the database.
 The path name actually used is a setting in the magick.ini file.
 
-<verb>files/memo</verb>This directory is where all attachments are stored.
+<tag/files\memo/ This directory is where all attachments are stored.
 The files themselves are stored as hexidecimal numbers, with no
 extension -- the map to real filenames is stored in the database.
 The path name actually used is a setting in the magick.ini file.
 
-<verb>files/temp</verb>This directory is where all files involved in DCC
+<tag/files\public/ This directory is where all files in the public
+filesystem are stored.
+The files themselves are stored as hexidecimal numbers, with no
+extension -- the map to real filenames is stored in the database.
+The path name actually used is a setting in the magick.ini file.
+
+<tag/files\temp/ This directory is where all files involved in DCC
 transfers (sending or receiving) are stored.  These files are
 considered volatile, and if Magick is not running, can safely be
 removed. The files themselves are stored as hexidecimal numbers,
 with no extension. The path name actually used is a setting in the
 magick.ini file.
+</descrip>
 
 <sect1> General Usage
 <p>
@@ -767,7 +779,7 @@ a number of command-line options that override the settings of
 their equivilants on load.  NOTE: If the config file is loaded
 again at runtime, the settings in the config file will be used.
 
-<quote>
+<tscreen><verb>
 --help (or -?)	Help output (summary of the below).
 --dir X		Set the initial services directory.
 --config X	Set the name of the config file.
@@ -779,7 +791,7 @@ again at runtime, the settings in the config file will be used.
 		using the OperServ TRACE SET command while
 		running, where X is the trace type (or ALL), and
 		Y is the trace level in hex.
-</quote>
+</verb></tscreen>
 
 All other command line options just override the configuration
 file settings.  Below is a list of the overrides available, and
@@ -787,7 +799,7 @@ the settings they override in the configuration file.  Please see
 the configuration file's comments for more information on each
 option, and what it does.
 
-<quote>
+<tscreen><verb>
 PARAMATER	SHORT	GROUP		OPTION
 ---------	-----	-----		------
 --name X	-n	STARTUP		SERVER_NAME
@@ -823,7 +835,52 @@ PARAMATER	SHORT	GROUP		OPTION
 --inflight X	-f	MEMOSERV	INFLIGHT
 --logignore	-i	OPERSERV	LOG_IGNORE=true
 --ignore X      -I	OPERSERV	IGNORE_METHOD
-</quote>
+</verb></tscreen>
+
+Example:
+
+<tscreen><verb>
+./magick --config /etc/magick.ini
+</verb></tscreen>
+
+To use encryption, you must generate a key file with the program
+magick_keygen.  This program accepts a maximum of two arguments,
+being the output key filename, and an input file with the plain
+text version of the key respectively.  If neither argument is
+supplied, it will ask you to enter the data interactively.
+
+On unix terminals that support it, the text entered at the key
+prompts will be hidden, however to not bank on this, and always
+ensure noone can look over your shoulder of sniff your network
+traffic to find out what the clear-text password is.  The maximum
+size of a key is specified at compile time, and may be changed
+with a configure option (see INSTALL for further details).
+
+Example 1:
+
+<tscreen><verb>
+./magick_keygen
+Magick IRC Services - http://www.magick.tm
+    (c) 1997-2000 Preston A. Elder &lt;prez@magick.tm&gt;
+    (c) 1998-2000 William King &lt;ungod@magick.tm&gt;
+
+Enter filename to output to [magick.key]:
+Enter database key:
+Re-Enter database key:
+
+Created 362 byte keyfile.
+</verb></tscreen>
+
+Example 2:
+
+<tscreen><verb>
+./magick_keygen magick.key magick.plain
+Magick IRC Services - http://www.magick.tm
+    (c) 1997-2000 Preston A. Elder &lt;prez@magick.tm&gt;
+    (c) 1998-2000 William King &lt;ungod@magick.tm&gt;
+
+Created 1024 byte keyfile.
+</verb></tscreen>
 
 <sect1>Functionality
 <p>
@@ -870,19 +927,21 @@ common interest, or can alter a user's access to certain features
 of services.  You may also send memos to all members of a committee
 or set logon messages for committees that all members will see
 on signon.  Services has 6 'default' committees:
-	<verb>SADMIN</verb>Services Adminstrators - Members of this
+	<descrip>
+	<tag/SADMIN/ Services Adminstrators - Members of this
 		  committee are hard-coded into the Magick
 		  configuration file.
-	<verb>SOP</verb>Services Operators - Members of this committee
+	<tag/SOP/ Services Operators - Members of this committee
 		  are added by members of the SADMIN committee.
-	<verb>ADMIN</verb>Server Administrators - Members of this committee
+	<tag/ADMIN/ Server Administrators - Members of this committee
 		  are added by members of the SADMIN committee.
-	<verb>OPER</verb>IRC Operators - Members of this committee are
+	<tag/OPER/ IRC Operators - Members of this committee are
 		  added by members of the ADMIN committee.
-	<verb>REGD</verb>All Registered Users - This committee may not be
+	<tag/REGD/ All Registered Users - This committee may not be
 		  modified, and its members are dynamic.
-	<verb>ALL</verb>All Users - This committee may not be modified,
+	<tag/ALL/ All Users - This committee may not be modified,
 		  and its members are dynamic.
+	</descrip>
 
 OperServ is a services that allows IRC Operators to keep control
 on the network.  This service offers functions like an Automatic
