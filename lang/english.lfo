@@ -249,6 +249,8 @@ AKICK            =Kicked user $1 from channel $2 for triggering AKICK ($3).
 RESTRICTED       =Kicked user $1 from restricted channel $2.
 NEW_THREAD       =Starting new thread to handle excess load.
 KILL_THREAD      =Killing thread, not enough work to warrant it.
+NEW_THREAD_FAIL  =Failed to create new thread.
+MAX_THREADS      =Maximum number of threads reached, cannot start a new one.
 
 ;
 ; These are errors that come from system based
@@ -278,7 +280,7 @@ LOCK_RELEASE     =Failed to release $1 lock for $2.
 LOCK_DUP         =Duplicate $1 lock $2 detected where only 1 allowed!
 STAGE_FAIL       =Could not create/validate a stage in load or save process, skipping.
 STAGE_FAIL_ABORT =Could not create/validate a stage in load or save process, aborting.
-THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!
+THREAD_DEAD      =Non-processing $1 thread detected - attempting to stop thread!
 THREAD_DEAD_HALF =Over half of threads not processing, shutting down!
 THREAD_DEAD_MAIN =The main thread has stopped processing, shutting down!
 LOCKED_BIN       =System lock values do not match!  Binary recompile required!

@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.329  2001/11/18 03:26:53  prez
+** More changes re: trace names, and made the command system know the
+** difference between 'insufficiant access' and 'unknown command'.
+**
 ** Revision 1.328  2001/11/18 01:54:04  prez
 ** Fixed up trace levels (again)
 **
@@ -669,8 +673,6 @@ int Magick::Start(bool firstrun)
 		else
 		{
 		    mstring type=argv[i].Before(":").UpperCase();
-		    if (type=="MAIN" || type=="ALL")
-			Trace::TurnSet(tt_MAIN, level);
 		    for (j=0; j<tt_MAX; j++)
 			if (type==threadname[j] || type=="ALL")
 			    Trace::TurnSet(static_cast<threadtype_enum>(j), level);

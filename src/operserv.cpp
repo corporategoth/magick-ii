@@ -27,6 +27,10 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.137  2001/11/18 03:26:53  prez
+** More changes re: trace names, and made the command system know the
+** difference between 'insufficiant access' and 'unknown command'.
+**
 ** Revision 1.136  2001/11/18 01:54:04  prez
 ** Fixed up trace levels (again)
 **
@@ -1441,11 +1445,6 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 	type = tt_MAX;
 	ttype = "ALL";
     }
-    else if (ttype.IsSameAs("MAIN", true))
-    {
-	type = tt_MAIN;
-	ttype = "MAIN";
-    }
     else
     {
         for (i=0+1; i<tt_MAX; i++)
@@ -1493,7 +1492,6 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 	}
 	else
 	{
-	    bool gotone = false;
 	    for (i=0; i<levels.size(); i++)
 	    {
 		for (j=0; j<Trace::levelname.size(); j++)
@@ -1504,11 +1502,7 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 			{
 			    for (k=0; k<tt_MAX; k++)
 			    {
-				if (k==tt_MAIN)
-				{
-				    Trace::TurnSet(static_cast<threadtype_enum>(k), 0U);
-				    gotone = true;
-				}
+				Trace::TurnSet(static_cast<threadtype_enum>(k), 0U);
 				Trace::TurnUp(static_cast<threadtype_enum>(k),
 					Trace::levelname[j].level);
 				output.Format("%s SET: Trace level set to %#06x.",
@@ -1521,18 +1515,14 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 			}
 			else
 			{
-				if (!gotone)
-				{
-				    Trace::TurnSet(type, 0U);
-				    gotone = true;
-				}
-				Trace::TurnUp(type, Trace::levelname[j].level);
-				output.Format("%s SET: Trace level set to %#06x.",
-				    mDateTime::CurrentDateTime().DateTimeString().c_str(),
-				    Trace::TraceLevel(type));
-				{ MLOCK(("ThreadMessageQueue"));
-				ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
-				}
+			    Trace::TurnSet(static_cast<threadtype_enum>(type), 0U);
+			    Trace::TurnUp(type, Trace::levelname[j].level);
+			    output.Format("%s SET: Trace level set to %#06x.",
+				mDateTime::CurrentDateTime().DateTimeString().c_str(),
+				Trace::TraceLevel(type));
+			    { MLOCK(("ThreadMessageQueue"));
+			    ThreadMessageQueue.push_back(pair<threadtype_enum, mstring>(type, output));
+			    }
 			}
 			break;
 		    }
@@ -1617,8 +1607,7 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		SEND(mynick, source, "OS_STATUS/INVALID_LEVEL", (
-								levels[i]));
+		SEND(mynick, source, "OS_STATUS/INVALID_LEVEL", (levels[i]));
 	}
     }
     else if (action.Matches("VIEW*", true) || action.Matches("LIST*", true))
@@ -1635,8 +1624,7 @@ void OperServ::do_Trace(const mstring &mynick, const mstring &source, const mstr
     mstring line1, line2, tmp;
     for (i=0; i<tt_MAX; i++)
     {
-	tmp.Format("%6s  ", (strlen(threadname[i].c_str())) ?
-				threadname[i].c_str() : "MAIN");
+	tmp.Format("%6s  ", threadname[i].c_str());
 	line1 += tmp;
 	tmp.Format("%#06x  ", Trace::TraceLevel(static_cast<threadtype_enum>(i)));
 	line2 += tmp;
@@ -3303,7 +3291,9 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 
 	float percent = 100.0 * static_cast<float>(killusers.size()) /
 			static_cast<float>(Parent->nickserv.LiveSize());
-	if (percent > Parent->operserv.Akill_Reject())
+	if (percent > Parent->operserv.Akill_Reject() &&
+	    !(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	    Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source)))
 	{
 	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOMANY", (
 		fmstring("%.2f", percent),

@@ -27,6 +27,10 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.176  2001/11/18 03:26:53  prez
+** More changes re: trace names, and made the command system know the
+** difference between 'insufficiant access' and 'unknown command'.
+**
 ** Revision 1.175  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -1800,6 +1804,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &servic
 		for (i=1; i <= iter->second.WordCount(" "); i++)
 		{
 		    list = iter->second.ExtractWord(i, " ").UpperCase();
+		    retval.second = iter->third;
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
@@ -1807,7 +1812,6 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &servic
 			&& Parent->commserv.GetList(list).IsOn(user))
 		    {
 			retval.first = true;
-			retval.second = iter->third;
 			NRET(pair<bool_functor>,retval);
 		    }
 		}
@@ -1864,6 +1868,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &serv
 		for (i=1; i <= iter->second.WordCount(" "); i++)
 		{
 		    list = iter->second.ExtractWord(i, " ").UpperCase();
+		    retval.second = iter->third;
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
@@ -1871,7 +1876,6 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &serv
 			 && Parent->commserv.GetList(list).IsOn(user))
 		    {
 			retval.first = true;
-			retval.second = iter->third;
 			NRET(pair<bool_functor>,retval);
 		    }
 		}
@@ -1886,18 +1890,58 @@ bool CommandMap::DoCommand(const mstring &mynick, const mstring &user,
 {
     FT("CommandMap::DoCommand", (mynick, user, command, params));
 
-    if (DoUserCommand(mynick, user, command, params) ||
-	DoSystemCommand(mynick, user, command, params))
+    bool cmdfound = false;
+    pair<bool,functor> cmd = GetUserCommand(mynick, command, user);
+    if (cmd.second != NULL)
     {
-	RET(true);
+	if (cmd.first)
+	{
+	    (*cmd.second)(mynick, user, params);
+	    RET(true);
+	}
+	cmdfound = true;
     }
-    if (command.WordCount(" ") < 2)
-	SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+    else if (cmd.first)
+    {
+	if (command.WordCount(" ") < 2)
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+		command.UpperCase(), mynick));
+	else
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+		command.UpperCase(), mynick,
+		command.Before(" ").UpperCase()));
+	RET(false);
+    }
+    
+    cmd = GetSystemCommand(mynick, command, user);
+    if (cmd.second != NULL || cmdfound)
+    {
+	if (cmd.first)
+	{
+	    (*cmd.second)(mynick, user, params);
+	    RET(true);
+	}
+	else
+	{
+	    if (command.WordCount(" ") < 2)
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (
 			command.UpperCase(), mynick));
-    else
-	SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+	    else
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (
 			command.UpperCase(), mynick,
 			command.Before(" ").UpperCase()));
+	}
+    }
+    else
+    {
+	if (command.WordCount(" ") < 2)
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+		command.UpperCase(), mynick));
+	else
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+		command.UpperCase(), mynick,
+		command.Before(" ").UpperCase()));
+    }
     RET(false);
 }
 
@@ -1908,19 +1952,33 @@ bool CommandMap::DoUserCommand(const mstring &mynick, const mstring &user,
     FT("CommandMap::DoUserCommand", (mynick, user, command, params));
 
     pair<bool,functor> cmd = GetUserCommand(mynick, command, user);
-    if (cmd.first)
+    if (cmd.second != NULL)
     {
-	if (cmd.second != NULL)
+	if (cmd.first)
+	{
 	    (*cmd.second)(mynick, user, params);
+	    RET(true);
+	}
 	else
+	{
 	    if (command.WordCount(" ") < 2)
-		SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (
 			command.UpperCase(), mynick));
 	    else
-		SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (
 			command.UpperCase(), mynick,
 			command.Before(" ").UpperCase()));
-	RET(true);
+	}
+    }
+    else
+    {
+	if (command.WordCount(" ") < 2)
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+		command.UpperCase(), mynick));
+	else
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+		command.UpperCase(), mynick,
+		command.Before(" ").UpperCase()));
     }
     RET(false);
 }
@@ -1932,19 +1990,33 @@ bool CommandMap::DoSystemCommand(const mstring &mynick, const mstring &user,
     FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
 
     pair<bool,functor> cmd = GetSystemCommand(mynick, command, user);
-    if (cmd.first)
+    if (cmd.second != NULL)
     {
-	if (cmd.second != NULL)
+	if (cmd.first)
+	{
 	    (*cmd.second)(mynick, user, params);
+	    RET(true);
+	}
 	else
+	{
 	    if (command.WordCount(" ") < 2)
-		SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (
 			command.UpperCase(), mynick));
 	    else
-		SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (
 			command.UpperCase(), mynick,
 			command.Before(" ").UpperCase()));
-	RET(true);
+	}
+    }
+    else
+    {
+	if (command.WordCount(" ") < 2)
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
+		command.UpperCase(), mynick));
+	else
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
+		command.UpperCase(), mynick,
+		command.Before(" ").UpperCase()));
     }
     RET(false);
 }

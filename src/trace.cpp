@@ -27,6 +27,10 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2001/11/18 03:26:53  prez
+** More changes re: trace names, and made the command system know the
+** difference between 'insufficiant access' and 'unknown command'.
+**
 ** Revision 1.111  2001/11/18 01:03:29  prez
 ** Fixed up the trace names.
 **
@@ -158,7 +162,7 @@ RCSID(trace_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-mstring threadname[tt_MAX] = { "LOST", "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE" };
+mstring threadname[tt_MAX] = { "LOST", "MAIN", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE" };
 
 unsigned short makehex (const mstring &SLevel)
 {

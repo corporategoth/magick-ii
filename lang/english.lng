@@ -90,6 +90,8 @@
 TRANSLATED         =Preston Elder <prez@magick.tm>
 UNKNOWN_COMMAND    =Unrecognised command \b$1\b.  Type \b/MSG $2 HELP\b for help.
 UNKNOWN_OPTION     =Unrecognised option \b$1\b.  Type \b/MSG $2 HELP $3\b for help.
+ACCESS_COMMAND     =Insufficiant access for \b$1\b command.  Type \b/MSG $2 HELP\b for help.
+ACCESS_OPTION      =Insufficiant access for \b$1\b command.  Type \b/MSG $2 HELP $3\b for help.
 NEED_PARAMS        =Insufficient parameters specified for \b$1\b.  Type \b/MSG $2 HELP $3\b for help.
 MUSTCONTAIN        =Specified $1 entry must contain a '$2' character.
 MAYNOTCONTAIN      =Specified $1 entry may not contain a '$2' character.
