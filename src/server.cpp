@@ -1666,7 +1666,7 @@ void Server::HELPOPS(const mstring & nick, const mstring & message)
 	if (proto.Helpops())
 	    line +=
 		((proto.Tokens() &&
-		  !proto.GetNonToken("HELPOPS").empty()) ? proto.GetNonToken("HELPOPS") : mstring("HELPOPS")) + " :";
+		  !proto.GetNonToken("HELPOP").empty()) ? proto.GetNonToken("HELPOP") : mstring("HELPOP")) + " :";
 	else if (proto.Globops())
 	    line +=
 		((proto.Tokens() &&

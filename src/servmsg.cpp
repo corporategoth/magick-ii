@@ -1666,12 +1666,6 @@ void ServMsg::do_Ask(const mstring & mynick, const mstring & source, const mstri
 
     mstring message = params.Before(" ").UpperCase();
 
-    if (!Magick::instance().server.proto.Helpops())
-    {
-	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
-	return;
-    }
-
     if (params.WordCount(" ") < 2)
     {
 	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
