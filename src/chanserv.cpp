@@ -477,10 +477,6 @@ mstring Chan_Live_t::UserDef(mstring type, mstring val)
 }
 
 
-// --------- end of Chan_Live_t -----------------------------------
-
-
-
 bool checkops(pair<mstring, pair<bool,bool> > &in)
 {
     FT("checkops",(in.first,in.second.first,in.second.second));
@@ -508,7 +504,7 @@ bool checkvoices(pair<mstring, pair<bool,bool> > &in)
     }
 }
 
-// --------- start of entlist_t -----------------------------------
+// --------- end of Chan_Live_t -----------------------------------
 
 entlist_t::entlist_t()
 {
@@ -620,7 +616,7 @@ wxInputStream &operator>>(wxInputStream& in, entlist_t& out)
     return in;
 }
 
-// --------- start of entlist_val_t -----------------------------------
+// --------- end of entlist_val_t -----------------------------------
 
 entlist_val_t::entlist_val_t()
 {

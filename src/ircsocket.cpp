@@ -61,9 +61,9 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	else
 	    flack = data2.ExtractWord(data2.WordCount("\n\r"), "\n\r");
 
-	for(int i=0;i<data2.WordCount("\n\r")-1;i++)
-	    if(data2.ExtractWord(i+1,"\n\r")!="")
-		mBase::push_message(data2.ExtractWord(i+1,"\n\r"));
+	for(int i=1;i<data2.WordCount("\n\r");i++)
+	    if(data2.ExtractWord(i,"\n\r")!="")
+		mBase::push_message(data2.ExtractWord(i,"\n\r"));
 	if (flack == "")
 	    mBase::push_message(data2.ExtractWord(data2.WordCount("\n\r"),"\n\r"));
 
