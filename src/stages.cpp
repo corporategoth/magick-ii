@@ -28,6 +28,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2002/01/14 07:19:16  prez
+** Fixed delete calls
+**
 ** Revision 1.16  2002/01/14 07:16:55  prez
 ** More pretty printing with a newer indent with C++ fixes (not totally done)
 **
