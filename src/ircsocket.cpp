@@ -977,7 +977,8 @@ map_entry < mMessage > IrcSvcHandler::GetMessage(unsigned long in) const
 	RET(mMessage &, GLOB_mMessage);
 #endif
     }
-    if (!iter->second->validated())
+    map_entry<mMessage> entry(iter->second);
+    if (!entry->validated())
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_IrcSvcHandler_Message(E_IrcSvcHandler_Message::W_Get, E_IrcSvcHandler_Message::T_Blank, in));
@@ -987,7 +988,7 @@ map_entry < mMessage > IrcSvcHandler::GetMessage(unsigned long in) const
 #endif
     }
 
-    NRET(map_entry < mMessage >, map_entry < mMessage > (iter->second));
+    NRET(map_entry < mMessage >, entry);
     ETCB();
 }
 
@@ -1029,7 +1030,13 @@ bool IrcSvcHandler::IsMessage(unsigned long in) const
     MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
     msgidmap_t::const_iterator iter = MsgIdMap.find(in);
     if (iter != MsgIdMap.end() && iter->second != NULL)
-	RET(true);
+    {
+	map_entry<mMessage> entry(iter->second);
+	if (entry->validated())
+	{
+	    RET(true);
+	}
+    }
     RET(false);
     ETCB();
 }
@@ -2802,29 +2809,41 @@ void EventTask::do_msgcheck(mDateTime & synctime)
 
     static_cast < void > (synctime);
     vector<unsigned long> chunked;
+    unsigned int i;
 
     {
 	MLOCK((lck_IrcSvcHandler, lck_MsgIdMap));
 	if (Magick::instance().ircsvchandler != NULL)
 	{
+	    vector<unsigned long> chunked2;
 	    IrcSvcHandler::msgidmap_t::iterator iter;
 	    for (iter=Magick::instance().ircsvchandler->MsgIdMap.begin(); iter!=Magick::instance().ircsvchandler->MsgIdMap.end(); iter++)
 	    {
+		// iter->first is less reliable, but we have no choice now.
+		if (iter->second == NULL)
+		    chunked2.push_back(iter->first);
+
 		map_entry<mMessage> msg(iter->second);
-		if (msg.entry() != NULL && msg->references() < 2 && 
-		    msg->creation().SecondsSince() > Magick::instance().config.MSG_Seen_Time())
+		if (!msg->validated())
+		{
+		    iter->second = NULL;
+		    msg->setDelete();
+		    chunked2.push_back(msg->msgid());
+		}
+		else if (msg->references() < 2 && msg->creation().SecondsSince() > Magick::instance().config.MSG_Seen_Time())
 		{
 		    chunked.push_back(msg->msgid());
 		    Magick::instance().ircsvchandler->enqueue(msg->msgid(), P_Old);
 		}
 	    }
+	    for (i=0; i<chunked2.size(); i++)
+		Magick::instance().ircsvchandler->MsgIdMap.erase(chunked2[i]);
 	}
     }
 
     if (chunked.size())
     {
 	MLOCK((lck_AllDeps));
-	unsigned int i;
 	map < mMessage::type_t, map < mstring, set < unsigned long > > >::iterator j;
 
 	for (j = mMessage::AllDependancies.begin(); j != mMessage::AllDependancies.end(); j++)
