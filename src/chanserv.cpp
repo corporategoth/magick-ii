@@ -714,7 +714,7 @@ void ChanServ::RemLive(const mstring & in)
     BTCB();
     FT("ChanServ::RemLive", (in));
 
-    RLOCK((lck_ChanServ, lck_live));
+    WLOCK((lck_ChanServ, lck_live));
     ChanServ::live_t::iterator iter = live.find(in.LowerCase());
     if (iter == live.end())
     {
@@ -732,7 +732,6 @@ void ChanServ::RemLive(const mstring & in)
 	entry->setDelete();
     }
     live.erase(iter);
-    WLOCK((lck_ChanServ, lck_live));
     ETCB();
 }
 
