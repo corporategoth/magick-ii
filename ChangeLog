@@ -1,3 +1,66 @@
+* 2002-12-15 21:20  Preston A. Elder <prez@magick.tm>
+  include/magick.h (1.193):
+  
+  Causes ambiguity in some compilers
+
+* 2002-12-14 10:13  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.105), docs/en/index.sgml (1.45):
+  
+  Added maximum live level, and check for negative average lag.
+
+* 2002-12-14 09:02  Preston A. Elder <prez@magick.tm>
+  README (1.28), docs/man/magick.pod (1.16), gui/ChanServ.java (1.8),
+  gui/Config.java (1.8), gui/Files.java (1.13), gui/Startup.java (1.10),
+  gui/ToolTips.java (1.9), include/magick.h (1.192), lang/english.lfo
+  (1.61), lang/example.lfo (1.7), src/ircsocket.cpp (1.243), src/magick.cpp
+  (1.384):
+  
+  Added maximum live level, and check for negative average lag.
+
+* 2002-12-13 21:11  Preston A. Elder <prez@magick.tm>
+  COPYING (1.6), docs/oper.txt (1.6), docs/oper_docbook.sgml (1.5),
+  docs/user.txt (1.7), docs/user_docbook.sgml (1.5), docs/en/index.sgml
+  (1.44):
+  
+  Documentation changes.
+
+* 2002-12-13 16:40  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.315), src/commserv.cpp (1.136):
+  
+  Accomodated for no committees in the override.
+
+* 2002-12-13 14:04  Preston A. Elder <prez@magick.tm>
+  docs/magick.ini (1.104), gui/ChanServ.java (1.7), gui/CommServ.java
+  (1.10), gui/Config.java (1.7), gui/Files.java (1.12), gui/MemoServ.java
+  (1.7), gui/NickServ.java (1.7), gui/OperServ.java (1.8),
+  gui/Services.java (1.6), gui/ToolTips.java (1.8), include/chanserv.h
+  (1.87), include/commserv.h (1.74), lang/english.lfo (1.60),
+  lang/example.lfo (1.6), lang/example.lng (1.7), src/chanserv.cpp (1.314),
+  src/commserv.cpp (1.135), src/magick.cpp (1.383), src/server.cpp (1.256):
+  
+  Added override committee fields for MAX_PER_NICK, MAX_MESSAGES and
+  MAX_LOGON.  Also made all display fields in the GUI Title Case.
+
+* 2002-12-12 10:12  Preston A. Elder <prez@magick.tm>
+  lang/english.lng (1.92), lang/example.lng (1.6):
+  
+  Updated the english header, and the example text
+
+* 2002-12-10 22:01  Preston A. Elder <prez@magick.tm>
+  src/magick.cpp (1.382):
+  
+  Disabled the heartbeat handler.
+
+* 2002-12-09 04:12  Preston A. Elder <prez@magick.tm>
+  FAQ (1.10):
+  
+  Added IPV6 question.
+
+* 2002-12-09 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.61):
+  
+  Created version 2.0s20021209
+
 * 2002-12-08 08:08  Preston A. Elder <prez@magick.tm>
   helper/uninstall.bat (1.6), helper/uninstall2.bat (1.2):
   
