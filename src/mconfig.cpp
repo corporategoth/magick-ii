@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/12/30 19:53:13  prez
+** Fixed problem where it would create keys twice ...
+**
 ** Revision 1.25  2000/12/25 06:36:14  prez
 ** Added locking around the threadtoself map, and removed a bunch of
 ** defines from mstring (while keeping it the same!)
@@ -197,6 +200,7 @@ bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
     FT("ceNode::SetKey", (KeyName, Value));
 
     mstring temppath;
+    bool Result=false;
     if(KeyName[0]=='/')
         temppath=KeyName.After("/");
     else
@@ -206,6 +210,7 @@ bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
     if(!temppath.Contains("/"))
     {
 	i_keys[temppath]=Value;
+	Result=true;
     }
     else
     {
@@ -220,8 +225,7 @@ bool ceNode::SetKey(const mstring &KeyName, const mstring &Value)
         }
         i_children[next]->SetKey(rest,Value);
     }
-    // todo set up the return values, true if it actually sets it, false if it doesn't
-    RET(false);
+    RET(Result);
 }
 
 bool ceNode::DeleteKey(const mstring &KeyName)
@@ -253,7 +257,7 @@ bool ceNode::DeleteKey(const mstring &KeyName)
 	if (iter == i_children.end() || iter->second == NULL)
             Result=false;
         else
-            Result=i_children[next]->DeleteKey(rest);
+            Result=iter->second->DeleteKey(rest);
     }
     RET(Result);
 }
@@ -265,6 +269,7 @@ bool ceNode::CreateNode(const mstring &NodeName)
     // ie NodeName="blah/test/test2", pull out blah, and pass "test/test2" to the node
     FT("ceNode::CreateNode",(NodeName));
     mstring temppath;
+    bool Result=false;
     if(NodeName[0]=='/')
         temppath=NodeName.After("/");
     else
@@ -278,6 +283,7 @@ bool ceNode::CreateNode(const mstring &NodeName)
         {
             i_children[temppath]=new ceNode;
             i_children[temppath]->i_Name=temppath;
+	    Result=true;
         }
     }
     else
@@ -293,14 +299,14 @@ bool ceNode::CreateNode(const mstring &NodeName)
         }
         i_children[next]->CreateNode(rest);
     }
-    // todo set up the return values, true if it actually creates it, false if it doesn't
-    RET(true);
+    RET(Result);
 }
 
 bool ceNode::DeleteNode(const mstring &NodeName)
 {
     FT("ceNode::DeleteNode",(NodeName));
     mstring temppath;
+    bool Result=false;
     if(NodeName[0]=='/')
         temppath=NodeName.After("/");
     else
@@ -315,6 +321,7 @@ bool ceNode::DeleteNode(const mstring &NodeName)
             if(iter->second != NULL)
                 delete iter->second;
             i_children.erase(iter);
+	    Result=true;
         }
     }
     else
@@ -328,8 +335,7 @@ bool ceNode::DeleteNode(const mstring &NodeName)
             i_children[next]->DeleteNode(rest);
         }
     }
-    // todo set up the return values, true if it actually deletes it, false if it doesn't
-    RET(true);
+    RET(Result);
 }
 
 bool ceNode::NodeExists(const mstring &NodeName) const
@@ -442,8 +448,12 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
     {
         // end of the line
 	map<mstring,ceNode * >::const_iterator iter = i_children.find(temppath);
-	if (iter != i_children.end() && iter->second != NULL)
-            Result=iter->second;
+	if (iter == i_children.end() || iter->second == NULL)
+        {
+            i_children[temppath]=new ceNode;
+            i_children[temppath]->i_Name=temppath;
+        }
+	Result=i_children[temppath];
     }
     else
     {
@@ -453,7 +463,7 @@ ceNode *ceNode::GetNode(const mstring &NodeName)
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
 	map<mstring,ceNode * >::iterator iter = i_children.find(next);
-	if (iter == i_children.end() || iter->second != NULL)
+	if (iter == i_children.end() || iter->second == NULL)
         {
             i_children[next]=new ceNode;
             i_children[next]->i_Name=next;
@@ -487,7 +497,7 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
         // note i don't use NodeExists and CreateNode here as this is a recursive function
         // and that would cause it to check if the node exists for every recursion of this function
 	map<mstring,ceNode * >::iterator iter = i_children.find(next);
-	if (iter == i_children.end() || iter->second != NULL)
+	if (iter == i_children.end() || iter->second == NULL)
         {
             i_children[next]=new ceNode;
             i_children[next]->i_Name=next;
@@ -500,7 +510,7 @@ mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
 map<mstring,mstring> ceNode::GetMap() const
 {
     NFT("ceNode::GetMap");
-    map<mstring,mstring> submap, retval;
+    map<mstring,mstring> submap, Result;
 
     map<mstring,ceNode * >::const_iterator i;
     map<mstring,mstring>::const_iterator j;
@@ -512,9 +522,9 @@ map<mstring,mstring> ceNode::GetMap() const
 	    for (j=submap.begin(); j!=submap.end(); j++)
 	    {
 		if (i_Name != "")
-		    retval[i_Name + "/" + j->first] = j->second;
+		    Result[i_Name + "/" + j->first] = j->second;
 		else
-		    retval[j->first] = j->second;
+		    Result[j->first] = j->second;
 
 	    }
 	    submap.clear();
@@ -524,11 +534,11 @@ map<mstring,mstring> ceNode::GetMap() const
     for (j=i_keys.begin(); j!=i_keys.end(); j++)
     {
 	if (i_Name != "")
-	    retval[i_Name + "/" + j->first] = j->second;
+	    Result[i_Name + "/" + j->first] = j->second;
 	else
-	    retval[j->first] = j->second;
+	    Result[j->first] = j->second;
     }
-    NRET(map<mstring_mstring>, retval);
+    NRET(map<mstring_mstring>, Result);
 }
 
 mConfigEngine::mConfigEngine()
@@ -547,14 +557,14 @@ bool mConfigEngine::LoadFile()
 {
     NFT("mConfigEngine::LoadFile");
 
+    bool Result = false;
     if(i_FileName != "" && mFile::Exists(i_FileName))
     {
         vector<mstring> initialload;
         initialload=mFile::UnDump(i_FileName);
-        bool retval = LoadFromArray(initialload);
-        RET(retval);
+        Result = LoadFromArray(initialload);
     }
-    RET(false);
+    RET(Result);
 }
 
 bool mConfigEngine::SaveFile()
@@ -790,22 +800,22 @@ ceNode *mConfigEngine::GetNode(const mstring& NodeName)
     //  could be freed at any time, trust it only as long as you have to
     // but at the moment, i'm just too damn brainfried to redesign this
     FT("mConfigEngine::GetNode", (NodeName));
-    ceNode *retval = RootNode.GetNode(NodeName);
-    NRET(ceNode *, retval);
+    ceNode *Result = RootNode.GetNode(NodeName);
+    NRET(ceNode *, Result);
 }
 
 bool mConfigEngine::DeleteNode(const mstring& NodeName)
 {
     FT("mConfigEngine::DeleteNode", (NodeName));
-    bool retval=RootNode.DeleteNode(NodeName);
-    RET(retval);
+    bool Result=RootNode.DeleteNode(NodeName);
+    RET(Result);
 }
 
 bool mConfigEngine::DeleteKey(const mstring& KeyName)
 {
     FT("mConfigEngine::DeleteKey", (KeyName));
-    bool retval = RootNode.DeleteKey(KeyName);
-    RET(retval);
+    bool Result = RootNode.DeleteKey(KeyName);
+    RET(Result);
 }
 
 bool mConfigEngine::LoadFromString(const mstring& configstring)
@@ -814,8 +824,8 @@ bool mConfigEngine::LoadFromString(const mstring& configstring)
     vector<mstring> tempstore;
     for(unsigned int i=1;i<=configstring.WordCount("\n");i++)
         tempstore.push_back(configstring.ExtractWord(i,"\n"));
-    bool retval = LoadFromArray(tempstore);
-    RET(retval);
+    bool Result = LoadFromArray(tempstore);
+    RET(Result);
 }
 
 bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
@@ -854,7 +864,8 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
 bool mConfigEngine::NodeExists(const mstring &NodeName) const
 {
     FT("mConfigEngine::NodeExists", (NodeName));
-    RET(RootNode.NodeExists(NodeName));
+    bool Result = RootNode.NodeExists(NodeName);
+    RET(Result);
 }
 
 vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
