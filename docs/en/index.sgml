@@ -961,6 +961,7 @@ again at runtime, the settings in the config file will be used.
 --help (or -?)	Help output (summary of the below).
 --dir X		Set the initial services directory.
 --config X	Set the name of the config file.
+--nofork	Do not become a daemon process (dont fork()).
 --convert X	Convert another version of services databases
 		to Magick II format, where X is the type of
 		database to convert.  Currently recognised:
@@ -1000,6 +1001,7 @@ PARAMATER	SHORT	GROUP		OPTION
 --keyfile X	-K	FILES		KEYFILE
 --compress X	-c	FILES		COMPRESSION
 --relink X	-r	CONFIG		SERVER_RELINK
+--norelink		CONFIG		SERVER_RELINK=0
 --cycle X	-t	CONFIG		CYCLETIME
 --save X	-w	CONFIG		SAVETIME
 --check X	-T 	CONFIG		CHECKTIME

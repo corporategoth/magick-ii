@@ -27,6 +27,10 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.157  2001/05/02 02:35:26  prez
+** Fixed dependancy system, and removed printf's - we no longer coredump on
+** a 1000 user network.  As a bonus, we actually synd perfectly ;P
+**
 ** Revision 1.156  2001/05/01 14:00:22  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -542,119 +546,122 @@ void mMessage::AddDependancies()
 	AddDepend(ChanExists, params_.ExtractWord(1, ": "));
     }
 
+    WLOCK2(("AllDependancies"));
+    list<triplet<type_t, mstring, bool> >::iterator iter;
+    for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
+    {
+	switch (iter->first)
+	{
+	case ServerExists:
+	    if (Parent->server.GetServer(iter->second).empty())
+	    {
+		AllDependancies[ServerExists][iter->second].insert(this);
+	    }
+	    else
+	    {
+		iter->third = true;
+	    }
+	    break;
+	case ServerNoExists:
+	    if (!Parent->server.GetServer(iter->second).empty())
+	    {
+		AllDependancies[ServerNoExists][iter->second].insert(this);
+	    }
+	    else
+	    {
+		iter->third = true;
+	    }
+	    break;
+	case NickExists:
+	    if (!Parent->nickserv.IsLive(iter->second))
+	    {
+		AllDependancies[NickExists][iter->second].insert(this);
+	    }
+	    else
+	    {
+		iter->third = true;
+	    }
+	    break;
+	case NickNoExists:
+	    if (Parent->nickserv.IsLive(iter->second))
+	    {
+		AllDependancies[NickNoExists][iter->second].insert(this);
+	    }
+	    else
+	    {
+		iter->third = true;
+	    }
+	    break;
+	case ChanExists:
+	    if (!Parent->chanserv.IsLive(iter->second))
+	    {
+		AllDependancies[ChanExists][iter->second].insert(this);
+	    }
+	    else
+	    {
+		iter->third = true;
+	    }
+	    break;
+	case ChanNoExists:
+	    if (Parent->chanserv.IsLive(iter->second))
+	    {
+		AllDependancies[ChanNoExists][iter->second].insert(this);
+	    }
+	    else
+	    {
+		iter->third = true;
+	    }
+	    break;
+	case UserInChan:
+	    if (Parent->chanserv.IsLive(iter->second.Before(":")))
+	    {
+		if (!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+		{
+		    AllDependancies[UserInChan][iter->second].insert(this);
+		}
+		else
+		{
+		    iter->third = true;
+		}
+	    }
+	    else
+	    {
+		AllDependancies[UserInChan][iter->second].insert(this);
+	    }
+	    break;
+	case UserNoInChan:
+	    if (Parent->chanserv.IsLive(iter->second.Before(":")) &&
+		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+	    {
+		AllDependancies[UserNoInChan][iter->second].insert(this);
+	    }
+	    else
+	    {
+		iter->third = true;
+	    }
+	    break;
+	}
+    }
 }
 
 bool mMessage::OutstandingDependancies()
 {
     NFT("mMessage::OutstandingDependancies");
-    bool retval = false;
-printf("(%p) DEBUG 2-1\n", mThread::find()); fflush(stdout);
 
-    RLOCK(("Dependancies", this));
-printf("(%p) DEBUG 2-2\n", mThread::find()); fflush(stdout);
     if (!dependancies.size())
 	AddDependancies();
-printf("(%p) DEBUG 2-3\n", mThread::find()); fflush(stdout);
     
-    WLOCK(("AllDependancies"));
-
-    // OK, now WE know what WE depend on, find out what we need and add ourselves
-    // to 'what we need's list of dependants.
-printf("(%p) DEBUG 2-4\n", mThread::find()); fflush(stdout);
-    list<pair<type_t, mstring> >::iterator iter;
+    RLOCK(("Dependancies", this));
+    list<triplet<type_t, mstring, bool> >::iterator iter;
     for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
     {
-printf("(%p) DEBUG 2-5\n", mThread::find()); fflush(stdout);
-	switch (iter->first)
+	if (!iter->third)
 	{
-	case ServerExists:
-printf("(%p) DEBUG 2-6\n", mThread::find()); fflush(stdout);
-	    if (Parent->server.GetServer(iter->second).empty())
-	    {
-printf("(%p) DEBUG 2-7\n", mThread::find()); fflush(stdout);
-		AllDependancies[ServerExists][iter->second].insert(this);
-		retval = true;
-	    }
-	    break;
-	case ServerNoExists:
-printf("(%p) DEBUG 2-8\n", mThread::find()); fflush(stdout);
-	    if (!Parent->server.GetServer(iter->second).empty())
-	    {
-printf("(%p) DEBUG 2-9\n", mThread::find()); fflush(stdout);
-		AllDependancies[ServerNoExists][iter->second].insert(this);
-		retval = true;
-	    }
-	    break;
-	case NickExists:
-printf("(%p) DEBUG 2-10\n", mThread::find()); fflush(stdout);
-	    if (!Parent->nickserv.IsLive(iter->second))
-	    {
-printf("(%p) DEBUG 2-11\n", mThread::find()); fflush(stdout);
-		AllDependancies[NickExists][iter->second].insert(this);
-		retval = true;
-	    }
-	    break;
-	case NickNoExists:
-printf("(%p) DEBUG 2-12\n", mThread::find()); fflush(stdout);
-	    if (Parent->nickserv.IsLive(iter->second))
-	    {
-printf("(%p) DEBUG 2-13\n", mThread::find()); fflush(stdout);
-		AllDependancies[NickNoExists][iter->second].insert(this);
-		retval = true;
-	    }
-	    break;
-	case ChanExists:
-printf("(%p) DEBUG 2-14\n", mThread::find()); fflush(stdout);
-	    if (!Parent->chanserv.IsLive(iter->second))
-	    {
-printf("(%p) DEBUG 2-15\n", mThread::find()); fflush(stdout);
-		AllDependancies[ChanExists][iter->second].insert(this);
-		retval = true;
-	    }
-	    break;
-	case ChanNoExists:
-printf("(%p) DEBUG 2-16\n", mThread::find()); fflush(stdout);
-	    if (Parent->chanserv.IsLive(iter->second))
-	    {
-printf("(%p) DEBUG 2-17\n", mThread::find()); fflush(stdout);
-		AllDependancies[ChanNoExists][iter->second].insert(this);
-		retval = true;
-	    }
-	    break;
-	case UserInChan:
-printf("(%p) DEBUG 2-18\n", mThread::find()); fflush(stdout);
-	    if (Parent->chanserv.IsLive(iter->second.Before(":")))
-	    {
-printf("(%p) DEBUG 2-19\n", mThread::find()); fflush(stdout);
-		if (!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
-		{
-printf("(%p) DEBUG 2-20\n", mThread::find()); fflush(stdout);
-		    AllDependancies[UserInChan][iter->second].insert(this);
-		    retval = true;
-		}
-	    }
-	    else
-	    {
-printf("(%p) DEBUG 2-21\n", mThread::find()); fflush(stdout);
-		AllDependancies[UserInChan][iter->second].insert(this);
-		retval = true;
-	    }
-	    break;
-	case UserNoInChan:
-printf("(%p) DEBUG 2-22\n", mThread::find()); fflush(stdout);
-	    if (Parent->chanserv.IsLive(iter->second.Before(":")) &&
-		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
-	    {
-printf("(%p) DEBUG 2-23\n", mThread::find()); fflush(stdout);
-		AllDependancies[UserNoInChan][iter->second].insert(this);
-		retval = true;
-	    }
-	    break;
+	    RET(true);
 	}
     }
-printf("(%p) DEBUG 2-24\n", mThread::find()); fflush(stdout);
 
-    RET(retval);
+    RET(false);
 }
 
 void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, const mstring& param2)
@@ -671,57 +678,55 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 
     vector<mMessage *> msgs;
 
-printf("(%p) DEBUG 1 %d\n", mThread::find(), (int) type); fflush(stdout);
     { WLOCK(("AllDependancies"));
-printf("(%p) DEBUG 2\n", mThread::find()); fflush(stdout);
     map<type_t, map<mstring, set<mMessage *> > >::iterator i = AllDependancies.find(type);
-printf("(%p) DEBUG 3\n", mThread::find()); fflush(stdout);
     if (i != AllDependancies.end())
     {
-printf("(%p) DEBUG 4\n", mThread::find()); fflush(stdout);
 	mstring target;
 	if (!param2.empty())
 	    target = param1.LowerCase() + ":" + param2.LowerCase();
 	else
 	    target = param1.LowerCase();
-printf("(%p) DEBUG 5 %s\n", mThread::find(), target.c_str()); fflush(stdout);
 
 	map<mstring, set<mMessage *> >::iterator j = i->second.find(target);
-printf("(%p) DEBUG 6\n", mThread::find()); fflush(stdout);
 	if (j != i->second.end())
 	{
-printf("(%p) DEBUG 7\n", mThread::find()); fflush(stdout);
 	    set<mMessage *>::iterator k;
 	    for (k=j->second.begin(); k!=j->second.end(); k++)
 	    {
-printf("(%p) DEBUG 8 %p\n", mThread::find(), *k); fflush(stdout);
-if (*k != NULL)
-    printf("(%p) DEBUG 8a %s %s %s\n", mThread::find(), (*k)->source().c_str(),
-		(*k)->msgtype().c_str(), (*k)->params().c_str()); fflush(stdout);
-
-		if (*k != NULL && !(*k)->OutstandingDependancies())
+		if (*k != NULL)
 		{
-printf("(%p) DEBUG 9\n", mThread::find()); fflush(stdout);
-		    msgs.push_back(*k);
+		    (*k)->DependancySatisfied(type, target);
+		    if (!(*k)->OutstandingDependancies())
+		    {
+			msgs.push_back(*k);
+		    }
 		}
 	    }
-printf("(%p) DEBUG 10\n", mThread::find()); fflush(stdout);
 	    i->second.erase(j);
 	}
     }}
-printf("(%p) DEBUG 11 %d\n", mThread::find(), msgs.size()); fflush(stdout);
 
-    for (unsigned int k=0; k<msgs.size(); k++)
+    for (unsigned int l=0; l<msgs.size(); l++)
     {
-printf("(%p) DEBUG 12 %p\n", mThread::find(), msgs[k]); fflush(stdout);
-if (msgs[k] != NULL)
-    printf("(%p) DEBUG 12a %s %s %s\n", mThread::find(), msgs[k]->source().c_str(),
-		msgs[k]->msgtype().c_str(), msgs[k]->params().c_str()); fflush(stdout);
-	msgs[k]->call();
-printf("(%p) DEBUG 13\n", mThread::find()); fflush(stdout);
-	delete msgs[k];
+	msgs[l]->call();
+	delete msgs[l];
     }
-printf("(%p) DEBUG 14\n", mThread::find()); fflush(stdout);
+}
+
+void mMessage::DependancySatisfied(mMessage::type_t type, const mstring& param)
+{
+    FT("mMessage::DependancySatisfied", ((int) type, param));
+
+    WLOCK(("Dependancies", this));
+    list<triplet<type_t, mstring, bool> >::iterator iter;
+    for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
+    {
+	if (iter->first == type && iter->second == param)
+	{
+	    iter->third = true;
+	}
+    }
 }
 
 int mMessage::call()
@@ -732,6 +737,7 @@ int mMessage::call()
     {
 	if (msgtype_.IsSameAs("SHUTDOWN", false))
 	    RET(-1);
+	RET(0);
     }
 
     CP(("Processing message (%s) %s %s", source_.c_str(), msgtype_.c_str(), params_.c_str()));
@@ -1078,13 +1084,8 @@ void mBaseTask::message(const mstring& message)
     }
 
     mMessage *msg = new mMessage(source, msgtype, params);
-printf("(%p) DEBUG 3-1\n", mThread::find()); fflush(stdout);
     if (!msg->OutstandingDependancies())
-    {
-printf("(%p) DEBUG 3-2\n", mThread::find()); fflush(stdout);
 	message_queue_.enqueue(msg);
-    }
-printf("(%p) DEBUG 3-3\n", mThread::find()); fflush(stdout);
 }
 
 int mBaseTask::check_LWM()

@@ -25,6 +25,10 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.90  2001/05/02 02:35:26  prez
+** Fixed dependancy system, and removed printf's - we no longer coredump on
+** a 1000 user network.  As a bonus, we actually synd perfectly ;P
+**
 ** Revision 1.89  2001/05/01 14:00:21  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -221,10 +225,10 @@ public:
 
 private:
 
-    list<pair<type_t, mstring> > dependancies;
+    list<triplet<type_t, mstring, bool> > dependancies;
     static map<type_t, map<mstring, set<mMessage *> > > AllDependancies;
     void AddDepend(const type_t type, const mstring& param)
-	{ dependancies.push_back(pair<type_t,mstring>(type, param)); }
+	{ dependancies.push_back(triplet<type_t,mstring,bool>(type, param, false)); }
     void AddDependancies();
 
 public:
@@ -234,6 +238,7 @@ public:
 
     bool OutstandingDependancies();
     static void CheckDependancies(type_t type, const mstring& param1, const mstring& param2 = "");
+    void DependancySatisfied(type_t type, const mstring& param);
 
     mstring source() { return source_; }
     mstring msgtype() { return msgtype_; }

@@ -28,6 +28,10 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.165  2001/05/02 02:35:27  prez
+** Fixed dependancy system, and removed printf's - we no longer coredump on
+** a 1000 user network.  As a bonus, we actually synd perfectly ;P
+**
 ** Revision 1.164  2001/05/01 14:00:24  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -4424,9 +4428,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 
 			mMessage::CheckDependancies(mMessage::ChanExists, chan);
 			for (i=0; i<users.size(); i++)
-			{
 			    mMessage::CheckDependancies(mMessage::UserInChan, chan, users[i]);
-			}
 		    }
 		}
 		else if (modes.length() > 1)

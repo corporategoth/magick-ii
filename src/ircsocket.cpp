@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.155  2001/05/02 02:35:27  prez
+** Fixed dependancy system, and removed printf's - we no longer coredump on
+** a 1000 user network.  As a bonus, we actually synd perfectly ;P
+**
 ** Revision 1.154  2001/05/01 14:00:23  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -1527,6 +1531,7 @@ int EventTask::svc(void)
 	if (last_msgcheck.SecondsSince() > Parent->config.MSG_Check_Time())
 	{
 	    set<mMessage *> Ids, AllIds;
+	    set<mMessage *>::iterator k;
 
 	    { WLOCK(("AllDependancies"));
 	    map<mMessage::type_t, map<mstring, set<mMessage *> > >::iterator i;
@@ -1535,7 +1540,6 @@ int EventTask::svc(void)
 		map<mstring, set<mMessage *> >::iterator j;
 		for (j=i->second.begin(); j!=i->second.end(); j++)
 		{
-		    set<mMessage *>::iterator k;
 		    for (k=j->second.begin(); k!=j->second.end(); k++)
 		    {
 			if (*k == NULL || (*k)->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
@@ -1554,7 +1558,6 @@ int EventTask::svc(void)
 		    i->second.erase(chunked[k]);
 		chunked.clear();
 	    }}
-	    set<mMessage *>::iterator k;
 	    for (k=AllIds.begin(); k!=AllIds.end(); k++)
 		delete *k;
 	}}

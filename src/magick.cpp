@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.300  2001/05/02 02:35:27  prez
+** Fixed dependancy system, and removed printf's - we no longer coredump on
+** a 1000 user network.  As a bonus, we actually synd perfectly ;P
+**
 ** Revision 1.299  2001/05/01 14:00:23  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -461,6 +465,8 @@ RCSID(magick_cpp, "@(#)$Id$");
 #include "convert_esper.h"
 #endif
 
+static bool nofork = false;
+
 //#define LOGGING
 
 mDateTime StartTime;
@@ -630,40 +636,44 @@ int Magick::Start()
     }
     FLUSH();
 
-    // Need to shut down, it wont be carried over fork.
-    // We will re-start it ASAP after fork.
-    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK")));
-    errno = 0;
-    Result = ACE::daemonize(Services_Dir(), 0, i_programname);
-    if (Result < 0 && errno)
-    {
-	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/OPERROR"),
-		"fork", errno, strerror(errno)));
-    }
-    else if (Result != 0)
-    {
-	RET(MAGICK_RET_NORMAL);
-    }
-    errno = 0;
-    Result = ACE_OS::setpgid (0, 0);
-    if (Result < 0 && errno)
-    {
-	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/OPERROR"),
-		"setpgid", errno, strerror(errno)));
-    }
     Result = ACE_OS::getuid();
     if (Result == 0)
     {
 	LOG((LM_ALERT, getLogMessage("SYS_ERRORS/RUN_AS_ROOT")));
     }
 
-    pidfile.Open(files.Pidfile(),"w");
-    if(pidfile.IsOpened())
+    // Need to shut down, it wont be carried over fork.
+    // We will re-start it ASAP after fork.
+    if (!nofork)
     {
-	mstring dummystring;
-	dummystring<<getpid();
-	pidfile.Write(dummystring);
-	pidfile.Close();
+	LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK")));
+	errno = 0;
+	Result = ACE::daemonize(Services_Dir(), 0, i_programname);
+	if (Result < 0 && errno)
+	{
+	    LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/OPERROR"),
+		"fork", errno, strerror(errno)));
+	}
+	else if (Result != 0)
+	{
+	    RET(MAGICK_RET_NORMAL);
+	}
+	errno = 0;
+	Result = ACE_OS::setpgid (0, 0);
+	if (Result < 0 && errno)
+	{
+	    LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/OPERROR"),
+		"setpgid", errno, strerror(errno)));
+	}
+
+	pidfile.Open(files.Pidfile(),"w");
+	if(pidfile.IsOpened())
+	{
+	    mstring dummystring;
+	    dummystring<<getpid();
+	    pidfile.Write(dummystring);
+	    pidfile.Close();
+	}
     }
 
     // load the local messages database and internal "default messages"
@@ -1088,6 +1098,7 @@ void Magick::dump_help() const
 	 << "--help             -?      Help output (summary of the below).\n"
 	 << "--dir X                    Set the initial services directory.\n"
 	 << "--config X                 Set the name of the config file.\n"
+	 << "--nofork                   Do not become a daemon process.\n"
 #ifdef CONVERT
 	 << "--convert X                Convert another version of services databases\n"
 	 << "                           to Magick II format, where X is the type of\n"
@@ -1118,6 +1129,7 @@ void Magick::dump_help() const
 	 << "--keyfile X        -K      Override [FILES/KEYFILE] to X.\n"
 	 << "--compress X       -c      Override [FILES/COMPRESSION] to X.\n"
 	 << "--relink X         -r      Override [CONFIG/SERVER_RELINK] to X.\n"
+	 << "--norelink                 Override [CONFIG/SERVER_RELINK] to 0.\n"
 	 << "--cycle X          -t      Override [CONFIG/CYCLETIME] to X.\n"
 	 << "--save X           -w      Override [CONFIG/SAVETIME] to X.\n"
 	 << "--check X          -T      Override [CONFIG/CHECKTIME] to X.\n"
@@ -1474,6 +1486,10 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
     else if(first=="--norelink")
     {
 	config.server_relink=0;
+    }
+    else if(first=="--nofork")
+    {
+	nofork=true;
     }
     else if(first=="--cycle" || first=="--expire")
     {
@@ -3016,8 +3032,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 {
     // No trace, screws with LastFunc...
     //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
-    ThreadID *tid = mThread::find();
-printf("(%p) In signal handler - %d\n", tid, signum); fflush(stdout);
+    ThreadID *tid;
 
     // todo: fill this sucker in
     switch(signum)
