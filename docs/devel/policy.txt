@@ -8,8 +8,8 @@ Written as of Magick II.
 
 * Alpha releases are to be released in the design phase of
   any release, for the alpha team to supply feedback of how
-  the core design could be changed, enhansed, etc.  This
-  includes the user interface (or proposed one) aswell as the
+  the core design could be changed, enhanced, etc.  This
+  includes the user interface (or proposed one) as well as the
   internal data structures, etc.
   ALPHA TEAM: The code here is guarenteed to be incomplete.
 

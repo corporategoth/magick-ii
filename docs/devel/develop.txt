@@ -255,8 +255,8 @@ x Add to mDateTime a 'Difference' function that will output the difference
 	Hour() = 13, Min() = 12, Sec() = 43, Msec() = 905
 
 * Redo the locking with some macros to setup/emulate  a try..finally type
-	scenario on gcc and msvc (and bcb at a later date). Note Function
-	macros only, so that we don't get that damn triplet argument fuckup again.
+	scenario on gcc, msvc and bcb . Note Function macros only, so that we don't get 
+	that damn triplet argument fuckup again.
 
 Scripting
 ---------
@@ -274,7 +274,7 @@ Scripting
 
 Databases
 ---------
-x bytesex independant data storage
+x bytesex independant data storage (research on xml based storage in progress)
 
 x compressed iostream filters
 
