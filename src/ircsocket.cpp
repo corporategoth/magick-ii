@@ -94,5 +94,15 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	//okay we got a connection problem here. log it and try again
 	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->Config_SERVER_RELINK));
     }
+    else
+    {
+        ACE_INET_Addr localaddr;
+	Parent->ircsvchandler->peer().get_local_addr(localaddr);
+	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
+        mstring passcmd="PASS "+Parent->Startup_PASSWORD+"\n";
+	Parent->ircsvchandler->send(passcmd);
+	mstring servercmd="SERVER "+Parent->Startup_SERVER_NAME+" 1 :"+Parent->Startup_SERVER_DESC+"\n";
+	Parent->ircsvchandler->send(servercmd);
+    }
     return 0;
 }

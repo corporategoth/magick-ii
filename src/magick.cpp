@@ -300,6 +300,9 @@ int Magick::Start()
     /*
     ircsvchandler->send(mstring); // ie server line.
     */
+    ACE_INET_Addr localaddr;
+    ircsvchandler->peer().get_local_addr(localaddr);
+    CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
     mstring passcmd="PASS "+Startup_PASSWORD+"\n";
     ircsvchandler->send(passcmd);
     mstring servercmd="SERVER "+Startup_SERVER_NAME+" 1 :"+Startup_SERVER_DESC+"\n";

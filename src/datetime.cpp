@@ -471,7 +471,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 			Result<<mstring(format[i]);
 			break;
 		default:
-			wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
+			wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal",format[i]);
+			wxLogWarning("FormatString==%s",format.c_str());
 			Result<<mstring(format[i]);
 		};
 		i++;
