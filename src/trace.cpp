@@ -72,10 +72,23 @@ Trace::Trace()
 Trace::~Trace()
 {}
 
+Trace::TraceTypes Trace::resolve(Trace::level_enum level, threadtype_enum type)
+{ 
+	return tmap[levelpair(type,level)]; 
+}
 Trace::TraceTypes Trace::resolve(Trace::level_enum level, ThreadID *tid)
 { 
-	return tmap[levelpair(tid->type(),level)]; 
+	return resolve(level, tid->type());
 }
+Trace::TraceTypes Trace::resolve(threadtype_enum type)
+{ 
+	return resolve(SLevel, type);
+}
+Trace::TraceTypes Trace::resolve(ThreadID *tid)
+{ 
+	return resolve(SLevel, tid->type());
+}
+
 
 // ===================================================
 
@@ -187,7 +200,7 @@ Modify::Modify(const mVarArray &args)
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
-	    message << "<<" << "DE" << i+1 << "(" << args[i].AsString() << ")";
+	    message << "<< " << "DE" << i+1 << "(" << args[i].AsString() << ")";
 	    tid->WriteOut(message);
 	}
     }
@@ -199,7 +212,7 @@ Modify::EndModify(const mVarArray &args)
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
-	    message << ">>" << "DE" << i+1 << "(" << args[i].AsString() << ")";
+	    message << ">> " << "DE" << i+1 << "(" << args[i].AsString() << ")";
 	    tid->WriteOut(message);
 	}
     }

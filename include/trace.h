@@ -34,12 +34,45 @@ using namespace std;
 class Thread;
 class ThreadID;
 
-enum threadtype_enum{ MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
+// OperServ TRACE Syntax:
+//
+// TRACE SET 0x000000B0		Set exact TraceTypes
+// TRACE SET B			Just 3 flags
+// TRACE SET Func*		Just 1 flag
+// TRACE SET Func* Chat*	Just 2 flags
+// TRACE SET NS B		Just 3 flags
+// TRACE SET NS Func*		Just 1 flag
+// TRACE SET NS Func* Chat*	Just 2 flags
+// TRACE SET ALL B		Just 3 flags
+// TRACE SET ALL Func*		Just 1 flag
+// TRACE SET ALL Func* Chat*	Just 2 flags
+// TRACE UP B			8 + 2 + 1 (3 flags)
+// TRACE UP Func*		4 (1 flag)
+// TRACE UP Func* Chat*		4 + 1 (2 flags)
+// TRACE UP NS B		8 + 2 + 1 (3 flags)
+// TRACE UP NS Func*		4 (1 flag)
+// TRACE UP NS Func* Chat*	4 + 1 (2 flags)
+// TRACE UP ALL B		8 + 2 + 1 (3 flags)
+// TRACE UP ALL Func*		4 (1 flag)
+// TRACE UP ALL Func* Chat*	4 + 1 (2 flags)
+// TRACE DOWN B			8 + 2 + 1 (3 flags)
+// TRACE DOWN Func*		4 (1 flag)
+// TRACE DOWN Func* Chat*	4 + 1 (2 flags)
+// TRACE DOWN NS B		8 + 2 + 1 (3 flags)
+// TRACE DOWN NS Func*		4 (1 flag)
+// TRACE DOWN NS Func* Chat*	4 + 1 (2 flags)
+// TRACE DOWN ALL B		8 + 2 + 1 (3 flags)
+// TRACE DOWN ALL Func*		4 (1 flag)
+// TRACE DOWN ALL Func* Chat*	4 + 1 (2 flags)
+//
+
+enum threadtype_enum { MAIN = 0, NickServ, ChanServ, MemoServ, OperServ, OtherServ, ServNet, BOB, MAX };
+char threadname[MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
 
 class Trace
 {
 
-    long TraceLevel;
+    static long TraceLevel;
     enum TraceTypes {
 	TT_Off		= 0,
 	G_Stats		= 0x00000001,	// CPU/Memory and Global Flags
@@ -77,8 +110,27 @@ class Trace
     };
 
 public:
-    enum level_enum { Off = 0, Stats = 1, Source = 2, Locking = 4, Sockets = 4, Bind = 2,
-	External = 4, Chatter = 1, CheckPoint = 2, Functions = 3, Modify = 4 };
+    enum level_enum { Off = 0, Stats = 1, Source = 2, Locking = 8, Sockets = 8, Bind = 2,
+	External = 8, Chatter = 1, CheckPoint = 2, Functions = 4, Modify = 8 };
+    struct levelname_struct {
+	mstring name;
+	level_enum level;
+    } levelname;
+    levelname = {{ "OFF", Off },
+		{ "STAT*", Stats },
+		{ "SOUR*", Source },
+		{ "SRC*", Source },
+		{ "L*CK*", Locking },
+		{ "S*CK*", Sockets },
+		{ "BIND*", Bind },
+		{ "REG*", Bind },
+		{ "HOOK*", Bind },
+		{ "EXT*", External },
+		{ "CHAT*", Chatter },
+		{ "CHE*", CheckPoint },
+		{ "C*P*", CheckPoint },
+		{ "F*NC*", Functions },
+		{ "MOD*", Modify }};
 
 	// Thread* for now till we get it done
 private:
@@ -90,7 +142,15 @@ private:
     bool IsOnBig(TraceTypes level)
 	{ return (level & TraceLevel!=0); }
 
+    TraceTypes resolve(level_enum level, threadtype_enum type);
     TraceTypes resolve(level_enum level, ThreadID *tid);
+    TraceTypes resolve(threadtype_enum type);
+    TraceTypes resolve(ThreadID *tid);
+
+    void TurnUp(TraceTypes param)
+	{ TraceLevel |= param; }
+    void TurnDown(TraceTypes param)
+	{ TraceLevel &= ~param; }
 
 public:
     Trace();
@@ -99,10 +159,35 @@ public:
     level_enum ShortLevel(level_enum level) { return (SLevel = level); }
     level_enum ShortLevel() { return SLevel; }
 
-    bool IsOn(ThreadID *tid)
-	{ return IsOnBig(resolve(SLevel, tid)); }
+    void TurnSet(long param)
+	{ TraceLevel = param; }
+
+    bool IsOn(level_enum level, threadtype_enum type)
+	{ return IsOnBig(resolve(level, type)); }
     bool IsOn(level_enum level, ThreadID *tid)
 	{ return IsOnBig(resolve(level, tid)); }
+    bool IsOn(threadtype_enum type)
+	{ return IsOnBig(resolve(type)); }
+    bool IsOn(ThreadID *tid)
+	{ return IsOnBig(resolve(tid)); }
+
+    void TurnUp(level_enum level, threadtype_enum type)
+	{ TurnUp(resolve(level, type)); }
+    void TurnUp(level_enum level, ThreadID *tid)
+	{ TurnUp(resolve(level, tid)); }
+    void TurnUp(threadtype_enum type)
+	{ TurnUp(resolve(type)); }
+    void TurnUp(ThreadID *tid)
+	{ TurnUp(resolve(tid)); }
+
+    void TurnDown(level_enum level, threadtype_enum type)
+	{ TurnDown(resolve(level, type)); }
+    void TurnDown(level_enum level, ThreadID *tid)
+	{ TurnDown(resolve(level, tid)); }
+    void TurnDown(threadtype_enum type)
+	{ TurnDown(resolve(type)); }
+    void TurnDown(ThreadID *tid)
+	{ TurnDown(resolve(tid)); }
 };
 
 // ===================================================
