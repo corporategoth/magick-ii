@@ -25,6 +25,9 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2001/12/23 20:46:03  prez
+** Added cleanup code for committee entries in channel access list.
+**
 ** Revision 1.59  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -214,6 +217,7 @@ public:
 
     mstring Name()const		{ return i_Name; }
     mDateTime RegTime() const;
+    void Drop();
     mstring HeadCom() const;
     mstring Head() const;
     void Head(const mstring& newhead);

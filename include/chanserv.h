@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.71  2001/12/23 20:46:03  prez
+** Added cleanup code for committee entries in channel access list.
+**
 ** Revision 1.70  2001/12/23 08:17:36  prez
 ** Added ability to add both hostmasks and committees to channel access
 ** lists.  Priority of access search is nickname, committee, then mask.
@@ -547,10 +550,10 @@ public:
     set<entlist_val_t<long> >::iterator Access_end()
 	{ return i_Access.end(); }
     size_t Access_size() const	{ return i_Access.size(); }
-    bool Access_find(const mstring& entry, const commstat_t commstat = C_IsIn,
-		const bool looklive = true);
-    long Access_value(const mstring& entry, const commstat_t commstat = C_IsIn,
-		const bool looklive = true);
+    bool Access_find(const mstring& entry, const commstat_t commstat = C_None,
+		const bool looklive = false);
+    long Access_value(const mstring& entry, const commstat_t commstat = C_None,
+		const bool looklive = false);
     set<entlist_val_t<long> >::iterator Access;
     long GetAccess(const mstring& entry);
     bool GetAccess(const mstring& entry, const mstring& type);
@@ -572,10 +575,10 @@ public:
     set<entlist_val_t<mstring> >::iterator Akick_end()
 	{ return i_Akick.end(); }
     size_t Akick_size() const	{ return i_Akick.size(); }
-    bool Akick_find(const mstring& entry, const commstat_t commstat = C_IsIn,
-		const bool looklive = true);
-    mstring Akick_string(const mstring& entry, const commstat_t commstat = C_IsIn,
-		const bool looklive = true);
+    bool Akick_find(const mstring& entry, const commstat_t commstat = C_None,
+		const bool looklive = false);
+    mstring Akick_string(const mstring& entry, const commstat_t commstat = C_None,
+		const bool looklive = false);
     set<entlist_val_t<mstring> >::iterator Akick;
 
     // FIND: Looks for EXACT MATCH of nick entry.

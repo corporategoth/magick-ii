@@ -23,16 +23,6 @@ x Done
     for this, we would need db storage, and per second stats that can
     be gathered -- and of course, how long to keep them is a problem.
 
-= Work out some form of database redundancy (maybe backup copies) so
-  that if we get a fucked up database, all aint lost. (credit skold).
-  > I'd say this should be a shell script (Multipal versions of magick
-    will also accomodate this).
-  > Currently we create a 'old' file while saving a 'new' file, only when
-    the save is done, do we move the 'new' file to the correct filename
-    and THEN delete the old file, so essentially if an 'old' file exists
-    and a new file exists, remove the new file and copy the old file as
-    the databses.  If an old file exists and no new file does, remove it.
-
 * If a misconfigured server fights with services (ie a missing uline) have
   services go into a sort of standby mode, requiring any ircop to re enable
   them once the server has been fixed or removed (and leave certain commands
@@ -50,10 +40,6 @@ x Done
 * Should be able to have permanent akills
   > Dont like this personally coz I've seen it abused (ie. not cleaned up).
 
-* Restart command in OperServ.
-  > Why? you can squit services, and reload config if necessary .. hrm.
-    Only thing it doesnt do is reload db's from file -- possible command?
-
 * Log and announce new max users (optional) -- possibly store values.
   > As with previous point, should be part of a more advanced stats system.
 
@@ -62,7 +48,7 @@ x Done
 * Ability to 'rename' a channel (eg. #aic -> #lucida).
 
 * Have AKILL check online to ensure they are not akilling anyone on
-  a committee higher than themselves.
+  a committee 'higher' than themselves.
 
 * Ability to have CS on-join messages go to only people NOT on the access
   list.
@@ -75,14 +61,6 @@ x Done
   > Becomes difficult because a user@host clone override should not effect
     an @host clone limit -- so 8 users from one user@host should not stop
     another user from the same @host signing on.
-
-* Allow committees to be added somehow to a channel access list, with direct
-  entries for users on the list overriding their committee listign.
-  > Probably best method would be to maintain a seperate 'com_access' list
-    same as access list, but with committees.  Would mean searching through
-    ALL these committees during GetAccess (used alot, including on join).
-  > Would also have to do cleanup, removing committees from access lists
-    when they're dropped.
 
 * Have a per-channel 'bad words' list that will kick on mention of them
   > Requires chanserv to be in channel, or epona-style 'botserv'.  I

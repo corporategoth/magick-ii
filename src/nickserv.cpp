@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.195  2001/12/23 20:46:03  prez
+** Added cleanup code for committee entries in channel access list.
+**
 ** Revision 1.194  2001/12/23 08:17:36  prez
 ** Added ability to add both hostmasks and committees to channel access
 ** lists.  Priority of access search is nickname, committee, then mask.
@@ -3400,7 +3403,7 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 	{ MLOCK(("ChanServ", "stored", csiter->first, "Access"));
 	found = false;
 	valueL = 0;
-	if (csiter->second.Access_find(i_Name, Chan_Stored_t::C_None, false))
+	if (csiter->second.Access_find(i_Name))
 	{
 	    valueL = csiter->second.Access->Value();
 	    modifier = csiter->second.Access->Last_Modifier();
@@ -3408,7 +3411,7 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 	    csiter->second.Access_erase();
 	    found = true;
 	}
-	if (csiter->second.Access_find(oldnick, Chan_Stored_t::C_None, false))
+	if (csiter->second.Access_find(oldnick))
 	{
 	    if (csiter->second.Access->Value() > valueL)
 		valueL = csiter->second.Access->Value();
@@ -3424,7 +3427,7 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 	} }
 	{ MLOCK(("ChanServ", "stored", csiter->first, "Akick"));
 	found = false;
-	if (csiter->second.Akick_find(i_Name, Chan_Stored_t::C_None, false))
+	if (csiter->second.Akick_find(i_Name))
 	{
 	    valueS = csiter->second.Akick->Value();
 	    modifier = csiter->second.Akick->Last_Modifier();
@@ -3432,7 +3435,7 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 	    csiter->second.Akick_erase();
 	    found = true;
 	}
-	if (csiter->second.Akick_find(oldnick, Chan_Stored_t::C_None, false))
+	if (csiter->second.Akick_find(oldnick))
 	{
 	    valueS = csiter->second.Akick->Value();
 	    modifier = csiter->second.Akick->Last_Modifier();

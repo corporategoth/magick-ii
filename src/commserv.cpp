@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.109  2001/12/23 20:46:03  prez
+** Added cleanup code for committee entries in channel access list.
+**
 ** Revision 1.108  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -399,6 +402,21 @@ mDateTime Committee_t::RegTime() const
     NFT("Committee_t::RegTime");
     RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_RegTime"));
     RET(i_RegTime);
+}
+
+void Committee_t::Drop()
+{
+    // Now we go for our channels ...
+    ChanServ::stored_t::iterator iter;
+    mstring entry = "@" + i_Name;
+    { RLOCK(("ChanServ", "stored"));
+    for (iter = Magick::instance().chanserv.StoredBegin();
+	    iter != Magick::instance().chanserv.StoredEnd(); iter++)
+    {
+	MLOCK(("ChanServ", "stored", iter->first, "Access"));
+	if (iter->second.Access_find(entry))
+	    iter->second.Access_erase();
+    }}
 }
 
 mstring Committee_t::HeadCom() const
@@ -1461,6 +1479,7 @@ void CommServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	return;
     }
 
+    Magick::instance().commserv.GetList(committee).Drop();
     Magick::instance().commserv.RemList(committee);
     Magick::instance().commserv.stats.i_Del++;
     SEND(mynick, source, "COMMSERV/DEL", ( committee));

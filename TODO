@@ -7,14 +7,6 @@ $Id$
 Feature requests that have been 'approved' by the
 development team to be worked on, and are coming:
 
-- Put in a maximum number of threads we can go to. 
-
-- Split out dead thread detection to an event based thing,
-  and expand it to detect dead Event and DCC threads.  This
-  means adding in a 'type' field, but means I can re-start
-  all thread types ... and I wont be betting on the event
-  thread not locking up.
-
 - Expanded flood protection (eg. nick flood = kill, etc)
 
 - Per-channel clone override lists (kick if cloning)

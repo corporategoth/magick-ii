@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.271  2001/12/23 20:46:03  prez
+** Added cleanup code for committee entries in channel access list.
+**
 ** Revision 1.270  2001/12/23 19:16:35  prez
 ** Fixed typos in chanserv.cpp
 **
@@ -2190,7 +2193,7 @@ bool Chan_Stored_t::Join(const mstring& nick)
     }
 
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
-    if (Akick_find(nick, C_IsOn))
+    if (Akick_find(nick, C_IsOn, true))
     {
 	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
@@ -2449,7 +2452,7 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
     // We supply the OLD nick to check the mask, and then the
     // new nick to check nick only (livelook is off).
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
-    if (Akick_find(nick, C_IsOn) || Akick_find(newnick, C_IsOn, false))
+    if (Akick_find(nick, C_IsOn, true) || Akick_find(newnick, C_IsOn))
     {
 	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
@@ -2675,7 +2678,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    if (!(setter.Contains(".") && Anarchy()) &&
 			!(Magick::instance().nickserv.IsLive(arg) &&
 			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
-			(Access_value(arg) <= Level_value("AUTODEOP") ||
+			(Access_value(arg, C_IsOn, true) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) &&
 			Secureops())))
 		    {
@@ -2711,7 +2714,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    if (!(setter.Contains(".") && Anarchy()) &&
 			!(Magick::instance().nickserv.IsLive(arg) &&
 			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
-			(Access_value(arg) <= Level_value("AUTODEOP") ||
+			(Access_value(arg, C_IsOn, true) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDHALFOP") ||
 			  GetAccess(arg, "AUTOHALFOP")) &&
 			Secureops())))
@@ -2736,7 +2739,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    if (!(setter.Contains(".") && Anarchy()) &&
 			!(Magick::instance().nickserv.IsLive(arg) &&
 			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
-			(Access_value(arg) <= Level_value("AUTODEOP") ||
+			(Access_value(arg, C_IsOn, true) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDVOICE") ||
 			  GetAccess(arg, "AUTOVOICE")) &&
 			Secureops())))
@@ -4832,8 +4835,7 @@ bool Chan_Stored_t::Access_insert(const mstring& i_entry, const long value,
     }
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
-    bool rv = Access_find(entry);
-    if (!rv || (entry[0u] != '@' && Access->Entry()[0u] == '@'))
+    if (!Access_find(entry))
     {
 	pair<set<entlist_val_t<long> >::iterator, bool> tmp;
 	MCB(i_Access.size());
@@ -4923,7 +4925,7 @@ bool Chan_Stored_t::Access_find(const mstring& entry,
 	    if (entry.Contains("@"))
 	    {
 		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
-		    if (entry.Matches(iter->Entry(), true))
+		    if (iter->Entry().Contains("@") && entry.Matches(iter->Entry(), true))
 			break;
 	    }
 	    else if (livelook && Magick::instance().nickserv.IsLive(entry))
@@ -4931,7 +4933,7 @@ bool Chan_Stored_t::Access_find(const mstring& entry,
 		mstring mask = Magick::instance().nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H);
 
 		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
-		    if (mask.Matches(iter->Entry(), true))
+		    if (iter->Entry().Contains("@") && mask.Matches(iter->Entry(), true))
 			break;
 	    }
 	}
@@ -5026,7 +5028,7 @@ long Chan_Stored_t::GetAccess(const mstring& entry)
 	}
 	else
 	{
-	    retval = Access_value(realentry, C_IsOn);
+	    retval = Access_value(realentry, C_IsOn, true);
 	}
     }
     RET(retval);
@@ -5082,8 +5084,7 @@ bool Chan_Stored_t::Akick_insert(const mstring& i_entry, const mstring& value,
     }
 
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
-    bool rv = Akick_find(entry);
-    if (!rv || (entry[0u] != '@' && Access->Entry()[0u] == '@'))
+    if (!Akick_find(entry))
     {
 	pair<set<entlist_val_t<mstring> >::iterator, bool> tmp;
 	MCB(i_Akick.size());
@@ -5182,7 +5183,7 @@ bool Chan_Stored_t::Akick_find(const mstring& entry,
 	    if (entry.Contains("@"))
 	    {
 		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
-		    if (entry.Matches(iter->Entry(), true))
+		    if (iter->Entry().Contains("@") && entry.Matches(iter->Entry(), true))
 			break;
 	    }
 	    else if (livelook && Magick::instance().nickserv.IsLive(entry))
@@ -5190,7 +5191,7 @@ bool Chan_Stored_t::Akick_find(const mstring& entry,
 		mstring mask(Magick::instance().nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H));
 
 		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
-		    if (mask.Matches(iter->Entry(), true))
+		    if (iter->Entry().Contains("@") && mask.Matches(iter->Entry(), true))
 			break;
 	    }
 	}
@@ -9820,7 +9821,7 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
     }
 
     MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Access"));
-    if (cstored.Access_find(who))
+    if (cstored.Access_find(who, Chan_Stored_t::C_IsIn))
     {
 	if (cstored.Access->Value() >= cstored.GetAccess(source))
 	{
@@ -9830,7 +9831,7 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
 	}
     }
 
-    if (cstored.Access_find(who, Chan_Stored_t::C_None))
+    if (cstored.Access_find(who))
     {
 	mstring entry = cstored.Access->Entry();
 	if (entry[0u] == '@')
@@ -9950,8 +9951,22 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
     }
     else
     {
+	if (who.Contains("@") || who.Contains("!"))
+	{
+	    if (!who.Contains("@"))
+	    {
+		SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
+		    Magick::instance().getMessage(source, "LIST/AKICK"), '@'));
+		return;
+	    }
+	    else if (who[0u] != '@' && !who.Contains("!"))
+	    {
+		who.prepend("*!");
+	    }
+	}
+
 	MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Access"));
-	if (cstored.Access_find(who))
+	if (cstored.Access_find(who, Chan_Stored_t::C_IsIn))
 	{
 	    if (cstored.Access->Value() >= cstored.GetAccess(source))
 	    {
@@ -9961,7 +9976,7 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
 	    }
 	}
 
-	if (cstored.Access_find(who, Chan_Stored_t::C_None))
+	if (cstored.Access_find(who))
 	{
 	    Magick::instance().chanserv.stats.i_Access++;
 	    mstring entry = cstored.Access->Entry();
@@ -10175,7 +10190,7 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
     channel = cstored.Name();
 
     { MLOCK(("ChanServ", "stored", channel.LowerCase(), "Access"));
-    if (cstored.Access_find(who))
+    if (cstored.Access_find(who, Chan_Stored_t::C_IsIn))
     {
 	// Reject if they're higher on access list, else erase them
 	// from the access list, AKICK doesnt play nice with ACCESS.
@@ -10186,7 +10201,7 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
 	    return;
 	}
 
-	if (cstored.Access_find(who, Chan_Stored_t::C_None))
+	if (cstored.Access_find(who))
 	{
 	    cstored.Access_erase();
 	}
@@ -10206,7 +10221,7 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
     }
 
     { MLOCK(("ChanServ", "stored", channel.LowerCase(), "Akick"));
-    if (cstored.Akick_find(who, Chan_Stored_t::C_None))
+    if (cstored.Akick_find(who))
     {
 	SEND(mynick, source, "LIST/EXISTS2", (
 		who, channel,
@@ -10214,6 +10229,7 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
 	return;
     }
     cstored.Akick_insert(who, reason, source);
+    who = cstored.Akick->Entry();
     }}
 
     Magick::instance().chanserv.stats.i_Akick++;
@@ -10374,14 +10390,14 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 		    Magick::instance().getMessage(source, "LIST/AKICK"), '@'));
 		return;
 	    }
-	    else if (!who.Contains("!"))
+	    else if (who[0u] != '@' && !who.Contains("!"))
 	    {
 		who.prepend("*!");
 	    }
 	}
 
 	MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Akick"));
-	if (cstored.Akick_find(who, Chan_Stored_t::C_None))
+	if (cstored.Akick_find(who))
 	{
 	    Magick::instance().chanserv.stats.i_Akick++;
 	    mstring entry = cstored.Akick->Entry();
