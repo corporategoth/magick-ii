@@ -676,7 +676,7 @@ wxOutputStream& wxOutputStream::operator<<(const char *string)
   return Write(string, strlen(string));
 }
 
-wxOutputStream& wxOutputStream::operator<<(mstring& string)
+wxOutputStream& wxOutputStream::operator<<(const mstring& string)
 {
   return Write(string, string.length());
 }

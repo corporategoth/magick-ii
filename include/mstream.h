@@ -212,7 +212,7 @@ class wxOutputStream: public wxStreamBase {
 
   wxOutputStream& operator<<(wxInputStream& out) { return Write(out); }
   wxOutputStream& operator<<(const char *string);
-  wxOutputStream& operator<<(mstring& string);
+  wxOutputStream& operator<<(const mstring& string);
   wxOutputStream& operator<<(char c);
   wxOutputStream& operator<<(short i);
   wxOutputStream& operator<<(int i);
