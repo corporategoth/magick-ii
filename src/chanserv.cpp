@@ -23,8 +23,14 @@ ChanServ::ChanServ()
 	automation=true;
     }
 }
-void ChanServ::execute(const mstring & message)
+void ChanServ::execute(const mstring & data)
 {
-    FT("ChanServ::execute", (message));
+    FT("ChanServ::execute", (data));
     //okay this is the main chanserv command switcher
+
+    mstring source, msgtype, mynick, message;
+    source  = data.Before(" ");
+    msgtype = data.After(" ").Before(" ");
+    mynick  = data.After(" ").After(" ").Before(" ");
+    message = data.After(" ").After(" ").After(" ");
 }
