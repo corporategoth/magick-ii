@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2000/08/06 21:56:14  prez
+** Fixed some small problems in akill/clone protection
+**
 ** Revision 1.116  2000/08/06 08:06:41  prez
 ** Fixed loading of logon messages in committee ..
 **
@@ -2629,7 +2632,7 @@ void NetworkServ::execute(const mstring & data)
 		}}
 		if (Parent->nickserv.IsLive(sourceL))
 		{
-		    if (Parent->nickserv.live[sourceL].IsServices())
+		    if (Parent->nickserv.live[sourceL].Server() == "")
 		    {
 			KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
@@ -3150,7 +3153,7 @@ void NetworkServ::execute(const mstring & data)
 	    }}
 	    if (Parent->nickserv.IsLive(sourceL))
 	    {
-		if (Parent->nickserv.live[sourceL].IsServices())
+		if (Parent->nickserv.live[sourceL].Server() == "")
 		{
 		    KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
@@ -3503,7 +3506,7 @@ void NetworkServ::execute(const mstring & data)
 
 	    if (Parent->nickserv.IsLive(sourceL))
 	    {
-		if (Parent->nickserv.live[sourceL].IsServices())
+		if (Parent->nickserv.live[sourceL].Server() == "")
 		{
 		    KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());

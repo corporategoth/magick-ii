@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/08/06 21:56:14  prez
+** Fixed some small problems in akill/clone protection
+**
 ** Revision 1.41  2000/07/30 09:04:05  prez
 ** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
 ** on linux, as it seems to corrupt the databases.
@@ -1515,9 +1518,14 @@ int DccMap::svc(void)
     while (!Parent->Shutdown())
     {
 	/*COM(("Active Size is %d", active.size()));*/
+
+	// NOTE: This used to be in the if, however I pulled
+	// it out to stop it spinlocking if active size was
+	// > 0, must find out root cause however. Need more
+	// info (trace would be good, but difficult).
+	    ACE_OS::sleep(1);
 	if (!active.size())
 	{
-	    ACE_OS::sleep(1);
 	    continue;
 	}
 

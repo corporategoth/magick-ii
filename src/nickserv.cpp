@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.120  2000/08/06 21:56:14  prez
+** Fixed some small problems in akill/clone protection
+**
 ** Revision 1.119  2000/08/06 08:06:41  prez
 ** Fixed loading of logon messages in committee ..
 **
@@ -904,6 +907,7 @@ Nick_Live_t::Nick_Live_t()
     NFT("Nick_Live_t::Nick_Live_t");
     // Dont call anything that locks, no names!
     identified = false;
+    services = true;
     last_msg_entries = flood_triggered_times = failed_passwds = 0;
 }
 
@@ -923,6 +927,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     i_alt_host = hostname;
     i_realname = realname;
     identified = false;
+    services = false;
     InFlight.nick=i_Name;
     InFlight.init();
     last_msg_entries = flood_triggered_times = failed_passwds = 0;
@@ -939,6 +944,9 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 			Parent->operserv.Akill->Value().first -
 				Parent->operserv.Akill->Last_Modify_Time().SecondsSince(),
 			Parent->operserv.Akill->Last_Modifier());
+	// Do this cos it will be removed when we KILL,
+	// and we dont wanna get out of touch.
+	Parent->operserv.AddHost(i_host);
 	i_server = "";
 	i_realname = reason;
 	return;
@@ -975,6 +983,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
     i_alt_host = hostname;
     i_realname = realname;
     identified = true;
+    services = true;
     InFlight.nick = i_Name;
     InFlight.init();
     last_msg_entries = flood_triggered_times = failed_passwds = 0;
@@ -1575,17 +1584,12 @@ void Nick_Live_t::ClearSquit()
     i_squit = "";
     }
 
-    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
-    if (!IsServices())
-	Parent->operserv.AddHost(i_host);
-    }
-
     // These will all be set again
     { WLOCK2(("NickServ", "live", i_Name.LowerCase(), "modes"));
     modes = "";
     }
 
-    WLOCK3(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    { WLOCK3(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
     set<mstring>::iterator i;
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
@@ -1595,6 +1599,19 @@ void Nick_Live_t::ClearSquit()
 		"UNSQUIT", i_Name.c_str(), i->c_str());
 
     joined_channels.clear();
+    }
+
+    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
+    if (!IsServices())
+	if (Parent->operserv.AddHost(i_host))
+	{
+	    Log(LM_INFO, Parent->getLogMessage("OTHER/KILL_CLONE"),
+		Mask(N_U_P_H).c_str());
+	    Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
+			Parent->operserv.Def_Clone());
+	    return;
+	}
+    }
 }
 
 
@@ -1915,8 +1932,8 @@ bool Nick_Live_t::IsRecognized()
 bool Nick_Live_t::IsServices()
 {
     NFT("Nick_Live_t::IsServices");
-    RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_server"));
-    RET(i_server == "");
+    RLOCK(("NickServ", "live", i_Name.LowerCase(), "services"));
+    RET(services);
 }
 
 size_t Nick_Live_t::Usage()
