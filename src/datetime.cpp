@@ -772,8 +772,17 @@ int mDateTime::YearsSince()
 mstring DisectTime(long intime)
 {
     mstring Result="";
-    long Years=0, Days=0, Hours=0, Minutes=0, negamt=0;
-    long Seconds = intime;
+    long Years=0, Days=0, Hours=0, Minutes=0, Seconds=0, negamt=0;
+
+    if (intime < 0)
+    {
+	Result << "-";
+	Seconds = intime * -1;
+    }
+    else
+    {
+	Seconds = intime;
+    }
 
     negamt = (long)(60.0 * 60.0 * 24.0 * 365.25);
     while (Seconds >= negamt)

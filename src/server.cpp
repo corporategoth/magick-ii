@@ -790,7 +790,7 @@ void NetworkServ::KillUnknownUser(mstring user)
     FT("NetworkServ::KillUnknownUser", (user));
     raw(":" + Parent->startup.Server_Name() + " KILL " + user +
 	    " :" + Parent->startup.Server_Name() + " (" + user +
-	    "(?) <- " + Parent->Server + ")");
+	    "(?) <- " + Parent->Server() + ")");
 }
 
 
@@ -984,7 +984,7 @@ void NetworkServ::execute(const mstring & data)
 	    if (Parent->nickserv.IsLive(source))
 		sraw("303 " + source + " :" + data.ExtractWord(3, ": "));
 
-	    Parent->GotConnect = true;
+	    Parent->GotConnect(true);
 	}
 	else
 	{
@@ -1265,14 +1265,13 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="PASS")
 	{
 	    // PASS :password
-	    if (data.ExtractWord(2, ": ") != Parent->startup.Server(Parent->Server).second)
+	    if (data.ExtractWord(2, ": ") != Parent->startup.Server(Parent->Server()).second)
 	    {
 		CP(("Server password mismatch.  Closing socket."));
-		raw("ERROR :No Access (passwd mismatch) [" + Parent->Server + "]");
-		raw("ERROR :Closing Link: [" + Parent->Server + "] (Bad Password)");
+		raw("ERROR :No Access (passwd mismatch) [" + Parent->Server() + "]");
+		raw("ERROR :Closing Link: [" + Parent->Server() + "] (Bad Password)");
 
-		Parent->reconnect=false;
-		Parent->ircsvchandler->shutdown();
+		Parent->Disconnect();
 	    }
             else
             {

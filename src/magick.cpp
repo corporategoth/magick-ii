@@ -397,7 +397,7 @@ void Magick::dump_help(mstring & progname)
          << "    (c) 1996-2000 Preston A. Elder <prez@magick.tm>\n"
          << "    (c) 1999-2000 William King <ungod@magick.tm>\n"
          << "\n"
-         << "Syntax: " << ProgramName << " [ops]\n"
+         << "Syntax: " << i_programname << " [ops]\n"
          << "\n"
          << "    -n, --name servername          Override SERVER_NAME in the config file.\n"
          << "    -d, --desc description         Override SERVER_DESC in the config file.\n"
@@ -896,7 +896,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect)
+    if (!reconnect && GotConnect())
     {
 	for (i=0; i<nickserv.names.WordCount(" "); i++)
 	{
@@ -928,7 +928,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect)
+    if (!reconnect && GotConnect())
     {
 	for (i=0; i<chanserv.names.WordCount(" "); i++)
 	{
@@ -962,7 +962,7 @@ bool Magick::get_config_values()
 
     in.Read(ts_Services+"MEMO",&memoserv.memo,true);
     in.Read(ts_Services+"NEWS",&memoserv.news,true);
-    if (!reconnect && GotConnect && (memoserv.memo || memoserv.news))
+    if (!reconnect && GotConnect() && (memoserv.memo || memoserv.news))
     {
 	for (i=0; i<memoserv.names.WordCount(" "); i++)
 	{
@@ -994,7 +994,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect)
+    if (!reconnect && GotConnect())
     {
 	for (i=0; i<operserv.names.WordCount(" "); i++)
 	{
@@ -1030,7 +1030,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect)
+    if (!reconnect && GotConnect())
     {
 	for (i=0; i<commserv.names.WordCount(" "); i++)
 	{
@@ -1062,7 +1062,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect)
+    if (!reconnect && GotConnect())
     {
 	for (i=0; i<servmsg.names.WordCount(" "); i++)
 	{
@@ -1429,7 +1429,7 @@ bool Magick::get_config_values()
     }
 
 /*
-    if (reconnect && GotConnect)
+    if (reconnect && GotConnect())
     {
 	server.raw("ERROR :Closing Link: Configuration reload required restart!");
 	ircsvchandler->shutdown();
@@ -1438,7 +1438,7 @@ bool Magick::get_config_values()
 */
 
     RET(true);
-    CP(("%s read and loaded to live configuration.", config_file.c_str()));
+    CP(("%s read and loaded to live configuration.", i_config_file.c_str()));
 }
 
 int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext)
@@ -1716,6 +1716,14 @@ void Magick::destroy_output_stream()
 	delete cstrm;
 	cstrm=NULL;
     }
+}
+
+void Magick::Disconnect()
+{
+    NFT("Magick::Disconnect");
+    i_reconnect = false;
+    if (ircsvchandler != NULL)
+	ircsvchandler->shutdown();
 }
 
 void Magick::send(mstring in)

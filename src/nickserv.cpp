@@ -409,6 +409,7 @@ Nick_Live_t::Nick_Live_t()
     NFT("Nick_Live_t::Nick_Live_t");
     identified = false;
     InFlight.init();
+    last_msg_entries = flood_triggered_times = failed_passwds = 0;
 }
 
 
@@ -427,6 +428,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     identified = false;
     InFlight.nick=i_Name;
     InFlight.init();
+    last_msg_entries = flood_triggered_times = failed_passwds = 0;
 
     if (Parent->operserv.AddHost(i_host))
     {
@@ -458,6 +460,7 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
     identified = true;
     InFlight.nick = i_Name;
     InFlight.init();
+    last_msg_entries = flood_triggered_times = failed_passwds = 0;
 }
 
 

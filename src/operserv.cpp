@@ -1388,7 +1388,7 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
 			mstring(itoa(Parent->operserv.Max_Clone())) + ".");
 
     ::send(mynick, source, "Flood is triggered with " +
-			mstring(itoa(Parent->operserv.Flood_Msgs())) + " in " +
+			mstring(itoa(Parent->operserv.Flood_Msgs())) + " messages in " +
 			ToHumanTime(Parent->operserv.Flood_Time()) + ".");
     ::send(mynick, source, "Services remember old flood triggers for up to " +
 			ToHumanTime(Parent->operserv.Ignore_Remove()) + " later.");

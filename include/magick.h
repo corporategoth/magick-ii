@@ -222,9 +222,10 @@ public:
 	 ~Magick();
 
 	// Streams, etc
-	bool Reconnect()    { return i_reconnect; }
-	bool GotConnect()   { return i_gotconnect; }
-	mstring Server()    { return i_server; }
+	bool Reconnect()	    { return i_reconnect; }
+	bool GotConnect()	    { return i_gotconnect; }
+	bool GotConnect(bool in)    { i_gotconnect = in; }
+	mstring Server()	    { return i_server; }
 	void save_databases();
 	void load_databases();
         Reconnect_Handler rh;
@@ -258,6 +259,7 @@ public:
 	    commserv.RemCommands();
 	}
 
+	void Disconnect();
 	void send(mstring text);
 };
 
