@@ -8,7 +8,7 @@ CXX=g++
 CFLAGS=-O2 -I/usr/local/include -I$(TOPDIR)/include
 
 # Linking flags to give the compiler
-LFLAGS=-L/usr/local/lib -lACE -lpthread
+LFLAGS=-L/usr/local/lib -lACE -lpthread -lgz
 
 # What third-party libraries to include in link
 LIBS=./src/magick.a $(LIBACE) $(LIBCRYPT) $(LIBZ) ./src/bob/bob.a ./src/antlr/antlr.a ./src/des/des.a
