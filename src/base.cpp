@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.110  2000/03/29 14:03:00  prez
+** Fixed the failure to create thread condition ...
+**
 ** Revision 1.109  2000/03/29 14:00:18  prez
 ** Fixed the thread pool system, and the watermarks.
 **
@@ -581,11 +584,15 @@ void mBaseTask::message(const mstring& message)
     {
 	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
 	if(activate(THR_NEW_LWP | THR_JOINABLE, 1, 1)!=0)
+	{
 	    CP(("Couldn't start new thread to handle excess load, will retry next message"));
-
-	message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()) * (sizeof(ACE_Method_Object *) * 2));
-	message_queue_.low_water_mark(((Parent->config.High_Water_Mark() * (thr_count()-2)) +
+	}
+	else
+	{
+	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() * (thr_count()) * (sizeof(ACE_Method_Object *) * 2));
+	    message_queue_.low_water_mark(((Parent->config.High_Water_Mark() * (thr_count()-2)) +
 					Parent->config.Low_Water_Mark()) * (sizeof(ACE_Method_Object *) * 2));
+	}
     }
     MLOCK2(("ActivationQueue"));
     activation_queue_.enqueue(new mBaseTaskmessage_MO(this,message));
