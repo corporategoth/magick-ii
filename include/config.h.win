@@ -35,7 +35,7 @@
 
 /* Define if your system's locking works */
 #ifndef MAGICK_LOCKS_WORK
-/* #undef MAGICK_LOCKS_WORK */
+#define MAGICK_LOCKS_WORK 1
 #endif
 
 /* Define if we are on a windows system */
