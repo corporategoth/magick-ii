@@ -374,6 +374,26 @@ you get one that doesnt error.  Once you have one that doesnt have
 an error, just type 'echo $ACE_ROOT' to ensure it gives you your
 current directory, if not, keep trying.  I love unix standards :)
 
+Note, If you get problems in the make with erorrs like:
+
+ACE_wrappers/include/makeinclude/wrapper_macros.GNU",
+       line 135: Missing dependency operator
+
+Your version of make is either old or not GNU standard.  ACE requires
+a GNU standard make program to compile.  First see if the program
+`gmake' exists, and if so try it, if not, or it doesnt work, please
+download it by going to http://www.gnu.org/software/make/make.html
+and downloading it from one of their mirror sites.  Incase your
+wondering 'do I need root for this?'  No, you dont.  Just download
+it, compile it, and then type:
+
+alias make=/path/to/make-x.y/make
+
+Where /path/to are replaced with the full path before the make
+directory (eg. /home/myuser), and the x and y in the make-x.y
+directory are subtituted for the version of make you have.  Once
+you have aliased make, then try and build ACE again.
+
 After ACE has been made, you have two options:
 
 <itemize>
