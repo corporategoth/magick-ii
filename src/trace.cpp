@@ -164,6 +164,7 @@ void ThreadID::WriteOut(const mstring &message)
 */
     mstring finalout = "";
     //prez: the below line gpe's with i=0 called from Bob::InitBuiltins   WLock("Bob");
+    // following the code through, the ~T_Locking is an invalid object??? (go figure)
     /* call stack trace below
 ThreadID::WriteOut(const mstring & {...}) line 167 + 21 bytes
 T_Locking::~T_Locking() line 366
