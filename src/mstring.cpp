@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.122  2001/12/27 01:02:15  prez
+** Fixed up init, moved to header (for efficiancy)
+**
 ** Revision 1.121  2001/12/27 00:40:44  prez
 ** Some efficiancy changes to mstring
 **
@@ -439,25 +442,6 @@ inline void mstring::lock_rel() const
 	ACE_OS::fflush(stderr);
     }
 #endif
-}
-
-inline void mstring::init()
-{
-#ifdef MSTRING_LOCKS_WORK
-    char lockname[30];
-    UNIQ_LOCK_TYPE uniq_lock("mstring_lock_id");
-    uniq_lock.acquire();
-    next_lock_id++;
-    sprintf(lockname, "mstring_%08x%08x", time(NULL), next_lock_id);
-    uniq_lock.release();
-    i_lock = new LOCK_TYPE(lockname);
-#endif
-
-    lock_write();
-    i_len = 0;
-    i_res = 0;
-    i_str = NULL;
-    lock_rel();
 }
 
 mstring::~mstring()
