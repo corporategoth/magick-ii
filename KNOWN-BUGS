@@ -14,8 +14,6 @@ UNVERSAL
 - Should probably lock when setting/getting CFG vals, just
   incase one is set while another thread is accessing it
   (though this possibility is VERY slim).
-- It will segfault if we lose connection to server and
-  try to re-establish it.
 - If you add someone to a committee that is head of one they
   are already on (eg. adding to ADMIN when they're already
   on OPER) it will not remove them from the subcommittee,
