@@ -25,6 +25,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2001/07/05 06:00:39  prez
+** Up'd version to b11
+**
 ** Revision 1.32  2001/05/28 11:17:33  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -152,7 +155,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm";
-const mstring RELEASE			= "b10";
+const mstring RELEASE			= "b11";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";

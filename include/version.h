@@ -25,6 +25,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.122  2001/07/05 06:00:38  prez
+** Up'd version to b11
+**
 ** Revision 1.121  2001/06/11 03:44:45  prez
 ** Re-wrote how burst works, and made the burst message a lower priority
 ** than normal.  Also removed the chance of a stray pointer being picked
@@ -154,7 +157,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm";
-const mstring RELEASE			= "b10";
+const mstring RELEASE			= "b11";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
