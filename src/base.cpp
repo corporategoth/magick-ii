@@ -43,6 +43,7 @@ unsigned long mMessage::LastMsgId = 0;
 
 entlist_t &entlist_t::operator=(const entlist_t & in)
 {
+    BTCB();
     FT("entlist_t::operator=", ("(const entlist_t &) in"));
     i_Entry = in.i_Entry;
     i_Last_Modify_Time = in.i_Last_Modify_Time;
@@ -52,6 +53,7 @@ entlist_t &entlist_t::operator=(const entlist_t & in)
     for (i = in.i_UserDef.begin(); i != in.i_UserDef.end(); i++)
 	i_UserDef[i->first] = i->second;
     NRET(entlist_t &, *this);
+    ETCB();
 }
 
 SXP::Tag tag_entlist_t("entlist_t");
@@ -67,6 +69,7 @@ SXP::Tag tag_Stupid("Stupid");
 
 void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("entlist_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -78,28 +81,30 @@ void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	ud_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
+    ETCB();
 }
 
 void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("entlist_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    //TODO: Add your source code here
     if (pElement->IsA(tag_Entry))
 	pElement->Retrieve(i_Entry);
     if (pElement->IsA(tag_Last_Modify_Time))
 	pElement->Retrieve(i_Last_Modify_Time);
     if (pElement->IsA(tag_Last_Modifier))
 	pElement->Retrieve(i_Last_Modifier);
+    ETCB();
 }
 
 void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("entlist_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
-    //TODO: Add your source code here
     pOut->BeginObject(tag_entlist_t);
 
     pOut->WriteElement(tag_Entry, i_Entry);
@@ -113,10 +118,12 @@ void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_entlist_t);
+    ETCB();
 }
 
 void entlist_t::PostLoad() const
 {
+    BTCB();
     NFT("entlist_t::PostLoad");
 
     unsigned int j;
@@ -131,10 +138,12 @@ void entlist_t::PostLoad() const
 	}
     }
     ud_array.clear();
+    ETCB();
 }
 
 size_t entlist_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     retval += i_Entry.capacity();
@@ -147,6 +156,7 @@ size_t entlist_t::Usage() const
 	retval += i->second.capacity();
     }
     return retval;
+    ETCB();
 }
 
 void entlist_t::DumpB() const
@@ -165,6 +175,7 @@ mMessage::mMessage(const mstring & p_source, const mstring & p_msgtype, const ms
 		   const unsigned long p_priority) : ACE_Method_Request(p_priority), msgid_(0), sourceToken_(false),
 source_(p_source), params_(p_params), creation_(mDateTime::CurrentDateTime())
 {
+    BTCB();
     FT("mMessage::mMessage", (p_source, p_msgtype, p_params, p_priority));
 
     if (source_ != " " && Magick::instance().server.proto.Tokens())
@@ -179,10 +190,12 @@ source_(p_source), params_(p_params), creation_(mDateTime::CurrentDateTime())
 	msgtype_ = p_msgtype;
 
     msgtype_.MakeUpper();
+    ETCB();
 }
 
 void mMessage::AddDependancies()
 {
+    BTCB();
     NFT("mMessage::AddDependancies");
     WLOCK(("Dependancies", this));
     int added = 0;
@@ -612,10 +625,12 @@ void mMessage::AddDependancies()
 	    CP(("(%d) Added dependancy on %d %s.", msgid_, static_cast < int > (iter->first), iter->second.c_str()));
 	}
     }
+    ETCB();
 }
 
 bool mMessage::RecheckDependancies()
 {
+    BTCB();
     NFT("mMessage::RecheckDependancies");
     {
 	WLOCK(("Dependancies", this));
@@ -778,10 +793,12 @@ bool mMessage::RecheckDependancies()
 	RET(false);
     }
     RET(true);
+    ETCB();
 }
 
 bool mMessage::OutstandingDependancies()
 {
+    BTCB();
     NFT("mMessage::OutstandingDependancies");
 
     if (!dependancies.size())
@@ -799,10 +816,12 @@ bool mMessage::OutstandingDependancies()
     }
 
     RET(false);
+    ETCB();
 }
 
 void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, const mstring & param2)
 {
+    BTCB();
     FT("mMessage::CheckDependancies", (static_cast < int > (type), param1, param2));
 
     if (param1.empty())
@@ -905,10 +924,12 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, 
 		Magick::instance().ircsvchandler->enqueue(msg);
 	}
     }
+    ETCB();
 }
 
 void mMessage::DependancySatisfied(mMessage::type_t type, const mstring & param)
 {
+    BTCB();
     FT("mMessage::DependancySatisfied", (static_cast < int > (type), param));
 
     WLOCK(("Dependancies", this));
@@ -923,10 +944,12 @@ void mMessage::DependancySatisfied(mMessage::type_t type, const mstring & param)
 	    break;
 	}
     }
+    ETCB();
 }
 
 int mMessage::call()
 {
+    BTCB();
     NFT("mMessage::call");
 
     if (source_ == " ")
@@ -1227,10 +1250,12 @@ int mMessage::call()
     }
 
     RET(0);
+    ETCB();
 }
 
 bool mBase::signon(const mstring & nickname) const
 {
+    BTCB();
     FT("mBase::signon", (nickname));
 
     if (Magick::instance().nickserv.IsLive(nickname))
@@ -1245,10 +1270,12 @@ bool mBase::signon(const mstring & nickname) const
 				       Magick::instance().startup.Server_Name(), realname);
 	RET(true);
     }
+    ETCB();
 }
 
 bool mBase::signoff(const mstring & nickname, const mstring & msg) const
 {
+    BTCB();
     FT("mBase::signoff", (nickname));
 
     if (Magick::instance().nickserv.IsLive(nickname))
@@ -1260,10 +1287,12 @@ bool mBase::signoff(const mstring & nickname, const mstring & msg) const
     {
 	RET(false);
     }
+    ETCB();
 }
 
 void mBase::privmsgV(const mstring & dest, const char *pszFormat, ...) const
 {
+    BTCB();
     FT("mBase::privmsgV", (dest, pszFormat));
 
     va_list argptr;
@@ -1274,10 +1303,12 @@ void mBase::privmsgV(const mstring & dest, const char *pszFormat, ...) const
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     privmsg(FirstName(), dest, message);
+    ETCB();
 }
 
 void mBase::privmsgV(const mstring & source, const mstring & dest, const char *pszFormat, ...) const
 {
+    BTCB();
     FT("mBase::privmsgV", (source, dest, pszFormat));
 
     va_list argptr;
@@ -1288,24 +1319,30 @@ void mBase::privmsgV(const mstring & source, const mstring & dest, const char *p
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     privmsg(source, dest, message);
+    ETCB();
 }
 
 void mBase::privmsg(const mstring & dest, const mstring & message) const
 {
+    BTCB();
     FT("mBase::privmsg", (dest, message));
     privmsg(FirstName(), dest, message);
+    ETCB();
 }
 
 void mBase::privmsg(const mstring & source, const mstring & dest, const mstring & message) const
 {
+    BTCB();
     FT("mBase::privmsg", (source, dest, message));
 
     if (IsName(source) && !Magick::instance().getLname(dest).empty())
 	Magick::instance().server.PRIVMSG(source, dest, message);
+    ETCB();
 }
 
 void mBase::noticeV(const mstring & dest, const char *pszFormat, ...) const
 {
+    BTCB();
     FT("mBase::noticeV", (dest, pszFormat));
 
     va_list argptr;
@@ -1316,10 +1353,12 @@ void mBase::noticeV(const mstring & dest, const char *pszFormat, ...) const
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     notice(FirstName(), dest, message);
+    ETCB();
 }
 
 void mBase::noticeV(const mstring & source, const mstring & dest, const char *pszFormat, ...) const
 {
+    BTCB();
     FT("mBase::noticeV", (source, dest, pszFormat));
 
     va_list argptr;
@@ -1330,24 +1369,30 @@ void mBase::noticeV(const mstring & source, const mstring & dest, const char *ps
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     notice(source, dest, message);
+    ETCB();
 }
 
 void mBase::notice(const mstring & dest, const mstring & message) const
 {
+    BTCB();
     FT("mBase::notice", (dest, message));
     notice(FirstName(), dest, message);
+    ETCB();
 }
 
 void mBase::notice(const mstring & source, const mstring & dest, const mstring & message) const
 {
+    BTCB();
     FT("mBase::notice", (source, dest, message));
 
     if (IsName(source) && !Magick::instance().getLname(dest).empty())
 	Magick::instance().server.NOTICE(source, dest, message);
+    ETCB();
 }
 
 void mBase::sendV(const mstring & dest, const char *pszFormat, ...) const
 {
+    BTCB();
     FT("mBase::sendV", (dest, pszFormat));
 
     va_list argptr;
@@ -1358,10 +1403,12 @@ void mBase::sendV(const mstring & dest, const char *pszFormat, ...) const
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     send(FirstName(), dest, message);
+    ETCB();
 }
 
 void mBase::sendV(const mstring & source, const mstring & dest, const char *pszFormat, ...) const
 {
+    BTCB();
     FT("mBase::sendV", (source, dest, pszFormat));
 
     va_list argptr;
@@ -1372,16 +1419,20 @@ void mBase::sendV(const mstring & source, const mstring & dest, const char *pszF
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     send(source, dest, message);
+    ETCB();
 }
 
 void mBase::send(const mstring & dest, const mstring & message) const
 {
+    BTCB();
     FT("mBase::send", (dest, message));
     send(FirstName(), dest, message);
+    ETCB();
 }
 
 void mBase::send(const mstring & source, const mstring & dest, const mstring & message) const
 {
+    BTCB();
     FT("mBase::send", (source, dest, message));
 
     if (IsName(source) && Magick::instance().nickserv.IsLive(dest))
@@ -1410,10 +1461,12 @@ void mBase::send(const mstring & source, const mstring & dest, const mstring & m
 	    }
 	}
     }
+    ETCB();
 }
 
 void privmsgV(const mstring & source, const mstring & dest, const char *pszFormat, ...)
 {
+    BTCB();
     FT("privmsgV", (source, dest, pszFormat));
 
     va_list argptr;
@@ -1424,10 +1477,12 @@ void privmsgV(const mstring & source, const mstring & dest, const char *pszForma
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     privmsg(source, dest, message);
+    ETCB();
 }
 
 void privmsg(const mstring & source, const mstring & dest, const mstring & message)
 {
+    BTCB();
     FT("privmsg", (source, dest, message));
 
     if (Magick::instance().operserv.IsName(source))
@@ -1453,10 +1508,12 @@ void privmsg(const mstring & source, const mstring & dest, const mstring & messa
     {
 	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("PRIVMSG", source));
     }
+    ETCB();
 }
 
 void noticeV(const mstring & source, const mstring & dest, const char *pszFormat, ...)
 {
+    BTCB();
     FT("noticeV", (source, dest, pszFormat));
 
     va_list argptr;
@@ -1467,10 +1524,12 @@ void noticeV(const mstring & source, const mstring & dest, const char *pszFormat
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     notice(source, dest, message);
+    ETCB();
 }
 
 void notice(const mstring & source, const mstring & dest, const mstring & message)
 {
+    BTCB();
     FT("notice", (source, dest, message));
 
     if (Magick::instance().operserv.IsName(source))
@@ -1496,10 +1555,12 @@ void notice(const mstring & source, const mstring & dest, const mstring & messag
     {
 	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("NOTICE", source));
     }
+    ETCB();
 }
 
 void sendV(const mstring & source, const mstring & dest, const char *pszFormat, ...)
 {
+    BTCB();
     FT("sendV", (source, dest, pszFormat));
 
     va_list argptr;
@@ -1510,10 +1571,12 @@ void sendV(const mstring & source, const mstring & dest, const char *pszFormat, 
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     send(source, dest, message);
+    ETCB();
 }
 
 void send(const mstring & source, const mstring & dest, const mstring & message)
 {
+    BTCB();
     FT("send", (source, dest, message));
 
     if (Magick::instance().operserv.IsName(source))
@@ -1539,10 +1602,12 @@ void send(const mstring & source, const mstring & dest, const mstring & message)
     {
 	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("SEND", source));
     }
+    ETCB();
 }
 
 void announceV(const mstring & source, const char *pszFormat, ...)
 {
+    BTCB();
     FT("announceV", (source, pszFormat));
 
     va_list argptr;
@@ -1553,12 +1618,15 @@ void announceV(const mstring & source, const char *pszFormat, ...)
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     announce(source, message);
+    ETCB();
 }
 
 void announce(const mstring & source, const mstring & message)
 {
+    BTCB();
     FT("announce", (source, message));
     Magick::instance().server.GLOBOPS(source, message);
+    ETCB();
 }
 
 // Command Map stuff ...
@@ -1566,6 +1634,7 @@ void announce(const mstring & source, const mstring & message)
 void CommandMap::AddSystemCommand(const mstring & service, const mstring & command, const mstring & committees,
 				  functor function)
 {
+    BTCB();
     FT("CommandMap::AddSystemCommand", (service, command, committees));
 
     WLOCK(("CommandMap", "i_system"));
@@ -1573,10 +1642,12 @@ void CommandMap::AddSystemCommand(const mstring & service, const mstring & comma
 					    functor > (command.UpperCase(),
 						       ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
 						       function));
+    ETCB();
 }
 
 void CommandMap::RemSystemCommand(const mstring & service, const mstring & command, const mstring & committees)
 {
+    BTCB();
     FT("CommandMap::RemSystemCommand", (service, command, committees));
 
     WLOCK(("CommandMap", "i_system"));
@@ -1595,10 +1666,12 @@ void CommandMap::RemSystemCommand(const mstring & service, const mstring & comma
 	    }
 	}
     }
+    ETCB();
 }
 
 void CommandMap::AddCommand(const mstring & service, const mstring & command, const mstring & committees, functor function)
 {
+    BTCB();
     FT("CommandMap::AddCommand", (service, command, committees));
 
     WLOCK(("CommandMap", "i_user"));
@@ -1606,10 +1679,12 @@ void CommandMap::AddCommand(const mstring & service, const mstring & command, co
 					  functor > (command.UpperCase(),
 						     ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
 						     function));
+    ETCB();
 }
 
 void CommandMap::RemCommand(const mstring & service, const mstring & command, const mstring & committees)
 {
+    BTCB();
     FT("CommandMap::RemCommand", (service, command, committees));
 
     WLOCK(("CommandMap", "i_user"));
@@ -1628,11 +1703,13 @@ void CommandMap::RemCommand(const mstring & service, const mstring & command, co
 	    }
 	}
     }
+    ETCB();
 }
 
 pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & service, const mstring & command,
 							      const mstring & user) const
 {
+    BTCB();
     FT("CommandMap::GetUserCommand", (service, command, user));
     unsigned int i;
 
@@ -1693,11 +1770,13 @@ pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & se
 	}
     }
     NRET(pair < bool_functor >, retval);
+    ETCB();
 }
 
 pair < bool, CommandMap::functor > CommandMap::GetSystemCommand(const mstring & service, const mstring & command,
 								const mstring & user) const
 {
+    BTCB();
     FT("CommandMap::GetSystemCommand", (service, command, user));
     unsigned int i;
 
@@ -1758,10 +1837,12 @@ pair < bool, CommandMap::functor > CommandMap::GetSystemCommand(const mstring & 
 	}
     }
     NRET(pair < bool_functor >, retval);
+    ETCB();
 }
 
 bool CommandMap::DoCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
 {
+    BTCB();
     FT("CommandMap::DoCommand", (mynick, user, command, params));
 
     bool cmdfound = false;
@@ -1810,10 +1891,12 @@ bool CommandMap::DoCommand(const mstring & mynick, const mstring & user, const m
 	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
     }
     RET(false);
+    ETCB();
 }
 
 bool CommandMap::DoUserCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
 {
+    BTCB();
     FT("CommandMap::DoUserCommand", (mynick, user, command, params));
 
     pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
@@ -1841,10 +1924,12 @@ bool CommandMap::DoUserCommand(const mstring & mynick, const mstring & user, con
 	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
     }
     RET(false);
+    ETCB();
 }
 
 bool CommandMap::DoSystemCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
 {
+    BTCB();
     FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
 
     pair < bool, functor > cmd = GetSystemCommand(mynick, command, user);
@@ -1872,10 +1957,12 @@ bool CommandMap::DoSystemCommand(const mstring & mynick, const mstring & user, c
 	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
     }
     RET(false);
+    ETCB();
 }
 
 void do_1_2param(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_1_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
@@ -1895,10 +1982,12 @@ void do_1_2param(const mstring & mynick, const mstring & source, const mstring &
 //                      command.Before(" ")));
     }
 
+    ETCB();
 }
 
 void do_1_3param(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_1_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
@@ -1917,10 +2006,12 @@ void do_1_3param(const mstring & mynick, const mstring & source, const mstring &
 //                      command, mynick,
 //                      command.Before(" ")));
     }
+    ETCB();
 }
 
 void do_1_4param(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_1_4param", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
@@ -1939,10 +2030,12 @@ void do_1_4param(const mstring & mynick, const mstring & source, const mstring &
 //                      command, mynick,
 //                      command.Before(" ")));
     }
+    ETCB();
 }
 
 void do_1_2paramswap(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_1_2paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
@@ -1967,10 +2060,12 @@ void do_1_2paramswap(const mstring & mynick, const mstring & source, const mstri
 //                      command.Before(" ")));
     }
 
+    ETCB();
 }
 
 void do_1_3paramswap(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_1_3paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
@@ -1994,10 +2089,12 @@ void do_1_3paramswap(const mstring & mynick, const mstring & source, const mstri
 //                      command, mynick,
 //                      command.Before(" ")));
     }
+    ETCB();
 }
 
 void do_1_4paramswap(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_1_3paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
@@ -2021,10 +2118,12 @@ void do_1_4paramswap(const mstring & mynick, const mstring & source, const mstri
 //                      command, mynick,
 //                      command.Before(" ")));
     }
+    ETCB();
 }
 
 void do_2param(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
@@ -2049,10 +2148,12 @@ void do_2param(const mstring & mynick, const mstring & source, const mstring & p
 //                      command.Before(" ")));
     }
 
+    ETCB();
 }
 
 void do_3param(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
@@ -2076,10 +2177,12 @@ void do_3param(const mstring & mynick, const mstring & source, const mstring & p
 //                      command, mynick,
 //                      command.Before(" ")));
     }
+    ETCB();
 }
 
 void do_4param(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("do_3param", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
@@ -2103,4 +2206,5 @@ void do_4param(const mstring & mynick, const mstring & source, const mstring & p
 //                      command, mynick,
 //                      command.Before(" ")));
     }
+    ETCB();
 }

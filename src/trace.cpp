@@ -900,3 +900,12 @@ void T_Sockets::End(const mstring & reason)
 // T_External::T_External() {}
 
 #endif /* MAGICK_TRACE_WORKS */
+
+void LOG2(ACE_Log_Priority type, const mstring & msg)
+{
+    if (Magick::instance_exists() && Magick::instance().ValidateLogger(ACE_LOG_MSG))
+    {
+	ACE_DEBUG((type, (const ACE_TCHAR *) msg));
+	Magick::instance().EndLogMessage(ACE_LOG_MSG);
+    }
+}
