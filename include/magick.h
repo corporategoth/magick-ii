@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.151  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.150  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -518,7 +521,7 @@ public:
 	    commserv.RemCommands();
 	}
 
-	mstring getLname(mstring in)
+	mstring getLname(const mstring in)
 	{
 	    if (IsChan(in))
 	    {
@@ -533,7 +536,7 @@ public:
 	    return "";
 	}
 
-	mstring getSname(mstring in)
+	mstring getSname(const mstring in)
 	{
 	    if (IsChan(in))
 	    {

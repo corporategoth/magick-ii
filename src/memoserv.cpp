@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2001/03/08 08:07:41  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.90  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -437,7 +440,7 @@ void News_t::NoExpire(bool in)
     MCE(i_NoExpire);
 }
 
-bool News_t::IsRead(mstring name) const
+bool News_t::IsRead(mstring name)
 {
     FT("News_t::IsRead", (name));
     mstring target = name;

@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.159  2001/03/08 08:07:41  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.158  2001/03/04 02:04:14  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -1379,7 +1382,7 @@ void Nick_Live_t::Quit(mstring reason)
 }
 
 
-bool Nick_Live_t::IsInChan(mstring chan) const
+bool Nick_Live_t::IsInChan(mstring chan)
 {
     FT("Nick_Live_t::IsInChan", (chan));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
@@ -1926,7 +1929,7 @@ void Nick_Live_t::SetSquit()
     RLOCK3(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
-	    Parent->chanserv.live[i->LowerCase()].Squit(i_Name);
+	    Parent->chanserv.live[i->LowerCase()].SquitUser(i_Name);
 	else
 	{
 	    LOG((LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
@@ -1959,7 +1962,7 @@ void Nick_Live_t::ClearSquit()
     set<mstring>::iterator i;
     for (i=joined_channels.begin(); i!=joined_channels.end(); i++)
 	if (Parent->chanserv.IsLive(*i))
-	    Parent->chanserv.live[i->LowerCase()].UnSquit(i_Name);
+	    Parent->chanserv.live[i->LowerCase()].UnSquitUser(i_Name);
 	else
 	{
 	    LOG((LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
@@ -2206,7 +2209,7 @@ void Nick_Live_t::UnChanIdentify(mstring channel)
     }
 }
 
-bool Nick_Live_t::IsChanIdentified(mstring channel) const
+bool Nick_Live_t::IsChanIdentified(mstring channel)
 {
     FT("Nick_Live_t::IsChanIdentified", (channel));
     RLOCK(("NickServ", "live", i_Name.LowerCase(), "chans_founder_identd"));

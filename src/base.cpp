@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.151  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.150  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -950,7 +953,7 @@ void CommandMap::RemSystemCommand(mstring service, mstring command,
     WLOCK(("CommandMap", "i_system"));
     if (i_system.find(service.LowerCase()) != i_system.end())
     {
-	ctype::iterator iter;
+	cmdtype::iterator iter;
 	for (iter = i_system[service.LowerCase()].begin();
 		iter != i_system[service.LowerCase()].end(); iter++)
 	{
@@ -989,7 +992,7 @@ void CommandMap::RemCommand(mstring service, mstring command,
     WLOCK(("CommandMap", "i_user"));
     if (i_user.find(service.LowerCase()) != i_user.end())
     {
-	ctype::iterator iter;
+	cmdtype::iterator iter;
 	for (iter = i_user[service.LowerCase()].begin();
 		iter != i_user[service.LowerCase()].end(); iter++)
 	{
@@ -1013,7 +1016,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
     FT("CommandMap::GetUserCommand", (service, command, user));
     unsigned int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
-    ctype::const_iterator iter;
+	cmdtype::const_iterator iter;
     mstring type, list;
 
     // IF i_system exists
@@ -1044,7 +1047,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
 	NRET(pair<bool_functor>,retval);
 
     RLOCK(("CommandMap", "i_user"));
-    cmap::const_iterator mi = i_user.find(type);
+	cmdmap::const_iterator mi = i_user.find(type);
     if (mi != i_user.end())
     {
 	for (iter=mi->second.begin(); iter!=mi->second.end(); iter++)
@@ -1077,7 +1080,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
     FT("CommandMap::GetSystemCommand", (service, command, user));
     unsigned int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
-    ctype::const_iterator iter;
+	cmdtype::const_iterator iter;
     mstring type, list;
 
     // IF i_system exists
@@ -1108,7 +1111,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
 	NRET(pair<bool_functor>,retval);
 
     RLOCK(("CommandMap", "i_system"));
-    cmap::const_iterator mi = i_system.find(type);
+    cmdmap::const_iterator mi = i_system.find(type);
     if (mi != i_system.end())
     {
 	for (iter=mi->second.begin(); iter!=mi->second.end(); iter++)

@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.229  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.228  2001/03/04 02:04:14  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -462,9 +465,9 @@ unsigned int Chan_Live_t::Part(mstring nick)
     RET(retval);
 }
 
-void Chan_Live_t::Squit(mstring nick)
+void Chan_Live_t::SquitUser(mstring nick)
 {
-    FT("Chan_Live_t::Squit", (nick));
+    FT("Chan_Live_t::SquitUser", (nick));
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
     WLOCK2(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     if (users.find(nick.LowerCase())!=users.end())
@@ -478,9 +481,9 @@ void Chan_Live_t::Squit(mstring nick)
     }
 }
 
-void Chan_Live_t::UnSquit(mstring nick)
+void Chan_Live_t::UnSquitUser(mstring nick)
 {
-    FT("Chan_Live_t::UnSquit", (nick));
+    FT("Chan_Live_t::UnSquitUser", (nick));
 
     // We'll get ALL modes if all users are squit
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "modes"));

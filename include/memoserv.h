@@ -25,6 +25,9 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.42  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -206,7 +209,7 @@ public:
 
     bool NoExpire() const;
     void NoExpire(bool in);
-    bool IsRead(mstring name) const;
+    bool IsRead(mstring name);
     void Read(mstring name);
     void Unread(mstring name);
 

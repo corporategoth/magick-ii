@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.65  2001/03/08 08:07:41  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.64  2001/03/04 02:04:14  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -475,7 +478,7 @@ long mFile::Length() const
 	RET(-1);
     long retval = 0;
     struct stat st;
-    opres = ACE_OS::fstat(fileno(fd), &st);
+    opres = ACE_OS::stat(i_name, &st);
     if (opres < 0 && errno)
     {
 	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),
@@ -498,7 +501,7 @@ mDateTime mFile::LastMod() const
 	RET(0.0);
     mDateTime retval;
     struct stat st;
-    opres = ACE_OS::fstat(fileno(fd), &st);
+    opres = ACE_OS::stat(i_name, &st);
     if (opres < 0 && errno)
     {
 	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEOPERROR"),

@@ -1,80 +1,64 @@
-# ---------------------------------------------------------------------------
-!if !$d(BCB)
-BCB = $(MAKEDIR)\..
-!endif
-
-# ---------------------------------------------------------------------------
-# IDE MANAGED SECTION
-# ---------------------------------------------------------------------------
-# The following section of the project makefile is managed by the BCB IDE.
-# It is recommended to use the IDE to change any of the values in this
-# section.
-# ---------------------------------------------------------------------------
-
-VERSION = BCB.04.04
-# ---------------------------------------------------------------------------
-PROJECT = magickbcc.exe
-OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
-  Debug\datetime.obj Debug\dccengine.obj Debug\ircsocket.obj Debug\lockable.obj \
-  Debug\magick.obj Debug\main.obj Debug\memoserv.obj Debug\mstring.obj \
-  Debug\nickserv.obj Debug\operserv.obj Debug\server.obj Debug\servmsg.obj \
-  Debug\trace.obj Debug\utils.obj Debug\variant.obj Debug\convert.obj \
-  Debug\filesys.obj Debug\mconfig.obj
-RESFILES =
-RESDEPEN = $(RESFILES)
-LIBFILES = ..\support\zlib\zlib.LIB \
-  ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib src\des\crypto.lib \
-  src\xml\xml.lib
-IDLGENFILES =
-IDLFILES =
-LIBRARIES = VCL40.lib
-SPARELIBS = VCL40.lib
-PACKAGES = VCL40.bpi VCLJPG40.bpi VCLX40.bpi bcbsmp40.bpi VCLDB40.bpi ibsmp40.bpi \
-  VCLDBX40.bpi QRPT40.bpi TEEUI40.bpi TEEDB40.bpi TEE40.bpi DSS40.bpi \
-  VCLMID40.bpi NMFAST40.bpi INETDB40.bpi INET40.bpi dclocx40.bpi RXCTL4.bpi \
-  RXDB4.bpi Icsbcb40.bpi DragDropC4.bpi KBMMEMC4.bpi ABC45.bpi ABCDB45.bpi \
-  A258_R41.bpi O305_R41.bpi O305BR41.bpi S204_R41.bpi S204BR41.bpi
-DEFFILE =
-# ---------------------------------------------------------------------------
-PATHCPP = .;src
-PATHPAS = .;
-PATHRC = .;
-PATHASM = .;
-DEBUGLIBPATH = $(BCB)\lib\debug
-RELEASELIBPATH = $(BCB)\lib\release
-SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
-USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H
-# ---------------------------------------------------------------------------
-CFLAG1 = -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
-  -Od -H=$(BCB)\lib\vcl40.csm -wstv -wstu -w-rvl -wpin -w-par -wnod -wnak -wdef \
-  -wamb -Vmp -Tkh30000 -r- -a8 -d -k -y -v -vi- -D$(SYSDEFINES);$(USERDEFINES) -q \
-  -tWR -tWM -c
-IDLCFLAGS = -I"..\..\Program Files\Borland\CBuilder4\Projects" -Isrc -Iinclude \
-  -I..\support\ace_wrappers -I..\support\zlib -I..\include\sxp -I..\include\expat \
-  -I$(BCB)\include -I$(BCB)\include\ATL -src_suffixcpp -D_DEBUG -DDEBUG -DWIN32 \
-  -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 -DACE_USE_RCSID=0 -DHAVE_CONFIG_H
-PFLAGS = -U"..\..\Program Files\Borland\CBuilder4\Projects";src;$(BCB)\lib;$(DEBUGLIBPATH) \
-  -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
-  -N2Debug -N0Debug \
-  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H \
-  -$YD -$W -$O-
-RFLAGS = -i"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
-  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H \
-  /l 0xc09 /d "_DEBUG" /i$(BCB)\include;$(BCB)\include\mfc
-AFLAGS = /i"..\..\Program Files\Borland\CBuilder4\Projects" /isrc /iinclude \
-  /i..\support\ace_wrappers /i..\support\zlib /i..\include\sxp /i..\include\expat \
-  /i$(BCB)\include /i$(BCB)\include\ATL /d_DEBUG /dDEBUG /dWIN32 /d_CONSOLE \
-  /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /dACE_USE_RCSID=0 /dHAVE_CONFIG_H /mx /w2 /zi
-LFLAGS = -L"..\..\Program Files\Borland\CBuilder4\Projects";src;$(BCB)\lib;$(DEBUGLIBPATH) \
-  -H:0x1000000 -S:0x1000000 -ap -Tpe -s -v -q
-IFLAGS =
-# ---------------------------------------------------------------------------
-ALLOBJ = c0x32.obj ws2_32.lib $(OBJFILES)
-ALLRES = $(RESFILES)
-ALLLIB = $(LIBFILES) $(LIBRARIES) import32.lib cw32mti.lib
-# ---------------------------------------------------------------------------
-!ifdef IDEOPTIONS
-
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="magickbcc.exe"/>
+    <OBJFILES value="Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj 
+      Debug\datetime.obj Debug\dccengine.obj Debug\ircsocket.obj 
+      Debug\lockable.obj Debug\magick.obj Debug\main.obj Debug\memoserv.obj 
+      Debug\mstring.obj Debug\nickserv.obj Debug\operserv.obj Debug\server.obj 
+      Debug\servmsg.obj Debug\trace.obj Debug\utils.obj Debug\variant.obj 
+      Debug\filesys.obj Debug\mconfig.obj Debug\convert_magick.obj 
+      Debug\convert_esper.obj"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value="..\support\zlib\zlib.LIB 
+      ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib 
+      src\des\crypto.lib src\xml\xml.lib"/>
+    <LIBRARIES value="vcl50.lib"/>
+    <SPARELIBS value="vcl50.lib"/>
+    <PACKAGES value="vcl50.bpi vcljpg50.bpi vclx50.bpi bcbsmp50.bpi vcldb50.bpi vclbde50.bpi 
+      ibsmp50.bpi vcldbx50.bpi qrpt50.bpi teeui50.bpi teedb50.bpi tee50.bpi 
+      dss50.bpi vclmid50.bpi nmfast50.bpi inetdb50.bpi inet50.bpi dclocx50.bpi 
+      RXCTL4.bpi RXDB4.bpi Icsbcb40.bpi DragDropC4.bpi KBMMEMC4.bpi ABC45.bpi 
+      ABCDB45.bpi A258_R41.bpi O305_R41.bpi O305BR41.bpi S204_R41.bpi S204BR41.bpi"/>
+    <PATHCPP value=".;src"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H"/>
+    <SYSDEFINES value="_NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL;_VIS_NOLIB"/>
+    <MAINSOURCE value="magickbcc.cpp"/>
+    <INCLUDEPATH value="src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include"/>
+    <LIBPATH value="src;$(BCB)\lib"/>
+    <WARNINGS value="-wstv -wstu -w-rvl -wpin -w-par -wnod -wnak -wdef -wamb"/>
+    <WARNOPTSTR value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-Isrc -Iinclude -I..\support\ace_wrappers -I..\support\zlib 
+      -I..\include\sxp -I..\include\expat -I$(BCB)\include -src_suffix cpp 
+      -D_DEBUG -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 
+      -DACE_USE_RCSID=0 -DHAVE_CONFIG_H -boa"/>
+    <CFLAG1 value="-vGc -vGt -vGd -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -Vmp 
+      -Tkh30000 -X- -r- -a8 -b -d -k -y -v -vi- -q -tWR -tWM -c"/>
+    <PFLAGS value="-N2Debug -N0Debug -$YD -$W -$O-"/>
+    <RFLAGS value="/l 0xc09 /d &quot;_DEBUG&quot; /i$(BCB)\include;$(BCB)\include\mfc"/>
+    <AFLAGS value="/mx /w2 /zi"/>
+    <LFLAGS value="-IDebug -D&quot;&quot; -H:0x1000000 -S:0x1000000 -ap -Tpe -GD -s -v -q"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj ws2_32.lib $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="cg32.lib $(LIBFILES) $(LIBRARIES) import32.lib cw32mti.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
 [Version Info]
 IncludeVerInfo=0
 AutoIncBuild=0
@@ -103,19 +87,22 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=5
-Item0=..\..\Program Files\Borland\CBuilder4\Projects;src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL
+Count=7
+Item0=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include
 Item1=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL
-Item2=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL;
-Item3=src;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat
-Item4=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
+Item2=D:\Program Files\Borland\CBuilder4\Projects\;src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL
+Item3=..\..\Program Files\Borland\CBuilder4\Projects;src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL
+Item4=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL;
+Item5=src;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat
+Item6=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
 
 [HistoryLists\hlLibraryPath]
-Count=4
-Item0=..\..\Program Files\Borland\CBuilder4\Projects;src;$(BCB)\lib
-Item1=src;$(BCB)\lib
-Item2=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB;$(BCB)\lib
-Item3=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB-1.1.3;$(BCB)\lib
+Count=5
+Item0=src;$(BCB)\lib
+Item1=D:\Program Files\Borland\CBuilder4\Projects\;src;$(BCB)\lib
+Item2=..\..\Program Files\Borland\CBuilder4\Projects;src;$(BCB)\lib
+Item3=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB;$(BCB)\lib
+Item4=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB-1.1.3;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -128,8 +115,9 @@ Item1=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0
 Item2=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 
 [HistoryLists\hlIntOutputDir]
-Count=1
-Item0=Debug
+Count=2
+Item0=D:\working\Magick-II\Debug
+Item1=Debug
 
 [HistoryLists\hlFinalOutputDir]
 Count=7
@@ -152,103 +140,18 @@ RemotePath=
 RemoteDebug=0
 
 [Compiler]
-InMemoryExe=0
 ShowInfoMsgs=0
+LinkDebugVcl=0
+LinkCGLIB=1
 
 [CORBA]
 AddServerUnit=1
 AddClientUnit=1
 PrecompiledHeaders=1
 
-!endif
-
-# ---------------------------------------------------------------------------
-# MAKE SECTION
-# ---------------------------------------------------------------------------
-# This section of the project makefile is not used by the BCB IDE.  It is for
-# the benefit of building from the command-line using the MAKE utility.
-# ---------------------------------------------------------------------------
-
-.autodepend
-# ---------------------------------------------------------------------------
-!if !$d(BCC32)
-BCC32 = bcc32
-!endif
-
-!if !$d(CPP32)
-CPP32 = cpp32
-!endif
-
-!if !$d(DCC32)
-DCC32 = dcc32
-!endif
-
-!if !$d(TASM32)
-TASM32 = tasm32
-!endif
-
-!if !$d(LINKER)
-LINKER = ilink32
-!endif
-
-!if !$d(BRCC32)
-BRCC32 = brcc32
-!endif
-
-!if !$d(IDL2CPP)
-IDL2CPP = idl2cpp
-!endif
-# ---------------------------------------------------------------------------
-!if $d(PATHCPP)
-.PATH.CPP = $(PATHCPP)
-.PATH.C   = $(PATHCPP)
-!endif
-
-!if $d(PATHPAS)
-.PATH.PAS = $(PATHPAS)
-!endif
-
-!if $d(PATHASM)
-.PATH.ASM = $(PATHASM)
-!endif
-
-!if $d(PATHRC)
-.PATH.RC  = $(PATHRC)
-!endif
-# ---------------------------------------------------------------------------
-$(PROJECT): $(IDLGENFILES) $(OBJFILES) $(RESDEPEN) $(DEFFILE)
-   $(BCB)\BIN\$(LINKER) @&&! 
-   $(LFLAGS) + 
-   $(ALLOBJ), + 
-   $(PROJECT),, + 
-   $(ALLLIB), + 
-   $(DEFFILE), + 
-   $(ALLRES) 
-!
-# ---------------------------------------------------------------------------
-
-.pas.hpp:
-    $(BCB)\BIN\$(DCC32) $(PFLAGS) {$< }
-
-.pas.obj:
-    $(BCB)\BIN\$(DCC32) $(PFLAGS) {$< }
-
-.cpp.obj:
-    $(BCB)\BIN\$(BCC32) $(CFLAG1) -n$(@D) {$< }
-
-.c.obj:
-    $(BCB)\BIN\$(BCC32) $(CFLAG1) -n$(@D) {$< }
-
-.c.i:
-    $(BCB)\BIN\$(CPP32) $(CFLAG1) -n. {$< }
-
-.cpp.i:
-    $(BCB)\BIN\$(CPP32) $(CFLAG1) -n. {$< }
-
-.asm.obj:
-    $(BCB)\BIN\$(TASM32) $(AFLAGS) $<, $@
-
-.rc.res:
-    $(BCB)\BIN\$(BRCC32) $(RFLAGS) -fo$@ $<
-# ---------------------------------------------------------------------------
- 4
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

@@ -14,7 +14,7 @@
 ** ========================================================== */
 #ifndef _VARIANT_H
 #define _VARIANT_H
-#include "pch.h"
+//#include "pch.h"
 RCSID(variant_h, "@(#) $Id$");
 /* ========================================================== **
 **
@@ -25,6 +25,9 @@ RCSID(variant_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.35  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -91,8 +94,8 @@ private:
     //} value;
 	
 public:
-    mVariant();
-    virtual ~mVariant() {}
+    mVariant() {};
+    virtual ~mVariant() {};
     mVariant(const mVariant& in);
     mVariant(const bool in);
     mVariant(const char in);
@@ -173,9 +176,9 @@ public:
     int count()const{return values.size();};
     const mVariant &operator[](int position)const{return values[position];};
     mVariant &operator[](int position){return values[position];};
+    static const mVarArray EmptyArray();
 };
 
-extern const mVarArray EmptyArray;
 // todo
 #define AOC(x) mVarArray x
 

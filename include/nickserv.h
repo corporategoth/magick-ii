@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.60  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -254,7 +257,7 @@ public:
     void Part(mstring channel);
     void Kick(mstring kicker, mstring channel);
     void Quit(mstring reason);
-    bool IsInChan(mstring channel) const;
+    bool IsInChan(mstring channel);
     set<mstring> Channels() const;
 
     // true if user ignored
@@ -305,7 +308,7 @@ public:
     // Will KILL user if >PassFailMax
     mstring ChanIdentify(mstring channel, mstring password);
     void UnChanIdentify(mstring channel);
-    bool IsChanIdentified(mstring channel) const;
+    bool IsChanIdentified(mstring channel);
     mstring Identify(mstring password);
     void UnIdentify();
     bool IsIdentified() const;

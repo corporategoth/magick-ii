@@ -27,6 +27,9 @@ RCSID(variant_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2001/03/08 08:07:41  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.45  2001/03/02 05:24:42  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -88,14 +91,10 @@ RCSID(variant_cpp, "@(#)$Id$");
 **
 ** ========================================================== */
 
-#include "variant.h"
-
-const mVarArray EmptyArray;
+// gah microsoft sucks, the below is to make sure our header get's included, not ms's
+#include "../include/variant.h"
 
 // tracing taken out of mVariant now that we know it works so that we don't get infinite recursion.
-mVariant::mVariant()
-{}
-
 mVariant::mVariant(const short in)
 	: truevaluetype("short"),
 	  valuetype("short"),
@@ -695,4 +694,10 @@ mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& t
     values.push_back(fourteen);
     values.push_back(fifteen);
     values.push_back(sixteen);
+}
+
+const mVarArray mVarArray::EmptyArray()
+{
+	mVarArray Result;
+	return const_cast<const mVarArray>(Result);
 }

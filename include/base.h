@@ -25,6 +25,9 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.82  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -498,10 +501,10 @@ class CommandMap
 
     typedef void (*functor)(mstring, mstring, mstring);
     // map<service, map<command, pair<committees, functor> > >
-    typedef list<triplet<mstring, mstring, functor> > ctype;
-    typedef map<mstring, ctype> cmap;
-    cmap i_user;
-    cmap i_system;
+	typedef list<triplet<mstring, mstring, functor> > cmdtype;
+	typedef map<mstring, cmdtype> cmdmap;
+	cmdmap i_user;
+    cmdmap i_system;
 
     void AddSystemCommand(mstring service, mstring command,
 	    mstring committees, functor function);

@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.55  2001/02/11 07:41:27  prez
 ** Enhansed support for server numerics, specifically for Unreal.
 **
@@ -168,8 +171,8 @@ class Chan_Live_t : public mUserDef
 
     bool Join(mstring nick); // Called by Nick_Live_t
     unsigned int Part(mstring nick); // Called by Nick_Live_t
-    void Squit(mstring nick); // Called by Nick_Live_t
-    void UnSquit(mstring nick); // Called by Nick_Live_t
+    void SquitUser(mstring nick); // Called by Nick_Live_t
+    void UnSquitUser(mstring nick); // Called by Nick_Live_t
     unsigned int Kick(mstring nick, mstring kicker); // Called by Nick_Live_t
     void ChgNick(mstring nick, mstring newnick); // Called by Nick_Live_t
 public:
@@ -652,7 +655,7 @@ public:
 	unsigned long Unlock()const	    { return i_Unlock; }
     } stats;
 
-    bool IsRevengeLevel(mstring level)const
+    bool IsRevengeLevel(mstring level)
 	{ return (Revenge_Levels.find(level.UpperCase()) !=
 				    Revenge_Levels.end()); }
     bool Hide()const			{ return hide; }

@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.291  2001/03/08 08:07:41  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.290  2001/03/04 02:04:14  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -2777,7 +2780,7 @@ bool Magick::get_config_values()
     else
 	operserv.expire_sadmin = FromHumanTime("1y");
 
-    in.Read(ts_OperServ+"AKILL_REJECT",operserv.akill_reject,10.0);
+    in.Read(ts_OperServ+"AKILL_REJECT",operserv.akill_reject,10.0f);
     if (operserv.akill_reject < 0.0)
 	operserv.akill_reject = 0.0;
     if (operserv.akill_reject > 100.0)
@@ -3030,11 +3033,11 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     switch(signum)
     {
     // Silent ignores (commonplace!)
-#ifdef SIGCHLD
+#if defined(SIGCHLD) && (SIGCHLD!=0)
     case SIGCHLD:
 	break;
 #endif
-#ifdef SIGPIPE
+#if defined(SIGPIPE) && (SIGPIPE!=0)
     case SIGPIPE:
 	FLUSH();
 	break;
@@ -3075,10 +3078,10 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 
 
     case SIGILL:	// illegal opcode, this suckers gone walkabouts..
-#ifdef SIGIOT
+#if defined(SIGIOT) && (SIGIOT != 0)
     case SIGIOT:	// abort(), exit immediately!
 #endif
-#ifdef SIGBUS
+#if defined(SIGBUS) && (SIGBUS != 0)
     case SIGBUS:	// BUS error (fatal)
 #endif
     case SIGSEGV:	// Segmentation Fault

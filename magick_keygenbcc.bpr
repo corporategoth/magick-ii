@@ -1,56 +1,53 @@
-# ---------------------------------------------------------------------------
-!if !$d(BCB)
-BCB = $(MAKEDIR)\..
-!endif
-
-# ---------------------------------------------------------------------------
-# IDE SECTION
-# ---------------------------------------------------------------------------
-# The following section of the project makefile is managed by the BCB IDE.
-# It is recommended to use the IDE to change any of the values in this
-# section.
-# ---------------------------------------------------------------------------
-
-VERSION = BCB.04.04
-# ---------------------------------------------------------------------------
-PROJECT = magick_keygenbcc.exe
-OBJFILES = magick_keygenbcc.obj src\magick_keygen.obj
-RESFILES =
-RESDEPEN = $(RESFILES)
-LIBFILES = src\des\crypto.lib
-IDLFILES =
-IDLGENFILES =
-LIBRARIES = 
-SPARELIBS = 
-PACKAGES = Vcl40.bpi Vclx40.bpi bcbsmp40.bpi Vcldb40.bpi ibsmp40.bpi vcldbx40.bpi \
-  Qrpt40.bpi TeeUI40.bpi teedb40.bpi tee40.bpi Dss40.bpi Vclmid40.bpi \
-  NMFast40.bpi Inetdb40.bpi Inet40.bpi dclocx40.bpi dclusr40.bpi Icsbcb40.bpi
-DEFFILE =
-# ---------------------------------------------------------------------------
-PATHCPP = .;src
-PATHASM = .;
-PATHPAS = .;
-PATHRC = .;
-DEBUGLIBPATH = $(BCB)\lib\debug
-RELEASELIBPATH = $(BCB)\lib\release
-SYSDEFINES = _NO_VCL
-USERDEFINES = HASCRYPT
-# ---------------------------------------------------------------------------
-CFLAG1 = -Isrc;$(BCB)\include;include -Od -w -Tkh30000 -r- -a8 -k -y -v -vi- -c -tWM \
-  -tWC -D$(SYSDEFINES);$(USERDEFINES)
-IDLCFLAGS = -Isrc -I$(BCB)\include -Iinclude -src_suffixcpp -DHASCRYPT
-PFLAGS = -Usrc;$(BCB)\lib;$(DEBUGLIBPATH) -Isrc;$(BCB)\include;include -DHASCRYPT -$YD \
-  -$W -$O- -v -JPHN -M
-RFLAGS = -isrc;$(BCB)\include;include -DHASCRYPT
-AFLAGS = /isrc /i$(BCB)\include /iinclude /dHASCRYPT /mx /w2 /zd
-LFLAGS = -Lsrc;$(BCB)\lib;$(DEBUGLIBPATH) -ap -Tpe -x -Gn -v
-# ---------------------------------------------------------------------------
-ALLOBJ = c0x32.obj $(OBJFILES)
-ALLRES = $(RESFILES)
-ALLLIB = $(LIBFILES)  import32.lib cw32mt.lib
-# ---------------------------------------------------------------------------
-!ifdef IDEOPTIONS
-
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="magick_keygenbcc.exe"/>
+    <OBJFILES value="magick_keygenbcc.obj src\magick_keygen.obj"/>
+    <RESFILES value=""/>
+    <IDLFILES value=""/>
+    <IDLGENFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value="src\des\crypto.lib"/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="vcl50.bpi vclx50.bpi bcbsmp50.bpi vcldb50.bpi vclbde50.bpi ibsmp50.bpi 
+      vcldbx50.bpi qrpt50.bpi teeui50.bpi teedb50.bpi tee50.bpi dss50.bpi 
+      vclmid50.bpi nmfast50.bpi inetdb50.bpi inet50.bpi dclocx50.bpi 
+      DCLUSR50.bpi Icsbcb40.bpi"/>
+    <PATHCPP value=".;src"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="HASCRYPT"/>
+    <SYSDEFINES value="_NO_VCL;_VIS_NOLIB"/>
+    <MAINSOURCE value="magick_keygenbcc.cpp"/>
+    <INCLUDEPATH value="src;$(BCB)\include;include;..\support\zlib"/>
+    <LIBPATH value="src;$(BCB)\lib"/>
+    <WARNINGS value=""/>
+    <WARNOPTSTR value=""/>
+  </MACROS>
+  <OPTIONS>
+    <IDLCFLAGS value="-Isrc -I$(BCB)\include -Iinclude -I..\support\zlib -src_suffix cpp 
+      -DHASCRYPT -boa"/>
+    <CFLAG1 value="-vGc -vGt -vGd -Od -Q -w -Tkh30000 -X- -r- -a8 -b -d -k -y -v -vi- -c -tWM 
+      -tWC"/>
+    <PFLAGS value="-$YD -$W -$O- -v -JPHN -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zd"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="cg32.lib $(LIBFILES) import32.lib cw32mt.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
 [Version Info]
 IncludeVerInfo=0
 AutoIncBuild=0
@@ -79,9 +76,12 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=2
-Item0=src;$(BCB)\include;include
-Item1=src;$(BCB)\include
+Count=5
+Item0=src;$(BCB)\include;include;..\support\zlib
+Item1=src;$(BCB)\include;include;D:\working\support\zlib
+Item2=src;$(BCB)\include;include
+Item3=src;$(BCB)\include;..\include
+Item4=src;$(BCB)\include
 
 [HistoryLists\hlLibraryPath]
 Count=1
@@ -90,6 +90,10 @@ Item0=src;$(BCB)\lib
 [HistoryLists\hlConditionals]
 Count=1
 Item0=HASCRYPT
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=Debug
 
 [Debugging]
 DebugSourceDirs=
@@ -102,92 +106,18 @@ RemotePath=
 RemoteDebug=0
 
 [Compiler]
-InMemoryExe=0
 ShowInfoMsgs=0
+LinkDebugVcl=1
+LinkCGLIB=1
 
 [CORBA]
 AddServerUnit=1
 AddClientUnit=1
 PrecompiledHeaders=1
 
-!endif
-
-# ---------------------------------------------------------------------------
-# MAKE SECTION
-# ---------------------------------------------------------------------------
-# This section of the project file is not used by the BCB IDE.  It is for
-# the benefit of building from the command-line using the MAKE utility.
-# ---------------------------------------------------------------------------
-
-.autodepend
-# ---------------------------------------------------------------------------
-!if !$d(BCC32)
-BCC32 = bcc32
-!endif
-
-!if !$d(DCC32)
-DCC32 = dcc32
-!endif
-
-!if !$d(TASM32)
-TASM32 = tasm32
-!endif
-
-!if !$d(LINKER)
-LINKER = ilink32
-!endif
-
-!if !$d(BRCC32)
-BRCC32 = brcc32
-!endif
-
-!if !$d(IDL2CPP)
-IDL2CPP = idl2cpp
-!endif
-
-# ---------------------------------------------------------------------------
-!if $d(PATHCPP)
-.PATH.CPP = $(PATHCPP)
-.PATH.C   = $(PATHCPP)
-!endif
-
-!if $d(PATHPAS)
-.PATH.PAS = $(PATHPAS)
-!endif
-
-!if $d(PATHASM)
-.PATH.ASM = $(PATHASM)
-!endif
-
-!if $d(PATHRC)
-.PATH.RC  = $(PATHRC)
-!endif
-# ---------------------------------------------------------------------------
-$(PROJECT): $(IDLGENFILES) $(OBJFILES) $(RESDEPEN) $(DEFFILE)
-    $(BCB)\BIN\$(LINKER) @&&!
-    $(LFLAGS) +
-    $(ALLOBJ), +
-    $(PROJECT),, +
-    $(ALLLIB), +
-    $(DEFFILE), +
-    $(ALLRES)
-!
-# ---------------------------------------------------------------------------
-.pas.hpp:
-    $(BCB)\BIN\$(DCC32) $(PFLAGS) {$< }
-
-.pas.obj:
-    $(BCB)\BIN\$(DCC32) $(PFLAGS) {$< }
-
-.cpp.obj:
-    $(BCB)\BIN\$(BCC32) $(CFLAG1) -n$(@D) {$< }
-
-.c.obj:
-    $(BCB)\BIN\$(BCC32) $(CFLAG1) -n$(@D) {$< }
-
-.asm.obj:
-    $(BCB)\BIN\$(TASM32) $(AFLAGS) $<, $@
-
-.rc.res:
-    $(BCB)\BIN\$(BRCC32) $(RFLAGS) -fo$@ $<
-# ---------------------------------------------------------------------------
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+  </IDEOPTIONS>
+</PROJECT>

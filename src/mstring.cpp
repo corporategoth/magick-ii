@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.97  2001/03/08 08:07:41  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.96  2001/03/04 02:04:14  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -774,7 +777,7 @@ int mstring::find_first_of(const char *str, size_t length) const
 
     for (i=0; i < length; i++)
     {
-	char *ptr = index(i_str, str[i]);
+	char *ptr = strchr(i_str, str[i]);
 	if (ptr != NULL && ptr - i_str < retval)
 	    retval = ptr - i_str;
     }
@@ -800,7 +803,7 @@ int mstring::find_last_of(const char *str, size_t length) const
 
     for (i=0; i<length; i++)
     {
-	char *ptr = rindex(i_str, str[i]);
+	char *ptr = strrchr(i_str, str[i]);
 	if (ptr != NULL && ptr - i_str > retval)
 	    retval = ptr - i_str;
     }
@@ -834,7 +837,7 @@ int mstring::find_first_not_of(const char *str, size_t length) const
 
     for (i=0; i<i_len; i++)
     {
-	if (index(tmp, i_str[i])==NULL)
+	if (strchr(tmp, i_str[i])==NULL)
 	{
 	    retval = i;
 	    break;
@@ -870,7 +873,7 @@ int mstring::find_last_not_of(const char *str, size_t length) const
 
     for (i=i_len-1; i>=0; i--)
     {
-	if (index(tmp, i_str[i])==NULL)
+	if (strchr(tmp, i_str[i])==NULL)
 	{
 	    retval = i;
 	    break;
@@ -1343,7 +1346,7 @@ int mstring::FormatV(const char *fmt, va_list argptr)
     }
     while (buffer != NULL)
     {
-	length = vsnprintf(buffer, size-1, fmt, argptr);
+	length = ::vsnprintf(buffer, size-1, fmt, argptr);
 	if (length < size)
 	    break;
 	dealloc(buffer);

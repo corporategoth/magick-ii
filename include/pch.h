@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2001/03/08 08:07:40  ungod
+** fixes for bcc 5.5
+**
 ** Revision 1.32  2001/02/03 03:20:33  prez
 ** Fixed up some differences in previous committed versions ...
 **
@@ -144,9 +147,9 @@
 #endif
 
 #ifdef STDC_HEADERS
-#  include <stdlib.h>
-#  include <stdarg.h>
-#  include <strings.h>
+#  include <cstdlib>
+#  include <cstdarg>
+#  include <cstring>
 #endif
 
 #ifdef WIN32
