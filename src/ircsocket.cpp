@@ -356,7 +356,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 	enqueue_shutdown();
 
     {
-	MLOCK((lck_AllDependancies));
+	MLOCK((lck_AllDeps));
 	mMessage::AllDependancies.clear();
     }
     {
@@ -2673,7 +2673,7 @@ void EventTask::do_msgcheck(mDateTime & synctime)
     vector < mstring > chunked;
 
     {
-	MLOCK((lck_AllDependancies));
+	MLOCK((lck_AllDeps));
 	map < mMessage::type_t, map < mstring, set < unsigned long > > >::iterator j;
 
 	for (j = mMessage::AllDependancies.begin(); j != mMessage::AllDependancies.end(); j++)
