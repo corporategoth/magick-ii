@@ -7,26 +7,14 @@
 
 #include "mstring.h"
 
-class Magick;
-class handle_input_MO;
-class send_MO;
 class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
     typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
-    friend handle_input_MO;
-    friend send_MO;
-private:
-    ACE_Activation_Queue activation_queue_;
-    int handle_input_i(const mstring& data);
-    int send_i(const mstring& data);
 public:
-    int close(unsigned long in);
+    virtual int close(unsigned long in);
     int send(const mstring& data);
-    int open(void *);
-    int handle_input(ACE_HANDLE handle);
-//    int handle_output(ACE_HANDLE handle);
-    int svc(void);
-    int shutdown();
+    virtual int open(void *);
+    virtual int handle_input(ACE_HANDLE handle);
 };
 
 typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcServer;

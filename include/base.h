@@ -28,7 +28,7 @@ public:
     virtual int open(void *in=0);
     virtual int svc(void);
     void message(const mstring& message);
-    void shutdown();
+    void i_shutdown();
 };
 
 

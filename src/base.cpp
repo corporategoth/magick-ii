@@ -83,7 +83,7 @@ void mBase::shutdown()
     NFT("mBase::shutdown");
     int j=BaseTask.thr_count();
     for(int i=0;i<j;i++)
-	BaseTask.shutdown();
+	BaseTask.i_shutdown();
 }
 
 int mBaseTask::open(void *in)
@@ -198,12 +198,12 @@ void mBaseTask::message_i(const mstring& message)
 	    message_queue_.high_water_mark(Parent->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(ACE_Method_Object *));
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
 	    COM(("Low water mark reached, killing thread."));
-	    shutdown();
+	    i_shutdown();
 	}
     }
 }
 
-void mBaseTask::shutdown()
+void mBaseTask::i_shutdown()
 {
     NFT("mBaseTask::message_i");
     activation_queue_.enqueue(new shutdown_MO);
