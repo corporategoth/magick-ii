@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/06/23 14:21:18  ungod
+** more completion of the ceNode class and more work done on mConfigEngine
+**
 ** Revision 1.11  2000/06/23 12:49:44  ungod
 ** completion of the ceNode class
 **
@@ -292,8 +295,125 @@ bool ceNode::NodeExists(const mstring &NodeName)
             Result=i_children[temppath]->NodeExists(rest);
         }
     }
-    RET(false);
+    RET(Result);
 }
+
+bool ceNode::KeyExists(const mstring &KeyName)
+{
+    FT("ceNode::KeyExists", (KeyName));
+    mstring temppath;
+    bool Result=false;
+    if(KeyName[0]=='/')
+        temppath=KeyName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        if(i_keys.find(temppath)!=i_keys.end()&&(i_keys[temppath]!=""))
+            Result=true;
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        if((i_children.find(me)!=i_children.end())&&(i_children[temppath]!=NULL))
+        {
+            Result=i_children[temppath]->KeyExists(rest);
+        }
+    }
+    RET(Result);
+}
+
+mstring ceNode::GetKey(const mstring &KeyName, const mstring &DefValue)
+{
+    FT("ceNode::GetKey", (KeyName,DefValue));
+    mstring temppath;
+    mstring Result=DefValue;
+    if(KeyName[0]=='/')
+        temppath=KeyName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        if(i_keys.find(temppath)!=i_keys.end()&&(i_keys[temppath]!=""))
+            Result=i_keys[temppath];
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        if((i_children.find(me)!=i_children.end())&&(i_children[temppath]!=NULL))
+        {
+            Result=i_children[temppath]->GetKey(rest,DefValue);
+        }
+    }
+    RET(Result);
+}
+
+ceNode *ceNode::GetNode(const mstring &NodeName)
+{
+    FT("ceNode::GetNode", (NodeName));
+    mstring temppath;
+    ceNode *Result=NULL;
+    if(NodeName[0]=='/')
+        temppath=NodeName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        if(i_children.find(temppath)!=i_children.end()&&(i_children[temppath]!=NULL))
+            Result=i_children[temppath];
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        // note i don't use NodeExists and CreateNode here as this is a recursive function
+        // and that would cause it to check if the node exists for every recursion of this function
+        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        {
+            i_children[me]=new ceNode;
+            i_children[me]->i_Name=me;
+        }
+        Result=i_children[temppath]->GetNode(rest);
+    }
+    NRET(ceNode *,Result);
+}
+
+mstring ceNode::Write(const mstring &KeyName, const mstring &Value)
+{
+    FT("ceNode::Write", (KeyName,Value));
+    mstring temppath;
+    mstring Result="";
+    if(KeyName[0]=='/')
+        temppath=KeyName.After("/");
+    if(temppath.WordCount("/")==1)
+    {
+        // end of the line
+        Result=i_keys[temppath];
+        i_keys[temppath]=Value;
+    }
+    else
+    {
+        //pull us out and pass us on
+        mstring me,rest;
+        me=temppath.Before("/");
+        rest=temppath.After("/");
+        // note i don't use NodeExists and CreateNode here as this is a recursive function
+        // and that would cause it to check if the node exists for every recursion of this function
+        if((i_children.find(me)==i_children.end())||(i_children[temppath]==NULL))
+        {
+            i_children[me]=new ceNode;
+            i_children[me]->i_Name=me;
+        }
+        Result=i_children[temppath]->Write(rest,Value);
+    }
+    RET(Result);
+}
+
 
 mConfigEngine::mConfigEngine()
 {
@@ -325,12 +445,17 @@ bool mConfigEngine::LoadFile()
 bool mConfigEngine::SaveFile()
 {
     NFT("mConfigEngine::SaveFile");
+    // bah i'll write this one later
     RET(false);
 }
 
 void mConfigEngine::Empty()
 {
     NFT("mConfigEngine::Empty");
+    map<mstring, ceNode *>::iterator i;
+    for(i=RootNode.i_children.begin();i!=RootNode.i_children.end();i++)
+        if(i->second!=NULL)
+            delete i->second;
     RootNode.i_children.clear();
     RootNode.i_keys.clear();
 }
@@ -384,49 +509,56 @@ bool mConfigEngine::Read(const mstring &key, double &outvar, double Default)
     RET(false);
 }
 
-
-void mConfigEngine::Write(const mstring &key,const mstring &value)
+mstring mConfigEngine::Write(const mstring &key,const mstring &value)
 {
     FT("mConfigEngine::Write", (key, value));
+    RET("");
 }
 
-void mConfigEngine::Write(const mstring &key,bool value)
+bool mConfigEngine::Write(const mstring &key,bool value)
 {
     FT("mConfigEngine::Write", (key, value));
+    RET(false);
 }
 
-void mConfigEngine::Write(const mstring &key,int value)
+int mConfigEngine::Write(const mstring &key,int value)
 {
     FT("mConfigEngine::Write", (key, value));
+    RET(0);
 }
 
-void mConfigEngine::Write(const mstring &key,unsigned int value)
+unsigned int mConfigEngine::Write(const mstring &key,unsigned int value)
 {
     FT("mConfigEngine::Write", (key, value));
+    RET(0);
 }
 
-void mConfigEngine::Write(const mstring &key,long value)
+long mConfigEngine::Write(const mstring &key,long value)
 {
     FT("mConfigEngine::Write", (key, value));
+    RET(0L);
 }
 
-void mConfigEngine::Write(const mstring &key,unsigned long value)
+unsigned long mConfigEngine::Write(const mstring &key,unsigned long value)
 {
     FT("mConfigEngine::Write", (key, value));
+    RET(0L);
 }
 
-void mConfigEngine::Write(const mstring &key,double value)
+double mConfigEngine::Write(const mstring &key,double value)
 {
     FT("mConfigEngine::Write", (key, value));
+    RET(0.0);
 }
 
 
-auto_ptr<ceNode> mConfigEngine::GetNode(const mstring& NodeName)
+ceNode *mConfigEngine::GetNode(const mstring& NodeName)
 {
+    // warning *HIGHLY DANGEROUS, as i can't get auto_ptr's working this pointer
+    //  could be freed at any time, trust it only as long as you have to
+    // but at the moment, i'm just too damn brainfried to redesign this
     FT("mConfigEngine::GetNode", (NodeName));
-    auto_ptr<ceNode> Result;
-
-    NRET(auto_ptr<ceNode>, Result);
+    NRET(ceNode *, RootNode.GetNode(NodeName));
 }
 
 bool mConfigEngine::DeleteNode(const mstring& NodeName)
@@ -459,6 +591,7 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
     bool Result=false;
     vector<mstring> decommented;
     decommented=DeComment(configarray);
+    ceNode *currNode=&RootNode;
     mstring currline;
     mstring currpath;
     for(vector<mstring>::const_iterator i=decommented.begin();i!=decommented.end();i++)
@@ -469,12 +602,13 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
         {
             // new section
             Result=RootNode.CreateNode(currline.After("[").Before("]"));
+            currNode=RootNode.GetNode(currline.After("[").Before("]"));
         }
         else if(currline.First('=')>0)
         {
             // new value
-            Result=RootNode.SetKey(currline.Before("=").Trim(true),
-					currline.After("=").Trim(false));
+            if(currNode!=NULL)
+                Result=currNode->SetKey(currline.Before("=").Trim(true), currline.After("=").Trim(false));
         }
     }
     RET(Result);
@@ -483,7 +617,7 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
 bool mConfigEngine::NodeExists(const mstring &NodeName)
 {
     FT("mConfigEngine::NodeExists", (NodeName));
-    RET(false);
+    RET(RootNode.NodeExists(NodeName));
 }
 
 vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
@@ -496,8 +630,8 @@ vector<mstring> mConfigEngine::DeComment(const vector<mstring> in)
         {
             // if we find ; then it's a comment to end of line, but /; is not a comment.
             bool founddelim=false;
-            int j=1;
-            while(founddelim = false && j < i->Len())
+            unsigned int j=1;
+            while(founddelim == false && j < i->Len())
             {
                 if(*i[j] == ';' && *i[j-1] != '\\')
                     founddelim=true;

@@ -25,6 +25,9 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2000/06/23 14:23:37  ungod
+** more completion of the ceNode class and more work done on mConfigEngine
+**
 ** Revision 1.8  2000/06/23 12:49:13  ungod
 ** completion of the ceNode class
 **
@@ -79,6 +82,10 @@ public:
     bool CreateNode(const mstring &NodeName);
     bool DeleteNode(const mstring &NodeName);
     bool NodeExists(const mstring &NodeName);
+    bool KeyExists(const mstring &KeyName);
+    mstring GetKey(const mstring &KeyName, const mstring &DefValue);
+    ceNode *GetNode(const mstring &NodeName);
+    mstring Write(const mstring &KeyName, const mstring &Value);
 };
 
 class mConfigEngine
@@ -105,15 +112,15 @@ public:
     bool Read(const mstring &key, unsigned long &outvar, unsigned int Default=0);
     bool Read(const mstring &key, double &outvar, double Default=0.0);
 
-    void Write(const mstring &key,const mstring &value);
-    void Write(const mstring &key,bool value);
-    void Write(const mstring &key,int value);
-    void Write(const mstring &key,unsigned int value);
-    void Write(const mstring &key,long value);
-    void Write(const mstring &key,unsigned long value);
-    void Write(const mstring &key,double value);
+    mstring Write(const mstring &key,const mstring &value);
+    bool Write(const mstring &key,bool value);
+    int Write(const mstring &key,int value);
+    unsigned int Write(const mstring &key,unsigned int value);
+    long Write(const mstring &key,long value);
+    unsigned long Write(const mstring &key,unsigned long value);
+    double Write(const mstring &key,double value);
 
-    auto_ptr<ceNode> GetNode(const mstring& NodeName);
+    ceNode *GetNode(const mstring& NodeName);
     bool DeleteNode(const mstring& NodeName);
     bool DeleteKey(const mstring& KeyName);
     bool NodeExists(const mstring &NodeName);
