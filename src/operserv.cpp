@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2000/03/15 15:02:47  prez
+** Added checking for current ops matching an OPERDENY mask
+**
 ** Revision 1.65  2000/03/15 14:42:59  prez
 ** Added variable AKILL types (including GLINE)
 **
@@ -2127,6 +2130,25 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
     Parent->operserv.stats.i_OperDeny++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD"),
 	host.c_str(), Parent->getMessage(source, "LIST/OPERDENY").c_str());
+
+    map<mstring,Nick_Live_t>::iterator nlive;
+    for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
+    {
+	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).Matches(host))
+	{
+	    if (Parent->server.proto.SVS())
+	    {
+		nlive->second.SendMode("-o");
+	    }
+	    else
+	    {
+		Parent->server.KILL(Parent->operserv.FirstName(),
+	    	    nlive->second.Name(),
+		    Parent->getMessage(nlive->second.Name(), "MISC/KILL_OPERDENY"));
+	    }
+	}
+    }
+
 }
 
 void OperServ::do_operdeny_Del(mstring mynick, mstring source, mstring params)
