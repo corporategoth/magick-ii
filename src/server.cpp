@@ -3201,7 +3201,10 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
     }
     else if (msgtype == "CHGHOST")
     {
-	Magick::instance().nickserv.GetLive(source)->AltHost(IrcParam(params, 1));
+	mstring nick = GetUser(IrcParam(params, 1));
+
+	if (!nick.empty())
+	    Magick::instance().nickserv.GetLive(nick)->AltHost(IrcParam(params, 2));
     }
     else if (msgtype == "CHGIDENT")
     {
