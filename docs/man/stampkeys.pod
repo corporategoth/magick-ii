@@ -1,0 +1,74 @@
+=head1 NAME
+
+stampkeys - Replace kry file key placeholds with random keys.
+
+=head1 SYNOPSIS
+
+stampkeys B<files>
+
+=head1 DESCRIPTION
+
+This will modify the binary files you specify searching for
+placeholders put in it by the compilation that represent the
+place where the keys that are used for encrypting the key
+file should be.  Once found (for either key), it will replace
+it with a random key it generates on the fly.
+
+The same keys are put in all files specified on the commandline,
+however each time this program is run, what is placed in the
+binary files changes.  This means you MUST specify all files
+you wish to get the same keys on the SAME commandline!
+
+This program will only have an effect on 'freshly linked' files,
+ie. if you wish to restamp a binary file, you must either
+recompile it, or at the minimum, relink it from its object files.
+
+=head1 EXAMPLE
+
+If you wish to re-stamp some original magick files, and you already
+have the compiled source in the original magick tree, you can simply
+type "make relink" in the src directory, and it will then re-link
+all the binaries, and auto re-stamp them for you.
+
+The magick, magick.debug and magick_keygen binary files will then
+have totally different keyfile keys in them than any previous
+versions of this file, or any other binaries in existance.
+
+=head1 FILES
+
+Specified on commandline.
+
+=head1 SEE ALSO
+
+L<magick(1)>, L<magick_keygen(1)>  
+
+=head1 NOTES
+
+Magick may be obtained from B<http://www.magick.tm> or
+B<ftp://ftp.magick.tm/pub/magick.tm> and is distributed under
+the I<GNU General Public License>.
+
+You will need to re-generate your Magick database key (with the
+same key entered the first time) after re-stamping your binaries.
+
+=head1 DEDICATION
+
+Magick is dedicated to the memory of PreZ's loving sister,
+Stacey Louise Elder (1st Jan, 1975 - 25th Feb, 1998). She
+has been there for me more than anyone over the years, and I
+was distraught when she died, may her Lord love her as much
+as I did, and keep her safe like I could not. Merry Parting,
+Dear Sister.
+
+Magick is also dedicated to the memory of Ungod's brother,
+Edward Kevin King (28th Aug, 1982 - 21st Nov, 1997), His
+life was short, but his memory is great, never will those
+who knew him forget him.
+
+=head1 AUTHORS
+
+Magick Development Team E<lt>magick-devel@magick.tmE<gt>
+
+(c) 1997-2001 Preston Elder E<lt>prez@magick.tmE<gt>
+
+(c) 1998-2001 William King E<lt>ungod@magick.tmE<gt>

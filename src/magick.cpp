@@ -29,6 +29,11 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.297  2001/04/13 07:12:48  prez
+** Changed genrankeys style random key generation to binary stamping
+** (allowing people to stamp the binary AFTER it has been created, and
+** thus, allowing pre-compiled binaries to be stamped for security).
+**
 ** Revision 1.296  2001/04/08 18:53:09  prez
 ** It now all compiles and RUNS with -fno-default-inline OFF.
 **
@@ -3440,15 +3445,14 @@ mstring Magick::GetKey()const
 	des_key_schedule key1, key2;
 	des_cblock ckey1, ckey2;
 
-#include "crypt.h"
 	memset(tmp, 0, KEYLEN);
 	key_size = keyfile.Read(tmp, KEYLEN);
 	tmp[KEYLEN-1]=0;
 
 	/* Unscramble keyfile keys */
-	des_string_to_key(crypto_key1,&ckey1);
+	des_string_to_key(CRYPTO_KEY1,&ckey1);
 	des_set_key(&ckey1,key1);
-	des_string_to_key(crypto_key2,&ckey2);
+	des_string_to_key(CRYPTO_KEY2,&ckey2);
 	des_set_key(&ckey2,key2);
 
 	/* Use keyfile keys to get REAL key */

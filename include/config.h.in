@@ -64,7 +64,17 @@
 
 /* Length of database key */
 #ifndef KEYLEN
-#define KEYLEN 1024
+#define KEYLEN 0
+#endif
+
+/* Crypto key 1 placeholder */
+#ifndef CRYPTO_KEY1
+#define CRYPTO_KEY1 ""
+#endif
+
+/* Crypto key 2 placeholder */
+#ifndef CRYPTO_KEY2
+#define CRYPTO_KEY2 ""
 #endif
 
 /* Define if you have the dtoa function.  */

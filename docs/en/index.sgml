@@ -399,24 +399,10 @@ and resulting binary size.  What this means in english is, the final
 product is very efficient, however making it will take a large
 chunk out of your available resources.
 
-Dont dispair tho.  Magick is also available in binary form from
-ftp://www.magick.tm/pub/magick.tm/bin - however if you want to
-use encryption, its recommended you compile magick yourself.  Why?
-Magick encrypts the key file with 2 keys determined at compile-
-time.  These are never the same for 2 different compiles.  However
-if you get a pre-compiled binary, then others will have access to
-the same binary you have, and may be able to some how reverse
-engineer the keys for the keyfile inside, and be able to decrypt
-your key file.  So, if you use a pre-compiled binary, you should
-consider the key potentially compromised.  This is not to say you
-shouldnt bother using encryption in that instance, just that you
-should take extra precautions to ensure noone can access your
-key file and databases.
-
 Host locking (ie. stopping magick from being run anywhere that
 doesnt have the same host and system type compiled into magick)
-is also impossible with pre-compiled binaries.  If you wish to
-add this level of protection in (ie. you want to ensure that even
+is impossible with pre-compiled binaries.  If you wish to add
+this level of protection in (ie. you want to ensure that even
 if someone DOES get your binaries, they cant run them without
 going through some special measures to try and do so), then you
 will need to re-compile.  Essentially the rule of thumb is
@@ -825,6 +811,9 @@ of facilitating this are:
      <item>EACH compile creates new key file keys, which means you must
        re-generate the key file each time you compile, ensuring it
        does not get stale (and becomes invalid if someone gets it!)
+     <item>You may manually replace the key file keys by using the
+       stampkey utility that comes with magick (you will have to
+       regenerate your key file after this).
      </itemize>
 
 To ensure the security of your databases and communication, you should
@@ -834,18 +823,31 @@ To ensure the security of your databases and communication, you should
        you wont need it often.  Also choose long and varied key file
        keys, they can be up to 1024 bytes long (or longer with the
        --with-keylen parameter to configure)!
-     <item>Recompile magick every so often.  This forces you to re-generate
-       the database key file with new keys, which is always a good idea!
+     <item>Use the stampkeys utility on all your binaries at once and
+       regenerate your keys every so often, so stop them becoming
+       stale.
      </itemize>
 
 Windows users will not automatically generate a new keyset with each
-compile.  A default (generic, consider it hacked) keyset is supplied
-with the magick source.  It is however recommended that you create
-your own random one (each compile).  To do this, you must:
-     <itemize>
-     <item>Compile the genrankeys program
-     <item>From the include directory, execute:  genrankeys crypt.h
-     </itemize>
+compile.  It is recommended you create your own using the stampkey
+utility supplied if you intend to use encryption.  This must be
+done some time before the database encryption key is generated.
+
+Syntax for the stampkey utility is:
+<tscreen><verb>
+     stampkey <all binaries to be stamped>
+</verb></tscreen>
+
+You MUST do all executable files at once, so an example is:
+<tscreen><verb>
+     (UNIX) stampkey magick magick.debug magick_keygen
+     (WIN ) stampkey magick.exe magick_keygen.exe
+</verb></tscreen>
+
+Keep in mind that to be able to stamp a binary, it must NOT have been
+previously stamped, so you will need a 'freshly linked' file.  All
+binary distributions contain un-stamped files, all source distributions
+can create (and auto-restamp) files with the "make reilnk" command.
 
 REMEMBER:  If you forget your database password, then you had BETTER
 decrypt your databases (via. the config file) ASAP, as if you lose

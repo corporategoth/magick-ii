@@ -20,6 +20,11 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2001/04/13 07:12:48  prez
+** Changed genrankeys style random key generation to binary stamping
+** (allowing people to stamp the binary AFTER it has been created, and
+** thus, allowing pre-compiled binaries to be stamped for security).
+**
 ** Revision 1.10  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -76,7 +81,6 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 
 #include <stdio.h>
 #include "config.h"
-#include "crypt.h"
 #ifdef HASCRYPT
 #include "des/des_locl.h"
 #include "des/spr.h"
@@ -211,9 +215,9 @@ int main(int argc, char **argv)
 #endif
     }
 
-    des_string_to_key(crypto_key1,&ckey1);
+    des_string_to_key(CRYPTO_KEY1,&ckey1);
     des_set_key(&ckey1,key1);
-    des_string_to_key(crypto_key2,&ckey2);
+    des_string_to_key(CRYPTO_KEY2,&ckey2);
     des_set_key(&ckey2,key2);
 
     // normalize to a derivitive of sizeof(unsigned long) * 2

@@ -152,10 +152,10 @@ Override the B<FILES/ENCRYPTION> value in the configuration file,
 setting it to true, which tells magick to encrypt the databases
 next time it saves (depends on the F<magick.key> file existing).
 
-I<NOTE>: if your F<magick.key> file was created with a different
-F<magick_keygen> binary than the one associated with the current
-version of F<magick> you are running (including the actual COMPILE
-of it), you will essentially create corrupted databases.
+I<NOTE>: if your F<magick.key> file was created with a
+F<magick_keygen> binary stamped with different keyfile keys than
+the ones the current version of F<magick> you are running was
+stamped with, you will essentially create corrupted databases.
 
 =item --decrypt, -e
 
@@ -163,8 +163,9 @@ Override the B<FILES/ENCRYPTION> value in the configuration file,
 setting it to false, which tells magick to decrypt the databases
 on load, and not re-encrypt it when it saves them.  This requires
 your F<magick.key> file to have the correct key to decrypt the
-databases (and to have been created with the F<magick_keygen> of
-the same compile set as the current F<magick> binary).
+databases (and to have been created with a version of
+F<magick_keygen> that is stamped with the same keyfile keys as 
+the current version of your F<magick> binary).
 
 =item --keyfile X, -K
 
@@ -172,8 +173,8 @@ Override the B<FILES/KEYFILE> value in the configuration file,
 which is the file that contains the key to decrypt or encrypt
 databases.  This file is created with the F<magick_keygen> program.
 You MUST ensure you are using a version of F<magick_keygen> and
-F<magick> that were compiled at the same time.  This defaults to
-F<magick.key>.
+F<magick> that were stamped with the same keyfile keys.  This
+defaults to F<magick.key>.
 
 =item --compress X, -c
 
@@ -369,7 +370,7 @@ a reply to any HELP request.
 
 =head1 SEE ALSO
 
-L<magick_keygen(1)>
+L<magick_keygen(1)>, L<stampkeys(1)>
 
 =head1 NOTES
 

@@ -21,9 +21,9 @@ as your key, however it may not contain a carriage return if entered
 interactively (ie. not via. the F<plainfile>).
 
 This program is written for use with Magick IRC Services, and contains
-the two keys it will use to generate the keyfile hard-coded into it.
-This means if your copy of magick and magick_keygen were not compiled
-at the same time, the keys this program will generate will be invalid.
+the two keys it will use to generate the keyfile stamped into it.
+This means if your copy of F<magick> and F<magick_keygen> were not stamped
+with the same keys, the keys this program will generate will be invalid.
 
 =head1 OPTIONS
 
@@ -55,7 +55,7 @@ Specified in program.
 
 =head1 SEE ALSO
 
-L<magick(1)>
+L<magick(1)> L<stampkeys(1)>
 
 =head1 BUGS
 
@@ -71,8 +71,8 @@ B<ftp://ftp.magick.tm/pub/magick.tm> and is distributed under
 the I<GNU General Public License>.
 
 You will need to re-generate your Magick database key (with the
-same key entered the first time) each time you re-compile magick
-and magick_keygen.
+same key entered the first time) each time you re-stemp the
+F<magick> and F<magick_keygen> binaries.
 
 If you forget the plain text key needed to re-generate your keyfile,
 or wish to change the plain text key, you must:
@@ -92,7 +92,8 @@ remove the existing keyfile.
 
 =item *
 
-If you are upgrading your version of magick (ie. you recompiled),
+If you are upgrading your version of magick (ie. your new binaries
+are stamped with different keyfile keys than the current ones),
 then shut down magick, and copy in your new magick and magick_keygen
 binaries.
 

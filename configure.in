@@ -289,6 +289,15 @@ dnl Now we check to see if they want encryption.
 dnl DES is included with Magick, and enabled by
 dnl default, but here is where they can disable it.
 
+AC_ARG_ENABLE(quick, [  --enable-quick          Do not increment build number
+  --disable-quick         Increment build number (default)],
+	[case "${enableval}" in
+		yes) quick=true;;
+		no) quick=false;;
+		*) AC_MSG_ERROR(bad value ${enableval} for QUICK option);;
+	 esac], [quick=false])
+AM_CONDITIONAL(INCREMENT, test x$quick = xfalse)
+
 AC_ARG_ENABLE(des, [  --enable-des            Add DES encryption to Magick (default)
   --disable-des           Remove DES encryption from Magick],
 	[case "${enableval}" in
@@ -366,6 +375,13 @@ if test "$hostlock" = "true"; then
 else
     unset BUILD_NODE BUILD_TYPE BUILD_REL
 fi
+
+if test -z "$BUILD_NODE" -o -z "$BUILD_TYPE" -o -z "$BUILD_REL"; then
+    unset BUILD_NODE BUILD_TYPE BUILD_REL
+else
+    AM_CONDITIONAL(STAMPED, test 1)
+fi
+
 
 AC_ARG_ENABLE(mpatrol, [  --enable-mpatrol        Enable mpatrol (memory debug)
   --disable-mpatrol       Disable mpatrol (default)],
@@ -468,7 +484,19 @@ AC_CHECK_FUNCS(uitoa)
 AC_CHECK_FUNCS(vsnprintf)
 
 AC_ARG_WITH(keylen, [  --with-keylen=size      Maximum size of key (and keyfile)],
-	[AC_DEFINE_UNQUOTED(KEYLEN, $withval)],
-	[AC_DEFINE_UNQUOTED(KEYLEN, 1024)])
+	[keylen=$withval], [keylen=1024])
+AC_DEFINE_UNQUOTED(KEYLEN, $keylen)
+
+fill="."
+while test `echo $fill | wc -c` -lt $keylen
+do	fill=`echo $fill | sed "s/\./\.\./g"`
+done
+len=`expr $keylen - 2`
+str="| Magick II Key Stamp 1 $fill"
+str="`echo $str | cut -b1-$len` |"
+AC_DEFINE_UNQUOTED(CRYPTO_KEY1, "$str")
+str="| Magick II Key Stamp 2 $fill"
+str="`echo $str | cut -b1-$len` |"
+AC_DEFINE_UNQUOTED(CRYPTO_KEY2, "$str")
 
 AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/des/Makefile include/xml/Makefile docs/man/Makefile docs/devel/Makefile lang/Makefile)
