@@ -45,6 +45,7 @@ static Server_t GLOB_Server_t;
 
 unsigned long Protocol::Numeric_t::str_to_base64(const mstring & in) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::str_to_base64", (in));
 
     if (!in.length())
@@ -59,10 +60,12 @@ unsigned long Protocol::Numeric_t::str_to_base64(const mstring & in) const
     }
 
     RET(v);
+    ETCB();
 }
 
 mstring Protocol::Numeric_t::base64_to_str(unsigned long in) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::base64_to_str", (in));
 
     // 32/6 == max 6 bytes for representation, +1 for the null
@@ -82,58 +85,72 @@ mstring Protocol::Numeric_t::base64_to_str(unsigned long in) const
     mstring retval = (base64buf + (Trim() ? i : 0));
 
     RET(retval);
+    ETCB();
 }
 
 unsigned long Protocol::Numeric_t::ServerNumeric(const mstring & in) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::ServerNumeric", (in));
     unsigned long rv = str_to_base64(in.Right(Server()));
 
     RET(rv);
+    ETCB();
 }
 
 mstring Protocol::Numeric_t::ServerNumeric(unsigned long in) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::ServerNumeric", (in));
     mstring rv = base64_to_str(in).Right(Server());
 
     RET(rv);
+    ETCB();
 }
 
 unsigned long Protocol::Numeric_t::UserNumeric(const mstring & in) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::UserNumeric", (in));
     unsigned long rv = str_to_base64(in.Right(User() + (Combine() ? Server() : 0)));
 
     RET(rv);
+    ETCB();
 }
 
 mstring Protocol::Numeric_t::UserNumeric(unsigned long in) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::UserNumeric", (in));
     mstring rv = base64_to_str(in).Right(User() + (Combine() ? Server() : 0));
 
     RET(rv);
+    ETCB();
 }
 
 unsigned long Protocol::Numeric_t::ChannelNumeric(const mstring & in) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::ChannelNumeric", (in));
     unsigned long rv = str_to_base64(in.Right(Channel()));
 
     RET(rv);
+    ETCB();
 }
 
 mstring Protocol::Numeric_t::ChannelNumeric(unsigned long in) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::ChannelNumeric", (in));
     mstring rv = base64_to_str(in).Right(Channel());
 
     RET(rv);
+    ETCB();
 }
 
 bool Protocol::Set(const mstring & filename)
 {
+    BTCB();
     FT("Protocol::Set", (filename));
 
     DumpB();
@@ -279,19 +296,23 @@ bool Protocol::Set(const mstring & filename)
     DumpE();
 
     RET(true);
+    ETCB();
 }
 
 mstring Protocol::GetToken(const mstring & in) const
 {
+    BTCB();
     FT("Protocol::GetToken", (in));
     map < mstring, mstring >::const_iterator iter = tokens.find(in);
     if (iter == tokens.end())
 	RET("");
     RET(iter->second);
+    ETCB();
 }
 
 mstring Protocol::GetNonToken(const mstring & in) const
 {
+    BTCB();
     FT("Protocol::GetNonToken", (in));
     mstring retval;
 
@@ -305,78 +326,94 @@ mstring Protocol::GetNonToken(const mstring & in) const
 	}
     }
     RET(retval);
+    ETCB();
 }
 
 void Protocol::DumpB() const
 {
+    BTCB();
     MB(0,
        (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
 	i_Akill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
     MB(16,
        (i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
 	tokens.size()));
+    ETCB();
 }
 
 void Protocol::DumpE() const
 {
+    BTCB();
     ME(0,
        (i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic, i_TopicJoin,
 	i_Akill, i_Signon, i_Modes, i_ChanModeArg, i_Server));
     ME(16,
        (i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE, i_SVSHOST,
 	tokens.size()));
+    ETCB();
 }
 
 void Server_t::defaults()
 {
+    BTCB();
     NFT("Server_t::defaults");
     ref_class::lockData(mVarArray(lck_Server, lck_list, i_Name.LowerCase()));
     i_Hops = 0;
     i_Ping = 0.0;
     i_Lag = 0;
     i_Jupe = false;
+    ETCB();
 }
 
 Server_t::Server_t()
 {
+    BTCB();
     NFT("Server_t::Server_t");
     defaults();
     DumpE();
+    ETCB();
 }
 
 Server_t::Server_t(const mstring & name, const mstring & description, const unsigned long numeric) : i_Name(name.LowerCase()),
 i_AltName(name.LowerCase()), i_Numeric(numeric), i_Uplink(Magick::instance().startup.Server_Name().LowerCase()),
 i_Description(description)
 {
+    BTCB();
     FT("Server_t::Server_t", (name, description, numeric));
     defaults();
     i_Jupe = true;
     DumpE();
+    ETCB();
 }
 
 Server_t::Server_t(const mstring & name, const int hops, const mstring & description,
 		   const unsigned long numeric) : i_Name(name.LowerCase()), i_AltName(name.LowerCase()), i_Numeric(numeric),
 i_Uplink(Magick::instance().startup.Server_Name().LowerCase()), i_Description(description)
 {
+    BTCB();
     FT("Server_t::Server_t", (name, hops, description, numeric));
     defaults();
     i_Hops = hops;
     Magick::instance().server.OurUplink(i_Name);
     DumpE();
+    ETCB();
 }
 
 Server_t::Server_t(const mstring & name, const mstring & uplink, const int hops, const mstring & description,
 		   const unsigned long numeric) : i_Name(name.LowerCase()), i_AltName(name.LowerCase()), i_Numeric(numeric),
 i_Uplink(uplink.LowerCase()), i_Description(description)
 {
+    BTCB();
     FT("Server_t::Server_t", (name, uplink, hops, description, numeric));
     defaults();
     i_Hops = hops;
     DumpE();
+    ETCB();
 }
 
 Server_t &Server_t::operator=(const Server_t & in)
 {
+    BTCB();
     FT("Server_t::operator=", ("(const Server_t &) in"));
     i_Name = in.i_Name;
     ref_class::lockData(mVarArray(lck_Server, lck_list, i_Name.LowerCase()));
@@ -389,63 +426,79 @@ Server_t &Server_t::operator=(const Server_t & in)
     i_Lag = in.i_Lag;
     i_Jupe = in.i_Jupe;
     NRET(Server_t &, *this);
+    ETCB();
 }
 
 mstring Server_t::AltName() const
 {
+    BTCB();
     NFT("Server_t::AltName");
     RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_AltName"));
     RET(i_AltName);
+    ETCB();
 }
 
 void Server_t::AltName(const mstring & in)
 {
+    BTCB();
     FT("Server_t::AltName", (in));
     WLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_AltName"));
     MCB(i_AltName);
     i_AltName = in;
     MCE(i_AltName);
+    ETCB();
 }
 
 unsigned long Server_t::Numeric() const
 {
+    BTCB();
     NFT("Server_t::Numeric");
     RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Numeric"));
     RET(i_Numeric);
+    ETCB();
 }
 
 void Server_t::Numeric(const unsigned long in)
 {
+    BTCB();
     FT("Server_t::Numeric", (in));
     WLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Numeric"));
     MCB(i_Numeric);
     i_Numeric = in;
     MCE(i_Numeric);
+    ETCB();
 }
 
 mstring Server_t::Uplink() const
 {
+    BTCB();
     NFT("Server_t::Uplink");
     RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Uplink"));
     RET(i_Uplink);
+    ETCB();
 }
 
 int Server_t::Hops() const
 {
+    BTCB();
     NFT("Server_t::Hops");
     RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Hops"));
     RET(i_Hops);
+    ETCB();
 }
 
 mstring Server_t::Description() const
 {
+    BTCB();
     NFT("Server_t::Description");
     RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Description"));
     RET(i_Description);
+    ETCB();
 }
 
 void Server_t::Ping()
 {
+    BTCB();
     NFT("Server_t::Ping");
 
     WLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Ping"));
@@ -459,10 +512,12 @@ void Server_t::Ping()
 	i_Ping = mDateTime::CurrentDateTime();
 	MCE(i_Ping);
     }
+    ETCB();
 }
 
 void Server_t::Pong()
 {
+    BTCB();
     NFT("Server_t::Pong");
     WLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Ping"));
     if (i_Ping != mDateTime(0.0))
@@ -477,24 +532,30 @@ void Server_t::Pong()
 	CE(1, i_Ping);
 	MCE(i_Lag);
     }
+    ETCB();
 }
 
 float Server_t::Lag() const
 {
+    BTCB();
     NFT("Server_t::Lag");
     RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Lag"));
     RET(i_Lag);
+    ETCB();
 }
 
 bool Server_t::Jupe() const
 {
+    BTCB();
     NFT("Server_t::Jupe");
     RLOCK((lck_Server, lck_list, i_Name.LowerCase(), "i_Jupe"));
     RET(i_Jupe);
+    ETCB();
 }
 
 unsigned int Server_t::Users() const
 {
+    BTCB();
     NFT("Server_t::Users");
 
     unsigned int count = 0;
@@ -510,10 +571,12 @@ unsigned int Server_t::Users() const
 	}
     }
     RET(count);
+    ETCB();
 }
 
 unsigned int Server_t::Opers() const
 {
+    BTCB();
     NFT("Server_t::Opers");
 
     unsigned int count = 0;
@@ -529,10 +592,12 @@ unsigned int Server_t::Opers() const
 	}
     }
     RET(count);
+    ETCB();
 }
 
 vector < mstring > Server_t::Downlinks() const
 {
+    BTCB();
     NFT("Server_t::Downlinks");
     vector < mstring > downlinks;
     Server::list_t::iterator iter;
@@ -547,10 +612,12 @@ vector < mstring > Server_t::Downlinks() const
 	}
     }
     NRET(vector < mstring >, downlinks);
+    ETCB();
 }
 
 vector < mstring > Server_t::AllDownlinks() const
 {
+    BTCB();
     NFT("Server_t::AllDownlinks");
     vector < mstring > downlinks, uplinks, uplinks2;
     Server::list_t::iterator iter;
@@ -593,10 +660,12 @@ vector < mstring > Server_t::AllDownlinks() const
     }
 
     NRET(vector < mstring >, downlinks);
+    ETCB();
 }
 
 size_t Server_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     WLOCK((lck_Server, lck_list, i_Name.LowerCase()));
@@ -610,10 +679,12 @@ size_t Server_t::Usage() const
     retval += sizeof(i_Jupe);
 
     return retval;
+    ETCB();
 }
 
 mstring Protocol::Numeric_t::FindServerNumeric(unsigned long n) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::FindServerNumeric", (n));
     mstring retval;
 
@@ -630,10 +701,12 @@ mstring Protocol::Numeric_t::FindServerNumeric(unsigned long n) const
 	}
     }
     RET(retval);
+    ETCB();
 }
 
 mstring Protocol::Numeric_t::FindUserNumeric(unsigned long n) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::FindUserNumeric", (n));
 
     mstring retval;
@@ -651,10 +724,12 @@ mstring Protocol::Numeric_t::FindUserNumeric(unsigned long n) const
 	}
     }
     RET(retval);
+    ETCB();
 }
 
 mstring Protocol::Numeric_t::FindChannelNumeric(unsigned long n) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::FindChannelNumeric", (n));
 
     mstring retval;
@@ -672,10 +747,12 @@ mstring Protocol::Numeric_t::FindChannelNumeric(unsigned long n) const
 	}
     }
     RET(retval);
+    ETCB();
 }
 
 unsigned long Protocol::Numeric_t::FindServerNumeric() const
 {
+    BTCB();
     NFT("Protocol::Numeric_t::FindServerNumeric");
 
     unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
@@ -694,10 +771,12 @@ unsigned long Protocol::Numeric_t::FindServerNumeric() const
     }
 
     RET(0);
+    ETCB();
 }
 
 unsigned long Protocol::Numeric_t::FindUserNumeric() const
 {
+    BTCB();
     NFT("Protocol::Numeric_t::FindUserNumeric");
 
     unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
@@ -729,10 +808,12 @@ unsigned long Protocol::Numeric_t::FindUserNumeric() const
     }
 
     RET(0);
+    ETCB();
 }
 
 unsigned long Protocol::Numeric_t::FindChannelNumeric() const
 {
+    BTCB();
     NFT("Protocol::Numeric_t::FindChannelNumeric");
 
     unsigned long max = 1;
@@ -747,10 +828,12 @@ unsigned long Protocol::Numeric_t::FindChannelNumeric() const
     }
 
     RET(0);
+    ETCB();
 }
 
 mstring Protocol::Numeric_t::ServerLineNumeric(unsigned long n) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::ServerLineNumeric", (n));
     mstring retval;
 
@@ -765,10 +848,12 @@ mstring Protocol::Numeric_t::ServerLineNumeric(unsigned long n) const
     }
 
     RET(retval);
+    ETCB();
 }
 
 unsigned long Protocol::Numeric_t::ServerLineNumeric(const mstring & n) const
 {
+    BTCB();
     FT("Protocol::Numeric_t::ServerLineNumeric", (n));
     unsigned long retval = 0;
 
@@ -783,26 +868,34 @@ unsigned long Protocol::Numeric_t::ServerLineNumeric(const mstring & n) const
     }
 
     RET(retval);
+    ETCB();
 }
 
 void Server_t::DumpB() const
 {
+    BTCB();
     MB(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description, i_Ping, i_Lag, i_Jupe));
+    ETCB();
 }
 
 void Server_t::DumpE() const
 {
+    BTCB();
     ME(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description, i_Ping, i_Lag, i_Jupe));
+    ETCB();
 }
 
 void Server::raw(const mstring & text) const
 {
+    BTCB();
     FT("Server::raw", (text));
     Magick::instance().send(text);
+    ETCB();
 }
 
 void Server::sraw(const mstring & text) const
 {
+    BTCB();
     mstring out;
 
     if (!proto.Numeric.Server())
@@ -815,10 +908,12 @@ void Server::sraw(const mstring & text) const
     }
     out << text;
     raw(out);
+    ETCB();
 }
 
 void Server::nraw(const mstring & nick, const mstring & text) const
 {
+    BTCB();
     mstring out;
 
     mstring n = GetUser(nick);
@@ -839,10 +934,12 @@ void Server::nraw(const mstring & nick, const mstring & text) const
 
     out << " " << text;
     raw(out);
+    ETCB();
 }
 
 void Server::SignOnAll()
 {
+    BTCB();
     NFT("Server::SignOnAll");
 
     mstring doison;
@@ -901,10 +998,12 @@ void Server::SignOnAll()
     if (!doison.empty())
 	sraw(((proto.Tokens() &&
 	       !proto.GetNonToken("ISON").empty()) ? proto.GetNonToken("ISON") : mstring("ISON")) + " :" + doison);
+    ETCB();
 }
 
 void Server::SignOffAll(const mstring & reason)
 {
+    BTCB();
     FT("Server::SignOffAll", (reason));
 
     unsigned int i;
@@ -939,42 +1038,52 @@ void Server::SignOffAll(const mstring & reason)
 	if (Magick::instance().nickserv.IsLive(Magick::instance().servmsg.GetNames().ExtractWord(i, " ")))
 	    Magick::instance().servmsg.signoff(Magick::instance().servmsg.GetNames().ExtractWord(i, " "), reason);
     }
+    ETCB();
 }
 
 Server::Server()
 {
+    BTCB();
     NFT("Server::Server");
     messages = true;
     WLOCK((lck_Server, "i_UserMax"));
     i_UserMax = 0;
     DumpE();
+    ETCB();
 }
 
 size_t Server::UserMax() const
 {
+    BTCB();
     NFT("Server::UserMax");
     RLOCK((lck_Server, "i_UserMax"));
     RET(i_UserMax);
+    ETCB();
 }
 
 void Server::OurUplink(const mstring & server)
 {
+    BTCB();
     FT("Server::OurUplink", (server));
     WLOCK((lck_Server, "i_OurUplink"));
     MCB(i_OurUplink);
     i_OurUplink = server;
     MCE(i_OurUplink);
+    ETCB();
 }
 
 mstring Server::OurUplink() const
 {
+    BTCB();
     NFT("Server::OurUplink");
     RLOCK((lck_Server, "i_OurUplink"));
     RET(i_OurUplink);
+    ETCB();
 }
 
 void Server::FlushMsgs(const mstring & nick)
 {
+    BTCB();
     FT("Server::FlushMsgs", (nick));
 
     map < mstring, list < triplet < send_type, mDateTime, triplet < mstring, mstring, mstring > > > >::iterator i;
@@ -1054,6 +1163,7 @@ void Server::FlushMsgs(const mstring & nick)
 	ToBeSent.erase(i->first);
     }
     MCE(ToBeSent.size());
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1062,6 +1172,7 @@ void Server::AddList(Server_t * in) throw (E_Server_List)
 void Server::AddList(Server_t * in)
 #endif
 {
+    BTCB();
     FT("Server::AddList", ("(Server_t *) in"));
 
     if (in == NULL)
@@ -1103,6 +1214,7 @@ void Server::AddList(Server_t * in)
     }
     WLOCK((lck_Server, lck_list));
     i_list[in->Name().LowerCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1111,6 +1223,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const throw (E_Server
 map_entry < Server_t > Server::GetList(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("Server::GetList", (in));
 
     RLOCK((lck_Server, lck_list, in.LowerCase()));
@@ -1144,6 +1257,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
     }
 
     NRET(map_entry < Server_t >, map_entry < Server_t > (iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1152,6 +1266,7 @@ void Server::RemList(const mstring & in, bool downlinks) throw (E_Server_List)
 void Server::RemList(const mstring & in, bool downlinks)
 #endif
 {
+    BTCB();
     FT("Server::RemList", (in, downlinks));
 
     RLOCK((lck_Server, lck_list));
@@ -1200,19 +1315,23 @@ void Server::RemList(const mstring & in, bool downlinks)
 	}
 	i_list.erase(iter);
     }
+    ETCB();
 }
 
 bool Server::IsList(const mstring & server) const
 {
+    BTCB();
     FT("Server::IsList", (server));
     RLOCK((lck_Server, lck_list));
     bool retval = (i_list.find(server.LowerCase()) != i_list.end());
 
     RET(retval);
+    ETCB();
 }
 
 mstring Server::GetServer(const mstring & server) const
 {
+    BTCB();
     FT("Server::GetServer", (server));
     mstring retval;
 
@@ -1221,10 +1340,12 @@ mstring Server::GetServer(const mstring & server) const
     else if (IsList(server) || server.IsSameAs(Magick::instance().startup.Server_Name(), true))
 	retval = server;
     RET(retval);
+    ETCB();
 }
 
 mstring Server::GetUser(const mstring & user) const
 {
+    BTCB();
     FT("Server::GetUser", (user));
     mstring retval;
 
@@ -1233,10 +1354,12 @@ mstring Server::GetUser(const mstring & user) const
     else if (Magick::instance().nickserv.IsLive(user))
 	retval = user;
     RET(retval);
+    ETCB();
 }
 
 mstring Server::GetChannel(const mstring & channel) const
 {
+    BTCB();
     FT("Server::GetChannel", (channel));
     mstring retval;
 
@@ -1245,19 +1368,23 @@ mstring Server::GetChannel(const mstring & channel) const
     else if (Magick::instance().chanserv.IsLive(channel))
 	retval = channel;
     RET(retval);
+    ETCB();
 }
 
 bool Server::IsSquit(const mstring & server) const
 {
+    BTCB();
     FT("Server::IsSquit", (server));
     RLOCK((lck_Server, "ServerSquit"));
     bool retval = (ServerSquit.find(server.LowerCase()) != ServerSquit.end());
 
     RET(retval);
+    ETCB();
 }
 
 void Server::Jupe(const mstring & server, const mstring & reason)
 {
+    BTCB();
     FT("Server::Jupe", (server, reason));
     if (IsList(server))
 	raw(((proto.Tokens() &&
@@ -1281,10 +1408,12 @@ void Server::Jupe(const mstring & server, const mstring & reason)
 
     map_entry < Server_t > jupe(new Server_t(server.LowerCase(), "JUPED (" + reason + ")", numeric));
     Magick::instance().server.AddList(jupe);
+    ETCB();
 }
 
 void Server::AKILL(const mstring & host, const mstring & reason, const unsigned long exptime, const mstring & killer)
 {
+    BTCB();
     FT("Server::AKILL", (host, reason, exptime, killer));
 
     if (!host.Contains("@"))
@@ -1409,10 +1538,12 @@ void Server::AKILL(const mstring & host, const mstring & reason, const unsigned 
 		mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(killusers[j].second));
 	}
     }
+    ETCB();
 }
 
 void Server::ANONKILL(const mstring & nick, const mstring & dest, const mstring & reason)
 {
+    BTCB();
     FT("Server::ANONKILL", (nick, dest, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1451,10 +1582,12 @@ void Server::ANONKILL(const mstring & nick, const mstring & dest, const mstring 
 	if (numeric)
 	    mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(numeric));
     }
+    ETCB();
 }
 
 void Server::AWAY(const mstring & nick, const mstring & reason)
 {
+    BTCB();
     FT("Server::AWAY", (nick, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1478,10 +1611,12 @@ void Server::AWAY(const mstring & nick, const mstring & reason)
 	    line = " : " + reason;
 	nraw(nick, line);
     }
+    ETCB();
 }
 
 void Server::GLOBOPS(const mstring & nick, const mstring & message)
 {
+    BTCB();
     FT("Server::GLOBOPS", (nick, message));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1515,10 +1650,12 @@ void Server::GLOBOPS(const mstring & nick, const mstring & message)
 	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    nraw(nick, line + message.ExtractWord(i, "\n\r"));
     }
+    ETCB();
 }
 
 void Server::HELPOPS(const mstring & nick, const mstring & message)
 {
+    BTCB();
     FT("Server::HELPOPS", (nick, message));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1557,10 +1694,12 @@ void Server::HELPOPS(const mstring & nick, const mstring & message)
 	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    nraw(nick, line + message.ExtractWord(i, "\n\r"));
     }
+    ETCB();
 }
 
 void Server::CHATOPS(const mstring & nick, const mstring & message)
 {
+    BTCB();
     FT("Server::CHATOPS", (nick, message));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1599,10 +1738,12 @@ void Server::CHATOPS(const mstring & nick, const mstring & message)
 	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    nraw(nick, line + message.ExtractWord(i, "\n\r"));
     }
+    ETCB();
 }
 
 void Server::INVITE(const mstring & nick, const mstring & dest, const mstring & channel)
 {
+    BTCB();
     FT("Server::INVITE", (nick, dest, channel));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1634,10 +1775,12 @@ void Server::INVITE(const mstring & nick, const mstring & dest, const mstring & 
 	       !proto.GetNonToken("INVITE").empty()) ? proto.GetNonToken("INVITE") : mstring("INVITE")) + " " + dest + " :" +
 	     channel);
     }
+    ETCB();
 }
 
 void Server::JOIN(const mstring & nick, const mstring & channel)
 {
+    BTCB();
     FT("Server::JOIN", (nick, channel));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1700,10 +1843,12 @@ void Server::JOIN(const mstring & nick, const mstring & channel)
 	for (ci = channels.begin(); ci != channels.end(); ci++)
 	    nlive->Join(*ci);
     }
+    ETCB();
 }
 
 void Server::KICK(const mstring & nick, const mstring & dest, const mstring & channel, const mstring & reason)
 {
+    BTCB();
     FT("Server::KICK", (nick, dest, channel, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1748,10 +1893,12 @@ void Server::KICK(const mstring & nick, const mstring & dest, const mstring & ch
 
 	nraw(nick, out);
     }
+    ETCB();
 }
 
 void Server::KILL(const mstring & nick, const mstring & dest, const mstring & reason)
 {
+    BTCB();
     FT("Server::KILL", (nick, dest, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1791,10 +1938,12 @@ void Server::KILL(const mstring & nick, const mstring & dest, const mstring & re
 	if (numeric)
 	    mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(numeric));
     }
+    ETCB();
 }
 
 void Server::MODE(const mstring & nick, const mstring & mode)
 {
+    BTCB();
     FT("Server::MODE", (nick, mode));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1812,10 +1961,12 @@ void Server::MODE(const mstring & nick, const mstring & mode)
 	     ((proto.Tokens() &&
 	       !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + nick + " :" + mode);
     }
+    ETCB();
 }
 
 void Server::MODE(const mstring & nick, const mstring & channel, const mstring & mode)
 {
+    BTCB();
     FT("Server::MODE", (nick, channel, mode));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1843,11 +1994,13 @@ void Server::MODE(const mstring & nick, const mstring & channel, const mstring &
 		   !proto.GetNonToken("MODE").empty()) ? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
 		 mode.Before(" ") + " " + mode.After(" "));
     }
+    ETCB();
 }
 
 void Server::NICK(const mstring & nick, const mstring & user, const mstring & host, const mstring & i_server,
 		  const mstring & name)
 {
+    BTCB();
     FT("Server::NICK", (nick, user, host, i_server, name));
 
     if (Magick::instance().nickserv.IsLive(nick))
@@ -2048,10 +2201,12 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	if (tmp->Numeric())
 	    mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(tmp->Numeric()));
     }
+    ETCB();
 }
 
 void Server::NICK(const mstring & oldnick, const mstring & newnick)
 {
+    BTCB();
     FT("Server::NICK", (oldnick, newnick));
 
     if (!Magick::instance().nickserv.IsLive(oldnick))
@@ -2087,10 +2242,12 @@ void Server::NICK(const mstring & oldnick, const mstring & newnick)
 	mMessage::CheckDependancies(mMessage::NickNoExists, oldnick);
 	mMessage::CheckDependancies(mMessage::NickExists, newnick);
     }
+    ETCB();
 }
 
 void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & text)
 {
+    BTCB();
     FT("Server::NOTICE", (nick, dest, text));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -2158,10 +2315,12 @@ void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & 
 	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    nraw(nick, line + text.ExtractWord(i, "\n\r"));
     }
+    ETCB();
 }
 
 void Server::PART(const mstring & nick, const mstring & channel, const mstring & reason)
 {
+    BTCB();
     FT("Server::PART", (nick, channel, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -2193,10 +2352,12 @@ void Server::PART(const mstring & nick, const mstring & channel, const mstring &
 	     ((proto.Tokens() &&
 	       !proto.GetNonToken("PART").empty()) ? proto.GetNonToken("PART") : mstring("PART")) + " " + channel + tmpResult);
     }
+    ETCB();
 }
 
 void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring & text)
 {
+    BTCB();
     FT("Server::PRIVMSG", (nick, dest, text));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -2265,10 +2426,12 @@ void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring &
 	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    nraw(nick, line + text.ExtractWord(i, "\n\r"));
     }
+    ETCB();
 }
 
 void Server::SQLINE(const mstring & nick, const mstring & target, const mstring & reason)
 {
+    BTCB();
     FT("Server::SQLINE", (nick, target, reason));
 
     if (proto.SQLINE().empty())
@@ -2299,10 +2462,12 @@ void Server::SQLINE(const mstring & nick, const mstring & target, const mstring 
 	output << " " << target << " :" << reason;
 	nraw(nick, output);
     }
+    ETCB();
 }
 
 void Server::QUIT(const mstring & nick, const mstring & reason)
 {
+    BTCB();
     FT("Server::QUIT", (nick, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -2330,10 +2495,12 @@ void Server::QUIT(const mstring & nick, const mstring & reason)
 	if (numeric)
 	    mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(numeric));
     }
+    ETCB();
 }
 
 void Server::RAKILL(const mstring & host)
 {
+    BTCB();
     FT("Server::RAKILL", (host));
 
     if (!host.Contains("@"))
@@ -2396,10 +2563,12 @@ void Server::RAKILL(const mstring & host)
     }
     if (!line.empty())
 	sraw(line);
+    ETCB();
 }
 
 void Server::SVSHOST(const mstring & mynick, const mstring & nick, const mstring & newhost)
 {
+    BTCB();
     FT("Server::SVSHOST", (mynick, nick, newhost));
 
     if (proto.SVSHOST().empty())
@@ -2435,10 +2604,12 @@ void Server::SVSHOST(const mstring & mynick, const mstring & nick, const mstring
 	output << " " << nick << " " << newhost << " :" << mDateTime::CurrentDateTime().timetstring();
 	nraw(mynick, output);
     }
+    ETCB();
 }
 
 void Server::SVSKILL(const mstring & mynick, const mstring & nick, const mstring & reason)
 {
+    BTCB();
     FT("Server::SVSKILL", (mynick, nick, reason));
 
     if (proto.SVSKILL().empty())
@@ -2484,10 +2655,12 @@ void Server::SVSKILL(const mstring & mynick, const mstring & nick, const mstring
 	if (numeric)
 	    mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(numeric));
     }
+    ETCB();
 }
 
 void Server::SVSNICK(const mstring & mynick, const mstring & nick, const mstring & newnick)
 {
+    BTCB();
     FT("Server::SVSNICK", (mynick, nick, newnick));
 
     if (proto.SVSNICK().empty())
@@ -2526,10 +2699,12 @@ void Server::SVSNICK(const mstring & mynick, const mstring & nick, const mstring
 	output << " " << nick << " " << newnick << " :" << time_t(NULL);
 	nraw(mynick, output);
     }
+    ETCB();
 }
 
 void Server::SVSNOOP(const mstring & nick, const mstring & server, const bool onoff)
 {
+    BTCB();
     FT("Server::SVSNOOP", (nick, server, onoff));
 
     if (proto.SVSNOOP().empty())
@@ -2558,10 +2733,12 @@ void Server::SVSNOOP(const mstring & nick, const mstring & server, const bool on
 	output << " " + server + " " + mstring(onoff ? "+" : "-");
 	nraw(nick, output);
     }
+    ETCB();
 }
 
 void Server::SVSMODE(const mstring & mynick, const mstring & nick, const mstring & mode)
 {
+    BTCB();
     FT("Server::SVSMODE", (mynick, nick, mode));
 
     if (proto.SVSMODE().empty())
@@ -2597,11 +2774,13 @@ void Server::SVSMODE(const mstring & mynick, const mstring & nick, const mstring
 	output << " " << nick << " " << mode;
 	nraw(mynick, output);
     }
+    ETCB();
 }
 
 void Server::TOPIC(const mstring & nick, const mstring & setter, const mstring & channel, const mstring & topic,
 		   const mDateTime & settime)
 {
+    BTCB();
     FT("Server::TOPIC", (nick, setter, channel, topic, settime));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -2654,10 +2833,12 @@ void Server::TOPIC(const mstring & nick, const mstring & setter, const mstring &
 	if (dojoin)
 	    PART(Magick::instance().chanserv.FirstName(), channel);
     }
+    ETCB();
 }
 
 void Server::UNSQLINE(const mstring & nick, const mstring & target)
 {
+    BTCB();
     FT("Server::UNSQLINE", (nick, target));
 
     if (proto.UNSQLINE().empty())
@@ -2688,10 +2869,12 @@ void Server::UNSQLINE(const mstring & nick, const mstring & target)
 	output << " " << target;
 	nraw(nick, output);
     }
+    ETCB();
 }
 
 void Server::WALLOPS(const mstring & nick, const mstring & message)
 {
+    BTCB();
     FT("Server::WALLOPS", (nick, message));
 
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -2719,19 +2902,23 @@ void Server::WALLOPS(const mstring & nick, const mstring & message)
 	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    nraw(nick, line + message.ExtractWord(i, "\n\r"));
     }
+    ETCB();
 }
 
 void Server::KillUnknownUser(const mstring & user) const
 {
+    BTCB();
     FT("Server::KillUnknownUser", (user));
     sraw(((proto.Tokens() &&
 	   !proto.GetNonToken("KILL").empty()) ? proto.GetNonToken("KILL") : mstring("KILL")) + " " + user + " :" +
 	 Magick::instance().startup.Server_Name() + " (" + user + "(?) <- " + Magick::instance().CurrentServer() + ")");
     LOG(LM_ERROR, "OTHER/KILL_UNKNOWN", (user));
+    ETCB();
 }
 
 void Server::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     //okay this is the main networkserv command switcher
     FT("Server::execute", (source, msgtype, params));
 
@@ -2833,10 +3020,12 @@ void Server::execute(mstring & source, const mstring & msgtype, const mstring & 
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	break;
     }
+    ETCB();
 }
 
 void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_A", (source, msgtype, params));
 
     if (msgtype == "ADCHAT")
@@ -2922,10 +3111,12 @@ void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_B", (source, msgtype, params));
 
     static_cast < void > (params);
@@ -3013,10 +3204,12 @@ void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_C", (source, msgtype, params));
 
     if (msgtype == "CAPAB")
@@ -3064,20 +3257,24 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_D(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_D", (source, msgtype, params));
 
     static_cast < void > (source);
     static_cast < void > (params);
 
     LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    ETCB();
 }
 
 void Server::parse_E(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_E", (source, msgtype, params));
 
     static_cast < void > (source);
@@ -3102,20 +3299,24 @@ void Server::parse_E(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_F(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_F", (source, msgtype, params));
 
     static_cast < void > (source);
     static_cast < void > (params);
 
     LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    ETCB();
 }
 
 void Server::parse_G(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_G", (source, msgtype, params));
 
     static_cast < void > (source);
@@ -3143,10 +3344,12 @@ void Server::parse_G(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_H(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_H", (source, msgtype, params));
 
     static_cast < void > (source);
@@ -3164,10 +3367,12 @@ void Server::parse_H(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_I(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_I", (source, msgtype, params));
 
     if (msgtype == "INFO")
@@ -3225,10 +3430,12 @@ void Server::parse_I(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_J(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_J", (source, msgtype, params));
 
     if (msgtype == "JOIN")
@@ -3248,10 +3455,12 @@ void Server::parse_J(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_K", (source, msgtype, params));
 
     if (msgtype == "KICK")
@@ -3332,10 +3541,12 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_L", (source, msgtype, params));
 
     static_cast < void > (params);
@@ -3413,10 +3624,12 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_M", (source, msgtype, params));
 
     if (msgtype == "MODE")
@@ -3519,10 +3732,12 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_N", (source, msgtype, params));
 
     if (msgtype == "NAMES")
@@ -3959,10 +4174,12 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_O(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_O", (source, msgtype, params));
 
     static_cast < void > (source);
@@ -3975,10 +4192,12 @@ void Server::parse_O(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_P", (source, msgtype, params));
 
     if (msgtype == "PART")
@@ -4082,10 +4301,12 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_Q", (source, msgtype, params));
 
     if (msgtype == "QUIT")
@@ -4156,10 +4377,12 @@ void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_R(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_R", (source, msgtype, params));
 
     static_cast < void > (source);
@@ -4187,10 +4410,12 @@ void Server::parse_R(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_S", (source, msgtype, params));
 
     if (msgtype == "SETHOST")
@@ -5035,10 +5260,12 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_T", (source, msgtype, params));
 
     if (msgtype == "TIME")
@@ -5198,10 +5425,12 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_U", (source, msgtype, params));
 
     if (msgtype == "UMODE2")
@@ -5469,10 +5698,12 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_V(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_V", (source, msgtype, params));
 
     static_cast < void > (params);
@@ -5491,10 +5722,12 @@ void Server::parse_V(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_W", (source, msgtype, params));
 
     if (msgtype == "WALLOPS")
@@ -5691,30 +5924,36 @@ void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::parse_X(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_X", (source, msgtype, params));
 
     static_cast < void > (source);
     static_cast < void > (params);
 
     LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    ETCB();
 }
 
 void Server::parse_Y(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_Y", (source, msgtype, params));
 
     static_cast < void > (source);
     static_cast < void > (params);
 
     LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    ETCB();
 }
 
 void Server::parse_Z(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::parse_Z", (source, msgtype, params));
 
     static_cast < void > (source);
@@ -5729,10 +5968,12 @@ void Server::parse_Z(mstring & source, const mstring & msgtype, const mstring & 
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
     }
+    ETCB();
 }
 
 void Server::numeric_execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     FT("Server::numeric_execute", (source, msgtype, params));
 
     static_cast < void > (source);
@@ -5925,14 +6166,19 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 //      LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	break;
     }
+    ETCB();
 }
 
 void Server::DumpB() const
 {
+    BTCB();
     MB(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(), i_OurUplink, ToBeSent.size()));
+    ETCB();
 }
 
 void Server::DumpE() const
 {
+    BTCB();
     ME(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(), i_OurUplink, ToBeSent.size()));
+    ETCB();
 }

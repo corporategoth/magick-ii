@@ -39,6 +39,7 @@ RCSID(operserv_cpp, "@(#)$Id$");
 
 bool OperServ::AddHost(const mstring & host)
 {
+    BTCB();
     FT("OperServ::AddHost", (host));
     bool retval = false;
 
@@ -114,10 +115,12 @@ bool OperServ::AddHost(const mstring & host)
 
     MCE(CloneList.size());
     RET(retval);
+    ETCB();
 }
 
 void OperServ::RemHost(const mstring & host)
 {
+    BTCB();
     FT("OperServ::RemHost", (host));
 
     MLOCK((lck_OperServ, "CloneList"));
@@ -130,10 +133,12 @@ void OperServ::RemHost(const mstring & host)
 	    CloneList.erase(host.LowerCase());
     }
     MCE(CloneList.size());
+    ETCB();
 }
 
 size_t OperServ::CloneList_sum() const
 {
+    BTCB();
     NFT("OperServ::ClonesList_sum");
 
     map < mstring, pair < unsigned int, list < mDateTime > > >::const_iterator i;
@@ -145,10 +150,12 @@ size_t OperServ::CloneList_sum() const
 	value += i->second.first;
     }
     RET(value);
+    ETCB();
 }
 
 size_t OperServ::CloneList_size(const unsigned int amt) const
 {
+    BTCB();
     FT("OperServ::CloneList_size", (amt));
 
     map < mstring, pair < unsigned int, list < mDateTime > > >::const_iterator i;
@@ -161,10 +168,12 @@ size_t OperServ::CloneList_size(const unsigned int amt) const
 	    value++;
     }
     RET(value);
+    ETCB();
 }
 
 size_t OperServ::CloneList_Usage() const
 {
+    BTCB();
     size_t retval = 0;
     map < mstring, pair < unsigned int, list < mDateTime > > >::const_iterator i;
 
@@ -178,10 +187,12 @@ size_t OperServ::CloneList_Usage() const
 	    retval += sizeof(j->Internal());
     }
     return retval;
+    ETCB();
 }
 
 void OperServ::CloneList_check()
 {
+    BTCB();
     NFT("OperServ::CloneList_check");
 
     map < mstring, pair < unsigned int, list < mDateTime > > >::iterator iter;
@@ -228,11 +239,13 @@ void OperServ::CloneList_check()
 	    }
 	}
     }
+    ETCB();
 }
 
 bool OperServ::Clone_insert(const mstring & entry, const unsigned int value, const mstring & reason, const mstring & nick,
 			    const mDateTime & added)
 {
+    BTCB();
     FT("OperServ::Clone_insert", (entry, value, reason, nick, added));
 
     // Wildcards but no @
@@ -261,10 +274,12 @@ bool OperServ::Clone_insert(const mstring & entry, const unsigned int value, con
 	Clone = i_Clone.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool OperServ::Clone_erase()
 {
+    BTCB();
     NFT("OperServ::Clone_erase");
 
     MLOCK((lck_OperServ, "Clone"));
@@ -280,10 +295,12 @@ bool OperServ::Clone_erase()
     {
 	RET(false);
     }
+    ETCB();
 }
 
 size_t OperServ::Clone_Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     set < Clone_Type >::const_iterator i;
@@ -293,10 +310,12 @@ size_t OperServ::Clone_Usage() const
 	retval += i->Usage();
     }
     return retval;
+    ETCB();
 }
 
 bool OperServ::Clone_find(const mstring & entry)
 {
+    BTCB();
     FT("OperServ::Clone_find", (entry));
 
 //  entlist_val_ui<pair<int, mstring> > iter = i_Clone.end();
@@ -317,10 +336,12 @@ bool OperServ::Clone_find(const mstring & entry)
 	Clone = i_Clone.end();
 	RET(false);
     }
+    ETCB();
 }
 
 pair < unsigned int, mstring > OperServ::Clone_value(const mstring & entry)
 {
+    BTCB();
     FT("OperServ::Clone_value", (entry));
 
     pair < unsigned int, mstring > retval = pair < unsigned int, mstring > (0, "");
@@ -333,11 +354,13 @@ pair < unsigned int, mstring > OperServ::Clone_value(const mstring & entry)
 	retval = Clone->Value();
     Clone = iter;
     return retval;
+    ETCB();
 }
 
 bool OperServ::Akill_insert(const mstring & entry, const unsigned long value, const mstring & reason, const mstring & nick,
 			    const mDateTime & added)
 {
+    BTCB();
     FT("OperServ::Akill_insert", (entry, value, reason, nick, added));
 
     // no @
@@ -366,10 +389,12 @@ bool OperServ::Akill_insert(const mstring & entry, const unsigned long value, co
 	Akill = i_Akill.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool OperServ::Akill_erase()
 {
+    BTCB();
     NFT("OperServ::Akill_erase");
 
     MLOCK((lck_OperServ, "Akill"));
@@ -386,10 +411,12 @@ bool OperServ::Akill_erase()
 	RET(false);
     }
 
+    ETCB();
 }
 
 size_t OperServ::Akill_Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     set < Akill_Type >::const_iterator i;
@@ -399,10 +426,12 @@ size_t OperServ::Akill_Usage() const
 	retval += i->Usage();
     }
     return retval;
+    ETCB();
 }
 
 bool OperServ::Akill_find(const mstring & entry)
 {
+    BTCB();
     FT("OperServ::Akill_find", (entry));
 
     // no @
@@ -433,10 +462,12 @@ bool OperServ::Akill_find(const mstring & entry)
 	Akill = i_Akill.end();
 	RET(false);
     }
+    ETCB();
 }
 
 pair < unsigned long, mstring > OperServ::Akill_value(const mstring & entry)
 {
+    BTCB();
     FT("OperServ::Akill_value", (entry));
 
     pair < unsigned long, mstring > retval = pair < unsigned long, mstring > (0, "");
@@ -449,10 +480,12 @@ pair < unsigned long, mstring > OperServ::Akill_value(const mstring & entry)
 	retval = Akill->Value();
     Akill = iter;
     return retval;
+    ETCB();
 }
 
 bool OperServ::OperDeny_insert(const mstring & i_entry, const mstring & value, const mstring & nick)
 {
+    BTCB();
     FT("OperServ::OperDeny_insert", (i_entry, value, nick));
 
     // no @
@@ -485,10 +518,12 @@ bool OperServ::OperDeny_insert(const mstring & i_entry, const mstring & value, c
 	OperDeny = i_OperDeny.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool OperServ::OperDeny_erase()
 {
+    BTCB();
     NFT("OperServ::OperDeny_erase");
 
     MLOCK((lck_OperServ, "OperDeny"));
@@ -505,10 +540,12 @@ bool OperServ::OperDeny_erase()
 	RET(false);
     }
 
+    ETCB();
 }
 
 size_t OperServ::OperDeny_Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     set < OperDeny_Type >::const_iterator i;
@@ -518,10 +555,12 @@ size_t OperServ::OperDeny_Usage() const
 	retval += i->Usage();
     }
     return retval;
+    ETCB();
 }
 
 bool OperServ::OperDeny_find(const mstring & i_entry)
 {
+    BTCB();
     FT("OperServ::OperDeny_find", (i_entry));
 
     // no @
@@ -553,10 +592,12 @@ bool OperServ::OperDeny_find(const mstring & i_entry)
 	OperDeny = i_OperDeny.end();
 	RET(false);
     }
+    ETCB();
 }
 
 mstring OperServ::OperDeny_value(const mstring & entry)
 {
+    BTCB();
     FT("OperServ::OperDeny_value", (entry));
 
     mstring retval;
@@ -569,10 +610,12 @@ mstring OperServ::OperDeny_value(const mstring & entry)
 	retval = OperDeny->Value();
     OperDeny = iter;
     return retval;
+    ETCB();
 }
 
 bool OperServ::Ignore_insert(const mstring & i_entry, const bool perm, const mstring & nick)
 {
+    BTCB();
     FT("OperServ::Ignore_insert", (i_entry, perm, nick));
 
     // no @
@@ -605,10 +648,12 @@ bool OperServ::Ignore_insert(const mstring & i_entry, const bool perm, const mst
 	Ignore = i_Ignore.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool OperServ::Ignore_erase()
 {
+    BTCB();
     NFT("OperServ::Ignore_erase");
 
     MLOCK((lck_OperServ, "Ignore"));
@@ -625,10 +670,12 @@ bool OperServ::Ignore_erase()
 	RET(false);
     }
 
+    ETCB();
 }
 
 size_t OperServ::Ignore_Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     set < Ignore_Type >::const_iterator i;
@@ -638,10 +685,12 @@ size_t OperServ::Ignore_Usage() const
 	retval += i->Usage();
     }
     return retval;
+    ETCB();
 }
 
 bool OperServ::Ignore_find(const mstring & i_entry)
 {
+    BTCB();
     FT("OperServ::Ignore_find", (i_entry));
 
     // no @
@@ -676,10 +725,12 @@ bool OperServ::Ignore_find(const mstring & i_entry)
 	Ignore = i_Ignore.end();
 	RET(false);
     }
+    ETCB();
 }
 
 bool OperServ::Ignore_value(const mstring & entry)
 {
+    BTCB();
     FT("OperServ::Ignore_value", (entry));
 
     bool retval = false;
@@ -692,16 +743,20 @@ bool OperServ::Ignore_value(const mstring & entry)
 	retval = Ignore->Value();
     Ignore = iter;
     return retval;
+    ETCB();
 }
 
 OperServ::OperServ()
 {
+    BTCB();
     NFT("OperServ::OperServ");
     messages = true;
+    ETCB();
 }
 
 void OperServ::AddCommands()
 {
+    BTCB();
     NFT("OperServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -865,10 +920,12 @@ void OperServ::AddCommands()
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "IGN*",
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name(), do_1_2param);
+    ETCB();
 }
 
 void OperServ::RemCommands()
 {
+    BTCB();
     NFT("OperServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -996,10 +1053,12 @@ void OperServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "IGN*",
 						 Magick::instance().commserv.OPER_Name() + " " +
 						 Magick::instance().commserv.SOP_Name());
+    ETCB();
 }
 
 void OperServ::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     mThread::ReAttach(tt_OperServ);
     FT("OperServ::execute", (source, msgtype, params));
     //okay this is the main operserv command switcher
@@ -1035,10 +1094,12 @@ void OperServ::execute(mstring & source, const mstring & msgtype, const mstring 
     }
 
     mThread::ReAttach(tt_mBase);
+    ETCB();
 }
 
 void OperServ::do_Help(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Help", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1063,11 +1124,13 @@ void OperServ::do_Help(const mstring & mynick, const mstring & source, const mst
 
     for (i = 0; i < help.size(); i++)
 	::send(mynick, source, help[i]);
+    ETCB();
 }
 
 #ifdef MAGICK_TRACE_WORKS
 void OperServ::do_Trace(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Trace", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1288,11 +1351,13 @@ void OperServ::do_Trace(const mstring & mynick, const mstring & source, const ms
 	NSLOG(LM_NOTICE, line1);
 	NSLOG(LM_NOTICE, line2);
     }
+    ETCB();
 }
 #endif
 
 void OperServ::do_Mode(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Mode", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1356,10 +1421,12 @@ void OperServ::do_Mode(const mstring & mynick, const mstring & source, const mst
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_Qline(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Qline", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1386,10 +1453,12 @@ void OperServ::do_Qline(const mstring & mynick, const mstring & source, const ms
     SEND(mynick, source, "OS_COMMAND/QLINE", (target, Magick::instance().getMessage(source, "VALS/ON")));
     ANNOUNCE(mynick, "MISC/QLINE", (source, Magick::instance().getMessage("VALS/ON"), target));
     LOG(LM_INFO, "OPERSERV/QLINE", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target));
+    ETCB();
 }
 
 void OperServ::do_UnQline(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_UnQline", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1413,10 +1482,12 @@ void OperServ::do_UnQline(const mstring & mynick, const mstring & source, const 
     SEND(mynick, source, "OS_COMMAND/QLINE", (target, Magick::instance().getMessage(source, "VALS/OFF")));
     ANNOUNCE(mynick, "MISC/QLINE", (source, Magick::instance().getMessage("VALS/OFF"), target));
     LOG(LM_INFO, "OPERSERV/UNQLINE", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target));
+    ETCB();
 }
 
 void OperServ::do_NOOP(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_NOOP", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1459,10 +1530,12 @@ void OperServ::do_NOOP(const mstring & mynick, const mstring & source, const mst
     LOG(LM_INFO, "OPERSERV/NOOP",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target,
 	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+    ETCB();
 }
 
 void OperServ::do_Kill(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Kill", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1496,10 +1569,12 @@ void OperServ::do_Kill(const mstring & mynick, const mstring & source, const mst
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (target));
     }
+    ETCB();
 }
 
 void OperServ::do_Hide(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Hide", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1533,10 +1608,12 @@ void OperServ::do_Hide(const mstring & mynick, const mstring & source, const mst
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (target));
     }
+    ETCB();
 }
 
 void OperServ::do_Ping(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Ping", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1560,10 +1637,12 @@ void OperServ::do_Ping(const mstring & mynick, const mstring & source, const mst
 	    LOG(LM_DEBUG, "OPERSERV/PING", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H)));
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_Update(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Update", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
 
@@ -1577,10 +1656,12 @@ void OperServ::do_Update(const mstring & mynick, const mstring & source, const m
 	    LOG(LM_DEBUG, "OPERSERV/UPDATE", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H)));
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_Shutdown(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Shutdown", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
 
@@ -1597,10 +1678,12 @@ void OperServ::do_Shutdown(const mstring & mynick, const mstring & source, const
     LOG(LM_CRITICAL, "OPERSERV/SHUTDOWN", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), reason));
     Magick::instance().Shutdown(true);
     Magick::instance().Die();
+    ETCB();
 }
 
 void OperServ::do_Restart(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Restart", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
 
@@ -1616,10 +1699,12 @@ void OperServ::do_Restart(const mstring & mynick, const mstring & source, const 
     ANNOUNCE(mynick, "MISC/RESTART", (source, reason));
     LOG(LM_CRITICAL, "OPERSERV/RESTART", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), reason));
     Magick::instance().Die();
+    ETCB();
 }
 
 void OperServ::do_Reload(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Reload", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1645,10 +1730,12 @@ void OperServ::do_Reload(const mstring & mynick, const mstring & source, const m
 	LOG(LM_ERROR, "COMMANDLINE/NO_CFG_FILE", (Magick::instance().Config_File()));
 	NSEND(mynick, source, "OS_COMMAND/RELOAD_FAIL");
     }
+    ETCB();
 }
 
 void OperServ::do_Signon(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Reload", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1664,10 +1751,12 @@ void OperServ::do_Signon(const mstring & mynick, const mstring & source, const m
 
     Magick::instance().server.SignOnAll();
     NSEND(mynick, source, "OS_COMMAND/SIGNON");
+    ETCB();
 }
 
 void OperServ::do_Unload(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Unload", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
 
@@ -1702,10 +1791,12 @@ void OperServ::do_Unload(const mstring & mynick, const mstring & source, const m
     {
 	SEND(mynick, source, "OS_STATUS/ISNOTLANG", (language));
     }
+    ETCB();
 }
 
 void OperServ::do_Jupe(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Jupe", (mynick, source, params));
     mstring message = params.Before(" ").UpperCase();
 
@@ -1729,10 +1820,12 @@ void OperServ::do_Jupe(const mstring & mynick, const mstring & source, const mst
     SEND(mynick, source, "OS_COMMAND/JUPE", (target));
     ANNOUNCE(mynick, "MISC/JUPE", (source, target));
     LOG(LM_NOTICE, "OPERSERV/JUPE", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, reason));
+    ETCB();
 }
 
 void OperServ::do_On(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_On", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1824,10 +1917,12 @@ void OperServ::do_On(const mstring & mynick, const mstring & source, const mstri
 	    }
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_Off(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_Off", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1919,10 +2014,12 @@ void OperServ::do_Off(const mstring & mynick, const mstring & source, const mstr
 	    }
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_HTM(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_HTM", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1993,10 +2090,12 @@ void OperServ::do_HTM(const mstring & mynick, const mstring & source, const mstr
 	    }
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_settings_Config(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_settings_Config", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2036,10 +2135,12 @@ void OperServ::do_settings_Config(const mstring & mynick, const mstring & source
     SEND(mynick, source, "OS_SETTINGS/CFG_DCC2",
 	 (ToHumanSpace(Magick::instance().files.Min_Speed()), ToHumanSpace(Magick::instance().files.Max_Speed()),
 	  ToHumanTime(Magick::instance().files.Sampletime(), source)));
+    ETCB();
 }
 
 void OperServ::do_settings_Nick(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_settings_Nick", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2141,10 +2242,12 @@ void OperServ::do_settings_Nick(const mstring & mynick, const mstring & source, 
     SEND(mynick, source, "OS_SETTINGS/NICK_PICEXT", (Magick::instance().nickserv.PicExt()));
     SEND(mynick, source, "OS_SETTINGS/NICK_FILES",
 	 (Magick::instance().memoserv.Files(), ToHumanSpace(Magick::instance().memoserv.FileSize())));
+    ETCB();
 }
 
 void OperServ::do_settings_Channel(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_settings_Channel", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2305,10 +2408,12 @@ void OperServ::do_settings_Channel(const mstring & mynick, const mstring & sourc
     SEND(mynick, source, "OS_SETTINGS/CHAN_ACCESS",
 	 (Magick::instance().chanserv.Level_Min(), Magick::instance().chanserv.Level_Max()));
     SEND(mynick, source, "OS_SETTINGS/CHAN_NEWS", (ToHumanTime(Magick::instance().memoserv.News_Expire(), source)));
+    ETCB();
 }
 
 void OperServ::do_settings_Other(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_settings_Other", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2377,10 +2482,12 @@ void OperServ::do_settings_Other(const mstring & mynick, const mstring & source,
 	    output << IRC_Off;
     }
     SEND(mynick, source, "OS_SETTINGS/MISC_COMM_OPT", (output));
+    ETCB();
 }
 
 void OperServ::do_settings_All(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_settings_All", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2398,10 +2505,12 @@ void OperServ::do_settings_All(const mstring & mynick, const mstring & source, c
     do_settings_Nick(mynick, source, params);
     do_settings_Channel(mynick, source, params);
     do_settings_Other(mynick, source, params);
+    ETCB();
 }
 
 void OperServ::do_clone_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_clone_Add", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2494,10 +2603,12 @@ void OperServ::do_clone_Add(const mstring & mynick, const mstring & source, cons
 	LOG(LM_DEBUG, "OPERSERV/CLONE_ADD",
 	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), host, num));
     }
+    ETCB();
 }
 
 void OperServ::do_clone_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_clone_Del", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2573,10 +2684,12 @@ void OperServ::do_clone_Del(const mstring & mynick, const mstring & source, cons
 	    SEND(mynick, source, "LIST/NOTEXISTS", (host, Magick::instance().getMessage(source, "LIST/CLONE")));
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_clone_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_clone_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2640,10 +2753,12 @@ void OperServ::do_clone_List(const mstring & mynick, const mstring & source, con
 	    i++;
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_akill_Add", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2812,10 +2927,12 @@ void OperServ::do_akill_Add(const mstring & mynick, const mstring & source, cons
 	    }
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_akill_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_akill_Del", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2888,10 +3005,12 @@ void OperServ::do_akill_Del(const mstring & mynick, const mstring & source, cons
 	    SEND(mynick, source, "LIST/NOTEXISTS", (host, Magick::instance().getMessage(source, "LIST/AKILL")));
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_akill_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_akill_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -2951,10 +3070,12 @@ void OperServ::do_akill_List(const mstring & mynick, const mstring & source, con
 	    i++;
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_operdeny_Add", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -3054,10 +3175,12 @@ void OperServ::do_operdeny_Add(const mstring & mynick, const mstring & source, c
 	Magick::instance().server.KILL(Magick::instance().operserv.FirstName(), killusers[i],
 				       Magick::instance().getMessage("MISC/KILL_OPERDENY"));
 
+    ETCB();
 }
 
 void OperServ::do_operdeny_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_operdeny_Del", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -3136,10 +3259,12 @@ void OperServ::do_operdeny_Del(const mstring & mynick, const mstring & source, c
 	    SEND(mynick, source, "LIST/NOTEXISTS", (host, Magick::instance().getMessage(source, "LIST/OPERDENY")));
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_operdeny_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_operdeny_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -3206,10 +3331,12 @@ void OperServ::do_operdeny_List(const mstring & mynick, const mstring & source, 
 	    i++;
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_ignore_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_ignore_Add", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -3276,10 +3403,12 @@ void OperServ::do_ignore_Add(const mstring & mynick, const mstring & source, con
     Magick::instance().operserv.stats.i_Ignore++;
     SEND(mynick, source, "LIST/ADD", (host, Magick::instance().getMessage(source, "LIST/SIGNORE")));
     LOG(LM_DEBUG, "OPERSERV/IGNORE_ADD", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), host));
+    ETCB();
 }
 
 void OperServ::do_ignore_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_ignore_Del", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -3358,10 +3487,12 @@ void OperServ::do_ignore_Del(const mstring & mynick, const mstring & source, con
 	    SEND(mynick, source, "LIST/NOTEXISTS", (host, Magick::instance().getMessage(source, "LIST/SIGNORE")));
 	}
     }
+    ETCB();
 }
 
 void OperServ::do_ignore_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("OperServ::do_ignore_List", (mynick, source, params));
 
     mstring message = params.Before(" ", 2).UpperCase();
@@ -3425,6 +3556,7 @@ void OperServ::do_ignore_List(const mstring & mynick, const mstring & source, co
     }
     if (head == false)
 	SEND(mynick, source, "LIST/EMPTY", (Magick::instance().getMessage(source, "LIST/SIGNORE")));
+    ETCB();
 }
 
 SXP::Tag OperServ::tag_OperServ("OperServ");
@@ -3435,6 +3567,7 @@ SXP::Tag OperServ::tag_Ignore("Ignore");
 
 void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     FT("OperServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
     if (pElement->IsA(tag_Clone))
@@ -3468,18 +3601,22 @@ void OperServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	i_array.push_back(tmp);
 	pIn->ReadTo(tmp);
     }
+    ETCB();
 }
 
 void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
     static_cast < void > (pElement);
 
     FT("OperServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+    ETCB();
 }
 
 void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("OperServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -3536,10 +3673,12 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_OperServ);
+    ETCB();
 }
 
 void OperServ::PostLoad()
 {
+    BTCB();
     NFT("OperServ::PostLoad");
     // Linkage, etc
 
@@ -3601,14 +3740,19 @@ void OperServ::PostLoad()
     {
 	Ignore->PostLoad();
     }
+    ETCB();
 }
 
 void OperServ::DumpB() const
 {
+    BTCB();
     MB(0, (i_Clone.size(), CloneList.size(), i_Akill.size(), i_OperDeny.size(), i_Ignore.size()));
+    ETCB();
 }
 
 void OperServ::DumpE() const
 {
+    BTCB();
     ME(0, (i_Clone.size(), CloneList.size(), i_Akill.size(), i_OperDeny.size(), i_Ignore.size()));
+    ETCB();
 }
