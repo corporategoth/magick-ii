@@ -48,6 +48,9 @@ private:
 	vector<mstring> MessageNamesShort;
 	int doparamparse();
 public:
+	int StarThresh;
+	int override_level;
+	mstring motd_filename;
 	bool show_sync;
 	bool shutdown;
 	mstring password;
@@ -56,6 +59,7 @@ public:
 	mstring s_Outlet;
 	int lastmsgmax;
 	int flood_messages;
+	// this get's moved to nickserv
 	int passfail_max;
 	int read_timeout;
 	// move these to the appropriate classes later
