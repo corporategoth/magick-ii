@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2000/12/31 18:17:17  prez
+** Fixed MS reply
+**
 ** Revision 1.84  2000/12/29 15:31:55  prez
 ** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
 **
@@ -1356,7 +1359,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	    if (iter->Text().size() > 20)
 		output << iter->Text().SubString(0, 19) << "...";
 	    else
-		output << iter->Text().SubString(0, iter->Text().size()-1);
+		output << iter->Text();
 
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/NEWS_LIST"),
 		    iter->IsRead(whoami) ? ' ' : '*',
@@ -1391,7 +1394,7 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	    if (iter->Text().size() > 20)
 		output << iter->Text().SubString(0, 19) << "...";
 	    else
-		output << iter->Text().SubString(0, iter->Text().size()-1);
+		output << iter->Text();
 
 	    if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
 	    {
@@ -1679,7 +1682,7 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 
 	if (iter->File())
 	    output.Format(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG").c_str(),
-		"filename",
+		Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
 		iter->Sender().c_str(), iter->Text().c_str());
 	else
 	    output.Format(Parent->getMessage(dest, "MS_STATUS/FORWARD").c_str(),
@@ -1840,9 +1843,9 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	for (i=1; i < num; iter++, i++) ;
 	output.Format(Parent->getMessage("MS_STATUS/REPLY_ARG").c_str(),
 		iter->Sender().c_str(),
-		(iter->Text().size() < 21) ?
+		(iter->Text().size() > 20) ?
 		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().SubString(0, iter->Text().size()-1).c_str(),
+		    iter->Text().c_str(),
 		text.c_str());
 	}
 
@@ -1924,22 +1927,22 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 
 	if (iter->File())
 	    output.Format(Parent->getMessage("MS_STATUS/REPLY_ARG").c_str(),
-		"filename",
-		(iter->Text().size() < 21) ?
+		Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
+		(iter->Text().length() > 20) ?
 		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().SubString(0, iter->Text().size()-1).c_str(),
+		    iter->Text().c_str(),
 		text.c_str());
 	else
 	    output.Format(Parent->getMessage("MS_STATUS/REPLY").c_str(),
-		(iter->Text().size() < 21) ?
+		(iter->Text().length() > 20) ?
 		    (iter->Text().SubString(0, 19) + "...").c_str() :
-		    iter->Text().SubString(0, iter->Text().size()-1).c_str(),
+		    iter->Text().c_str(),
 		text.c_str());
-	}
 
 	Parent->memoserv.stats.i_Reply++;
 	Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
-					    false, mynick, who, output);
+				false, mynick, iter->Sender(), output);
+	}
     }
 }
 
@@ -2257,7 +2260,7 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
 	text.Truncate(Parent->server.proto.MaxLine());
 	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/TRUNCATE"),
 			text.SubString(Parent->server.proto.MaxLine()-20,
-			Parent->server.proto.MaxLine()).c_str(), mynick.c_str());
+			Parent->server.proto.MaxLine()-1).c_str(), mynick.c_str());
     }
 
     if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
@@ -2375,7 +2378,7 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 	text.Truncate(Parent->server.proto.MaxLine());
 	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/TRUNCATE"),
 			text.SubString(Parent->server.proto.MaxLine()-20,
-			Parent->server.proto.MaxLine()).c_str(), mynick.c_str());
+			Parent->server.proto.MaxLine()-1).c_str(), mynick.c_str());
     }
 
     Parent->memoserv.stats.i_File++;
