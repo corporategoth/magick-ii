@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2000/05/27 15:14:45  prez
+** *** empty log message ***
+**
 ** Revision 1.17  2000/05/27 15:10:10  prez
 ** Misc changes, mainly re-did the makefile system, makes more sense.
 ** Also added a config.h file.
@@ -112,7 +115,9 @@
 using namespace std;
 
 #include <zlib.h>
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 extern size_t Log(ACE_Log_Priority priority, const char *messages, ...);
 extern size_t LogV(ACE_Log_Priority priority, const char *messages, va_list argptr);
