@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2000/03/30 11:24:53  prez
+** Added threads to the filesys establishment.
+**
 ** Revision 1.13  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -62,6 +65,7 @@ extern "C"
 wxCryptOutputStream::wxCryptOutputStream(wxOutputStream& stream, const mstring& passphrase)
 : wxFilterOutputStream(stream)
 {
+#ifdef HASCRYPT
     des_cblock ckey1, ckey2;
     if(passphrase=="")
     {
@@ -71,11 +75,15 @@ wxCryptOutputStream::wxCryptOutputStream(wxOutputStream& stream, const mstring& 
     des_string_to_2keys((char *)passphrase.c_str(),&ckey1,&ckey2);
     des_set_key(&ckey1,key1);
     des_set_key(&ckey2,key2);
+#else
+     ppgiven=false;
+#endif
 }
 
 wxCryptInputStream::wxCryptInputStream(wxInputStream& stream, const mstring& passphrase)
 : wxFilterInputStream(stream)
 {
+#ifdef HASCRYPT
     des_cblock ckey1, ckey2;
     if(passphrase=="")
     {
@@ -85,6 +93,9 @@ wxCryptInputStream::wxCryptInputStream(wxInputStream& stream, const mstring& pas
     des_string_to_2keys((char *)passphrase.c_str(),&ckey1,&ckey2);
     des_set_key(&ckey1,key1);
     des_set_key(&ckey2,key2);
+#else
+    ppgiven=false;
+#endif
 }
 
 size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
@@ -95,6 +106,7 @@ size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
 	Write(buffer,size);
 	return size;
     }
+#ifdef HASCRYPT
     unsigned char *buff=new unsigned char[size];
     unsigned char *buff2=new unsigned char[size];
     try
@@ -114,9 +126,10 @@ size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
 	// below is just to make sure, not sure it's ever used
     }
     if(buff!=NULL)
-        delete [] buff;
+	delete [] buff;
     if(buff2!=NULL)
-        delete [] buff2;
+	delete [] buff2;
+#endif
     return size;
 }
 
@@ -128,6 +141,7 @@ size_t wxCryptInputStream::OnSysRead(void *buffer, size_t size)
 	Read(buffer,size);
 	return size;
     }
+#ifdef HASCRYPT
     unsigned char *buff=new unsigned char[size];
     unsigned char *buff2=new unsigned char[size];
     try
@@ -149,7 +163,8 @@ size_t wxCryptInputStream::OnSysRead(void *buffer, size_t size)
     if(buff!=NULL)
 	delete [] buff;
     if(buff2!=NULL)
-        delete [] buff2;
+	delete [] buff2;
+#endif
     return size;
 }
 

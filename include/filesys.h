@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2000/03/30 11:24:53  prez
+** Added threads to the filesys establishment.
+**
 ** Revision 1.8  2000/03/24 15:35:17  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -132,20 +135,42 @@ public:
 
 class DccMap : public ACE_Task<ACE_MT_SYNCH>
 {
-    queue<unsigned long> active;
+    static queue<unsigned long> active;
+
+    ACE_Thread_Manager tm;
+    struct NewSocket
+    {
+	mstring mynick;
+	mstring source;
+
+	// Connector
+	ACE_INET_Addr address;
+	mstring filename;
+	size_t filesize;
+	size_t blocksize;
+
+	// Acceptor
+	unsigned short port;
+	FileMap::FileType filetype;
+	unsigned int filenum;
+    };
+
+    static void *Connect2(void *);
+    static void *Accept2(void *);
+
 public:
     virtual int open(void *in=0);
     virtual int close(unsigned long in);
     virtual int svc(void);
 
-    map<unsigned long, DccXfer> xfers;
+    static map<unsigned long, DccXfer> xfers;
     vector<unsigned long> GetList(mstring in);
 
     // These start in their own threads.
-    unsigned long Connect(ACE_INET_Addr address,
+    void Connect(ACE_INET_Addr address,
 	mstring mynick, mstring source, mstring filename,
 	size_t filesize = 0, size_t blocksize = 0);
-    unsigned long Accept(unsigned short port, mstring mynick,
+    void Accept(unsigned short port, mstring mynick,
 	mstring source, FileMap::FileType filetype,
 	unsigned long filenum);
     void Close(unsigned long DccId);

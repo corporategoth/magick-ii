@@ -24,6 +24,9 @@ static const char *ident_cryptstream_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/03/30 11:24:53  prez
+** Added threads to the filesys establishment.
+**
 ** Revision 1.9  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -43,10 +46,15 @@ static const char *ident_cryptstream_h = "@(#) $Id$";
 
 #include "mstream.h"
 #include "mstring.h"
+
+#define HASCRYPT
+
+#ifdef HASCRYPT
 extern "C"
 {
 #include "des/des_locl.h"
 };
+#endif
 
 class wxCryptInputStream : public wxFilterInputStream
 {
@@ -57,9 +65,11 @@ protected:
     size_t OnSysRead(void *buffer, size_t size);
 private:
     bool ppgiven;
+#ifdef HASCRYPT
     des_key_schedule key1;
     des_key_schedule key2;
     des_cblock ivec;
+#endif
 };
 
 class wxCryptOutputStream : public wxFilterOutputStream
@@ -71,9 +81,11 @@ protected:
     size_t OnSysWrite(const void *buffer, size_t size);
 private:
     bool ppgiven;
+#ifdef HASCRYPT
     des_key_schedule key1;
     des_key_schedule key2;
     des_cblock ivec;
+#endif
 };
 
 #endif

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/03/30 11:24:53  prez
+** Added threads to the filesys establishment.
+**
 ** Revision 1.11  2000/03/28 16:20:58  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -71,6 +74,9 @@ static const char *ident = "@(#)$Id$";
 
 #include "lockable.h"
 #include "magick.h"
+
+queue<unsigned long> DccMap::active;
+map<unsigned long, DccXfer> DccMap::xfers;
 
 unsigned short FindAvailPort()
 {
@@ -654,15 +660,15 @@ vector<unsigned long> DccMap::GetList(mstring in)
     NRET(vector<unsigned long>, retval);
 }
 
-unsigned long DccMap::Connect(ACE_INET_Addr address,
-	mstring mynick, mstring source, mstring filename,
-	size_t filesize, size_t blocksize)
+void *DccMap::Connect2(void *in)
 {
-    FT("DccMap::Connect", ("(ACE_INET_Addr) address", mynick,
-			source, filename, filesize, blocksize));
+    FT("DccMap::Connect2", ("(void *) in"));
+
+    NewSocket *val = (NewSocket *) in;
+
     ACE_SOCK_Stream *DCC_SOCK = new ACE_SOCK_Stream;
     ACE_Time_Value tv(Parent->files.Timeout());
-    ACE_SOCK_Connector tmp((ACE_SOCK_Stream &) *DCC_SOCK, (ACE_Addr &) address, &tv);
+    ACE_SOCK_Connector tmp((ACE_SOCK_Stream &) *DCC_SOCK, (ACE_Addr &) val->address, &tv);
     CP(("Connect responded with %d", errno));
     if (errno != ETIME)
     {
@@ -671,27 +677,30 @@ unsigned long DccMap::Connect(ACE_INET_Addr address,
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
-		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, mynick,
-			source, filename, filesize, blocksize);
+		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, val->mynick,
+			val->source, val->filename, val->filesize, val->blocksize);
 		active.push(WorkId);
 		CP(("Created DCC entry #%d", WorkId));
-		RET(WorkId);
 	    }
 	}
-	send(mynick, source, Parent->getMessage("DCC/FAILED"),
+	send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"GET");
     }
     else
-	send(mynick, source, Parent->getMessage("DCC/NOCONNECT"),
+	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
 						"GET");
-    RET(0);
+    if (val != NULL)
+	delete val;
+    RET(NULL);
 }
 
-unsigned long DccMap::Accept(unsigned short port, mstring mynick,
-	mstring source, FileMap::FileType filetype, unsigned long filenum)
+void *DccMap::Accept2(void *in)
 {
-    FT("DccMap::Accept", (port, mynick, source, (int) filetype, filenum));
-    ACE_INET_Addr local(port, Parent->LocalHost());
+    FT("DccMap::Accept2", ("(void *) in"));
+
+    NewSocket *val = (NewSocket *) in;
+
+    ACE_INET_Addr local(val->port, Parent->LocalHost());
     ACE_SOCK_Stream *DCC_SOCK = new ACE_SOCK_Stream;
     ACE_Time_Value tv(Parent->files.Timeout());
     ACE_SOCK_Acceptor tmp(local);
@@ -704,20 +713,52 @@ unsigned long DccMap::Accept(unsigned short port, mstring mynick,
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
-		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, mynick,
-			source, filetype, filenum);
+		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, val->mynick,
+			val->source, val->filetype, val->filenum);
 		active.push(WorkId);
 		CP(("Created DCC entry #%d", WorkId));
-		RET(WorkId);
 	    }
 	}
-	send(mynick, source, Parent->getMessage("DCC/FAILED"),
+	send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"SEND");
     }
     else
-	send(mynick, source, Parent->getMessage("DCC/NOCONNECT"),
+	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
 						"SEND");
-    RET(0);
+    if (val != NULL)
+	delete val;
+    RET(NULL);
+}
+
+void DccMap::Connect(ACE_INET_Addr address,
+	mstring mynick, mstring source, mstring filename,
+	size_t filesize, size_t blocksize)
+{
+    FT("DccMap::Connect", ("(ACE_INET_Addr) address", mynick,
+			source, filename, filesize, blocksize));
+    NewSocket *tmp = new NewSocket;
+    tmp->address = address;
+    tmp->source = source;
+    tmp->mynick = mynick;
+    tmp->filename = filename;
+    tmp->filesize = filesize;
+    tmp->blocksize = blocksize;
+
+    tm.spawn(Connect2, (void *) tmp);
+}
+
+void DccMap::Accept(unsigned short port, mstring mynick,
+	mstring source, FileMap::FileType filetype, unsigned long filenum)
+{
+    FT("DccMap::Accept", (port, mynick, source, (int) filetype, filenum));
+    NewSocket *tmp = new NewSocket;
+    tmp->port = port;
+    tmp->source = source;
+    tmp->mynick = mynick;
+    tmp->filetype = filetype;
+    tmp->filenum = filenum;
+
+    tm.spawn(Accept2, (void *) tmp);
 }
 
 void DccMap::Close(unsigned long DccId)
@@ -725,6 +766,7 @@ void DccMap::Close(unsigned long DccId)
     FT("DccMap::Close", (DccId));
     if (xfers.find(DccId) != xfers.end())
 	xfers[DccId].Cancel();
+    tm.cancel_all();
 }
 
 
