@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.168  2001/05/05 06:04:01  prez
+** Fixed nick join stuff ...
+**
 ** Revision 1.167  2001/05/04 03:43:33  prez
 ** Fixed UMODE problems (re-oper) and problems in mstring erase
 **
@@ -1288,9 +1291,10 @@ void Nick_Live_t::Join(const mstring& chan)
     }
     // We do this seperately coz we require initialisation of
     // the channel to be completed.
-    if (joined && Parent->chanserv.IsStored(chan) &&
-	Parent->chanserv.GetStored(chan).Join(i_Name))
+    if (joined)
     {
+	if (Parent->chanserv.IsStored(chan))
+	    Parent->chanserv.GetStored(chan).Join(i_Name);
 	WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
 	MCB(joined_channels.size());
 	joined_channels.insert(chan.LowerCase());
