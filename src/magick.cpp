@@ -1213,15 +1213,29 @@ void Magick::load_databases()
     // the below is megaly fucked up, need to do load from file to memory stream, 
     // then pass that stream on down to the load_database code
 
-    wxMemoryStream chanservstrm;
+/*    wxMemoryStream chanservstrm;
     wxInputStream *strm=create_input_stream(chanservstrm);
     chanserv.load_database(*strm);
-    destroy_input_stream();
+    destroy_input_stream();*/
 }
 
 void Magick::save_databases()
 {
     // to buggered to think about it tonight, maybe tommorow night.
+/*    wxOutputStream *strm;
+
+    wxMemoryStream chanservstream;
+    strm=create_output_stream(chanservstrm);
+    chaserv.save_database(*strm);
+    destroy_output_stream();
+
+    wxMemoryStream nickservstream;
+    strm=create_output_stream(chanservstrm);
+    nickserv.save_database(*strm);
+    destroy_output_stream();
+
+    wxFileOutputStream */
+
 }
 
 wxInputStream *Magick::create_input_stream(wxMemoryStream &in)
@@ -1260,8 +1274,33 @@ void Magick::destroy_input_stream()
 }
 wxOutputStream *Magick::create_output_stream(wxMemoryStream &out)
 {
-    return NULL;
+    wxOutputStream *Result=&out;
+/*    if(files.Password()!="")
+    {
+	cstrm=new mEncryptStream(*Result,files.Password());
+	Result=cstrm;
+    }
+    else
+	cstrm=NULL;*/
+    if(files.Compression())
+    {
+	ozstrm=new wxZlibOutputStream(*Result);
+	Result=ozstrm;
+    }
+    else
+	ozstrm=NULL;
+    return Result;
 }
 void Magick::destroy_output_stream()
 {
+    if(zstrm!=NULL)
+    {
+	delete zstrm;
+	zstrm=NULL;
+    }
+    if(cstrm!=NULL)
+    {
+	delete cstrm;
+	cstrm=NULL;
+    }
 }

@@ -1850,3 +1850,42 @@ off_t wxMemoryStream::OnSysTell() const
 {
     return distance((vector<unsigned char>::iterator)storage.begin(),(vector<unsigned char>::iterator)streamptr);
 }
+
+#ifndef max
+#define max(a, b)  (((a) > (b)) ? (a) : (b))
+#endif
+
+void wxMemoryStream::Read(wxInputStream& stream_in,int count)
+{
+    unsigned char c;
+    int i;
+    for(i=0;i<max(count/5,stream_in.StreamSize()/5);i++)
+    {
+	stream_in>>c;
+	storage.push_back(c);
+	stream_in>>c;
+	storage.push_back(c);
+	stream_in>>c;
+	storage.push_back(c);
+	stream_in>>c;
+	storage.push_back(c);
+	stream_in>>c;
+	storage.push_back(c);
+    }
+    for(i=0;i<max(count%5,stream_in.StreamSize()%5);i++)
+    {
+	stream_in>>c;
+	storage.push_back(c);
+    }
+    streamptr=streamptr+max(count,stream_in.StreamSize());
+}
+void wxMemoryStream::Write(wxOutputStream& stream_out,int count)
+{
+    int i=0;
+    while(i<count&&streamptr!=storage.end())
+    {
+	stream_out<<(*streamptr);
+	streamptr++;
+	i++;
+    }
+}

@@ -284,7 +284,7 @@ class wxDataOutputStream: public wxFilterOutputStream {
   void WriteString(const mstring& string);
 };
 
-class wxMemoryStream: public wxInputStream,wxOutputStream
+class wxMemoryStream: public wxInputStream,public wxOutputStream
 {
 public:
     wxMemoryStream();
@@ -292,6 +292,8 @@ public:
     virtual ~wxMemoryStream();
     size_t Dump(wxOutputStream& out);
     size_t CopyTo(unsigned char *buffer, size_t len);
+    void Read(wxInputStream& stream_out,int count);
+    void Write(wxOutputStream& stream_in,int count);
 protected:
     virtual size_t OnSysRead(void *buffer, size_t size);
     virtual size_t OnSysWrite(const void *buffer, size_t size);

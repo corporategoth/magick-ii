@@ -69,7 +69,9 @@ private:
 	wxOutputStream *create_output_stream(wxMemoryStream &out);
 	void destroy_output_stream();
         wxZlibInputStream *zstrm;
+        wxZlibOutputStream *ozstrm;
 	mDecryptStream *cstrm;
+	mEncryptStream *ocstrm;
 
 	// Running config
 	
