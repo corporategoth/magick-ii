@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.85  2001/12/16 01:30:45  prez
+** More changes to fix up warnings ... added some new warning flags too!
+**
 ** Revision 1.84  2001/11/30 09:01:56  prez
 ** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
 ** Pause(bool) functions. This should help if/when we decide to implement
@@ -1906,6 +1909,7 @@ int DccMap::open(void *in)
 
 int DccMap::close(const unsigned long in)
 {
+    static_cast<void>(in);
     FT("DccMap::close", (in));
     // dump all and close open file handles.
     DccMap::xfers_t::iterator iter;

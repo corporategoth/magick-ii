@@ -46,22 +46,22 @@ dnl -dm   Output memory stats when compile is done
 OPTFLAGS=""
 
 dnl What warnings we will give off
-dnl REMOVED: -Wshadow -Wcast-qual -Wconversion -Wunused
-dnl          -Wold-style-cast -Wcast-align
-WARNFLAGS="-Wall -W -Wbad-function-cast -Wimport -Wmain\
-	-Wcomment -Wformat -Wimplicit -Wimplicit-int \
-	-Wimplicit-function-declarations -Wnested-externs \
-	-Wmissing-declarations -Wmissing-prototypes \
-	-Woverloaded-virtual -Wparentheses -Wpointer-arith \
-        -Wreorder -Wreturn-type -Wsynth -Wsign-compare \
-	-Wstrict-prototypes -Wswitch -Wwrite-strings \
-	-Wtraditional -Wtrigraphs -Wuninitialized"
+dnl -Wall == -Wno-import -Wchar-subscripts -Wcomment -Wformat
+dnl          -Wimplicit-int -Wimplicit-function-declaration
+dnl          -Wimplicit -Wmain -Wmissing-braces -Wmultichar
+dnl          -Wparentheses -Wsequence-point -Wreturn-type
+dnl          -Wswitch -Wtrigraphs -Wunused -Wuninitialized
+dnl          -Wreorder -Wunknown-pragmas
+dnl REMOVED: -Wshadow -Wcast-qual -Wconversion -Wcast-align
+dnl          -Wold-style-cast -Wundef
+WARNFLAGS="-W -Wall -Wbad-function-cast -Wimport -Wsynth \
+	-Wmissing-declarations -Wmissing-prototypes -Winline \
+	-Woverloaded-virtual -Wpointer-arith -Wnested-externs \
+	-Wsign-compare -Wtraditional -Wstrict-prototypes \
+	-Wwrite-strings -Wtemplate-debugging -Wpacked \
+	-Wredundant-decls -Wformat-security"
 
-dnl Add -fno-default-inline else gcc spinlocks (not-nice)
 CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"
-
-dnl Now we include SGI's STL -- if you have it
-dnl CXXFLAGS="$CXXFLAGS -I\$(top_srcdir)/include/stlport"
 
 dnl Just incase ace is there, which it often is ...
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"

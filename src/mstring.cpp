@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.119  2001/12/16 01:30:46  prez
+** More changes to fix up warnings ... added some new warning flags too!
+**
 ** Revision 1.118  2001/12/12 15:36:06  prez
 ** Moved around some strstr calls, to reduce calls, and clean code a little.
 **
@@ -969,7 +972,7 @@ int mstring::occurances(const char *str, const size_t len) const
 int mstring::find(const mstring &str, int occurance) const
 {
     int count = 0, retval = -1;
-    char *start, *end;
+    char *start, *end = NULL;
 
     if (str.empty())
 	return -1;

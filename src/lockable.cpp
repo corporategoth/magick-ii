@@ -27,6 +27,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2001/12/16 01:30:45  prez
+** More changes to fix up warnings ... added some new warning flags too!
+**
 ** Revision 1.75  2001/11/28 13:40:47  prez
 ** Added UMASK option to config.  Also made the 'dead thread' protection
 ** send a SIGIOT signal to try and get the thread to die gracefully, else
@@ -941,6 +944,8 @@ bool mSocket::Bind(ACE_SOCK_Stream *in, const dir_enum direction, const bool all
 #ifdef MAGICK_TRACE_WORKS
     trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
 	mstring(remote.get_host_addr()), direction);
+#else
+    static_cast<void>(direction);
 #endif	
 
     RET(true);
@@ -1017,9 +1022,12 @@ bool mSocket::IsConnected() const
 void mSocket::Resolve(const socktype_enum type, const mstring &info)
 {
     FT("mSocket::Resolve", (static_cast<int>(type), info));
-    WLOCK(("mSocket", sockid));
 #ifdef MAGICK_TRACE_WORKS
+    WLOCK(("mSocket", sockid));
     trace.Resolve(type, info);
+#else
+    static_cast<void>(type);
+    static_cast<void>(info);
 #endif
 }
 

@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.198  2001/12/16 01:30:46  prez
+** More changes to fix up warnings ... added some new warning flags too!
+**
 ** Revision 1.197  2001/12/10 09:43:17  prez
 ** Updated to remove '-' in front of release name in version tags.
 **
@@ -3408,6 +3411,7 @@ void Server::parse_B(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_B", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3484,6 +3488,7 @@ void Server::parse_D(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_D", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3539,6 +3544,7 @@ void Server::parse_F(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_F", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3596,6 +3602,7 @@ void Server::parse_H(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_H", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3801,6 +3808,7 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_L", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -4404,6 +4412,7 @@ void Server::parse_O(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_O", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -4621,6 +4630,7 @@ void Server::parse_R(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_R", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -5924,6 +5934,7 @@ void Server::parse_V(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_V", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -6211,6 +6222,7 @@ void Server::parse_X(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_X", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -6228,6 +6240,7 @@ void Server::parse_Y(mstring &source, const mstring &msgtype, const mstring &par
 {
     FT("Server::parse_Y", (source, msgtype, params));
 
+    static_cast<void>(params);
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 

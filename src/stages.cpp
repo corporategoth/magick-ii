@@ -27,6 +27,9 @@ RCSID(stages_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2001/12/16 01:30:46  prez
+** More changes to fix up warnings ... added some new warning flags too!
+**
 ** Revision 1.9  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -94,6 +97,7 @@ StringStage::StringStage(const mstring &in)
     input = NULL;
     tag = 0;
     offset = 0;
+    i_str = in;
 }
 
 StringStage::StringStage(Stage &PrevStage)

@@ -27,6 +27,9 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.113  2001/12/16 01:30:46  prez
+** More changes to fix up warnings ... added some new warning flags too!
+**
 ** Revision 1.112  2001/11/18 03:26:53  prez
 ** More changes re: trace names, and made the command system know the
 ** difference between 'insufficiant access' and 'unknown command'.
@@ -318,7 +321,9 @@ void ThreadID::assign(const threadtype_enum Type)
 
 void ThreadID::WriteOut(const mstring &message)
 {
-#ifdef MAGICK_TRACE_WORKS
+#ifndef MAGICK_TRACE_WORKS
+    static_cast<void>(message);
+#else
     mstring finalout;
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";

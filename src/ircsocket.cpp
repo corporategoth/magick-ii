@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.186  2001/12/16 01:30:45  prez
+** More changes to fix up warnings ... added some new warning flags too!
+**
 ** Revision 1.185  2001/11/30 09:01:56  prez
 ** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
 ** Pause(bool) functions. This should help if/when we decide to implement
@@ -439,6 +442,7 @@ const char *Heartbeat_Handler::names[] = { "invalid", "worker", "main",
 
 void *IrcSvcHandler::worker(void *in)
 {
+    static_cast<void>(in);
     mThread::Attach(tt_mBase);
     FT("IrcSvcHandler::worker", (in));
     mMessage *msg = NULL;
@@ -503,6 +507,7 @@ void *IrcSvcHandler::worker(void *in)
 
 int IrcSvcHandler::open(void *in)
 {
+    static_cast<void>(in);
     //mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::open", (in));
     this->reactor()->register_handler(this, ACE_Event_Handler::READ_MASK);
@@ -1934,6 +1939,7 @@ int EventTask::open(void *in)
 
 int EventTask::close(unsigned long in)
 {
+    static_cast<void>(in);
     FT("EventTask::close", (in));
     // dump all and close open file handles.
     RET(0);
