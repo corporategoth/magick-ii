@@ -10,3 +10,6 @@ magick
 magick.debug
 err.out
 *.log
+*.~*
+magickbcc.dsk
+magickbcc$$$
