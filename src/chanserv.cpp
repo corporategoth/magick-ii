@@ -32,5 +32,5 @@ void ChanServ::execute(const mstring & data)
     source  = data.Before(" ");
     msgtype = data.After(" ").Before(" ");
     mynick  = data.After(" ").After(" ").Before(" ");
-    message = data.After(" ").After(" ").After(" ");
+    message = data.After(":");
 }
