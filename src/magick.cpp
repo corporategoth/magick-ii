@@ -734,14 +734,14 @@ void Magick::get_config_values()
     mstring ts_Operserv=mstring("Operserv\\");
     mstring ts_DevNull=mstring("DevNull\\");
 
-    in.Read(ts_Startup+"Remote_Server",&remote_server,"127.0.0.1");
-    in.Read(ts_Startup+"Remote_Port",&remote_port,9666);
-    in.Read(ts_Startup+"Password",&password,"");
+    //in.Read(ts_Startup+"Remote_Server",&remote_server,"127.0.0.1");
+    //in.Read(ts_Startup+"Remote_Port",&remote_port,9666);
+    //in.Read(ts_Startup+"Password",&password,"");
     in.Read(ts_Startup+"Server_Name",&server_name,"hell.darker.net");
     in.Read(ts_Startup+"Server_Desc",&server_desc,"DarkerNet's IRC Services");
     in.Read(ts_Startup+"Services_User",&services_user,"reaper");
     in.Read(ts_Startup+"Services_Host",&services_host,"darker.net");
-    in.Read(ts_Startup+"Services_Level",&services_level,1);
+    in.Read(ts_Startup+"LEVEL",&services_level,1);
     in.Read(ts_Startup+"TZ_Offset",&tz_offset,0);
     in.Read(ts_Startup+"Stop",&shutdown);
 
