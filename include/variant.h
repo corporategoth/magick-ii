@@ -47,6 +47,7 @@ public:
 	mVariant(const mVariant& in);
 	mVariant(void *in);
 	mVariant(unsigned int in);
+	mVariant(unsigned long in);
 	mVariant(unsigned short in);
 	mVariant(unsigned char in);
 	mVariant(bool in);
@@ -55,6 +56,7 @@ public:
 	mVariant(float in);
 	mVariant(char in);
 	mVariant(int in);
+	mVariant(long in);
 	mVariant(short in);
 	mVariant();
 	mVariant(const mstring& in);

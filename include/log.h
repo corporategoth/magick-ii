@@ -14,12 +14,6 @@
 #ifndef _LOG_H
 #define _LOG_H
 #include "mstring.h"
-#ifdef _MSC_VER
-#include <ostream>
-using namespace std;
-#else
-#include <ostream.h>
-#endif
 #include <stdio.h>
 
 // ----------------------------------------------------------------------------

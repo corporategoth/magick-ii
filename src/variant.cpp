@@ -34,6 +34,12 @@ mVariant::mVariant(int in)
     value.IntValue=in;
 }
 
+mVariant::mVariant(long in)
+{
+    truevaluetype=valuetype="VarInt";
+    value.IntValue=in;
+}
+
 mVariant::mVariant(char in)
 {
     truevaluetype=valuetype="VarChar";
@@ -89,6 +95,12 @@ mVariant::mVariant(unsigned short in)
 }
 
 mVariant::mVariant(unsigned int in)
+{
+	truevaluetype=valuetype="VarUInt";
+	value.UIntValue=in;
+}
+
+mVariant::mVariant(unsigned long in)
 {
 	truevaluetype=valuetype="VarUInt";
 	value.UIntValue=in;
