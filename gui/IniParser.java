@@ -45,14 +45,16 @@ public class IniParser
 	    // Ditch any trailing comments
 	    String[] strippedLine = fullLine.split("[^\\\\];", 2);
 
+	    String line = strippedLine[0].replaceAll("\\\\\\\\", "\\\\");
+
 	    // Blank line ...
-	    if (strippedLine[0].matches("^\\s*$"))
+	    if (line.matches("^\\s*$"))
 		continue;
 
 	    // Section Name ...
-	    else if (strippedLine[0].matches("^\\s*\\[\\s*(\\s*[^\\s\\[\\]]+)+\\s*\\]\\s*$"))
+	    else if (line.matches("^\\s*\\[\\s*(\\s*[^\\s\\[\\]]+)+\\s*\\]\\s*$"))
 	    {
-		String[] splitLine = strippedLine[0].split("[\\[\\]]");
+		String[] splitLine = line.split("[\\[\\]]");
 		for (int i=0; i<splitLine.length; i++)
 		{
 		    if (splitLine[i].trim().length() != 0)
@@ -64,9 +66,9 @@ public class IniParser
 	    }
 
 	    // Regular line ...
-	    else if (strippedLine[0].matches("^\\s*(\\s*[^\\s\\[\\]=]+)+\\s*=.*$"))
+	    else if (line.matches("^\\s*(\\s*[^\\s\\[\\]=]+)+\\s*=.*$"))
 	    {
-		String[] splitLine = strippedLine[0].split("=", 2);
+		String[] splitLine = line.split("=", 2);
 		String key = new String(section);
 		if (key.length() != 0)
 		    key += "/";

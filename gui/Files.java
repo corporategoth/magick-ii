@@ -46,7 +46,8 @@ public class Files extends TabbedPane
     private JComboBox compression;
     private int def_compression;
     private JButton b_logfile, b_pidfile, b_motdfile, b_keyfile, b_database,
-		b_protocol;
+		b_protocol, b_langdir, b_picture, b_memoattach, b_public,
+		b_tempdir;
 
     public String name() { return "Files"; }
 
@@ -67,13 +68,13 @@ public class Files extends TabbedPane
 	database = createTextField("DATABASE", 30, "magick.mnd", true);
 	keyfile = createTextField("KEYFILE", 30, "magick.key", encryption.isSelected());
 	picture_size = createFormattedTextField("PICTURE_SIZE", 4, new SpaceFormat(), "0b", true);
-	picture = createTextField("PICTURE", 20, "files/pic", true);
+	picture = createTextField("PICTURE", 20, "files" + File.separator + "pic", true);
 	memoattach_size = createFormattedTextField("MEMOATTACH_SIZE", 4, new SpaceFormat(), "0b", true);
-	memoattach = createTextField("MEMOATTACH", 20, "files/memo", true);
+	memoattach = createTextField("MEMOATTACH", 20, "files" + File.separator + "memo", true);
 	public_size = createFormattedTextField("PUBLIC_SIZE", 4, new SpaceFormat(), "0b", true);
-	f_public = createTextField("PUBLIC", 20, "files/public", true);
+	f_public = createTextField("PUBLIC", 20, "files" + File.separator + "public", true);
 	tempdir_size = createFormattedTextField("TEMPDIR_SIZE", 4, new SpaceFormat(), "0b", true);
-	tempdir = createTextField("TEMPDIR", 20, "files/temp", true);
+	tempdir = createTextField("TEMPDIR", 20, "files" + File.separator + "temp", true);
 	blocksize = createFormattedTextField("BLOCKSIZE", 4, new SpaceFormat(), "1k", true);
 	timeout = createFormattedTextField("TIMEOUT", 4, new TimeFormat(), "2m", true);
 	min_speed = createFormattedTextField("MIN_SPEED", 4, new SpaceFormat(), "0b", true);
@@ -96,12 +97,17 @@ public class Files extends TabbedPane
 
 	if (mct.currentDirectory() != null)
 	{
-	    b_logfile = createButton("B_LOGFILE", "Browse...", true);
-	    b_database = createButton("B_DATABASE", "Browse...", true);
-	    b_keyfile = createButton("B_KEYFILE", "Browse...", encryption.isSelected());
-	    b_motdfile = createButton("B_MOTDFILE", "Browse...", true);
-	    b_protocol = createButton("B_PROTOCOL", "Browse...", true);
-	    b_pidfile = createButton("B_PIDFILE", "Browse...", true);
+	    b_logfile = createButton("B_LOGFILE", "...", true);
+	    b_database = createButton("B_DATABASE", "...", true);
+	    b_keyfile = createButton("B_KEYFILE", "...", encryption.isSelected());
+	    b_motdfile = createButton("B_MOTDFILE", "...", true);
+	    b_protocol = createButton("B_PROTOCOL", "...", true);
+	    b_pidfile = createButton("B_PIDFILE", "...", true);
+	    b_langdir = createButton("B_LANGDIR", "...", true);
+	    b_picture = createButton("B_PICTURE", "...", true);
+	    b_memoattach = createButton("B_MEMOATTACH", "...", true);
+	    b_public = createButton("B_PUBLIC", "...", true);
+	    b_tempdir = createButton("B_TEMPDIR", "...", true);
 	}
     }
 
@@ -154,6 +160,36 @@ public class Files extends TabbedPane
 	    if (rv != null)
 		pidfile.setText(rv);
 	}
+	else if (e.getSource() == b_langdir)
+	{
+	    String rv = mct.showDirectoryDialog(langdir.getText(), "Select", null, null, true);
+	    if (rv != null)
+		langdir.setText(rv);
+	}
+	else if (e.getSource() == b_picture)
+	{
+	    String rv = mct.showDirectoryDialog(picture.getText(), "Select", null, null, true);
+	    if (rv != null)
+		picture.setText(rv);
+	}
+	else if (e.getSource() == b_memoattach)
+	{
+	    String rv = mct.showDirectoryDialog(memoattach.getText(), "Select", null, null, true);
+	    if (rv != null)
+		memoattach.setText(rv);
+	}
+	else if (e.getSource() == b_public)
+	{
+	    String rv = mct.showDirectoryDialog(f_public.getText(), "Select", null, null, true);
+	    if (rv != null)
+		f_public.setText(rv);
+	}
+	else if (e.getSource() == b_tempdir)
+	{
+	    String rv = mct.showDirectoryDialog(tempdir.getText(), "Select", null, null, true);
+	    if (rv != null)
+		tempdir.setText(rv);
+	}
     }
 
     public JComponent createPane()
@@ -164,48 +200,70 @@ public class Files extends TabbedPane
 
 	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBagLine(gb, gc, "File UMASK", umask);
-	addToGridBag(gb, gc, "Log File", logfile);
 	if (mct.currentDirectory() != null)
-	    addToGridBagAligned(gb, gc, b_logfile, gc.WEST);
+	    addToGridBagButtonLine(gb, gc, "Log File", logfile, b_logfile);
+	else
+	    addToGridBagLine(gb, gc, "Log File", logfile);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Log Channel", logchan);
 	addToGridBag(gb, gc, "Verbose", verbose);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Database File", database);
 	if (mct.currentDirectory() != null)
-	    addToGridBagAligned(gb, gc, b_database, gc.WEST);
+	    addToGridBagButtonLine(gb, gc, "Database File", database, b_database);
+	else
+	    addToGridBagLine(gb, gc, "Database File", database);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Compression Level", compression);
 	addToGridBag(gb, gc, "Encryption", encryption);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Key File", keyfile);
 	if (mct.currentDirectory() != null)
-	    addToGridBagAligned(gb, gc, b_keyfile, gc.WEST);
+	    addToGridBagButtonLine(gb, gc, "Key File", keyfile, b_keyfile);
+	else
+	    addToGridBagLine(gb, gc, "Key File", keyfile);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "MOTD File", motdfile);
 	if (mct.currentDirectory() != null)
-	    addToGridBagAligned(gb, gc, b_motdfile, gc.WEST);
+	    addToGridBagButtonLine(gb, gc, "MOTD File", motdfile, b_motdfile);
+	else
+	    addToGridBagLine(gb, gc, "MOTD File", motdfile);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Protocol Definition", protocol);
 	if (mct.currentDirectory() != null)
-	    addToGridBagAligned(gb, gc, b_protocol, gc.WEST);
+	    addToGridBagButtonLine(gb, gc, "Protocol Definition", protocol, b_protocol);
+	else
+	    addToGridBagLine(gb, gc, "Protocol Definition", protocol);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "PID File", pidfile);
 	if (mct.currentDirectory() != null)
-	    addToGridBagAligned(gb, gc, b_pidfile, gc.WEST);
+	    addToGridBagButtonLine(gb, gc, "PID File", pidfile, b_pidfile);
+	else
+	    addToGridBagLine(gb, gc, "PID File", pidfile);
 	addGridBagLine(gb, gc);
 
-	addToGridBagLine(gb, gc, "Language Dir", langdir);
-	addToGridBag(gb, gc, "Picture Dir", picture);
+	if (mct.currentDirectory() != null)
+	    addToGridBagButtonLine(gb, gc, "Language Dir", langdir, b_langdir);
+	else
+	    addToGridBagLine(gb, gc, "Language Dir", langdir);
+	addGridBagLine(gb, gc);
+	if (mct.currentDirectory() != null)
+	    addToGridBagButton(gb, gc, "Picture Dir", picture, b_picture);
+	else
+	    addToGridBag(gb, gc, "Picture Dir", picture);
 	addToGridBag(gb, gc, "Size", picture_size);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Memo Attach Dir", memoattach);
+	if (mct.currentDirectory() != null)
+	    addToGridBagButton(gb, gc, "Memo Attach Dir", memoattach, b_memoattach);
+	else
+	    addToGridBag(gb, gc, "Memo Attach Dir", memoattach);
 	addToGridBag(gb, gc, "Size", memoattach_size);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Public FS Dir", f_public);
+	if (mct.currentDirectory() != null)
+	    addToGridBagButton(gb, gc, "Public FS Dir", f_public, b_public);
+	else
+	    addToGridBag(gb, gc, "Public FS Dir", f_public);
 	addToGridBag(gb, gc, "Size", public_size);
 	addGridBagLine(gb, gc);
-	addToGridBag(gb, gc, "Temp Dir", tempdir);
+	if (mct.currentDirectory() != null)
+	    addToGridBagButton(gb, gc, "Temp Dir", tempdir, b_tempdir);
+	else
+	    addToGridBag(gb, gc, "Temp Dir", tempdir);
 	addToGridBag(gb, gc, "Size", tempdir_size);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Block Size", blocksize);

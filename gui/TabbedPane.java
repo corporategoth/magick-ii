@@ -116,6 +116,9 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
 	    rv.setToolTipText(tip);
 	rv.addActionListener(this);
 	rv.setEnabled(enabled);
+	Insets i = rv.getMargin();
+	i.left = i.right = i.bottom = i.top;
+	rv.setMargin(i);
 	return rv;
     }
 
@@ -327,5 +330,48 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
 	gc.gridwidth = 1;
 	addGridBagLine(p, gc);
     }
+
+    protected void addToGridBagButton(JPanel p, GridBagConstraints gc, String name, Color col, JComponent c, JButton b)
+    {
+	addToGridBagLabel(p, gc, name, col);
+	Box bx = Box.createHorizontalBox();
+	bx.add(c);
+	bx.add(b);
+	addToGridBagField(p, gc, bx);
+    }
+
+    protected void addToGridBagButton(JPanel p, GridBagConstraints gc, String name, JComponent c, JButton b)
+    {
+	addToGridBagLabel(p, gc, name);
+	Box bx = Box.createHorizontalBox();
+	bx.add(c);
+	bx.add(b);
+	addToGridBagField(p, gc, bx);
+    }
+
+    protected void addToGridBagButtonLine(JPanel p, GridBagConstraints gc, String name, Color col, JComponent c, JButton b)
+    {
+	addToGridBagLabel(p, gc, name, col);
+	Box bx = Box.createHorizontalBox();
+	bx.add(c);
+	bx.add(b);
+	gc.gridwidth = gc.REMAINDER;
+	addToGridBagField(p, gc, bx);
+	gc.gridwidth = 1;
+	addGridBagLine(p, gc);
+    }
+
+    protected void addToGridBagButtonLine(JPanel p, GridBagConstraints gc, String name, JComponent c, JButton b)
+    {
+	addToGridBagLabel(p, gc, name);
+	Box bx = Box.createHorizontalBox();
+	bx.add(c);
+	bx.add(b);
+	gc.gridwidth = gc.REMAINDER;
+	addToGridBagField(p, gc, bx);
+	gc.gridwidth = 1;
+	addGridBagLine(p, gc);
+    }
+
 }
 

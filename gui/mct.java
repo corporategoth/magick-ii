@@ -100,6 +100,7 @@ public class mct extends JApplet implements ActionListener
 	cfg += "\n" + operserv.createCfg();
 	cfg += "\n" + commserv.createCfg();
 	cfg += "\n" + servmsg.createCfg();
+	cfg = cfg.replaceAll("\\\\", "\\\\\\\\");
 	return cfg;
     }
 
@@ -122,40 +123,14 @@ public class mct extends JApplet implements ActionListener
     {
 	if (e.getSource() == cwd)
 	{
-	    JFileChooser select_dir = new JFileChooser(currentDirectory());
-
-	    if (select_dir.getAccessibleContext() == null)
+	    String rv = showDirectoryDialog(currentDirectory(), "Select Work Directory", null, null, true);
+	    if (rv != null)
 	    {
-		JOptionPane.showMessageDialog(null,
-			"Due to security concerns, we cannot perform any files-based\n" +
-			"actions on your system at this time.\n",
-			"Error",
-			JOptionPane.ERROR_MESSAGE);
+		pwd = rv;
 	    }
-	    else
+	    else if (pwd == null)
 	    {
-		select_dir.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		int rv = select_dir.showDialog(null, "Select Working Directory");
-		if (rv == JFileChooser.APPROVE_OPTION)
-		{
-		    try
-		    {
-			pwd = select_dir.getSelectedFile().getCanonicalPath();
-		    }
-		    catch (Exception ex)
-		    {
-			JOptionPane.showMessageDialog(null,
-			    "Could not open directory:\n" +
-			    ex.getMessage() + "\n",
-			    "Error",
-			    JOptionPane.ERROR_MESSAGE);
-			return;
-		    }
-		}
-		else if (pwd == null)
-		{
-		    System.exit(0);
-		}
+		System.exit(0);
 	    }
 	}
 	else if (e.getSource() == open)
@@ -340,8 +315,6 @@ public class mct extends JApplet implements ActionListener
 	// Menu Bar ...
 	JPanel top = new JPanel();
 	top.setLayout(new BorderLayout());
-	JPanel tmp = new JPanel();
-	tmp.setLayout(new BorderLayout());
 
 	JMenuBar mb = new JMenuBar();
 	mb.setBorderPainted(false);
@@ -415,10 +388,8 @@ public class mct extends JApplet implements ActionListener
 	submenu.add(tooltips);
 
 	mb.add(submenu);
-	tmp.add(mb, BorderLayout.WEST);
+	mb.add(Box.createHorizontalGlue());
 
-	mb = new JMenuBar();
-	mb.setBorderPainted(false);
 	submenu = new JMenu("Help");
 	submenu.setMnemonic(KeyEvent.VK_H);
 
@@ -445,9 +416,7 @@ public class mct extends JApplet implements ActionListener
 	submenu.add(wildcards);
 
 	mb.add(submenu);
-	tmp.add(mb, BorderLayout.EAST);
-
-	top.add(tmp, BorderLayout.NORTH);
+	top.add(mb, BorderLayout.NORTH);
 
 	JTabbedPane middle = new JTabbedPane();
 
@@ -540,7 +509,16 @@ public class mct extends JApplet implements ActionListener
 	frame.setVisible(true);
     }
 
+    public static String showDirectoryDialog(String path, String approve, String filtname, String fileext, boolean readable)
+    {
+	return showPathDialog(path, approve, JFileChooser.DIRECTORIES_ONLY, filtname, fileext, readable);
+    }
     public static String showFileDialog(String path, String approve, String filtname, String fileext, boolean readable)
+    {
+	return showPathDialog(path, approve, JFileChooser.FILES_ONLY, filtname, fileext, readable);
+    }
+
+    public static String showPathDialog(String path, String approve, int limit, String filtname, String fileext, boolean readable)
     {
 	String value = null;
 
@@ -553,20 +531,15 @@ public class mct extends JApplet implements ActionListener
 		File f = new File(path);
 		if (!f.isAbsolute())
 		    f = new File(currentDirectory() + File.separator + path);
-		if (f.isDirectory())
-		    directory = f.getCanonicalPath();
+		selected = f.getName();
+		directory = f.getParent();
+		if (directory == null)
+		    directory = currentDirectory();
 		else
 		{
-		    selected = f.getName();
-		    directory = f.getParent();
-		    if (directory == null)
-			directory = currentDirectory();
-		    else
-		    {
-			f = new File(directory);
-			directory = null;
-			directory = f.getCanonicalPath();
-		    }
+		    f = new File(directory);
+		    directory = null;
+		    directory = f.getCanonicalPath();
 		}
 	    }
 	    catch (Exception ex)
@@ -625,6 +598,7 @@ public class mct extends JApplet implements ActionListener
 	    }
 	    if (selected != null)
 		chooser.setSelectedFile(new File(directory + File.separator + selected));
+	    chooser.setFileSelectionMode(limit);
 	    int rv = chooser.showDialog(null, approve);
 	    if (rv == JFileChooser.APPROVE_OPTION)
 	    {
