@@ -36,7 +36,7 @@ public:
     // message_queue'ing with variable sized messages.
     mBase();
     static void push_message(const mstring& message);
-    void init();
+    static void init();
 
     virtual bool MSG() =0;
     virtual void MSG(bool on) =0;

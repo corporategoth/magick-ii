@@ -245,10 +245,13 @@ int Magick::Start()
     ACE_UNUSED_ARG (sigttsp);
 #endif
 
+    mBase::init();
+#if 0
     if(!nickserv.getnames().IsEmpty())
 	nickserv.init();
     if(!chanserv.getnames().IsEmpty())
 	chanserv.init();
+#endif
 
     // etc.
 

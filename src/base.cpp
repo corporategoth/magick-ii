@@ -36,7 +36,7 @@ void mBase::push_message(const mstring& message)
 	if(Buffer_Queue.is_full())
 	{
 	    // set new water marks and spawn off a new thread.
-	    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads())*4);
+	    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads())*sizeof(unsigned long));
 	    // below is set to the same as high_water_mark so that Buffer_Queue, doesn't block on add.
 	    Buffer_Queue.low_water_mark(Buffer_Queue.high_water_mark());
 	    if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1)
@@ -55,6 +55,11 @@ void mBase::init()
     //mThread::spawn(Get_TType(),thread_handler,(void *)this);
     //todo: setup the first high water mark and first low water mark
     //and spawn off x threads.
+    Buffer_Queue.high_water_mark(MagickObject->high_water_mark*sizeof(unsigned long));
+    // below is set to the same as high_water_mark so that Buffer_Queue, doesn't block on add.
+    Buffer_Queue.low_water_mark(Buffer_Queue.high_water_mark());
+    if(ACE_Thread_Manager::instance()->spawn(thread_handler)==-1)
+	CP(("Failed to create initial thread"));
 }
 
 void *thread_handler(void *owner)
@@ -80,9 +85,9 @@ void *thread_handler(void *owner)
 
 	    // lock here temporarily
 	    if(mBase::Buffer_Queue.message_count()<
-		MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)+MagickObject->low_water_mark)
+		MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-2)*sizeof(unsigned long)+MagickObject->low_water_mark*sizeof(unsigned long))
 	    {
-		mBase::Buffer_Queue.high_water_mark(MagickObject->high_water_mark*ACE_Thread_Manager::instance()->count_threads()*4);
+		mBase::Buffer_Queue.high_water_mark(MagickObject->high_water_mark*(ACE_Thread_Manager::instance()->count_threads()-1)*sizeof(unsigned long));
 		 mBase::Buffer_Queue.low_water_mark(mBase::Buffer_Queue.high_water_mark());
 		 return NULL;
 	    }
