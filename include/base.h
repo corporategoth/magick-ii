@@ -43,7 +43,7 @@ public:
     virtual bool AUTO() =0;
     virtual void AUTO(bool on) =0;
 
-    virtual void execute(const mstring& servicename, const mstring& message)=0;
+    virtual void execute(const mstring& message)=0;
     virtual threadtype_enum Get_TType() const=0;
     //virtual mBase *GetOwner()=0;
     virtual mstring GetInternalName() const=0;

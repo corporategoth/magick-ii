@@ -23,8 +23,8 @@ ChanServ::ChanServ()
 	automation=true;
     }
 }
-void ChanServ::execute(const mstring & servicename, const mstring & message)
+void ChanServ::execute(const mstring & message)
 {
-    FT("ChanServ::execute", (servicename, message));
+    FT("ChanServ::execute", (message));
     //okay this is the main chanserv command switcher
 }

@@ -88,30 +88,26 @@ void *thread_handler(void *owner)
 		mBase::Buffer_Tuple.erase(messageid);
 	    }
 
-	    mstring tmp[3];
-	    tmp[0]=message.Before(" ");				// 1st arg
-	    tmp[1]=message.After(" ").Before(" ");		// 2nd arg
-	    tmp[2]=message.After(" ").After(" ").Before(" ");	// 3rd arg
-	    tmp[1].MakeUpper();
+	    mstring tmp[2];
+	    tmp[0]=message.After(" ").Before(" ");		// 2nd arg
+	    tmp[1]=message.After(" ").After(" ").Before(" ");	// 3rd arg
+	    tmp[0].MakeUpper();
 
-	    if (tmp[1] == "PRIVMSG" || tmp[1] == "NOTICE") {
-		// We pass to services all except target.
-		// We send target as a seperate argument.
-		mstring pass=tmp[0]+tmp[1]+message.After(" ").After(" ").After(" ");
+	    if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE") {
 		mstring names;
 
 		// Find out if the target nick is one of the services 'clones'
 		// (and if it is, which one?)  Pass the message to them if so.
-//		     if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[2]+" "))
-//		    MagickObject->operserv.execute(tmp[2], pass);
-		     if ((names=" "+MagickObject->nickserv.getnames()+" ").Find(" "+tmp[2]+" "))
-		    MagickObject->nickserv.execute(tmp[2], pass);
-		else if ((names=" "+MagickObject->chanserv.getnames()+" ").Find(" "+tmp[2]+" "))
-		    MagickObject->chanserv.execute(tmp[2], pass);
-//		else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[2]+" "))
-//		    MagickObject->memoserv.execute(tmp[2], pass);
-//		else if ((names=" "+HelpServ::getnames()+" ").Find(" "+tmp[2]+" "))
-//		    MagickObject->helpserv.execute(tmp[2], pass);
+//		     if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//		    MagickObject->operserv.execute(message);
+		     if ((names=" "+MagickObject->nickserv.getnames()+" ").Find(" "+tmp[1]+" "))
+		    MagickObject->nickserv.execute(message);
+		else if ((names=" "+MagickObject->chanserv.getnames()+" ").Find(" "+tmp[1]+" "))
+		    MagickObject->chanserv.execute(message);
+//		else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//		    MagickObject->memoserv.execute(message);
+//		else if ((names=" "+HelpServ::getnames()+" ").Find(" "+tmp[1]+" "))
+//		    MagickObject->helpserv.execute(message);
 
 		// How do we want to handle custom services (BOB created)?
 
