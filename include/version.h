@@ -24,6 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2000/04/26 11:34:12  prez
+** *** empty log message ***
+**
 ** Revision 1.87  2000/04/26 10:31:07  prez
 ** Added KDE Development Studio project (and associated stuff)
 **
@@ -60,7 +63,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 3;
+const int BUILD_NUMBER = 5;
 const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
 const mstring BUILD_SYS = "haven";
 const unsigned short Magick_Major_Ver=2;

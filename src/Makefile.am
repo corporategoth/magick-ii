@@ -1,7 +1,7 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 bin_PROGRAMS = magick
 magick_SOURCES = variant.cpp utils.cpp trace.cpp textfile.cpp servmsg.cpp server.cpp operserv.cpp nickserv.cpp mstring.cpp mstream.cpp memoserv.cpp main.cpp magick.cpp log.cpp lockable.cpp ircsocket.cpp filesys.cpp fileconf.cpp dccengine.cpp datetime.cpp cryptstream.cpp convert.cpp confbase.cpp commserv.cpp chanserv.cpp base.cpp EscParser.cpp EscLexer.cpp 
-magick_LDADD   = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a ACE z pthread
+magick_LDADD   = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a 
 
 SUBDIRS = antlr des xml 
 
