@@ -631,4 +631,4 @@ str="`echo \`./.max_keylen\` | sed -e s/X/2/`"
 AC_DEFINE_UNQUOTED(CRYPTO_KEY2, "$str")
 rm -f .max_keylen*
 
-AC_OUTPUT(Makefile src/Makefile gui/Makefile docs/Makefile docs/en/Makefile src/crypt/Makefile src/xml/Makefile include/Makefile include/crypt/Makefile include/xml/Makefile docs/man/Makefile lang/Makefile)
+AC_OUTPUT(Makefile src/Makefile gui/Makefile docs/Makefile docs/en/Makefile ircd/Makefile src/crypt/Makefile src/xml/Makefile include/Makefile include/crypt/Makefile include/xml/Makefile docs/man/Makefile lang/Makefile)
