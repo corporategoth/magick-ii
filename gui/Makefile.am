@@ -9,16 +9,15 @@ mostlyclean-compile:
 	-rm -f *.class core *.core *.debug
 
 %.class: %.java
-	if test -n "`which javac 2>/dev/null`"; then \
-		JVER=`java -version 2>&1 | grep "^java version" | cut -f3 -d" " | sed -e "s/\"//g" -e "s/\.//g"`; \
-		if test 0$$JVER -lt 140; then \
-			echo "Java v1.4.0 or above is required to compile the Magick Configuration Tool."; \
-		else \
-			javac -g -O $(patsubst %.class,%.java,$@); \
-		fi; \
+	@if test -n "$(JAVAC)"; then \
+		CLASSPATH="."; export CLASSPATH; \
+		echo "$(JAVAC) $(JFLAGS) $(patsubst %.class,%.java,$@)"; \
+		$(JAVAC) $(JFLAGS) $(patsubst %.class,%.java,$@); \
 	fi
 
 mct.jar: mct.class
-	if test -n "`which jar 2>/dev/null`" -a -f mct.class; then \
-		jar cfm $@ mct.mf *.class *.jpg; \
+	@if test -n "$(JAVAC)"; then \
+		CLASSPATH="."; export CLASSPATH; \
+		echo "jar cfm $@ $(patsubst %.jar,%.mf,$@) *.class *.jpg"; \
+		jar cfm $@ $(patsubst %.jar,%.mf,$@) *.class *.jpg; \
 	fi

@@ -45,6 +45,26 @@ AC_HEADER_STAT
 AC_LANG_CPLUSPLUS
 AC_CANONICAL_HOST
 
+dnl Test for java.
+AC_CHECK_PROG(JAVAC, javac, javac)
+if test -n "$JAVAC"; then
+    echo $ECHO_N$ac_n "checking whether Java compiler works"" ... $ECHO_C$ac_c"
+    cat >jtest.java <<EOT
+import javax.swing.JFormattedTextField;
+class jtest extends JFormattedTextField
+{
+}
+EOT
+    javac jtest.java
+    if test -f jtest.class; then
+	echo "${ECHO_T}${ac_t}yes"
+    else
+	echo "${ECHO_T}${ac_t}no"
+	JAVAC=""
+    fi
+    rm -f jtest.*
+fi
+
 dnl Required stuff
 dnl ==============
 
@@ -55,6 +75,7 @@ dnl (ie. build.sh or something) to normalize things ...
 dnl Stuff for a later date.  Right now, we'll keep it here.
 
 dnl NOTE: CFLAGS = C only, CXXFLAGS = C++ only, CPPFLAGS = both
+dnl NOTE: JFLAGS = Java only
 
 dnl Optimisation and Debugging flags
 dnl -g3   Increased output to gdb (for macros, etc)
@@ -79,6 +100,8 @@ WARNFLAGS="-W -Wall -Wbad-function-cast -Wimport \
 	-Wwrite-strings -Wformat-security -Wnested-externs"
 
 CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"
+
+JFLAGS="-g -O"
 
 dnl Just incase ace is there, which it often is ...
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
