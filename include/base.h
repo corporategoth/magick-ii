@@ -150,8 +150,12 @@ public:
     virtual bool AUTO()		{ return automation; }
     virtual void AUTO(bool on)	{ automation=on; }
 
-    void privmsg(const mstring& source, mstring message);
-    void notice(const mstring& source, mstring message);
+    bool signon(const mstring& nickname);
+    bool signoff(const mstring& nickname);
+    void privmsg(const mstring source, mstring dest, mstring message);
+    void privmsg(mstring dest, mstring message); // FIRST nick
+    void notice(const mstring& source, mstring dest, mstring message);
+    void notice(mstring dest, mstring message); // FIRST nick
 
     operator mVariant() const
     {

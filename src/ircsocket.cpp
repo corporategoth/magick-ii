@@ -110,8 +110,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
         ACE_INET_Addr localaddr;
 	Parent->ircsvchandler->peer().get_local_addr(localaddr);
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
-	Send("PASS " + Parent->startup.Password());
-	Send("SERVER " + Parent->startup.Server_Name() + " 1 :" + Parent->startup.Server_Desc());
+	Parent->server.raw("PASS " + Parent->startup.Password());
+	Parent->server.raw("SERVER " + Parent->startup.Server_Name() + " 1 :" + Parent->startup.Server_Desc());
     }
     return 0;
 }

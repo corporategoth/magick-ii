@@ -272,6 +272,38 @@ void mBase::init()
     BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
 }
 
+bool mBase::signon(const mstring &nickname)
+{
+    FT("mBase::signon", (nickname));
+
+    if (Parent->nickserv.IsLive(nickname))
+    {
+	RET(false);
+    }
+    else
+    {
+	Parent->server.NICK(nickname,
+		Parent->startup.Ownuser() ? nickname.LowerCase() : Parent->startup.Services_User(),
+		Parent->startup.Services_Host(), Parent->startup.Server_Name(), realname);
+	RET(true);
+    }
+}
+
+bool mBase::signoff(const mstring &nickname)
+{
+    FT("mBase::signoff", (nickname));
+
+    if (Parent->nickserv.IsLive(nickname))
+    {
+	Parent->server.QUIT(nickname);
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+}
+
 void mBase::shutdown()
 {
     NFT("mBase::shutdown");

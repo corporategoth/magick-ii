@@ -304,10 +304,8 @@ int Magick::Start()
     ACE_INET_Addr localaddr;
     ircsvchandler->peer().get_local_addr(localaddr);
     CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
-    mstring passcmd="PASS "+startup.Password()+"\n";
-    ircsvchandler->send(passcmd);
-    mstring servercmd="SERVER "+startup.Server_Name()+" 1 :"+startup.Server_Desc()+"\n";
-    ircsvchandler->send(servercmd);
+    server.raw("PASS " + startup.Password());
+    server.raw("SERVER " + startup.Server_Name() + " 1 :" + startup.Server_Desc());
 
     // next thing to be done here is set up the acceptor mechanism to listen
     // for incoming "magickgui" connections and handle them.
@@ -623,7 +621,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	RET(true);
     }
     else if(first=="--verbose" || first=="--debug")
-	debug=true;
+	logger->SetVerbose(true);
     else if(first=="--fg" || first=="--foreground"
 	    || first=="--live" || first=="--nofork")
 	live=true;

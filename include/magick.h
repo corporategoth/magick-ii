@@ -217,12 +217,6 @@ public:
 extern Magick *Parent;
 extern mDateTime StartTime;
 
-inline void SendSVR(mstring message)
-{ Parent->ircsvchandler->send(":" + Parent->startup.Server_Name() + " " + message); }
-
-inline void Send(mstring message)
-{ Parent->ircsvchandler->send(message); }
-
 inline void KillUnknownUser(mstring user)
 { Parent->ircsvchandler->send(":" + Parent->startup.Server_Name() + " KILL " +
     user + " :" + Parent->startup.Server_Name() + " (" + user + "(?) <- " +

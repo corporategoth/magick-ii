@@ -55,12 +55,33 @@ public:
 
 class NetworkServ : public mBase
 {
+    friend class Server;
     friend class Magick;
+    friend class Reconnect_Handler;
 private:
+    void raw(mstring send);
+    void sraw(mstring send);
 
 public:
     map<mstring,Server> ServerList;
     bool IsServer(mstring server);
+
+    void AWAY(mstring nick, mstring reason = "");
+    void GLOBOPS(mstring nick, mstring message);
+    void INVITE(mstring nick, mstring dest, mstring channel);
+    void JOIN(mstring nick, mstring channel);
+    void KICK(mstring nick, mstring dest, mstring channel, mstring reason = "");
+    void KILL(mstring nick, mstring dest, mstring reason);
+    void MODE(mstring nick, mstring mode);
+    void MODE(mstring nick, mstring channel, mstring mode);
+    void NICK(mstring nick, mstring user, mstring host,
+    	mstring server, mstring realname);
+    void NOTICE(mstring nick, mstring dest, mstring text);
+    void PART(mstring nick, mstring channel, mstring reason = "");
+    void PRIVMSG(mstring nick, mstring dest, mstring text);
+    void QUIT(mstring nick, mstring reason = "");
+    void TOPIC(mstring nick, mstring channel, mstring topic = "");
+    void WALLOPS(mstring nick, mstring message);    
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);

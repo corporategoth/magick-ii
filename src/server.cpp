@@ -52,7 +52,7 @@ void Server::Ping()
     NFT("Server::Ping");
     if (!i_Ping)
     {
-        SendSVR("PING " + Parent->startup.Server_Name() + " :" + i_Name);
+        Parent->server.sraw("PING " + Parent->startup.Server_Name() + " :" + i_Name);
 	i_Ping = ACE_OS::gettimeofday().msec();
    }
 }
@@ -134,6 +134,17 @@ Server::~Server()
 	Parent->server.ServerList.erase(Kill[i]);
 }
 
+void NetworkServ::raw(mstring text)
+{
+    FT("NetworkServ::raw", (text));
+    Parent->ircsvchandler->send(text);
+}
+
+void NetworkServ::sraw(mstring text)
+{
+    raw(":" + Parent->startup.Server_Name() + " " + text);
+}
+
 NetworkServ::NetworkServ()
 {
     NFT("NetworkServ::NetworkServ");
@@ -146,6 +157,323 @@ bool NetworkServ::IsServer(mstring server)
     FT("NetworkServ::IsServer", (server));
     RET((ServerList.find(server.LowerCase()) != ServerList.end()));
 }
+
+
+void NetworkServ::AWAY(mstring nick, mstring reason)
+{
+    FT("NetworkServ::AWAY", (nick, reason));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("AWAY command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("AWAY command requested by non-service %s", nick.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Away(reason);
+	raw(":" + nick + " AWAY" + (reason != "") ? " : " + reason : mstring(""));
+    }
+}
+
+
+void NetworkServ::GLOBOPS(mstring nick, mstring message)
+{
+    FT("NetworkServ::GLOBOPS", (nick, message));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("GLOBOPS command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("GLOBOPS command requested by non-service %s", nick.c_str());
+    }
+    else
+    {
+	raw(":" + nick + " GLOBOPS :" + message);
+    }
+}
+
+
+void NetworkServ::INVITE(mstring nick, mstring dest, mstring channel)
+{
+    FT("NetworkServ::INVITE", (nick, dest, channel));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("INVITE command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("INVITE command requested by non-service %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.IsLive(dest))
+    {
+	wxLogWarning("INVITE command requested for non-existant user %s", dest.c_str());
+    }
+    else if (!Parent->chanserv.IsLive(channel))
+    {
+	wxLogWarning("INVITE command requested by %s for %s in non-existant channel %s",
+		nick.c_str(), dest.c_str(), channel.c_str());
+    }
+    else
+    {
+	raw(":" + nick + " INVITE " + dest + " :" + channel);
+    }
+}
+
+
+void NetworkServ::JOIN(mstring nick, mstring channel)
+{
+    FT("NetworkServ::JOIN", (nick, channel));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("JOIN command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("JOIN command requested by non-service %s", nick.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Join(channel);
+	raw(":" + nick + " JOIN :" + channel);
+    }
+}
+
+
+void NetworkServ::KICK(mstring nick, mstring dest, mstring channel, mstring reason)
+{
+    FT("NetworkServ::KICK", (nick, dest, channel, reason));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("KICK command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("KICK command requested by non-service %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.IsLive(dest))
+    {
+	wxLogWarning("KICK command requested by %s for non-existant %s", dest.c_str(), nick.c_str());
+    }
+    else if (!Parent->chanserv.IsLive(channel))
+    {
+	wxLogWarning("KICK command requested by %s for %s in non-existant channel %s",
+		nick.c_str(), dest.c_str(), channel.c_str());
+    }
+    else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(dest))
+    {
+	wxLogWarning("KICK command requested by %s for %s who is not in channel %s",
+		nick.c_str(), dest.c_str(), channel.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[dest.LowerCase()].Kick(nick, channel);
+	raw(":" + nick + " KICK " + channel + " " + dest + " :" + reason);
+    }
+}
+
+
+void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
+{
+    FT("NetworkServ::KILL", (nick, dest, reason));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("KILL command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("KILL command requested by non-service %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.IsLive(dest))
+    {
+	wxLogWarning("KILL command requested for non-existant user %s", dest.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[dest.LowerCase()].Quit(
+		"Killed (" + nick + " (" + reason + "))");
+	Parent->nickserv.live.erase(dest.LowerCase());
+	raw(":" + nick + " KILL " + dest + " :" + Parent->nickserv.live[nick.LowerCase()].Host() +
+		"!" + nick + " (" + reason + ")");
+    }
+}
+
+
+void NetworkServ::NICK(mstring nick, mstring user, mstring host,
+    	mstring server, mstring realname)
+{
+    FT("NetworkServ::NICK", (nick, user, host, server, realname));
+
+    // DAL4.4.15+ NICK name hops time user host server services? :real name
+
+    mstring send;
+    send << "NICK " << nick << " 1 " << (time_t) Now() <<
+	" " << user << " " << host << " " << server << " 1 " <<
+	host << " :" << realname;
+
+    // Sign ourselves in ...
+    Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
+	nick, user, host, realname);
+    raw(send);
+
+}
+
+
+void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
+{
+    FT("NetworkServ::NOTICE", (nick, dest, text));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("NOTICE command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("NOTICE command requested by non-service %s", nick.c_str());
+    }
+    else if (!(Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
+    {
+	wxLogWarning("NOTICE command requested for non-existant user/channel %s", dest.c_str());
+    }
+    else
+    {
+	raw(":" + nick + " NOTICE " + dest + " :" + text);
+    }
+}
+
+
+void NetworkServ::PART(mstring nick, mstring channel, mstring reason)
+{
+    FT("NetworkServ::PART", (nick, channel, reason));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("PART command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("PART command requested by non-service %s", nick.c_str());
+    }
+    else if (!Parent->chanserv.IsLive(channel))
+    {
+	wxLogWarning("PART command requested by %s for non-existant channel %s",
+		nick.c_str(), channel.c_str());
+    }
+    else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(nick))
+    {
+	wxLogWarning("PART command requested by %s who is not in channel %s",
+		nick.c_str(), channel.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Part(channel);
+	raw(":" + nick + " PART " + channel +
+		(reason != "") ? " :" + reason : mstring(""));
+    }
+}
+
+
+void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
+{
+    FT("NetworkServ::PRIVMSG", (nick, dest, text));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("PRIVMSG command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("PRIVMSG command requested by non-service %s", nick.c_str());
+    }
+    else if (!(Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
+    {
+	wxLogWarning("PRIVMSG command requested by %s for non-existant user/channel %s",
+		nick.c_str(), dest.c_str());
+    }
+    else
+    {
+	raw(":" + nick + " PRIVMSG " + dest + " :" + text);
+    }
+}
+
+
+void NetworkServ::QUIT(mstring nick, mstring reason)
+{
+    FT("NetworkServ::QUIT", (nick, reason));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("QUIT command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("QUIT command requested by non-service %s", nick.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
+	raw(":" + nick + " QUIT :" + reason);
+    }
+}
+
+
+void NetworkServ::TOPIC(mstring nick, mstring channel, mstring topic)
+{
+    FT("NetworkServ::TOPIC", (nick, channel, topic));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("TOPIC command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("TOPIC command requested by non-service %s", nick.c_str());
+    }
+    else if (Parent->chanserv.IsLive(channel))
+    {
+	wxLogWarning("TOPIC command requested by %s for non-existant channel %s",
+		nick.c_str(), channel.c_str());
+    }
+    else
+    {
+	mstring send;
+	if (topic == "")
+	    send << ":" << nick << " TOPIC " << channel << " " << nick;
+	else
+	    send << ":" << nick << " TOPIC " << channel << " " <<
+		nick << " " << (time_t) Now() << " :" << topic;
+
+	raw(send);
+    }
+}
+
+
+void NetworkServ::WALLOPS(mstring nick, mstring message)
+{
+    FT("NetworkServ::WALLOPS", (nick, message));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("WALLOPS command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("WALLOPS command requested by non-service %s", nick.c_str());
+    }
+    else
+    {
+	raw(":" + nick + " WALLOPS :" + message);
+    }
+}
+
 
 void NetworkServ::execute(const mstring & data)
 {
@@ -192,11 +520,11 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="ADMIN")
 	{
 	    // :source ADMIN
-	    SendSVR("256 " + source + " :Administrative info about " +
+	    sraw("256 " + source + " :Administrative info about " +
 		Parent->startup.Server_Name());
-	    SendSVR("257 " + source + " :" + Parent->startup.Server_Desc());
-	    SendSVR("258 " + source + " :Admins - " + Parent->operserv.Services_Admin());
-	    SendSVR("259 " + source + " :" + FULL_NAME + " - " + FULL_EMAIL);
+	    sraw("257 " + source + " :" + Parent->startup.Server_Desc());
+	    sraw("258 " + source + " :Admins - " + Parent->operserv.Services_Admin());
+	    sraw("259 " + source + " :" + FULL_NAME + " - " + FULL_EMAIL);
 	}
 	else if (msgtype=="AKILL")
 	{
@@ -230,12 +558,12 @@ void NetworkServ::execute(const mstring & data)
 	    if (IsServer(data.ExtractWord(3, ": ")) ||
 	    	data.ExtractWord(3, ": ").LowerCase() == Parent->startup.Server_Name().LowerCase())
 	    {
-		SendSVR("NOTICE " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
+		sraw("NOTICE " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
 			" already exists from " + Parent->startup.Server_Name());
 	    }
 	    else
 	    {
-		Send("NOTICE " + source + " :Connect: Host " +
+		raw("NOTICE " + source + " :Connect: Host " +
 			data.ExtractWord(3, ": ") + " not listed in irc.conf");
 	    }
 	}
@@ -294,8 +622,8 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source INFO :server/nick
 	    for (int i=0; i<sizeof(contrib)/sizeof(mstring); i++)
-		SendSVR("371 " + source + " :" + contrib[i]);
-	    SendSVR("374 " + source + " :End of /INFO report");
+		sraw("371 " + source + " :" + contrib[i]);
+	    sraw("374 " + source + " :End of /INFO report");
 	}
 	else if (msgtype=="INVITE")
 	{
@@ -309,7 +637,7 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // repl: :our.server 303 source :local.nick
 	    if (Parent->nickserv.IsLive(source))
-		SendSVR("303 " + source + " :" + data.ExtractWord(3, ": "));
+		sraw("303 " + source + " :" + data.ExtractWord(3, ": "));
 	}
 	else
 	{
@@ -341,7 +669,7 @@ void NetworkServ::execute(const mstring & data)
 	    }
 
 	    if (!(Parent->nickserv.live[sourceL].IsInChan(data.ExtractWord(3, ": ")) || source.Contains(".")))
-		SendSVR("KICK " + data.ExtractWord(3, ": ") + " " + source + " :You are not in this channel");
+		sraw("KICK " + data.ExtractWord(3, ": ") + " " + source + " :You are not in this channel");
 
 	    // NOTE: as the message has already been broadcasted,
 	    // we still need to acomodate for it.
@@ -377,31 +705,31 @@ void NetworkServ::execute(const mstring & data)
 	    //:ChanServ LINKS :temple.magick.tm
 	    //:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
 	    //:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
-	    SendSVR("364 " + source + " " + Parent->startup.Server_Name() + " " +
+	    sraw("364 " + source + " " + Parent->startup.Server_Name() + " " +
 		Parent->startup.Server_Name() + " :0 " + Parent->startup.Server_Desc());
 
 	    map<mstring,Server>::iterator serv;
 	    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
 	    {
-		SendSVR("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
+		sraw("364 " + source + " " + serv->second.Name() + " " + serv->second.Uplink()
 			+ " :" + serv->second.Hops() + " " + serv->second.Description());
 	    }
 
-	    SendSVR("365 " + source + " " + Parent->startup.Server_Name() + " :End of /LINKS list.");
+	    sraw("365 " + source + " " + Parent->startup.Server_Name() + " :End of /LINKS list.");
 
 	}
 	else if (msgtype=="LIST")
 	{
-	    SendSVR("321 " + source + " Channel :Users  Name");
+	    sraw("321 " + source + " Channel :Users  Name");
 
 	    map<mstring,Chan_Live_t>::iterator chan;
 	    for (chan=Parent->chanserv.live.begin(); chan!=Parent->chanserv.live.end(); chan++)
 	    {
-		SendSVR("322 " + source + " " + chan->first + " " + mstring(chan->second.Users()) + 
+		sraw("322 " + source + " " + chan->first + " " + mstring(chan->second.Users()) + 
 		    " :" + chan->second.Topic());
 	    }
 
-	    SendSVR("323 " + source + " :End of /LIST");
+	    sraw("323 " + source + " :End of /LIST");
 	}
 	else
 	{
@@ -450,7 +778,7 @@ void NetworkServ::execute(const mstring & data)
 	    // :source NAMES #channel our.server
 //:soul.darker.net 353 ChanServ = #chatzone :killkickabuseme @Aimee Jupiter @Allanon Ghost_ wildrose
 //:soul.darker.net 366 ChanServ #chatzone :End of /NAMES list.
-	    SendSVR("366 " + source + " " + data.ExtractWord(3, ": ") + " :End of /NAMES list.");
+	    sraw("366 " + source + " " + data.ExtractWord(3, ": ") + " :End of /NAMES list.");
 
 	}
 	else if (msgtype=="NICK")
@@ -526,8 +854,8 @@ void NetworkServ::execute(const mstring & data)
 	    if (data.ExtractWord(2, ": ") != Parent->startup.Password())
 	    {
 		CP(("Server password mismatch.  Closing socket."));
-		Send("ERROR :No Access (passwd mismatch) [" + Parent->startup.Remote_Server() + "]");
-		Send("ERROR :Closing Link: [" + Parent->startup.Remote_Server() + "] (Bad Password)");
+		raw("ERROR :No Access (passwd mismatch) [" + Parent->startup.Remote_Server() + "]");
+		raw("ERROR :Closing Link: [" + Parent->startup.Remote_Server() + "] (Bad Password)");
 
 		Parent->reconnect=false;
 		Parent->ircsvchandler->shutdown();
@@ -538,9 +866,9 @@ void NetworkServ::execute(const mstring & data)
 	    // PING :some.server
 	    // :some.server PING some.server :our.server
 	    if (source)
-		SendSVR("PONG " + Parent->startup.Server_Name() + " :" + source);
+		sraw("PONG " + Parent->startup.Server_Name() + " :" + source);
 	    else
-		SendSVR("PONG " + Parent->startup.Server_Name() + " :" +
+		sraw("PONG " + Parent->startup.Server_Name() + " :" +
 			data.ExtractWord(2, ": "));
 	}
 	else if (msgtype=="PONG")
@@ -642,13 +970,13 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source STATS type :our.server
 	    //:temple.magick.tm 219 ChanServ o :End of /STATS report
-	    SendSVR("219 " + source + " " + data.ExtractWord(3, ": ") +
+	    sraw("219 " + source + " " + data.ExtractWord(3, ": ") +
 		" :End of /STATS report");
 	}
 	else if (msgtype=="SUMMON")
 	{
 	    // :source SUMMON user our.server *
-	    SendSVR("445 " + source + " :SUMMON has been disabled");
+	    sraw("445 " + source + " :SUMMON has been disabled");
 	}
 	else if (msgtype=="SVSHOST")
 	{
@@ -703,7 +1031,7 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="TIME")
 	{
 	    // :source TIME :our.server
-	    SendSVR("391 " + source + " :" + Now().DateTimeString());
+	    sraw("391 " + source + " :" + Now().DateTimeString());
 	}
 	else if (msgtype=="TOPIC")
 	{
@@ -785,7 +1113,7 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
 	    {
-		SendSVR("302 " + source + " :" +
+		sraw("302 " + source + " :" +
 			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Name() +
 			"*=-" +
 			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].User() +
@@ -795,14 +1123,14 @@ void NetworkServ::execute(const mstring & data)
 	    }
 	    else
 	    {
-		SendSVR("461 " + source + " USERHOST :Not enough paramaters");
+		sraw("461 " + source + " USERHOST :Not enough paramaters");
 	    }
 
 	}
 	else if (msgtype=="USERS")
 	{
 	    // :source USERS :our.server
-	    SendSVR("446 " + source + " :USERS has been disabled");
+	    sraw("446 " + source + " :USERS has been disabled");
 	}
 	else
 	{
@@ -815,7 +1143,7 @@ void NetworkServ::execute(const mstring & data)
 	    // :source VERSION :our.server
 	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
 	    mstring tmp;
-	    SendSVR("351 " + source + " " + PRODUCT + " " + Parent->startup.Server_Name() +
+	    sraw("351 " + source + " " + PRODUCT + " " + Parent->startup.Server_Name() +
 			" :" + VERSION + ((RELEASE != "") ? ("-" + RELEASE).c_str() : "") +
 			((PATCH1 != "") ? ("+" + PATCH1).c_str() : "") +
 			((PATCH2 != "") ? ("+" + PATCH2).c_str() : "") +
@@ -928,12 +1256,12 @@ void NetworkServ::execute(const mstring & data)
 		mstring target = data.ExtractWord(3, ": ");
 		mstring targetL = target.LowerCase();
 
-		SendSVR("311 " + source + " " + target + " " + Parent->nickserv.live[targetL].User() +
+		sraw("311 " + source + " " + target + " " + Parent->nickserv.live[targetL].User() +
 			" " + Parent->nickserv.live[targetL].Host() + " * :" +
 			Parent->nickserv.live[targetL].RealName());
 		if (Parent->nickserv.live[targetL].IsRecognized())
 		{
-		    SendSVR("307 " + source + " " + target + " : is a registered nick");
+		    sraw("307 " + source + " " + target + " : is a registered nick");
 		}
 
 		set<mstring> chans = Parent->nickserv.live[targetL].Channels();
@@ -943,7 +1271,7 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    if (outline.size() + iter->size() > 512)
 		    {
-			SendSVR(outline);
+			sraw(outline);
 			outline = "319 " + source + " " + target + " :";
 		    }
 
@@ -965,28 +1293,28 @@ void NetworkServ::execute(const mstring & data)
 			outline += *iter + " ";
 		}
 		if (outline.After(":").size() > 0)
-		    SendSVR(outline);
+		    sraw(outline);
 
 		if (IsServer(Parent->nickserv.live[targetL].Server()))
-		    SendSVR("312 " + source + " " + target + Parent->nickserv.live[targetL].Server() +
+		    sraw("312 " + source + " " + target + Parent->nickserv.live[targetL].Server() +
 			" :" + ServerList[Parent->nickserv.live[targetL].Server()].Description());
 
 		if (Parent->nickserv.live[targetL].Away() != "")
-		    SendSVR("301 " + source + " " + target + " :" + Parent->nickserv.live[targetL].Away());
+		    sraw("301 " + source + " " + target + " :" + Parent->nickserv.live[targetL].Away());
 
 		if (Parent->nickserv.live[targetL].HasMode("o"))
-		    SendSVR("313 " + source + " " + target + " :is an IRC Operator");
+		    sraw("313 " + source + " " + target + " :is an IRC Operator");
 
 		if (Parent->nickserv.live[targetL].HasMode("h"))
-		    SendSVR("310 " + source + " " + target + " :looks very helpful.");
+		    sraw("310 " + source + " " + target + " :looks very helpful.");
 		if (Parent->nickserv.live[targetL].IsServices())
 		{
     		    mstring signon_idletime;
 		    signon_idletime<<Parent->nickserv.live[targetL].IdleTime()<<" "<<(time_t)Parent->nickserv.live[targetL].SignonTime();
-		    SendSVR("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
+		    sraw("317 " + source + " " + target + " " + signon_idletime + " :seconds idle, signon time");
 		}
 
-		SendSVR("313 " + source + " " + target + " :End of /WHOIS list.");
+		sraw("313 " + source + " " + target + " :End of /WHOIS list.");
 
 	    }
 	    else
@@ -1284,6 +1612,7 @@ void NetworkServ::numeric_execute(const mstring & data)
     case 502:     // ERR_USERSDONTMATCH
 	break;
     default:
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     }
 }

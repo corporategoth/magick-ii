@@ -252,7 +252,9 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
       break;
 
     case wxLOG_Debug:
+#ifdef DEBUG
       DoLogString(str << "DEBUG   | " << szString);
+#endif
       break;
 
     default:
