@@ -56,6 +56,9 @@ CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"
 dnl Now we include SGI's STL -- if you have it
 dnl CXXFLAGS="$CXXFLAGS -I\$(top_srcdir)/include/stlport"
 
+dnl Just incase ace is there, which it often is ...
+LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
+
 dnl ====================================================
 
 dnl First we check if we were GIVEN the location of ACE.

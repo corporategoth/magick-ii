@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.186  2001/07/12 00:28:42  prez
+** Added propper support for Anarchy mode
+**
 ** Revision 1.185  2001/07/05 05:59:12  prez
 ** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
@@ -4616,7 +4619,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    if (Parent->chanserv.IsLive(chan))
 		    {
 			Parent->chanserv.GetLive(chan).Mode(
-				Parent->chanserv.FirstName(), modes + " " + mode_params);
+				source, modes + " " + mode_params);
 		    }
 		}
 		else if (modes.length() > 1)
@@ -4666,21 +4669,22 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			    }
 			}
 			Parent->nickserv.GetLive(sourceL).Join(chan);
+			mstring server = Parent->nickserv.GetLive(sourceL).Server();
 			if (oped)
 			    Parent->chanserv.GetLive(chan).Mode(
-				Parent->chanserv.FirstName(), "+o " + source);
+				server, "+o " + source);
 			if (halfoped)
 			    Parent->chanserv.GetLive(chan).Mode(
-				Parent->chanserv.FirstName(), "+h " + source);
+				server, "+h " + source);
 			if (voiced)
 			    Parent->chanserv.GetLive(chan).Mode(
-				Parent->chanserv.FirstName(), "+v " + source);
+				server, "+v " + source);
 			if (owner)
 			    Parent->chanserv.GetLive(chan).Mode(
-				Parent->chanserv.FirstName(), "+q " + source);
+				server, "+q " + source);
 			if (prot)
 			    Parent->chanserv.GetLive(chan).Mode(
-				Parent->chanserv.FirstName(), "+a " + source);
+				server, "+a " + source);
 		    }
 		}
 		else

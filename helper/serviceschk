@@ -28,7 +28,7 @@
 #
 
 # Terminate Check (uncomment to terminate the auto-start).
-#exit 0
+exit 0
 
 # change this to the directory you run your services from.
 servicesdir="/usr/local/lib/services"
@@ -47,6 +47,11 @@ pidfile="magick.pid"
 # change this to whatever your database file is called.
 dbfile="magick.mnd"
 
+# How old should the dbfile be before we consider the
+# 'running' process to be dead (ie. no save has happened!).
+# Setting this to '0' stops the save time check.
+savetime=0
+
 # Set this to either 0 to suppress a core file, unlimited to
 # allow a core file of any size, or the maximum core file size.
 coresize=unlimited
@@ -58,9 +63,20 @@ if test -r ${pidfile}; then
   # there is a pid file -- is it current?
   servicespid=`cat ${pidfile}`
   if `kill -CHLD $servicespid >/dev/null 2>&1`; then
-    # it's still going
-    # back out quietly
-    exit 0
+    if test 0$savetime -gt 0; then
+      # it's still going
+      if test -n "`find . -name $dbfile -mmin -$savetime 2>/dev/null`"; then
+        # backout quietly
+        exit 0
+      else
+        echo "Killing non-responding services ..."
+        kill -9 $servicespid
+      fi
+    else
+      # it's still going
+      # back out quietly
+      exit 0
+    fi
   fi
   echo ""
   echo "Stale ${pidfile} file (erasing it)"
@@ -83,6 +99,7 @@ fi
 
 ulimit -c $coresize 2>/dev/null
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$acelibdir"
+touch $dbfile
 $startcommand
 
 exit 0

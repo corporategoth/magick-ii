@@ -20,6 +20,9 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2001/07/12 00:28:42  prez
+** Added propper support for Anarchy mode
+**
 ** Revision 1.3  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -44,6 +47,7 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** ========================================================== */
 
 #include <stdio.h>
+#include <string.h>
 #include "config.h"
 
 #ifdef HASCRYPT

@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.259  2001/07/12 00:28:41  prez
+** Added propper support for Anarchy mode
+**
 ** Revision 1.258  2001/07/08 01:37:54  prez
 ** Verified encryption works ...
 **
@@ -2508,9 +2511,11 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		{
 		if (add)
 		{
-		    // IF not services, AND (user is AUTODEOP OR (channel is
-		    // secure AND (user is not AUTOOP or CMDOP)))
-		    if (!(Parent->nickserv.IsLive(arg) &&
+		    // IF not (a server set the mode and we've got anarchy set) and
+		    // not (services user set mode), AND (user is AUTODEOP OR
+		    // (channel is secure ops AND (user is not AUTOOP or CMDOP)))
+		    if (!(setter.Contains(".") && Anarchy()) &&
+			!(Parent->nickserv.IsLive(arg) &&
 			  Parent->nickserv.GetLive(arg).IsServices()) &&
 			(Access_value(arg) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) &&
@@ -2523,12 +2528,13 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		else if (!setter.Contains("."))
 		{
 		    // If user is services or a beneficiary of revenge
+		    // deop the setter ... bad boy ... tsk tsk ...
 		    if ((Parent->nickserv.IsLive(arg) &&
 			Parent->nickserv.GetLive(arg).IsServices()) ||
 			DoRevenge("DEOP", setter, arg))
 		    {
 			out_mode += "-o";
-			out_param += " " + arg;
+			out_param += " " + setter;
 		    }
 		}
 
@@ -2541,9 +2547,11 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		{
 		if (add)
 		{
-		    // IF not services, AND (user is AUTODEOP OR (channel is
-		    // secure AND (user is not AUTOVOICE or CMDVOICE)))
-		    if (!(Parent->nickserv.IsLive(arg) &&
+		    // IF not (a server set the mode and we've got anarchy set) and
+		    // not (services user set mode), AND (user is AUTODEOP OR
+		    // (channel is secure ops AND (user is not AUTOVOICE or CMDVOICE)))
+		    if (!(setter.Contains(".") && Anarchy()) &&
+			!(Parent->nickserv.IsLive(arg) &&
 			  Parent->nickserv.GetLive(arg).IsServices()) &&
 			(Access_value(arg) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDVOICE") ||
