@@ -54,13 +54,12 @@ dnl          -Wswitch -Wtrigraphs -Wunused -Wuninitialized
 dnl          -Wreorder -Wunknown-pragmas
 dnl REMOVED: -Wshadow -Wcast-qual -Wconversion -Wcast-align
 dnl          -Wold-style-cast -Wundef -Wredundant-decls
-dnl          -Winline
+dnl          -Winline -Wtemplate-debugging -Wpacked
 WARNFLAGS="-W -Wall -Wbad-function-cast -Wimport \
 	-Wmissing-declarations -Wmissing-prototypes \
 	-Woverloaded-virtual -Wpointer-arith -Wsynth \
 	-Wsign-compare -Wtraditional -Wstrict-prototypes \
-	-Wwrite-strings -Wtemplate-debugging -Wpacked \
-	-Wformat-security -Wnested-externs"
+	-Wwrite-strings -Wformat-security -Wnested-externs"
 
 CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"
 
