@@ -4015,7 +4015,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 			if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
 			    setmode2 += setmode[j];
 		    }
-		    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
+		    if (!setmode2.empty())
+			SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
 		}
 		if (Magick::instance().nickserv.IsStored(newnick))
 		{
@@ -4101,7 +4102,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 			    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
 				setmode2 += setmode[j];
 			}
-			SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
+			if (!setmode2.empty())
+			    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
 		    }
 
 		    if (Magick::instance().nickserv.IsStored(newnick))
@@ -5344,7 +5346,8 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 		    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
 			setmode2 += setmode[j];
 		}
-		SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
+		if (!setmode2.empty())
+		    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
 	    }
 	    if (Magick::instance().nickserv.IsStored(newnick))
 	    {
