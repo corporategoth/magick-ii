@@ -164,6 +164,8 @@ int Magick::Start()
     signalhandler=new SignalHandler;
     ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
     ACE_Reactor::instance()->register_handler(SIGTERM,signalhandler);
+
+    socket.open(0);
     
     // temporary placeholder
     while(shutdown!=true)

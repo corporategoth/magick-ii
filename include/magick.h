@@ -32,6 +32,7 @@ using namespace std;
 #include "datetime.h"	// Added by ClassView
 #include "trace.h"
 #include "chanserv.h"
+#include "ircsocket.h"
 
 const int MAGICK_RET_NORMAL = 0;
 const int MAGICK_RET_RESTART = 1;
@@ -56,20 +57,25 @@ private:
 	int doparamparse();
 	SignalHandler *signalhandler;
 public:
-	int StarThresh;
-	int override_level;
-	mstring motd_filename;
-	bool show_sync;
-	bool shutdown;
-	mstring password;
 	void get_config_values();
-	mstring pid_filename;
-	mstring s_Outlet;
-	int lastmsgmax;
-	int flood_messages;
-	// this get's moved to nickserv
-	int passfail_max;
-	int read_timeout;
+	bool check_config();
+	int ping_frequency;
+	int update_timeout;
+	int server_relink;
+	void LoadExternalMessages();
+	mstring parseEscapes(const mstring& in);
+	void LoadInternalMessages();
+	void dump_help(mstring& progname);
+	mstring getMessage(const mstring& name);
+	Magick(int inargc, char **inargv);
+	int Start();
+
+	IrcSocket socket;
+	ChanServ chanserv;
+	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
+	Bob bob;
+
+	mDateTime StartTime;
 	// move these to the appropriate classes later
 	bool globalnoticer_on;
 	bool outlet_on;
@@ -77,26 +83,23 @@ public:
 	bool clones_on;
 	bool operserv_on;
 	int clones_allowed;
-
-
-	bool check_config();
-	int ping_frequency;
-	int update_timeout;
-	int server_relink;
-	ChanServ chanserv;
-	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
-	mDateTime StartTime;
-	void LoadExternalMessages();
-	mstring parseEscapes(const mstring& in);
-	void LoadInternalMessages();
-	void dump_help(mstring& progname);
-	mstring getMessage(const mstring& name);
+	mstring pid_filename;
+	mstring s_Outlet;
+	int lastmsgmax;
+	int flood_messages;
+	// this get's moved to nickserv
+	int passfail_max;
+	int read_timeout;
 	mstring config_file;
 	mstring services_dir;
 	mstring ProgramName;
-	Bob bob;
-	Magick(int inargc, char **inargv);
-	int Start();
+	int StarThresh;
+	int override_level;
+	mstring motd_filename;
+	bool show_sync;
+	bool shutdown;
+	mstring password;
+
 protected:
 	int tz_offset;
 	int services_level;
