@@ -9,8 +9,8 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-#define RCSID(x,y) const char *rcsid_genrankeys_c_ ## x () { return y; }
-RCSID(genrankeys_c, "@(#)$Id$");
+#define RCSID(x,y) const char *rcsid_magick_stampkeys_c_ ## x () { return y; }
+RCSID(magick_stampkeys_c, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -20,6 +20,9 @@ RCSID(genrankeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2001/12/16 01:48:08  prez
+** Fixed RCSID
+**
 ** Revision 1.6  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
