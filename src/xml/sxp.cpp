@@ -1,5 +1,6 @@
 #include "pch.h"
 #ifdef WIN32
+#include "winbase.h"
 #pragma hdrstop
 #else
 #pragma implementation
@@ -27,6 +28,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2001/11/05 04:19:18  prez
+** more windows tuning, now it actually works without silly runtime dependancies
+**
 ** Revision 1.24  2001/06/15 07:20:41  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
