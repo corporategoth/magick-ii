@@ -142,6 +142,7 @@ bool Protocol::Set(const mstring & filename)
     AkillTypes.insert(0000);
     AkillTypes.insert(1000);
     AkillTypes.insert(1001);
+    AkillTypes.insert(1002);
     AkillTypes.insert(2000);
     AkillTypes.insert(2001);
     AkillTypes.insert(2002);
