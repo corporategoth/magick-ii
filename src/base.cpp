@@ -119,8 +119,8 @@ void *thread_handler(void *owner)
 
 		// Not a MSG/NOTICE to services, fall through
 		// (it could be to a channel, or unrecognised nick).
-//		else
-//		    Server.execute (message);
+		else
+		    MagickObject->Server.execute (message);
 
 	    } else {
 		// This handles all non-msgs/notices.
@@ -196,4 +196,24 @@ void *thread_handler(void *owner)
     }
 #endif
     return NULL;
+}
+
+NetworkServ::NetworkServ()
+{
+    NFT("NetworkServ::NetworkServ");
+    if (mThread::findbytype(Get_TType(), 1) == NULL) {
+	messages=true;
+	automation=true;
+    }
+}
+void NetworkServ::execute(const mstring & data)
+{
+    FT("NetworkServ::execute", (data));
+    //okay this is the main networkserv command switcher
+
+    mstring source, msgtype, mynick, message;
+    source  = data.Before(" ");
+    msgtype = data.After(" ").Before(" ");
+    mynick  = data.After(" ").After(" ").Before(" ");
+    message = data.After(":");
 }

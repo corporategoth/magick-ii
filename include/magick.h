@@ -122,6 +122,7 @@ public:
 	ChanServ chanserv;
 	Bob bob;
 	NickServ nickserv;
+	NetworkServ Server;
 
 protected:
 	bool i_shutdown;
