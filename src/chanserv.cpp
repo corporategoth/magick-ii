@@ -27,6 +27,11 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.275  2002/01/02 00:15:14  prez
+** Fixed up chanserv's GetAccess function, so it does not just give access to
+** someone with the same nickname as someone on the access list, it verifies
+** they are actually online (recognized or identified).
+**
 ** Revision 1.274  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -2205,7 +2210,10 @@ bool Chan_Stored_t::Join(const mstring& nick)
     }
 
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
-    if (Akick_find(nick, C_IsOn, true))
+    bool rv = Akick_find(nick, C_IsOn, true);
+    if (rv && ((Akick->Entry().Contains("@")) ||
+	(Magick::instance().nickserv.IsStored(nick) &&
+	 Magick::instance().nickserv.GetStored(nick).IsOnline())))
     {
 	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
@@ -2464,7 +2472,10 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
     // We supply the OLD nick to check the mask, and then the
     // new nick to check nick only (livelook is off).
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
-    if (Akick_find(nick, C_IsOn, true) || Akick_find(newnick, C_IsOn))
+    bool rv = (Akick_find(nick, C_IsOn, true) || Akick_find(newnick, C_IsOn));
+    if (rv && ((Akick->Entry().Contains("@")) ||
+	(Magick::instance().nickserv.IsStored(nick) &&
+	 Magick::instance().nickserv.GetStored(nick).IsOnline())))
     {
 	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
@@ -2690,7 +2701,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    if (!(setter.Contains(".") && Anarchy()) &&
 			!(Magick::instance().nickserv.IsLive(arg) &&
 			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
-			(Access_value(arg, C_IsOn, true) <= Level_value("AUTODEOP") ||
+			(GetAccess(arg) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) &&
 			Secureops())))
 		    {
@@ -2726,7 +2737,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    if (!(setter.Contains(".") && Anarchy()) &&
 			!(Magick::instance().nickserv.IsLive(arg) &&
 			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
-			(Access_value(arg, C_IsOn, true) <= Level_value("AUTODEOP") ||
+			(GetAccess(arg) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDHALFOP") ||
 			  GetAccess(arg, "AUTOHALFOP")) &&
 			Secureops())))
@@ -2751,7 +2762,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    if (!(setter.Contains(".") && Anarchy()) &&
 			!(Magick::instance().nickserv.IsLive(arg) &&
 			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
-			(Access_value(arg, C_IsOn, true) <= Level_value("AUTODEOP") ||
+			(GetAccess(arg) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDVOICE") ||
 			  GetAccess(arg, "AUTOVOICE")) &&
 			Secureops())))
@@ -5019,49 +5030,62 @@ long Chan_Stored_t::GetAccess(const mstring& entry)
     }
 
     mstring realentry;
-    if (Magick::instance().nickserv.IsStored(entry) &&
-	Magick::instance().nickserv.GetStored(entry).IsOnline())
+    bool isregd = false;
+    if (Magick::instance().nickserv.IsStored(entry))
     {
-	realentry = Magick::instance().nickserv.GetStored(entry).Host().LowerCase();
-	if (realentry.empty())
-	    realentry = entry.LowerCase();
-
-	if (Suspended())
+	isregd = Magick::instance().nickserv.GetStored(entry).IsOnline();
+	if (isregd)
 	{
-	    if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-		Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(realentry))
+	    realentry = Magick::instance().nickserv.GetStored(entry).Host().LowerCase();
+	    if (realentry.empty())
+		realentry = entry.LowerCase();
+
+	    if (Suspended())
 	    {
-		retval = Magick::instance().chanserv.Level_Max() + 1;
+		if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(realentry))
+		{
+		    retval = Magick::instance().chanserv.Level_Max() + 1;
+		}
+		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+			 Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(realentry))
+		{
+		    retval = Level_value("SUPER");
+		}
+		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+			 Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name()).IsOn(realentry))
+		{
+		    retval = Level_value("AUTOOP");
+		}
+		else if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+			 Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(realentry))
+		{
+		    retval = Level_value("AUTOVOICE");
+		}
+		RET(retval); 
 	    }
-	    else if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
-		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(realentry))
-	    {
-		retval = Level_value("SUPER");
-	    }
-	    else if (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
-		Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name()).IsOn(realentry))
-	    {
-		retval = Level_value("AUTOOP");
-	    }
-	    else if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
-		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(realentry))
-	    {
-		retval = Level_value("AUTOVOICE");
-	    }
-	    RET(retval); 
 	}
     }
 	
 
-    if (Secure() ? Magick::instance().nickserv.GetLive(entry).IsIdentified() : 1)
+    if (!Secure() || Magick::instance().nickserv.GetLive(entry).IsIdentified())
     {
-	if (!realentry.empty() && Founder().IsSameAs(realentry, true))
+	if (isregd && Founder().IsSameAs(realentry, true))
 	{
 	    retval = Magick::instance().chanserv.Level_Max() + 1;
 	}
 	else
 	{
-	    retval = Access_value(entry, C_IsOn, true);
+	    // Deliberately duplicating some of Access_value functionality.
+	    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
+	    set<entlist_val_t<long> >::iterator iter = Access;
+
+	    if (Access_find(entry, C_IsOn, true))
+	    {
+		if (isregd || Access->Entry().Contains("@"))
+		    retval=Access->Value();
+	    }
+	    Access = iter;
 	}
     }
     RET(retval);
