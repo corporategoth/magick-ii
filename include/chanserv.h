@@ -143,8 +143,6 @@ class Chan_Stored_t : public mUserDef
     bool l_Secure;
     bool i_NoExpire;
     bool l_NoExpire;
-    bool i_NoGreet;
-    bool l_NoGreet;
     bool i_Anarchy;
     bool l_Anarchy;
     bool i_Restricted;
@@ -242,10 +240,6 @@ public:
     void NoExpire(bool in);
     bool L_NoExpire();
     void L_NoExpire(bool in);
-    bool NoGreet();
-    void NoGreet(bool in);
-    bool L_NoGreet();
-    void L_NoGreet(bool in);
     bool Anarchy();
     void Anarchy(bool in);
     bool L_Anarchy();
@@ -361,8 +355,6 @@ private:
     bool lck_secure;		// SECURE is locked?
     bool def_noexpire;		// Default value of NOEXPIRE
     bool lck_noexpire;		// NOEXPIRE is locked?
-    bool def_nogreet;		// Default value of NOGREET
-    bool lck_nogreet;		// NOGREET is locked?
     bool def_anarchy;		// Default value of ANARCHY
     bool lck_anarchy;		// ANARCHY is locked?
     bool def_restricted;	// Default value of RESTRICTED
@@ -371,27 +363,10 @@ private:
     bool lck_join;		// JOIN is locked?
     mstring def_revenge;	// Default REVENGE level
     bool lck_revenge;		// REVENGE is locked?
-    int level_min;		// Minimum access level
-    int level_max;		// Maximum access level
-    int lvl_autodeop;		// Default level for AUTODEOP
-    int lvl_autovoice;		// Default level for AUTOVOICE
-    int lvl_autoop;		// Default level for AUTOOP
-    int lvl_readmemo;		// Default level for READMEMO
-    int lvl_writememo;		// Default level for WRITEMEMO
-    int lvl_delmemo;		// Default level for DELMEMO
-    int lvl_akick;		// Default level for AKICK
-    int lvl_super;		// Default level for SUPER
-    int lvl_unban;		// Default level for UNBAN
-    int lvl_access;		// Default level for ACCESS
-    int lvl_set;		// Default level for SET
-    int lvl_view;		// Default level for VIEW
-    int lvl_cmdinvite;		// Default level for CMDINVITE
-    int lvl_cmdunban;		// Default level for CMDUNBAN
-    int lvl_cmdvoice;		// Default level for CMDVOICE
-    int lvl_cmdop;		// Default level for CMDOP
-    int lvl_cmdkick;		// Default level for CMDKICK
-    int lvl_cmdmode;		// Default level for CMDMODE
-    int lvl_cmdclear;		// Default level for CMDCLEAR
+    long level_min;		// Minimum access level
+    long level_max;		// Maximum access level
+    map<mstring, long> lvl;
+
 
     void AddCommands();
     void RemCommands();
@@ -418,8 +393,6 @@ public:
     bool LCK_Secure()		{ return lck_secure; }
     bool DEF_NoExpire()		{ return def_noexpire; }
     bool LCK_NoExpire()		{ return lck_noexpire; }
-    bool DEF_NoGreet()		{ return def_nogreet; }
-    bool LCK_NoGreet()		{ return lck_nogreet; }
     bool DEF_Anarchy()		{ return def_anarchy; }
     bool LCK_Anarchy()		{ return lck_anarchy; }
     bool DEF_Restricted()	{ return def_restricted; }
@@ -428,28 +401,11 @@ public:
     bool LCK_Join()		{ return lck_join; }
     mstring DEF_Revenge()	{ return def_revenge; }
     bool LCK_Revenge()		{ return lck_revenge; }
-    int	Level_Min()		{ return level_min; }
-    int	Level_Max()		{ return level_max; }
-    int	LVL_Autodeop()		{ return lvl_autodeop; }
-    int	LVL_Autovoice()		{ return lvl_autovoice; }
-    int	LVL_Autoop()		{ return lvl_autoop; }
-    int	LVL_Readmemo()		{ return lvl_readmemo; }
-    int	LVL_Writememo()		{ return lvl_writememo; }
-    int	LVL_Delmemo()		{ return lvl_delmemo; }
-    int	LVL_Akick()		{ return lvl_akick; }
-    int	LVL_Super()		{ return lvl_super; }
-    int	LVL_Unban()		{ return lvl_unban; }
-    int	LVL_Access()		{ return lvl_access; }
-    int	LVL_Set()		{ return lvl_set; }
-    int	LVL_View()		{ return lvl_view; }
-    int	LVL_Cmdinvite()		{ return lvl_cmdinvite; }
-    int	LVL_Cmdunban()		{ return lvl_cmdunban; }
-    int	LVL_Cmdop()		{ return lvl_cmdop; }
-    int	LVL_Cmdvoice()		{ return lvl_cmdvoice; }
-    int	LVL_Cmdkick()		{ return lvl_cmdkick; }
-    int	LVL_Cmdmode()		{ return lvl_cmdmode; }
-    int	LVL_Cmdclear()		{ return lvl_cmdclear; }
-
+    long Level_Min()		{ return level_min; }
+    long Level_Max()		{ return level_max; }
+    long LVL(mstring level);
+    bool IsLVL(mstring level);
+    vector<mstring> LVL();
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);
@@ -519,7 +475,6 @@ public:
     static void do_set_SecureOps(mstring mynick, mstring source, mstring params);
     static void do_set_Secure(mstring mynick, mstring source, mstring params);
     static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
-    static void do_set_NoGreet(mstring mynick, mstring source, mstring params);
     static void do_set_Anarchy(mstring mynick, mstring source, mstring params);
     static void do_set_Restricted(mstring mynick, mstring source, mstring params);
     static void do_set_Join(mstring mynick, mstring source, mstring params);
@@ -531,10 +486,20 @@ public:
     static void do_lock_Private(mstring mynick, mstring source, mstring params);
     static void do_lock_SecureOps(mstring mynick, mstring source, mstring params);
     static void do_lock_Secure(mstring mynick, mstring source, mstring params);
-    static void do_lock_NoGreet(mstring mynick, mstring source, mstring params);
     static void do_lock_Anarchy(mstring mynick, mstring source, mstring params);
     static void do_lock_Restricted(mstring mynick, mstring source, mstring params);
     static void do_lock_Join(mstring mynick, mstring source, mstring params);
     static void do_lock_Revenge(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Mlock(mstring mynick, mstring source, mstring params);
+    static void do_unlock_BanTime(mstring mynick, mstring source, mstring params);
+    static void do_unlock_KeepTopic(mstring mynick, mstring source, mstring params);
+    static void do_unlock_TopicLock(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Private(mstring mynick, mstring source, mstring params);
+    static void do_unlock_SecureOps(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Anarchy(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Restricted(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Join(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Revenge(mstring mynick, mstring source, mstring params);
 };
 #endif

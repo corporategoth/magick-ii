@@ -1198,8 +1198,6 @@ void Chan_Stored_t::defaults()
     l_Secure = false;
     i_NoExpire = Parent->chanserv.DEF_NoExpire();
     l_NoExpire = false;
-    i_NoGreet = Parent->chanserv.DEF_NoGreet();
-    l_NoGreet = false;
     i_Anarchy = Parent->chanserv.DEF_Anarchy();
     l_Anarchy = false;
     i_Restricted = Parent->chanserv.DEF_Restricted();
@@ -1286,45 +1284,14 @@ void Chan_Stored_t::defaults()
 	}
     }
 
-    i_Access_Level.insert(entlist_val_t<long>("AUTODEOP",
-	Parent->chanserv.LVL_Autodeop(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("AUTOVOICE",
-	Parent->chanserv.LVL_Autovoice(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("AUTOOP",
-	Parent->chanserv.LVL_Autoop(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("READMEMO",
-	Parent->chanserv.LVL_Readmemo(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("WRITEMEMO",
-	Parent->chanserv.LVL_Writememo(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("DELMEMO",
-	Parent->chanserv.LVL_Delmemo(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("AKICK",
-	Parent->chanserv.LVL_Akick(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("SUPER",
-	Parent->chanserv.LVL_Super(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("UNBAN",
-	Parent->chanserv.LVL_Unban(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("ACCESS",
-	Parent->chanserv.LVL_Access(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("SET",
-	Parent->chanserv.LVL_Set(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("VIEW",
-	Parent->chanserv.LVL_View(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("CMDINVITE",
-	Parent->chanserv.LVL_Cmdinvite(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("CMDUNBAN",
-	Parent->chanserv.LVL_Cmdunban(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("CMDVOICE",
-	Parent->chanserv.LVL_Cmdvoice(),	Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("CMDOP",
-	Parent->chanserv.LVL_Cmdop(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("CMDKICK",
-	Parent->chanserv.LVL_Cmdkick(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("CMDMODE",
-	Parent->chanserv.LVL_Cmdmode(),		Parent->chanserv.FirstName()));
-    i_Access_Level.insert(entlist_val_t<long>("CMDCLEAR",
-	Parent->chanserv.LVL_Cmdclear(),	Parent->chanserv.FirstName()));
-    
+    vector<mstring> levels = Parent->chanserv.LVL();
+    for (i=0; i<levels.size(); i++)
+    {
+	if (Parent->chanserv.LVL(levels[i]) > Parent->chanserv.Level_Min())
+	    i_Access_Level.insert(entlist_val_t<long>(levels[i],
+					Parent->chanserv.LVL(levels[i]),
+					Parent->chanserv.FirstName()));
+    }    
 }
 
 
@@ -1385,8 +1352,6 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     l_Secure=in.l_Secure;
     i_NoExpire=in.i_NoExpire;
     l_NoExpire=in.l_NoExpire;
-    i_NoGreet=in.i_NoGreet;
-    l_NoGreet=in.l_NoGreet;
     i_Anarchy=in.i_Anarchy;
     l_Anarchy=in.l_Anarchy;
     i_Restricted=in.i_Restricted;
@@ -2179,44 +2144,6 @@ bool Chan_Stored_t::L_NoExpire()
 }
 
 
-void Chan_Stored_t::NoGreet(bool in)
-{
-    FT("Chan_Stored_t::NoGreet", (in));
-    if (!(Parent->chanserv.LCK_NoGreet() || l_NoGreet))
-	i_NoGreet = in;
-}
-
-
-bool Chan_Stored_t::NoGreet()
-{
-    NFT("Chan_Stored_t::NoGreet");
-    if (!Parent->chanserv.LCK_NoGreet())
-    {
-	RET(i_NoGreet);
-    }
-    RET(Parent->chanserv.DEF_NoGreet());
-}
-
-
-void Chan_Stored_t::L_NoGreet(bool in)
-{
-    FT("Chan_Stored_t::L_NoGreet", (in));
-    if (!Parent->chanserv.LCK_NoGreet())
-	l_NoGreet = in;
-}
-
-
-bool Chan_Stored_t::L_NoGreet()
-{
-    NFT("Chan_Stored_t::L_NoGreet");
-    if (!Parent->chanserv.LCK_NoGreet())
-    {
-	RET(l_NoGreet);
-    }
-    RET(true);
-}
-
-
 void Chan_Stored_t::Anarchy(bool in)
 {
     FT("Chan_Stored_t::Anarchy", (in));
@@ -2777,9 +2704,9 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_CoFounder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
     out<<in.i_Mlock_On<<in.i_Mlock_Off<<in.i_Mlock_Key<<in.i_Mlock_Limit;
     out<<in.i_Bantime<<in.i_Keeptopic<<in.i_Topiclock<<in.i_Private<<in.i_Secureops<<in.i_Secure
-	<<in.i_NoExpire<<in.i_NoGreet<<in.i_Anarchy<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
+	<<in.i_NoExpire<<in.i_Anarchy<<in.i_Restricted<<in.i_Join<<in.i_Forbidden;
     out<<in.l_Bantime<<in.l_Keeptopic<<in.l_Topiclock<<in.l_Private<<in.l_Secureops<<in.l_Secure
-	<<in.l_NoExpire<<in.l_NoGreet<<in.l_Anarchy<<in.l_Restricted<<in.l_Join<<in.l_Mlock_On<<in.l_Mlock_Off;
+	<<in.l_NoExpire<<in.l_Anarchy<<in.l_Restricted<<in.l_Join<<in.l_Mlock_On<<in.l_Mlock_Off;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
 
 //  entlist_val_cui<long> j;
@@ -2821,9 +2748,9 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     in>>out.i_Name>>out.i_RegTime>>out.i_Founder>>out.i_CoFounder>>out.i_Description>>out.i_Password>>out.i_URL>>out.i_Comment;
     in>>out.i_Mlock_On>>out.i_Mlock_Off>>out.i_Mlock_Key>>out.i_Mlock_Limit;
     in>>out.i_Bantime>>out.i_Keeptopic>>out.i_Topiclock>>out.i_Private>>out.i_Secureops>>out.i_Secure
-	>>out.i_NoExpire>>out.i_NoGreet>>out.i_Anarchy>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
+	>>out.i_NoExpire>>out.i_Anarchy>>out.i_Restricted>>out.i_Join>>out.i_Forbidden;
     in>>out.l_Bantime>>out.l_Keeptopic>>out.l_Topiclock>>out.l_Private>>out.l_Secureops>>out.l_Secure
-	>>out.l_NoExpire>>out.l_NoGreet>>out.l_Anarchy>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
+	>>out.l_NoExpire>>out.l_Anarchy>>out.l_Restricted>>out.l_Join>>out.l_Mlock_On>>out.l_Mlock_Off;
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
 
     out.i_Access_Level.clear();
@@ -3012,8 +2939,6 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* NOEX*", Parent->commserv.SOP_Name(), ChanServ::do_set_NoExpire);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* NOGR*", Parent->commserv.SOP_Name(), ChanServ::do_set_NoGreet);
-    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* ANAR*", Parent->commserv.SOP_Name(), ChanServ::do_set_Anarchy);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* RES*", Parent->commserv.REGD_Name(), ChanServ::do_set_Restricted);
@@ -3036,8 +2961,6 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK SEC*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK NOGR*", Parent->commserv.SOP_Name(), ChanServ::do_lock_NoGreet);
-    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK ANAR*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Anarchy);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK RES*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Restricted);
@@ -3045,6 +2968,28 @@ void ChanServ::AddCommands()
 	    "LOCK *JOIN*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Join);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK REV*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Revenge);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK M*LOCK", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Mlock);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK BAN*TIME", Parent->commserv.SOP_Name(), ChanServ::do_unlock_BanTime);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK KEEP*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_KeepTopic);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK TOPIC*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_TopicLock);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK PRIV*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Private);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK SEC*OP*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_SecureOps);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK SEC*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Secure);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK ANAR*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Anarchy);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK RES*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Restricted);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK *JOIN*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Join);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK REV*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Revenge);
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -4365,12 +4310,6 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
     mstring what      = params.ExtractWord(4, " ");
     mstring level     = params.ExtractWord(5, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
-    {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
-	return;
-    }
-
     if (!Parent->chanserv.IsStored(channel))
     {
 	::send(mynick, source, "Channel " + channel + " is not registered.");
@@ -4386,12 +4325,12 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (!level.IsNumber() ||
-	atoi(level.c_str()) < Parent->chanserv.Level_Min() ||
-	atoi(level.c_str()) > Parent->chanserv.Level_Max()+1)
+    if (!level.IsNumber() || level.Contains(".") ||
+	atol(level.c_str()) < Parent->chanserv.Level_Min() ||
+	atol(level.c_str()) > Parent->chanserv.Level_Max()+1)
     {
 	mstring output;
-	output << "Levels may only be a number between " <<
+	output << "Levels may only be a whole number between " <<
 		Parent->chanserv.Level_Min() << " and " <<
 		Parent->chanserv.Level_Max()+1 << ".";
 	::send(mynick, source, output);
@@ -4427,12 +4366,6 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
     mstring channel   = params.ExtractWord(2, " ");
     mstring what      = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
-    {
-	::send(mynick, source, "Channel " + channel + " is not in use.");
-	return;
-    }
-
     if (!Parent->chanserv.IsStored(channel))
     {
 	::send(mynick, source, "Channel " + channel + " is not registered.");
@@ -4448,11 +4381,72 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access_Level"));
+    if (cstored->Access_Level_find(what) &&
+	Parent->chanserv.LVL(what) > Parent->chanserv.Level_Min())
+    {
+	    cstored->Access_Level->Value(Parent->chanserv.LVL(what), source);
+	    ::send(mynick, source, "Level for " +
+				    cstored->Access_Level->Entry() +
+				    " has now been set to " +
+				    ltoa(cstored->Access_Level->Value()) + ".");
+    }
+    else
+    {
+	::send(mynick, source, "No such default level type " + what + ".");
+    }
 }
 
 void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_level_List", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring what = "";
+    if (params.WordCount(" ") > 3)
+	what = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    mstring output;
+    if (cstored->GetAccess(source, "SET"))
+    {
+	output.Format("%30s  %l", "Title", "Level");
+	::send(mynick, source, output);
+    }
+    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access_Level"));
+    for (cstored->Access_Level = cstored->Access_Level_begin();
+		    cstored->Access_Level != cstored->Access_Level_end();
+		    cstored->Access_Level++)
+    {
+	if (cstored->GetAccess(source, "SET"))
+	{
+	    mstring output;
+	    output.Format("%30s  %l", cstored->Access_Level->Entry().c_str(),
+					cstored->Access_Level->Value());
+	    ::send(mynick, source, output);
+	}
+	else if(cstored->Access_Level->Value() >= cstored->GetAccess(source))
+	{
+	    ::send(mynick, source, "You have " + cstored->Access_Level->Entry() +
+					    " access.");
+	}
+    }
 }
 
 void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
@@ -4488,176 +4482,2063 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
 void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_greet_Add", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring target    = source;
+    mstring option    = params.After(" ", 3);
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (option[0U] == '!' && params.WordCount(" ") > 4 &&
+	cstored->GetAccess(source, "OVERGREET"))
+    {
+	target = params.ExtractWord(4, " ").After("!");
+	option = params.After(" ", 4);
+    }
+    else if (!cstored->GetAccess(source, "GREET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+    else
+    {
+	while (option[0U] == '!')
+	    option = option.After("!");
+    }
+
+    if (cstored->Greet_find(target))
+    {
+	if (cstored->Greet->Entry()[0U] == '!' && source == target &&
+	    !cstored->GetAccess(source, "OVERGREET"))
+	{
+	    ::send(mynick, source, "Your channel greeting for " +
+			    cstored->Name() + " is locked.");
+	    return;
+	}
+	cstored->Greet_erase();
+    }
+    cstored->Greet_insert(option, target);
+    if (target != source)
+    {
+	if (option[0U] == '!')
+	{
+	    ::send(mynick, source, "Greeting for " + target + " on channel " +
+				cstored->Name() + " has been locked to " +
+				IRC_Bold + option.After("!") + IRC_Off);
+	}
+	else
+	{
+	    ::send(mynick, source, "Greeting for " + target + " on channel " +
+				cstored->Name() + " has been set to " +
+				IRC_Bold + option + IRC_Off);
+	}
+    }
+    else
+    {
+	::send(mynick, source, "Your greeting for channel " + cstored->Name() +
+			" has been set to " + IRC_Bold + option + IRC_Off);
+    }
 }
 
 void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_greet_Del", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel = params.ExtractWord(2, " ");
+    mstring target = source;
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (params.WordCount(" ") > 3 &&
+	cstored->GetAccess(source, "OVERGREET"))
+    {
+	target = params.ExtractWord(3, " ").After("!");
+	if (!cstored->Greet_find(target))
+	{
+	    ::send(mynick, source, "Nick " + target + " does not have " +
+		"a channel greeting for " + cstored->Name() + ".");
+	    return;
+	}
+    }
+    else if (!cstored->GetAccess(source, "GREET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (source != target)
+    {
+	cstored->Greet_erase();
+	::send(mynick, source, "Greeting for nick " + target + " removed " +
+				    "for channel " + cstored->Name() + ".");
+    }
+    else
+    {
+	if (cstored->Greet_find(target))
+	{
+	    if (cstored->Greet->Entry()[0U] == '!' &&
+		!cstored->GetAccess(source, "OVERGREET"))
+	    {
+		::send(mynick, source, "Your channel greeting for " +
+			    cstored->Name() + " is locked.");
+		return;
+	    }
+	    cstored->Greet_erase();
+	    ::send(mynick, source, "Your greeting for channel " +
+				    cstored->Name() + " has been unset.");
+	}
+	else
+	{
+	    ::send(mynick, source, "You do not have a greeting for channel " +
+							cstored->Name());
+	}
+    }
 }
 
 void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_greet_List", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel = params.ExtractWord(2, " ");
+    bool all = false;
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (params.WordCount(" ") > 3 &&
+	cstored->GetAccess(source, "OVERGREET"))
+    {
+	if (params.ExtractWord(3, " ").LowerCase() == "all")
+	    all = true;
+    }
+    else if (!cstored->GetAccess(source, "GREET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    for (cstored->Greet = cstored->Greet_begin();
+		    cstored->Greet != cstored->Greet_end(); cstored->Greet++)
+    {
+	if (cstored->Greet->Last_Modifier().LowerCase() == source.LowerCase()
+	    || all)
+	{
+	    ::send(mynick, source, "[" + cstored->Greet->Last_Modifier() +
+				"] " + cstored->Greet->Entry());
+	}
+    }
 }
 
 void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Founder", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring founder   = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (!Parent->nickserv.IsStored(founder))
+    {
+	::send(mynick, source, "Nickname " + founder + " is not registered.");
+	return;
+    }
+    else if (Parent->nickserv.stored[founder.LowerCase()].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.stored[founder.LowerCase()].Host()))
+    {
+	founder = Parent->nickserv.stored[Parent->nickserv.stored[founder.LowerCase()].Host()].Name();
+    }
+
+    cstored->Founder(founder);
+    ::send(mynick, source, "Founder for channel " + cstored->Name() +
+			" has been set to " + IRC_Bold + founder + IRC_Off);
 }
 
 void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_CoFounder", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring founder   = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (!Parent->nickserv.IsStored(founder))
+    {
+	::send(mynick, source, "Nickname " + founder + " is not registered.");
+	return;
+    }
+    else if (Parent->nickserv.stored[founder.LowerCase()].Host() != "" &&
+	Parent->nickserv.IsStored(Parent->nickserv.stored[founder.LowerCase()].Host()))
+    {
+	founder = Parent->nickserv.stored[Parent->nickserv.stored[founder.LowerCase()].Host()].Name();
+    }
+
+    if (cstored->Founder().LowerCase() == founder.LowerCase())
+    {
+	::send(mynick, source, "Cannot demote current founder of " + channel + ".");
+	return;
+    }
+
+    cstored->CoFounder(founder);
+    ::send(mynick, source, "CoFounder for channel " + cstored->Name() +
+			" has been set to " + IRC_Bold + founder + IRC_Off);
 }
 
 void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Description", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring option    = params.After(" ", 3);
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    cstored->Description(option);
+    ::send(mynick, source, "Description for channel " + cstored->Name() +
+			" has been set to " + IRC_Bold + option + IRC_Off);
 }
 
 void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Password", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring password  = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source) <= Parent->chanserv.Level_Max())
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (password.Len() < 5 || password.CmpNoCase(cstored->Name()) == 0 ||
+	password.CmpNoCase(source) == 0)
+    {
+	::send(mynick, source, "Please choose a more complex password.");
+	return;
+    }
+
+    cstored->Password(password);
+    ::send(mynick, source, "Password for channel " + cstored->Name() +
+			" has been set to " + IRC_Bold + password + IRC_Off);
 }
 
 void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Email", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring option    = params.After(" ", 3);
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (option.CmpNoCase("none") == 0)
+	option = "";
+    cstored->Email(option);
+    if (option == "")
+	::send(mynick, source, "E-Mail for channel " + cstored->Name() +
+			" has been unset.");
+    else
+	::send(mynick, source, "E-Mail for channel " + cstored->Name() +
+			" has been set to " + IRC_Bold + option + IRC_Off);
 }
 
 void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_URL", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring option    = params.After(" ", 3);
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (option.CmpNoCase("none") == 0)
+	option = "";
+    cstored->URL(option);
+    if (option == "")
+	::send(mynick, source, "URL for channel " + cstored->Name() +
+			" has been unset.");
+    else
+	::send(mynick, source, "URL for channel " + cstored->Name() +
+			" has been set to " + IRC_Bold + option + IRC_Off);
 }
 
 void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Comment", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring option    = params.After(" ", 3);
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (option.CmpNoCase("none") == 0)
+	option = "";
+    cstored->Comment(option);
+    if (option == "")
+	::send(mynick, source, "Comment for channel " + cstored->Name() +
+			" has been unset.");
+    else
+	::send(mynick, source, "Comment for channel " + cstored->Name() +
+			" has been set to " + IRC_Bold + option + IRC_Off);
 }
 
 void ChanServ::do_set_Mlock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Mlock", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring option    = params.After(" ", 3);
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+    {
+	option = Parent->chanserv.DEF_MLock();
+    }
+
+    ::send(mynick, source, cstored->Mlock(option));
 }
 
 void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_BanTime", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring value     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Bantime())
+    {
+	::send(mynick, source, "Bantime is a LOCKED value.");
+	return;
+    }
+
+    if (!value.IsNumber() || atol(value) < 0)
+    {
+	::send(mynick, source, "Value specified muse be a number >= 0");
+	return;
+    }
+
+    cstored->Bantime(atol(value));
+    ::send(mynick, source, "Bantime for channel " + cstored->Name() +
+	" has been set to " + value + ".");
 }
 
 void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_KeepTopic", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Keeptopic())
+    {
+	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Keeptopic())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->Keeptopic(onoff.GetBool());
+    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_TopicLock", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Topiclock())
+    {
+	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Topiclock())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->Topiclock(onoff.GetBool());
+    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Private", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Private())
+    {
+	::send(mynick, source, "Private is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Private())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->Private(onoff.GetBool());
+    ::send(mynick, source, "Private for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_SecureOps", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Secureops())
+    {
+	::send(mynick, source, "SecureOps is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Secureops())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->Secureops(onoff.GetBool());
+    ::send(mynick, source, "SecureOps for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Secure", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Secure())
+    {
+	::send(mynick, source, "Secure is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Secure())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->Secure(onoff.GetBool());
+    ::send(mynick, source, "Secure for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_NoExpire", (mynick, source, params));
-}
 
-void ChanServ::do_set_NoGreet(mstring mynick, mstring source, mstring params)
-{
-    FT("ChanServ::do_set_NoGreet", (mynick, source, params));
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (cstored->L_NoExpire())
+    {
+	::send(mynick, source, "NoExpire is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_NoExpire())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->NoExpire(onoff.GetBool());
+    ::send(mynick, source, "NoExpire for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Anarchy", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Anarchy())
+    {
+	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Anarchy())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->Anarchy(onoff.GetBool());
+    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Restricted", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Restricted())
+    {
+	::send(mynick, source, "Restricted is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Restricted())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->Restricted(onoff.GetBool());
+    ::send(mynick, source, "Restricted for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Join", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Join())
+    {
+	::send(mynick, source, "Join is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Join())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->Join(onoff.GetBool());
+    ::send(mynick, source, "Join for channel " + cstored->Name() +
+	" has been set to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_set_Revenge", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring option    = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (cstored->GetAccess(source, "SET"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (cstored->L_Revenge())
+    {
+	::send(mynick, source, "Revenge is a LOCKED value.");
+	return;
+    }
+
+    if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+    {
+	option = Parent->chanserv.DEF_Revenge();
+    }
+
+    // checking to see if its valid.
+
+    cstored->Revenge(option.UpperCase());
+    ::send(mynick, source, "Revenge for channel " + cstored->Name() +
+	" has been set to " + option.UpperCase() + ".");
 }
 
 void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Mlock", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring option    = params.After(" ", 3);
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+    {
+	option = Parent->chanserv.DEF_MLock();
+    }
+    else if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+
+    ::send(mynick, source, cstored->L_Mlock(option));
 }
 
 void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_BanTime", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring value     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Bantime())
+    {
+	::send(mynick, source, "Bantime is a SERVICES LOCKED value.");
+	return;
+    }
+
+    if (!value.IsNumber() || atol(value) < 0)
+    {
+	::send(mynick, source, "Value specified muse be a number >= 0");
+	return;
+    }
+
+    cstored->L_Bantime(false);
+    cstored->Bantime(atol(value));
+    cstored->L_Bantime(true);
+    ::send(mynick, source, "Bantime for channel " + cstored->Name() +
+	" has been locked to " + value + ".");
 }
 
 void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_KeepTopic", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Keeptopic())
+    {
+	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Keeptopic())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->L_Keeptopic(false);
+    cstored->Keeptopic(onoff.GetBool());
+    cstored->L_Keeptopic(true);
+    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
+	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_TopicLock", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Topiclock())
+    {
+	::send(mynick, source, "TopicLock is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Topiclock())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->L_Topiclock(false);
+    cstored->Topiclock(onoff.GetBool());
+    cstored->L_Topiclock(true);
+    ::send(mynick, source, "TopicLock for channel " + cstored->Name() +
+	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Private", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Private())
+    {
+	::send(mynick, source, "Private is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Private())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->L_Private(false);
+    cstored->Private(onoff.GetBool());
+    cstored->L_Private(true);
+    ::send(mynick, source, "Private for channel " + cstored->Name() +
+	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_SecureOps", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Secureops())
+    {
+	::send(mynick, source, "SecureOps is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Secureops())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->L_Secureops(false);
+    cstored->Secureops(onoff.GetBool());
+    cstored->L_Secureops(true);
+    ::send(mynick, source, "SecureOps for channel " + cstored->Name() +
+	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Secure", (mynick, source, params));
-}
 
-void ChanServ::do_lock_NoGreet(mstring mynick, mstring source, mstring params)
-{
-    FT("ChanServ::do_lock_NoGreet", (mynick, source, params));
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Secure())
+    {
+	::send(mynick, source, "Secure is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Secure())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->L_Secure(false);
+    cstored->Secure(onoff.GetBool());
+    cstored->L_Secure(true);
+    ::send(mynick, source, "Secure for channel " + cstored->Name() +
+	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Anarchy", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Anarchy())
+    {
+	::send(mynick, source, "Anarchy is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Anarchy())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->L_Anarchy(false);
+    cstored->Anarchy(onoff.GetBool());
+    cstored->L_Anarchy(true);
+    ::send(mynick, source, "Anarchy for channel " + cstored->Name() +
+	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Restricted", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Restricted())
+    {
+	::send(mynick, source, "Restricted is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Restricted())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->L_Restricted(false);
+    cstored->Restricted(onoff.GetBool());
+    cstored->L_Restricted(true);
+    ::send(mynick, source, "Restricted for channel " + cstored->Name() +
+	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Join", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Join())
+    {
+	::send(mynick, source, "Join is a LOCKED value.");
+	return;
+    }
+
+    if (!onoff.CmpNoCase("default") || !onoff.CmpNoCase("reset"))
+    {
+	if (Parent->chanserv.DEF_Join())
+	    onoff = "TRUE";
+	else
+	    onoff = "FALSE";
+    }
+
+    if (!onoff.IsBool())
+    {
+	::send(mynick, source, "The value you have entered is not valid.");
+	return;
+    }
+
+    cstored->L_Join(false);
+    cstored->Join(onoff.GetBool());
+    cstored->L_Join(true);
+    ::send(mynick, source, "Join for channel " + cstored->Name() +
+	" has been locked to " + mstring(onoff.GetBool() ? "ON." : "OFF."));
 }
 
 void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
 {
     FT("ChanServ::do_lock_Revenge", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring option    = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Revenge())
+    {
+	::send(mynick, source, "Revenge is a LOCKED value.");
+	return;
+    }
+
+    if (!option.CmpNoCase("default") || !option.CmpNoCase("reset"))
+    {
+	option = Parent->chanserv.DEF_Revenge();
+    }
+    else
+    {
+	// checking to see if its valid.
+    }
+
+    cstored->L_Revenge(false);
+    cstored->Revenge(option.UpperCase());
+    cstored->L_Revenge(true);
+    ::send(mynick, source, "Revenge for channel " + cstored->Name() +
+	" has been locked to " + option.UpperCase() + ".");
+}
+
+void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_Mlock", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    ::send(mynick, source, cstored->L_Mlock(""));
+}
+
+void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_BanTime", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Bantime())
+    {
+	::send(mynick, source, "Bantime is a SERVICES LOCKED value.");
+	return;
+    }
+
+    cstored->L_Bantime(false);
+    ::send(mynick, source, "Bantime for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_KeepTopic", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Keeptopic())
+    {
+	::send(mynick, source, "KeepTopic is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Keeptopic(false);
+    ::send(mynick, source, "KeepTopic for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_TopicLock", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring onoff     = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Topiclock())
+    {
+	::send(mynick, source, "TopicLock is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Topiclock(false);
+    ::send(mynick, source, "TopicLock for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_Private", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+ 
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Private())
+    {
+	::send(mynick, source, "Private is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Private(false);
+    ::send(mynick, source, "Private for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_SecureOps", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Secureops())
+    {
+	::send(mynick, source, "SecureOps is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Secureops(false);
+    ::send(mynick, source, "SecureOps for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_Secure", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Secure())
+    {
+	::send(mynick, source, "Secure is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Secure(false);
+    ::send(mynick, source, "Secure for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_Anarchy", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Anarchy())
+    {
+	::send(mynick, source, "Anarchy is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Anarchy(false);
+    ::send(mynick, source, "Anarchy for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_Restricted", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Restricted())
+    {
+	::send(mynick, source, "Restricted is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Restricted(false);
+    ::send(mynick, source, "Restricted for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_Join", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Join())
+    {
+	::send(mynick, source, "Join is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Join(false);
+    ::send(mynick, source, "Join for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_unlock_Revenge", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    if (Parent->chanserv.LCK_Revenge())
+    {
+	::send(mynick, source, "Revenge is a LOCKED value.");
+	return;
+    }
+
+    cstored->L_Revenge(false);
+    ::send(mynick, source, "Revenge for channel " + cstored->Name() +
+						" has been unlocked.");
+}
+
+
+long ChanServ::LVL(mstring level)
+{
+    FT("ChanServ::LVL", (level));
+    if (!IsLVL(level) ||
+	lvl[level.UpperCase()] > Level_Max() + 1 ||
+	lvl[level.UpperCase()] < Level_Min())
+    {
+	RET(Level_Min()-1);
+    }
+    else
+    {
+	RET(lvl[level.UpperCase()]);
+    }
+}
+
+
+vector<mstring> ChanServ::LVL()
+{
+    NFT("ChanServ::LVL");
+
+    vector<mstring> retval;
+    map<mstring, long>::iterator iter;
+    for (iter = lvl.begin(); iter != lvl.end(); iter++)
+    {
+	retval.push_back(iter->first.UpperCase());
+    }
+    NRET(vector<mstring>, retval);
+}
+
+
+bool ChanServ::IsLVL(mstring level)
+{
+    FT("ChanServ::IsLVL", (level));
+    RET(lvl.find(level.UpperCase()) != lvl.end());
 }
 
 

@@ -146,8 +146,20 @@ public:
 	pair<int,int> RegFind(const mstring& pattern)const;
 };
 
-bool makeboolF(mstring value);
-bool makeboolT(mstring value);
+#define NEED_ITOA
+#define NEED_FTOA
+#define NEED_LTOA
+
+#ifdef NEED_ITOA
+const char *itoa(int i);
+#endif
+#ifdef NEED_FTOA
+const char *ftoa(float f);
+#endif
+#ifdef NEED_LTOA
+const char *ltoa(long l);
+#endif
+
 extern const mstring DirSlash;
 extern const mstring Blank;
 extern const mstring IRC_Bold;

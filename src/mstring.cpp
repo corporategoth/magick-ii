@@ -860,7 +860,32 @@ bool mstring::Matches(const mstring& in)const
 	else
 	    in2=in2+in[i];
     }
-    return RxMatches(in2);
-	
+    return RxMatches(in2);	
 }
 
+#ifdef NEED_ITOA
+const char *itoa(int i)
+{
+    mstring str;
+    str << i;
+    return str.c_str();
+}
+#endif
+
+#ifdef NEED_FTOA
+const char *ftoa(float f)
+{
+    mstring str;
+    str << f;
+    return str.c_str();
+}
+#endif
+
+#ifdef NEED_LTOA
+const char *ltoa(long l)
+{
+    mstring str;
+    str << l;
+    return str.c_str();
+}
+#endif

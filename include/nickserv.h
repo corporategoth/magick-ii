@@ -436,5 +436,11 @@ public:
     static void do_lock_Private(mstring mynick, mstring source, mstring params);
     static void do_lock_PRIVMSG(mstring mynick, mstring source, mstring params);
     static void do_lock_Language(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Protect(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
+    static void do_unlock_NoMemo(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Private(mstring mynick, mstring source, mstring params);
+    static void do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params);
+    static void do_unlock_Language(mstring mynick, mstring source, mstring params);
 };
 #endif

@@ -1565,33 +1565,31 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
     FT("Nick_Stored_t::ChangeOver", (oldnick)); 
 
     bool found;
+    mstring modifier, valueS;
+    long valueL;
+    mDateTime modtime;
+
     map<mstring, Committee>::iterator citer;
     for (citer = Parent->commserv.list.begin();
 			    citer != Parent->commserv.list.end(); citer++)
     {
 	MLOCK(("CommServ", "list", citer->first, "member"));
 	found = false;
-	pair<mstring, mDateTime> tmp;
 	if (citer->second.Name() != Parent->commserv.ALL_Name() &&
 	    citer->second.Name() != Parent->commserv.REGD_Name() &&
 	    citer->second.Name() != Parent->commserv.SADMIN_Name())
 	{
 	    if (citer->second.find(i_Name))
 	    {
-/*		tmp = pair<mstring, mDateTime>(
-				citer->second.member->Last_Modifier(),
-				citer->second.member->Last_Modify_Time());
-*/
-		tmp.first =	citer->second.member->Last_Modifier();
-		tmp.second =	citer->second.member->Last_Modify_Time();
+		modifier = citer->second.member->Last_Modifier();
+		modtime = citer->second.member->Last_Modify_Time();
 		citer->second.erase();
 		found = true;
 	    }
 	    if (citer->second.find(oldnick))
 	    {
-		tmp = pair<mstring, mDateTime>(
-				citer->second.member->Last_Modifier(),
-				citer->second.member->Last_Modify_Time());
+		modifier = citer->second.member->Last_Modifier();
+		modtime = citer->second.member->Last_Modify_Time();
 		citer->second.erase();
 		found = true;
 	    }
@@ -1599,7 +1597,7 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 		found = false;
 	    if (found)
 	    {
-		citer->second.insert(i_Name, tmp.second, tmp.second);
+		citer->second.insert(i_Name, modifier, modtime);
 		citer->second.member = citer->second.end();
 	    }
 	}
@@ -1619,79 +1617,69 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 	}
 	{ MLOCK(("ChanServ", "stored", csiter->first, "Access"));
 	found = false;
-	triplet<long, mstring, mDateTime> tmp;
 	if (csiter->second.Access_find(i_Name))
 	{
-	    tmp = triplet<long, mstring, mDateTime>(
-			    csiter->second.Access->Value(),
-			    csiter->second.Access->Last_Modifier(),
-			    csiter->second.Access->Last_Modify_Time());
+	    valueL = csiter->second.Access->Value();
+	    modifier = csiter->second.Access->Last_Modifier();
+	    modtime = csiter->second.Access->Last_Modify_Time();
 	    csiter->second.Access_erase();
 	    found = true;
 	}
 	if (csiter->second.Access_find(oldnick))
 	{
-	    tmp = triplet<long, mstring, mDateTime>(
-			    csiter->second.Access->Value(),
-			    csiter->second.Access->Last_Modifier(),
-			    csiter->second.Access->Last_Modify_Time());
+	    valueL = csiter->second.Access->Value();
+	    modifier = csiter->second.Access->Last_Modifier();
+	    modtime = csiter->second.Access->Last_Modify_Time();
 	    csiter->second.Access_erase();
 	    found = true;
 	}
 	if (found)
 	{
-	    csiter->second.Access_insert(i_Name, tmp.first, tmp.second,
-							    tmp.third);
+	    csiter->second.Access_insert(i_Name, valueL, modifier, modtime);
 	    csiter->second.Access = csiter->second.Access_end();
 	} }
 	{ MLOCK(("ChanServ", "stored", csiter->first, "Akick"));
 	found = false;
-	triplet<mstring, mstring, mDateTime> tmp;
 	if (csiter->second.Akick_find(i_Name))
 	{
-	    tmp = triplet<mstring, mstring, mDateTime>(
-			    csiter->second.Akick->Value(),
-			    csiter->second.Akick->Last_Modifier(),
-			    csiter->second.Akick->Last_Modify_Time());
+	    valueS = csiter->second.Akick->Value();
+	    modifier = csiter->second.Akick->Last_Modifier();
+	    modtime = csiter->second.Akick->Last_Modify_Time();
 	    csiter->second.Akick_erase();
 	    found = true;
 	}
 	if (csiter->second.Akick_find(oldnick))
 	{
-	    tmp = triplet<mstring, mstring, mDateTime>(
-			    csiter->second.Akick->Value(),
-			    csiter->second.Akick->Last_Modifier(),
-			    csiter->second.Akick->Last_Modify_Time());
+	    valueS = csiter->second.Akick->Value();
+	    modifier = csiter->second.Akick->Last_Modifier();
+	    modtime = csiter->second.Akick->Last_Modify_Time();
 	    csiter->second.Akick_erase();
 	    found = true;
 	}
 	if (found)
 	{
-	    csiter->second.Akick_insert(i_Name, tmp.first, tmp.second, tmp.third);
+	    csiter->second.Akick_insert(i_Name, valueS, modifier, modtime);
 	    csiter->second.Akick = csiter->second.Akick_end();
 	} }
 	{ MLOCK(("ChanServ", "stored", csiter->first, "Greet"));
 	found = false;
-	pair<mstring, mDateTime> tmp;
 	if (csiter->second.Greet_find(i_Name))
 	{
-	    tmp = pair<mstring, mDateTime>(
-			    csiter->second.Greet->Entry(),
-			    csiter->second.Greet->Last_Modify_Time());
+	    valueS = csiter->second.Greet->Entry();
+	    modtime = csiter->second.Greet->Last_Modify_Time();
 	    csiter->second.Greet_erase();
 	    found = true;
 	}
 	if (csiter->second.Greet_find(oldnick))
 	{
-	    tmp = pair<mstring, mDateTime>(
-			    csiter->second.Greet->Entry(),
-			    csiter->second.Greet->Last_Modify_Time());
+	    valueS = csiter->second.Greet->Entry();
+	    modtime = csiter->second.Greet->Last_Modify_Time();
 	    csiter->second.Greet_erase();
 	    found = true;
 	}
 	if (found)
 	{
-	    csiter->second.Greet_insert(tmp.first, i_Name, tmp.second);
+	    csiter->second.Greet_insert(valueS, i_Name, modtime);
 	    csiter->second.Greet = csiter->second.Greet_end();
 	} }
     }
@@ -3258,6 +3246,20 @@ void NickServ::AddCommands()
 		"LOCK PRIV*", Parent->commserv.SOP_Name(), NickServ::do_lock_Private);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_lock_Language);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK PROT*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Protect);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK SEC*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Secure);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK NOMEMO", Parent->commserv.SOP_Name(), NickServ::do_unlock_NoMemo);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK PRIVM*", Parent->commserv.SOP_Name(), NickServ::do_unlock_PRIVMSG);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK *MSG", Parent->commserv.SOP_Name(), NickServ::do_unlock_PRIVMSG);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK PRIV*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Private);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Language);
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -3270,6 +3272,8 @@ void NickServ::AddCommands()
 		"SET*", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK", Parent->commserv.REGD_Name(), do_1_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"ACC* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -4989,6 +4993,180 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
     Parent->nickserv.stored[nickname.LowerCase()].Language(lang);
     Parent->nickserv.stored[nickname.LowerCase()].L_Language(true);
     ::send(mynick, source, "Language for " + nickname + " is now locked to " + lang.UpperCase() + ".");
+}
+
+void NickServ::do_unlock_Protect(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_unlock_Protect", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring nickname = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(nickname))
+    {
+	::send(mynick, source, "Nickname " + nickname + " is not registered.");
+	return;
+    }
+
+    if (Parent->nickserv.LCK_Protect())
+    {
+	::send(mynick, source, "Kill Protect is a SERVICE LOCKED value.");
+	return;
+    }
+
+    Parent->nickserv.stored[nickname.LowerCase()].L_Protect(false);
+    ::send(mynick, source, "Kill Protect for " + nickname + " is now unlocked.");
+}
+
+void NickServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_unlock_Secure", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring nickname = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(nickname))
+    {
+	::send(mynick, source, "Nickname " + nickname + " is not registered.");
+	return;
+    }
+
+    if (Parent->nickserv.LCK_Secure())
+    {
+	::send(mynick, source, "Secure is a SERVICE LOCKED value.");
+	return;
+    }
+
+    Parent->nickserv.stored[nickname.LowerCase()].L_Secure(false);
+    ::send(mynick, source, "Secure for " + nickname + " is now unlocked.");
+}
+
+void NickServ::do_unlock_NoMemo(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_unlock_NoMemo", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring nickname = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(nickname))
+    {
+	::send(mynick, source, "Nickname " + nickname + " is not registered.");
+	return;
+    }
+
+    if (Parent->nickserv.LCK_NoMemo())
+    {
+	::send(mynick, source, "Denying Memos is a SERVICE LOCKED value.");
+	return;
+    }
+
+    Parent->nickserv.stored[nickname.LowerCase()].L_NoMemo(false);
+    ::send(mynick, source, "Denying Memos for " + nickname + " is now unlocked.");
+}
+
+void NickServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_unlock_Private", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring nickname = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(nickname))
+    {
+	::send(mynick, source, "Nickname " + nickname + " is not registered.");
+	return;
+    }
+
+    if (Parent->nickserv.LCK_Private())
+    {
+	::send(mynick, source, "Protect is a SERVICE LOCKED value.");
+	return;
+    }
+
+    Parent->nickserv.stored[nickname.LowerCase()].L_Private(false);
+    ::send(mynick, source, "Private for " + nickname + " is now unlocked.");
+}
+
+void NickServ::do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_unlock_PRIVMSG", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring nickname = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(nickname))
+    {
+	::send(mynick, source, "Nickname " + nickname + " is not registered.");
+	return;
+    }
+
+    if (Parent->nickserv.LCK_PRIVMSG())
+    {
+	::send(mynick, source, "PRIVMSG is a SERVICE LOCKED value.");
+	return;
+    }
+
+    Parent->nickserv.stored[nickname.LowerCase()].L_PRIVMSG(false);
+    ::send(mynick, source, "PRIVMSG for " + nickname + " is now unlocked.");
+}
+
+void NickServ::do_unlock_Language(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_unlock_Language", (mynick, source, params));
+
+    mstring message  = params.Before(" ", 2).UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring nickname = params.ExtractWord(3, " ");
+
+    if (!Parent->nickserv.IsStored(nickname))
+    {
+	::send(mynick, source, "Nickname " + nickname + " is not registered.");
+	return;
+    }
+
+    if (Parent->nickserv.LCK_Language())
+    {
+	::send(mynick, source, "Language is a SERVICE LOCKED value.");
+	return;
+    }
+
+    Parent->nickserv.stored[nickname.LowerCase()].L_Language(false);
+    ::send(mynick, source, "Language for " + nickname + " is now unlocked.");
 }
 
 void NickServ::save_database(wxOutputStream& out)
