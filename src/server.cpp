@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.134  2000/10/03 05:36:27  prez
+** Updated some makefiles, helper stuff, and headers -- nothing
+** too earth shattering.
+**
 ** Revision 1.133  2000/09/30 10:48:09  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -588,7 +592,7 @@ void Protocol::Set(unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 51: /* Relic >= 2.1 */
+    case 51: /* Relic 2.1 */
 	i_NickLen = 32;
 	i_SVS = true;
 	i_Globops = true;
@@ -620,6 +624,17 @@ void Protocol::Set(unsigned int in)
 	i_Globops = true;
 	i_SVS = true;
 	i_Akill = 1;
+	SetTokens(0001);
+	break;
+
+    case 80: /* UltimateIRCD */
+	i_NickLen = 32;
+	i_Signon = 1001;
+	i_Globops = true;
+	i_SVS = true;
+	i_Akill = 1;
+	i_Modes = 6;
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 	SetTokens(0001);
 	break;
 

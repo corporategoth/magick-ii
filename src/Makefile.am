@@ -7,10 +7,9 @@ magick_LDADD   = ./xml/libxml.a ./des/libdes.a
 magick_keygen_SOURCES = magick_keygen.c
 magick_keygen_LDADD   = ./des/libdes.a
 
-
 SUBDIRS = des xml 
 
-EXTRA_DIST = base.cpp chanserv.cpp commserv.cpp convert.cpp datetime.cpp dccengine.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp mconfig.cpp main.cpp memoserv.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp trace.cpp utils.cpp variant.cpp keygen.c genrandkeys.c
+EXTRA_DIST = base.cpp chanserv.cpp commserv.cpp convert.cpp datetime.cpp dccengine.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp main.cpp memoserv.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp trace.cpp utils.cpp variant.cpp mconfig.cpp magick_keygen.c genrankeys.c 
 
 ####### kdevelop will overwrite this part!!! (end)############
 

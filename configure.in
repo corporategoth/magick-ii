@@ -14,7 +14,7 @@ dnl ==============
 
 AC_INIT(include/config.h)
 
-AM_INIT_AUTOMAKE(Magick, 2.0)
+AM_INIT_AUTOMAKE(Magick,2.0)
 AM_CONFIG_HEADER(include/config.h)
 
 AC_PROG_CC
@@ -35,6 +35,9 @@ dnl go into an infinate loop unless you use them.
 
 CFLAGS="$CFLAGS -fno-default-inline"
 CPPFLAGS="$CPPFLAGS -fno-default-inline"
+
+dnl Now we include SGI's STL
+dnl CPPFLAGS="$CPPFLAGS -ftemplate-depth-25 -I\$(top_srcdir)/include/stl"
 
 dnl ====================================================
 
@@ -359,6 +362,7 @@ fi
 dnl Find out which to use for C++ headers ...
 AC_CHECK_HEADERS(mpatrol.h)
 AC_CHECK_HEADERS(termio.h)
+dnl AC_CHECK_HEADERS(wchar.h)
 AC_CHECK_HEADERS(iostream.h)
 AC_CHECK_HEADERS(istream.h)
 AC_CHECK_HEADERS(ostream.h)
@@ -388,4 +392,4 @@ AC_ARG_WITH(keylen, [  --with-keylen=size      Maximum size of key (and keyfile)
 	[AC_DEFINE_UNQUOTED(KEYLEN, $withval)],
 	[AC_DEFINE_UNQUOTED(KEYLEN, 1024)])
 
-AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile docs/man/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/des/Makefile include/xml/Makefile lang/Makefile)
+AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/des/Makefile include/xml/Makefile docs/man/Makefile docs/devel/Makefile lang/Makefile)

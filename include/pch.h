@@ -21,6 +21,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2000/10/03 05:36:27  prez
+** Updated some makefiles, helper stuff, and headers -- nothing
+** too earth shattering.
+**
 ** Revision 1.23  2000/09/30 10:48:06  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -128,6 +132,9 @@
  * unix machines tend to use .h files
  */
 #ifdef __cplusplus
+/* Used with SGI's STL
+#define _STL_NO_CONCEPT_CHECKS
+*/
 
 #ifdef MAGICK_HAS_EXCEPTIONS
 #  ifdef HAVE_EXCEPTION_H
@@ -203,6 +210,10 @@
 #endif
 
 /* ACE Extensions */
+#include <ace/config.h>
+/* Used with SGI's STL
+#undef ACE_LACKS_AUTO_PTR
+*/
 #include <ace/Activation_Queue.h>
 #include <ace/Auto_Ptr.h>
 #include <ace/Connector.h>

@@ -21,56 +21,51 @@ fi
 rm -f version.h~
 mv version.h version.h~
 if [ -n "`grep PATCH1 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH1.*;/PATCH1		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH1.*;/PATCH1			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
 if [ -n "`grep PATCH2 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH2.*;/PATCH2		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH2.*;/PATCH2			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
 if [ -n "`grep PATCH3 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH3.*;/PATCH3		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH3.*;/PATCH3			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
 if [ -n "`grep PATCH4 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH4.*;/PATCH4		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH4.*;/PATCH4			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
 if [ -n "`grep PATCH5 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH5.*;/PATCH5		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH5.*;/PATCH5			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
 if [ -n "`grep PATCH6 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH6.*;/PATCH6		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH6.*;/PATCH6			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
 if [ -n "`grep PATCH7 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH7.*;/PATCH7		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH7.*;/PATCH7			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
 if [ -n "`grep PATCH8 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH8.*;/PATCH8		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH8.*;/PATCH8			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
 if [ -n "`grep PATCH9 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH9.*;/PATCH9		= \"$*\";/" version.h~ >version.h
+	sed "s/PATCH9.*;/PATCH9			= \"$*\";/" version.h~ >version.h
 	exit 0
 fi
 
-if [ -n "`grep PATCH0 version.h~ | grep '""'`" ]; then
-	sed "s/PATCH0.*;/PATCH0		= \"$*\";/" version.h~ >version.h
-	exit 0
-fi
-
-echo "You've already patched Magick 10 times.  It might be"
+echo "You've already patched Magick 9 times.  It might be"
 echo "a good idea to revise and remove some of your patches!"
 echo "DID NOT APPLY DUE TO TOO MANY PATCHLEVELS ..."
 mv version.h~ version.h

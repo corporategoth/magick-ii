@@ -1,8 +1,6 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 
-SUBDIRS = en man
-
-####### kdevelop will overwrite this part!!! (end)############
+SUBDIRS = en man devel 
 
 magick_CONF = magick.ini
 EXTRA_DIST = magick.ini

@@ -1,5 +1,8 @@
+####### kdevelop will overwrite this part!!! (begin)##########
+
+
+EXTRA_DIST = index.sgml 
 magick_INFO = index.sgml
-EXTRA_DIST = index.html index-1.html index-2.html index-3.html index-4.html index-5.html index-6.html index.latex index.info index.txt
 
 SGML2HTMLPARAM  = 
 SGML2INFOPARAM  =

@@ -24,6 +24,10 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.109  2000/10/03 05:36:27  prez
+** Updated some makefiles, helper stuff, and headers -- nothing
+** too earth shattering.
+**
 ** Revision 1.108  2000/09/27 11:21:37  prez
 ** Added a BURST mode ...
 **
@@ -95,8 +99,8 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 1;
-const mstring BUILD_TYPE = "Linux 2.4.0-test8 i686 unknown";
+const int BUILD_NUMBER = 2;
+const mstring BUILD_TYPE = "Linux 2.2.16 i686 unknown";
 const mstring BUILD_SYS = "haven";
 
 /* Versioning Information

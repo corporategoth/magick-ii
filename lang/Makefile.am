@@ -1,7 +1,7 @@
 magick_LANG = *.lng *.lfo *.hlp
 EXTRA_DIST = *.lng *.lfo *.hlp
 
-distclean: distclean-recursive
+distclean:
 	-rm -f *.change
 
 install-data-am:

@@ -24,6 +24,7 @@ of changes since the previous release of Magick.
 3. SUPPORT FILES
 4. OPERATION
 5. FUNCTIONALITY
+6. NOTE TO DEVELOPERS
 
 1. DEDICATION
 =============
@@ -338,3 +339,22 @@ are connected to from this service.  This service also offers the
 ability for Server Administrators to send a global message that
 will be sent to all users on the network, and services operators
 to offer files to users through the public file system.
+
+6. NOTE TO DEVELOPERS
+=====================
+
+If you feel the insane urge to modify Magick's code in any way,
+we have made it slightly easier to distribute your code to a
+userbase.  In the helper directory, you will find a blank-patch
+file, which you just plug in the name of the patch, your name
+and email address, a description of the patch, and the output
+from DIFF between the base magick distribution, and your modified
+version, and that it.  Send it out to users, they run it, and it
+automatically updates the version info, etc -- all maintenance
+is done -- they just run your patch :)
+
+We DO ask however that you not rename Magick to another name
+because you think its cool, or remove any of our copyrights
+throughout the source, documentation, and other places. We do
+deserve some credit, just as you do for your addition, and you
+are free to add credit for your work where it has been done.

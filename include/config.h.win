@@ -58,17 +58,20 @@
 #define KEYLEN 1024
 #endif
 
-/* Define if you have the atoul function.  */
-/* #undef HAVE_ATOUL */
-
-/* Define if you have the ftoa function.  */
-/* #undef HAVE_FTOA */
-
 /* Define if you have the itoa function.  */
 /* #undef HAVE_ITOA */
 
 /* Define if you have the ltoa function.  */
 /* #undef HAVE_LTOA */
+
+/* Define if you have the ftoa function.  */
+/* #undef HAVE_FTOA */
+
+/* Define if you have the dtoa function.  */
+/* #undef HAVE_DTOA */
+
+/* Define if you have the uitoa function.  */
+/* #undef HAVE_UITOA */
 
 /* Define if you have the ultoa function.  */
 /* #undef HAVE_ULTOA */

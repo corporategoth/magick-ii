@@ -1,0 +1,101 @@
+#!/bin/sh
+#
+# Blank PATCH file for application with Magick.
+# First, change the PATCHNAME to the short name
+# of your patch (one word).  Then put the output
+# of a DIFF in between the END_OF_PATCH tokens.
+# You should also rename this to the short name
+# of your patch with -patch on the end.  It should
+# be run as:
+#    blank-patch [-h] [-r] <directory to magick src>
+#
+# The addition to and removal from version.h is
+# automated with this script.
+
+# Short name for the patch
+# Author of the patch (include email)
+# What the patch does, "This patch will ..."
+PATCHNAME="blank"
+PATCHAUTHOR="Preston Elder <prez@magick.tm>"
+PATCHDESC="do nothing"
+
+# --------------------------------------------------------------
+
+echo "Magick IRC Services - http://www.magick.tm"
+echo "    (c) 1997-2000 Preston Elder <prez@magick.tm>"
+echo "    (c) 1998-2000 William King <ungod@magick.tm>"
+echo ""
+
+while [ -n "$1" ]; do
+	if [ "x$1" = "x-h" -o "x$1" = "x-H" ]; then
+		echo "This script apply a source patch to Magick IRC Services."
+		echo "This patch has NOT been written by the Magick Development"
+		echo "team and all queries should be directed to its author."
+		echo ""
+		echo "This patch is written by $PATCHAUTHOR"
+		echo "This patch will $PATCHDESC"
+		echo ""
+		echo "syntax : $0 [-h] [-r] <directory to magick src>"
+		echo "options: -h   Help (this output!)"
+		echo "         -r   Reverse the patch (remove it)"
+		echo ""
+		exit 0
+	elif [ "x$1" = "x-r" -o "x$1" = "x-R" ]; then
+		REVERSE="-R"
+	else
+		MAGICKDIR=$1
+	fi
+	shift
+done
+
+if [ -z "$MAGICKDIR" ]; then
+	echo "You must specify the location of the magick source."
+	echo "Type $0 -h for help."
+	echo ""
+	exit 1
+fi
+
+cd $MAGICKDIR
+
+if [ ! -f include/version.h ]; then
+	echo "Could not find magick source, exiting!"
+	echo ""
+	exit 2
+fi
+
+cp include/version.h include/version.h~
+
+# --------------------------------------------------------------
+# PUT YOUR DIFF IN BETWEEN THE END_OF_PATCH TOKENS HERE!
+# ENSURE TO LEAVE END_OF_PATCH ON A BLANK LINE ON ITS OWN!
+#
+patch $REVERSE -p0 >$0.log <<END_OF_PATCH
+END_OF_PATCH
+# --------------------------------------------------------------
+RETVAL=$?
+
+cp include/version.h include/version.h~
+if [ 0$RETVAL -ne 0 ]; then
+	echo "PATCH FAILED ($RETVAL)!  Clean it up yourself (sorry!)."
+	echo ""
+	exit 3
+else
+	if [ -n "$REVERSE" ]; then
+		helper/rem-patch $PATCHNAME
+		if [ 0$? -ne 0 ]; then
+			echo ""
+			$0 $PATCHDIR >/dev/null
+			exit 4
+		fi
+	else
+		helper/add-patch $PATCHNAME
+		if [ 0$? -ne 0 ]; then
+			echo ""
+			$0 -r $PATCHDIR >/dev/null
+			exit 4
+		fi
+	fi
+	echo "Patch $PATCHNAME successfully applied."
+	echo ""
+fi
+exit 0

@@ -1,8 +1,8 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 
-magick_INFO = AUTHORS COPYING ChangeLog INSTALL KNOWN-BUGS NEWS README TODO
-SUBDIRS = docs src include 
-EXTRA_DIST = magick.kdevprj AUTHORS COPYING ChangeLog INSTALL KNOWN-BUGS NEWS README TODO magick.lsm what.c
+SUBDIRS = docs src include lang 
+
+EXTRA_DIST = magick.kdevprj AUTHORS COPYING ChangeLog INSTALL README TODO magick.lsm FAQ NEWS acconfig.h KNOWN-BUGS rtfm Magick.spec 
 
 ####### kdevelop will overwrite this part!!! (end)############
 noinst_PROGRAMS = what

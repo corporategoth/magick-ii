@@ -14,11 +14,12 @@ fi
 
 cd $1/include
 
-for x in `ls -1 *.h`; do
-    mv $x $x~
-    sed "s/\*ident.* =/\*ident_`echo $x | sed \"s/\./_/g\"` =/g" $x~ >$x
-    rm $x~
-done
+# Change ident to ident_blah_h
+#for x in `ls -1 *.h`; do
+#    mv $x $x~
+#    sed "s/\*ident.* =/\*ident_`echo $x | sed \"s/\./_/g\"` =/g" $x~ >$x
+#    rm $x~
+#done
 
 build=`grep BUILD_NUMBER.*\=.*\; version.h | cut -f2 -d\= | cut -f1 -d\;`
 build=`expr $build + 1`;
