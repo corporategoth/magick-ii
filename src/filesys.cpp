@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/09/18 08:17:57  prez
+** Intergrated mpatrol into the xml/des sublibs, and did
+** some minor fixes as a result of mpatrol.
+**
 ** Revision 1.50  2000/09/13 12:45:33  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -347,16 +351,16 @@ mstring mFile::ReadLine()
         RET("");
 
     MLOCK(("mFile", i_name));
-    char *buffer=NULL;
+    char buffer[1025];
+    memset(buffer, 0, 1025);
 #ifdef MAGICK_HAS_EXCEPTIONS
     try
     {
 #endif
-        buffer=new char[Length()+1];
-        ACE_OS::fgets(buffer,Length()+1,fd);
+        ACE_OS::fgets(buffer,1024,fd);
         Result=buffer;
-        if(Result[Result.Len()-1]=='\n')
-            Result=Result.Left(Result.Len()-1);
+        Result.Replace("\n", "");
+        Result.Replace("\r", "");
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
     catch(...)
@@ -365,8 +369,6 @@ mstring mFile::ReadLine()
         Result="";
     }
 #endif
-    if(buffer!=NULL)
-        delete [] buffer;
 
     RET(Result);
 }
@@ -773,6 +775,8 @@ size_t FileMap::GetSize(FileMap::FileType type, unsigned long num)
     {
 	CP(("Checking file size of %s", filename.c_str()));
 	long retval = mFile::Length(filename);
+	if (retval < 0)
+	    retval = 0;
 	RET(retval);
     }
     RET(0);
@@ -1012,6 +1016,14 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
     mFile::Copy(tmp, i_Tempfile);
     i_File.Open(i_Tempfile.c_str());
     i_Filesize = i_File.Length();
+    if (i_Filesize <= 0)
+    {
+	i_File.Close();
+	Parent->filesys.EraseFile(filetype, filenum);
+	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
+					"SEND");
+	return;
+    }
 
     // Initialize Transfer
     i_Transiant = new unsigned char[i_Blocksize + 1];

@@ -305,6 +305,17 @@ Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
 
+`--with-include=path'
+`--with-libdir=path'
+`--with-lib=lib'
+     These will add -I, -L and -l options to the compile/link options.
+If you find Magick wont compile on your system due to missing symbols,
+or undefined references, it may not have been able to find a header it
+needed, or it may not have included a required library.  The include
+and libdir should both be directories where to find the include files
+or libraries, where lib should be the library name with the lib prefix
+and the .so or .a postfix trucated.  eg. libpthread.so becomes pthread.
+
 `--enable-des'
 `--disable-des'
      This turns on or off encryption support in Magick.  Some versions
@@ -323,6 +334,15 @@ default disabled.
 for ensuring only one thread can access a bit of data at once.  On some
 bad thread implementations, this will stop segfaults, however it is a
 big target asking for data corruption turning this off.
+
+`--enable-mpatrol'
+`--disable-mpatrol'
+     This turns on or off the usage of the memory error checking and
+profiling software mpatrol (http://www.cbmamiga.demon.co.uk/mpatrol).
+This software is useful in the fact it looks for memory access errors
+(eg. accessing unitialized memory, exceeding memory bounds, not freeing
+memory, etc).  However it slows the program down dramatically.  Turning
+this on causes a new log file (mpatrol.log) to be created.
 
 `--with-keylen=size'
      This is the maximum size of the key file, and the input key that

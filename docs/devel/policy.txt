@@ -76,6 +76,13 @@
   the actual text (with formatting), so you should only have
   language 'tokens' in your code.
 
+* It is recommended you every so often run your code through the
+  package 'mpatrol', which is a GNU memory profiling and error
+  checking program.  This will tell you about any memory errors
+  that have been introduced to the code base (exceeding memory
+  bounds, failing to free memory, accessing unitialized memory).
+  The INSTALL file tells how to enable this, and where to get it.
+  
 
 RULE OF THUMB
 -------------

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.134  2000/09/18 08:17:57  prez
+** Intergrated mpatrol into the xml/des sublibs, and did
+** some minor fixes as a result of mpatrol.
+**
 ** Revision 1.133  2000/09/12 21:17:02  prez
 ** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
 **
@@ -5903,6 +5907,16 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    mstring filename = 	Parent->filesys.GetName(FileMap::Picture, picnum);
+    size_t filesize = Parent->filesys.GetSize(FileMap::Picture, picnum);
+    if (filename == "" || filesize <= 0)
+    {
+	Parent->nickserv.stored[target.LowerCase()].GotPic(0);
+	::send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
+							"SEND");
+	return;
+    }
+
     if (!(Parent->files.TempDirSize() == 0 ||
 	mFile::DirUsage(Parent->files.TempDir()) <=
 		Parent->files.TempDirSize()))
@@ -5910,9 +5924,6 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
 	return;
     }
-
-    mstring filename = 	Parent->filesys.GetName(FileMap::Picture, picnum);
-    size_t filesize = Parent->filesys.GetSize(FileMap::Picture, picnum);
 
     unsigned short port = FindAvailPort();
     ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2000/09/18 08:17:57  prez
+** Intergrated mpatrol into the xml/des sublibs, and did
+** some minor fixes as a result of mpatrol.
+**
 ** Revision 1.76  2000/09/09 02:17:48  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -1216,6 +1220,14 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 		    continue;
 		}
 
+		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);
+		size_t filesize = Parent->filesys.GetSize(FileMap::MemoAttach, filenum);
+		if (filename == "" || filesize <= 0)
+		{
+		    nonfiles = true;
+		    continue;
+		}
+
 		if (!(Parent->files.TempDirSize() == 0 ||
 		    mFile::DirUsage(Parent->files.TempDir()) <=
 		    Parent->files.TempDirSize()))
@@ -1223,9 +1235,6 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 		    ::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
 		    return;
 		}
-
-		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);
-		size_t filesize = Parent->filesys.GetSize(FileMap::MemoAttach, filenum);
 
 		unsigned short port = FindAvailPort();
 		::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +

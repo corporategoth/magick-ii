@@ -60,9 +60,12 @@ dnl Same deal with includes, and adding a -I to the
 dnl C/CPP flags
 
 AC_ARG_WITH(aceinc, [  --with-aceinc=dir       Location of ACE include files],
-	[CFLAGS="$CFLAGS -I${withval}"
-	CPPFLAGS="$CPPFLAGS -I${withval}"
-	libacehead=1])
+	[if test -f ${withval}/ace/OS.h; then
+		CFLAGS="$CFLAGS -I${withval}"
+		CPPFLAGS="$CPPFLAGS -I${withval}"
+		libacehead=1
+		echo "checking for ace/OS.h ... (specified) yes"
+	fi])
 
 dnl ====================================================
 
@@ -125,9 +128,24 @@ dnl Same deal with includes, and adding a -I to the
 dnl C/CPP flags
 
 AC_ARG_WITH(zinc, [  --with-zinc=dir         Location of compression include files],
+	[if test -f ${withval}/zlib.h; then
+		CFLAGS="$CFLAGS -I${withval}"
+		CPPFLAGS="$CPPFLAGS -I${withval}"
+		libzhead=1
+		ehco "checking for zlib.h ... (specified) yes"
+	fi])
+
+dnl ====================================================
+
+AC_ARG_WITH(libdir, [  --with-libdir=dir       Add in search path for libraries],
+	[LIBS="$LIBS -L${withval}"])
+
+AC_ARG_WITH(lib, [  --with-lib=dir          Add in library],
+	[LIBS="$LIBS -l${withval}"])
+
+AC_ARG_WITH(include, [  --with-include=dir      Add in search path for includes],
 	[CFLAGS="$CFLAGS -I${withval}"
-	CPPFLAGS="$CPPFLAGS -I${withval}"
-	libzhead=1])
+	CPPFLAGS="$CPPFLAGS -I${withval}"])
 
 dnl ====================================================
 

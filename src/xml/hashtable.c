@@ -28,7 +28,7 @@ GPL. If you do not delete the provisions above, a recipient may use
 your version of this file under either the MPL or the GPL.
 */
 
-#include "xml/xmldef.h"
+#include "pch.h"
 
 #ifdef XML_UNICODE_WCHAR_T
 #ifndef XML_UNICODE

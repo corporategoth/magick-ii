@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.136  2000/09/18 08:17:57  prez
+** Intergrated mpatrol into the xml/des sublibs, and did
+** some minor fixes as a result of mpatrol.
+**
 ** Revision 1.135  2000/09/13 12:45:33  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -319,7 +323,7 @@ int mBaseTask::svc(void)
 		if (transit != NULL)
 		{
 		    retval = message_i(mstring(transit));
-		    delete transit;
+		    delete [] transit;
 		}
 		break;
 	    case ACE_Message_Block::MB_HANGUP:

@@ -21,6 +21,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/09/18 08:17:57  prez
+** Intergrated mpatrol into the xml/des sublibs, and did
+** some minor fixes as a result of mpatrol.
+**
 ** Revision 1.21  2000/09/13 12:45:33  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -112,6 +116,7 @@
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
+#define STRICT
 #include <windows.h>
 #endif
 
@@ -119,6 +124,8 @@
 /* These all have IFDEF's because
  * unix machines tend to use .h files
  */
+#ifdef __cplusplus
+
 #ifdef MAGICK_HAS_EXCEPTIONS
 #  ifdef HAVE_EXCEPTION_H
 #    include <exception.h>
@@ -249,11 +256,19 @@
 // # define bcmp	ACE_OS::bcmp
 #endif
 
-#include <zlib.h>
-
 using namespace std;
 
 extern size_t Log(ACE_Log_Priority priority, const char *messages, ...);
 extern size_t LogV(ACE_Log_Priority priority, const char *messages, va_list argptr);
+
+#else /* __cplusplus */
+
+#if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
+#  include <mpatrol.h>
+#endif
+
+#endif /* __cplusplus */
+
+#include <zlib.h>
 
 #endif

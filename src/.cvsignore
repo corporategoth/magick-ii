@@ -1,6 +1,7 @@
 *~
 *.~cp
 *.~hp
+*.log
 Makefile
 Makefile.in
 .deps

@@ -143,10 +143,6 @@ SOURCE=..\..\include\xml\utf8tab.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\xml\xmldef.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\include\xml\xmlfile.h
 # End Source File
 # Begin Source File

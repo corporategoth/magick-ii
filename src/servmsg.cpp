@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2000/09/18 08:17:58  prez
+** Intergrated mpatrol into the xml/des sublibs, and did
+** some minor fixes as a result of mpatrol.
+**
 ** Revision 1.66  2000/09/09 02:17:49  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -1385,6 +1389,14 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    filename = Parent->filesys.GetName(FileMap::Public, filenum);
+    size_t filesize = Parent->filesys.GetSize(FileMap::Public, filenum);
+    if (filename == "" || filesize <= 0)
+    {
+	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS"),
+		filename.c_str(), Parent->getMessage(source, "LIST/FILES").c_str());
+	return;
+    }
 
     if (!(Parent->files.TempDirSize() == 0 ||
 	mFile::DirUsage(Parent->files.TempDir()) <=
@@ -1393,10 +1405,6 @@ void ServMsg::do_file_Send(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "DCC/NOSPACE2"));
 	return;
     }
-
-
-    filename = Parent->filesys.GetName(FileMap::Public, filenum);
-    size_t filesize = Parent->filesys.GetSize(FileMap::Public, filenum);
 
     Parent->servmsg.stats.i_file_Send++;
     unsigned short port = FindAvailPort();

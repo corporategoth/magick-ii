@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index10205.info.2.
+/tmp/sgmltmp.index11547.info.2.
 
    \input texinfo
 
@@ -783,8 +783,43 @@ operates.
      library file, and the include directory exists).  This should only
      be used if Magick does not detect a threads library.
 
+`--with-include=path'
+     -with-libdir=path -with-lib=lib These will add -I, -L and -l
+     options to the compile/link options.  If you find Magick wont
+     compile on your system due to missing symbols, or undefined
+     references, it may not have been able to find a header it needed,
+     or it may not have included a required library.  The include and
+     libdir should both be directories where to find the include files
+     or libraries, where lib should be the library name with the lib
+     prefix and the .so or .a postfix trucated.  eg. libpthread.so
+     becomes pthread.
+
 `--enable-des'
      -disable-des This turns on or off encryption support in Magick.
+     Some versions of Magick may not be distributed with DES
+     encryption, in which case you will have to download it and enable
+     it to use it.
+
+`--enable-trace'
+     -disable-trace This turns on or off the internal tracing functions
+     of Magick.  This can cause problems right now with large
+     databases.  It is therefore by default disabled.
+
+`--enable-locks'
+     -disable-locks This turns on or off thread locking.  Thread
+     locking is essential for ensuring only one thread can access a bit
+     of data at once.  On some bad thread implementations, this will
+     stop segfaults, however it is a big target asking for data
+     corruption turning this off.
+
+`--enable-mpatrol'
+     -disable-mpatrol This turns on or off the usage of the memory
+     error checking and profiling software mpatrol
+     (http://www.cbmamiga.demon.co.uk/mpatrol).  This software is
+     useful in the fact it looks for memory access errors (eg.
+     accessing unitialized memory, exceeding memory bounds, not freeing
+     memory, etc).  However it slows the program down dramatically.
+     Turning this on causes a new log file (mpatrol.log) to be created.
 
 `--with-keylen=size'
      This is the maximum size of the key file, and the input key that
@@ -1520,14 +1555,14 @@ Node: Optional Features23240
 Node: Specifying the System Type24010
 Node: Sharing Defaults25033
 Node: Operation Controls25679
-Node: Security Tips28498
-Node: Usage30502
-Node: Support files30674
-Node: General Usage35269
-Node: Functionality41035
-Node: Questions and Answers44838
-Node: My IRCD isnt supported what can I do?45025
-Node: License45474
-Node: Copyright60964
+Node: Security Tips30247
+Node: Usage32251
+Node: Support files32423
+Node: General Usage37018
+Node: Functionality42784
+Node: Questions and Answers46587
+Node: My IRCD isnt supported what can I do?46774
+Node: License47223
+Node: Copyright62713
 
 End Tag Table

@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.130  2000/09/18 08:17:58  prez
+** Intergrated mpatrol into the xml/des sublibs, and did
+** some minor fixes as a result of mpatrol.
+**
 ** Revision 1.129  2000/09/13 12:45:34  prez
 ** Added intergration of mpatrol (memory leak finder).  Default is set OFF,
 ** must enable with --enable-mpatrol in configure (and have mpatrol in system).
@@ -2282,7 +2286,7 @@ void NetworkServ::execute(const mstring & data)
         source=data.ExtractWord(1,": ");
 	sourceL=source.LowerCase();
         msgtype=data.ExtractWord(2,": ").UpperCase();
-	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
 	{
 		PushUser(source, data);
 		return;
@@ -3327,7 +3331,7 @@ void NetworkServ::execute(const mstring & data)
 			Parent->chanserv.live[data.ExtractWord(4, ": ").LowerCase()].Mode(
 				Parent->chanserv.FirstName(), modes + " " + mode_params);
 		}
-		else if (modes != "")
+		else if (modes.Len() > 1)
 		{
 		    PushUser(nick, ":" + source + " MODE " +
 			data.ExtractWord(4, ": ") + " " + modes +
@@ -4285,7 +4289,7 @@ void NetworkServ::numeric_execute(const mstring & data)
         source=data.ExtractWord(1,": ");
 	sourceL=source.LowerCase();
         msgtype=ACE_OS::atoi(data.ExtractWord(2,": "));
-	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
+	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
 	{
 	    PushUser(source, data);
 	}

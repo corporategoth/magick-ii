@@ -52,7 +52,7 @@ dist=true
 install=false
 type=HEADER
 [include/xml/Makefile.am]
-files=include/xml/asciitab.h,include/xml/codepage.h,include/xml/filemap.h,include/xml/hashtable.h,include/xml/iasciitab.h,include/xml/latin1tab.h,include/xml/nametab.h,include/xml/sxp.h,include/xml/sxp_data.h,include/xml/utf8tab.h,include/xml/xmldef.h,include/xml/xmlfile.h,include/xml/xmlparse.h,include/xml/xmlrole.h,include/xml/xmltchar.h,include/xml/xmltok.h,include/xml/xmltok_impl.h,
+files=include/xml/asciitab.h,include/xml/codepage.h,include/xml/filemap.h,include/xml/hashtable.h,include/xml/iasciitab.h,include/xml/latin1tab.h,include/xml/nametab.h,include/xml/sxp.h,include/xml/sxp_data.h,include/xml/utf8tab.h,include/xml/xmlfile.h,include/xml/xmlparse.h,include/xml/xmlrole.h,include/xml/xmltchar.h,include/xml/xmltok.h,include/xml/xmltok_impl.h,
 sub_dirs=
 type=normal
 [include/version.h]
@@ -274,11 +274,6 @@ install_location=
 dist=true
 install=false
 type=SOURCE
-[include/xml/xmldef.h]
-install_location=
-dist=true
-install=false
-type=HEADER
 [include/filesys.h]
 install_location=
 dist=true
