@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.146  2000/03/07 09:53:19  prez
+** More helpfile updates (and associated updates).
+**
 ** Revision 1.145  2000/03/02 07:25:10  prez
 ** Added stuff to do the chanserv greet timings (ie. only greet if a user has
 ** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
@@ -1017,7 +1020,7 @@ void Chan_Stored_t::Join(mstring nick)
 	return;
     }}
 
-    if (Restricted() && GetAccess(nick) < (long) 1)
+    if (Restricted() && !Suspended() && GetAccess(nick) < (long) 1)
     {
 	// If this user is the only user in channel
 	if (users == 1)
@@ -1092,7 +1095,7 @@ void Chan_Stored_t::Join(mstring nick)
 	target = nstored->Host();
     }
 
-    {
+    if (!Suspended()) {
 	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
 	if (Greet_find(target) &&
 		clive->PartTime(target).SecondsSince() > Parttime())
@@ -2760,7 +2763,7 @@ long Chan_Stored_t::GetAccess(mstring entry)
 	RET(0);
     }
 
-    if (nlive->IsChanIdentified(i_Name))
+    if (nlive->IsChanIdentified(i_Name) && !Suspended())
     {
 	RET(Parent->chanserv.Level_Max() + 1);
     }
@@ -2773,6 +2776,27 @@ long Chan_Stored_t::GetAccess(mstring entry)
     }
     else
     {
+	RET(0);
+    }
+
+    if (Suspended())
+    {
+	if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(realentry))
+	{
+	    RET(Parent->chanserv.Level_Max() + 1);
+	}
+	else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	    Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(realentry))
+	{
+	    RET(Level_Value("AUTOOP"));
+	}
+	else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(realentry))
+	{
+	    RET(Level_Value("AUTOVOICE"));
+	}
+
 	RET(0);
     }
 
@@ -3247,7 +3271,7 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLEAR* *BAN*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Bans);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *ALL*", Parent->commserv.REGD_Name(), ChanServ::do_clear_All);
+	    "CLEAR* *ALL*", Parent->commserv.REGD_Name(), ChanServ::do_All);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LEV* SET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Set);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -4475,7 +4499,7 @@ void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
     FT("ChanServ::do_Kick", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
-    if (params.WordCount(" ") < 4)
+    if (params.WordCount(" ") < 3)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
 				message.c_str(), mynick.c_str(), message.c_str());
@@ -4484,7 +4508,11 @@ void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
 
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = params.ExtractWord(3, " ");
-    mstring reason    = params.After(" ", 3);
+    mstring reason;
+    if (params.WordCount(" ") >= 4)
+	reason = params.After(" ", 3);
+    else
+	reason = Parent->chanserv.DEF_Akick_Reason();
 
     if (!Parent->chanserv.IsLive(channel))
     {
@@ -5000,13 +5028,14 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 	clive->SendMode("-v " + clive->Voice(i));
     }
     if (!message.After(" ").Matches("*ALL*"))
+    {
 	for (i=0; i<clive->Ops(); i++)
 	{
 	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
 		    message.c_str(), source.c_str(), channel.c_str());
 	}
-    if (!message.After(" ").Matches("*ALL*"))
 	Parent->chanserv.stats.i_Clear++;
+    }
 }
 
 void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
@@ -5055,13 +5084,14 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
 
     clive->SendMode("-" + clive->Mode() + " " + clive->Key());
     if (!message.After(" ").Matches("*ALL*"))
+    {
 	for (i=0; i<clive->Ops(); i++)
 	{
 	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
 		    message.c_str(), source.c_str(), channel.c_str());
 	}
-    if (!message.After(" ").Matches("*ALL*"))
 	Parent->chanserv.stats.i_Clear++;
+    }
 }
 
 void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
@@ -5113,13 +5143,14 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
 	clive->SendMode("-b " + clive->Ban(i));
     }
     if (!message.After(" ").Matches("*ALL*"))
+    {
 	for (i=0; i<clive->Ops(); i++)
 	{
 	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
 		    message.c_str(), source.c_str(), channel.c_str());
 	}
-    if (!message.After(" ").Matches("*ALL*"))
 	Parent->chanserv.stats.i_Clear++;
+    }
 }
 
 void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
@@ -5546,7 +5577,7 @@ void ChanServ::do_access_List(mstring mynick, mstring source, mstring params)
     channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!cstored->GetAccess(source, "ACCESS") &&
+    if (!cstored->GetAccess(source, "VIEW") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
@@ -5813,7 +5844,7 @@ void ChanServ::do_akick_List(mstring mynick, mstring source, mstring params)
     channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!cstored->GetAccess(source, "AKICK") &&
+    if (!cstored->GetAccess(source, "VIEW") &&
 	!(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source)))
     {
@@ -5878,17 +5909,23 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
     channel = cstored->Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (option[0U] == '!' && params.WordCount(" ") > 4 &&
+    if ((option[0U] == '@' || option[0U] == '!') &&
+	params.WordCount(" ") > 4 &&
 	cstored->GetAccess(source, "OVERGREET"))
     {
-	target = params.ExtractWord(4, " ").After("!");
-	option = params.After(" ", 4);
-	if (!Parent->nickserv.IsStored(target))
+	if (option[0U]=='@')
 	{
-	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
-		target.c_str());
-	    return;
+	    target = params.ExtractWord(4, " ").After("@");
+	    option = params.After(" ", 4);
+	    if (!Parent->nickserv.IsStored(target))
+	    {
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+		    target.c_str());
+		return;
+	    }
 	}
+	while (option[1U] == '!')
+	    option = option.After("!");
     }
     else if (!cstored->GetAccess(source, "GREET"))
     {

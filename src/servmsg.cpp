@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/03/07 09:53:21  prez
+** More helpfile updates (and associated updates).
+**
 ** Revision 1.32  2000/03/02 11:59:45  prez
 ** More helpfile updates (slowly but surely writing it)
 **
@@ -85,18 +88,24 @@ void ServMsg::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "GLOB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Global);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* NICK*", Parent->commserv.OPER_Name(), ServMsg::do_stats_Nick);
+	    "STAT* NICK*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Nick);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* CHAN*", Parent->commserv.OPER_Name(), ServMsg::do_stats_Channel);
+	    "STAT* CHAN*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Channel);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* OTH*", Parent->commserv.OPER_Name(), ServMsg::do_stats_Other);
+	    "STAT* OTH*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Other);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* USAGE", Parent->commserv.OPER_Name(), ServMsg::do_stats_Usage);
+	    "STAT* USAGE", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Usage);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* ALL*", Parent->commserv.OPER_Name(), ServMsg::do_stats_All);
+	    "STAT* ALL*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), ServMsg::do_stats_All);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* *", Parent->commserv.OPER_Name(), NULL);
+	    "STAT* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT*", Parent->commserv.REGD_Name(), do_Stats);
 }
@@ -525,8 +534,10 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_Stats", (mynick, source, params));
 
     if (params.WordCount(" ") > 1 &&
-	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.list[Parent->commserv.OPER_Name()].IsIn(source))
+	((Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source)) ||
+	 (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))))
     {
 	do_1_2param(mynick, source, params);
 	return;

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2000/03/07 09:53:21  prez
+** More helpfile updates (and associated updates).
+**
 ** Revision 1.60  2000/03/02 11:59:45  prez
 ** More helpfile updates (slowly but surely writing it)
 **
@@ -541,7 +544,8 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "TRACE", Parent->commserv.SADMIN_Name(), OperServ::do_Trace);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*MODE*", Parent->commserv.OPER_Name(), OperServ::do_Mode);
+	    "*MODE*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_Mode);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "Q*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_Qline);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -551,7 +555,8 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "KILL*", Parent->commserv.SOP_Name(), OperServ::do_Kill);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*PING*", Parent->commserv.OPER_Name(), OperServ::do_Ping);
+	    "*PING*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_Ping);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UPD*", Parent->commserv.SADMIN_Name(), OperServ::do_Update);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -570,15 +575,20 @@ void OperServ::AddCommands()
 	    "OFF", Parent->commserv.SADMIN_Name(), OperServ::do_Off);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* CONF*", Parent->commserv.OPER_Name(), OperServ::do_settings_Config);
+	    "SET* CONF*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_settings_Config);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* NICK*", Parent->commserv.OPER_Name(), OperServ::do_settings_Nick);
+	    "SET* NICK*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_settings_Nick);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* CHAN*", Parent->commserv.OPER_Name(), OperServ::do_settings_Channel);
+	    "SET* CHAN*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_settings_Channel);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* OTH*", Parent->commserv.OPER_Name(), OperServ::do_settings_Other);
+	    "SET* OTH*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_settings_Other);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* *ALL*", Parent->commserv.OPER_Name(), OperServ::do_settings_All);
+	    "SET* *ALL*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_settings_All);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLONE* ADD*", Parent->commserv.SOP_Name(), OperServ::do_clone_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -586,19 +596,26 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLONE* ERA*", Parent->commserv.SOP_Name(), OperServ::do_clone_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLONE* LIST", Parent->commserv.OPER_Name(), OperServ::do_clone_List);
+	    "CLONE* LIST", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_clone_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLONE* VIEW", Parent->commserv.OPER_Name(), OperServ::do_clone_List);
+	    "CLONE* VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_clone_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL ADD*", Parent->commserv.OPER_Name(), OperServ::do_akill_Add);
+	    "A*KILL ADD*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_akill_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL DEL*", Parent->commserv.OPER_Name(), OperServ::do_akill_Del);
+	    "A*KILL DEL*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_akill_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL ERA*", Parent->commserv.OPER_Name(), OperServ::do_akill_Del);
+	    "A*KILL ERA*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_akill_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL LIST", Parent->commserv.OPER_Name(), OperServ::do_akill_List);
+	    "A*KILL LIST", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_akill_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL VIEW", Parent->commserv.OPER_Name(), OperServ::do_akill_List);
+	    "A*KILL VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_akill_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "O*DENY* ADD*", Parent->commserv.SOP_Name(), OperServ::do_operdeny_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -606,9 +623,11 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "O*DENY* ERA*", Parent->commserv.SOP_Name(), OperServ::do_operdeny_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* LIST", Parent->commserv.OPER_Name(), OperServ::do_operdeny_List);
+	    "O*DENY* LIST", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_operdeny_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* VIEW", Parent->commserv.OPER_Name(), OperServ::do_operdeny_List);
+	    "O*DENY* VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_operdeny_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "IGN* ADD*", Parent->commserv.SOP_Name(), OperServ::do_ignore_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -616,30 +635,42 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "IGN* ERA*", Parent->commserv.SOP_Name(), OperServ::do_ignore_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "IGN* LIST", Parent->commserv.OPER_Name(), OperServ::do_ignore_List);
+	    "IGN* LIST", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_ignore_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "IGN* VIEW", Parent->commserv.OPER_Name(), OperServ::do_ignore_List);
+	    "IGN* VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_ignore_List);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* *", Parent->commserv.ALL_Name(), NULL);
+	    "SET* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET*", Parent->commserv.ALL_Name(), do_1_2param);
+	    "SET*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLONE* *", Parent->commserv.ALL_Name(), NULL);
+	    "CLONE* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLONE*", Parent->commserv.ALL_Name(), do_1_2param);
+	    "CLONE*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL* *", Parent->commserv.ALL_Name(), NULL);
+	    "A*KILL* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KILL*", Parent->commserv.ALL_Name(), do_1_2param);
+	    "A*KILL*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY* *", Parent->commserv.ALL_Name(), NULL);
+	    "O*DENY* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "O*DENY*", Parent->commserv.ALL_Name(), do_1_2param);
+	    "O*DENY*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "IGN* *", Parent->commserv.ALL_Name(), NULL);
+	    "IGN* *", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "IGN*", Parent->commserv.ALL_Name(), do_1_2param);
+	    "IGN*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_1_2param);
 }
 
 void OperServ::RemCommands()

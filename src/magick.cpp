@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.201  2000/03/07 09:53:21  prez
+** More helpfile updates (and associated updates).
+**
 ** Revision 1.200  2000/03/02 07:25:11  prez
 ** Added stuff to do the chanserv greet timings (ie. only greet if a user has
 ** been OUT of channel over 'x' seconds).  New stored chanserv cfg item.
@@ -583,7 +586,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	    while(bContEntries)
 	    {
 		fconf.Read(entryname.UpperCase(), &tempstr, "");
-		sendline = true;
+		sendline = false;
 		yescom = nocom = text = "";
 		yescom = tempstr.ExtractWord(1, ":", false);
 		nocom  = tempstr.ExtractWord(2, ":", false);
@@ -591,12 +594,16 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		if (text == "")
 		    text = " ";
 		if (yescom != "")
-		    for (i=1; sendline && i<=yescom.WordCount(" "); i++)
+		{
+		    for (i=1; !sendline && i<=yescom.WordCount(" "); i++)
 		    {
 			if (commserv.IsList(yescom.ExtractWord(i, " ")) &&
-			    !commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
-			    sendline = false;
+			    commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+			    sendline = true;
 		    }
+		}
+		else
+		    sendline = true;
 		if (nocom != "")
 		    for (i=1; sendline && i<=nocom.WordCount(" "); i++)
 		    {
@@ -637,7 +644,7 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 	    while(bContEntries)
 	    {
 		fconf.Read(entryname.UpperCase(), &tempstr, "");
-		sendline = true;
+		sendline = false;
 		yescom = nocom = text = "";
 		yescom = tempstr.ExtractWord(1, ":", false);
 		nocom  = tempstr.ExtractWord(2, ":", false);
@@ -645,12 +652,16 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
 		if (text == "")
 		    text = " ";
 		if (yescom != "")
-		    for (i=1; sendline && i<=yescom.WordCount(" "); i++)
+		{
+		    for (i=1; !sendline && i<=yescom.WordCount(" "); i++)
 		    {
 			if (commserv.IsList(yescom.ExtractWord(i, " ")) &&
-			    !commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
-			    sendline = false;
+			    commserv.list[yescom.ExtractWord(i, " ").UpperCase()].IsOn(nick))
+			    sendline = true;
 		    }
+		}
+		else
+		    sendline = true;
 		if (nocom != "")
 		    for (i=1; sendline && i<=nocom.WordCount(" "); i++)
 		    {

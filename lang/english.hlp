@@ -18,14 +18,14 @@
 ; Each entry in a section will be sorted by the tag, so please
 ; ensure that ALL tags are in order -- the actual name of the
 ; tags does not matter, however PLEASE ENSURE THE TAG IS IN
-; UPPER CASE!  The detection engine is CASE SENSATIVE.
+; UPPER CASE!  The detection engine is CASE SENSETIVE.
 ;
-; Each entry has 3 fields, seperated by a colon (':').
-;    1. Committees to display for:
-;       If specified, the user must be on ALL committees you
+; Each entry has 3 fields, seperated by a colon (':'):
+;    1. Committees to display for.
+;       If specified, the user must be on ANY committees you
 ;       specify in this field, committees are seperated by a
 ;       space.  If not specified, it will assume 'ALL'.
-;    2. Committees not to display for:
+;    2. Committees not to display for.
 ;       If specified, the user may not be on ANY of the
 ;       committees you specify in this field, committees are
 ;       seperated by a space.  If not specify it will assume
@@ -68,8 +68,8 @@
 [NICKSERV/REGISTER]
 01 =::REGISTER <password>
 02 =::
-03 =::This will make your nickname recognized with NickServ.
-04 =::By doing so, NickServ will reserve your nickname for
+03 =::This will make your nickname recognized with services.
+04 =::By doing so, services will reserve your nickname for
 05 =::just you, and will kill or rename any user who tries to
 06 =::use it and does not come from your regular address (as
 07 =::long as Kill Protection is set).  Once registered, you
@@ -81,10 +81,10 @@
 13 =::channel access list, or to send a memo to another user.
 14 =::Please choose a password you will remember, but that is
 15 =::suitably complex when registering your nickname.  If
-16 =::someone else gets your nickname, they can then exercise
-17 =::total control over it, including forbidding you access
-18 =::to it.  If you have lost your password, you can contact
-19 =::a Services Operator to retrieve it for you.
+16 =::someone else gets your password, they can then exercise
+17 =::total control over your nickname, including forbidding
+18 =::you access to it.  If you have lost your password, you
+19 =::can contact a Services Operator to retrieve it for you.
 
 [NICKSERV/DROP]
 01 =REGD::DROP [nickname]
@@ -305,7 +305,6 @@
 07 =REGD::Otherwise it will delete all hostmasks matching the
 08 =REGD::mask you specify (which may be multiple entries).
 
-
 [NICKSERV/ACCESS/LIST]
 01 =REGD::ACCESS LIST
 02 =REGD::
@@ -327,7 +326,6 @@
 11 =REGD::You maintain your ignore list with these commands:
 12 =REGD::    ADD          DEL          LIST
 
-
 [NICKSERV/IGNORE/ADD]
 01 =REGD::IGNORE ADD <nickname>
 02 =REGD::
@@ -347,7 +345,6 @@
 07 =REGD::entry number that corrisponds to the numbers printed
 08 =REGD::with the IGNORE LIST command.
 
-
 [NICKSERV/IGNORE/LIST]
 01 =REGD::IGNORE LIST
 02 =REGD::
@@ -356,7 +353,7 @@
 05 =REGD::with the DEL command to quickly delete an entry.
 
 [NICKSERV/SET]
-01 =REGD::NickServ maintains many settings on your nick
+01 =REGD::Services maintains many settings on your nick
 02 =REGD::record, ranging from your password, to an e-mail
 03 =REGD::address you specify, to options that effect how
 04 =REGD::services treat your nickname.  Some of these you
@@ -383,10 +380,10 @@
 10 =REGD::
 11 =REGD::Please choose a password you will remember, but that is
 12 =REGD::suitably complex when registering your nickname.  If
-14 =REGD::someone else gets your nickname, they can then exercise
-15 =REGD::total control over it, including forbidding you access
-16 =REGD::to it.  If you have lost your password, you can contact
-17 =REGD::a Services Operator to retrieve it for you.
+14 =REGD::someone else gets your nickname password, they can then
+15 =REGD::exercise total control over it, including forbidding you
+16 =REGD::access to it.  If you have lost your password, you can
+17 =REGD::contact a Services Operator to retrieve it for you.
 
 [NICKSERV/SET/EMAIL]
 01 =REGD::SET EMAIL <email>
@@ -500,7 +497,6 @@
 06 =REGD::ignore list will turn into an allow list, and you
 07 =REGD::will still accept memos from people on that list.
 
-
 [NICKSERV/SET/PRIVATE]
 01 =REGD::SET PRIVATE <ON|OFF>
 02 =REGD::
@@ -528,7 +524,7 @@
 05 =REGD::can get services to talk to you in that language.
 
 [NICKSERV/LOCK]
-01 =SOP::NickServ allows you to lock a value for a nickname,
+01 =SOP::Services allows you to lock a value for a nickname,
 02 =SOP::preventing the user from overriding your setting.
 03 =SOP::Please use caution, as you are removing a users
 04 =SOP::right to change their own record.
@@ -592,8 +588,8 @@
 07 =SOP::are removing a users right to change their own
 08 =SOP::record.
 
-[NICKSERV/LOCK]
-01 =SOP::NickServ allows you to lock a value for a nickname,
+[NICKSERV/UNLOCK]
+01 =SOP::Services allows you to lock a value for a nickname,
 02 =SOP::preventing the user from overriding your setting.
 03 =SOP::These commands will remove a lock placed on a user.
 04 =SOP::
@@ -663,356 +659,945 @@
 21 =::      may change what is displayed above.
 
 [CHANSERV/REGISTER]
-01 =::REGISTER <channel> <password> <description>
-02 =::
+01 =REGD::REGISTER <channel> <password> <description>
+02 =REGD::
+03 =REGD::This will make your channel recognized with services.
+04 =REGD::By doing so, services will reserve your channel for
+05 =REGD::you, and only give OPS and VOICE to the people you
+06 =REGD::specify on the channel ACCESS list.  Once registered,
+07 =REGD::you can use te IDENTIFY command to gain full authorative
+08 =REGD::control over the channel from another nickname.
+09 =REGD::
+10 =REGD::Channel registration allows many other various featues
+11 =REGD::including channel greetings, news articles, automatic
+12 =REGD::kicking, and much more.  Only registered nicknames
+13 =REGD::may be added to a channel access list.
+14 =REGD::Please choose a password you will remember, but that is
+15 =REGD::suitably complex when registering your channel.  If
+16 =REGD::someone else gets your password, they can then exercise
+17 =REGD::total control over your channel, including forbidding
+18 =REGD::you access to it.  If you have lost your password, you
+19 =REGD::can contact a Services Operator to retrieve it for you.
 
 [CHANSERV/DROP]
-01 =::DROP <channel>
-02 =::
+01 =REGD::DROP <channel>
+02 =REGD::
+03 =REGD::This will de-register your channel.  This action is
+04 =REGD::permanent, and not reversable.  The channel will once
+05 =REGD::be governed by whoever has ops, and nothing will stop
+06 =REGD::channel takeovers, keep the channel topic, etc.
+07 =SOP::
+08 =SOP::As a SOP, you may drop any channel, weather you own
+09 =SOP::it or not.  Please use this command CAREFULLY.
 
 [CHANSERV/IDENTIFY]
 01 =::IDENTIFY <channel> <password>
 02 =::
+03 =::This will identify you to your channel.  This is
+04 =::required to transfer control of the channel, or set
+05 =::various other options, including adding someone at
+06 =::the top access level to the channel access list.
+07 =::You will be accounted as having access ABOVE ALL
+08 =::entries on the access list with this command.
+09 =::
+10 =::The password you specify should be the same as the
+11 =::one you set with the REGISTER or SET PASSWORD command.
 
 [CHANSERV/INFO]
 01 =::INFO <channel>
 02 =::
+03 =::This will give you various information about a given
+04 =::channel.  This includes information such as their
+05 =::mailing list address, web address, and description
+06 =::if they have set them, the time the channel was last
+07 =::used, or who is currently in the channel (if it doesnt
+08 =::have the Private option set on).  It will also tell
+09 =::you what options they have set, the current topic,
+10 =::and much more.
+11 =OPER::
+12 =OPER::As an oper, you may also see a comment about that
+13 =OPER::channel, which has been set by a SOP either as a prior
+14 =OPER::suspend reason, or manually.  Please be advised that
+15 =OPER::normal users CANNOT see this field.
 
 [CHANSERV/LIST]
 01 =::LIST [<mask> [<maximum>]]
 02 =::
-
-[CHANSERV/GETPASS]
-01 =::GETPASS <channel>
-02 =::
+03 =::This will list all registered channels that match
+04 =::the mask you have specified and their descriptions
+05 =::up to a default maximum number of entries set by the
+06 =::Services Admins.  You override the maximum amount of
+07 =::entries displayed up to an absolute maximum also
+08 =::specified by the Services Admins.  Channels marked
+09A=:OPER:as private will not be displayed in the list.
+09B=OPER::as private will be displayed in the list.
 
 [CHANSERV/SUSPEND]
-01 =::SUSPEND <channel> <reason>
-02 =::
+01 =SOP::SUSPEND <channel> <reason>
+02 =SOP::
+03 =SOP::This will render a channel's access list (and
+04 =SOP::founder) useless.  It will NOT stop users from
+05 =SOP::joining the channel (unless it has Restricted and
+06 =SOP::SecureOps on), they will just not get their normal
+07 =SOP::access privilages.  All IRC Operators will recieve
+08 =SOP::AutoVoice, SOPs will recieve AutoOps, and SADMINS
+09 =SOP::will recieve founder privilages. Because they
+10 =SOP::cannot ident, they also cannot drop the channel, or
+11 =SOP::change its password.  This is ment to be a short
+12 =SOP::term diciplinary measure while a complaint is under
+13 =SOP::review against this channel, or to caution the
+14 =SOP::channel rather than just dropping it.
 
 [CHANSERV/UNSUSPEND]
-01 =::UNSUSPEND <channel>
-02 =::
+01 =SOP::UNSUSPEND <channel>
+02 =SOP::
+03 =SOP::This will essentially reverse the suspend command,
+04 =SOP::allowing the channel access list to resume as normal.
+05 =SOP::The suspend reason will however remain as a comment
+06 =SOP::on the channel record, to remove this you must use
+07 =SOP::the SET COMMENT command.
 
 [CHANSERV/FORBID]
-01 =::FORBID <channel>
-02 =::
+01 =SOP::FORBID <channel>
+02 =SOP::
+03 =SOP::This will forbid a channel from being used on the
+04 =SOP::network, and will automaticlly kick any user who
+05 =SOP::joins it out.
+
+[CHANSERV/GETPASS]
+01 =SOP::GETPASS <channel>
+02 =SOP::
+03 =SOP::This will retrieve the channel password for any
+04 =SOP::registered channel.
+05 =SOP::Please note that whenever this command is used, a
+06 =SOP::global message to all IRCOPS will be broadcast!
 
 [CHANSERV/MODE]
-01 =::MODE <channel> [modes]
-02 =::
+01 =REGD::MODE <channel> [modes]
+02 =REGD::
+03 =REGD::This will show you the current modes that are set
+04 =REGD::on a channel, including keys and limits (if you
+05 =REGD::have VIEW access).  If a mode is specified and you
+06 =REGD::have CMDMODE access, it will set it (subject to
+07 =REGD::the channel ModeLock).
 
 [CHANSERV/OP]
-01 =::OP <channel> [nickname]
-02 =::
+01 =REGD::OP <channel> [nickname]
+02 =REGD::
+03 =REGD::This will attempt to set mode +o on your nickname
+04 =REGD::in the specified channel, if you have CMDOP access.
+05 =REGD::If you specify another nickname after the channel
+06A=REGD:SOP:and you have SUPER access, mode +o will be set on
+07A=REGD:SOP:that user instead (if the channel is either not
+08A=REGD:SOP:secure, or they have either CMDOP or AUTOOP access).
+06B=SOP::mode +o will be set on that user instead (if the
+07B=SOP::channel is either not secure, or they have either
+08B=SOP::CMDOP or AUTOOP access).
 
 [CHANSERV/DEOP]
-01 =::DEOP <channel> [nickname]
-02 =::
+01 =REGD::DEOP <channel> [nickname]
+02 =REGD::
+03 =REGD::This will attempt to set mode -o on your nickname
+04 =REGD::in the specified channel, if you have CMDOP access.
+05 =REGD::If you specify another nickname after the channel
+06A=REGD:SOP:and you have SUPER access, mode -o will be set on
+07A=REGD:SOP:that user instead.
+06B=SOP::mode -o will be set on that user instead.
 
 [CHANSERV/VOICE]
-01 =::VOICE <channel> [nickname]
-02 =::
+01 =REGD::VOICE <channel> [nickname]
+02 =REGD::
+03 =REGD::This will attempt to set mode +v on your nickname
+04 =REGD::in the specified channel, if you have CMDVOICE
+05 =REGD::access.  If you specify another nickname after the
+06A=REGD:SOP:channel and you have SUPER access, mode +v will be
+07A=REGD:SOP:set on that user instead (if the channel is either
+08A=REGD:SOP:not secure, or they have either CMDVOICE or
+09A=REGD:SOP:AUTOVOICE access).
+06B=SOP::mode +o will be set on that user instead (if the
+07B=SOP::channel is either not secure, or they have either
+08B=SOP::CMDVOICE or AUTOVOICE access).
 
 [CHANSERV/DEVOICE]
-01 =::DEVOICE <channel> [nickname]
-02 =::
+01 =REGD::DEVOICE <channel> [nickname]
+02 =REGD::
+03 =REGD::This will attempt to set mode -o on your nickname
+04 =REGD::in the specified channel, if you have CMDVOICE
+05 =REGD::access. If you specify another nickname after the
+06A=REGD:SOP:channel and you have SUPER access, mode -o will be
+07A=REGD:SOP:set on that user instead.
+06B=SOP::channel mode -o will be set on that user instead.
 
 [CHANSERV/TOPIC]
-01 =::TOPIC <channel> [topic]
-02 =::
+01 =REGD::TOPIC <channel> [topic]
+02 =REGD::
+03 =REGD::This will return the topic of a channel, if you have
+04 =REGD::VIEW access.  Specifying a topic after the channel
+05 =REGD::will set the topic, if you have CMDMODE access.
 
 [CHANSERV/KICK]
-01 =::KICK <channel> <nickname> [reason]
-02 =::
+01 =REGD::KICK <channel> <nickname> [reason]
+02 =REGD::
+03 =REGD::This will kick a user from a channel, with the reason
+04 =REGD::you specify.  If you do not specify a kick reason, the
+05 =REGD::default AKICK reason is used.  The user will however
+06 =REGD::know who kicked them (in the kick reason), and you must
+07 =REGD::have at least CMDKICK access to use this option.  You
+08 =REGD::may not kick a user who is higher than you on the
+09 =REGD::access list.
 
 [CHANSERV/REMOVE]
-01 =::REMOVE <channel> <nickname> <reason>
-02 =::
+01 =REGD::REMOVE <channel> <nickname> <reason>
+02 =REGD::
+03 =REGD::This performs the same action as the KICK command,
+04 =REGD::except the user does NOT know who kicked them, and
+05 =REGD::the kick reason MUST be specified.  You must have
+06 =REGD::at least SUPER access to use this command, and you
+07 =REGD::may not kick a user who is higher than you on the
+08 =REGD::access list.
 
 [CHANSERV/USERS]
-01 =::USERS <channel>
-02 =::
+01 =REGD::USERS <channel>
+02 =REGD::
+03 =REGD::This will show you a list of the users in a s channel,
+04 =REGD::as long as you have VIEW access.  OPS and VOICES will
+05 =REGD::be indicated with a '@' and '+' before the nickname
+06 =REGD::respectively.
 
 [CHANSERV/INVITE]
-01 =::INVITE <channel> [nickname]
-02 =::
+01 =REGD::INVITE <channel> [nickname]
+02 =REGD::
+03 =REGD::This will invite you (or a nickname specified after
+04 =REGD::the channel) to a channel that has mode +i set.  You
+05A=REGD:SOP:must have CMDINVITE access to use this command, or
+06A=REGD:SOP:SUPER access to invite another user.
+05B=SOP::may invite any user to any channel.
 
 [CHANSERV/UNBAN]
-01 =::UNBAN <channel> [nickname]
-02 =::
+01 =REGD::UNBAN <channel> [nickname]
+02 =REGD::
+03 =REGD::This will scan through the ban list and remove all
+04 =REGD::entries that are preventing you from joining a
+05 =REGD::channel.  If a nickname is specified after the
+06 =REGD::channel name, it will attempt to unban another
+07A=REGD:SOP:online user.  You must have CMDUNBAN access to use
+08A=REGD:SOP:this command on yourself, and SUPER access to use
+09A=REGD:SOP:it on another user.
+07B=SOP::online user.
 
 [CHANSERV/CLEAR]
+01 =REGD::Sometimes it is nessicary (as a juditial measure,
+02 =REGD::or a method of gaining control of a situation, etc)
+03 =REGD::to take drastic measures in a channel.  This command
+04 =REGD::is your drastic measure in-a-box.  This will do
+05 =REGD::anything from take off all modes on a channel, to
+06 =REGD::kicking everyone out of it.
+07 =REGD::
+08 =REGD::Your available drastic measures are:
+09 =REGD::    MODES        BANS         OPS          VOICES
+10 =REGD::    USERS        ALL
 
 [CHANSERV/CLEAR/USERS]
-01 =::CLEAR <channel> USERS
-02 =::
+01 =REGD::CLEAR <channel> USERS
+02 =REGD::
+03 =REGD::This command should be used with extreme caution,
+04 =REGD::as it will kick all users in the channel out of it.
+05 =REGD::All users on channel will be notified of the action,
+06 =REGD::and who did it.
+07 =REGD:SOP:You must have CMDCLEAR access to use this command.
 
 [CHANSERV/CLEAR/MODES]
-01 =::CLEAR <channel> MODES
-02 =::
+01 =REGD::CLEAR <channel> MODES
+02 =REGD::
+03 =REGD::This will unset all modes set for a channel, that
+04 =REGD::NOT ModeLocked on.  This includes unsetting any
+05 =REGD::channel key, invite only mode, etc.  All ops will
+06 =REGD::will be notified of the action, and who did it.
+07 =REGD:SOP:You must have CMDCLEAR access to use this command.
 
 [CHANSERV/CLEAR/OPS]
-01 =::CLEAR <channel> OPS
-02 =::
+01 =REGD::CLEAR <channel> OPS
+02 =REGD::
+03 =REGD::This will remove mode +o from all users in channel
+04 =REGD::who have it set (ie. ops).  All users who are deoped
+05 =REGD::will be notified of the action, and who did it.
+06 =REGD:SOP:You must have CMDCLEAR access to use this command.
 
 [CHANSERV/CLEAR/VOICES]
-01 =::CLEAR <channel> VOICES
-02 =::
+01 =REGD::CLEAR <channel> VOICES
+02 =REGD::
+03 =REGD::This will remove mode +v from all users in channel
+04 =REGD::who have it set (ie. voices).  All users who are
+05 =REGD::devoiced, and all ops will be notified of the action,
+06 =REGD::and who did it.
+07 =REGD:SOP:You must have CMDCLEAR access to use this command.
 
 [CHANSERV/CLEAR/BANS]
-01 =::CLEAR <channel> BANS
-02 =::
+01 =REGD::CLEAR <channel> BANS
+02 =REGD::
+03 =REGD::This will remove all bans (ie. mode +b) from the
+04 =REGD::channel ban list.  Essentiall giving all people who
+05 =REGD::are banned from the channel a reprieve.  If these
+06 =REGD::users are on the AKICK list, or the channel has
+07 =REGD::Restricted and SecureOps set, the ban will be set
+08 =REGD::again by services as soon as they enter again.
+09 =REGD::Please refer to the help on SET BANTIME for a way
+10 =REGD::of bans being removed automatically after a time
+11 =REGD::period.  All ops will be notified of this action,
+12 =REGD::and who did it.
+13 =REGD:SOP:You must have CMDCLEAR access to use this command.
 
 [CHANSERV/CLEAR/ALL]
-01 =::CLEAR <channel> ALL
-02 =::
+01 =REGD::CLEAR <channel> ALL
+02 =REGD::
+03 =REGD::This command essentially does the same as:
+04 =REGD::    CLEAR MODES, CLEAR OPS, CLEAR VOICES, CLEAR BANS
+05 =REGD::
+06 =REGD::Please see the help on each of these commands to find
+07 =REGD::out what each of them do.  All public notice in the
+08 =REGD::channel will be made when this command is used.
+09 =REGD:SOP:You must have CMDCLEAR access to use this command.
+
+[CHANSERV/LEVEL]
+01 =REGD::Services allow you to alter the default level for
+02 =REGD::taking various actions in a channel, and what level
+03 =REGD::is required to perform verious actions.  eg.  By
+04 =REGD::default, reading channel news is available to all
+05 =REGD::users (ie. level 0), however some like to restrict
+06 =REGD::it to only people on the access list (level 1).
+07 =REGD::
+08 =REGD::You may maintain the channel levels with:
+09 =REGD::    SET          RESET        LIST
 
 [CHANSERV/LEVEL/SET]
-01 =::LEVEL <channel> SET <type> <level>
-02 =::
+01 =REGD::LEVEL <channel> SET <type> <level>
+02 =REGD::
+03 =REGD::This will set the level of <type> to a number that
+04 =REGD::you specify.  There are maximum and minimum limits
+05 =REGD::as to what you may set a level to.  These are the
+06 =REGD::same limits as to what level you may add someone
+07 =REGD::to the access list with (except you may specify one
+08 =REGD::above the maximum here, to mean 'founder only').
+09 =REGD::Once set, users must be at or above the level you
+10 =REGD::specify to be able to access or use the feature in
+11 =REGD::question, except for AUTODEOP, where you must be
+12 =REGD::below or equal to the level specified.  You must
+13 =REGD::have founder access to use this command.
 
 [CHANSERV/LEVEL/RESET]
-01 =::LEVEL <channel> RESET <type|ALL>
-02 =::
+01 =REGD::LEVEL <channel> RESET <type|ALL>
+02 =REGD::
+03 =REGD::This is the same as using the LEVEL SET command and
+04 =REGD::specifying the default level as the 'new level'.
+05 =REGD::Specifying ALL as the level type will reset all
+06 =REGD::levels back to the default level (ie. what it was
+07 =REGD::set to when you registered the channel).  You must
+08 =REGD::have founder access to use this command.
+
+[CHANSERV/LEVEL/LIST]
+01 =REGD::LEVEL <channel> LIST
+02 =REGD::
+03 =REGD::If you have SET privilages or above, you this will
+04 =REGD::show you a list of TAGS, LEVELS and DESCRIPTIONS of
+05 =REGD::the access levels of the channel.  If you do not,
+06 =REGD::this will show you a line for each level you have
+07 =REGD::access to you, including the description of it.
 
 [CHANSERV/ACCESS]
+01 =REGD::The channel access list is a way for a founder to
+02 =REGD::control who has access to do what with their channel,
+03 =REGD::from who else can have ops/voices, to who can adjust
+04 =REGD::the channel settings or add to the access list iself.
+05 =REGD::
+06 =REGD::You maintain the access list with these commands:
+07 =REGD::    ADD          DEL          LIST
 
 [CHANSERV/ACCESS/ADD]
-01 =::ACCESS <channel> ADD <nickname> <level>
-02 =::
+01 =REGD::ACCESS <channel> ADD <nickname> <level>
+02 =REGD::
+03 =REGD::This will add a nickname to a channel access list at
+04 =REGD::the level you specify.  You may only specify a level
+05 =REGD::that is below your own.  You must have ACCESS pivilages
+06 =REGD::to use this command.  Please refer to the LEVEL LIST
+07 =REGD::to see what access you will be giving the person before
+08 =REGD::deciding what level to add them at.  You may only add
+09 =REGD::registered nicknames to a channel access list.
 
 [CHANSERV/ACCESS/DEL]
-01 =::ACCESS <channel> DEL <nickname|NUM>
-02 =::
+01 =REGD::ACCESS <channel> DEL <nickname|NUM>
+02 =REGD::
+03 =REGD::This will remove a nickname from a channel access
+04 =REGD::list.  You may specify either the nickname to remove
+05 =REGD::or the entry number as displayed with the ACCESS LIST
+06 =REGD::command.  You may not remove anyone with a higher or
+07 =REGD::equal access level than you have.  You must have
+08 =REGD::ACCESS privilages to use this command.
 
 [CHANSERV/ACCESS/LIST]
-01 =::ACCESS <channel> LIST
-02 =::
+01 =REGD::ACCESS <channel> LIST
+02 =REGD::
+03 =REGD::This will list the access list, including what level
+04 =REGD::everyone is in channel, and who last modified their
+05 =REGD::access record, and when it was last modified.  You
+06 =REGD::must have VIEW privilages to use this command.
 
 [CHANSERV/AKICK]
+01 =REGD::There are times when a user violates the channel rules
+02 =REGD::so much, or just plain becomes so annoying that they
+03 =REGD::warrent a permanent ban from channel.  AutoKick is
+04 =REGD::services method of achieving this.  Any users on this
+05 =REGD::list will be automatically kicked/banned from channel.
+06 =REGD::
+07 =REGD::You maintain the AutoKick list with these commands:
+08 =REGD::    ADD          DEL          LIST
 
 [CHANSERV/AKICK/ADD]
-01 =::AKICK <channel> ADD <nickname|mask> [reason]
-02 =::
+01 =REGD::AKICK <channel> ADD <nickname|mask> [reason]
+02 =REGD::
+03 =REGD::This will add someone to the AutoKick list (permanent
+04 =REGD::ban).  You may specify a registered nickname, or a
+05 =REGD::mask.  If you specify a nickname, a user will only be
+06 =REGD::kicked if services recognize the user on that nickname
+07 =REGD::(ie. they're recognized or identified).  If a mask is
+08 =REGD::specified, anyone matching that mask will be banned,
+09 =REGD::and that mask will be set as the ban.  If a reason is
+10 =REGD::specified, it will be used in the kick message, else
+11 =REGD::a default kick message will be used.  You must have
+12 =REGD::AKICK access to use this command.
 
 [CHANSERV/AKICK/DEL]
-01 =::AKICK <channel> DEL <nickname|mask|NUM>
-02 =::
+01 =REGD::AKICK <channel> DEL <nickname|mask|NUM>
+02 =REGD::
+03 =REGD::This will remove an entry from the AutoKick list.  You
+04 =REGD::may specify a nickname or mask that matches one of the
+05 =REGD::entries on the list, or the entry number directly which
+06 =REGD::corrisponds to one outputted from the LIST command.
+07 =REGD::You must have AKICK access to use this command.
 
 [CHANSERV/AKICK/LIST]
-01 =::AKICK <channel> LIST
-02 =::
+01 =REGD::AKICK <channel> LIST
+02 =REGD::
+03 =REGD::This will list out all entries on the AutoKick list.
+04 =REGD::It will also list out who added them to it, how long
+05 =REGD::they have been on the list for, and why they are on
+06 =REGD::the AutoKick list in the first place.
+07 =REGD:SOP:You must have VIEW access to use this command.
 
 [CHANSERV/GREET]
+01 =REGD::One feature many users like about Eggdrop IRC bots,
+02 =REGD::is the ability to set an InfoLine, which is quoted
+03 =REGD::to channel (prefixed by their nickname) when they
+04 =REGD::join channel.  Services now also offer this feature.
+05 =REGD::
+06 =REGD::You may maintain your greetings with the following:
+07 =REGD::    ADD          DEL          LIST
 
 [CHANSERV/GREET/ADD]
-01 =::GREET <channel> ADD [!nickname] [!]<greeting>
-02 =::
+01 =REGD::GREET <channel> ADD [@nickname] [!]<greeting>
+02 =REGD::
+03 =REGD::This will add a channel greeting to your nickname
+04 =REGD::which will be displayed on joining a channel.  You
+05 =REGD::may not start your greeting with a '!' or '@' char.
+06 =REGD::You must have GREET access to set a greeting, or
+07 =REGD::have it displayed on joining a channel.  If you
+08 =REGD::have OVERGREET access, you may set the greet of
+09 =REGD::another person by specifying their nickname prefixed
+10 =REGD::by the '@' symbol after the ADD keyword.  You may
+11 =REGD::also lock a greeting (ie. the user will not be able
+12 =REGD::to change it themselves) by prefixing the greeting
+13 =REGD::itself with a '!' character.
 
 [CHANSERV/GREET/DEL]
-01 =::GREET <channel> DEL [nickname]
-02 =::
+01 =REGD::GREET <channel> DEL [nickname]
+02 =REGD::
+03 =REGD::This will remove your channel greeting, and services
+04 =REGD::will no longer announce your greeting on joining a
+05 =REGD::channel.  If you have OVERGREET access, you may delete
+06 =REGD::another user's greeting by specifying their nickname
+07 =REGD::after the DEL keyword.
 
 [CHANSERV/GREET/LIST]
-01 =::GREET <channel> LIST [ALL]
-02 =::
+01 =REGD::GREET <channel> LIST [ALL]
+02 =REGD::
+03 =REGD::This will show you what your greeing is currently set
+04 =REGD::to, or if you specify ALL after the LIST keyword, and
+05 =REGD::have OVERGREET access, it will show you the greetings
+06 =REGD::of all users in the channel.
 
 [CHANSERV/MESSAGE]
+01 =REGD::Often, channels will want to send a notice to users as
+02 =REGD::they join, usually telling them the channel rules, or
+03 =REGD::how to obtain them, or simply channel announcements.
+04 =REGD::
+05 =REGD::You may maintain the on-join messages with these commands:
+06 =REGD::    ADD          DEL          LIST
 
 [CHANSERV/MESSAGE/ADD]
-01 =::MESSAGE <channel> ADD <message>
-02 =::
+01 =REGD::MESSAGE <channel> ADD <message>
+02 =REGD::
+03 =REGD::This will add a new message to (the bottom of) the list
+04 =REGD::of messages that will be displayed to users as they
+05 =REGD::join the channel.  You must have MESSAGE access to use
+06 =REGD::this command.
 
 [CHANSERV/MESSAGE/DEL]
-01 =::MESSAGE <channel> DEL <NUM>
-02 =::
+01 =REGD::MESSAGE <channel> DEL <NUM>
+02 =REGD::
+03 =REGD::This will delte a message from the list that will be
+04 =REGD::displayed to users on joining the channel.  You may only
+05 =REGD::delete by number, which is obtained with the MESSAGE
+06 =REGD::LIST command.  You must have MESSAGE access to use this
+07 =REGD::command.
 
 [CHANSERV/MESSAGE/LIST]
-01 =::MESSAGE <channel> LIST
-02 =::
+01 =REGD::MESSAGE <channel> LIST
+02 =REGD::
+03 =REGD::This will list out (numbered) all messages that will be
+04 =REGD::displayed to users as they join the channel.  It will
+05 =REGD::also show who added the on-join message, and how long
+06 =REGD::it has been in effect.  You must have MESSAGE access to
+07 =REGD::use this command.
 
 [CHANSERV/SET]
+01 =REGD::Services maintains many settings on your channel
+02 =REGD::record, ranging from the password, to an e-mail
+03 =REGD::address you specify, to options that effect how
+04 =REGD::services treat your channel.  Some of these you
+05 =REGD::must identify to set, others may be set as long
+06 =REGD::as you have SET privilages.
+07 =REGD::
+08 =REGD::You may alter your settings with these commands:
+09 =REGD::    FOUNDER      COFOUNDER    PASSWORD     EMAIL
+10 =REGD::    URL          DESCRIPTION  MLOCK        BANTIME
+11 =REGD::    PARTTIME     KEEPTOPIC    TOPICLOCK    PRIVATE
+12 =REGD::    SECUREOPS    SECURE       ANARCHY      JOIN
+12 =REGD::    RESTRICTED   REVENGE
+12 =SOP::As a SOP you may also use the following commands:
+13 =SOP::    COMMENT      NOEXPIRE
 
 [CHANSERV/SET/FOUNDER]
-01 =::SET <channel> FOUNDER <founder>
-02 =::
+01 =REGD::SET <channel> FOUNDER <founder>
+02 =REGD::
+03 =REGD::This will transfer ownership of the channel to
+04 =REGD::another nickname.  This is permanent, you will be
+05 =REGD::relinquishing ALL control of this channel, and if
+06 =REGD::you are not in the access list, all access to it.
+07 =REGD::You may still identify as founder if you know the
+08 =REGD::password without being set as founder.  You must
+09 =REGD::identify as founder to use this command.
 
 [CHANSERV/SET/COFOUNDER]
-01 =::SET <channel> COFOUNDER <cofounder>
-02 =::
+01 =REGD::SET <channel> COFOUNDER <cofounder>
+02 =REGD::
+03 =REGD::This will establish a 'will' for the channel, ie.
+04 =REGD::who will get it if your nickname is dropped, or
+05 =REGD::expires.  The person who is co-founder has NO
+06 =REGD::extra access than what they are given on the access
+07 =REGD::list like every other user, its just a method of
+08 =REGD::ensuring that if your nick is dropped, the channel
+09 =REGD::does not go with it.  You must identify as founder
+10 =REGD::to use this command.
 
 [CHANSERV/SET/DESCRIPTION]
-01 =::SET <channel> DESCRIPTION <description>
-02 =::
+01 =REGD::SET <channel> DESCRIPTION <description>
+02 =REGD::
+03 =REGD::This will change the description of what the channel
+04 =REGD::is all about (shown in the INFO display).  This is
+05 =REGD::a free-form text field only used in the INFO and
+06 =REGD::LIST commands.  Please be descriptive about what the
+07 =REGD::channels main purpose for being is.
+08 =REGD::
+09 =REGD::This value will display as-is in your INFO display.
+10 =REGD::Setting this value to "NONE" will clear it.
 
 [CHANSERV/SET/PASSWORD]
-01 =::SET <channel> PASSWORD <password>
-02 =::
+01 =REGD::SET <channel> PASSWORD <password>
+02 =REGD::
+03 =REGD::This will change your channel password.  This
+04 =REGD::password is required for the IDENTIFY command (ie.
+05 =REGD::to be recognized as founder when not on your normal
+06 =REGD::nickname).  You must identify as founder to use this
+07 =REGD::command.
+08 =REGD::
+09 =REGD::Please choose a password you will remember, but that is
+10 =REGD::suitably complex when registering your channel.  If
+11 =REGD::someone else gets your channel password, they can then
+12 =REGD::exercise total control over it, including forbidding you
+13 =REGD::exercise to it.  If you have lost your password, you can
+14 =REGD::contact a Services Operator to retrieve it for you.
 
 [CHANSERV/SET/EMAIL]
-01 =::SET <channel> EMAIL <email>
-02 =::
+01 =REGD::SET <channel> EMAIL <email>
+02 =REGD::
+03 =REGD::This command is used to set the channels email address
+04 =REGD::(usually a mailing list of some kind).
+05 =REGD::
+06 =REGD::You must have SET priviliages to use this command.
+07 =REGD::This value will display as-is in your INFO display.
+08 =REGD::Setting this value to "NONE" will clear it.
 
 [CHANSERV/SET/URL]
-01 =::SET <channel> URL <url>
-02 =::
+01 =REGD::SET <channel> URL <url>
+02 =REGD::
+03 =REGD::This command is used to set the channels web address.
+04 =REGD::
+05 =REGD::You must have SET priviliages to use this command.
+06 =REGD::This value will display as-is in your INFO display.
+07 =REGD::Setting this value to "NONE" will clear it.
 
 [CHANSERV/SET/COMMENT]
-01 =::SET <channel> COMMENT <comment>
-02 =::
+01 =SOP::SET <channel> COMMENT <comment>
+02 =SOP::
+03 =SOP::This will set (or clear) a comment on a channel INFO
+04 =SOP::record.  Normal users will not be able to see this
+05 =SOP::comment, however all members of the OPER committee
+06 =SOP::will.  When a channel is suspended, the suspend reason
+07 =SOP::is set as the comment automatically, and this will
+08 =SOP::remain even after the channel is unsuspended.
+09 =SOP::
+10 =SOP::Setting this value to "NONE" will clear it.
 
 [CHANSERV/SET/MLOCK]
-01 =::SET <channel> MLOCK <modes|NONE>
-02 =::
+01 =REGD::SET <channel> MLOCK <modes|NONE>
+02 =REGD::
+03 =REGD::This is a list of modes that will be enforced (+ or
+04 =REGD::-) by services.  If a user tries to contravine these
+05 =REGD::modes, services will reset them automatically.  This
+06 =REGD::includes channel keys and limits.
+07 =REGD::
+08 =REGD::You must have SET priviliages to use this command.
+09 =REGD::Setting this value to "NONE" will clear it.
 
 [CHANSERV/SET/BANTIME]
-01 =::SET <channel> BANTIME <bantime>
-02 =::
+01 =REGD::SET <channel> BANTIME <bantime|RESET>
+02 =REGD::
+03 =REGD::This is the amount of time services will leave a ban
+04 =REGD::active on channel before removing it automatically.
+05 =REGD::This value is in Standard Time Format (see the global
+06 =REGD::noticer's help on TIME).
+07 =REGD::
+08 =REGD::You must have SET priviliages to use this command.
+09 =REGD::Setting this value to 0 will disable unbanning.
 
 [CHANSERV/SET/PARTTIME]
-01 =::SET <channel> PARTTIME <parttime>
-02 =::
+01 =REGD::SET <channel> PARTTIME <parttime|RESET>
+02 =REGD::
+03 =REGD::This is the amount of time services will require a
+04 =REGD::user to have been out of channel before displaying
+05 =REGD::their channel greeting again.  This value is in
+06 =REGD::Standard Time Format (see the global noticer's help
+07 =REGD::on TIME).
+08 =REGD::
+09 =REGD::You must have SET priviliages to use this command.
+10 =REGD::Setting this value to 0 will display EACH join.
 
 [CHANSERV/SET/KEEPTOPIC]
-01 =::SET <channel> KEEPTOPIC <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <channel> KEEPTOPIC <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Keep Topic.
+04 =REGD::When this option is on, services will remember the
+05 =REGD::channel topic after all users have left channel,
+06 =REGD::and will re-set it when someone joins it again.
+07 =REGD::You must have SET priviliages to use this command.
 
 [CHANSERV/SET/TOPICLOCK]
-01 =::SET <channel> TOPICLOCK <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <channel> TOPICLOCK <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Topic Lock.
+04 =REGD::When this option is on, services will not allow
+05 =REGD::anyone to set the channel topic except by use of
+06 =REGD::the TOPIC command.
+07 =REGD::You must have SET priviliages to use this command.
 
 [CHANSERV/SET/PRIVATE]
-01 =::SET <channel> PRIVATE <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <channel> PRIVATE <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Private.
+04 =REGD::When this option is on, the info display for this
+05 =REGD::channel will not display stats about who is in it,
+06 =REGD::and it will not show up in the channel list.
+07 =REGD::You must have SET priviliages to use this command.
 
 [CHANSERV/SET/SECUREOPS]
-01 =::SET <channel> SECUREOPS <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <channel> SECUREOPS <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Secure Ops.
+04 =REGD::When this option is on, only people on the access
+05 =REGD::list will be allowed to have mode +o (ops) or mode
+06 =REGD::+v (voices) set on them.
+07 =REGD::You must have SET priviliages to use this command.
 
 [CHANSERV/SET/SECURE]
-01 =::SET <channel> SECURE <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <channel> SECURE <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Secure.
+04 =REGD::When this option is on, users will have to identify
+05 =REGD::to their nicknames to be recognized as themselves
+06 =REGD::as far as the channel access list goes.
+07 =REGD::You must have SET priviliages to use this command.
 
 [CHANSERV/SET/NOEXPIRE]
-01 =::SET <channel> NOEXPIRE <ON|OFF|RESET>
-02 =::
+01 =SOP::SET <channel> NOEXPIRE <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::When you set this on a channel, that channel will
+04 =SOP::not be subject to channel expiration if it is not
+05 =SOP::used after a period of time.  Please use this very
+06 =SOP::cautiously, as channel expiration guarentees that
+07 =SOP::channels dont get held up if they're not being used.
 
 [CHANSERV/SET/ANARCHY]
-01 =::SET <channel> ANARCHY <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <channel> ANARCHY <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Anarchy.
+04 =REGD::When this option is on, services not deop a user
+05 =REGD::who is not on the access list if they're the first
+06 =REGD::user to join channel.
+07 =REGD::You must have SET priviliages to use this command.
 
 [CHANSERV/SET/RESTRICTED]
-01 =::SET <channel> RESTRICTED <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <channel> RESTRICTED <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Restricted.
+04 =REGD::When this option is on, only people on the access
+05 =REGD::list will be able to join the channel.  If secure
+06 =REGD::is set on, remember to identify before joining.
+07 =REGD::You must have SET priviliages to use this command.
 
 [CHANSERV/SET/JOIN]
-01 =::SET <channel> JOIN <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <channel> JOIN <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::This will turn on or off Keep Topic.
+04 =REGD::When this option is on, services will join the
+05 =REGD::channel, and remain oped.  You may not deop or
+06 =REGD::kick services, they'll rejoin and reop.
+07 =REGD::You must have SET priviliages to use this command.
 
 [CHANSERV/SET/REVENGE]
-01 =::SET <channel> REVENGE <level>
+01 =REGD::SET <channel> REVENGE <level|RESET>
+02 =REGD::
+03 =REGD::This will set the revenge level services will
+04 =REGD::enforce.  Revenge is taken on users when they
+05 =REGD::attempt to kick or deop someone higher than them
+06 =REGD::on the access list, or ban someone equal or above
+07 =REGD::them on the access list.  See help on SET REVENGE
+08 =REGD::LEVELS for a list of available revenge levels and
+09 =REGD::the action they will take.
+10 =REGD::You must have SET priviliages to use this command.
+
+[CHANSERV/SET/REVENGE/LEVELS]
+01 =::Available Channel Revenge Levels
 02 =::
+03 =::NONE     Do nothing
+04 =::REVERSE  Reverse the action, but do not reprimand
+05 =::DEOP     DeOp (mode -o) the offending user
+06 =::KICK     Kick the offending user from channel
+07 =::BAN1     Nick Ban (nick!*@*) offending user
+08 =::BAN2     Mask Ban (*!*user@*.host) offending user
+09 =::BAN3     Port Ban (*!*@port.host) offending user
+10 =::BAN4     Host Ban (*!*@*.host) offending user
+11 =::MIRROR   Mirror activity (do what they did back!)
 
 [CHANSERV/LOCK]
+01 =SOP::Services allows you to lock a value for a channel,
+02 =SOP::preventing users with SET privilages and the founder
+03 =SOP::from overriding your setting.  Please use caution,
+04 =SOP::as you are removing their right to change their record.
+05 =SOP::
+06 =SOP::You may lock a channels settings with these commands:
+07 =SOP::    MLOCK        BANTIME      PARTTIME     KEEPTOPIC
+08 =SOP::    TOPICLOCK    PRIVATE      SECUREOPS    SECURE
+09 =SOP::    ANARCHY      JOIN         RESTRICTED   REVENGE
 
 [CHANSERV/LOCK/MLOCK]
-01 =::LOCK <channel> MLOCK <modes>
-02 =::
+01 =SOP::LOCK <channel> MLOCK <modes>
+02 =SOP::
+03 =SOP::This will lock the value of ModeLock for a channel,
+04 =SOP::enforcing whatever you set over whatever the channel
+05 =SOP::has set themselves.  Doing this, will prevent the
+05 =SOP::founder and people with SET privilages from being able
+06 =SOP::to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/BANTIME]
-01 =::LOCK <channel> BANTIME <bantime>
-02 =::
+01 =SOP::LOCK <channel> BANTIME <bantime>
+02 =SOP::
+03 =SOP::This will lock the value of Ban Time for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/PARTTIME]
-01 =::LOCK <channel> PARTTIME <parttime>
-02 =::
+01 =SOP::LOCK <channel> PARTTIME <parttime>
+02 =SOP::
+03 =SOP::This will lock the value of Part Time for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/KEEPTOPIC]
-01 =::LOCK <channel> KEEPTOPIC <ON|OFF|RESET>
-02 =::
+01 =SOP::LOCK <channel> KEEPTOPIC <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Keep Topic for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/TOPICLOCK]
-01 =::LOCK <channel> TOPICLOCK <ON|OFF|RESET>
-02 =::
+01 =SOP::LOCK <channel> TOPICLOCK <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Topic Lock for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/PRIVATE]
-01 =::LOCK <channel> PRIVATE <ON|OFF|RESET>
-02 =::
+01 =SOP::LOCK <channel> PRIVATE <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Private for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/SECUREOPS]
-01 =::LOCK <channel> SECUREOPS <ON|OFF|RESET>
-02 =::
+01 =SOP::LOCK <channel> SECUREOPS <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Secure Ops for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/SECURE]
-01 =::LOCK <channel> SECURE <ON|OFF|RESET>
-02 =::
+01 =SOP::LOCK <channel> SECURE <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Secure for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/ANARCHY]
-01 =::LOCK <channel> ANARCHY <ON|OFF|RESET>
-02 =::
+01 =SOP::LOCK <channel> ANARCHY <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Anarchy for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/RESTRICTED]
-01 =::LOCK <channel> RESTRICTED <ON|OFF|RESET>
-02 =::
+01 =SOP::LOCK <channel> RESTRICTED <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Restricted for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/JOIN]
-01 =::LOCK <channel> JOIN <ON|OFF|RESET>
-02 =::
+01 =SOP::LOCK <channel> JOIN <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Join for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/LOCK/REVENGE]
-01 =::LOCK <channel> REVENGE <level>
-02 =::
+01 =SOP::LOCK <channel> REVENGE <level>
+02 =SOP::
+03 =SOP::This will lock the value of Revenge for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privilages from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
 
 [CHANSERV/UNLOCK]
+01 =SOP::Services allows you to lock a value for a channel,
+02 =SOP::preventing the user from overriding your setting.
+03 =SOP::These commands will remove a lock placed on a channel.
+04 =SOP::
+05 =SOP::You may unlock a users settings with these commands:
+06 =SOP::    MLOCK        BANTIME      PARTTIME     KEEPTOPIC
+07 =SOP::    TOPICLOCK    PRIVATE      SECUREOPS    SECURE
+08 =SOP::    ANARCHY      JOIN         RESTRICTED   REVENGE
 
 [CHANSERV/UNLOCK/MLOCK]
-01 =::UNLOCK <channel> MLOCK
-02 =::
+01 =SOP::UNLOCK <channel> MLOCK
+02 =SOP::
+03 =SOP::This will stop enforcing the modes locked in
+04 =SOP::the mlock, allowing them to be changed again.
 
 [CHANSERV/UNLOCK/BANTIME]
-01 =::UNLOCK <channel> BANTIME
-02 =::
+01 =SOP::UNLOCK <channel> BANTIME
+02 =SOP::
+03 =SOP::This will unlock the value of Ban Time for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/PARTTIME]
-01 =::UNLOCK <channel> PARTTIME
-02 =::
+01 =SOP::UNLOCK <channel> PARTTIME
+02 =SOP::
+03 =SOP::This will unlock the value of Part Time for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/KEEPTOPIC]
-01 =::UNLOCK <channel> KEEPTOPIC
-02 =::
+01 =SOP::UNLOCK <channel> KEEPTOPIC
+02 =SOP::
+03 =SOP::This will unlock the value of Keep Topic for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/TOPICLOCK]
-01 =::UNLOCK <channel> TOPICLOCK
-02 =::
+01 =SOP::UNLOCK <channel> TOPICLOCK
+02 =SOP::
+03 =SOP::This will unlock the value of Topic Lock for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/PRIVATE]
-01 =::UNLOCK <channel> PRIVATE
-02 =::
+01 =SOP::UNLOCK <channel> PRIVATE
+02 =SOP::
+03 =SOP::This will unlock the value of Private for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/SECUREOPS]
-01 =::UNLOCK <channel> SECUREOPS
-02 =::
+01 =SOP::UNLOCK <channel> SECUREOPS
+02 =SOP::
+03 =SOP::This will unlock the value of Secure Ops for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/SECURE]
-01 =::UNLOCK <channel> SECURE
-02 =::
+01 =SOP::UNLOCK <channel> SECURE
+02 =SOP::
+03 =SOP::This will unlock the value of Secure for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/ANARCHY]
-01 =::UNLOCK <channel> ANARCHY
-02 =::
+01 =SOP::UNLOCK <channel> ANARCHY
+02 =SOP::
+03 =SOP::This will unlock the value of Anarchy for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/RESTRICTED]
-01 =::UNLOCK <channel> RESTRICTED
-02 =::
+01 =SOP::UNLOCK <channel> RESTRICTED
+02 =SOP::
+03 =SOP::This will unlock the value of Restricted for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/JOIN]
-01 =::UNLOCK <channel> JOIN
-02 =::
+01 =SOP::UNLOCK <channel> JOIN
+02 =SOP::
+03 =SOP::This will unlock the value of Join for a
+04 =SOP::channel, however the value will remain the same.
 
 [CHANSERV/UNLOCK/REVENGE]
-01 =::UNLOCK <channel> REVENGE
-02 =::
+01 =SOP::UNLOCK <channel> REVENGE
+02 =SOP::
+03 =SOP::This will unlock the value of Revenge for a
+04 =SOP::channel, however the value will remain the same.
 
 
 
@@ -1034,48 +1619,48 @@
 15 =::      may change what is displayed above.
 
 [MEMOSERV/READ]
-01 =::READ [channel] <NUM|ALL|UNREAD>
-02 =::
+01 =REGD::READ [channel] <NUM|ALL|UNREAD>
+02 =REGD::
 
 [MEMOSERV/UNREAD]
-01 =::UNREAD [channel] <NUM|ALL>
-02 =::
+01 =REGD::UNREAD [channel] <NUM|ALL>
+02 =REGD::
 
 [MEMOSERV/LIST]
-01 =::LIST [channel]
-02 =::
+01 =REGD::LIST [channel]
+02 =REGD::
 
 [MEMOSERV/SEND]
-01 =::SEND [channel] <message>
-02 =::
+01 =REGD::SEND [channel] <message>
+02 =REGD::
 
 [MEMOSERV/FLUSH]
-01 =::FLUSH
-02 =::
+01 =REGD::FLUSH
+02 =REGD::
 
 [MEMOSERV/REPLY]
-01 =::REPLY [channel] <NUM>
-02 =::
+01 =REGD::REPLY [channel] <NUM>
+02 =REGD::
 
 [MEMOSERV/FORWARD]
-01 =::FORWARD [channel] <NUM> <nickname|channel>
-02 =::
+01 =REGD::FORWARD [channel] <NUM> <nickname|channel>
+02 =REGD::
 
 [MEMOSERV/CANCEL]
-01 =::CANCEL
-02 =::
+01 =REGD::CANCEL
+02 =REGD::
 
 [MEMOSERV/DEL]
-01 =::DEL [channel] <NUM|ALL|READ>
-02 =::
+01 =REGD::DEL [channel] <NUM|ALL|READ>
+02 =REGD::
 
 [MEMOSERV/CONTINUE]
-01 =::CONTINUE <message>
-02 =::
+01 =REGD::CONTINUE <message>
+02 =REGD::
 
 [MEMOSERV/FILE]
-01 =::FILE <nickname> <filename> [message]
-02 =::
+01 =REGD::FILE <nickname> <filename> [message]
+02 =REGD::
 
 
 [COMMSERV]
@@ -1097,28 +1682,28 @@
 16 =::      may change what is displayed above.
 
 [COMMSERV/NEW]
-01 =::NEW <committee> <head> <description>
-02 =::
+01 =SOP::NEW <committee> <head> <description>
+02 =SOP::
 
 [COMMSERV/KILL]
-01 =::KILL <committee>
-02 =::
+01 =SOP::KILL <committee>
+02 =SOP::
 
 [COMMSERV/ADD]
-01 =::ADD <committee> <nickname>
-02 =::
+01 =REGD::ADD <committee> <nickname>
+02 =REGD::
 
 [COMMSERV/DEL]
-01 =::DEL <committee> <nickname|NUM>
-02 =::
+01 =REGD::DEL <committee> <nickname|NUM>
+02 =REGD::
 
 [COMMSERV/LIST]
-01 =::LIST <committee>
-02 =::
+01 =REGD::LIST <committee>
+02 =REGD::
 
 [COMMSERV/MEMO]
-01 =::MEMO <committee> <message>
-02 =::
+01 =REGD::MEMO <committee> <message>
+02 =REGD::
 
 [COMMSERV/INFO]
 01 =::INFO <committee>
@@ -1127,42 +1712,42 @@
 [COMMSERV/LOGON]
 
 [COMMSERV/LOGON/ADD]
-01 =::LOGON <committee> ADD <message>
-02 =::
+01 =REGD::LOGON <committee> ADD <message>
+02 =REGD::
 
 [COMMSERV/LOGON/DEL]
-01 =::LOGON <committee> DEL <NUM>
-02 =::
+01 =REGD::LOGON <committee> DEL <NUM>
+02 =REGD::
 
 [COMMSERV/LOGON/LIST]
-01 =::LOGON <committee> LIST
-02 =::
+01 =REGD::LOGON <committee> LIST
+02 =REGD::
 
 [COMMSERV/SET]
 
 [COMMSERV/SET/HEAD]
-01 =::SET <committee> HEAD <head>
-02 =::
+01 =REGD::SET <committee> HEAD <head>
+02 =REGD::
 
 [COMMSERV/SET/EMAIL]
-01 =::SET <committee> EMAIL <email>
-02 =::
+01 =REGD::SET <committee> EMAIL <email>
+02 =REGD::
 
 [COMMSERV/SET/URL]
-01 =::SET <committee> URL <url>
-02 =::
+01 =REGD::SET <committee> URL <url>
+02 =REGD::
 
 [COMMSERV/SET/SECURE]
-01 =::SET <committee> SECURE <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <committee> SECURE <ON|OFF|RESET>
+02 =REGD::
 
 [COMMSERV/SET/PRIVATE]
-01 =::SET <committee> PRIVATE <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <committee> PRIVATE <ON|OFF|RESET>
+02 =REGD::
 
 [COMMSERV/SET/OPENMEMOS]
-01 =::SET <committee> OPENMEMOS <ON|OFF|RESET>
-02 =::
+01 =REGD::SET <committee> OPENMEMOS <ON|OFF|RESET>
+02 =REGD::
 
 
 
@@ -1175,60 +1760,83 @@
 06 =REGD::    STATS
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    GLOBAL
-09 =::
-10 =::You may request help on the syntax and functionalty
-11 =::of any and all of the above commands by specifying
-12 =::the command name after the HELP request.
-13 =::NOTE: Only commands you currently may use are listed
-14 =::      above, and things such as nickname registration
-15 =::      may change what is displayed above.
+09 =::This service also offers help on the following:
+10 =::    TIME         HOSTMASKS
+11 =::
+12 =::You may request help on the syntax and functionalty
+13 =::of any and all of the above commands by specifying
+14 =::the command name after the HELP request.
+15 =::NOTE: Only commands you currently may use are listed
+16 =::      above, and things such as nickname registration
+17 =::      may change what is displayed above.
 
 [SERVMSG/BREAKDOWN]
 01 =::BREAKDOWN
 02 =::
+03 =::This will show a list of servers that are currently on
+04 =::the network, including how they are linked to eachother,
+05 =::how many users and ircops are on them, how lagged from
+06 =::services they currently are, and percentage (by users)
+07 =::of the network the server currently accounts for.
 
 [SERVMSG/GLOBAL]
-01 =::GLOBAL <message>
-02 =::
+01 =ADMIN::GLOBAL <message>
+02 =ADMIN::
+03 =ADMIN::This will send a message to all users on the network.
+04 =ADMIN::This should be used rarely, and for something that
+05 =ADMIN::the whole network needs to know.
 
 [SERVMSG/STATS]
-01A=::STATS
-01B=::STATS [NICK|CHANNEL|OTHER|USAGE|ALL]
-02 =::
+01A=REGD:OPER SOP:STATS
+01B=OPER SOP::STATS [NICK|CHANNEL|OTHER|USAGE|ALL]
+02 =REGD::
+03 =REGD::This will show you how long services have been up
+04 =REGD::for, how many users are online (and the maximum
+05 =REGD::users services have seen), and how many clones (ie.
+06 =REGD::users from the same host) are online.
+07 =OPER SOP::
+08 =OPER SOP::If you specify a paramater after the STATS command,
+09 =OPER SOP::You will get a totally different display, please see
+10 =OPER SOP::the respective help on these subcommands for more
+11 =OPER SOP::information on what they display.
 
 [SERVMSG/STATS/NICK]
-01 =::STATS NICK
-02 =::
+01 =OPER SOP::STATS NICK
+02 =OPER SOP::
 
 [SERVMSG/STATS/CHANNEL]
-01 =::STATS CHANNEL
-02 =::
+01 =OPER SOP::STATS CHANNEL
+02 =OPER SOP::
 
 [SERVMSG/STATS/OTHER]
-01 =::STATS OTHER
-02 =::
+01 =OPER SOP::STATS OTHER
+02 =OPER SOP::
 
 [SERVMSG/STATS/USAGE]
-01 =::STATS USAGE
-02 =::
+01 =OPER SOP::STATS USAGE
+02 =OPER SOP::
 
 [SERVMSG/STATS/ALL]
-01 =::STATS ALL
-02 =::
+01 =OPER SOP::STATS ALL
+02 =OPER SOP::
 
+[SERVMSG/TIME]
+01 =::Standard Time Format
+
+[SERVMSG/HOSTMASKS]
+01 =::Wildcards, etc.
 
 
 [OPERSERV]
 01 =::This service assists IRC Operators in keeping control
 02 =::of the network and services.
 03 =OPER SOP::
-04 =OPER::This service allows you to use the following commands:
+04 =OPER SOP::This service allows you to use the following commands:
 05 =OPER SOP::    HELP         CLONE        OPERDENY     IGNORE
-06 =OPER::    AKILL        MODE         PING         SETTINGS
+06 =OPER SOP::    AKILL        MODE         PING         SETTINGS
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
-09 =SOP::And as a Services Operator, the following commands:
-09 =SOP::    KILL
+09 =ADMIN::    KILL
 10 =SADMIN::And as a Services Admin, the following commands:
 11 =SADMIN::    TRACE        UNLOAD       RELOAD       IDENTIFY
 12 =SADMIN::    UPDATE       SHUTDOWN     ON           OFF
@@ -1243,144 +1851,144 @@
 [OPERSERV/TRACE]
 
 [OPERSERV/TRACE/UP]
-01 =::TRACE UP <type> <level|name> [name [...]]
-02 =::
+01 =SADMIN::TRACE UP <type> <level|name> [name [...]]
+02 =SADMIN::
 
 [OPERSERV/TRACE/DOWN]
-01 =::TRACE DOWN <type> <level|name> [name [...]]
-02 =::
+01 =SADMIN::TRACE DOWN <type> <level|name> [name [...]]
+02 =SADMIN::
 
 [OPERSERV/TRACE/SET]
-01 =::TRACE SET <type> <level|name> [name [...]]
-02 =::
+01 =SADMIN::TRACE SET <type> <level|name> [name [...]]
+02 =SADMIN::
 
 [OPERSERV/MODE]
-01 =::MODE <nick|channel> [modes]
-02 =::
+01 =OPER SOP::MODE <nick|channel> [modes]
+02 =OPER SOP::
 
 [OPERSERV/QLINE]
-01 =::QLINE <mask>
-02 =::
+01 =ADMIN::QLINE <mask>
+02 =ADMIN::
 
 [OPERSERV/UNQLINE]
-01 =::UNQLINE <mask>
-02 =::
+01 =ADMIN::UNQLINE <mask>
+02 =ADMIN::
 
 [OPERSERV/NOOP]
-01 =::NOOP <server> <ON|OFF>
-02 =::
+01 =ADMIN::NOOP <server> <ON|OFF>
+02 =ADMIN::
 
 [OPERSERV/KILL]
-01 =::KILL <nickname> <reason>
-02 =::
+01 =ADMIN::KILL <nickname> <reason>
+02 =ADMIN::
 
 [OPERSERV/PING]
-01 =::PING
-02 =::
+01 =OPER SOP::PING
+02 =OPER SOP::
 
 [OPERSERV/UPDATE]
-01 =::UPDATE
-02 =::
+01 =SADMIN::UPDATE
+02 =SADMIN::
 
 [OPERSERV/SHUTDOWN]
-01 =::SHUTDOWN <reason>
-02 =::
+01 =SADMIN::SHUTDOWN <reason>
+02 =SADMIN::
 
 [OPERSERV/RELOAD]
-01 =::RELOAD
-02 =::
+01 =SADMIN::RELOAD
+02 =SADMIN::
 
 [OPERSERV/UNLOAD]
-01 =::UNLOAD <language>
-02 =::
+01 =SADMIN::UNLOAD <language>
+02 =SADMIN::
 
 [OPERSERV/JUPE]
-01 =::JUPE <server> [reason]
-02 =::
+01 =ADMIN::JUPE <server> [reason]
+02 =ADMIN::
 
 [OPERSERV/ON]
-01 =::ON [service]
-02 =::
+01 =SADMIN::ON [service]
+02 =SADMIN::
 
 [OPERSERV/OFF]
-01 =::OFF [service] <reason>
-02 =::
+01 =SADMIN::OFF [service] <reason>
+02 =SADMIN::
 
 [OPERSERV/SETTINGS]
 
 [OPERSERV/SETTINGS/CONFIG]
-01 =::SETTINGS CONFIG
-02 =::
+01 =OPER SOP::SETTINGS CONFIG
+02 =OPER SOP::
 
 [OPERSERV/SETTINGS/NICK]
-01 =::SETTINGS NICK
-02 =::
+01 =OPER SOP::SETTINGS NICK
+02 =OPER SOP::
 
 [OPERSERV/SETTINGS/CHANNEL]
-01 =::SETTINGS CHANNEL
-02 =::
+01 =OPER SOP::SETTINGS CHANNEL
+02 =OPER SOP::
 
 [OPERSERV/SETTINGS/OTHER]
-01 =::SETTINGS OTHER
-02 =::
+01 =OPER SOP::SETTINGS OTHER
+02 =OPER SOP::
 
 [OPERSERV/SETTINGS/ALL]
-01 =::SETTINGS ALL
-02 =::
+01 =OPER SOP::SETTINGS ALL
+02 =OPER SOP::
 
 [OPERSERV/CLONE]
 
 [OPERSERV/CLONE/ADD]
-01 =::CLONE ADD <mask> <amount> <reason>
-02 =::
+01 =SOP::CLONE ADD <mask> <amount> <reason>
+02 =SOP::
 
 [OPERSERV/CLONE/DEL]
-01 =::CLONE DEL <mask|NUM>
-02 =::
+01 =SOP::CLONE DEL <mask|NUM>
+02 =SOP::
 
 [OPERSERV/CLONE/LIST]
-01 =::CLONE LIST
-02 =::
+01 =OPER SOP::CLONE LIST
+02 =OPER SOP::
 
 [OPERSERV/AKILL]
 
 [OPERSERV/AKILL/ADD]
-01 =::AKILL ADD <mask> [time] <reason>
-02 =::
+01 =OPER SOP::AKILL ADD <mask> [time] <reason>
+02 =OPER SOP::
 
 [OPERSERV/AKILL/DEL]
-01 =::AKILL DEL <mask|NUM>
-02 =::
+01 =OPER SOP::AKILL DEL <mask|NUM>
+02 =OPER SOP:
 
 [OPERSERV/AKILL/LIST]
-01 =::AKILL LIST
-02 =::
+01 =OPER SOP::AKILL LIST
+02 =OPER SOP::
 
 [OPERSERV/OPERDENY]
 
 [OPERSERV/OPERDENY/ADD]
-01 =::OPERDENY ADD <mask>
-02 =::
+01 =SOP::OPERDENY ADD <mask>
+02 =SOP::
 
 [OPERSERV/OPERDENY/DEL]
-01 =::OPERDENY DEL <mask|NUM>
-02 =::
+01 =SOP::OPERDENY DEL <mask|NUM>
+02 =SOP::
 
 [OPERSERV/OPERDENY/LIST]
-01 =::OPERDENY LIST
-02 =::
+01 =OPER SOP::OPERDENY LIST
+02 =OPER SOP::
 
 [OPERSERV/IGNORE]
 
 [OPERSERV/IGNORE/ADD]
-01 =::IGNORE ADD <mask>
-02 =::
+01 =SOP::IGNORE ADD <mask>
+02 =SOP::
 
 [OPERSERV/IGNORE/DEL]
-01 =::IGNORE DEL <mask|NUM>
-02 =::
+01 =SOP::IGNORE DEL <mask|NUM>
+02 =SOP::
 
 [OPERSERV/IGNORE/LIST]
-01 =::IGNORE LIST
-02 =::
+01 =OPER SOP::IGNORE LIST
+02 =OPER SOP::
 
