@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2001/06/17 05:22:12  prez
+** Resolved compatability issues with ACE 5.1.17
+**
 ** Revision 1.76  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -559,7 +562,7 @@ long mFile::Length() const
     if (!IsOpened())
 	RET(-1);
     long retval = 0;
-    struct stat st;
+    ACE_stat st;
     opres = ACE_OS::stat(i_name, &st);
     if (opres < 0 && errno)
     {
@@ -582,7 +585,7 @@ mDateTime mFile::LastMod() const
     if (!IsOpened())
 	RET(0.0);
     mDateTime retval;
-    struct stat st;
+    ACE_stat st;
     opres = ACE_OS::stat(i_name, &st);
     if (opres < 0 && errno)
     {
@@ -602,7 +605,7 @@ bool mFile::Eof() const
     MLOCK(("mFile", i_name));
     if (!IsOpened())
 	RET(true);
-    bool retval = feof(fd);
+    bool retval = (feof(fd) != 0);
     if (ferror(fd) && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
@@ -693,7 +696,7 @@ long mFile::Length(const mstring& name)
     if (!Exists(name))
 	RET(0);
     long retval = 0;
-    struct stat st;
+    ACE_stat st;
     opres = ACE_OS::stat(name.c_str(), &st);
     if (opres < 0 && errno)
     {
@@ -716,7 +719,7 @@ mDateTime mFile::LastMod(const mstring& name)
     if (!Exists(name))
 	RET(0.0);
     mDateTime retval;
-    struct stat st;
+    ACE_stat st;
     opres = ACE_OS::stat(name.c_str(), &st);
     if (opres < 0 && errno)
     {
@@ -840,21 +843,22 @@ size_t mFile::DirUsage(const mstring& directory)
     FT("mFile::DirUsage", (directory));
     int opres;
     size_t retval = 0;
-    DIR *dir = NULL;
-    struct dirent *entry = NULL;
-    struct stat st;
-
-#ifdef WIN32
-    retval = -1;
-    //todo: change over to findfirst/findnext (in io.h)
-#else
 
     if (!directory.length())
 	RET(0);
 
-    if ((dir = ACE_OS::opendir(directory.c_str())) != NULL)
+    // Not supported on WIN32 until ACE 5.1.13 ...
+#if (ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
+	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \
+	ACE_BETA_VERSION >= 13)))) || !defined(WIN32)
+
+    struct dirent *entry = NULL;
+    ACE_DIR *dir = NULL;
+    ACE_stat st;
+    
+    if ((dir = ACE_OS_Dirent::opendir(directory.c_str())) != NULL)
     {
-	while ((entry = ACE_OS::readdir(dir)) != NULL)
+	while ((entry = ACE_OS_Dirent::readdir(dir)) != NULL)
 	{
 	    if (strlen(entry->d_name))
 	    {
@@ -870,15 +874,16 @@ size_t mFile::DirUsage(const mstring& directory)
 		}
 	    }
 	}
-	ACE_OS::closedir(dir);
+	ACE_OS_Dirent::closedir(dir);
     }
     else
     {
 	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
 		"opendir", directory, errno, strerror(errno)));
     }
-#endif
     RET(retval);
+#endif
+    RET(0);
 }
 
 
@@ -886,19 +891,21 @@ set<mstring> mFile::DirList(const mstring& directory, const mstring& filemask)
 {
     FT("mFile::DirList", (directory, filemask));
     set<mstring> retval;
-    DIR *dir = NULL;
-    struct dirent *entry = NULL;
-
-#ifdef WIN32
-    //todo: change over to findfirst/findnext (in io.h)
-#else
 
     if (!directory.length())
 	NRET(set<mstring>, retval);
 
-    if ((dir = ACE_OS::opendir(directory.c_str())) != NULL)
+    // Not supported on WIN32 until ACE 5.1.13 ...
+#if (ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
+	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \
+	ACE_BETA_VERSION >= 13)))) || !defined(WIN32)
+
+    struct dirent *entry = NULL;
+    ACE_DIR *dir = NULL;
+
+    if ((dir = ACE_OS_Dirent::opendir(directory.c_str())) != NULL)
     {
-	while ((entry = ACE_OS::readdir(dir)) != NULL)
+	while ((entry = ACE_OS_Dirent::readdir(dir)) != NULL)
 	{
 	    if (strlen(entry->d_name) &&
 		mstring(entry->d_name).Matches(filemask))
@@ -906,7 +913,7 @@ set<mstring> mFile::DirList(const mstring& directory, const mstring& filemask)
 		retval.insert(entry->d_name);
 	    }
 	}
-	ACE_OS::closedir(dir);
+	ACE_OS_Dirent::closedir(dir);
     }
     else
     {

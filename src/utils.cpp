@@ -27,6 +27,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2001/06/17 05:22:12  prez
+** Resolved compatability issues with ACE 5.1.17
+**
 ** Revision 1.67  2001/06/15 07:20:41  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -678,7 +681,7 @@ mstring base64_to_str(unsigned long in)
 mstring sysinfo_node()
 {
     mstring retval;
-    struct utsname *type = new struct utsname;
+    struct ACE_utsname *type = new struct ACE_utsname;
     ACE_OS::uname(type);
     retval = type->nodename;
     delete type;
@@ -688,7 +691,7 @@ mstring sysinfo_node()
 mstring sysinfo_type()
 {
     mstring retval;
-    struct utsname *type = new struct utsname;
+    struct ACE_utsname *type = new struct ACE_utsname;
     ACE_OS::uname(type);
     retval << type->sysname << "/" << type->machine;
     delete type;
@@ -698,7 +701,7 @@ mstring sysinfo_type()
 mstring sysinfo_rel()
 {
     mstring retval;
-    struct utsname *type = new struct utsname;
+    struct ACE_utsname *type = new struct ACE_utsname;
     ACE_OS::uname(type);
     retval = type->release;
     delete type;

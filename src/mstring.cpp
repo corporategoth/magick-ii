@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.107  2001/06/17 05:22:12  prez
+** Resolved compatability issues with ACE 5.1.17
+**
 ** Revision 1.106  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -273,7 +276,8 @@ char *mstring::alloc(const size_t size)
 #elif ALLOCTYPE == 3
 
     /* Duplicate ACE's new, but with no return's. */
-# ifdef MAGICK_HAS_EXCEPTIONS
+# if defined(MAGICK_HAS_EXCEPTIONS) && \
+	defined(ACE_NEW_THROWS_EXCEPTIONS)
     try
     {
 	out = new char[size];
