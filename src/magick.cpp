@@ -165,7 +165,7 @@ int Magick::Start()
     if(!check_config())
 	RET(MAGICK_RET_TERMINATE);
 
-    FILE *logfile = fopen((services_dir+DirSlash+Files_LOGFILE).c_str(), "w+");
+    FILE *logfile = fopen((services_dir+DirSlash+files.Logfile()).c_str(), "w+");
     logger->ChangeFile(logfile);
 
     // load the local messages database and internal "default messages"
@@ -194,7 +194,7 @@ int Magick::Start()
 #endif
 #endif
     wxFile pidfile;
-    pidfile.Create(Files_PIDFILE.Strip(mstring::stBoth),true);
+    pidfile.Create(files.Pidfile().Strip(mstring::stBoth),true);
     if(pidfile.IsOpened())
     {
 	mstring dummystring;
@@ -203,7 +203,7 @@ int Magick::Start()
 	pidfile.Close();
     }
     /*else
-	log_perror ("Warning: cannot write to PID file %s", Files_PIDFILE);*/
+	log_perror ("Warning: cannot write to PID file %s", files.Pidfile());*/
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler=new SignalHandler;
@@ -289,7 +289,7 @@ int Magick::Start()
     // to the irc server and sets up the socket handler that receives
     // incoming data and pushes it out to the appropriate service.
 
-    ACE_INET_Addr addr(Startup_REMOTE_PORT,Startup_REMOTE_SERVER);
+    ACE_INET_Addr addr(startup.Remote_Port(),startup.Remote_Server());
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
     ircsvchandler=new IrcSvcHandler;
     if(ACO_server.connect(ircsvchandler,addr)==-1)
@@ -304,9 +304,9 @@ int Magick::Start()
     ACE_INET_Addr localaddr;
     ircsvchandler->peer().get_local_addr(localaddr);
     CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
-    mstring passcmd="PASS "+Startup_PASSWORD+"\n";
+    mstring passcmd="PASS "+startup.Password()+"\n";
     ircsvchandler->send(passcmd);
-    mstring servercmd="SERVER "+Startup_SERVER_NAME+" 1 :"+Startup_SERVER_DESC+"\n";
+    mstring servercmd="SERVER "+startup.Server_Name()+" 1 :"+startup.Server_Desc()+"\n";
     ircsvchandler->send(servercmd);
 
     // next thing to be done here is set up the acceptor mechanism to listen
@@ -493,7 +493,7 @@ void Magick::LoadExternalMessages()
     // use the previously created name array to get the names to load
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
-    wxFileConfig fconf("magick","",services_dir+DirSlash+"lang"+DirSlash+Files_LANGUAGE+".lng");
+    wxFileConfig fconf("magick","",services_dir+DirSlash+"lang"+DirSlash+files.Language()+".lng");
     int i;
     // change this to not just update the internal defaults but also to
     // add new one's like loadinternal does.
@@ -568,10 +568,10 @@ bool Magick::paramlong(mstring first, mstring second)
 	    if(atoi(second.After(':').c_str())<=0)
 		wxLogError("port must be a positive number (ignoring)");
 	    else
-		Startup_REMOTE_PORT=atoi(second.After(':').c_str());
+		startup.remote_port=atoi(second.After(':').c_str());
 	} else
 	    wxLogError("port must be a number");
-	Startup_REMOTE_SERVER=second.Before(':');
+	startup.remote_server=second.Before(':');
 	RET(true);
     }
     else if(first=="--name")
@@ -580,7 +580,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--name");
 	}
-	Startup_SERVER_NAME=second;
+	startup.server_name=second;
 	RET(true);
     }
     else if(first=="--desc")
@@ -589,7 +589,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--desc");
 	}
-	Startup_SERVER_DESC=second;
+	startup.server_name=second;
 	RET(true);
     }
     else if(first=="--user")
@@ -598,12 +598,12 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--user");
 	}
-	Startup_SERVICES_USER=second;
+	startup.services_user=second;
 	RET(true);
     }
     else if(first=="--ownuser")
     {
-	Startup_OWNUSER=true;
+	startup.ownuser=true;
     }
     else if(first=="--host")
     {
@@ -611,7 +611,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--host");
 	}
-	Startup_SERVICES_HOST=second;
+	startup.services_host=second;
     }
     else if(first=="--log")
     {
@@ -619,7 +619,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--log");
 	}
-	Files_LOGFILE=second;
+	files.logfile=second;
 	RET(true);
     }
     else if(first=="--verbose" || first=="--debug")
@@ -637,11 +637,11 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal("--relink parameter must be positive");
 	}
-	Config_SERVER_RELINK=atoi(first.c_str());
+	config.server_relink=atoi(first.c_str());
 	RET(true);
     }
     else if(first=="--norelink")
-	Config_SERVER_RELINK=0;
+	config.server_relink=0;
     else if(first=="--level")
     {
 	if(second.IsEmpty() || second[0U]=='-')
@@ -652,7 +652,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal("--level paramater must be positive");
 	}
-	Startup_LEVEL=atoi(second.c_str());
+	startup.level=atoi(second.c_str());
 	RET(true);
     }
     else if(first=="--gmt")
@@ -665,7 +665,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal("--gmt must be between -12 and 12");
 	}
-	Startup_GMT=atoi(second.c_str());
+	startup.gmt=atoi(second.c_str());
 	RET(true);
     }
     else if(first=="--save" || first=="--update")
@@ -678,7 +678,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal("--save: number of seconds must be positive");
 	}
-	Config_CYCLETIME=atoi(second.c_str());
+	config.cycletime=atoi(second.c_str());
 	RET(true);
     }
     else
@@ -790,27 +790,27 @@ bool Magick::check_config()
 	operserv.akill=false;
 	operserv.operdeny=false;
     }
-    if (Startup_LEVEL < 1)
+    if (startup.Level() < 1)
     {
 	// change this to the logging mechanism
 	wxLogFatal("CONFIG: Cannot set [Startup] LEVEL < 1");
     }
-    if (Startup_GMT >= 12 || Startup_GMT <= -12)
+    if (startup.GMT() >= 12 || startup.GMT() <= -12)
     {
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: [Startup] GMT must fall between -12 and 12.");
     }
-    if (Config_CYCLETIME < 30)
+    if (config.Cycletime() < 30)
     {
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: Cannot set [Config] CYCLETIME < 30.");
     }
-    if (Startup_LAGTIME < 1)
+    if (startup.Lagtime() < 1)
     {
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: Cannot set [Startup] LAGTIME < 1.");
     }
-    if (nickserv.passfail < 1)
+    if (nickserv.Passfail() < 1)
     {
 	// change this to the logging mechanism
         wxLogFatal("CONFIG: Cannot set [NickServ] PASSFAIL < 1.");
@@ -841,18 +841,18 @@ void Magick::get_config_values()
     mstring ts_CommServ=mstring("CommServ/");
     mstring ts_ServMsg=mstring("ServMsg/");
 
-    in.Read(ts_Startup+"REMOTE_SERVER",&Startup_REMOTE_SERVER,"127.0.0.1");
-    in.Read(ts_Startup+"REMOTE_PORT",&Startup_REMOTE_PORT,9666);
-    in.Read(ts_Startup+"PASSWORD",&Startup_PASSWORD,"");
-    in.Read(ts_Startup+"SERVER_NAME",&Startup_SERVER_NAME,"services.magick.tm");
-    in.Read(ts_Startup+"SERVER_DESC",&Startup_SERVER_DESC,FULL_NAME);
-    in.Read(ts_Startup+"SERVICES_USER",&Startup_SERVICES_USER,"services");
-    in.Read(ts_Startup+"SERVICES_HOST",&Startup_SERVICES_HOST,"magick.tm");
-    in.Read(ts_Startup+"OWNUSER",&Startup_OWNUSER,false);
-    in.Read(ts_Startup+"LEVEL",&Startup_LEVEL,1);
-    in.Read(ts_Startup+"LAGTIME",&Startup_LAGTIME,10);
-    in.Read(ts_Startup+"DEADTIME",&Startup_DEADTIME,30);
-    in.Read(ts_Startup+"GMT",&Startup_GMT,0.0);
+    in.Read(ts_Startup+"REMOTE_SERVER",&startup.remote_server,"127.0.0.1");
+    in.Read(ts_Startup+"REMOTE_PORT",&startup.remote_port,9666);
+    in.Read(ts_Startup+"PASSWORD",&startup.password,"");
+    in.Read(ts_Startup+"SERVER_NAME",&startup.server_name,"services.magick.tm");
+    in.Read(ts_Startup+"SERVER_DESC",&startup.server_desc,FULL_NAME);
+    in.Read(ts_Startup+"SERVICES_USER",&startup.services_user,"services");
+    in.Read(ts_Startup+"SERVICES_HOST",&startup.services_host,"magick.tm");
+    in.Read(ts_Startup+"OWNUSER",&startup.ownuser,false);
+    in.Read(ts_Startup+"LEVEL",&startup.level,1);
+    in.Read(ts_Startup+"LAGTIME",&startup.lagtime,10);
+    in.Read(ts_Startup+"DEADTIME",&startup.deadtime,30);
+    in.Read(ts_Startup+"GMT",&startup.gmt,0.0);
     in.Read(ts_Startup+"STOP",&i_shutdown,true);
 
     in.Read(ts_Services+"NickServ",&nickserv.names,"NickServ");
@@ -868,34 +868,33 @@ void Magick::get_config_values()
     in.Read(ts_Services+"FLOOD",&operserv.flood,true);
     in.Read(ts_Services+"AKILL",&operserv.akill,true);
     in.Read(ts_Services+"OPERDENY",&operserv.operdeny,true);
-    in.Read(ts_Services+"HelpServ",&helpserv.names,"HelpServ");
-    in.Read(ts_Services+"HelpServ_Name",&helpserv.realname,"User Help Subsystem");
-    in.Read(ts_Services+"CommServ",&Services_CommServ,"CommServ");
-    in.Read(ts_Services+"CommServ_Name",&Services_CommServ_Name,"Committee Service");
-    in.Read(ts_Services+"ServMsg",&Services_ServMsg,"GlobalMsg DevNull");
-    in.Read(ts_Services+"ServMsg_Name",&Services_ServMsg_Name,PRODUCT + " <--> User");
-    in.Read(ts_Services+"SHOWSYNC",&Services_SHOWSYNC,true);
+    in.Read(ts_Services+"CommServ",&commserv.names,"CommServ");
+    in.Read(ts_Services+"CommServ_Name",&commserv.realname,"Committee Service");
+    in.Read(ts_Services+"ServMsg",&servmsg.names,"GlobalMsg DevNull");
+    in.Read(ts_Services+"ServMsg_Name",&servmsg.realname,PRODUCT + " <--> User");
+    in.Read(ts_Services+"SHOWSYNC",&servmsg.showsync,true);
 
-    in.Read(ts_Files+"PIDFILE",&Files_PIDFILE,"magick.pid");
-    in.Read(ts_Files+"LOGFILE",&Files_LOGFILE,"magick.log");
-    in.Read(ts_Files+"MOTDFILE",&Files_MOTDFILE,"magick.motd");
-    in.Read(ts_Files+"LANGUAGE",&Files_LANGUAGE,"english");
-    in.Read(ts_Files+"COMMANDS",&Files_COMMANDS,"default");
-    in.Read(ts_Files+"LINK_DB",&Files_LINK_DB,"link.db");
-    in.Read(ts_Files+"NICK_DB",&Files_NICK_DB,"nick.db");
-    in.Read(ts_Files+"CHAN_DB",&Files_CHAN_DB,"chan.db");
-    in.Read(ts_Files+"MEMO_DB",&Files_MEMO_DB,"memo.db");
-    in.Read(ts_Files+"NEWS_DB",&Files_NEWS_DB,"news.db");
-    in.Read(ts_Files+"AKILL_DB",&Files_AKILL_DB,"akill.db");
-    in.Read(ts_Files+"IGNORE_DB",&Files_IGNORE_DB,"ignore.db");
-    in.Read(ts_Files+"CLONE_DB",&Files_CLONE_DB,"clone.db");
-    in.Read(ts_Files+"COMM_DB",&Files_COMM_DB,"comm.db");
-    in.Read(ts_Files+"MSGS_DB",&Files_MSGS_DB,"msgs.db");
+    in.Read(ts_Files+"PIDFILE",&files.pidfile,"magick.pid");
+    in.Read(ts_Files+"LOGFILE",&files.logfile,"magick.log");
+    in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
+    in.Read(ts_Files+"LANGUAGE",&files.language,"english");
+    in.Read(ts_Files+"COMMANDS",&files.commands,"default");
+    in.Read(ts_Files+"LINK_DB",&files.link_db,"link.db");
+    in.Read(ts_Files+"NICK_DB",&files.nick_db,"nick.db");
+    in.Read(ts_Files+"CHAN_DB",&files.chan_db,"chan.db");
+    in.Read(ts_Files+"MEMO_DB",&files.memo_db,"memo.db");
+    in.Read(ts_Files+"NEWS_DB",&files.news_db,"news.db");
+    in.Read(ts_Files+"AKILL_DB",&files.akill_db,"akill.db");
+    in.Read(ts_Files+"IGNORE_DB",&files.ignore_db,"ignore.db");
+    in.Read(ts_Files+"CLONE_DB",&files.clone_db,"clone.db");
+    in.Read(ts_Files+"COMM_DB",&files.comm_db,"comm.db");
+    in.Read(ts_Files+"MSGS_DB",&files.msgs_db,"msgs.db");
+    in.Read(ts_Files+"COMPRESSION",&files.compression,true);
 
-    in.Read(ts_Config+"SERVER_RELINK",&Config_SERVER_RELINK,5);
-    in.Read(ts_Config+"CYCLETIME",&Config_CYCLETIME,300);
-    in.Read(ts_Config+"PING_FREQUENCY",&Config_PING_FREQUENCY,30);
-    in.Read(ts_Config+"STARTHRESH",&Config_STARTHRESH, 4);
+    in.Read(ts_Config+"SERVER_RELINK",&config.server_relink,5);
+    in.Read(ts_Config+"CYCLETIME",&config.cycletime,300);
+    in.Read(ts_Config+"PING_FREQUENCY",&config.ping_frequency,30);
+    in.Read(ts_Config+"STARTHRESH",&config.starthresh, 4);
 
     in.Read(ts_NickServ+"EXPIRE",&nickserv.expire,28);
     in.Read(ts_NickServ+"RELEASE",&nickserv.release,60);
@@ -965,7 +964,7 @@ void Magick::get_config_values()
     in.Read(ts_OperServ+"IGNORE_REMOVE",&operserv.ignore_remove,300);
     in.Read(ts_OperServ+"IGNORE_METHOD",&operserv.ignore_method,8);
 
-    in.Read(ts_CommServ+"SECURE_OPER",&CommServ_SECURE_OPER,true);
+    in.Read(ts_CommServ+"SECURE_OPER",&commserv.secure_oper,true);
 
     CP(("%s read and loaded to live configuration.", config_file.c_str()));
 }

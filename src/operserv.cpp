@@ -23,36 +23,6 @@ OperServ::OperServ()
 {
 }
 
-mstring OperServ::Services_Admin()
-{
-    return services_admin;
-}
-
-int OperServ::Flood_Time()
-{
-    return flood_time;
-}
-
-int OperServ::Flood_Msgs()
-{
-    return flood_msgs;
-}
-
-bool OperServ::Akill()
-{
-    return akill;
-}
-
-bool OperServ::Flood()
-{
-    return flood;
-}
-
-bool OperServ::OperDeny()
-{
-    return operdeny;
-}
-
 void OperServ::execute(const mstring & data)
 {
     mThread::ReAttach(tt_OperServ);

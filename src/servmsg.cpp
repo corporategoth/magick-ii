@@ -16,17 +16,17 @@
 // ===================================================
 
 #include "lockable.h"
-#include "memoserv.h"
+#include "servmsg.h"
 #include "magick.h"
 
-MemoServ::MemoServ()
+ServMsg::ServMsg()
 {
 }
 
-void MemoServ::execute(const mstring & data)
+void ServMsg::execute(const mstring & data)
 {
-    mThread::ReAttach(tt_MemoServ);
-    FT("MemoServ::execute", (data));
+    mThread::ReAttach(tt_OtherServ);
+    FT("ServMsg::execute", (data));
     //okay this is the main nickserv command switcher
 
 

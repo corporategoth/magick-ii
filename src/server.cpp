@@ -33,7 +33,7 @@ Server::Server(mstring name, int hops, mstring description)
 {
     FT("Server::Server", (name, hops, description));
     i_Name = name.LowerCase();
-    i_Uplink = Parent->Startup_SERVER_NAME.LowerCase();
+    i_Uplink = Parent->startup.Server_Name().LowerCase();
     i_Hops = hops;
     i_Description = description;
 }
@@ -99,7 +99,7 @@ void Server::Ping()
     NFT("Server::Ping");
     if (!i_Ping)
     {
-        SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
+        SendSVR("PING " + Parent->startup.Server_Name() + " :" + i_Name);
 	i_Ping = ACE_OS::gettimeofday().msec();
    }
 }
@@ -192,6 +192,7 @@ NetworkServ::NetworkServ()
     NFT("NetworkServ::NetworkServ");
     messages=true;
     automation=true;
+    names=Parent->startup.Server_Name();
 }
 
 bool NetworkServ::IsServer(mstring server)
@@ -247,8 +248,8 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source ADMIN
 	    SendSVR("256 " + source + " :Administrative info about " +
-		Parent->Startup_SERVER_NAME);
-	    SendSVR("257 " + source + " :" + Parent->Startup_SERVER_DESC);
+		Parent->startup.Server_Name());
+	    SendSVR("257 " + source + " :" + Parent->startup.Server_Desc());
 	    SendSVR("258 " + source + " :Admins - " + Parent->operserv.Services_Admin());
 	    SendSVR("259 " + source + " :" + FULL_NAME + " - " + FULL_EMAIL);
 	}
@@ -282,10 +283,10 @@ void NetworkServ::execute(const mstring & data)
 
 	    // :source CONNECT some.server port :our.server
 	    if (IsServer(data.ExtractWord(3, ": ")) ||
-	    	data.ExtractWord(3, ": ").LowerCase() == Parent->Startup_SERVER_NAME.LowerCase())
+	    	data.ExtractWord(3, ": ").LowerCase() == Parent->startup.Server_Name().LowerCase())
 	    {
 		SendSVR("NOTICE " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
-			" already exists from " + Parent->Startup_SERVER_NAME);
+			" already exists from " + Parent->startup.Server_Name());
 	    }
 	    else
 	    {
@@ -431,8 +432,8 @@ void NetworkServ::execute(const mstring & data)
 	    //:ChanServ LINKS :temple.magick.tm
 	    //:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
 	    //:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
-	    SendSVR("364 " + source + " " + Parent->Startup_SERVER_NAME + " " +
-		Parent->Startup_SERVER_NAME + " :0 " + Parent->Startup_SERVER_DESC);
+	    SendSVR("364 " + source + " " + Parent->startup.Server_Name() + " " +
+		Parent->startup.Server_Name() + " :0 " + Parent->startup.Server_Desc());
 
 	    map<mstring,Server>::iterator serv;
 	    for(serv=Parent->server.ServerList.begin(); serv!=Parent->server.ServerList.end(); serv++)
@@ -441,7 +442,7 @@ void NetworkServ::execute(const mstring & data)
 			+ " :" + serv->second.Hops() + " " + serv->second.Description());
 	    }
 
-	    SendSVR("365 " + source + " " + Parent->Startup_SERVER_NAME + " :End of /LINKS list.");
+	    SendSVR("365 " + source + " " + Parent->startup.Server_Name() + " :End of /LINKS list.");
 
 	}
 	else if (msgtype=="LIST")
@@ -577,11 +578,11 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="PASS")
 	{
 	    // PASS :password
-	    if (data.ExtractWord(2, ": ") != Parent->Startup_PASSWORD)
+	    if (data.ExtractWord(2, ": ") != Parent->startup.Password())
 	    {
 		CP(("Server password mismatch.  Closing socket."));
-		Send("ERROR :No Access (passwd mismatch) [" + Parent->Startup_REMOTE_SERVER + "]");
-		Send("ERROR :Closing Link: [" + Parent->Startup_REMOTE_SERVER + "] (Bad Password)");
+		Send("ERROR :No Access (passwd mismatch) [" + Parent->startup.Remote_Server() + "]");
+		Send("ERROR :Closing Link: [" + Parent->startup.Remote_Server() + "] (Bad Password)");
 
 		Parent->reconnect=false;
 		Parent->ircsvchandler->shutdown();
@@ -592,9 +593,9 @@ void NetworkServ::execute(const mstring & data)
 	    // PING :some.server
 	    // :some.server PING some.server :our.server
 	    if (source)
-		SendSVR("PONG " + Parent->Startup_SERVER_NAME + " :" + source);
+		SendSVR("PONG " + Parent->startup.Server_Name() + " :" + source);
 	    else
-		SendSVR("PONG " + Parent->Startup_SERVER_NAME + " :" +
+		SendSVR("PONG " + Parent->startup.Server_Name() + " :" +
 			data.ExtractWord(2, ": "));
 	}
 	else if (msgtype=="PONG")
@@ -869,7 +870,7 @@ void NetworkServ::execute(const mstring & data)
 	    // :source VERSION :our.server
 	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
 	    mstring tmp;
-	    SendSVR("351 " + source + " " + PRODUCT + " " + Parent->Startup_SERVER_NAME +
+	    SendSVR("351 " + source + " " + PRODUCT + " " + Parent->startup.Server_Name() +
 			" :" + VERSION + ((RELEASE != "") ? ("-" + RELEASE).c_str() : "") +
 			((PATCH1 != "") ? ("+" + PATCH1).c_str() : "") +
 			((PATCH2 != "") ? ("+" + PATCH2).c_str() : "") +
@@ -880,22 +881,22 @@ void NetworkServ::execute(const mstring & data)
 			((PATCH7 != "") ? ("+" + PATCH7).c_str() : "") +
 			((PATCH8 != "") ? ("+" + PATCH8).c_str() : "") +
 			((PATCH9 != "") ? ("+" + PATCH9).c_str() : "") + " (" +
-			((Parent->operserv.getnames() != "")	? "O" : "o") +
-			((Parent->operserv.getnames() != "" &&
+			((Parent->operserv.GetNames() != "")	? "O" : "o") +
+			((Parent->operserv.GetNames() != "" &&
 				Parent->operserv.Akill())	? "A" : "a") +
-			((Parent->operserv.getnames() != "" &&
+			((Parent->operserv.GetNames() != "" &&
 				Parent->operserv.Flood())	? "F" : "f") +
-			((Parent->operserv.getnames() != "" &&
+			((Parent->operserv.GetNames() != "" &&
 				Parent->operserv.OperDeny())	? "D" : "d") +
-			((Parent->nickserv.getnames() != "")	? "N" : "n") +
-			((Parent->chanserv.getnames() != "")	? "C" : "c") +
-			((Parent->memoserv.getnames() != "" &&
+			((Parent->nickserv.GetNames() != "")	? "N" : "n") +
+			((Parent->chanserv.GetNames() != "")	? "C" : "c") +
+			((Parent->memoserv.GetNames() != "" &&
 				Parent->memoserv.Memo())	? "M" : "m") +
-			((Parent->memoserv.getnames() != "" &&
+			((Parent->memoserv.GetNames() != "" &&
 				Parent->memoserv.News())	? "W" : "w") +
-			((Parent->helpserv.getnames() != "")	? "H" : "h") +
-			(Parent->Services_SHOWSYNC		? "Y" : "y") +
-			(tmp << Parent->Startup_LEVEL) + ")");
+			((Parent->servmsg.GetNames() != "")	? "H" : "h") +
+			(Parent->servmsg.ShowSync()		? "Y" : "y") +
+			(tmp << Parent->startup.Level()) + ")");
 	}
 	else
 	{
@@ -933,7 +934,7 @@ void NetworkServ::execute(const mstring & data)
 //:soul.darker.net 352 ChanServ #complaints reaper darker.net hell.darker.net DevNull H% :2 /dev/null -- message sink
 //:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net MemoServ H :2 Memo Server
 //:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net IrcIIHelp H :2 ircII Help Server
-//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net HelpServ H :2 Help Server
+//:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net ServMsg H :2 Global Noticer
 //:soul.darker.net 352 ChanServ * reaper darker.net hell.darker.net NickServ H :2 Nickname Server
 //:soul.darker.net 352 ChanServ #magick prez castle.srealm.net.au soul.darker.net DarkMgk H%@ :0 Magick BridgeBot
 //:soul.darker.net 315 ChanServ * :End of /WHO list.
@@ -1012,11 +1013,11 @@ void NetworkServ::execute(const mstring & data)
 			continue;
 
 		    if (Parent->chanserv.live[*iter].IsOp(target))
-			outline += "@" + *iter;
+			outline += "@" + *iter + " ";
 		    else if (Parent->chanserv.live[*iter].IsVoice(target))
-			outline += "+" + *iter;
+			outline += "+" + *iter + " ";
 		    else
-			outline += *iter;
+			outline += *iter + " ";
 		}
 		if (outline.After(":").size() > 0)
 		    SendSVR(outline);

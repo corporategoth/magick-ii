@@ -255,11 +255,19 @@ SOURCE=.\include\fileconf.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\helpserv.cpp
+SOURCE=.\src\servmsg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\helpserv.h
+SOURCE=.\include\servmsg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\commserv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\commserv.h
 # End Source File
 # Begin Source File
 

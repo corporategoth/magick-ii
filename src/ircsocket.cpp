@@ -25,7 +25,7 @@ int IrcSvcHandler::open(void *in)
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     //activate();
     // todo activate the task
-    ACE_Reactor::instance()->schedule_timer(&sph,0,ACE_Time_Value(Parent->Config_PING_FREQUENCY),ACE_Time_Value(Parent->Config_PING_FREQUENCY));
+    ACE_Reactor::instance()->schedule_timer(&sph,0,ACE_Time_Value(Parent->config.Ping_Frequency()),ACE_Time_Value(Parent->config.Ping_Frequency()));
 
     CP(("SvcHandler activated"));
     RET(0);
@@ -45,7 +45,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	// sleep and then reconnect
 	CP(("No data, scheduling reconnect, then closing down"));
 	if(Parent->reconnect==true||Parent->shutdown()==false)
-	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->Config_SERVER_RELINK));
+	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
 	return -1;
     }
     // possibly mstring(data,0,recvResult); rather than mstring(data)
@@ -95,23 +95,23 @@ int IrcSvcHandler::close(unsigned long in)
 
 int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 {
-    ACE_INET_Addr addr(Parent->Startup_REMOTE_PORT,Parent->Startup_REMOTE_SERVER);
+    ACE_INET_Addr addr(Parent->startup.Remote_Port(),Parent->startup.Remote_Server());
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
-    if(Parent->Config_SERVER_RELINK==-1||Parent->reconnect!=true||Parent->shutdown()==true)
+    if(Parent->config.Server_Relink()==-1||Parent->reconnect!=true||Parent->shutdown()==true)
 	return 0;
     Parent->ircsvchandler=new IrcSvcHandler;
     if(Parent->ACO_server.connect(Parent->ircsvchandler,addr)==-1)
     {
 	//okay we got a connection problem here. log it and try again
-	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->Config_SERVER_RELINK));
+	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
     }
     else
     {
         ACE_INET_Addr localaddr;
 	Parent->ircsvchandler->peer().get_local_addr(localaddr);
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
-	Send("PASS " + Parent->Startup_PASSWORD);
-	Send("SERVER " + Parent->Startup_SERVER_NAME + " 1 :" + Parent->Startup_SERVER_DESC);
+	Send("PASS " + Parent->startup.Password());
+	Send("SERVER " + Parent->startup.Server_Name() + " 1 :" + Parent->startup.Server_Desc());
     }
     return 0;
 }

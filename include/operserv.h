@@ -28,11 +28,6 @@ class OperServ : public mBase
 {
     friend class Magick;
 private:
-
-    // Config Entries ...
-    mstring names;		// Names of service (space delimited)
-    mstring realname;		// 'Real Name' of service
-
     mstring services_admin;
     mstring expire_oper;
     mstring expire_admin;
@@ -51,24 +46,27 @@ private:
     bool akill;
     bool operdeny;
 
-    bool messages;		// Wether to process /MSG, /NOTICE.
-    bool automation;		// Wether to do automatic tasks.
-
 public:
-    mstring getnames() { return names; }
+    mstring Services_Admin()	{ return services_admin; }
+    mstring Expire_Oper()	{ return expire_oper; }
+    mstring Expire_Admin()	{ return expire_admin; }
+    mstring Expire_Sop()	{ return expire_sop; }
+    mstring Expire_SAdmin()	{ return expire_sadmin; }
+    int Clone_Limit()		{ return clone_limit; }
+    mstring Def_Clone()		{ return def_clone; }
+    int Flood_Time()		{ return flood_time; }
+    int Flood_Msgs()		{ return flood_msgs; }
+    int Ignore_Time()		{ return ignore_time; }
+    int Ignore_Limit()		{ return ignore_limit; }
+    int Ignore_Remove()		{ return ignore_remove; }
+    int Ignore_Method()		{ return ignore_method; }
 
-    bool MSG() { return messages; }
-    void MSG(bool on) { messages = on; }
-    bool AUTO() { return automation; }
-    void AUTO(bool on) { automation = on; }
+    bool Flood()		{ return flood; }
+    bool Akill()		{ return akill; }
+    bool OperDeny()		{ return operdeny; }
 
-    mstring Services_Admin();
-    int Flood_Time();
-    int Flood_Msgs();
-    bool Akill();
-    bool Flood();
-    bool OperDeny();
-
+    void load_database(void);
+    void save_database(void);
     OperServ();
     virtual threadtype_enum Get_TType() const { return tt_OperServ; }
     virtual mstring GetInternalName() const { return "OperServ"; }

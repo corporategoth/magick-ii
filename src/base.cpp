@@ -59,25 +59,6 @@ void mBase::init()
     BaseTask.message_queue_.low_water_mark(BaseTask.message_queue_.high_water_mark());
 }
 
-void mBase::send_cmd(const mstring & source, const char *fmt, ...)
-{
-    FT("send_cmd", (source, fmt));
-    va_list args;
-    va_start(args,fmt);
-    //if(runflags & RUN_NOSEND)
-	//return;
-    mstring data1;
-    data1.FormatV(fmt,args);
-    va_end(args);
-
-    if(source!="")
-    {
-    }
-    else
-    {
-    }
-}
-
 void mBase::shutdown()
 {
     NFT("mBase::shutdown");
@@ -156,24 +137,28 @@ void mBaseTask::message_i(const mstring& message)
 
     if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE")
     {
-	mstring names;
 	if (Parent->nickserv.IsLive(message.ExtractWord(1, ": ")))
 	    Parent->nickserv.live[message.ExtractWord(1, ": ")].FloodTrigger();
 
 	// Find out if the target nick is one of the services 'clones'
-	// (and if it is, which one?)  Pass the message to them if so.
-	// before even that, check if it's script overriden via Parent->checkifhandled(servername,command)
+	// Pass the message to them if so.
+	// before even that, check if it's script overriden via
+	//     Parent->checkifhandled(servername,command)
 	// if so, Parent->doscripthandle(server,command,data);
-	if ((names=" "+Parent->operserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+	if (Parent->operserv.IsName(tmp[1]))
 	    Parent->operserv.execute(message);
-	else if ((names=" "+Parent->nickserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+
+	else if (Parent->nickserv.IsName(tmp[1]))
 	    Parent->nickserv.execute(message);
-	else if ((names=" "+Parent->chanserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+
+	else if (Parent->chanserv.IsName(tmp[1]))
 	    Parent->chanserv.execute(message);
-	else if ((names=" "+Parent->memoserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
+
+	else if (Parent->memoserv.IsName(tmp[1]))
 	    Parent->memoserv.execute(message);
-	else if ((names=" "+Parent->helpserv.getnames().UpperCase()+" ").Contains(" "+tmp[1]+" "))
-	    Parent->helpserv.execute(message);
+
+	else if (Parent->servmsg.IsName(tmp[1]))
+	    Parent->servmsg.execute(message);
 
 	// else check if it's script handled, might do up a list of script servers
 	// in the magick object to check against, else trash it.

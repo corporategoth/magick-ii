@@ -584,7 +584,7 @@ void ChanServ::load_database(void)
 
 void ChanServ::save_database(void)
 {
-    mstring savename=Parent->Files_CHAN_DB+".save";
+    mstring savename=Parent->files.Chan_DB()+".save";
     if(wxFile::Exists(savename.c_str()))
 	remove(savename.c_str());
     try
@@ -597,14 +597,14 @@ void ChanServ::save_database(void)
 	 
 	flagout<<FileVersionNumber;
 
-	if(Parent->Password!=""&&Parent->Files_COMPRESS_STREAMS==true)
+	if(Parent->Password!=""&&Parent->files.Compression()==true)
 	{
 	    outc=new mEncryptStream(outf,Parent->Password);
 	    outz=new wxZlibOutputStream(*outc);
 	    outd=new wxDataOutputStream(*outz);
 	    flagout<<(char)3;
 	}
-	else if(Parent->Files_COMPRESS_STREAMS==true)
+	else if(Parent->files.Compression()==true)
 	{
 	    outz=new wxZlibOutputStream(outf);
 	    outd=new wxDataOutputStream(*outz);
@@ -632,7 +632,7 @@ void ChanServ::save_database(void)
 	    // todo call script saving hooks.
 	}
 	 
-	if(Parent->Password!=""&&Parent->Files_COMPRESS_STREAMS==true)
+	if(Parent->Password!=""&&Parent->files.Compression()==true)
 	{
 	    if(outd!=NULL)
 		delete outd;
@@ -641,7 +641,7 @@ void ChanServ::save_database(void)
 	    if(outc!=NULL)
 		delete outd;
 	}
-	else if(Parent->Files_COMPRESS_STREAMS==true)
+	else if(Parent->files.Compression()==true)
 	{
 	    if(outd!=NULL)
 		delete outd;
@@ -670,8 +670,8 @@ void ChanServ::save_database(void)
     }
     if(wxFile::Exists(savename.c_str()))
     {
-        if(wxFile::Exists(Parent->Files_CHAN_DB.c_str()))
-	    remove(Parent->Files_CHAN_DB.c_str());
-	rename(savename.c_str(),Parent->Files_CHAN_DB.c_str());
+        if(wxFile::Exists(Parent->files.Chan_DB().c_str()))
+	    remove(Parent->files.Chan_DB().c_str());
+	rename(savename.c_str(),Parent->files.Chan_DB().c_str());
     }
 }

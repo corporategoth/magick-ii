@@ -35,28 +35,53 @@ public:
 class mBase
 {
     friend mBaseTask;
+
 protected:
+    mstring names;		// Names of service (space delimited)
+    mstring realname;		// 'Real Name' of service
+
+    bool messages;		// Wether to process /MSG, /NOTICE.
+    bool automation;		// Wether to do automatic tasks.
+
     //deque<pair<mstring,mstring> > inputbuffer; // pair of sentto,datastring
     static bool TaskOpened;
     static mBaseTask BaseTask;
+
 public:
-	void send_cmd(const mstring& source, const char *fmt, ...);
     mBase();
-    static void push_message(const mstring& message);
     static void init();
 
-    virtual bool MSG() =0;
-    virtual void MSG(bool on) =0;
-    virtual bool AUTO() =0;
-    virtual void AUTO(bool on) =0;
+    virtual void load_database(void) =0;
+    virtual void save_database(void) =0;
 
-    virtual void execute(const mstring& message)=0;
-    virtual threadtype_enum Get_TType() const=0;
-    //virtual mBase *GetOwner()=0;
-    virtual mstring GetInternalName() const=0;
-    operator mVariant() const { mVariant locvar(GetInternalName()); locvar.truevaluetype=GetInternalName(); return locvar; };
+    static void push_message(const mstring& message);
+    virtual void execute(const mstring& message) =0;
+
+    mstring GetNames() { return names; }
+    bool IsName(mstring in)
+    {
+        mstring tmp = " "+names.UpperCase()+" ";
+	return tmp.Contains(" "+in.UpperCase()+" ");
+    }
+
+    virtual threadtype_enum Get_TType() const =0;
+    virtual mstring GetInternalName() const =0;
+
+    virtual bool MSG()		{ return messages; }
+    virtual void MSG(bool on)	{ messages=on; } 
+    virtual bool AUTO()		{ return automation; }
+    virtual void AUTO(bool on)	{ automation=on; }
+
+    void privmsg(const mstring& source, mstring message);
+    void notice(const mstring& source, mstring message);
+
+    operator mVariant() const
+    {
+	mVariant locvar(GetInternalName());
+	locvar.truevaluetype=GetInternalName();
+	return locvar;
+    }
     static void shutdown();
-  
 };
 
 #endif

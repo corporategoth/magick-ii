@@ -63,7 +63,6 @@ private:
     bool automation;		// Wether to do automatic tasks.
 
 public:
-    mstring getnames() { return names; }
     map<mstring,Server> ServerList;
     bool IsServer(mstring server);
 
@@ -72,6 +71,8 @@ public:
     bool AUTO() { return automation; }
     void AUTO(bool on) { automation = on; }
 
+    void load_database(void);
+    void save_database(void);
     NetworkServ();
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }
     virtual mstring GetInternalName() const { return "NetworkServ"; }

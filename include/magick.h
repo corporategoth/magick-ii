@@ -27,7 +27,8 @@
 #include "nickserv.h"
 #include "chanserv.h"
 #include "memoserv.h"
-#include "helpserv.h"
+#include "servmsg.h"
+#include "commserv.h"
 #include "ircsocket.h"
 #include "variant.h"
 #include "version.h"
@@ -61,8 +62,93 @@ private:
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
 
 	bool messages;		// Wether to process /MSG, /NOTICE.
-	bool automation;		// Wether to do automatic tasks.
+	bool automation;	// Wether to do automatic tasks.
+
+
 public:
+	// Config Values
+        class {
+		friend Magick;
+
+		mstring remote_server;
+		int remote_port;
+		mstring password;
+		mstring server_name;
+		mstring server_desc;
+		mstring services_user;
+		mstring services_host;
+		bool ownuser;
+		int level;
+		int lagtime;
+		int deadtime;
+		float gmt;
+	public:
+		mstring Remote_Server()	{ return remote_server; }
+		int Remote_Port()	{ return remote_port; }
+		mstring Password()	{ return password; }
+		mstring Server_Name()	{ return server_name; }
+		mstring Server_Desc()	{ return server_desc; }
+		mstring Services_User()	{ return services_user; }
+		mstring Services_Host()	{ return services_host; }
+		bool Ownuser()		{ return ownuser; }
+		int Level()		{ return level; }
+		int Lagtime()		{ return lagtime; }
+		int Deadtime()		{ return deadtime; }
+		float GMT()		{ return gmt; }
+	} startup;
+
+	class {
+		friend Magick;
+
+		mstring pidfile;
+		mstring logfile;
+		mstring motdfile;
+		mstring language;
+		mstring commands;
+		mstring link_db;
+		mstring nick_db;
+		mstring chan_db;
+		mstring memo_db;
+		mstring news_db;
+		mstring akill_db;
+		mstring ignore_db;
+		mstring clone_db;
+		mstring comm_db;
+		mstring msgs_db;
+		bool compression;
+	public:
+		mstring Pidfile()	{ return pidfile; }
+		mstring Logfile()	{ return logfile; }
+		mstring Motdfile()	{ return motdfile; }
+		mstring Language()	{ return language; }
+		mstring Commands()	{ return commands; }
+		mstring Link_DB()	{ return link_db; }
+		mstring Nick_DB()	{ return nick_db; }
+		mstring Chan_DB()	{ return chan_db; }
+		mstring Memo_DB()	{ return memo_db; }
+		mstring News_DB()	{ return news_db; }
+		mstring AKill_DB()	{ return akill_db; }
+		mstring Ignore_DB()	{ return ignore_db; }
+		mstring Clone_DB()	{ return clone_db; }
+		mstring Comm_DB()	{ return comm_db; }
+		mstring Msgs_DB()	{ return msgs_db; }
+		bool Compression()	{ return compression; }
+	} files;
+
+	class {
+		friend Magick;
+
+		int server_relink;
+		int cycletime;
+		int ping_frequency;
+		int starthresh;
+	public:
+		int Server_Relink()	{ return server_relink; }
+		int Cycletime()		{ return cycletime; }
+		int Ping_Frequency()	{ return ping_frequency; }
+		int Starthresh()	{ return starthresh; }
+	} config;
+
 	bool Files_COMPRESS_STREAMS;
 	mstring Password;
 	 ~Magick();
@@ -116,7 +202,8 @@ public:
 	ChanServ chanserv;
 	NickServ nickserv;
 	MemoServ memoserv;
-	HelpServ helpserv;
+	ServMsg servmsg;
+	CommServ commserv;
 	NetworkServ server;
 	LoggerTask loggertask;
         IrcServer ACO_server;
@@ -124,50 +211,6 @@ public:
 //protected:
 	bool i_shutdown;
 
-	// Config Values
-	mstring Startup_REMOTE_SERVER;
-	int Startup_REMOTE_PORT;
-	mstring Startup_PASSWORD;
-	mstring Startup_SERVER_NAME;
-	mstring Startup_SERVER_DESC;
-	mstring Startup_SERVICES_USER;
-	mstring Startup_SERVICES_HOST;
-	bool Startup_OWNUSER;
-	int Startup_LEVEL;
-	int Startup_LAGTIME;
-	int Startup_DEADTIME;
-	float Startup_GMT;
-
-	mstring Services_CommServ;
-	mstring Services_CommServ_Name;
-	mstring Services_ServMsg;
-	mstring Services_ServMsg_Name;
-	bool Services_SHOWSYNC;
-
-	mstring Files_PIDFILE;
-	mstring Files_LOGFILE;
-	mstring Files_MOTDFILE;
-	mstring Files_LANGUAGE;
-	mstring Files_COMMANDS;
-	mstring Files_LINK_DB;
-	mstring Files_NICK_DB;
-	mstring Files_CHAN_DB;
-	mstring Files_MEMO_DB;
-	mstring Files_NEWS_DB;
-	mstring Files_AKILL_DB;
-	mstring Files_IGNORE_DB;
-	mstring Files_CLONE_DB;
-	mstring Files_COMM_DB;
-	mstring Files_MSGS_DB;
-
-	int Config_SERVER_RELINK;
-	int Config_CYCLETIME;
-	int Config_PING_FREQUENCY;
-	int Config_STARTHRESH;
-
-	int MemoServ_NEWS_EXPIRE;
-
-	bool CommServ_SECURE_OPER;
 	mDateTime ResetTime;
 };
 
@@ -175,15 +218,15 @@ extern Magick *Parent;
 extern mDateTime StartTime;
 
 inline void SendSVR(mstring message)
-{ Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " " + message); }
+{ Parent->ircsvchandler->send(":" + Parent->startup.Server_Name() + " " + message); }
 
 inline void Send(mstring message)
 { Parent->ircsvchandler->send(message); }
 
 inline void KillUnknownUser(mstring user)
-{ Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " KILL " +
-    user + " :" + Parent->Startup_SERVER_NAME + " (" + user + "(?) <- " +
-    Parent->Startup_REMOTE_SERVER + ")"); }
+{ Parent->ircsvchandler->send(":" + Parent->startup.Server_Name() + " KILL " +
+    user + " :" + Parent->startup.Server_Name() + " (" + user + "(?) <- " +
+    Parent->startup.Remote_Server() + ")"); }
 
 inline bool IsChan(mstring input)
 { return (ChanSpec.Contains(input[0U])); }
