@@ -25,6 +25,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2001/07/24 02:51:13  prez
+** Added ability to do JOIN or SJOIN
+**
 ** Revision 1.33  2001/07/05 06:00:39  prez
 ** Up'd version to b11
 **
@@ -152,9 +155,9 @@ const int BUILD_NUMBER = 0;
  */
 const mstring FULLNAME			= "Magick IRC Services";
 const mstring SLOGAN			= "Power to the PEOPLE!";
-const mstring EMAIL			= "magick@magick.tm";
+const mstring EMAIL			= "general@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
-const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm";
+const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/beta";
 const mstring RELEASE			= "b11";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";

@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.188  2001/07/24 02:51:13  prez
+** Added ability to do JOIN or SJOIN
+**
 ** Revision 1.187  2001/07/16 03:36:14  prez
 ** Got rid of mstring's strcmp, now using memcmp.  Also did a little
 ** tweaking with the protocol support.
@@ -1954,14 +1957,44 @@ void Server::JOIN(const mstring& nick, const mstring& channel)
     }
     else
     {
-	for (unsigned int i=0; i<channel.WordCount(", "); i++)
+	// If we have SJOIN ability, then we need to add a timestamp
+	// and seperate the channels by ' ', else we do a standard
+	// JOIN with channels seperated by ','.
+
+	mstring send;
+	send << ":" << nick << " ";
+	if (proto.SJoin())
 	{
-	    Parent->nickserv.GetLive(nick).Join(channel.ExtractWord(i+1, ", "));
+	    send << ((proto.Tokens() && !proto.GetNonToken("SJOIN").empty()) ?
+			proto.GetNonToken("SJOIN") : mstring("SJOIN"))
+		<< " " << mDateTime::CurrentDateTime().timetstring() << " :";
+	    bool firstchan = true;
+	    for (unsigned int i=1; i<=channel.WordCount(", "); i++)
+	    {
+		if (firstchan)
+		    firstchan = false;
+		else
+		    send << " ";
+		send << channel.ExtractWord(i, ", ");
+		Parent->nickserv.GetLive(nick).Join(channel.ExtractWord(i, ", "));
+	    }
 	}
-	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
-			proto.GetNonToken("JOIN") : mstring("JOIN")) +
-		" :" + channel);
+	else
+	{
+	    send << ((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
+			proto.GetNonToken("JOIN") : mstring("JOIN")) << " :";
+	    bool firstchan = true;
+	    for (unsigned int i=1; i<=channel.WordCount(", "); i++)
+	    {
+		if (firstchan)
+		    firstchan = false;
+		else
+		    send << ",";
+		send << channel.ExtractWord(i, ", ");
+		Parent->nickserv.GetLive(nick).Join(channel.ExtractWord(i, ", "));
+	    }
+	}
+	raw(send);
     }
 }
 
@@ -3177,6 +3210,9 @@ void Server::parse_C(mstring &source, const mstring &msgtype, const mstring &par
 	    // Bahamut version of the PROTOCTL line
 	    if ((" " + params + " ").Contains(" TOKEN "))
 		proto.Tokens(true);
+	    if ((" " + params + " ").Contains(" SSJOIN ") ||
+		(" " + params + " ").Contains(" SJOIN "))
+		proto.SJoin(true);
 	}
 	else if (msgtype=="CHATOPS")
 	{
@@ -4228,6 +4264,9 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 	    // Turn on tokens dynamically ...
 	    if ((" " + params + " ").Contains(" TOKEN "))
 		proto.Tokens(true);
+	    if ((" " + params + " ").Contains(" SSJOIN ") ||
+		(" " + params + " ").Contains(" SJOIN "))
+		proto.SJoin(true);
 	}
 	else
 	{

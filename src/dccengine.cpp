@@ -27,6 +27,9 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2001/07/24 02:51:13  prez
+** Added ability to do JOIN or SJOIN
+**
 ** Revision 1.44  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -365,12 +368,10 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    Using
 		X-N-SPC	::= '\000' .. '\037' | '\041' .. '\377' 
 	    */
-	    mstring tmp(VERSION);
-	    if(!RELEASE.empty())
-		tmp+="-" + RELEASE;
-
+	    mstring tmp;
+	    tmp << PACKAGE << "-" << VERSION << RELEASE;
 	    Parent->server.NOTICE(mynick, source, encode("SOURCE",
-		    DOWNLOAD+":"+PACKAGE+tmp+".tar.gz"));
+		    DOWNLOAD+":"+tmp+".tar.gz"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="USERINFO")
 	{

@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2001/07/24 02:51:13  prez
+** Added ability to do JOIN or SJOIN
+**
 ** Revision 1.69  2001/07/16 03:36:14  prez
 ** Got rid of mstring's strcmp, now using memcmp.  Also did a little
 ** tweaking with the protocol support.
@@ -200,6 +203,7 @@ class Protocol
     bool i_Tokens;
     bool i_P12;
     bool i_TSora;
+    bool i_SJoin;
 
     /* AKILL types
      *
@@ -292,6 +296,8 @@ public:
     bool Helpops() const	  { return i_Helpops; }
     bool Tokens() const		  { return i_Tokens; }
     void Tokens(const bool in)	  { i_Tokens = in; }
+    bool SJoin() const		  { return i_SJoin; }
+    void SJoin(const bool in)	  { i_SJoin = in; }
     bool P12() const		  { return i_P12; }
     bool TSora() const		  { return i_TSora; }
     unsigned int Akill() const    { return i_Akill; }
