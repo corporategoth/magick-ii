@@ -9,3 +9,4 @@ vctobpr.log
 Makefile
 Makefile.in
 .deps
+xml.lib
