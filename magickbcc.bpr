@@ -45,7 +45,7 @@ PATHASM = .;
 DEBUGLIBPATH = $(BCB)\lib\debug
 RELEASELIBPATH = $(BCB)\lib\release
 SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
-USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0
+USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H
 # ---------------------------------------------------------------------------
 CFLAG1 = -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
   -Od -H=$(BCB)\lib\vcl40.csm -wuse -wstv -wstu -w-rvl -wpin -wnod -wnak -wdef \
@@ -54,21 +54,21 @@ CFLAG1 = -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\suppo
 IDLCFLAGS = -I"..\..\Program Files\Borland\CBuilder4\Projects" -Isrc -Iinclude \
   -I..\support\ace_wrappers -I..\support\zlib -I..\include\sxp -I..\include\expat \
   -I$(BCB)\include -I$(BCB)\include\ATL -src_suffixcpp -D_DEBUG -DDEBUG -DWIN32 \
-  -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 -DACE_USE_RCSID=0
+  -D_CONSOLE -D_MBCS -DDES_UNROLL -DACE_NTRACE=1 -DACE_USE_RCSID=0 -DHAVE_CONFIG_H
 PFLAGS = -U"..\..\Program Files\Borland\CBuilder4\Projects";src;$(BCB)\lib;$(DEBUGLIBPATH) \
   -I"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
   -N2Debug -N0Debug \
-  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0 \
+  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H \
   -$YD -$W -$O-
 RFLAGS = -i"..\..\Program Files\Borland\CBuilder4\Projects";src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL \
-  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0 /l \
-  0xc09 /d "_DEBUG" /i$(BCB)\include;$(BCB)\include\mfc
-AFLAGS = /isrc /iinclude /i..\support\ace_wrappers /i..\support\zlib /i..\include\sxp \
-  /i..\include\expat /i$(BCB)\include /i$(BCB)\include\ATL /d_DEBUG /dDEBUG \
-  /dWIN32 /d_CONSOLE /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /dACE_USE_RCSID=0 /mx \
-  /w2 /zi
+  -D_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H \
+  /l 0xc09 /d "_DEBUG" /i$(BCB)\include;$(BCB)\include\mfc
+AFLAGS = /i"..\..\Program Files\Borland\CBuilder4\Projects" /isrc /iinclude \
+  /i..\support\ace_wrappers /i..\support\zlib /i..\include\sxp /i..\include\expat \
+  /i$(BCB)\include /i$(BCB)\include\ATL /d_DEBUG /dDEBUG /dWIN32 /d_CONSOLE \
+  /d_MBCS /dDES_UNROLL /dACE_NTRACE=1 /dACE_USE_RCSID=0 /dHAVE_CONFIG_H /mx /w2 /zi
 LFLAGS = -L"..\..\Program Files\Borland\CBuilder4\Projects";src;$(BCB)\lib;$(DEBUGLIBPATH) \
-  -ap -Tpe -s -v -q
+  -H:0x1000000 -S:0x1000000 -ap -Tpe -s -v -q
 IFLAGS =
 # ---------------------------------------------------------------------------
 ALLOBJ = c0x32.obj ws2_32.lib $(OBJFILES)
@@ -105,26 +105,29 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=4
-Item0=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL
-Item1=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL;
-Item2=src;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat
-Item3=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
+Count=5
+Item0=..\..\Program Files\Borland\CBuilder4\Projects;src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL
+Item1=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL
+Item2=src;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat;$(BCB)\include;$(BCB)\include\ATL;
+Item3=src;$(BCB)\include;$(BCB)\include\ATL;include;..\support\ace_wrappers;..\support\zlib;..\include\sxp;..\include\expat
+Item4=src;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib
 
 [HistoryLists\hlLibraryPath]
-Count=3
-Item0=src;$(BCB)\lib
-Item1=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB;$(BCB)\lib
-Item2=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB-1.1.3;$(BCB)\lib
+Count=4
+Item0=..\..\Program Files\Borland\CBuilder4\Projects;src;$(BCB)\lib
+Item1=src;$(BCB)\lib
+Item2=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB;$(BCB)\lib
+Item3=src;..\SUPPORT\ACE_WRAPPERS\ACE;..\SUPPORT\ZLIB-1.1.3;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=2
-Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0
-Item1=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
+Count=3
+Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0;HAVE_CONFIG_H
+Item1=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1;ACE_USE_RCSID=0
+Item2=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 
 [HistoryLists\hlIntOutputDir]
 Count=1
