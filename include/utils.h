@@ -24,6 +24,9 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.23  2000/05/13 07:05:46  prez
+** Added displaying of sizes to all file fields..
+**
 ** Revision 1.22  2000/04/30 03:48:28  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -90,6 +93,8 @@ vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(mstring in);
 mstring ToHumanTime(unsigned long in);
 mstring ToHumanNumber(unsigned long in);
+unsigned long FromHumanSpace(mstring in);
+mstring ToHumanSpace(unsigned long in);
 
 // extrapolated from the ms's pair<T1,T2> template code
 

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2000/05/13 07:05:46  prez
+** Added displaying of sizes to all file fields..
+**
 ** Revision 1.85  2000/05/10 11:46:59  prez
 ** added back memo timers
 **
@@ -582,7 +585,7 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
     }
 /*    else if (!Parent->nickserv.)
     {
-	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PICDISABLED"));
+	send(service, nick, Parent->getMessage(nick, "NS_YOU_STATUS/PUBDISABLED"));
     } */
 
     type = FileMap::Public;
@@ -593,7 +596,7 @@ void Nick_Live_t::InFlight_t::Public(mstring mynick, mstring committees)
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
-    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PENDING"));
+    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/PUB_PENDING"));
 }
 
 
@@ -1961,7 +1964,10 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 		found = true;
 	    }
 	    if (citer->second.IsHead(i_Name) || citer->second.IsHead(oldnick))
+	    {
+		citer->Head(i_Name);
 		found = false;
+	    }
 	    if (found)
 	    {
 		citer->second.insert(i_Name, modifier, modtime);
@@ -1984,6 +1990,7 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 	}
 	{ MLOCK(("ChanServ", "stored", csiter->first, "Access"));
 	found = false;
+	valueL = 0;
 	if (csiter->second.Access_find(i_Name))
 	{
 	    valueL = csiter->second.Access->Value();
@@ -1994,7 +2001,8 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 	}
 	if (csiter->second.Access_find(oldnick))
 	{
-	    valueL = csiter->second.Access->Value();
+	    if (csiter->second.Access->Value() > valueL)
+		valueL = csiter->second.Access->Value();
 	    modifier = csiter->second.Access->Last_Modifier();
 	    modtime = csiter->second.Access->Last_Modify_Time();
 	    csiter->second.Access_erase();
@@ -4175,6 +4183,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 						output.c_str());
     if (nick->PicNum())
 	::send(mynick, source, Parent->getMessage(source, "NS_INFO/HASPIC"),
+				ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, nick->PicNum())).c_str(),
 				mynick.c_str(), nick->Name().c_str());
     if (nick->IsOnline())
 	::send(mynick, source,  Parent->getMessage(source, "NS_INFO/ISONLINE"),

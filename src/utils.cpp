@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/05/13 07:05:47  prez
+** Added displaying of sizes to all file fields..
+**
 ** Revision 1.34  2000/04/30 03:48:30  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -431,3 +434,110 @@ mstring ToHumanNumber(unsigned long in)
 }
 
 
+mstring ToHumanSpace(unsigned long in)
+{
+    FT("ToHumanSpace", (in));
+    mstring retval;
+    retval.Format("%ub", in);
+
+    unsigned long value = 1024;
+    for (int power = 1; power<5; power++)
+    {
+	CP(("Comparing %d to %d = %d", in, power, value));
+	if (in >= value)
+	{
+	    switch (power) {
+	    case 4:
+	    	retval.Format("%uTb", in / value);
+		break;
+	    case 3:
+	    	retval.Format("%uGb", in / value);
+		break;
+	    case 2:
+	    	retval.Format("%uMb", in / value);
+		break;
+	    case 1:
+	    	retval.Format("%uKb", in / value);
+		break;
+	    }
+	}
+	else
+	    break;
+	value *= 1024;
+    }
+    RET(retval);
+}
+
+unsigned long FromHumanSpace(mstring in)
+{
+    FT("FromHumanTime", (in));
+
+    unsigned int i;
+    unsigned long number = 0, total = 0;
+
+    for (i=0; i<in.size(); i++)
+    {
+	switch(in[i])
+	{
+	case 'T':
+	case 't':
+	    if (number != 0)
+	    {
+		total += number * 1024 * 1024 * 1024 * 1024;
+		number = 0;
+	    }
+	    break;
+	case 'G':
+	case 'g':
+	    if (number != 0)
+	    {
+		total += number * 1024 * 1024 * 1024;
+		number = 0;
+	    }
+	    break;
+	case 'M':
+	case 'm':
+	    if (number != 0)
+	    {
+		total += number * 1024 * 1024;
+		number = 0;
+	    }
+	    break;
+	case 'K':
+	case 'k':
+	    if (number != 0)
+	    {
+		total += number * 1024;
+		number = 0;
+	    }
+	    break;
+	case 'B':
+	case 'b':
+	    if (number != 0)
+	    {
+		total += number;
+		number = 0;
+	    }
+	    break;
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	    number *= 10;
+	    number += (unsigned long) (in[i] - '0');
+	    break;
+	default:
+	    RET(0);
+	}
+    }
+    if (number != 0)
+	total += number;
+
+    RET(total);
+}

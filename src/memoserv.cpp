@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/05/13 07:05:46  prez
+** Added displaying of sizes to all file fields..
+**
 ** Revision 1.52  2000/05/09 09:11:59  prez
 ** Added XMLisation to non-mapped structures ... still need to
 ** do the saving stuff ...
@@ -490,9 +493,20 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		    continue;
 
 		iter->Read();
-		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
+		if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
+		{
+		    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_FILE"),
+			i++, iter->Sender().c_str(),
+			iter->Time().Ago().c_str(),
+			Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
+			ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File())).c_str());
+		}
+		else
+		{
+		    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
 			i++, iter->Sender().c_str(),
 			iter->Time().Ago().c_str());
+		}
 		unsigned int sentsize;
 		mstring output;
 		for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
@@ -546,9 +560,20 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
 		    {
 			iter->Read();
-			::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
+			if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
+			{
+			    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_FILE"),
+				j, iter->Sender().c_str(),
+				iter->Time().Ago().c_str(),
+				Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
+				ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File())).c_str());
+			}
+			else
+			{
+			    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO"),
 				j, iter->Sender().c_str(),
 				iter->Time().Ago().c_str());
+			}
 			unsigned int sentsize;
 			for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
 			{
@@ -838,26 +863,14 @@ void MemoServ::do_Get(mstring mynick, mstring source, mstring params)
 		    continue;
 		}
 
+		if (!Parent->filesys.Exists(FileMap::MemoAttach, filenum))
+		{
+		    nonfiles = true;
+		    continue;
+		}
+
 		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);
-		if (filename == "")
-		{
-		    nonfiles = true;
-		}
-
-		mstring sourcefile;
-		sourcefile.Format("%s%s%08x", Parent->files.MemoAttach().c_str(),
-					DirSlash.c_str(), filenum);
-		if (!wxFile::Exists(sourcefile.c_str()))
-		{
-		    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
-		    nonfiles = true;
-		    return;
-		}
-
-		size_t filesize;
-		wxFile file(sourcefile.c_str());
-		filesize = file.Length();
-		file.Close();
+		size_t filesize = Parent->filesys.GetSize(FileMap::MemoAttach, filenum);
 
 		short port = FindAvailPort();
 		::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
@@ -972,10 +985,22 @@ void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 	    else
 		output << iter->Text().SubString(0, iter->Text().size()-1);
 
-	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_LIST"),
+	    if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
+	    {
+		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_LIST_FILE"),
+		    iter->IsRead() ? ' ' : '*',
+		    i++, iter->Sender().c_str(),
+		    iter->Time().Ago().c_str(), output.c_str(),
+		    Parent->filesys.GetName(FileMap::MemoAttach, iter->File()).c_str(),
+		    ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File())).c_str());
+	    }
+	    else
+	    {
+		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/MEMO_LIST"),
 		    iter->IsRead() ? ' ' : '*',
 		    i++, iter->Sender().c_str(),
 		    iter->Time().Ago().c_str(), output.c_str());
+	    }
 	}
     }
 }

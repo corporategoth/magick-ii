@@ -272,18 +272,18 @@ OTH_CMD9           =LOCK       %10d / UNLOCK     %10d
 
 OTH_CMD10          =GLOBAL     %10d / CREDITS    %10d
 
-USE_NS_LIVE        =Live Nicknames      %5d (%dkb)
-USE_CS_LIVE        =Live Channels       %5d (%dkb)
-USE_NS_STORED      =Stored Nicknames    %5d (%dkb)
-USE_CS_STORED      =Stored Channels     %5d (%dkb)
-USE_MEMO           =User Memos          %5d (%dkb)
-USE_NEWS           =News Articles       %5d (%dkb)
-USE_COMMITTEE      =Committees          %5d (%dkb)
-USE_OPERSERV       =OperServ Lists      %5d (%dkb)
-USE_OTHER          =Other               %5d (%dkb)
-USE_TOTAL          =TOTAL               %5d (%dkb)
-USE_LANGHEAD       =Language                LNG      HLP
-USE_LANG           =%-20s %5dkb  %5dkb
+USE_NS_LIVE        =Live Nicknames      %5d (%s)
+USE_CS_LIVE        =Live Channels       %5d (%s)
+USE_NS_STORED      =Stored Nicknames    %5d (%s)
+USE_CS_STORED      =Stored Channels     %5d (%s)
+USE_MEMO           =User Memos          %5d (%s)
+USE_NEWS           =News Articles       %5d (%s)
+USE_COMMITTEE      =Committees          %5d (%s)
+USE_OPERSERV       =OperServ Lists      %5d (%s)
+USE_OTHER          =Other               %5d (%s)
+USE_TOTAL          =TOTAL               %5d (%s)
+USE_LANGHEAD       =Language                 LNG      HLP
+USE_LANG           =%-20s %7s  %7s
 
 
 ;
@@ -413,7 +413,7 @@ DESCRIPTION        =\    Description: %s
 COMMENT            =\        Comment: %s
 COMMITTEES         =\     Committees: %s
 OPTIONS            =\        Options: %s
-HASPIC             =This user has a picture available.  Type /MSG %s SEND %s to download it.
+HASPIC             =This user has a picture available (%s).  Type /MSG %s SEND %s to download it.
 ISONLINE           =This user is currently online.  Type /whois %s for more information.
 NOEXPIRE           =non-expiring
 
@@ -477,6 +477,7 @@ UNSET              =Your %s has been unset.
 OPT_SET_TO         =%s option has been set to %s.
 
 PENDING            =Please begin sending your picture now.
+PUB_PENDING        =Please begin sending your file now.
 SAVED              =Your picture has been saved.
 REMOVED            =Your picture has been removed.
 
@@ -796,7 +797,9 @@ REPLY_ARG          =[REPLY(%s): "%s"] %s
 NEWS               =#%d from %s to %s sent %s ago.
 NEWS_LIST          =%c#%d from %s to %s sent %s ago - "%s"
 MEMO               =#%d from %s sent %s ago.
+MEMO_FILE          =#%d from %s sent %s ago has %s (%s) attached.
 MEMO_LIST          =%c#%d from %s sent %s ago - "%s"
+MEMO_LIST_FILE     =%c#%d from %s sent %s ago - "%s" [%s (%s)]
 CS_UNREAD          =News articles %s for channel %s have been unread.
 CS_UNREAD_ALL      =All news articles for channel %s have been unread.
 NS_UNREAD          =Your memos %s have been unread.

@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/05/13 07:05:46  prez
+** Added displaying of sizes to all file fields..
+**
 ** Revision 1.61  2000/05/13 06:48:49  ungod
 ** no message
 **
@@ -241,63 +244,13 @@ void entlist_val_t<T>::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 template<class T> inline
 void entlist_val_t<T>::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
-	pOut->BeginObject(tag_entlist_t, attribs);
+	pOut->BeginObject(tag_entlist_val_t, attribs);
     entlist_t::WriteElement(pOut,attribs);
 
 	pOut->WriteElement(tag_Value, i_Value);
 	pOut->WriteElement(tag_Stupid, i_Stupid);
 
-	pOut->EndObject(tag_entlist_t);
-}
-
-template<class T1, class T2>
-class entlist_val_t< std::pair<T1,T2> > : public entlist_t
-{
-#ifdef WIN32
-    friend wxOutputStream &operator<<(wxOutputStream& out, const entlist_val_t< std::pair<T1,T2> >& in);
-    friend wxInputStream &operator>>(wxInputStream& in, entlist_val_t<  std::pair<T1,T2> >& out);
-#else
-    friend wxOutputStream &operator<< < std::pair<T1,T2> >(wxOutputStream& out, const entlist_val_t< std::pair<T1,T2> >& in);
-    friend wxInputStream &operator>> < std::pair<T1,T2> >(wxInputStream& in, entlist_val_t< std::pair<T1,T2> >& out);
-#endif
-    std::pair<T1,T2> i_Value;
-    bool i_Stupid;	// if TRUE, Value() does nothing.
-
-public:
-    entlist_val_t () {}
-    entlist_val_t (const entlist_val_t& in) { *this = in; }
-    entlist_val_t (mstring entry, std::pair<T1,T2> value, mstring nick, mDateTime modtime = Now(), bool stupid = false);
-    void operator=(const entlist_val_t &in);
-
-    bool Value(std::pair<T1,T2> value, mstring nick);
-    std::pair<T1,T2> Value()const			{ return i_Value; }
-
-    virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; }
-    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
-    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
-    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
-};
-
-template<class T1, class T2>
-inline void entlist_val_t< std::pair<T1,T2> >::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
-{
-    entlist_t::EndElement(pIn,pElement);
-	if( pElement->IsA(tag_ValueFirst) )   pElement->Retrieve(i_Value.first);
-	if( pElement->IsA(tag_ValueSecond) )   pElement->Retrieve(i_Value.second);
-	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
-}
-
-template<class T1, class T2>
-inline void entlist_val_t< std::pair<T1,T2> >::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
-{
-	pOut->BeginObject(tag_entlist_t, attribs);
-    entlist_t::WriteElement(pOut,attribs);
-
-	pOut->WriteElement(tag_ValueFirst, i_Value.first);
-	pOut->WriteElement(tag_ValueSecond, i_Value.second);
-	pOut->WriteElement(tag_Stupid, i_Stupid);
-
-	pOut->EndObject(tag_entlist_t);
+	pOut->EndObject(tag_entlist_val_t);
 }
 
 template<class T> inline
@@ -329,6 +282,77 @@ wxInputStream &operator>>(wxInputStream& in, entlist_val_t<T>& out)
 	out.i_UserDef[dummy]=dummy2;
     }
     return in;
+}
+
+template<class T1, class T2>
+class entlist_val_t< pair<T1,T2> > : public entlist_t
+{
+/*
+#ifdef WIN32
+    friend wxOutputStream &operator<<(wxOutputStream& out, const entlist_val_t< pair<T1,T2> >& in);
+    friend wxInputStream &operator>>(wxInputStream& in, entlist_val_t<  pair<T1,T2> >& out);
+#else
+    friend wxOutputStream &operator<< < pair<T1,T2> >(wxOutputStream& out, const entlist_val_t< pair<T1,T2> >& in);
+    friend wxInputStream &operator>> < pair<T1,T2> >(wxInputStream& in, entlist_val_t< pair<T1,T2> >& out);
+#endif
+*/
+    pair<T1,T2> i_Value;
+    bool i_Stupid;	// if TRUE, Value() does nothing.
+
+public:
+    entlist_val_t () {}
+    entlist_val_t (const entlist_val_t& in) { *this = in; }
+    entlist_val_t (mstring entry, pair<T1,T2> value, mstring nick, mDateTime modtime = Now(), bool stupid = false);
+    void operator=(const entlist_val_t &in);
+
+    bool Value(pair<T1,T2> value, mstring nick);
+    pair<T1,T2> Value()const			{ return i_Value; }
+
+    virtual SXP::Tag& GetClassTag() const { return tag_entlist_val_t; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+};
+
+
+template<class T1, class T2> inline
+bool entlist_val_t<pair<T1,T2> >::Value(pair<T1,T2> value, mstring nick)
+{
+    FT("entlist_val_t<pair<T1,T2> >::Change", ("(pair<T1,T2>) value", nick));
+    if (i_Stupid)
+    {
+	RET(false);
+    }
+    else
+    {
+	i_Value = value;
+	i_Last_Modify_Time = Now();
+	i_Last_Modifier = nick;
+	RET(true);
+    }
+}
+
+
+template<class T1, class T2> inline
+void entlist_val_t<pair<T1,T2> >::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    entlist_t::EndElement(pIn,pElement);
+	if( pElement->IsA(tag_ValueFirst) )   pElement->Retrieve(i_Value.first);
+	if( pElement->IsA(tag_ValueSecond) )   pElement->Retrieve(i_Value.second);
+	if( pElement->IsA(tag_Stupid) )   pElement->Retrieve(i_Stupid);
+}
+
+template<class T1, class T2> inline
+void entlist_val_t<pair<T1,T2> >::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+	pOut->BeginObject(tag_entlist_val_t, attribs);
+    entlist_t::WriteElement(pOut,attribs);
+
+	pOut->WriteElement(tag_ValueFirst, i_Value.first);
+	pOut->WriteElement(tag_ValueSecond, i_Value.second);
+	pOut->WriteElement(tag_Stupid, i_Stupid);
+
+	pOut->EndObject(tag_entlist_val_t);
 }
 
 class mBase

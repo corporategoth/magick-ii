@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/05/13 07:05:47  prez
+** Added displaying of sizes to all file fields..
+**
 ** Revision 1.43  2000/05/10 11:47:00  prez
 ** added back memo timers
 **
@@ -562,53 +565,53 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_LIVE"),
 		Parent->nickserv.live.size(),
-		(Parent->nickserv.live.size() * sizeof(mstring) +
-		Parent->nickserv.live.size() * sizeof(Nick_Live_t)) / 1024);
+		ToHumanSpace(Parent->nickserv.live.size() * sizeof(mstring) +
+		Parent->nickserv.live.size() * sizeof(Nick_Live_t)).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_LIVE"),
 		Parent->chanserv.live.size(),
-		(Parent->chanserv.live.size() * sizeof(mstring) +
-		Parent->chanserv.live.size() * sizeof(Chan_Live_t)) / 1024);
+		ToHumanSpace(Parent->chanserv.live.size() * sizeof(mstring) +
+		Parent->chanserv.live.size() * sizeof(Chan_Live_t)).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NS_STORED"),
 		Parent->nickserv.stored.size(),
-		(Parent->nickserv.stored.size() * sizeof(mstring) +
-		Parent->nickserv.stored.size() * sizeof(Nick_Stored_t)) / 1024);
+		ToHumanSpace(Parent->nickserv.stored.size() * sizeof(mstring) +
+		Parent->nickserv.stored.size() * sizeof(Nick_Stored_t)).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_CS_STORED"),
 		Parent->chanserv.stored.size(),
-		(Parent->chanserv.stored.size() * sizeof(mstring) +
-		Parent->chanserv.stored.size() * sizeof(Chan_Stored_t)) / 1024);
+		ToHumanSpace(Parent->chanserv.stored.size() * sizeof(mstring) +
+		Parent->chanserv.stored.size() * sizeof(Chan_Stored_t)).c_str());
     map<mstring,list<Memo_t> >::iterator mi;
     for (count = 0, mi=Parent->memoserv.nick.begin();
 			mi!=Parent->memoserv.nick.end(); mi++)
 	count += mi->second.size();
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_MEMO"),
 		Parent->memoserv.nick.size(),
-		(Parent->memoserv.nick.size() * sizeof(mstring) +
-		count * sizeof(Memo_t)) / 1024);
+		ToHumanSpace(Parent->memoserv.nick.size() * sizeof(mstring) +
+		count * sizeof(Memo_t)).c_str());
     map<mstring,list<News_t> >::iterator ni;
     for (count = 0, ni=Parent->memoserv.channel.begin();
 			ni!=Parent->memoserv.channel.end(); ni++)
 	count += ni->second.size();
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_NEWS"),
 		Parent->memoserv.channel.size(),
-		(Parent->memoserv.channel.size() * sizeof(mstring) +
-		count * sizeof(News_t)) / 1024);
+		ToHumanSpace(Parent->memoserv.channel.size() * sizeof(mstring) +
+		count * sizeof(News_t)).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_COMMITTEE"),
 		Parent->commserv.list.size(),
-		(Parent->commserv.list.size() * sizeof(mstring) +
-		Parent->commserv.list.size() * sizeof(Committee)) / 1024);
+		ToHumanSpace(Parent->commserv.list.size() * sizeof(mstring) +
+		Parent->commserv.list.size() * sizeof(Committee)).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OPERSERV"),
 		(Parent->operserv.Clone_size() +
 		Parent->operserv.Akill_size() +
 		Parent->operserv.OperDeny_size() +
 		Parent->operserv.Ignore_size()),
-		(Parent->operserv.Clone_size() * sizeof(*Parent->operserv.Clone) +
+		ToHumanSpace(Parent->operserv.Clone_size() * sizeof(*Parent->operserv.Clone) +
 		Parent->operserv.Akill_size() * sizeof(*Parent->operserv.Akill) +
 		Parent->operserv.OperDeny_size() * sizeof(*Parent->operserv.OperDeny) +
-		Parent->operserv.Ignore_size() * sizeof(*Parent->operserv.Ignore)) / 1024);
+		Parent->operserv.Ignore_size() * sizeof(*Parent->operserv.Ignore)).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_OTHER"),
 		Parent->server.ServerList.size(),
-		(Parent->server.ServerList.size() * sizeof(mstring) +
-		Parent->server.ServerList.size() * sizeof(Server)) / 1024);
+		ToHumanSpace(Parent->server.ServerList.size() * sizeof(mstring) +
+		Parent->server.ServerList.size() * sizeof(Server)).c_str());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANGHEAD"));
     set<mstring> seen;
@@ -627,16 +630,16 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 	    }
 	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
 			i->first.c_str(),
-			Parent->Messages[i->first].size() * sizeof(i->second) / 1024,
-			(sizeof(i->first) + helpsz) / 1024);
+			ToHumanSpace(Parent->Messages[i->first].size() * sizeof(i->second)).c_str(),
+			ToHumanSpace(sizeof(i->first) + helpsz).c_str());
 	    seen.insert(i->first);
 	}
 	else
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
 			i->first.c_str(),
-			Parent->Messages[i->first].size() * sizeof(i->second) / 1024,
-			0);
+			ToHumanSpace(Parent->Messages[i->first].size() * sizeof(i->second)).c_str(),
+			ToHumanSpace(0).c_str());
 	}
      }
      for (k=Parent->Help.begin(); k!=Parent->Help.end(); k++)
@@ -650,8 +653,8 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 		helpsz += sizeof(j->first);
 	    }
 	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
-			k->first.c_str(), 0,
-			(sizeof(k->first) + helpsz) / 1024);
+			k->first.c_str(), ToHumanSpace(0).c_str(),
+			ToHumanSpace(sizeof(k->first) + helpsz).c_str());
 	}
     }
 }
@@ -759,14 +762,14 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 	    {
 		if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 			Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
-		    ::send(mynick, source, "%s (%d kb) [%s]",
+		    ::send(mynick, source, "%s (%s) [%s]",
 			Parent->filesys.GetName(FileMap::Picture, filelist[j]).c_str(),
-			Parent->filesys.GetSize(FileMap::Picture, filelist[j])/1024,
+			ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, filelist[j])).c_str(),
 			Parent->filesys.GetPriv(FileMap::Picture, filelist[j]).c_str());
 		else
-		    ::send(mynick, source, "%s (%d kb)",
+		    ::send(mynick, source, "%s (%s)",
 			Parent->filesys.GetName(FileMap::Picture, filelist[j]).c_str(),
-			Parent->filesys.GetSize(FileMap::Picture, filelist[j])/1024);
+			ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, filelist[j])).c_str());
 		
 		i++;
 	    }
