@@ -66,7 +66,7 @@ void Magick::register_instance(Magick * ins, ACE_thread_t id)
     if (ins == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
-	throw(E_Magick(E_Magick::T_Invalid));
+	throw E_Magick(E_Magick::T_Invalid);
 #endif
 	return;
     }
@@ -96,7 +96,7 @@ Magick &Magick::instance(ACE_thread_t id)
 	return *(iter->second);
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    throw(E_Magick(E_Magick::T_NotFound));
+    throw E_Magick(E_Magick::T_NotFound);
 #else
     LOG(LM_CRITICAL, "EXCEPTIONS/MAGICK", (id));
     return GLOB_Magick;
