@@ -27,6 +27,10 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2001/05/23 02:43:48  prez
+** Fixed the NOACCESS bug, the chanserv getpass/setpass bug and nickserv failed
+** passwords kill bug.
+**
 ** Revision 1.100  2001/05/17 19:18:55  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -1371,7 +1375,7 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
@@ -1690,7 +1694,7 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
@@ -2001,7 +2005,7 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
@@ -2114,7 +2118,7 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 
 	if (!Parent->chanserv.GetStored(name).GetAccess(source, "WRITEMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
     }
@@ -2238,7 +2242,7 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READ"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
@@ -2363,7 +2367,7 @@ void MemoServ::do_Forward2(const mstring &mynick, const mstring &source,
 
 	if (!Parent->chanserv.GetStored(dest).GetAccess(source, "WRITEMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
     }
@@ -2447,7 +2451,7 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
@@ -2658,7 +2662,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
@@ -2674,7 +2678,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	{
 	    if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "DELMEMO"))
 	    {
-		NSEND(mynick, source, "MISC/NOACCESS");
+		NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 		return;
 	    }
 
@@ -3105,7 +3109,7 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
@@ -3124,7 +3128,7 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 
 	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "DELMEMO"))
 	{
-	    NSEND(mynick, source, "MISC/NOACCESS");
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 

@@ -27,6 +27,10 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.178  2001/05/23 02:43:48  prez
+** Fixed the NOACCESS bug, the chanserv getpass/setpass bug and nickserv failed
+** passwords kill bug.
+**
 ** Revision 1.177  2001/05/22 22:57:10  prez
 ** Fixed nick linking/idetify, and recognition of committee heads.
 **
@@ -1230,6 +1234,8 @@ Nick_Live_t::Nick_Live_t(const mstring& name, const mDateTime& signon,
 	// Do this cos it will be removed when we KILL,
 	// and we dont wanna get out of touch.
 	Parent->operserv.AddHost(i_host);
+	i_server.erase();
+	i_realname = reason;
 	LOG(LM_INFO, "OTHER/KILL_AKILL", (
 		Mask(N_U_P_H), Parent->operserv.Akill->Entry(),
 		reason));
@@ -1237,8 +1243,6 @@ Nick_Live_t::Nick_Live_t(const mstring& name, const mDateTime& signon,
 			Parent->operserv.Akill->Value().first -
 				Parent->operserv.Akill->Last_Modify_Time().SecondsSince(),
 			Parent->operserv.Akill->Last_Modifier());
-	i_server.erase();
-	i_realname = reason;
 	return;
     }}
 
@@ -2260,10 +2264,10 @@ mstring Nick_Live_t::ChanIdentify(const mstring& channel, const mstring& passwor
 
 	    if (failtimes >= Parent->chanserv.Passfail())
 	    {
-		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
-			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
 		LOG(LM_NOTICE, "OTHER/KILL_CHAN_PASS", (
 			Mask(N_U_P_H), channel));
+		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
+			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
 		RET("");
 	    }
 	    else
@@ -2364,10 +2368,10 @@ mstring Nick_Live_t::Identify(const mstring& password)
 	    RLOCK_IF(("NickServ", "live", i_Name.LowerCase(), "failed_passwds"),
 		failed_passwds >= Parent->nickserv.Passfail())
 	    {
-		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
-			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
 		LOG(LM_NOTICE, "OTHER/KILL_NICK_PASS", (
 			Mask(N_U_P_H), i_Name));
+		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
+			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
 		RET("");
 	    }
 	    else

@@ -27,6 +27,10 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.246  2001/05/23 02:43:47  prez
+** Fixed the NOACCESS bug, the chanserv getpass/setpass bug and nickserv failed
+** passwords kill bug.
+**
 ** Revision 1.245  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -2128,7 +2132,7 @@ bool Chan_Stored_t::Join(const mstring& nick)
 	}
     }
 
-    if (nstored != NULL && GetAccess(nick, "MEMOREAD") &&
+    if (nstored != NULL && GetAccess(nick, "READMEMO") &&
 	Parent->memoserv.IsChannel(i_Name))
     {
 	size_t count = Parent->memoserv.ChannelNewsCount(i_Name, nick);
@@ -7015,7 +7019,7 @@ void ChanServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
     if (chan.Forbidden())
     {
@@ -7077,7 +7081,7 @@ void ChanServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
     if (chan.Forbidden())
     {
