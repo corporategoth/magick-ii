@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+<head>
+
+<title>Magick Specification: Mantra</title>
+
+<meta name="keywords" content="magick,magick.tm,magick irc services,irc,irc services,services,internet relay chat,network,irc network services,network services,chat,irc operater,ircop,oper,operserv,nickserv,chanserv,memoserv,akill,ban,download,magick 2.0,magick 1.4,version 2,documentation,gpl,open source,c++">
+<meta name="description" content="Magick IRC Services">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="utils.js"></script>
+
+<link rel="stylesheet" type="text/css" href="magick.css">
+
+<link rel="shortcut icon" href="favicon.ico">
+
+</head>
+<body>
+
+<table class="center collapse" width="780" cellpadding="0" cellspacing="0" border="1">
+ <tr class="medium">
+  <td><div class="center"><img src="images/logo1.jpg" width="160" height="110" alt="Magick Logo"><img src="images/logo2.jpg" alt="Magick Logo" height="110" width="600"></div></td>
+ </tr>
+</table>
+
+<br />
+
+<table class="center collapse medium" width="780" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td>
+   <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+    <tr>
+     <td width="200" valign="top">
+      <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+       <tr>
+        <td>
+         <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="0">
+          <tr class="dark">
+           <td><b class="light-margin">Contents</b></td></tr>
+          <tr>
+           <td><br /></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Home'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#0'" class="hand"><p class="menu-side"><a href="#0">Home:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Summary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#1'" class="hand"><p class="menu-side"><a href="#1">Summary:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Justification'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#2'" class="hand"><p class="menu-side"><a href="#2">Justification:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Pre-Requisites'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#3'" class="hand"><p class="menu-side"><a href="#3">Pre-Requisites:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Implementation'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#4'" class="hand"><p class="menu-side"><a href="#4">Implementation:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Potential Problems'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#5'" class="hand"><p class="menu-side"><a href="#5">Potential Problems:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Test Plan'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#6'" class="hand"><p class="menu-side"><a href="#6">Test Plan:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Glossary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#7'" class="hand"><p class="menu-side"><a href="#7">Glossary:</a></p></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/spacer.gif" alt="" height="1000" width="1"></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/logo3.jpg" alt="Magick Logo" height="300" width="190"></td></tr>
+         </table>
+        </td>
+       </tr>
+      </table>
+     </td>
+     <td width="580" valign="top">&nbsp;
+      <table width="580" cellpadding="2" cellspacing="2" border="0">
+       <tr>
+        <td><div class="center">
+         <table width="490" cellpadding="2" cellspacing="2" border="0" class="center">
+          <tr>
+           <td><h1><a name="0">Mantra</a></h1></td></tr>
+          <tr>
+	   <td><table border="0" class="medium">
+            <tr><td><p>Project Number	</td><td><p>	1				</p></td></tr>
+            <tr><td><p>Slated Release	</td><td><p>	2.1				</p></td></tr>
+            <tr><td><p>Author		</td><td><p>	Preston A. Elder		</p></td></tr>
+            <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
+            <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
+			<br />$Log$
+			<br />Revision 1.1  2002/07/31 20:09:57  prez
+			<br />Added Mantra spec.
+			<br />
+            </code></p></td></tr>
+           </table></td></tr>
+          <tr>
+           <td><br />
+
+            <h2><a name="1">Summary</a></h2>
+            <p>
+			Mantra will be a library that contains all of the code that is not specific to Magick.
+			It is likely that other products may eventually use Magick, as the technology that will be
+			contained within is very advanced, and rarely available in a decent package.  However, it
+			will primarily be designed to perform all the functions that Magick needs.
+            </p><br />
+
+            <h2><a name="2">Justification</a></h2>
+            <p>
+			1. Magick is too dependant on certain technologies (eg. ACE), in that it would be very
+			difficult to change to a different set of technologies if the need arose.  Add to this,
+			that as new features arise (eg. the scripting language), if we dont have something like
+			Mantra in place, the Magick code will become more and more difficult to maintain.
+            </p><p>
+			2. In the future, we plan on adding things like a data storage abstraction layer, so that
+			users may choose how their Magick data is stored.  To do this, we need a common interface
+			that Magick can use, without caring how the data is stored or retrieved.  This requires
+			an API, and thus, Mantra.
+            </p><p>
+			3. Others in the development community have expressed great interest in the technologies
+			that form the basis of Magick.  For example, the tracing technology.  These technologies
+			are very Magick specific right now, and also are licensed under the same license as
+			Magick, making it difficult for others to use.  By creating Mantra, we will remove the
+			specific nature of them (to Magick), and be able to re-license just these technologies,
+			so that others might use them.
+            </p><br />
+
+            <h2><a name="3">Pre-Requisites</a></h2>
+            <p>
+			Which technolgoies in Magick to be moved to Mantra must be determined.
+            </p><br />
+
+            <h2><a name="4">Implementation</a></h2>
+            <p>
+			Mantra will be implemented in stages.
+            </p><p>
+			1. We must assemble all the code that we are pulling out of Magick into its own directory.
+			We must also pull the necessary includes from the Magick pch.h.
+            </p><p>
+			2. We must create Mantra functions that duplicate all the ACE functions that are currently
+			in use by Magick.  This means making our own classes, etc. that mirror at least as much of the
+			API of ACE as we are using.  Initially, these classes will just be inherited from the ACE ones.
+            </p><p>
+			3. We must convert all the classes we inherited from ACE into an ACE interaction layer,
+			which will conform to as set of 'External Intergration Layer' standards.  By conforming to these
+			standards, we will have a list of functions which we will HAVE to implement to be able to replace
+			ACE, if we desire to.
+            </p><p>
+			4. We must create a new cohesive API that we will expose to anyone using Mantra.  This API should
+			interact with one of the External Intergration Layers, but should not expose it directly.
+            </p><br />
+
+            <h2><a name="5">Potential Problems</a></h2>
+            <p>
+			Certain technologies will have to be replaced, this could alter the way Magick works.
+            </p><br />
+
+            <h2><a name="6">Test Plan</a></h2>
+            <p>
+			Full regression test, Magick should work exactly as it did before, just linked to Mantra.
+            </p><br />
+
+            <h2><a name="7">Glossary</a></h2>
+            <p>
+			<b>ACE</b>: The <a href="http://www.cs.wustl.edu/~schmidt/ACE.html">Adaptive Communications Environment</a>.
+            </p><br />
+
+           </td></tr>
+         </table></div>
+        </td>
+       </tr>
+       </div>
+      </table>  
+     </td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+</table>
+<p class="center-sm">Copyright &copy;2001-2002 Magick.tm. All rights reserved.</p>
+&nbsp;
+</body>
+
+</html>
