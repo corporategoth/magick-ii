@@ -122,7 +122,7 @@ mstring mstring::Left(size_t nCount)const
 
 mstring mstring::Right(size_t nCount)const
 {
-	return Mid(size()-nCount-1);
+    return Mid(this->size()-nCount-1);
 }
 
 mstring mstring::Before(const mstring & in) const
@@ -132,7 +132,7 @@ mstring mstring::Before(const mstring & in) const
 
 mstring mstring::After(const mstring & in) const
 {
-	return Mid(First(in)+2);
+	return Mid(First(in)+1);
 }
 
 mstring mstring::RevBefore(const mstring & in) const
@@ -150,7 +150,7 @@ mstring mstring::RevAfter(const mstring & in) const
 void mstring::MakeUpper()
 {
 	int i;
-	for(i=0;i<size();i++)
+	for(i=0;i<this->size();i++)
 		if(islower(*this[i]))
 			at(i)=(char)toupper(*this[i]);
 }
@@ -158,7 +158,7 @@ void mstring::MakeUpper()
 void mstring::MakeLower()
 {
 	int i;
-	for(i=0;i<size();i++)
+	for(i=0;i<this->size();i++)
 		if(isupper(*this[i]))
 			at(i)=(char)tolower(*this[i]);
 }
