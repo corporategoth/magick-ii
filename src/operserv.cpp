@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/05/14 06:30:14  prez
+** Trying to get XML loading working -- debug code (printf's) in code.
+**
 ** Revision 1.75  2000/05/14 04:02:54  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -2846,6 +2849,7 @@ SXP::Tag OperServ::tag_Ignore("Ignore");
 
 void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("OperServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     set<entlist_t>::size_type ei,ecount;
     set<entlist_val_t<long> >::size_type vli,vlcount;
     set<entlist_val_t<mstring> >::size_type vsi,vscount;
@@ -2887,6 +2891,7 @@ void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("OperServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     set<entlist_val_t<pair<unsigned int, mstring> > >::iterator i;
     set<entlist_val_t<pair<unsigned long, mstring> > >::iterator j;
     set<entlist_val_t<mstring> >::iterator k;
@@ -2932,5 +2937,6 @@ void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void OperServ::PostLoad()
 {
+    NFT("OperServ::PostLoad");
     // Linkage, etc
 }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2000/05/14 06:30:14  prez
+** Trying to get XML loading working -- debug code (printf's) in code.
+**
 ** Revision 1.16  2000/05/14 04:02:53  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -402,6 +405,7 @@ SXP::Tag FileMap::tag_File("File");
 
 void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("FileMap::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     mstring in;
     FileMap::FileType type;
     unsigned long number;
@@ -423,11 +427,13 @@ void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("FileMap::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("FileMap::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_FileMap, attribs);
 
@@ -450,6 +456,7 @@ void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void FileMap::PostLoad()
 {
+    NFT("FileMap::PostLoad");
     // Linkage, etc
 }
 

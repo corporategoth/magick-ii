@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/05/14 06:30:14  prez
+** Trying to get XML loading working -- debug code (printf's) in code.
+**
 ** Revision 1.54  2000/05/14 04:02:54  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -1943,6 +1946,7 @@ SXP::Tag News_t::tag_UserDef("UserDef");
 
 void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("Memo_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Nick) )		pElement->Retrieve(i_Nick);
 	if( pElement->IsA(tag_Sender) )		pElement->Retrieve(i_Sender);
@@ -1981,6 +1985,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("News_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Channel) )	pElement->Retrieve(i_Channel);
 	if( pElement->IsA(tag_Sender) )		pElement->Retrieve(i_Sender);
@@ -2030,6 +2035,7 @@ SXP::Tag MemoServ::tag_MemoServ("MemoServ");
 
 void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("MemoServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Memo_t d1;
     if( pElement->IsA( d1.GetClassTag() ) )
     {
@@ -2049,11 +2055,13 @@ void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void MemoServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("MemoServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("MemoServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_MemoServ, attribs);
 
@@ -2080,5 +2088,6 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void MemoServ::PostLoad()
 {
+    NFT("MemoServ::PostLoad");
     // Linkage, etc
 }

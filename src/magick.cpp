@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.225  2000/05/14 06:30:14  prez
+** Trying to get XML loading working -- debug code (printf's) in code.
+**
 ** Revision 1.224  2000/05/14 04:02:53  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -439,8 +442,10 @@ int Magick::Start()
     // TODO: how to work out max_thread_pool for all of magick?
 
     CP((PRODUCT + " II has been started ..."));
-    load_databases();
+    //load_databases();
+    LoadXML();
     i_ResetTime=Now();
+printf("I am outside load (%d) ...\n", nickserv.stored.size()); fflush(stdout);
 
     //this little piece of code creates the actual connection from magick
     // to the irc server and sets up the socket handler that receives
@@ -2843,55 +2848,76 @@ SXP::Tag Magick::tag_Magick("Magick");
 
 void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("Magick::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
+printf("Beginning of BeginElement\n"); fflush(stdout);
     if( pElement->IsA( operserv.GetClassTag() ) )
     {
+printf("DEBUG 1\n"); fflush(stdout);
         pIn->ReadTo(&operserv);
+printf("DEBUG 2\n"); fflush(stdout);
         operserv.PostLoad();
     }
     if( pElement->IsA( nickserv.GetClassTag() ) )
     {
+printf("DEBUG 3\n"); fflush(stdout);
         pIn->ReadTo(&nickserv);
+printf("DEBUG 4\n"); fflush(stdout);
         nickserv.PostLoad();
     }
     if( pElement->IsA( chanserv.GetClassTag() ) )
     {
+printf("DEBUG 5\n"); fflush(stdout);
         pIn->ReadTo(&chanserv);
+printf("DEBUG 6\n"); fflush(stdout);
         chanserv.PostLoad();
     }
     if( pElement->IsA( memoserv.GetClassTag() ) )
     {
+printf("DEBUG 7\n"); fflush(stdout);
         pIn->ReadTo(&memoserv);
+printf("DEBUG 8\n"); fflush(stdout);
         memoserv.PostLoad();
     }
     if( pElement->IsA( commserv.GetClassTag() ) )
     {
+printf("DEBUG 9\n"); fflush(stdout);
         pIn->ReadTo(&commserv);
+printf("DEBUG 10\n"); fflush(stdout);
         commserv.PostLoad();
     }
     if( pElement->IsA( filesys.GetClassTag() ) )
     {
+printf("DEBUG 11\n"); fflush(stdout);
         pIn->ReadTo(&filesys);
+printf("DEBUG 12\n"); fflush(stdout);
         filesys.PostLoad();
     }
+printf("End of BeginElement .. %d\n", nickserv.stored.size()); fflush(stdout);
 }
 
 void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
+printf("Beginning of EndElement\n"); fflush(stdout);
 }
 
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("Magick::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
-    attribs["version"]=FileVersionNumber;
+    mstring tmp;
+    tmp << Magick_Major_Ver << "." << Magick_Minor_Ver;
+    attribs["version"]= tmp;
     pOut->BeginObject(tag_Magick, attribs);
 
-    pOut->WriteSubElement(&operserv, attribs);
-    pOut->WriteSubElement(&nickserv, attribs);
-    pOut->WriteSubElement(&chanserv, attribs);
-    pOut->WriteSubElement(&memoserv, attribs);
-    pOut->WriteSubElement(&commserv, attribs);
-    pOut->WriteSubElement(&filesys, attribs);
+    SXP::dict attr;
+    pOut->WriteSubElement(&operserv, attr);
+    pOut->WriteSubElement(&nickserv, attr);
+    pOut->WriteSubElement(&chanserv, attr);
+    pOut->WriteSubElement(&memoserv, attr);
+    pOut->WriteSubElement(&commserv, attr);
+    pOut->WriteSubElement(&filesys, attr);
 
     pOut->EndObject(tag_Magick);
 }
@@ -2906,7 +2932,12 @@ void Magick::SaveXML()
 
 void Magick::LoadXML()
 {
+    if (wxFile::Exists(files.Database()))
+    {
    	SXP::CParser p( this ); // let the parser know which is the object
+printf("Before FileFeed\n"); fflush(stdout);
 	p.FeedFile(	(char *)files.Database().c_str());
+printf("After FileFeed\n"); fflush(stdout);
+    }
 }
 

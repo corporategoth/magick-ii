@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2000/05/14 06:30:14  prez
+** Trying to get XML loading working -- debug code (printf's) in code.
+**
 ** Revision 1.97  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -611,7 +614,8 @@ int EventTask::svc(void)
 	if (last_save.SecondsSince() >= Parent->config.Cycletime())
 	{
 	    CP(("Starting DATABASE SAVE ..."));
-	    Parent->save_databases();
+//	    Parent->save_databases();
+	    Parent->SaveXML();
 
 	    last_save = Now();
 	}

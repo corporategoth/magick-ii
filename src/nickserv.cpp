@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2000/05/14 06:30:14  prez
+** Trying to get XML loading working -- debug code (printf's) in code.
+**
 ** Revision 1.88  2000/05/14 04:02:54  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -3255,6 +3258,7 @@ SXP::Tag Nick_Stored_t::tag_UserDef("UserDef");
 
 void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("Nick_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Name) )		pElement->Retrieve(i_Name);
 	if( pElement->IsA(tag_RegTime) )	pElement->Retrieve(i_RegTime);
@@ -6101,6 +6105,7 @@ SXP::Tag NickServ::tag_NickServ("NickServ");
 
 void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("NickServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Nick_Stored_t d1;
     if( pElement->IsA( d1.GetClassTag() ) )
     {
@@ -6112,11 +6117,13 @@ void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void NickServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("NickServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("NickServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_NickServ, attribs);
 
@@ -6129,6 +6136,7 @@ void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void NickServ::PostLoad()
 {
+    NFT("NickServ::PostLoad");
     map<mstring,Nick_Stored_t>::iterator iter;
     CP(("Linking nickname entries ..."));
     for (iter=stored.begin(); iter!=stored.end(); iter++)

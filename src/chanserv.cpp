@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.167  2000/05/14 06:30:13  prez
+** Trying to get XML loading working -- debug code (printf's) in code.
+**
 ** Revision 1.166  2000/05/14 04:02:52  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -3618,6 +3621,7 @@ SXP::Tag Chan_Stored_t::tag_UserDef("UserDef");
 
 void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("Chan_Stored_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     set<entlist_t>::size_type ei,ecount;
     set<entlist_val_t<long> >::size_type vli,vlcount;
     set<entlist_val_t<mstring> >::size_type vsi,vscount;
@@ -9555,6 +9559,7 @@ SXP::Tag ChanServ::tag_ChanServ("ChanServ");
 
 void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("ChanServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Chan_Stored_t d1;
     if( pElement->IsA( d1.GetClassTag() ) )
     {
@@ -9566,11 +9571,13 @@ void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void ChanServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("ChanServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("ChanServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_ChanServ, attribs);
 
@@ -9583,5 +9590,6 @@ void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void ChanServ::PostLoad()
 {
+    NFT("ChanServ::PostLoad");
     // Linkage, etc
 }

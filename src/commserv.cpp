@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2000/05/14 06:30:14  prez
+** Trying to get XML loading working -- debug code (printf's) in code.
+**
 ** Revision 1.53  2000/05/14 04:02:53  prez
 ** Finished off per-service XML stuff, and we should be ready to go.
 **
@@ -2379,6 +2382,7 @@ SXP::Tag Committee::tag_UserDef("UserDef");
 
 void Committee::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("Committee::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
 	if( pElement->IsA(tag_Name) )		pElement->Retrieve(i_Name);
 	if( pElement->IsA(tag_RegTime) )	pElement->Retrieve(i_RegTime);
@@ -2391,11 +2395,22 @@ void Committee::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_set_Private) )	pElement->Retrieve(i_Private);
 	if( pElement->IsA(tag_set_Secure) )	pElement->Retrieve(i_Secure);
 
-    if( pElement->IsA(tag_Members) )
+    if (i_Name == Parent->commserv.SADMIN_Name())
     {
-	entlist_t tmp;
-	pIn->ReadTo(&tmp);
-	i_Members.insert(tmp);
+	for (int j=1; j<=Parent->operserv.Services_Admin().WordCount(", "); j++)
+	    i_Members.insert(entlist_t(
+		Parent->operserv.Services_Admin().ExtractWord(j, ", "),
+		Parent->operserv.FirstName()));
+    }
+    else if (!(i_Name == Parent->commserv.ALL_Name() ||
+		i_Name == Parent->commserv.REGD_Name()))
+    {
+	if( pElement->IsA(tag_Members) )
+	{
+	    entlist_t tmp;
+	    pIn->ReadTo(&tmp);
+	    i_Members.insert(tmp);
+	}
     }
 
     if( pElement->IsA(tag_Messages) )
@@ -2416,6 +2431,7 @@ void Committee::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("Committee::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Committee, attribs);
 
@@ -2430,12 +2446,17 @@ void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->WriteElement(tag_set_Private, i_Private);
 	pOut->WriteElement(tag_set_Secure, i_Secure);
 
-	entlist_ui l;
-	for(l=i_Members.begin(); l!=i_Members.end(); l++)
+	if (!(i_Name == Parent->commserv.ALL_Name() ||
+	      i_Name == Parent->commserv.REGD_Name() ||
+	      i_Name == Parent->commserv.SADMIN_Name()))
 	{
-	    pOut->BeginObject(tag_Members, attribs);
-	    pOut->WriteSubElement((entlist_t *) &(*l), attribs);
-	    pOut->EndObject(tag_Members);
+	    entlist_ui l;
+	    for(l=i_Members.begin(); l!=i_Members.end(); l++)
+	    {
+		pOut->BeginObject(tag_Members, attribs);
+		pOut->WriteSubElement((entlist_t *) &(*l), attribs);
+		pOut->EndObject(tag_Members);
+	    }
 	}
 
 	entlist_i k;
@@ -2459,6 +2480,7 @@ SXP::Tag CommServ::tag_CommServ("CommServ");
 
 void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("CommServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Committee d1;
     if( pElement->IsA( d1.GetClassTag() ) )
     {
@@ -2470,11 +2492,13 @@ void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void CommServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    FT("CommServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
 void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    FT("CommServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_CommServ, attribs);
 
@@ -2488,5 +2512,6 @@ void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 
 void CommServ::PostLoad()
 {
+    NFT("CommServ::PostLoad");
     // Linkage, etc
 }
