@@ -1279,7 +1279,7 @@ size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
 #endif
 
 // there is no distinction between text and binary files under Unix
-#ifdef    __UNIX__
+#if defined(__UNIX__) || defined(__linux__)
   #define   O_BINARY    (0)
 #endif  //__UNIX__
 
@@ -1538,7 +1538,7 @@ bool wxFile::Eof() const
 
   int iRc;
 
-  #if defined(__UNIX__) || defined(__GNUWIN32__)
+  #if defined(__UNIX__) || defined(__linux__) || defined(__GNUWIN32__)
     // @@ this doesn't work, of course, on unseekable file descriptors
     off_t ofsCur = Tell(),
           ofsMax = Length();
@@ -1588,7 +1588,7 @@ bool wxTempFile::Open(const mstring& strName)
   // otherwise rename() in Commit() might not work (if the files are on
   // different partitions for example). Unfortunately, the only standard
   // (POSIX) temp file creation function tmpnam() can't do it.
-  #if defined(__UNIX__)
+  #if defined(__UNIX__) || defined(__linux__)
     static const char *szMktempSuffix = "XXXXXX";
     m_strTemp << strName << szMktempSuffix;
     mktemp((char *)m_strTemp.c_str()); // will do because length doesn't change

@@ -17,6 +17,7 @@ using namespace std;
 #include "mstring.h"
 #include "datetime.h"
 #include "textfile.h"
+#include "fileconf.h"
 
 // based upon mechanisms prevalent in Delphi.
 
@@ -59,8 +60,12 @@ public:
 	mVariant(long in);
 	mVariant(short in);
 	mVariant();
+	// Magick Only stuff
 	mVariant(const mstring& in);
 	mVariant(wxTextFileType in);
+	mVariant(LineList *in);
+	mVariant(ConfigEntry *in);
+	mVariant(ConfigGroup *in);
 
 	mVariant& operator=(const mVariant& in);
 	bool operator==(const mVariant& in)const;

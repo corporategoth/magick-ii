@@ -72,7 +72,7 @@ mstring wxFileConfig::GetGlobalDir()
   NFT("wxFileConfig::GetGlobalDir");
   mstring strDir;
 
-  #ifdef __UNIX__
+  #if defined(__UNIX__) || defined(__linux__)
     strDir = "/etc/";
   #elif defined(__WXSTUBS__)
     wxASSERT_MSG( false, "TODO" ) ;
@@ -94,7 +94,7 @@ mstring wxFileConfig::GetLocalDir()
 
   wxGetHomeDir(&strDir);
 
-#ifdef  __UNIX__
+#if defined(__UNIX__) || defined(__linux__)
   if (strDir.Last() != '/') strDir << '/';
 #else
   if (strDir.Last() != '\\') strDir << '\\';
@@ -110,7 +110,7 @@ mstring wxFileConfig::GetGlobalFileName(const char *szFile)
   str << szFile;
 
   if ( strchr(szFile, '.') == NULL )
-  #ifdef  __UNIX__
+  #if defined(__UNIX__) || defined(__linux__)
     str << ".conf";
   #else   // Windows
     str << ".ini";
@@ -124,7 +124,7 @@ mstring wxFileConfig::GetLocalFileName(const char *szFile)
   FT("wxFileConfig::GetLocalFileName", (szFile));
   mstring str = GetLocalDir();
 
-  #ifdef  __UNIX__
+  #if defined(__UNIX__) || defined(__linux__)
     str << '.';
   #endif
 
@@ -1026,10 +1026,10 @@ ConfigGroup::FindEntry(const char *szName) const
     else if ( res < 0 )
       lo = i + 1;
     else
-      NRET(ConfigEntry, pEntry);
+      RET(pEntry);
   }
 
-  NRET(ConfigEntry, NULL);
+  RET((ConfigEntry *) NULL);
 }
 
 ConfigGroup *
@@ -1053,10 +1053,10 @@ ConfigGroup::FindSubgroup(const char *szName) const
     else if ( res < 0 )
       lo = i + 1;
     else
-      NRET(ConfigGroup, pGroup);
+      RET(pGroup);
   }
 
-  RET(NULL);
+  RET((ConfigGroup *) NULL);
 }
 
 // ----------------------------------------------------------------------------
@@ -1733,7 +1733,7 @@ const char* wxGetHomeDir(mstring *pstr)
   FT("wxGetHomeDir", (pstr));
   mstring& strDir = *pstr;
 
-  #if defined(__UNIX__)
+  #if defined(__UNIX__) || defined(__linux__)
     const char *szHome = getenv("HOME");
     if ( szHome == NULL ) {
       // we're homeless...
@@ -1937,7 +1937,7 @@ const mstring& ConfigEntry::Value()       const
 ConfigGroup    *ConfigEntry::Group()       const 
 {
     NFT("ConfigEntry::Group");
-    NRET(ConfigGroup, m_pParent);    
+    RET(m_pParent);    
 }
 
 bool            ConfigEntry::IsDirty()     const 
@@ -1979,7 +1979,7 @@ const mstring& ConfigGroup::Name()    const
 ConfigGroup    *ConfigGroup::Parent()  const 
 {
     NFT("ConfigGroup::Parent");
-    NRET(ConfigGroup, m_pParent); 
+    RET(m_pParent); 
 }
 
 wxFileConfig   *ConfigGroup::Config()  const 

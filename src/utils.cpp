@@ -60,7 +60,7 @@ mstring &wxGetHomeDir(mstring &pstr)
   FT("wxGetHomeDir", (pstr));
   mstring& strDir = pstr;
 
-  #ifdef __UNIX__
+  #if defined(__UNIX__) || defined(__linux__)
     const char *szHome = getenv("HOME");
     if ( szHome == NULL ) {
       // we're homeless...

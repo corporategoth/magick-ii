@@ -143,6 +143,27 @@ mVariant::mVariant(wxTextFileType in)
     }
 }
 
+mVariant::mVariant(LineList *in)
+{
+	truevaluetype="LineList"
+	valuetype="VarString";
+	value.StringValue=(in->Text()).c_str();
+}
+
+mVariant::mVariant(ConfigEntry *in)
+{
+	truevaluetype="ConfigEntry"
+	valuetype="VarString";
+	value.StringValue=(in->Name() + "=" + in->Value()).c_str();
+}
+
+mVariant::mVariant(ConfigGroup *in)
+{
+	truevaluetype="ConfigGroup"
+	valuetype="VarString";
+	value.StringValue=(in->Name()).c_str();
+}
+
 mVariant& mVariant::operator=(const mVariant& in)
 {
 	return *this;

@@ -220,7 +220,7 @@ int Magick::Start()
     ACE_UNUSED_ARG (sigttou);
 #endif
 #ifdef SIGTSTP
-    ACE_Sig_Action sigttsp (ACE_SignalHandler (SIG_IGN), SIGTTSP);
+    ACE_Sig_Action sigttsp (ACE_SignalHandler (SIG_IGN), SIGTSTP);
     ACE_UNUSED_ARG (sigttsp);
 #endif
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
@@ -639,7 +639,7 @@ int Magick::doparamparse()
 	    }
 	    else
 	    {
-		temp.Format("Unknown option %s.",argv[i]);
+		temp.Format("Unknown option %s.",argv[i].c_str());
 		cerr<<temp<<endl;
 		RET(MAGICK_RET_ERROR);
 	    }

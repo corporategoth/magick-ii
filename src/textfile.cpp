@@ -32,7 +32,7 @@
 const wxTextFileType wxTextFile::typeDefault =
 #if   defined(WIN32)
   wxTextFileType_Dos;
-#elif defined(__UNIX__)
+#elif defined(__UNIX__) || defined(__linux__)
   wxTextFileType_Unix;
 #else
   wxTextFileType_None;

@@ -36,8 +36,10 @@
 #include "log.h"
 #include <time.h>
 #include <ctype.h>
+#ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#endif
 
 // ----------------------------------------------------------------------------
 // non member functions
