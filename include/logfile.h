@@ -1,5 +1,5 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,8 +25,8 @@ RCSID(logfile_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.23  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
+** Revision 1.24  2002/01/02 02:15:02  prez
+** Updated default language definitions
 **
 **
 ** ========================================================== */
@@ -34,10 +34,10 @@ RCSID(logfile_h, "@(#) $Id$");
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Sat Nov 10 20:26:13 EST 2001
+ * Created on Tue Jan  1 21:14:50 EST 2002
  */
 
-const unsigned int def_logent =     365;
+const unsigned int def_logent =     370;
 const char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
@@ -99,6 +99,7 @@ const char *def_log[] = {
 "UNKNOWN_OPTION   =Unknown option $1, ignored.",
 "NEEDPARAM        =Option $1 requires a parameter.",
 "MUSTBENUMBER     =Parameter for $1 must be a positive number.",
+"MUSTHAVEDIGITS   =Parameter for $1 must be $2 digits between $3 and $4 (inclusive).",
 "TIMEORZERO       =Time value specified is invalid or zero, on value $1.",
 "VALUETOOHIGH     =Value specified for $1 must be below or equal to $2.",
 "NO_CFG_FILE      =Could not read config file $1, aborting.",
@@ -290,6 +291,8 @@ const char *def_log[] = {
 "RESTRICTED       =Kicked user $1 from restricted channel $2.",
 "NEW_THREAD       =Starting new thread to handle excess load.",
 "KILL_THREAD      =Killing thread, not enough work to warrant it.",
+"NEW_THREAD_FAIL  =Failed to create new thread.",
+"MAX_THREADS      =Maximum number of threads reached, cannot start a new one.",
 "",
 ";",
 "; These are errors that come from system based",
@@ -319,11 +322,13 @@ const char *def_log[] = {
 "LOCK_DUP         =Duplicate $1 lock $2 detected where only 1 allowed!",
 "STAGE_FAIL       =Could not create/validate a stage in load or save process, skipping.",
 "STAGE_FAIL_ABORT =Could not create/validate a stage in load or save process, aborting.",
-"THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!",
+"THREAD_DEAD      =Non-processing $1 thread detected - attempting to stop thread!",
 "THREAD_DEAD_HALF =Over half of threads not processing, shutting down!",
+"THREAD_DEAD_MAIN =The main thread has stopped processing, shutting down!",
 "LOCKED_BIN       =System lock values do not match!  Binary recompile required!",
 "",
 "[EXCEPTIONS]",
+"MAGICK           =Exception - Thread $1 could not obtain Magick instance.",
 "GENERIC          =Exception - $1:$2:$3:$4",
 "GENERIC1         =Exception - $1:$2:$3:$4 - $5",
 "GENERIC2         =Exception - $1:$2:$3:$4 - $5/$6",

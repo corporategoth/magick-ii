@@ -1,5 +1,5 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
 /*  Magick IRC Services
 **
@@ -25,8 +25,8 @@ RCSID(language_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.33  2001/11/12 01:05:01  prez
-** Added new warning flags, and changed code to reduce watnings ...
+** Revision 1.34  2002/01/02 02:15:02  prez
+** Updated default language definitions
 **
 **
 ** ========================================================== */
@@ -34,10 +34,10 @@ RCSID(language_h, "@(#) $Id$");
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Sat Nov 10 20:26:08 EST 2001
+ * Created on Tue Jan  1 21:14:46 EST 2002
  */
 
-const unsigned int def_langent =     938;
+const unsigned int def_langent =     940;
 const char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
@@ -131,6 +131,8 @@ const char *def_lang[] = {
 "TRANSLATED         =Preston Elder <prez@magick.tm>",
 "UNKNOWN_COMMAND    =Unrecognised command \\b$1\\b.  Type \\b/MSG $2 HELP\\b for help.",
 "UNKNOWN_OPTION     =Unrecognised option \\b$1\\b.  Type \\b/MSG $2 HELP $3\\b for help.",
+"ACCESS_COMMAND     =Insufficiant access for \\b$1\\b command.  Type \\b/MSG $2 HELP\\b for help.",
+"ACCESS_OPTION      =Insufficiant access for \\b$1\\b command.  Type \\b/MSG $2 HELP $3\\b for help.",
 "NEED_PARAMS        =Insufficient parameters specified for \\b$1\\b.  Type \\b/MSG $2 HELP $3\\b for help.",
 "MUSTCONTAIN        =Specified $1 entry must contain a '$2' character.",
 "MAYNOTCONTAIN      =Specified $1 entry may not contain a '$2' character.",
@@ -158,7 +160,7 @@ const char *def_lang[] = {
 "ONYOURSELF         =You may only perform \\b$1\\b on yourself.",
 "NOTONYOURSELF      =You may not perform \\b$1\\b on yourself.",
 "ONSIBLING          =You may only perform \\b$1\\b on a sibling.",
-"NOTONSIBLINK       =You may not perform \\b$1\\b on a sibling.",
+"NOTONSIBLING       =You may not perform \\b$1\\b on a sibling.",
 "ONANICK            =You may only perform \\b$1\\b a nickname.",
 "NOTONANICK         =You may not perform \\b$1\\b a nickname.",
 "ONACHAN            =You may only perform \\b$1\\b a channel.",
