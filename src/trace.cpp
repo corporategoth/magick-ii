@@ -193,22 +193,19 @@ ThreadID::ThreadID()
 {
     t_indent = 0;
     t_internaltype = tt_MAIN;
-    t_number = 0;
     out=NULL;
 }
 
-ThreadID::ThreadID(threadtype_enum Type, int Number)
+ThreadID::ThreadID(threadtype_enum Type)
 {
     t_indent = 0;
     t_internaltype = Type;
-    t_number = Number;
     out=NULL;
 }
 
-ThreadID ThreadID::assign(threadtype_enum Type, int Number)
+ThreadID ThreadID::assign(threadtype_enum Type)
 {
     t_internaltype = Type;
-    t_number = Number;
     return *this;
 }
 

@@ -160,7 +160,6 @@ class Magick;
 class ThreadID {
 private:
     threadtype_enum t_internaltype;
-    int t_number;
     short t_indent;
     wxFileOutputStream *out;
     
@@ -168,13 +167,12 @@ private:
 
 public:
     ThreadID();
-    ThreadID(threadtype_enum Type, int Number);
+    ThreadID(threadtype_enum Type);
     ~ThreadID() { if(out!=NULL) delete out;}
-    ThreadID assign(threadtype_enum Type, int Number);
+    ThreadID assign(threadtype_enum Type);
     threadtype_enum type() { return t_internaltype; }
     void indentup() { t_indent++; }
     void indentdown() { if (t_indent>0) t_indent--; }
-    int number() { return t_number;  }
     short indent() { return t_indent; }
 
     void WriteOut (const mstring &message);

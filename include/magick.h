@@ -98,6 +98,7 @@ public:
 	mstring ProgramName;
 	bool debug;
 	bool live;
+	bool reconnect;
         operator mVariant() const { mVariant locvar("Magick"); locvar.truevaluetype="Magick"; return locvar; };
 
 	void get_config_values();

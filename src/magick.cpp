@@ -40,6 +40,7 @@ Magick::Magick(int inargc, char **inargv)
 
     low_water_mark=100;   // To be deciphered at runtime later
     high_water_mark=200;
+    reconnect=true;
 }
 
 int Magick::Start()

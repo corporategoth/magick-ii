@@ -306,7 +306,7 @@ ThreadID* mThread::find(ACE_thread_t thread)
 void mThread::Attach(threadtype_enum ttype)
 {
     FT("mThread::Attach", ("(threadtype_enum) ttype"));
-    ThreadID *tmpid=new ThreadID();
+    ThreadID *tmpid=new ThreadID(ttype);
     selftothreadidmap[ACE_Thread::self()]=tmpid;
     COM(("%s Thread ID %d has been attached.", threadname[ttype].c_str()));
 }
