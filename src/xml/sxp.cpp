@@ -27,6 +27,10 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2001/05/13 18:45:15  prez
+** Fixed up the keyfile validation bug, and added more error reporting to
+** the db load (also made sure it did not hang on certain circumstances).
+**
 ** Revision 1.18  2001/03/04 02:04:15  prez
 ** Made mstring a little more succinct ... and added vector/list operations
 **
@@ -388,20 +392,22 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 	unsigned char tag = 0;
 	char *tmpbuf, *buffer = static_cast<char *>(malloc(filesize * sizeof(char)));
 	memset(buffer, 0, filesize * sizeof(char));
-	new_sz = filesize + 8;
+	new_sz = filesize-1;
 
 	in.Read(&tag, sizeof(unsigned char));
-	memset(buffer, 0, filesize);
 	in.Read(buffer, (filesize-1) * sizeof(char));
 	in.Close();
 
 	if (tag & SXP_TAG)
 	{
-	    if ((tag & SXP_ENCRYPT) && !ikey.empty())
+	    if (tag & SXP_ENCRYPT)
 	    {
+		if (ikey.empty())
+		    return -1;
 		des_key_schedule key1, key2;
 		des_cblock ckey1, ckey2;
 
+		new_sz += 8;
 		tmpbuf = static_cast<char *>(malloc(new_sz * sizeof(char)));
 		memset(tmpbuf, 0, new_sz * sizeof(char));
 		des_string_to_2keys(const_cast<char *>(ikey.c_str()), &ckey1, &ckey2);
@@ -411,16 +417,19 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		mDES(reinterpret_cast<unsigned char *>(buffer),
 					reinterpret_cast<unsigned char *>(tmpbuf),
 	    				filesize-1, key1, key2, 0);
+		for(unsigned int i=new_sz-1; tmpbuf[i]==0; i--, new_sz--) ;
 
-		if (tmpbuf != NULL)
+		if (tmpbuf != NULL && tmpbuf[filesize-2] == 0)
 		{
 		    if (buffer != NULL)
 			free(buffer);
 		    buffer = tmpbuf;
 		    tmpbuf = NULL;
 		}
+		else
+		    retval = -2;
 	    }
-	    if (tag & SXP_COMPRESS)
+	    if (retval >= 0 && tag & SXP_COMPRESS)
 	    {
 		int bufsize = 1024, index = 0;
 		z_streamp strm = new z_stream_s;
@@ -452,6 +461,8 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 			strm->next_out  = reinterpret_cast<unsigned char *>(&tmpbuf[index]);
 			strm->avail_out = index;
 		    }
+		    else if (retval != Z_OK)
+			break;
 		}
 		if (retval == Z_STREAM_END || retval == Z_OK)
 		{
@@ -464,32 +475,37 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		    if (tmpbuf != NULL)
 			free(tmpbuf);
 		    tmpbuf = NULL;
+		    retval = 0;
 		}
 		else
 		{
 		    if (tmpbuf != NULL)
 			free(tmpbuf);
 		    tmpbuf = NULL;
+		    retval = -3;
 		}
 		inflateEnd(strm);
 		if (strm != NULL)
 		    delete strm;
-		retval = 0;
 	    }
-	    if (strncmp(buffer, XML_STRING, strlen(XML_STRING)) != 0)
+	    if (retval >= 0)
 	    {
-		retval = -1;
-	    }
-	    else
-	    {
-		retval = Feed(buffer, new_sz);
-		if (retval == 0)
+		if (strncmp(buffer, XML_STRING, strlen(XML_STRING)) != 0)
 		{
-		    Shutdown();
-		    retval = 1;
+		    retval = -4;
 		}
-		if( m_bShuttingDown )
-		    DoShutdown();
+		else
+		{
+		    retval = Feed(buffer, new_sz);
+
+		    if (retval <= 0)
+		    {
+			Shutdown();
+			retval = -5;
+		    }
+		    if( m_bShuttingDown )
+			DoShutdown();
+		}
 	    }
 	}
 	if (buffer != NULL)

@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.308  2001/05/13 18:45:15  prez
+** Fixed up the keyfile validation bug, and added more error reporting to
+** the db load (also made sure it did not hang on certain circumstances).
+**
 ** Revision 1.307  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -3524,7 +3528,7 @@ mstring Magick::GetKey()const
     {
 	mFile keyfile(files.KeyFile());
 	unsigned char tmp[KEYLEN], key[KEYLEN];
-	unsigned char instr[64], outstr[64];
+	unsigned char instr[128], outstr[128];
 	size_t key_size;
 	des_key_schedule key1, key2;
 	des_cblock ckey1, ckey2;
@@ -3538,6 +3542,7 @@ mstring Magick::GetKey()const
 	// First verify syntax is correct!
 	keyfile.Read(instr, 128);
 	mDES(instr, outstr, 128, key1, key2, 0);
+	memset(instr, 0, 128);
 #if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
 	mstring::snprintf(reinterpret_cast<char *>(instr), 128, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
 #else
@@ -3546,6 +3551,8 @@ mstring Magick::GetKey()const
 	if (memcmp(instr, outstr, 128) == 0)
 	{
 	    /* Use keyfile keys to get REAL key */
+	    memset(tmp, 0, KEYLEN);
+	    memset(key, 0, KEYLEN);
 	    key_size = keyfile.Read(tmp, KEYLEN);
 	    mDES(tmp, key, key_size, key1, key2, 0);
 	    retval = reinterpret_cast<char *>(key);
@@ -3689,17 +3696,26 @@ void Magick::load_databases()
 	NLOG(LM_STARTUP, "EVENT/LOAD");
    	SXP::CParser p( this ); // let the parser know which is the object
 	int retval = p.FeedFile(files.Database(), GetKey());
-	if (retval == -2)
+	switch (retval)
 	{
-	    NLOG(LM_EMERGENCY, "ERROR/DB_LOCK_FAIL");
-	}
-	else if (retval == -1)
-	{
-	    NLOG(LM_EMERGENCY, "ERROR/DB_SANITY_FAIL");
-	}
-	else if (retval < 1)
-	{
-	    NLOG(LM_EMERGENCY, "ERROR/DB_CORRUPT");
+	case  0: // Load did not run
+	    NLOG(LM_EMERGENCY, "ERROR/DB_NOPROCESS");
+	    break;
+	case -1: // Encrypted but no/invalid key specified
+	    NLOG(LM_EMERGENCY, "ERROR/DB_NOKEY");
+	    break;
+	case -2: // Decryption failed
+	    NLOG(LM_EMERGENCY, "ERROR/DB_NODECRYPT");
+	    break;
+	case -3: // Decompression failed
+	    NLOG(LM_EMERGENCY, "ERROR/DB_NODECOMPRESS");
+	    break;
+	case -4: // Sanity check failed
+	    NLOG(LM_EMERGENCY, "ERROR/DB_NOSANITY");
+	    break;
+	case -5: // XML parse failed
+	    NLOG(LM_EMERGENCY, "ERROR/DB_NOPARSE");
+	    break;
 	}
     }
 }

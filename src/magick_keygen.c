@@ -20,6 +20,10 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2001/05/13 18:45:15  prez
+** Fixed up the keyfile validation bug, and added more error reporting to
+** the db load (also made sure it did not hang on certain circumstances).
+**
 ** Revision 1.12  2001/05/13 00:55:18  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -93,6 +97,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 #include <termio.h>
 #endif
 
+#ifdef HASCRYPT
+#define TUPLE_SIZE	(2 * sizeof(DES_LONG))
+#endif
 #define MIN_KEYLEN	16
 #define DEF_KEYNAME	"magick.key"
 
@@ -236,7 +243,7 @@ int main(int argc, char **argv)
     fwrite(outstr, sizeof(unsigned char), 128, outfile);
 
     // normalize to a derivitive of sizeof(unsigned long) * 2
-    key_size += (key_size % (sizeof(unsigned long) * 2));
+    key_size += (TUPLE_SIZE - (key_size % TUPLE_SIZE));
     mDES(inkey, outkey, key_size, key1, key2, 1);
     fwrite(outkey, sizeof(unsigned char), key_size, outfile);
     fclose(outfile);
@@ -252,10 +259,10 @@ void mDES(unsigned char *in, unsigned char *out, size_t size,
 #ifdef HASCRYPT
     DES_LONG tuple[2], t0, t1;
     unsigned char *iptr, *optr, tmp[8];
-    int i;
+    unsigned int i;
 
     memset(out, 0, size);
-    for (iptr=in, optr=out, i=0; i<size; i+=8)
+    for (iptr=in, optr=out, i=0; i+7<size; i+=8)
     {
 	c2l(iptr, t0); tuple[0] = t0;
 	c2l(iptr, t1); tuple[1] = t1;
