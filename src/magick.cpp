@@ -169,6 +169,10 @@ int Magick::Start()
     while(shutdown!=true)
 	ACE_Reactor::instance()->handle_events();
 
+    ACE_Reactor::instance()->remove_handler(SIGINT);
+    ACE_Reactor::instance()->remove_handler(SIGTERM);
+    delete signalhandler;
+
     return MAGICK_RET_TERMINATE;
 }
 
