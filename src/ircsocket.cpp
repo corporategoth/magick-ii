@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.168  2001/06/16 09:35:24  prez
+** More tiny bugs ...
+**
 ** Revision 1.167  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -602,7 +605,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     unsigned int i;
     // We DONT want any processing once we're gone ...
     // Dump the queue and kill all our threads nicely.
-    for (i=0; i<tm.count_threads(); i++)
+    for (i=0; i<static_cast<unsigned int>(tm.count_threads()); i++)
 	enqueue_sleep();
     { MLOCK(("MessageQueue"));
     mMessage *msg;
@@ -612,13 +615,13 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 	if (msg != NULL)
 	    delete msg;
     }}
-    for (i=0; i<tm.count_threads(); i++)
+    for (i=0; i<static_cast<unsigned int>(tm.count_threads()); i++)
 	enqueue_shutdown();
 
     { WLOCK(("AllDependancies"));
     mMessage::AllDependancies.clear();
     }
-    { WLOCK(("MsgIdMap"));
+    { MLOCK(("MsgIdMap"));
     map<unsigned long, mMessage *>::iterator mi;
     for (mi=mMessage::MsgIdMap.begin(); mi!=mMessage::MsgIdMap.end(); mi++)
 	delete mi->second;
@@ -1848,6 +1851,7 @@ int EventTask::svc(void)
 	if (last_msgcheck.SecondsSince() > Parent->config.MSG_Check_Time())
 	{
 	    set<unsigned long> Ids;
+	    vector<mMessage *> Msgs;
 	    set<unsigned long>::iterator k;
 
 	    { WLOCK(("AllDependancies"));
@@ -1859,15 +1863,15 @@ int EventTask::svc(void)
 		{
 		    for (k=j->second.begin(); k!=j->second.end(); k++)
 		    {
-			{ WLOCK(("MsgIdMap"));
+			{ MLOCK(("MsgIdMap"));
 			map<unsigned long, mMessage *>::iterator l = mMessage::MsgIdMap.find(*k);
 			if (l != mMessage::MsgIdMap.end())
 			{
 			    if (l->second == NULL ||
 				l->second->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
 			    {
-				delete l->second;
 				Ids.insert(l->first);
+				Msgs.push_back(l->second);
 				mMessage::MsgIdMap.erase(l);
 			    }
 			}}
@@ -1881,6 +1885,16 @@ int EventTask::svc(void)
 		    i->second.erase(chunked[k]);
 		chunked.clear();
 	    }}
+	    vector<mMessage *>::iterator m;
+	    for (m=Msgs.begin(); m!=Msgs.end(); m++)
+	    {
+		{ RLOCK(("IrcSvcHandler"));
+		if (Parent->ircsvchandler != NULL)
+		    Parent->ircsvchandler->enqueue(*m);
+		}
+		delete *m;
+	    }
+		
 	}}
 
 	{ RLOCK(("Events", "last_heartbeat"));

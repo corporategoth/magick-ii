@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.251  2001/06/16 09:35:24  prez
+** More tiny bugs ...
+**
 ** Revision 1.250  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -1954,8 +1957,7 @@ bool Chan_Stored_t::Join(const mstring& nick)
 			"JOIN", i_Name, nick));
 	RET(false);
     }
-    RLOCK2(("NickServ", "live", nick.LowerCase()));
-    Nick_Live_t &nlive = Parent->nickserv.GetLive(nick);
+    Nick_Live_t nlive = Parent->nickserv.GetLive(nick);
 
     RLOCK(("ChanServ", "live", i_Name.LowerCase()));
     Chan_Live_t &clive = Parent->chanserv.GetLive(i_Name);

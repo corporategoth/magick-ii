@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.180  2001/06/16 09:35:24  prez
+** More tiny bugs ...
+**
 ** Revision 1.179  2001/06/15 07:20:41  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -4110,6 +4113,13 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 	{
 	    if (!source.Contains("."))
 		return;
+
+	    /* TRACE ... (usually leave off)
+	    
+	    Trace::TurnSet(tt_MAIN, 0x20c0);
+	    for (int i=tt_MAIN+1; i<tt_MAX; i++)
+		Trace::TurnSet(static_cast<threadtype_enum>(i), 0x20c0);
+	    */
 
 	    // PASS :password
 	    if (params.ExtractWord(1, ": ") != Parent->startup.Server(Parent->CurrentServer()).second.second)
