@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2000/12/09 10:34:14  prez
+** Added ACE style alloc as an option -- COPY STILL HAS PRINTF's.
+**
 ** Revision 1.81  2000/12/05 07:56:16  prez
 ** OOps ... forgot to #if / #endif something ...
 **
@@ -139,7 +142,7 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 #include "mstring.h"
 
-#if ALLOCTYPE == 3
+#if ALLOCTYPE == 4
 // This defaults to 8192 chunks.  Use init(size) before
 // any use of it, or pass size as a 2nd param to the first
 // use of it, or use blocksize(size) at any time to change.
@@ -168,27 +171,37 @@ mstring const IRC_Off((char) 15);	// ^O
 
 void mstring::copy(const char *in, size_t length)
 {
+printf("DEBUG 1 %p\n", i_str); fflush(stdout);
     if (i_str != NULL)
 	DEALLOC(i_str);
+printf("DEBUG 2 %p (%d)\n", in, length); fflush(stdout);
     if (length && in)
     {
+printf("DEBUG 3 %s\n", in); fflush(stdout);
 	i_len = length;
 	i_res = 2;
+printf("DEBUG 4\n"); fflush(stdout);
 	while (i_res <= i_len)
 	    i_res *= 2;
-	i_str = ALLOC(i_res);
+printf("DEBUG 5 %d\n", i_res); fflush(stdout);
+	ALLOC(i_str, i_res);
+printf("DEBUG 6 %p\n", i_str); fflush(stdout);
 	if (i_str == NULL)
 	    NOMEM;
+printf("DEBUG 7\n"); fflush(stdout);
 	memset(i_str, 0, i_res);
+printf("DEBUG 8\n"); fflush(stdout);
 	memcpy(i_str, in, i_len);
 printf("(1) Created String: %s\n", i_str); fflush(stdout);
     }
     else
     {
+printf("DEBUG 9\n"); fflush(stdout);
 	i_len = 0;
 	i_res = 0;
 	i_str = NULL;
     }
+printf("DEBUG 10\n"); fflush(stdout);
 }
 
 void mstring::append(const char *in, size_t length)
@@ -204,7 +217,7 @@ void mstring::append(const char *in, size_t length)
 	i_res *= 2;
     if (oldres != i_res)
     {
-	tmp = ALLOC(i_res);
+	ALLOC(tmp, i_res);
 	if (tmp == NULL)
 	    NOMEM;
 	memset(tmp, 0, i_res);
@@ -254,7 +267,7 @@ void mstring::erase(int begin, int end)
 	    i_res /= 2;
 	if (i_res != oldres)
 	{
-	    tmp = ALLOC(i_res);
+	    ALLOC(tmp, i_res);
 	    if (tmp == NULL)
 		NOMEM;
 	    memset(tmp, 0, i_res);
@@ -309,7 +322,7 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 	i_res = 2;
     while (i_res <= i_len + length)
 	i_res *= 2;
-    tmp = ALLOC(i_res);
+    ALLOC(tmp, i_res);
     if(tmp == NULL)
 	NOMEM;
     memset(tmp, 0, i_res);
@@ -450,7 +463,8 @@ int mstring::find_first_not_of(const char *str, size_t length) const
     if (i_str == NULL)
 	return -1;
 
-    char *tmp = ALLOC(length+1);
+    char *tmp;
+    ALLOC(tmp, length+1);
     if (tmp == NULL)
 	NOMEMR(-1);
     memcpy(tmp, str, length);
@@ -473,7 +487,8 @@ int mstring::find_last_not_of(const char *str, size_t length) const
     if (i_str == NULL)
 	return -1;
 
-    char *tmp = ALLOC(length+1);
+    char *tmp;
+    ALLOC(tmp, length+1);
     if (tmp == NULL)
 	NOMEMR(-1);
     memcpy(tmp, str, length);
@@ -596,7 +611,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
 	i_res *= 2;
     while (i_res / 2 > i_len)
 	i_res /= 2;
-    tmp = ALLOC(i_res);
+    ALLOC(tmp, i_res);
     if (tmp == NULL)
 	NOMEM;
     memset(tmp, 0, i_res);
@@ -831,7 +846,8 @@ int mstring::Format(const char *fmt, ...)
 int mstring::FormatV(const char *fmt, va_list argptr)
 {
     int length, size = 1024;
-    char *buffer = ALLOC(size);
+    char *buffer;
+    ALLOC(buffer, size);
     if (buffer == NULL)
 	NOMEMR(-1);
     while (buffer != NULL)
@@ -841,7 +857,7 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	    break;
 	DEALLOC(buffer);
 	size *= 2;
-	buffer = ALLOC(size);
+	ALLOC(buffer, size);
 	if (buffer == NULL)
 	    NOMEMR(-1);
     }
