@@ -103,6 +103,7 @@ MUSTBEONOFF        =You may only specify "ON" or "OFF".
 NONNUMERIC         =Non-numeric arguments specified (ignored).
 ABOVELIMIT         =All entries above $1 have been ignored.
 CHANFILEATTACH     =File attachments are not allowed to channels.
+ARG_MODE           =Mode $1$2 takes arguments (ignored).
 MULTI_MODE         =Multiple +/-$1 modes specified (ignored).
 NOKEY              =No key specified, but required (ignored).
 NOLIMIT            =No limit specified, but required (ignored).

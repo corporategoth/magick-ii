@@ -875,6 +875,11 @@ void ChanServ::do_Register(const mstring & mynick, const mstring & source, const
     cstored->Topic(clive->Topic(), clive->Topic_Setter(), clive->Topic_Set_Time());
     clive->SendMode(cstored->Mlock());
     nlive->ChanIdentify(channel, password);
+    if (!Magick::instance().server.proto.FounderMode().empty())
+    {
+	for (unsigned int i = 0; i < Magick::instance().server.proto.FounderMode().length(); i++)
+	    clive->SendMode("+" + mstring(Magick::instance().server.proto.FounderMode()[i]) + " " + source);
+    }
     Magick::instance().chanserv.stats.i_Register++;
     SEND(mynick, source, "CS_COMMAND/REGISTERED", (channel, founder));
     LOG(LM_INFO, "CHANSERV/REGISTER", (nlive->Mask(Nick_Live_t::N_U_P_H), channel));
@@ -970,6 +975,12 @@ void ChanServ::do_Identify(const mstring & mynick, const mstring & source, const
     {
 	Magick::instance().chanserv.stats.i_Identify++;
 	LOG(LM_INFO, "CHANSERV/IDENTIFY", (nlive->Mask(Nick_Live_t::N_U_P_H), channel));
+	if (!Magick::instance().server.proto.FounderMode().empty() && Magick::instance().chanserv.IsLive(channel))
+	{
+	    map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(channel);
+	    for (unsigned int i = 0; i < Magick::instance().server.proto.FounderMode().length(); i++)
+		clive->SendMode("+" + mstring(Magick::instance().server.proto.FounderMode()[i]) + " " + source);
+	}
     }
     if (!output.empty())
 	::send(mynick, source, output);

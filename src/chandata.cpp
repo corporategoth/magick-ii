@@ -1052,11 +1052,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (!IsOp(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'o', arg);
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'o', arg))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, mode[i], arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
 				{
-				    p_modes_on += "o";
+				    p_modes_on += mode[i];
 				    p_modes_on_params.push_back(arg);
 				}
 			    }
@@ -1065,11 +1065,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsOp(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', arg);
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'o', arg))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, mode[i], arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
 				{
-				    p_modes_off += "o";
+				    p_modes_off += mode[i];
 				    p_modes_off_params.push_back(arg);
 				}
 			    }
@@ -1091,11 +1091,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (!IsHalfOp(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'h', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'h', arg);
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'h', arg))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, mode[i], arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
 				{
-				    p_modes_on += "h";
+				    p_modes_on += mode[i];
 				    p_modes_on_params.push_back(arg);
 				}
 			    }
@@ -1104,11 +1104,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsHalfOp(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'h', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'h', arg);
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'h', arg))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, mode[i], arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
 				{
-				    p_modes_off += "h";
+				    p_modes_off += mode[i];
 				    p_modes_off_params.push_back(arg);
 				}
 			    }
@@ -1130,11 +1130,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (!IsVoice(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', arg);
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'v', arg))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, mode[i], arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
 				{
-				    p_modes_on += "v";
+				    p_modes_on += mode[i];
 				    p_modes_on_params.push_back(arg);
 				}
 			    }
@@ -1143,11 +1143,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsVoice(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', arg);
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'v', arg))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, mode[i], arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
 				{
-				    p_modes_off += "v";
+				    p_modes_off += mode[i];
 				    p_modes_off_params.push_back(arg);
 				}
 			    }
@@ -1165,11 +1165,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (!IsBan(arg))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'b', arg);
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'b', arg))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, mode[i], arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
 				{
-				    p_modes_on += "b";
+				    p_modes_on += mode[i];
 				    p_modes_on_params.push_back(arg);
 				}
 			    }
@@ -1178,11 +1178,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsBan(arg))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'b', arg);
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'b', arg))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, mode[i], arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
 				{
-				    p_modes_off += "b";
+				    p_modes_off += mode[i];
 				    p_modes_off_params.push_back(arg);
 				}
 			    }
@@ -1200,11 +1200,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (!IsExempt(arg))
 			    {
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'e', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'e', arg);
-				if (!ModeExists(p_modes_on, p_modes_on_params, true, 'e', arg))
+				if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, mode[i], arg);
+				if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
 				{
-				    p_modes_on += "e";
+				    p_modes_on += mode[i];
 				    p_modes_on_params.push_back(arg);
 				}
 			    }
@@ -1213,11 +1213,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (IsExempt(in.ExtractWord(param, " ")))
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'e', arg);
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'e', arg))
+				if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, mode[i], arg);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
 				{
-				    p_modes_off += "e";
+				    p_modes_off += mode[i];
 				    p_modes_off_params.push_back(arg);
 				}
 			    }
@@ -1236,11 +1236,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 				int new_limit = atoi(in.ExtractWord(param, " "));
 				if (new_limit > 0 && static_cast<unsigned int>(new_limit) != i_Limit)
 				{
-				    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
-					RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
-				    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
-					RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
-				    p_modes_on += "l";
+				    if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
+					RemoveMode(p_modes_off, p_modes_off_params, false, mode[i]);
+				    if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
+					RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
+				    p_modes_on += mode[i];
 				    p_modes_on_params.push_back(in.ExtractWord(param, " "));
 				 }
 				 param++;
@@ -1253,10 +1253,10 @@ void Chan_Live_t::SendMode(const mstring & in)
 			{
 			    if (i_Limit)
 			    {
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
-				if (!ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
-				    p_modes_off += "l";
+				if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
+				if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
+				    p_modes_off += mode[i];
 			    }
 			}
 		    }
@@ -1267,15 +1267,15 @@ void Chan_Live_t::SendMode(const mstring & in)
 			mstring new_key = in.ExtractWord(param, " ");
 			if (add)
 			{
-			    if (!cstored || s_key == new_key || !s_mlock_off.Contains("k"))
+			    if (!cstored || s_key == new_key || !s_mlock_off.Contains(mode[i]))
 			    {
 				// ONLY allow +k if we've turned it off before, or one isnt set
-				if (i_Key.empty() || ModeExists(p_modes_off, p_modes_off_params, false, 'k', i_Key))
+				if (i_Key.empty() || ModeExists(p_modes_off, p_modes_off_params, false, mode[i], i_Key))
 				{
 				    // DONT take off 'off' value, coz we can -k+k key1 key2
-				    if (!ModeExists(p_modes_on, p_modes_on_params, true, 'k'))
+				    if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
 				    {
-					p_modes_on += "k";
+					p_modes_on += mode[i];
 					p_modes_on_params.push_back(new_key);
 				    }
 				}
@@ -1287,11 +1287,11 @@ void Chan_Live_t::SendMode(const mstring & in)
 			    {
 				if (!cstored || s_key.empty())
 				{
-				    if (ModeExists(p_modes_on, p_modes_on_params, true, 'k'))
-					RemoveMode(p_modes_on, p_modes_on_params, true, 'k');
-				    if (!ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
+				    if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
+					RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
+				    if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
 				    {
-					p_modes_off += "k";
+					p_modes_off += mode[i];
 					p_modes_off_params.push_back(new_key);
 				    }
 				}
@@ -1302,7 +1302,17 @@ void Chan_Live_t::SendMode(const mstring & in)
 		    break;
 		default:
 		    if (in.WordCount(" ") >= param)
+		    {
+			mstring arg = in.ExtractWord(param, " ");
+			if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i], arg))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, mode[i], arg);
+			if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i], arg))
+			{
+			    p_modes_on += mode[i];
+			    p_modes_on_params.push_back(arg);
+			}
 			param++;
+		    }
 		}
 	    }
 	    else
@@ -1408,8 +1418,8 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].first = true;
 				}
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', arg);
+				if (ModeExists(p_modes_on, p_modes_on_params, true, change[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, change[i], arg);
 			    }
 			    else
 			    {
@@ -1417,8 +1427,8 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].first = false;
 				}
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'o', arg);
+				if (ModeExists(p_modes_off, p_modes_off_params, false, change[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, change[i], arg);
 			    }
 			    newmode += change[i];
 			    newmode_param += " " + arg;
@@ -1442,8 +1452,8 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].second = true;
 				}
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'h', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'h', arg);
+				if (ModeExists(p_modes_on, p_modes_on_params, true, change[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, change[i], arg);
 			    }
 			    else
 			    {
@@ -1451,8 +1461,8 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].second = false;
 				}
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'h', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'h', arg);
+				if (ModeExists(p_modes_off, p_modes_off_params, false, change[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, change[i], arg);
 			    }
 			    newmode += change[i];
 			    newmode_param += " " + arg;
@@ -1476,8 +1486,8 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].third = true;
 				}
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', arg);
+				if (ModeExists(p_modes_on, p_modes_on_params, true, change[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, change[i], arg);
 			    }
 			    else
 			    {
@@ -1485,8 +1495,8 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 				    WLOCK5((lck_ChanServ, lck_live, i_Name.LowerCase(), "users"));
 				    users[arg.LowerCase()].third = false;
 				}
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', arg);
+				if (ModeExists(p_modes_off, p_modes_off_params, false, change[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, change[i], arg);
 			    }
 			    newmode += change[i];
 			    newmode_param += " " + arg;
@@ -1508,14 +1518,14 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    if (add)
 			    {
 				bans[arg.LowerCase()] = mDateTime::CurrentDateTime();
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'b', arg);
+				if (ModeExists(p_modes_on, p_modes_on_params, true, change[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, change[i], arg);
 			    }
 			    else
 			    {
 				bans.erase(arg.LowerCase());
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'b', arg);
+				if (ModeExists(p_modes_off, p_modes_off_params, false, change[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, change[i], arg);
 			    }
 			    CE(5, bans.size());
 			}
@@ -1534,14 +1544,14 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    if (add)
 			    {
 				exempt[arg.LowerCase()] = mDateTime::CurrentDateTime();
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'e', arg);
+				if (ModeExists(p_modes_on, p_modes_on_params, true, change[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, change[i], arg);
 			    }
 			    else
 			    {
 				exempt.erase(arg.LowerCase());
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'e', arg))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'e', arg);
+				if (ModeExists(p_modes_off, p_modes_off_params, false, change[i], arg))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, change[i], arg);
 			    }
 			    CE(5, exempt.size());
 			}
@@ -1560,16 +1570,16 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    if (add)
 			    {
 				i_Key = arg;
-				if (ModeExists(p_modes_on, p_modes_on_params, true, 'k', arg))
-				    RemoveMode(p_modes_on, p_modes_on_params, true, 'k', arg);
+				if (ModeExists(p_modes_on, p_modes_on_params, true, change[i], arg))
+				    RemoveMode(p_modes_on, p_modes_on_params, true, change[i], arg);
 			    }
 			    else
 			    {
 				if (i_Key != arg)
 				    LOG(LM_ERROR, "ERROR/KEYMISMATCH", (i_Key, arg, i_Name, source));
 				i_Key.erase();
-				if (ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
-				    RemoveMode(p_modes_off, p_modes_off_params, false, 'k');
+				if (ModeExists(p_modes_off, p_modes_off_params, false, change[i]))
+				    RemoveMode(p_modes_off, p_modes_off_params, false, change[i]);
 			    }
 			    CE(5, i_Key);
 			}
@@ -1610,8 +1620,8 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    i_Limit = 0;
 			    CE(5, i_Limit);
 			}
-			if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
-			    RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
+			if (ModeExists(p_modes_off, p_modes_off_params, false, change[i]))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, change[i]);
 			newmode += change[i];
 		    }
 		    break;
@@ -2010,6 +2020,13 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	MCE(i_LastUsed);
     }
 
+    // If the access level the user has is above the 'maximum', they're a founder
+    if (!Magick::instance().server.proto.FounderMode().empty() && GetAccess(nick) > Magick::instance().chanserv.Level_Max())
+    {
+	for (unsigned int i = 0; i < Magick::instance().server.proto.FounderMode().length(); i++)
+	    clive->SendMode("+" + mstring(Magick::instance().server.proto.FounderMode()[i]) + " " + nick);
+    }
+
     if (Magick::instance().chanserv.IsLive(i_Name))
     {
 	if (GetAccess(nick, "AUTOOP"))
@@ -2381,12 +2398,12 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 		    else if (!setter.Contains("."))
 		    {
 			// If user is services or a beneficiary of revenge
-			// deop the setter ... bad boy ... tsk tsk ...
+			// re-op the user (revenge takes care of the rest)
 			if ((Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices())
 			    || DoRevenge("DEOP", setter, arg))
 			{
-			    out_mode += "-o";
-			    out_param += " " + setter;
+			    out_mode += "+o";
+			    out_param += " " + arg;
 			}
 		    }
 
@@ -3297,27 +3314,10 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
     setting.Mlock_Key.erase();
     setting.Mlock_Limit = 0;
     vector < mstring > retval;
-    mstring output, change(mode.ExtractWord(1, " "));
+    mstring ignore, output, change(mode.ExtractWord(1, " "));
     unsigned int i;
     unsigned int fwdargs = 2;
     bool add = true;
-    bool ignorek = false;
-    bool ignorel = false;
-
-    if (change.WordCount("k") > 2)
-    {
-	ignorek = true;
-	output.erase();
-	output = parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/MULTI_MODE"), mVarArray('k'));
-	retval.push_back(output);
-    }
-    if (change.WordCount("l") > 2)
-    {
-	ignorel = true;
-	output.erase();
-	output = parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/MULTI_MODE"), mVarArray('l'));
-	retval.push_back(output);
-    }
 
     for (i = 0; i < change.size(); i++)
     {
@@ -3329,12 +3329,24 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 	{
 	    add = false;
 	}
+	else if (setting.Mlock_On.Contains(change[i]) || setting.Mlock_Off.Contains(change[i]))
+	{
+	    ignore += change[i];
+	    if (add && Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
+		fwdargs++;
+	}
 	else if (Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 	{
 	    switch (change[i])
 	    {
 	    case 'k':
-		if (!ignorek && add)
+		if (!setting.Mlock_Key.empty())
+		{
+		    ignore += change[i];
+		    if (add)
+			fwdargs++;
+		}
+		else if (add)
 		{
 		    if (fwdargs > mode.WordCount(" "))
 		    {
@@ -3349,10 +3361,20 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 		    }
 		    fwdargs++;
 		}
+		else
+		{
+		     setting.Mlock_Off += change[i];
+		}
 		break;
 
 	    case 'l':
-		if (!ignorel && add)
+		if (setting.Mlock_Limit != 0)
+		{
+		    ignore += change[i];
+		    if (add)
+			fwdargs++;
+		}
+		else if (add)
 		{
 		    if (fwdargs > mode.WordCount(" "))
 		    {
@@ -3381,48 +3403,46 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 		    }
 		    fwdargs++;
 		}
+		else
+		{
+		    setting.Mlock_Off += change[i];
+		}
 		break;
 	    default:
-		fwdargs++;
+		output = parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/ARG_MODE"), mVarArray(add ? '+' : '-', change[i]));
+		retval.push_back(output);
+		if (add)
+		    fwdargs++;
 	    }
-	}
-    }
-
-    add = true;
-    for (i = 0; i < change.size(); i++)
-    {
-	if (change[i] == '+')
-	{
-	    add = true;
-	}
-	else if (change[i] == '-')
-	{
-	    add = false;
 	}
 	else
 	{
 	    if (add)
-	    {
-		if (!Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
-		{
-		    if (!setting.Mlock_On.Contains(change[i]))
-			setting.Mlock_On += change[i];
-		    if (setting.Mlock_Off.Contains(change[i]))
-			setting.Mlock_Off.Remove(change[i]);
-		}
-	    }
+		setting.Mlock_On += change[i];
 	    else
-	    {
-		// Nothing with arguments unless its k or l
-		if (!Magick::instance().server.proto.ChanModeArg().Contains(change[i]) ||
-		    ((change[i] == 'k' && !ignorek) || (change[i] == 'l' && !ignorel)))
-		{
-		    if (!setting.Mlock_Off.Contains(change[i]))
-			setting.Mlock_Off += change[i];
-		    if (setting.Mlock_On.Contains(change[i]))
-			setting.Mlock_On.Remove(change[i]);
-		}
-	    }
+		setting.Mlock_Off += change[i];
+	}
+    }
+
+    for (i=0; i<ignore.length(); i++)
+    {
+	output = parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/MULTI_MODE"), mVarArray(ignore[i]));
+	retval.push_back(output);
+
+	switch (ignore[i])
+	{
+	case 'k':
+	    setting.Mlock_Key.erase();
+	    setting.Mlock_Off.Remove(ignore[i]);
+	    break;
+	case 'l':
+	    setting.Mlock_Limit = 0;
+	    setting.Mlock_Off.Remove(ignore[i]);
+	    break;
+	default:
+	    setting.Mlock_On.Remove(ignore[i]);
+	    setting.Mlock_Off.Remove(ignore[i]);
+	    break;
 	}
     }
 

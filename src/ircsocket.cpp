@@ -676,8 +676,7 @@ void IrcSvcHandler::enqueue(mMessage * mm)
 	}
 
 	// Only spawn if we are less than our maximum ... and need it :)
-	if (message_queue.method_count() > static_cast < int >
-	    (tm.count_threads() * Magick::instance().config.High_Water_Mark()))
+	if (message_queue.method_count() > tm.count_threads() * Magick::instance().config.High_Water_Mark())
 	{
 	    CP(("Queue is full - Starting new thread and increasing watermarks ..."));
 	    if (static_cast < unsigned int > (tm.count_threads()) >= Magick::instance().config.Max_Threads())

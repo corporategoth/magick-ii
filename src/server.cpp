@@ -215,7 +215,7 @@ bool Protocol::Set(const mstring & filename)
     cfg.Read(ts_Protocol + "SJOIN", i_SJoin, false);
     cfg.Read(ts_Protocol + "BIGTOPIC", i_BigTopic, false);
     cfg.Read(ts_Protocol + "TOPICJOIN", i_TopicJoin, false);
-    cfg.Read(ts_Protocol + "SERVERMODES", i_TopicJoin, false);
+    cfg.Read(ts_Protocol + "SERVERMODES", i_ServerModes, false);
 
     cfg.Read(ts_Protocol + "AKILL", value_uint, 0000);
     if (AkillTypes.find(value_uint) == AkillTypes.end())
@@ -245,6 +245,7 @@ bool Protocol::Set(const mstring & filename)
 
     cfg.Read(ts_Protocol + "SERVICESMODES", i_ServicesModes, "");
     cfg.Read(ts_Protocol + "CHANMODEARG", i_ChanModeArg, "ovbkl");
+    cfg.Read(ts_Protocol + "FOUNDERMODE", i_FounderMode, "");
     cfg.Read(ts_Protocol + "SERVER", i_Server, "SERVER $1 $2 :$3");
     cfg.Read(ts_Protocol + "BURST", i_Burst, "");
     cfg.Read(ts_Protocol + "ENDBURST", i_EndBurst, "");

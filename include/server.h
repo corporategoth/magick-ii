@@ -103,6 +103,7 @@ class Protocol
     unsigned int i_Modes;	// Modes per line
     mstring i_ServicesModes;	// Modes services MUST set to be services
     mstring i_ChanModeArg;	// Channel Modes that have arguments (def. ovbkl)
+    mstring i_FounderMode;	// Mode indicating a user is the founder
 
     /* The server line will have 6 replacements ($1 ... $6) done.
      * $1 = Server name              $2 = hop count
@@ -327,6 +328,10 @@ public:
     mstring ChanModeArg() const
     {
 	return i_ChanModeArg;
+    }
+    mstring FounderMode() const
+    {
+	return i_FounderMode;
     }
     mstring Server() const
     {
