@@ -9,7 +9,7 @@
 #include <vector>
 #include <map>
 using namespace std;
-#include "ace/Synh.h"
+#include "ace/Synch.h"
 
 #include "bob.hpp"
 #include "mstring.h"

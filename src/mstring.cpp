@@ -326,7 +326,8 @@ int mstring::Find(char ch, bool bFromEnd) const
 int mstring::Find(const mstring & in) const
 {
 	//const char *psz=ACE_OS::strstr(c_str(),in);
-	iterator i=search(begin(),end(),in.begin(),in.end());
+	const_iterator i;
+	i=search(begin(),end(),in.begin(),in.end());
 	if(i==end())
 		return -1;
 	else
