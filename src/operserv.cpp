@@ -398,8 +398,9 @@ bool OperServ::Ignore_find(mstring entry)
     if (!i_Ignore.empty())
 	for (iter=i_Ignore.begin(); iter!=i_Ignore.end(); iter++)
 	{
-	    CP(( ("ENT: " + entry.LowerCase() + " matches " + iter->Entry().LowerCase()).c_str() ));
-	    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+	    mstring entry2 = iter->Entry().LowerCase();
+	    entry2.Replace("*",".*",true);
+	    if (entry2.LowerCase().Matches(entry2))
 		break;
 	}
 
