@@ -16,16 +16,20 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-static const char *ident = "@(#)$Id$";
+#define RCSID(x,y) const char *rcsid_convert_magick_cpp_ ## x () { return y; }
+RCSID(convert_magick_cpp, "@(#)$Id$");
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.1  2001/02/03 02:22:34  prez
+** added conversion for ESPERNET
+**
 ** Revision 1.23  2001/01/01 05:32:44  prez
 ** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
 ** HELP ACCESS).
@@ -105,9 +109,9 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-
+#ifdef CONVERT
+#include "convert_magick.h"
 #include "magick.h"
-#include "convert.h"
 
 const int file_version = 5;
 const char *nickserv_db = "nick.db";
@@ -365,7 +369,7 @@ delnick (NickInfo * ni)
 }
 
 Nick_Stored_t
-CreateNickEntry(NickInfo *ni)
+CreateNickEntry(NickInfo_CUR *ni)
 {
     /*
     NickInfo *next, *prev;
@@ -436,7 +440,7 @@ CreateNickEntry(NickInfo *ni)
 	if (ni->flags & NI_SUSPENDED)
 	{
 	    out.i_Suspend_By = Parent->nickserv.FirstName();
-	    out.i_Suspend_Time = Now();
+	    out.i_Suspend_Time = mDateTime::CurrentDateTime();
 	    if (ni->last_usermask != NULL)
 		out.i_Comment = mstring(ni->last_usermask);
 	}
@@ -1014,7 +1018,7 @@ delchan (ChanInfo * ci)
 }	
 
 Chan_Stored_t
-CreateChanEntry(ChanInfo *ci)
+CreateChanEntry(ChanInfo_CUR *ci)
 {
     /* ChanInfo *next, *prev;
     char name[CHANMAX];
@@ -1384,7 +1388,7 @@ del_newslist (NewsList * nl)
 }
 
 list<Memo_t>
-CreateMemoEntry(MemoList *ml)
+CreateMemoEntry(MemoList_CUR *ml)
 {
 /*  char sender[NICKMAX];
     long number;
@@ -1416,7 +1420,7 @@ CreateMemoEntry(MemoList *ml)
 }
 
 list<News_t>
-CreateNewsEntry(NewsList *nl)
+CreateNewsEntry(NewsList_CUR *nl)
 {
 /*  char sender[NICKMAX];
     long number;
@@ -1673,13 +1677,13 @@ load_akill ()
 	{
 	    if (akills[j].time == 0)
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		Parent->operserv.Akill_insert(mstring(akills[j].mask),
 		    Parent->operserv.Expire_Sop(),
 		    mstring(akills[j].reason), mstring(akills[j].who));
 	    }
 	    else
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		Parent->operserv.Akill_insert(mstring(akills[j].mask),
 		    Parent->operserv.Def_Expire(),
 		    mstring(akills[j].reason), mstring(akills[j].who),
 		    mDateTime(akills[j].time));
@@ -1760,3 +1764,5 @@ load_clone ()
     }				/* switch (version) */
     fclose (f);
 }
+
+#endif /* CONVERT */

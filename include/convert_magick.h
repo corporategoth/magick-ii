@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2001 Preston Elder <prez@magick.tm>
-** (c) 1998-2001 William King <ungod@magick.tm>
+** (c) 1997-2000 Preston Elder <prez@magick.tm>
+** (c) 1998-2000 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -12,22 +12,21 @@
 ** code must be clearly documented and labelled.
 **
 ** ========================================================== */
-#ifndef _CONVERT_H
-#define _CONVERT_H
+#ifndef _CONVERT_MAGICK_H
+#define _CONVERT_MAGICK_H
 #include "pch.h"
-static const char *ident_convert_h = "@(#) $Id$";
+RCSID(convert_magick_h, "@(#) $Id$");
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
 **
 ** N/A
 **
-** Changes by Magick Development Team <magick-devel@magick.tm>:
+** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.6  2001/01/01 05:32:43  prez
-** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
-** HELP ACCESS).
+** Revision 1.1  2001/02/03 02:22:34  prez
+** added conversion for ESPERNET
 **
 ** Revision 1.5  2000/09/30 10:48:06  prez
 ** Some general code cleanups ... got rid of warnings, etc.
@@ -47,10 +46,7 @@ static const char *ident_convert_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-
-#include "nickserv.h"
-#include "chanserv.h"
-#include "memoserv.h"
+#ifdef CONVERT
 
 /* struct		ver
  * ------------------------
@@ -238,8 +234,8 @@ struct NickInfo_V3 {
     long reserved[4];	/* For future expansion -- set to 0 */
 };
 
-struct NickInfo {
-    NickInfo *next, *prev;
+struct NickInfo_CUR {
+    NickInfo_CUR *next, *prev;
     char nick[NICKMAX];
     char pass[PASSMAX];
     char *email;
@@ -255,6 +251,8 @@ struct NickInfo {
     long flags;		/* See below */
     long reserved[4];	/* For future expansion -- set to 0 */
 };
+
+typedef struct NickInfo_CUR NickInfo;
 
 /****************************************************************************
  * chan.db
@@ -323,8 +321,8 @@ struct ChanInfo_V3 {
     long reserved[3];			/* For future expansion -- set to 0 */
 };
 
-struct ChanInfo {
-    ChanInfo *next, *prev;
+struct ChanInfo_CUR {
+    ChanInfo_CUR *next, *prev;
     char name[CHANMAX];
     char founder[NICKMAX];		/* Always a reg'd nick */
     char founderpass[PASSMAX];
@@ -347,6 +345,8 @@ struct ChanInfo {
     long reserved[3];			/* For future expansion -- set to 0 */
 };
 
+typedef struct ChanInfo_CUR ChanInfo;
+
 /****************************************************************************
  * memo.db and news.db
  ****************************************************************************/
@@ -359,21 +359,24 @@ struct Memo {
     long reserved[4];	/* For future expansion -- set to 0 */
 };
 
-struct MemoList {
-    MemoList *next, *prev;
+struct MemoList_CUR {
+    MemoList_CUR *next, *prev;
     char nick[NICKMAX];	/* Owner of the memos */
     long n_memos;	/* Number of memos */
     Memo *memos;	/* The memos themselves */
     long reserved[4];	/* For future expansion -- set to 0 */
 };
 
-struct NewsList {
-    NewsList *next, *prev;
+struct NewsList_CUR {
+    NewsList_CUR *next, *prev;
     char chan[CHANMAX];	/* Owner of the memos */
     long n_newss;	/* Number of memos */
     Memo *newss;	/* The memos themselves */
     long reserved[4];	/* For future expansion -- set to 0 */
 };
+
+typedef struct MemoList_CUR MemoList;
+typedef struct NewsList_CUR NewsList;
 
 /****************************************************************************
  * others
@@ -419,21 +422,22 @@ class News_t;
 int get_file_version (FILE * f, const char *filename);
 void load_ns_dbase (void);
 void delnick (NickInfo * ni);
-Nick_Stored_t CreateNickEntry(NickInfo *ni);
+Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
 void load_cs_dbase (void);
 char *oldmodeconv (short inmode);
 void delchan (ChanInfo *ci);
-Chan_Stored_t CreateChanEntry(ChanInfo *ci);
+Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
 void load_ms_dbase (void);
 void load_news_dbase (void);
 void del_memolist (MemoList * ml);
 void del_newslist (NewsList * nl);
-list<Memo_t> CreateMemoEntry(MemoList *ml);
-list<News_t> CreateNewsEntry(NewsList *nl);
+list<Memo_t> CreateMemoEntry(MemoList_CUR *ml);
+list<News_t> CreateNewsEntry(NewsList_CUR *nl);
 void load_sop ();
 void load_message ();
 void load_akill ();
 void load_clone ();
 
 
-#endif
+#endif /* CONVERT */
+#endif /* _CONVERT_MAGICK */
