@@ -1,0 +1,12 @@
+Debug
+Release
+convert.plg
+*.*~
+*.~??
+convert.dsk
+convert$$$
+vctobpr.log
+Makefile
+Makefile.in
+.deps
+convert.lib
