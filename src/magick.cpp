@@ -388,15 +388,15 @@ mstring Magick::getMessage(const mstring & nick, const mstring & name)
 {
     FT("Magick::getMessage", (nick, name));
 
-    bool deflang = (Messages.find(nickserv.DEF_Language().UpperCase()) !=
-							Messages.end());
     if (nickserv.IsStored(nick) &&
 	nickserv.stored[nick.LowerCase()].IsOnline())
     {
+	CP(("Using USER-DEIFNED language."));
 	RET(getMessageL(nickserv.stored[nick.LowerCase()].Language(), name));
     }
     else
     {
+	CP(("Using DEFAULT language."));
 	RET(getMessageL(nickserv.DEF_Language(), name));
     }
 }
@@ -407,10 +407,12 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 
     // Load requested language if its NOT loaded.
     // and then look for the message of THAT type.
+    CP(("Trying SPECIFIED language ..."));
     if (lang != "" &&
 	Messages.find(lang.UpperCase()) == Messages.end())
     {
 	LoadExternalMessages(lang);
+	CP(("Language %s was loaded into memory.", lang.c_str()));
     }
     if (lang != "" &&
 	Messages.find(lang.UpperCase()) != Messages.end() &&
@@ -422,12 +424,14 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 
     // Load nickserv default language if its NOT loaded.
     // and then look for the message of THAT type.
+    CP(("Trying DEFAULT language ..."));
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
 	nickserv.DEF_Language() != "" &&
 	Messages.find(nickserv.DEF_Language().UpperCase()) ==
 	Messages.end())
     {
 	LoadExternalMessages(nickserv.DEF_Language());
+	CP(("Language %s was loaded into memory.", nickserv.DEF_Language().c_str()));
     }
     if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
 	nickserv.DEF_Language() != "" &&
@@ -440,6 +444,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     }
 
     // Otherwise just try and find it in the DEFAULTs.
+   CP(("Trying HARD-CODED language ..."));
     if (Messages["DEFAULT"].find(name.UpperCase()) !=
 		Messages["DEFAULT"].end())
     {

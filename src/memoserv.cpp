@@ -178,7 +178,6 @@ void MemoServ::execute(const mstring & data)
     else if (!Parent->commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
-	send(mynick, source, "Invalid command.");
     }
 
 
