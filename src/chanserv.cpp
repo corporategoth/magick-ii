@@ -68,6 +68,7 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     }
 }
 
+
 Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
@@ -425,6 +426,17 @@ bool checkvoices(pair<mstring, pair<bool,bool> > &in)
 // --------- end of Chan_Live_t -----------------------------------
 
 
+void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
+{
+    FT("Chan_Stored_t::ChgAttempt", (nick, newnick));
+
+    map<mstring, int>::iterator iter;
+    for (iter=failed_passwds.begin(); iter!=failed_passwds.end(); iter++)
+	if (iter->first == nick.LowerCase())
+	    iter->first = newnick.LowerCase();
+}
+
+
 void Chan_Stored_t::defaults()
 {
     NFT("Chan_Stored_t::defaults");
@@ -606,6 +618,22 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     map<mstring, mstring>::const_iterator i;
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
     i_UserDef.insert(*i);
+}
+
+
+int Chan_Stored_t::CheckPass(mstring nick, mstring password)
+{
+    FT("Chan_Stored_t::CheckPass", (nick, password));
+    if (i_Password == password)
+    {
+	failed_passwds.erase(nick.LowerCase());
+	RET(0);
+    }
+    else
+    {
+	failed_passwds[nick.LowerCase()]++;
+	RET(failed_passwds[nick.LowerCase()]);
+    }
 }
 
 

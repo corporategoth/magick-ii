@@ -897,16 +897,19 @@ void Magick::get_config_values()
     in.Read(ts_Config+"STARTHRESH",&config.starthresh, 4);
 
     in.Read(ts_NickServ+"EXPIRE",&nickserv.expire,28);
+    in.Read(ts_NickServ+"IDENT",&nickserv.ident,60);
     in.Read(ts_NickServ+"RELEASE",&nickserv.release,60);
     in.Read(ts_NickServ+"PASSFAIL",&nickserv.passfail,5);
-    in.Read(ts_NickServ+"DEF_KILL",&nickserv.def_kill,true);
-    in.Read(ts_NickServ+"LCK_KILL",&nickserv.lck_kill,false);
-    in.Read(ts_NickServ+"DEF_PRIVMSG",&nickserv.def_privmsg,false);
-    in.Read(ts_NickServ+"LCK_PRIVMSG",&nickserv.lck_privmsg,false);
-    in.Read(ts_NickServ+"DEF_PRIVATE",&nickserv.def_private,false);
-    in.Read(ts_NickServ+"LCK_PRIVATE",&nickserv.lck_private,false);
+    in.Read(ts_NickServ+"DEF_PROTECT",&nickserv.def_protect,true);
+    in.Read(ts_NickServ+"LCK_PROTECT",&nickserv.lck_protect,false);
     in.Read(ts_NickServ+"DEF_SECURE",&nickserv.def_secure,false);
     in.Read(ts_NickServ+"LCK_SECURE",&nickserv.lck_secure,false);
+    in.Read(ts_NickServ+"DEF_NOEXPIRE",&nickserv.def_noexpire,false);
+    in.Read(ts_NickServ+"LCK_NOEXPIRE",&nickserv.lck_noexpire,false);
+    in.Read(ts_NickServ+"DEF_PRIVATE",&nickserv.def_private,false);
+    in.Read(ts_NickServ+"LCK_PRIVATE",&nickserv.lck_private,false);
+    in.Read(ts_NickServ+"DEF_PRIVMSG",&nickserv.def_privmsg,false);
+    in.Read(ts_NickServ+"LCK_PRIVMSG",&nickserv.lck_privmsg,false);
 
     in.Read(ts_ChanServ+"EXPIRE",&chanserv.expire,14);
     in.Read(ts_ChanServ+"DEF_AKICK",&chanserv.def_akick_reason,"You have been banned from channel");
