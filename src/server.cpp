@@ -1155,22 +1155,23 @@ unsigned long Protocol::Numeric_t::FindUserNumeric() const
 
     unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
     unsigned long i, max;
+    int j;
 
     if (Combine())
     {
 	i = ournumeric;
-	for (int j = 0; j < User(); j++)
+	for (j = 0; j < User(); j++)
 	    i *= 64;
 
 	max = ournumeric + 1;
-	for (int j = 0; j < User(); j++)
+	for (j = 0; j < User(); j++)
 	    max *= 64;
     }
     else
     {
 	i = 1;
 	max = 1;
-	for (int j = 0; j < User(); j++)
+	for (j = 0; j < User(); j++)
 	    max *= 64;
     }
 
