@@ -759,7 +759,7 @@ void IrcSvcHandler::enqueue(const mstring & message, unsigned long priority)
     {
 	// AND we have server numerics, AND the length of the message is <= the
 	// server numeric maximum length ... assume its a server numeric ...
-	if (Magick::instance().server.proto.Numeric.Server() &&
+	if (Magick::instance().server.proto.Numeric.Server() && !source.Contains(".") &&
 	    source.length() <= static_cast < size_t > (Magick::instance().server.proto.Numeric.Server()))
 	    source.prepend("@");
 

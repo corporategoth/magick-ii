@@ -333,46 +333,35 @@ void mMessage::AddDependancies()
 	    switch (Magick::instance().server.proto.Signon())
 	    {
 	    case 0000:
-		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + IrcParam(params_, 4));
-		else
-		    AddDepend(ServerExists, IrcParam(params_, 4).LowerCase());
+		server = IrcParam(params_, 4);
 		break;
 	    case 0001:
-		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + IrcParam(params_, 5));
-		else
-		    AddDepend(ServerExists, IrcParam(params_, 5).LowerCase());
+		server = IrcParam(params_, 5);
 		break;
 	    case 1000:
 	    case 1001:
 	    case 1002:
-		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + IrcParam(params_, 6));
-		else
-		    AddDepend(ServerExists, IrcParam(params_, 6).LowerCase());
+		server = IrcParam(params_, 6);
 		break;
 	    case 1003:
 	    case 2000:
 	    case 2001:
-		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + IrcParam(params_, 7));
-		else
-		    AddDepend(ServerExists, IrcParam(params_, 7).LowerCase());
+		server = IrcParam(params_, 7);
 		break;
 	    case 2002:
-		AddDepend(ServerExists, IrcParam(params_, 8).LowerCase());
+		server = IrcParam(params_, 8);
 		break;
 	    case 2003:
-		if (Magick::instance().server.proto.Numeric.Server())
-		    AddDepend(ServerExists, "@" + IrcParam(params_, 6));
-		else
-		    AddDepend(ServerExists, IrcParam(params_, 6).LowerCase());
+		server = IrcParam(params_, 6);
 		break;
 	    case 3000:
 		// Source is already added ...
 		break;
 	    }
+	    if (Magick::instance().server.proto.Numeric.Server() && !server.Contains("."))
+		AddDepend(ServerExists, "@" + server);
+	    else
+		AddDepend(ServerExists, server.LowerCase());
 	}
     }
     else if (msgtype_ == "PART")

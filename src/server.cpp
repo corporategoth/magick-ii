@@ -1335,9 +1335,9 @@ mstring Server::GetServer(const mstring & server) const
     FT("Server::GetServer", (server));
     mstring retval;
 
-    if (proto.Numeric.Server() && server[0u] == '@')
+    if (proto.Numeric.Server() && server[0u] == '@' && !server.Contains("."))
 	retval = proto.Numeric.FindServerNumeric(proto.Numeric.ServerNumeric(server.After("@")));
-    else if (IsList(server) || server.IsSameAs(Magick::instance().startup.Server_Name(), true))
+    else if (IsList(server.After("@")) || server.IsSameAs(Magick::instance().startup.Server_Name(), true))
 	retval = server;
     RET(retval);
     ETCB();
@@ -3819,9 +3819,6 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    mstring server;
 	    mstring modes;
 
-	    if (proto.Numeric.Server())
-		server = "@";
-
 	    switch (proto.Signon())
 	    {
 	    case 0000:
@@ -3830,23 +3827,23 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    case 1000:		// NICK nick hops time user host server :realname
 	    case 1001:		// NICK nick hops time user host server 1 :realname
 	    case 1002:		// NICK nick hops time user host server 0 real-host :realname
-		server += IrcParam(params, 6);
+		server = IrcParam(params, 6);
 		break;
 	    case 1003:		// NICK nick hops time user real-host host server 0 :realname
-		server += IrcParam(params, 7);
+		server = IrcParam(params, 7);
 		break;
 	    case 2000:		// NICK nick hops time mode user host server :realname
 	    case 2001:		// NICK nick hops time mode user host server 0 :realname
 		modes = IrcParam(params, 4);
-		server += IrcParam(params, 7);
+		server = IrcParam(params, 7);
 		break;
 	    case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 		modes = IrcParam(params, 4);
-		server += IrcParam(params, 8);
+		server = IrcParam(params, 8);
 		break;
 	    case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
 		modes = IrcParam(params, 8);
-		server += IrcParam(params, 6);
+		server = IrcParam(params, 6);
 		break;
 	    case 3000:		// server NICK nick hops time user host [mode] ipaddr numeric :realname
 		modes = IrcParam(params, 6);
@@ -3855,6 +3852,8 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		server = source;
 		break;
 	    }
+	    if (proto.Numeric.Server() && !server.Contains("."))
+		server.prepend("@");
 	    server = GetServer(server);
 
 	    if (Magick::instance().nickserv.IsLiveAll(newnick))
@@ -5298,16 +5297,13 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	mstring server;
 	mstring modes;
 
-	if (proto.Numeric.Server())
-	    server = "@";
-
 	switch (proto.Signon())
 	{
 	case 0000:		// USER nick user host server :realname
-	    server += IrcParam(params, 4);
+	    server = IrcParam(params, 4);
 	    break;
 	case 0001:		// USER nick time user host server :realname
-	    server += IrcParam(params, 5);
+	    server = IrcParam(params, 5);
 	    break;
 	case 1000:		// NICK nick hops time user host server :realname
 	case 1001:		// NICK nick hops time user host server 1 :realname
@@ -5320,7 +5316,8 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
 	    break;
 	}
-
+	if (proto.Numeric.Server() && !server.Contains("."))
+	    server.prepend("@");
 	server = GetServer(server);
 
 	if (Magick::instance().nickserv.IsLiveAll(newnick))
