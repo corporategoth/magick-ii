@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2000/05/18 10:13:15  prez
+** Finished off the mFile structure, and the DCC system, it all works.
+**
 ** Revision 1.12  2000/05/17 07:47:57  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -74,6 +77,32 @@ static const char *ident_filesys_h = "@(#) $Id$";
 
 unsigned short FindAvailPort();
 
+class mFile
+{
+    FILE *fd;
+public:
+    mFile() { fd = NULL; }
+    mFile(FILE *in);
+    mFile(mstring name, mstring mode = "r");
+    ~mFile() { Close(); }
+    bool Open(mstring name, mstring mode = "r");
+    void Close();
+    bool IsOpened() { return (fd != NULL); }
+    long Seek(long offset, int whence = SEEK_SET);
+    size_t Write(mstring buf, bool endline = true);
+    size_t Write(const void *buf, size_t size);
+    size_t Read(void *buf, size_t size);
+    long Length();
+    bool Eof() { return feof(fd); }
+    void Attach(FILE *in) { fd = in; }
+    void Flush();
+    
+    static bool Exists(mstring name);
+    static long Length(mstring name);
+    static long Copy(mstring sin, mstring sout, bool append = false);
+    static long Dump(vector<mstring> sin, mstring sout, bool append = false, bool endline = true);
+};
+
 class FileMap : public SXP::IPersistObj
 {
 public:
@@ -112,7 +141,7 @@ private:
     // that we now have it.  This way we can just
     // concentrate on getting the job done.
     auto_ptr<ACE_SOCK_Stream> i_Socket;
-    wxFile i_File;
+    mFile i_File;
     mstring i_Source;
     mstring i_Mynick;
     mstring i_Tempfile;

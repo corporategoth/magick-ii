@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.229  2000/05/18 10:13:15  prez
+** Finished off the mFile structure, and the DCC system, it all works.
+**
 ** Revision 1.228  2000/05/17 14:08:11  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -371,8 +374,8 @@ int Magick::Start()
     dcc = new DccMap;
     dcc->open();
 
-    wxFile pidfile;
-    pidfile.Create(files.Pidfile().Strip(mstring::stBoth),true);
+    mFile pidfile;
+    pidfile.Open(files.Pidfile().Strip(mstring::stBoth),"w");
     if(pidfile.IsOpened())
     {
 	mstring dummystring;
@@ -1284,7 +1287,7 @@ bool Magick::paramlong(mstring first, mstring second)
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
-	if(!wxFile::Exists(second.c_str()))
+	if(!mFile::Exists(second))
 	{
 	    wxLogFatal(getLogMessage("COMMANDLINE/NO_KEYFILE"), second.c_str());
 	}
@@ -2641,12 +2644,12 @@ mstring Magick::GetKey()
     mstring retval = "";
     if (files.Encryption())
     {
-	if (wxFile::Exists(files.KeyFile().c_str()))
+	if (mFile::Exists(files.KeyFile()))
 	{
-	    wxFile keyfile(files.KeyFile().c_str());
+	    mFile keyfile(files.KeyFile());
 	    char tmp[4096];
 	    ACE_OS::memset(tmp, 0, 4096);
-	    keyfile.Read(&tmp, 4096);
+	    keyfile.Read(tmp, 4096);
 	    retval = tmp;
 	}
     }
@@ -2942,7 +2945,7 @@ void Magick::save_databases()
 void Magick::load_databases()
 {
     NFT("Magick::load_databases");
-    if (wxFile::Exists(files.Database()))
+    if (mFile::Exists(files.Database()))
     {
    	SXP::CParser p( this ); // let the parser know which is the object
 printf("Before FileFeed\n"); fflush(stdout);

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/05/18 10:13:15  prez
+** Finished off the mFile structure, and the DCC system, it all works.
+**
 ** Revision 1.59  2000/05/17 14:08:12  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -1603,7 +1606,7 @@ size_t wxFile::Write(const void *pBuf, size_t nCount)
 {
   wxCHECK( (pBuf != NULL) && IsOpened(), 0 );
 
-  size_t iRc = ACE_OS::fwrite(pBuf, nCount, 1, m_fd);
+  size_t iRc = ACE_OS::fwrite(pBuf, 1, nCount, m_fd);
   if ( ferror(m_fd) ) 
   {
     wxLogSysError("can't write to file: %p", m_fd);

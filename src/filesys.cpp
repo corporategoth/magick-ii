@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/05/18 10:13:15  prez
+** Finished off the mFile structure, and the DCC system, it all works.
+**
 ** Revision 1.21  2000/05/17 14:08:11  prez
 ** More tweaking with DCC, and getting iostream mods working ...
 **
@@ -106,11 +109,161 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
+#include <sys/stat.h>
 #include "lockable.h"
 #include "magick.h"
 
 queue<unsigned long> DccMap::active;
 map<unsigned long, DccXfer> DccMap::xfers;
+
+mFile::mFile(FILE *in)
+{
+    FT("mFile::mFile", ("(FILE *) in"));
+    fd = in;
+}
+
+mFile::mFile(mstring name, mstring mode)
+{
+    FT("mFile::mFile", (name, mode));
+    
+    if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
+    {
+	wxLogError("Could not open file %s (%s).",
+				name.c_str(), mode.c_str());
+    }
+}
+
+bool mFile::Open(mstring name, mstring mode)
+{
+
+    FT("mFile::Open", (name, mode));
+    if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
+    {
+	wxLogError("Could not open file %s (%s).",
+				name.c_str(), mode.c_str());
+    }
+    RET(fd != NULL);
+}
+
+void mFile::Close()
+{
+    NFT("mFile::Close");
+    if (fd != NULL)
+    {
+	ACE_OS::fflush(fd);
+	ACE_OS::fclose(fd);
+    }
+    fd = NULL;
+}
+
+long mFile::Seek(long offset, int whence)
+{
+    FT("mFile::Seek", (offset, whence));
+    if (fd == NULL)
+	RET(-1);
+    long retpos = fseek(fd, offset, whence);
+    RET(retpos);
+}
+
+size_t mFile::Write(mstring buf, bool endline = true)
+{
+    FT("mFile::Write", (buf, endline));
+    if (endline)
+	buf << "\n";
+    long written = Write(buf.c_str(), buf.Len());
+    RET(written);
+}
+
+size_t mFile::Write(const void *buf, size_t size)
+{
+    FT("mFile::Write", ("(const void *)", size));
+    if (fd == NULL)
+	RET(0);
+    long written = ACE_OS::fwrite(buf, 1, size, fd);
+    RET(written);
+}
+
+size_t mFile::Read(void *buf, size_t size)
+{
+    FT("mFile::Read", ("(const void *)", size));
+    if (fd == NULL)
+	RET(0);
+    long read = ACE_OS::fread(buf, 1, size, fd);
+    RET(read);
+}
+
+long mFile::Length()
+{
+    NFT("mFile::Length");
+    if (fd == NULL)
+	RET(-1);
+    struct stat st;
+    fstat(fd->_fileno, &st);
+    RET(st.st_size);
+}
+
+void mFile::Flush()
+{
+    NFT("mFile::Flush");
+    if (fd != NULL)
+	ACE_OS::fflush(fd);
+}
+
+bool mFile::Exists(mstring name)
+{
+    FT("mFile::Exists", (name));
+    mFile tmp(name);
+    RET(tmp.IsOpened());
+}
+
+long mFile::Length(mstring name)
+{
+    FT("mFile::Length", (name));
+    struct stat st;
+    stat(name.c_str(), &st);
+    RET(st.st_size);
+}
+
+long mFile::Copy(mstring sin, mstring sout, bool append)
+{
+    FT("mFile::Copy", (sin, sout, append));
+    
+    mFile in(sin.c_str());
+    mFile out(sout.c_str(), append ? "a" : "w");
+    if (!(in.IsOpened() && out.IsOpened()))
+	RET(false);
+    
+    unsigned char c[1024];
+    size_t read, total = 0;
+    do {
+        read = in.Read(c, 1024);
+	total += out.Write(c, read);
+    } while (read == 1024);
+    in.Close();
+    out.Close();
+    RET(total);
+}
+
+
+long mFile::Dump(vector<mstring> sin, mstring sout, bool append, bool endline)
+{
+    FT("mFile::Dump", ("(vector<mstring>) sin", sout, append, endline));
+    
+    mFile out(sout.c_str(), append ? "a" : "w");
+    if (!(sin.size() && out.IsOpened()))
+	RET(0);
+	
+    size_t i, total = 0;
+    for (i=0; i<sin.size(); i++)
+    {
+	if (endline)
+	    sin[i] << "\n";
+	total += out.Write(sin[i].c_str(), sin[i].Len());
+    }
+    out.Close();
+    RET(total);
+}
+
 
 unsigned short FindAvailPort()
 {
@@ -156,7 +309,7 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
     else if (type == Public)
     	filename.Prepend(Parent->files.Public() + DirSlash);
 
-    if (wxFile::Exists(filename.c_str()))
+    if (mFile::Exists(filename.c_str()))
     {
 	if (i_FileMap.find(type) != i_FileMap.end())
 	{
@@ -249,8 +402,7 @@ size_t FileMap::GetSize(FileMap::FileType type, unsigned long num)
 	    filename.Prepend(Parent->files.Public() + DirSlash);
 
 	CP(("Checking file size of %s", filename.c_str()));
-	wxFile tmp(filename, wxFile::read);
-	size_t retval = tmp.Length();
+	long retval = mFile::Length(filename);
 	RET(retval);
     }
     RET(0);
@@ -453,17 +605,16 @@ DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
     else if (filetype == FileMap::Public)
 	tmp.Format("%s%s%08x", Parent->files.Public().c_str(),
 			DirSlash.c_str(), filenum);
-    if (!wxFile::Exists(tmp.c_str()))
+    if (!mFile::Exists(tmp.c_str()))
     {
 	Parent->filesys.EraseFile(filetype, filenum);
 	send(mynick, source, Parent->getMessage(source, "DCC/NOFILE"),
 					"SEND");
 	return;
     }
-    ifstream fin(tmp.c_str());
-    ofstream fout(i_Tempfile.c_str(), ios::out|ios::trunc);
-    fout << fin;
-    i_File.Open(i_Tempfile.c_str(), wxFile::read);
+    
+    mFile::Copy(tmp, i_Tempfile);
+    i_File.Open(i_Tempfile.c_str());
     i_Filesize = i_File.Length();
 
     // Initialize Transfer
@@ -515,9 +666,9 @@ DccXfer::DccXfer(unsigned long dccid, auto_ptr<ACE_SOCK_Stream> socket,
     }
 
     // Set 'Ready to Transfer'
-    if (wxFile::Exists(i_Tempfile.c_str()))
+    if (mFile::Exists(i_Tempfile.c_str()))
 	remove(i_Tempfile.c_str());
-    i_File.Open(i_Tempfile.c_str(), wxFile::write);
+    i_File.Open(i_Tempfile.c_str(), "w");
     i_Filesize = filesize;
 
     // Initialize Transfer
@@ -576,11 +727,9 @@ DccXfer::~DccXfer()
 		else if (filetype == FileMap::Public)
 		    tmp.Format("%s%s%08x", Parent->files.Public().c_str(),
 			DirSlash.c_str(), filenum);
-		if (wxFile::Exists(i_Tempfile.c_str()))
+		if (mFile::Exists(i_Tempfile.c_str()))
 		{
-		    ifstream fin(i_Tempfile.c_str());
-		    ofstream fout(tmp.c_str(), ios::out|ios::trunc);
-		    fout << fin;
+		    mFile::Copy(i_Tempfile, tmp);
 		    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
 		    CP(("Added entry %d to FileMap", filenum));
 		}
@@ -594,7 +743,7 @@ DccXfer::~DccXfer()
 	    Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
     }
 
-    if (wxFile::Exists(i_Tempfile.c_str()))
+    if (mFile::Exists(i_Tempfile.c_str()))
 	remove(i_Tempfile.c_str());
 }
 
@@ -620,19 +769,19 @@ void DccXfer::operator=(const DccXfer &in)
     i_Type=in.i_Type;
     i_DccId=in.i_DccId;
 
-    if (in.i_File.IsOpened())
+    DccXfer *tmp = (DccXfer *) &in;
+    if (tmp->i_File.IsOpened())
     {
-	DccXfer *tmp = (DccXfer *) &in;
 	tmp->i_File.Close();
 	if (i_Type == Get)
 	{
-	    i_File.Open(i_Tempfile.c_str(), wxFile::write_append);
+	    i_File.Open(i_Tempfile.c_str(), "a");
 	}
 	else if (i_Type == Send)
 	{
-	    i_File.Open(i_Tempfile.c_str(), wxFile::read);
+	    i_File.Open(i_Tempfile.c_str());
 	    if (i_Total + i_Blocksize > i_Filesize)
-		i_File.SeekEnd();
+		i_File.Seek(0, SEEK_END);
 	    else
 		i_File.Seek(i_Total + i_Blocksize);
 	}
@@ -660,8 +809,9 @@ void DccXfer::Cancel()
 void DccXfer::Action()
 {
     NFT("DccXfer::Action");
-    size_t XferAmt = 0;
+    long XferAmt = 0, TranSz = 0;
     int merrno;
+    unsigned long verify;
     ACE_Time_Value onesec(1);
 
     if (i_Type == Get)
@@ -683,7 +833,8 @@ void DccXfer::Action()
 		i_File.Write(i_Transiant, i_XferTotal);
 		i_XferTotal = 0;
 		ACE_OS::memset(i_Transiant, 0, i_Blocksize);
-		XferAmt = i_Socket->send_n((void *) htonl(i_Total), 4, &onesec);
+		verify = htonl(i_Total);
+		XferAmt = i_Socket->send_n((void *) &verify, 4, &onesec);
 		merrno = errno;
 		COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
 		if (i_Filesize == i_Total)
@@ -715,11 +866,9 @@ void DccXfer::Action()
     else if (i_Type == Send)
     {
 	COM(("Executing action for DCC %d SEND", i_DccId));
-	if (i_Total && (i_Filesize == i_Total + i_XferTotal ||
-	    i_XferTotal == i_Blocksize))
+	if (i_XferTotal == i_Blocksize)
 	{
-	    unsigned long verify;
-	    XferAmt = i_Socket->recv_n((void *) verify, 4, &onesec);
+	    XferAmt = i_Socket->recv_n((void *) &verify, 4, &onesec);
 	    merrno = errno;
 	    COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
 	    if (XferAmt <= 0 || ntohl(verify) != i_Total)
@@ -737,37 +886,36 @@ void DccXfer::Action()
 		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
 						"SEND", merrno);
 		    i_File.Close();
+		    return;
 		}
-		return;
 	    }
 	    ACE_OS::memset(i_Transiant, 0, i_Blocksize);
 	    i_Total += i_XferTotal;
 	    i_XferTotal = 0;
-	    if (i_Total == i_Filesize)
-	    {
-		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
-					"SEND", i_Total);
-		i_File.Close();
-		return;
-	    }
 	}
-	if (i_Transiant[0] == 0 && i_Total < i_Filesize)
+	if (!i_XferTotal && i_Total < i_Filesize)
 	{
 	    if (i_Total + i_Blocksize > i_Filesize)
-		i_File.Read(i_Transiant, i_Filesize - i_Total);
+		TranSz = i_File.Read(i_Transiant, i_Filesize - i_Total);
 	    else
-		i_File.Read(i_Transiant, i_Blocksize);
+		TranSz = i_File.Read(i_Transiant, i_Blocksize);
+	    i_XferTotal = 0;
 	}
-	CP(("Going to send %d bytes ...", ACE_OS::strlen((const char *) i_Transiant)));
+	CP(("Going to send %d bytes ...", TranSz));
 	XferAmt = i_Socket->send_n((void *) &i_Transiant[i_XferTotal],
-			ACE_OS::strlen((char *) i_Transiant) - i_XferTotal,
-			&onesec);
+			TranSz - i_XferTotal, &onesec);
 	merrno = errno;
 	COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
 	if (XferAmt > 0)
 	{
 	    i_XferTotal += XferAmt;
 	    i_LastData = Now();
+	    if (i_Filesize == i_Total + i_XferTotal)
+	    {
+		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
+					"SEND", i_Total);
+		i_File.Close();
+	    }
 	}
 	else
 	{
@@ -895,7 +1043,7 @@ void *DccMap::Connect2(void *in)
 						"GET");
 
 
-    DccXfer xfer(1, DCC_SOCK, val->mynick,
+    DccXfer xfer(TxnIds::Create(), DCC_SOCK, val->mynick,
 	val->source, val->filename, val->filesize, val->blocksize);
     while (xfer.Ready())
     {
@@ -950,7 +1098,8 @@ void *DccMap::Accept2(void *in)
     else
 	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
 						"SEND");
-    DccXfer xfer(2, DCC_SOCK, val->mynick,
+
+    DccXfer xfer(TxnIds::Create(), DCC_SOCK, val->mynick,
 	val->source, val->filetype, val->filenum);
     while (xfer.Ready())
     {

@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2000/05/18 10:13:15  prez
+** Finished off the mFile structure, and the DCC system, it all works.
+**
 ** Revision 1.93  2000/05/10 11:47:00  prez
 ** added back memo timers
 **
@@ -1793,11 +1796,11 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="MOTD")
 	{
-	    if (wxFile::Exists(Parent->files.Motdfile().c_str()))
+	    if (mFile::Exists(Parent->files.Motdfile()))
 	    {
 		sraw("375 " + source + " :Message Of The Day");
 		char buf[1024];
-		wxFile in(Parent->files.Motdfile().c_str());
+		mFile in(Parent->files.Motdfile());
 		mstring flack;
 		unsigned int i;
 		while (!in.Eof())

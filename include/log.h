@@ -24,6 +24,9 @@ static const char *ident_log_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2000/05/18 10:13:15  prez
+** Finished off the mFile structure, and the DCC system, it all works.
+**
 ** Revision 1.18  2000/02/23 12:21:01  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -178,11 +181,11 @@ private:
 // example of usage:
 /*
 void Foo() {
-  wxFile file;
+  mFile file("bar");
 
   // wxFile.Open() normally complains if file can't be opened, we don't want it
   wxLogNull logNo;
-  if ( !file.Open("bar") )
+  if ( !file.IsOpened() )
     ... process error ourselves ...
 
   // ~wxLogNull called, old log sink restored
