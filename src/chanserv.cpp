@@ -19,27 +19,10 @@
 #include "lockable.h"
 #include "magick.h"
 
-ChanServ::ChanServ()
+
+Chan_Live_t::Chan_Live_t()
 {
-    NFT("ChanServ::ChanServ");
-    messages=true;
-    automation=true;
-}
-
-void ChanServ::execute(const mstring & data)
-{
-    mThread::ReAttach(tt_ChanServ);
-    FT("ChanServ::execute", (data));
-    //okay this is the main chanserv command switcher
-
-    mstring source, msgtype, mynick, message;
-    source  = data.Before(" ");
-    msgtype = data.After(" ").Before(" ");
-    mynick  = data.After(" ").After(" ").Before(" ");
-    message = data.After(":");
-
-
-    mThread::ReAttach(tt_mBase);
+    NFT("Chan_Live_t::Chan_Live_t");
 }
 
 Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)
@@ -47,6 +30,34 @@ Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)
     NFT("Chan_Live_t::Chan_Live_t");
     *this=in;
 }
+
+Chan_Live_t::Chan_Live_t(mstring name, mstring first_user)
+{
+    FT("Chan_Live_t::Chan_Live_t", (name, first_user));
+    i_Name = name;
+    users[first_user.LowerCase()] = pair<bool,bool>(false,false);
+}
+
+void Chan_Live_t::Join(mstring nick)
+{
+    FT("Chan_Live_t::Join", (nick));
+    if (users.find(nick.LowerCase())!=users.end())
+	wxLogWarning("Duplicate JOIN message for %s in %s received.", nick, i_Name);
+    else
+	users[nick.LowerCase()] = pair<bool,bool>(false,false);
+}
+
+int Chan_Live_t::Part(mstring nick)
+{
+    FT("Chan_Live_t::Part", (nick));
+    if (users.find(nick.LowerCase())==users.end())
+	wxLogWarning("PART received for %s who is not in %s.", nick, i_Name);
+    else
+	users.erase(nick.LowerCase());
+
+    return users.size();
+}
+
 
 void Chan_Live_t::operator=(const Chan_Live_t &in)
 {
@@ -123,6 +134,31 @@ int Chan_Live_t::Voices()
     RET(count_if(users.begin(),users.end(),checkvoices));
 }
 
+userlist_t::userlist_t(const userlist_t& in)
+{
+    NFT("userlist_t::userlist_t");
+    *this=in;
+}
+
+void userlist_t::operator=(const userlist_t &in)
+{
+    NFT("userlist_t::operator=");
+    i_Entry=in.i_Entry;
+    i_Last_Modify_Time=in.i_Last_Modify_Time;
+    i_Last_Modifier=in.i_Last_Modifier;
+    map<mstring,mstring>::iterator i;
+    i_UserDef.clear();
+    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
+	i_UserDef.insert(*i);
+}
+
+bool userlist_t::operator==(const userlist_t &in) const
+{
+    NFT("userlist_t::operator==");
+    RET(i_Entry==in.i_Entry&&i_Last_Modify_Time==in.i_Last_Modify_Time&&
+	i_Last_Modifier==in.i_Last_Modifier&&i_UserDef==in.i_UserDef);
+}
+
 Chan_Stored_t::Chan_Stored_t(const Chan_Stored_t& in)
 {
     NFT("Chan_Stored_t::Chan_Stored_t");
@@ -176,27 +212,35 @@ bool Chan_Stored_t::operator<(const Chan_Stored_t &in) const
     RET(i_Name<in.i_Name);
 }
 
-userlist_t::userlist_t(const userlist_t& in)
+ChanServ::ChanServ()
 {
-    NFT("userlist_t::userlist_t");
-    *this=in;
+    NFT("ChanServ::ChanServ");
+    messages=true;
+    automation=true;
 }
 
-void userlist_t::operator=(const userlist_t &in)
+bool ChanServ::IsLive(mstring in)
 {
-    NFT("userlist_t::operator=");
-    i_Entry=in.i_Entry;
-    i_Last_Modify_Time=in.i_Last_Modify_Time;
-    i_Last_Modifier=in.i_Last_Modifier;
-    map<mstring,mstring>::iterator i;
-    i_UserDef.clear();
-    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-	i_UserDef.insert(*i);
+    return (live.find(in.LowerCase())!=live.end());
 }
 
-bool userlist_t::operator==(const userlist_t &in) const
+bool ChanServ::IsStored(mstring in)
 {
-    NFT("userlist_t::operator==");
-    RET(i_Entry==in.i_Entry&&i_Last_Modify_Time==in.i_Last_Modify_Time&&
-	i_Last_Modifier==in.i_Last_Modifier&&i_UserDef==in.i_UserDef);
+    return (stored.find(in.LowerCase())!=stored.end());
+}
+
+void ChanServ::execute(const mstring & data)
+{
+    mThread::ReAttach(tt_ChanServ);
+    FT("ChanServ::execute", (data));
+    //okay this is the main chanserv command switcher
+
+    mstring source, msgtype, mynick, message;
+    source  = data.Before(" ");
+    msgtype = data.After(" ").Before(" ");
+    mynick  = data.After(" ").After(" ").Before(" ");
+    message = data.After(":");
+
+
+    mThread::ReAttach(tt_mBase);
 }

@@ -150,13 +150,6 @@ public:
     }
 };
 
-// ToDo -- A method to get the current ThreadID number
-
-// in here, without specifying it everywhere.
-// ACE_thread_t threadid = ACE_Thread::self();
-// threadtype_enum Type=MagickObject->ThreadtoTypeMap[ACE_Thread::self()];
-// or to set the Type in the map  eg: MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
-
 class Magick;
 
 class ThreadID {

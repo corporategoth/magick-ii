@@ -330,6 +330,11 @@ void T_CheckPoint::common(const char *input)
 // ===================================================
 
 //      ## Loading value blah ...
+T_Comments::T_Comments()
+{
+    common("Comment Reached");
+}
+
 T_Comments::T_Comments(const char *fmt, ...)
 {
     va_list args;
@@ -425,7 +430,6 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 
 //      :+ R ChanInfo::#Magick
 //      :+ W NickInfo::PreZ::Flags
-
 //      :+ M Magick::LoadMessages
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {

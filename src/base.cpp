@@ -155,7 +155,8 @@ void mBaseTask::message_i(const mstring& message)
 
     if (tmp[0] == "PRIVMSG" || tmp[0] == "NOTICE") {
 	mstring names;
-	Parent->nickserv.live[message.ExtractWord(1, ": ").LowerCase()].FloodTrigger();
+	if (Parent->nickserv.IsLive(message.ExtractWord(1, ": ")))
+	    Parent->nickserv.live[message.ExtractWord(1, ": ")].FloodTrigger();
 
     // Find out if the target nick is one of the services 'clones'
     // (and if it is, which one?)  Pass the message to them if so.
@@ -222,11 +223,14 @@ void NetworkServ::execute(const mstring & data)
     mThread::ReAttach(tt_ServNet);
     FT("NetworkServ::execute", (data));
 
-    mstring source, msgtype;
+    mstring source, sourceL, msgtype;
     if (data[0u]==':')
     {
         source=data.ExtractWord(1,": ");
+	sourceL=source.LowerCase();
         msgtype=data.ExtractWord(2,": ").UpperCase();
+	if (!Parent->nickserv.IsLive(source))
+	    KillUnknownUser(source);
     }
     else
     {
@@ -267,6 +271,10 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source AWAY
 	    // :source AWAY :This is my reason
+	    if (data.ExtractWord(3, ": ")=="")
+		Parent->nickserv.live[sourceL].Away("");
+	    else
+		Parent->nickserv.live[sourceL].Away(data.After(":", 2));
 	}
 	break;
     case 'B':
@@ -325,7 +333,10 @@ void NetworkServ::execute(const mstring & data)
     case 'J':
 	if (msgtype=="JOIN")
 	{
-	    // :source JOIN :#channel
+	    // :source JIN :#channel
+	    mstring chan;
+	    for (int i=1; (chan=data.After(":", 2).ExtractWord(i, ",")) != ""; i++)
+		Parent->nickserv.live[sourceL].Join(chan);
 	}
 	break;
     case 'K':
@@ -391,6 +402,9 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="PART")
 	{
 	    // :source PART #channel
+	    mstring chan;
+	    for (int i=1; (chan=data.ExtractWord(3, ": ").ExtractWord(i, ",")) != ""; i++)
+		Parent->nickserv.live[sourceL].Part(chan);
 	}
 	else if (msgtype=="PASS")
 	{
@@ -427,7 +441,7 @@ void NetworkServ::execute(const mstring & data)
 	    // :source QUIT :reason
 
 	    // TODO: Call stored.Quit(reason) for live.IsRecognized().
-	    Parent->nickserv.live.erase(source.LowerCase());
+	    Parent->nickserv.live.erase(sourceL);
 	}
 	break;
     case 'R':
@@ -481,6 +495,7 @@ void NetworkServ::execute(const mstring & data)
 	if (msgtype=="TIME")
 	{
 	    // :source TIME :our.server
+	    SendSVR("391 " + source + " :" + Now().DateTimeString());
 	}
 	else if (msgtype=="TOPIC")
 	{
@@ -550,12 +565,15 @@ void NetworkServ::numeric_execute(const mstring & data)
 {
     FT("NetworkServ::numeric_execute", (data));
 
-    mstring source;
+    mstring source, sourceL;
     unsigned int msgtype;
     if (data[0u]==':')
     {
         source=data.ExtractWord(1,": ");
+	sourceL=source.LowerCase();
         msgtype=atoi(data.ExtractWord(2,": "));
+	if (!Parent->nickserv.IsLive(source))
+	    KillUnknownUser(source);
     }
     else
     {

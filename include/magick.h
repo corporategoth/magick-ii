@@ -209,5 +209,10 @@ inline void SendSVR(mstring message)
 inline void Send(mstring message)
 { Parent->ircsvchandler->send(message); }
 
+inline void KillUnknownUser(mstring user)
+{ Parent->ircsvchandler->send(":" + Parent->Startup_SERVER_NAME + " KILL " +
+    user + " :" + Parent->Startup_SERVER_NAME + " (" + user + "(?) <- " +
+    Parent->Startup_REMOTE_SERVER + ")"); }
+
 
 #endif
