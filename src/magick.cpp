@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.294  2001/03/27 16:09:42  prez
+** Fixed chanserv internal maps problem (inserted with incorrect case)
+**
 ** Revision 1.293  2001/03/27 07:04:31  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -1005,7 +1008,7 @@ StartGetLang:
     if (Help.find(language) == Help.end() &&
 	mFile::Exists(files.Langdir()+DirSlash+language.LowerCase()+".hlp"))
     {
-	WLOCK(("Help", language.UpperCase()));
+	WLOCK(("Help", language));
 
 	mConfigEngine fconf(files.Langdir()+DirSlash+language.LowerCase()+".hlp");
 	map<mstring,mstring> tmp = fconf.GetMap();
@@ -1016,7 +1019,7 @@ StartGetLang:
 	triplet<mstring,mstring,mstring> entry;
 	for (i=tmp.begin(); i!=tmp.end(); i++)
 	{
-	    section = i->first.RevBefore("/");
+	    section = i->first.RevBefore("/").UpperCase();
 	    entry = triplet<mstring, mstring, mstring>(
 			i->second.ExtractWord(1, ":", false),
 			i->second.ExtractWord(2, ":", false),
@@ -1036,36 +1039,37 @@ StartGetLang:
 	}
     }
 
+    mstring Uname(name.UpperCase());
     unsigned int i, j;
-    { RLOCK(("Help", language.UpperCase(), name.UpperCase()));
+    { RLOCK(("Help", language, Uname));
     if (Help.find(language) != Help.end() &&
-	Help[language].find(name.UpperCase()) != Help[language].end())
+	Help[language].find(Uname) != Help[language].end())
     {
 	bool sendline;
 
-	for (j=0; j<Help[language][name.UpperCase()].size(); j++)
+	for (j=0; j<Help[language][Uname].size(); j++)
 	{
 	    sendline = false;
-	    if (!Help[language][name.UpperCase()][j].first.empty())
+	    if (!Help[language][Uname][j].first.empty())
 	    {
-		for (i=1; !sendline && i<=Help[language][name.UpperCase()][j].first.WordCount(" "); i++)
+		for (i=1; !sendline && i<=Help[language][Uname][j].first.WordCount(" "); i++)
 		{
-		    if (commserv.IsList(Help[language][name.UpperCase()][j].first.ExtractWord(i, " ")) &&
-			commserv.GetList(Help[language][name.UpperCase()][j].first.ExtractWord(i, " ")).IsOn(nick))
+		    if (commserv.IsList(Help[language][Uname][j].first.ExtractWord(i, " ")) &&
+			commserv.GetList(Help[language][Uname][j].first.ExtractWord(i, " ")).IsOn(nick))
 			sendline = true;
 		}
 	    }
 	    else
 		sendline = true;
-	    if (!Help[language][name.UpperCase()][j].second.empty())
-		for (i=1; sendline && i<=Help[language][name.UpperCase()][j].second.WordCount(" "); i++)
+	    if (!Help[language][Uname][j].second.empty())
+		for (i=1; sendline && i<=Help[language][Uname][j].second.WordCount(" "); i++)
 		{
-		    if (commserv.IsList(Help[language][name.UpperCase()][j].second.ExtractWord(i, " ")) &&
-			commserv.GetList(Help[language][name.UpperCase()][j].second.ExtractWord(i, " ")).IsOn(nick))
+		    if (commserv.IsList(Help[language][Uname][j].second.ExtractWord(i, " ")) &&
+			commserv.GetList(Help[language][Uname][j].second.ExtractWord(i, " ")).IsOn(nick))
 			sendline = false;
 		}
 	    if (sendline)
-		helptext.push_back(Help[language][name.UpperCase()][j].third);
+		helptext.push_back(Help[language][Uname][j].third);
 	}
     }}
 

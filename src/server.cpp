@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.160  2001/03/27 16:09:43  prez
+** Fixed chanserv internal maps problem (inserted with incorrect case)
+**
 ** Revision 1.159  2001/03/27 07:04:32  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -1422,7 +1425,7 @@ void Server::FlushUser(const mstring& nick, const mstring& channel)
 	if (WorkList2.size())
 	{
 	    WLOCK(("Server", "ToBeDone"));
-	    ToBeDone[nick] = WorkList2;
+	    ToBeDone[nick.LowerCase()] = WorkList2;
 	}
 	if (LastProc.size())
 	{
@@ -1454,7 +1457,7 @@ void Server::PushUser(const mstring& nick, const mstring& message,
 	WLOCK(("Server", "ToBeDone", nick.LowerCase()));
 	WLOCK2(("Server", "ToBeDone"));
 	MCB(ToBeDone.size());
-	ToBeDone[nick].push_back(
+	ToBeDone[nick.LowerCase()].push_back(
 		triplet<mDateTime, mstring, mstring>(
 		mDateTime::CurrentDateTime(), message, channel.LowerCase()));
 	MCE(ToBeDone.size());
@@ -1486,7 +1489,7 @@ void Server::PopUser(const mstring& nick, const mstring& channel)
 	if (WorkList2.size())
 	{
 	    WLOCK(("Server", "ToBeDone"));
-	    ToBeDone[nick] = WorkList2;
+	    ToBeDone[nick.LowerCase()] = WorkList2;
 	}
     }
     MCE(ToBeDone.size());
@@ -1747,7 +1750,7 @@ void Server::ANONKILL(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_KILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, reason, "")));
@@ -1815,7 +1818,7 @@ void Server::GLOBOPS(const mstring& nick, const mstring& message)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_GLOBOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		message, "", "")));
@@ -1852,7 +1855,7 @@ void Server::HELPOPS(const mstring& nick, const mstring& message)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_HELPOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		message, "", "")));
@@ -1885,7 +1888,7 @@ void Server::INVITE(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_INVITE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, channel, "")));
@@ -1952,7 +1955,7 @@ void Server::KICK(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_KICK, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, channel, reason)));
@@ -1999,7 +2002,7 @@ void Server::KILL(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_KILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, reason, "")));
@@ -2297,7 +2300,7 @@ void Server::NOTICE(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_NOTICE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, text, "")));
@@ -2385,7 +2388,7 @@ void Server::PRIVMSG(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_PRIVMSG, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		dest, text, "")));
@@ -2435,7 +2438,7 @@ void Server::SQLINE(const mstring& nick, const mstring& target,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SQLINE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		target, reason, "")));
@@ -2552,7 +2555,7 @@ void Server::SVSHOST(const mstring& mynick, const mstring& nick,
     {
 	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[mynick].push_back(
+	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SVSHOST, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		nick, newhost, "")));
@@ -2596,7 +2599,7 @@ void Server::SVSKILL(const mstring& mynick, const mstring& nick,
     {
 	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[mynick].push_back(
+	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SVSKILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		nick, reason, "")));
@@ -2642,7 +2645,7 @@ void Server::SVSNICK(const mstring& mynick, const mstring& nick,
     {
 	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[mynick].push_back(
+	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SVSNICK, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		nick, newnick, "")));
@@ -2728,7 +2731,7 @@ void Server::SVSMODE(const mstring& mynick, const mstring& nick,
     {
 	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[mynick].push_back(
+	ToBeSent[mynick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_SVSMODE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		nick, mode, "")));
@@ -2770,7 +2773,7 @@ void Server::TOPIC(const mstring& nick, const mstring& setter,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_TOPIC, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		setter, channel, topic)));
@@ -2820,7 +2823,7 @@ void Server::UNSQLINE(const mstring& nick, const mstring& target)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_UNSQLINE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		target, "", "")));
@@ -2854,7 +2857,7 @@ void Server::WALLOPS(const mstring& nick, const mstring& message)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick].push_back(
+	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_WALLOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
 		message, "", "")));
@@ -3955,7 +3958,7 @@ void Server::execute(const mstring & data)
 		Parent->nickserv.GetLive(sourceL).SetSquit();
 		WLOCK2(("Server", "ToBeSquit"));
 		MCB(ToBeSquit.size());
-		ToBeSquit[params.ExtractWord(2, ": ")].push_back(sourceL);
+		ToBeSquit[params.ExtractWord(2, ": ").LowerCase()].push_back(sourceL);
 		LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_FIRST"),
 			params.ExtractWord(2, ": ").c_str(),
 			params.ExtractWord(1, ": ").c_str()));

@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.162  2001/03/27 16:09:43  prez
+** Fixed chanserv internal maps problem (inserted with incorrect case)
+**
 ** Revision 1.161  2001/03/27 07:04:32  prez
 ** All maps have been hidden, and are now only accessable via. access functions.
 **
@@ -1150,7 +1153,7 @@ Nick_Live_t::Nick_Live_t(const mstring& name, const mDateTime& signon,
 	  i_My_Signon_Time(mDateTime::CurrentDateTime()),
 	  i_Last_Action(mDateTime::CurrentDateTime()),
 	  i_realname(realname), i_user(username), i_host(hostname),
-	  i_alt_host(hostname), i_server(server), last_msg_entries(0),
+	  i_alt_host(hostname), i_server(server.LowerCase()), last_msg_entries(0),
 	  flood_triggered_times(0), failed_passwds(0), identified(false),
 	  services(false), InFlight(name)
 {

@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.233  2001/03/27 16:09:42  prez
+** Fixed chanserv internal maps problem (inserted with incorrect case)
+**
 ** Revision 1.232  2001/03/27 07:49:10  prez
 ** Fixed channels being added in case
 **
@@ -424,7 +427,7 @@ bool Chan_Live_t::Join(const mstring& nick)
     else
     {
 	MCB(users.size());
-	users[nick] = pair<bool,bool>(false,false);
+	users[nick.LowerCase()] = pair<bool,bool>(false,false);
 	MCE(users.size());
 	RET(true);
     }
@@ -444,7 +447,7 @@ unsigned int Chan_Live_t::Part(const mstring& nick)
 	    target = Parent->nickserv.GetStored(nick).Host().LowerCase();
 	MCB(users.size());
 	CB(1, recent_parts.size());
-	recent_parts[target] = mDateTime::CurrentDateTime();
+	recent_parts[target.LowerCase()] = mDateTime::CurrentDateTime();
 	users.erase(nick.LowerCase());
 	if (!users.size())
 	{
@@ -490,7 +493,7 @@ void Chan_Live_t::SquitUser(const mstring& nick)
     {
 	MCB(squit.size());
 	CB(1, users.size());
-	squit[nick] = users[nick];
+	squit[nick.LowerCase()] = users[nick.LowerCase()];
 	users.erase(nick.LowerCase());
 	CE(1, users.size());
 	MCE(squit.size());
@@ -559,7 +562,7 @@ void Chan_Live_t::ChgNick(const mstring& nick, const mstring& newnick)
     if (users.find(nick.LowerCase())!=users.end())
     {
 	MCB(users.size());
-	users[newnick] = users[nick];
+	users[newnick.LowerCase()] = users[nick.LowerCase()];
 	users.erase(nick.LowerCase());
 	MCE(users.size());
 	if (Parent->chanserv.IsStored(i_Name))
@@ -568,7 +571,7 @@ void Chan_Live_t::ChgNick(const mstring& nick, const mstring& newnick)
     else if (squit.find(nick.LowerCase())!=squit.end())
     {
 	MCB(squit.size());
-	squit[newnick] = squit[nick];
+	squit[newnick.LowerCase()] = squit[nick.LowerCase()];
 	squit.erase(nick.LowerCase());
 	MCE(squit.size());
     }
@@ -585,7 +588,7 @@ Chan_Live_t::Chan_Live_t(const mstring& name, const mstring& first_user)
 {
     FT("Chan_Live_t::Chan_Live_t", (name, first_user));
     WLOCK(("ChanServ", "live", i_Name.LowerCase()));
-    users[first_user] = pair<bool,bool>(false,false);
+    users[first_user.LowerCase()] = pair<bool,bool>(false,false);
     DumpB();
 }
 
@@ -1464,13 +1467,13 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "users"));
 		    if (add)
 		    {
-			users[in.ExtractWord(fwdargs, ": ")].first = true;
+			users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = true;
 			if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(fwdargs, ": ")))
 			    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(fwdargs, ": "));
 		    }
 		    else
 		    {
-			users[in.ExtractWord(fwdargs, ": ")].first = false;
+			users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = false;
 			if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(fwdargs, ": ")))
 			    RemoveMode(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(fwdargs, ": "));
 		    }
@@ -1494,13 +1497,13 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		    WLOCK6(("ChanServ", "live", i_Name.LowerCase(), "users"));
 		    if (add)
 		    {
-			users[in.ExtractWord(fwdargs, ": ")].second = true;
+			users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = true;
 			if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(fwdargs, ": ")))
 			    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(fwdargs, ": "));
 		    }
 		    else
 		    {
-			users[in.ExtractWord(fwdargs, ": ")].second = false;
+			users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = false;
 			if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(fwdargs, ": ")))
 			    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(fwdargs, ": "));
 		    }
@@ -1523,7 +1526,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		CB(5, bans.size());
 		if (add)
 		{
-		    bans[in.ExtractWord(fwdargs, ": ")] = mDateTime::CurrentDateTime();
+		    bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = mDateTime::CurrentDateTime();
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": "));
 		}
@@ -1547,7 +1550,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		CB(5, exempt.size());
 		if (add)
 		{
-		    exempt[in.ExtractWord(fwdargs, ": ")] = mDateTime::CurrentDateTime();
+		    exempt[in.ExtractWord(fwdargs, ": ").LowerCase()] = mDateTime::CurrentDateTime();
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(fwdargs, ": ")))
 			RemoveMode(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(fwdargs, ": "));
 		}
@@ -1824,7 +1827,7 @@ void Chan_Stored_t::ChgAttempt(const mstring& nick, const mstring& newnick)
     for (iter=failed_passwds.begin(); iter!=failed_passwds.end(); iter++)
 	if (iter->first == nick.LowerCase())
 	{
-	    failed_passwds[newnick] = iter->second;
+	    failed_passwds[newnick.LowerCase()] = iter->second;
 	    break;
 	}
     failed_passwds.erase(nick.LowerCase());
@@ -3010,8 +3013,8 @@ unsigned int Chan_Stored_t::CheckPass(const mstring& nick, const mstring& passwo
     else
     {
 	if (failed_passwds.find(nick.LowerCase()) == failed_passwds.end())
-	    failed_passwds[nick]=0;
-	retval = ++failed_passwds[nick];
+	    failed_passwds[nick.LowerCase()]=0;
+	retval = ++failed_passwds[nick.LowerCase()];
     }
     MCE(failed_passwds.size());
     RET(retval);
