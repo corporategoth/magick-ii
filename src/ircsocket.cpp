@@ -300,10 +300,129 @@ int EventTask::svc(void)
     while(!Parent->shutdown())
     {
 	// Main routine -- when we end this, we're done!!
+	map<mstring, Nick_Live_t>::iterator nli;
+	map<mstring, Nick_Stored_t>::iterator nsi;
+	map<mstring, Chan_Live_t>::iterator cli;
+	map<mstring, Chan_Stored_t>::iterator csi;
+	map<mstring, list<Memo_t> >::iterator mi;
+	list<Memo_t>::iterator lmi;
+	map<mstring, list<News_t> >::iterator ni;
+	list<News_t>::iterator lni;
+	map<mstring, Committee>::iterator ci;
+	map<mstring, Server>::iterator si;
+	map<mstring, mDateTime>::iterator di;
+	unsigned int i;
 
 	if (last_expire.SecondsSince() >= Parent->config.Cycletime())
 	{
 	    CP(("Starting EXPIRATION check ..."));
+
+	    // akills
+	    {
+		MLOCK("OperServ","Akill");
+		bool firstgone = false;;
+		for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
+			(Parent->operserv.Akill != Parent->operserv.Akill_end() && !firstgone);
+			Parent->operserv.Akill++)
+		{
+		    if (firstgone)
+		    {
+			Parent->operserv.Akill = Parent->operserv.Akill_begin();
+			firstgone = false;
+		    }
+		    if (Parent->operserv.Akill->Last_Modify_Time().HoursSince() >
+			    Parent->operserv.Akill->Value().first)
+		    {
+			if (Parent->operserv.Akill == Parent->operserv.Akill_begin())
+			{
+			    Parent->operserv.Akill_erase();
+			    firstgone = true;
+			}
+			else
+			{
+			    set<entlist_val_t<pair<long, mstring> > >::iterator LastEnt = Parent->operserv.Akill;
+			    LastEnt--;
+			    Parent->operserv.Akill_erase();
+			    Parent->operserv.Akill = LastEnt;
+			}
+		    }
+		}
+	    }
+
+	    // nicknames
+	    {
+		MLOCK("NickServ", "stored");
+		vector<mstring> expired_nicks;
+		for (nsi = Parent->nickserv.stored.begin();
+			nsi != Parent->nickserv.stored.end(); nsi++)
+		{
+		    if (nsi->second.Host() == "")
+		    {
+			if (nsi->second.LastAllSeenTime().DaysSince() >
+			    Parent->nickserv.Expire())
+			    expired_nicks.push_back(nsi->first);
+		    }
+		    else
+		    {
+			if (nsi->second.LastSeenTime().DaysSince() >
+			    Parent->nickserv.Expire())
+			    expired_nicks.push_back(nsi->first);
+		    }
+		}
+		for (i=0; i<expired_nicks.size(); i++)
+		    Parent->nickserv.stored.erase(expired_nicks[i]);
+	    }
+
+	    // channels
+	    {
+		MLOCK("ChanServ", "stored");
+		vector<mstring> expired_chans;
+		for (csi = Parent->chanserv.stored.begin();
+			csi != Parent->chanserv.stored.end(); nsi++)
+		{
+		    if (csi->second.LastUsed().DaysSince() >
+			Parent->chanserv.Expire())
+			expired_chans.push_back(csi->first);
+		}
+		for (i=0; i<expired_chans.size(); i++)
+		    Parent->chanserv.stored.erase(expired_chans[i]);
+	    }
+
+	    // news articles
+	    {
+		MLOCK("MemoServ", "news");
+		for (ni=Parent->memoserv.channel.begin();
+			ni!=Parent->memoserv.channel.end(); ni++)
+		{
+		    bool firstgone = false;
+		    for (lni=ni->second.begin();
+			(lni!=ni->second.end() && !firstgone); lni++)
+		    {
+			if (firstgone)
+			{
+			    lni = ni->second.begin();
+			    firstgone = false;
+			}
+			if (lni->Time().DaysSince() >
+			    Parent->memoserv.News_Expire())
+			{
+			    if (lni == ni->second.begin())
+			    {
+				ni->second.erase(lni);
+				firstgone = true;
+				lni = ni->second.end();
+			    }
+			    else
+			    {
+				list<News_t>::iterator lastnews = lni;
+				lastnews--;
+				ni->second.erase(lni);
+				lni = lastnews;
+			    }
+			}
+		    }
+		}
+	    }
 
 	    last_expire = Now();
 	}
@@ -312,26 +431,144 @@ int EventTask::svc(void)
 	{
 	    CP(("Starting DATABASE SAVE ..."));
 
+	    //Parent->operserv.save_database();
+	    //Parent->nickserv.save_database();
+	    //Parent->chanserv.save_database();
+	    //Parent->memoserv.save_database();
+	    //Parent->commserv.save_database();
+	    //Parent->servmsg.save_database();
+	    // Scripted services?
+
 	    last_save = Now();
 	}
 
-	if (last_bancheck.SecondsSince() >= 5)
+	if (last_check.SecondsSince() >= Parent->config.Checktime())
 	{
-	    CP(("Starting check for EXPIRED bans ..."));
+	    CP(("Starting CHECK cycle ..."));
 
-	    last_bancheck = Now();
+	    for (cli=Parent->chanserv.live.begin();
+		    cli!=Parent->chanserv.live.end(); cli++)
+	    {
+		csi = Parent->chanserv.stored.find(cli->first.LowerCase());
+		// Removing bans ...
+		if (!Parent->chanserv.LCK_Bantime() ||
+		    !Parent->chanserv.DEF_Bantime())
+		{
+		    unsigned long bantime;
+		    if (Parent->chanserv.LCK_Bantime())
+			bantime = Parent->chanserv.DEF_Bantime();
+		    else if (csi != Parent->chanserv.stored.end())
+			bantime = csi->second.Bantime();
+		    if (bantime)
+		    {
+			vector<mstring> remove;
+			vector<mstring>::iterator ri;
+			for (di=cli->second.bans.begin();
+				di!=cli->second.bans.end(); di++)
+			{
+			    if (di->second.SecondsSince() > bantime)
+			    {
+				remove.push_back(di->first);
+			    }
+			}
+			for (ri=remove.begin(); ri!=remove.end(); ri++)
+			{
+			    cli->second.SendMode("-b " + *ri);
+			}
+		    }
+		}
+
+		// Sending pending modes ...
+		if (cli->second.p_modes_on != "" || cli->second.p_modes_off != "")
+		{
+		    int modesperline = 4, j, k;
+		    vector<mstring> modelines;
+		    mstring mode;
+		    mstring modeparam;
+
+		    for (i=0, j=0, k=0; i<cli->second.p_modes_off.size(); i++, j++)
+		    {
+			if (j>=modesperline)
+			{
+			    modelines.push_back(mode + " " + modeparam);
+			    mode = modeparam = "";
+			    j=0;
+			}
+			if (mode == "")
+			    mode += "-";
+			mode += cli->second.p_modes_off[i];
+			switch (cli->second.p_modes_off[i])
+			{
+			case 'o':
+			case 'v':
+			case 'b':
+			case 'k':
+			    modeparam += " " + cli->second.p_modes_off_params[k];
+			    k++;
+			}
+		    }
+		    for (i=0, k=0; i<cli->second.p_modes_on.size(); i++, j++)
+		    {
+			if (j>=modesperline)
+			{
+			    modelines.push_back(mode + " " + modeparam);
+			    mode = modeparam = "";
+			    j=0;
+			}
+			if (mode == "")
+			    mode += "+";
+			mode += cli->second.p_modes_on[i];
+			switch (cli->second.p_modes_on[i])
+			{
+			case 'o':
+			case 'v':
+			case 'b':
+			case 'k':
+			case 'l':
+			    modeparam += " " + cli->second.p_modes_on_params[k];
+			    k++;
+			}
+		    }
+		    for (i=0; i<modelines.size(); i++)
+		    {
+			Parent->server.MODE(Parent->chanserv.FirstName(),
+			    cli->first, modelines[i]);
+		    }
+		}
+	    }
+	    last_check = Now();
 	}
 
 	if (last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
 	{
 	    CP(("Starting SERVER PING ..."));
-	    map<mstring, Server>::iterator iter;
-	    for(iter=Parent->server.ServerList.begin();
-		    iter!=Parent->server.ServerList.end();iter++)
-	    {
-		iter->second.Ping();
-	    }
 
+	    vector<double> pingtimes;
+	    double min = -1, max = 0, sum, avg;
+	    for (si=Parent->server.ServerList.begin();
+		    si!=Parent->server.ServerList.end(); si++)
+	    {
+		if (min == -1 || si->second.Lag() < min)
+		    min = si->second.Lag();
+		if (si->second.Lag() > max)
+		    max = si->second.Lag();
+		pingtimes.push_back(si->second.Lag());
+		sum += si->second.Lag();
+	    }
+	    if (pingtimes.size() >= 3)
+		avg = (sum - min - max) / (pingtimes.size() - 2);
+	    else
+		avg = sum / pingtimes.size();
+
+	    if (avg > (Parent->startup.Lagtime() * (Parent->level - Parent->startup.Level() + 1)))
+		Parent->level++;
+	    if (Parent->level > Parent->startup.Level() &&
+		avg <= (Parent->startup.Lagtime() * (Parent->level - Parent->startup.Level() + 1)))
+		Parent->level--;		
+
+	    for (si=Parent->server.ServerList.begin();
+		    si!=Parent->server.ServerList.end();si++)
+		si->second.Ping();
 	    last_ping = Now();
 	}
 	

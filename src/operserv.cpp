@@ -440,7 +440,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 
     if (params.WordCount(" ") < 4)
     {
-	Parent->server.NOTICE(mynick, source, "Not enough paramaters");
+	send(mynick, source, "Not enough paramaters");
 	return;
     }
 
@@ -475,7 +475,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 	}
 	else
 	{
-	    Parent->server.NOTICE(mynick, source, mstring("Invalid thread type \"") + ttype + mstring("\" is not valid."));
+	    send(mynick, source, mstring("Invalid thread type \"") + ttype + mstring("\" is not valid."));
 	    return;
 	}
     }
@@ -542,7 +542,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 		    }
 		}
 		if (j>=Trace::levelname.size())
-	   	    Parent->server.NOTICE(mynick, source, mstring("Trace level \"") + levels[i] +
+	   	    send(mynick, source, mstring("Trace level \"") + levels[i] +
 		        mstring("\" is not valid, ignored."));
 	    }
 	}
@@ -576,7 +576,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		Parent->server.NOTICE(mynick, source, mstring("Trace level \"") + levels[i] +
+		send(mynick, source, mstring("Trace level \"") + levels[i] +
 		    mstring("\" is not valid, ignored."));
 	}
     }
@@ -609,7 +609,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		Parent->server.NOTICE(mynick, source, mstring("Trace level \"") + levels[i] +
+		send(mynick, source, mstring("Trace level \"") + levels[i] +
 		    mstring("\" is not valid, ignored."));
 	}
     }
@@ -619,7 +619,7 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	Parent->server.NOTICE(mynick, source, "Incorrect TRACE option.");
+	send(mynick, source, "Incorrect TRACE option.");
 	return;
     }
 
@@ -631,8 +631,8 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 	tmp.Format("%#06x  ", Trace::TraceLevel((threadtype_enum) i));
 	line2 += tmp;
     }
-    Parent->server.NOTICE(mynick, source, line1);
-    Parent->server.NOTICE(mynick, source, line2);
+    send(mynick, source, line1);
+    send(mynick, source, line2);
 }
 
 void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, mstring server)
@@ -675,7 +675,7 @@ void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, m
 		    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
 			(previndent + "|-" + downlinks[i]).c_str(), lag, users, opers,
 			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		Parent->server.NOTICE(mynick, source, out);
+		send(mynick, source, out);
 		DoBreakdown(mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
@@ -692,7 +692,7 @@ void OperServ::DoBreakdown(mstring mynick, mstring source, mstring previndent, m
 		    out.Format("%-40s  %3.3fs  %5d (%3d)  %3.2f%%",
 			(previndent + "`-" + downlinks[i]).c_str(), lag, users, opers,
 			((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-		Parent->server.NOTICE(mynick, source, out);
+		send(mynick, source, out);
 		DoBreakdown(mynick, source, previndent + "  ", downlinks[i]);
 	    }
 	}
@@ -734,7 +734,7 @@ void OperServ::execute(const mstring & data)
     else if (command == "BREAKDOWN")
     {
 
-	Parent->server.NOTICE(mynick, source,
+	send(mynick, source,
 		"SERVER                                         LAG  USERS (OPS)");
 	mstring out;
  	unsigned int users = 0, opers = 0;
@@ -752,7 +752,7 @@ void OperServ::execute(const mstring & data)
 	out.Format("%-40s    0.000s  %5d (%3d)  %3.2f%%",
 		Parent->startup.Server_Name().LowerCase().c_str(), users, opers,
 		((float) users / (float) Parent->nickserv.live.size()) * 100.0);
-	Parent->server.NOTICE(mynick, source, out);
+	send(mynick, source, out);
 
 	DoBreakdown(mynick, source, "", Parent->startup.Server_Name());
     }

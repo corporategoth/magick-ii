@@ -53,9 +53,9 @@ typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcServer;
 class EventTask : public ACE_Task<ACE_MT_SYNCH>
 {
     mDateTime last_expire;
-    mDateTime last_ping;
-    mDateTime last_bancheck;
     mDateTime last_save;
+    mDateTime last_check;
+    mDateTime last_ping;
 public:
     void ForceSave() { last_save = mDateTime(0.0); }
     virtual int open(void *in=0);

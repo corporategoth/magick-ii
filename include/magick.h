@@ -137,6 +137,7 @@ public:
 		int squit_protect;
 		int squit_cancel;
 		int cycletime;
+		int checktime;
 		int ping_frequency;
 		int starthresh;
 		int startup_threads;
@@ -147,6 +148,7 @@ public:
 		int Squit_Protect()	{ return squit_protect; }
 		int Squit_Cancel()	{ return squit_cancel; }
 		int Cycletime()		{ return cycletime; }
+		int Checktime()		{ return checktime; }
 		int Ping_Frequency()	{ return ping_frequency; }
 		int Starthresh()	{ return starthresh; }
 		int Startup_Threads()	{ return startup_threads; }
@@ -180,6 +182,7 @@ public:
 	long runflags;
 	mstring services_dir;
 	mstring config_file;
+	int level;
 	int high_water_mark;
 	int low_water_mark;
 	mstring ProgramName;

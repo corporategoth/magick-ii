@@ -20,6 +20,7 @@
 class Chan_Live_t : public mUserDef
 {
     friend class Nick_Live_t;
+    friend class EventTask;
     mstring i_Name;
     mDateTime i_Creation_Time;
     // below: .first == op .second==voice
@@ -32,6 +33,15 @@ class Chan_Live_t : public mUserDef
     mstring modes;
     int i_Limit;
     mstring i_Key;
+    mstring p_modes_on;
+    mstring p_modes_off;
+    vector<mstring> p_modes_on_params;
+    vector<mstring> p_modes_off_params;
+
+    bool ModeExists(mstring mode, vector<mstring> mode_params,
+			bool change, char reqmode, mstring reqparam = "");
+    void RemoveMode(mstring mode, vector<mstring> mode_params,
+			bool change, char reqmode, mstring reqparam = "");
 
     void Join(mstring nick); // Called by Nick_Live_t
     int Part(mstring nick); // Called by Nick_Live_t
@@ -69,12 +79,15 @@ public:
     int Voices();
     mstring Voice(int num);
     pair<bool, bool> User(mstring name);
+    int Bans();
+    mstring Ban(int num);
+    mDateTime Ban(mstring mask);
     bool IsSquit(mstring nick);
     bool IsIn(mstring nick);
     bool IsOp(mstring nick);
     bool IsVoice(mstring nick);
+    bool IsBan(mstring mask);
 
-    void SendMode(mstring source, mstring in);	// out
     void SendMode(mstring in);			// out
     void Mode(mstring source, mstring in);	// in
     bool HasMode(mstring in)	{ return modes.Contains(in); }

@@ -277,6 +277,98 @@ void mBase::send(const mstring &dest, const mstring &message)
 }
 
 
+void privmsg(const mstring& source, const mstring &dest, const mstring &message)
+{
+    FT("privmsg", (source, dest, message));
+    if (Parent->nickserv.IsLive(source) &&
+	Parent->nickserv.live[source.LowerCase()].IsServices())
+    {
+	if (Parent->operserv.IsName(source))
+	    Parent->operserv.privmsg(source, dest, message);
+
+	else if (Parent->nickserv.IsName(source))
+	    Parent->nickserv.privmsg(source, dest, message);
+
+	else if (Parent->chanserv.IsName(source))
+	    Parent->chanserv.privmsg(source, dest, message);
+
+	else if (Parent->memoserv.IsName(source))
+	    Parent->memoserv.privmsg(source, dest, message);
+
+	else if (Parent->commserv.IsName(source))
+	    Parent->commserv.privmsg(source, dest, message);
+
+	else if (Parent->servmsg.IsName(source))
+	    Parent->servmsg.privmsg(source, dest, message);
+
+	// scripted hosts ...
+	// else
+    }
+}
+
+
+void notice(const mstring& source, const mstring &dest, const mstring &message)
+{
+    FT("notice", (source, dest, message));
+
+    if (Parent->nickserv.IsLive(source) &&
+	Parent->nickserv.live[source.LowerCase()].IsServices())
+    {
+	if (Parent->operserv.IsName(source))
+	    Parent->operserv.notice(source, dest, message);
+
+	else if (Parent->nickserv.IsName(source))
+	    Parent->nickserv.notice(source, dest, message);
+
+	else if (Parent->chanserv.IsName(source))
+	    Parent->chanserv.notice(source, dest, message);
+
+	else if (Parent->memoserv.IsName(source))
+	    Parent->memoserv.notice(source, dest, message);
+
+	else if (Parent->commserv.IsName(source))
+	    Parent->commserv.notice(source, dest, message);
+
+	else if (Parent->servmsg.IsName(source))
+	    Parent->servmsg.notice(source, dest, message);
+
+	// scripted hosts ...
+	// else
+    }
+}
+
+
+void send(const mstring& source, const mstring &dest, const mstring &message)
+{
+    FT("send", (source, dest, message));
+
+    if (Parent->nickserv.IsLive(source) &&
+	Parent->nickserv.live[source.LowerCase()].IsServices())
+    {
+	if (Parent->operserv.IsName(source))
+	    Parent->operserv.send(source, dest, message);
+
+	else if (Parent->nickserv.IsName(source))
+	    Parent->nickserv.send(source, dest, message);
+
+	else if (Parent->chanserv.IsName(source))
+	    Parent->chanserv.send(source, dest, message);
+
+	else if (Parent->memoserv.IsName(source))
+	    Parent->memoserv.send(source, dest, message);
+
+	else if (Parent->commserv.IsName(source))
+	    Parent->commserv.send(source, dest, message);
+
+	else if (Parent->servmsg.IsName(source))
+	    Parent->servmsg.send(source, dest, message);
+
+	// scripted hosts ...
+	// else
+    }
+}
+
+
 void mBase::shutdown()
 {
     NFT("mBase::shutdown");

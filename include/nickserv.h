@@ -113,7 +113,7 @@ public:
     void Name(mstring in);
     mstring Name() { return i_Name; }
 
-    void SendMode(mstring source, mstring in);
+    void SendMode(mstring in);
     void Mode(mstring in);
     mstring Mode() { return modes; }
     bool HasMode(mstring in) { return modes.Contains(in); }

@@ -252,4 +252,9 @@ public:
     static void shutdown();
 };
 
+void privmsg(const mstring& source, const mstring &dest, const mstring &message);
+void notice(const mstring& source, const mstring &dest, const mstring &message);
+void send(const mstring& source, const mstring &dest, const mstring &message);
+
+
 #endif

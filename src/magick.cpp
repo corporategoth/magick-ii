@@ -888,6 +888,7 @@ void Magick::get_config_values()
     } while (ent!="");
 
     in.Read(ts_Startup+"LEVEL",&startup.level,1);
+    level = startup.level;
     in.Read(ts_Startup+"LAGTIME",&startup.lagtime,10);
     in.Read(ts_Startup+"STOP",&i_shutdown,true);
 
@@ -925,6 +926,7 @@ void Magick::get_config_values()
     in.Read(ts_Config+"SQUIT_PROTECT",&config.squit_protect,120);
     in.Read(ts_Config+"SQUIT_CANCEL",&config.squit_cancel,10);
     in.Read(ts_Config+"CYCLETIME",&config.cycletime,300);
+    in.Read(ts_Config+"CHECKTIME",&config.checktime,5);
     in.Read(ts_Config+"PING_FREQUENCY",&config.ping_frequency,30);
     in.Read(ts_Config+"STARTHRESH",&config.starthresh, 4);
     in.Read(ts_Config+"STARTUP_THREADS",&config.startup_threads, 2);
@@ -956,7 +958,7 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"CHANKEEP",&chanserv.chankeep,15);
     in.Read(ts_ChanServ+"DEF_MLOCK",&chanserv.def_mlock,"+nt");
     in.Read(ts_ChanServ+"LCK_MLOCK",&chanserv.lck_mlock,"+");
-    in.Read(ts_ChanServ+"DEF_BANTIME",&chanserv.def_bantime,(unsigned long) 0);
+    in.Read(ts_ChanServ+"DEF_BANTIME",&chanserv.def_bantime, 0u);
     in.Read(ts_ChanServ+"LCK_BANTIME",&chanserv.lck_bantime,false);
     in.Read(ts_ChanServ+"DEF_KEEPTOPIC",&chanserv.def_keeptopic,true);
     in.Read(ts_ChanServ+"LCK_KEEPTOPIC",&chanserv.lck_keeptopic,false);

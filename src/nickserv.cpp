@@ -125,14 +125,14 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     {
 	if (InProg())
 	{
-	    Parent->server.NOTICE(service, nick,
+	    send(service, nick,
 		"Cannot begin a new memo while a file is in progress.");
 	    return;
 	}
 	else
 	{
 	    Cancel();
-	    Parent->server.NOTICE(service, nick,
+	    send(service, nick,
 		"Previous pending file transfer ABORTED.");
 	}
     }
@@ -143,19 +143,19 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 
     if (!Parent->nickserv.IsStored(nick))
     {
-	Parent->server.NOTICE(mynick, nick,
+	send(mynick, nick,
 	    "You must register your nickname before you can send a memo.");
 	return;
     }
     else if (Parent->nickserv.IsStored(user))
     {
-	Parent->server.NOTICE(mynick, nick,
+	send(mynick, nick,
 	    "Nickname " + user + " is not registered, cannot send memo.");
 	return;
     }
     else if (file && !Parent->memoserv.Files())
     {
-	Parent->server.NOTICE(mynick, nick,
+	send(mynick, nick,
 	    "File attachments in MEMOs have been disabled.");
 	return;
     }
@@ -204,6 +204,10 @@ void Nick_Live_t::InFlight_t::Cancel()
 	{
 	    delete arg;
 	}
+    if (memo)
+	send(service, nick, "Memo has been cancelled.");
+    else
+	send(service, nick, "Picture transfer has been cancelled.");
     init();
 }
 
@@ -247,6 +251,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		    {
 			Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
 			    Memo_t(realrecipiant, sender, text, filenum));
+			send(service, nick, "Memo has been sent to " + recipiant + " (" + realrecipiant + ").");
 		    }
 		    else if (File())
 		    {
@@ -263,6 +268,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		if (Parent->nickserv.PicSize())
 		{
 		    Parent->nickserv.stored[sender.LowerCase()].GotPic(filenum);
+		    send(service, nick, "Your picture has been saved.");
 		}
 		else
 		{
@@ -282,14 +288,14 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     {
 	if (InProg())
 	{
-	    Parent->server.NOTICE(service, nick,
+	    send(service, nick,
 		"Cannot begin picture transfer while a file is in progress.");
 	    return;
 	}
 	else
 	{
 	    Cancel();
-	    Parent->server.NOTICE(service, nick,
+	    send(service, nick,
 		"Previous pending file transfer ABORTED.");
 	}
     }
@@ -300,13 +306,13 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 
     if (Parent->nickserv.IsStored(nick))
     {
-	Parent->server.NOTICE(service, nick,
+	send(service, nick,
 	    "Your nickname is not registered.");
 	return;
     }
     else if (!Parent->nickserv.PicSize())
     {
-	Parent->server.NOTICE(service, nick,
+	send(service, nick,
 	    "Setting pictures has been disabled.");
     }
 
@@ -631,9 +637,18 @@ void Nick_Live_t::Name(mstring in)
 }
 
 
-void Nick_Live_t::SendMode(mstring source, mstring in)
+void Nick_Live_t::SendMode(mstring in)
 {
-    FT("Nick_Live_t::SendMode", (source, in));
+    FT("Nick_Live_t::SendMode", (in));
+
+    if (IsServices())
+    {
+	Parent->server.MODE(i_Name, in);
+    }
+    else
+    {
+	Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, in);
+    }
 }
 
 

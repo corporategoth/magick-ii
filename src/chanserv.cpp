@@ -287,6 +287,42 @@ pair<bool,bool> Chan_Live_t::User(mstring name)
 }
 
 
+int Chan_Live_t::Bans()
+{
+    NFT("Chan_Live_t::Bans");
+    RET(bans.size());
+}
+
+
+mstring Chan_Live_t::Ban(int num)
+{
+    FT("Chan_Live_t::Ban", (num));
+    int i;
+    map<mstring, mDateTime>::const_iterator k;
+    for(i=0, k=bans.begin();k!=bans.end();k++, i++)
+	if (i==num)
+	{
+	    RET(k->first);
+	}
+ 
+    RET("");
+}
+
+
+mDateTime Chan_Live_t::Ban(mstring mask)
+{
+   FT("Chan_Live_t::Ban", (mask));
+   if (IsBan(mask))
+   {
+	RET(bans[mask.LowerCase()]);
+   }
+   else
+   {
+	RET(mDateTime(0.0));
+   }
+}
+
+
 bool Chan_Live_t::IsSquit(mstring nick)
 {
     FT("Chan_Live_t::IsSquit", (nick));
@@ -328,15 +364,316 @@ bool Chan_Live_t::IsVoice(mstring nick)
 }
 
 
-void Chan_Live_t::SendMode(mstring source, mstring in)
+bool Chan_Live_t::IsBan(mstring mask)
 {
-    FT("Chan_Live_t::SendMode", (source, in));
+    FT("Chan_Live_t::IsBan", (mask));
+    RET((bans.find(mask.LowerCase()) != bans.end()));
+}
+
+bool Chan_Live_t::ModeExists(mstring mode, vector<mstring> mode_params,
+			bool change, char reqmode, mstring reqparam)
+{
+    FT("Chan_Live_t::ModeExists", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
+    unsigned int i, param;
+
+    if (reqparam == "")
+	if (mode.Contains(reqmode))
+	{
+	    RET(true);
+	}
+	else
+	{
+	    RET(false);
+	}
+
+    for (param=0, i=0; i<mode.size(); i++)
+    {
+	switch (mode[i])
+	{
+	case 'o':
+	case 'v':
+	case 'b':
+	case 'k':
+	    if (mode[i] == reqmode && param < mode_params.size()
+		&& mode_params[param] == reqparam)
+	    {
+		    RET(true);
+	    }
+	    param++;
+	    break;
+	case 'l':
+	    if (mode[i] == reqmode && param < mode_params.size()
+		&& mode_params[param] == reqparam)
+	    {
+		    RET(true);
+	    }
+	    if (change)
+		param++;
+	    break;
+	default:
+	    if (mode[i] == reqmode)
+	    {
+		RET(true);
+	    }
+	}
+    }
+    RET(false);
+}
+
+
+void Chan_Live_t::RemoveMode(mstring mode, vector<mstring> mode_params,
+			bool change, char reqmode, mstring reqparam)
+{
+    FT("Chan_Live_t::RemoveExists", (mode, "vector<mstring> mode_params", change, reqmode, reqparam));
+    unsigned int i, param;
+    mstring new_mode;
+    vector<mstring> new_params;
+
+    for (param=0, i=0; i<mode.size(); i++)
+    {
+	switch (mode[i])
+	{
+	case 'o':
+	case 'v':
+	case 'b':
+	case 'k':
+	    if (reqmode == mode[i] && param < mode_params.size())
+	    {
+		if ((reqparam != "" && mode_params[param] == reqparam) ||
+		    reqparam == "")
+		{
+		    // Do nothing ... we want to delete it!
+		}
+		else
+		{
+		    new_mode += mode[i];
+		    new_params.push_back(mode_params[param]);
+		}
+	    }
+	    param++;
+	    break;
+	case 'l':
+	    if (reqmode == mode[i] && param < mode_params.size())
+	    {
+		if ((reqparam != "" && mode_params[param] == reqparam)
+		    || reqparam == "")
+		{
+		    // Do nothing ... we want to delete it!
+		    if (change)
+			param++;
+		}
+		else
+		{
+		    new_mode += mode[i];
+		    if (change)
+		    {
+			new_params.push_back(mode_params[param]);
+			param++;
+		    }
+		}
+	    }
+	    break;
+	default:
+	    if (mode[i] == reqmode)
+	    {
+		// Do nothing ... we want to delete it!
+	    }
+	    else
+	    {
+		new_mode += mode[i];
+	    }
+	}
+    }
 }
 
 
 void Chan_Live_t::SendMode(mstring in)
 {
-    SendMode(Parent->chanserv.FirstName(), in);
+    FT("Chan_Live_t::SendMode", (in));
+    unsigned int i, param = 2;
+    mstring mode = in.Before(" ");
+    
+    bool add = true;
+
+    for (i=0; i<in.size(); i++)
+    {
+	switch (in[i])
+	{
+	case '+':
+	    add = true;
+	    break;
+	case '-':
+	    add = false;
+	    break;
+	case 'o':
+	    if (in.WordCount(" ") >= param)
+	    {
+		if (add)
+		{
+		    if (!IsOp(in.ExtractWord(param, " ")))
+		    {
+			if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " ")))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " "));
+			if (!ModeExists(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(param, " ")))
+			{
+			    p_modes_on += "o";
+			    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+			}
+		    }
+		}
+		else
+		{
+		    if (IsOp(in.ExtractWord(param, " ")))
+		    {
+			if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(param, " ")))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(param, " "));
+			if (!ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " ")))
+			{
+			    p_modes_off += "o";
+			    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+			}
+		    }
+		}
+	    }
+	    break;
+	case 'v':
+	    if (in.WordCount(" ") >= param)
+	    {
+		if (add)
+		{
+		    if (!IsVoice(in.ExtractWord(param, " ")))
+		    {
+			if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(param, " ")))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(param, " "));
+			if (!ModeExists(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(param, " ")))
+			{
+			    p_modes_on += "v";
+			    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+			}
+		    }
+		}
+		else
+		{
+		    if (IsVoice(in.ExtractWord(param, " ")))
+		    {
+			if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(param, " ")))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(param, " "));
+			if (!ModeExists(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(param, " ")))
+			{
+			    p_modes_off += "v";
+			    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+			}
+		    }
+		}
+	    }
+	    break;
+	case 'b':
+	    if (in.WordCount(" ") >= param)
+	    {
+		if (add)
+		{
+		    if (!IsBan(in.ExtractWord(param, " ")))
+		    {
+			if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(param, " ")))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(param, " "));
+			if (!ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(param, " ")))
+			{
+			    p_modes_on += "b";
+			    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+			}
+		    }
+		}
+		else
+		{
+		    if (IsBan(in.ExtractWord(param, " ")))
+		    {
+			if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(param, " ")))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(param, " "));
+			if (!ModeExists(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(param, " ")))
+			{
+			    p_modes_off += "b";
+			    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+			}
+		    }
+		}
+	    }
+	    break;
+	case 'l':
+	    if (in.WordCount(" ") >= param)
+	    {
+		if (add)
+		{
+		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
+			RemoveMode(p_modes_off, p_modes_off_params, false, 'l');
+		    if (!ModeExists(p_modes_on, p_modes_on_params, true, 'l', in.ExtractWord(param, " ")))
+		    {
+			p_modes_on += "l";
+			p_modes_on_params.push_back(in.ExtractWord(param, " "));
+		    }
+		}
+		else
+		{
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'l');
+		    if (!ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
+		    {
+			p_modes_off += "l";
+		    }
+		}
+	    }
+	    break;
+	case 'k':
+	    if (in.WordCount(" ") >= param)
+	    {
+		if (add)
+		{
+		    // ONLY allow +k if we've turned it off before, or one isnt set
+		    if (!i_Key || ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
+		    {
+			// DONT take off 'off' value, coz we can -k+k key1 key2
+			if (!ModeExists(p_modes_on, p_modes_on_params, true, 'k'))
+			{
+			    p_modes_on += "k";
+			    p_modes_on_params.push_back(in.ExtractWord(param, " "));
+			}
+		    }
+		}
+		else
+		{
+		    if (i_Key == in.ExtractWord(param, " "))
+		    {
+			if (ModeExists(p_modes_on, p_modes_on_params, true, 'k'))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, 'k');
+			if (!ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
+			{
+			    p_modes_off += "k";
+			    p_modes_off_params.push_back(in.ExtractWord(param, " "));
+			}
+		    }
+		}
+	    }
+	    break;
+	default:
+		if (add)
+		{
+		    if (ModeExists(p_modes_off, p_modes_off_params, false, in[i]))
+			RemoveMode(p_modes_off, p_modes_off_params, false, in[i]);
+		    if (!ModeExists(p_modes_on, p_modes_on_params, true, in[i]))
+			p_modes_on += in[i];
+		}
+		else
+		{
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, in[i]))
+			RemoveMode(p_modes_on, p_modes_on_params, true, in[i]);
+		    if (!ModeExists(p_modes_off, p_modes_off_params, false, in[i]))
+		    {
+			p_modes_off += in[i];
+		    }
+		}
+	    break;
+	}
+    }
+	
 }
 
 

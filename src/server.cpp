@@ -389,6 +389,51 @@ void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
 }
 
 
+void NetworkServ::MODE(mstring nick, mstring mode)
+{
+    FT("NetworkServ::MODE", (nick, mode));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("MODE command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("MODE command requested by non-service %s", nick.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
+	raw(":" + nick + " MODE " + mode);
+    }
+}
+
+
+void NetworkServ::MODE(mstring nick, mstring channel, mstring mode)
+{
+    FT("NetworkServ::MODE", (nick, channel, mode));
+
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("MODE command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
+    {
+	wxLogWarning("MODE command requested by non-service %s", nick.c_str());
+    }
+    else if (!Parent->chanserv.IsLive(channel))
+    {
+	wxLogWarning("MODE command requested by %s for non-existant channel %s", nick.c_str(), channel.c_str());
+    }
+    else
+    {
+	Parent->chanserv.live[channel.LowerCase()].Mode(nick, mode);
+	raw(":" + nick + " MODE " + channel + " " + mode.Before(" ") +
+					" :" + mode.After(" "));
+    }
+}
+
+
 void NetworkServ::NICK(mstring nick, mstring user, mstring host,
     	mstring server, mstring realname)
 {
@@ -514,6 +559,30 @@ void NetworkServ::QUIT(mstring nick, mstring reason)
     {
 	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
 	raw(":" + nick + " QUIT :" + reason);
+    }
+}
+
+
+void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
+{
+    FT("NetworkServ::SVSMODE", (mynick, nick, mode));
+
+    if (!Parent->nickserv.IsLive(mynick))
+    {
+	wxLogWarning("MODE command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
+    {
+	wxLogWarning("MODE command requested by non-service %s", mynick.c_str());
+    }
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("MODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
+	raw(":" + mynick + " SVSMODE " + nick + " " + mode);
     }
 }
 
