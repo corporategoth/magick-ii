@@ -25,6 +25,9 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2001/11/04 23:43:14  prez
+** Updates for MS Visual C++ compilation (it works now!).
+**
 ** Revision 1.67  2001/11/03 21:02:50  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -183,7 +186,8 @@ RCSID(chanserv_h, "@(#) $Id$");
 class Chan_Live_t : public mUserDef
 {
     friend class Nick_Live_t;
-    friend int EventTask::svc(void);
+    friend void EventTask::do_check(mDateTime &synctime);
+    friend void EventTask::do_modes(mDateTime &synctime);
     friend class Part_Handler;
 
     mstring i_Name;
@@ -311,7 +315,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     mstring i_Topic_Setter;
     mDateTime i_Topic_Set_Time;
     
-    class {
+    class setting_t {
 	friend class Chan_Stored_t;
 	friend class ChanServ;
 	friend Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
@@ -338,7 +342,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
 	unsigned int Mlock_Limit;
     } setting;
 
-    class {
+    class lock_t {
 	friend class Chan_Stored_t;
 	bool Keeptopic:1;
 	bool Topiclock:1;
@@ -612,7 +616,7 @@ private:
     long level_max;		// Maximum access level
     map<mstring, long> lvl;
 
-    class {
+    class def_t {
 	friend class ChanServ;
 	friend class Magick;
 	bool Keeptopic:1;
@@ -631,7 +635,7 @@ private:
 	mstring Mlock;
     } def;
 
-    class {
+    class lock_t {
 	friend class ChanServ;
 	friend class Magick;
 	bool Keeptopic:1;

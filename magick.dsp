@@ -99,6 +99,10 @@ SOURCE=.\src\commserv.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\convert_epona.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\convert_esper.cpp
 # End Source File
 # Begin Source File
@@ -200,6 +204,10 @@ SOURCE=.\include\commserv.h
 # Begin Source File
 
 SOURCE=.\include\config.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\convert_epona.h
 # End Source File
 # Begin Source File
 

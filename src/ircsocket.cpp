@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.178  2001/11/04 23:43:14  prez
+** Updates for MS Visual C++ compilation (it works now!).
+**
 ** Revision 1.177  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -1606,6 +1609,7 @@ int EventTask::close(unsigned long in)
     RET(0);
 }
 
+
 int EventTask::svc(void)
 {
     mThread::Attach(tt_MAIN);
@@ -1652,682 +1656,88 @@ int EventTask::svc(void)
 	    continue;
 	}
 
- 	// Main routine -- when we end this, we're done!!
-	NickServ::live_t::iterator nli;
-	NickServ::stored_t::iterator nsi;
-	NickServ::recovered_t::iterator di;
-	ChanServ::live_t::iterator cli;
-	ChanServ::stored_t::iterator csi;
-//	MemoServ::nick_t::iterator mi;
-//	MemoServ::nick_memo_t::iterator lmi;
-	MemoServ::channel_t::iterator ni;
-	MemoServ::channel_news_t::iterator lni;
-//	CommServ::list_t::iterator ci;
-	Server::list_t::iterator si;
-	unsigned int i;
-	vector<mstring> chunked;
 
-    try
-    {
-
-	// This is mainly used for 'only do this if users have had
-	// enough time to rectify the situation since sync' ...
-	RLOCK_IF(("Events", "last_expire"),
+	try
+        {
+	    // This is mainly used for 'only do this if users have had
+	    // enough time to rectify the situation since sync' ...
+	    RLOCK_IF(("Events", "last_expire"),
 		last_expire.SecondsSince() >= Parent->config.Cycletime())
-	{
-	    CP(("Starting EXPIRATION check ..."));
-
-	    // akills
-	    //try
 	    {
-		vector<mstring> expired_akills;
-		MLOCK(("OperServ","Akill"));
-		for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
-		    Parent->operserv.Akill != Parent->operserv.Akill_end();
-		    Parent->operserv.Akill++)
-		{
-		    if (Parent->operserv.Akill->Last_Modify_Time().SecondsSince() >
-			    Parent->operserv.Akill->Value().first)
-		    {
-			expired_akills.push_back(Parent->operserv.Akill->Entry());
-		    }
-		}
-		// OK, ugly, but it avoids SET re-ordering...
-		for (i=0; i<expired_akills.size(); i++)
-		{
-		    for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
-			Parent->operserv.Akill != Parent->operserv.Akill_end();
-			Parent->operserv.Akill++)
-			if (Parent->operserv.Akill->Entry() == expired_akills[i])
-			    break;
-
-		    if (Parent->operserv.Akill != Parent->operserv.Akill_end())
-		    {
-			Parent->server.RAKILL(Parent->operserv.Akill->Entry());
-			LOG(LM_INFO, "EVENT/EXPIRE_AKILL",
-				(Parent->operserv.Akill->Entry(),
-				Parent->operserv.Akill->Value().second,
-				Parent->operserv.Akill->Last_Modifier(),
-				ToHumanTime(Parent->operserv.Akill->Value().first)));
-			ANNOUNCE(Parent->operserv.FirstName(),
-				"MISC/EXPIRE_AKILL", (
-				Parent->operserv.Akill->Entry(),
-				Parent->operserv.Akill->Value().second,
-				Parent->operserv.Akill->Last_Modifier(),
-				ToHumanTime(Parent->operserv.Akill->Value().first)));
-			Parent->operserv.Akill_erase();
-		    }
-		}
-	    }
-	    //catch(...)
-	    //{
-	    //}
-
-	    // nicknames
-	    try
-	    {
-		vector<pair<mstring,mstring> > expired_nicks;
-		{ RLOCK2(("NickServ", "stored"));
-		for (nsi = Parent->nickserv.StoredBegin();
-			nsi != Parent->nickserv.StoredEnd(); nsi++)
-		{
-		    RLOCK3(("NickServ", "stored", nsi->first));
-		    if (!(nsi->second.NoExpire() || nsi->second.Forbidden() ||
-			nsi->second.Suspended()))
-		    {
-			if (nsi->second.Host().empty())
-			{
-			    if (nsi->second.LastAllSeenTime().SecondsSince() >
-				Parent->nickserv.Expire())
-			    {
-				expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Name()));
-			    }
-			}
-			else
-			{
-			    if (nsi->second.LastSeenTime().SecondsSince() >
-				Parent->nickserv.Expire())
-			    {
-				expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Host()));
-			    }
-			}
-		    }
-		}}
-		for (i=0; i<expired_nicks.size(); i++)
-		{
-		    if (Parent->nickserv.IsStored(expired_nicks[i].first))
-		    {
-			Parent->nickserv.GetStored(expired_nicks[i].first).Drop();
-			Parent->nickserv.RemStored(expired_nicks[i].first);
-			LOG(LM_INFO, "EVENT/EXPIRE_NICK", (expired_nicks[i].first,
-				    expired_nicks[i].second));
-		    }
-		}
-	    }
-	    catch (E_NickServ_Stored &e)
-	    {
-		switch(e.where())
-		{
-		    case E_NickServ_Stored::W_Get:
-			switch (e.type())
-			{
-			case E_NickServ_Stored::T_Invalid:
-			case E_NickServ_Stored::T_Blank:
-			    if (strlen(e.what()))
-			    {
-				Parent->nickserv.RemStored(e.what());
-			    }
-			    break;
-			default:
-			    break;
-			}
-			break;
-		    default:
-			break;
-		}
+		do_expire(synctime);
+		WLOCK(("Events", "last_expire"));
+		MCB(last_expire);
+		last_expire = mDateTime::CurrentDateTime();
+		MCE(last_expire);
 	    }
 
-	    // channels
-	    try
+	    if (Parent->Saving())
 	    {
-		vector<pair<mstring, mstring> > expired_chans;
-		{ RLOCK2(("ChanServ", "stored"));
-		for (csi = Parent->chanserv.StoredBegin();
-			csi != Parent->chanserv.StoredEnd(); csi++)
-		{
-		    RLOCK3(("ChanServ", "stored", csi->first));
-		    if (!(csi->second.NoExpire() || csi->second.Forbidden() ||
-			csi->second.Suspended()))
-		    {
-			if (csi->second.LastUsed().SecondsSince() >
-			    Parent->chanserv.Expire())
-			    expired_chans.push_back(pair<mstring,mstring>(csi->second.Name(), csi->second.Founder()));
-		    }
-		}}
-		for (i=0; i<expired_chans.size(); i++)
-		{
-		    if (Parent->chanserv.IsStored(expired_chans[i].first))
-		    {
-			Parent->chanserv.RemStored(expired_chans[i].first);
-			LOG(LM_INFO, "EVENT/EXPIRE_CHAN", (expired_chans[i].first, expired_chans[i].second));
-		    }
-		}
+		WLOCK(("Events", "last_save"));
+		MCB(last_save);
+		last_save = mDateTime::CurrentDateTime();
+		MCE(last_save);
 	    }
-	    catch (E_ChanServ_Stored &e)
-	    {
-		switch(e.where())
-		{
-		    case E_ChanServ_Stored::W_Get:
-			switch (e.type())
-			{
-			case E_ChanServ_Stored::T_Invalid:
-			case E_ChanServ_Stored::T_Blank:
-			    if (strlen(e.what()))
-			    {
-				Parent->chanserv.RemStored(e.what());
-			    }
-			    break;
-			default:
-			    break;
-			}
-			break;
-		    default:
-			break;
-		}
-	    }
-
-	    // news articles
-	    try
-	    {
-		map<mstring, vector<size_t> > expired_news;
-		map<mstring, vector<size_t> >::iterator iter;
-		{ RLOCK2(("MemoServ", "channel"));
-		for (ni=Parent->memoserv.ChannelBegin();
-			ni!=Parent->memoserv.ChannelEnd(); ni++)
-		{
-		    size_t i, cnt = 0;
-		    RLOCK3(("MemoServ", "channel", ni->first));
-		    for (lni=ni->second.begin(), i=0; lni != ni->second.end(); lni++, i++)
-		    {
-			if (!lni->NoExpire() && lni->Time().SecondsSince() >
-			    Parent->memoserv.News_Expire())
-			{
-			    LOG(LM_DEBUG, "EVENT/EXPIRE_NEWS", (lni->Channel()));
-			    expired_news[ni->first].push_back(i);
-			    cnt++;
-			}
-		    }
-		    // If we see an entry in the map, but its empty, it will mean
-		    // ALL news articles are gone ... an efficiancy thing.
-		    if (cnt == ni->second.size())
-			expired_news[ni->first].clear();
-		}}
-		for (iter=expired_news.begin(); iter!=expired_news.end(); iter++)
-		{
-		    if (iter->second.size())
-		    {
-			size_t i, adjust = 0;
-			for (i=0; i < iter->second.size(); i++)
-			{
-			    Parent->memoserv.RemChannelNews(iter->first, iter->second[i] - adjust);
-			    adjust++;
-			}
-		    }
-		    else
-		    {
-			Parent->memoserv.RemChannel(iter->first);
-		    }
-		}
-	    }
-	    catch (E_MemoServ_Channel &e)
-	    {
-		e.what();
-	    }
-
-	    WLOCK(("Events", "last_expire"));
-	    MCB(last_expire);
-	    last_expire = mDateTime::CurrentDateTime();
-	    MCE(last_expire);
-	}
-
-	if (Parent->Saving())
-	{
-	    WLOCK(("Events", "last_save"));
-	    MCB(last_save);
-	    last_save = mDateTime::CurrentDateTime();
-	    MCE(last_save);
-	}
-	RLOCK2_IF(("Events", "last_save"),
+	    RLOCK2_IF(("Events", "last_save"),
 		last_save.SecondsSince() >= Parent->config.Savetime())
-	{
-	    CP(("Starting DATABASE SAVE ..."));
-	    tm.spawn(save_databases, NULL);
+	    {
+		CP(("Starting DATABASE SAVE ..."));
+		tm.spawn(save_databases, NULL);
 
-	    WLOCK(("Events", "last_save"));
-	    MCB(last_save);
-	    last_save = mDateTime::CurrentDateTime();
-	    MCE(last_save);
-	}
+		WLOCK(("Events", "last_save"));
+		MCB(last_save);
+		last_save = mDateTime::CurrentDateTime();
+		MCE(last_save);
+	    }
 
-	RLOCK2_IF(("Events", "last_check"),
+	    RLOCK2_IF(("Events", "last_check"),
 		last_check.SecondsSince() >= Parent->config.Checktime())
-	{
-	    CP(("Starting CHECK cycle ..."));
+	    {
+		do_check(synctime);
+		WLOCK(("Events", "last_check"));
+		MCB(last_check);
+		last_check = mDateTime::CurrentDateTime();
+		MCE(last_check);
+	    }
 
 	    if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
-	    { RLOCK2(("ChanServ", "live"));
-	    for (cli=Parent->chanserv.LiveBegin();
-		    cli!=Parent->chanserv.LiveEnd(); cli++)
-	    {
-		RLOCK3(("ChanServ", "live", cli->first));
-		bool found = false;
-		unsigned long bantime = 0, parttime = 0;
+		do_modes(synctime);
 
-		if (Parent->chanserv.IsStored(cli->first))
-		{
-		    bantime = Parent->chanserv.GetStored(cli->first).Bantime();
-		    parttime = Parent->chanserv.GetStored(cli->first).Parttime();
-		    found = true;
-		}
-		// Removing bans ...
-		if (found && (!Parent->chanserv.LCK_Bantime() ||
-		    Parent->chanserv.DEF_Bantime()))
-		{
-		    if (Parent->chanserv.LCK_Bantime())
-			bantime = Parent->chanserv.DEF_Bantime();
-		    if (bantime)
-		    {
-			vector<mstring> remove;
-			vector<mstring>::iterator ri;
-			{ RLOCK4(("ChanServ", "live", cli->first, "bans"));
-			for (di=cli->second.bans.begin();
-				di!=cli->second.bans.end(); di++)
-			{
-			    if (di->second.SecondsSince() > bantime)
-			    {
-				remove.push_back(di->first);
-			    }
-			}}
-			for (ri=remove.begin(); ri!=remove.end(); ri++)
-			{
-			    LOG(LM_DEBUG, "EVENT/UNBAN", (*ri,
-				cli->second.Name(),
-				ToHumanTime(csi->second.Bantime())));
-			    cli->second.SendMode("-b " + *ri);
-			}
-		    }
-		}
 
-		chunked.clear();
-		if (found)
-		{
-		    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
-		    for (di=cli->second.recent_parts.begin();
-				di!=cli->second.recent_parts.end(); di++)
-		    {
-			if (di->second.SecondsSince() > parttime)
-			    chunked.push_back(di->first);
-		    }
-		    for (i=0; i<chunked.size(); i++)
-			cli->second.recent_parts.erase(chunked[i]);
-		}
-		else if (cli->second.recent_parts.size())
-		{
-		    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
-		    cli->second.recent_parts.clear();
-		}
-
-	    }}
-
-	    // Check if we should rename people who are past their
-	    // grace time on ident (if KillProtect is on, and they
-	    // are not on access list or secure is on).
-	    chunked.clear();
-	    if (synctime.SecondsSince() >= Parent->nickserv.Ident() &&
-		Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
-	    {
-		{ RLOCK(("NickServ", "live"));
-		for (nli = Parent->nickserv.LiveBegin();
-			    nli != Parent->nickserv.LiveEnd(); nli++)
-		{
-		    RLOCK2(("NickServ", "live", nli->first));
-		    if (Parent->nickserv.IsStored(nli->first))
-		    {
-			if (!Parent->nickserv.GetStored(nli->first).IsOnline() &&
-				Parent->nickserv.GetStored(nli->first).Protect() &&
-				!nli->second.IsServices() && nli->second.Squit().empty() &&
-				nli->second.MySignonTime().SecondsSince() >=
-					    Parent->nickserv.Ident())
-			{
-			    chunked.push_back(nli->second.Name());
-			}
-		    }
-		}}
-		for (i=0; i<chunked.size(); i++)
-		{
-		    if (!Parent->nickserv.IsLive(chunked[i]) ||
-			!Parent->nickserv.IsStored(chunked[i]))
-			continue;
-
-		    mstring newnick = Parent->nickserv.findnextnick(chunked[i]);
-		    LOG(LM_INFO, "EVENT/KILLPROTECT", (Parent->nickserv.GetLive(chunked[i]).Mask(Nick_Live_t::N_U_P_H)));
-		    if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
-		    {
-			if (Parent->nickserv.GetStored(chunked[i]).Forbidden())
-			    NSEND(Parent->nickserv.FirstName(), chunked[i], "MISC/RENAMED_FORBID");
-			else
-			    NSEND(Parent->nickserv.FirstName(), chunked[i], "MISC/RENAMED_IDENT");
-			Parent->server.SVSNICK(Parent->nickserv.FirstName(),
-				chunked[i], newnick);
-		    }
-		    else
-		    {
-			if (Parent->nickserv.GetStored(chunked[i]).Forbidden())
-			    Parent->server.KILL(Parent->nickserv.FirstName(),
-				chunked[i], Parent->getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
-			else
-			    Parent->server.KILL(Parent->nickserv.FirstName(),
-				chunked[i], Parent->getMessage("NS_SET/PROTECT"));
-			Parent->server.NICK(chunked[i], (Parent->startup.Ownuser() ?
-				    chunked[i].LowerCase() :
-				    Parent->startup.Services_User()),
-				    Parent->startup.Services_Host(),
-				    Parent->startup.Server_Name(),
-				    Parent->nickserv.Enforcer_Name());
-		    }
-		    Parent->nickserv.AddRecovered(chunked[i], mDateTime::CurrentDateTime());
-		}
-
-		// Sign off clients we've decided to take.
-		chunked.clear();
-		{ RLOCK(("NickServ", "recovered"));
-		for (di = Parent->nickserv.RecoveredBegin();
-			di != Parent->nickserv.RecoveredEnd(); di++)
-		{
-		    if (di->second.SecondsSince() >= Parent->nickserv.Release())
-		    {
-			if (Parent->nickserv.IsLive(di->first) &&
-				Parent->nickserv.GetLive(di->first).IsServices())
-			{
-			    chunked.push_back(di->first);
-			}
-		    }
-		}}
-		for (i=0; i<chunked.size(); i++)
-		{
-		    Parent->nickserv.RemRecovered(chunked[i]);
-		    Parent->server.QUIT(chunked[i], "RECOVER period expired");
-		}
-	    }
-	    WLOCK(("Events", "last_check"));
-	    MCB(last_check);
-	    last_check = mDateTime::CurrentDateTime();
-	    MCE(last_check);
-	}
-
-	if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
-	{
-	    CP(("Starting PENDING MODES check ..."));
-	    set<mstring> cmp;
-	    set<mstring>::iterator iter;
-	    { WLOCK(("Events", "cmodes_pending"));
-	    cmp = cmodes_pending;
-	    MCB(cmodes_pending.size());
-	    cmodes_pending.clear();
-	    MCE(cmodes_pending.size());
-	    }
-	    map<mstring,vector<mstring> > modelines;
-	    map<mstring,vector<mstring> >::iterator ml;
-	    for (iter=cmp.begin(); iter!=cmp.end(); iter++)
-	    {
-		if (Parent->chanserv.IsLive(*iter))
-		{
-		    COM(("Looking at channel %s", iter->c_str()));
-		    RLOCK(("ChanServ", "live", *iter));
-		    Chan_Live_t &chan = Parent->chanserv.GetLive(*iter);
-		    if (!chan.p_modes_on.empty() || !chan.p_modes_off.empty())
-		    {
-			unsigned int j, k;
-			mstring mode;
-			mstring modeparam;
-
-			{ RLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
-			RLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
-			CP(("p_modes_off_size %d (%s)", chan.p_modes_off.size(), chan.p_modes_off.c_str()));
-			for (i=0, j=0, k=0; i<chan.p_modes_off.size(); i++)
-			{
-			    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_off[i], j, k));
-			    if (j>=Parent->server.proto.Modes())
-			    {
-				modelines[*iter].push_back(mode + " " + modeparam);
-				mode.erase();
-				modeparam.erase();
-				j=0;
-			    }
-			    if (mode.empty())
-				mode += "-";
-			    mode += chan.p_modes_off[i];
-			    if (chan.p_modes_off[i] != 'l' &&
-				Parent->server.proto.ChanModeArg().Contains(chan.p_modes_off[i]))
-			    {
-				if (!modeparam.empty())
-				    modeparam += " ";
-				modeparam +=  chan.p_modes_off_params[k];
-				j++; k++;
-			    }
-			}
-			WLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
-			WLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
-			chan.p_modes_off.erase();
-			chan.p_modes_off_params.clear();
-			}
-			{ RLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
-			RLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
-			if (mode.size() && chan.p_modes_on.size())
-			    mode += "+";
-			CP(("p_modes_on_size %d (%s)", chan.p_modes_on.size(), chan.p_modes_on.c_str()));
-			for (i=0, k=0; i<chan.p_modes_on.size(); i++)
-			{
-			    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_on[i], j, k));
-			    if (j>=Parent->server.proto.Modes())
-			    {
-				modelines[*iter].push_back(mode + " " + modeparam);
-				mode.erase();
-				modeparam.erase();
-				j=0;
-			    }
-			    if (mode.empty())
-				mode += "+";
-			    mode += chan.p_modes_on[i];
-			    if (Parent->server.proto.ChanModeArg().Contains(chan.p_modes_on[i]))
-			    {
-				if (!modeparam.empty())
-				    modeparam += " ";
-				modeparam += chan.p_modes_on_params[k];
-				j++; k++;
-			    }
-			}
-			WLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
-			WLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
-			chan.p_modes_on.erase();
-			chan.p_modes_on_params.clear();
-			}
-			if (mode.size())
-			    modelines[*iter].push_back(mode + " " + modeparam);
-		    }
-		}
-	    }
-	    for (ml=modelines.begin(); ml!=modelines.end(); ml++)
-	    {
-		for (i=0; i<ml->second.size(); i++)
-		    Parent->server.MODE(Parent->chanserv.FirstName(),
-			ml->first, ml->second[i]);
-	    }
-	}
-
-	chunked.clear();
-	RLOCK2_IF(("Events", "last_msgcheck"),
+	    RLOCK2_IF(("Events", "last_msgcheck"),
 		last_msgcheck.SecondsSince() > Parent->config.MSG_Check_Time())
-	{
-	    CP(("Starting EXPIRED MESSAGE check ..."));
-	    vector<mMessage *> Msgs;
-
-	    { MLOCK(("AllDependancies"));
-	    map<mMessage::type_t, map<mstring, set<unsigned long> > >::iterator j;
-	    for (j=mMessage::AllDependancies.begin(); j!=mMessage::AllDependancies.end(); j++)
 	    {
-		map<mstring, set<unsigned long> >::iterator k;
-		for (k=j->second.begin(); k!=j->second.end(); k++)
-		{
-		    set<unsigned long> Ids;
-		    set<unsigned long>::iterator l;
-		    for (l=k->second.begin(); l!=k->second.end(); l++)
-		    {
-			{ MLOCK(("MsgIdMap"));
-			map<unsigned long, mMessage *>::iterator m = mMessage::MsgIdMap.find(*l);
-			if (m != mMessage::MsgIdMap.end())
-			{
-			    if (m->second == NULL ||
-				m->second->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
-			    {
-				Ids.insert(m->first);
-				if (m->second != NULL)
-				    Msgs.push_back(m->second);
-				mMessage::MsgIdMap.erase(m);
-			    }
-			}}
-		    }
-		    for (l=Ids.begin(); l!=Ids.end(); l++)
-			k->second.erase(*l);
-		    if (!k->second.size())
-			chunked.push_back(k->first);
-		}
-		for (i=0; i<chunked.size(); i++)
-		    j->second.erase(chunked[i]);
-		chunked.clear();
-	    }}
-	    vector<mMessage *>::iterator m;
-	    for (m=Msgs.begin(); m!=Msgs.end(); m++)
-	    {
-		{ RLOCK(("IrcSvcHandler"));
-		if (Parent->ircsvchandler != NULL)
-		{
-		    COM(("(%d) Requing without filled dependancies\n", (*m)->msgid()));
-		    (*m)->priority(static_cast<u_long>(P_DepFilled));
-		    Parent->ircsvchandler->enqueue(*m);
-		}
-		else
-		{
-		    COM(("(%d) Deleting obsolete message\n", (*m)->msgid()));
-		    delete *m;
-		}}
+		do_msgcheck(synctime);
+		WLOCK(("Events", "last_msgcheck"));
+		MCB(last_msgcheck);
+		last_msgcheck = mDateTime::CurrentDateTime();
+		MCE(last_msgcheck);
 	    }
-	    WLOCK(("Events", "last_msgcheck"));
-	    MCB(last_msgcheck);
-	    last_msgcheck = mDateTime::CurrentDateTime();
-	    MCE(last_msgcheck);
-	}
 
-	RLOCK2_IF(("Events", "last_heartbeat"),
+	    RLOCK2_IF(("Events", "last_heartbeat"),
 		last_heartbeat.SecondsSince() > Parent->config.Heartbeat_Time())
-	{
-	    vector<ACE_thread_t> dead;
-	    map<ACE_thread_t,mDateTime>::iterator iter;
-	    { RLOCK(("Events", "thread_heartbeat"));
-	    for (iter=thread_heartbeat.begin(); iter!=thread_heartbeat.end(); iter++)
 	    {
-		if (iter->second.SecondsSince() > Parent->config.Heartbeat_Time())
-		{
-		    dead.push_back(iter->first);
-		}
+		do_heartbeat(synctime);
+		WLOCK(("Events", "last_heartbeat"));
+		MCB(last_heartbeat);
+		last_heartbeat = mDateTime::CurrentDateTime();
+		MCE(last_heartbeat);
 	    }
-	    if (dead.size() > (thread_heartbeat.size() / 2))
-	    {
-		NANNOUNCE(Parent->operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
-		NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
-	    }
-	    else if (dead.size())
-	    {
-		WLOCK(("Events", "thread_heartbeat"));
-		for (i=0; i<dead.size(); i++)
-		{
-		    NLOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD");
-		    { RLOCK(("IrcSvcHandler"));
-		    if (Parent->ircsvchandler != NULL)
-			Parent->ircsvchandler->tm.cancel(dead[i]);
-		    }
-		    thread_heartbeat.erase(dead[i]);
-		}
-	    }}
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler != NULL)
-		for (i=0; i<thread_heartbeat.size(); i++)
-		    Parent->ircsvchandler->enqueue_test();
-	    }
-	    WLOCK(("Events", "last_heartbeat"));
-	    MCB(last_heartbeat);
-	    last_heartbeat = mDateTime::CurrentDateTime();
-	    MCE(last_heartbeat);
-	}
 
-	RLOCK2_IF(("Events", "last_ping"),
+	    RLOCK2_IF(("Events", "last_ping"),
 		last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
-	{
-	    CP(("Starting SERVER PING ..."));
-
-	    double min = -1, max = 0, sum = 0, avg = 0, count = 0;
-	    { RLOCK2(("Server", "list"));
-	    for (si=Parent->server.ListBegin();
-		    si!=Parent->server.ListEnd(); si++)
 	    {
-		RLOCK3(("Server", "list", si->first));
-		if (min == -1 || si->second.Lag() < min)
-		    min = si->second.Lag();
-		if (si->second.Lag() > max)
-		    max = si->second.Lag();
-		sum += si->second.Lag();
-		count++;
-	    }}
-	    if (count >= 3)
-		avg = (sum - min - max) / (count - 2);
-	    else
-		avg = sum / count;
-
-	    if (avg > static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
-	    {
-		Parent->LevelUp();
-		LOG(LM_WARNING, "EVENT/LEVEL_UP", (fmstring("%.3f", avg)));
+		do_ping(synctime);
+		WLOCK(("Events", "last_ping"));
+		MCB(last_ping);
+		last_ping = mDateTime::CurrentDateTime();
+		MCE(last_ping);
 	    }
-	    else if (Parent->Level() > Parent->startup.Level() &&
-		avg <= static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
-	    {
-		Parent->LevelDown();
-		LOG(LM_WARNING, "EVENT/LEVEL_DOWN", (fmstring("%.3f", avg)));
-	    }
-
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler != NULL &&
-		Parent->ircsvchandler->HTM_Level() <= 3)
-	    {
-		RLOCK2(("Server", "list"));
-		for (si = Parent->server.ListBegin();
-			si != Parent->server.ListEnd(); si++)
-		{
-		    RLOCK3(("Server", "list", si->first));
-		    si->second.Ping();
-		}
-		NLOG(LM_TRACE, "EVENT/PING");
-	    }}
-	    WLOCK(("Events", "last_ping"));
-	    MCB(last_ping);
-	    last_ping = mDateTime::CurrentDateTime();
-	    MCE(last_ping);
 	}
-    }
-    catch (E_NickServ_Stored &e)
-    {
-	switch(e.where())
+	catch (E_NickServ_Stored &e)
 	{
+	    switch(e.where())
+	    {
 	    case E_NickServ_Stored::W_Get:
 		switch (e.type())
 		{
@@ -2344,12 +1754,12 @@ int EventTask::svc(void)
 		break;
 	    default:
 		break;
+	    }
 	}
-    }
-    catch (E_NickServ_Live &e)
-    {
-	switch(e.where())
+	catch (E_NickServ_Live &e)
 	{
+	    switch(e.where())
+	    {
 	    case E_NickServ_Live::W_Get:
 		switch (e.type())
 		{
@@ -2366,12 +1776,12 @@ int EventTask::svc(void)
 		break;
 	    default:
 		break;
+	    }
 	}
-    }
-    catch (E_NickServ_Recovered &e)
-    {
-	switch(e.where())
+	catch (E_NickServ_Recovered &e)
 	{
+	    switch(e.where())
+	    {
 	    case E_NickServ_Recovered::W_Get:
 		switch (e.type())
 		{
@@ -2388,12 +1798,12 @@ int EventTask::svc(void)
 		break;
 	    default:
 		break;
+	    }
 	}
-    }
-    catch (E_ChanServ_Stored &e)
-    {
-	switch(e.where())
+	catch (E_ChanServ_Stored &e)
 	{
+	    switch(e.where())
+	    {
 	    case E_ChanServ_Stored::W_Get:
 		switch (e.type())
 		{
@@ -2410,12 +1820,12 @@ int EventTask::svc(void)
 		break;
 	    default:
 		break;
+	    }
 	}
-    }
-    catch (E_ChanServ_Live &e)
-    {
-	switch(e.where())
+	catch (E_ChanServ_Live &e)
 	{
+	    switch(e.where())
+	    {
 	    case E_ChanServ_Live::W_Get:
 		switch (e.type())
 		{
@@ -2432,12 +1842,12 @@ int EventTask::svc(void)
 		break;
 	    default:
 		break;
+	    }
 	}
-    }
-    catch (E_CommServ_List &e)
-    {
-	switch(e.where())
+	catch (E_CommServ_List &e)
 	{
+	    switch(e.where())
+	    {
 	    case E_CommServ_List::W_Get:
 		switch (e.type())
 		{
@@ -2454,12 +1864,12 @@ int EventTask::svc(void)
 		break;
 	    default:
 		break;
+	    }
 	}
-    }
-    catch (E_Server_List &e)
-    {
-	switch(e.where())
+	catch (E_Server_List &e)
 	{
+	    switch(e.where())
+	    {
 	    case E_Server_List::W_Get:
 		switch (e.type())
 		{
@@ -2476,20 +1886,20 @@ int EventTask::svc(void)
 		break;
 	    default:
 		break;
+	    }
 	}
-    }
-    catch (E_MemoServ_Nick &e)
-    {
-	e.what();
-    }
-    catch (E_MemoServ_Channel &e)
-    {
-	e.what();
-    }
-    catch (E_DccMap_Xfers &e)
-    {
-	switch(e.where())
+	catch (E_MemoServ_Nick &e)
 	{
+	    e.what();
+	}
+	catch (E_MemoServ_Channel &e)
+	{
+	    e.what();
+	}
+	catch (E_DccMap_Xfers &e)
+	{
+	    switch(e.where())
+	    {
 	    case E_DccMap_Xfers::W_Get:
 		switch (e.type())
 		{
@@ -2506,22 +1916,651 @@ int EventTask::svc(void)
 		break;
 	    default:
 		break;
+	    }
 	}
-    }
-    catch (exception &e)
-    {
-	LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", ( e.what()));
-    }
-    catch (...)
-    {
-	NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
-    }
+	catch (exception &e)
+	{
+	    LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", ( e.what()));
+	}
+	catch (...)
+	{
+	    NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
+	}
 
 	COM(("Completed Events Cycle"));
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);
     }
     DRET(0);
+}
+
+void EventTask::do_expire(mDateTime &synctime)
+{
+    CP(("Starting EXPIRATION check ..."));
+
+    // Main routine -- when we end this, we're done!!
+    NickServ::stored_t::iterator nsi;
+    NickServ::recovered_t::iterator di;
+    ChanServ::stored_t::iterator csi;
+    MemoServ::channel_t::iterator ni;
+    MemoServ::channel_news_t::iterator lni;
+    unsigned int i;
+
+    // akills
+    //try
+    {
+	vector<mstring> expired_akills;
+	MLOCK(("OperServ","Akill"));
+	for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
+	    Parent->operserv.Akill != Parent->operserv.Akill_end();
+	    Parent->operserv.Akill++)
+	{
+	    if (Parent->operserv.Akill->Last_Modify_Time().SecondsSince() >
+		    Parent->operserv.Akill->Value().first)
+	    {
+		expired_akills.push_back(Parent->operserv.Akill->Entry());
+	    }
+	}
+	// OK, ugly, but it avoids SET re-ordering...
+	for (i=0; i<expired_akills.size(); i++)
+	{
+	    for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
+		Parent->operserv.Akill != Parent->operserv.Akill_end();
+		Parent->operserv.Akill++)
+		if (Parent->operserv.Akill->Entry() == expired_akills[i])
+	    break;
+
+	    if (Parent->operserv.Akill != Parent->operserv.Akill_end())
+	    {
+		Parent->server.RAKILL(Parent->operserv.Akill->Entry());
+		LOG(LM_INFO, "EVENT/EXPIRE_AKILL",
+			(Parent->operserv.Akill->Entry(),
+			Parent->operserv.Akill->Value().second,
+			Parent->operserv.Akill->Last_Modifier(),
+			ToHumanTime(Parent->operserv.Akill->Value().first)));
+		ANNOUNCE(Parent->operserv.FirstName(),
+			"MISC/EXPIRE_AKILL", (
+			Parent->operserv.Akill->Entry(),
+			Parent->operserv.Akill->Value().second,
+			Parent->operserv.Akill->Last_Modifier(),
+			ToHumanTime(Parent->operserv.Akill->Value().first)));
+		Parent->operserv.Akill_erase();
+	    }
+	}
+    }
+    //catch(...)
+    //{
+    //}
+
+    // nicknames
+    try
+    {
+	vector<pair<mstring,mstring> > expired_nicks;
+	{ RLOCK2(("NickServ", "stored"));
+	for (nsi = Parent->nickserv.StoredBegin();
+		nsi != Parent->nickserv.StoredEnd(); nsi++)
+	{
+	    RLOCK3(("NickServ", "stored", nsi->first));
+	    if (!(nsi->second.NoExpire() || nsi->second.Forbidden() ||
+		nsi->second.Suspended()))
+	    {
+		if (nsi->second.Host().empty())
+		{
+		    if (nsi->second.LastAllSeenTime().SecondsSince() >
+			Parent->nickserv.Expire())
+		    {
+			expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Name()));
+		    }
+		}
+		else
+		{
+		    if (nsi->second.LastSeenTime().SecondsSince() >
+			Parent->nickserv.Expire())
+		    {
+			expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Host()));
+		    }
+		}
+	    }
+	}}
+	for (i=0; i<expired_nicks.size(); i++)
+	{
+	    if (Parent->nickserv.IsStored(expired_nicks[i].first))
+	    {
+		Parent->nickserv.GetStored(expired_nicks[i].first).Drop();
+		Parent->nickserv.RemStored(expired_nicks[i].first);
+		LOG(LM_INFO, "EVENT/EXPIRE_NICK", (expired_nicks[i].first,
+			    expired_nicks[i].second));
+	    }
+	}
+    }
+    catch (E_NickServ_Stored &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Stored::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Stored::T_Invalid:
+		case E_NickServ_Stored::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->nickserv.RemStored(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+
+    // channels
+    try
+    {
+	vector<pair<mstring, mstring> > expired_chans;
+	{ RLOCK2(("ChanServ", "stored"));
+	for (csi = Parent->chanserv.StoredBegin();
+		csi != Parent->chanserv.StoredEnd(); csi++)
+	{
+	    RLOCK3(("ChanServ", "stored", csi->first));
+	    if (!(csi->second.NoExpire() || csi->second.Forbidden() ||
+		csi->second.Suspended()))
+	    {
+		if (csi->second.LastUsed().SecondsSince() >
+		    Parent->chanserv.Expire())
+		    expired_chans.push_back(pair<mstring,mstring>(csi->second.Name(), csi->second.Founder()));
+	    }
+	}}
+	for (i=0; i<expired_chans.size(); i++)
+	{
+	    if (Parent->chanserv.IsStored(expired_chans[i].first))
+	    {
+		Parent->chanserv.RemStored(expired_chans[i].first);
+		LOG(LM_INFO, "EVENT/EXPIRE_CHAN", (expired_chans[i].first, expired_chans[i].second));
+	    }
+	}
+    }
+    catch (E_ChanServ_Stored &e)
+    {
+	switch(e.where())
+	{
+	    case E_ChanServ_Stored::W_Get:
+		switch (e.type())
+		{
+		case E_ChanServ_Stored::T_Invalid:
+		case E_ChanServ_Stored::T_Blank:
+		    if (strlen(e.what()))
+		    {
+			Parent->chanserv.RemStored(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+
+    // news articles
+    try
+    {
+	map<mstring, vector<size_t> > expired_news;
+	map<mstring, vector<size_t> >::iterator iter;
+	{ RLOCK2(("MemoServ", "channel"));
+	for (ni=Parent->memoserv.ChannelBegin();
+		ni!=Parent->memoserv.ChannelEnd(); ni++)
+	{
+	    size_t i, cnt = 0;
+	    RLOCK3(("MemoServ", "channel", ni->first));
+	    for (lni=ni->second.begin(), i=0; lni != ni->second.end(); lni++, i++)
+	    {
+		if (!lni->NoExpire() && lni->Time().SecondsSince() >
+		    Parent->memoserv.News_Expire())
+		{
+		    LOG(LM_DEBUG, "EVENT/EXPIRE_NEWS", (lni->Channel()));
+		    expired_news[ni->first].push_back(i);
+		    cnt++;
+		}
+	    }
+	    // If we see an entry in the map, but its empty, it will mean
+	    // ALL news articles are gone ... an efficiancy thing.
+	    if (cnt == ni->second.size())
+		expired_news[ni->first].clear();
+	}}
+	for (iter=expired_news.begin(); iter!=expired_news.end(); iter++)
+	{
+	    if (iter->second.size())
+	    {
+		size_t adjust = 0;
+		for (i=0; i < iter->second.size(); i++)
+		{
+		    Parent->memoserv.RemChannelNews(iter->first, iter->second[i] - adjust);
+		    adjust++;
+		}
+	    }
+	    else
+	    {
+		Parent->memoserv.RemChannel(iter->first);
+	    }
+	}
+    }
+    catch (E_MemoServ_Channel &e)
+    {
+	e.what();
+    }
+}
+
+void EventTask::do_check(mDateTime &synctime)
+{
+    CP(("Starting CHECK cycle ..."));
+
+    NickServ::live_t::iterator nli;
+    NickServ::recovered_t::iterator di;
+    ChanServ::live_t::iterator cli;
+    unsigned int i;
+    vector<mstring> chunked;
+
+    if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
+    { RLOCK2(("ChanServ", "live"));
+    for (cli=Parent->chanserv.LiveBegin();
+	    cli!=Parent->chanserv.LiveEnd(); cli++)
+    {
+	RLOCK3(("ChanServ", "live", cli->first));
+	bool found = false;
+	unsigned long bantime = 0, parttime = 0;
+
+	if (Parent->chanserv.IsStored(cli->first))
+	{
+	    bantime = Parent->chanserv.GetStored(cli->first).Bantime();
+	    parttime = Parent->chanserv.GetStored(cli->first).Parttime();
+	    found = true;
+	}
+	// Removing bans ...
+	if (found && (!Parent->chanserv.LCK_Bantime() ||
+	    Parent->chanserv.DEF_Bantime()))
+	{
+	    if (Parent->chanserv.LCK_Bantime())
+		bantime = Parent->chanserv.DEF_Bantime();
+	    if (bantime)
+	    {
+		vector<mstring> remove;
+		vector<mstring>::iterator ri;
+		{ RLOCK4(("ChanServ", "live", cli->first, "bans"));
+		for (di=cli->second.bans.begin();
+			di!=cli->second.bans.end(); di++)
+		{
+		    if (di->second.SecondsSince() > bantime)
+		    {
+			remove.push_back(di->first);
+		    }
+		}}
+		for (ri=remove.begin(); ri!=remove.end(); ri++)
+		{
+		    LOG(LM_DEBUG, "EVENT/UNBAN", (*ri,
+			cli->second.Name(),
+			ToHumanTime(bantime)));
+		    cli->second.SendMode("-b " + *ri);
+		}
+	    }
+	}
+
+	chunked.clear();
+	if (found)
+	{
+	    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
+	    for (di=cli->second.recent_parts.begin();
+			di!=cli->second.recent_parts.end(); di++)
+	    {
+		if (di->second.SecondsSince() > parttime)
+		    chunked.push_back(di->first);
+	    }
+	    for (i=0; i<chunked.size(); i++)
+		cli->second.recent_parts.erase(chunked[i]);
+	}
+	else if (cli->second.recent_parts.size())
+	{
+	    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
+	    cli->second.recent_parts.clear();
+	}
+    }}
+
+    // Check if we should rename people who are past their
+    // grace time on ident (if KillProtect is on, and they
+    // are not on access list or secure is on).
+    chunked.clear();
+    if (synctime.SecondsSince() >= Parent->nickserv.Ident() &&
+	Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
+    {
+	{ RLOCK(("NickServ", "live"));
+	for (nli = Parent->nickserv.LiveBegin();
+		    nli != Parent->nickserv.LiveEnd(); nli++)
+	{
+	    RLOCK2(("NickServ", "live", nli->first));
+	    if (Parent->nickserv.IsStored(nli->first))
+	    {
+		if (!Parent->nickserv.GetStored(nli->first).IsOnline() &&
+			Parent->nickserv.GetStored(nli->first).Protect() &&
+			!nli->second.IsServices() && nli->second.Squit().empty() &&
+			nli->second.MySignonTime().SecondsSince() >=
+				    Parent->nickserv.Ident())
+		{
+		    chunked.push_back(nli->second.Name());
+		}
+	    }
+	}}
+	for (i=0; i<chunked.size(); i++)
+	{
+	    if (!Parent->nickserv.IsLive(chunked[i]) ||
+		!Parent->nickserv.IsStored(chunked[i]))
+		continue;
+
+	    mstring newnick = Parent->nickserv.findnextnick(chunked[i]);
+	    LOG(LM_INFO, "EVENT/KILLPROTECT", (Parent->nickserv.GetLive(chunked[i]).Mask(Nick_Live_t::N_U_P_H)));
+	    if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
+	    {
+		if (Parent->nickserv.GetStored(chunked[i]).Forbidden())
+		    NSEND(Parent->nickserv.FirstName(), chunked[i], "MISC/RENAMED_FORBID");
+		else
+		    NSEND(Parent->nickserv.FirstName(), chunked[i], "MISC/RENAMED_IDENT");
+		Parent->server.SVSNICK(Parent->nickserv.FirstName(),
+			chunked[i], newnick);
+	    }
+	    else
+	    {
+		if (Parent->nickserv.GetStored(chunked[i]).Forbidden())
+		    Parent->server.KILL(Parent->nickserv.FirstName(),
+			chunked[i], Parent->getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
+		else
+		    Parent->server.KILL(Parent->nickserv.FirstName(),
+			chunked[i], Parent->getMessage("NS_SET/PROTECT"));
+		Parent->server.NICK(chunked[i], (Parent->startup.Ownuser() ?
+			    chunked[i].LowerCase() :
+			    Parent->startup.Services_User()),
+			    Parent->startup.Services_Host(),
+			    Parent->startup.Server_Name(),
+			    Parent->nickserv.Enforcer_Name());
+	    }
+	    Parent->nickserv.AddRecovered(chunked[i], mDateTime::CurrentDateTime());
+	}
+		
+	// Sign off clients we've decided to take.
+	chunked.clear();
+	{ RLOCK(("NickServ", "recovered"));
+	for (di = Parent->nickserv.RecoveredBegin();
+		di != Parent->nickserv.RecoveredEnd(); di++)
+	{
+	    if (di->second.SecondsSince() >= Parent->nickserv.Release())
+	    {
+		if (Parent->nickserv.IsLive(di->first) &&
+			Parent->nickserv.GetLive(di->first).IsServices())
+		{
+		    chunked.push_back(di->first);
+		}
+	    }
+	}}
+	for (i=0; i<chunked.size(); i++)
+	{
+	    Parent->nickserv.RemRecovered(chunked[i]);
+	    Parent->server.QUIT(chunked[i], "RECOVER period expired");
+	}
+    }
+}
+
+void EventTask::do_modes(mDateTime &synctime)
+{
+    CP(("Starting PENDING MODES check ..."));
+    set<mstring> cmp;
+    set<mstring>::iterator iter;
+    unsigned int i;
+    
+    { WLOCK(("Events", "cmodes_pending"));
+    cmp = cmodes_pending;
+    MCB(cmodes_pending.size());
+    cmodes_pending.clear();
+    MCE(cmodes_pending.size());
+    }
+    map<mstring,vector<mstring> > modelines;
+    map<mstring,vector<mstring> >::iterator ml;
+    for (iter=cmp.begin(); iter!=cmp.end(); iter++)
+    {
+	if (Parent->chanserv.IsLive(*iter))
+	{
+	    COM(("Looking at channel %s", iter->c_str()));
+	    RLOCK(("ChanServ", "live", *iter));
+	    Chan_Live_t &chan = Parent->chanserv.GetLive(*iter);
+	    if (!chan.p_modes_on.empty() || !chan.p_modes_off.empty())
+	    {
+		unsigned int j, k;
+		mstring mode;
+		mstring modeparam;
+
+		{ RLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
+		RLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
+		CP(("p_modes_off_size %d (%s)", chan.p_modes_off.size(), chan.p_modes_off.c_str()));
+		for (i=0, j=0, k=0; i<chan.p_modes_off.size(); i++)
+		{
+		    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_off[i], j, k));
+		    if (j>=Parent->server.proto.Modes())
+		    {
+			modelines[*iter].push_back(mode + " " + modeparam);
+			mode.erase();
+			modeparam.erase();
+			j=0;
+		    }
+		    if (mode.empty())
+			mode += "-";
+		    mode += chan.p_modes_off[i];
+		    if (chan.p_modes_off[i] != 'l' &&
+			Parent->server.proto.ChanModeArg().Contains(chan.p_modes_off[i]))
+		    {
+			if (!modeparam.empty())
+			    modeparam += " ";
+			modeparam +=  chan.p_modes_off_params[k];
+			j++; k++;
+		    }
+		}
+		WLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
+		WLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
+		chan.p_modes_off.erase();
+		chan.p_modes_off_params.clear();
+		}
+		{ RLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
+		RLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
+		if (mode.size() && chan.p_modes_on.size())
+		    mode += "+";
+		CP(("p_modes_on_size %d (%s)", chan.p_modes_on.size(), chan.p_modes_on.c_str()));
+		for (i=0, k=0; i<chan.p_modes_on.size(); i++)
+		{
+		    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_on[i], j, k));
+		    if (j>=Parent->server.proto.Modes())
+		    {
+			modelines[*iter].push_back(mode + " " + modeparam);
+			mode.erase();
+			modeparam.erase();
+			j=0;
+		    }
+		    if (mode.empty())
+			mode += "+";
+		    mode += chan.p_modes_on[i];
+		    if (Parent->server.proto.ChanModeArg().Contains(chan.p_modes_on[i]))
+		    {
+			if (!modeparam.empty())
+			    modeparam += " ";
+			modeparam += chan.p_modes_on_params[k];
+			j++; k++;
+		    }
+		}
+		WLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
+		WLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
+		chan.p_modes_on.erase();
+		chan.p_modes_on_params.clear();
+		}
+		if (mode.size())
+		    modelines[*iter].push_back(mode + " " + modeparam);
+	    }
+	}
+    }
+    for (ml=modelines.begin(); ml!=modelines.end(); ml++)
+    {
+	for (i=0; i<ml->second.size(); i++)
+	    Parent->server.MODE(Parent->chanserv.FirstName(),
+		ml->first, ml->second[i]);
+    }
+}
+
+void EventTask::do_msgcheck(mDateTime &synctime)
+{
+    CP(("Starting EXPIRED MESSAGE check ..."));
+    vector<mMessage *> Msgs;
+    unsigned int i;
+    vector<mstring> chunked;
+
+    { MLOCK(("AllDependancies"));
+    map<mMessage::type_t, map<mstring, set<unsigned long> > >::iterator j;
+    for (j=mMessage::AllDependancies.begin(); j!=mMessage::AllDependancies.end(); j++)
+    {
+	map<mstring, set<unsigned long> >::iterator k;
+	for (k=j->second.begin(); k!=j->second.end(); k++)
+	{
+	    set<unsigned long> Ids;
+	    set<unsigned long>::iterator l;
+	    for (l=k->second.begin(); l!=k->second.end(); l++)
+	    {
+		{ MLOCK(("MsgIdMap"));
+		map<unsigned long, mMessage *>::iterator m = mMessage::MsgIdMap.find(*l);
+		if (m != mMessage::MsgIdMap.end())
+		{
+		    if (m->second == NULL ||
+			m->second->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
+		    {
+			Ids.insert(m->first);
+			if (m->second != NULL)
+			    Msgs.push_back(m->second);
+			mMessage::MsgIdMap.erase(m);
+		    }
+		}}
+	    }
+	    for (l=Ids.begin(); l!=Ids.end(); l++)
+		k->second.erase(*l);
+	    if (!k->second.size())
+		chunked.push_back(k->first);
+	}
+	for (i=0; i<chunked.size(); i++)
+	    j->second.erase(chunked[i]);
+	chunked.clear();
+    }}
+    vector<mMessage *>::iterator m;
+    for (m=Msgs.begin(); m!=Msgs.end(); m++)
+    {
+	{ RLOCK(("IrcSvcHandler"));
+	if (Parent->ircsvchandler != NULL)
+	{
+	    COM(("(%d) Requing without filled dependancies\n", (*m)->msgid()));
+	    (*m)->priority(static_cast<u_long>(P_DepFilled));
+	    Parent->ircsvchandler->enqueue(*m);
+	}
+	else
+	{
+	    COM(("(%d) Deleting obsolete message\n", (*m)->msgid()));
+	    delete *m;
+	}}
+    }
+}
+
+void EventTask::do_heartbeat(mDateTime &synctime)
+{
+    CP(("Starting HEARTBEAT ..."));
+
+    vector<ACE_thread_t> dead;
+    map<ACE_thread_t,mDateTime>::iterator iter;
+    unsigned int i;
+
+    { RLOCK(("Events", "thread_heartbeat"));
+    for (iter=thread_heartbeat.begin(); iter!=thread_heartbeat.end(); iter++)
+    {
+	if (iter->second.SecondsSince() > Parent->config.Heartbeat_Time())
+	{
+	    dead.push_back(iter->first);
+	}
+    }
+    if (dead.size() > (thread_heartbeat.size() / 2))
+    {
+	NANNOUNCE(Parent->operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
+	NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
+    }
+    else if (dead.size())
+    {
+	WLOCK(("Events", "thread_heartbeat"));
+	for (i=0; i<dead.size(); i++)
+	{
+	    NLOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD");
+	    { RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL)
+		Parent->ircsvchandler->tm.cancel(dead[i]);
+	    }
+	    thread_heartbeat.erase(dead[i]);
+	}
+    }}
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL)
+	for (i=0; i<thread_heartbeat.size(); i++)
+	    Parent->ircsvchandler->enqueue_test();
+    }
+}
+
+void EventTask::do_ping(mDateTime &synctime)
+{
+    CP(("Starting SERVER PING ..."));
+
+    Server::list_t::iterator si;
+
+    double min = -1, max = 0, sum = 0, avg = 0, count = 0;
+    { RLOCK2(("Server", "list"));
+    for (si=Parent->server.ListBegin();
+	    si!=Parent->server.ListEnd(); si++)
+    {
+	RLOCK3(("Server", "list", si->first));
+	if (min == -1 || si->second.Lag() < min)
+	    min = si->second.Lag();
+	if (si->second.Lag() > max)
+	    max = si->second.Lag();
+	sum += si->second.Lag();
+	count++;
+    }}
+    if (count >= 3)
+	avg = (sum - min - max) / (count - 2);
+    else
+	avg = sum / count;
+
+    if (avg > static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
+    {
+	Parent->LevelUp();
+	LOG(LM_WARNING, "EVENT/LEVEL_UP", (fmstring("%.3f", avg)));
+    }
+    else if (Parent->Level() > Parent->startup.Level() &&
+	avg <= static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
+    {
+	Parent->LevelDown();
+	LOG(LM_WARNING, "EVENT/LEVEL_DOWN", (fmstring("%.3f", avg)));
+    }
+
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL &&
+	Parent->ircsvchandler->HTM_Level() <= 3)
+    {
+	RLOCK2(("Server", "list"));
+	for (si = Parent->server.ListBegin();
+		si != Parent->server.ListEnd(); si++)
+	{
+	    RLOCK3(("Server", "list", si->first));
+	    si->second.Ping();
+	}
+	NLOG(LM_TRACE, "EVENT/PING");
+    }}
 }
 
 void EventTask::DumpB() const

@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2001/11/04 23:43:14  prez
+** Updates for MS Visual C++ compilation (it works now!).
+**
 ** Revision 1.74  2001/11/03 21:02:50  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -405,7 +408,7 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
     set<mstring> i_access;
     set<mstring> i_ignore;
 
-    class {
+    class setting_t {
 	friend class Nick_Stored_t;
 	friend Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
 	friend Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
@@ -422,7 +425,7 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 	unsigned long Picture;
     } setting;
 
-    class {
+    class lock_t {
 	friend class Nick_Stored_t;
 	bool Protect:1;
 	bool Secure:1;
@@ -602,7 +605,7 @@ private:
     unsigned long picsize;	// Maximum picture size
     mstring picext;		// Valid PIC extensions
 
-    class {
+    class def_t {
 	friend class NickServ;
 	friend class Magick;
 	bool Protect:1;
@@ -614,7 +617,7 @@ private:
 	mstring Language;
     } def;
 
-    class {
+    class lock_t {
 	friend class NickServ;
 	friend class Magick;
 	bool Protect:1;

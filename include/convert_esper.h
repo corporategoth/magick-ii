@@ -25,6 +25,9 @@ RCSID(convert_esper_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2001/11/04 23:43:14  prez
+** Updates for MS Visual C++ compilation (it works now!).
+**
 ** Revision 1.3  2001/11/03 21:02:50  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -103,8 +106,8 @@ int ESP_read_int32(int32 *ret, ESP_dbFILE *f);
 int ESP_read_string(char **ret, ESP_dbFILE *f);
 
 #define ESP_read_int8(ret,f)	((*(ret)=fgetc((f)->fp))==EOF ? -1 : 0)
-#define ESP_read_buffer(buf,f)	(ESP_read_db((f),(buf),sizeof(buf)) == sizeof(buf))
-#define ESP_read_variable(var,f)	(ESP_read_db((f),&(var),sizeof(var)) == sizeof(var))
+#define ESP_read_buffer(buf,f)	((ESP_read_db((f),(buf),sizeof(buf)) != sizeof(buf)) ? -1 : 0)
+#define ESP_read_variable(var,f)	((ESP_read_db((f),&(var),sizeof(var)) != sizeof(var)) ? -1 : 0)
 
 /*************************************************************************/
 

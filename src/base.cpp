@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.174  2001/11/04 23:43:14  prez
+** Updates for MS Visual C++ compilation (it works now!).
+**
 ** Revision 1.173  2001/11/03 21:02:51  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -809,7 +812,9 @@ void mMessage::AddDependancies()
 	    break;
 	}
 	if (oldadded != added)
+	{
 	    CP(("(%d) Added dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
+	}
     }
 }
 
@@ -959,7 +964,9 @@ bool mMessage::RecheckDependancies()
 	    break;
 	}
 	if (resolved)
+	{
 	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
+	}
     }}
     if (!OutstandingDependancies())
     {

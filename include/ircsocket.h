@@ -25,6 +25,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2001/11/04 23:43:14  prez
+** Updates for MS Visual C++ compilation (it works now!).
+**
 ** Revision 1.56  2001/11/03 21:02:50  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -181,6 +184,13 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
     mDateTime last_msgcheck;
     mDateTime last_heartbeat;
     static void *save_databases(void *in = NULL);
+    void do_expire(mDateTime &synctime);
+    void do_check(mDateTime &synctime);
+    void do_ping(mDateTime &synctime);
+    void do_msgcheck(mDateTime &synctime);
+    void do_heartbeat(mDateTime &synctime);
+    void do_modes(mDateTime &synctime);
+
 public:
     void RemoveThread(ACE_thread_t thr = ACE_Thread::self());
     void Heartbeat(ACE_thread_t thr = ACE_Thread::self());
@@ -199,7 +209,7 @@ public:
 class mMessage;
 class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
 {
-    friend int EventTask::svc(void);
+    friend void EventTask::do_heartbeat(mDateTime &synctime);
     typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
     // This takes any characters read from the socket that dont
     // end in \r or \n, and adds them to next read's run.
