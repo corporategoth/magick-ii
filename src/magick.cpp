@@ -33,7 +33,7 @@ Magick::Magick(int inargc, char **inargv)
 
 int Magick::Start()
 {
-    NFT("Magick::Start()");
+    NFT("Magick::Start");
     int i;
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.

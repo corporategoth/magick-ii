@@ -76,30 +76,6 @@ mstring& mstring::operator <<(const char * psz)
 	return *this;
 }
 
-mstring& mstring::operator =(const mstring & in)
-{
-	*this=string(in);
-	return *this;
-}
-
-mstring& mstring::operator =(const string & in)
-{
-	string(*this)=in;
-	return *this;
-}
-
-mstring& mstring::operator=(const char *in)
-{
-	*this=mstring(in);
-	return *this;
-}
-
-mstring& mstring::operator=(char in)
-{
-	*this=mstring(in);
-	return *this;
-}
-
 mstring& mstring::operator <<(char ch)
 {
 	*this=*this+mstring(ch);

@@ -15,6 +15,7 @@
 using namespace std;
 #include "magick.h"
 #include "datetime.h"
+
 mDateTime Start_Time, Reset_Time;
 
 Magick *MagickObject;
@@ -35,8 +36,10 @@ int main(int argc, char **argv)
     TraceObject->TurnSet(0x44444444);
     mainthread = new ThreadID(tt_MAIN, 1);
     Start_Time=Now();
+#ifdef MAGICK_HAS_EXCEPTIONS
     try
     {
+#endif
 	int Result;
 restart:
 	Result=start_server(argc,argv);
@@ -44,16 +47,27 @@ restart:
 	    goto restart;
 	delete mainthread;
 	return Result;
+#ifdef MAGICK_HAS_EXCEPTIONS
     }
     catch(exception &e)
     {
+	// new style STL exceptions
 	fprintf(stderr,"Unhandled exception: %s\n",e.what());
+	delete mainthread;
+    }
+    catch(int i)
+    {
+	// old style c exceptions
+	fprintf(stderr,"Unhandled exception: %d\n",i);
 	delete mainthread;
     }
     catch(...)
     {
+	// even older style exceptions like SIGSEGV
 	fprintf(stderr,"Unhandled exception: Unknown\n");
 	delete mainthread;
 	return -1;
     }
+#endif
+    return 0;
 }

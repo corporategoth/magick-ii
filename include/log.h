@@ -287,7 +287,7 @@ extern const char* wxSysErrorMsg(unsigned long nErrCode = 0);
   @param   szFile and nLine - file name and line number of the ASSERT
            szMsg            - optional message explaining the reason
   */
-  void WXDLLEXPORT wxOnAssert(const char *szFile, int nLine, const char *szMsg = (const char *)NULL);
+  void wxOnAssert(const char *szFile, int nLine, const char *szMsg = (const char *)NULL);
 
   /// generic assert macro
   #define   wxASSERT(cond)   if ( !(cond) ) wxOnAssert(__FILE__, __LINE__)
@@ -303,10 +303,10 @@ extern const char* wxSysErrorMsg(unsigned long nErrCode = 0);
 #endif  //__WXDEBUG__
 
   /// special form of assert: always triggers it (in debug mode)
-#define   wxFAIL                 wxASSERT(wxFalse)
+#define   wxFAIL                 wxASSERT(false)
 
   /// FAIL with some message
-#define   wxFAIL_MSG(msg)        wxASSERT_MSG(wxFalse, msg)
+#define   wxFAIL_MSG(msg)        wxASSERT_MSG(false, msg)
 
   /// check that expression is true, "return" if not (also FAILs in debug mode)
 #define   wxCHECK(x, rc)            if (!(x)) {wxFAIL; return rc; }

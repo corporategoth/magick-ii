@@ -120,6 +120,7 @@ mVariant::mVariant(void * in)
 mVariant::mVariant(const mVariant & in)
 {
 	*this=in;
+
 }
 
 mVariant::mVariant(wxTextFileType in)
@@ -181,8 +182,12 @@ mVariant::mVariant(ConfigGroup *in)
 
 mVariant& mVariant::operator=(const mVariant& in)
 {
-	return *this;
+    valuetype=in.valuetype;
+    truevaluetype=in.truevaluetype;
+    value=in.value;
+    return *this;
 }
+
 bool mVariant::operator==(const mVariant& in)const
 {
 	if(valuetype!=in.valuetype)
@@ -404,7 +409,9 @@ mVarArray::mVarArray(const mVariant& one)
 
 mVarArray::mVarArray(const mVariant & one, const mVariant & two)
 {
+    wxLogDebug("mVariant::operator=\n valuetype: %s\n truevaluetype: %s\n",one.valuetype.c_str(),one.truevaluetype.c_str());
     values.push_back(one);
+    wxLogDebug("mVariant::operator=\n valuetype: %s\n truevaluetype: %s\n",two.valuetype.c_str(),two.truevaluetype.c_str());
     values.push_back(two);
 }
 mVarArray::mVarArray(const mVariant& one, const mVariant& two, const mVariant& three)

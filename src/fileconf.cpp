@@ -584,7 +584,7 @@ bool wxFileConfig::Write(const mstring& key, const mstring& szValue)
   mstring strName = path.Name();
   if ( strName.IsEmpty() ) {
     // setting the value of a group is an error
-    wxASSERT_MSG( IsEmpty(szValue), _("can't set value of a group!") );
+    wxASSERT_MSG( szValue=="", _("can't set value of a group!") );
 
     // ... except if it's empty in which case it's a way to force it's creation
     m_pCurrentGroup->SetDirty();
@@ -1305,7 +1305,7 @@ void ConfigEntry::SetValue(const mstring& strValue, bool bUser)
     }
     else {
       // add a new line to the file
-      wxASSERT( m_nLine == wxNOT_FOUND );   // consistency check
+      wxASSERT( m_nLine == -1 );   // consistency check
 
       m_pLine = Group()->Config()->LineListInsert(strLine,
                                                   Group()->GetLastEntryLine());

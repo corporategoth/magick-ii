@@ -100,10 +100,6 @@ public:
 	int CmpNoCase(const mstring& in);
 	int Cmp(const mstring& in);
 	mstring& operator<<(char ch);
-	mstring& operator=(char in);
-	mstring& operator=(const string& in);
-	mstring& operator=(const mstring& in);
-	mstring& operator=(const char *in);
 	mstring& operator<<(const char *psz);
 	mstring& operator<<(const mstring& s);
 	mstring(const mstring& in);
