@@ -26,8 +26,8 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.37  2000/03/13 09:36:18  prez
-** Completed help file, we now have full help text.
+** Revision 1.38  2000/03/14 10:02:48  prez
+** Added SJOIN and SNICK
 **
 ** Revision 1.36  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
@@ -1143,12 +1143,14 @@ ConfigGroup::FindEntry(const char *szName) const
   int res;
   ConfigEntry *pEntry;
 
+  mstring tmp;
   while ( lo < hi ) {
     i = (lo + hi)/2;
     pEntry = m_aEntries[i];
 
-      mstring tmp = szName;
-      res = tmp.CmpNoCase(pEntry->Name());
+      /* res = strcmp(pEntry->Name(), szName); */
+      tmp = pEntry->Name();
+      res = tmp.CmpNoCase(szName);
 
     if ( res > 0 )
       hi = i;
@@ -1171,12 +1173,14 @@ ConfigGroup::FindSubgroup(const char *szName) const
   int res;
   ConfigGroup *pGroup;
 
+  mstring tmp;
   while ( lo < hi ) {
     i = (lo + hi)/2;
     pGroup = m_aSubgroups[i];
 
-      mstring tmp = szName;
-      res = tmp.CmpNoCase(pGroup->Name());
+      /* res = strcmp(pGroup->Name(), szName); */
+      tmp = pGroup->Name();
+      res = tmp.CmpNoCase(szName);
 
     if ( res > 0 )
       hi = i;
@@ -1467,8 +1471,8 @@ int CompareEntries(ConfigEntry *p1,
 {
     FT("CompareEntries", (p1, p2));
     mstring tmp = p1->Name();
-    int retval = tmp.CmpNoCase(p2->Name());
-    RET(retval);
+    int res = tmp.CmpNoCase(p2->Name());
+    RET(res);
 }
 
 int CompareGroups(ConfigGroup *p1,
@@ -1476,8 +1480,8 @@ int CompareGroups(ConfigGroup *p1,
 {
     FT("CompareGroups", (p1, p2));
     mstring tmp = p1->Name();
-    int retval = tmp.CmpNoCase(p2->Name());
-    RET(retval);
+    int res = tmp.CmpNoCase(p2->Name());
+    RET(res);
 }
 
 // ----------------------------------------------------------------------------

@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/03/14 10:02:48  prez
+** Added SJOIN and SNICK
+**
 ** Revision 1.73  2000/03/13 09:36:18  prez
 ** Completed help file, we now have full help text.
 **
@@ -1687,6 +1690,123 @@ void NetworkServ::execute(const mstring & data)
 		}
 	    }
 	}
+	else if (msgtype=="SJOIN")
+	{
+	    //:server SJOIN chan-stamp #channel +modes extra-params :@opd_nick +voice_nick nick 
+	    //:relic.devel.relic.net SJOIN 952608432 #blah + <none> :@Kwahraw +PreZ Zephyr 
+	    unsigned int i;
+
+	    vector<mstring> users;
+	    mstring modes;
+	    mstring mode_params;
+	    modes = data.ExtractWord(5, ": ");
+	    mode_params = data.Before(":").After(" ", 5);
+	    for (i=0; i < data.After(":", 2).WordCount(" "); i++)
+	    {
+		if (Parent->nickserv.IsLive(users[i]))
+		{
+		    users[i] = data.After(":", 2).ExtractWord(i+1, " ");
+		    if (users[i][0u] == '@')
+		    {
+			modes += "o";
+			mode_params += " " + users[i];
+			users[i].Replace("@", "");
+		    }
+		    if (users[i][0u] == '+')
+		    {
+			modes += "v";
+			mode_params += " " + users[i];
+			users[i].Replace("+", "");
+		    }
+		}
+	    }
+
+	    for (i=0; i<users.size(); i++)
+		Parent->nickserv.live[users[i].LowerCase()].Join(data.ExtractWord(4, ": "));
+	    if (Parent->chanserv.IsLive(data.ExtractWord(4, ": ")))
+		Parent->chanserv.live[data.ExtractWord(4, ": ").LowerCase()].Mode(source,
+									modes + " " + mode_params);
+	}
+	else if (msgtype=="SNICK")
+	{
+	    if (source.Contains("."))
+		return;
+
+	    // NEW USER
+	    sourceL = data.ExtractWord(2, ": ").LowerCase();
+
+	    // DONT kill when we do SQUIT protection.
+	    map<mstring,list<mstring> >::iterator i;
+	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
+	    {
+		list<mstring>::iterator k;
+		for (k=i->second.begin(); k!=i->second.end(); k++)
+		    if (*k == sourceL)
+		    {
+			list<mstring>::iterator j = k;  j--;
+			i->second.erase(k);
+			k=j;
+		    }
+	    }
+
+	    if (Parent->nickserv.IsLive(sourceL))
+	    {
+		// IF the squit server = us, and the signon time matches
+		if (Parent->nickserv.live[sourceL].Squit() == data.ExtractWord(7, ": ").LowerCase()
+		    && Parent->nickserv.live[sourceL].SignonTime() == mDateTime((time_t) atol(data.ExtractWord(4, ": "))))
+		{
+		    Parent->nickserv.live[sourceL].ClearSquit();
+		    return;    // nice way to avoid repeating ones self :)
+		}
+		else
+		{
+		    Parent->nickserv.live[sourceL].Quit("SQUIT - " + Parent->nickserv.live[sourceL].Server());
+		    Parent->nickserv.live.erase(sourceL);
+		}
+	    }
+
+	    // hops = servers from us
+	    // services = 1 for service, 0 for user
+	    // DAL4.4.15+ SNICK name hops time user host server services modes :real name
+	    Parent->nickserv.live[sourceL] =
+		    Nick_Live_t(
+			data.ExtractWord(2, ": "),
+			(time_t) atol(data.ExtractWord(4, ": ")),
+			data.ExtractWord(7, ": "),
+			data.ExtractWord(5, ": "),
+			data.ExtractWord(6, ": "),
+			data.After(":")
+		    );
+	    if (i_UserMax < Parent->nickserv.live.size())
+		i_UserMax = Parent->nickserv.live.size();
+	    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
+
+	    // HAS to be AFTER the nickname is added to map.
+	    map<mstring, Committee>::iterator iter;
+	    for (iter = Parent->commserv.list.begin();
+				    iter != Parent->commserv.list.end();
+				    iter++)
+	    {
+		if (iter->second.IsOn(sourceL))
+		{
+		    for (iter->second.message = iter->second.MSG_begin();
+			    iter->second.message != iter->second.MSG_end();
+			    iter->second.message++)
+		    {
+			Parent->servmsg.send(sourceL, "[" + IRC_Bold +
+					    iter->first + IRC_Off + "] " +
+					    iter->second.message->Entry());
+		    }
+		}
+	    }
+	    if (Parent->nickserv.IsStored(sourceL) &&
+		    Parent->nickserv.stored[sourceL].Protect() &&
+		    !Parent->nickserv.stored[sourceL].IsOnline())
+	    {
+		Parent->nickserv.send(sourceL,
+			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"));
+	    }
+	}
 	else if (msgtype=="SQLINE")
 	{
 	    // We will ignore SQLINES because they're not relivant to us.
@@ -1721,11 +1841,20 @@ void NetworkServ::execute(const mstring & data)
 	    }
 	    ToBeSquit.erase(target);
 	    map<mstring,Nick_Live_t>::iterator iter;
+	    vector<mstring> chunked;
 	    for (iter=Parent->nickserv.live.begin(); iter != Parent->nickserv.live.end(); iter++)
 	    {
-		if (iter->second.Server() == target)
+		if (iter->second.IsServices() && ServerList.size() == 0)
+		{
+		    chunked.push_back(iter->first);
+		}
+		else if (iter->second.Server() == target)
 		    iter->second.SetSquit();
 	    }
+	    // Sign off services if we have NO uplink
+	    unsigned int i;
+	    for (i=0; i<chunked.size(); i++)
+		QUIT(chunked[i], "SQUIT - " + target);
 	}
 	else if (msgtype=="STATS")
 	{
@@ -2303,20 +2432,20 @@ void NetworkServ::numeric_execute(const mstring & data)
 				(iter->second.Mlock_On().Contains("k") ||
 				iter->second.Mlock_On().Contains("i"))))
 			    {
-				if (joinline.Size())
+				if (joinline.Len())
 				    joinline << ",";
 				joinline << iter->first;
-				if (joinline.Size() > 450)
+				if (joinline.Len() > 450)
 				{
 				    JOIN(Parent->chanserv.FirstName(), joinline);
-				    joinline.clear();
+				    joinline = "";
 				}
 			    }
 			}
-			if (joinline.Size())
+			if (joinline.Len())
 			{
 			    JOIN(Parent->chanserv.FirstName(), joinline);
-			    joinline.clear();
+			    joinline = "";
 			}
 		    }
 		}

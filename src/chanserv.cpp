@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.148  2000/03/14 10:02:48  prez
+** Added SJOIN and SNICK
+**
 ** Revision 1.147  2000/03/08 23:38:36  prez
 ** Added LIVE to nickserv/chanserv, added help funcitonality to all other
 ** services, and a bunch of other small changes (token name changes, etc)
@@ -81,7 +84,7 @@ void Chan_Live_t::Join(mstring nick)
 
     if (users.find(nick.LowerCase())!=users.end())
     {
-	wxLogWarning(Parent->getMessage("ERROR/DUP_CHAN"),
+	wxLogWarning(Parent->getLogMessage("ERROR/DUP_CHAN"),
 		"JOIN", nick.c_str(), i_Name.c_str());
     }
     else
