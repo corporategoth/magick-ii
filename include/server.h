@@ -24,8 +24,8 @@ class Server
     mstring i_Uplink;
     int i_Hops;
     mstring i_Description;
-    float i_Ping;
-    float i_Lag;
+    double i_Ping;
+    double i_Lag;
 public:
     Server();
     Server(const Server &in);
@@ -41,7 +41,7 @@ public:
     mstring Description();
     void Ping();
     void Pong();
-    float Lag();
+    double Lag();
 
     vector<mstring> Downlinks();
     vector<mstring> AllDownlinks();

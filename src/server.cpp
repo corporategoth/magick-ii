@@ -98,10 +98,13 @@ void Server::Ping()
 {
     NFT("Server::Ping");
 
-    timeval *tmp;
-    SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
-    gettimeofday(tmp, NULL);
-    i_Ping = tmp->tv_sec + (tmp->tv_usec / 1000);
+    if (!i_Ping)
+    {
+	SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
+	timeval *tmp;
+	gettimeofday(tmp, NULL);
+	i_Ping = tmp->tv_sec + (tmp->tv_usec / 1000);
+   }
 }
 
 void Server::Pong()
@@ -109,14 +112,14 @@ void Server::Pong()
     NFT("Server::Pong");
     if (i_Ping)
     {
-	timeval *tmp;
 	gettimeofday(tmp, NULL);
+	timeval *tmp;
 	i_Lag = (tmp->tv_sec + (tmp->tv_usec / 1000)) - i_Ping;
 	i_Ping = 0;
     }
 }
 
-float Server::Lag()
+double Server::Lag()
 {
     NFT("Server::Lag");
     RET(i_Lag);
