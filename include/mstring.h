@@ -25,6 +25,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2001/03/04 02:08:27  prez
+** Enhansed mstring
+**
 ** Revision 1.67  2001/03/02 05:24:41  prez
 ** HEAPS of modifications, including synching up my own archive.
 **
@@ -330,6 +333,7 @@ mstring operator+ (const unsigned long lhs, const mstring &rhs);
 mstring operator+ (const float lhs, const mstring &rhs);
 mstring operator+ (const double lhs, const mstring &rhs);
 
+
 class mstring
 {
     char *i_str;
@@ -353,7 +357,7 @@ class mstring
     void lock_write() const;
     void lock_rel() const;
     void init();
-    int occurances(const char *str) const;
+    int occurances(const char *str, size_t length) const;
 
 public:
     mstring()
@@ -382,6 +386,10 @@ public:
 	{ init(); copy(in); }
     mstring(const double in)
 	{ init(); copy(in); }
+    mstring(const vector<mstring> in)
+	{ init(); Assemble(in); }
+    mstring(const list<mstring> in)
+	{ init(); Assemble(in); }
     ~mstring();
 
     void copy(const char *in, size_t length);
@@ -423,74 +431,14 @@ public:
     void copy(const double in)
 	{ mstring out; out.Format("%f", in); copy(out); }
 
+    void prepend(const mstring &in)
+	{ insert(0, in.i_str, in.i_len); }
     void append(const mstring &in)
 	{ append(in.i_str, in.i_len); }
-    void append(const string &in)
-	{ append(in.c_str(), in.length()); }
-    void append(const char *in)
-	{ append(in, strlen(in)); }
-    void append(const char in)
-	{ append(&in, 1); }
-    void append(const unsigned char in)
-	{ append(&static_cast<const char>(in), 1); }
-    void append(const int in)
-	{ mstring out(in); append(out); }
-    void append(const unsigned int in)
-	{ mstring out(in); append(out); }
-    void append(const long in)
-	{ mstring out(in); append(out); }
-    void append(const unsigned long in)
-	{ mstring out(in); append(out); }
-    void append(const float in)
-	{ mstring out(in); append(out); }
-    void append(const double in)
-	{ mstring out(in); append(out); }
-
     void insert(size_t pos, const mstring &in)
 	{ insert(pos, in.i_str, in.i_len); }
-    void insert(size_t pos, const string &in)
-	{ insert(pos, in.c_str(), in.length()); }
-    void insert(size_t pos, const char *in)
-	{ insert(pos, in, strlen(in)); }
-    void insert(size_t pos, const char in)
-	{ insert(pos, &in, 1); }
-    void insert(size_t pos, const unsigned char in)
-	{ insert(pos, &static_cast<const char>(in), 1); }
-    void insert(size_t pos, const int in)
-	{ mstring out(in); insert(pos, out); }
-    void insert(size_t pos, const unsigned int in)
-	{ mstring out(in); insert(pos, out); }
-    void insert(size_t pos, const long in)
-	{ mstring out(in); insert(pos, out); }
-    void insert(size_t pos, const unsigned long in)
-	{ mstring out(in); insert(pos, out); }
-    void insert(size_t pos, const float in)
-	{ mstring out(in); insert(pos, out); }
-    void insert(size_t pos, const double in)
-	{ mstring out(in); insert(pos, out); }
-
     int compare(const mstring &in) const
 	{ return compare(in.i_str, in.i_len); }
-    int compare(const string &in) const
-	{ return compare(in.c_str(), in.length()); }
-    int compare(const char *in) const
-	{ return compare(in, strlen(in)); }
-    int compare(const char in) const
-	{ return compare(&in, 1); }
-    int compare(const unsigned char in) const
-	{ return compare(&static_cast<const char>(in), 1); }
-    int compare(const int in) const
-	{ mstring out(in); return compare(in); }
-    int compare(const unsigned int in) const
-	{ mstring out(in); return compare(in); }
-    int compare(const long in) const
-	{ mstring out(in); return compare(in); }
-    int compare(const unsigned long in) const
-	{ mstring out(in); return compare(in); }
-    int compare(const float in) const
-	{ mstring out(in); return compare(in); }
-    int compare(const double in) const
-	{ mstring out(in); return compare(in); }
 
     const char operator[] (size_t off) const;
     operator const char *() const
@@ -500,71 +448,9 @@ public:
 
     mstring &operator= (const mstring &rhs)
 	{ copy(rhs); return *this; }
-    mstring &operator= (const string &rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const char *rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const char rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const unsigned char rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const int rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const unsigned int rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const long rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const unsigned long rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const float rhs)
-	{ copy(rhs); return *this; }
-    mstring &operator= (const double rhs)
-	{ copy(rhs); return *this; }
-
     mstring &operator+= (const mstring &rhs)
 	{ append(rhs); return *this; }
-    mstring &operator+= (const string &rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const char *rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const char rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const unsigned char rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const int rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const unsigned int rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const long rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const unsigned long rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const float rhs)
-	{ append(rhs); return *this; }
-    mstring &operator+= (const double rhs)
-	{ append(rhs); return *this; }
-
     mstring &operator<< (const mstring &rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const string &rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const char *rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const char rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const unsigned char rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const int rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const unsigned int rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const long rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const unsigned long rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const float rhs)
-	{ append(rhs); return *this; }
-    mstring &operator<< (const double rhs)
 	{ append(rhs); return *this; }
 
     // ALL return -1 if not found, or the offset
@@ -578,65 +464,28 @@ public:
 
     int find_first_of(const mstring &in) const
 	{ return find_first_of(in.i_str, in.i_len); }
-    int find_first_of(const string &in) const
-	{ return find_first_of(in.c_str(), in.length()); }
-    int find_first_of(const char *in) const
-	{ return find_first_of(in, strlen(in)); }
-    int find_first_of(const char in) const
-	{ return find_first_of(&in, 1); }
-    int find_first_of(const unsigned char in) const
-	{ return find_first_of(&static_cast<const char>(in), 1); }
-
     int find_last_of(const mstring &in) const
 	{ return find_last_of(in.i_str, in.i_len); }
-    int find_last_of(const string &in) const
-	{ return find_last_of(in.c_str(), in.length()); }
-    int find_last_of(const char *in) const
-	{ return find_last_of(in, strlen(in)); }
-    int find_last_of(const char in) const
-	{ return find_last_of(&in, 1); }
-    int find_last_of(const unsigned char in) const
-	{ return find_last_of(&static_cast<const char>(in), 1); }
-
     int find_first_not_of(const mstring &in) const
 	{ return find_first_not_of(in.i_str, in.i_len); }
-    int find_first_not_of(const string &in) const
-	{ return find_first_not_of(in.c_str(), in.length()); }
-    int find_first_not_of(const char *in) const
-	{ return find_first_not_of(in, strlen(in)); }
-    int find_first_not_of(const char in) const
-	{ return find_first_not_of(&in, 1); }
-    int find_first_not_of(const unsigned char in) const
-	{ return find_first_not_of(&static_cast<const char>(in), 1); }
-
     int find_last_not_of(const mstring &in) const
 	{ return find_last_not_of(in.i_str, in.i_len); }
-    int find_last_not_of(const string &in) const
-	{ return find_last_not_of(in.c_str(), in.length()); }
-    int find_last_not_of(const char *in) const
-	{ return find_last_not_of(in, strlen(in)); }
-    int find_last_not_of(const char in) const
-	{ return find_last_not_of(&in, 1); }
-    int find_last_not_of(const unsigned char in) const
-	{ return find_last_not_of(&static_cast<const char>(in), 1); }
-
 
     // str here is used completely
-    int find(const char *str, int occurance = 1) const;
-    int rfind(const char *str, int occurance = 1) const;
-    void replace(const char *find, const char *replace, bool all = true);
-    void replace(int begin, int end, char *replace, size_t length);
+    int find(const mstring &str, int occurance = 1) const;
+    int rfind(const mstring &str, int occurance = 1) const;
+    void replace(const mstring &i_find, const mstring &i_replace, bool all = true);
+    void replace(int begin, int end, const char *i_replace, size_t length);
+    void replace(int begin, int end, const mstring &i_replace)
+	{ replace(begin, end, i_replace.i_str, i_replace.i_len); }
     bool replace(size_t offs, char c);
 
     mstring substr(int nFirst, int nCount) const;
 
     /* From here is our own additions ... */
-    bool Contains(const char *in) const
+    bool Contains(const mstring &in) const
 	{ return (find(in) >= 0); }
-    bool Contains(const char in) const
-	{ return (find(mstring(in)) >= 0); }
-    bool Contains(const unsigned char in) const
-	{ return (find(mstring(in)) >= 0); }
+
     bool IsWord() const;
     bool IsNumber() const;
     bool IsAscii() const;
@@ -656,16 +505,9 @@ public:
 	{ return (Cmp(in, NoCase)==0); }
     bool Matches(const mstring &in, bool NoCase = false) const;
 
-    void Prepend(const mstring &in)
-	{ insert(0, in); }
-    void Append(const mstring &in)
-	{ append(in); }
-    void Replace(const mstring &f, const mstring &r, bool All = true)
-	{ replace(f.i_str, r.i_str, All); }
     void Remove(const mstring &in, bool All = true)
-	{ replace(in.i_str, "", All); }
-    void Truncate(size_t pos)
-	{ erase(pos); }
+	{ replace(in, "", All); }
+    void Truncate(size_t pos, bool right = true);
     void Trim(bool right=true, const mstring &delims = " \n\r\t");
     mstring Strip(bool right=true, const mstring &delims = " \n\r\t") const;
 
@@ -689,6 +531,8 @@ public:
 
     vector<mstring> Vector(const mstring &delim, bool assemble = true) const;
     list<mstring> List(const mstring &delim, bool assemble = true) const;
+    void Assemble(const vector<mstring> text, const mstring &delim = " ");
+    void Assemble(const list<mstring> text, const mstring &delim = " ");
 };
 
 #endif
