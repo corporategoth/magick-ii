@@ -11,9 +11,10 @@
 //
 // ===================================================
 
+#include "magickmemory.hpp"
 #include "chanserv.h"
-#include "magick.h"
 #include "lockable.h"
+#include "magick.h"
 
 ChanServ::ChanServ()
 {

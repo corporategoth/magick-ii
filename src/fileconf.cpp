@@ -22,6 +22,7 @@
 //                       Ballueder@usa.net     <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
+#include "magickmemory.hpp"
 #include "fileconf.h"
 #include "utils.h"
 #include <ctype.h>

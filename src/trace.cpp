@@ -14,6 +14,7 @@
 // Tracing functions -- Include making TraceMap's and
 // receiving all trace information.
 
+#include "magickmemory.hpp"
 #include "trace.h"
 
 long Trace::TraceLevel=0;

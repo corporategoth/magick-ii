@@ -11,6 +11,7 @@
 //
 // ===================================================
 
+#include "magickmemory.hpp"
 #include "datetime.h"
 #include "log.h"
 

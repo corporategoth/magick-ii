@@ -24,6 +24,7 @@
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
+#include "magickmemory.hpp"
 #include "mstring.h"
 #include "ace/OS.h"
 #include <ctype.h>

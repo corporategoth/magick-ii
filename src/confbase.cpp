@@ -22,6 +22,7 @@
 //                       Vadim Zeitlin      <zeitlin@dptmaths.ens-cachan.fr>
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
+#include "magickmemory.hpp"
 #include "confbase.h"
 #include "fileconf.h"
 #include "trace.h"

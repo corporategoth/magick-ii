@@ -24,6 +24,7 @@
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "magickmemory.hpp"
 #include "textfile.h"
 #include "log.h"
 #include "trace.h"

@@ -213,6 +213,14 @@ SOURCE=.\include\magick.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\magickmemory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\magickmemory.hpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File

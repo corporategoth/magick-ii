@@ -21,6 +21,7 @@
 // Copyright:   (c) Guilhem Lavaux
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
+#include "magickmemory.hpp"
 #include "mstream.h"
 #include "utils.h"
 #include <math.h>

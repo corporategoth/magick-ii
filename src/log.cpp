@@ -33,6 +33,7 @@
   #pragma implementation "log.h"
 #endif
 
+#include "magickmemory.hpp"
 #include "log.h"
 #include <time.h>
 #include <ctype.h>

@@ -10,6 +10,7 @@
 // code must be clearly documented and labelled.
 //
 // ===================================================
+#include "magickmemory.hpp"
 #include "variant.h"
 #include "trace.h"
 

@@ -11,6 +11,7 @@
 //
 // ===================================================
 
+#include "magickmemory.hpp"
 #include <iostream>
 #include <strstream>
 #include <ace/INET_Addr.h>

@@ -11,6 +11,7 @@
 //
 // ===================================================
 
+#include "magickmemory.hpp"
 #include "ircsocket.h"
 #include "trace.h"
 
