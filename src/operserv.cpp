@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.94  2000/08/09 12:14:44  prez
+** Ensured chanserv infinate loops wont occur, added 2 new cmdline
+** paramaters, and added a manpage (you need to perl2pod it tho).
+**
 ** Revision 1.93  2000/08/06 05:27:47  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -3007,6 +3011,12 @@ void OperServ::do_operdeny_Add(mstring mynick, mstring source, mstring params)
     {
 	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).Matches(host))
 	{
+	    // IF user is recognized and on sadmin, ignore.
+	    if (!(Parent->nickserv.IsStored(nlive->first) &&
+		Parent->nickserv.stored[nlive->first].IsOnline() &&
+		Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+		Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(nlive->first)))
+		continue;
 	    if (Parent->server.proto.SVS())
 	    {
 		nlive->second.SendMode("-oAa");

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.195  2000/08/09 12:14:42  prez
+** Ensured chanserv infinate loops wont occur, added 2 new cmdline
+** paramaters, and added a manpage (you need to perl2pod it tho).
+**
 ** Revision 1.194  2000/08/08 09:58:55  prez
 ** Added ModeO to 4 pre-defined committees.
 ** Also added back some deletes in xml in the hope that it
@@ -5823,14 +5827,19 @@ void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
 
     if (Parent->chanserv.IsLive(channel))
     {
-	mstring reason;
-	reason.Format(Parent->getMessage(source, "CS_STATUS/ISFORBIDDEN"),
-		channel.c_str());
 
-	while (Parent->chanserv.IsLive(channel))
+	unsigned int i;
+	vector<mstring> kickees;
+	for (i=0; i<Parent->chanserv.live[channel.LowerCase()].Users(); i++)
 	{
-	    Parent->server.KICK(Parent->chanserv.FirstName(),
-		Parent->chanserv.live[channel.LowerCase()].User(0),
+		kickees.push_back(Parent->chanserv.live[channel.LowerCase()].User(i));
+	}
+	for (i=0; i<kickees.size(); i++)
+	{
+	    mstring reason;
+	    reason.Format(Parent->getMessage(kickees[i], "CS_STATUS/ISFORBIDDEN"),
+		channel.c_str());
+	    Parent->server.KICK(Parent->chanserv.FirstName(), kickees[i],
 		channel, reason);
 	}
     }
@@ -6863,12 +6872,20 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 
     Chan_Live_t *clive = &Parent->chanserv.live[channel.LowerCase()];
     unsigned int i;
+    vector<mstring> kickees;
     for (i=0; i<clive->Users(); i++)
     {
+	mstring user = clive->User(i);
+	if (user.CmpNoCase(source) != 0 && Parent->nickserv.IsLive(user) &&
+		!Parent->nickserv.live[user.LowerCase()].IsServices())
+	    kickees.push_back(clive->User(i));
+    }
+    for (i=0; i<kickees.size(); i++)
+    {
 	mstring output;
-	output.Format(Parent->getMessage(clive->User(i), "CS_COMMAND/CLEAR").c_str(),
+	output.Format(Parent->getMessage(kickees[i], "CS_COMMAND/CLEAR").c_str(),
 		message.c_str(), source.c_str(), channel.c_str());
-	Parent->server.KICK(mynick, clive->User(i), channel, output);
+	Parent->server.KICK(mynick, kickees[i], channel, output);
     }
     Parent->chanserv.stats.i_Clear++;
     Log(LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
@@ -7870,15 +7887,20 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 	    if (who.Contains("@"))
 	    {
 		// Kick matching users ...
+		vector<mstring> kickees;
 		for (i=0; i<Parent->chanserv.live[channel.LowerCase()].Users(); i++)
 		{
 		    // MAN these commands can get REAL long .. ;)
 		    if (Parent->nickserv.IsLive(Parent->chanserv.live[channel.LowerCase()].User(i)) &&
 			Parent->nickserv.live[Parent->chanserv.live[channel.LowerCase()].User(i).LowerCase()].Mask(Nick_Live_t::N_U_P_H).LowerCase().Matches(who.LowerCase()))
 		    {
-			Parent->server.KICK(mynick, Parent->chanserv.live[channel.LowerCase()].User(i), channel,
-				((reason != "") ? reason : Parent->chanserv.DEF_Akick_Reason()));
+			kickees.push_back(Parent->chanserv.live[channel.LowerCase()].User(i));
 		    }
+		}
+		for (i=0; i<kickees.size(); i++)
+		{
+		    Parent->server.KICK(mynick, kickees[i], channel,
+				((reason != "") ? reason : Parent->chanserv.DEF_Akick_Reason()));
 		}
 	    }
 	    else

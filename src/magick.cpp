@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.261  2000/08/09 12:14:43  prez
+** Ensured chanserv infinate loops wont occur, added 2 new cmdline
+** paramaters, and added a manpage (you need to perl2pod it tho).
+**
 ** Revision 1.260  2000/08/08 09:58:56  prez
 ** Added ModeO to 4 pre-defined committees.
 ** Also added back some deletes in xml in the hope that it
@@ -1052,6 +1056,7 @@ void Magick::dump_help()
 	 << "--save X           -w      Override [CONFIG/SAVETIME] to X.\n"
 	 << "--check X          -T      Override [CONFIG/CHECKTIME] to X.\n"
 	 << "--ping X           -p      Override [CONFIG/PING_FREQUENCY] to X.\n"
+	 << "--threads X        -X      Override [CONFIG/MIN_THREADS] to X.\n"
 	 << "--lwm X            -m      Override [CONFIG/LOW_WATER_MARK] to X.\n"
 	 << "--hwm X            -M      Override [CONFIG/HIGH_WATER_MARK] to X.\n"
 	 << "--append           -a      Override [NICKSERV/APPEND_RENAME] to true.\n"
@@ -1381,7 +1386,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	config.server_relink=0;
     }
-    else if(first=="--cycle" || first=="--save" || first=="--update")
+    else if(first=="--cycle" || first=="--expire")
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
@@ -1392,6 +1397,19 @@ bool Magick::paramlong(mstring first, mstring second)
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
 	}
 	config.cycletime=FromHumanTime(second);
+	RET(true);
+    }
+    else if(first=="--save" || first=="--update")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(!FromHumanTime(second))
+	{
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	}
+	config.savetime=FromHumanTime(second);
 	RET(true);
     }
     else if(first=="--check" || first=="--hyperactive")
@@ -1418,6 +1436,21 @@ bool Magick::paramlong(mstring first, mstring second)
 	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
 	}
 	config.ping_frequency=FromHumanTime(second);
+	RET(true);
+    }
+    else if(first=="--threads" || first=="--min_threads")
+    {
+	if(second.IsEmpty() || second[0U]=='-')
+	{
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	}
+	if(ACE_OS::atoi(second.c_str())<0)
+	{
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	}
+	config.min_threads=ACE_OS::atoi(second.c_str());
+	if (config.min_threads < 1)
+	    config.min_threads = 1;
 	RET(true);
     }
     else if(first=="--lwm" || first=="--low_water_mark")
@@ -1669,6 +1702,13 @@ bool Magick::paramshort(mstring first, mstring second)
 	    else
 		ArgUsed = paramlong ("--cycle", second);
 	}
+	else if(first[i]=='w')
+	{
+	    if (ArgUsed)
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--save", second);
+	}
 	else if(first[i]=='T')
 	{
 	    if (ArgUsed)
@@ -1682,6 +1722,13 @@ bool Magick::paramshort(mstring first, mstring second)
 		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--ping", second);
+	}
+	else if(first[i]=='X')
+	{
+	    if (ArgUsed)
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    else
+		ArgUsed = paramlong ("--threads", second);
 	}
 	else if(first[i]=='m')
 	{

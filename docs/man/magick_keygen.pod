@@ -1,0 +1,63 @@
+=head1 NAME
+
+magick_keygen - Keyfile generator for Magick IRC Services
+
+=head1 SYNOPSIS
+
+magick_keygen
+
+=head1 DESCRIPTION
+
+This will generate an encrypted keyfile using two hard-coded keys
+in the binary (that are shared with the Magick binary) to ensure
+that the actual key used for Magick databases is never readable.
+
+This program will ask you first for the output filename, the default
+is F<magick.key>.  It will then ask you to enter the key to encrypt
+twice.
+
+You may type VERY long lines of text (by default, up to 1024 bytes)
+as your key, however it may not contain a carriage return.
+
+=head1 FILES
+
+Specified in program.
+
+=head1 SEE ALSO
+
+L<magick(1)>
+
+=head1 BUGS
+
+The key you type in may show up on the screen.  It is not supposed
+to, but this is due to the fact your system does not have TERMIO,
+which is required to 'hide' the keystrokes.  Hopefully later other
+methods of hiding keystrokes will be implemented at a later date.
+
+=head1 NOTES
+
+Magick may be obtained from B<http://www.magick.tm> or
+B<ftp://ftp.magick.tm/pub/Magick> and is distribted under
+the I<GNU General Public License>.
+
+=head1 DEDICATION
+
+Magick is dedicated to the memory of PreZ's loving sister,
+Stacey Louise Elder (1st Jan, 1975 - 25th Feb, 1998). She
+has been there for me more than anyone over the years, and I
+was distraught when she died, may her Lord love her as much
+as I did, and keep her safe like I could not. Merry Parting,
+Dear Sister.
+
+Magick is also dedicated to the memory of Ungod's brother,
+Edward Kevin King (28th Aug, 1982 - 21st Nov, 1997), His
+life was short, but his memory is great, never will those
+who knew him forget him.
+
+=head1 AUTHORS
+
+Magick Development Team E<lt>magick-devel@magick.tmE<gt>
+
+(c) 1997-2000 Preston Elder E<lt>prez@magick.tmE<gt>
+
+(c) 1998-2000 William King E<lt>ungod@magick.tmE<gt>

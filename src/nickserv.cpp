@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.123  2000/08/09 12:14:43  prez
+** Ensured chanserv infinate loops wont occur, added 2 new cmdline
+** paramaters, and added a manpage (you need to perl2pod it tho).
+**
 ** Revision 1.122  2000/08/08 09:58:56  prez
 ** Added ModeO to 4 pre-defined committees.
 ** Also added back some deletes in xml in the hope that it
@@ -1399,13 +1403,16 @@ void Nick_Live_t::Mode(mstring in)
 		Parent->operserv.RemHost(i_host);
 		MLOCK(("OperServ", "OperDeny"));
 		// IF we are SecureOper and NOT on oper list
-		// OR user is on OperDeny and NOT on sadmin list
+		// OR user is on OperDeny and NOT on sadmin list && recognized
+		// Yeah, one UUUUUUGLY if.
 		if ((Parent->operserv.SecureOper() &&
 		    !(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 		    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(i_Name))) ||
 		    (Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
-		    !IsServices() && !(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(i_Name))))
+		    !IsServices() && !(Parent->nickserv.IsStored(i_Name) &&
+		    Parent->nickserv.stored[i_Name.LowerCase()].IsOnline() &&
+		    Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+		    Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(i_Name))))
 		{
 		    if (Parent->server.proto.SVS())
 		    {
@@ -5591,8 +5598,8 @@ void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
     }
 
     // If we are NOT a SADMIN, and target is a PRIV GROUP.
-    if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	!Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(source) &&
+    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(source)) &&
 	(Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(target) ||
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	Parent->commserv.list[Parent->commserv.SOP_Name()].IsIn(target)) ||

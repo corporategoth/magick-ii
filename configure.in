@@ -356,4 +356,4 @@ AC_ARG_WITH(keylen, [  --with-keylen=size      Maximum size of key (and keyfile)
 	[AC_DEFINE_UNQUOTED(KEYLEN, $withval)],
 	[AC_DEFINE_UNQUOTED(KEYLEN, 1024)])
 
-AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/des/Makefile include/xml/Makefile )
+AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile docs/man/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/des/Makefile include/xml/Makefile )
