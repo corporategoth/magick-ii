@@ -2681,9 +2681,8 @@ bool Chan_Stored_t::DoRevenge(const mstring & i_type, const mstring & target, co
     BTCB();
     FT("Chan_Stored_t::DoRevenge", (i_type, target, source));
 
-    if (!
-	(Magick::instance().chanserv.IsLive(i_Name) && Magick::instance().nickserv.IsLive(source) &&
-	 Magick::instance().nickserv.IsLive(target)))
+    if (!(Magick::instance().chanserv.IsLive(i_Name) && Magick::instance().nickserv.IsLive(source) &&
+	 Magick::instance().nickserv.IsLive(target)) || Magick::instance().nickserv.GetLive(source)->IsServices())
 	RET(false);
 
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(i_Name);
