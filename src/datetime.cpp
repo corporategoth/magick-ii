@@ -731,71 +731,17 @@ int mDateTime::Year()
     return Year;
 }
 
-mstring mDateTime::Ago(bool call)
-{
-    mstring Result="";
-    int Seconds = SecondsSince();
-    int Years = (int) (Seconds / (60 * 60 * 24 * 365.25));
-    Seconds -= (int) (Years * 60 * 60 * 24 * 365.25);
-    int Days = Seconds / (60 * 60 * 24);
-    Seconds -= Days * 60 * 60 * 24;
-    int Hours = Seconds / (60 * 60);
-    Seconds -= Hours * 60 * 60;
-    int Minutes = Seconds / 60;
-    Seconds -= Minutes * 60;
-
-    // what the fuck does !! do exactly? not not???
-    // how to get GMT hmm.
-    //if(call)
-	//add GMT offset
-    if(Years>0)
-    {
-	Result << Years << " year" << (Years==1 ? "" : "s");
-	if (Days)
-	    Result << ", " << Days << " day" << (Days==1 ? "" : "s");
-	if (Hours || Minutes || Seconds)
-	    Result << ", " << (Hours>10 ? "" : "0") << Hours << ":" <<
-		    (Minutes>10 ? "" : "0") << Minutes << ":" <<
-		    (Seconds>10 ? "" : "0") << Seconds << ":";
-    }
-    else if(Days>0)
-    {
-	Result << " " << Days << " day" << (Days==1 ? "" : "s");
-	if (Hours || Minutes || Seconds)
-	    Result << ", " << (Hours>10 ? "" : "0") << Hours << ":" <<
-		    (Minutes>10 ? "" : "0") << Minutes << ":" <<
-		    (Seconds>10 ? "" : "0") << Seconds << ":";
-    }
-    else if(Hours>0)
-    {
-	Result << Hours << " hour" << (Hours==1 ? "" : "s");
-	if (Minutes)
-	    Result << ", " << Minutes << " minute" << (Minutes==1 ? "" : "s");
-	if (Seconds)
-	    Result << ", " << Seconds << " second" << (Seconds==1 ? "" : "s");
-    }
-    else if(Minutes>0)
-    {
-	Result << Minutes << " minute" << (Minutes==1 ? "" : "s");
-	if (Seconds)
-	    Result << ", " << Seconds << " second" << (Seconds==1 ? "" : "s");
-    }
-    else if(Seconds>0)
-    {
-	Result << Seconds << " second" << (Seconds==1 ? "" : "s");
-    }
-    else
-    {
-	Result << "Now";
-    }
-    return Result;
-}
-
 int mDateTime::MSecondsSince()
 {
     mDateTime dummyvar=Now()-(*this);
     int CurrentVal=(int)(dummyvar.Val*(double)MSecsPerDay);
     return CurrentVal;
+}
+
+mstring mDateTime::Ago(bool gmt)
+{
+    // Later we find out if this is a GMT time.
+    return(DisectTime(SecondsSince()));
 }
 
 int mDateTime::SecondsSince()
@@ -820,6 +766,83 @@ int mDateTime::DaysSince()
 
 int mDateTime::YearsSince()
 {
-    return (int)((double) DaysSince() / 365.5);
+    return (int)((double) DaysSince() / 365.25);
+}
+
+mstring DisectTime(long intime)
+{
+    mstring Result="";
+    long Years=0, Days=0, Hours=0, Minutes=0, negamt=0;
+    long Seconds = intime;
+
+    negamt = (long)(60.0 * 60.0 * 24.0 * 365.25);
+    while (Seconds >= negamt)
+    {
+	Years++;
+	Seconds -= negamt;
+    }
+
+    negamt = 60 * 60 * 24;
+    while (Seconds >= negamt)
+    {
+	Days++;
+	Seconds -= negamt;
+    }
+
+    negamt = 60 * 60;
+    while (Seconds >= negamt)
+    {
+	Hours++;
+	Seconds -= negamt;
+    }
+
+    negamt = 60;
+    while (Seconds >= negamt)
+    {
+	Minutes++;
+	Seconds -= negamt;
+    }
+
+    if(Years>0)
+    {
+	Result << Years << " year" << (Years==1 ? "" : "s");
+	if (Days)
+	    Result << ", " << Days << " day" << (Days==1 ? "" : "s");
+	if (Hours || Minutes || Seconds)
+	    Result << ", " << (Hours>10 ? "" : "0") << Hours << ":" <<
+		    (Minutes>10 ? "" : "0") << Minutes << ":" <<
+		    (Seconds>10 ? "" : "0") << Seconds;
+    }
+    else if(Days>0)
+    {
+	Result << Days << " day" << (Days==1 ? "" : "s");
+	if (Hours || Minutes || Seconds)
+	    Result << ", " << (Hours>10 ? "" : "0") << Hours << ":" <<
+		    (Minutes>10 ? "" : "0") << Minutes << ":" <<
+		    (Seconds>10 ? "" : "0") << Seconds;
+    }
+    else if(Hours>0)
+    {
+	Result << Hours << " hour" << (Hours==1 ? "" : "s");
+	if (Minutes)
+	    Result << ", " << Minutes << " minute" << (Minutes==1 ? "" : "s");
+	if (Seconds)
+	    Result << ", " << Seconds << " second" << (Seconds==1 ? "" : "s");
+    }
+    else if(Minutes>0)
+    {
+	Result << Minutes << " minute" << (Minutes==1 ? "" : "s");
+	if (Seconds)
+	    Result << ", " << Seconds << " second" << (Seconds==1 ? "" : "s");
+    }
+    else if(Seconds>0)
+    {
+	Result << Seconds << " second" << (Seconds==1 ? "" : "s");
+    }
+    else
+    {
+	Result << "now";
+    }
+    return Result;
 }
 

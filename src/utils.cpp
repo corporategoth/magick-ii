@@ -234,7 +234,7 @@ unsigned long FromHumanTime(mstring in)
 	case 'y':
 	    if (number != 0)
 	    {
-		total += (unsigned long) (number * 60 * 60 * 24 * 365.25);
+		total += number * (unsigned long)(60.0 * 60.0 * 24.0 * 365.25);
 		number = 0;
 	    }
 	    break;
@@ -242,7 +242,7 @@ unsigned long FromHumanTime(mstring in)
 	case 'w':
 	    if (number != 0)
 	    {
-		total += (number * 60 * 60 * 24 * 7);
+		total += number * 60 * 60 * 24 * 7;
 		number = 0;
 	    }
 	    break;
@@ -250,7 +250,7 @@ unsigned long FromHumanTime(mstring in)
 	case 'd':
 	    if (number != 0)
 	    {
-		total += (number * 60 * 60 * 24);
+		total += number * 60 * 60 * 24;
 		number = 0;
 	    }
 	    break;
@@ -258,7 +258,7 @@ unsigned long FromHumanTime(mstring in)
 	case 'h':
 	    if (number != 0)
 	    {
-		total += (number * 60 * 60);
+		total += number * 60 * 60;
 		number = 0;
 	    }
 	    break;
@@ -266,7 +266,7 @@ unsigned long FromHumanTime(mstring in)
 	case 'm':
 	    if (number != 0)
 	    {
-		total += (number * 60);
+		total += number * 60;
 		number = 0;
 	    }
 	    break;
@@ -311,6 +311,5 @@ mstring ToHumanTime(unsigned long in)
 	RET("unlimited");
     }
 
-    mDateTime mytime = Now() - ((double) (in+1) / (60.0 * 60.0 * 24.0));
-    RET(mytime.Ago());
+    RET(DisectTime((long) in));
 }

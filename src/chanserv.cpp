@@ -4863,7 +4863,7 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
 	if (haveset)
 	{
 	    output = "";
-	    output.Format("%5l  %s", cstored->Level->Value(),
+	    output.Format("%5d  %s", cstored->Level->Value(),
 					cstored->Level->Entry().c_str());
 	    ::send(mynick, source, output);
 	}
@@ -4986,19 +4986,35 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 							channel + ".");
 	    return;
 	}
-    }
-
-    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
-    if (cstored->Access_find(who))
-    {
-	::send(mynick, source, cstored->Access->Entry() +
-				" has been removed from  " + channel + ".");
-	cstored->Access_erase();
+	unsigned int i;
+	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+	for (i=1, cstored->Access = cstored->Access_begin();
+				i<atoi(who) && cstored->Access != cstored->Access_end();
+				i++, cstored->Access++) ;
+	if (cstored->Access != cstored->Access_end())
+	{
+		cstored->Access_erase();
+	}
+	else
+	{
+	    ::send(mynick, source, "Entry #" + who + " was not found on " + channel +
+							" access list.");
+	}
     }
     else
     {
-	::send(mynick, source, who + " was not found on " + channel +
+	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
+	if (cstored->Access_find(who))
+	{
+	    ::send(mynick, source, cstored->Access->Entry() +
+				" has been removed from  " + channel + ".");
+	    cstored->Access_erase();
+	}
+	else
+	{
+	    ::send(mynick, source, who + " was not found on " + channel +
 							" access list.");
+	}
     }
 }
 
@@ -5198,19 +5214,45 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 							channel + ".");
 	    return;
 	}
-    }
-
-    MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
-    if (cstored->Akick_find(who))
-    {
-	::send(mynick, source, "AKICK for " + cstored->Akick->Entry() +
-				" has been removed from  " + channel + ".");
-	cstored->Akick_erase();
+	unsigned int i;
+	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+	for (i=1, cstored->Akick = cstored->Akick_begin();
+				i<atoi(who) && cstored->Akick != cstored->Akick_end();
+				i++, cstored->Akick++) ;
+	if (cstored->Akick != cstored->Akick_end())
+	{
+		cstored->Akick_erase();
+	}
+	else
+	{
+	    ::send(mynick, source, "Entry #" + who + " was not found on " + channel +
+							" access list.");
+	}
     }
     else
     {
-	::send(mynick, source, "AKICK for " + who + " was not found on " +
-					    channel + " access list.");
+	if (!who.Contains("@"))
+	{
+	    ::send(mynick, source, "When specifying a mask, you MUST include a '@' symbol");
+	    return;
+	}
+	else if (!who.Contains("!"))
+	{
+	    who.Prepend("*!");
+	}
+
+	MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Akick"));
+	if (cstored->Akick_find(who))
+	{
+	    ::send(mynick, source, cstored->Akick->Entry() +
+				" has been removed from  " + channel + ".");
+	    cstored->Akick_erase();
+	}
+	else
+	{
+	    ::send(mynick, source, who + " was not found on " + channel +
+							" access list.");
+	}
     }
 }
 
@@ -5511,7 +5553,7 @@ void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
     }
 
     mstring channel   = params.ExtractWord(2, " ");
-    mstring text      = params.ExtractWord(4, " ");
+    mstring text      = params.After(" ", 3);
 
     if (!Parent->chanserv.IsStored(channel))
     {

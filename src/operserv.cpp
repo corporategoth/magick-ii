@@ -1405,7 +1405,7 @@ OTHER:
 	    output << ", ";
 	if (Parent->commserv.LCK_OpenMemos())
 	    output << IRC_Bold;
-	output << "OpenMemos";
+	output << "Open Memos";
 	if (Parent->commserv.LCK_OpenMemos())
 	    output << IRC_Off;
     }

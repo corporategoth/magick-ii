@@ -594,14 +594,14 @@ mstring& mstring::operator <<(unsigned int i)
 mstring& mstring::operator <<(long l)
 {
 	mstring s;
-	s.Format("%l",l);
+	s.Format("%d",l);
 	return *this<<s;
 }
 
 mstring& mstring::operator <<(unsigned long l)
 {
 	mstring s;
-	s.Format("%lu",l);
+	s.Format("%u",l);
 	return *this<<s;
 }
 

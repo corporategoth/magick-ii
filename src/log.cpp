@@ -131,7 +131,7 @@ void wxLogVerbose(const char *szFormat, ...)
 void wxLogSysErrorHelper(long lErrCode)
 {
   char szErrMsg[LOG_BUFFER_SIZE / 2];
-  sprintf(szErrMsg, " (error %ld: %s)", lErrCode, wxSysErrorMsg(lErrCode));
+  sprintf(szErrMsg, " (error %d: %s)", lErrCode, wxSysErrorMsg(lErrCode));
   strncat(s_szBuf, szErrMsg, sizeof(s_szBuf) - strlen(s_szBuf));
 
   wxLog::OnLog(wxLOG_Error, s_szBuf);

@@ -38,6 +38,7 @@ Magick::Magick(int inargc, char **inargv)
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
 
+    level=0;
     reconnect=true;
     loggertask.open();
     events.open();
@@ -1329,7 +1330,7 @@ bool Magick::get_config_values()
     else
 	operserv.expire_sadmin = FromHumanTime("1y");
 
-    in->Read(ts_OperServ+"CLONE_MAX",&operserv.clone_limit,50);
+    in->Read(ts_OperServ+"MAX_CLONE",&operserv.max_clone,50);
     in->Read(ts_OperServ+"CLONE_LIMIT",&operserv.clone_limit,2);
     in->Read(ts_OperServ+"DEF_CLONE",&operserv.def_clone,"Maximum connections from one host exceeded");
     in->Read(ts_OperServ+"FLOOD_TIME",&value_mstring,"10s");

@@ -193,6 +193,8 @@ public:
 
 };
 
+mstring DisectTime(long intime);
+
 wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);
 wxInputStream& operator>>(wxInputStream& is, mDateTime& src);
 

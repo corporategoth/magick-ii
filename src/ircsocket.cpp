@@ -278,6 +278,11 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 }
 
 
+mstring EventTask::SyncTime()
+{
+    NFT("EventTask::SyncTime");
+    RET(ToHumanTime(Parent->config.Cycletime() - (unsigned long)last_save.SecondsSince()));
+}
 
 int EventTask::open(void *in)
 {

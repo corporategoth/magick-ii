@@ -455,7 +455,7 @@ mstring mVariant::AsString()const
     else if(valuetype=="int")
 	dummystring.Format("%d",IntValue);
     else if(valuetype=="long")
-	dummystring.Format("%l",IntValue);
+	dummystring.Format("%d",LongValue);
     else if(valuetype=="void *")
 	dummystring.Format("%p",PtrValue);
     else if(valuetype=="short")
@@ -467,7 +467,7 @@ mstring mVariant::AsString()const
     else if(valuetype=="unsigned int")
 	dummystring.Format("%u",UIntValue);
     else if(valuetype=="unsigned long")
-	dummystring.Format("%lu",ULongValue);
+	dummystring.Format("%u",ULongValue);
     else if(valuetype=="unsigned short")
 	dummystring.Format("%u",UShortValue);
     else if(valuetype=="NULL")

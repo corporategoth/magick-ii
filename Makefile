@@ -41,7 +41,6 @@ rmexec:
 magick: subdirs link
 
 subdirs:
-	helper/build-ver
 	@for x in $(SUBDIRS) ./src; \
 	do	cd $$x; \
 		if [ -f ./configure ]; \
@@ -52,6 +51,7 @@ subdirs:
 	done
 
 link:
+	helper/build-ver
 	gcc $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
 	strip magick
