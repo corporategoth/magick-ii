@@ -50,13 +50,13 @@
 02 =::de modo que não possa ser feito exame por qualquer um mais.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =::A LIGAÇÃO DO REGISTO DA AJUDA IDENTIFICA
-06 =::O GHOST DO INFO RECUPERA A LISTA
-07 =REGD::A GOTA UNLINK ESCRAVOS DO ANFITRIÃO
-08 =REGD::ALCANCE IGNORAM O JOGO EMITEM
+05 =::    HELP         REGISTER     LINK         IDENTIFY
+06 =::    INFO         GHOST        RECOVER      LIST
+07 =REGD::    DROP         UNLINK       HOST         SLAVES
+08 =REGD::    ACCESS       IGNORE       SET          SEND
 09 =SOP::And as a Services Operator, the following commands:
-10 =SOP::O FECHAMENTO PROIBIDO GETPASS DESTRAVA
-11 =SOP::SUSPENDA UNSUSPEND VIVO
+10 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
+11 =SOP::    SUSPEND      UNSUSPEND    LIVE
 12 =::
 13 =::Você pode pedir a ajuda na sintaxe e na funcionalidade
 14 =::de alguns e de todos os comandos acima especificando
@@ -66,7 +66,7 @@
 18 =::pode mudar o que é indicado acima.
 
 [NICKSERV/REGISTER]
-01 =::REGISTO < senha >
+01 =::REGISTER < senha >
 02 =::
 03 =::Isto fará seu nickname reconhecido com serviços.
 04 =::Fazendo so, os serviços reservarão seu nickname para
@@ -87,7 +87,7 @@
 19 =::pode contatar um operador dos serviços para recuperá-lo para você.
 
 [NICKSERV/DROP]
-01 =REGD::GOTA [nickname]
+01 =REGD::DROP [nickname]
 02 =REGD::
 03 =REGD::Isto vontade de-register seu nickname.  Fazendo assim a vontade
 04 =REGD::remova-o de todas as listas que do acesso de canaleta você é on,
@@ -104,7 +104,7 @@
 12B=SOP::Otherwise it will drop your current nickname.
 
 [NICKSERV/LINK]
-01 =::Senha > < do nickname > da LIGAÇÃO <
+01 =::LINK < do nickname > < Senha >
 02 =::
 03 =::Isto ligará seu nickname atual another, a fazer
 04 =::ele seu nickname do anfitrião.  Disso point, ambos os nicknames
@@ -130,7 +130,7 @@
 11 =REGD::e é-lhe ligado you, unlinked preferivelmente.
 
 [NICKSERV/HOST]
-01 =REGD::ANFITRIÃO [nickname]
+01 =REGD::HOST [nickname]
 02 =REGD::
 03 =REGD::Isto mudará seu nickname do anfitrião ao seu atual
 04 =REGD::nickname, ou o nickname especificado após o anfitrião
@@ -150,7 +150,7 @@
 06 =REGD::Os nicknames slave são criados com o comando da LIGAÇÃO.
 
 [NICKSERV/IDENTIFY]
-01 =::IDENTIFIQUE < a senha >
+01 =::IDENTIFY < a senha >
 02 =::
 03 =::Isto identificá-lo-á a seu nickname.  Isto está
 04 =::requerido se você tiver a proteção da matança on, e a tentar
@@ -165,7 +165,7 @@
 13 =::um que você se ajustou com o comando da SENHA do REGISTO ou do JOGO.
 
 [NICKSERV/INFO]
-01 =::Info < nickname >
+01 =::INFO < nickname >
 02 =::
 03 =::Isto dar-lhe-á a vária informação sobre dado
 04 =::nickname.  Isto inclui a informação tal como seus
@@ -182,7 +182,7 @@
 15 =OPER::os usuários normais NÃO PODEM ver este campo.
 
 [NICKSERV/GHOST]
-01 =::Senha > < do nickname > do GHOST <
+01 =::GHOST < do nickname > < Senha >
 02 =::
 03 =::Isto matará um usuário (ou o serviço) que esteja prendendo
 04 =::seu nickname da rede.  Isto é usado
@@ -194,7 +194,7 @@
 10 =::um que você se ajustou com o comando da SENHA do REGISTO ou do JOGO.
 
 [NICKSERV/RECOVER]
-01 =::RECUPERE < a senha > < do nickname >
+01 =::RECOVER < do nickname > < a senha >
 02 =::
 03 =::Isto matará um usuário que esteja usando seu nickname
 04 =::e os serviços farão exame d eles mesmos.  Se você não

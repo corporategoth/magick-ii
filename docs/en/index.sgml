@@ -1015,10 +1015,28 @@ to offer files to users through the public file system.
 
 <sect>Questions and Answers<p>
 <sect1>My IRCD isn't supported, what can I do?<p>
-If this is the case, and none of the pre-defined IRCD's are compatible
-with it, please find out exactly (at a protocol level) how your IRCD
-is different to the ones Magick supports (or ask the IRCD's author) and 
-email the list of differences to the Magick Development Team.
+   If this is the case, and none of the pre-defined IRCD's are
+compatible with it, please find out exactly (at a server to server
+protocol level) how your IRCD is different to the ones Magick supports
+(or ask the IRCD's author) and email the list of differences to the
+Magick Development Team <htmlurl url="mailto:magick-devel@magick.tm" name="magick-devel@magick.tm">.
+
+Here are some of the IRCD's we know are compatible with ones supported:
+<tscreen><verb>
+IRCD                    COMPATIBLE
+------------------------------------------------
+Wrecked IRCD            DALNet >= 4.4.15
+</verb></tscreen>
+
+<sect1>I like these services and want to pay the author!<p>
+   OK, so this isn't something I hear, but a little wishful thinking
+never hurts.  If you want to send me something by snail mail, then
+feel free to do so to PO BOX 893, SUTHERLAND, NSW, 2232, Australia.
+I always like tokens of appreciation, puts a smile on my face and
+makes the whole thing worth while (no, not necessarily money, but
+that is always nice!).  Remember tho, if you ARE going to send me
+money, don't send cash, and ensure it is cashable in Australia (an
+international postal order is usually best).
 
 <sect>License
 <p>

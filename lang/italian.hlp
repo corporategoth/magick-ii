@@ -50,12 +50,12 @@
 02 =::in moda da non poterlo prendere esso da chiunque altrimenti.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =::IL COLLEGAMENTO DEL REGISTRO DI AIUTO IDENTIFICA
-06 =::IL FANTASMA DI INFO RECUPERA LA LISTA
-07 =REGD::LA GOCCIA SCONNETTE GLI SCHIAVI OSPITE
-08 =REGD::ACCEDERE A IGNORANO L' INSIEME TRASMETTONO
+05 =::    HELP         REGISTER     LINK         IDENTIFY
+06 =::    INFO         GHOST        RECOVER      LIST
+07 =REGD::    DROP         UNLINK       HOST         SLAVES
+08 =REGD::    ACCESS       IGNORE       SET          SEND
 09 =SOP::And as a Services Operator, the following commands:
-10 =SOP::LA SERRATURA PROIBITA A GETPASS SBLOCCA
+10 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
 11 =SOP::    SUSPEND      UNSUSPEND    LIVE
 12 =::
 13 =::Potete chiedere l' aiuto sulla sintassi e sulla funzionalità
@@ -66,7 +66,7 @@
 18 =::      may change what is displayed above.
 
 [NICKSERV/REGISTER]
-01 =::REGISTRO < parola d'accesso >
+01 =::REGISTER < parola d'accesso >
 02 =::
 03 =::Ciò farà il vostro nickname riconosciuto con i servizi.
 04 =::Facendo so, i servizi riserveranno il vostro nickname per
@@ -87,7 +87,7 @@
 19 =::può mettersi in contatto con un operatore di servizi per richiamarvelo per.
 
 [NICKSERV/DROP]
-01 =REGD::GOCCIA [nickname]
+01 =REGD::DROP [nickname]
 02 =REGD::
 03 =REGD::Ciò volontà de-register il vostro nickname.  Facendo così volontà
 04 =REGD::rimuoverli da tutte le liste che di accesso di scanalatura siete on,
@@ -104,7 +104,7 @@
 12B=SOP::Otherwise it will drop your current nickname.
 
 [NICKSERV/LINK]
-01 =::Parola d'accesso > < di nickname > di COLLEGAMENTO <
+01 =::LINK < di nickname > < Parola d'accesso >
 02 =::
 03 =::Ciò collegherà il vostro nickname corrente another, a fare
 04 =::esso il vostro nickname ospite.  Da quello point, entrambi i nicknames
@@ -130,7 +130,7 @@
 11 =REGD::ed è collegato you, ad esso sarà sconnesso preferibilmente.
 
 [NICKSERV/HOST]
-01 =REGD::CALCOLATORE CENTRALE [nickname]
+01 =REGD::HOST [nickname]
 02 =REGD::
 03 =REGD::Ciò cambierà il vostro nickname ospite al vostro corrente
 04 =REGD::nickname, o il nickname specificato dopo il calcolatore centrale
@@ -150,7 +150,7 @@
 06 =REGD::I nicknames slave sono creati con il comando di COLLEGAMENTO.
 
 [NICKSERV/IDENTIFY]
-01 =::IDENTIFICARE < la parola d'accesso >
+01 =::IDENTIFY < la parola d'accesso >
 02 =::
 03 =::Ciò li identificherà al vostro nickname.  Ciò è
 04 =::richiesto se avete protezione di uccisione on, e provate
@@ -165,7 +165,7 @@
 13 =::one you set with the REGISTER or SET PASSWORD command.
 
 [NICKSERV/INFO]
-01 =::Info < nickname >
+01 =::INFO < nickname >
 02 =::
 03 =::Ciò vi fornirà le varie informazioni sull' dato
 04 =::nickname.  Ciò include le informazioni come loro
@@ -182,7 +182,7 @@
 15 =OPER::gli utenti normali NON POSSONO vedere questo campo.
 
 [NICKSERV/GHOST]
-01 =::Parola d'accesso > < di nickname > del FANTASMA <
+01 =::GHOST < di nickname > < Parola d'accesso >
 02 =::
 03 =::Ciò ucciderà un utente (o servizio) che sta tenendo
 04 =::il vostro nickname dalla rete.  Ciò è usata
@@ -194,7 +194,7 @@
 10 =::uno che vi siete regolati con il comando di PAROLA D'ACCESSO dell' INSIEME o del REGISTRO.
 
 [NICKSERV/RECOVER]
-01 =::RECUPERARE < la parola d'accesso > < di nickname >
+01 =::RECOVER < di nickname > < la parola d'accesso >
 02 =::
 03 =::Ciò ucciderà un utente che sta usando il vostro nickname
 04 =::ed i servizi lo prenderanno essi stessi.  Se non

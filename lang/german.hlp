@@ -50,13 +50,13 @@
 02 =::damit es nicht durch niemand sonst genommen werden kann.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =::HILFE REGISTERCLink KENNZEICHNEN
-06 =::INFOCGeist STELLEN LISTE WIEDERHER
-07 =REGD::TROPFEN LÖSEN HAUPTRECHNERCSklaven
-08 =REGD::GREIFEN SIE IGNORIEREN SET SENDEN ZU
+05 =::    HELP         REGISTER     LINK         IDENTIFY
+06 =::    INFO         GHOST        RECOVER      LIST
+07 =REGD::    DROP         UNLINK       HOST         SLAVES
+08 =REGD::    ACCESS       IGNORE       SET          SEND
 09 =SOP::And as a Services Operator, the following commands:
-10 =SOP::GETPASS VERBOTENE VERRIEGELUNG ENTSPERREN
-11 =SOP::VERSCHIEBEN SIE PHASEN UNSUSPEND
+10 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
+11 =SOP::    SUSPEND      UNSUSPEND    LIVE
 12 =::
 13 =::Sie können um Hilfe auf der Syntax und der Funktionalität bitten
 14 =::von irgendwelchen und von allen oben genannten Befehle durch das Spezifizieren
@@ -66,7 +66,7 @@
 18 =::kann ändern, was oben angezeigt wird.
 
 [NICKSERV/REGISTER]
-01 =::REGISTER < Kennwort >,
+01 =::REGISTER < Kennwort >
 02 =::
 03 =::Dieses bildet Ihren Nickname, der mit Dienstleistungen erkannt wird.
 04 =::Indem sie so, tun, heben Dienstleistungen Ihren Nickname für auf
@@ -87,7 +87,7 @@
 19 =::kann mit einem Service-Bediener in Verbindung treten, um es für Sie zurückzuholen.
 
 [NICKSERV/DROP]
-01 =REGD::TROPFEN [nickname]
+01 =REGD::DROP [nickname]
 02 =REGD::
 03 =REGD::Dieses Wille de-register Ihr Nickname.  Willen so tun
 04 =REGD::löschen Sie Sie von allen Kanalzugrifflisten, die Sie sind on,
@@ -104,7 +104,7 @@
 12B=SOP::Otherwise it will drop your current nickname.
 
 [NICKSERV/LINK]
-01 =::LINK< Nickname> < Kennwort >,
+01 =::LINK < Nickname> < Kennwort >
 02 =::
 03 =::Dieses bindet Ihren aktuellen Nickname mit another, dem Bilden
 04 =::es Ihr Hauptrechnernickname.  Von dem point, beide Nicknames
@@ -117,7 +117,7 @@
 11 =::ES WIRD FALLENGELASSEN, BEVOR MAN MIT IHREM HAUPTRECHNER GEBUNDEN WIRD.
 
 [NICKSERV/UNLINK]
-01 =REGD::LÖSEN Sie [nick]
+01 =REGD::UNLINK [nick]
 02 =REGD::
 03 =REGD::Dieses löst Ihren Einschnitt von Ihrem Hauptrechner nick, zuerst
 04 =REGD::allen settings, Zugriff kopierend und ignorieren Sie Listen.
@@ -130,7 +130,7 @@
 11 =REGD::und es wird mit you, ihm wird gelöst anstatt gebunden.
 
 [NICKSERV/HOST]
-01 =REGD::HAUPTRECHNER [nickname]
+01 =REGD::HOST [nickname]
 02 =REGD::
 03 =REGD::Dieses ändert Ihren Hauptrechnernickname zu Ihrem aktuellen
 04 =REGD::nickname, oder der Nickname spezifiziert nach dem Hauptrechner
@@ -150,7 +150,7 @@
 06 =REGD::Sklavennicknames werden mit dem LINK-Befehl erstellt.
 
 [NICKSERV/IDENTIFY]
-01 =::KENNZEICHNEN Sie < Kennwort >,
+01 =::IDENTIFY < Kennwort >
 02 =::
 03 =::Dieses kennzeichnet Sie zu Ihrem Nickname.  Dieses ist
 04 =::benötigt, wenn Sie Abbruch Schutz on, haben und versuchen
@@ -165,7 +165,7 @@
 13 =::ein, das Sie mit dem REGISTER- oder SETCKennwort-Befehl einstellten.
 
 [NICKSERV/INFO]
-01 =::INFO < Nickname >,
+01 =::INFO < Nickname >
 02 =::
 03 =::Dieses gibt Ihnen verschiedene Informationen über gegeben
 04 =::Nickname.  Dieses umfaßt Informationen wie ihr
@@ -182,7 +182,7 @@
 15 =OPER::normale Benutzer KÖNNEN nicht dieses Feld sehen.
 
 [NICKSERV/GHOST]
-01 =::GEIST< Nickname> < Kennwort >,
+01 =::GHOST < Nickname> < Kennwort >
 02 =::
 03 =::Dieses beendet einen Benutzer (oder Service) der anhält
 04 =::Ihr Nickname vom Netz.  Dieses wird verwendet
@@ -194,7 +194,7 @@
 10 =::ein, das Sie mit dem REGISTER- oder SETCKennwort-Befehl einstellten.
 
 [NICKSERV/RECOVER]
-01 =::STELLEN Sie < Nickname> < Kennwort > wiederher,
+01 =::RECOVER < Nickname> < Kennwort >
 02 =::
 03 =::Dieses beendet einen Benutzer, der verwendet Ihren Nickname
 04 =::und Dienstleistungen nehmen es selbst.  Wenn Sie nicht

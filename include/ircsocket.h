@@ -25,6 +25,9 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/09/27 11:21:37  prez
+** Added a BURST mode ...
+**
 ** Revision 1.42  2000/09/09 02:17:47  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -143,6 +146,8 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     time_t htm_gap;
     size_t htm_threshold;
     mSocket sock;
+    bool i_burst;
+    mDateTime i_synctime;
 public:
     int send(const mstring& data);
     virtual int open(void *);
@@ -160,6 +165,9 @@ public:
     void HTM_Threshold(size_t in);
     void HTM(bool in);
     size_t Average(time_t secs = 0);
+    bool Burst();
+    mDateTime SyncTime();
+    void EndBurst();
     void DumpB();
     void DumpE();
 };

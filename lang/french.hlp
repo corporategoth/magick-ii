@@ -50,13 +50,13 @@
 02 =::de sorte qu'il ne puisse être pris autrement par n'importe qui.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =::LE LIEN DE REGISTRE D'CAide IDENTIFIENT
-06 =::L'COrdinateur DE SECOURS D'CInformation RÉCUPÈRENT LA LISTE
-07 =REGD::LA BAISSE SÉPARER/ DES ESCLAVES DE CENTRE SERVEUR
-08 =REGD::ACCÉDEZ IGNORENT LE POSITIONNEMENT ENVOIENT
+05 =::    HELP         REGISTER     LINK         IDENTIFY
+06 =::    INFO         GHOST        RECOVER      LIST
+07 =REGD::    DROP         UNLINK       HOST         SLAVES
+08 =REGD::    ACCESS       IGNORE       SET          SEND
 09 =SOP::And as a Services Operator, the following commands:
-10 =SOP::LA SERRURE INTERDITE PAR GETPASS SE DÉVERROUILLENT
-11 =SOP::SUSPENDEZ UNSUSPEND DE PHASE
+10 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
+11 =SOP::    SUSPEND      UNSUSPEND    LIVE
 12 =::
 13 =::Vous peut demander l'aide sur la syntaxe et la fonctionnalité
 14 =::de quelles et de toutes les commandes ci-dessus par l'indication
@@ -66,7 +66,7 @@
 18 =::      may change what is displayed above.
 
 [NICKSERV/REGISTER]
-01 =::REGISTRE < mot de passe >
+01 =::REGISTER < mot de passe >
 02 =::
 03 =::Ceci fera votre surnom identifié avec des services.
 04 =::En faisant so, les services réserveront votre surnom pour
@@ -87,7 +87,7 @@
 19 =::peut contacter un opérateur de services pour le rechercher pour vous.
 
 [NICKSERV/DROP]
-01 =REGD::BAISSE [nickname]
+01 =REGD::DROP [nickname]
 02 =REGD::
 03 =REGD::Ceci volonté de-register votre surnom.  Faisant ainsi la volonté
 04 =REGD::retirez-vous de toutes les listes d'accès de canal que vous êtes on,
@@ -104,7 +104,7 @@
 12B=SOP::Otherwise it will drop your current nickname.
 
 [NICKSERV/LINK]
-01 =::Mot de passe > de < surnom > de LIEN <
+01 =::LINK < surnom > < Mot de passe >
 02 =::
 03 =::Ceci joindra votre surnom actuel another, à la fabrication
 04 =::il votre surnom de centre serveur.  De cela point, les deux surnoms
@@ -117,7 +117,7 @@
 11 =::IL SERA RELÂCHÉ AVANT D'CÊtre JOINT À VOTRE CENTRE SERVEUR.
 
 [NICKSERV/UNLINK]
-01 =REGD::SÉPARER/ [nick]
+01 =REGD::UNLINK [nick]
 02 =REGD::
 03 =REGD::Ceci séparer/ votre entaille de votre centre serveur nick, d'abord
 04 =REGD::en reproduisant le chacun des settings, accès et ignorez les listes.
@@ -130,7 +130,7 @@
 11 =REGD::et il est joint you, à lui sera séparer/ à la place.
 
 [NICKSERV/HOST]
-01 =REGD::CENTRE SERVEUR [nickname]
+01 =REGD::HOST [nickname]
 02 =REGD::
 03 =REGD::Ceci changera votre surnom de centre serveur en votre actuel
 04 =REGD::nickname, ou le surnom indiqué après le centre serveur
@@ -150,7 +150,7 @@
 06 =REGD::Des surnoms slave sont créés avec la commande de LIEN.
 
 [NICKSERV/IDENTIFY]
-01 =::IDENTIFIEZ l'< mot de passe >
+01 =::IDENTIFY l'< mot de passe >
 02 =::
 03 =::Ceci vous identifiera à votre surnom.  C'est
 04 =::requis si vous avez la protection de mise à mort on, et essayez
@@ -182,7 +182,7 @@
 15 =OPER::les utilisateurs normaux NE PEUVENT PAS voir cette zone.
 
 [NICKSERV/GHOST]
-01 =::Mot de passe > d'< surnom > d'cOrdinateur DE SECOURS <
+01 =::GHOST d'< surnom > < Mot de passe >
 02 =::
 03 =::Ceci détruira un utilisateur (ou le service) qui se tient
 04 =::votre surnom du réseau.  Ceci est utilisé
@@ -194,7 +194,7 @@
 10 =::un que vous avez placé avec la commande de MOT DE PASSE de REGISTRE ou de POSITIONNEMENT.
 
 [NICKSERV/RECOVER]
-01 =::RÉCUPÉREZ < le mot de passe > de < surnom >
+01 =::RECOVER < surnom > < le mot de passe >
 02 =::
 03 =::Ceci détruira un utilisateur qui utilise votre surnom
 04 =::et les services le prendront eux-mêmes.  Si vous pas

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2000/09/27 11:21:39  prez
+** Added a BURST mode ...
+**
 ** Revision 1.67  2000/09/18 08:17:58  prez
 ** Intergrated mpatrol into the xml/des sublibs, and did
 ** some minor fixes as a result of mpatrol.
@@ -487,7 +490,11 @@ void ServMsg::do_Languages(mstring mynick, mstring source, mstring params)
 	    val.Truncate(val.Find(".", true));
 	    if (output.Len())
 		output += ", ";
+	    if (val.UpperCase() == Parent->nickserv.DEF_Language())
+		output += IRC_Bold;
 	    output += val.UpperCase();
+	    if (val.UpperCase() == Parent->nickserv.DEF_Language())
+		output += IRC_Off;
 	}
 	if (output.Len())
 	    ::send(mynick, source, "    " + output);

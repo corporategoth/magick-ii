@@ -50,12 +50,12 @@
 02 =::para no poderlo tomar por cualquier persona .
 03 =::
 04 =::This service allows you to use the following commands:
-05 =::LA CONEXIÓN DEL REGISTRO DE LA AYUDA IDENTIFICA
-06 =::EL FANTASMA DEL INFO RECUPERA LA LISTA
-07 =REGD::LA GOTA DESATA ESCLAVOS DEL ORDENADOR PRINCIPAL
-08 =REGD::TENGA ACCESO NO HACEN CASO DEL CONJUNTO ENVÍAN
+05 =::    HELP         REGISTER     LINK         IDENTIFY
+06 =::    INFO         GHOST        RECOVER      LIST
+07 =REGD::    DROP         UNLINK       HOST         SLAVES
+08 =REGD::    ACCESS       IGNORE       SET          SEND
 09 =SOP::And as a Services Operator, the following commands:
-10 =SOP::EL BLOQUEO PROHIBIDO GETPASS ABRE
+10 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
 11 =SOP::    SUSPEND      UNSUSPEND    LIVE
 12 =::
 13 =::Usted puede solicitar ayuda en la el sintaxis y las funciones
@@ -66,7 +66,7 @@
 18 =::puede cambiar qué se visualiza arriba.
 
 [NICKSERV/REGISTER]
-01 =::REGISTRO < palabra de paso >
+01 =::REGISTER < palabra de paso >
 02 =::
 03 =::Esto hará su apodo reconocido con servicios.
 04 =::Haciendo so, los servicios reservarán su apodo para
@@ -87,7 +87,7 @@
 19 =::puede entrar en contacto con a un operador de los servicios para extraerlo para usted.
 
 [NICKSERV/DROP]
-01 =REGD::GOTA [nickname]
+01 =REGD::DROP [nickname]
 02 =REGD::
 03 =REGD::Esto voluntad de-register su apodo.  Haciendo tan voluntad
 04 =REGD::quítele de todas las listas del acceso de canal que usted es on,
@@ -104,7 +104,7 @@
 12B=SOP::Otherwise it will drop your current nickname.
 
 [NICKSERV/LINK]
-01 =::Palabra de paso > del < apodo > de la CONEXIÓN <
+01 =::LINK < Palabra de paso > < apodo >
 02 =::
 03 =::Esto conectará su apodo actual another, a la fabricación
 04 =::él su apodo del ordenador principal.  De eso point, ambos apodos
@@ -117,7 +117,7 @@
 11 =::SERÁ CAÍDO ANTES DE SER CONECTADA A SU ORDENADOR PRINCIPAL.
 
 [NICKSERV/UNLINK]
-01 =REGD::DESATE [nick]
+01 =REGD::UNLINK [nick]
 02 =REGD::
 03 =REGD::Esto desatará su mella de su ordenador principal nick, primero
 04 =REGD::duplicando settings, el acceso y no haga caso de las listas.
@@ -130,7 +130,7 @@
 11 =REGD::y se conecta you, a él será desatado en lugar de otro.
 
 [NICKSERV/HOST]
-01 =REGD::ORDENADOR PRINCIPAL [nickname]
+01 =REGD::HOST [nickname]
 02 =REGD::
 03 =REGD::Esto cambiará su apodo del ordenador principal a su actual
 04 =REGD::nickname, o el apodo especificado después del ordenador principal
@@ -150,7 +150,7 @@
 06 =REGD::Los apodos auxiliares se crean con el comando de la CONEXIÓN.
 
 [NICKSERV/IDENTIFY]
-01 =::IDENTIFIQUE la < palabra de paso >
+01 =::IDENTIFY < palabra de paso >
 02 =::
 03 =::Esto le identificará a su apodo.  Esto es
 04 =::requerido si usted tiene protección de la matanza on, e intenta
@@ -165,7 +165,7 @@
 13 =::uno que usted fijó con el comando de la PALABRA DE PASO del REGISTRO o del CONJUNTO.
 
 [NICKSERV/INFO]
-01 =::Info < apodo >
+01 =::INFO < apodo >
 02 =::
 03 =::Esto le dará la varia información sobre dado
 04 =::apodo.  Esto incluye la información tal como sus
@@ -182,7 +182,7 @@
 15 =OPER::los utilizadores normales NO PUEDEN ver este campo.
 
 [NICKSERV/GHOST]
-01 =::Palabra de paso > del < apodo > del FANTASMA <
+01 =::GHOST < apodo > < Palabra de paso >
 02 =::
 03 =::Esto matará a un utilizador (o a servicio) que esté sosteniendo
 04 =::su apodo de la red.  Se utiliza esto
@@ -194,7 +194,7 @@
 10 =::uno que usted fijó con el comando de la PALABRA DE PASO del REGISTRO o del CONJUNTO.
 
 [NICKSERV/RECOVER]
-01 =::RECUPERE < la palabra de paso > del < apodo >
+01 =::RECOVER < apodo > < la palabra de paso >
 02 =::
 03 =::Esto matará a un utilizador que esté utilizando su apodo
 04 =::y los servicios lo tomarán ellos mismos.  Si usted no

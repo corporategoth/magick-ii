@@ -2,6 +2,7 @@
 #
 # Check for missing tags in language files.
 #
+# By, Preston Elder
 
 die "Syntax: $0 sourcefile targetfile\n" unless ($ARGV[1]);
 

@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.132  2000/09/27 11:21:39  prez
+** Added a BURST mode ...
+**
 ** Revision 1.131  2000/09/22 12:26:12  prez
 ** Fixed that pesky bug with chanserv not seeing modes *sigh*
 **
@@ -287,198 +290,69 @@ static const char *ident = "@(#)$Id$";
 #include "lockable.h"
 #include "magick.h"
 
-Protocol::Protocol()
+void Protocol::SetTokens(unsigned int type)
 {
-    NFT("Protocol::Protocol");
-    i_Number = 0;
-    i_NickLen = 9;
-    i_MaxLine = 450;
-    i_Globops = false;
-    i_Tokens = false;
-    i_SVS = false;
-    i_SVSHOST = false;
-    i_P12 = false;
-    i_TSora = false;
-    i_Akill = 0;
-    i_Signon = 0000;
-    i_Modes = 3;
-    i_ChanModeArg = "ovbkl";
-    i_Server = "SERVER %s %d :%s";
-    i_Protoctl = "";
+    FT("Protocol::SetTokens", (type));
 
-    tokens["!"] = "PRIVMSG";
-    tokens["\\"] = "WHO";
-    tokens["#"] = "WHOIS";
-    tokens["$"] = "WHOWAS";
-    tokens["%"] = "USER";
-    tokens["&"] = "NICK";
-    tokens["'"] = "SERVER";
-    tokens["("] = "LIST";
-    tokens[")"] = "TOPIC";
-    tokens["*"] = "INVITE";
-    tokens["+"] = "VERSION";
-    tokens[","] = "QUIT";
-    tokens["-"] = "SQUIT";
-    tokens["."] = "KILL";
-    tokens["/"] = "INFO";
-    tokens["0"] = "LINKS";
-    tokens["1"] = "SUMMON";
-    tokens["2"] = "STATS";
-    tokens["3"] = "USERS";
-    tokens["4"] = "HELP";
-    tokens["5"] = "ERROR";
-    tokens["6"] = "AWAY";
-    tokens["7"] = "CONNECT";
-    tokens["8"] = "PING";
-    tokens["9"] = "PONG";
-    tokens[";"] = "OPER";
-    tokens["<"] = "PASS";
-    tokens[">"] = "TIME";
-    tokens["="] = "WALLOPS";
-    tokens["?"] = "NAMES";
-    tokens["@"] = "ADMIN";
-    tokens["B"] = "NOTICE";
-    tokens["C"] = "JOIN";
-    tokens["D"] = "PART";
-    tokens["E"] = "LUSERS";
-    tokens["F"] = "MOTD";
-    tokens["G"] = "MODE";
-    tokens["H"] = "KICK";
-    tokens["I"] = "SERVICE";
-    tokens["J"] = "USERHOST";
-    tokens["K"] = "ISON";
-    tokens["L"] = "SQUERY";
-    tokens["M"] = "SERVLIST";
-    tokens["N"] = "SERVSET";
-    tokens["O"] = "REHASH";
-    tokens["P"] = "RESTART";
-    tokens["Q"] = "CLOSE";
-    tokens["R"] = "DIE";
-    tokens["S"] = "HASH";
-    tokens["T"] = "DNS";
-    tokens["U"] = "SILENCE";
-    tokens["V"] = "AKILL";
-    tokens["W"] = "KLINE";
-    tokens["X"] = "UNKLINE";
-    tokens["Y"] = "RAKILL";
-    tokens["Z"] = "GNOTICE";
-    tokens["["] = "GOPER";
-    tokens["]"] = "GLOBOPS";
-    tokens["^"] = "LOCOPS";
-    tokens["_"] = "PROTOCTL";
-    tokens["`"] = "WATCH";
-    tokens["b"] = "TRACE";
-    tokens["c"] = "SQLINE";
-    tokens["d"] = "UNSQLINE";
-    tokens["e"] = "SVSNICK";
-    tokens["f"] = "SVSNOOP";
-    tokens["g"] = "PRIVMSG NickServ :IDENTIFY";
-    tokens["h"] = "SVSKILL";
-    tokens["i"] = "PRIVMSG NickServ";
-    tokens["j"] = "PRIVMSG ChanServ";
-    tokens["k"] = "PRIVMSG OperServ";
-    tokens["l"] = "PRIVMSG MemoServ";
-    tokens["m"] = "SERVICES";
-    tokens["n"] = "SVSMODE";
-    tokens["o"] = "SAMODE";
-    tokens["p"] = "CHATOPS";
-    tokens["q"] = "ZLINE";
-    tokens["r"] = "UNZLINE";
-    tokens["s"] = "PRIVMSG HelpServ";
-    DumpB();
-}
-
-void Protocol::Set(unsigned int in)
-{
-    FT("Protocol::Set", (in));
-
-    // WE NEVER set 'i_Tokens', thats set with the PROTCTL line.
-
-    DumpB();
-    switch (in)
+    tokens.clear();
+    switch (type)
     {
-    case 0: /* RFC */
-	i_Signon = 0000;
-	i_Akill = 2;
+    case 1000: /* ircu >= 2.10.x */
+	tokens["AB"] = "ADMIN";
+	tokens["A"]  = "AWAY";
+	tokens["CN"] = "CNOTICE";
+	tokens["CO"] = "CONNECT";
+	tokens["CP"] = "CPRIVMSG";
+	tokens["C"]  = "CREATE";
+	tokens["DE"] = "DESTRUCT";
+	tokens["DS"] = "DESYNCH";
+	tokens["EB"] = "END_OF_BURST";
+	tokens["EA"] = "EOB_ACK";
+	tokens["Y"]  = "ERROR";
+	tokens["GL"] = "GLINE";
+	tokens["F"]  = "INFO";
+	tokens["I"]  = "INVITE";
+	tokens["J"]  = "JOIN";
+	tokens["K"]  = "KICK";
+	tokens["D"]  = "KILL";
+	tokens["LI"] = "LINKS";
+	tokens["LU"] = "LUSERS";
+	tokens["M"]  = "MODE";
+	tokens["MO"] = "MOTD";
+	tokens["E"]  = "NAMES";
+	tokens["N"]  = "NICK";
+	tokens["O"]  = "NOTICE";
+	tokens["L"]  = "PART";
+	tokens["G"]  = "PING";
+	tokens["Z"]  = "PONG";
+	tokens["P"]  = "PRIVMSG";
+	tokens["Q"]  = "QUIT";
+	tokens["RI"] = "RPING";
+	tokens["RO"] = "RPONG";
+	tokens["SE"] = "SETTIME";
+	tokens["U"]  = "SILENCE";
+	tokens["SQ"] = "SQUIT";
+	tokens["R"]  = "STATS";
+	tokens["TI"] = "TIME";
+	tokens["TR"] = "TOPIC";
+	tokens["V"]  = "VERSION";
+	tokens["WC"] = "WALLCHOPS";
+	tokens["WA"] = "WALLOPS";
+	tokens["H"]  = "WHO";
+	tokens["W"]  = "WHOIS";
+	tokens["X"]  = "WHOWAS";
+/*	tokens["ACTION"] = "CTCP ACTION";
+	tokens["VERSION"] = "CTCP VERSION";
+	tokens["PING"] = "CTCP PING";
+	tokens["PONG"] = "CTCP PONG";
+	tokens["CLIENTINFO"] = "CTCP CLIENTINFO";
+	tokens["USERINFO"] = "CTCP USERINFO";
+	tokens["TIME"] = "CTCP TIME";
+	tokens["ERRMSG"] = "CTCP ERRMSG"; */
 	break;
-    case 1: /* RFC with TS8 */
-	i_Signon = 0001;
-	i_Akill = 2;
-	break;
-    case 10: /* DAL < 4.4.15 */
-	i_NickLen = 32;
-	i_Signon = 1000;
-	i_Globops = true;
-	i_Akill = 1;
-	i_Modes = 4;
-	break;
-    case 11: /* DAL >= 4.4.15 */
-	i_NickLen = 32;
-	i_Signon = 1001;
-	i_Globops = true;
-	i_SVS = true;
-	i_Akill = 1;
-	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
-	break;
-    case 12: /* Bahamut */
-	i_NickLen = 32;
-	i_Signon = 1004;
-	i_Globops = true;
-	i_SVS = true;
-	i_Akill = 5;
-	i_Modes = 6;
-	i_TSora = true;
-	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
-	break;
-    case 20: /* UnderNet < 2.10.x  */
-	i_Signon = 1000;
-	i_Akill = 2;
-	break;
-    case 21: /* UnderNet >= 2.10.x */
-	i_Signon = 1000;
-	i_Akill = 2;
-	i_Server = "SERVER %s %d 0 0 P09 :%s";
-	break;
-    case 30: /* Aurora */
-	i_NickLen = 32;
-	i_Signon = 1002;
-	i_Globops = true;
-	i_SVS = true;
-	i_SVSHOST = true;
-	i_Akill = 1;
-	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
-	break;
-    case 40: /* Elite */
-	i_NickLen = 32;
-	i_Signon = 1001;
-	i_Globops = true;
-	i_SVS = true;
-	i_Akill = 1;
-	break;
-    case 50: /* Relic 2.0 */
-	i_NickLen = 32;
-	i_SVS = true;
-	i_Globops = true;
-	i_Signon = 1001;
-	i_Akill = 1;
-	i_Modes = 6;
-	i_Server = "SERVER %s %d relic2.0 :%s";
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
-	break;
-    case 51: /* Relic >= 2.1 */
-	i_NickLen = 32;
-	i_SVS = true;
-	i_Globops = true;
-	i_P12 = true;
-	i_Signon = 1003;
-	i_Akill = 4;
-	i_Modes = 6;
-	i_ChanModeArg = "ovbekl";
-	i_Server = "SERVER %s %d relic2.1 :%s";
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
 
+    case 0002: /* Relic >= 2.1 */
+	SetTokens(0001);
 	tokens.erase("1");
 	tokens.erase("3");
 	tokens.erase("=");
@@ -501,8 +375,251 @@ void Protocol::Set(unsigned int in)
 	tokens["HM"] = "HTM";
 	tokens["z"] = "ADCHAT";
 	tokens["Rz"] = "RW";
-
 	break;
+
+    case 0001: /* DAL >= 4.4.15 */
+	tokens["!"] = "PRIVMSG";
+	tokens["\\"] = "WHO";
+	tokens["#"] = "WHOIS";
+	tokens["$"] = "WHOWAS";
+	tokens["%"] = "USER";
+	tokens["&"] = "NICK";
+	tokens["'"] = "SERVER";
+	tokens["("] = "LIST";
+	tokens[")"] = "TOPIC";
+	tokens["*"] = "INVITE";
+	tokens["+"] = "VERSION";
+	tokens[","] = "QUIT";
+	tokens["-"] = "SQUIT";
+	tokens["."] = "KILL";
+	tokens["/"] = "INFO";
+	tokens["0"] = "LINKS";
+	tokens["1"] = "SUMMON";
+	tokens["2"] = "STATS";
+	tokens["3"] = "USERS";
+	tokens["4"] = "HELP";
+	tokens["5"] = "ERROR";
+	tokens["6"] = "AWAY";
+	tokens["7"] = "CONNECT";
+	tokens["8"] = "PING";
+	tokens["9"] = "PONG";
+	tokens[";"] = "OPER";
+	tokens["<"] = "PASS";
+	tokens[">"] = "TIME";
+	tokens["="] = "WALLOPS";
+	tokens["?"] = "NAMES";
+	tokens["@"] = "ADMIN";
+	tokens["B"] = "NOTICE";
+	tokens["C"] = "JOIN";
+	tokens["D"] = "PART";
+	tokens["E"] = "LUSERS";
+	tokens["F"] = "MOTD";
+	tokens["G"] = "MODE";
+	tokens["H"] = "KICK";
+	tokens["I"] = "SERVICE";
+	tokens["J"] = "USERHOST";
+	tokens["K"] = "ISON";
+	tokens["L"] = "SQUERY";
+	tokens["M"] = "SERVLIST";
+	tokens["N"] = "SERVSET";
+	tokens["O"] = "REHASH";
+	tokens["P"] = "RESTART";
+	tokens["Q"] = "CLOSE";
+	tokens["R"] = "DIE";
+	tokens["S"] = "HASH";
+	tokens["T"] = "DNS";
+	tokens["U"] = "SILENCE";
+	tokens["V"] = "AKILL";
+	tokens["W"] = "KLINE";
+	tokens["X"] = "UNKLINE";
+	tokens["Y"] = "RAKILL";
+	tokens["Z"] = "GNOTICE";
+	tokens["["] = "GOPER";
+	tokens["]"] = "GLOBOPS";
+	tokens["^"] = "LOCOPS";
+	tokens["_"] = "PROTOCTL";
+	tokens["`"] = "WATCH";
+	tokens["b"] = "TRACE";
+	tokens["c"] = "SQLINE";
+	tokens["d"] = "UNSQLINE";
+	tokens["e"] = "SVSNICK";
+	tokens["f"] = "SVSNOOP";
+	tokens["g"] = "PRIVMSG NickServ :IDENTIFY";
+	tokens["h"] = "SVSKILL";
+	tokens["i"] = "PRIVMSG NickServ";
+	tokens["j"] = "PRIVMSG ChanServ";
+	tokens["k"] = "PRIVMSG OperServ";
+	tokens["l"] = "PRIVMSG MemoServ";
+	tokens["m"] = "SERVICES";
+	tokens["n"] = "SVSMODE";
+	tokens["o"] = "SAMODE";
+	tokens["p"] = "CHATOPS";
+	tokens["q"] = "ZLINE";
+	tokens["r"] = "UNZLINE";
+	tokens["s"] = "PRIVMSG HelpServ";
+    }
+}
+
+Protocol::Protocol()
+{
+    NFT("Protocol::Protocol");
+    i_Number = 0;
+    i_NickLen = 9;
+    i_MaxLine = 450;
+    i_Globops = false;
+    i_Tokens = false;
+    i_SVS = false;
+    i_SVSHOST = false;
+    i_P12 = false;
+    i_TSora = false;
+    i_Akill = 0;
+    i_Signon = 0000;
+    i_Modes = 3;
+    i_ChanModeArg = "ovbkl";
+    i_Server = "SERVER %s %d :%s";
+    i_Numeric = false;
+    i_Burst = "";
+    i_EndBurst = "";
+    i_Protoctl = "";
+
+    DumpB();
+}
+
+void Protocol::Set(unsigned int in)
+{
+    FT("Protocol::Set", (in));
+
+    // WE NEVER set 'i_Tokens', thats set with the PROTCTL line.
+
+    DumpB();
+    switch (in)
+    {
+    case 0: /* RFC */
+	i_Signon = 0000;
+	i_Akill = 2;
+	SetTokens(0000);
+	break;
+
+    case 1: /* RFC with TS8 */
+	i_Signon = 0001;
+	i_Akill = 2;
+	SetTokens(0000);
+	break;
+
+    case 10: /* DAL < 4.4.15 */
+	i_NickLen = 32;
+	i_Signon = 1000;
+	i_Globops = true;
+	i_Akill = 1;
+	i_Modes = 4;
+	SetTokens(0000);
+	break;
+
+    case 11: /* DAL >= 4.4.15 */
+	i_NickLen = 32;
+	i_Signon = 1001;
+	i_Globops = true;
+	i_SVS = true;
+	i_Akill = 1;
+	i_Modes = 6;
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	SetTokens(0001);
+	break;
+
+    case 12: /* Bahamut */
+	i_NickLen = 32;
+	i_Signon = 2001;
+	i_Globops = true;
+	i_SVS = true;
+	i_Akill = 5;
+	i_Modes = 6;
+	i_TSora = true;
+	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
+	i_Burst = "BURST";
+	i_EndBurst = "BURST END";
+	SetTokens(0001);
+	break;
+
+    case 20: /* UnderNet < 2.10.x  */
+	i_Signon = 1000;
+	i_Akill = 2;
+	SetTokens(0000);
+	break;
+
+    case 21: /* UnderNet >= 2.10.x */
+	i_Signon = 1000;
+	i_Akill = 2;
+	i_Server = "";
+	i_Server << "SERVER %s %d 0 0 P10 " << Parent->startup.Level() << " :%s";
+	i_Numeric = true;
+	i_Burst = "BURST";
+	i_EndBurst = "END_OF_BURST";
+	SetTokens(1000);
+	break;
+
+    case 30: /* Hybrid */
+	i_Signon = 2000;
+	SetTokens(0000);
+	i_TSora = true;
+	i_Protoctl = "CAPAB EX DE";
+	break;
+
+    case 40: /* Elite */
+	i_NickLen = 32;
+	i_Signon = 1001;
+	i_Globops = true;
+	i_SVS = true;
+	i_Akill = 1;
+	SetTokens(0001);
+	break;
+
+    case 50: /* Relic 2.0 */
+	i_NickLen = 32;
+	i_SVS = true;
+	i_Globops = true;
+	i_Signon = 1001;
+	i_Akill = 1;
+	i_Modes = 6;
+	i_Server = "SERVER %s %d relic2.0 :%s";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	SetTokens(0001);
+	break;
+
+    case 51: /* Relic >= 2.1 */
+	i_NickLen = 32;
+	i_SVS = true;
+	i_Globops = true;
+	i_P12 = true;
+	i_Signon = 1003;
+	i_Akill = 4;
+	i_Modes = 6;
+	i_ChanModeArg = "ovbekl";
+	i_Server = "SERVER %s %d relic2.1 :%s";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	SetTokens(0002);
+	break;
+
+    case 60: /* Aurora */
+	i_NickLen = 32;
+	i_Signon = 1002;
+	i_Globops = true;
+	i_SVS = true;
+	i_SVSHOST = true;
+	i_Akill = 1;
+	i_Modes = 6;
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN WATCH=128 SAFELIST";
+	SetTokens(0001);
+	break;
+
+    case 70: /* Unreal */
+	i_NickLen = 32;
+	i_Signon = 1001;
+	i_Globops = true;
+	i_SVS = true;
+	i_Akill = 1;
+	SetTokens(0001);
+	break;
+
     default:
 	DumpE();
 	return;
@@ -621,6 +738,22 @@ void Server::AltName(mstring in)
     MCB(i_AltName);
     i_AltName = in;
     MCE(i_AltName);
+}
+
+unsigned int Server::Numeric()
+{
+    NFT("Server::Numeric");
+    RLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Numeric"));
+    RET(i_Numeric);
+}
+
+void Server::Numeric(unsigned int in)
+{
+    FT("Server::Numeric", (in));
+    WLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Numeric"));
+    MCB(i_Numeric);
+    i_Numeric = in;
+    MCE(i_Numeric);
 }
 
 mstring Server::Uplink()
@@ -827,7 +960,14 @@ void NetworkServ::raw(mstring text)
 
 void NetworkServ::sraw(mstring text)
 {
-    raw(":" + Parent->startup.Server_Name() + " " + text);
+    mstring out;
+    out << ":";
+    if (proto.Numeric())
+	out << Parent->startup.Level();
+    else
+	out << Parent->startup.Server_Name();
+    out << " " << text;
+    raw(out);
 }
 
 void NetworkServ::SignOnAll()
@@ -982,7 +1122,7 @@ void NetworkServ::FlushMsgs(mstring nick)
 		SVSHOST(nick, j->third.first, j->third.second);
 		break;
 	    case t_TOPIC:
-		TOPIC(nick, j->third.first, j->third.second);
+		TOPIC(nick, j->third.first, j->third.second, j->third.third);
 		break;
 	    case t_UNSQLINE:
 		UNSQLINE(nick, j->third.first);
@@ -1119,6 +1259,22 @@ bool NetworkServ::IsServer(mstring server)
     FT("NetworkServ::IsServer", (server));
     RLOCK(("Server", "ServerList"));
     bool retval = (ServerList.find(server.LowerCase()) != ServerList.end());
+    RET(retval);
+}
+
+
+mstring NetworkServ::ServerNumeric(unsigned int num)
+{
+    FT("NetworkServ::ServerNumeric", (num));
+    mstring retval;
+    RLOCK(("Server", "ServerList"));
+    map<mstring, Server>::iterator iter;
+    for (iter=ServerList.begin(); iter!=ServerList.end(); iter++)
+	if (iter->second.Numeric() == num)
+	{
+	    retval = iter->second.Name();
+	    break;
+	}
     RET(retval);
 }
 
@@ -1611,7 +1767,19 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 		send << " +" << Parent->startup.Setmode();
 	    send << " :" << realname;
 	    break;
-	case 1004:
+	case 2000:
+	    token = "NICK";
+	    if (proto.P12())
+		token = "SNICK";
+	    if (proto.Tokens() && proto.GetNonToken(token) != "")
+		send << proto.GetNonToken(token);
+	    else
+		send << token;
+	    send << " " << nick << " 1 " << Now().timetstring() <<
+		" +" << Parent->startup.Setmode() << " " << user <<
+		" " << host << " " << server << " :" << realname;
+	    break;
+	case 2001:
 	    token = "NICK";
 	    if (proto.P12())
 		token = "SNICK";
@@ -1634,7 +1802,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 	}
 	Parent->nickserv.live[nick.LowerCase()] = Nick_Live_t(
 		nick, user, host, realname);
-	if (proto.P12() || proto.Signon() == 1004)
+	if (proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000))
 		Parent->nickserv.live[nick.LowerCase()].Mode(
 			Parent->startup.Setmode());
 	}
@@ -2131,6 +2299,7 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
 {
     FT("NetworkServ::TOPIC", (nick, setter, channel, topic, time));
 
+    
     if (!Parent->nickserv.IsLive(nick))
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
@@ -2138,7 +2307,7 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
 	ToBeSent[nick.LowerCase()].push_back(
 		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
 		t_TOPIC, Now(), triplet<mstring, mstring, mstring>(
-		channel, topic, "")));
+		setter, channel, topic)));
 	MCE(ToBeSent.size());
 	return;
     }
@@ -2154,6 +2323,8 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
     }
     else
     {
+	CP(("%s is %s", nick.c_str(),
+		Parent->nickserv.live[nick.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str()));
 	mstring send;
 	send << ":" << nick << " ";
 	if (proto.Tokens() && proto.GetNonToken("TOPIC") != "")
@@ -2287,6 +2458,8 @@ void NetworkServ::execute(const mstring & data)
     if (data[0u]==':')
     {
         source=data.ExtractWord(1,": ");
+	if (proto.Numeric() && source.IsNumber())
+	    source = ServerNumeric(ACE_OS::atoi(source.c_str()));
 	sourceL=source.LowerCase();
         msgtype=data.ExtractWord(2,": ").UpperCase();
 	if (!(source.Contains(".") || Parent->nickserv.IsLive(source)))
@@ -2442,7 +2615,19 @@ void NetworkServ::execute(const mstring & data)
 			data.c_str());
 	break;
     case 'E':
-	if (msgtype=="ERROR")
+	if (msgtype=="END_OF_BURST")
+	{
+	    // Tis only nice, afterall ...
+	    Parent->server.sraw(((Parent->server.proto.Tokens() &&
+		Parent->server.proto.GetNonToken("EOB_ACK") != "") ?
+		Parent->server.proto.GetNonToken("EOB_ACK") :
+		mstring("EOB_ACK")));
+	}
+	else if (msgtype=="EOB_ACK")
+	{
+	    // Thank you, drive through ...
+	}
+	else if (msgtype=="ERROR")
 	{
 	    // ERROR :This is my error
 	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
@@ -2905,7 +3090,19 @@ void NetworkServ::execute(const mstring & data)
 			);
 		    Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
 		    break;
-		case 1004: // NICK nick hops time mode user host server 0 :realname
+		case 2000: // NICK nick hops time mode user host server :realname
+		    Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(8, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.ExtractWord(7, ": "),
+			    data.After(":")
+			);
+		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
+		    break;
+		case 2001: // NICK nick hops time mode user host server 0 :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
@@ -3248,6 +3445,9 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(2, ": ").LowerCase(),
 			ACE_OS::atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
+		if (proto.Numeric())
+		    ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
+			ACE_OS::atoi(data.ExtractWord(7, ": ").c_str()));
 		Log(LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(2, ": ").c_str(),
 			Parent->startup.Server_Name().c_str());
@@ -3262,6 +3462,9 @@ void NetworkServ::execute(const mstring & data)
 			sourceL,
 			ACE_OS::atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
 			data.After(":", 2));
+		    if (proto.Numeric())
+			ServerList[data.ExtractWord(2, ": ").LowerCase()].Numeric(
+			   ACE_OS::atoi(data.ExtractWord(8, ": ").c_str()));
 		    Log(LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(3, ": ").c_str(), sourceL.c_str());
 		}
@@ -3485,7 +3688,19 @@ void NetworkServ::execute(const mstring & data)
 		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(7, ": "));
 		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
 		break;
-	    case 1004: // NICK nick hops time mode user host server 0 :realname
+	    case 2000: // NICK nick hops time mode user host server :realname
+		Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(8, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.ExtractWord(7, ": "),
+			    data.After(":")
+			);
+		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(5, ": "));
+		break;
+	    case 2001: // NICK nick hops time mode user host server 0 :realname
 		Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
 			    data.ExtractWord(2, ": "),
@@ -3795,6 +4010,75 @@ void NetworkServ::execute(const mstring & data)
 			" " + source + " :" + tmp.c_str());
 		return;
 	    }}
+	    mstring out;
+	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")) &&
+		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].IsServices())
+	    {
+		RLOCK(("NickServ", "live", data.ExtractWord(3, ": ").LowerCase()));
+		Nick_Live_t *nlive = &Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()];
+		if (nlive->HasMode("o"))
+		    out << "204 " << source << " Operator 10 ";
+		else
+		    out << "205 " << source << " User 1 ";
+		out << nlive->Name() << " [" << nlive->User() << "@"
+			<< nlive->Host() << "] :" << nlive->IdleTime().timetstring();
+		sraw(out);
+	    }
+	    else
+	    {
+		unsigned long opers=0, users=0;
+		out << "206 " << source << "Server 50 " << ServerList.size()+1 <<
+			"S " << Parent->nickserv.live.size() << "C " <<
+			OurUplink() << "[0.0.0.0] AutoConn.!*@" <<
+			Parent->startup.Server_Name() << " :0";
+		sraw(out);
+
+		RLOCK(("NickServ", "live"));
+		map<mstring, Nick_Live_t>::iterator iter;
+		for (iter=Parent->nickserv.live.begin();
+			iter!=Parent->nickserv.live.end(); iter++)
+		{
+		    if (iter->second.IsServices())
+		    {
+			out = "";
+			if (iter->second.HasMode("o"))
+			{
+			    out << "204 " << source << " Operator 10 ";
+			    opers++;
+			}
+			else
+			{
+			    out << "205 " << source << " User 1 ";
+			    users++;
+			}
+			out << iter->second.Name() << " [" <<
+				iter->second.User() << "@" <<
+				iter->second.Host() << "] :" <<
+				iter->second.IdleTime().timetstring();
+			sraw(out);
+			
+		    }
+		}
+		out = "";
+		out << "209 " << source << " Class 50 :1";
+		sraw(out);
+		if (opers)
+		{
+		    out = "";
+		    out << "209 " << source << " Class 10 :" << opers;
+		    sraw(out);
+		}
+		if (users)
+		{
+		    out = "";
+		    out << "209 " << source << " Class 1 :" << users;
+		    sraw(out);
+		}
+	    }
+	    out = "";
+	    out << "262 " << source << " " << Parent->startup.Server_Name() <<
+		" :End of TRACE";
+	    sraw(out);
 	}
 	else
 	{
@@ -3888,7 +4172,8 @@ void NetworkServ::execute(const mstring & data)
 	    case 1001:
 	    case 1002:
 	    case 1003:
-	    case 1004:
+	    case 2000:
+	    case 2001:
 		break;
 	    }}
 
@@ -4323,6 +4608,15 @@ void NetworkServ::numeric_execute(const mstring & data)
     switch (msgtype)
     {
     case 303:     // RPL_ISON
+	{ RLOCK(("IrcSvcHandler"));
+	if (Parent->ircsvchandler != NULL)
+	{
+	    Parent->ircsvchandler->EndBurst();
+	}}
+	if (proto.Burst() != "")
+	    Parent->server.sraw(((Parent->server.proto.Tokens() &&
+		proto.GetNonToken(proto.Burst()) != "") ?
+		proto.GetNonToken(proto.Burst()) : mstring(proto.Burst())));
 	for (i=4; i<=data.WordCount(": "); i++)
 	{
 	    // Remove clients from 'signon list' who are
@@ -4356,19 +4650,23 @@ void NetworkServ::numeric_execute(const mstring & data)
 			mstring joinline;
 			map<mstring,Chan_Stored_t>::iterator iter;
 			map<mstring,mstring> modes;
+			Chan_Live_t *clive;
 			{ RLOCK(("ChanServ", "stored"));
 			for (iter=Parent->chanserv.stored.begin(); iter!=Parent->chanserv.stored.end(); iter++)
 			{
+			    if (Parent->chanserv.IsLive(iter->first))
+				clive = &Parent->chanserv.live[iter->first];
+			    else
+				clive = NULL;
 			    // If its live and got JOIN on || not live and mlock +k or +i
-			    if ((Parent->chanserv.IsLive(iter->first) && iter->second.Join()) ||
-				(!Parent->chanserv.IsLive(iter->first) &&
-				(iter->second.Mlock_Key() != "" ||
+			    if ((clive != NULL && iter->second.Join()) ||
+				(clive == NULL && (iter->second.Mlock_Key() != "" ||
 				iter->second.Mlock_On().Contains("i"))))
 			    {
 				if (joinline.Len())
 				    joinline << ",";
 				joinline << iter->first;
-				if(!Parent->chanserv.IsLive(iter->first))
+				if(clive == NULL)
 				{
 				    modes[iter->first] = "+s";
 				    if (iter->second.Mlock_On().Contains("i"))
@@ -4381,6 +4679,29 @@ void NetworkServ::numeric_execute(const mstring & data)
 				{
 				    JOIN(Parent->chanserv.FirstName(), joinline);
 				    joinline = "";
+				}
+			    }
+			    if (clive != NULL)
+			    {
+				if (clive->Topic() != "")
+				{
+				    // Defer all the topic resets till we're done
+				    clive->Topic(OurUplink(),
+					clive->Topic(), clive->Topic_Setter(),
+					clive->Topic_Set_Time());
+				}
+				else
+				{
+				    // Now lets carry over all topics at once.
+				    if (iter->second.Keeptopic() &&
+					iter->second.Last_Topic() != "")
+				    {
+					Parent->server.TOPIC(*k,
+					    iter->second.Last_Topic_Setter(),
+					    iter->second.Name(),
+					    iter->second.Last_Topic(),
+					    iter->second.Last_Topic_Set_Time());
+				    }
 				}
 			    }
 			}}
@@ -4411,7 +4732,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 			Parent->server.MODE(*k, "+o");
 		}
 
-		if (!(proto.P12() || proto.Signon() == 1004) &&
+		if (!(proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000)) &&
 		    Parent->nickserv.IsLive(*k) && Parent->startup.Setmode() != "")
 		    Parent->server.MODE(*k, "+" + Parent->startup.Setmode());
 		FlushMsgs(*k);
@@ -4420,6 +4741,10 @@ void NetworkServ::numeric_execute(const mstring & data)
 	{ WLOCK(("Server", "WaitIsOn"));
 	WaitIsOn.clear();
 	}
+	if (proto.EndBurst() != "")
+	    Parent->server.sraw(((Parent->server.proto.Tokens() &&
+		proto.GetNonToken(proto.EndBurst()) != "") ?
+		proto.GetNonToken(proto.EndBurst()) : mstring(proto.EndBurst())));
 	break;
     case 436:     // ERR_NICKCOLLISION
 	// MUST handle.

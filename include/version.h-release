@@ -24,6 +24,9 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/09/27 11:21:37  prez
+** Added a BURST mode ...
+**
 ** Revision 1.21  2000/09/19 08:05:24  prez
 ** Ran text files through spell checker.
 **
@@ -125,7 +128,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring RELEASE			= "b4";
+const mstring RELEASE			= "b5";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";

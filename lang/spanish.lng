@@ -162,7 +162,8 @@ NLOOKUP_OTHER      =Unknown file category %s.
 NOSPACE            =No bastante espacio para file, quitó.
 NOSPACE2           =No bastante espacio para file, temporal intenta por favor otra vez más adelante.
 
-LIST_HEAD          =Utilizador De Prog Speed/s De la Talla De la Identificación D (Nombre del archivo)
+LIST_HEAD          =ID       D      Size   Prog Speed/s User (File Name)
+;LIST_HEAD          =Utilizador De Prog Speed/s De la Talla De la Identificación D (Nombre del archivo)
 ;                   > < | > < > < > < >
 LIST               =%08x %c %9d %5.1f%% %6.1f%c %s (%s)
 NOACTIVE           =Ningunas transferencias de fichero del DCC activas.
@@ -241,7 +242,8 @@ REVENGE            =VENGANZA:  No  %s %s
 SYNC               =Las bases de datos quieren la sinc. adentro %s.
 LANG_LIST          =Los lenguajes disponibles son:
 LANG_NOLIST        =Error que genera la lista de lenguajes disponibles.
-BREAKDOWN_HEAD     =UTILIZADORES DEL RETRASO DEL SERVIDOR (OPS)
+BREAKDOWN_HEAD     =SERVER                                   LAG  USERS (OPS)
+;BREAKDOWN_HEAD     =UTILIZADORES DEL RETRASO DEL SERVIDOR (OPS)
 BREAKDOWN          =%-35s % 3.3fs %5d (%3d) %3.2f%%
 
 ;
@@ -257,47 +259,47 @@ GEN_CLONES         =La Corriente Se reproduce:  %d ((host(s) de enc_1)d)
 NICK_REGD          =Colocado Actualmente:  %d (%d conectado)
 NICK_DENIED        =Suspendido Actualmente:  %d (%d prohibido)
 NICK_CMD           =Uso Acertado Del Comando:
-NICK_CMD1          =COLOQÚESE GOTA (de enc_1)10d / %10d
-NICK_CMD2          =CONEXIÓN %10d / DESATAN %10d
-NICK_CMD3          =ORDENADOR PRINCIPAL %10d / IDENTIFICAN %10d
-NICK_CMD4          =FANTASMA %10d / SE RECUPERAN %10d
-NICK_CMD5          =SUSPENDA %10d / UNSUSPEND %10d
-NICK_CMD6          =PROHIBIDO %10d / GETPASS %10d
+NICK_CMD1          =REGISTER      %10d / DROP          %10d
+NICK_CMD2          =LINK          %10d / UNLINK        %10d
+NICK_CMD3          =HOST          %10d / IDENTIFY      %10d
+NICK_CMD4          =GHOST         %10d / RECOVER       %10d
+NICK_CMD5          =SUSPEND       %10d / UNSUSPEND     %10d
+NICK_CMD6          =FORBID        %10d / GETPASS       %10d
 NICK_CMD7          =ACCESS        %10d / IGNORE        %10d
-NICK_CMD8          =FIJE %10d / NOEXPIRE %10d
-NICK_CMD9          =BLOQUEO %10d / ABREN %10d
+NICK_CMD8          =SET           %10d / NOEXPIRE      %10d
+NICK_CMD9          =LOCK          %10d / UNLOCK        %10d
 
 CHAN_REGD          =Currently Registered: %d
 CHAN_DENIED        =Suspendido Actualmente:  %d (%d prohibido)
 CHAN_CMD           =Uso Acertado Del Comando:
-CHAN_CMD1          =COLOQÚESE GOTA (de enc_1)10d / %10d
-CHAN_CMD2          =IDENTIFIQUE %10d
-CHAN_CMD3          =SUSPENDA %10d / UNSUSPEND %10d
-CHAN_CMD4          =PROHIBIDO %10d / GETPASS %10d
-CHAN_CMD5          =MODO ASUNTO (de enc_1)10d / %10d
-CHAN_CMD6          =DE OP. SYS. %10d / DEOP %10d
-CHAN_CMD7          =EXPRESE %10d / DEVOICE %10d
-CHAN_CMD8          =GOLPEE con el pie %10d / ANONKICK %10d
-CHAN_CMD9          =INVITE %10d / UNBAN %10d
-CHAN_CMD10         =BORRE %10d / AKICK %10d
-CHAN_CMD11         =NIVELE ACCESO (de enc_1)10d / %10d
-CHAN_CMD12         =SALUDE MENSAJE (de enc_1)10d / %10d
-CHAN_CMD13         =FIJE %10d / NOEXPIRE %10d
-CHAN_CMD14         =BLOQUEO %10d / ABREN %10d
+CHAN_CMD1          =REGISTER      %10d / DROP          %10d
+CHAN_CMD2          =IDENTIFY      %10d
+CHAN_CMD3          =SUSPEND       %10d / UNSUSPEND     %10d
+CHAN_CMD4          =FORBID        %10d / GETPASS       %10d
+CHAN_CMD5          =MODE          %10d / TOPIC         %10d
+CHAN_CMD6          =OP            %10d / DEOP          %10d
+CHAN_CMD7          =VOICE         %10d / DEVOICE       %10d
+CHAN_CMD8          =KICK          %10d / ANONKICK      %10d
+CHAN_CMD9          =INVITE        %10d / UNBAN         %10d
+CHAN_CMD10         =CLEAR         %10d / AKICK         %10d
+CHAN_CMD11         =LEVEL         %10d / ACCESS        %10d
+CHAN_CMD12         =GREET         %10d / MESSAGE       %10d
+CHAN_CMD13         =SET           %10d / NOEXPIRE      %10d
+CHAN_CMD14         =LOCK          %10d / UNLOCK        %10d
 
 OPER_CLONE         =Entradas de la invalidación de la copia:  %d
 OPER_AKILL         =Entradas auto de la matanza:  %d
 OPER_OPERDENY      =La operación niega entradas:  %d
 OPER_IGNORE        =No haga caso de las entradas:  %d
 OPER_CMD           =Uso Acertado Del Comando:
-OPER_CMD1          =RASTREE MODO (de enc_1)10d / %10d
-OPER_CMD2          =QLINE %10d / UNQLINE %10d
-OPER_CMD3          =NOOP MATANZA (de enc_1)10d / %10d
-OPER_CMD4          =SILBIDO DE BALA ACTUALIZACIÓN (de enc_1)10d / %10d
-OPER_CMD5          =RECARGA %10d / DESCARGAN %10d
-OPER_CMD6          =JUPE %10d / ON/OFF %10d
-OPER_CMD7          =REPRODÚZCASE %10d / AKILL %10d
-OPER_CMD8          =OPERDENY %10d / NO HACEN CASO %10d
+OPER_CMD1          =TRACE         %10d / MODE          %10d
+OPER_CMD2          =QLINE         %10d / UNQLINE       %10d
+OPER_CMD3          =NOOP          %10d / KILL          %10d
+OPER_CMD4          =PING          %10d / UPDATE        %10d
+OPER_CMD5          =RELOAD        %10d / UNLOAD        %10d
+OPER_CMD6          =JUPE          %10d / ON/OFF        %10d
+OPER_CMD7          =CLONE         %10d / AKILL         %10d
+OPER_CMD8          =OPERDENY      %10d / IGNORE        %10d
 OPER_CMD9          =HIDE          %10d
 
 OTH_MEMO           =Utilizadores con las notas que esperan:  %d
@@ -305,19 +307,19 @@ OTH_NEWS           =Canales con los artículos de las noticias:  %d
 OTH_COMM           =Comités Activos:  %d
 
 OTH_CMD            =Acertado (uso del comando de enc_1)s:
-OTH_CMD1           =LEÍDO %10d / UNREAD %10d
+OTH_CMD1           =READ          %10d / UNREAD        %10d
 OTH_CMD2           =SEND          %10d / FLUSH         %10d
-OTH_CMD3           =CONTESTE %10d / DELANTERO %10d
-OTH_CMD4           =CANCELE %10d / DEL %10d
-OTH_CMD5           =CONTINÚE %10d / FILE/GET %10d
+OTH_CMD3           =REPLY         %10d / FORWARD       %10d
+OTH_CMD4           =CANCEL        %10d / DEL           %10d
+OTH_CMD5           =CONTINUE      %10d / FILE/GET      %10d
 
-OTH_CMD6           =NUEVO MATANZA (de enc_1)10d / %10d
-OTH_CMD7           =ADD/DEL NOTA (de enc_1)10d / %10d
-OTH_CMD8           =CONEXIÓN %10d / FIJÓ %10d
-OTH_CMD9           =BLOQUEO %10d / ABREN %10d
+OTH_CMD6           =NEW           %10d / KILL          %10d
+OTH_CMD7           =ADD/DEL       %10d / MEMO          %10d
+OTH_CMD8           =LOGON         %10d / SET           %10d
+OTH_CMD9           =LOCK          %10d / UNLOCK        %10d
 
 OTH_CMD10          =GLOBAL        %10d / CREDITS       %10d
-OTH_CMD11          =FICHERO ADD/DEL el FICHERO (de enc_1)10d / ENVÍA %10d
+OTH_CMD11          =FILE ADD/DEL  %10d / FILE SEND     %10d
 OTH_CMD12          =FILE CHANGE   %10d / FILE CANCEL   %10d
 
 USE_CPU            =Uso de la CPU (sistema de enc_1)s y (utilizador de enc_1)s.
@@ -333,7 +335,7 @@ USE_OPERSERV       =OperServ enumera %5d (%s)
 USE_OTHER          =Otro %5d (%s)
 USE_TOTAL          =TOTAL %5d (%s)
 USE_LANGHEAD       =Language                 LNG      HLP
-USE_LANG           =%-20s %7s %7s
+USE_LANG           =%-20s %7s  %7s
 
 
 ;
@@ -692,7 +694,8 @@ OTH_INVITE         =A le han invitado que acanale %s cerca %s.
 UNBANNED           =Usted ha sido unbanned del canal %s.
 OTH_UNBANNED       =Apodo %s ha sido unbanned del canal %s.
 CLEAR              =(el comando de enc_1)s se ha utilizado cerca %s para el canal %s.
-LEVEL_HEAD         =Título llano de la ETIQUETA (%s)
+LEVEL_HEAD         =Level  TAG        Title (%s)
+;LEVEL_HEAD         =Título llano de la ETIQUETA (%s)
 LEVEL_LIST         =%5d %-9s %s
 LEVEL_HAVE         =Usted tiene acceso de %s en el canal %s.
 
@@ -799,7 +802,7 @@ CHAN_NEWS          =Los artículos de las noticias expiran después de %s.
 MISC_INFLIGHT      =Las notas son in-flight para %s.
 MISC_AKILL1        =El tiempo auto de la matanza del valor por defecto es %s.
 MISC_AKILL2        =Los tiempos auto máximos de la matanza (por el comité) son:
-MISC_AKILL3        =%s:  %s
+MISC_AKILL3        =    %s: %s
 MISC_CLONES        =Los utilizadores pueden tener hasta (el clone(s) de enc_1)d por host, que puede ser reemplazado hasta %d.
 MISC_FLOOD1        =La inundación se acciona con (el message(s) de enc_1)d es %s.
 MISC_FLOOD2        =Los servicios recuerdan los viejos disparadores de la inundación para %s.

@@ -25,6 +25,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/09/27 11:21:37  prez
+** Added a BURST mode ...
+**
 ** Revision 1.50  2000/09/10 09:53:42  prez
 ** Added functionality to ensure the order of messages is kept.
 **
@@ -172,13 +175,18 @@ class Protocol
      * 1001 = NICK nick hops signon-time user host server service :realname
      * 1002 = NICK nick hops signon-time user host server service althost :realname
      * 1003 - NICK nick hops signon-time user host althost server service :realname
-     * 1004 = NICK nick hops signon-time mode user host server service :realname
+     *
+     * 2000 = NICK nick hops signon-time mode user host server :realname
+     * 2001 = NICK nick hops signon-time mode user host server service :realname
      */
     unsigned int i_Signon;
     unsigned int i_Modes; /* Modes per line */
     mstring i_ChanModeArg; /* Channel Modes that have arguments */
 
     mstring i_Server;	/* Should have %s %d %s in it (in order) */
+    bool i_Numeric;	/* Do we use numerics at all */
+    mstring i_Burst;	/* Simply do we need to announce a flood? */
+    mstring i_EndBurst; /* and if we do, how do we tell em we're done */
 
     /* PROTOCTL and CAPAB identifiers
      *
@@ -196,6 +204,7 @@ class Protocol
     // This is a map of real commands -> tokenized commands
     // to save bandwidth.
     map<mstring,mstring> tokens;
+    void SetTokens(unsigned int type);
 
 public:
     Protocol();
@@ -219,6 +228,9 @@ public:
     unsigned int Modes()    { return i_Modes; }
     mstring ChanModeArg()   { return i_ChanModeArg; }
     mstring Server()	    { return i_Server; }
+    bool Numeric()	    { return i_Numeric; }
+    mstring Burst()	    { return i_Burst; }
+    mstring EndBurst()	    { return i_EndBurst; }
     mstring Protoctl()	    { return i_Protoctl; }
 
     void DumpB();
@@ -229,6 +241,7 @@ class Server
 {
     mstring i_Name;
     mstring i_AltName;
+    unsigned int i_Numeric;
     mstring i_Uplink;
     int i_Hops;
     mstring i_Description;
@@ -252,6 +265,8 @@ public:
     mstring Name()		{ return i_Name; }
     mstring AltName();
     void AltName(mstring in);
+    unsigned int Numeric();
+    void Numeric(unsigned int num);
     mstring Uplink();
     int Hops();
     mstring Description();
@@ -312,6 +327,7 @@ public:
     map<mstring,Server> ServerList;
     mstring OurUplink();
     bool IsServer(mstring server);
+    mstring ServerNumeric(unsigned int num);
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's
     // squit, REGARDLESS of wether it is currently connected or not.

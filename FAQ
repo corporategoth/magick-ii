@@ -1,0 +1,37 @@
+Magick IRC Services
+
+$Id$
+(c) 1997-2000 Preston A. Elder <prez@magick.tm>
+(c) 1998-2000 William King <ungod@magick.tm>
+
++----------------------------+
+| FREQUENTLY ASKED QUESTIONS |
++----------------------------+
+
+My IRCD isn't supported what can I do?
+======================================
+
+   If this is the case, and none of the pre-defined IRCD's are
+compatible with it, please find out exactly (at a server to server
+protocol level) how your IRCD is different to the ones Magick supports
+(or ask the IRCD's author) and email the list of differences to the
+Magick Development Team <magick-devel@magick.tm>.
+
+Here are some of the IRCD's we know are compatible with ones supported:
+
+IRCD                    COMPATIBLE
+------------------------------------------------
+Wrecked IRCD            DALNet >= 4.4.15
+
+
+I like these services and want to pay the author!
+=================================================
+
+   OK, so this isn't something I hear, but a little wishful thinking
+never hurts.  If you want to send me something by snail mail, then
+feel free to do so to PO BOX 893, SUTHERLAND, NSW, 2232, Australia.
+I always like tokens of appreciation, puts a smile on my face and
+makes the whole thing worth while (no, not necessarily money, but
+that is always nice!).  Remember tho, if you ARE going to send me
+money, don't send cash, and ensure it is cashable in Australia (an
+international postal order is usually best).

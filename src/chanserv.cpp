@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.209  2000/09/27 11:21:38  prez
+** Added a BURST mode ...
+**
 ** Revision 1.208  2000/09/22 12:26:11  prez
 ** Fixed that pesky bug with chanserv not seeing modes *sigh*
 **
@@ -1748,6 +1751,7 @@ bool Chan_Stored_t::Join(mstring nick)
     Chan_Live_t *clive = NULL;
     Nick_Live_t *nlive = NULL;
     Nick_Stored_t *nstored = NULL;
+    bool burst;
 
     if (Parent->chanserv.IsLive(i_Name))
 	clive = &Parent->chanserv.live[i_Name.LowerCase()];
@@ -1779,6 +1783,11 @@ bool Chan_Stored_t::Join(mstring nick)
 	nstored = &Parent->nickserv.stored[nick.LowerCase()];
     else
 	nstored = NULL;
+
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL)
+	burst = Parent->ircsvchandler->Burst();
+    }    
 
     if (Forbidden())
     {
@@ -1877,14 +1886,14 @@ bool Chan_Stored_t::Join(mstring nick)
 	RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
 	RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
 	// Carry over topic ..
-	if (Keeptopic() && i_Topic != "")
+	if (!burst && Keeptopic() && i_Topic != "")
 	{
 	    Parent->server.TOPIC(Parent->chanserv.FirstName(),
 		i_Topic_Setter, i_Name, i_Topic, i_Topic_Set_Time);
 	}}
     }
 
-    if (Join() && users == 1)
+    if (!burst && Join() && users == 1)
     {
 	Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
 	users++;
@@ -2107,8 +2116,14 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
 {
     FT("Chan_Stored_t::Topic", (source, topic, setter, time));
 
+    // Still in burst ...
+    { RLOCK(("IrcSvcHandler"));
+    if (Parent->ircsvchandler != NULL && Parent->ircsvchandler->Burst())
+	return;
+    }
+
     // Its us re-setting it!
-    if (Parent->nickserv.IsLive(source) &&
+    if (!source.Contains(".") && Parent->nickserv.IsLive(source) &&
 	Parent->nickserv.live[source.LowerCase()].IsServices())
 	return;
 
@@ -2161,7 +2176,7 @@ void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
     FT("Chan_Stored_t::SetTopic", (source, setter, topic));
 
     // Its us re-setting it!
-    if (Parent->nickserv.IsLive(setter) &&
+    if (!setter.Contains(".") && Parent->nickserv.IsLive(setter) &&
 	Parent->nickserv.live[setter.LowerCase()].IsServices())
 	return;
 

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.134  2000/09/27 11:21:39  prez
+** Added a BURST mode ...
+**
 ** Revision 1.133  2000/09/22 12:26:11  prez
 ** Fixed that pesky bug with chanserv not seeing modes *sigh*
 **
@@ -254,6 +257,8 @@ int IrcSvcHandler::open(void *in)
     htm_gap = Parent->operserv.Init_HTM_Gap();
     htm_threshold = Parent->operserv.Init_HTM_Thresh();
     last_htm_check = Now();
+    i_burst = true;
+    i_synctime = mDateTime(0.0);
 
     // Only activate the threads when we're ready.
     mBase::init();
@@ -503,6 +508,29 @@ size_t IrcSvcHandler::Average(time_t secs)
 	}
     }
     RET(total / (i ? i : 1));
+}
+
+bool IrcSvcHandler::Burst()
+{
+    NFT("IrcSvcHandler::Burst");
+    RLOCK(("IrcSvcHandler", "i_burst"));
+    RET(i_burst);
+}
+
+mDateTime IrcSvcHandler::SyncTime()
+{
+    NFT("IrcSvcHandler::SyncTime");
+    RLOCK(("IrcSvcHandler", "i_synctime"));
+    RET(i_synctime);
+}
+
+void IrcSvcHandler::EndBurst()
+{
+    NFT("IrcSvcHandler::EndBurst");
+    WLOCK(("IrcSvcHandler", "i_burst"));
+    WLOCK2(("IrcSvcHandler", "i_synctime"));
+    i_burst = false;
+    i_synctime = Now();
 }
 
 int IrcSvcHandler::send(const mstring & data)
@@ -887,6 +915,7 @@ int EventTask::svc(void)
     DumpB();
 
     ACE_Thread_Manager tm;
+    mDateTime synctime;
     while(!Parent->Shutdown())
     {
 	// Make sure we're turned on ...
@@ -910,6 +939,15 @@ int EventTask::svc(void)
 	map<mstring, mDateTime>::iterator di;
 	unsigned int i;
 	vector<mstring> chunked;
+
+	// This is mainly used for 'only do this if users have had
+	// enough time to rectify the situation since sync' ...
+	{ RLOCK(("IrcSvcHandler"));
+	if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
+	    synctime = Parent->ircsvchandler->SyncTime();
+	else
+	    synctime = Now();
+	}
 
 	{ RLOCK(("Events", "last_expire"));
 	if (last_expire.SecondsSince() >= Parent->config.Cycletime())
@@ -1253,8 +1291,9 @@ int EventTask::svc(void)
 	    // grace time on ident (if KillProtect is on, and they
 	    // are not on access list or secure is on).
 	    chunked.clear();
-	    if (Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
-	    { RLOCK(("NickServ", "live"));
+	    if (synctime.SecondsSince() >= Parent->nickserv.Ident() &&
+		Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
+	    {{ RLOCK(("NickServ", "live"));
 	    for (nli = Parent->nickserv.live.begin();
 			    nli != Parent->nickserv.live.end(); nli++)
 	    {
@@ -1325,7 +1364,7 @@ int EventTask::svc(void)
 	    { WLOCK(("NickServ", "recovered"));
 	    for (i=0; i<chunked.size(); i++)
 		Parent->nickserv.recovered.erase(chunked[i]);
-	    }
+	    }}
 	    WLOCK(("Events", "last_check"));
 	    MCB(last_check);
 	    last_check = Now();
@@ -1333,7 +1372,9 @@ int EventTask::svc(void)
 	}}
 
 	{ RLOCK(("Events", "last_ping"));
-	if (last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
+	{ RLOCK(("IrcSvcHandler"));
+	if (last_ping.SecondsSince() >= Parent->config.Ping_Frequency() &&
+	    Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
 	{
 	    CP(("Starting SERVER PING ..."));
 
@@ -1382,7 +1423,7 @@ int EventTask::svc(void)
 	    MCB(last_ping);
 	    last_ping = Now();
 	    MCE(last_ping);
-	}}
+	}}}
 	
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);

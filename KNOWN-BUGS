@@ -6,6 +6,9 @@ $Id$
 
 Known problems that exist in magick that should be fixed.
 
+UNVERSAL
+--------
+
 - Probably should lock when doing list searches (iterator
   based operations).  Doesnt seem a problem right now.
 - Should probably lock when setting/getting CFG vals, just
@@ -18,7 +21,19 @@ Known problems that exist in magick that should be fixed.
   on OPER) it will not remove them from the subcommittee,
   and they will appear twice.
 
-- On FreeBSD, the log file isnt appended to properly, its
-  overwritten from the start or not written at all, which means
-  each sessions needs a new log file (yes, annoying).  Looking
-  into a different method other than re-directing stderr.
+SYSTEM SPECIFIC
+---------------
+
+FreeBSD (3.x, 4.x):
+
+- The log file is not appended to properly, it is overwritten
+  from the start - requiring a remove of the log file each
+  restart (which is annoying!).
+- Under high loads, it seems the underlying strings library
+  of FreeBSD gives way and failes on initialising a string,
+  causing either a coredump, or a recursive signal (spinlock).
+
+Mandrake Linux:
+
+- The threads system sometimes fails (coredumps) on an attempt
+  to suspend a thread (probably a bad threads implementation).

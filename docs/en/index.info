@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index20721.info.2.
+/tmp/sgmltmp.index17988.info.2.
 
    \input texinfo
 
@@ -1202,18 +1202,40 @@ Questions and Answers
 * Menu:
 
 * My IRCD isn't supported what can I do?::
+* I like these services and want to pay the author!::
 
 
-File: index.info,  Node: My IRCD isn't supported what can I do?,  Up: Questions and Answers
+File: index.info,  Node: My IRCD isn't supported what can I do?,  Next: I like these services and want to pay the author!,  Up: Questions and Answers
 
 My IRCD isn't supported what can I do?
 ======================================
 
    If this is the case, and none of the pre-defined IRCD's are
-compatible with it, please find out exactly (at a protocol level) how
-your IRCD is different to the ones Magick supports (or ask the IRCD's
-author) and email the list of differences to the Magick Development
-Team.
+compatible with it, please find out exactly (at a server to server
+protocol level) how your IRCD is different to the ones Magick supports
+(or ask the IRCD's author) and email the list of differences to the
+Magick Development Team magick-devel@magick.tm.
+
+   Here are some of the IRCD's we know are compatible with ones
+supported:
+     IRCD                    COMPATIBLE
+     ------------------------------------------------
+     Wrecked IRCD            DALNet >= 4.4.15
+
+
+File: index.info,  Node: I like these services and want to pay the author!,  Prev: My IRCD isn't supported what can I do?,  Up: Questions and Answers
+
+I like these services and want to pay the author!
+=================================================
+
+   OK, so this isn't something I hear, but a little wishful thinking
+never hurts.  If you want to send me something by snail mail, then feel
+free to do so to PO BOX 893, SUTHERLAND, NSW, 2232, Australia.  I
+always like tokens of appreciation, puts a smile on my face and makes
+the whole thing worth while (no, not necessarily money, but that is
+always nice!).  Remember tho, if you ARE going to send me money, don't
+sent cash, and ensure it is cashable in Australia (an international
+postal order is usually best).
 
 
 File: index.info,  Node: License,  Next: Copyright,  Prev: Questions and Answers,  Up: Top
@@ -1561,8 +1583,9 @@ Node: Support files32445
 Node: General Usage37044
 Node: Functionality42812
 Node: Questions and Answers46619
-Node: My IRCD isn't supported what can I do?46807
-Node: License47259
-Node: Copyright62751
+Node: My IRCD isn't supported what can I do?46861
+Node: I like these services and want to pay the author!47627
+Node: License48397
+Node: Copyright63889
 
 End Tag Table

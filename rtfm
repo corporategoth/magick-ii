@@ -12,7 +12,7 @@ we have provided to help you use Magick before coming
 to us with queries about how to install or use it.
 We do not mind questions, but only AFTER you have read
 and tried to follow the documentation provided.  You
-will more than likely be ignore if you try and ask
+will more than likely be ignored if you try and ask
 questions of us that are documented.
 
 The following documents are available for your reading:
@@ -24,6 +24,8 @@ INSTALL    Instructions on how to compile and install
 AUTHORS    All about the authors, who we owe a debt of
            gratitude to, and who aided us all along.
 README     A basic guide on usage (not full manual).
+FAQ        The Frequently Asked Questions -- please
+           read this before contacting the dev team.
 NEWS       This is a must read, it contains the latest
            news that is important to ALL magick users.
 ChangeLog  This is a detailed summary of all changes
@@ -37,5 +39,5 @@ Most help for this product is online (ie. /msg service
 help <command>), however there is a full user manual
 in the docs/<lang> directory, where lang is the two
 letter abbreviation for your language (eg. en for
-english, fr for french, etc).  These will be translated
+English, fr for French, etc).  These will be translated
 as people generously give their time to it.
