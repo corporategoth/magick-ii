@@ -1445,13 +1445,13 @@ load_akill ()
 	{
 	    if (akills[j].time == 0)
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		Parent->operserv.Akill_insert(mstring(akills[j].mask),
 		    Parent->operserv.Expire_Sop(),
 		    mstring(akills[j].reason), mstring(akills[j].who));
 	    }
 	    else
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		Parent->operserv.Akill_insert(mstring(akills[j].mask),
 		    Parent->operserv.Def_Expire(),
 		    mstring(akills[j].reason), mstring(akills[j].who),
 		    mDateTime(akills[j].time));

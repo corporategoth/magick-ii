@@ -1599,11 +1599,11 @@ long wxFile::Tell() const
 }
 
 // get current file length
-off_t wxFile::Length() const
+long wxFile::Length() const
 {
   wxASSERT( IsOpened() );
 
-    int iRc = Tell();
+    long iRc = Tell();
     if(iRc==-1)
     {
 	wxLogSysError("can't find length of file: %p", m_fd);
@@ -1614,7 +1614,7 @@ off_t wxFile::Length() const
 	wxLogSysError("can't find length of file: %p", m_fd);
 	return -1;
     }
-    int iLen = Tell();
+    long iLen = Tell();
     Seek(iRc);
 
     if ( iLen == -1 ) 
