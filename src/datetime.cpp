@@ -597,9 +597,56 @@ mDateTime Time()
 	return mDateTime::CurrentTime();
 }
 
+mDateTime StringToDate(const mstring& in)
+{
+	int year=0,month=0,day=0;
+	int first=0,second=0,third=0;
+	mstring formatspec;
+	mstring shortdateformat=ShortDateFormat;
+	shortdateformat.LowerCase();
+	formatspec="%d"+DateSeparator+"%d"+DateSeparator+"%d";
+	sscanf(in.c_str(),formatspec.c_str(),&first,&second,&third);
+	if(shortdateformat.Before(DateSeparator)=="mm"||shortdateformat.Before(DateSeparator)=="m")
+		month=first;
+	else if(shortdateformat.Before(DateSeparator)=="dd"||shortdateformat.Before(DateSeparator)=="d")
+		day=first;
+	else if(shortdateformat.Before(DateSeparator)=="yyyy")
+		year=first;
+	else if(shortdateformat.Before(DateSeparator)=="yy")
+		if(year<70)
+			year=first+2000;
+		else
+			year=first+1900;
+	if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="mm"||shortdateformat.After(DateSeparator).Before(DateSeparator)=="m")
+		month=second;
+	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="dd"||shortdateformat.After(DateSeparator).Before(DateSeparator)=="d")
+		day=second;
+	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="yyyy")
+		year=second;
+	else if(shortdateformat.After(DateSeparator).Before(DateSeparator)=="yy")
+		if(year<70)
+			year=second+2000;
+		else
+			year=second+1900;
+	if(shortdateformat.After(DateSeparator).After(DateSeparator)=="mm"||shortdateformat.After(DateSeparator).After(DateSeparator)=="m")
+		month=third;
+	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="dd"||shortdateformat.After(DateSeparator).After(DateSeparator)=="d")
+		day=third;
+	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="yyyy")
+		year=third;
+	else if(shortdateformat.After(DateSeparator).After(DateSeparator)=="yy")
+		if(year<70)
+			year=third+2000;
+		else
+			year=third+1900;
+	return mDateTime(year,month,day);
+}
+
 #if 0
-mDateTime StringToDate(const mstring& in);
-mDateTime StringToTime(const mstring& in);
+mDateTime StringToTime(const mstring& in)
+{
+
+}
 mDateTime StringToDateTime(const mstring& in);
 
 #endif

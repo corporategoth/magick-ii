@@ -162,6 +162,12 @@ void Magick::LoadInternalMessages()
 	You need a wxFileOutputStream for a strait string -> file write?
 	Also -- why cant we go string away -> parser (no tmp file!) */
 
+	/* back to prez: we need a temp file because the parser uses a file
+	to read from, if you wanna rewrite it go ahead. wxFileOutputStream 
+	and not ofstream because ofstream will mean linking in more 
+	unnecessary code we have our streams code in the wxStream classes, 
+	why use unnecessary	extra overhead?*/
+
 	wxFileOutputStream *fostream=new wxFileOutputStream("tmplang.lng");
 	for(i=0;i<def_langent;i++)
 	{
