@@ -60,19 +60,24 @@ namespace SXP
     }
     const char *IElement::Attrib(const char *attrName)
     {
+	static_cast<void>(attrName);
 	return "";
     }
 
     bool IElement::IsA(const char *name)
     {
+	static_cast<void>(name);
 	return false;
     }
     bool IElement::IsA(Tag & t)
     {
+	static_cast<void>(t);
 	return false;
     }
     bool IElement::AttribIs(const char *attrName, const char *val)
     {
+	static_cast<void>(attrName);
+	static_cast<void>(val);
 	return false;
     }
 
@@ -339,6 +344,7 @@ namespace SXP
 
     int CParser::UEHandler(void *pData, const char *pchName, XML_Encoding * info)
     {
+	static_cast<void>(pData);
 	if (strcmp(pchName, "sxp_encoding") == 0)
 	{
 	    for (int i = 0; i < 256; i++)

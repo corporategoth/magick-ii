@@ -608,10 +608,12 @@ mstring OperServ::OperDeny_value(const mstring & entry)
     ETCB();
 }
 
-bool OperServ::Ignore_insert(const mstring & i_entry, const bool perm, const mstring & nick)
+bool OperServ::Ignore_insert(const mstring & i_entry, const bool perm, const mstring & nick,
+			     const mDateTime & added)
+
 {
     BTCB();
-    FT("OperServ::Ignore_insert", (i_entry, perm, nick));
+    FT("OperServ::Ignore_insert", (i_entry, perm, nick, added));
 
     // no @
     if (!i_entry.Contains("@"))
@@ -630,7 +632,7 @@ bool OperServ::Ignore_insert(const mstring & i_entry, const bool perm, const mst
 	pair < set < Ignore_Type >::iterator, bool > tmp;
 
 	MCB(i_Ignore.size());
-	Ignore_Type ent(entry, perm, nick);
+	Ignore_Type ent(entry, perm, nick, added);
 	i_Ignore.erase(ent);
 	tmp = i_Ignore.insert(ent);
 	MCE(i_Ignore.size());

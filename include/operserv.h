@@ -42,6 +42,7 @@ class OperServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend class Nick_Live_t;
+    friend class Convert;
 
 private:
     mstring services_admin;
@@ -405,7 +406,8 @@ public:
 
     set < OperDeny_Type >::iterator OperDeny;
 
-    bool Ignore_insert(const mstring & entry, const bool perm, const mstring & nick);
+    bool Ignore_insert(const mstring & entry, const bool perm, const mstring & nick,
+		       const mDateTime & added = mDateTime::CurrentDateTime());
     bool Ignore_erase();
 
     set < Ignore_Type >::iterator Ignore_begin()

@@ -180,10 +180,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
     friend void Nick_Live_t::Quit(const mstring & reason);
     friend class Chan_Live_t;
     friend class ChanServ;
-    friend Chan_Stored_t *CreateChanEntry(ChanInfo_CUR * ci);
-    friend Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo * ci);
-    friend Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo * ci);
-    friend Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci);
+    friend class Convert;
 
     mstring i_Name;
     mDateTime i_RegTime;
@@ -205,10 +202,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
     {
 	friend class Chan_Stored_t;
 	friend class ChanServ;
-	friend Chan_Stored_t *CreateChanEntry(ChanInfo_CUR * ci);
-	friend Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo * ci);
-	friend Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo * ci);
-	friend Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci);
+	friend class Convert;
 
 	bool Keeptopic:1;
 	bool Topiclock:1;

@@ -43,11 +43,8 @@ struct HYB_MemoInfo;
 
 class Memo_t : public mUserDef, public SXP::IPersistObj
 {
-    friend list < Memo_t > CreateMemoEntry(MemoList_CUR * ml);
-    friend list < Memo_t > ESP_CreateMemoEntry(ESP_MemoInfo * ml, char *nick);
-    friend list < Memo_t > EPO_CreateMemoEntry(EPO_MemoInfo * ml, char *nick);
-    friend list < Memo_t > HYB_CreateMemoEntry(HYB_MemoInfo * mi);
     friend class MemoServ;
+    friend class Convert;
 
     mstring i_Nick;
     mstring i_Sender;
@@ -119,10 +116,8 @@ public:
 
 class News_t : public mUserDef, public SXP::IPersistObj
 {
-    friend list < News_t > CreateNewsEntry(NewsList_CUR * nl);
-    friend list < News_t > ESP_CreateNewsEntry(ESP_MemoInfo * nl, char *chan);
-    friend list < News_t > EPO_CreateNewsEntry(EPO_MemoInfo * nl, char *chan);
     friend class MemoServ;
+    friend class Convert;
 
     mstring i_Channel;
     mstring i_Sender;

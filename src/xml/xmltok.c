@@ -73,16 +73,20 @@ We need 8 bits to index into pages, 3 bits to add to that index and
 
 static int isNever(const ENCODING * enc, const char *p)
 {
+    (void) enc;
+    (void) p;
     return 0;
 }
 
 static int utf8_isName2(const ENCODING * enc, const char *p)
 {
+    (void) enc;
     return UTF8_GET_NAMING2(namePages, (const unsigned char *) p);
 }
 
 static int utf8_isName3(const ENCODING * enc, const char *p)
 {
+    (void) enc;
     return UTF8_GET_NAMING3(namePages, (const unsigned char *) p);
 }
 
@@ -90,11 +94,13 @@ static int utf8_isName3(const ENCODING * enc, const char *p)
 
 static int utf8_isNmstrt2(const ENCODING * enc, const char *p)
 {
+    (void) enc;
     return UTF8_GET_NAMING2(nmstrtPages, (const unsigned char *) p);
 }
 
 static int utf8_isNmstrt3(const ENCODING * enc, const char *p)
 {
+    (void) enc;
     return UTF8_GET_NAMING3(nmstrtPages, (const unsigned char *) p);
 }
 
@@ -104,11 +110,13 @@ static int utf8_isNmstrt3(const ENCODING * enc, const char *p)
 
 static int utf8_isInvalid3(const ENCODING * enc, const char *p)
 {
+    (void) enc;
     return UTF8_INVALID3((const unsigned char *) p);
 }
 
 static int utf8_isInvalid4(const ENCODING * enc, const char *p)
 {
+    (void) enc;
     return UTF8_INVALID4((const unsigned char *) p);
 }
 
@@ -260,6 +268,7 @@ static void utf8_toUtf8(const ENCODING * enc, const char **fromP, const char *fr
 {
     char *to;
     const char *from;
+    (void) enc;
 
     if (fromLim - *fromP > toLim - *toP)
     {
@@ -371,6 +380,7 @@ static const struct normal_encoding internal_utf8_encoding =
 
 static void latin1_toUtf8(const ENCODING * enc, const char **fromP, const char *fromLim, char **toP, const char *toLim)
 {
+    (void) enc;
     for (;;)
     {
 	unsigned char c;
@@ -398,6 +408,7 @@ static void latin1_toUtf8(const ENCODING * enc, const char **fromP, const char *
 static void latin1_toUtf16(const ENCODING * enc, const char **fromP, const char *fromLim, unsigned short **toP,
 			   const unsigned short *toLim)
 {
+    (void) enc;
     while (*fromP != fromLim && *toP != toLim)
 	*(*toP)++ = (unsigned char) *(*fromP)++;
 }
@@ -432,6 +443,7 @@ static const struct normal_encoding latin1_encoding =
 
 static void ascii_toUtf8(const ENCODING * enc, const char **fromP, const char *fromLim, char **toP, const char *toLim)
 {
+    (void) enc;
     while (*fromP != fromLim && *toP != toLim)
 	*(*toP)++ = * (*fromP)++;
 }
@@ -499,6 +511,7 @@ void E ## toUtf8(const ENCODING *enc, \
 		 char **toP, const char *toLim) \
 { \
   const char *from; \
+  (void) enc; \
   for (from = *fromP; from != fromLim; from += 2) { \
     int plane; \
     unsigned char lo2; \
@@ -561,6 +574,7 @@ void E ## toUtf16(const ENCODING *enc, \
 		  const char **fromP, const char *fromLim, \
 		  unsigned short **toP, const unsigned short *toLim) \
 { \
+  (void) enc; \
   /* Avoid copying first half only of surrogate */ \
   if (fromLim - *fromP > ((toLim - *toP) << 1) \
       && (GET_HI(fromLim - 2) & 0xF8) == 0xD8) \
@@ -885,6 +899,7 @@ static int streqci(const char *s1, const char *s2)
 
 static void initUpdatePosition(const ENCODING * enc, const char *ptr, const char *end, POSITION * pos)
 {
+    (void) enc;
     normal_updatePosition(&utf8_encoding.enc, ptr, end, pos);
 }
 

@@ -47,16 +47,18 @@ RCSID(magick_h, "@(#) $Id$");
 #include "ircsocket.h"
 #include "version.h"
 
-const int MAGICK_RET_NORMAL = 0;
-const int MAGICK_RET_RESTART = 1;
-const int MAGICK_RET_DIE = 2;
-const int MAGICK_RET_ERROR = -1;
-const int MAGICK_RET_LOCKED = -2;
-const int MAGICK_RET_STATE = -3;
-const int MAGICK_RET_SERVICE_INSERT = -10;
-const int MAGICK_RET_SERVICE_REMOVE = -11;
-const int MAGICK_RET_SERVICE_START = -12;
-const int MAGICK_RET_SERVICE_STOP = -13;
+enum {
+	MAGICK_RET_NORMAL = 0,
+	MAGICK_RET_RESTART = 1,
+	MAGICK_RET_DIE = 2,
+	MAGICK_RET_ERROR = -1,
+	MAGICK_RET_LOCKED = -2,
+	MAGICK_RET_STATE = -3,
+	MAGICK_RET_SERVICE_INSERT = -10,
+	MAGICK_RET_SERVICE_REMOVE = -11,
+	MAGICK_RET_SERVICE_START = -12,
+	MAGICK_RET_SERVICE_STOP = -13
+};
 
 #ifdef WIN32
 bool isWinNT();

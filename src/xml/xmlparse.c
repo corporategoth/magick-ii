@@ -3445,6 +3445,9 @@ static enum XML_Error processInternalParamEntity(XML_Parser parser, ENTITY * ent
 
 static enum XML_Error errorProcessor(XML_Parser parser, const char *s, const char *end, const char **nextPtr)
 {
+    (void) s;
+    (void) end;
+    (void) nextPtr;
     return errorCode;
 }
 
@@ -4307,6 +4310,7 @@ static int copyEntityTable(HASH_TABLE * newTable, STRING_POOL * newPool, const H
     HASH_TABLE_ITER iter;
     const XML_Char *cachedOldBase = 0;
     const XML_Char *cachedNewBase = 0;
+    (void) parser;
 
     hashTableIterInit(&iter, oldTable);
 

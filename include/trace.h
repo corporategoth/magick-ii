@@ -119,14 +119,18 @@ public:
 
 void LOG2(ACE_Log_Priority type, const mstring & msg);
 
-#define LOG(X, Y, Z) \
-	{ LOG2(X, parseMessage(Magick::instance().getLogMessage(Y), mVarArray Z)); }
-#define NLOG(X, Y) \
-	{ LOG2(X, parseMessage(Magick::instance().getLogMessage(Y))); }
-#define SLOG(X, Y, Z) \
-	{ LOG2(X, parseMessage(Y, mVarArray Z)); }
-#define NSLOG(X, Y) \
-	{ LOG2(X, parseMessage(Y)); }
+#define LOG(X, Y, Z) do { \
+	LOG2(X, parseMessage(Magick::instance().getLogMessage(Y), mVarArray Z)); \
+	} while (0)
+#define NLOG(X, Y) do { \
+	LOG2(X, parseMessage(Magick::instance().getLogMessage(Y))); \
+	} while (0)
+#define SLOG(X, Y, Z) do { \
+	LOG2(X, parseMessage(Y, mVarArray Z)); \
+	} while(0)
+#define NSLOG(X, Y) do { \
+	LOG2(X, parseMessage(Y)); \
+	} while (0)
 
 #ifndef MAGICK_TRACE_WORKS
 

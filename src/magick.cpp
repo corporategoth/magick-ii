@@ -41,10 +41,7 @@ RCSID(magick_cpp, "@(#)$Id$");
 #include "language.h"
 #include "logfile.h"
 #ifdef CONVERT
-#include "convert_magick.h"
-#include "convert_esper.h"
-#include "convert_epona.h"
-#include "convert_hybserv.h"
+#include "convert/interface.h"
 #endif
 
 mDateTime Magick::i_StartTime;
@@ -1061,9 +1058,15 @@ void Magick::dump_help() const
 #ifdef CONVERT
 	"--convert X                Convert another version of services databases\n" <<
 	"                           to Magick II format, where X is the type of\n" <<
-	"                           database to convert.  Currently recognized:\n" <<
-	"                               magick (1.4), esper (4.4.8), epona (1.4.7),\n" <<
-	"                               hybserv (1.9.0)\n" <<
+	"                           database to convert.  After the name of the\n" <<
+	"                           services to convert is the version that the\n" <<
+        "                           conversion utilities were taken from (you can\n" <<
+        "                           usually assume previous versions will also work).\n" <<
+	"                               magick (1.4), ircservices (5.0.6), epona (1.4.14),\n" <<
+	"                               hybserv (1.9.0), auspice (2.8), ptlink (2.22.3),\n" <<
+	"                               sirv (2.9.0), wrecked (1.2.0), trircd (4.26),\n" <<
+	"                               cygnus (0.1.1), srvx (1.2), daylight (12),\n" <<
+	"                               ircs (1.3), bolivia (1.2.0).\n" <<
 #endif
 #ifdef MAGICK_TRACE_WORKS
 	"--trace X:Y                Set the trace level on startup, equivilant of\n" <<
@@ -1708,46 +1711,17 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if (second.IsSameAs("magick", true))
-	{
-	    NLOG(LM_STARTUP, "COMMANDLINE/START_CONVERT");
-	    load_ns_dbase();
-	    load_cs_dbase();
-	    load_ms_dbase();
-	    load_news_dbase();
-	    load_akill();
-	    load_clone();
-	    load_sop();
-	    load_message();
-	}
-	else if (second.IsSameAs("esper", true))
-	{
-	    NLOG(LM_STARTUP, "COMMANDLINE/START_CONVERT");
-	    ESP_load_ns_dbase();
-	    ESP_load_cs_dbase();
-	    ESP_load_os_dbase();
-	    ESP_load_akill();
-	    ESP_load_news();
-	    ESP_load_exceptions();
-	}
-	else if (second.IsSameAs("epona", true))
-	{
-	    NLOG(LM_STARTUP, "COMMANDLINE/START_CONVERT");
-	    EPO_load_ns_dbase();
-	    EPO_load_cs_dbase();
-	    EPO_load_os_dbase();
-	    EPO_load_news();
-	    EPO_load_exceptions();
-	}
-	else if (second.IsSameAs("hybserv", true))
-	{
-	    NLOG(LM_STARTUP, "COMMANDLINE/START_CONVERT");
-	    HYB_load_ns_dbase();
-	    HYB_load_cs_dbase();
-	    HYB_load_ms_dbase();
-	    HYB_load_ignore_dbase();
-	}
-	else
+
+	unsigned int i;
+	for (i=0; convert_names[i].name; i++)
+	    if (second.IsSameAs(convert_names[i].name, true))
+	    {
+		NLOG(LM_STARTUP, "COMMANDLINE/START_CONVERT");
+		convert_db(convert_names[i].id);
+		break;
+	    }
+
+	if (!convert_names[i].name)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/CANNOT_CONVERT", (second));
 	}

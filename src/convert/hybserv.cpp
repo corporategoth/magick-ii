@@ -35,25 +35,229 @@ RCSID(convert_hybserv_cpp, "@(#)$Id$");
 ** ======================================================================= */
 
 #ifdef CONVERT
-#include "convert_hybserv.h"
-#include "magick.h"
 
-const char *HYB_NickDBName = "nick.db";
-const char *HYB_ChanDBName = "chan.db";
-const char *HYB_MemoDBName = "memo.db";
-const char *HYB_IgnoreDBName = "ignore.db";
+/* Based upon the DB loading routines from HybServ 1.9.0
+ * (c) 2001-2003 Dinko Korunic <kreator@srce.hr>
+ */
+
+#include "magick.h"
+#include "convert/interface.h"
+#include "convert/hybserv.h"
+
+/* NickServ flags */
+#define hybserv_NS_IDENTIFIED   0x00000001 /* nick has IDENTIFY'd */
+#define hybserv_NS_PROTECTED    0x00000002 /* kill to regain nick */
+#define hybserv_NS_NOEXPIRE     0x00000004 /* nickname which doesn't expire */
+#define hybserv_NS_AUTOMASK     0x00000008 /* auto-add new hostmasks */
+#define hybserv_NS_PRIVATE      0x00000010 /* nick won't show up in a LIST */
+#define hybserv_NS_COLLIDE      0x00000020 /* stole a nick - kill them */
+#define hybserv_NS_RELEASE      0x00000040 /* to release an enforced nick */
+#define hybserv_NS_FORBID       0x00000080 /* nick is forbidden */
+#define hybserv_NS_SECURE       0x00000100 /* nick is secure */
+#define hybserv_NS_DELETE       0x00000200 /* delete after a RELOAD */
+#define hybserv_NS_UNSECURE     0x00000400 /* don't need to IDENTIFY */
+#define hybserv_NS_MEMOSIGNON   0x00000800 /* tell about memos on signon */
+#define hybserv_NS_MEMONOTIFY   0x00001000 /* tell about new memos */
+#define hybserv_NS_MEMOS        0x00002000 /* allow others to send memos */
+#define hybserv_NS_HIDEALL      0x00004000 /* hide everything from INFO */
+#define hybserv_NS_HIDEEMAIL    0x00008000 /* hide email from INFO */
+#define hybserv_NS_HIDEURL      0x00010000 /* hide url from INFO */
+#define hybserv_NS_HIDEQUIT     0x00020000 /* hide quitmsg from INFO */
+#define hybserv_NS_HIDEADDR     0x00040000 /* hide last addy from INFO */
+#define hybserv_NS_KILLIMMED    0x00080000 /* kill immediately to regain nick */
+#define hybserv_NS_NOREGISTER   0x00100000 /* cannot register channels */
+#define hybserv_NS_NOCHANOPS    0x00200000 /* not allowed to be opped */
+#define hybserv_NS_NUMERIC      0x00400000 /* ignores 432 numeric */
+#define hybserv_NS_PRIVMSG      0x00800000 /* PRIVMSG or NOTICE */
+
+/* structure for registered nicknames */
+struct hybserv_NickInfo
+{
+  mstring nick;                /* registered nickname */
+  mstring password;            /* password */
+  vector<mstring> hosts;    /* recognized hosts for this nick */
+  time_t created;            /* timestamp when it was registered */
+  time_t lastseen;           /* for expiration purposes */
+  long flags;                /* nick flags */
+
+  mstring email;               /* email address */
+  mstring url;                 /* url */
+
+  mstring gsm;                 /* GSM number */
+  mstring phone;               /* Phone */
+  mstring UIN;                 /* ICQ UIN */
+
+  mstring lastu;               /* last seen username */
+  mstring lasth;               /* last seen hostname */
+  mstring lastqmsg;            /* last quit message */
+
+  /*
+   * If this is the "hub" nickname for a list of linked nicknames,
+   * master will be NULL. If this nickname is a leaf, master will
+   * point to the "hub" nickname of this list
+   */
+  mstring master;
+};
+
+/*************************************************************************/
+
+#define hybserv_BAN_EXPIRE_TIME 10800
+
+/* ChanServ flags */
+#define hybserv_CS_PRIVATE      0x00000001 /* channel won't show up in LIST */
+#define hybserv_CS_TOPICLOCK    0x00000002 /* must be changed via SET TOPIC */
+#define hybserv_CS_SECURE       0x00000004 /* channel is secure */
+#define hybserv_CS_SECUREOPS    0x00000008 /* only aop/sop/founders can be opped */
+#define hybserv_CS_SUSPENDED    0x00000010 /* channel is suspended */
+#define hybserv_CS_FORBID       0x00000020 /* channel is forbidden */
+#define hybserv_CS_RESTRICTED   0x00000040 /* channel is restricted */
+#define hybserv_CS_FORGET       0x00000080 /* channel is forgotten */
+#define hybserv_CS_DELETE       0x00000100 /* delete after a RELOAD */
+#define hybserv_CS_NOEXPIRE     0x00000200 /* never expires */
+#define hybserv_CS_GUARD        0x00000400 /* have ChanServ join the channel */
+#define hybserv_CS_SPLITOPS     0x00000800 /* let people keep ops from splits */
+#define hybserv_CS_VERBOSE      0x00001000 /* notify chanops for access changes */
+#define hybserv_CS_EXPIREBANS   0x00002000 /* expire bans after EXPIRETIME */
+
+/* access_lvl[] indices */
+/* We will happily FUBAR old databases by changing this. However, it had
+ * to be done -kre && Janos
+ * PS, I have added upgrade-chan target in Makefile for fixing this
+ * properly - it relies on awk and DefaultAccess as well as ALVL in
+ * chan.db -kre */
+# define hybrid7_CA_AUTODEOP     0
+# define hybrid7_CA_AUTOVOICE    1
+# define hybrid7_CA_CMDVOICE     2
+# define hybrid7_CA_ACCESS       3
+# define hybrid7_CA_CMDINVITE    4
+# define hybrid7_CA_AUTOHALFOP   5
+# define hybrid7_CA_CMDHALFOP    6
+# define hybrid7_CA_AUTOOP       7
+# define hybrid7_CA_CMDOP        8
+# define hybrid7_CA_CMDUNBAN     9
+# define hybrid7_CA_AKICK        10
+# define hybrid7_CA_CMDCLEAR     11
+# define hybrid7_CA_SET          12
+# define hybrid7_CA_SUPEROP      13
+# define hybrid7_CA_FOUNDER      14
+# define hybrid7_CA_SIZE         15 /* number of indices */
+# define hybrid6_CA_AUTODEOP     0
+# define hybrid6_CA_AUTOVOICE    1
+# define hybrid6_CA_CMDVOICE     2
+# define hybrid6_CA_ACCESS       3
+# define hybrid6_CA_CMDINVITE    4
+# define hybrid6_CA_AUTOOP       5
+# define hybrid6_CA_CMDOP        6
+# define hybrid6_CA_CMDUNBAN     7
+# define hybrid6_CA_AKICK        8
+# define hybrid6_CA_CMDCLEAR     9
+# define hybrid6_CA_SET          10
+# define hybrid6_CA_SUPEROP      11
+# define hybrid6_CA_FOUNDER      12
+# define hybrid6_CA_SIZE         13 /* number of indices */
+
+#define hybserv_CMODE_L          0x000010 /* channel is +l */
+#define hybserv_CMODE_K          0x000020 /* channel is +k */
+#define hybserv_CMODE_S          0x000040 /* channel is +s */
+#define hybserv_CMODE_P          0x000080 /* channel is +p */
+#define hybserv_CMODE_N          0x000100 /* channel is +n */
+#define hybserv_CMODE_T          0x000200 /* channel is +t */
+#define hybserv_CMODE_M          0x000400 /* channel is +m */
+#define hybserv_CMODE_I          0x000800 /* channel is +i */
+#define hybserv_CMODE_C          0x001000 /* channel is +c */
+#define hybserv_CMODE_F          0x002000 /* channel is +f */
+#define hybserv_CMODE_A          0x004000 /* channel is +a - Janos */
+
+
+struct hybserv_ChanAccess
+{
+  int level;               /* privs mask has */
+  mstring entry;   /* nickname */
+
+  /*
+   * pointer to corresponding AccessChannel structure on nptr's
+   * AccessChannels list - this way, when we delete a ChanAccess
+   * structure, we don't have to loop through all of nptr's
+   * access channels to find the corresponding pointer.
+   */
+  time_t created; /* time when this entry was added */
+  time_t last_used; /* last time the person joined the channel while
+                       identified */
+};
+
+struct hybserv_AutoKick
+{
+  mstring hostmask; /* mask to autokick */
+  mstring reason;   /* reason for autokick */
+};
+
+struct hybserv_ChanInfo
+{
+  mstring name;                   /* channel name */
+  mstring founder;                /* founder nick (must be registered) */
+  time_t last_founder_active;   /* last time the founder joined/left */
+  mstring successor;              /* successor nick (must be registered) */
+  mstring password;               /* founder password */
+  mstring topic;                  /* NULL if no topic lock */
+  long limit;                   /* 0 if no limit */
+  mstring key;                    /* NULL if no key */
+  int modes_on,                 /* modes to enforce */
+      modes_off;                /* modes to enforce off */
+  vector<hybserv_ChanAccess> access;    /* access list */
+  vector<hybserv_AutoKick> akick;       /* autokick list */
+
+  mstring entrymsg;               /* msg to send to users upon entry to channel */
+  mstring email;                  /* email address of channel */
+  mstring url;                    /* url of channel */
+
+  time_t created;               /* timestamp when it was registered */
+  time_t lastused;              /* for expiration purposes */
+  vector<int> access_lvl;              /* customized access levels for this channel */
+  long flags;                   /* channel flags */
+};
+
+
+/*************************************************************************/
+
+/* MemoServ flags */
+#define hybserv_MS_READ         0x00000001 /* memo has been read */
+#define hybserv_MS_DELETE       0x00000002 /* marked for deletion */
+#define hybserv_MS_RDELETE      0x00000004 /* delete after a RELOAD */
+#define hybserv_MS_REPLIED      0x00000008 /* has been replied */
+
+struct hybserv_Memo
+{
+  mstring sender;
+  time_t sent;    /* time it was sent */
+  mstring text;
+  long flags;
+};
+
+struct hybserv_MemoInfo
+{
+  mstring name;            /* who the memo was sent to */
+  vector<hybserv_Memo> memos;    /* the actual memos */
+};
+
+
+/*************************************************************************/
+
+const char *hybserv_NickDBName = "nick.db";
+const char *hybserv_ChanDBName = "chan.db";
+const char *hybserv_MemoDBName = "memo.db";
+const char *hybserv_IgnoreDBName = "ignore.db";
 
 /*************************************************************************/
 
 
-void HYB_load_ns_dbase()
+void hybserv_load_nick()
 {
     BTCB();
-    HYB_NickInfo *ni = NULL;
+    hybserv_NickInfo *ni = NULL;
 
-    mFile dbfile(HYB_NickDBName);
+    mFile dbfile(hybserv_NickDBName);
     if (!dbfile.IsOpened())
-	SLOG(LM_EMERGENCY, "Could not open file $1", (HYB_NickDBName));
+	SLOG(LM_EMERGENCY, "Could not open file $1", (hybserv_NickDBName));
 
     while (!dbfile.Eof())
     {
@@ -115,7 +319,7 @@ void HYB_load_ns_dbase()
 	{
 	    if (ni)
 	    {
-		Nick_Stored_t *nick = HYB_CreateNickEntry(ni);
+		Nick_Stored_t *nick = Convert::hybserv_CreateNickEntry(ni);
 		if (nick != NULL)
 		    Magick::instance().nickserv.AddStored(nick);
 
@@ -127,7 +331,7 @@ void HYB_load_ns_dbase()
 	    if (line.WordCount(" ") < 4)
 		continue;
 
-	    ni = new HYB_NickInfo;
+	    ni = new hybserv_NickInfo;
 	    ni->nick = line.ExtractWord(1, " ");
 	    ni->flags = atoi(line.ExtractWord(2, " ").c_str());
 	    ni->created = atoi(line.ExtractWord(3, " ").c_str());
@@ -135,17 +339,28 @@ void HYB_load_ns_dbase()
 	}
     }
 
+    if (ni)
+    {
+	Nick_Stored_t *nick = Convert::hybserv_CreateNickEntry(ni);
+	if (nick != NULL)
+	    Magick::instance().nickserv.AddStored(nick);
+
+	// Previous entry ...
+	delete ni;
+	ni = NULL;
+    }
+
     ETCB();
 }
 
-void HYB_load_cs_dbase(void)
+void hybserv_load_chan(void)
 {
     BTCB();
-    HYB_ChanInfo *ci = NULL;
+    hybserv_ChanInfo *ci = NULL;
 
-    mFile dbfile(HYB_ChanDBName);
+    mFile dbfile(hybserv_ChanDBName);
     if (!dbfile.IsOpened())
-	SLOG(LM_EMERGENCY, "Could not open file $1", (HYB_ChanDBName));
+	SLOG(LM_EMERGENCY, "Could not open file $1", (hybserv_ChanDBName));
 
     while (!dbfile.Eof())
     {
@@ -175,7 +390,7 @@ void HYB_load_cs_dbase(void)
 	    }
 	    else if (field.IsSameAs("ACCESS", true))
 	    {
-		HYB_ChanAccess ca;
+		hybserv_ChanAccess ca;
 		mstring ent = data.ExtractWord(1, " ");
 		ca.entry = ent;
 		ca.level = atoi(data.ExtractWord(2, " ").c_str());
@@ -185,7 +400,7 @@ void HYB_load_cs_dbase(void)
 	    }
 	    else if (field.IsSameAs("AKICK", true))
 	    {
-		HYB_AutoKick ca;
+		hybserv_AutoKick ca;
 		ca.hostmask = data.ExtractWord(2, " ");
 		ca.reason = data.After(":", 1);
 		ci->akick.push_back(ca);
@@ -233,7 +448,7 @@ void HYB_load_cs_dbase(void)
 	{
 	    if (ci)
 	    {
-		Chan_Stored_t *chan = HYB_CreateChanEntry(ci);
+		Chan_Stored_t *chan = Convert::hybserv_CreateChanEntry(ci);
 		if (chan != NULL)
 		    Magick::instance().chanserv.AddStored(chan);
 
@@ -245,7 +460,10 @@ void HYB_load_cs_dbase(void)
 	    if (line.WordCount(" ") < 4)
 		continue;
 
-	    ci = new HYB_ChanInfo;
+	    ci = new hybserv_ChanInfo;
+	    ci->last_founder_active = 0;
+	    ci->limit = 0;
+	    ci->modes_on = ci->modes_off = 0;
 	    ci->name = line.ExtractWord(1, " ");
 	    ci->flags = atoi(line.ExtractWord(2, " ").c_str());
 	    ci->created = atoi(line.ExtractWord(3, " ").c_str());
@@ -256,14 +474,14 @@ void HYB_load_cs_dbase(void)
     ETCB();
 }
 
-void HYB_load_ms_dbase(void)
+void hybserv_load_memo(void)
 {
     BTCB();
-    HYB_MemoInfo *mi = NULL;
+    hybserv_MemoInfo *mi = NULL;
 
-    mFile dbfile(HYB_MemoDBName);
+    mFile dbfile(hybserv_MemoDBName);
     if (!dbfile.IsOpened())
-	SLOG(LM_EMERGENCY, "Could not open file $1", (HYB_MemoDBName));
+	SLOG(LM_EMERGENCY, "Could not open file $1", (hybserv_MemoDBName));
 
     while (!dbfile.Eof())
     {
@@ -281,7 +499,7 @@ void HYB_load_ms_dbase(void)
 
 	    if (field.IsSameAs("TEXT", true))
 	    {
-		HYB_Memo m;
+		hybserv_Memo m;
 		m.sender = data.ExtractWord(1, " ");
 		m.sent = atoi(data.ExtractWord(2, " ").c_str());
 		m.flags = atoi(data.ExtractWord(2, " ").c_str());
@@ -292,7 +510,7 @@ void HYB_load_ms_dbase(void)
 	{
 	    if (mi)
 	    {
-		MemoServ::nick_memo_t memo = HYB_CreateMemoEntry(mi);
+		MemoServ::nick_memo_t memo = Convert::hybserv_CreateMemoEntry(mi);
 		if (memo.size())
 		    Magick::instance().memoserv.AddNick(memo);
 
@@ -301,7 +519,7 @@ void HYB_load_ms_dbase(void)
 		mi = NULL;
 	    }
 
-	    mi = new HYB_MemoInfo;
+	    mi = new hybserv_MemoInfo;
 	    mi->name = line.ExtractWord(1, " ");
 	}
     }
@@ -309,13 +527,13 @@ void HYB_load_ms_dbase(void)
     ETCB();
 }
 
-void HYB_load_ignore_dbase(void)
+void hybserv_load_ignore(void)
 {
     BTCB();
 
-    mFile dbfile(HYB_IgnoreDBName);
+    mFile dbfile(hybserv_IgnoreDBName);
     if (!dbfile.IsOpened())
-	SLOG(LM_EMERGENCY, "Could not open file $1", (HYB_IgnoreDBName));
+	SLOG(LM_EMERGENCY, "Could not open file $1", (hybserv_IgnoreDBName));
 
     while (!dbfile.Eof())
     {
@@ -335,13 +553,13 @@ void HYB_load_ignore_dbase(void)
 
 /*************************************************************************/
 
-Nick_Stored_t *HYB_CreateNickEntry(HYB_NickInfo * ni)
+Nick_Stored_t *Convert::hybserv_CreateNickEntry(hybserv_NickInfo * ni)
 {
     BTCB();
     if (ni == NULL || ni->nick.empty())
 	return NULL;
 
-    if (ni->flags & HYB_NS_FORBID)
+    if (ni->flags & hybserv_NS_FORBID)
     {
 	Nick_Stored_t *out = new Nick_Stored_t(ni->nick);
 
@@ -391,17 +609,17 @@ Nick_Stored_t *HYB_CreateNickEntry(HYB_NickInfo * ni)
 	for (i=0; i<ni->hosts.size(); i++)
 	    out->i_access.insert(ni->hosts[i]);
 
-	if (ni->flags & HYB_NS_PROTECTED && !out->L_Protect())
+	if (ni->flags & hybserv_NS_PROTECTED && !out->L_Protect())
 	    out->setting.Protect = true;
-	if (ni->flags & HYB_NS_SECURE && !out->L_Secure())
+	if (ni->flags & hybserv_NS_SECURE && !out->L_Secure())
 	    out->setting.Secure = true;
-	if (ni->flags & HYB_NS_PRIVATE && !out->L_Private())
+	if (ni->flags & hybserv_NS_PRIVATE && !out->L_Private())
 	    out->setting.Private = true;
-	if (ni->flags & HYB_NS_PRIVMSG && !out->L_PRIVMSG())
+	if (ni->flags & hybserv_NS_PRIVMSG && !out->L_PRIVMSG())
 	    out->setting.PRIVMSG = true;
-	if (ni->flags & HYB_NS_NOEXPIRE && !Magick::instance().nickserv.LCK_NoExpire())
+	if (ni->flags & hybserv_NS_NOEXPIRE && !Magick::instance().nickserv.LCK_NoExpire())
 	    out->setting.NoExpire = true;
-	if (!(ni->flags & HYB_NS_MEMOS) && !out->L_NoMemo())
+	if (!(ni->flags & hybserv_NS_MEMOS) && !out->L_NoMemo())
 	    out->setting.NoMemo = true;
 
 	return out;
@@ -410,45 +628,45 @@ Nick_Stored_t *HYB_CreateNickEntry(HYB_NickInfo * ni)
 }
 
 
-mstring HYB_getmodes(int modes)
+mstring hybserv_getmodes(int modes)
 {
     BTCB();
     mstring retval;
 
-    if (modes & HYB_CMODE_L)
+    if (modes & hybserv_CMODE_L)
 	retval += "l";
-    if (modes & HYB_CMODE_K)
+    if (modes & hybserv_CMODE_K)
 	retval += "k";
-    if (modes & HYB_CMODE_S)
+    if (modes & hybserv_CMODE_S)
 	retval += "s";
-    if (modes & HYB_CMODE_P)
+    if (modes & hybserv_CMODE_P)
 	retval += "p";
-    if (modes & HYB_CMODE_N)
+    if (modes & hybserv_CMODE_N)
 	retval += "n";
-    if (modes & HYB_CMODE_T)
+    if (modes & hybserv_CMODE_T)
 	retval += "t";
-    if (modes & HYB_CMODE_M)
+    if (modes & hybserv_CMODE_M)
 	retval += "m";
-    if (modes & HYB_CMODE_I)
+    if (modes & hybserv_CMODE_I)
 	retval += "i";
-    if (modes & HYB_CMODE_C)
+    if (modes & hybserv_CMODE_C)
 	retval += "c";
-    if (modes & HYB_CMODE_F)
+    if (modes & hybserv_CMODE_F)
 	retval += "f";
-    if (modes & HYB_CMODE_A)
+    if (modes & hybserv_CMODE_A)
 	retval += "a";
 
     return retval;
     ETCB();
 }
 
-Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
+Chan_Stored_t *Convert::hybserv_CreateChanEntry(hybserv_ChanInfo * ci)
 {
     BTCB();
     if (ci == NULL || ci->name.empty())
 	return NULL;
 
-    if (ci->flags & HYB_CS_FORBID)
+    if (ci->flags & hybserv_CS_FORBID)
     {
 	Chan_Stored_t *out = new Chan_Stored_t(ci->name);
 
@@ -456,8 +674,8 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
     }
     else
     {
-	vector<HYB_ChanAccess>::iterator access;
-	vector<HYB_AutoKick>::iterator akick;
+	vector<hybserv_ChanAccess>::iterator access;
+	vector<hybserv_AutoKick>::iterator akick;
 	unsigned int i;
 
 	if (ci->founder.empty() || ci->password.empty())
@@ -516,26 +734,26 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
 	if (!ci->entrymsg.empty())
 	    out->Message_insert(ci->entrymsg, Magick::instance().chanserv.FirstName());
 
-	if (ci->flags & HYB_CS_SECUREOPS && !out->L_Secureops())
+	if (ci->flags & hybserv_CS_SECUREOPS && !out->L_Secureops())
 	    out->setting.Secureops = true;
-	if (ci->flags & HYB_CS_PRIVATE && !out->L_Private())
+	if (ci->flags & hybserv_CS_PRIVATE && !out->L_Private())
 	    out->setting.Private = true;
-	if (ci->flags & HYB_CS_TOPICLOCK && !out->L_Topiclock())
+	if (ci->flags & hybserv_CS_TOPICLOCK && !out->L_Topiclock())
 	    out->setting.Topiclock = true;
-	if (ci->flags & HYB_CS_RESTRICTED && !out->L_Restricted())
+	if (ci->flags & hybserv_CS_RESTRICTED && !out->L_Restricted())
 	    out->setting.Restricted = true;
-	if (ci->flags & HYB_CS_SPLITOPS && !out->L_Anarchy())
+	if (ci->flags & hybserv_CS_SPLITOPS && !out->L_Anarchy())
 	    out->setting.Anarchy = true;
-	if (ci->flags & HYB_CS_SECURE && !out->L_Secure())
+	if (ci->flags & hybserv_CS_SECURE && !out->L_Secure())
 	    out->setting.Secure = true;
-	if (ci->flags & HYB_CS_GUARD && !out->L_Secure())
+	if (ci->flags & hybserv_CS_GUARD && !out->L_Secure())
 	    out->setting.Join = true;
-	if (ci->flags & HYB_CS_NOEXPIRE && !Magick::instance().chanserv.LCK_NoExpire())
+	if (ci->flags & hybserv_CS_NOEXPIRE && !Magick::instance().chanserv.LCK_NoExpire())
 	    out->setting.NoExpire = true;
-	if (ci->flags & HYB_CS_EXPIREBANS && !out->L_Bantime())
-	    out->setting.Bantime = HYB_BAN_EXPIRE_TIME;
+	if (ci->flags & hybserv_CS_EXPIREBANS && !out->L_Bantime())
+	    out->setting.Bantime = hybserv_BAN_EXPIRE_TIME;
 
-	if (ci->flags & HYB_CS_SUSPENDED)
+	if (ci->flags & hybserv_CS_SUSPENDED)
 	{
 	    out->i_Suspend_By = Magick::instance().chanserv.FirstName();
 	    out->i_Suspend_Time = mDateTime::CurrentDateTime();
@@ -545,7 +763,7 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
 
 	if (ci->modes_on || !ci->key.empty() || ci->limit)
 	{
-	    mstring modes = HYB_getmodes(ci->modes_on);
+	    mstring modes = hybserv_getmodes(ci->modes_on);
 
 	    modes.Remove("k");
 	    modes.Remove("l");
@@ -553,7 +771,7 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
 	}
 	if (ci->modes_off)
 	{
-	    modelock << "-" << HYB_getmodes(ci->modes_off);
+	    modelock << "-" << hybserv_getmodes(ci->modes_off);
 	}
 	if (!ci->key.empty())
 	{
@@ -575,51 +793,51 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
 	    else
 		newlevel = (long) ((float) ci->access_lvl[i] * mod);
 
-	    if (ci->access_lvl.size() == HYB7_CA_SIZE)
+	    if (ci->access_lvl.size() == hybrid7_CA_SIZE)
 	    {
 		switch (i)
 		{
-		case HYB7_CA_AUTODEOP:
+		case hybrid7_CA_AUTODEOP:
 		    out->Level_change("AUTODEOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_AUTOVOICE:
+		case hybrid7_CA_AUTOVOICE:
 		    out->Level_change("AUTOVOICE", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_CMDVOICE:
+		case hybrid7_CA_CMDVOICE:
 		    out->Level_change("CMDVOICE", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_ACCESS:
+		case hybrid7_CA_ACCESS:
 		    out->Level_change("ACCESS", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_CMDINVITE:
+		case hybrid7_CA_CMDINVITE:
 		    out->Level_change("CMDINVITE", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_AUTOHALFOP:
+		case hybrid7_CA_AUTOHALFOP:
 		    out->Level_change("AUTOHALFOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_CMDHALFOP:
+		case hybrid7_CA_CMDHALFOP:
 		    out->Level_change("CMDHALFOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_AUTOOP:
+		case hybrid7_CA_AUTOOP:
 		    out->Level_change("AUTOOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_CMDOP:
+		case hybrid7_CA_CMDOP:
 		    out->Level_change("CMDOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_CMDUNBAN:
+		case hybrid7_CA_CMDUNBAN:
 		    out->Level_change("UNBAN", newlevel, Magick::instance().chanserv.FirstName());
 		    out->Level_change("CMDUNBAN", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_AKICK:
+		case hybrid7_CA_AKICK:
 		    out->Level_change("AKICK", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_CMDCLEAR:
+		case hybrid7_CA_CMDCLEAR:
 		    out->Level_change("CMDCLEAR", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_SET:
+		case hybrid7_CA_SET:
 		    out->Level_change("SET", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB7_CA_SUPEROP:
+		case hybrid7_CA_SUPEROP:
 		    out->Level_change("SUPER", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		}
@@ -628,41 +846,41 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
 	    {
 		switch (i)
 		{
-		case HYB6_CA_AUTODEOP:
+		case hybrid6_CA_AUTODEOP:
 		    out->Level_change("AUTODEOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_AUTOVOICE:
+		case hybrid6_CA_AUTOVOICE:
 		    out->Level_change("AUTOVOICE", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_CMDVOICE:
+		case hybrid6_CA_CMDVOICE:
 		    out->Level_change("CMDVOICE", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_ACCESS:
+		case hybrid6_CA_ACCESS:
 		    out->Level_change("ACCESS", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_CMDINVITE:
+		case hybrid6_CA_CMDINVITE:
 		    out->Level_change("CMDINVITE", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_AUTOOP:
+		case hybrid6_CA_AUTOOP:
 		    out->Level_change("AUTOOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_CMDOP:
+		case hybrid6_CA_CMDOP:
 		    out->Level_change("CMDOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_CMDUNBAN:
+		case hybrid6_CA_CMDUNBAN:
 		    out->Level_change("UNBAN", newlevel, Magick::instance().chanserv.FirstName());
 		    out->Level_change("CMDUNBAN", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_AKICK:
+		case hybrid6_CA_AKICK:
 		    out->Level_change("AKICK", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_CMDCLEAR:
+		case hybrid6_CA_CMDCLEAR:
 		    out->Level_change("CMDCLEAR", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_SET:
+		case hybrid6_CA_SET:
 		    out->Level_change("SET", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
-		case HYB6_CA_SUPEROP:
+		case hybrid6_CA_SUPEROP:
 		    out->Level_change("SUPER", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		}
@@ -674,7 +892,7 @@ Chan_Stored_t *HYB_CreateChanEntry(HYB_ChanInfo * ci)
     ETCB();
 }
 
-list < Memo_t > HYB_CreateMemoEntry(HYB_MemoInfo * mi)
+MemoServ::nick_memo_t Convert::hybserv_CreateMemoEntry(hybserv_MemoInfo * mi)
 {
     BTCB();
     unsigned int i;
@@ -689,7 +907,7 @@ list < Memo_t > HYB_CreateMemoEntry(HYB_MemoInfo * mi)
 
 	tmp = new Memo_t(mi->name, mi->memos[i].sender, mi->memos[i].text);
 	tmp->i_Time = mDateTime(mi->memos[i].sent);
-	if (mi->memos[i].flags & HYB_MS_READ)
+	if (mi->memos[i].flags & hybserv_MS_READ)
 	    tmp->i_Read = true;
 	out.push_back(*tmp);
 	delete tmp;

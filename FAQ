@@ -42,7 +42,8 @@ Here are some of the IRCD's we know are compatible with ones supported:
 IRCD                    COMPATIBLE
 ------------------------------------------------
 Wrecked IRCD            DALNet >= 4.4.15
-
+Ultimate IRCD 2.8.1	DALNet >= 4.4.15
+Ultimate IRCD 3.0.0	Bahamut
 
 Why dont these services work right with Hybrid?
 ===============================================

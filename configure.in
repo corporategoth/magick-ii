@@ -107,8 +107,8 @@ CXXWARN="-Woverloaded-virtual -Wsynth -Wno-deprecated"
 JWARN=""
 
 CPPFLAGS="$CPPFLAGS $CPPOPT $CPPWARN -I\$(top_srcdir)/include"
-CFLAGS="$CFLAGS $COPT $CWARN"
-CXXFLAGS="$CXXFLAGS $CXXOPT $CXXWARN"
+CFLAGS="$CPPFLAGS $CFLAGS $COPT $CWARN"
+CXXFLAGS="$CPPFLAGS $CXXFLAGS $CXXOPT $CXXWARN"
 JFLAGS="$JFLAGS $JOPT $JWARN"
 
 dnl Just incase ace is there, which it often is ...
@@ -409,6 +409,7 @@ AC_ARG_ENABLE(convert, [  --enable-convert        Enable DB CONVERSION code
 if test "$convert" = "true"; then
   AC_DEFINE(CONVERT)
 fi
+AM_CONDITIONAL(CONVERT, test x$convert = xtrue)
 
 AC_ARG_ENABLE(getpass, [  --enable-getpass        Enable GETPASS
   --disable-getpass       Disable GETPASS (default)],
@@ -644,4 +645,4 @@ str="`echo \`./.max_keylen\` | sed -e s/X/2/`"
 AC_DEFINE_UNQUOTED(CRYPTO_KEY2, "$str")
 rm -f .max_keylen*
 
-AC_OUTPUT(Makefile src/Makefile gui/Makefile docs/Makefile docs/en/Makefile ircd/Makefile src/crypt/Makefile src/xml/Makefile include/Makefile include/crypt/Makefile include/xml/Makefile docs/man/Makefile lang/Makefile)
+AC_OUTPUT(Makefile src/Makefile gui/Makefile docs/Makefile docs/en/Makefile ircd/Makefile src/crypt/Makefile src/xml/Makefile src/convert/Makefile include/Makefile include/crypt/Makefile include/xml/Makefile include/convert/Makefile docs/man/Makefile lang/Makefile)
