@@ -24,6 +24,9 @@ static const char *ident_fileconf_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.17  2000/05/20 16:05:06  prez
+** Finished off the log conversion (still via. wrappers)
+**
 ** Revision 1.16  2000/03/13 09:36:18  prez
 ** Completed help file, we now have full help text.
 **
@@ -55,7 +58,6 @@ static const char *ident_fileconf_h = "@(#) $Id$";
 #include "confbase.h"
 #include "mstring.h"
 #include "textfile.h"
-#include "log.h"
 
 /*
   wxFileConfig derives from base Config and implements file based config class,
@@ -235,6 +237,38 @@ private:
 
   long   *m_pItems;   // pointer to data
 };
+
+
+  // nothing to do in release modes (hopefully at this moment there are
+  // no more bugs ;-)
+#ifdef  DEBUG
+   #define   wxASSERT(cond)   if ( !(cond) ) wxOnAssert(__FILE__, __LINE__)
+   #define   wxASSERT_MSG(x, m)  if ( !(x) ) wxOnAssert(__FILE__, __LINE__, m)
+ #else
+   #define   wxASSERT(cond)   
+   #define   wxASSERT_MSG(x, m)  
+#endif  //__WXDEBUG__
+  /// special form of assert: always triggers it (in debug mode)
+#define   wxFAIL                 wxASSERT(false)
+
+  /// FAIL with some message
+#define   wxFAIL_MSG(msg)        wxASSERT_MSG(false, msg)
+
+  /// check that expression is true, "return" if not (also FAILs in debug mode)
+#define   wxCHECK(x, rc)            if (!(x)) {wxFAIL; return rc; }
+  /// as wxCHECK but with a message explaining why we fail
+#define   wxCHECK_MSG(x, rc, msg)   if (!(x)) {wxFAIL_MSG(msg); return rc; }
+  /// check that expression is true, perform op if not
+#define   wxCHECK2(x, op)           if (!(x)) {wxFAIL; op; }
+  /// as wxCHECK2 but with a message explaining why we fail
+#define   wxCHECK2_MSG(x, op, msg)  if (!(x)) {wxFAIL_MSG(msg); op; }
+  /// special form of wxCHECK2: as wxCHECK, but for use in void functions
+  //  NB: there is only one form (with msg parameter) and it's intentional:
+  //      there is no other way to tell the caller what exactly went wrong
+  //      from the void function (of course, the function shouldn't be void
+  //      to begin with...)
+#define   wxCHECK_RET(x, msg)       if (!(x)) {wxFAIL_MSG(msg); return; }
+
 
 // ----------------------------------------------------------------------------
 // This is the same as the previous macro, but it defines a sorted array.

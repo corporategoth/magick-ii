@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.38  2000/05/20 16:05:07  prez
+** Finished off the log conversion (still via. wrappers)
+**
 ** Revision 1.37  2000/03/28 16:20:59  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -56,7 +59,7 @@ static const char *ident = "@(#)$Id$";
 **
 ** ========================================================== */
 
-#include "../include/variant.h"
+#include "variant.h"
 #include "trace.h"
 
 const mVarArray EmptyArray;

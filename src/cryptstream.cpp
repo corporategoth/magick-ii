@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2000/05/20 16:05:07  prez
+** Finished off the log conversion (still via. wrappers)
+**
 ** Revision 1.17  2000/04/16 06:12:13  prez
 ** Started adding body to the documentation...
 **
@@ -65,7 +68,6 @@ static const char *ident = "@(#)$Id$";
 ** ========================================================== */
 
 #include "cryptstream.h"
-#include "log.h"
 #include "trace.h"
 
 #ifdef HASCRYPT

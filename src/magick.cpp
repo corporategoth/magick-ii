@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.233  2000/05/20 16:05:07  prez
+** Finished off the log conversion (still via. wrappers)
+**
 ** Revision 1.232  2000/05/20 15:17:00  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -357,7 +360,6 @@ Magick::Magick(int inargc, char **inargv)
 	argv.push_back(inargv[i]);
     i_programname=argv[0].RevAfter("/");
 
-    logfile = NULL;
     i_level=0;
     i_reconnect = true;
     i_gotconnect = false;
@@ -722,9 +724,6 @@ int Magick::Start()
     }
 
     delete signalhandler;
-
-    if(logfile!=NULL)
-	fclose(logfile);
 
     remove(files.Pidfile().Strip(mstring::stBoth));
 

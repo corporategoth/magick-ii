@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/05/20 16:05:07  prez
+** Finished off the log conversion (still via. wrappers)
+**
 ** Revision 1.40  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -1636,6 +1639,59 @@ mstring FilterOut(const mstring& str)
 // ============================================================================
 // implementation
 // ============================================================================
+
+// ----------------------------------------------------------------------------
+// debug helper
+// ----------------------------------------------------------------------------
+
+#ifdef  DEBUG
+
+void Trap()
+{
+#ifdef WIN32
+    DebugBreak();
+#else // Unix
+    raise(SIGTRAP);
+#endif // Win/Unix
+}
+
+// this function is called when an assert fails
+void wxOnAssert(const char *szFile, int nLine, const char *szMsg)
+{
+  // this variable can be set to true to suppress "assert failure" messages
+  static bool s_bNoAsserts = false;
+  static bool s_bInAssert = false;
+
+  if ( s_bInAssert ) {
+    // He-e-e-e-elp!! we're trapped in endless loop
+    Trap();
+
+    return;
+  }
+
+  s_bInAssert = true;
+
+  char szBuf[LOG_BUFFER_SIZE];
+  sprintf(szBuf, "Assert failed in file %s at line %d", szFile, nLine);
+  if ( szMsg != NULL ) {
+    strcat(szBuf, ": ");
+    strcat(szBuf, szMsg);
+  }
+  else {
+    strcat(szBuf, ".");
+  }
+
+  if ( !s_bNoAsserts ) {
+    // send it to the normal log destination
+    wxLogDebug(szBuf);
+
+      Trap();
+  }
+
+  s_bInAssert = false;
+}
+
+#endif  //DEBUG
 
 // ----------------------------------------------------------------------------
 // wxBaseArray - dynamice array of 'long's

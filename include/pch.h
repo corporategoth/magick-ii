@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2000/05/20 16:05:07  prez
+** Finished off the log conversion (still via. wrappers)
+**
 ** Revision 1.14  2000/05/20 15:17:00  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -107,6 +110,7 @@ using namespace std;
 extern void wxLogFatal(const char *szFormat, ...);
 extern void wxLogError(const char *szFormat, ...);
 extern void wxLogWarning(const char *szFormat, ...);
+extern void wxLogNotice(const char *szFormat, ...);
 extern void wxLogInfo(const char *szFormat, ...);
 extern void wxLogVerbose(const char *szFormat, ...);
 extern void wxLogDebug(const char *szFormat, ...);

@@ -24,6 +24,9 @@ static const char *ident_textfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.13  2000/05/20 16:05:07  prez
+** Finished off the log conversion (still via. wrappers)
+**
 ** Revision 1.12  2000/02/23 12:21:02  prez
 ** Fixed the Magick Help System (needed to add to ExtractWord).
 ** Also replaced #pragma ident's with static const char *ident's
@@ -54,7 +57,6 @@ static const char *ident_textfile_h = "@(#) $Id$";
 
 #include "mstring.h"
 #include "mstream.h"
-//#include "log.h"
 
 enum wxTextFileType
 {
