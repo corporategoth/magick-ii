@@ -109,7 +109,7 @@ bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
   {
     for(I = 1; I<Month;I++) 
 		tmpDay+=DayTable[I];
-    I = (double)Year - 1.0;
+    I = Year - 1.0;
     Date.Val = (double)(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
     Result = true;
   }

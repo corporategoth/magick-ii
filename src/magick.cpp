@@ -212,12 +212,12 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->register_handler(SIGFPE,signalhandler);
 #endif
-#if defined(SIGUSR1) && (SIGUSR1 != 0)
-    ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
-#endif
-#if defined(SIGUSR2) && (SIGUSR2 != 0)
-    ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
-#endif
+// #if defined(SIGUSR1) && (SIGUSR1 != 0)
+//     ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
+// #endif
+// #if defined(SIGUSR2) && (SIGUSR2 != 0)
+//     ACE_Reactor::instance()->register_handler(SIGUSR2,signalhandler);
+// #endif
 #if defined(SIGALRM) && (SIGALRM != 0)
     ACE_Sig_Action sigalrm (ACE_SignalHandler (SIG_IGN), SIGALRM);
     ACE_UNUSED_ARG (sigalrm);
@@ -307,12 +307,12 @@ int Magick::Start()
 #ifdef SIGFPE
     ACE_Reactor::instance()->remove_handler(SIGFPE);
 #endif
-#if defined(SIGUSR1) && (SIGUSR1 != 0)
-    ACE_Reactor::instance()->remove_handler(SIGUSR1);
-#endif
-#if defined(SIGUSR2) && (SIGUSR2 != 0)
-    ACE_Reactor::instance()->remove_handler(SIGUSR2);
-#endif
+// #if defined(SIGUSR1) && (SIGUSR1 != 0)
+//     ACE_Reactor::instance()->remove_handler(SIGUSR1);
+// #endif
+// #if defined(SIGUSR2) && (SIGUSR2 != 0)
+//     ACE_Reactor::instance()->remove_handler(SIGUSR2);
+// #endif
     delete signalhandler;
     if(logger!=NULL)
 	delete logger;
@@ -880,14 +880,14 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #endif
     case SIGFPE:	// Retry last call
 	break;
-#if defined(SIGUSR1) && (SIGUSR1 != 0)
-    case SIGUSR1:	// ??
-	break;
-#endif
-#if defined(SIGUSR2) && (SIGUSR2 != 0)
-    case SIGUSR2:	// ??
-	break;
-#endif
+// #if defined(SIGUSR1) && (SIGUSR1 != 0)
+//     case SIGUSR1:	// ??
+// 	break;
+// #endif
+// #if defined(SIGUSR2) && (SIGUSR2 != 0)
+//     case SIGUSR2:	// ??
+// 	break;
+// #endif
     default:		// Everything else.
 	;//ignore (todo log that we got it and we're ignoring it)
     }

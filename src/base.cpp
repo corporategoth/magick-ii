@@ -38,7 +38,7 @@ void mBase::push_message(const mstring& servicename, const mstring& message)
     }
     if(mThread::typecount(Get_TType())==1&&inputbuffer.size()==1)
     {
-        CP(("%s has new messages resuming thread...", GetInternalName().c_str()));
+        COM(("%s has new messages resuming thread...", GetInternalName().c_str()));
 	mThread::resume(mThread::findbytype(Get_TType()));
     }
 
@@ -89,8 +89,10 @@ void *thread_handler(void *owner)
 	// if theres leftover time in the timeslice, yield it up to the processor.
         if(mThread::typecount(Owner->Get_TType()) == 1 && Owner->inputbuffer.size() == 0)
         {
-            CP(("%s has no more messages left going to suspended state...", Owner->GetInternalName().c_str()));
+            COM(("%s has no more messages left going to suspended state...", Owner->GetInternalName().c_str()));
 	    mThread::suspend();
+//	    VERY VERY temporary measure!!
+	    sleep(1);
 	}
     }
     RET((void *) NULL);

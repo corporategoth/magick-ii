@@ -32,7 +32,7 @@ SUBDIRS=$(CRYPTDIR)
 all: rmexec magick
 
 rmexec:
-	rm -f magick
+	rm -f magick magick.debug
 
 magick:
 	@for x in $(SUBDIRS) ./src; \

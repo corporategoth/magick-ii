@@ -39,7 +39,8 @@ RMLIB:
 	rm -f $(LIBNAME)
 
 $(LIBNAME): $(OBJS)
-	ar rcs $@ $(OBJS) || \
+	@echo "Linking $@ ..."
+	@ar rcs $@ $(OBJS) || \
 	( ar rc $@ $(OBJS) && \
 	  ranlib $@ )
 	
