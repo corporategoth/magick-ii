@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.132  2000/09/10 09:53:43  prez
+** Added functionality to ensure the order of messages is kept.
+**
 ** Revision 1.131  2000/09/09 02:17:48  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -1152,13 +1155,15 @@ void Nick_Live_t::Join(mstring chan)
     }
     // We do this seperately coz we require initialisation of
     // the channel to be completed.
-    if (joined && Parent->chanserv.IsStored(chan))
-	Parent->chanserv.stored[chan.LowerCase()].Join(i_Name);
-
-    WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
-    MCB(joined_channels.size());
-    joined_channels.insert(chan.LowerCase());
-    MCE(joined_channels.size());
+    if (joined && Parent->chanserv.IsStored(chan) &&
+	Parent->chanserv.stored[chan.LowerCase()].Join(i_Name))
+    {
+	WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+	MCB(joined_channels.size());
+	joined_channels.insert(chan.LowerCase());
+	MCE(joined_channels.size());
+	Parent->server.FlushUser(i_Name, chan);
+    }
 }
 
 

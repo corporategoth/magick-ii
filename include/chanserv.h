@@ -25,6 +25,9 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/09/10 09:53:42  prez
+** Added functionality to ensure the order of messages is kept.
+**
 ** Revision 1.45  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -289,7 +292,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
 	tag_Akick, tag_Greet, tag_Message, tag_UserDef;
 
     void ChgAttempt(mstring nick, mstring newnick);
-    void Join(mstring nick);
+    bool Join(mstring nick);
     void Part(mstring nick);
     void Kick(mstring nick, mstring kicker);
     void ChgNick(mstring nick, mstring newnick);

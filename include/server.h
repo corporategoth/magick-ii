@@ -25,6 +25,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2000/09/10 09:53:42  prez
+** Added functionality to ensure the order of messages is kept.
+**
 ** Revision 1.49  2000/09/07 08:13:17  prez
 ** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
 ** Also added CPU statistics and fixed problem with socket deletions.
@@ -296,8 +299,13 @@ private:
     map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
     void FlushMsgs(mstring nick);
 
+    map<mstring, list<triplet<mDateTime, mstring, mstring> > > ToBeDone;
+
     void OurUplink(mstring server);
 public:
+    void FlushUser(mstring nick, mstring channel = "");
+    void PushUser(mstring nick, mstring message, mstring channel = "");
+    void PopUser(mstring nick, mstring channel = "");
     void SignOnAll();
     Protocol proto;
     size_t UserMax();

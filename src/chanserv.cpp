@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.204  2000/09/10 09:53:43  prez
+** Added functionality to ensure the order of messages is kept.
+**
 ** Revision 1.203  2000/09/09 02:17:47  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -1156,7 +1159,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     wc = in.WordCount(": ");
 
     requeue << ":" << source << " MODE " << i_Name << " ";
-    if (Parent->server.SeenMessage(requeue+in) >= Parent->config.MSG_Seen_Act())
+    if (source.Contains(".") &&
+	Parent->server.SeenMessage(requeue+in) >= Parent->config.MSG_Seen_Act())
     {
 	for (i=0; i<change.size(); i++)
 	{
@@ -1309,7 +1313,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    if (i_Key != in.ExtractWord(fwdargs, ": "))
 			Log(LM_ERROR, Parent->getLogMessage("ERROR/KEYMISMATCH"),
 				i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
-			i_Name.c_str(), source.c_str());
+				i_Name.c_str(), source.c_str());
 		    i_Key = "";
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'k');
@@ -1403,8 +1407,10 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     if (Parent->chanserv.IsStored(i_Name))
 	Parent->chanserv.stored[i_Name.LowerCase()].Mode(source,
 						newmode + newmode_param);
-    if (requeue_param != "")
-	mBase::push_message(requeue + requeue_param);
+    if (!source.Contains("."))
+    {
+	Parent->server.PushUser(source, requeue + requeue_param, i_Name);
+    }
 }
 
 bool Chan_Live_t::HasMode(mstring in)
@@ -1557,7 +1563,7 @@ void Chan_Stored_t::ChgAttempt(mstring nick, mstring newnick)
 }
 
 
-void Chan_Stored_t::Join(mstring nick)
+bool Chan_Stored_t::Join(mstring nick)
 {
     FT("Chan_Stored_t::Join", (nick));
 
@@ -1571,7 +1577,7 @@ void Chan_Stored_t::Join(mstring nick)
     {
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
 			"JOIN", nick.c_str(), i_Name.c_str());
-	return;
+	RET(false);
     }
     size_t users = clive->Users();
 
@@ -1581,14 +1587,14 @@ void Chan_Stored_t::Join(mstring nick)
     {
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
 			"JOIN", i_Name.c_str(), nick.c_str());
-	return;
+	RET(false);
     }
 
     if (nlive->IsServices() &&
 	Parent->chanserv.FirstName().CmpNoCase(nick)==0)
     {
 	clive->SendMode("+o " + nick);
-	return;
+	RET(true);
     }
 
     if (Parent->nickserv.IsStored(nick))
@@ -1614,8 +1620,9 @@ void Chan_Stored_t::Join(mstring nick)
 		i_Name.c_str());
 	    Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, reason);
+	    RET(false);
 	}
-	return;
+	RET(true);
     }
 
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
@@ -1638,7 +1645,7 @@ void Chan_Stored_t::Join(mstring nick)
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Akick->Value());
 
-	return;
+	RET(false);
     }}
 
     if (Restricted() && !Suspended() && GetAccess(nick) < (long) 1)
@@ -1660,7 +1667,7 @@ void Chan_Stored_t::Join(mstring nick)
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Parent->getMessage(nick, "MISC/KICK_RESTRICTED"));
 
-	return;
+	RET(false);
     }
 
     clive->UnLock();
@@ -1719,7 +1726,9 @@ void Chan_Stored_t::Join(mstring nick)
 	clive->SendMode("+v " + nick);
 
     if (Suspended())
-	return;
+    {
+	RET(true);
+    }
 
     mstring target = nick;
     if (nstored != NULL && nstored->Host() != "")
@@ -1775,6 +1784,7 @@ void Chan_Stored_t::Join(mstring nick)
 		i_Name.c_str(), count,
 		Parent->memoserv.FirstName().c_str(), i_Name.c_str());
     }
+    RET(true);
 }
 
 

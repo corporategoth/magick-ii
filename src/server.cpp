@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.127  2000/09/10 09:53:43  prez
+** Added functionality to ensure the order of messages is kept.
+**
 ** Revision 1.126  2000/09/09 02:17:49  prez
 ** Changed time functions to actuallt accept the source nick as a param
 ** so that the time values (minutes, etc) can be customized.  Also added
@@ -919,88 +922,182 @@ void NetworkServ::FlushMsgs(mstring nick)
     if (!Parent->nickserv.IsLive(nick))
 	return;
 
-    RLOCK(("Server", "ToBeSent"));
+    RLOCK(("Server", "ToBeSent", nick.LowerCase()));
     MCB(ToBeSent.size());
-    for (i=ToBeSent.begin(); i!=ToBeSent.end(); i++)
+    if ((i = ToBeSent.find(nick.LowerCase())) != ToBeSent.end())
     {
-	if (nick.LowerCase() == i->first)
+	WLOCK(("Server", "ToBeSent", i->first));
+	for (j=i->second.begin(); j!=i->second.end(); j++)
 	{
-	    WLOCK(("Server", "ToBeSent", i->first));
-	    for (j=i->second.begin(); j!=i->second.end(); j++)
-	    {
-		if (j->second.SecondsSince() > Parent->config.Squit_Protect())
-		    continue;
+	    if (j->second.SecondsSince() > Parent->config.Squit_Protect())
+		continue;
 
-		switch (j->first)
-		{
-		case t_GLOBOPS:
-		    GLOBOPS(nick, j->third.first);
-		    break;
-		case t_INVITE:
-		    INVITE(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_KICK:
-		    KICK(nick, j->third.first,
-				j->third.second,
-				j->third.third);
-		    break;
-		case t_KILL:
-		    KILL(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_NOTICE:
-		    NOTICE(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_PRIVMSG:
-		    PRIVMSG(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_SQLINE:
-		    SQLINE(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_SVSMODE:
-		    SVSMODE(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_SVSNICK:
-		    SVSNICK(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_SVSKILL:
-		    SVSKILL(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_SVSHOST:
-		    SVSHOST(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_TOPIC:
-		    TOPIC(nick, j->third.first,
-				j->third.second);
-		    break;
-		case t_UNSQLINE:
-		    UNSQLINE(nick, j->third.first);
-		    break;
-		case t_WALLOPS:
-		    WALLOPS(nick, j->third.first);
-		    break;
-		default:
-		    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_UNKNOWN"),
+	    switch (j->first)
+	    {
+	    case t_GLOBOPS:
+		GLOBOPS(nick, j->third.first);
+		break;
+	    case t_INVITE:
+		INVITE(nick, j->third.first, j->third.second);
+		break;
+	    case t_KICK:
+		KICK(nick, j->third.first, j->third.second, j->third.third);
+		break;
+	    case t_KILL:
+		KILL(nick, j->third.first, j->third.second);
+		break;
+	    case t_NOTICE:
+		NOTICE(nick, j->third.first, j->third.second);
+		break;
+	    case t_PRIVMSG:
+		PRIVMSG(nick, j->third.first, j->third.second);
+		break;
+	    case t_SQLINE:
+		SQLINE(nick, j->third.first, j->third.second);
+		break;
+	    case t_SVSMODE:
+		SVSMODE(nick, j->third.first, j->third.second);
+		break;
+	    case t_SVSNICK:
+		SVSNICK(nick, j->third.first, j->third.second);
+		break;
+	    case t_SVSKILL:
+		SVSKILL(nick, j->third.first, j->third.second);
+		break;
+	    case t_SVSHOST:
+		SVSHOST(nick, j->third.first, j->third.second);
+		break;
+	    case t_TOPIC:
+		TOPIC(nick, j->third.first, j->third.second);
+		break;
+	    case t_UNSQLINE:
+		UNSQLINE(nick, j->third.first);
+		break;
+	    case t_WALLOPS:
+		WALLOPS(nick, j->third.first);
+		break;
+	    default:
+		Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_UNKNOWN"),
 			(int) j->first, i->first.c_str(), j->third.first.c_str(),
 			j->third.second.c_str(), j->third.third.c_str(),
 			ToHumanTime(j->second.SecondsSince()).c_str());
-		    break;
-		}
+		break;
 	    }
-	    ToBeSent.erase(i->first);
-	    return;
 	}
+	ToBeSent.erase(i->first);
     }
     MCE(ToBeSent.size());
 }
+
+void NetworkServ::FlushUser(mstring nick, mstring channel)
+{
+    FT("NetworkServ::FlushUser", (nick, channel));
+
+    map<mstring, list<triplet<mDateTime, mstring, mstring> > >::iterator i;
+
+    list<triplet<mDateTime, mstring, mstring> >::iterator j;
+    list<triplet<mDateTime, mstring, mstring> > WorkList;
+    vector<mstring> LastProc;
+
+    // Dont report this, thats the point of the queue...
+    if (!Parent->nickserv.IsLive(nick))
+	return;
+
+    RLOCK(("Server", "ToBeDone", nick.LowerCase()));
+    MCB(ToBeDone.size());
+    if ((i = ToBeDone.find(nick.LowerCase())) != ToBeDone.end())
+    {
+	WLOCK(("Server", "ToBeDone", i->first));
+	WorkList = i->second;
+	ToBeDone.erase(i->first);
+	for (j=WorkList.begin(); j!=WorkList.end(); j++)
+	{
+	    if (j->first.SecondsSince() > Parent->config.Squit_Protect())
+		continue;
+
+	    // If its not a channel record and we're not doing
+	    // a channel 'run', do it -- else if its a channel
+	    // run and the this record is for that channel and
+	    // the channel exists with the user in it, do it.
+	    if (((channel.LowerCase() == j->third)) && ((channel == "") ||
+		(Parent->chanserv.IsLive(channel) &&
+		 Parent->chanserv.live[channel.LowerCase()].IsIn(nick))))
+	    {
+		if (j->second.Contains(" JOIN "))
+		{
+		    LastProc.push_back(j->second);
+		}
+		else
+		{
+		    execute(j->second);
+		}
+	    }
+	    else
+	    {
+		ToBeDone[nick.LowerCase()].push_back(*j);
+	    }
+	}
+	if (LastProc.size())
+	{
+	    for (int i=0; i<LastProc.size(); i++)
+	    {
+		execute(LastProc[i]);
+	    }
+	}
+    }
+    MCE(ToBeDone.size());
+
+}
+
+void NetworkServ::PushUser(mstring nick, mstring message, mstring channel)
+{
+    FT("NetworkServ::PushUser", (nick, message));
+    WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+    // If the nick is reg'd and either a channel is not specified
+    // or the channel exists and the user is in it, just do it,
+    // else queue it.
+    if (((Parent->nickserv.IsLive(nick))) &&
+	((channel == "") || (Parent->chanserv.IsLive(channel) &&
+	Parent->chanserv.live[channel.LowerCase()].IsIn(nick))))
+    {
+	execute(message);
+    }
+    else
+    {
+	MCB(ToBeDone.size());
+	ToBeDone[nick.LowerCase()].push_back(
+		triplet<mDateTime, mstring, mstring>(
+		Now(), message, channel.LowerCase()));
+	MCE(ToBeDone.size());
+    }
+}
+
+void NetworkServ::PopUser(mstring nick, mstring channel)
+{
+    FT("NetworkServ::PopUser", (nick, channel));
+
+
+    map<mstring, list<triplet<mDateTime, mstring, mstring> > >::iterator i;
+
+    list<triplet<mDateTime, mstring, mstring> >::iterator j;
+    list<triplet<mDateTime, mstring, mstring> > WorkList;
+
+    WLOCK(("Server", "ToBeSent", nick.LowerCase()));
+    MCB(ToBeDone.size());
+    if ((i = ToBeDone.find(nick.LowerCase())) != ToBeDone.end())
+    {
+	WLOCK(("Server", "ToBeDone", i->first));
+	WorkList = i->second;
+	ToBeDone.erase(i->first);
+	for (j=WorkList.begin(); j!=WorkList.end(); j++)
+	{
+	    if (j->third != channel.LowerCase())
+		ToBeDone[nick.LowerCase()].push_back(*j);
+	}
+    }
+    MCE(ToBeDone.size());
+}
+
 
 bool NetworkServ::IsServer(mstring server)
 {
@@ -2136,7 +2233,7 @@ unsigned int NetworkServ::SeenMessage(mstring data)
     vector<mstring> chunked;
     unsigned int times = 0;
 
-    MLOCK(("Server", "ReDoMessages"));
+    WLOCK(("Server", "ReDoMessages"));
     for (iter=ReDoMessages.begin(); iter!=ReDoMessages.end(); iter++)
     {
 	if (iter->second.second.SecondsSince() > Parent->config.MSG_Seen_Time())
@@ -2149,7 +2246,6 @@ unsigned int NetworkServ::SeenMessage(mstring data)
     {
 	times = ReDoMessages[data].first;
 	times++;
-	ReDoMessages.erase(data);
     }
 
     ReDoMessages[data] = pair<unsigned int,mDateTime>(times, Now());
@@ -2171,11 +2267,7 @@ void NetworkServ::execute(const mstring & data)
         msgtype=data.ExtractWord(2,": ").UpperCase();
 	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
 	{
-		// Requeue the message ...
-		if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
-		    KillUnknownUser(source);
-		else
-		    mBase::push_message(data);
+		PushUser(source, data);
 		return;
 	}
     }
@@ -2599,11 +2691,18 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
-			Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+		    if (source.Contains("."))
+		    {
+			if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+			    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
 				"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
+			else
+			    mBase::push_message(data);
+		    }
 		    else
-			mBase::push_message(data);
+		    {
+			PushUser(source, data, data.ExtractWord(3, ": "));
+		    }
 		}
 	    }
 	    else
@@ -2614,11 +2713,18 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
-			Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+		    if (source.Contains("."))
+		    {
+			if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
+			    Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
 				"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
+			else
+			    mBase::push_message(data);
+		    }
 		    else
-			mBase::push_message(data);
+		    {
+			PushUser(source, data);
+		    }
 		}
 	    }
 	}
@@ -2779,6 +2885,7 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    if (Parent->nickserv.live[sourceL].Server() == "")
 		    {
+			PopUser(sourceL);
 			KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
 			return;
@@ -2791,6 +2898,7 @@ void NetworkServ::execute(const mstring & data)
 			i_UserMax = Parent->nickserv.live.size();
 			MCE(i_UserMax);
 		    }}
+		    FlushUser(sourceL);
 
 		    // HAS to be AFTER the nickname is added to map.
 		    map<mstring, Committee>::iterator iter;
@@ -3176,14 +3284,16 @@ void NetworkServ::execute(const mstring & data)
 			}
 			else
 			{
-			    mBase::push_message(":" + nick + " JOIN " +
+			    PushUser(nick, ":" + nick + " JOIN " +
 				data.ExtractWord(4, ": "));
 			    if (oped)
-				mBase::push_message(":" + source + " MODE " +
-				    data.ExtractWord(4, ": ") + " +o :" + nick);
+				PushUser(nick, ":" + source + " MODE " +
+				    data.ExtractWord(4, ": ") + " +o :" +
+				    nick, data.ExtractWord(4, ": "));
 			    if (voiced)
-				mBase::push_message(":" + source + " MODE " +
-				    data.ExtractWord(4, ": ") + " +v :" + nick);
+				PushUser(nick, ":" + source + " MODE " +
+				    data.ExtractWord(4, ": ") + " +v :" +
+				    nick, data.ExtractWord(4, ": "));
 			}
 		    }
 		}
@@ -3202,9 +3312,9 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else if (modes != "")
 		{
-		    mBase::push_message(":" + source + " MODE " +
-					data.ExtractWord(4, ": ") + " " +
-					modes + " :" + mode_params);
+		    PushUser(nick, ":" + source + " MODE " +
+			data.ExtractWord(4, ": ") + " " + modes +
+			" :" + mode_params, data.ExtractWord(4, ": "));
 		}
 	    }
 	    else
@@ -3354,6 +3464,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		if (Parent->nickserv.live[sourceL].Server() == "")
 		{
+		    PopUser(sourceL);
 		    KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
 		    return;
@@ -3366,6 +3477,7 @@ void NetworkServ::execute(const mstring & data)
 		    i_UserMax = Parent->nickserv.live.size();
 		    MCE(i_UserMax);
 		}}
+		FlushUser(sourceL);
 
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
@@ -3590,11 +3702,18 @@ void NetworkServ::execute(const mstring & data)
 	    }
 	    else
 	    {
+		if (source.Contains("."))
+		{
 		    if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
 			Log(LM_CRITICAL, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-				"TOPIC", source.c_str(), data.ExtractWord(3, ": ").c_str());
+				"MODE", source.c_str(), data.ExtractWord(3, ": ").c_str());
 		    else
 			mBase::push_message(data);
+		}
+		else
+		{
+		    PushUser(source, data, data.ExtractWord(3, ": "));
+		}
 	    }
 	}
 	else if (msgtype=="TRACE")
@@ -3738,6 +3857,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		if (Parent->nickserv.live[sourceL].Server() == "")
 		{
+		    PopUser(sourceL);
 		    KILL(Parent->nickserv.FirstName(), sourceL,
 				Parent->nickserv.live[sourceL].RealName());
 		    return;
@@ -3750,6 +3870,7 @@ void NetworkServ::execute(const mstring & data)
 		    i_UserMax = Parent->nickserv.live.size();
 		    MCE(i_UserMax);
 		}}
+		FlushUser(sourceL);
 
 		// HAS to be AFTER the nickname is added to map.
 		map<mstring, Committee>::iterator iter;
@@ -4149,12 +4270,7 @@ void NetworkServ::numeric_execute(const mstring & data)
         msgtype=ACE_OS::atoi(data.ExtractWord(2,": "));
 	if (!(Parent->nickserv.IsLive(source) || source.Contains(".")))
 	{
-		// Requeue the message ...
-		if (SeenMessage(data) >= Parent->config.MSG_Seen_Act())
-		    KillUnknownUser(source);
-		else
-		    mBase::push_message(data);
-		return;
+	    PushUser(source, data);
 	}
     }
     else
