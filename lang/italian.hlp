@@ -1,0 +1,2771 @@
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
+;
+; Italian On-Line Help File
+; Translated By: Babelfish (http://babelfish.altavista.com)
+; Please also edit the TRANSLATED/01 token to
+; reflect the above (this is displayed when someone
+; switches to your language).
+;
+; ----------------------------(enc _ 6)---------------------------------
+;
+; This file is divided up into sections, each section being
+; un comando che può essere eseguito in Magick.  Il nome della sezione
+; sostituisce semplicemente gli spazi con la a '/' character, e mette
+; nome del servizio nella parte anteriore (NON il nickname, ma
+; GetInternalName() valore).
+;
+; Ogni entrata in una sezione sarà ordinata dal tag, così soddisfa
+; accertarsi che TUTTE LE modifiche siano nell' ordine -- il nome reale dei
+; le modifiche matter, tuttavia PREGO NON ACCERTA LA MODIFICA È IN
+; MAIUSCOLO!  Il motore di rilevazione è CASO SENSIBILE.
+;
+; Ogni entrata ha 3 fields, separato dai due punti (':'):
+;    1.  Comitati da visualizzare per.
+;       Se specified, l' utente deve essere su QUALUNQUE comitati voi
+;       specify in this field, committees are separated by a
+;       spazio.  Sennò specified, presupporrà 'ALL'.
+;    2.  Comitati da non visualizzare per.
+;       Se specified, l' utente non può essere su C'È NE dei
+;       i comitati che specificate in questo field, comitati sono
+;       separato da uno spazio.  Sennò specificarlo presupporrà
+;       nessun (IE non nega chiunque).
+;    3.  Il testo reale dell' aiuto entry, che sarà
+;       visualizzato all' utente verbatim.  Se questo campo è
+;       la parte di sinistra blank, una riga in bianco sarà trasmessa all' utente.
+;       Questo campo PUÒ contenere i due punti (':'), saranno
+;       trattato come qualunque altro carattere.
+;
+; Non è solitamente una buoa idea produrre qualche cosa più che
+; circa 15-20 si allinea ad un utente a meno che assolutamente necessario.  Voi
+; se essere descrittivo circa che cosa il comando does, e come
+; per usarlo.
+;
+
+[TRANSLATED]
+01 =Babelfish (http://babelfish.altavista.com)
+
+[NICKSERV]
+01 =::Questo servizio permette che registriate il vostro nickname
+02 =::in moda da non poterlo prendere esso da chiunque altrimenti.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =::IL COLLEGAMENTO DEL REGISTRO DI AIUTO IDENTIFICA
+06 =::IL FANTASMA DI INFO RECUPERA LA LISTA
+07 =REGD::LA GOCCIA SCONNETTE GLI SCHIAVI OSPITE
+08 =REGD::ACCEDERE A IGNORANO L' INSIEME TRASMETTONO
+09 =SOP::And as a Services Operator, the following commands:
+10 =SOP::LA SERRATURA PROIBITA A GETPASS SBLOCCA
+11 =SOP::    SUSPEND      UNSUSPEND    LIVE
+12 =::
+13 =::Potete chiedere l' aiuto sulla sintassi e sulla funzionalità
+14 =::di c'è ne e di tutti i suddetti comandi specificando
+15 =::il nome di comando dopo la richiesta di AIUTO.
+16 =::NOTE:Soltanto i comandi che attualmente potete usare sono elencati
+17 =::above, e cose quale il registro di nickname
+18 =::      may change what is displayed above.
+
+[NICKSERV/REGISTER]
+01 =::REGISTRO < parola d'accesso >
+02 =::
+03 =::Ciò farà il vostro nickname riconosciuto con i servizi.
+04 =::Facendo so, i servizi riserveranno il vostro nickname per
+05 =::appena you, ed ucciderà o cambierà titolo tutto l' utente che prova
+06 =::usarlo e non venuto dal vostro indirizzo normale (come
+07 =::lungamente come uccisione la protezione è regolata).  Una volta che registered,
+08 =::può usare il comando di IDENTIFIC essere riconosciuto da
+09 =::in qualche luogo tranne il vostro address, normale o se avete
+10 =::più di uno address, potete aggiungerli alla lista di ACCESSO.
+11 =::
+12 =::Il registro di nickname è richiesto per essere aggiunto a c'è ne
+13 =::accesso di scanalatura list, o trasmettere un appunto ad un altro utente.
+14 =::Scegliere prego una parola d'accesso che remember, ma quello è
+15 =::adeguatamente complesso quando registra il vostro nickname.  Se
+16 =::qualcun'altro ottiene vostro password, può allora esercitarsi
+17 =::controllo totale più del vostro nickname, compreso proibire
+18 =::accedete a ad esso.  Se avete perso il vostro password, voi
+19 =::può mettersi in contatto con un operatore di servizi per richiamarvelo per.
+
+[NICKSERV/DROP]
+01 =REGD::GOCCIA [nickname]
+02 =REGD::
+03 =REGD::Ciò volontà de-register il vostro nickname.  Facendo così volontà
+04 =REGD::rimuoverli da tutte le liste che di accesso di scanalatura siete on,
+05 =REGD::forzare tutte le scanalature che siete fondatore di da dare a
+06 =REGD::il co-founder o è droped se ci è none, rimuove
+07 =REGD::tutti gli vostri appunti (colti o unread), e se fatto su un calcolatore centrale
+08 =REGD::nickname, goccia tutti gli schiavi di esso.
+09 =REGD::
+10A=REGD:SOP:If you specify a nickname after the drop command, and
+11A=REGD:SOP:the nickname is linked to you, it will drop it, if not,
+12A=REGD:SOP:it will drop your current nickname.
+10B=SOP::If you specify a nickname after the drop command, it
+11B=SOP::will drop that nickname (weather you own it or not).
+12B=SOP::Otherwise it will drop your current nickname.
+
+[NICKSERV/LINK]
+01 =::Parola d'accesso > < di nickname > di COLLEGAMENTO <
+02 =::
+03 =::Ciò collegherà il vostro nickname corrente another, a fare
+04 =::esso il vostro nickname ospite.  Da quello point, entrambi i nicknames
+05 =::essere considerato equivalent, ripartirà l' accesso
+06 =::liste (sia nickname che channel), se uno è aggiunto all'
+07 =::comitato tutti saranno i membri it, dei
+08 =::ripartire lo stesso appunto list, ecc.
+09 =::
+10 =::IMPORTANT:Se Il Vostro Nickname Corrente È REGISTERED,
+11 =::SARÀ CADUTO PRIMA DEL COLLEGAMENTO AL VOSTRO CALCOLATORE CENTRALE.
+
+[NICKSERV/UNLINK]
+01 =REGD::UNLINK [nick]
+02 =REGD::
+03 =REGD::This will unlink your nick from your host nick, first
+04 =REGD::duplicando il tutto e settings, gli accesso ed ignorare le liste.
+05 =REGD::Qualsiasi modifiche apportate dopo al vostro nickname questo
+06 =REGD::il comando è eseguito non si scambierà sui
+07 =REGD::nickname ospite.  Egualmente vi rimuoverete
+08 =REGD::da tutte le liste di accesso che il nickname ospite è sopra.
+09 =REGD::
+10 =REGD::Se un nickname è specificato dopo la sconnessione command,
+11 =REGD::ed è collegato you, ad esso sarà sconnesso preferibilmente.
+
+[NICKSERV/HOST]
+01 =REGD::CALCOLATORE CENTRALE [nickname]
+02 =REGD::
+03 =REGD::Ciò cambierà il vostro nickname ospite al vostro corrente
+04 =REGD::nickname, o il nickname specificato dopo il calcolatore centrale
+05 =REGD::comandare se è collegato a voi.  Fare così non
+06 =REGD::cambiare qualche cosa per quanto riguarda il vostro accesso a channels,
+07 =REGD::memos, o comitato membership, tuttavia che
+08 =REGD::rivelare come il nuovo nickname ospite come fondatore di c'è ne
+09 =REGD::scanalature own, e su tutte le liste di accesso voi siete sopra.
+
+[NICKSERV/SLAVES]
+01A=REGD:OPER:SLAVES
+01B=OPER::SLAVES [nick]
+02 =REGD::
+03 =REGD::Ciò elencherà verso l'esterno tutti i vostri nicknames collegati.
+04 =OPER::Se specificate un nickname, elencherà loro preferibilmente.
+05 =REGD::
+06 =REGD::I nicknames slave sono creati con il comando di COLLEGAMENTO.
+
+[NICKSERV/IDENTIFY]
+01 =::IDENTIFICARE < la parola d'accesso >
+02 =::
+03 =::Ciò li identificherà al vostro nickname.  Ciò è
+04 =::richiesto se avete protezione di uccisione on, e provate
+05 =::usare il vostro nickname da un calcolatore centrale che non è in vostri
+06 =::accesso list, o desiderio per cambiare la vostra parola d'accesso.  Esso
+07 =::egualmente è richiesto per usare la vostra scalfittura affatto (con noncuranza
+08 =::della vostra lista di accesso) se avete sicuro sopra.  È
+09 =::anche richiesto se desiderate usare il vostro accesso
+10 =::on any channels or committees that have Secure on.
+11 =::
+12 =::La parola d'accesso che specificate dovrebbe essere la stessa del
+13 =::one you set with the REGISTER or SET PASSWORD command.
+
+[NICKSERV/INFO]
+01 =::Info < nickname >
+02 =::
+03 =::Ciò vi fornirà le varie informazioni sull' dato
+04 =::nickname.  Ciò include le informazioni come loro
+05 =::Web di e-mail address, address, ICQ UIN, e fisico medica
+06 =::descrizione se hanno regolato them, il tempo erano
+07 =::ultimo in linea e da dove sono venuto (se non
+08 =::regolare l' opzione riservata sopra).  Egualmente dirà a
+09 =::voi che opzione set, che comitati
+10 =::are on, and weather they have a downloadable picture.
+11 =OPER::
+12 =OPER::Come oper, potete inoltre vedere un commento a tale proposito
+13 =OPER::user, che è stato regolato da un SOP uno come un anteriore
+14 =OPER::sospendere reason, o manualmente.  Prego raccomandarsi quello
+15 =OPER::gli utenti normali NON POSSONO vedere questo campo.
+
+[NICKSERV/GHOST]
+01 =::Parola d'accesso > < di nickname > del FANTASMA <
+02 =::
+03 =::Ciò ucciderà un utente (o servizio) che sta tenendo
+04 =::il vostro nickname dalla rete.  Ciò è usata
+05 =::riguadagnare il vostro nickname dopo che abbiate cronometrato out, e
+06 =::il vostro nickname ha not, o non siete riuscito ad identificare
+07 =::in time, e nei servizi hanno preso il vostro nickname.
+08 =::
+09 =::La parola d'accesso che specificate dovrebbe essere la stessa del
+10 =::uno che vi siete regolati con il comando di PAROLA D'ACCESSO dell' INSIEME o del REGISTRO.
+
+[NICKSERV/RECOVER]
+01 =::RECUPERARE < la parola d'accesso > < di nickname >
+02 =::
+03 =::Ciò ucciderà un utente che sta usando il vostro nickname
+04 =::ed i servizi lo prenderanno essi stessi.  Se non
+05 =::avere protezione di uccisione on, o la vostra lista di accesso accade
+06 =::to cover another user as well as yourself, it is
+07 =::possibile hanno potuto usare il vostro nickname senza essere
+08 =::sfidato e renamed/killed per fare così.  È
+09 =::suggerito voi regolarsi sicuro sopra se questo è il caso.
+10 =::Eliminare usando di servizi vostro nickname, voi deve
+11 =::usare il comando del FANTASMA.
+12 =::
+13 =::La parola d'accesso che specificate dovrebbe essere la stessa del
+14 =::uno che vi siete regolati con il comando di PAROLA D'ACCESSO dell' INSIEME o del REGISTRO.
+
+[NICKSERV/LIST]
+01 =::LISTA [mask [maximum]]
+02 =SOP::LISTNOEXP [mask [maximum]]
+03 =SOP::LISTFORBID [mask [maximum]]
+04 =SOP::LISTSUSP [mask [maximum]]
+05 =::
+06 =::Ciò elencherà tutti i nicknames registrati quello corrispondenza
+07 =::la mascherina che avete specificato ed i loro calcolatori centrali dell' ultimo o
+08 =::"ONLINE" up to a default maximum number of entries
+09 =::regolarsi dai servizi Admins.  Escludete il massimo
+10 =::la quantità di entrate ha visualizzato fino assoluto ad un massimo
+11 =::anche specificato dai servizi Admins.  Gli utenti hanno contrassegnato
+12A=:OPER:as private will not be displayed in the list.
+12B=OPER::as private will be displayed in the list.
+13 =SOP::Il NOEXP, PROIBITO A e SUSP suffigge al comando della LISTA
+14 =SOP::elencherà soltanto la gente senza espirano set, proibito a
+15 =SOP::users, o utenti sospesi rispettivamente.
+
+[NICKSERV/SEND]
+01 =REGD::TRASMETTERE < il nickname >
+02 =REGD::
+03 =REGD::Se il nickname specificato ha un' immagine in loro
+04 =REGD::il nickserv record, questo comando li permetterà
+05 =REGD::trasferirlo dal sistema centrale verso i satelliti.  I servizi inizieranno un archivio di DCC
+06 =REGD::trasferimento con voi di quello file, chiamato come
+07 =REGD::utenti nickname, e l' estensione di archivio.
+
+[NICKSERV/SUSPEND]
+01 =SOP::SOSPENDERE < il motivo > < di nickname >
+02 =SOP::
+03 =SOP::This will stop a user from being able to identify to
+04 =SOP::loro nickname, tuttavia non li arresterà da
+05 =SOP::usando a meno che abbiano sicuro sopra.  Poiché
+06 =SOP::non possono ident, anche non possono cadere il loro nick, o
+07 =SOP::cambiare la loro parola d'accesso.  Ciò è significata per essere un corto
+08 =SOP::misura disciplinare di termine mentre un reclamo è sotto
+09 =SOP::revisione contro questo user, o ammonirli piuttosto
+10 =SOP::che appena cadendoli o akilling dalla rete.
+
+[NICKSERV/UNSUSPEND]
+01 =SOP::UNSUSPEND < nickname >
+02 =SOP::
+03 =SOP::Ciò essenzialmente invertirà la sospensione command,
+04 =SOP::permettendo che l' utente usi il loro nickname come normale.
+05 =SOP::Il motivo di sospensione tuttavia rimarrà come commento
+06 =SOP::sugli utenti nickname record, per rimuovere questo voi
+07 =SOP::deve usare il comando di COMMENTO dell' INSIEME.
+
+[NICKSERV/FORBID]
+01 =SOP::FORBID <nickname>
+02 =SOP::
+03 =SOP::Ciò proibirà ad un nickname dal usando sui
+04 =SOP::network, e forzerà tutto l' utente che tenta di usare
+05 =SOP::esso per cambiare la loro scalfittura o da essere killed/renamed.
+
+[NICKSERV/GETPASS]
+01 =SOP::GETPASS < nickname >
+02 =SOP::
+03 =SOP::Ciò richiamerà la parola d'accesso di nickname per un utente.
+04 =SOP::Notare prego quello ogni volta che questo comando è used,
+05 =SOP::il messaggio globale a tutto il IRCOPS sarà radiodiffusione!
+06 =SOP:SADMIN:Non potete richiamare la parola d'accesso dell' servizi
+07 =SOP:SADMIN:Amministratore.
+
+[NICKSERV/LIVE]
+01 =SOP::VIVERE [mask [maximum]]
+02 =SOP::LIVEOPER [mask [maximum]]
+03 =SOP::
+04 =SOP::Ciò elencherà tutti i nicknames in linea che abbinano
+05 =SOP::la mascherina completa del nick!user@host ha specificato.  Se la scalfittura è
+06 =SOP::la parte di sinistra off, * sarà presupposta.  Se il calcolatore centrale è lasciato
+07 =SOP::off, *@* sarà presupposto.  Ciò visualizzerà
+08 =SOP::users full host, what server they are on, and what
+09 =SOP::modi che attualmente si sono regolati.  Il suffisso di FUNZIONAMENTO a
+10 =SOP::il comando della LISTA elencherà soltanto la gente con il modo
+11 =SOP::(insieme di enc_0)o (operatori del IRC dello IE).
+
+[NICKSERV/ACCESS]
+01 =REGD::La vostra lista di accesso è un metodo da potere venire in
+02 =REGD::da più di un hostmask, senza devono
+03 =REGD::re-identify voi stessi ogni volta che entrate.  A meno che
+04 =REGD::avete sicuro on, voi sarete riconosciuti senza
+05 =REGD::identifying when coming from any of the hosts in your
+06 =REGD::accedere alla lista.
+07 =REGD::
+08 =REGD::You maintain your access list with these commands:
+09 =REGD::CURRENT ADD DEL LIST
+
+[NICKSERV/ACCESS/CURRENT]
+01 =REGD::ACCESS CURRENT
+02 =REGD::
+03 =REGD::Ciò aggiungerà il vostro hostmask corrente (*user@*.host) a
+04 =REGD::la vostra lista di accesso.  Ciò è giusta una scorciatoia a digitare
+05 =REGD::out the full add command.
+
+[NICKSERV/ACCESS/ADD]
+01 =REGD::ACCEDERE A AGGIUNGONO < la mascherina >
+02 =REGD::
+03 =REGD::Ciò aggiungerà il hostmask che specificate al vostro accesso
+04 =REGD::lista.  Potete usare i metacaratteri nel vostro hostmask (IE *
+05 =REGD::e?  caratteri).  Dovete includere la a '@' carattere
+06 =REGD::dal vostro hostmask, e non può includere il carattere di a '!'.
+07 =REGD::
+08 =REGD::Un' entrata tipica sarebbe *myident@*.myisp.com
+
+[NICKSERV/ACCESS/DEL]
+01 =REGD::ACCEDERE A DEL < mask|NUM >
+02 =REGD::
+03 =REGD::Ciò rimuoverà un hostmask (o più di uno) da
+04 =REGD::la vostra lista di accesso.  Se lo specificate number, allora
+05 =REGD::sarà presupposto per essere un numero che dell' entrata quello corrisponde
+06 =REGD::ai numeri ha stampato con il comando della LISTA di ACCESSO.
+07 =REGD::Altrimenti cancellerà tutta la corrispondenza dei hostmasks
+08 =REGD::mascherina che specificate (che possono essere entrate multiple).
+
+[NICKSERV/ACCESS/LIST]
+01 =REGD::ACCEDERE ALLA LISTA
+02 =REGD::
+03 =REGD::Ciò elencherà verso l'esterno il contenuto del vostro accesso list,
+04 =REGD::e dare ad ogni entrata un numero indice che può essere usato
+05 =REGD::con il DEL command cancellare rapidamente un' entrata.
+
+[NICKSERV/IGNORE]
+01 =REGD::Your ignore list will block any memos that are sent
+02 =REGD::you by all nicknames on it.  If you do not wish to
+03 =REGD::associarsi con una persona anymore, e continuano a trasmettere
+04 =REGD::voi memos, o voi state ottenendo l' appunto bombed, allora appena
+05 =REGD::aggiungere il nickname offendente al vostro ignorano la lista.
+06 =REGD::
+07 =REGD::Una volta usato insieme con l' appunto di no option, esso
+08 =REGD::invertirà la funzionalità di questa lista.
+09 =REGD::diventa una lista della gente PER ACCETTARE gli appunti da.
+10 =REGD::
+11 =REGD::You maintain your ignore list with these commands:
+12 =REGD::AGGIUNGERE DEL LIST
+
+[NICKSERV/IGNORE/ADD]
+01 =REGD::IGNORARE AGGIUNGONO < il nickname >
+02 =REGD::
+03 =REGD::Ciò aggiungerà un nickname al vostro ignora list, e
+04 =REGD::più non accetterete gli appunti loro (o voi
+05 =REGD::WILL start accepting memos from them if the No Memo
+06 =REGD::l' opzione è regolata sopra).  Potete specificare soltanto registrato
+07 =REGD::nickname.
+
+[NICKSERV/IGNORE/DEL]
+01 =REGD::IGNORARE DEL < nick|NUM >
+02 =REGD::
+03 =REGD::Ciò rimuoverà un nickname dal vostro appunto ignora
+04 =REGD::list, e voi uno ancora accetteranno o negheranno gli appunti
+05 =REGD::da them, secondo la vostra regolazione dell' appunto di no.  Se
+06 =REGD::a number is specified, it will be assumed to be an
+07 =REGD::numero dell' entrata che corrisponde ai numeri stampato
+08 =REGD::con il comando della LISTA di IGNOR.
+
+[NICKSERV/IGNORE/LIST]
+01 =REGD::IGNORE LIST
+02 =REGD::
+03 =REGD::Ciò elencherà verso l'esterno il contenuto del vostro ignora list,
+04 =REGD::e dare ad ogni entrata un numero indice che può essere usato
+05 =REGD::con il DEL command cancellare rapidamente un' entrata.
+
+[NICKSERV/SET]
+01 =REGD::I servizi effettua molte regolazioni sulla vostra scalfittura
+02 =REGD::record, variando dal vostro password, ad un e-mail
+03 =REGD::address you specify, to options that effect how
+04 =REGD::i servizi trattano il vostro nickname.  Alcuni di questi
+05 =REGD::deve identificare set, ad altri che sono riconosciuti è
+06 =REGD::abbastanza (che sia la stessa cosa se fissare è regolato).
+07 =REGD::
+08 =REGD::You may alter your settings with these commands:
+09 =REGD::URL ICQ DEL EMAIL DI PAROLA D'ACCESSO
+10 =REGD::L' IMMAGINE DI DESCRIZIONE PROTEGGE SICURO
+11 =REGD::LINGUAGGIO RISERVATO DI NOMEMO PRIVMSG
+12 =SOP::As a SOP you may also use the following commands:
+13 =SOP::COMMENTO NOEXPIRE
+
+[NICKSERV/SET/PASSWORD]
+01 =REGD::REGOLARE LA PAROLA D'ACCESSO < parola d'accesso >
+02 =REGD::
+03 =REGD::This will change your nickname password.  This
+04 =REGD::la parola d'accesso è richiesta per il comando di IDENTIFIC (IE
+05 =REGD::per usare il vostro nickname da in qualche luogo non sui vostri
+06 =REGD::accedere alla lista).  Egualmente è richiesto per il FANTASMA
+07 =REGD::e RECUPERARE i comandi.  Se avete insieme sicuro on,
+08 =REGD::questa parola d'accesso è necessità DI USARE il vostro nickname. Voi
+09 =REGD::deve identificare prima che possiate usare questo comando.
+10 =REGD::
+11 =REGD::Scegliere prego una parola d'accesso che remember, ma quello è
+12 =REGD::suitably complex when registering your nickname.  If
+14 =REGD::qualcun'altro ottiene il vostro nickname password, che possono allora
+15 =REGD::controllo totale di esercitazione oltre it, compreso proibirvi
+16 =REGD::accedere a ad esso.  Se avete perso il vostro password, potete
+17 =REGD::mettersi in contatto con un operatore di servizi per richiamarvelo per.
+
+[NICKSERV/SET/EMAIL]
+01 =REGD::REGOLARE IL email < email >
+02 =REGD::
+03 =REGD::Ciò è un campo fornito per rappresentare i vostri e-mail
+04 =REGD::indirizzo.  Destra now, è un free-text field, tuttavia
+05 =REGD::vi è suggerito accerta i dati che mettete in questo
+06 =REGD::is a valid email address, as it may be used later for
+07 =REGD::tali cose come rete announcements, ecc.
+08 =REGD::
+09 =REGD::Questo valore visualizzerà as-is nella vostra visualizzazione di Info.
+10 =REGD::Setting this value to "NONE" will clear it.
+
+[NICKSERV/SET/URL]
+01 =REGD::REGOLARE IL URL < URL >
+02 =REGD::
+03 =REGD::Ciò è un campo fornito per rappresentare il vostro Web page
+04 =REGD::indirizzo.  Destra now, è un free-text field, tuttavia
+05 =REGD::vi è suggerito accerta i dati che mettete in questo
+06 =REGD::è un Web page valido address, mentre può essere usato più successivamente
+07 =REGD::per tali cose come gli utenti collega page, ecc.  Non
+08 =REGD::need to (and should not) put 'http://' nel URL.
+09 =REGD::
+10 =REGD::Questo valore visualizzerà as-is nella vostra visualizzazione di Info.
+11 =REGD::Regolando questo valore a "NONE" lo annullerà.
+
+[NICKSERV/SET/ICQ]
+01 =REGD::REGOLARE ICQ < uin >
+02 =REGD::
+03 =REGD::This is a field provided to represent your ICQ UIN.
+04 =REGD::Destra now, è un free-text field, tuttavia che è
+05 =REGD::suggerito voi accertare i dati che mettete in questo essete
+06 =REGD::un ICQ valido UIN, come esso può essere usato più successivamente per tali
+07 =REGD::cose come utenti correnti status, ecc.
+08 =REGD::
+09 =REGD::Questo valore visualizzerà as-is nella vostra visualizzazione di Info.
+10 =REGD::Regolando questo valore a "NONE" lo annullerà.
+
+[NICKSERV/SET/DESCRIPTION]
+01 =REGD::REGOLARE LA DESCRIZIONE < descrizione >
+02 =REGD::
+03 =REGD::Questo campo è fornito per fornire altri
+04 =REGD::physical description of yourself, or stats about
+05 =REGD::voi stessi (age, sex, location, ecc).  Prego anche
+06 =REGD::vedere l' aiuto sul comando dell' IMMAGINE dell' INSIEME se avete
+07 =REGD::immagine di lei voi mente di don't che si ripartisce intorno.
+08 =REGD::
+09 =REGD::Questo valore visualizzerà as-is nella vostra visualizzazione di Info.
+10 =REGD::Setting this value to "NONE" will clear it.
+
+[NICKSERV/SET/COMMENT]
+01 =SOP::Commento > STABILITO < di nickname > di COMMENTO <
+02 =SOP::
+03 =SOP::Ciò regolerà (o libero) un commento sull' utenti l' Info
+04 =SOP::record.  Gli utenti normali non potranno vedere questo
+05 =SOP::comment, tuttavia tutti i membri del comitato di FUNZIONAMENTO
+06 =SOP::volontà.  Quando un utente è suspended, il motivo di sospensione
+07 =SOP::è regolato poichè il commento automatically, e questo
+08 =SOP::rimanere anche dopo che l' utente è unsuspended.
+09 =SOP::
+10 =SOP::Regolando questo valore a "NONE" lo annullerà.
+
+[NICKSERV/SET/PICTURE]
+01 =REGD::SET PICTURE [NONE]
+02 =REGD::
+03 =REGD::Ciò installerà i servizi per ricevere un archivio di DCC
+04 =REGD::da you, che sarà regolato come vostra immagine.
+05 =REGD::Sia l' archivio extension, che il formato di archivio possono essere
+06 =REGD::restricted, per scoprire che estensioni
+07 =REGD::may send, or the maximum file size, please
+08 =REGD::mettersi in contatto con tutto l' operatore del IRC.
+09 =REGD::
+10 =REGD::Once the DCC completes, any user may download
+11 =REGD::la vostra immagine con il comando di TRASMISSIONE.  Se
+12 =REGD::specificare "NONE" dopo l' IMMAGINE dell' INSIEME command,
+13 =REGD::la vostra immagine sarà rimossa dal vostro record.
+
+[NICKSERV/SET/PROTECT]
+01 =REGD::Regolarsi Proteggono < ON|OFF >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di protezione di uccisione.
+04 =REGD::Quando questa opzione è on, se chiunque tenta di usare
+05 =REGD::il vostro nickname da un hostmask non nel vostro accesso
+06 =REGD::list, they will be asked to identify, or be renamed
+07 =REGD::o ucciso.
+
+[NICKSERV/SET/SECURE]
+01 =REGD::Stabilito Fissare < ON|OFF >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di sicuro.
+04 =REGD::Quando questa opzione è on, dovete usare l' identific
+05 =REGD::comando essere riconosciuto (essenzialmente girando su
+06 =REGD::paranoia mode, disconsiderando la vostra lista di accesso). Esso
+07 =REGD::media di volontà egualmente avete bisogno dell' identificazione di ottenere tutto l' accesso
+08 =REGD::su qualsiasi scanalatura voi join, per leggere vostro memos, ecc.
+
+[NICKSERV/SET/NOEXPIRE]
+01 =SOP::REGOLARE NOEXPIRE < il nickname > < ON|OFF >
+02 =SOP::
+03 =SOP::Quando regolate questo su un nickname, che il nickname
+04 =SOP::non essere conforme alla scadenza di nickname se non è
+05 =SOP::usato dopo un periodo di tempo.  Usare prego questo molto
+06 =SOP::cautiously, come nickname scadenza garantisce quello
+07 =SOP::i nicknames don't ottengono sostenuti se they're che non usando.
+
+[NICKSERV/SET/NOMEMO]
+01 =REGD::Regolare Nomemo < ON|OFF >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di nessun appunti.
+04 =REGD::Quando questa opzione è on, automaticamente
+05 =REGD::ignorare tutti gli appunti al vostro nickname, tuttavia vostro
+06 =REGD::ignorare la lista si trasformerà in un concedere list, e voi
+07 =REGD::tranquillo accetterà gli appunti dalla gente su quella lista.
+
+[NICKSERV/SET/PRIVATE]
+01 =REGD::Stabiliti Riservati < ON|OFF >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di riservato.
+04 =REGD::Quando questa opzione è on, il vostro ultimo hostmask e
+05 =REGD::i tempi in linea non saranno visualizzati sul vostro Info
+06 =REGD::display, e voi non riveleranno quando qualcuno
+07 =REGD::fa una lista di tutti i nicknames.
+
+[NICKSERV/SET/PRIVMSG]
+01 =REGD::SET PRIVMSG <ON|OFF>
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di PRIVMSG.
+04 =REGD::Quando questa opzione è on, i servizi useranno PRIVMSG
+05 =REGD::(aka. una domanda) trasmetterli qualche cosa che abbiano bisogno di
+06 =REGD::trasmettere you, piuttosto che usando l' AVVISO.  tranquillo
+07 =REGD::ottenere gli avvisi se non siete recognised, o per c'è ne
+08 =REGD::kind of global notice.
+
+[NICKSERV/SET/LANGUAGE]
+01 =REGD::REGOLARE IL LINGUAGGIO < linguaggio >
+02 =REGD::
+03 =REGD::Questa regolazione definisce che servizi linguistici comunicano
+04 =REGD::a voi dentro.  Se un altro linguaggio è available, voi
+05 =REGD::può convincere i servizi a comunicare con voi in quel linguaggio.
+
+[NICKSERV/LOCK]
+01 =SOP::Services allows you to lock a value for a nickname,
+02 =SOP::impedendo all' utente di escludere la vostra regolazione.
+03 =SOP::Usare prego caution, poichè siete rimuovere utenti
+04 =SOP::di destra per cambiare il loro propri record.
+05 =SOP::
+06 =SOP::You may lock a users settings with these commands:
+07 =SOP::PROTEGGERE NOMEMO SICURO RISERVATO
+08 =SOP::LINGUAGGIO DI PRIVMSG
+
+[NICKSERV/LOCK/PROTECT]
+01 =SOP::BLOCCARE PROTEGGONO < il nickname > < ON|OFF >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore dell' uccisione protegge per
+04 =SOP::utente a a qualunque lo avete regolato.  Facendo this, volontà
+05 =SOP::impedire all' utente di potere escludere questo
+06 =SOP::setting, così soddisfa l' uso con caution, mentre essete
+07 =SOP::rimozione utenti a destra per cambiare il loro proprio record.
+
+[NICKSERV/LOCK/SECURE]
+01 =SOP::BLOCCARE < il nickname > SICURO < ON|OFF >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di sicuro per un utente a
+04 =SOP::a qualunque lo avete regolato.  Fare this, eviterà
+05 =SOP::l' utente da potere escludere questo setting,
+06 =SOP::così vogliate l' uso con caution, come state rimuovendo
+07 =SOP::gli utenti radrizzano per cambiare il loro proprio record.
+
+[NICKSERV/LOCK/NOMEMO]
+01 =SOP::BLOCCARE NOMEMO < il nickname > < ON|OFF >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di nessun appunti per un utente a
+04 =SOP::a qualunque lo avete regolato.  Fare this, eviterà
+05 =SOP::l' utente da potere escludere questo setting,
+06 =SOP::così vogliate l' uso con caution, come state rimuovendo
+07 =SOP::gli utenti radrizzano per cambiare il loro proprio record.
+
+[NICKSERV/LOCK/PRIVATE]
+01 =SOP::BLOCCARE < il nickname > RISERVATO < ON|OFF >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di riservato per un utente a
+04 =SOP::whatever you set it to.  Doing this, will prevent
+05 =SOP::l' utente da potere escludere questo setting,
+06 =SOP::così vogliate l' uso con caution, come state rimuovendo
+07 =SOP::gli utenti radrizzano per cambiare il loro proprio record.
+
+[NICKSERV/LOCK/PRIVMSG]
+01 =SOP::BLOCCARE PRIVMSG < il nickname > < ON|OFF >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di PRIVMSG per un utente a
+04 =SOP::a qualunque lo avete regolato.  Fare this, eviterà
+05 =SOP::l' utente da potere escludere questo setting,
+06 =SOP::così vogliate l' uso con caution, come state rimuovendo
+07 =SOP::gli utenti radrizzano per cambiare il loro proprio record.
+
+[NICKSERV/LOCK/LANGUAGE]
+01 =SOP::BLOCCARE il linguaggio > < di nickname > di LINGUAGGIO <
+02 =SOP::
+03 =SOP::Ciò bloccherà i servizi linguistici risponde a
+04 =SOP::un utente dentro a a qualunque lo avete regolato.  Fare this,
+05 =SOP::impedirà all' utente di potere escludere
+06 =SOP::questo setting, così soddisfa l' uso con caution, come voi
+07 =SOP::è rimuovere utenti a destra per cambiare il loro propri
+08 =SOP::record.
+
+[NICKSERV/UNLOCK]
+01 =SOP::I servizi permette che blocchiate un valore per nickname,
+02 =SOP::impedendo all' utente di escludere la vostra regolazione.
+03 =SOP::Questi comandi rimuoveranno una
+04 =SOP::
+05 =SOP::You may unlock a users settings with these commands:
+06 =SOP::    PROTECT      SECURE       NOMEMO       PRIVATE
+07 =SOP::    PRIVMSG      LANGUAGE
+
+[NICKSERV/UNLOCK/PROTECT]
+01 =SOP::UNLOCK PROTECT <nickname>
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore dell' uccisione protegge per
+04 =SOP::user, tuttavia il valore rimarrà lo stesso.
+
+[NICKSERV/UNLOCK/SECURE]
+01 =SOP::SBLOCCARE SICURO < il nickname >
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di sicuro per
+04 =SOP::user, however the value will remain the same.
+
+[NICKSERV/UNLOCK/NOMEMO]
+01 =SOP::SBLOCCARE NOMEMO < nickname >
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di nessun appunti per
+04 =SOP::user, tuttavia il valore rimarrà lo stesso.
+
+[NICKSERV/UNLOCK/PRIVATE]
+01 =SOP::SBLOCCARE RISERVATO < il nickname >
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di riservato per
+04 =SOP::user, tuttavia il valore rimarrà lo stesso.
+
+[NICKSERV/UNLOCK/PRIVMSG]
+01 =SOP::SBLOCCARE PRIVMSG < nickname >
+02 =SOP::
+03 =SOP::This will unlock the value of PRIVMSG for a
+04 =SOP::user, tuttavia il valore rimarrà lo stesso.
+
+[NICKSERV/UNLOCK/LANGUAGE]
+01 =SOP::UNLOCK LANGUAGE <nickname>
+02 =SOP::
+03 =SOP::Ciò sbloccherà i servizi linguistici risponde
+04 =SOP::ad un utente in, tuttavia il valore rimarrà
+05 =SOP::stessi.
+
+
+
+[CHANSERV]
+01 =::Questo servizio permette che registriate la vostra scanalatura
+02 =::in moda da non poterlo prendere esso da chiunque altrimenti.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =::LA LISTA DI AIUTO INFO IDENTIFICA
+06 =REGD::GLI UTENTI DI GOCCIA DEL REGISTRO INVITANO
+07 =REGD::VOCE OP DEVOICE DI DEOP
+08 =REGD::SCOSSA DI SOGGETTO UNBAN DI MODO
+09 =REGD::RIMUOVERE STABILITO LIBERO IL LIVELLO
+10 =REGD::L' ACCESSO AKICK GREET IL MESSAGGIO
+11 =SOP::And as a Services Operator, the following commands:
+12 =SOP::    GETPASS      FORBID       LOCK         UNLOCK
+13 =SOP::SOSPENDERE UNSUSPEND IN TENSIONE
+14 =::
+15 =::Potete chiedere l' aiuto sulla sintassi e sulla funzionalità
+16 =::di c'è ne e di tutti i suddetti comandi specificando
+17 =::il nome di comando dopo la richiesta di AIUTO.
+19 =::NOTE:Soltanto i comandi che attualmente potete usare sono elencati
+20 =::above, e cose quale il registro di nickname
+21 =::può cambiare che cosa è visualizzato sopra.
+
+[CHANSERV/REGISTER]
+01 =REGD::REGISTRARE la descrizione > < di parola d'accesso > < della scanalatura > <
+02 =REGD::
+03 =REGD::Ciò farà la vostra scanalatura riconosciuta con i servizi.
+04 =REGD::Facendo so, i servizi riserveranno la vostra scanalatura per
+05 =REGD::you, e soltanto give OPS e VOCE alla gente
+06 =REGD::specify on the channel ACCESS list.  Once registered,
+07 =REGD::you can use the IDENTIFY command to gain full authorative
+08 =REGD::controllo sopra la scanalatura da un altro nickname.
+09 =REGD::
+10 =REGD::Il registro della Manica permette molte altre varie caratteristiche
+11 =REGD::compreso le notizie della scanalatura greetings, articles, automatico
+12 =REGD::kicking, e molto più.  Soltanto registrati nicknames
+13 =REGD::può essere aggiunto ad una lista di accesso di scanalatura.
+14 =REGD::Scegliere prego una parola d'accesso che remember, ma quello è
+15 =REGD::adeguatamente complesso quando registra la vostra scanalatura.  Se
+16 =REGD::qualcun'altro ottiene vostro password, può allora esercitarsi
+17 =REGD::controllo totale più del vostro channel, compreso proibire
+18 =REGD::accedete a ad esso.  Se avete perso il vostro password, voi
+19 =REGD::può mettersi in contatto con un operatore di servizi per richiamarvelo per.
+
+[CHANSERV/DROP]
+01 =REGD::DROP <channel>
+02 =REGD::
+03 =REGD::Ciò volontà de-register la vostra scanalatura.  Questa azione è
+04 =REGD::permanent, and not reversible.  The channel will once
+05 =REGD::essere governato da chiunque ha ops, e niente si arresterà
+06 =REGD::conservazione della scanalatura takeovers, la scanalatura topic, ecc.
+07 =SOP::
+08 =SOP::Come SOP, potete cadere tutto il channel, tempo voi per possedere
+09 =SOP::esso oppure no.  Usare prego CON ATTENZIONE questo comando.
+
+[CHANSERV/IDENTIFY]
+01 =::IDENTIFICARE < la parola d'accesso > < della scanalatura >
+02 =::
+03 =::Ciò li identificherà alla vostra scanalatura.  Ciò è
+04 =::richiesto per trasferire controllo del channel, o per regolarsi
+05 =::vario options, compreso la aggiunta del qualcuno a
+06 =::il livello di accesso superiore alla lista di accesso di scanalatura.
+07 =::You will be accounted as having access ABOVE ALL
+08 =::le entrate sull' accesso elencano con questo comando.
+09 =::
+10 =::La parola d'accesso che specificate dovrebbe essere la stessa del
+11 =::uno che vi siete regolati con il comando di PAROLA D'ACCESSO dell' INSIEME o del REGISTRO.
+
+[CHANSERV/INFO]
+01 =::Info < scanalatura >
+02 =::
+03 =::Ciò vi fornirà le varie informazioni sull' dato
+04 =::scanalatura.  Ciò include le informazioni come loro
+05 =::Web della lista spedire address, address, e descrizione
+06 =::se hanno regolato them, il tempo la scanalatura era ultimo
+07 =::used, o chi è attualmente nella scanalatura (se esso doesn't
+08 =::regolare l' opzione riservata sopra).  Egualmente dirà a
+09 =::voi che opzione set, il corrente topic,
+10 =::e molto più.
+11 =OPER::
+12 =OPER::Come oper, potete inoltre vedere un commento a tale proposito
+13 =OPER::channel, che è stato regolato da un SOP uno come un anteriore
+14 =OPER::sospendere reason, o manualmente.  Prego raccomandarsi quello
+15 =OPER::gli utenti normali NON POSSONO vedere questo campo.
+
+[CHANSERV/LIST]
+01 =::LISTA [<mask > [<maximum>]]
+02 =SOP::LISTNOEXP [<mask > [<maximum>]]
+03 =SOP::LISTFORBID [<mask > [<maximum>]]
+04 =SOP::LISTSUSP [<mask > [<maximum>]]
+05 =::
+06 =::Ciò elencherà tutte le scanalature registrate quello corrispondenza
+07 =::la mascherina che avete specificato e le loro descrizioni
+08 =::fino ad un numero massimo di difetto dell' insieme delle entrate dai
+09 =::Servizi Admins.  Escludete l' importo massimo di
+10 =::le entrate hanno visualizzato fino ad un massimo assoluto egualmente
+11 =::specificato dai servizi Admins.  Scanalature contrassegnato
+12A=:OPER:as private will not be displayed in the list.
+12B=OPER::as private will be displayed in the list.
+13 =SOP::Il NOEXP, PROIBITO A e SUSP suffigge al comando della LISTA
+14 =SOP::elencherà soltanto le scanalature senza espirano set, proibito a
+15 =SOP::users, o utenti sospesi rispettivamente.
+
+[CHANSERV/SUSPEND]
+01 =SOP::SOSPENDERE < il motivo > < della scanalatura >
+02 =SOP::
+03 =SOP::Ciò renderà una lista di accesso di scanalature (e
+04 =SOP::fondatore) inutile.  Non arresterà gli utenti da
+05 =SOP::unire la scanalatura (a meno che limiti ed
+06 =SOP::Ops sicuro on), non otterranno appena il loro normale
+07 =SOP::accedere ai privilegi.  Tutti gli operatori del IRC riceveranno
+08 =SOP::L' automobile Voice, SOPs riceverà l' automobile Ops, e SADMINS
+09 =SOP::riceverà i privilegi del fondatore.  Poiché
+10 =SOP::non possono ident, anche non possono cadere il channel, o
+11 =SOP::cambiare la relativa parola d'accesso.  Ciò è significata per essere un corto
+12 =SOP::misura disciplinare di termine mentre un reclamo è sotto
+13 =SOP::review against this channel, or to caution the
+14 =SOP::scanalatura piuttosto che appena caderla.
+
+[CHANSERV/UNSUSPEND]
+01 =SOP::UNSUSPEND < scanalatura >
+02 =SOP::
+03 =SOP::Ciò essenzialmente invertirà la sospensione command,
+04 =SOP::permettendo l' accesso di scanalatura elencare per riprendere come normale.
+05 =SOP::Il motivo di sospensione tuttavia rimarrà come commento
+06 =SOP::sulla scanalatura record, per rimuovere questo dovete usare
+07 =SOP::il comando di COMMENTO dell' INSIEME.
+
+[CHANSERV/FORBID]
+01 =SOP::PROIBITA A < scanalatura >
+02 =SOP::
+03 =SOP::Ciò proibirà ad una scanalatura dal usando sui
+04 =SOP::network, e darà dei calci automaticamente a tutto l' utente che
+05 =SOP::lo unisce fuori.
+
+[CHANSERV/GETPASS]
+01 =SOP::GETPASS < scanalatura >
+02 =SOP::
+03 =SOP::Ciò richiamerà la parola d'accesso della scanalatura per c'è ne
+04 =SOP::scanalatura registrata.
+05 =SOP::Notare prego quello ogni volta che questo comando è used,
+06 =SOP::il messaggio globale a tutto il IRCOPS sarà radiodiffusione!
+
+[CHANSERV/MODE]
+01 =REGD::MODO < scanalatura > [modes]
+02 =REGD::
+03 =REGD::Ciò vi mostrerà i modi correnti che sono regolati
+04 =REGD::su un channel, compreso i tasti ed i limiti (se
+05 =REGD::avere accesso di VISTA).  Se un modo è specificato e voi
+06 =REGD::avere CMDMODE access, che lo regolerà (conforme a
+07 =REGD::la serratura di modo della scanalatura).
+
+[CHANSERV/OP]
+01 =REGD::< scanalatura > OP [nickname]
+02 =REGD::
+03 =REGD::Ciò tenterà al modo stabilito +o sul vostro nickname
+04 =REGD::in the specified channel, if you have CMDOP access.
+05 =REGD::Se specificate un altro nickname dopo la scanalatura
+06A=REGD:SOP:and you have SUPER access, mode +o will be set on
+07A=REGD:SOP:that user instead (if the channel is either not
+08A=REGD:SOP:secure, or they have either CMDOP or AUTOOP access).
+06B=SOP::mode +o will be set on that user instead (if the
+07B=SOP::channel is either not secure, or they have either
+08B=SOP::CMDOP or AUTOOP access).
+
+[CHANSERV/DEOP]
+01 =REGD::DEOP < scanalatura > [nickname]
+02 =REGD::
+03 =REGD::Ciò tenterà al modo stabilito -o sul vostro nickname
+04 =REGD::in the specified channel, if you have CMDOP access.
+05 =REGD::Se specificate un altro nickname dopo la scanalatura
+06A=REGD:SOP:and you have SUPER access, mode -o will be set on
+07A=REGD:SOP:that user instead.
+06B=SOP::mode -o will be set on that user instead.
+
+[CHANSERV/VOICE]
+01 =REGD::VOCE < scanalatura > [nickname]
+02 =REGD::
+03 =REGD::Ciò tenterà al modo stabilito +v sul vostro nickname
+04 =REGD::dal channel, specificato se avete CMDVOICE
+05 =REGD::accesso.  Se specificate dopo un altro nickname
+06A=REGD:SOP:channel and you have SUPER access, mode +v will be
+07A=REGD:SOP:set on that user instead (if the channel is either
+08A=REGD:SOP:not secure, or they have either CMDVOICE or
+09A=REGD:SOP:AUTOVOICE access).
+06B=SOP::mode +o will be set on that user instead (if the
+07B=SOP::channel is either not secure, or they have either
+08B=SOP::CMDVOICE or AUTOVOICE access).
+
+[CHANSERV/DEVOICE]
+01 =REGD::DEVOICE < scanalatura > [nickname]
+02 =REGD::
+03 =REGD::Ciò tenterà al modo stabilito -o sul vostro nickname
+04 =REGD::dal channel, specificato se avete CMDVOICE
+05 =REGD::accesso.  Se specificate dopo un altro nickname
+06A=REGD:SOP:channel and you have SUPER access, mode -o will be
+07A=REGD:SOP:set on that user instead.
+06B=SOP::channel mode -o will be set on that user instead.
+
+[CHANSERV/TOPIC]
+01 =REGD::SOGGETTO < scanalatura > [topic]
+02 =REGD::
+03 =REGD::Ciò restituirà il soggetto d'un channel, se avete
+04 =REGD::Accesso di VISTA.  Specificando un soggetto dopo la scanalatura
+05 =REGD::regolerà il topic, se avete accesso di CMDMODE.
+
+[CHANSERV/KICK]
+01 =REGD::DARE DEI CALCI < al nickname > < della scanalatura > [reason]
+02 =REGD::
+03 =REGD::Ciò darà dei calci ad un utente da un channel, con il motivo
+04 =REGD::specificate.  Se non specificate una scossa reason,
+05 =REGD::il motivo di difetto AKICK è usato.  L' utente tuttavia
+06 =REGD::conoscere chi ha dato dei calci loro (nella scossa reason), ed in voi deve
+07 =REGD::avere almeno accesso di CMDKICK per usare questa opzione.  Voi
+08 =REGD::non può dare dei calci ad un utente che è superiore voi sui
+09 =REGD::accedere alla lista.
+
+[CHANSERV/REMOVE]
+01 =REGD::RIMUOVERE il motivo > < di nickname > < della scanalatura > <
+02 =REGD::
+03 =REGD::This performs the same action as the KICK command,
+04 =REGD::a meno che l' utente non conosca chi ha dato dei calci a them, ed
+05 =REGD::il motivo di scossa DEVE essere specificato.  Dovete avere
+06 =REGD::at least SUPER access to use this command, and you
+07 =REGD::non può dare dei calci ad un utente che è superiore voi sui
+08 =REGD::accedere alla lista.
+
+[CHANSERV/USERS]
+01 =REGD::USERS <channel>
+02 =REGD::
+03 =REGD::Ciò vi mostrerà una lista degli utenti in una s channel,
+04 =REGD::finchè voi avere accesso di VISTA.  OPS e le VOCI
+05 =REGD::essere indicato con la a '@' e '+' prima del nickname
+06 =REGD::rispettivamente.
+
+[CHANSERV/INVITE]
+01 =REGD::INVITARE < la scanalatura > [nickname]
+02 =REGD::
+03 =REGD::Ciò inviterà voi (o un nickname specificato dopo
+04 =REGD::la scanalatura) ad una scanalatura che ha modo +i regolato.  Voi
+05A=REGD:SOP:must have CMDINVITE access to use this command, or
+06A=REGD:SOP:SUPER access to invite another user.
+05B=SOP::may invite any user to any channel.
+
+[CHANSERV/UNBAN]
+01 =REGD::UNBAN < scanalatura > [nickname]
+02 =REGD::
+03 =REGD::Ciò esplorerà attraverso la lista di divieto e rimuoverà tutto
+04 =REGD::entrate che stanno impedendovi di unirsi
+05 =REGD::scanalatura.  Se un nickname è dopo specificati
+06 =REGD::scanalatura name, tenterà a unban un altro
+07A=REGD:SOP:online user.  You must have CMDUNBAN access to use
+08A=REGD:SOP:this command on yourself, and SUPER access to use
+09A=REGD:SOP:it on another user.
+07B=SOP::online user.
+
+[CHANSERV/LIVE]
+01 =SOP::VIVERE [mask [maximum]]
+02 =SOP::
+03 =SOP::Ciò elencherà tutte le scanalature attive quella corrispondenza
+04 =SOP::mascherina completa specificata.  Ciò visualizzerà il pieno
+05 =SOP::scanalatura name, la quantità users, ops, di voci
+06 =SOP::gli utenti ed i divieti dello squit sono attivi da channel, e
+07 =SOP::che modi la scanalatura attualmente ha regolato (compreso
+08 =SOP::tasto e limite).
+
+[CHANSERV/CLEAR]
+01 =REGD::Sometimes it is necessary (as a judicial measure,
+02 =REGD::o un metodo di guadagnare controllo situation, ecc)
+03 =REGD::to take drastic measures in a channel.  This command
+04 =REGD::è la vostra misura drastica in-a-box.  Ciò basterà
+05 =REGD::qualche cosa da toglie tutti i modi su un channel,
+06 =REGD::dando dei calci a tutto da esso.
+07 =REGD::
+08 =REGD::Your available drastic measures are:
+09 =REGD::VOCI DI DIVIETI OPS DI MODI
+10 =REGD::UTENTI TUTTO
+
+[CHANSERV/CLEAR/USERS]
+01 =REGD::ANNULLARE GLI UTENTI < della scanalatura >
+02 =REGD::
+03 =REGD::Questo comando dovrebbe essere usato con l' estremo caution,
+04 =REGD::poichè darà dei calci a tutti gli utenti nella scanalatura da esso.
+05 =REGD::Tutti gli utenti sulla scanalatura saranno comunicati del action,
+06 =REGD::e chi lo ha fatto.
+07 =REGD:SOP:Dovete avere accesso di CMDCLEAR per usare questo comando.
+
+[CHANSERV/CLEAR/MODES]
+01 =REGD::ANNULLARE I MODI < della scanalatura >
+02 =REGD::
+03 =REGD::Ciò volontà unset tutti i modi regolati per channel, quello
+04 =REGD::NON il modo ha bloccato sopra.  Ciò include unsetting c'è ne
+05 =REGD::la scanalatura key, invita soltanto mode, ecc.  Tutti i ops
+06 =REGD::sarà informato del action, e chi lo ha fatto.
+07 =REGD:SOP:Dovete avere accesso di CMDCLEAR per usare questo comando.
+
+[CHANSERV/CLEAR/OPS]
+01 =REGD::RIMUOVERE < la scanalatura > OPS
+02 =REGD::
+03 =REGD::Ciò rimuoverà il modo +o da tutti gli utenti in scanalatura
+04 =REGD::chi lo hanno regolato (ops dello IE).  Tutti gli utenti che sono deoped
+05 =REGD::sarà informato del action, e chi lo ha fatto.
+06 =REGD:SOP:Dovete avere accesso di CMDCLEAR per usare questo comando.
+
+[CHANSERV/CLEAR/VOICES]
+01 =REGD::ANNULLARE LE VOCI < della scanalatura >
+02 =REGD::
+03 =REGD::Ciò rimuoverà il modo +v da tutti gli utenti in scanalatura
+04 =REGD::chi lo hanno regolato (voci dello IE).  Tutti gli utenti che sono
+05 =REGD::devoiced, and all ops will be notified of the action,
+06 =REGD::e chi lo ha fatto.
+07 =REGD:SOP:You must have CMDCLEAR access to use this command.
+
+[CHANSERV/CLEAR/BANS]
+01 =REGD::ANNULLARE I DIVIETI < della scanalatura >
+02 =REGD::
+03 =REGD::This will remove all bans (ie. mode +b) from the
+04 =REGD::lista di divieto della scanalatura.  Essenzialmente dando tutta la gente che
+05 =REGD::si vietano dalla scanalatura un reprieve.  Se questi
+06 =REGD::gli utenti sono sul AKICK list, o la scanalatura ha
+07 =REGD::Ops limitato e sicuro set, il divieto sarà regolato
+08 =REGD::again by services as soon as they enter again.
+09 =REGD::Riferirsi prego all' aiuto sull' INSIEME BANTIME per un modo
+10 =REGD::dei divieti che sono rimossi automaticamente dopo un tempo
+11 =REGD::periodo.  Tutti i ops saranno comunicati del questo action,
+12 =REGD::e chi lo ha fatto.
+13 =REGD:SOP:Dovete avere accesso di CMDCLEAR per usare questo comando.
+
+[CHANSERV/CLEAR/ALL]
+01 =REGD::RIMUOVERE < la scanalatura > TUTTO
+02 =REGD::
+03 =REGD::This command essentially does the same as:
+04 =REGD::Annullare MODES, I Divieti Della Radura Dell' Annull Dell' Annull OPS, VOICES,
+05 =REGD::
+06 =REGD::Vedere prego l' aiuto su ciascuno di questi comandi trovare
+07 =REGD::verso l'esterno che cosa ciascuno di loro fare.  Tutto l' avviso pubblico in
+08 =REGD::la scanalatura sarà fatta quando questo comando è usato.
+09 =REGD:SOP:Dovete avere accesso di CMDCLEAR per usare questo comando.
+
+[CHANSERV/LEVEL]
+01 =REGD::Services allow you to alter the default level for
+02 =REGD::intraprendendo le varie azioni da un channel, e che livellato
+03 =REGD::è richiesto per realizzare le varie azioni.  per esempio.  Da
+04 =REGD::default, leggendo le notizie della scanalatura è disponibile a tutto
+05 =REGD::utenti (il Livello dello IE 0), tuttavia alcuni gradisce limitare
+06 =REGD::soltanto alla gente sull' accesso elenca (1) Livello.
+07 =REGD::
+08 =REGD::You may maintain the channel levels with:
+09 =REGD::REGOLARE LA LISTA DI RISISTEMAZIONE
+
+[CHANSERV/LEVEL/SET]
+01 =REGD::Il LIVELLO < scanalatura > HA REGOLATO < il tipo > < livellato >
+02 =REGD::
+03 =REGD::Ciò regolerà il livello < di tipo > ad un numero quello
+04 =REGD::you specify.  There are maximum and minimum limits
+05 =REGD::as to what you may set a level to.  These are the
+06 =REGD::gli stessi limiti quanto a che livello potete aggiungere qualcuno
+07 =REGD::alla lista di accesso con (a meno che possiate specificare uno
+08 =REGD::sopra il here, massimo significare 'founder only').
+09 =REGD::Una volta che set, gli utenti devono essere a o sopra il livello voi
+10 =REGD::specificare per potere accedere o usare alla caratteristica in
+11 =REGD::question, tranne AUTODEOP, dove dovete essere
+12 =REGD::inferiore o uguale al livello specificato.  Dovete
+13 =REGD::avere accesso del fondatore per usare questo comando.
+
+[CHANSERV/LEVEL/RESET]
+01 =REGD::LIVELLO < scanalatura > RIPRISTINATI < type|ALL >
+02 =REGD::
+03 =REGD::Ciò è la stessa del usando il comando STABILITO LIVELLATO e
+04 =REGD::specificare il livello di difetto come 'new level'.
+05 =REGD::Specificare TUTTO come il tipo livellato ripristinerà tutto
+06 =REGD::levels back to the default level (ie. what it was
+07 =REGD::regolarsi a quando avete registrato la scanalatura).  Dovete
+08 =REGD::avere accesso del fondatore per usare questo comando.
+
+[CHANSERV/LEVEL/LIST]
+01 =REGD::LISTA < della scanalatura > del LIVELLO
+02 =REGD::
+03 =REGD::Se AVETE REGOLATO i privilegi o above, voi che questo
+04 =REGD::mostrarvi una lista di TAGS, i LIVELLI e DESCRIZIONI di
+05 =REGD::i livelli di accesso della scanalatura.  Se not,
+06 =REGD::ciò vi mostrerà una riga per ogni livello che avete
+07 =REGD::accedere a a you, compreso la descrizione di esso.
+
+[CHANSERV/ACCESS]
+01 =REGD::La lista di accesso di scanalatura è un modo per un fondatore
+02 =REGD::controllo che ha accesso per fare che cosa con il loro channel,
+03 =REGD::da chi altrimenti può avere ops/voices, a chi può registrare
+04 =REGD::le regolazioni della scanalatura o aggiungono alla lista in se di accesso.
+05 =REGD::
+06 =REGD::You maintain the access list with these commands:
+07 =REGD::    ADD          DEL          LIST
+
+[CHANSERV/ACCESS/ADD]
+01 =REGD::L' ACCESSO < scanalatura > AGGIUNGE < il nickname > < livellato >
+02 =REGD::
+03 =REGD::Ciò aggiungerà un nickname ad una lista di accesso di scanalatura a
+04 =REGD::il livello che specificate.  Potete specificare soltanto un livellato
+05 =REGD::quello è sotto i vostri propri.  Dovete avere privilegi di ACCESSO
+06 =REGD::per usare questo comando.  Riferirsi prego LIVELLATA alla LISTA
+07 =REGD::per vedere che accesso darete alla persona prima
+08 =REGD::decidendo che livello per aggiungerli.  Potete soltanto aggiungere
+09 =REGD::nicknames registrati ad una lista di accesso di scanalatura.
+
+[CHANSERV/ACCESS/DEL]
+01 =REGD::ACCEDERE < alla scanalatura > DEL < nickname|NUM >
+02 =REGD::
+03 =REGD::Ciò rimuoverà un nickname da un accesso di scanalatura
+04 =REGD::lista.  Potete specificare il uno o il altro il nickname da rimuovere
+05 =REGD::o il numero dell' entrata come visualizzato con la LISTA di ACCESSO
+06 =REGD::comando.  Non potete rimuovere chiunque con un più alto o
+07 =REGD::equal access level than you have.  You must have
+08 =REGD::ACCEDERE ai privilegi di usare questo comando.
+
+[CHANSERV/ACCESS/LIST]
+01 =REGD::ACCEDERE ALLA LISTA < della scanalatura >
+02 =REGD::
+03 =REGD::Ciò elencherà l' accesso list, compreso che livellato
+04 =REGD::tutto è da channel, e chi Last modified loro
+05 =REGD::accesso record, e quando era Last modified.  Voi
+06 =REGD::deve avere privilegi di VISTA di usare questo comando.
+
+[CHANSERV/AKICK]
+01 =REGD::Ci sono periodi in cui un utente viola la scanalatura regola
+02 =REGD::così much, o la pianura giusta diventa così annoying che
+03 =REGD::garantire un divieto permanente dalla scanalatura.  La scossa automatica è
+04 =REGD::assiste il metodo di realizzare questo.  Qualsiasi utenti su questo
+05 =REGD::la lista sarà automaticamente kicked/banned dalla scanalatura.
+06 =REGD::
+07 =REGD::You maintain the Auto Kick list with these commands:
+08 =REGD::    ADD          DEL          LIST
+
+[CHANSERV/AKICK/ADD]
+01 =REGD::AKICK < scanalatura > AGGIUNGONO < nickname|mask > [reason]
+02 =REGD::
+03 =REGD::Ciò aggiungerà qualcuno alla lista automatica di scossa (permanent
+04 =REGD::divieto).  Potete specificare un nickname, registrato o
+05 =REGD::mascherina.  Se specificate un nickname, un utente soltanto sarà
+06 =REGD::dato dei calci a se i servizi riconoscono l' utente su quello il nickname
+07 =REGD::(IE they're riconosciuto o ha identificato).  Se una mascherina è
+08 =REGD::specified, chiunque che abbina quella mascherina sarà banned,
+09 =REGD::e quella mascherina sarà regolata come il divieto.  Se un motivo è
+10 =REGD::specified, sarà usato nella scossa message, altrimenti
+11 =REGD::un messaggio di scossa di difetto sarà usato.  Dovete avere
+12 =REGD::Accesso di AKICK per usare questo comando.
+
+[CHANSERV/AKICK/DEL]
+01 =REGD::AKICK < scanalatura > DEL < nickname|mask|NUM >
+02 =REGD::
+03 =REGD::This will remove an entry from the Auto Kick list.  You
+04 =REGD::può specificare un nickname o mascherare che corrispondenze una dei
+05 =REGD::entrate sul list, o il numero dell' entrata direttamente che
+06 =REGD::corrisponde ad uno outputted dal comando della LISTA.
+07 =REGD::Dovete avere accesso di AKICK per usare questo comando.
+
+[CHANSERV/AKICK/LIST]
+01 =REGD::LISTA < della scanalatura > di AKICK
+02 =REGD::
+03 =REGD::Ciò elencherà verso l'esterno tutte le entrate sulla lista automatica di scossa.
+04 =REGD::Egualmente elencherà verso l'esterno a chi le ha aggiunte it, quanto tempo
+05 =REGD::sono stati sulla lista for, e su perchè sono
+06 =REGD::la lista automatica di scossa nel primo posto.
+07 =REGD:SOP:Dovete avere accesso di VISTA per usare questo comando.
+
+[CHANSERV/GREET]
+01 =REGD::Una caratteristica molti utenti gradisce circa il IRC di Eggdrop bots,
+02 =REGD::è la capacità di regolare un Info Line, che è citato
+03 =REGD::to channel (prefixed by their nickname) when they
+04 =REGD::unire la scanalatura.  I servizi ora egualmente offrono questa caratteristica.
+05 =REGD::
+06 =REGD::You may maintain your greetings with the following:
+07 =REGD::AGGIUNGERE DEL LIST
+
+[CHANSERV/GREET/ADD]
+01 =REGD::GREET < la scanalatura > AGGIUNGONO [@nickname] [!]<greeting >
+02 =REGD::
+03 =REGD::Ciò aggiungerà una scanalatura che greeting al vostro nickname
+04 =REGD::quale sarà visualizzato sull' unire una scanalatura.  Voi
+05 =REGD::non può iniziare il vostro saluto con la a '!' o '@' carbonizzarsi.
+06 =REGD::Dovete avere GREET l' accesso per regolare un greeting, o
+07 =REGD::fa visualizzare sull' unire una scanalatura.  Se
+08 =REGD::avere OVERGREET access, che potete regolare il greet di
+09 =REGD::un' altra persona specificando il loro nickname premesso
+10 =REGD::dal simbolo '@' dopo la parola chiave di AGGIUNTA.  Potete
+11 =REGD::egualmente bloccare un saluto (IE l' utente non potrà
+12 =REGD::per cambiarlo essi stessi) premettendo il saluto
+13 =REGD::itself with a '!' character.
+
+[CHANSERV/GREET/DEL]
+01 =REGD::GREET <channel> DEL [nickname]
+02 =REGD::
+03 =REGD::Ciò rimuoverà la vostra scanalatura greeting, e servizi
+04 =REGD::la volontà più non annuncia il vostro saluto sull' unirsi
+05 =REGD::scanalatura.  Se avete OVERGREET access, potete cancellare
+06 =REGD::un altro saluto di user's specificando il loro nickname
+07 =REGD::dopo il DEL keyword.
+
+[CHANSERV/GREET/LIST]
+01 =REGD::GREET LA LISTA < della scanalatura > [ALL]
+02 =REGD::
+03 =REGD::Ciò vi mostrerà che cosa il vostro saluto attualmente è regolato
+04 =REGD::to, o se specificate TUTTI dopo la LISTA keyword, e
+05 =REGD::avere OVERGREET access, che vi mostrerà i saluti
+06 =REGD::di tutti gli utenti nella scanalatura.
+
+[CHANSERV/MESSAGE]
+01 =REGD::Often, le scanalature desidereranno trasmettere un avviso agli utenti come
+02 =REGD::join, solitamente che dicono loro la scanalatura rules, o
+03 =REGD::come ottenere them, o semplicemente gli annunci della scanalatura.
+04 =REGD::
+05 =REGD::You may maintain the on-join messages with these commands:
+06 =REGD::AGGIUNGERE DEL LIST
+
+[CHANSERV/MESSAGE/ADD]
+01 =REGD::Il MESSAGGIO < scanalatura > AGGIUNGE < il messaggio >
+02 =REGD::
+03 =REGD::Ciò aggiungerà la parte inferiore del nuovo messaggio (di) la lista
+04 =REGD::of messages that will be displayed to users as they
+05 =REGD::unire la scanalatura.  Dovete avere accesso del MESSAGGIO ad uso
+06 =REGD::questo comando.
+
+[CHANSERV/MESSAGE/DEL]
+01 =REGD::MESSAGGIO < scanalatura > DEL < NUMERICA >
+02 =REGD::
+03 =REGD::Ciò cancellerà un messaggio dalla lista che sarà
+04 =REGD::visualizzato agli utenti sull' unire la scanalatura.  Potete soltanto
+05 =REGD::delete by number, which is obtained with the MESSAGE
+06 =REGD::Comando della LISTA.  Dovete avere accesso del MESSAGGIO per usare questo
+07 =REGD::comando.
+
+[CHANSERV/MESSAGE/LIST]
+01 =REGD::LISTA < della scanalatura > del MESSAGGIO
+02 =REGD::
+03 =REGD::Ciò elencherà verso l'esterno (numerato) tutti i messaggi che saranno
+04 =REGD::visualizzato agli utenti come uniscono la scanalatura.
+05 =REGD::egualmente mostrare chi ha aggiunto il on-join message, e quanto tempo
+06 =REGD::è stato in effetti.  Dovete avere accesso del MESSAGGIO a
+07 =REGD::usare questo comando.
+
+[CHANSERV/SET]
+01 =REGD::I servizi effettua molte regolazioni sulla vostra scanalatura
+02 =REGD::record, variando dal password, ad un e-mail
+03 =REGD::parlarvi specify, alle opzioni che effettuano come
+04 =REGD::i servizi trattano la vostra scanalatura.  Alcuni di questi
+05 =REGD::must identify to set, others may be set as long
+06 =REGD::come AVETE REGOLATO i privilegi.
+07 =REGD::
+08 =REGD::You may alter your settings with these commands:
+09 =REGD::EMAIL DI PAROLA D'ACCESSO DEL FONDATORE COFOUNDER
+10 =REGD::    URL          DESCRIPTION  MLOCK        BANTIME
+11 =REGD::PARTTIME KEEPTOPIC TOPICLOCK RISERVATO
+12 =REGD::SECUREOPS ANARCHY SICURO SI UNISCONO
+13 =REGD::LIMITATA KICKONBAN VENDETTA
+14 =SOP::As a SOP you may also use the following commands:
+15 =SOP::COMMENTO NOEXPIRE
+
+[CHANSERV/SET/FOUNDER]
+01 =REGD::REGOLARE IL FONDATORE < fondatore > < della scanalatura >
+02 =REGD::
+03 =REGD::Ciò trasferirà la proprietà della scanalatura a
+04 =REGD::un altro nickname.  Ciò è permanent, voi sarà
+05 =REGD::cedendo TUTTO IL controllo di questo channel, e se
+06 =REGD::non siete nell' accesso list, tutto l' accesso ad esso.
+07 =REGD::You may still identify as founder if you know the
+08 =REGD::parola d'accesso senza essere regolata come fondatore.  Dovete
+09 =REGD::identify as founder to use this command.
+
+[CHANSERV/SET/COFOUNDER]
+01 =REGD::REGOLARE < la scanalatura > COFOUNDER < co-founder >
+02 =REGD::
+03 =REGD::Ciò stabilirà la a 'will' per channel, lo IE.
+04 =REGD::chi lo otterrà se il vostro nickname è droped, o
+05 =REGD::espira.  La persona che è co-founder ha NESSUN
+06 =REGD::accesso supplementare che che cosa sono dati sull' accesso
+07 =REGD::elencare come ogni altro user, relativo giusto un metodo di
+08 =REGD::accertare quello se la vostra scalfittura è droped, la scanalatura
+09 =REGD::does not go with it.  You must identify as founder
+10 =REGD::per usare questo comando.
+
+[CHANSERV/SET/DESCRIPTION]
+01 =REGD::REGOLARE LA DESCRIZIONE < descrizione > < della scanalatura >
+02 =REGD::
+03 =REGD::Ciò cambierà la descrizione di che cosa la scanalatura
+04 =REGD::è tutto il circa (indicato nella visualizzazione di Info).  Ciò è
+05 =REGD::a free-form text field only used in the INFO and
+06 =REGD::Comandi della LISTA.  Essere prego descrittivo circa che cosa
+07 =REGD::lo scopo principale delle scanalature per essere è.
+08 =REGD::
+09 =REGD::Questo valore visualizzerà as-is nella vostra visualizzazione di Info.
+10 =REGD::Regolando questo valore a "NONE" lo annullerà.
+
+[CHANSERV/SET/PASSWORD]
+01 =REGD::REGOLARE LA PAROLA D'ACCESSO < parola d'accesso > < della scanalatura >
+02 =REGD::
+03 =REGD::Ciò cambierà la vostra parola d'accesso della scanalatura.  Ciò
+04 =REGD::password is required for the IDENTIFY command (ie.
+05 =REGD::essere riconosciuto come fondatore quando non sul vostro normale
+06 =REGD::nickname).  Dovete identificare come fondatore per usare questo
+07 =REGD::comando.
+08 =REGD::
+09 =REGD::Scegliere prego una parola d'accesso che remember, ma quello è
+10 =REGD::adeguatamente complesso quando registra la vostra scanalatura.  Se
+11 =REGD::qualcun'altro ottiene la vostra scanalatura password, che possono allora
+12 =REGD::controllo totale di esercitazione oltre it, compreso proibirvi
+13 =REGD::esercitazione ad esso.  Se avete perso il vostro password, potete
+14 =REGD::mettersi in contatto con un operatore di servizi per richiamarvelo per.
+
+[CHANSERV/SET/EMAIL]
+01 =REGD::REGOLARE IL email < email > < della scanalatura >
+02 =REGD::
+03 =REGD::Questo comando è usato regolare il email address delle scanalature
+04 =REGD::(solitamente una lista spedire d'un certo genere).
+05 =REGD::
+06 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+07 =REGD::Questo valore visualizzerà as-is nella vostra visualizzazione di Info.
+08 =REGD::Regolando questo valore a "NONE" lo annullerà.
+
+[CHANSERV/SET/URL]
+01 =REGD::REGOLARE IL URL < URL > < della scanalatura >
+02 =REGD::
+03 =REGD::Questo comando è usato regolare l' indirizzo di Web delle scanalature.
+04 =REGD::You do not need to (and should not) put 'http://' in
+05 =REGD::il URL.
+06 =REGD::
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+08 =REGD::Questo valore visualizzerà as-is nella vostra visualizzazione di Info.
+09 =REGD::Regolando questo valore a "NONE" lo annullerà.
+
+[CHANSERV/SET/COMMENT]
+01 =SOP::REGOLARE IL COMMENTO < commento > < della scanalatura >
+02 =SOP::
+03 =SOP::Ciò regolerà (o libero) un commento su una scanalatura l' Info
+04 =SOP::record.  Gli utenti normali non potranno vedere questo
+05 =SOP::comment, tuttavia tutti i membri del comitato di FUNZIONAMENTO
+06 =SOP::volontà.  Quando una scanalatura è suspended, il motivo di sospensione
+07 =SOP::è regolato poichè il commento automatically, e questo
+08 =SOP::remain even after the channel is unsuspended.
+09 =SOP::
+10 =SOP::Regolando questo valore a "NONE" lo annullerà.
+
+[CHANSERV/SET/MLOCK]
+01 =REGD::REGOLARE < la scanalatura > MLOCK < modes|NONE >
+02 =REGD::
+03 =REGD::Ciò è una lista dei modi che saranno fatti rispettare (+ o
+04 =REGD::-) dai servizi.  Se un utente prova a contestare questi
+05 =REGD::modes, i servizi li ripristineranno automaticamente.  Ciò
+06 =REGD::include i tasti ed i limiti della scanalatura.
+07 =REGD::
+08 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+09 =REGD::Regolando questo valore a "NONE" lo annullerà.
+
+[CHANSERV/SET/BANTIME]
+01 =REGD::REGOLARE < la scanalatura > BANTIME < bantime|RESET >
+02 =REGD::
+03 =REGD::Ciò è il tempo i servizi lascerà un divieto
+04 =REGD::attivo sulla scanalatura prima della rimozione esso automaticamente.
+05 =REGD::This value is in Standard Time Format (see the global
+06 =REGD::aiuto di noticer's in tempo).
+07 =REGD::
+08 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+09 =REGD::Regolando questo valore a 0 inabiliterà unbanning.
+
+[CHANSERV/SET/PARTTIME]
+01 =REGD::REGOLARE < la scanalatura > PARTTIME < parttime|RESET >
+02 =REGD::
+03 =REGD::Ciò è il tempo i servizi richiederà
+04 =REGD::user to have been out of channel before displaying
+05 =REGD::il loro saluto della scanalatura ancora.  Questo valore è in
+06 =REGD::Formato di tempo standard (vedere l' aiuto globale di noticer's
+07 =REGD::in tempo).
+08 =REGD::
+09 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+10 =REGD::Regolando questo valore a 0 visualizzerà CIASCUNO si unisce.
+
+[CHANSERV/SET/KEEPTOPIC]
+01 =REGD::SET <channel> KEEPTOPIC <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori del soggetto di conservazione.
+04 =REGD::Quando questa opzione è on, i servizi si ricorderanno dei
+05 =REGD::il soggetto della scanalatura dopo tutti gli utenti ha andato channel,
+06 =REGD::e volontà re-set esso quando qualcuno la unisce ancora.
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/TOPICLOCK]
+01 =REGD::REGOLARE < la scanalatura > TOPICLOCK < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori della serratura di soggetto.
+04 =REGD::Quando questa opzione è on, i servizi non consentiranno a
+05 =REGD::chiunque per regolare il soggetto della scanalatura esclude per mezzo di
+06 =REGD::il comando di SOGGETTO.
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/PRIVATE]
+01 =REGD::REGOLARE < la scanalatura > RISERVATO < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di riservato.
+04 =REGD::Quando questa opzione è on, la visualizzazione di Info per questo
+05 =REGD::la scanalatura non visualizzerà gli stats circa in chi è it,
+06 =REGD::e non rivelerà nella lista della scanalatura.
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/SECUREOPS]
+01 =REGD::REGOLARE < la scanalatura > SECUREOPS < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di Ops sicuro.
+04 =REGD::Quando questa opzione è on, soltanto la gente sull' accesso
+05 =REGD::la lista sarà permessa avere modo +o (ops) o modo
+06 =REGD::+v (voci) si è regolato su loro.
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/SECURE]
+01 =REGD::REGOLARE < la scanalatura > FISSANO < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di sicuro.
+04 =REGD::Quando questa opzione è on, gli utenti dovranno identificare
+05 =REGD::ai loro nicknames da riconoscere come essi stessi
+06 =REGD::fino ad accesso di scanalatura la lista va.
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/NOEXPIRE]
+01 =SOP::SET <channel> NOEXPIRE <ON|OFF|RESET>
+02 =SOP::
+03 =SOP::Quando regolate questo su un channel, che la scanalatura
+04 =SOP::non essere conforme alla scadenza della scanalatura se non è
+05 =SOP::usato dopo un periodo di tempo.  Usare prego questo molto
+06 =SOP::cautiously, come scanalatura scadenza garantisce quello
+07 =SOP::le scanalature don't ottengono sostenute se they're che non usando.
+
+[CHANSERV/SET/ANARCHY]
+01 =REGD::REGOLARE < la scanalatura > ANARCHY < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di Anarchy.
+04 =REGD::Quando questa opzione è on, assiste non il deop un utente
+05 =REGD::chi non è sulla lista di accesso se they're i primi
+06 =REGD::utente per unire scanalatura.
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/KICKONBAN]
+01 =REGD::REGOLARE < la scanalatura > KICKONBAN < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori della scossa sul divieto.
+04 =REGD::Quando questa opzione è on, i servizi daranno dei calci ad un utente
+05 =REGD::chi è vietato dalla scanalatura verso l'esterno automaticamente (se
+06 =REGD::non viola un vincolo di vendetta).
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/RESTRICTED]
+01 =REGD::REGOLARE < la scanalatura > HA LIMITATO < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di limitato.
+04 =REGD::Quando questa opzione è on, soltanto la gente sull' accesso
+05 =REGD::la lista potrà unire la scanalatura.  Se sicuro
+06 =REGD::è regolato on, si ricordano di identificare prima di unirsi.
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/JOIN]
+01 =REGD::REGOLARE < la scanalatura > UNISCONO < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori della Manica di servizi unirsi.
+04 =REGD::Quando questa opzione è on, i servizi uniranno
+05 =REGD::channel, e rimane oped.  Non potete deop o
+06 =REGD::la scossa services, they'll ricongiunge e reop.
+07 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/REVENGE]
+01 =REGD::REGOLARE LA VENDETTA < level|RESET > < della scanalatura >
+02 =REGD::
+03 =REGD::Ciò regolerà i servizi del livello di vendetta
+04 =REGD::fare rispettare.  La vendetta è presa sugli utenti quando
+05 =REGD::tentare di dare dei calci a o deop qualcuno più superiore loro
+06 =REGD::sull' accesso list, o sul divieto qualcuno è uguale o sopra
+07 =REGD::loro sulla lista di accesso.  Vedere l' aiuto su VENDETTA dell' INSIEME
+08 =REGD::LIVELLI per una lista dei livelli disponibili di vendetta e
+09 =REGD::l' azione che intraprenderanno.
+10 =REGD::Dovete REGOLARE i privilegi di usare questo comando.
+
+[CHANSERV/SET/REVENGE/LEVELS]
+01 =::Livelli Disponibili Di Vendetta Della Manica
+02 =::
+03 =::NESSUN niente
+04 =::L' inverso D'INVERSIONE il action, ma non rimprovera
+05 =::DEOP DeOp (modo -o) offendente l' utente
+06 =::Scossa di SCOSSA l' utente offendente dalla scanalatura
+07 =::Utente offendente di divieto della scalfittura BAN1 (nick!*@*)
+08 =::Divieto della mascherina BAN2 (*!*user@*.host) utente di offesa
+09 =::BAN3 divieto port (*!*@port.host) utente di offesa
+10 =::Divieto ospite BAN4 (*!*@*.host) utente di offesa
+11 =::Attività dello specchio dello SPECCHIO (fare che cosa hanno sostenuto!)
+
+[CHANSERV/LOCK]
+01 =SOP::I servizi permette che blocchiate un valore per channel,
+02 =SOP::utenti evitanti con i privilegi dell' INSIEME ed il fondatore
+03 =SOP::from overriding your setting.  Please use caution,
+04 =SOP::come state rimuovendo la loro destra cambiare il loro record.
+05 =SOP::
+06 =SOP::You may lock a channels settings with these commands:
+07 =SOP::MLOCK BANTIME PARTTIME KEEPTOPIC
+08 =SOP::TOPICLOCK SECUREOPS RISERVATO FISSANO
+09 =SOP::ANARCHY KICKONBAN UNISCONO LIMITATO
+10 =SOP::VENDETTA
+
+[CHANSERV/LOCK/MLOCK]
+01 =SOP::BLOCCARE < la scanalatura > MLOCK < modi >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore della serratura di modo per channel,
+04 =SOP::facendo rispettare qualunque vi siete regolati sopra qualunque la scanalatura
+05 =SOP::si è regolato.  Fare this, impedirà
+06 =SOP::fondatore e la gente con i privilegi dell' INSIEME da potere
+07 =SOP::per escludere questo setting, così vogliate l' uso con caution,
+08 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/BANTIME]
+01 =SOP::LOCK <channel> BANTIME <bantime>
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di tempo di divieto per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/PARTTIME]
+01 =SOP::BLOCCARE < la scanalatura > PARTTIME < parttime >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di a metà tempo per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/KEEPTOPIC]
+01 =SOP::BLOCCARE < la scanalatura > KEEPTOPIC < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::This will lock the value of Keep Topic for a channel to
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/TOPICLOCK]
+01 =SOP::BLOCCARE < la scanalatura > TOPICLOCK < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore della serratura di soggetto per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/PRIVATE]
+01 =SOP::BLOCCARE < la scanalatura > RISERVATO < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di riservato per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/SECUREOPS]
+01 =SOP::BLOCCARE < la scanalatura > SECUREOPS < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di Ops sicuro per una scanalatura a
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/SECURE]
+01 =SOP::BLOCCARE < la scanalatura > FISSANO < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di sicuro per una scanalatura a
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/ANARCHY]
+01 =SOP::BLOCCARE < la scanalatura > ANARCHY < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di Anarchy per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/KICKONBAN]
+01 =SOP::BLOCCARE < la scanalatura > KICKONBAN < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore della scossa sul divieto per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/RESTRICTED]
+01 =SOP::BLOCCARE < la scanalatura > HA LIMITATO < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di limitato per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/LOCK/JOIN]
+01 =SOP::BLOCCARE < la scanalatura > UNISCONO < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di si unisce per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
+
+[CHANSERV/LOCK/REVENGE]
+01 =SOP::BLOCCARE > la VENDETTA < < della scanalatura livellata >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di vendetta per una scanalatura a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::il fondatore e la gente con i privilegi dell' INSIEME da essere
+06 =SOP::in grado di escludere questo setting, così vogliate l' uso con caution,
+07 =SOP::come state rimuovendo la destra cambiare il loro proprio record.
+
+[CHANSERV/UNLOCK]
+01 =SOP::I servizi permette che blocchiate un valore per channel,
+02 =SOP::impedendo all' utente di escludere la vostra regolazione.
+03 =SOP::Questi comandi rimuoveranno una serratura disposta su una scanalatura.
+04 =SOP::
+05 =SOP::You may unlock a channels settings with these commands:
+06 =SOP::MLOCK BANTIME PARTTIME KEEPTOPIC
+07 =SOP::TOPICLOCK SECUREOPS RISERVATO FISSANO
+08 =SOP::ANARCHY KICKONBAN UNISCONO LIMITATO
+09 =SOP::    REVENGE
+
+[CHANSERV/UNLOCK/MLOCK]
+01 =SOP::SBLOCCARE < la scanalatura > MLOCK
+02 =SOP::
+03 =SOP::Ciò smetterà di fare rispettare i modi bloccati in
+04 =SOP::il mlock, permettendoli di essere cambiato ancora.
+
+[CHANSERV/UNLOCK/BANTIME]
+01 =SOP::SBLOCCARE < la scanalatura > BANTIME
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di tempo di divieto per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/PARTTIME]
+01 =SOP::SBLOCCARE < la scanalatura > PARTTIME
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di a metà tempo per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/KEEPTOPIC]
+01 =SOP::SBLOCCARE < la scanalatura > KEEPTOPIC
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore del soggetto di conservazione per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/TOPICLOCK]
+01 =SOP::UNLOCK <channel> TOPICLOCK
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore della serratura di soggetto per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/PRIVATE]
+01 =SOP::SBLOCCARE < la scanalatura > RISERVATO
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di riservato per
+04 =SOP::channel, however the value will remain the same.
+
+[CHANSERV/UNLOCK/SECUREOPS]
+01 =SOP::SBLOCCARE < la scanalatura > SECUREOPS
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di Ops sicuro per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/SECURE]
+01 =SOP::SBLOCCARE < la scanalatura > FISSANO
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di sicuro per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/ANARCHY]
+01 =SOP::SBLOCCARE < la scanalatura > ANARCHY
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di Anarchy per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/KICKONBAN]
+01 =SOP::SBLOCCARE < la scanalatura > KICKONBAN
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore della scossa sul divieto per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/RESTRICTED]
+01 =SOP::SBLOCCARE < la scanalatura > HA LIMITATO
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di limitato per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/JOIN]
+01 =SOP::SBLOCCARE < la scanalatura > SI UNISCONO
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di si unisce per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[CHANSERV/UNLOCK/REVENGE]
+01 =SOP::SBLOCCARE LA VENDETTA < della scanalatura >
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di vendetta per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+
+[MEMOSERV]
+01 =::Questo servizio permette che trasmettiate un appunto ad un altro
+02 =::user, o invia un articolo di notizie ad una scanalatura.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =:REGD:AIUTO
+06 =REGD::LA LISTA DI AIUTO HA LETTO UNREAD
+07 =REGD::TRASMETTERE IL ROSSORE DI RISPOSTA IN AVANTI
+08 =REGD::CONTINUARE L' ANNULLAMENTO DEL FILE
+09 =REGD::OTTENGONO
+10 =::
+11 =::Potete chiedere l' aiuto sulla sintassi e sulla funzionalità
+12 =::di c'è ne e di tutti i suddetti comandi specificando
+13 =::il nome di comando dopo la richiesta di AIUTO.
+14 =::NOTE:Soltanto i comandi che attualmente potete usare sono elencati
+15 =::above, e cose quale il registro di nickname
+16 =::può cambiare che cosa è visualizzato sopra.
+
+[MEMOSERV/READ]
+01 =REGD::READ [channel] <NUM|ALL|UNREAD>
+02 =REGD::
+03 =REGD::This will display the contents of a memo or channel
+04 =REGD::articolo di notizie.  Potete specificare number, una gamma di
+05 =REGD::numbers (1-5), list of numbers (1,3,5), ALL for all
+06 =REGD::memos or news articles, or UNREAD for only the ones
+07 =REGD::precedentemente non avete letto (o si sono regolati a unread).
+08 =REGD::I numeri specificati possono essere ottenuti dalla LISTA
+09 =REGD::comando.  Se state leggendo lle notizie della scanalatura article,
+10 =REGD::dovete avere accesso di MEMOREAD.
+
+[MEMOSERV/UNREAD]
+01 =REGD::UNREAD [channel] <NUM|ALL>
+02 =REGD::
+03 =REGD::Ciò rimuoverà la bandierina colta da un appunto o scaverà canali
+04 =REGD::articolo di notizie.  Ciò significa che rivelerà in c'è ne
+05 =REGD::elenco del unread (per esempio COLTO UNREAD), e sarà saltato
+06 =REGD::con un DEL COLTO comando.  Potete specificare number,
+07 =REGD::gamma di lista di numeri (1-5), dei numeri (1,3,5), o di TUTTO
+08 =REGD::per tutti gli appunti o articoli di notizie.  I numeri hanno specificato
+09 =REGD::può essere ottenuto dal comando della LISTA.  Se essete
+10 =REGD::unreading lle notizie della scanalatura article, dovete avere MEMOREAD
+11 =REGD::accesso.
+
+[MEMOSERV/LIST]
+01 =REGD::LIST [channel]
+02 =REGD::
+03 =REGD::This will list (and preview) all memos or channel news
+04 =REGD::articles.  A '*' will be displayed before the memo or
+05 =REGD::il numero dell' articolo di notizie per indicare questo appunto è unread.
+06 =REGD::Questa lista egualmente mostrerà chi ha trasmesso l' appunto o le notizie
+07 =REGD::article, quanto tempo fa esso erano sent, ed il primo 20
+08 =REGD::caratteri del messaggio.  Se vostro stanno elencando la scanalatura
+09 =REGD::notizie articles, dovete avere accesso di MEMOREAD.
+
+[MEMOSERV/SEND]
+01 =REGD::TRASMETTERE [channel] < il messaggio >
+02 =REGD::
+03 =REGD::Ciò trasmetterà un appunto ad un altro user, o un articolo di notizie
+04 =REGD::ad una scanalatura.  Dovete avere accesso di MEMOWRITE per trasmettere
+05 =REGD::channel news article.  This will not send the memo or
+06 =REGD::articolo di notizie immediately, lo contrassegnerà come in corso.
+07 =REGD::l' appunto o l' articolo di notizie è trasmesso soltanto quando in attesa del il temporizzatore
+08 =REGD::periodi out, trasmettete un altro appunto o notizie article, voi
+09 =REGD::usare il command, A LIVELLO o rinunciate.  Potete anche usare
+10 =REGD::il comando di ANNULLAMENTO non trasmettere l' appunto o le notizie article,
+11 =REGD::o il comando di CONTINUAZIONE aggiungere più testo a it, e risistemazione
+12 =REGD::del il temporizzatore in attesa.
+
+[MEMOSERV/FLUSH]
+01 =REGD::IRRIGANO
+02 =REGD::
+03 =REGD::Ciò trasmetterà d'un articolo in attesa di notizie o dell' appunto immediately,
+04 =REGD::e non aspett del il temporizzatore in attesa da cronometrare fuori.
+
+[MEMOSERV/REPLY]
+01 =REGD::RISPONDERE [channel] < NUMERICO > < il testo >
+02 =REGD::
+03 =REGD::Ciò risponderà al trasmettitore delle notizie dell' appunto o della scanalatura
+04 =REGD::articolo specify, dove NUMERICO siete un numero ottenuto con
+05 =REGD::il comando della LISTA.  Per le notizie articles, mostrerà chi
+06 =REGD::il trasmettitore originale was, ed i primi 20 carboni (previsione)
+07 =REGD::dell' articolo originale di notizie.  Per memos, esso visualizzerà
+08 =REGD::il nome del collegamento originale dell' archivio se any, ed
+09 =REGD::primi 20 carboni (previsione) dell' appunto originale.  In entrambi
+10 =REGD::casi indicherà che questa è una risposta ad un altro
+11 =REGD::appunto o articolo di notizie.  Il testo è il vostro reply, alla lettera.
+12 =REGD::Dovete avere privilegi di MEMOWRITE e di MEMOREAD di rispondere
+13 =REGD::to a channel news article.
+
+[MEMOSERV/FORWARD]
+01 =REGD::SPEDIRE [channel] < NUMERICO > < nickname|channel >
+02 =REGD::
+03 =REGD::This will forward a memo or channel news article to
+04 =REGD::un altro utente o channel, dove NUMERICO è un numero ottenuto
+05 =REGD::con il comando della LISTA.  Per le notizie articles, mostrerà
+06 =REGD::chi il trasmettitore originale was, e che scanalatura ha venuto
+07 =REGD::from.  For memos it will show who the original sender
+08 =REGD::was, ed il nome del collegamento dell' archivio se c'è ne.  In
+10 =REGD::entrambe cases, indicherà che questo è un appunto spedito.
+11 =REGD::Dovete avere privilegi di MEMOREAD da spedire dall'
+12 =REGD::channel, and MEMOWRITE to forward to one.
+
+[MEMOSERV/CANCEL]
+01 =REGD::ANNULLANO
+02 =REGD::
+03 =REGD::This will cancel a pending memo or channel news article.
+04 =REGD::Se questo è executed, non otterrà mai trasmesso.  Una volta che
+05 =REGD::l' appunto o l' articolo di notizie è sent, il relativo troppo ritardato per annullarlo.
+
+[MEMOSERV/DEL]
+01 =REGD::DEL [channel] < NUM|ALL|READ >
+02 =REGD::
+03 =REGD::This will delete a memo or channel news article from
+04 =REGD::la vostra lista dell' appunto o lle notizie della scanalatura elenca.   Questa azione
+05 =REGD::è permanente.  Potete specificare number, una gamma di
+06 =REGD::numera la lista (1-5), dei numeri (1,3,5), TUTTA per tutto
+07 =REGD::appunti o notizie articles, o COLTO per soltanto quelle voi
+08 =REGD::precedentemente hanno letto.  I numeri specificati possono essere
+09 =REGD::verificato dal comando della LISTA.  Dovete uno essere
+10 =REGD::il sender, originale o ha privilegi di MEMODEL
+11 =REGD::cancellare un articolo di notizie della scanalatura.
+
+[MEMOSERV/CONTINUE]
+01 =REGD::CONTINUARE < il messaggio >
+02 =REGD::
+03 =REGD::Ciò continuerà di appunto o delle notizie in attesa article,
+04 =REGD::teoricamente rendendolo illimitato nel formato.  Ciò
+05 =REGD::egualmente ripristinare del il temporizzatore in attesa a zero.  Ciò è utile
+06 =REGD::se il vostro appunto fosse troncato quando usando il comando di TRASMISSIONE.
+
+[MEMOSERV/GET]
+01 =REGD::OTTENERE [NUM]
+02 =REGD::
+03 =REGD::Ciò richiamerà i collegamenti dell' archivio dai vostri appunti.
+04 =REGD::Potete specificare number, una gamma di numeri (1-5), o
+05 =REGD::a list of numbers (1,3,5).  This command will cause
+06 =REGD::i servizi per iniziare un DCC vi TRASMETTONO la sessione con.
+07 =REGD::The numbers specified may be obtained from the LIST
+08 =REGD::comando.
+
+[MEMOSERV/FILE]
+01 =REGD::ARCHIVIARE < il nome di schedario > < di nickname > [message]
+02 =REGD::
+03 =REGD::Ciò trasmetterà un collegamento dell' archivio ad un utente.  Potete
+04 =REGD::specificare un message, facoltativo che sarà visualizzato
+05 =REGD::con la notifica d'un collegamento dell' archivio.  Ciò
+06 =REGD::il comando prevedrà che un DCC TRASMETTA da voi con un archivio
+07 =REGD::nome abbinando quello ha specificato.  Se non
+08 =REGD::receive one before the pending timer times out, it
+09 =REGD::annullerà questo collegamento dell' archivio.  Una volta che il DCC è
+10 =REGD::received, the memo will be sent upon its completion.
+
+
+[COMMSERV]
+01 =::Questo servizio permette che l' utente sia raggruppato insieme in
+02 =::comitati per vari scopi.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =:REGD:LISTA DI AIUTO INFO
+06 =REGD::MEMBRO DELLA LISTA DI AIUTO INFO
+07 =REGD::L' INIZIO ATTIVITÀ DELL' APPUNTO SI REGOLA
+08 =SOP::And as a Services Operator, the following commands:
+09 =SOP::AGGIUNGERE DEL
+10 =::
+11 =::Potete chiedere l' aiuto sulla sintassi e sulla funzionalità
+12 =::di c'è ne e di tutti i suddetti comandi specificando
+13 =::il nome di comando dopo la richiesta di AIUTO.
+14 =::NOTE:Soltanto i comandi che attualmente potete usare sono elencati
+15 =::above, e cose quale il registro di nickname
+16 =::può cambiare che cosa è visualizzato sopra.
+
+[COMMSERV/ADD]
+01 =SOP::AGGIUNGERE la descrizione > < della testa > < del comitato > <
+02 =SOP::
+03 =SOP::This will create a new committee.  You must assign
+04 =SOP::a committee head and description for the committee on
+05 =SOP::creazione.  Essere prego sicuro scegliere ogni committee's
+06 =SOP::dirigere carefully, come potere aggiungere e rimuovere
+07 =SOP::la gente a quel comitato a will, o lo trasferisce a
+08 =SOP::altri head, ecc. senza qualsiasi modo intervenire tranne
+09 =SOP::a DEL il comitato.
+
+[COMMSERV/DEL]
+01 =SOP::DEL < comitato >
+02 =SOP::
+03 =SOP::Ciò rimuoverà un comitato.  Ciò egualmente rimuoverà
+04 =SOP::any access from users that they gained by being in
+05 =SOP::questo comitato.
+
+[COMMSERV/LIST]
+01 =::LISTA [mask [maximum]]
+02 =::
+03 =::This will list all committees that match the mask you
+04 =::have specified, how many members are on it, and its
+05 =::descrizione fino ad un numero massimo di difetto delle entrate
+06 =::regolarsi dai servizi Admins.  Escludete il massimo
+07 =::la quantità di entrate ha visualizzato fino assoluto ad un massimo
+08 =::anche specificato dai servizi Admins.  Comitati
+09A=:OPER:marked as private will not be displayed in the list.
+09B=OPER::marked as private will be displayed in the list.
+
+[COMMSERV/MEMO]
+01 =REGD::MEMO <committee> <message>
+02 =REGD::
+03 =REGD::Ciò trasmetterà un appunto a tutti i membri d'un comitato.
+04 =REGD::Se OPENMEMOS è on, allora qualunque membro d'un comitato
+05 =REGD::eseguire questo command, al contrario soltanto la testa dell'
+06 =REGD::eseguire questo comando.  Gli appunti saranno trasmessi immediatamente.
+
+[COMMSERV/INFO]
+01 =::Info < comitato >
+02 =::
+04 =::Ciò le informazioni di visualizzazione di volontà circa committee,
+05 =::includendo chi il relativo capo is, la relativa lista spedire address,
+06 =::Web address, ed opzioni che attualmente si è regolato.
+
+[COMMSERV/MEMBER]
+01 =REGD::Ogni comitato si compone d'un head, e dei membri.
+02 =REGD::La testa può aggiungere o rimuovere i membri alla volontà.
+03 =REGD::
+04 =REGD::You may maintain the committee member list with:
+05 =REGD::    ADD          DEL          LIST
+
+[COMMSERV/MEMBER/ADD]
+01 =REGD::Il MEMBRO < comitato > AGGIUNGE < il nickname >
+02 =REGD::
+03 =REGD::Ciò aggiungerà un membro ad un committee, che li assegna
+04 =REGD::qualsiasi accesso che il comitato in se ha.  Potete soltanto
+05 =REGD::specify a registered nickname.
+
+[COMMSERV/MEMBER/DEL]
+01 =REGD::MEMBRO < comitato > DEL < nickname|NUM >
+02 =REGD::
+03 =REGD::Ciò rimuoverà un membro da un comitato.  Voi
+04 =REGD::può specificare gli utenti nickname, o un numero
+05 =REGD::obtained from the LIST command.
+
+[COMMSERV/MEMBER/LIST]
+01 =REGD::LISTA < del comitato > del MEMBRO
+02 =REGD::
+03 =REGD::Ciò elencherà verso l'esterno i membri del specificato
+04 =REGD::comitato.  La volontà DEFUNCT compare dopo il loro nickname
+05 =REGD::se il loro nickname è stato droped dalla aggiunta.
+
+[COMMSERV/LOGON]
+01 =REGD::Committee's can have LOGON notices, which will be
+02 =REGD::trasmesso all' utente non appena sono riconosciuti da
+03 =REGD::services (ie. on access list or after ident).
+04 =REGD::
+05 =REGD::You may maintain the logon messages with:
+06 =REGD::AGGIUNGERE DEL LIST
+
+[COMMSERV/LOGON/ADD]
+01 =REGD::L' INIZIO ATTIVITÀ < comitato > AGGIUNGE < il messaggio >
+02 =REGD::
+03 =REGD::Ciò aggiungerà un nuovo messaggio ai messaggi di INIZIO ATTIVITÀ
+04 =REGD::d'un committee, che sarà visualizzato sull' apertura del colloquio col calcolatore
+05 =REGD::a tutti i membri di quel comitato.
+
+[COMMSERV/LOGON/DEL]
+01 =REGD::LOGON <committee> DEL <NUM>
+02 =REGD::
+03 =REGD::This will remove a message from the LOGON messages
+04 =REGD::d'un comitato.  Il numero del messaggio può essere
+05 =REGD::verificato dal comando della LISTA di INIZIO ATTIVITÀ.
+
+[COMMSERV/LOGON/LIST]
+01 =REGD::LISTA < del comitato > di INIZIO ATTIVITÀ
+02 =REGD::
+03 =REGD::This will list the LOGON messages for a committee, in
+04 =REGD::ordine di cui saranno visualizzati al comitato
+05 =REGD::members.  They will also number these messages for
+06 =REGD::scopi di omissione.
+
+[COMMSERV/SET]
+01 =REGD::I servizi effettua molte regolazioni sul vostro comitato
+02 =REGD::record, variando dalla testa di it, ad un email
+03 =REGD::parlarvi specify, alle opzioni che effettuano come
+04 =REGD::services treat your committee.
+05 =REGD::
+06 =REGD::You may alter your settings with these commands:
+07 =REGD::URL CAPO DEL EMAIL SICURO
+08 =REGD::RISERVATI OPENMEMOS
+
+[COMMSERV/SET/HEAD]
+01 =REGD::REGOLARE < la testa > CAPA < del comitato >
+02 =REGD::
+03 =REGD::Ciò cambierà chi la testa d'un comitato è.
+04 =REGD::la testa d'un comitato ha pieno potere sopra il tutto options,
+05 =REGD::members, appunti e messaggi di inizio attività.  Essere prego sicuro
+06 =REGD::desiderate cedere tutta l' pontenza del comitato
+07 =REGD::prima di usando questo comando.
+
+[COMMSERV/SET/EMAIL]
+01 =REGD::REGOLARE IL email < email > < del comitato >
+02 =REGD::
+03 =REGD::Ciò regolerà l' indirizzo della lista spedire dell' committee,
+04 =REGD::quale rivelerà as-is su una visualizzazione di Info. Regolazione
+05 =REGD::ciò a NESSUN annullerà questo campo.
+
+[COMMSERV/SET/URL]
+01 =REGD::REGOLARE IL URL < URL > < del comitato >
+02 =REGD::
+03 =REGD::Ciò regolerà l' indirizzo di Web page dell' committee,
+04 =REGD::quale rivelerà as-is su una visualizzazione di Info.  Voi
+05 =REGD::do not need to (and should not) put 'http://' in
+06 =REGD::il URL.  Regolando questo a NESSUN annullerà questo campo.
+
+[COMMSERV/SET/SECURE]
+01 =REGD::REGOLARE < il comitato > FISSANO < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di sicuro.
+04 =REGD::Quando questa opzione è on, gli utenti dovranno identificare
+05 =REGD::ai loro nicknames da riconoscere come essi stessi
+06 =REGD::fino al comitato l' insieme dei membri va.
+
+[COMMSERV/SET/PRIVATE]
+01 =REGD::SET <committee> PRIVATE <ON|OFF|RESET>
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori di riservato.
+04 =REGD::Quando questa opzione è on, non-members d'un comitato
+05 =REGD::will not be able to find out who is on it with the
+06 =REGD::La LISTA command, ed esso non riveleranno sui membri
+07 =REGD::Visualizzazioni di Info.
+
+[COMMSERV/SET/OPENMEMOS]
+01 =REGD::REGOLARE < il comitato > OPENMEMOS < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Ciò accenderà o fuori degli appunti aperti.
+04 =REGD::Quando questa opzione è on, qualsiasi membro può trasmettere un appunto
+05 =REGD::tutti i altri membri (e la testa) dell' committee,
+06 =REGD::trasformandolo un sistema di annuncio della Comunità di
+07 =REGD::ordinamenti.  Altrimenti soltanto la testa può trasmettere gli appunti.
+
+[COMMSERV/LOCK]
+01 =SOP::I servizi permette che blocchiate un valore per committee,
+02 =SOP::preventing the committee head from overriding your
+03 =SOP::regolazione.  Usare prego caution, poichè siete rimuovere
+04 =SOP::il comitato head's radrizza per cambiare il loro record.
+05 =SOP::
+06 =SOP::You may lock committee settings with these commands:
+07 =SOP::FISSARE RISERVATI OPENMEMOS
+
+[COMMSERV/LOCK/SECURE]
+01 =SOP::BLOCCARE < il comitato > FISSANO < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di sicuro per un comitato a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::committee head from being able to override this setting.
+06 =SOP::Please use with caution, as you are removing head's
+07 =SOP::di destra per cambiare il loro propri record.
+
+[COMMSERV/LOCK/PRIVATE]
+01 =SOP::BLOCCARE < il comitato > RISERVATO < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore di riservato per un comitato a
+04 =SOP::a qualunque lo avete regolato.  Fare this, impedirà
+05 =SOP::testa del comitato da potere escludere questa regolazione.
+06 =SOP::L' uso con caution, come voi sta rimuovendo prego i head's
+07 =SOP::di destra per cambiare il loro propri record.
+
+[COMMSERV/LOCK/OPENMEMOS]
+01 =SOP::BLOCCARE < la scanalatura > OPENMEMOS < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Ciò bloccherà il valore degli appunti aperti per un comitato
+04 =SOP::a a qualunque lo avete regolato.  Fare this, eviterà
+05 =SOP::la testa del comitato da potere escludere questo
+06 =SOP::setting.  Please use with caution, as you are removing
+07 =SOP::i head's radrizzano per cambiare il loro proprio record.
+
+[COMMSERV/UNLOCK]
+01 =SOP::I servizi permette che blocchiate un valore per committee,
+02 =SOP::impedendo la testa l' esclusione della vostra regolazione.
+03 =SOP::Questi comandi rimuoveranno una serratura disposta su un comitato.
+04 =SOP::
+05 =SOP::You may unlock committee settings with these commands:
+06 =SOP::FISSARE RISERVATI OPENMEMOS
+
+[COMMSERV/UNLOCK/SECURE]
+01 =SOP::SBLOCCARE < il comitato > FISSANO
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di sicuro per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[COMMSERV/UNLOCK/PRIVATE]
+01 =SOP::SBLOCCARE < il comitato > RISERVATO
+02 =SOP::
+03 =SOP::Ciò sbloccherà il valore di riservato per
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+[COMMSERV/UNLOCK/OPENMEMOS]
+01 =SOP::SBLOCCARE < il comitato > OPENMEMOS
+02 =SOP::
+03 =SOP::This will unlock the value of Open Memos for a
+04 =SOP::channel, tuttavia il valore rimarrà lo stesso.
+
+
+
+[SERVMSG]
+01 =::Questo servizio fornisce molte funzioni varie quello
+02 =::don't giusti misura elsewhere, principalmente informativo.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =::L' AIUTO ACCREDITA LA RIPARTIZIONE DI CONTRIB
+06A=:REGD:    FILE
+06B=REGD::    STATS        FILE         LANGUAGES
+07 =ADMIN::And as a Server Admin, the following commands:
+08 =ADMIN::    GLOBAL
+09 =::You may also obtain help on the following:
+10 =::SPAZIO DI TEMPO HOSTMASKS
+11 =::
+12 =::Potete chiedere l' aiuto sulla sintassi e sulla funzionalità
+13 =::di c'è ne e di tutti i suddetti comandi specificando
+14 =::il nome di comando dopo la richiesta di AIUTO.
+15 =::NOTE:Soltanto i comandi che attualmente potete usare sono elencati
+16 =::above, e cose quale il registro di nickname
+17 =::può cambiare che cosa è visualizzato sopra.
+
+[SERVMSG/BREAKDOWN]
+01 =::RIPARTIZIONE
+02 =::
+03 =::This will show a list of servers that are currently on
+04 =::il network, includendo come sono collegati all' ogni other,
+05 =::how many users and IRC ops are on them, how lagged from
+06 =::servizi attualmente are, e percentuale (dagli utenti)
+07 =::della rete il server attualmente rappresenta.
+
+[SERVMSG/GLOBAL]
+01 =ADMIN::GLOBALE < messaggio >
+02 =ADMIN::
+03 =ADMIN::Ciò trasmetterà un messaggio a tutti gli utenti sulla rete.
+04 =ADMIN::Ciò dovrebbe essere usata rarely, e per qualcosa quello
+05 =ADMIN::la rete intera deve sapere.
+
+[SERVMSG/LANGUAGES]
+01 =REGD::LINGUAGGI
+02 =REGD::
+03 =REGD::Ciò elencherà i linguaggi che potete chiedere a servizi
+04 =REGD::to talk to you in with the LANGUAGE setting in your
+05 =REGD::entrata di nickname.
+
+[SERVMSG/CREDITS]
+01 =::ACCREDITAMENTI
+02 =::
+03 =::Ciò spit verso l'esterno un poco testo circa services,
+04 =::includendo chi gli autori are, dove ottenere it, ecc.
+
+[SERVMSG/CONTRIB]
+01 =::CONTRIB
+02 =::
+03 =::This command is like CREDITS, however it gives more
+04 =::dettagliare circa gli autori themselves, e tutti gli altri
+05 =::chi erano una parte di creazione del pacchetto di servizi.
+
+[SERVMSG/STATS]
+01A=REGD:OPER SOP:STATS
+01B=OPER SOP::STATS [NICK|CHANNEL|OTHER|USAGE|ALL]
+02 =REGD::
+03 =REGD::Ciò vi mostrerà su quanto tempo i servizi sono stati
+04 =REGD::for, quanti utenti sono in linea (ed i massimi
+05 =REGD::i servizi degli utenti hanno seen), e quant0 clonano (IE
+06 =REGD::gli utenti dallo stesso calcolatore centrale) sono in linea.
+07 =OPER SOP::
+08 =OPER SOP::Se specificate un parametro dopo lo STATS command,
+09 =OPER SOP::Otterrete un display, completamente differente prego vedete
+10 =OPER SOP::l' aiuto rispettivo su questi subcommands per più
+11 =OPER SOP::le informazioni su che cosa visualizzano.
+
+[SERVMSG/STATS/NICK]
+01 =OPER SOP::SCALFITTURA DI STATS
+02 =OPER SOP::
+03 =OPER SOP::Ciò vi mostrerà le generalità sul nickname
+04 =OPER SOP::uso (per esempio quant0 registered, suspended, etc), ed
+05 =OPER SOP::mostrerà il tempo (poiché i servizi hanno
+06 =OPER SOP::stato) ogni comando è stato esaurito.
+
+[SERVMSG/STATS/CHANNEL]
+01 =OPER SOP::STATS CHANNEL
+02 =OPER SOP::
+03 =OPER SOP::Ciò vi mostrerà le generalità sulla scanalatura
+04 =OPER SOP::uso (per esempio quant0 registered, suspended, etc), ed
+05 =OPER SOP::mostrerà il tempo (poiché i servizi hanno
+06 =OPER SOP::stato) ogni comando è stato esaurito.
+
+[SERVMSG/STATS/OTHER]
+01 =OPER SOP::STATS ALTRO
+02 =OPER SOP::
+03 =OPER SOP::This will give a large output containing general
+04 =OPER SOP::assiste l' uso (per esempio quant0 clone overrides, akills,
+05 =OPER SOP::committees, etc), ed esso attivi mostreranno l' importo
+06 =OPER SOP::dei periodi (poiché i servizi sono stati su) ogni comando
+07 =OPER SOP::è stato usato.
+
+[SERVMSG/STATS/USAGE]
+01 =OPER SOP::USO DI STATS
+02 =OPER SOP::
+03 =OPER SOP::Ciò darà una ripartizione di uso di memoria da
+04 =OPER SOP::services, mostrando quantità di record in existence,
+05 =OPER SOP::e quanta memoria prendono collettivamente.
+
+[SERVMSG/STATS/ALL]
+01 =OPER SOP::STATS ALL
+02 =OPER SOP::
+03 =OPER SOP::This is equivalent to executing:
+04 =OPER SOP::    STATS NICK, STATS CHANNEL, STATS OTHER, STATS USAGE
+05 =OPER SOP::
+06 =OPER SOP::Vedere prego l' aiuto rispettivo su ciascuno di questi comandi
+07 =OPER SOP::per vedere che cosa individualmente.
+
+[SERVMSG/FILE]
+01 =::I servizi hanno un archivio pubblico interno system, che quello è
+02 =::effettuato da Services Operators.  Gli utenti possono trasferire
+03 =::archivi da questo filesystem via.  Dcc se hanno accesso
+04 =::to them.
+05 =::
+06 =::You may use the Public FileSystem with these commands:
+07 =::LA LISTA TRASMETTE
+08 =SOP::As a Services Operator, you may maintain it with:
+09 =SOP::AGGIUNGERE DEL RENAME SECURE
+10A=SOP:SADMIN:    DCC          CANCEL
+10B=SADMIN::    DCC          CANCEL       LOOKUP
+
+[SERVMSG/FILE/LIST]
+01 =::LISTA dell' ARCHIVIO [mask [max]]
+02 =::
+03 =::Ciò elencherà verso l'esterno tutti gli archivi che avete a disposizione a you,
+04 =::e quanto grande sono nel Kb.  I nomi elencati sono
+05 =::i nomi che digitate nell' ARCHIVIO TRASMETTONO il comando.
+
+[SERVMSG/FILE/SEND]
+01 =::L' ARCHIVIO TRASMETTE < il nome di schedario >
+02 =::
+03 =::Ciò inizierà un DCC TRASMETTE dai servizi voi con
+04 =::the filename you have requested, as long as you have
+05 =::permessi trasferirlo dal sistema centrale verso i satelliti.
+
+[SERVMSG/FILE/ADD]
+01 =SOP::L' ARCHIVIO AGGIUNGE [committees]
+02 =SOP::
+03 =SOP::Ciò inizierà un DCC OTTIENE da voi ai servizi.
+04 =SOP::archiviare completato una volta sarà aggiunto pubblico all' archivio
+05 =SOP::sistema come il nome è trasmesso As.  Se specificate c'è ne
+06 =SOP::comitati dopo ADD, soltanto la gente in uno di questi
+07 =SOP::i comitati potranno trasferire l' archivio dal sistema centrale verso i satelliti.
+
+[SERVMSG/FILE/DEL]
+01 =SOP::ARCHIVIO DEL < nome di schedario >
+02 =SOP::
+03 =SOP::Ciò rimuoverà un archivio dal sistema di archivio pubblico.
+04 =SOP::Ciò non fa controllo quanto a chi ha accesso al trasferimento dal sistema centrale verso i satelliti
+05 =SOP::il file, ed è permanent, così soddisfa vi accerta il tipo
+06 =SOP::correggere filename, e desiderare rimuovere quell' archivio.
+
+[SERVMSG/FILE/RENAME]
+01 =SOP::L' ARCHIVIO CAMBIA TITOLO < il nuovo nome di schedario > < di nome di schedario >
+02 =SOP::
+03 =SOP::Ciò cambierà titolo un archivio nell' archivio system, senza
+04 =SOP::avere bisogno download, della cancellazione e di re-upload l' archivio.
+
+[SERVMSG/FILE/SECURE]
+01 =SOP::< nome di schedario > SICURO dell' ARCHIVIO [committees]
+02 =SOP::
+03 =SOP::Ciò ripristinerà la sicurezza sull' archivio che specificate
+04 =SOP::i comitati voi specify, se c'è ne.  Se nessun comitati
+05 =SOP::è specified, allora ripristinerà la sicurezza a TUTTO
+06 =SOP::utenti.  Una volta che set, soltanto utenti elencati dei comitati
+07 =SOP::potere trasferire l' archivio dal sistema centrale verso i satelliti specificato.
+
+[SERVMSG/FILE/DCC]
+01 =SOP::ARCHIVIO DCC
+02 =SOP::
+03 =SOP::Ciò elencherà il DCC corrente transfers, ed il loro progresso
+04 =SOP::ai tempi dell' elenco.  Ciò elencherà SOLTANTO attivo (non-
+05 =SOP::pending) i trasferimenti.
+
+[SERVMSG/FILE/CANCEL]
+01 =SOP::ANNULLAMENTO < identificazione dell' ARCHIVIO di dcc >
+02 =SOP::
+03 =SOP::Ciò annullerà un trasferimento attualmente attivo di DCC (
+04 =SOP::L' identificazione di DCC è ottenuta con il comando di DCC dell' ARCHIVIO).  L' utente
+05 =SOP::riceverà (messaggio della terminazione del server di enc_3)internal error'.
+
+[SERVMSG/FILE/LOOKUP]
+01 =SADMIN::LISTA < tipo > dell' ARCHIVIO < hexfile >
+02 =SADMIN::
+03 =SADMIN::Ciò consultazione di volontà come e dove un nome di schedario grezzo (elencato in
+04 =SADMIN::gli indici reali sul sistema host di Magick's) sono memorizzati
+05 =SADMIN::nel programma del sistema di archivio.  Ci sono tre tipi di files,
+06 =SADMIN::this command recognises:
+07 =SADMIN::MemoAttach - che vi mostrerà filename, chi
+08 =SADMIN::possiede l' appunto che l' archivio è fissato to, e che numero.
+09 =SADMIN::Descrivere - che vi mostrerà di chi immagine è.
+10 =SADMIN::Pubblico - che li mostrerà il filename, e che
+11 =SADMIN::ha privilegi di trasferirlo dal sistema centrale verso i satelliti.
+12 =SADMIN::Il hexfile è il nome che reale l' archivio è memorizzato come su
+13 =SADMIN::il sistema host (che è sempre un numero del hex 8-digit).
+
+[SERVMSG/TIME]
+01 =::Formato Standard Di Tempo
+02 =::
+03 =::I servizi accettano tutti i valori di tempo in qualcosa che chiami
+04 =::IE di tempo standard Format, qualsiasi combinazione di years, weeks,
+05 =::days, hours, minuti o secondi.  Potete indicare che cosa
+06 =::unit of time you are speaking of with a 'token' after the
+07 =::l' importo ha coinvolto.  IE.  30s = 30 Seconds, 4m = 4 minuti
+09 =::The tokens are:
+10 =::la s = asseconda m. = minuti h = ore
+11 =::d = giorni W = settimane y = anni
+12 =::
+13 =::Potete specificare questi numeri ed il segno in tutto l' ordine e
+14 =::combination you wish.  eg:
+15 =::8m, 3d4h52m2s, 3s6d4w, 1y27s6w32m5d9h
+16 =::You may also go beyond the unit's boundaries of each, eg:
+17 =::120s, 72m, 60w8d37h
+18 =::
+19 =::You may only specify positive time values, and the default
+20 =::l' unità di tempo è secondi se nessuno è specificato.
+
+[SERVMSG/HOSTMASKS]
+01 =::Hostmasks e metacaratteri
+02 =::
+03 =::A hostmask refers to either the full nick!user@port.host
+04 =::quello è visualizzato in un user's whois, o giusto la parte
+05 =::after the user's nickname, eg:
+06 =::PreZ!prez@castle.srealm.net.au o
+07 =::prez@castle.srealm.net.au
+08 =::
+09 =::Molti posti (quali le liste di accesso) nei servizi li richiedono
+10 =::per immettere un hostmask (li avvertiranno se you've entrasse
+11 =::il tipo errato di hostmask).  In tutti i posti in cui potete
+12 =::entrarli hostmasks, può anche usare i metacaratteri. Metacaratteri
+13 =::è un metodo di dire (carattere o characters' di enc_3)any.
+14 =::   ? = one, and only one character (does not matter what)
+15 =::* = zero o più caratteri (di qualche cosa).
+16 =::
+18 =::Your default access mask is as follows:
+19 =::   *user@*.host   (eg:*prez@*.srealm.net.au)
+
+[SERVMSG/SPACE]
+01 =::Standard Formato Di Spazio
+02 =::
+03 =::I servizi accettano tutti i valori dello spazio in qualcosa che chiami
+04 =::IE standard dello spazio Format, qualsiasi combinazione di bytes,
+05 =::kilobytes, megabytes, gigabytes e terrabytes.  Potete
+06 =::indicare la che unità di tempo siete parlare con dell'
+07 =::'token' dopo l' importo in questione.  IE.  16k = 16 kilobytes
+09 =::The tokens are:
+10 =::b = byte K = kilobytes m. = megabyte
+11 =::g = gigabytes t = Terrabytes
+12 =::
+13 =::Potete specificare questi numeri ed il segno in tutto l' ordine e
+14 =::combination you wish.  eg:
+15 =::    8k,  3g4m52k2b,  3b6g4t,  1t27b6g32m5k
+16 =::You may also go beyond the unit's boundaries of each, eg:
+17 =::10000k, 6000g8000m2048k
+18 =::
+19 =::Potete specificare soltanto lo spazio positivo values, ed il difetto
+20 =::l' unità dello spazio è byte se nessuno è specificato.
+
+
+[OPERSERV]
+01 =::Questo servizio aiuta gli operatori del IRC nel mantenere il controllo
+02 =::della rete e dei servizi.
+03 =OPER SOP::
+04 =OPER SOP::This service allows you to use the following commands:
+05 =OPER SOP::IL CLONE AKILL DI AIUTO IGNORA
+06A=OPER:SOP:    MODE         PING         SETTINGS
+06B=SOP::    OPERDENY     MODE         PING         SETTINGS
+06C=SOP::    HTM
+07 =ADMIN::And as a Server Admin, the following commands:
+08 =ADMIN::QLINE UNQLINE NOOP JUPE
+09 =ADMIN::PELLAME DI UCCISIONE
+10 =SADMIN::And as a Services Admin, the following commands:
+11 =SADMIN::LA TRACCIA SCARICA LA RICARICA IDENTIFICA
+12 =SADMIN::ARRESTO DELL' AGGIORNAMENTO SU FUORI DI
+13 =OPER SOP::
+14 =OPER SOP::Potete chiedere l' aiuto sulla sintassi e sulla funzionalità
+15 =OPER SOP::of any and all of the above commands by specifying
+16 =OPER SOP::il nome di comando dopo la richiesta di AIUTO.
+17 =OPER SOP::NOTE:Soltanto i comandi che attualmente potete usare sono elencati
+18 =OPER SOP::above, e cose quale il registro di nickname
+19 =OPER SOP::può cambiare che cosa è visualizzato sopra.
+
+[OPERSERV/TRACE]
+01 =SADMIN::IE di sostegno di servizi 'Tracing', un metodo di individuazione
+02 =SADMIN::verso l'esterno esattamente che cosa il codice underlying sta facendo a c'è ne
+03 =SADMIN::dato tempo.  Ciò è usata per l' individuazione ostacola easily,
+04 =SAMDIN::così possono essere riparati più velocemente.  Quando una traccia è on, esso
+05 =SADMIN::uscita agli archivi sul sistema di servizi.
+06 =SADMIN::Non lasciare La Traccia ON, Come Può Riempire In su Il Vostro Duro
+07 =SADMIN::DISCO MOLTO RAPIDAMENTE E SERVIZI DI CAUSA DA ARRESTARSI!
+08 =SADMIN::
+09 =SADMIN::You may toggle trace levels with the following:
+10 =SADMIN::SULLO STABILITO SU
+11 =SADMIN::I TIPI LIVELLA
+
+[OPERSERV/TRACE/UP]
+01 =SADMIN::SEGUIRE < su tipo > < level|name [name [... ]] >
+02 =SADMIN::
+03 =SADMIN::Ciò volontà 'turn up' il livello o i nomi della traccia
+04 =SADMIN::specificare per tipo.  Ciò è operation, uno IE relativo.
+05 =SADMIN::funzionerà dalla traccia corrente level, e da tutto
+06 =SADMIN::le tracce precedenti rimarranno stabilite.  Una volta un livello della traccia
+07 =SADMIN::è girato up, tutta l' uscita per quel livello della traccia
+08 =SADMIN::entrare negli archivi della traccia sul calcolatore centrale di servizi.
+09 =SADMIN::Vedere prego l' aiuto sui TIPI della TRACCIA e SEGUIRE I LIVELLI per
+10 =SADMIN::parametri disponibili.
+
+[OPERSERV/TRACE/DOWN]
+01 =SADMIN::SEGUIRE GIÙ < tipo > < level|name [name [... ]] >
+02 =SADMIN::
+03 =SADMIN::Ciò volontà 'turn down' il livello o i nomi della traccia
+04 =SADMIN::specificare per tipo.  Ciò è operation, uno IE relativo.
+05 =SADMIN::funzionerà dalla traccia corrente level, e da tutto
+06 =SADMIN::le tracce precedenti rimarranno stabilite.  Una volta un livello della traccia
+07 =SADMIN::è girato down, tutta l' uscita per quel livello della traccia
+08 =SADMIN::più non entrare negli archivi della traccia sul calcolatore centrale di servizi.
+09 =SADMIN::Please see help on TRACE TYPES and TRACE LEVELS for
+10 =SADMIN::parametri disponibili.
+
+[OPERSERV/TRACE/SET]
+01 =SADMIN::LA TRACCIA HA REGOLATO < il tipo > < level|name [name [... ]] >
+02 =SADMIN::
+03 =SADMIN::Ciò regolerà il livello o i nomi che della traccia specificate
+04 =SADMIN::come il livello della traccia per tipo.  Ciò è un assoluto
+05 =SADMIN::operation, IE annullerà il livello della traccia prima
+06 =SADMIN::regolazione del livello specificato.  Una volta un livello della traccia è
+07 =SADMIN::set, tutta l' uscita per quel livello della traccia andrà in
+08 =SADMIN::archivi della traccia sul calcolatore centrale di servizi.
+09 =SADMIN::Please see help on TRACE TYPES and TRACE LEVELS for
+10 =SADMIN::parametri disponibili.
+
+[OPERSERV/TRACE/TYPES]
+01 =SADMIN::La Traccia Digita
+02 =SADMIN::
+03 =SADMIN::MAIN Events, data, ecc (non classificato) ricevuto.
+04 =SADMIN::Elaborare di NS NickServ (/MSG NickServ)
+05 =SADMIN::Elaborare del CS ChanServ (/MSG ChanServ)
+06 =SADMIN::MS      MemoServ processing (/MSG MemoServ)
+07 =SADMIN::Elaborare di OS OperServ (/MSG OperServ)
+08 =SADMIN::XS tutto il altro trattamento di servizio
+09 =SADMIN::RETE Inter-Magick data, processing, ecc.
+10 =SADMIN::Scritto dello SCRITTO (e scripted i servizi) che elaborano
+11 =SADMIN::Dati del server di MBASE (interfaccia del ircd dello IE)
+12 =SADMIN::PERSO qualche cosa non nel suddetto
+13 =SADMIN::TUTTO IL tutto il suddetto
+
+[OPERSERV/TRACE/LEVELS]
+01 =SADMIN::Livelli e nomi della traccia
+02 =SADMIN::
+03 =SADMIN::0x0000 fuori di nessun tracciato.
+04 =SADMIN::visualizzazioni statistiche di 0x0001 Stats soltanto
+05 =SADMIN::scritti dei file sorgente della lettura di sorgente 0x0002 (cfg,)
+06 =SADMIN::grippaggio di legatura 0x0004 ed Unbinding dei comandi
+07 =SADMIN::0x0008 inutilizzato
+08 =SADMIN::punti di controllo di 0x0010 CheckPoint Pre-defined
+09 =SADMIN::0x0020 commenta più verbose punti di controllo
+10 =SADMIN::l' acquisizione 0x0040 e liberarsi di bloccaggio bloccano
+11 =SADMIN::funzioni 0x0080 dentro e fuori dalle funzioni (e dai params)
+12 =SADMIN::cambiare 0x0100 che dati stanno cambiando
+13 =SADMIN::0x0200 modificano una differenza di in/out del record
+14 =SADMIN::0x0400 inutilizzato
+15 =SADMIN::0x0800 inutilizzato
+16 =SADMIN::lo zoccolo degli zoccoli 0x1000 stabilisce e stacca
+17 =SADMIN::dati di vibrazione 0x2000 dentro e fuori da uno zoccolo
+18 =SADMIN::0x4000 inutilizzato
+19 =SADMIN::0x8000 esterno tutta l' uscita esterne dalle chiamate
+20 =SADMIN::0xffff  All         All of the above
+
+[OPERSERV/MODE]
+01 =OPER SOP::MODO < nick|channel > [modes]
+02 =OPER SOP::
+03 =OPER SOP::Ciò visualizzerà i modi correnti (compresi tasti
+04 =OPER SOP::e limiti dove applicabile) che sono fissati su una scalfittura
+05 =OPER SOP::scanalatura.  Se i modi sono specificati dopo la scalfittura o
+06 =OPER SOP::channel, egualmente tenterà di regolarlo.  Potete
+07A=OPER:SOP:not set modes on a nickname.
+07B=SOP::set modes on a nickname as long as the IRC network
+08B=SOP::supports it (Please check with an IRC Admin).
+
+[OPERSERV/QLINE]
+01 =ADMIN::QLINE < mascherina > [reason]
+02 =ADMIN::
+03 =ADMIN::Ciò tenterà a quarantena un nickname da essere
+04 =ADMIN::sul network, finchè usati la rete del IRC
+05 =ADMIN::supports it.  This is equivalent to setting a Q:line
+06 =ADMIN::su quel nickname su ogni server.  I metacaratteri sono
+07 =ADMIN::consentito a nel nickname.  Usare prego CON ATTENZIONE questo.
+
+[OPERSERV/UNQLINE]
+01 =ADMIN::UNQLINE < mascherina >
+02 =ADMIN::
+03 =ADMIN::Ciò rimuoverà una quarantena su un nickname regolato da
+04 =ADMIN::il comando di QULINE.  Dovete specificare esatta la mascherina
+05 =ADMIN::quello è stato specificato nella quarantena iniziale.  Voi
+06 =ADMIN::può ottenere questo con la a (comando di enc_4)STATS Q.
+
+[OPERSERV/NOOP]
+01 =ADMIN::NOOP < server > < ON|OFF >
+02 =ADMIN::
+03 =ADMIN::Ciò tenterà di forzare tutti gli operatori del IRC sull'
+04 =ADMIN::server specificato da essere FUNZIONAMENTO LOCALE forzato SOLTANTO. Ciò
+05 =ADMIN::se essere usato con l' ESTREMO caution, e soltanto quando
+06 =ADMIN::tantissimi opers (o il admin) su quello server
+07 =ADMIN::stanno mettendo i calzoni alla politica della rete.  Se usate questo
+08 =ADMIN::without a very good reason, it is likely your server
+09 =ADMIN::essere delinked.
+
+[OPERSERV/KILL]
+01 =ADMIN::Motivo > < di nickname > di UCCISIONE <
+02 =ADMIN::
+03 =ADMIN::Ciò uccisione di volontà 'silently' un utente dalla rete.
+04 =ADMIN::lo IE là sarà nessun "Killed ()" in rinunciato message,
+05 =ADMIN::e l' utente non saprà che sono stati killed, esso
+06 =ADMIN::osserverà come se il server dia dei calci loro fuori con
+07 =ADMIN::motivo che specificate.
+
+[OPERSERV/HIDE]
+01 =ADMIN::PELLAME < nickname > < new-host >
+02 =ADMIN::
+03 =ADMIN::Se il server del IRC sostiene it, questo cambierà
+04 =ADMIN::calcolatore centrale degli utenti a qualunque specificate.  Ciò dovrebbe essere
+05 =ADMIN::usato con caution, come alcuni clienti del IRC confrontare
+06 =ADMIN::indirizzo in una richiesta di DCC e che cosa sono annotati
+07 =ADMIN::su come prima della stabilizzazione del DCC.
+
+[OPERSERV/PING]
+01 =OPER SOP::RUMORE METALLICO
+02 =OPER SOP::
+03 =OPER SOP::Ciò forzerà i servizi per fare un rumore metallico tutti i server (utilizzati per
+04 =OPER SOP::ottenendo le figure nella RIPARTIZIONE command, ed
+05 =OPER SOP::per misurare come ritardato esso proviene immediatamente dalla rete).
+06 =OPER SOP::Normally all servers are pinged periodically anyway.
+
+[OPERSERV/UPDATE]
+01 =SADMIN::AGGIORNAMENTO
+02 =SADMIN::
+03 =SADMIN::Ciò forzerà immediatamente un risparmio delle basi di dati.
+04 =SADMIN::Ciò è fatta automaticamente periodicamente.
+
+[OPERSERV/SHUTDOWN]
+01 =SADMIN::ARRESTO < motivo >
+02 =SADMIN::
+03 =SADMIN::Ciò terminerà i servizi completamente.  Non
+04 =SADMIN::riavviamento a meno che li ricominciate manualmente.
+05 =SADMIN::CIÒ DOVREBBE ESSERE USATA CON L' ATTENZIONE ESTREMA!
+
+[OPERSERV/RELOAD]
+01 =SADMIN::RICARICA
+02 =SADMIN::
+03 =SADMIN::Ciò ricaricherà l' archivio di config per i servizi.  Ciò
+04 =SADMIN::ha usato effettuare i cambiamenti fatti in questo archivio di config.
+05 =SADMIN::I servizi vogliono lo squit e re-connect, o firmare fuori ed
+06 =SADMIN::segno sui clienti come necessario (in la maggior parte cases, che
+07 =SADMIN::non essere necessario).
+
+[OPERSERV/UNLOAD]
+01 =SADMIN::SCARICARE < il linguaggio >
+02 =SADMIN::
+03 =SADMIN::Ciò scaricherà un archivio di linguaggio dalla memoria.  Ciò
+04 =SADMIN::l' archivio di linguaggio sarà re-loaded quando è primi
+05 =SADMIN::usato ancora (che può significare immediatamente se scaricate
+06 =SADMIN::il vostro proprio linguaggio).  Ciò è usata per effettuare
+07 =SADMIN::cambiamenti ad un archivio di linguaggio.
+
+[OPERSERV/JUPE]
+01 =ADMIN::JUPE < server > [reason]
+02 =ADMIN::
+03 =ADMIN::Ciò creerà un server fantasma collegato a
+04 =ADMIN::services, solitamente arrestare il server reale dei
+05 =ADMIN::potendo collegarsi.  Se lo specificate reason,
+06 =ADMIN::sarà usato come la descrizione del server.  Potete
+07 =ADMIN::eliminare questo server fantasma da SQUITing esso.
+
+[OPERSERV/ON]
+01 =SADMIN::SU [service]
+02 =SADMIN::
+03 =SADMIN::Ciò gira elaborare di messaggio indietro sopra ancora.  Se
+04 =SADMIN::un servizio è specified, esso soltanto girerà quello
+05 =SADMIN::assistere indietro sopra.
+
+[OPERSERV/OFF]
+01 =SADMIN::FUORI [service] < di motivo >
+02 =SADMIN::
+03 =SADMIN::Ciò spegnerà tutto l' elaborare di messaggio tranne
+04 =SADMIN::per l' IDENTIFIC e sui comandi.  Se un servizio
+05 =SADMIN::è specified, soltanto spegnerà quel servizio.
+
+[OPERSERV/HTM]
+01 =SOP::Htm [ON|OFF|SET < value>]
+02 =SOP::
+03 =SOP::Ciò maneggerà l' alto modo di traffico.  Quando servizi
+04 =SOP::essere nell' alto traffico Mode, che determinate funzioni di nucleo sono
+05 =SOP::inabilitato per provare e salvare la quantità di larghezza di banda
+06 =SOP::generato dai servizi (IE per ridurre le risposte).
+07 =SOP::Il htm è innescato automaticamente inbound dal traffico
+08 =SOP::per un determinato periodo di tempo che è più grande del nostro
+09 =SOP::soglia di Kb/s inbound.  Il periodo di tempo del campione
+10 =SOP::aumenta mentre rimaniamo da HTM, ed il htm è girato fuori di
+11 =SOP::quando andiamo sotto la soglia.  Il htm può essere forzato SU
+12 =SOP::o FUORI con questo command, ed il valore di soglia potere
+13 =SOP::variabile qui.  Il valore di soglia dovrebbe essere in
+14 =SOP::Formato Di Spazio Standard.
+
+[OPERSERV/SETTINGS]
+01 =OPER SOP::I servizi ha molte regolazioni regolate con la relativa configurazione
+02 =OPER SOP::archivio.  Potete osservare queste regolazioni per informativo
+03 =OPER SOP::purposes (eg. find out how long a nickname lasts
+04 =OPER SOP::prima dell' espirazione) per aiutare gli utenti con le loro domande.
+05 =OPER SOP::
+06 =OPER SOP::The following categories of settings exist:
+07 =OPER SOP::MANICA DELLA SCALFITTURA DI CONFIG ALTRO
+08 =OPER SOP::TUTTO
+
+[OPERSERV/SETTINGS/CONFIG]
+01 =OPER SOP::CONFIG DELLE REGOLAZIONI
+02 =OPER SOP::
+03 =OPER SOP::Ciò vi darà l' opzione generale di configurazione
+04 =OPER SOP::settings, per esempio.  Il livello e si ritarda settings, ciclo times,
+05 =OPER SOP::Collegamento di protezione di SQUIT settings, stats, ecc.
+
+[OPERSERV/SETTINGS/NICK]
+01 =OPER SOP::LE REGOLAZIONI SCALFISCONO
+02 =OPER SOP::
+03 =OPER SOP::Ciò vi darà le regolazioni concernente i nicknames
+04 =OPER SOP::includendo quanto tempo fino ai expire, altri temporizzatori
+05 =OPER SOP::(per esempio quanto tempo devono ident), le regolazioni di difetto
+06 =OPER SOP::su un nickname, registrato e sulle regolazioni dell' archivio.
+
+[OPERSERV/SETTINGS/CHANNEL]
+01 =OPER SOP::LE REGOLAZIONI MANICA
+02 =OPER SOP::
+03 =OPER SOP::Ciò vi darà le regolazioni concernente le scanalature
+04 =OPER SOP::including how long until they expire, Other timers
+05 =OPER SOP::(per esempio quanto tempo mantenere una scanalatura dopo avere vietato l' ultimo
+06 =OPER SOP::user), regolazioni di difetto sull' registrato channel,
+07 =OPER SOP::regolazioni di notizie e di accesso.
+
+[OPERSERV/SETTINGS/OTHER]
+01 =OPER SOP::REGOLAZIONI ALTRO
+02 =OPER SOP::
+03 =OPER SOP::Ciò vi darà le regolazioni concernente tutto l' altro
+04 =OPER SOP::servizi e liste effettuate da loro.  Compreso
+05 =OPER SOP::i servizi automatici di sovrapposizione di un comando manuale del clone di uccisione list, list,
+06 =OPER SOP::inondazione protection, ecc.
+
+[OPERSERV/SETTINGS/ALL]
+01 =OPER SOP::REGOLAZIONI TUTTO
+02 =OPER SOP::
+03 =OPER SOP::This is equivalent to executing:
+04 =OPER SOP::Manica Delle Regolazioni Delle Regolazioni Delle Regolazioni ONFIG, NICK,
+05 =OPER SOP::REGOLAZIONI ALTRO
+06 =OPER SOP::
+07 =OPER SOP::Vedere prego l' aiuto rispettivo su ciascuno di questi
+08 =OPER SOP::comandi vedere che cosa individualmente.
+
+[OPERSERV/CLONE]
+01 =OPER SOP::Services have in-built clone protection, which will
+02 =OPER SOP::uccidere automaticamente un utente una volta che loro sono più che
+03 =OPER SOP::un numero di pre-defined di collegamenti dal loro calcolatore centrale.
+04 =OPER SOP::Potete escludere quel numero di pre-defined qui.
+05 =OPER SOP::
+06A=OPER:SOP:You may view the clone override list with:
+06B=SOP::You may maintain the clone override list with:
+07A=OPER:SOP:    LIST
+07B=SOP::    ADD          DEL          LIST
+
+[OPERSERV/CLONE/ADD]
+01 =SOP::IL CLONE AGGIUNGE il motivo > < di quantità > < della mascherina > <
+02 =SOP::
+03 =SOP::Ciò aggiungerà una mascherina alla lista di sovrapposizione di un comando manuale del clone.  Voi
+04 =SOP::il mosto entra soltanto in un CALCOLATORE CENTRALE qui (IE nessun '!' o '@').  Voi
+05 =SOP::può usare i metacaratteri pure.  Dovete anche specificare un nuovo
+06 =SOP::la quantità massima di clona dal calcolatore centrale specified, e
+07 =SOP::un motivo per la aggiunta della questa sovrapposizione di un comando manuale.  Questo motivo è
+08 =SOP::usato da nessuna parte ma il comando della LISTA del CLONE.
+
+[OPERSERV/CLONE/DEL]
+01 =SOP::CLONE DEL < mask|NUM >
+02 =SOP::
+03 =SOP::Ciò cancellerà una mascherina dalla sovrapposizione di un comando manuale del clone list,
+04 =SOP::facendo rispettare lo stesso limite del clone di tutti gli altri utenti essere
+05 =SOP::subject to.  You may specify a mask, and all matching
+06 =SOP::entries will be removed, or a number obtained form the
+07 =SOP::Comando della LISTA.
+
+[OPERSERV/CLONE/LIST]
+01 =OPER SOP::LISTA DEL CLONE
+02 =OPER SOP::
+03 =OPER SOP::Ciò visualizzerà la sovrapposizione di un comando manuale del clone list, compreso
+04 =OPER SOP::a chi le ha aggiunte it, quanto tempo sono state sui
+05 =OPER SOP::list, la quantità di li clona è allowed, e
+06 =OPER SOP::numerare che può essere usato per cancellare l' entrata.
+
+[OPERSERV/AKILL]
+01 =OPER SOP::A volte un utente si transforma in in così abusive, che è migliore
+02 =OPER SOP::per la rete nell'insieme per ucciderglielo.  Ciò
+03 =OPER SOP::la lista facilita questo bisogno.  Tutta la gente che abbina
+04 =OPER SOP::le mascherine su questa lista saranno uccise automaticamente.
+05 =OPER SOP::
+06 =OPER SOP::You may maintain the Auto Kill list with:
+07 =OPER SOP::AGGIUNGERE DEL LIST
+
+[OPERSERV/AKILL/ADD]
+01 =OPER SOP::AKILL AGGIUNGONO < il motivo > < della mascherina > [time]
+02 =OPER SOP::
+03 =OPER SOP::Ciò aggiungerà la mascherina che completa del user@host specificate
+04 =OPER SOP::l' uccisione automatica list, ed uccide tutti gli utenti che lo abbinano.
+05 =OPER SOP::La mascherina che specificate può includere i metacaratteri.  Dovete
+06 =OPER SOP::egualmente specificare un motivo per l' utente che è killed, che
+07 =OPER SOP::sarà usato nel loro motivo di uccisione.  Potete facoltativamente
+08 =OPER SOP::specificare un momento nel formato di tempo standard.  Se so,
+09 =OPER SOP::sarà usato come il momento di mantenere l' uccisione automatica in
+10 =OPER SOP::effetto (secondo access, ci è il vario massimo
+11 =OPER SOP::cronometra specifiable).  Se non specificate un time,
+12 =OPER SOP::il difetto sarà usato (vedere le REGOLAZIONI ALTRA per questa).
+
+[OPERSERV/AKILL/DEL]
+01 =OPER SOP::AKILL DEL < mask|NUM >
+02 =OPER SOP::
+03 =OPER SOP::Ciò rimuoverà una mascherina dall' uccisione automatica list, consentendo
+04 =OPER SOP::tutti gli utenti che abbinano questa parte posteriore della mascherina sulla rete.  Voi
+05 =OPER SOP::può specificare un mask, e tutte le entrate abbinare questa mascherina
+06 =OPER SOP::sarà rimosso dal list, o potete specificare
+07 =OPER SOP::numero ottenuto dal comando della LISTA di AKILL.
+
+[OPERSERV/AKILL/LIST]
+01 =OPER SOP::LISTA DI AKILL
+02 =OPER SOP::
+03 =OPER SOP::Ciò visualizzerà l' uccisione automatica list, compreso la mascherina
+04 =OPER SOP::banned, quanto tempo si sono vietati for, quanto tempo
+05 =OPER SOP::sono stati uccisi for, il motivo che erano automobile Killed,
+06 =OPER SOP::chi ha aggiunto them, e numeri che possono essere usati per cancellare
+07 =OPER SOP::loro dalla lista automatica di uccisione.
+
+[OPERSERV/OPERDENY]
+01 =SOP::Da tempo time, ad un funzionamento metterà i calzoni alla rete
+02 =SOP::policies, o va insano ed inizio che nuoc la rete.
+03 =SOP::OPERDENY è usato per mettere a nudo un funzionamento delle loro pontenzi di funzionamento
+04 =SOP::fino a che il loro admin non possa ottenere in linea ed affare con loro.
+05 =SOP::
+06A=SOP:SADMIN:You may view the oper deny list with:
+06B=SADMIN::You may maintain the oper deny list with:
+07A=SOP:SADMIN:    LIST
+07B=SADMIN::    ADD          DEL          LIST
+
+[OPERSERV/OPERDENY/ADD]
+01 =SADMIN::OPERDENY AGGIUNGONO < la mascherina >
+02 =SADMIN::
+03 =SADMIN::Ciò aggiungerà la mascherina specificata al funzionamento nega la lista
+04 =SADMIN::efficacemente arrestandoli dalla regolazione del modo +o (che opering
+05 =SADMIN::su).  Potete usare i metacaratteri in questa mascherina.  Dovete
+06 =SADMIN::specificare una mascherina completa del nick!user@host (*! sarà presupposto).
+
+[OPERSERV/OPERDENY/DEL]
+01 =SADMIN::OPERDENY DEL < mask|NUM >
+02 =SADMIN::
+03 =SADMIN::Ciò rimuoverà una mascherina dal funzionamento nega la lista.  Voi
+04 =SADMIN::può specificare un mask, e tutte le entrate abbinare quello mascherina
+05 =SADMIN::essere removed, o potete specificare un numero ottenuto
+06 =SADMIN::con il comando della LISTA di OPERDENY.
+
+[OPERSERV/OPERDENY/LIST]
+01 =SOP::LISTA DI OPERDENY
+02 =SOP::
+03 =SOP::Ciò elencherà tutte le entrate sul funzionamento nega list,
+04 =SOP::includendo chi ha aggiunto them, quanto tempo la mascherina è stata
+05 =SOP::for, negato e un numero che può essere usato per cancellarlo.
+
+[OPERSERV/IGNORE]
+01 =OPER SOP::I servizi fa ignorare 2 lists, un temporary, ed uno
+02 =OPER SOP::permanente.  Un utente può essere aggiunto ad uno innescando
+03 =OPER SOP::l' inondazione di servizi protection, ma un utente può essere manualmente
+04 =OPER SOP::aggiunto al permanent ignorare la lista pure.
+05 =OPER SOP::
+06A=OPER:SOP:You may view the permanent ignore list with:
+06B=SOP::You may maintain the permanent ignore list with:
+07A=OPER:SOP:    LIST
+07B=SOP::    ADD          DEL          LIST
+
+[OPERSERV/IGNORE/ADD]
+01 =SOP::IGNORARE AGGIUNGONO < la mascherina >
+02 =SOP::
+03 =SOP::Ciò aggiungerà una mascherina al permanent ignora la lista.  C'è ne
+04 =SOP::l' utente che abbina questa mascherina non otterrà una risposta da
+05 =SOP::services, anche pings, ecc.  Ciò egualmente significa che
+06 =SOP::NON POTERE AD IDENTIFICAZIONE.  Potete usare i metacaratteri in questo
+07 =SOP::mask, e voi devono specificare una mascherina completa del nick!user@host.
+
+[OPERSERV/IGNORE/DEL]
+01 =SOP::IGNORARE DEL < mask|NUM >
+02 =SOP::
+03 =SOP::Ciò rimuoverà una mascherina dal permanent ignora la lista.
+04 =SOP::Potete specificare un mask, e tutte le entrate che abbinano quella mascherina
+05 =SOP::essere removed, o potete specificare un numero ottenuto con
+06 =SOP::il comando della LISTA di IGNOR.
+
+[OPERSERV/IGNORE/LIST]
+01 =OPER SOP::IGNORARE LA LISTA
+02 =OPER SOP::
+03 =OPER SOP::Ciò visualizzerà tutte le entrate sul permanent ignora
+04 =OPER SOP::lista.  Egualmente mostrerà chi ha aggiunto them, quanto tempo
+05 =OPER SOP::sono stati sopra ignorano for, e un numero che può essere usato
+06 =OPER SOP::per cancellarli dalla lista.
+

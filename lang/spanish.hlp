@@ -1,0 +1,2771 @@
+; Magick IRC Services
+; (c) 1996-1999 Preston A. Elder, W. King
+;
+; Spanish On-Line Help File
+; Translated By: Babelfish (http://babelfish.altavista.com)
+; Please also edit the TRANSLATED/01 token to
+; reflect the above (this is displayed when someone
+; switches to your language).
+;
+; ----------------------------(enc _ 6)---------------------------------
+;
+; Este fichero se divide para arriba en sections, cada sección que es
+; un comando que se puede ejecutar en Magick.  El nombre de la sección
+; substituye simplemente espacios por a '/' character, y pone
+; nombre del servicio en el frente (NO el nickname, pero
+; GetInternalName() value).
+;
+; Cada entrada en una sección será clasificada por el tag, tan satisface
+; asegúrese de que TODAS LAS etiquetas sean en el orden -- el nombre real de
+; las etiquetas matter, sin embargo POR FAVOR NO ASEGURAN LA ETIQUETA SON EN
+; MAYÚSCULO!  El motor de la detección es CASO SENSIBLE.
+;
+; Cada entrada tiene 3 fields, separado por dos puntos (':'):
+;    1.  Comités a visualizar para.
+;       Si specified, el utilizador debe ser en CUALESQUIERA comités usted
+;       especifique en este field, los comités son separados por
+;       espacio.  Si no specified, asume 'ALL'.
+;    2.  Comités a no visualizar para.
+;       Si specified, el utilizador puede no estar en CUALESQUIERA de
+;       los comités que usted especifica en este field, los comités son
+;       separado por un espacio.  Si no especificarlo asume
+;       ningunos (el IE no niega cualquier persona).
+;    3.  El texto real de la ayuda entry, que será
+;       visualizado al utilizador in extenso.  Si es este campo
+;       la izquierda blank, una línea en blanco será enviada al utilizador.
+;       Este campo PUEDE contener dos puntos (':'), serán
+;       tratado como cualquier otro carácter.
+;
+; No es generalmente una buena idea hacer salir cualquier cosa más que
+; sobre 15-20 alinea a un utilizador a menos que absolutamente sea necesario.  Usted
+; si sea descriptivo sobre cuál el comando does, y cómo
+; para utilizarlo.
+;
+
+[TRANSLATED]
+01 =Babelfish (http://babelfish.altavista.com)
+
+[NICKSERV]
+01 =::Este servicio permite que usted coloque su apodo
+02 =::para no poderlo tomar por cualquier persona .
+03 =::
+04 =::This service allows you to use the following commands:
+05 =::LA CONEXIÓN DEL REGISTRO DE LA AYUDA IDENTIFICA
+06 =::EL FANTASMA DEL INFO RECUPERA LA LISTA
+07 =REGD::LA GOTA DESATA ESCLAVOS DEL ORDENADOR PRINCIPAL
+08 =REGD::TENGA ACCESO NO HACEN CASO DEL CONJUNTO ENVÍAN
+09 =SOP::And as a Services Operator, the following commands:
+10 =SOP::EL BLOQUEO PROHIBIDO GETPASS ABRE
+11 =SOP::    SUSPEND      UNSUSPEND    LIVE
+12 =::
+13 =::Usted puede solicitar ayuda en la el sintaxis y las funciones
+14 =::de cualesquiera y de todos los comandos antedichos especificando
+15 =::el nombre del comando después de la petición de la AYUDA.
+16 =::NOTE:Solamente se enumeran los comandos que usted puede utilizar actualmente
+17 =::      above, and things such as nickname registration
+18 =::puede cambiar qué se visualiza arriba.
+
+[NICKSERV/REGISTER]
+01 =::REGISTRO < palabra de paso >
+02 =::
+03 =::Esto hará su apodo reconocido con servicios.
+04 =::Haciendo so, los servicios reservarán su apodo para
+05 =::apenas you, y matará o retitulará a cualquier utilizador que intente
+06 =::utilícelo y no viene de su direccionamiento regular (como
+07 =::de largo como matanza se fija la protección).  Una vez que registered, usted
+08 =::puede utilizar el comando del IDENTIFICAR de ser reconocido de
+09 =::en alguna parte con excepción de su address, regular o si usted tiene
+10 =::más de uno address, usted puede agregarlo a la lista del ACCESO.
+11 =::
+12 =::El registro del apodo se requiere para ser agregado a cualquiera
+13 =::acceso de canal list, o enviar una nota a otro utilizador.
+14 =::Please choose a password you will remember, but that is
+15 =::convenientemente complejo al colocar su apodo.  Si
+16 =::algún otro consigue su password, ellos puede entonces ejercitar
+17 =::control total concluído su nickname, incluyendo la prohibición
+18 =::usted tiene acceso a él.  Si usted ha perdido su password, usted
+19 =::puede entrar en contacto con a un operador de los servicios para extraerlo para usted.
+
+[NICKSERV/DROP]
+01 =REGD::GOTA [nickname]
+02 =REGD::
+03 =REGD::Esto voluntad de-register su apodo.  Haciendo tan voluntad
+04 =REGD::quítele de todas las listas del acceso de canal que usted es on,
+05 =REGD::fuerce todos los canales que usted es fundador de que se dará a
+06 =REGD::el co-founder o sea droped si hay none, quita
+07 =REGD::todas sus notas (leídas o unread), y si está hecho en un ordenador principal
+08 =REGD::nickname, cae todos los esclavos de él.
+09 =REGD::
+10A=REGD:SOP:If you specify a nickname after the drop command, and
+11A=REGD:SOP:the nickname is linked to you, it will drop it, if not,
+12A=REGD:SOP:it will drop your current nickname.
+10B=SOP::If you specify a nickname after the drop command, it
+11B=SOP::will drop that nickname (weather you own it or not).
+12B=SOP::Otherwise it will drop your current nickname.
+
+[NICKSERV/LINK]
+01 =::Palabra de paso > del < apodo > de la CONEXIÓN <
+02 =::
+03 =::Esto conectará su apodo actual another, a la fabricación
+04 =::él su apodo del ordenador principal.  De eso point, ambos apodos
+05 =::sea considerado equivalent, ellos compartirá el acceso
+06 =::listas (apodo y channel), si uno se agrega a
+07 =::comité todos serán miembros it, de ellos
+08 =::comparta la misma nota list, etc.
+09 =::
+10 =::IMPORTANT:Si Es Su Apodo Actual REGISTERED,
+11 =::SERÁ CAÍDO ANTES DE SER CONECTADA A SU ORDENADOR PRINCIPAL.
+
+[NICKSERV/UNLINK]
+01 =REGD::DESATE [nick]
+02 =REGD::
+03 =REGD::Esto desatará su mella de su ordenador principal nick, primero
+04 =REGD::duplicando settings, el acceso y no haga caso de las listas.
+05 =REGD::Cualquieres modificaciones hechas a su apodo después éste
+06 =REGD::se ejecuta el comando no será intercambiado en
+07 =REGD::apodo del ordenador principal.  Usted también se quitará
+08 =REGD::de todas las listas del acceso que el apodo del ordenador principal está encendido.
+09 =REGD::
+10 =REGD::Si un apodo se especifica después del desatar command,
+11 =REGD::y se conecta you, a él será desatado en lugar de otro.
+
+[NICKSERV/HOST]
+01 =REGD::ORDENADOR PRINCIPAL [nickname]
+02 =REGD::
+03 =REGD::Esto cambiará su apodo del ordenador principal a su actual
+04 =REGD::nickname, o el apodo especificado después del ordenador principal
+05 =REGD::ordene si se conecta a usted.  El hacer no  tan
+06 =REGD::cambie cualquier cosa con respecto a su acceso a channels,
+07 =REGD::memos, o comité membership, sin embargo que usted
+08 =REGD::muestre para arriba como el nuevo apodo del ordenador principal como fundador de cualquiera
+09 =REGD::los canales usted own, y en todas las listas del acceso usted está encendido.
+
+[NICKSERV/SLAVES]
+01A=REGD:OPER:SLAVES
+01B=OPER::SLAVES [nick]
+02 =REGD::
+03 =REGD::Esto enumerará fuera de todos sus apodos conectados.
+04 =OPER::Si usted especifica un nickname, enumerará el suyo en lugar de otro.
+05 =REGD::
+06 =REGD::Los apodos auxiliares se crean con el comando de la CONEXIÓN.
+
+[NICKSERV/IDENTIFY]
+01 =::IDENTIFIQUE la < palabra de paso >
+02 =::
+03 =::Esto le identificará a su apodo.  Esto es
+04 =::requerido si usted tiene protección de la matanza on, e intenta
+05 =::utilice su apodo de un ordenador principal que no esté en sus
+06 =::acceso list, o deseo para cambiar su palabra de paso.  Él
+07 =::también se requiere para utilizar su mella en todos (cueste lo que cueste
+08 =::de su lista del acceso) si usted tiene seguro encendido.  Es
+09 =::también requerido si usted desea hacer uso su acceso
+10 =::en cualquieres canales o comités que tienen seguro encendido.
+11 =::
+12 =::La palabra de paso que usted especifica debe ser igual que
+13 =::uno que usted fijó con el comando de la PALABRA DE PASO del REGISTRO o del CONJUNTO.
+
+[NICKSERV/INFO]
+01 =::Info < apodo >
+02 =::
+03 =::Esto le dará la varia información sobre dado
+04 =::apodo.  Esto incluye la información tal como sus
+05 =::e-mail address, web address, ICQ UIN, and physical
+06 =::descripción si han fijado them, la hora eran
+07 =::en línea pasado y de donde vinieron (si no
+08 =::tenga la opción privada fijada encendido).  También dirá
+09 =::usted qué opciones tienen set, qué comités ellos
+10 =::es on, y el tiempo que tienen un cuadro downloadable.
+11 =OPER::
+12 =OPER::Como oper, usted puede también ver un comentario sobre ése
+13 =OPER::user, que ha sido fijado por un SOP cualquiera como anterior
+14 =OPER::suspenda reason, o manualmente.  Por favor aconséjese ése
+15 =OPER::los utilizadores normales NO PUEDEN ver este campo.
+
+[NICKSERV/GHOST]
+01 =::Palabra de paso > del < apodo > del FANTASMA <
+02 =::
+03 =::Esto matará a un utilizador (o a servicio) que esté sosteniendo
+04 =::su apodo de la red.  Se utiliza esto
+05 =::recupere su apodo después de que usted haya medido el tiempo de out, y
+06 =::your nickname has not, or you have failed to identify
+07 =::en time, y servicios han tomado su apodo.
+08 =::
+09 =::La palabra de paso que usted especifica debe ser igual que
+10 =::uno que usted fijó con el comando de la PALABRA DE PASO del REGISTRO o del CONJUNTO.
+
+[NICKSERV/RECOVER]
+01 =::RECUPERE < la palabra de paso > del < apodo >
+02 =::
+03 =::Esto matará a un utilizador que esté utilizando su apodo
+04 =::y los servicios lo tomarán ellos mismos.  Si usted no
+05 =::tenga protección de la matanza on, o su lista del acceso sucede
+06 =::cubrir a otro utilizador así como yourself, él es
+07 =::posible podían utilizar su apodo sin ser
+08 =::desafiado y renamed/killed para hacer tan.  Es
+09 =::recomendado le fije seguro encendido si éste es el caso.
+10 =::Conseguir librado de usar de los servicios su nickname, usted debe
+11 =::utilice el comando del FANTASMA.
+12 =::
+13 =::La palabra de paso que usted especifica debe ser igual que
+14 =::uno que usted fijó con el comando de la PALABRA DE PASO del REGISTRO o del CONJUNTO.
+
+[NICKSERV/LIST]
+01 =::LISTA [mask [maximum]]
+02 =SOP::LISTNOEXP [mask [maximum]]
+03 =SOP::LISTFORBID [mask [maximum]]
+04 =SOP::LISTSUSP [mask [maximum]]
+05 =::
+06 =::Esto enumerará todos los apodos registrados eso emparejamiento
+07 =::la máscara que usted ha especificado y sus ordenadores principal del último o
+08 =::"ONLINE" hasta un número máximo del valor por defecto de entradas
+09 =::fije por los servicios Admins.  Usted reemplaza el máximo
+10 =::la cantidad de entradas visualizó hasta absoluto un máximo
+11 =::also specified by the Services Admins.  Users marked
+12A=:OPER:as private will not be displayed in the list.
+12B=OPER::as private will be displayed in the list.
+13 =SOP::El NOEXP, PROHIBIDO y SUSP añade como sufijo al comando de la LISTA
+14 =SOP::enumerará solamente a gente sin expiran set, prohibido
+15 =SOP::users, o utilizadores suspendidos respectivamente.
+
+[NICKSERV/SEND]
+01 =REGD::ENVÍE el < apodo >
+02 =REGD::
+03 =REGD::Si el apodo especificado tiene un cuadro en sus
+04 =REGD::el nickserv record, este comando le permitirá
+05 =REGD::descargúelo.  Los servicios comenzarán un fichero del DCC
+06 =REGD::transferencia con usted de eso file, nombrada como
+07 =REGD::utilizadores nickname, y la extensión de fichero.
+
+[NICKSERV/SUSPEND]
+01 =SOP::SUSPENDA < la razón > del < apodo >
+02 =SOP::
+03 =SOP::Esto parará a un utilizador de poder identificar
+04 =SOP::su nickname, sin embargo no los parará de
+05 =SOP::usarlo a menos que tengan seguro encendido.  Porque ellos
+06 =SOP::no pueden ident, también no pueden caer su nick, o
+07 =SOP::cambie su palabra de paso.  Éste se significa para ser un corto
+08 =SOP::medida disciplinaria del término mientras que es una queja bajo
+09 =SOP::revisión contra este user, o advertirlos algo
+10 =SOP::que apenas cayéndolos o akilling de la red.
+
+[NICKSERV/UNSUSPEND]
+01 =SOP::UNSUSPEND < apodo >
+02 =SOP::
+03 =SOP::Esto esencialmente invertirá el suspender command,
+04 =SOP::permitiendo que el utilizador utilice su apodo como normal.
+05 =SOP::The suspend reason will however remain as a comment
+06 =SOP::en los utilizadores apode record, para quitar esto usted
+07 =SOP::debe utilizar el comando del COMENTARIO del CONJUNTO.
+
+[NICKSERV/FORBID]
+01 =SOP::< apodo PROHIBIDO >
+02 =SOP::
+03 =SOP::Esto prohibirá un apodo de ser utilizado en
+04 =SOP::network, y forzará a cualquier utilizador que procure utilizar
+05 =SOP::él para cambiar su mella o a ser killed/renamed.
+
+[NICKSERV/GETPASS]
+01 =SOP::GETPASS < apodo >
+02 =SOP::
+03 =SOP::Esto extraerá la palabra de paso del apodo para un utilizador.
+04 =SOP::Observe por favor eso siempre que este comando sea used,
+05 =SOP::el mensaje global a todo el IRCOPS será difusión!
+06 =SOP:SADMIN:Usted no puede extraer la palabra de paso del los servicios
+07 =SOP:SADMIN:Administrador.
+
+[NICKSERV/LIVE]
+01 =SOP::VIVA [mask [maximum]]
+02 =SOP::LIVEOPER [mask [maximum]]
+03 =SOP::
+04 =SOP::Esto enumerará todos los apodos en línea que correspondan con
+05 =SOP::la máscara completa del nick!user@host especificó.  Si es la mella
+06 =SOP::la izquierda off, * será asumida.  Si se deja el ordenador principal
+07 =SOP::off, *@* será asumido.  Esto visualizará
+08 =SOP::utilizadores por completo host, qué servidor son on, y qué
+09 =SOP::modos que han fijado actualmente.  El sufijo de la OPERACIÓN a
+10 =SOP::el comando de la LISTA enumerará solamente a gente con modo
+11 =SOP::(conjunto de enc_0)o (operadores del IRC del IE).
+
+[NICKSERV/ACCESS]
+01 =REGD::Su lista del acceso es un método a poder venir en
+02 =REGD::de más de un hostmask, sin tuvieron que
+03 =REGD::re-identify usted mismo cada vez que usted entra.  A menos que
+04 =REGD::usted tiene seguro on, usted será reconocido sin
+05 =REGD::el identificar al venir de cualesquiera de los ordenadores principal en sus
+06 =REGD::tenga acceso a la lista.
+07 =REGD::
+08 =REGD::You maintain your access list with these commands:
+09 =REGD::CURRENT ADD DEL LIST
+
+[NICKSERV/ACCESS/CURRENT]
+01 =REGD::TENGA ACCESO A LA CORRIENTE
+02 =REGD::
+03 =REGD::Esto agregará su hostmask actual (*user@*.host) a
+04 =REGD::su lista del acceso.  Esto es justo un atajo a pulsar
+05 =REGD::fuera del lleno agregue el comando.
+
+[NICKSERV/ACCESS/ADD]
+01 =REGD::TENGA ACCESO AGREGAN la < máscara >
+02 =REGD::
+03 =REGD::Esto agregará el hostmask que usted especifica a su acceso
+04 =REGD::lista.  Usted puede utilizar comodines en su hostmask (IE *
+05 =REGD::y?  caracteres).  Usted debe incluir a '@' el carácter
+06 =REGD::en su hostmask, y no puede incluir el carácter de a '!'.
+07 =REGD::
+08 =REGD::Una entrada típica sería *myident@*.myisp.com
+
+[NICKSERV/ACCESS/DEL]
+01 =REGD::TENGA ACCESO A DEL < mask|NUM >
+02 =REGD::
+03 =REGD::Esto quitará un hostmask (o más de uno) de
+04 =REGD::su lista del acceso.  Si usted lo especifica number, entonces
+05 =REGD::será asumido para ser un número de la entrada que corresponde eso
+06 =REGD::a los números imprimió con el comando de la LISTA del ACCESO.
+07 =REGD::Si no suprimirá todo el corresponder con de los hostmasks
+08 =REGD::máscara que usted especifica (que pueden ser entradas múltiples).
+
+[NICKSERV/ACCESS/LIST]
+01 =REGD::TENGA ACCESO A LA LISTA
+02 =REGD::
+03 =REGD::Esto enumerará fuera del contenido de su acceso list,
+04 =REGD::y dé a cada entrada un número de índice que pueda ser utilizado
+05 =REGD::con el DEL command de suprimir rápidamente una entrada.
+
+[NICKSERV/IGNORE]
+01 =REGD::Su no haga caso de la lista bloqueará cualquier nota se envíe que
+02 =REGD::usted por todos los apodos en él.  Si usted no desea
+03 =REGD::asocíese a una persona anymore, y guardan el enviar
+04 =REGD::usted memos, o usted está consiguiendo la nota bombed, entonces apenas
+05 =REGD::agregue el apodo que se ofende a su no hacen caso de la lista.
+06 =REGD::
+07 =REGD::Cuando lo está utilizado conjuntamente con la nota de no option,
+08 =REGD::invertirá las funciones de esta lista.
+09 =REGD::se convierte una lista de la gente PARA VALIDAR notas de.
+10 =REGD::
+11 =REGD::You maintain your ignore list with these commands:
+12 =REGD::    ADD          DEL          LIST
+
+[NICKSERV/IGNORE/ADD]
+01 =REGD::NO HAGA CASO AGREGAN < apodo >
+02 =REGD::
+03 =REGD::Esto agregará un apodo a su no hace caso de list, y
+04 =REGD::usted validará no más de largo notas de ellas (o de usted
+05 =REGD::Comenzará a validar notas de ellas si la nota de no
+06 =REGD::la opción se fija encendido).  Usted puede especificar solamente registrado
+07 =REGD::apodo.
+
+[NICKSERV/IGNORE/DEL]
+01 =REGD::NO HAGA CASO DE DEL < nick|NUM >
+02 =REGD::
+03 =REGD::Esto quitará un apodo de su nota no hace caso
+04 =REGD::list, y usted uno validará o negará otra vez notas
+05 =REGD::a partir de them, dependiendo de su configuración de la nota de no.  Si
+06 =REGD::un número es specified, él será asumido para ser
+07 =REGD::entry number that corresponds to the numbers printed
+08 =REGD::con el comando de la LISTA del NO HACER CASO.
+
+[NICKSERV/IGNORE/LIST]
+01 =REGD::NO HAGA CASO DE LA LISTA
+02 =REGD::
+03 =REGD::Esto enumerará fuera del contenido de su no hace caso list,
+04 =REGD::y dé a cada entrada un número de índice que pueda ser utilizado
+05 =REGD::con el DEL command de suprimir rápidamente una entrada.
+
+[NICKSERV/SET]
+01 =REGD::Los servicios mantienen muchas configuraciones en su mella
+02 =REGD::record, extendiéndose de su password, a un e-mail
+03 =REGD::diríjase a usted specify, a las opciones que efectúan cómo
+04 =REGD::services treat your nickname.  Some of these you
+05 =REGD::debe identificar set, a otros que son reconocidos es
+06 =REGD::bastante (que es la misma cosa si asegure se fija).
+07 =REGD::
+08 =REGD::You may alter your settings with these commands:
+09 =REGD::URL ICQ DEL EMAIL DE LA PALABRA DE PASO
+10 =REGD::EL CUADRO DE LA DESCRIPCIÓN PROTEGE SEGURO
+11 =REGD::LENGUAJE PRIVADO DE NOMEMO PRIVMSG
+12 =SOP::As a SOP you may also use the following commands:
+13 =SOP::COMENTARIO NOEXPIRE
+
+[NICKSERV/SET/PASSWORD]
+01 =REGD::FIJE LA PALABRA DE PASO < palabra de paso >
+02 =REGD::
+03 =REGD::Esto cambiará su palabra de paso del apodo.  Éste
+04 =REGD::la palabra de paso se requiere para el comando del IDENTIFICAR (el IE
+05 =REGD::para utilizar su apodo de en alguna parte no en sus
+06 =REGD::tenga acceso a la lista).  También se requiere para el FANTASMA
+07 =REGD::y RECUPERE los comandos.  Si usted tiene conjunto seguro on,
+08 =REGD::esta palabra de paso es necesidad DE UTILIZAR su apodo.  Usted
+09 =REGD::debe identificar antes de que usted pueda utilizar este comando.
+10 =REGD::
+11 =REGD::Elija por favor una palabra de paso que usted  remember, pero eso es
+12 =REGD::convenientemente complejo al colocar su apodo.  Si
+14 =REGD::algún otro consigue su apodo password, que pueden entonces
+15 =REGD::control total del ejercicio concluído it, incluyendo la prohibición de usted
+16 =REGD::tenga acceso a él.  Si usted ha perdido su password, usted puede
+17 =REGD::entre en contacto con a un operador de los servicios para extraerlo para usted.
+
+[NICKSERV/SET/EMAIL]
+01 =REGD::FIJE email < email >
+02 =REGD::
+03 =REGD::Esto es un campo proporcionado para representar sus e-mail
+04 =REGD::direccionamiento.  La derecha now, es un free-text field, sin embargo
+05 =REGD::se recomienda le asegura los datos que usted pone en éste
+06 =REGD::es un email válido address, mientras que puede ser utilizado más adelante para
+07 =REGD::cosas tales como la red announcements, etc.
+08 =REGD::
+09 =REGD::Este valor visualizará as-is en su visualización del Info.
+10 =REGD::Fijar este valor a "NONE" lo borrará.
+
+[NICKSERV/SET/URL]
+01 =REGD::FIJE URL < URL >
+02 =REGD::
+03 =REGD::Esto es un campo proporcionado para representar su Web page
+04 =REGD::direccionamiento.  La derecha now, es un free-text field, sin embargo
+05 =REGD::se recomienda le asegura los datos que usted pone en éste
+06 =REGD::es un Web page válido address, mientras que puede ser utilizado más adelante
+07 =REGD::para las cosas tales como utilizadores conecta page, el etc. Usted no
+08 =REGD::need to (and should not) put 'http://' en el URL.
+09 =REGD::
+10 =REGD::Este valor visualizará as-is en su visualización del Info.
+11 =REGD::Fijar este valor a "NONE" lo borrará.
+
+[NICKSERV/SET/ICQ]
+01 =REGD::FIJE ICQ < uin >
+02 =REGD::
+03 =REGD::Esto es un campo proporcionado para representar su ICQ UIN.
+04 =REGD::La derecha now, es un free-text field, sin embargo que es
+05 =REGD::recomendado le asegure los datos que usted pone en esto es
+06 =REGD::un ICQ válido UIN, como él se puede utilizar más adelante para tales
+07 =REGD::things as current users status, etc.
+08 =REGD::
+09 =REGD::Este valor visualizará as-is en su visualización del Info.
+10 =REGD::Fijar este valor a "NONE" lo borrará.
+
+[NICKSERV/SET/DESCRIPTION]
+01 =REGD::FIJE LA DESCRIPCIÓN < descripción >
+02 =REGD::
+03 =REGD::Este campo se proporciona para proveer de otros
+04 =REGD::descripción física de yourself, o stats sobre
+05 =REGD::usted mismo (age, sex, location, etc).  Por favor también
+06 =REGD::vea la ayuda en el comando del CUADRO del CONJUNTO si usted tiene
+07 =REGD::cuadro de se usted mente de don't que comparte alrededor.
+08 =REGD::
+09 =REGD::Este valor visualizará as-is en su visualización del Info.
+10 =REGD::Fijar este valor a "NONE" lo borrará.
+
+[NICKSERV/SET/COMMENT]
+01 =SOP::Comentario DETERMINADO > del < apodo > del COMENTARIO <
+02 =SOP::
+03 =SOP::Esto fijará (o claro) un comentario sobre los utilizadores el Info
+04 =SOP::expediente.  Los utilizadores normales no podrán ver éste
+05 =SOP::comment, sin embargo todos los miembros del comité de la OPERACIÓN
+06 =SOP::voluntad.  Cuando un utilizador es suspended, la razón del suspender
+07 =SOP::se fija pues el comentario automatically, y éste
+08 =SOP::remain even after the user is unsuspended.
+09 =SOP::
+10 =SOP::Fijar este valor a "NONE" lo borrará.
+
+[NICKSERV/SET/PICTURE]
+01 =REGD::FIJE EL CUADRO [NONE]
+02 =REGD::
+03 =REGD::Esto setup servicios para recibir un fichero del DCC
+04 =REGD::a partir de you, que será fijada como su cuadro.
+05 =REGD::El fichero extension, y el tamaño del archivo pueden ser
+06 =REGD::restricted, para descubrir qué extensiones usted
+07 =REGD::puede send, o el fichero máximo size, por favor
+08 =REGD::entre en contacto con a cualquier operador del IRC.
+09 =REGD::
+10 =REGD::Una vez que el DCC completes, que cualquier utilizador puede descargar
+11 =REGD::su cuadro con el comando del ENVIAR.  Si usted
+12 =REGD::especifique "NONE" después del CUADRO del CONJUNTO command,
+13 =REGD::su cuadro será quitado de su expediente.
+
+[NICKSERV/SET/PROTECT]
+01 =REGD::Fije Protegen < ON|OFF >
+02 =REGD::
+03 =REGD::Esto se girará o de la protección de la matanza.
+04 =REGD::Cuando esta opción es on, si cualquier persona procura utilizar
+05 =REGD::su apodo de un hostmask no en su acceso
+06 =REGD::list, serán pedidos a identify, o ser retitulado
+07 =REGD::o matado.
+
+[NICKSERV/SET/SECURE]
+01 =REGD::Determinado Asegure < ON|OFF >
+02 =REGD::
+03 =REGD::Esto se girará o de seguro.
+04 =REGD::Cuando esta opción es on, usted debe utilizar el identificar
+05 =REGD::comando de ser reconocido (esencialmente dando vuelta en
+06 =REGD::paranoia mode, sin hacer caso de su lista del acceso).  Él
+07 =REGD::will also mean you need to ident to get any access
+08 =REGD::en cualquier canal usted join, para leer su memos, etc.
+
+[NICKSERV/SET/NOEXPIRE]
+01 =SOP::FIJE NOEXPIRE < apodo > < ON|OFF >
+02 =SOP::
+03 =SOP::Cuando usted fija esto en un nickname, que el apodo
+04 =SOP::no ser conforme a la expiración del apodo si no es
+05 =SOP::utilizado después de un período del tiempo.  Utilice por favor esto muy
+06 =SOP::cautiously, como apodo expiración garantiza ése
+07 =SOP::los apodos don't consiguen soportados si they're que no es utilizado.
+
+[NICKSERV/SET/NOMEMO]
+01 =REGD::Fije Nomemo < ON|OFF >
+02 =REGD::
+03 =REGD::Esto se girará o de ningunas notas.
+04 =REGD::Cuando esta opción es on, usted  automáticamente
+05 =REGD::no haga caso de todas las notas a su nickname, sin embargo sus
+06 =REGD::no haga caso de la lista en dará vuelta un permit list, y usted
+07 =REGD::inmóvil validará notas de la gente en esa lista.
+
+[NICKSERV/SET/PRIVATE]
+01 =REGD::< ON|OFF Privados Determinados >
+02 =REGD::
+03 =REGD::Esto se girará o de privado.
+04 =REGD::Cuando esta opción es on, su hostmask pasado y
+05 =REGD::los tiempos en línea no serán visualizados en su Info
+06 =REGD::display, y usted no mostrará para arriba cuando alguien
+07 =REGD::hace una lista de todos los apodos.
+
+[NICKSERV/SET/PRIVMSG]
+01 =REGD::Fije Privmsg < ON|OFF >
+02 =REGD::
+03 =REGD::Esto se girará o de PRIVMSG.
+04 =REGD::Cuando es esta opción on, los servicios utilizarán PRIVMSG
+05 =REGD::(aka. a query) to send you anything they need to
+06 =REGD::envíe you, más bien que usar el AVISO.  Usted  inmóvil
+07 =REGD::consiga los avisos si usted no es recognised, o para cualquiera
+08 =REGD::clase de aviso global.
+
+[NICKSERV/SET/LANGUAGE]
+01 =REGD::FIJE EL LENGUAJE < lenguaje >
+02 =REGD::
+03 =REGD::Esta configuración define qué servicios linguísticos hablan
+04 =REGD::a usted adentro.  Si otro lenguaje es available, usted
+05 =REGD::puede conseguir servicios hablar con usted en ese lenguaje.
+
+[NICKSERV/LOCK]
+01 =SOP::Los servicios permiten que usted bloquee un valor para nickname,
+02 =SOP::evitando que el utilizador reemplace su configuración.
+03 =SOP::Utilice por favor caution, pues usted es el quitar los utilizadores
+04 =SOP::derecho cambiar sus el propios expediente.
+05 =SOP::
+06 =SOP::You may lock a users settings with these commands:
+07 =SOP::PROTEJA NOMEMO SEGURO PRIVADO
+08 =SOP::LENGUAJE DE PRIVMSG
+
+[NICKSERV/LOCK/PROTECT]
+01 =SOP::BLOQUEE PROTEGEN el < apodo > < ON|OFF >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de la matanza protege para
+04 =SOP::user to whatever you set it to.  Doing this, will
+05 =SOP::evite que el utilizador pueda reemplazar éste
+06 =SOP::setting, satisface tan uso con caution, mientras que usted es
+07 =SOP::el quitar utilizadores a la derecha para cambiar su propio expediente.
+
+[NICKSERV/LOCK/SECURE]
+01 =SOP::BLOQUEE el < apodo SEGURO > < ON|OFF >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de seguro para un utilizador a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el utilizador de poder reemplazar este setting,
+06 =SOP::satisfaga tan el uso con caution, como usted está quitando
+07 =SOP::los utilizadores enderezan para cambiar su propio expediente.
+
+[NICKSERV/LOCK/NOMEMO]
+01 =SOP::BLOQUEE NOMEMO < apodo > < ON|OFF >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de ningunas notas para un utilizador a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el utilizador de poder reemplazar este setting,
+06 =SOP::satisfaga tan el uso con caution, como usted está quitando
+07 =SOP::los utilizadores enderezan para cambiar su propio expediente.
+
+[NICKSERV/LOCK/PRIVATE]
+01 =SOP::BLOQUEE el < apodo PRIVADO > < ON|OFF >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de privado para un utilizador a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el utilizador de poder reemplazar este setting,
+06 =SOP::satisfaga tan el uso con caution, como usted está quitando
+07 =SOP::los utilizadores enderezan para cambiar su propio expediente.
+
+[NICKSERV/LOCK/PRIVMSG]
+01 =SOP::BLOQUEE PRIVMSG < apodo > < ON|OFF >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de PRIVMSG para un utilizador a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el utilizador de poder reemplazar este setting,
+06 =SOP::satisfaga tan el uso con caution, como usted está quitando
+07 =SOP::los utilizadores enderezan para cambiar su propio expediente.
+
+[NICKSERV/LOCK/LANGUAGE]
+01 =SOP::BLOQUEE el lenguaje > del < apodo > del LENGUAJE <
+02 =SOP::
+03 =SOP::Esto bloqueará los servicios linguísticos responde a
+04 =SOP::un utilizador adentro a lo que usted lo fijó.  El hacer this,
+05 =SOP::evitará que el utilizador pueda reemplazar
+06 =SOP::este setting, satisface tan uso con caution, como usted
+07 =SOP::está el quitar los utilizadores a la derecha para cambiar sus el propios
+08 =SOP::expediente.
+
+[NICKSERV/UNLOCK]
+01 =SOP::Los servicios permiten que usted bloquee un valor para nickname,
+02 =SOP::evitando que el utilizador reemplace su configuración.
+03 =SOP::Estos comandos quitarán un bloqueo colocado en un utilizador.
+04 =SOP::
+05 =SOP::You may unlock a users settings with these commands:
+06 =SOP::PROTEJA NOMEMO SEGURO PRIVADO
+07 =SOP::LENGUAJE DE PRIVMSG
+
+[NICKSERV/UNLOCK/PROTECT]
+01 =SOP::ABRA PROTEGEN < apodo >
+02 =SOP::
+03 =SOP::Esto abrirá el valor de la matanza protege para
+04 =SOP::user, sin embargo el valor seguirá siendo igual.
+
+[NICKSERV/UNLOCK/SECURE]
+01 =SOP::ABRA el < apodo SEGURO >
+02 =SOP::
+03 =SOP::Esto abrirá el valor de seguro para
+04 =SOP::user, sin embargo el valor seguirá siendo igual.
+
+[NICKSERV/UNLOCK/NOMEMO]
+01 =SOP::ABRA NOMEMO < apodo >
+02 =SOP::
+03 =SOP::Esto abrirá el valor de ningunas notas para
+04 =SOP::user, sin embargo el valor seguirá siendo igual.
+
+[NICKSERV/UNLOCK/PRIVATE]
+01 =SOP::ABRA el < apodo PRIVADO >
+02 =SOP::
+03 =SOP::Esto abrirá el valor de privado para
+04 =SOP::user, sin embargo el valor seguirá siendo igual.
+
+[NICKSERV/UNLOCK/PRIVMSG]
+01 =SOP::ABRA PRIVMSG < apodo >
+02 =SOP::
+03 =SOP::Esto abrirá el valor de PRIVMSG para
+04 =SOP::user, sin embargo el valor seguirá siendo igual.
+
+[NICKSERV/UNLOCK/LANGUAGE]
+01 =SOP::ABRA EL LENGUAJE < apodo >
+02 =SOP::
+03 =SOP::Esto abrirá los servicios linguísticos responde
+04 =SOP::a un utilizador in, sin embargo el valor seguirá siendo
+05 =SOP::iguales.
+
+
+
+[CHANSERV]
+01 =::Este servicio permite que usted coloque su canal
+02 =::para no poderlo tomar por cualquier persona .
+03 =::
+04 =::This service allows you to use the following commands:
+05 =::LA LISTA DE LA AYUDA INFO IDENTIFICA
+06 =REGD::LOS UTILIZADORES DE LA GOTA DEL REGISTRO INVITAN
+07 =REGD::VOZ DE OP. SYS. DEVOICE DE DEOP
+08 =REGD::RETROCESO DEL ASUNTO UNBAN DEL MODO
+09 =REGD::QUITE DETERMINADO CLARO EL NIVEL
+10 =REGD::EL ACCESO AKICK SALUDA EL MENSAJE
+11 =SOP::And as a Services Operator, the following commands:
+12 =SOP::EL BLOQUEO PROHIBIDO GETPASS ABRE
+13 =SOP::SUSPENDA UNSUSPEND VIVO
+14 =::
+15 =::Usted puede solicitar ayuda en el sintaxis y las funciones
+16 =::de cualesquiera y de todos los comandos antedichos especificando
+17 =::el nombre del comando después de la petición de la AYUDA.
+19 =::NOTE:Solamente se enumeran los comandos que usted puede utilizar actualmente
+20 =::above, y cosas tales como registro del apodo
+21 =::puede cambiar qué se visualiza arriba.
+
+[CHANSERV/REGISTER]
+01 =REGD::COLOQUE la descripción > de la < palabra de paso > del < canal > <
+02 =REGD::
+03 =REGD::Esto hará su canal reconocido con servicios.
+04 =REGD::Haciendo so, los servicios reservarán su canal para
+05 =REGD::you, y solamente elasticidad OPS y VOZ a la gente usted
+06 =REGD::especifique en la lista del ACCESO de canal.  Una vez que registered,
+07 =REGD::usted puede utilizar el comando del IDENTIFICAR de ganar lleno authorative
+08 =REGD::control concluído el canal de otro apodo.
+09 =REGD::
+10 =REGD::El registro del canal permite muchas otras varias características
+11 =REGD::incluyendo las noticias del canal greetings, articles, automáticas
+12 =REGD::kicking, y mucho más.  Solamente registrados apodos
+13 =REGD::puede ser agregado a una lista del acceso de canal.
+14 =REGD::Elija por favor una palabra de paso que usted  remember, pero eso es
+15 =REGD::convenientemente complejo al colocar su canal.  Si
+16 =REGD::algún otro consigue su password, ellos puede entonces ejercitar
+17 =REGD::control total concluído su channel, incluyendo la prohibición
+18 =REGD::usted tiene acceso a él.  Si usted ha perdido su password, usted
+19 =REGD::puede entrar en contacto con a un operador de los servicios para extraerlo para usted.
+
+[CHANSERV/DROP]
+01 =REGD::GOTA < canal >
+02 =REGD::
+03 =REGD::Esto voluntad de-register su canal.  Esta acción es
+04 =REGD::permanent, y no reversible.  El canal  una vez
+05 =REGD::sea gobernado por quienquiera tiene ops, y nada parará
+06 =REGD::mantiene del canal takeovers, el canal topic, etc.
+07 =SOP::
+08 =SOP::Como SOP, usted puede caer cualquier channel, tiempo usted para poseer
+09 =SOP::él o no.  Utilice por favor este comando CUIDADOSAMENTE.
+
+[CHANSERV/IDENTIFY]
+01 =::IDENTIFIQUE < la palabra de paso > del < canal >
+02 =::
+03 =::Esto le identificará a su canal.  Esto es
+04 =::requerido para transferir el control de el channel, o para fijar
+05 =::options, otro incluyendo la adición alguien en
+06 =::el nivel de acceso superior a la lista del acceso de canal.
+07 =::Le considerarán como teniendo acceso SOBRETODO
+08 =::las entradas en el acceso enumeran con este comando.
+09 =::
+10 =::La palabra de paso que usted especifica debe ser igual que
+11 =::uno que usted fijó con el comando de la PALABRA DE PASO del REGISTRO o del CONJUNTO.
+
+[CHANSERV/INFO]
+01 =::Info < canal >
+02 =::
+03 =::Esto le dará la varia información sobre dado
+04 =::canal.  Esto incluye la información tal como sus
+05 =::Web de la lista el enviar address, address, y descripción
+06 =::si han fijado them, la hora el canal era pasado
+07 =::used, o quién está actualmente en el canal (si él doesn't
+08 =::tenga la opción privada fijada encendido).  También dirá
+09 =::usted qué opciones tienen set, el actual topic,
+10 =::y mucho más.
+11 =OPER::
+12 =OPER::Como oper, usted puede también ver un comentario sobre ése
+13 =OPER::channel, que ha sido fijado por un SOP cualquiera como anterior
+14 =OPER::suspenda reason, o manualmente.  Por favor aconséjese ése
+15 =OPER::los utilizadores normales NO PUEDEN ver este campo.
+
+[CHANSERV/LIST]
+01 =::LISTA [<mask > [<maximum>]]
+02 =SOP::LISTNOEXP [<mask > [<maximum>]]
+03 =SOP::LISTFORBID [<mask > [<maximum>]]
+04 =SOP::LISTSUSP [<mask > [<maximum>]]
+05 =::
+06 =::Esto enumerará todos los canales registrados eso emparejamiento
+07 =::la máscara que usted ha especificado y sus descripciones
+08 =::up to a default maximum number of entries set by the
+09 =::Servicios Admins.  Usted reemplaza la cantidad máxima de
+10 =::entries displayed up to an absolute maximum also
+11 =::especificado por los servicios Admins.  Los canales marcaron
+12A=:OPER:as private will not be displayed in the list.
+12B=OPER::as private will be displayed in the list.
+13 =SOP::El NOEXP, PROHIBIDO y SUSP añade como sufijo al comando de la LISTA
+14 =SOP::enumerará solamente los canales sin expiran set, prohibido
+15 =SOP::users, o utilizadores suspendidos respectivamente.
+
+[CHANSERV/SUSPEND]
+01 =SOP::SUSPENDA < la razón > del < canal >
+02 =SOP::
+03 =SOP::Esto rendirá una lista del acceso de canales (y
+04 =SOP::fundador) inútil.  No parará a utilizadores de
+05 =SOP::ensamblar el canal (a menos que ha restringido y
+06 =SOP::Ops seguro on), apenas no conseguirán su normal
+07 =SOP::tenga acceso a los privilegios.  Todos los operadores del IRC recibirán
+08 =SOP::Auto Voice, SOPs will receive Auto Ops, and SADMINS
+09 =SOP::recibirá privilegios del fundador.  Porque ellos
+10 =SOP::no pueden ident, también no pueden caer el channel, o
+11 =SOP::cambie su palabra de paso.  Éste se significa para ser un corto
+12 =SOP::medida disciplinaria del término mientras que es una queja bajo
+13 =SOP::repase contra este channel, o advertir
+14 =SOP::canal más bien que apenas caerlo.
+
+[CHANSERV/UNSUSPEND]
+01 =SOP::UNSUSPEND < canal >
+02 =SOP::
+03 =SOP::Esto esencialmente invertirá el suspender command,
+04 =SOP::permitiendo el acceso de canal enumere para reasumir como normal.
+05 =SOP::Seguirá habiendo la razón del suspender sin embargo como comentario
+06 =SOP::en el canal record, para quitar esto usted debe utilizar
+07 =SOP::el comando del COMENTARIO del CONJUNTO.
+
+[CHANSERV/FORBID]
+01 =SOP::< canal PROHIBIDO >
+02 =SOP::
+03 =SOP::Esto prohibirá un canal de ser utilizado en
+04 =SOP::network, y golpee automáticamente a cualquier utilizador con el pie que
+05 =SOP::lo ensambla hacia fuera.
+
+[CHANSERV/GETPASS]
+01 =SOP::GETPASS < canal >
+02 =SOP::
+03 =SOP::Esto extraerá la palabra de paso del canal para cualquiera
+04 =SOP::canal registrado.
+05 =SOP::Observe por favor eso siempre que este comando sea used,
+06 =SOP::el mensaje global a todo el IRCOPS será difusión!
+
+[CHANSERV/MODE]
+01 =REGD::MODO < canal > [modes]
+02 =REGD::
+03 =REGD::Esto le mostrará los modos actuales se fijan que
+04 =REGD::en un channel, incluyendo claves y límites (si usted
+05 =REGD::tenga acceso de la VISIÓN).  Si se especifica un modo y usted
+06 =REGD::tenga CMDMODE access, que lo fijará (conforme a
+07 =REGD::el bloqueo del modo del canal).
+
+[CHANSERV/OP]
+01 =REGD::< canal DE OP. SYS. > [nickname]
+02 =REGD::
+03 =REGD::Esto procurará al modo determinado +o en su apodo
+04 =REGD::en el channel, especificado si usted tiene acceso de CMDOP.
+05 =REGD::Si usted especifica otro apodo después del canal
+06A=REGD:SOP:and you have SUPER access, mode +o will be set on
+07A=REGD:SOP:that user instead (if the channel is either not
+08A=REGD:SOP:secure, or they have either CMDOP or AUTOOP access).
+06B=SOP::mode +o will be set on that user instead (if the
+07B=SOP::channel is either not secure, or they have either
+08B=SOP::CMDOP or AUTOOP access).
+
+[CHANSERV/DEOP]
+01 =REGD::DEOP < canal > [nickname]
+02 =REGD::
+03 =REGD::Esto procurará al modo determinado -o en su apodo
+04 =REGD::en el channel, especificado si usted tiene acceso de CMDOP.
+05 =REGD::Si usted especifica otro apodo después del canal
+06A=REGD:SOP:and you have SUPER access, mode -o will be set on
+07A=REGD:SOP:that user instead.
+06B=SOP::mode -o will be set on that user instead.
+
+[CHANSERV/VOICE]
+01 =REGD::VOZ < canal > [nickname]
+02 =REGD::
+03 =REGD::Esto procurará al modo determinado +v en su apodo
+04 =REGD::en el channel, especificado si usted tiene CMDVOICE
+05 =REGD::acceso.  Si usted especifica otro apodo después
+06A=REGD:SOP:channel and you have SUPER access, mode +v will be
+07A=REGD:SOP:set on that user instead (if the channel is either
+08A=REGD:SOP:not secure, or they have either CMDVOICE or
+09A=REGD:SOP:AUTOVOICE access).
+06B=SOP::mode +o will be set on that user instead (if the
+07B=SOP::channel is either not secure, or they have either
+08B=SOP::CMDVOICE or AUTOVOICE access).
+
+[CHANSERV/DEVOICE]
+01 =REGD::DEVOICE < canal > [nickname]
+02 =REGD::
+03 =REGD::Esto procurará al modo determinado -o en su apodo
+04 =REGD::en el channel, especificado si usted tiene CMDVOICE
+05 =REGD::access. If you specify another nickname after the
+06A=REGD:SOP:channel and you have SUPER access, mode -o will be
+07A=REGD:SOP:set on that user instead.
+06B=SOP::channel mode -o will be set on that user instead.
+
+[CHANSERV/TOPIC]
+01 =REGD::ASUNTO < canal > [topic]
+02 =REGD::
+03 =REGD::Esto volverá el asunto de un channel, si usted tiene
+04 =REGD::VIEW access.  Specifying a topic after the channel
+05 =REGD::fijará el topic, si usted tiene acceso de CMDMODE.
+
+[CHANSERV/KICK]
+01 =REGD::GOLPEE < el apodo > del < canal con el pie > [reason]
+02 =REGD::
+03 =REGD::Esto golpeará a un utilizador con el pie de un channel, con la razón
+04 =REGD::usted especifica.  Si usted no especifica un retroceso reason,
+05 =REGD::se utiliza la razón del valor por defecto AKICK.  El utilizador  sin embargo
+06 =REGD::sepa quién lo golpeó con el pie (en el retroceso reason), y usted debe
+07 =REGD::tenga por lo menos acceso de CMDKICK para utilizar esta opción. Usted
+08 =REGD::no puede golpear a un utilizador con el pie que sea más alto que usted en
+09 =REGD::tenga acceso a la lista.
+
+[CHANSERV/REMOVE]
+01 =REGD::QUITE la razón > del < apodo > del < canal > <
+02 =REGD::
+03 =REGD::Esto realiza la misma acción que el RETROCESO command,
+04 =REGD::a menos que el utilizador no sepa quién golpeó them, con el pie y
+05 =REGD::the kick reason MUST be specified.  You must have
+06 =REGD::por lo menos acceso ESTUPENDO para utilizar este command, y le
+07 =REGD::no puede golpear a un utilizador con el pie que sea más alto que usted en
+08 =REGD::tenga acceso a la lista.
+
+[CHANSERV/USERS]
+01 =REGD::Los UTILIZADORES < acanalan >
+02 =REGD::
+03 =REGD::This will show you a list of the users in a s channel,
+04 =REGD::usted tenga mientras acceso de la VISIÓN.  OPS y las VOCES
+05 =REGD::indiqúese con a '@' y '+' antes del apodo
+06 =REGD::respectivamente.
+
+[CHANSERV/INVITE]
+01 =REGD::INVITE el < canal > [nickname]
+02 =REGD::
+03 =REGD::Esto invitará le (o un apodo especificado después
+04 =REGD::el canal) a un canal que tiene modo +i fijado.  Usted
+05A=REGD:SOP:must have CMDINVITE access to use this command, or
+06A=REGD:SOP:SUPER access to invite another user.
+05B=SOP::may invite any user to any channel.
+
+[CHANSERV/UNBAN]
+01 =REGD::UNBAN < canal > [nickname]
+02 =REGD::
+03 =REGD::Esto explorará a través de la lista de la interdicción y quitará todo
+04 =REGD::entradas que están evitando que usted ensamblara
+05 =REGD::canal.  Si un apodo es después especificados
+06 =REGD::channel name, it will attempt to unban another
+07A=REGD:SOP:online user.  You must have CMDUNBAN access to use
+08A=REGD:SOP:this command on yourself, and SUPER access to use
+09A=REGD:SOP:it on another user.
+07B=SOP::online user.
+
+[CHANSERV/LIVE]
+01 =SOP::VIVA [mask [maximum]]
+02 =SOP::
+03 =SOP::Esto enumerará todos los canales activos ese emparejamiento
+04 =SOP::máscara completa especificada.  Esto visualizará el lleno
+05 =SOP::canal name, la cantidad users, ops, de voces
+06 =SOP::los utilizadores y las interdicciones del squit son activos en channel, y
+07 =SOP::qué modos el canal ha fijado actualmente (incluyendo
+08 =SOP::clave y límite).
+
+[CHANSERV/CLEAR]
+01 =REGD::Es a veces necesario (como judicial measure,
+02 =REGD::o un método de ganar control situation, de un etc)
+03 =REGD::para tomar medidas drásticas en un canal.  Este comando
+04 =REGD::es su medida drástica in-a-box.  Esto hará
+05 =REGD::cualquier cosa de saca todos los modos en un channel,
+06 =REGD::golpear cada uno con el pie de él.
+07 =REGD::
+08 =REGD::Your available drastic measures are:
+09 =REGD::VOCES DE LAS INTERDICCIONES OPS DE LOS MODOS
+10 =REGD::UTILIZADORES TODO
+
+[CHANSERV/CLEAR/USERS]
+01 =REGD::BORRE A UTILIZADORES del < canal >
+02 =REGD::
+03 =REGD::Este comando se debe utilizar con extremo caution,
+04 =REGD::pues golpeará a todos los utilizadores con el pie en el canal de él.
+05 =REGD::Notificarán a todos los utilizadores en el canal de action,
+06 =REGD::y quién lo hizo.
+07 =REGD:SOP:Usted debe tener acceso de CMDCLEAR para utilizar este comando.
+
+[CHANSERV/CLEAR/MODES]
+01 =REGD::BORRE LOS MODOS del < canal >
+02 =REGD::
+03 =REGD::Esto voluntad unset todos los modos fijados para channel, ése
+04 =REGD::NO el modo bloqueó encendido.  Esto incluye unsetting cualquiera
+05 =REGD::el canal key, invita solamente mode, el etc.  Todos los ops
+06 =REGD::será notificado de el action, y quién lo hizo.
+07 =REGD:SOP:You must have CMDCLEAR access to use this command.
+
+[CHANSERV/CLEAR/OPS]
+01 =REGD::BORRE el < canal > OPS
+02 =REGD::
+03 =REGD::Esto quitará el modo +o de todos los utilizadores en canal
+04 =REGD::quiénes lo tienen fijado (los ops del IE).  Todos los utilizadores que son deoped
+05 =REGD::será notificado de el action, y quién lo hizo.
+06 =REGD:SOP:Usted debe tener acceso de CMDCLEAR para utilizar este comando.
+
+[CHANSERV/CLEAR/VOICES]
+01 =REGD::BORRE LAS VOCES del < canal >
+02 =REGD::
+03 =REGD::Esto quitará el modo +v de todos los utilizadores en canal
+04 =REGD::quiénes lo tienen fijado (las voces del IE).  Todos los utilizadores que son
+05 =REGD::devoiced, y todos los ops será notificado de action,
+06 =REGD::y quién lo hizo.
+07 =REGD:SOP:Usted debe tener acceso de CMDCLEAR para utilizar este comando.
+
+[CHANSERV/CLEAR/BANS]
+01 =REGD::BORRE LAS INTERDICCIONES del < canal >
+02 =REGD::
+03 =REGD::Esto quitará todas las interdicciones (modo del IE +b) de
+04 =REGD::lista de la interdicción del canal.  Esencialmente dando a toda la gente que
+05 =REGD::están prohibidos del canal una suspensión temporal de un castigo. Si éstos
+06 =REGD::los utilizadores están en el AKICK list, o el canal tiene
+07 =REGD::Ops restricto y seguro set, la interdicción será fijado
+08 =REGD::otra vez por servicios tan pronto como entren otra vez.
+09 =REGD::Refiera por favor a la ayuda en el CONJUNTO BANTIME para una manera
+10 =REGD::de las interdicciones que son quitadas automáticamente después de un tiempo
+11 =REGD::período.  Todos los ops serán notificados de este action,
+12 =REGD::y quién lo hizo.
+13 =REGD:SOP:Usted debe tener acceso de CMDCLEAR para utilizar este comando.
+
+[CHANSERV/CLEAR/ALL]
+01 =REGD::BORRE el < canal > TODO
+02 =REGD::
+03 =REGD::This command essentially does the same as:
+04 =REGD::Dé salida a MODES, Las Interdicciones Del Claro Del Dar salida a Del Dar salida a OPS, VOICES,
+05 =REGD::
+06 =REGD::Vea por favor la ayuda en cada uno de estos comandos de encontrar
+07 =REGD::fuera qué cada uno de él hacer.  Todo el aviso público en
+08 =REGD::el canal será hecho cuando se utiliza este comando.
+09 =REGD:SOP:You must have CMDCLEAR access to use this command.
+
+[CHANSERV/LEVEL]
+01 =REGD::Los servicios permiten que usted altere el nivel del valor por defecto para
+02 =REGD::tomando varias acciones en un channel, y qué llano
+03 =REGD::se requiere para realizar varias acciones.  eg.  Por
+04 =REGD::default, leyendo noticias del canal está disponible para todo
+05 =REGD::utilizadores (el nivel del IE 0), sin embargo algunos tiene gusto de restringir
+06 =REGD::solamente a la gente en el acceso enumera (1) llano.
+07 =REGD::
+08 =REGD::You may maintain the channel levels with:
+09 =REGD::FIJE LA LISTA DE LA RESTAURACIÓN
+
+[CHANSERV/LEVEL/SET]
+01 =REGD::El NIVEL < canal > FIJÓ el < tipo > < llano >
+02 =REGD::
+03 =REGD::Esto fijará el nivel del < tipo > a un número ése
+04 =REGD::usted especifica.  Hay máximos y mínimos límites
+05 =REGD::en cuanto a a lo que usted puede fijar un nivel.  Éstos son
+06 =REGD::los mismos límites en cuanto a qué nivel usted puede agregar a alguien
+07 =REGD::a la lista del acceso con (a menos que usted puede especificar uno
+08 =REGD::sobre el here, máximo significar 'founder only').
+09 =REGD::Una vez que set, los utilizadores deban estar en o sobre el nivel usted
+10 =REGD::especifique para poder tener acceso o utilizar a la característica en
+11 =REGD::question, a excepción de AUTODEOP, donde usted debe ser
+12 =REGD::inferior o igual al nivel especificado.  Usted debe
+13 =REGD::tenga acceso del fundador para utilizar este comando.
+
+[CHANSERV/LEVEL/RESET]
+01 =REGD::NIVEL < canal type|ALL > REAJUSTADOS < >
+02 =REGD::
+03 =REGD::Éste es igual que usando el comando DETERMINADO LLANO y
+04 =REGD::especificar el nivel del valor por defecto como 'new level'.
+05 =REGD::Especificar TODO como el tipo llano reajustará todo
+06 =REGD::niveles de nuevo al nivel del valor por defecto (IE cuáles era
+07 =REGD::fije a cuando usted colocó el canal).  Usted debe
+08 =REGD::tenga acceso del fundador para utilizar este comando.
+
+[CHANSERV/LEVEL/LIST]
+01 =REGD::LISTA del < canal > del NIVEL
+02 =REGD::
+03 =REGD::Si usted HA FIJADO privilegios o above, usted que esto
+04 =REGD::muéstrele una lista TAGS, de NIVELES y de DESCRIPCIONES de
+05 =REGD::los niveles de acceso del canal.  Si usted  not,
+06 =REGD::esto le mostrará una línea para cada nivel que usted tiene
+07 =REGD::tenga acceso a you, incluyendo la descripción de ella.
+
+[CHANSERV/ACCESS]
+01 =REGD::La lista del acceso de canal es una manera para un fundador
+02 =REGD::control que tiene acceso para hacer lo que con su channel,
+03 =REGD::de quién  puede tener ops/voices, a quién puede ajustar
+04 =REGD::las configuraciones del canal o agregan a la lista sí mismo del acceso.
+05 =REGD::
+06 =REGD::You maintain the access list with these commands:
+07 =REGD::AGREGUE A DEL LIST
+
+[CHANSERV/ACCESS/ADD]
+01 =REGD::El ACCESO < canal > AGREGA el < apodo > < llano >
+02 =REGD::
+03 =REGD::Esto agregará un apodo a una lista del acceso de canal en
+04 =REGD::el nivel que usted especifica.  Usted puede especificar solamente un llano
+05 =REGD::eso está debajo sus el propio.  Usted debe tener privilegios del ACCESO
+06 =REGD::para utilizar este comando.  Refiera por favor LLANA a la LISTA
+07 =REGD::para ver qué acceso usted dará a la persona antes
+08 =REGD::decidiendo en qué nivel para agregarlos.  Usted puede solamente agregar
+09 =REGD::apodos registrados a una lista del acceso de canal.
+
+[CHANSERV/ACCESS/DEL]
+01 =REGD::TENGA ACCESO al < canal > DEL < nickname|NUM >
+02 =REGD::
+03 =REGD::Esto quitará un apodo de un acceso de canal
+04 =REGD::lista.  Usted puede especificar cualquier el apodo a quitar
+05 =REGD::o el número de la entrada según lo visualizado con la LISTA del ACCESO
+06 =REGD::comando.  Usted no puede quitar cualquier persona con un más alto o
+07 =REGD::el nivel de la igualdad de acceso que usted tiene.  Usted debe tener
+08 =REGD::TENGA ACCESO a los privilegios de utilizar este comando.
+
+[CHANSERV/ACCESS/LIST]
+01 =REGD::TENGA ACCESO A LA LISTA del < canal >
+02 =REGD::
+03 =REGD::Esto enumerará el acceso list, incluyendo qué llano
+04 =REGD::cada uno está en channel, y quién el Last modified su
+05 =REGD::acceso record, y cuando era Last modified.  Usted
+06 =REGD::debe tener privilegios de la VISIÓN de utilizar este comando.
+
+[CHANSERV/AKICK]
+01 =REGD::Hay las épocas en que un utilizador viola el canal gobierna
+02 =REGD::tan much, o el llano justo llega a ser tan molesto que ellos
+03 =REGD::autorice una interdicción permanente del canal.  El retroceso auto es
+04 =REGD::mantiene el método de alcanzar esto.  Cualquieres utilizadores en éste
+05 =REGD::la lista será automáticamente kicked/banned del canal.
+06 =REGD::
+07 =REGD::You maintain the Auto Kick list with these commands:
+08 =REGD::AGREGUE A DEL LIST
+
+[CHANSERV/AKICK/ADD]
+01 =REGD::AKICK < canal > AGREGAN < nickname|mask > [reason]
+02 =REGD::
+03 =REGD::Esto agregará a alguien a la lista auto del retroceso (la permanente
+04 =REGD::interdicción).  Usted puede especificar un nickname, registrado o
+05 =REGD::máscara.  Si usted especifica un nickname, un utilizador solamente será
+06 =REGD::golpeado con el pie si los servicios reconocen al utilizador en eso el apodo
+07 =REGD::(el IE they're reconocido o identificó).  Si es una máscara
+08 =REGD::specified, cualquier persona que corresponde con esa máscara será banned,
+09 =REGD::y esa máscara será fijada como la interdicción.  Si es una razón
+10 =REGD::specified, será utilizado en el retroceso message,
+11 =REGD::un mensaje del retroceso del valor por defecto será utilizado.  Usted debe tener
+12 =REGD::Acceso de AKICK para utilizar este comando.
+
+[CHANSERV/AKICK/DEL]
+01 =REGD::AKICK < canal > DEL < nickname|mask|NUM >
+02 =REGD::
+03 =REGD::Esto quitará una entrada de la lista auto del retroceso.  Usted
+04 =REGD::puede especificar un apodo o enmascararlo que los emparejamientos uno de
+05 =REGD::entradas en el list, o el número de la entrada directamente que
+06 =REGD::corresponde a uno outputted del comando de la LISTA.
+07 =REGD::Usted debe tener acceso de AKICK para utilizar este comando.
+
+[CHANSERV/AKICK/LIST]
+01 =REGD::LISTA del < canal > de AKICK
+02 =REGD::
+03 =REGD::Esto enumerará fuera de todas las entradas en la lista auto del retroceso.
+04 =REGD::También enumerará fuera de quién lo agregó it, cuánto tiempo
+05 =REGD::han estado en la lista for, y en porqué son
+06 =REGD::la lista auto del retroceso en el primer lugar.
+07 =REGD:SOP:Usted debe tener acceso de la VISIÓN para utilizar este comando.
+
+[CHANSERV/GREET]
+01 =REGD::Una característica muchos utilizadores tiene gusto alrededor del IRC de Eggdrop bots,
+02 =REGD::es la capacidad de fijar un Info Line, se cotice que
+03 =REGD::para acanalar (prefijado por su apodo) cuando ellos
+04 =REGD::ensamble el canal.  Los servicios ahora también ofrecen esta característica.
+05 =REGD::
+06 =REGD::You may maintain your greetings with the following:
+07 =REGD::AGREGUE A DEL LIST
+
+[CHANSERV/GREET/ADD]
+01 =REGD::SALUDE el < canal > AGREGAN [@nickname] [!]<greeting >
+02 =REGD::
+03 =REGD::Esto agregará un canal que saluda a su apodo
+04 =REGD::cuál será visualizado en ensamblar un canal.  Usted
+05 =REGD::no puede comenzar su saludo con a '!' o '@' socarre.
+06 =REGD::Usted debe tener SALUDAR el acceso para fijar un greeting, o
+07 =REGD::hace visualizar en ensamblar un canal.  Si usted
+08 =REGD::tenga OVERGREET access, que usted puede fijar el saludo de
+09 =REGD::otra persona especificando su apodo prefijado
+10 =REGD::por el símbolo '@' después de la palabra clave de la ADICIÓN.  Usted puede
+11 =REGD::también bloquee un saludo (el IE el utilizador no podrá
+12 =REGD::para cambiarlo ellos mismos) prefijando el saludo
+13 =REGD::sí mismo con el carácter de a '!'.
+
+[CHANSERV/GREET/DEL]
+01 =REGD::SALUDE el < canal > DEL [nickname]
+02 =REGD::
+03 =REGD::Esto quitará su canal greeting, y servicios
+04 =REGD::la voluntad anuncia no más de largo su saludo en ensamblar
+05 =REGD::canal.  Si usted tiene OVERGREET access, usted puede suprimir
+06 =REGD::otro saludo de user's especificando su apodo
+07 =REGD::después del DEL keyword.
+
+[CHANSERV/GREET/LIST]
+01 =REGD::SALUDE LA LISTA del < canal > [ALL]
+02 =REGD::
+03 =REGD::Esto le mostrará lo que se fija su saludo actualmente
+04 =REGD::to, o si usted especifica TODOS después de la LISTA keyword, y
+05 =REGD::tenga OVERGREET access, que le mostrará los saludos
+06 =REGD::de todos los utilizadores en el canal.
+
+[CHANSERV/MESSAGE]
+01 =REGD::Often, los canales desearán enviar un aviso a los utilizadores como
+02 =REGD::ellos join, generalmente que les dicen el canal rules, o
+03 =REGD::cómo obtener them, o simplemente avisos del canal.
+04 =REGD::
+05 =REGD::You may maintain the on-join messages with these commands:
+06 =REGD::    ADD          DEL          LIST
+
+[CHANSERV/MESSAGE/ADD]
+01 =REGD::El MENSAJE < canal > AGREGA el < mensaje >
+02 =REGD::
+03 =REGD::Esto agregará el fondo de un nuevo mensaje (de) la lista
+04 =REGD::de los mensajes que serán visualizados a los utilizadores como ellos
+05 =REGD::ensamble el canal.  Usted debe tener acceso del MENSAJE al uso
+06 =REGD::este comando.
+
+[CHANSERV/MESSAGE/DEL]
+01 =REGD::MENSAJE < canal > DEL < NUMÉRICO >
+02 =REGD::
+03 =REGD::Esto suprimirá un mensaje de la lista que será
+04 =REGD::visualizado a los utilizadores en ensamblar el canal.  Usted puede solamente
+05 =REGD::cancelación por number, que se obtiene con el MENSAJE
+06 =REGD::Comando de la LISTA.  Usted debe tener acceso del MENSAJE para utilizar éste
+07 =REGD::comando.
+
+[CHANSERV/MESSAGE/LIST]
+01 =REGD::LISTA del < canal > del MENSAJE
+02 =REGD::
+03 =REGD::Esto enumerará fuera (numerado) de todos los mensajes que sean
+04 =REGD::visualizado a los utilizadores como ensamblan el canal.
+05 =REGD::también muestre quién agregaron el on-join message, y cuánto tiempo
+06 =REGD::ha sido en efecto.  Usted debe tener acceso del MENSAJE a
+07 =REGD::utilice este comando.
+
+[CHANSERV/SET]
+01 =REGD::Los servicios mantienen muchas configuraciones en su canal
+02 =REGD::record, extendiéndose del password, a un e-mail
+03 =REGD::address you specify, to options that effect how
+04 =REGD::los servicios tratan su canal.  Algunos de éstos usted
+05 =REGD::debe identificar set, a otros puede ser fijado como de largo
+06 =REGD::como usted HA FIJADO privilegios.
+07 =REGD::
+08 =REGD::You may alter your settings with these commands:
+09 =REGD::EMAIL DE LA PALABRA DE PASO DEL FUNDADOR COFOUNDER
+10 =REGD::DESCRIPCIÓN MLOCK BANTIME DEL URL
+11 =REGD::PARTTIME KEEPTOPIC TOPICLOCK PRIVADO
+12 =REGD::SECUREOPS ANARCHY SEGURO ENSAMBLAN
+13 =REGD::KICKONBAN RESTRINGIÓ VENGANZA
+14 =SOP::As a SOP you may also use the following commands:
+15 =SOP::COMENTARIO NOEXPIRE
+
+[CHANSERV/SET/FOUNDER]
+01 =REGD::SET <channel> FOUNDER <founder>
+02 =REGD::
+03 =REGD::Esto transferirá la propiedad del canal a
+04 =REGD::otro apodo.  Éste es permanent, usted será
+05 =REGD::abandonando TODO EL control de este channel, y si
+06 =REGD::usted no es en el acceso list, todo el acceso a él.
+07 =REGD::Usted puede inmóvil identificar como fundador si usted sabe
+08 =REGD::palabra de paso sin ser fijado como fundador.  Usted debe
+09 =REGD::identifique como fundador para utilizar este comando.
+
+[CHANSERV/SET/COFOUNDER]
+01 =REGD::FIJE el < canal > COFOUNDER < co-founder >
+02 =REGD::
+03 =REGD::This will establish a 'will' for the channel, ie.
+04 =REGD::quién lo conseguirá si su apodo es droped, o
+05 =REGD::expira.  La persona que es co-founder tiene NINGÚN
+06 =REGD::acceso adicional que qué se dan en el acceso
+07 =REGD::enumere como cada otro user, su justo un método de
+08 =REGD::asegurar eso si su mella es droped, el canal
+09 =REGD::no va con él.  Usted debe identificar como fundador
+10 =REGD::para utilizar este comando.
+
+[CHANSERV/SET/DESCRIPTION]
+01 =REGD::FIJE LA DESCRIPCIÓN < descripción > del < canal >
+02 =REGD::
+03 =REGD::Esto cambiará la descripción de lo que el canal
+04 =REGD::está todo alrededor (mostrado en la visualización del Info).  Esto es
+05 =REGD::un campo del texto de free-form usado solamente en el Info y
+06 =REGD::Comandos de la LISTA.  Sea por favor descriptivo sobre lo que
+07 =REGD::el propósito principal de los canales para ser es.
+08 =REGD::
+09 =REGD::Este valor visualizará as-is en su visualización del Info.
+10 =REGD::Fijar este valor a "NONE" lo borrará.
+
+[CHANSERV/SET/PASSWORD]
+01 =REGD::FIJE LA PALABRA DE PASO < palabra de paso > del < canal >
+02 =REGD::
+03 =REGD::Esto cambiará su palabra de paso del canal.  Éste
+04 =REGD::la palabra de paso se requiere para el comando del IDENTIFICAR (el IE
+05 =REGD::ser reconocido como fundador cuando no en su normal
+06 =REGD::apodo).  Usted debe identificar como fundador para utilizar éste
+07 =REGD::comando.
+08 =REGD::
+09 =REGD::Elija por favor una palabra de paso que usted  remember, pero eso es
+10 =REGD::convenientemente complejo al colocar su canal.  Si
+11 =REGD::algún otro consigue su canal password, que pueden entonces
+12 =REGD::control total del ejercicio concluído it, incluyendo la prohibición de usted
+13 =REGD::ejercicio a él.  Si usted ha perdido su password, usted puede
+14 =REGD::entre en contacto con a un operador de los servicios para extraerlo para usted.
+
+[CHANSERV/SET/EMAIL]
+01 =REGD::FIJE email < email > del < canal >
+02 =REGD::
+03 =REGD::Se utiliza este comando de fijar el email address de los canales
+04 =REGD::(generalmente una lista el enviar de una cierta clase).
+05 =REGD::
+06 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+07 =REGD::Este valor visualizará as-is en su visualización del Info.
+08 =REGD::Fijar este valor a "NONE" lo borrará.
+
+[CHANSERV/SET/URL]
+01 =REGD::FIJE URL < URL > del < canal >
+02 =REGD::
+03 =REGD::Se utiliza este comando de fijar el direccionamiento del Web de los canales.
+04 =REGD::You do not need to (and should not) put 'http://' en
+05 =REGD::el URL.
+06 =REGD::
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+08 =REGD::Este valor visualizará as-is en su visualización del Info.
+09 =REGD::Fijar este valor a "NONE" lo borrará.
+
+[CHANSERV/SET/COMMENT]
+01 =SOP::FIJE EL COMENTARIO < comentario > del < canal >
+02 =SOP::
+03 =SOP::Esto fijará (o claro) un comentario sobre un canal el Info
+04 =SOP::expediente.  Los utilizadores normales no podrán ver éste
+05 =SOP::comment, sin embargo todos los miembros del comité de la OPERACIÓN
+06 =SOP::voluntad.  Cuando un canal es suspended, la razón del suspender
+07 =SOP::se fija pues el comentario automatically, y éste
+08 =SOP::permanezca incluso después sea el canal unsuspended.
+09 =SOP::
+10 =SOP::Fijar este valor a "NONE" lo borrará.
+
+[CHANSERV/SET/MLOCK]
+01 =REGD::FIJE el < canal > MLOCK < modes|NONE >
+02 =REGD::
+03 =REGD::Ésta es una lista de los modos que serán hechos cumplir (+ o
+04 =REGD::-) por servicios.  Si un utilizador intenta contravenir éstos
+05 =REGD::modes, los servicios los reajustarán automáticamente.  Éste
+06 =REGD::incluye claves y límites del canal.
+07 =REGD::
+08 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+09 =REGD::Fijar este valor a "NONE" lo borrará.
+
+[CHANSERV/SET/BANTIME]
+01 =REGD::FIJE el < canal > BANTIME < bantime|RESET >
+02 =REGD::
+03 =REGD::Ésta es la cantidad de servicios del tiempo dejará una interdicción
+04 =REGD::activo en el canal antes de quitarlo automáticamente.
+05 =REGD::Este valor está en formato de la hora estándar (véase el global
+06 =REGD::ayuda de noticer's el TIEMPO).
+07 =REGD::
+08 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+09 =REGD::Fijar este valor a 0 invalidará unbanning.
+
+[CHANSERV/SET/PARTTIME]
+01 =REGD::FIJE el < canal > PARTTIME < parttime|RESET >
+02 =REGD::
+03 =REGD::Ésta es la cantidad de servicios del tiempo requerirá
+04 =REGD::utilizador haber sido fuera del canal antes que visualiza
+05 =REGD::su saludo del canal otra vez.  Este valor es en
+06 =REGD::Formato de la hora estándar (véase la ayuda global de noticer's
+07 =REGD::el TIEMPO).
+08 =REGD::
+09 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+10 =REGD::Fijar este valor a 0 visualizará CADA UNO ensambla.
+
+[CHANSERV/SET/KEEPTOPIC]
+01 =REGD::FIJE el < canal > KEEPTOPIC < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o de asunto del mantiene.
+04 =REGD::Cuando es esta opción on, los servicios recordarán
+05 =REGD::el asunto del canal después de todos los utilizadores se ha ido channel,
+06 =REGD::y voluntad re-set él cuando alguien la ensambla otra vez.
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/TOPICLOCK]
+01 =REGD::FIJE el < canal > TOPICLOCK < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o del bloqueo del asunto.
+04 =REGD::Cuando es esta opción on, los servicios no permitirán
+05 =REGD::cualquier persona para fijar el asunto del canal exceptúa por medio de
+06 =REGD::el comando del ASUNTO.
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/PRIVATE]
+01 =REGD::FIJE el < canal ON|OFF|RESET > PRIVADO < >
+02 =REGD::
+03 =REGD::Esto se girará o de privado.
+04 =REGD::Cuando esta opción es on, la visualización del Info para éste
+05 =REGD::el canal no visualizará stats sobre en quién está it,
+06 =REGD::y no mostrará para arriba en la lista del canal.
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/SECUREOPS]
+01 =REGD::FIJE el < canal > SECUREOPS < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o de Ops seguro.
+04 =REGD::Cuando esta opción es on, solamente gente en el acceso
+05 =REGD::list will be allowed to have mode +o (ops) or mode
+06 =REGD::+v (voces) fijó en ellos.
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/SECURE]
+01 =REGD::FIJE el < canal > ASEGURAN < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o de seguro.
+04 =REGD::Cuando es esta opción on, los utilizadores tendrán que identificar
+05 =REGD::a sus apodos que se reconocerán como ellos mismos
+06 =REGD::hasta el acceso de canal la lista va.
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/NOEXPIRE]
+01 =SOP::FIJE el < canal > NOEXPIRE < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Cuando usted fija esto en un channel, que el canal
+04 =SOP::no ser conforme a la expiración del canal si no es
+05 =SOP::utilizado después de un período del tiempo.  Utilice por favor esto muy
+06 =SOP::cautiously, como canal expiración garantiza ése
+07 =SOP::los canales don't consiguen soportados si they're que no es utilizado.
+
+[CHANSERV/SET/ANARCHY]
+01 =REGD::FIJE el < canal > ANARCHY < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o de Anarchy.
+04 =REGD::Cuando es esta opción on, mantiene no el deop un utilizador
+05 =REGD::quién no es en la lista del acceso si they're el primer
+06 =REGD::utilizador para ensamblar el canal.
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/KICKONBAN]
+01 =REGD::FIJE el < canal > KICKONBAN < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o de retroceso en la interdicción.
+04 =REGD::Cuando es esta opción on, los servicios golpearán a un utilizador con el pie
+05 =REGD::quién está prohibida del canal fuera de automáticamente (si
+06 =REGD::no viola un constreñimiento de la venganza).
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/RESTRICTED]
+01 =REGD::FIJE el < canal > RESTRINGIÓ < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o de restricto.
+04 =REGD::Cuando esta opción es on, solamente gente en el acceso
+05 =REGD::la lista podrá ensamblar el canal.  Si es seguro
+06 =REGD::se fija on, recuerdan identificar antes de ensamblar.
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/JOIN]
+01 =REGD::FIJE el < canal > ENSAMBLAN < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o del canal de los servicios ensamble.
+04 =REGD::Cuando es esta opción on, los servicios ensamblarán
+05 =REGD::channel, y permanece oped.  Usted no puede deop o
+06 =REGD::el retroceso services, they'll contesta y reop.
+07 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/REVENGE]
+01 =REGD::FIJE LA VENGANZA < level|RESET > del < canal >
+02 =REGD::
+03 =REGD::Esto fijará los servicios del nivel de la venganza
+04 =REGD::haga cumplir.  La venganza se toma en utilizadores cuando ellos
+05 =REGD::procure golpear con el pie o deop alguien más arriba que ellos
+06 =REGD::en el acceso list, o interdicción alguien iguala o sobre
+07 =REGD::ellos en la lista del acceso.  Vea la ayuda en VENGANZA del CONJUNTO
+08 =REGD::NIVELES para una lista de los niveles disponibles de la venganza y
+09 =REGD::la acción que tomarán.
+10 =REGD::Usted debe HABER FIJADO privilegios de utilizar este comando.
+
+[CHANSERV/SET/REVENGE/LEVELS]
+01 =::Niveles Disponibles De la Venganza Del Canal
+02 =::
+03 =::NINGUNOS  nada
+04 =::El revés REVERSO el action, pero no reprende
+05 =::DEOP DeOp (modo -o) que se ofende el utilizador
+06 =::Retroceso del RETROCESO el utilizador que se ofende del canal
+07 =::Utilizador que se ofende de la interdicción de la mella BAN1 (nick!*@*)
+08 =::Interdicción de la máscara BAN2 (*!*user@*.host) utilizador el ofenderse
+09 =::Interdicción portuaria BAN3 (*!*@port.host) utilizador el ofenderse
+10 =::Interdicción del ordenador principal BAN4 (*!*@*.host) utilizador el ofenderse
+11 =::Actividad del espejo del ESPEJO (haga lo que él movió hacia atrás!)
+
+[CHANSERV/LOCK]
+01 =SOP::Los servicios permiten que usted bloquee un valor para channel,
+02 =SOP::utilizadores de prevención con los privilegios del CONJUNTO y el fundador
+03 =SOP::de reemplazar su configuración.  Por favor uso caution,
+04 =SOP::como usted está quitando la su derecha de cambiar su expediente.
+05 =SOP::
+06 =SOP::You may lock a channels settings with these commands:
+07 =SOP::MLOCK BANTIME PARTTIME KEEPTOPIC
+08 =SOP::TOPICLOCK SECUREOPS PRIVADO ASEGURAN
+09 =SOP::ANARCHY KICKONBAN ENSAMBLAN RESTRICTO
+10 =SOP::VENGANZA
+
+[CHANSERV/LOCK/MLOCK]
+01 =SOP::BLOQUEE el < canal > MLOCK < modos >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor del bloqueo del modo para channel,
+04 =SOP::haciendo cumplir concluído lo que usted fijó lo que el canal
+05 =SOP::se ha fijado.  Hacer this, prevendrá
+06 =SOP::fundador y gente con privilegios del CONJUNTO de poder
+07 =SOP::para reemplazar este setting, satisfaga tan el uso con caution,
+08 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/BANTIME]
+01 =SOP::BLOQUEE el < canal > BANTIME < bantime >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor del tiempo de la interdicción para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/PARTTIME]
+01 =SOP::BLOQUEE el < canal > PARTTIME < parttime >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de medio tiempo para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/KEEPTOPIC]
+01 =SOP::BLOQUEE el < canal > KEEPTOPIC < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor del asunto del mantiene para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/TOPICLOCK]
+01 =SOP::BLOQUEE el < canal > TOPICLOCK < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor del bloqueo del asunto para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/PRIVATE]
+01 =SOP::BLOQUEE el < canal ON|OFF|RESET > PRIVADO < >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de privado para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/SECUREOPS]
+01 =SOP::BLOQUEE el < canal > SECUREOPS < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de Ops seguro para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/SECURE]
+01 =SOP::BLOQUEE el < canal > ASEGURAN < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de seguro para un canal a
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/ANARCHY]
+01 =SOP::BLOQUEE el < canal > ANARCHY < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de Anarchy para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/KICKONBAN]
+01 =SOP::BLOQUEE el < canal > KICKONBAN < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor del retroceso en la interdicción para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/RESTRICTED]
+01 =SOP::BLOQUEE el < canal > RESTRINGIÓ < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de restricto para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/JOIN]
+01 =SOP::BLOQUEE el < canal > ENSAMBLAN < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de ensambla para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/LOCK/REVENGE]
+01 =SOP::LOCK <channel> REVENGE <level>
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de la venganza para un canal a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::el fundador y la gente con privilegios del CONJUNTO de ser
+06 =SOP::capaz de reemplazar este setting, satisfaga tan el uso con caution,
+07 =SOP::como usted está quitando la derecha de cambiar su propio expediente.
+
+[CHANSERV/UNLOCK]
+01 =SOP::Los servicios permiten que usted bloquee un valor para channel,
+02 =SOP::evitando que el utilizador reemplace su configuración.
+03 =SOP::Estos comandos quitarán un bloqueo colocado en un canal.
+04 =SOP::
+05 =SOP::You may unlock a channels settings with these commands:
+06 =SOP::MLOCK BANTIME PARTTIME KEEPTOPIC
+07 =SOP::    TOPICLOCK    PRIVATE      SECUREOPS    SECURE
+08 =SOP::    ANARCHY      KICKONBAN    JOIN         RESTRICTED
+09 =SOP::VENGANZA
+
+[CHANSERV/UNLOCK/MLOCK]
+01 =SOP::ABRA el < canal > MLOCK
+02 =SOP::
+03 =SOP::Esto parará el hacer cumplir de los modos bloqueados en
+04 =SOP::el mlock, permitiendo que sean cambiados otra vez.
+
+[CHANSERV/UNLOCK/BANTIME]
+01 =SOP::ABRA el < canal > BANTIME
+02 =SOP::
+03 =SOP::Esto abrirá el valor del tiempo de la interdicción para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/PARTTIME]
+01 =SOP::ABRA el < canal > PARTTIME
+02 =SOP::
+03 =SOP::Esto abrirá el valor de medio tiempo para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/KEEPTOPIC]
+01 =SOP::ABRA el < canal > KEEPTOPIC
+02 =SOP::
+03 =SOP::Esto abrirá el valor del asunto del mantiene para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/TOPICLOCK]
+01 =SOP::ABRA el < canal > TOPICLOCK
+02 =SOP::
+03 =SOP::Esto abrirá el valor del bloqueo del asunto para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/PRIVATE]
+01 =SOP::ABRA el < canal > PRIVADO
+02 =SOP::
+03 =SOP::Esto abrirá el valor de privado para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/SECUREOPS]
+01 =SOP::ABRA el < canal > SECUREOPS
+02 =SOP::
+03 =SOP::Esto abrirá el valor de Ops seguro para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/SECURE]
+01 =SOP::ABRA el < canal > ASEGURAN
+02 =SOP::
+03 =SOP::Esto abrirá el valor de seguro para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/ANARCHY]
+01 =SOP::ABRA el < canal > ANARCHY
+02 =SOP::
+03 =SOP::Esto abrirá el valor de Anarchy para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/KICKONBAN]
+01 =SOP::ABRA el < canal > KICKONBAN
+02 =SOP::
+03 =SOP::Esto abrirá el valor del retroceso en la interdicción para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/RESTRICTED]
+01 =SOP::ABRA el < canal > RESTRINGIÓ
+02 =SOP::
+03 =SOP::Esto abrirá el valor de restricto para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/JOIN]
+01 =SOP::ABRA el < canal > ENSAMBLAN
+02 =SOP::
+03 =SOP::Esto abrirá el valor de ensambla para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[CHANSERV/UNLOCK/REVENGE]
+01 =SOP::ABRA LA VENGANZA del < canal >
+02 =SOP::
+03 =SOP::Esto abrirá el valor de la venganza para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+
+[MEMOSERV]
+01 =::Este servicio permite que usted envíe una nota a otros
+02 =::user, o fija un artículo de las noticias a un canal.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =:REGD:AYUDA
+06 =REGD::AYUDA LEÍDOS LISTA UNREAD
+07 =REGD::ENVÍE EL RUBOR DE LA CONTESTACIÓN ADELANTE
+08 =REGD::CONTINÚE LA CANCELACIÓN DEL FILE
+09 =REGD::CONSIGUEN
+10 =::
+11 =::Usted puede solicitar ayuda en el sintaxis y las funciones
+12 =::de cualesquiera y de todos los comandos antedichos especificando
+13 =::el nombre del comando después de la petición de la AYUDA.
+14 =::NOTE:Solamente se enumeran los comandos que usted puede utilizar actualmente
+15 =::above, y cosas tales como registro del apodo
+16 =::puede cambiar qué se visualiza arriba.
+
+[MEMOSERV/READ]
+01 =REGD::[channel] < NUM|ALL|UNREAD LEÍDOS >
+02 =REGD::
+03 =REGD::Esto visualizará el contenido de una nota o lo acanalará
+04 =REGD::artículo de las noticias.  Usted puede especificar number, un rango de
+05 =REGD::numera la lista (1-5), de los números (1,3,5), TODA para todo
+06 =REGD::notas o noticias articles, o UNREAD para solamente el unos
+07 =REGD::usted no ha leído previamente (o han fijado al unread).
+08 =REGD::Los números especificados se pueden obtener de la LISTA
+09 =REGD::comando.  Si usted está leyendo noticias del canal article,
+10 =REGD::usted debe tener acceso de MEMOREAD.
+
+[MEMOSERV/UNREAD]
+01 =REGD::UNREAD [channel] < NUM|ALL >
+02 =REGD::
+03 =REGD::Esto quitará el indicador leído de una nota o lo acanalará
+04 =REGD::artículo de las noticias.  Esto significa que mostrará para arriba en cualquiera
+05 =REGD::listado del unread (eg. LEÍDO UNREAD), y será saltado
+06 =REGD::con un DEL LEÍDO comando.  Usted puede especificar number,
+07 =REGD::rango de la lista de los números (1-5), de los números (1,3,5), o de TODO
+08 =REGD::para todas las notas o artículos de las noticias.  Los números especificaron
+09 =REGD::puede ser obtenido del comando de la LISTA.  Si usted es
+10 =REGD::unreading a channel news article, you must have MEMOREAD
+11 =REGD::acceso.
+
+[MEMOSERV/LIST]
+01 =REGD::LISTA [channel]
+02 =REGD::
+03 =REGD::Esto enumerará (e inspección previo) todas las noticias de las notas o del canal
+04 =REGD::artículos.  A '*' será visualizada antes de la nota o
+05 =REGD::el número del artículo de las noticias para indicar esta nota es unread.
+06 =REGD::Esta lista también mostrará quién envió la nota o las noticias
+07 =REGD::article, cuánto tiempo hace él estaba sent, y los primeros 20
+08 =REGD::caracteres del mensaje.  Si su están enumerando el canal
+09 =REGD::las noticias articles, usted debe tener acceso de MEMOREAD.
+
+[MEMOSERV/SEND]
+01 =REGD::ENVÍE [channel] el < mensaje >
+02 =REGD::
+03 =REGD::Esto enviará una nota a otro user, o un artículo de las noticias
+04 =REGD::a un canal.  Usted debe tener acceso de MEMOWRITE para enviar
+05 =REGD::artículo de las noticias del canal.  Esto no enviará la nota o
+06 =REGD::el artículo de las noticias immediately, lo marcará como pendiente.
+07 =REGD::la nota o el artículo de las noticias se envía solamente cuando pendiente el temporizador
+08 =REGD::las épocas out, usted envía otra nota o noticias article, usted
+09 =REGD::utilice el command, RASANTE o usted sale.  Usted puede también utilizar
+10 =REGD::el comando de la CANCELACIÓN de no enviar la nota o las noticias article,
+11 =REGD::o el comando de la CONTINUACIÓN de agregar más texto a it, y la restauración
+12 =REGD::el temporizador pendiente.
+
+[MEMOSERV/FLUSH]
+01 =REGD::VACIAN
+02 =REGD::
+03 =REGD::Esto enviará un artículo pendiente de la nota o de las noticias immediately,
+04 =REGD::y no espera para que el temporizador pendiente mida el tiempo hacia fuera.
+
+[MEMOSERV/REPLY]
+01 =REGD::CONTESTE [channel] el < texto < NUMÉRICO > >
+02 =REGD::
+03 =REGD::Esto contestará al remitente de las noticias de la nota o del canal
+04 =REGD::artículo usted specify, con donde NUMÉRICO está un número obtenido
+05 =REGD::el comando de la LISTA.  Para las noticias articles, mostrará quién
+06 =REGD::el remitente original was, y los primeros 20 carbones (inspección previo)
+07 =REGD::del artículo original de las noticias.  Para memos, él visualizará
+08 =REGD::el nombre de la conexión original del fichero si any, y
+09 =REGD::primeros 20 carbones (inspección previo) de la nota original.  En ambos
+10 =REGD::los casos indicará que esto es una contestación a otros
+11 =REGD::nota o artículo de las noticias.  El texto es su reply, in extenso.
+12 =REGD::Usted debe tener privilegios de MEMOREAD y de MEMOWRITE de contestar
+13 =REGD::a un artículo de las noticias del canal.
+
+[MEMOSERV/FORWARD]
+01 =REGD::FORWARD [channel] <NUM> <nickname|channel>
+02 =REGD::
+03 =REGD::Esto transmitirá a un artículo de las noticias de la nota o del canal
+04 =REGD::está un número otro utilizador o channel, donde NUMÉRICO obtenido
+05 =REGD::con el comando de la LISTA.  Para las noticias articles, mostrará
+06 =REGD::quién el remitente original was, y qué canal vino
+07 =REGD::de.  Para las notas mostrará quién original el remitente
+08 =REGD::was, y el nombre de la conexión del fichero si cualquiera.  En
+10 =REGD::ambo cases, indicará que esto es una nota remitida.
+11 =REGD::Usted debe tener privilegios de MEMOREAD que remitir de
+12 =REGD::channel, y MEMOWRITE a remitir a uno.
+
+[MEMOSERV/CANCEL]
+01 =REGD::CANCELAN
+02 =REGD::
+03 =REGD::Esto cancelará un artículo pendiente de las noticias de la nota o del canal.
+04 =REGD::Si éste es executed, nunca conseguirá enviada.  Una vez que
+05 =REGD::la nota o el artículo de las noticias es sent, su demasiado atrasado para cancelarlo.
+
+[MEMOSERV/DEL]
+01 =REGD::DEL [channel] < NUM|ALL|READ >
+02 =REGD::
+03 =REGD::Esto suprimirá un artículo de las noticias de la nota o del canal de
+04 =REGD::su lista de la nota o las noticias del canal enumera.  Esta acción
+05 =REGD::es permanente.  Usted puede especificar number, un rango de
+06 =REGD::numera la lista (1-5), de los números (1,3,5), TODA para todo
+07 =REGD::notas o noticias articles, o LEÍDO para solamente las le
+08 =REGD::han leído previamente.  Los números especificados pueden ser
+09 =REGD::obtenido del comando de la LISTA.  Usted debe cualquiera ser
+10 =REGD::el sender, original o tiene privilegios de MEMODEL
+11 =REGD::suprima un artículo de las noticias del canal.
+
+[MEMOSERV/CONTINUE]
+01 =REGD::CONTINÚE el < mensaje >
+02 =REGD::
+03 =REGD::Esto continuará una nota o noticias pendiente article,
+04 =REGD::teóricamente haciéndolo ilimitado de tamaño.  Esto
+05 =REGD::también reajuste el temporizador pendiente a cero.  Esto es útil
+06 =REGD::si su nota fue truncada al usar el comando del ENVIAR.
+
+[MEMOSERV/GET]
+01 =REGD::CONSIGA [NUM]
+02 =REGD::
+03 =REGD::Esto extraerá las conexiones del fichero de sus notas.
+04 =REGD::Usted puede especificar number, un rango de los números (1-5), o
+05 =REGD::una lista de los números (1,3,5).  Este comando causará
+06 =REGD::los servicios para iniciar un DCC ENVÍAN la sesión con usted.
+07 =REGD::Los números especificados se pueden obtener de la LISTA
+08 =REGD::comando.
+
+[MEMOSERV/FILE]
+01 =REGD::CLASIFÍE < el nombre de fichero > del < apodo > [message]
+02 =REGD::
+03 =REGD::Esto enviará una conexión del fichero a un utilizador.  Usted puede
+04 =REGD::especifique un message, opcional que sea visualizado
+05 =REGD::con la notificación de una conexión del fichero.  Éste
+06 =REGD::el comando esperará que un DCC ENVÍE de usted con un fichero
+07 =REGD::conocido correspondiendo con el que está especificado.  Si no
+08 =REGD::reciba uno antes de los tiempos pendientes del temporizador out, él
+09 =REGD::cancelará esta conexión del fichero.  Una vez que sea el DCC
+10 =REGD::received, la nota será enviada sobre su terminación.
+
+
+[COMMSERV]
+01 =::Este servicio permite que agrupen junto al utilizador en
+02 =::comités para los varios propósitos.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =:REGD:LISTA DE LA AYUDA INFO
+06 =REGD::MIEMBRO DE LA LISTA DE LA AYUDA INFO
+07 =REGD::LA CONEXIÓN DE LA NOTA FIJA
+08 =SOP::And as a Services Operator, the following commands:
+09 =SOP::AGREGUE DEL
+10 =::
+11 =::Usted puede solicitar ayuda en el sintaxis y las funciones
+12 =::de cualesquiera y de todos los comandos antedichos especificando
+13 =::el nombre del comando después de la petición de la AYUDA.
+14 =::NOTE:Solamente se enumeran los comandos que usted puede utilizar actualmente
+15 =::above, y cosas tales como registro del apodo
+16 =::puede cambiar qué se visualiza arriba.
+
+[COMMSERV/ADD]
+01 =SOP::AGREGUE la descripción > de la < pista > del < comité > <
+02 =SOP::
+03 =SOP::Esto creará a un nuevo comité.  Usted debe asignar
+04 =SOP::una pista y una descripción del comité para el comité en
+05 =SOP::creación.  Sea por favor seguro elegir cada committee's
+06 =SOP::dirija carefully, como pueda agregar y quitar
+07 =SOP::la gente a ese comité en will, o lo transfiere a
+08 =SOP::otros head, etc. sin cualquier manera de intervenir excepto
+09 =SOP::a DEL el comité.
+
+[COMMSERV/DEL]
+01 =SOP::DEL < comité >
+02 =SOP::
+03 =SOP::Esto quitará a un comité.  Esto también quitará
+04 =SOP::cualquier acceso de los utilizadores en quienes ganaron siendo
+05 =SOP::este comité.
+
+[COMMSERV/LIST]
+01 =::LISTA [mask [maximum]]
+02 =::
+03 =::Esto enumerará a todos los comités que correspondan con la máscara usted
+04 =::tenga specified, cuántos miembros están en it, y su
+05 =::descripción hasta un número máximo del valor por defecto de entradas
+06 =::fije por los servicios Admins.  Usted reemplaza el máximo
+07 =::la cantidad de entradas visualizó hasta absoluto un máximo
+08 =::también especificado por los servicios Admins.  Comités
+09A=:OPER:marked as private will not be displayed in the list.
+09B=OPER::marked as private will be displayed in the list.
+
+[COMMSERV/MEMO]
+01 =REGD::Mensaje > del < comité > de la NOTA <
+02 =REGD::
+03 =REGD::Esto enviará una nota a todos los miembros de un comité.
+04 =REGD::Si OPENMEMOS es on, entonces cualquier miembro de un comité
+05 =REGD::ejecute este command, de otra manera solamente el jefe del
+06 =REGD::ejecute este comando.  Las notas serán enviadas inmediatamente.
+
+[COMMSERV/INFO]
+01 =::Info < comité >
+02 =::
+04 =::Esto información de visualización de la voluntad alrededor de committee,
+05 =::incluyendo quién su principal is, su lista el enviar address,
+06 =::Web address, y opciones que ha fijado actualmente.
+
+[COMMSERV/MEMBER]
+01 =REGD::Componen a cada comité de un head, y de miembros.
+02 =REGD::La pista puede agregar o quitar a miembros en la voluntad.
+03 =REGD::
+04 =REGD::You may maintain the committee member list with:
+05 =REGD::AGREGUE A DEL LIST
+
+[COMMSERV/MEMBER/ADD]
+01 =REGD::El MIEMBRO < comité > AGREGA < apodo >
+02 =REGD::
+03 =REGD::Esto agregará a un miembro a un committee, que los concede
+04 =REGD::cualquier acceso que el comité sí mismo tenga.  Usted puede solamente
+05 =REGD::especifique un apodo registrado.
+
+[COMMSERV/MEMBER/DEL]
+01 =REGD::MIEMBRO < comité > DEL < nickname|NUM >
+02 =REGD::
+03 =REGD::Esto quitará a un miembro de un comité.  Usted
+04 =REGD::puede especificar los utilizadores nickname, o un número
+05 =REGD::obtenido del comando de la LISTA.
+
+[COMMSERV/MEMBER/LIST]
+01 =REGD::LISTA del < comité > del MIEMBRO
+02 =REGD::
+03 =REGD::Esto enumerará fuera de los miembros del especificados
+04 =REGD::comité.  La voluntad DIFUNTA aparece después de su apodo
+05 =REGD::si ha sido su apodo droped desde la adición.
+
+[COMMSERV/LOGON]
+01 =REGD::Committee's puede tener CONEXIÓN notices, que sea
+02 =REGD::enviado al utilizador tan pronto como se reconozcan por
+03 =REGD::servicios (IE en lista del acceso o después de la identificación).
+04 =REGD::
+05 =REGD::You may maintain the logon messages with:
+06 =REGD::AGREGUE A DEL LIST
+
+[COMMSERV/LOGON/ADD]
+01 =REGD::La CONEXIÓN < comité > AGREGA el < mensaje >
+02 =REGD::
+03 =REGD::Esto agregará un nuevo mensaje a los mensajes de CONEXIÓN
+04 =REGD::de un committee, que será visualizado en signon
+05 =REGD::a todos los miembros de ese comité.
+
+[COMMSERV/LOGON/DEL]
+01 =REGD::CONEXIÓN < comité > DEL < NUMÉRICO >
+02 =REGD::
+03 =REGD::Esto quitará un mensaje de los mensajes de CONEXIÓN
+04 =REGD::de un comité.  El número del mensaje puede ser
+05 =REGD::obtenido del comando de la LISTA de la CONEXIÓN.
+
+[COMMSERV/LOGON/LIST]
+01 =REGD::LISTA del < comité > de la CONEXIÓN
+02 =REGD::
+03 =REGD::Esto enumerará los mensajes de CONEXIÓN para un committee, en
+04 =REGD::orden de la cual serán visualizados al comité
+05 =REGD::miembros.  También numerarán estos mensajes para
+06 =REGD::propósitos de la cancelacíon.
+
+[COMMSERV/SET]
+01 =REGD::Los servicios mantienen muchas configuraciones en su comité
+02 =REGD::record, extendiéndose de la pista de it, a un email
+03 =REGD::diríjase a usted specify, a las opciones que efectúan cómo
+04 =REGD::los servicios tratan a su comité.
+05 =REGD::
+06 =REGD::You may alter your settings with these commands:
+07 =REGD::URL PRINCIPAL DEL EMAIL SEGURO
+08 =REGD::PRIVADOS OPENMEMOS
+
+[COMMSERV/SET/HEAD]
+01 =REGD::FIJE < la pista PRINCIPAL > del < comité >
+02 =REGD::
+03 =REGD::Esto cambiará quiénes es la pista de un comité.
+04 =REGD::la pista de un comité tiene plenos poderes concluído todo el options,
+05 =REGD::members, notas y mensajes de conexión.  Sea por favor seguro
+06 =REGD::usted desea abandonar toda la potencia del comité
+07 =REGD::antes de usar este comando.
+
+[COMMSERV/SET/EMAIL]
+01 =REGD::FIJE email < email > del < comité >
+02 =REGD::
+03 =REGD::Esto fijará el direccionamiento de la lista el enviar del committee,
+04 =REGD::cuál mostrará para arriba as-is en una visualización del Info.  Configuración
+05 =REGD::esto a NINGUNOS borrará este campo.
+
+[COMMSERV/SET/URL]
+01 =REGD::FIJE URL < URL > del < comité >
+02 =REGD::
+03 =REGD::Esto fijará el direccionamiento del Web page del committee,
+04 =REGD::cuál mostrará para arriba as-is en una visualización del Info.  Usted
+05 =REGD::do not need to (and should not) put 'http://' en
+06 =REGD::el URL.  Fijar esto a NINGUNOS borrará este campo.
+
+[COMMSERV/SET/SECURE]
+01 =REGD::FIJE al < comité > ASEGURAN < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o de seguro.
+04 =REGD::Cuando es esta opción on, los utilizadores tendrán que identificar
+05 =REGD::a sus apodos que se reconocerán como ellos mismos
+06 =REGD::hasta el comité la calidad de miembro va.
+
+[COMMSERV/SET/PRIVATE]
+01 =REGD::FIJE al < comité ON|OFF|RESET > PRIVADO < >
+02 =REGD::
+03 =REGD::Esto se girará o de privado.
+04 =REGD::Cuando esta opción es on, non-members de un comité
+05 =REGD::no pueda descubrir quién está en él con
+06 =REGD::La LISTA command, y él no mostrarán para arriba en miembros
+07 =REGD::INFO displays.
+
+[COMMSERV/SET/OPENMEMOS]
+01 =REGD::FIJE al < comité > OPENMEMOS < ON|OFF|RESET >
+02 =REGD::
+03 =REGD::Esto se girará o de notas abiertas.
+04 =REGD::Cuando esta opción es on, cualquier miembro puede enviar una nota
+05 =REGD::el resto de los miembros (y la pista) del committee,
+06 =REGD::dándole vuelta en un sistema del aviso de la comunidad de
+07 =REGD::clases.  Si no solamente la pista puede enviar notas.
+
+[COMMSERV/LOCK]
+01 =SOP::Los servicios permiten que usted bloquee un valor para committee,
+02 =SOP::evitando que la pista del comité reemplace su
+03 =SOP::configuración.  Utilice por favor caution, pues usted es el quitar
+04 =SOP::el comité head's endereza para cambiar su expediente.
+05 =SOP::
+06 =SOP::You may lock committee settings with these commands:
+07 =SOP::ASEGURE PRIVADOS OPENMEMOS
+
+[COMMSERV/LOCK/SECURE]
+01 =SOP::BLOQUEE al < comité > ASEGURAN < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de seguro para un comité a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::pista del comité de poder reemplazar esta configuración.
+06 =SOP::El uso con caution, como usted está quitando por favor head's
+07 =SOP::derecho cambiar sus el propios expediente.
+
+[COMMSERV/LOCK/PRIVATE]
+01 =SOP::BLOQUEE al < comité ON|OFF|RESET > PRIVADO < >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de privado para un comité a
+04 =SOP::lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::pista del comité de poder reemplazar esta configuración.
+06 =SOP::El uso con caution, como usted está quitando por favor los head's
+07 =SOP::derecho cambiar sus el propios expediente.
+
+[COMMSERV/LOCK/OPENMEMOS]
+01 =SOP::BLOQUEE el < canal > OPENMEMOS < ON|OFF|RESET >
+02 =SOP::
+03 =SOP::Esto bloqueará el valor de las notas abiertas para un comité
+04 =SOP::a lo que usted lo fijó.  Hacer this, prevendrá
+05 =SOP::la pista del comité de poder reemplazar éste
+06 =SOP::configuración.  Por favor el uso con caution, como usted está quitando
+07 =SOP::los head's enderezan para cambiar su propio expediente.
+
+[COMMSERV/UNLOCK]
+01 =SOP::Los servicios permiten que usted bloquee un valor para committee,
+02 =SOP::evitando que la pista reemplace su configuración.
+03 =SOP::Estos comandos quitarán un bloqueo colocado en un comité.
+04 =SOP::
+05 =SOP::You may unlock committee settings with these commands:
+06 =SOP::ASEGURE PRIVADOS OPENMEMOS
+
+[COMMSERV/UNLOCK/SECURE]
+01 =SOP::ABRA al < comité > ASEGURAN
+02 =SOP::
+03 =SOP::Esto abrirá el valor de seguro para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[COMMSERV/UNLOCK/PRIVATE]
+01 =SOP::ABRA al < comité > PRIVADO
+02 =SOP::
+03 =SOP::Esto abrirá el valor de privado para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+[COMMSERV/UNLOCK/OPENMEMOS]
+01 =SOP::ABRA al < comité > OPENMEMOS
+02 =SOP::
+03 =SOP::Esto abrirá el valor de las notas abiertas para
+04 =SOP::channel, sin embargo el valor seguirá siendo igual.
+
+
+
+[SERVMSG]
+01 =::Este servicio proporciona a muchas funciones misceláneas ése
+02 =::don't justos cupieron elsewhere, sobre todo informativo.
+03 =::
+04 =::This service allows you to use the following commands:
+05 =::LA AYUDA ACREDITA RUPTURA DE CONTRIB
+06A=:REGD:    FILE
+06B=REGD::    STATS        FILE         LANGUAGES
+07 =ADMIN::And as a Server Admin, the following commands:
+08 =ADMIN::GLOBAL
+09 =::You may also obtain help on the following:
+10 =::ESPACIO DEL TIEMPO HOSTMASKS
+11 =::
+12 =::Usted puede solicitar ayuda en el sintaxis y las funciones
+13 =::de cualesquiera y de todos los comandos antedichos especificando
+14 =::el nombre del comando después de la petición de la AYUDA.
+15 =::NOTE:Solamente se enumeran los comandos que usted puede utilizar actualmente
+16 =::above, y cosas tales como registro del apodo
+17 =::      may change what is displayed above.
+
+[SERVMSG/BREAKDOWN]
+01 =::RUPTURA
+02 =::
+03 =::Esto mostrará una lista de los servidores en los cuales esté actualmente
+04 =::el network, incluyendo cómo se conectan a cada other,
+05 =::cuántos utilizadores y están retrasados los ops del IRC en esté them, de cómo
+06 =::servicios ellos actualmente are, y porcentaje (por los utilizadores)
+07 =::de la red el servidor considera actualmente.
+
+[SERVMSG/GLOBAL]
+01 =ADMIN::< mensaje GLOBAL >
+02 =ADMIN::
+03 =ADMIN::Esto enviará un mensaje a todos los utilizadores en la red.
+04 =ADMIN::Esto se debe utilizar rarely, y para algo ése
+05 =ADMIN::la red entera necesita saber.
+
+[SERVMSG/LANGUAGES]
+01 =REGD::LENGUAJES
+02 =REGD::
+03 =REGD::Esto enumerará los lenguajes que usted puede pedir a servicios
+04 =REGD::para hablar con usted adentro con el LENGUAJE que fija en sus
+05 =REGD::entrada del apodo.
+
+[SERVMSG/CREDITS]
+01 =::CRÉDITOS
+02 =::
+03 =::Esto escupirá fuera de un poco texto cerca de services,
+04 =::incluyendo quién los autores are, donde conseguir it, el etc.
+
+[SERVMSG/CONTRIB]
+01 =::CONTRIB
+02 =::
+03 =::Este comando es como RCEcDcIcTcS, sin embargo él da más
+04 =::detalle sobre los autores themselves, y todos los otros
+05 =::quiénes eran una parte de crear el conjunto de los servicios.
+
+[SERVMSG/STATS]
+01A=REGD:OPER SOP:STATS
+01B=OPER SOP::STATS [NICK|CHANNEL|OTHER|USAGE|ALL]
+02 =REGD::
+03 =REGD::Esto le mostrará encima de cuánto tiempo han sido los servicios
+04 =REGD::for, cuántos utilizadores están en línea (y los máximos
+05 =REGD::los servicios de los utilizadores tienen seen), y cuántos se reproducen (el IE
+06 =REGD::los utilizadores del mismo ordenador principal) están en línea.
+07 =OPER SOP::
+08 =OPER SOP::Si usted especifica un parámetro después del STATS command,
+09 =OPER SOP::Usted conseguirá un display, totalmente diverso por favor ve
+10 =OPER SOP::la ayuda respectiva en estos submandatos para más
+11 =OPER SOP::información sobre lo que él visualiza.
+
+[SERVMSG/STATS/NICK]
+01 =OPER SOP::MELLA DE STATS
+02 =OPER SOP::
+03 =OPER SOP::Esto le mostrará la información de carácter general sobre apodo
+04 =OPER SOP::uso (eg. cuántos registered, suspended, etc), y
+05 =OPER SOP::mostrará la cantidad de épocas (puesto que los servicios tienen
+06 =OPER SOP::sido encima) de cada comando se ha utilizado.
+
+[SERVMSG/STATS/CHANNEL]
+01 =OPER SOP::CANAL DE STATS
+02 =OPER SOP::
+03 =OPER SOP::Esto le mostrará la información de carácter general sobre el canal
+04 =OPER SOP::uso (eg. cuántos registered, suspended, etc), y
+05 =OPER SOP::mostrará la cantidad de épocas (puesto que los servicios tienen
+06 =OPER SOP::sido encima) de cada comando se ha utilizado.
+
+[SERVMSG/STATS/OTHER]
+01 =OPER SOP::STATS OTRO
+02 =OPER SOP::
+03 =OPER SOP::Esto dará a un general grande el contener de la salida
+04 =OPER SOP::mantiene el uso (eg. cuántos la copia overrides, akills,
+05 =OPER SOP::committees, etc), y él activos mostrará la cantidad
+06 =OPER SOP::de épocas (puesto que los servicios han estado encima de) cada comando
+07 =OPER SOP::se ha utilizado.
+
+[SERVMSG/STATS/USAGE]
+01 =OPER SOP::USO DE STATS
+02 =OPER SOP::
+03 =OPER SOP::Esto dará una ruptura del uso de la memoria por
+04 =OPER SOP::services, mostrando la cantidad de expedientes en existence,
+05 =OPER SOP::y cuánto memoria toman colectivamente.
+
+[SERVMSG/STATS/ALL]
+01 =OPER SOP::STATS TODO
+02 =OPER SOP::
+03 =OPER SOP::This is equivalent to executing:
+04 =OPER SOP::Uso De Stats NICK, Stats HANNEL, Stats OTHER, Stats
+05 =OPER SOP::
+06 =OPER SOP::Vea por favor la ayuda respectiva en cada uno de estos comandos
+07 =OPER SOP::para ver lo que él lo hace individualmente.
+
+[SERVMSG/FILE]
+01 =::Los servicios tienen un fichero público interno system, que es eso
+02 =::mantenido por Services Operators.  Los utilizadores pueden descargar
+03 =::ficheros de este filesystem vía.  Dcc si tienen acceso
+04 =::a ellos.
+05 =::
+06 =::You may use the Public FileSystem with these commands:
+07 =::LA LISTA ENVÍA
+08 =SOP::As a Services Operator, you may maintain it with:
+09 =SOP::AGREGUE A DEL RENAME SECURE
+10A=SOP:SADMIN:    DCC          CANCEL
+10B=SADMIN::    DCC          CANCEL       LOOKUP
+
+[SERVMSG/FILE/LIST]
+01 =::LISTA del FICHERO [mask [max]]
+02 =::
+03 =::Esto enumerará fuera de todos los ficheros que usted tiene disponible a you,
+04 =::y cómo es grande están en el KB.  Los nombres enumerados son
+05 =::los nombres que usted pulsa en el FICHERO ENVÍAN comando.
+
+[SERVMSG/FILE/SEND]
+01 =::El FICHERO ENVÍA < nombre de fichero >
+02 =::
+03 =::Esto iniciará un DCC ENVÍA de servicios usted con
+04 =::el nombre de fichero usted tiene requested, mientras usted tiene
+05 =::permisos de descargarlo.
+
+[SERVMSG/FILE/ADD]
+01 =SOP::El FICHERO AGREGA [committees]
+02 =SOP::
+03 =SOP::Esto iniciará un DCC CONSIGUE de usted a los servicios.
+04 =SOP::clasifíe terminado una vez será agregado público al fichero
+05 =SOP::sistema como el nombre se envía como.  Si usted especifica cualquiera
+06 =SOP::comités después ADD, solamente de la gente en uno de éstos
+07 =SOP::los comités podrán descargar el fichero.
+
+[SERVMSG/FILE/DEL]
+01 =SOP::FICHERO DEL < nombre de fichero >
+02 =SOP::
+03 =SOP::Esto quitará un fichero del sistema de ficheros público.
+04 =SOP::Esto no hace ningún controlar en cuanto a quién tiene acceso a la transferencia directa
+05 =SOP::el file, y es permanent, satisface tan le asegura el tipo
+06 =SOP::corrija filename, y desee quitar ese fichero.
+
+[SERVMSG/FILE/RENAME]
+01 =SOP::El FICHERO RETITULA < nuevo nombre de fichero > del < nombre de fichero >
+02 =SOP::
+03 =SOP::Esto retitulará un fichero en el fichero system, sin
+04 =SOP::necesite download, la cancelación y re-upload el fichero.
+
+[SERVMSG/FILE/SECURE]
+01 =SOP::< nombre de fichero SEGURO > del FICHERO [committees]
+02 =SOP::
+03 =SOP::Esto reajustará la seguridad en el fichero que usted especifica
+04 =SOP::los comités usted specify, si cualquiera.  Si ningunos comités
+05 =SOP::es specified, entonces reajustará la seguridad a TODO
+06 =SOP::utilizadores.  Una vez que set, solamente utilizadores mencionados de los comités
+07 =SOP::pueda descargar el fichero especificado.
+
+[SERVMSG/FILE/DCC]
+01 =SOP::FICHERO DCC
+02 =SOP::
+03 =SOP::Esto enumerará DCC actual transfers, y su progreso
+04 =SOP::a la hora del listado.  Esto enumerará SOLAMENTE activo (non-
+05 =SOP::hasta que finalicen) transferencias.
+
+[SERVMSG/FILE/CANCEL]
+01 =SOP::CANCELACIÓN < identificación del FICHERO del dcc >
+02 =SOP::
+03 =SOP::Esto cancelará una transferencia actualmente activa del DCC (
+04 =SOP::La identificación del DCC se obtiene con el comando del DCC del FICHERO).  El utilizador
+05 =SOP::recibirá (mensaje del aborto del servidor de enc_3)internal error'.
+
+[SERVMSG/FILE/LOOKUP]
+01 =SADMIN::LISTA < tipo > del FICHERO < hexfile >
+02 =SADMIN::
+03 =SADMIN::Esto operaciones de búsqueda de la voluntad cómo y donde un nombre de fichero sin procesar (enumerado en
+04 =SADMIN::los directorios reales en sistema huesped de Magick's) se salvan
+05 =SADMIN::en la correspondencia del sistema de ficheros.  Hay tres tipos de files,
+06 =SADMIN::this command recognises:
+07 =SADMIN::MemoAttach - que le mostrará filename, quién
+08 =SADMIN::posee la nota que el fichero se asocia to, y qué número.
+09 =SADMIN::Represente - que le mostrará de quién cuadro es.
+10 =SADMIN::Público - que le mostrarán el filename, y que
+11 =SADMIN::tiene privilegios de descargarlo.
+12 =SADMIN::El hexfile es el nombre real que se salva el fichero como en
+13 =SADMIN::el sistema huesped (que es siempre un número de la tuerca hexagonal 8-digit).
+
+[SERVMSG/TIME]
+01 =::Formato De la Hora estándar
+02 =::
+03 =::Los servicios validan todos los valores del tiempo en algo que llama
+04 =::IE de la hora estándar Format, cualquier combinación de years, weeks,
+05 =::days, hours, minutos o segundos.  Usted puede indicar qué
+06 =::unidad del tiempo usted es discurso con de a 'token' después
+07 =::cantidad implicada.  IE.  30s = 30 Seconds, 4m = 4 minutos
+09 =::The tokens are:
+10 =::s = secunda m = los minutos h = las horas
+11 =::d = días W = semanas y = años
+12 =::
+13 =::Usted puede especificar estos números y símbolo en cualquier orden y
+14 =::combination you wish.  eg:
+15 =::8m, 3d4h52m2s, 3s6d4w, 1y27s6w32m5d9h
+16 =::You may also go beyond the unit's boundaries of each, eg:
+17 =::120s, 72m, 60w8d37h
+18 =::
+19 =::Puede especificarle solamente el tiempo positivo values, y el valor por defecto
+20 =::la unidad del tiempo es segundos si no se especifica ninguno.
+
+[SERVMSG/HOSTMASKS]
+01 =::Hostmasks y comodines
+02 =::
+03 =::Un hostmask refiere a cualquiera llenos los nick!user@port.host
+04 =::eso se visualiza en un user's whois, o justo la parte
+05 =::after the user's nickname, eg:
+06 =::PreZ!prez@castle.srealm.net.au o
+07 =::prez@castle.srealm.net.au
+08 =::
+09 =::Muchos lugares (tales como listas del acceso) en servicios le requieren
+10 =::para entrar un hostmask (él le advertirá si you've introdujo
+11 =::el tipo incorrecto de hostmask).  En todos los lugares en donde usted puede
+12 =::inscríbale hostmasks, puede también utilizar comodines. Comodines
+13 =::es un método de decir (carácter o characters' de enc_3)any.
+14 =::= one, y solamente un caracteres (no importa lo que)
+15 =::* = cero o más carácter (cualquier cosa).
+16 =::
+18 =::Your default access mask is as follows:
+19 =::   *user@*.host   (eg:*prez@*.srealm.net.au)
+
+[SERVMSG/SPACE]
+01 =::Estándar Formato De Espacio
+02 =::
+03 =::Los servicios validan todos los valores del espacio en algo que llama
+04 =::IE estándar del espacio Format, cualquier combinación de bytes,
+05 =::kilobytes, megabytes, gigabytes y terrabytes.  Usted puede
+06 =::indique qué unidad del tiempo usted es discurso con de
+07 =::'token' después de la cantidad implicada.  IE.  16k = 16 kilobytes
+09 =::The tokens are:
+10 =::b = octetos k = kilobytes m = megabytes
+11 =::g = gigabytes t = Terrabytes
+12 =::
+13 =::Usted puede especificar estos números y símbolo en cualquier orden y
+14 =::combination you wish.  eg:
+15 =::8k, 3g4m52k2b, 3b6g4t, 1t27b6g32m5k
+16 =::You may also go beyond the unit's boundaries of each, eg:
+17 =::10000k, 6000g8000m2048k
+18 =::
+19 =::You may only specify positive space values, and the default
+20 =::la unidad del espacio es octetos si no se especifica ninguno.
+
+
+[OPERSERV]
+01 =::Este servicio asiste a operadores del IRC en guardar control
+02 =::de la red y de los servicios.
+03 =OPER SOP::
+04 =OPER SOP::This service allows you to use the following commands:
+05 =OPER SOP::LA COPIA AKILL DE LA AYUDA NO HACE CASO
+06A=OPER:SOP:    MODE         PING         SETTINGS
+06B=SOP::    OPERDENY     MODE         PING         SETTINGS
+06C=SOP::    HTM
+07 =ADMIN::And as a Server Admin, the following commands:
+08 =ADMIN::QLINE UNQLINE NOOP JUPE
+09 =ADMIN::PIEL DE LA MATANZA
+10 =SADMIN::And as a Services Admin, the following commands:
+11 =SADMIN::EL RASTRO DESCARGA LA RECARGA IDENTIFICA
+12 =SADMIN::PARADA NORMAL DE LA ACTUALIZACIÓN EN DE
+13 =OPER SOP::
+14 =OPER SOP::Usted puede solicitar ayuda en el sintaxis y las funciones
+15 =OPER SOP::de cualesquiera y de todos los comandos antedichos especificando
+16 =OPER SOP::el nombre del comando después de la petición de la AYUDA.
+17 =OPER SOP::NOTE:Solamente se enumeran los comandos que usted puede utilizar actualmente
+18 =OPER SOP::above, y cosas tales como registro del apodo
+19 =OPER SOP::puede cambiar qué se visualiza arriba.
+
+[OPERSERV/TRACE]
+01 =SADMIN::IE de la ayuda de servicios 'Tracing', un método de encontrar
+02 =SADMIN::fuera de exactamente qué el código subyacente está haciendo en cualquiera
+03 =SADMIN::tiempo dado.  Esto se utiliza para encontrar introduce errores de funcionamiento easily,
+04 =SAMDIN::pueden ser fijados tan más rápidamente.  Cuando un rastro es on, él
+05 =SADMIN::salida a los ficheros en el sistema de los servicios.
+06 =SADMIN::No deje El Rastro ON, Como Puede Llenar Para arriba Su Duro
+07 =SADMIN::DISCO MUY RÁPIDAMENTE Y SERVICIOS DE LA CAUSA A ESTRELLARSE!
+08 =SADMIN::
+09 =SADMIN::You may toggle trace levels with the following:
+10 =SADMIN::ENCIMA ABAJO DE FIJADO
+11 =SADMIN::LOS TIPOS NIVELAN
+
+[OPERSERV/TRACE/UP]
+01 =SADMIN::RASTREE ENCIMA del < tipo > < level|name [name [... ]] >
+02 =SADMIN::
+03 =SADMIN::Esto voluntad 'turn up' el nivel o los nombres del rastro usted
+04 =SADMIN::especifique para el tipo.  Esto es operation, un IE relativo.
+05 =SADMIN::trabajará del rastro actual level, y de todo
+06 =SADMIN::los rastros anteriores seguirán siendo determinados.  Una vez un nivel del rastro
+07 =SADMIN::se da vuelta up, toda la salida para ese nivel del rastro
+08 =SADMIN::entre los ficheros del rastro en el ordenador principal de los servicios.
+09 =SADMIN::Vea por favor la ayuda en TIPOS del RASTRO y RASTREE LOS NIVELES para
+10 =SADMIN::parámetros disponibles.
+
+[OPERSERV/TRACE/DOWN]
+01 =SADMIN::RASTREE ABAJO del < tipo > < level|name [name [... ]] >
+02 =SADMIN::
+03 =SADMIN::Esto voluntad 'turn down' el nivel o los nombres del rastro usted
+04 =SADMIN::especifique para el tipo.  Esto es operation, un IE relativo.
+05 =SADMIN::trabajará del rastro actual level, y de todo
+06 =SADMIN::los rastros anteriores seguirán siendo determinados.  Una vez un nivel del rastro
+07 =SADMIN::se da vuelta down, toda la salida para ese nivel del rastro
+08 =SADMIN::entre no más de largo los ficheros del rastro en el ordenador principal de los servicios.
+09 =SADMIN::Vea por favor la ayuda en TIPOS del RASTRO y RASTREE LOS NIVELES para
+10 =SADMIN::parámetros disponibles.
+
+[OPERSERV/TRACE/SET]
+01 =SADMIN::El RASTRO FIJÓ el < tipo > < level|name [name [... ]] >
+02 =SADMIN::
+03 =SADMIN::Esto fijará el nivel del rastro o nombres que usted especifica
+04 =SADMIN::como el nivel del rastro para el tipo.  Éste es un absoluto
+05 =SADMIN::operation, IE borrará el nivel del rastro antes
+06 =SADMIN::fijar el nivel especificado.  Una vez un nivel del rastro es
+07 =SADMIN::set, toda la salida para ese nivel del rastro irá en
+08 =SADMIN::ficheros del rastro en el ordenador principal de los servicios.
+09 =SADMIN::Vea por favor la ayuda en TIPOS del RASTRO y RASTREE LOS NIVELES para
+10 =SADMIN::parámetros disponibles.
+
+[OPERSERV/TRACE/TYPES]
+01 =SADMIN::El Rastro Pulsa
+02 =SADMIN::
+03 =SADMIN::CAÑERÍA Events, data, etc (sin clasificar) entrante.
+04 =SADMIN::Proceso del NS NickServ (/MSG NickServ)
+05 =SADMIN::Proceso del CS ChanServ (/MSG ChanServ)
+06 =SADMIN::Proceso del MS MemoServ (/MSG MemoServ)
+07 =SADMIN::Proceso del OS OperServ (/MSG OperServ)
+08 =SADMIN::XS el resto del proceso de servicios
+09 =SADMIN::RED Inter-Magick data, processing, etc.
+10 =SADMIN::Escritura de la ESCRITURA (y scripted los servicios) que procesaban
+11 =SADMIN::Datos del servidor de MBASE (interfaz del ircd del IE)
+12 =SADMIN::PERDIDO cualquier cosa no en el antedicho
+13 =SADMIN::TODOS LOS todo el antedicho
+
+[OPERSERV/TRACE/LEVELS]
+01 =SADMIN::Niveles y nombres del rastro
+02 =SADMIN::
+03 =SADMIN::0x0000 de ningún trazo.
+04 =SADMIN::visualizaciones estadísticas de 0x0001 Stats solamente
+05 =SADMIN::escrituras de los ficheros de fuente de la lectura de la fuente 0x0002 (cfg,)
+06 =SADMIN::atascamiento del lazo 0x0004 y Unbinding de comandos
+07 =SADMIN::0x0008 inusitado
+08 =SADMIN::puntos de verificación de 0x0010 CheckPoint Pre-defined
+09 =SADMIN::0x0020 comenta más prolijos puntos de verificación
+10 =SADMIN::el adquirir 0x0040 y la release/versión que bloquean bloquea
+11 =SADMIN::funciones 0x0080 dentro y fuera de funciones (y de params)
+12 =SADMIN::el cambiar 0x0100 qué datos están cambiando
+13 =SADMIN::0x0200 modifican una diferencia de in/out del de registro
+14 =SADMIN::0x0400 inusitado
+15 =SADMIN::0x0800 inusitado
+16 =SADMIN::el socket de los socketes 0x1000 establece y desconecta
+17 =SADMIN::datos de la charla 0x2000 dentro y fuera de un socket
+18 =SADMIN::0x4000 inusitado
+19 =SADMIN::0x8000 externo toda la salida externas de llamadas
+20 =SADMIN::0xffff todos los todo del antedicho
+
+[OPERSERV/MODE]
+01 =OPER SOP::MODO < nick|channel > [modes]
+02 =OPER SOP::
+03 =OPER SOP::Esto visualizará los modos actuales (incluyendo claves
+04 =OPER SOP::y límites cuando sea aplicable) que se fijan en una mella
+05 =OPER SOP::canal.  Si los modos se especifican después de la mella o
+06 =OPER SOP::channel, también procurará fijarlos.  Usted puede
+07A=OPER:SOP:not set modes on a nickname.
+07B=SOP::set modes on a nickname as long as the IRC network
+08B=SOP::supports it (Please check with an IRC Admin).
+
+[OPERSERV/QLINE]
+01 =ADMIN::QLINE < máscara > [reason]
+02 =ADMIN::
+03 =ADMIN::Esto procurará a la cuarentena un apodo de ser
+04 =ADMIN::en el network, mientras usados la red del IRC
+05 =ADMIN::supports it.  This is equivalent to setting a Q:línea
+06 =ADMIN::en ese apodo en cada servidor.  Los comodines son
+07 =ADMIN::permitido en el apodo.  Utilice por favor esto CUIDADOSAMENTE.
+
+[OPERSERV/UNQLINE]
+01 =ADMIN::UNQLINE <mask>
+02 =ADMIN::
+03 =ADMIN::Esto quitará una cuarentena en un apodo fijado por
+04 =ADMIN::el comando de QULINE.  Usted debe especificar exacta la máscara
+05 =ADMIN::eso fue especificada en la cuarentena inicial.  Usted
+06 =ADMIN::puede obtener esto con a (comando de enc_4)STATS Q.
+
+[OPERSERV/NOOP]
+01 =ADMIN::NOOP < servidor > < ON|OFF >
+02 =ADMIN::
+03 =ADMIN::Esto procurará forzar a todos los operadores del IRC en
+04 =ADMIN::servidor especificado a ser OPERACIÓN LOCAL forzada SOLAMENTE.  Éste
+05 =ADMIN::si utilícese con el EXTREMO caution, y solamente cuando
+06 =ADMIN::una gran cantidad de opers (o el admin) en eso servidor
+07 =ADMIN::están poniendo los calzones a la política de la red.  Si usted utiliza éste
+08 =ADMIN::sin un muy bueno reason, es probable su servidor
+09 =ADMIN::sea delinked.
+
+[OPERSERV/KILL]
+01 =ADMIN::Razón > del < apodo > de la MATANZA <
+02 =ADMIN::
+03 =ADMIN::Esto matanza de la voluntad 'silently' un utilizador de la red.
+04 =ADMIN::el IE allí será ningún "Killed ()" en salido message,
+05 =ADMIN::y el utilizador no sabrá que han sido killed, él
+06 =ADMIN::mirará como si el servidor los golpeara con el pie apagado con
+07 =ADMIN::razón que usted especifica.
+
+[OPERSERV/HIDE]
+01 =ADMIN::PIEL < apodo > < new-host >
+02 =ADMIN::
+03 =ADMIN::Si el servidor del IRC utiliza it, éste cambiará
+04 =ADMIN::ordenador principal de los utilizadores a lo que usted especifica. Esto debe ser
+05 =ADMIN::utilizado con caution, como algunos clientes del IRC compare
+06 =ADMIN::direccionamiento en una petición del DCC y qué se registran
+07 =ADMIN::en como antes de establecer un DCC.
+
+[OPERSERV/PING]
+01 =OPER SOP::SILBIDO DE BALA
+02 =OPER SOP::
+03 =OPER SOP::Esto forzará servicios para silbar como una bala todos los servidores (usados para
+04 =OPER SOP::obteniendo las figuras en la RUPTURA command, y
+05 =OPER SOP::para calibrar cómo le está retrasado es de la red) inmediatamente.
+06 =OPER SOP::Todos los servidores se silban como una bala normalmente periódicamente de todos modos.
+
+[OPERSERV/UPDATE]
+01 =SADMIN::ACTUALIZACIÓN
+02 =SADMIN::
+03 =SADMIN::Esto forzará una salvaguardia de las bases de datos inmediatamente.
+04 =SADMIN::Esto se hace automáticamente periódicamente.
+
+[OPERSERV/SHUTDOWN]
+01 =SADMIN::PARADA NORMAL < razón >
+02 =SADMIN::
+03 =SADMIN::Esto terminará servicios totalmente.  No
+04 =SADMIN::relanzar a menos que usted los recomience manualmente.
+05 =SADMIN::ESTO SE DEBE UTILIZAR CON LA PRECAUCIÓN EXTREMA!
+
+[OPERSERV/RELOAD]
+01 =SADMIN::RECARGA
+02 =SADMIN::
+03 =SADMIN::Esto recargará el fichero de los config para los servicios.  Éste
+04 =SADMIN::ponían los cambios en ejecución realizados en este fichero de los config.
+05 =SADMIN::Los servicios quieren el squit y re-connect, o firmar apagado y
+06 =SADMIN::muestra en clientes como necesario (en la mayoría cases, que
+07 =SADMIN::no ser necesario).
+
+[OPERSERV/UNLOAD]
+01 =SADMIN::DESCARGUE el < lenguaje >
+02 =SADMIN::
+03 =SADMIN::Esto descargará un fichero del lenguaje de la memoria.  Éste
+04 =SADMIN::el fichero del lenguaje será re-loaded cuando es primer
+05 =SADMIN::utilizado otra vez (que puede significar inmediatamente si usted descarga
+06 =SADMIN::su propio lenguaje).  Esto se utiliza para poner
+07 =SADMIN::cambios a un fichero del lenguaje.
+
+[OPERSERV/JUPE]
+01 =ADMIN::JUPE < servidor > [reason]
+02 =ADMIN::
+03 =ADMIN::Esto creará un servidor fantasma conectado a
+04 =ADMIN::services, generalmente parar el servidor verdadero de
+05 =ADMIN::pudiendo conectar.  Si usted lo especifica reason,
+06 =ADMIN::será utilizado como la descripción del servidor.  Usted puede
+07 =ADMIN::consiga librado de este servidor fantasma por SQUITing lo.
+
+[OPERSERV/ON]
+01 =SADMIN::EN [service]
+02 =SADMIN::
+03 =SADMIN::Esto da vuelta al proceso de mensaje detrás encendido otra vez.  Si
+04 =SADMIN::un servicio es specified, él dará vuelta solamente a ése
+05 =SADMIN::mantenga detrás encendido.
+
+[OPERSERV/OFF]
+01 =SADMIN::[service] de < razón >
+02 =SADMIN::
+03 =SADMIN::Esto dará vuelta apagado a todo el proceso de mensaje excepto
+04 =SADMIN::para el IDENTIFICAR y EN comandos.  Si un servicio
+05 =SADMIN::es specified, dará vuelta solamente a ese servicio apagado.
+
+[OPERSERV/HTM]
+01 =SOP::Htm [ON|OFF|SET < value>]
+02 =SOP::
+03 =SOP::Esto manipulará alto modo del tráfico.  Cuando servicios
+04 =SOP::esté en el alto tráfico Mode, que son ciertas funciones de la base
+05 =SOP::invalidado para intentar y para salvar la cantidad de anchura de banda
+06 =SOP::generado por los servicios (IE para reducir respuestas).
+07 =SOP::El htm es accionado automáticamente por de entrada el tráfico
+08 =SOP::concluído cierto período del tiempo que es mayor que nuestro
+09 =SOP::umbral de Kb/s de entrada.  El período de la muestra
+10 =SOP::aumenta mientras que permanecemos en HTM, y se da vuelta el htm de
+11 =SOP::cuando vamos debajo del umbral.  El htm puede ser forzado EN
+12 =SOP::o APAGADO con este command, y el valor de umbral pueda
+13 =SOP::cambiado aquí.  El valor de umbral debe ser en
+14 =SOP::Formato De Espacio Estándar.
+
+[OPERSERV/SETTINGS]
+01 =OPER SOP::Los servicios tienen muchas configuraciones fijadas con su configuración
+02 =OPER SOP::fichero.  Usted puede visión estas configuraciones para informativo
+03 =OPER SOP::propósitos (eg. descubra cuánto tiempo un apodo dura
+04 =OPER SOP::antes de expirar) para ayudar a utilizadores con sus interrogaciones.
+05 =OPER SOP::
+06 =OPER SOP::The following categories of settings exist:
+07 =OPER SOP::CANAL DE LA MELLA DE LOS CONFIG OTRO
+08 =OPER SOP::TODO
+
+[OPERSERV/SETTINGS/CONFIG]
+01 =OPER SOP::CONFIG DE LAS CONFIGURACIONES
+02 =OPER SOP::
+03 =OPER SOP::Esto le dará la opción general de la configuración
+04 =OPER SOP::settings, eg.  El nivel y se retrasa settings, ciclo times,
+05 =OPER SOP::Conexión de la protección de SQUIT settings, stats, etc.
+
+[OPERSERV/SETTINGS/NICK]
+01 =OPER SOP::LAS CONFIGURACIONES MARCAN
+02 =OPER SOP::
+03 =OPER SOP::Esto le dará las configuraciones referente a apodos
+04 =OPER SOP::incluyendo cuánto tiempo hasta ellos expire, otros temporizadores
+05 =OPER SOP::(eg. cuánto tiempo tienen que ident), las configuraciones de valor por defecto
+06 =OPER SOP::en un nickname, registrado y configuraciones del fichero.
+
+[OPERSERV/SETTINGS/CHANNEL]
+01 =OPER SOP::LAS CONFIGURACIONES ACANALAN
+02 =OPER SOP::
+03 =OPER SOP::Esto le dará las configuraciones referente a los canales
+04 =OPER SOP::incluyendo cuánto tiempo hasta ellos expire, otros temporizadores
+05 =OPER SOP::(eg. cuanto tiempo guardar un canal después de prohibir el pasado
+06 =OPER SOP::user), configuraciones de valor por defecto en registrado channel,
+07 =OPER SOP::configuraciones del acceso y de las noticias.
+
+[OPERSERV/SETTINGS/OTHER]
+01 =OPER SOP::CONFIGURACIONES OTRO
+02 =OPER SOP::
+03 =OPER SOP::Esto le dará configuraciones referente a todo el otro
+04 =OPER SOP::servicios y listas mantenidas por ellos.  Incluyendo
+05 =OPER SOP::los servicios auto de la invalidación de la copia de la matanza list, list,
+06 =OPER SOP::inundación protection, etc.
+
+[OPERSERV/SETTINGS/ALL]
+01 =OPER SOP::CONFIGURACIONES TODO
+02 =OPER SOP::
+03 =OPER SOP::This is equivalent to executing:
+04 =OPER SOP::Canal De las Configuraciones De las Configuraciones De las Configuraciones ONFIG, NICK,
+05 =OPER SOP::CONFIGURACIONES OTRO
+06 =OPER SOP::
+07 =OPER SOP::Vea por favor la ayuda respectiva en cada uno de éstos
+08 =OPER SOP::comandos de ver lo que él lo hace individualmente.
+
+[OPERSERV/CLONE]
+01 =OPER SOP::Los servicios tienen copia de in-built protection, que
+02 =OPER SOP::mate automáticamente a un utilizador una vez que sus sean más que
+03 =OPER SOP::a pre-defined number of connections from their host.
+04 =OPER SOP::Usted puede reemplazar ese número de pre-defined aquí.
+05 =OPER SOP::
+06A=OPER:SOP:You may view the clone override list with:
+06B=SOP::You may maintain the clone override list with:
+07A=OPER:SOP:    LIST
+07B=SOP::    ADD          DEL          LIST
+
+[OPERSERV/CLONE/ADD]
+01 =SOP::La COPIA AGREGA razón > de la < cantidad > de la < máscara > <
+02 =SOP::
+03 =SOP::Esto agregará una máscara a la lista de la invalidación de la copia.  Usted
+04 =SOP::la necesidad incorpora solamente un ORDENADOR PRINCIPAL aquí (IE ningún '!' o '@').  Usted
+05 =SOP::puede utilizar comodines también.  Usted debe también especificar un nuevo
+06 =SOP::la cantidad máxima de se reproduce del ordenador principal specified, y
+07 =SOP::una razón de agregar esta invalidación.  Esta razón es
+08 =SOP::no utilizado dondequiera solamente el comando de la LISTA de la COPIA.
+
+[OPERSERV/CLONE/DEL]
+01 =SOP::COPIA DEL < mask|NUM >
+02 =SOP::
+03 =SOP::Esto suprimirá una máscara de la invalidación de la copia list,
+04 =SOP::haciendo cumplir el mismo límite de la copia que el resto de los utilizadores sea
+05 =SOP::conforme a.  Usted puede especificar un mask, y todo corresponder con
+06 =SOP::las entradas serán removed, o una forma obtenida número
+07 =SOP::Comando de la LISTA.
+
+[OPERSERV/CLONE/LIST]
+01 =OPER SOP::LISTA DE LA COPIA
+02 =OPER SOP::
+03 =OPER SOP::Esto visualizará la invalidación de la copia list, incluyendo
+04 =OPER SOP::quién lo agregó it, cuánto tiempo ha estado en
+05 =OPER SOP::list, la cantidad de los reproduce es allowed, y
+06 =OPER SOP::numere que se puede utilizar para suprimir la entrada.
+
+[OPERSERV/AKILL]
+01 =OPER SOP::Un utilizador hace a veces tan abusive, que es mejor
+02 =OPER SOP::para la red en su totalidad para matarles de ella.  Éste
+03 =OPER SOP::la lista facilita esta necesidad.  Toda la gente que corresponde con
+04 =OPER SOP::las máscaras en esta lista serán matadas automáticamente.
+05 =OPER SOP::
+06 =OPER SOP::You may maintain the Auto Kill list with:
+07 =OPER SOP::AGREGUE A DEL LIST
+
+[OPERSERV/AKILL/ADD]
+01 =OPER SOP::AKILL AGREGAN < razón > de la < máscara > [time]
+02 =OPER SOP::
+03 =OPER SOP::Esto agregará la máscara completa del user@host que usted especifica
+04 =OPER SOP::la matanza auto list, y mata a cualquier utilizador que lo corresponde con.
+05 =OPER SOP::La máscara que usted especifica puede incluir comodines.  Usted debe
+06 =OPER SOP::también especifique una razón para el utilizador que es killed, que
+07 =OPER SOP::será utilizado en su razón de la matanza.  Usted puede opcionalmente
+08 =OPER SOP::especifique una época en formato de la hora estándar.  Si usted so,
+09 =OPER SOP::será utilizado como la época de guardar la matanza auto en
+10 =OPER SOP::efecto (dependiendo de access, hay el vario máximo
+11 =OPER SOP::mide el tiempo de specifiable).  Si usted no especifica un time,
+12 =OPER SOP::el valor por defecto será utilizado (véase las CONFIGURACIONES OTRA para esto).
+
+[OPERSERV/AKILL/DEL]
+01 =OPER SOP::AKILL DEL < mask|NUM >
+02 =OPER SOP::
+03 =OPER SOP::Esto quitará una máscara de la matanza auto list, permitiendo
+04 =OPER SOP::todos los utilizadores que corresponden con esta parte posteriora de la máscara en la red.  Usted
+05 =OPER SOP::puede especificar un mask, y todas las entradas corresponder con esta máscara
+06 =OPER SOP::será quitado del list, o usted puede especificar
+07 =OPER SOP::número obtenido del comando de la LISTA de AKILL.
+
+[OPERSERV/AKILL/LIST]
+01 =OPER SOP::LISTA DE AKILL
+02 =OPER SOP::
+03 =OPER SOP::Esto visualizará la matanza auto list, incluyendo la máscara
+04 =OPER SOP::banned, cuánto tiempo han estado prohibidos for, cuánto tiempo
+05 =OPER SOP::fueron matados for, la razón que eran automóvil Killed,
+06 =OPER SOP::quién agregó them, y los números que se pueden utilizar para suprimir
+07 =OPER SOP::ellos de la lista auto de la matanza.
+
+[OPERSERV/OPERDENY]
+01 =SOP::A partir de tiempo time, a una operación pondrá los calzones a la red
+02 =SOP::policies, o va insano y comienzo que daña la red.
+03 =SOP::OPERDENY se utiliza para eliminar una operación de sus potencias de la operación
+04 =SOP::hasta que su admin puede conseguir en línea y reparto con ellos.
+05 =SOP::
+06A=SOP:SADMIN:You may view the oper deny list with:
+06B=SADMIN::You may maintain the oper deny list with:
+07A=SOP:SADMIN:    LIST
+07B=SADMIN::    ADD          DEL          LIST
+
+[OPERSERV/OPERDENY/ADD]
+01 =SADMIN::OPERDENY AGREGAN la < máscara >
+02 =SADMIN::
+03 =SADMIN::Esto agregará la máscara especificada a la operación niega la lista
+04 =SADMIN::con eficacia parándolos de fijar el modo +o (opering
+05 =SADMIN::encima de).  Usted puede utilizar comodines en esta máscara.  Usted debe
+06 =SADMIN::especifique una máscara completa del nick!user@host (*!  será asumido).
+
+[OPERSERV/OPERDENY/DEL]
+01 =SADMIN::OPERDENY DEL < mask|NUM >
+02 =SADMIN::
+03 =SADMIN::Esto quitará una máscara de la operación niega la lista.  Usted
+04 =SADMIN::puede especificar un mask, y todas las entradas corresponder con eso máscara
+05 =SADMIN::sea removed, o usted puede especificar un número obtenido
+06 =SADMIN::con el comando de la LISTA de OPERDENY.
+
+[OPERSERV/OPERDENY/LIST]
+01 =SOP::LISTA DE OPERDENY
+02 =SOP::
+03 =SOP::Esto enumerará todas las entradas en la operación niega list,
+04 =SOP::incluyendo quién agregó them, cuánto tiempo ha sido la máscara
+05 =SOP::for, negado y un número que se puede utilizar para suprimirlo.
+
+[OPERSERV/IGNORE]
+01 =OPER SOP::Los servicios hacen que 2 no hagan caso lists, de un temporary, y uno
+02 =OPER SOP::permanente.  Un utilizador puede ser agregado a cualquiera accionando
+03 =OPER SOP::la inundación de los servicios protection, pero un utilizador puede estar manualmente
+04 =OPER SOP::agregado a la permanente no haga caso de la lista también.
+05 =OPER SOP::
+06A=OPER:SOP:You may view the permanent ignore list with:
+06B=SOP::You may maintain the permanent ignore list with:
+07A=OPER:SOP:    LIST
+07B=SOP::    ADD          DEL          LIST
+
+[OPERSERV/IGNORE/ADD]
+01 =SOP::NO HAGA CASO AGREGAN la < máscara >
+02 =SOP::
+03 =SOP::Esto agregará una máscara a la permanente no hace caso de la lista.   Cualquiera
+04 =SOP::el utilizador que corresponde con esta máscara no conseguirá una respuesta de
+05 =SOP::services, incluso en pings, el etc.  Esto también significa que
+06 =SOP::NO PODER A LA IDENTIFICACIÓN.  Usted puede utilizar comodines en éste
+07 =SOP::mask, y usted debe especificar una máscara completa del nick!user@host.
+
+[OPERSERV/IGNORE/DEL]
+01 =SOP::NO HAGA CASO DE DEL < mask|NUM >
+02 =SOP::
+03 =SOP::Esto quitará una máscara de la permanente no hace caso de la lista.
+04 =SOP::Usted puede especificar un mask, y todas las entradas que corresponden con eso máscara
+05 =SOP::sea removed, o usted puede especificar un número obtenido con
+06 =SOP::el comando de la LISTA del NO HACER CASO.
+
+[OPERSERV/IGNORE/LIST]
+01 =OPER SOP::NO HAGA CASO DE LA LISTA
+02 =OPER SOP::
+03 =OPER SOP::Esto visualizará todas las entradas en la permanente no hace caso
+04 =OPER SOP::lista.  También mostrará quién agregó them, cuanto tiempo ellos
+05 =OPER SOP::han estado encendido no hacen caso de for, y de un número que pueden ser utilizados
+06 =OPER SOP::para suprimirlos de la lista.
+
