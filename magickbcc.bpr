@@ -13,7 +13,7 @@ BCB = $(MAKEDIR)\..
 
 VERSION = BCB.04.04
 # ---------------------------------------------------------------------------
-PROJECT = Debug\magickbcc.exe
+PROJECT = src\Debug\magickbcc.exe
 OBJFILES = Debug\magickbcc.obj Debug\base.obj Debug\chanserv.obj Debug\commserv.obj \
   Debug\confbase.obj Debug\cryptstream.obj Debug\datetime.obj Debug\dccengine.obj \
   Debug\EscLexer.obj Debug\EscParser.obj Debug\fileconf.obj Debug\ircsocket.obj \
@@ -43,7 +43,7 @@ PATHRC = .;
 PATHASM = .;
 DEBUGLIBPATH = $(BCB)\lib\debug
 RELEASELIBPATH = $(BCB)\lib\release
-SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT
+SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_RTLDLL
 USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;DES_UNROLL;ACE_NTRACE=1
 # ---------------------------------------------------------------------------
 CFLAG1 = -Isrc;$(BCB)\include;$(BCB)\include\ATL;include\bob;include;..\support\ace_wrappers;..\support\zlib \
@@ -67,7 +67,7 @@ IFLAGS =
 ALLOBJ = c0x32.obj $(OBJFILES)
 ALLRES = $(RESFILES)
 ALLLIB = $(LIBFILES) $(LIBRARIES) ZLIB.LIB ACED.LIB ODBCCP32.LIB UUID.LIB import32.lib \
-  cw32mt.lib
+  cw32mti.lib
 # ---------------------------------------------------------------------------
 !ifdef IDEOPTIONS
 
@@ -121,9 +121,10 @@ Count=1
 Item0=Debug
 
 [HistoryLists\hlFinalOutputDir]
-Count=2
+Count=3
 Item0=Debug\
-Item1=Debug
+Item1=DebugItem1=Debug
+Item2=
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
