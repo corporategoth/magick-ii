@@ -506,13 +506,10 @@ void Chan_Live_t::SendMode(mstring in)
 	    add = false;
 	    break;
 	case 'o':
-CP(("DEBUG 1"));
 	    if (in.WordCount(" ") >= param)
 	    {
-CP(("DEBUG 2"));
 		if (add)
 		{
-CP(("DEBUG 3"));
 		    if (!IsOp(in.ExtractWord(param, " ")))
 		    {
 			if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " ")))
@@ -526,23 +523,17 @@ CP(("DEBUG 3"));
 		}
 		else
 		{
-CP(("DEBUG 4"));
 		    if (IsOp(in.ExtractWord(param, " ")))
 		    {
-CP(("DEBUG 5 %s | %s", p_mode_on.c_str(), p_mode_off.c_str()));
 			if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(param, " ")))
 			    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(param, " "));
-CP(("DEBUG 6 %s | %s", p_mode_on.c_str(), p_mode_off.c_str()));
 			if (!ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(param, " ")))
 			{
-CP(("DEBUG 7 %s | %s", p_mode_on.c_str(), p_mode_off.c_str()));
 			    p_modes_off += "o";
 			    p_modes_off_params.push_back(in.ExtractWord(param, " "));
 			}
-CP(("DEBUG 8 %s | %s", p_mode_on.c_str(), p_mode_off.c_str()));
 		    }
 		}
-CP(("DEBUG 9"));
 	    }
 	    break;
 	case 'v':
@@ -892,7 +883,7 @@ void Chan_Stored_t::Join(mstring nick)
 	}
 
     { // NOONE else can move our iterator
-    MLOCK(("ChanServ", "Akick", i_Name));
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (Akick_find(nick))
     {
 	// If this user is the only user in channel

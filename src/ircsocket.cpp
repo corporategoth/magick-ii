@@ -394,7 +394,7 @@ int EventTask::svc(void)
 
 	    // news articles
 	    {
-		MLOCK(("MemoServ", "news"));
+		MLOCK(("MemoServ", "channel"));
 		for (ni=Parent->memoserv.channel.begin();
 			ni!=Parent->memoserv.channel.end(); ni++)
 		{
@@ -510,6 +510,8 @@ int EventTask::svc(void)
 			    k++;
 			}
 		    }
+		    if (j>0 && cli->second.p_modes_on.size())
+			mode += "+";
 		    for (i=0, k=0; i<cli->second.p_modes_on.size(); i++, j++)
 		    {
 			if (j>=modesperline)
@@ -532,6 +534,8 @@ int EventTask::svc(void)
 			    k++;
 			}
 		    }
+		    if (j>0)
+			modelines.push_back(mode + " " + modeparam);
 		    for (i=0; i<modelines.size(); i++)
 		    {
 			Parent->server.MODE(Parent->chanserv.FirstName(),

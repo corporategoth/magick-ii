@@ -229,7 +229,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (what.CmpNoCase("all"))
+	if (what.CmpNoCase("all")==0)
 	{
 	    list<News_t>::iterator iter;
 	    int i = 1;
@@ -345,7 +345,7 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (what.CmpNoCase("all"))
+	if (what.CmpNoCase("all")==0)
 	{
 	    list<Memo_t>::iterator iter;
 	    int i = 1;
@@ -492,7 +492,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (what.CmpNoCase("all"))
+	if (what.CmpNoCase("all")==0)
 	{
 	    list<News_t>::iterator iter;
 	    int i = 1;
@@ -576,7 +576,7 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (what.CmpNoCase("all"))
+	if (what.CmpNoCase("all")==0)
 	{
 	    list<Memo_t>::iterator iter;
 	    int i = 1;
@@ -1142,7 +1142,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (what.CmpNoCase("all"))
+	if (what.CmpNoCase("all")==0)
 	{
 	    if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "DELMEMO"))
 	    {
@@ -1255,7 +1255,7 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (what.CmpNoCase("all"))
+	if (what.CmpNoCase("all")==0)
 	{
 	    list<Memo_t>::iterator iter;
 	    int i = 1;

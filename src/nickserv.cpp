@@ -274,6 +274,19 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			    News_t(recipiant, sender, text));
 			send(service, nick, "Memo has been sent to " + recipiant + " (" +
 			    Parent->chanserv.stored[recipiant.LowerCase()].Founder() + ").");
+			if (Parent->chanserv.IsLive(recipiant))
+			{
+			    Chan_Live_t *chan = Parent->chanserv.live[recipiant.LowerCase()];
+			    int i;
+			    for(i=0; i<chan->Users(); i++)
+			    {
+				if (Parent->chanserv.stored[recipiant.LowerCase()].GetAccess(chan->User(i), "READMEMO"))
+				{
+				    send(service, nick, "There is a new channel news article (#" +
+					itoa(Parent->memoserv.channel[recipiant.LowerCase()].size()) + ").");
+				}
+			    }
+			}
 		    }
 		}
 		else
@@ -289,6 +302,9 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			    Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
 				Memo_t(realrecipiant, sender, text, filenum));
 			    send(service, nick, "Memo has been sent to " + recipiant + " (" + realrecipiant + ").");
+			    if (Parent->nickserv.stored[realrecipiant.LowerCase()].IsOnline())
+				send(service, nick, "You have a new memo from " + sender + " (#" +
+					itoa(Parent->memoserv.nick[realrecipiant.LowerCase()].size()) + ").")
 			}
 			else if (File())
 			{
