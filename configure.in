@@ -499,4 +499,4 @@ str="| Magick II Key Stamp 2 $fill"
 str="`echo $str | cut -b1-$len` |"
 AC_DEFINE_UNQUOTED(CRYPTO_KEY2, "$str")
 
-AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/des/Makefile include/xml/Makefile docs/man/Makefile docs/devel/Makefile lang/Makefile)
+AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/des/Makefile include/xml/Makefile docs/man/Makefile lang/Makefile)
