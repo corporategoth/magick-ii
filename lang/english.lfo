@@ -376,6 +376,6 @@ DB_NODECRYPT     =Decryption of database failed (usually because the database is
 DB_NODECOMPRESS  =Decompression of databases failed (usually because the wrong key was used).
 DB_NOSANITY      =Database failed sanity check (usually because the wrong database version is used).
 DB_NOPARSE       =Failed to parse databases (internal data structure is incorrect!).
-WRONG_PASS_TYPE  =Hashed (one-way) passwords found - this binary does not support them!
+WRONG_PASS_TYPE  =Password found with hash not supported by this binary.  Please re-compile with the correct password hashing support.
 KEY_CORRUPT      =Keyfile $1 failed validation checks (requires regeneration) - NOT USED!
 EXCEPTION_CAUGHTUNHANDLED = Caught an unhandled exception in file $1 line $2, this should be reported to the developers ASAP.

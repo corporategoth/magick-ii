@@ -3004,7 +3004,7 @@ void Nick_Stored_t::Password(const mstring & in)
 #else
 #if defined(JP2CRYPT)
 	char *newpass = new char[(in.length() * 2) + 1];
-	mJP2HASH(in.c_str(). in.length(), newpass);
+	mJP2HASH(in.c_str(), in.length(), newpass);
 #elif defined(DESCRYPT) || defined(MD5CRYPT)
 	char newpass[35];
 	mCRYPTHASH(in.c_str(), newpass, NULL);
@@ -3038,7 +3038,7 @@ bool Nick_Stored_t::CheckPass(const mstring & password)
 #else
 #if defined(JP2CRYPT)
 	char *newpass = new char[(password.length() * 2) + 1];
-	mJP2HASH(password.c_str(). password.length(), newpass);
+	mJP2HASH(password.c_str(), password.length(), newpass);
 #elif defined(DESCRYPT) || defined(MD5CRYPT)
 	char newpass[35];
 	mCRYPTHASH(password.c_str(), newpass, i_Password.empty() ? NULL : i_Password.c_str());
@@ -4769,7 +4769,7 @@ void Nick_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 #if defined(JP2CRYPT)
 	    char *newpass = new char[(clearpass.length() * 2) + 1];
-	    mJP2HASH(clearpass.c_str(). clearpass.length(), newpass);
+	    mJP2HASH(clearpass.c_str(), clearpass.length(), newpass);
 #elif defined(DESCRYPT) || defined(MD5CRYPT)
 	    char newpass[35];
 	    mCRYPTHASH(clearpass.c_str(), newpass, NULL);

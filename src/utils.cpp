@@ -546,7 +546,7 @@ void mJP2HASH16(const char *in, const size_t size, char *out)
     char sum=0;
     int i;
     strcpy(out,in);
-    for(i=0;i<size;++i) sum+=in[i];
+    for(i=0;i<(int) size;++i) sum+=in[i];
     out[--i]|=sum;
     i--;
     for(;i>=0;--i) {
@@ -563,7 +563,7 @@ void mJP2HASH(const char *in, const size_t size, char *out)
     mJP2HASH16(in, size, tmp);
 
     memset(out, 0, (size * 2) + 1);
-    for (int i = 0; i < size; i++)
+    for (unsigned int i = 0; i < size; i++)
 	sprintf(&out[i * 2], "%02x", tmp[i]);
     delete [] tmp;
     ETCB();
@@ -618,11 +618,14 @@ void mCRYPTHASH(const char *in, char *out, const char *salt)
 	{
 	    mysalt[i] = (rand() % 64) + 46;
 	    if (mysalt[i] > 57)
-		mysalt[i] += 8;
-	    if (mysalt[i] > 90)
 		mysalt[i] += 7;
+	    if (mysalt[i] > 90)
+		mysalt[i] += 6;
 	}
 	epos = i;
+#ifdef MD5CRYPT
+	epos++;
+#endif
     }
 
     char *res = crypt(in, mysalt);
