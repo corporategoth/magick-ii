@@ -22,7 +22,7 @@
 
 include Makefile.inc
 
-TOPDIR=$${PWD}
+TOPDIR=/home/admin/prez/projects/Magick/Magick-II
 
 # What directories to enter and compile.
 SUBDIRS=$(ZDIR)
@@ -31,27 +31,34 @@ SUBDIRS=$(ZDIR)
 LIBS=$(SUBLIBS) $(LIBZ)
 
 # --[ Dont edit below this line ]-----------------------------------------
+OLDPWD=$(TOPDIR)
 
 all: rmexec magick
 
 rmexec:
 	rm -f magick magick.debug
 
-magick:
+magick: subdirs link
+
+subdirs:
 	helper/build-ver
 	@for x in $(SUBDIRS) ./src; \
 	do	cd $$x; \
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
-		cd $${OLDPWD}; \
-		$(MAKE) -C $$x TOPDIR=$(TOPDIR); \
+		$(MAKE) TOPDIR=$(TOPDIR); \
+		cd $(OLDPWD); \
 	done
-	$(CC) $(LFLAGS) $(LIBS) -o magick
+
+link:
+	gcc $(LFLAGS) $(LIBS) -o magick
 	cp magick magick.debug
 	strip magick
 
 clean:
 	@for x in $(SUBDIRS) ./src; \
-	do	$(MAKE) -C $$x clean TOPDIR=$(TOPDIR); \
+	do	cd $$x; \
+		$(MAKE) clean TOPDIR=$(TOPDIR); \
+		cd $(OLDPWD); \
 	done

@@ -20,6 +20,7 @@
 #include "EscParser.hpp"
 #include "lockable.h"
 #include "utils.h"
+#include "mstream.h"
 
 //#define ACE_DEBUGGING
 

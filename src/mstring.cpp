@@ -719,7 +719,7 @@ bool mstring::Matches(const mstring& in)const
 	else if(in[i]=='*')
 	    in2=in2+".*";
 	else if(in[i]=='?')
-	    in2=in2+".\\?";
+	    in2=in2+".";
 	else
 	    in2=in2+in[i];
     }

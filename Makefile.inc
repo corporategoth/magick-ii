@@ -9,7 +9,7 @@ CXX=g++
 CFLAGS=-DMAGICK_HAS_EXCEPTIONS -O3 -fno-default-inline -I/usr/local/include -I$(TOPDIR)/include -g
 
 # Linking flags to give the compiler
-LFLAGS=-L/usr/local/lib -lACE -lpthread -lz
+LFLAGS=-L/usr/local/lib -lACE -lpthread -lm -lstdc++ -lz
 
 # What third-party libraries to include in link
 SUBLIBS=./src/magick.a ./src/antlr/antlr.a ./src/des/des.a ./src/rx-1.5/rx/librx.a

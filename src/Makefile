@@ -13,6 +13,7 @@ OBJS = EscLexer.$(OBJ) EscParser.$(OBJ) base.$(OBJ) chanserv.$(OBJ) \
 
 SUBDIRS=antlr des rx-1.5
 
+OLDPWD=$(TOPDIR)/src
 all: SUBS RMLIB $(LIBNAME)
 
 clean:
@@ -21,8 +22,8 @@ clean:
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
-		cd $${OLDPWD}; \
-		$(MAKE) -C $$x clean $(PASSTHRU); \
+		$(MAKE) clean $(PASSTHRU); \
+		cd $(OLDPWD); \
 	done
 	rm -f *.$(OBJ) $(LIBNAME)
 
@@ -32,8 +33,8 @@ SUBS:
 		if [ -f ./configure ]; \
 		then	./configure; \
 		fi; \
-		cd $${OLDPWD}; \
-		$(MAKE) -C $$x $(PASSTHRU); \
+		$(MAKE) $(PASSTHRU); \
+		cd $(OLDPWD); \
 	done
 
 RMLIB:
