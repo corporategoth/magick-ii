@@ -1355,7 +1355,7 @@ mstring FilterIn(const mstring& str)
 {
   FT("FilterIn", (str));
   mstring strResult;
-  strResult.resize(str.size(),' ');
+//  strResult.resize(str.size(),' ');
 
   bool bQuoted = !str.IsEmpty() && str[0U] == '"';
 
@@ -1405,7 +1405,7 @@ mstring FilterOut(const mstring& str)
       RET(str);
 
   mstring strResult;
-  strResult.resize(str.size(),' ');
+//  strResult.resize(str.size(),' ');
 
   // quoting is necessary to preserve spaces in the beginning of the string
   bool bQuote = isspace(str[0U]) || str[0U] == '"';
