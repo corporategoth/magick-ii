@@ -1,3 +1,8 @@
+* 2002-02-04 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.21):
+  
+  Created version 2.0s20020204
+
 * 2002-01-31 13:51  Preston A. Elder <prez@magick.tm>
   src/base.cpp (1.186), src/ircsocket.cpp (1.204), src/mstring.cpp (1.129),
   src/server.cpp (1.209), src/utils.cpp (1.81):
