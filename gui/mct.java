@@ -7,10 +7,10 @@
 // however it may be added to if any modifications are made to this
 // file.  All modified code must be clearly documented and labelled.
 //
-// This code is released under the GNU General Public License, which
-// means (in short), it may be distributed freely, and may not be sold
-// or used as part of any closed-source product.  Please check the
-// COPYING file for full rights and restrictions of this software.
+// This code is released under the Artistic License v2.0 or better.
+// The full text of this license should be contained in a file called
+// COPYING distributed with this code.  If this file does not exist,
+// it may be viewed here: http://www.magick.tm/m2/license.html
 //
 // =======================================================================
 // rcsid = @(#)$Id$
@@ -239,7 +239,7 @@ public class mct extends JApplet implements ActionListener
 			"This tool was written to configure Magick IRC Services version 2.0\n" +
 			"\n" +
 			"This tool was written by Preston A. Elder <prez@magick.tm>, and is\n" +
-			"released under the terms of the GNU General Public License.\n" +
+			"released under the terms of the Artistic License v2.0 or better.\n" +
 			"\n" +
 			"The Magick home page can be found at: http://www.magick.tm\n" +
 			"\n" +

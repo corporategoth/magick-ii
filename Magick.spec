@@ -2,7 +2,7 @@ Summary: Magick IRC Services
 Name: Magick
 Version: 2.0
 Release: 1
-Copyright: GPL
+Copyright: Artistic-2.0
 Group: Applications/Communications
 Source: ftp.goth.net/pub/magick.tm/Magick-2.0.tar.gz
 BuildRoot: /var/tmp/%{name}-buildroot

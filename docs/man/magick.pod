@@ -396,7 +396,7 @@ L<magick_keygen(1)>, L<magick_stampkeys(1)>
 
 Magick may be obtained from B<http://www.magick.tm> or
 B<ftp://ftp.magick.tm/pub/magick.tm> and is distributed under
-the I<GNU General Public License>.
+the I<Artistic License v2.0 or better>.
 
 =head1 DEDICATION
 

@@ -11,10 +11,10 @@
 ** however it may be added to if any modifications are made to this
 ** file.  All modified code must be clearly documented and labelled.
 **
-** This code is released under the GNU General Public License, which
-** means (in short), it may be distributed freely, and may not be sold
-** or used as part of any closed-source product.  Please check the
-** COPYING file for full rights and restrictions of this software.
+** This code is released under the Artistic License v2.0 or better.
+** The full text of this license should be contained in a file called
+** COPYING distributed with this code.  If this file does not exist,
+** it may be viewed here: http://www.magick.tm/m2/license.html
 **
 ** ======================================================================= */
 #ifndef _LOCKABLE_H
@@ -178,13 +178,13 @@ public:
     }
 #endif
 
-    void *operator          new(size_t size)
+    void *operator           new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Read));
     }
-    void operator          delete(void *ptr)
+    void operator           delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }
@@ -218,13 +218,13 @@ public:
     }
 #endif
 
-    void *operator          new(size_t size)
+    void *operator           new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Write));
     }
-    void operator          delete(void *ptr)
+    void operator           delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }
@@ -247,13 +247,13 @@ public:
     {
     }
 
-    void *operator          new(size_t size)
+    void *operator           new(size_t size)
     {
 	static_cast < void > (size);
 
 	return Lock_Tokenizer::memory_area.malloc(sizeof(mLock_Mutex));
     }
-    void operator          delete(void *ptr)
+    void operator           delete(void *ptr)
     {
 	Lock_Tokenizer::memory_area.free(ptr);
     }

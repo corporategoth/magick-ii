@@ -53,7 +53,7 @@ methods of hiding keystrokes will be implemented.
 
 Magick may be obtained from B<http://www.magick.tm> or
 B<ftp://ftp.magick.tm/pub/magick.tm> and is distributed under
-the I<GNU General Public License>.
+the I<Artistic License v2.0 or better>.
 
 You will need to re-generate your Magick database keys (with the
 same keys entered the first time) each time you re-stemp the

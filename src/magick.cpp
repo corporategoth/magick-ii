@@ -16,10 +16,10 @@
 ** however it may be added to if any modifications are made to this
 ** file.  All modified code must be clearly documented and labelled.
 **
-** This code is released under the GNU General Public License, which
-** means (in short), it may be distributed freely, and may not be sold
-** or used as part of any closed-source product.  Please check the
-** COPYING file for full rights and restrictions of this software.
+** This code is released under the Artistic License v2.0 or better.
+** The full text of this license should be contained in a file called
+** COPYING distributed with this code.  If this file does not exist,
+** it may be viewed here: http://www.magick.tm/m2/license.html
 **
 ** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_magick_cpp_ ## x () { return y; }
@@ -1062,8 +1062,8 @@ void Magick::dump_help() const
 	"--logignore        -i      Override [OPERSERV/LOG_IGNORE] to true.\n" <<
 	"--ignore X         -I      Override [OPERSERV/IGNORE_METHOD] to X.\n" << "\n" << "For more help on the usage of " +
 	mstring(PACKAGE) +
-	", please browse the docs directory.\n" << "This released under the GNU General Public License.  Please see the\n" <<
-	"\"COPYING\" file for more details.\n\n";
+	", please browse the docs directory.\n" << "This released under the Artistic License v2.0 or better.  Please see the\n"
+	<< "\"COPYING\" file for more details.\n\n";
 
 }
 

@@ -90,12 +90,8 @@ Mirrors are:
 <sect1>License<label id="Intro_License">
 <p>
 
-Magick itself is distributed under the GNU General Public License.
+Magick itself is distributed under the Artistic License v2.0 or better.
 A full copy of the license comes with every copy of Magick.
-
-The crux of the GNU GPL however is that no one may charge for Magick,
-and anything derived from Magick must also be free, and if it is
-distributed at all, the source code must also be available.
 
 As a user of the product (i.e., not the person installing it), you
 are under no license or obligations.

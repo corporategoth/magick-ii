@@ -8,10 +8,10 @@
 ** however it may be added to if any modifications are made to this
 ** file.  All modified code must be clearly documented and labelled.
 **
-** This code is released under the GNU General Public License, which
-** means (in short), it may be distributed freely, and may not be sold
-** or used as part of any closed-source product.  Please check the
-** COPYING file for full rights and restrictions of this software.
+** This code is released under the Artistic License v2.0 or better.
+** The full text of this license should be contained in a file called
+** COPYING distributed with this code.  If this file does not exist,
+** it may be viewed here: http://www.magick.tm/m2/license.html
 **
 ** ======================================================================= */
 #define RCSID(x,y) const char *rcsid_magick_keygen_c_ ## x () { return y; }
@@ -67,7 +67,9 @@ void signal_catcher(int signum);
 #endif
 
 FILE *outfile = NULL, *tty = NULL;
-char filename[PATH_MAX] = { 0 };
+char filename[PATH_MAX] =
+{
+0};
 
 #ifdef HAVE_TERMIO_H
 struct termio tty_new, tty_orig;

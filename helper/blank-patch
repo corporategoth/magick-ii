@@ -10,10 +10,19 @@
 # however it may be added to if any modifications are made to this
 # file.  All modified code must be clearly documented and labelled.
 #
-# This code is released under the GNU General Public License, which
-# means (in short), it may be distributed freely, and may not be sold
-# or used as part of any closed-source product.  Please check the
-# COPYING file for full rights and restrictions of this software.
+# This code is released under the Artistic License v2.0 or better.
+# The full text of this license should be contained in a file called
+# COPYING distributed with this code.  If this file does not exist,
+# it may be viewed here: http://www.magick.tm/m2/license.html
+#
+# =======================================================================
+#
+# For official changes (by the Magick Development Team),please
+# check the ChangeLog* files that come with this distribution.
+#
+# Third Party Changes (please include e-mail address):
+#
+# N/A
 #
 # =======================================================================
 #
@@ -30,7 +39,7 @@
 #
 # Where original-dir is the directory where a default magick distribution
 # is located, and patched-dir where the same distribution with your patch
- #applied is located.
+# applied is located.
 #
 # The addition to and removal from version.h is automated with this script.
 
