@@ -1432,7 +1432,7 @@ void Server::AKILL(const mstring & host, const mstring & reason, const unsigned 
 	    line << proto.GetNonToken("TKL");
 	else
 	    line << "TKL";
-	line << " + G " << host.Before("@") << " " << host.After("@") <<
+	line << " + G " << host.Before("@") << " " << host.After("@") << " " <<
 		((!killer.empty()) ? killer : Magick::instance().operserv.FirstName()) << " " <<
 		static_cast < time_t > (mDateTime::CurrentDateTime()) + exptime << " " <<
 		static_cast < time_t > (mDateTime::CurrentDateTime()) << " :" << reason;
@@ -3199,6 +3199,16 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
     else if (msgtype == "CHATOPS")
     {
     }
+    else if (msgtype == "CHGHOST")
+    {
+	Magick::instance().nickserv.GetLive(source)->AltHost(IrcParam(params, 1));
+    }
+    else if (msgtype == "CHGIDENT")
+    {
+    }
+    else if (msgtype == "CHGNAME")
+    {
+    }
     else if (msgtype == "CONNECT")
     {
 	// :soul.darker.net 481 ChanServ :Permission Denied- You do not have the correct IRC operator privileges
@@ -3229,6 +3239,19 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 	Magick::instance().nickserv.GetLive(source)->Join(chan);
 	Magick::instance().chanserv.GetLive(chan)->Mode(source, "+o " + source);
     }
+    else if (msgtype == "CYCLE")
+    {
+	if (source.Contains("."))
+	    return;
+
+	map_entry<Nick_Live_t> clive = Magick::instance().nickserv.GetLive(source);
+	for (unsigned long i = 1; i <= IrcParam(params, 1).WordCount(","); i++)
+	{
+	    mstring chan(IrcParam(params, 1).ExtractWord(i, ","));
+	    clive->Part(chan);
+	    clive->Join(chan);
+	}
+    }
     else
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
@@ -3244,7 +3267,13 @@ void Server::parse_D(mstring & source, const mstring & msgtype, const mstring & 
     static_cast < void > (source);
     static_cast < void > (params);
 
-    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    if (msgtype == "DUMMY")
+    {
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
     ETCB();
 }
 
@@ -3315,6 +3344,9 @@ void Server::parse_G(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// useless chatter ... can be ignored.
     }
+    else if (msgtype == "GZLINE")
+    {
+    }
     else
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
@@ -3330,11 +3362,11 @@ void Server::parse_H(mstring & source, const mstring & msgtype, const mstring & 
     static_cast < void > (source);
     static_cast < void > (params);
 
-    if (msgtype == "HELP")
+    if (msgtype == "HELP" || msgtype == "HELPOP")
     {
 	// ignore ...
     }
-    else if (msgtype == "HELPOP")
+    else if (msgtype == "HTM")
     {
 	// ignore ...
     }
@@ -3423,17 +3455,11 @@ void Server::parse_J(mstring & source, const mstring & msgtype, const mstring & 
 	if (source.Contains("."))
 	    return;
 
-	mstring request;
-	unsigned int i, cnt = IrcParamCount(params);
-	for (i=1; i<=cnt; i++)
-	    request += " " + IrcParam(params, i);
-
-	// :source JOIN :#channel
-	for (i = 1; i <= request.WordCount(", "); i++)
+	map_entry<Nick_Live_t> clive = Magick::instance().nickserv.GetLive(source);
+	for (unsigned long i = 1; i <= IrcParam(params, 1).WordCount(","); i++)
 	{
-	    mstring chan(request.ExtractWord(i, ", "));
-
-	    Magick::instance().nickserv.GetLive(source)->Join(chan);
+	    mstring chan(IrcParam(params, 1).ExtractWord(i, ","));
+	    clive->Join(chan);
 	}
     }
     else
@@ -3539,7 +3565,10 @@ void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & 
 
     static_cast < void > (params);
 
-    if (msgtype == "LINKS")
+    if (msgtype == "LAG")
+    {
+    }
+    else if (msgtype == "LINKS")
     {
 	//:ChanServ LINKS :temple.magick.tm
 	//:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
@@ -3620,7 +3649,10 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
     BTCB();
     FT("Server::parse_M", (source, msgtype, params));
 
-    if (msgtype == "MODE")
+    if (msgtype == "MKPASSWD")
+    {
+    }
+    else if (msgtype == "MODE")
     {
 	// :source MODE source :mode
 	// :source MODE #channel mode params...
@@ -3718,6 +3750,9 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
 	    sraw("422 " + source + " :No MOTD exists.");
 	}
     }
+    else if (msgtype == "MODULE")
+    {
+    }
     else
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
@@ -3730,7 +3765,10 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
     BTCB();
     FT("Server::parse_N", (source, msgtype, params));
 
-    if (msgtype == "NAMES")
+    if (msgtype == "NACHAT")
+    {
+    }
+    else if (msgtype == "NAMES")
     {
 	// :source NAMES #channel our.server
 //:soul.darker.net 353 ChanServ = #chatzone :killkickabuseme @Aimee Jupiter @Allanon Ghost_ wildrose
@@ -4199,8 +4237,12 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	if (source.Contains("."))
 	    return;
 
-	// :source PART #channel :reason
-	Magick::instance().nickserv.GetLive(source)->Part(IrcParam(params, 1));
+	map_entry<Nick_Live_t> clive = Magick::instance().nickserv.GetLive(source);
+	for (unsigned long i = 1; i <= IrcParam(params, 1).WordCount(","); i++)
+	{
+	    mstring chan(IrcParam(params, 1).ExtractWord(i, ","));
+	    clive->Part(chan);
+	}
     }
     else if (msgtype == "PASS")
     {
@@ -4405,6 +4447,16 @@ void Server::parse_R(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// Will we ever get this via. net??  ignore.
     }
+    else if (msgtype == "RPING")
+    {
+	// :server RPING <pinged-server> <original-sender> <start-time-in-sec> <start-time-in-usec> :<remark>
+	sraw(((proto.Tokens() && !proto.GetNonToken("RPONG").empty()) ? proto.GetNonToken("RPONG") : mstring("RPONG")) +
+	     source + " " + IrcParam(params, 2) + " " + IrcParam(params, 3) + " " + IrcParam(params, 4) + " :" + 
+	     IrcParam(params, 5));
+    }
+    else if (msgtype == "RPONG")
+    {
+    }
     else if (msgtype == "RQLINE")
     {
 	// We will ignore RQLINES because they're not relivant to us.
@@ -4422,18 +4474,29 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
     BTCB();
     FT("Server::parse_S", (source, msgtype, params));
 
-    if (msgtype == "SETHOST")
+    if (msgtype == "SDESC")
+    {
+    }
+    else if (msgtype == "SENDUMODE")
+    {
+    }
+    else if (msgtype == "SETHOST")
     {
 	if (source.Contains("."))
 	    return;
 
-	// From UnrealIRCD
+	// From Unreal IRCD
 	// :source SVSHOST newhost
 	Magick::instance().nickserv.GetLive(source)->AltHost(IrcParam(params, 1));
     }
+    else if (msgtype == "SETIDENT")
+    {
+    }
+    else if (msgtype == "SETNAME")
+    {
+    }
     else if (msgtype == "SETTIME")
     {
-	// RWORLDism -- ignore.
     }
     else if (msgtype == "SERVER")
     {
@@ -4531,7 +4594,9 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
     }
     else if (msgtype == "SGLINE")
     {
-	// like we care ...
+    }
+    else if (msgtype == "SHUN")
+    {
     }
     else if (msgtype == "SILENCE")
     {
@@ -4891,7 +4956,10 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// Same as KILL (but by services)
     }
-    else if (msgtype == "SVSMODE")
+    else if (msgtype == "SVSMOTD")
+    {
+    }
+    else if (msgtype == "SVSMODE" || msgtype == "SVS2MODE")
     {
 	// Handle just as mode, WITHOUT sanity
 	if (!GetChannel(IrcParam(params, 1)).empty())
@@ -4957,13 +5025,23 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// forcably changed nicks (handle like nick)
     }
+    else if (msgtype == "SVSNLINE")
+    {
+    }
     else if (msgtype == "SVSNOOP")
     {
-	// Deny all OPERS on server, ignore.
+    }
+    else if (msgtype == "SVSO")
+    {
+    }
+    else if (msgtype == "SVSPART")
+    {
+    }
+    else if (msgtype == "SWHOIS")
+    {
     }
     else if (msgtype == "SZLINE")
     {
-	// zzzzZzzzZzzZzZZzZzZZZZzzzZzzz....
     }
     else
     {
@@ -4977,10 +5055,16 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
     BTCB();
     FT("Server::parse_T", (source, msgtype, params));
 
-    if (msgtype == "TIME")
+    if (msgtype == "TSCTL")
+    {
+    }
+    else if (msgtype == "TIME")
     {
 	// :source TIME :our.server
 	sraw("391 " + source + " :" + mDateTime::CurrentDateTime().DateTimeString());
+    }
+    else if (msgtype == "TKL" || msgtype == "TKLINE")
+    {
     }
     else if (msgtype == "TOPIC")
     {
@@ -5127,6 +5211,9 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
 	out << "262 " << source << " " << Magick::instance().startup.Server_Name() << " :End of TRACE";
 	sraw(out);
     }
+    else if (msgtype == "TZLINE")
+    {
+    }
     else
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
@@ -5149,6 +5236,11 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
     else if (msgtype == "UNGLINE")
     {
 	// We will ignore GLINES because they're not relivant to us.
+	// we will not be glining our own clients ;P
+    }
+    else if (msgtype == "UNGZLINE")
+    {
+	// We will ignore GZLINES because they're not relivant to us.
 	// we will not be glining our own clients ;P
     }
     else if (msgtype == "UNRQLINE")
