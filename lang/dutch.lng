@@ -105,10 +105,10 @@ NOLIMIT            =Geen limiet gespecificeerd, maar vereist (genegeerd).
 ; not fulfilled all the correct criteria to continue.
 ;
 [ERR_SITUATION]
-ONYOURSELF         =You may only perform %s on yourself.
-NOTONYOURSELF      =You may not perform %s on yourself.
-ONCOMMITTEE        =You may only perform %s on a member of the %s committee.
-NOTONCOMMITTEE     =You may not perform %s on a member of the %s committee.
+ONYOURSELF         =Je mag %s alleen op jezelf uitvoeren.
+NOTONYOURSELF      =Je mag %s niet op jezelf uitvoeren.
+ONCOMMITTEE        =Je mag %s alleen op een lid van %s committee uitvouren.
+NOTONCOMMITTEE     =Je mag %s niet op een lid van %s committee uitvoeren.
 ONPRIVCOMMITTEE    =You may only perform %s on a member of the privilaged committees.
 NOTONPRIVCOMMITTEE =You may not perform %s on a member of the privilaged committees.
 ONDYNAMIC          =You may only perform %s on a dynamic committee.
