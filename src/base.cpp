@@ -1,0 +1,80 @@
+#include "base.h"
+#include "lockable.h"
+#include "magick.h"
+#include "log.h"
+
+mBase::mBase()
+{
+    NFT("mBase::mBase");
+}
+
+void mBase::push_message(const mstring& servicename, const mstring& message)
+{
+    FT("mBase::push_message for ("+GetInternalName()+")", (servicename, message));
+    // Braces, so that if we spawn/resume a thread, we make sure it can process
+    {
+	WLOCK lock(GetInternalName(),"inputbuffer");
+	pair<mstring,mstring> dummyvar(servicename,message);
+	inputbuffer.push_back(dummyvar);
+    }
+    // put this here in case the processing loop get's hung up, it just *shrugs* and 
+    // starts up another when the threshhold gets hit
+    if(inputbuffer.size()>mThread::typecount(Get_TType())*MagickObject->high_water_mark)
+    {
+        CP(((GetInternalName()+" has reached hightide mark, starting a new thread").c_str()));
+        mThread::spawn(Get_TType(),thread_handler,(void *)this);
+    }
+    if(mThread::typecount(Get_TType())==1&&inputbuffer.size()==1)
+    {
+        CP(((GetInternalName()+" has new messages resuming thread...").c_str()));
+	mThread::resume(mThread::findbytype(Get_TType()));
+    }
+
+}
+
+void mBase::init()
+{
+    NFT("mBase::init() for ("+GetInternalName()+")");
+    mThread::spawn(Get_TType(),thread_handler,(void *)this);
+}
+
+void *thread_handler(void *owner)
+{
+    mBase *Owner=(mBase *)owner;
+    wxASSERT(Owner);
+    FT("thread_handler for ("+Owner->GetInternalName()+")", (owner));
+    int ilevel=mThread::find()->number();
+    pair<mstring,mstring> data;
+
+    while(Owner->on==true)
+    {
+
+	// brackets are here so that the lock exists only as long as we need it.
+	{
+	    RLOCK lock(Owner->GetInternalName(),"inputbuffer");
+	    // check the inputbuffer
+	    if(Owner->inputbuffer.size()!=0)
+	    {
+		data=Owner->inputbuffer.front();
+		Owner->inputbuffer.pop_front();
+	    }
+
+	}
+	Owner->execute(data.first,data.second);
+	// less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
+        if(mThread::typecount(Owner->Get_TType())!=1 && ilevel==mThread::typecount(Owner->Get_TType()) && Owner->inputbuffer.size() <
+		(mThread::typecount(Owner->Get_TType()) - 1) * MagickObject->high_water_mark + MagickObject->low_water_mark)
+        {
+    	    CP(((Owner->GetInternalName()+" has reached lowtide mark, dropping a thread").c_str()));
+	    return NULL;
+	}
+
+	// if theres leftover time in the timeslice, yield it up to the processor.
+        if(mThread::typecount(Owner->Get_TType()) == 1 && Owner->inputbuffer.size() == 0)
+        {
+            CP(((Owner->GetInternalName()+" has no more messages left going to suspended state...").c_str()));
+	    mThread::suspend();
+	}
+    }
+    return NULL;
+}

@@ -97,6 +97,14 @@ SOURCE=.\src\antlr\ASTFactory.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\base.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\base.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\antlr\BitSet.cpp
 # End Source File
 # Begin Source File
