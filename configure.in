@@ -106,7 +106,7 @@ CWARN="-Wbad-function-cast -Wmissing-declarations -Wnested-externs"
 CXXWARN="-Woverloaded-virtual -Wsynth -Wno-deprecated"
 JWARN=""
 
-CPPFLAGS="$CPPFLAGS $CPPOPT $CPPWARN"
+CPPFLAGS="$CPPFLAGS $CPPOPT $CPPWARN -I\$(top_srcdir)/include"
 CFLAGS="$CFLAGS $COPT $CWARN"
 CXXFLAGS="$CXXFLAGS $CXXOPT $CXXWARN"
 JFLAGS="$JFLAGS $JOPT $JWARN"

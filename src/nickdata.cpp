@@ -848,7 +848,7 @@ Nick_Live_t::Nick_Live_t(const mstring & name, const mstring & username, const m
 			 const mstring & realname) : i_Name(name), i_Numeric(0), i_Signon_Time(mDateTime::CurrentDateTime()),
 i_My_Signon_Time(mDateTime::CurrentDateTime()), i_Last_Action(mDateTime::CurrentDateTime()), i_realname(realname),
 i_user(username), i_host(hostname), i_alt_host(hostname), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0),
-identified(true), services(true), InFlight(name)
+identified(false), services(true), InFlight(name)
 {
     BTCB();
     FT("Nick_Live_t::Nick_Live_t", (name, username, hostname, realname));
@@ -4503,6 +4503,11 @@ bool Nick_Stored_t::IsOnline()
 
     if (Magick::instance().nickserv.IsLive(i_Name))
     {
+	if (nlive->IsService())
+	{
+	    RET(false);
+	}
+
 	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(i_Name);
 	// Not secure and recognized
 	// or not suspended and identified
