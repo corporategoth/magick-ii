@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/04/18 10:20:27  prez
+** Made helpfiles load on usage, like language files.
+**
 ** Revision 1.38  2000/04/16 14:29:44  prez
 ** Added stats for usage, and standardized grabbing paths, etc.
 **
@@ -565,37 +568,49 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 		Parent->server.ServerList.size() * sizeof(Server)) / 1024);
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANGHEAD"));
-     vector<mstring> displayed;
-     map<mstring, map<mstring, mstring> >::iterator i;
-     map<mstring, map<mstring, mstring, mstring> >::iterator k;
-     for (i=Parent->Messages.begin(); i!=Parent->Messages.end(); i++)
-     {
-/*	if (Parent->Help.find(i->first) != Parent->Help.end())
+    set<mstring> seen;
+    map<mstring, map<mstring, mstring> >::iterator i;
+    map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::iterator k;
+    map<mstring, vector<triplet<mstring, mstring, mstring> > >::iterator j;
+    for (i=Parent->Messages.begin(); i!=Parent->Messages.end(); i++)
+    {
+	if (Parent->Help.find(i->first) != Parent->Help.end())
 	{
+	    size_t helpsz = 0;
+	    for (j=Parent->Help[i->first].begin(); j!=Parent->Help[i->first].end(); j++)
+	    {
+		helpsz += j->second.size() * sizeof(j->second);
+		helpsz += sizeof(j->first);
+	    }
 	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
 			i->first,
-			Parent->Messages[i->first].size() * sizeof(map<mstring, mstring>) / 1024,
-			Parent->Help[i->first].size() * sizeof(map<mstring, mstring, mstring>) / 1024);
-	    displayed.push_back(i->first);
+			Parent->Messages[i->first].size() * sizeof(i->second) / 1024,
+			(sizeof(i->first) + helpsz) / 1024);
+	    seen.insert(i->first);
 	}
 	else
-	{ */
-	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
-			i->first.c_str(), 
-			Parent->Messages[i->first].size() * sizeof(map<mstring, mstring>) / 1024,
-			0);
-/*	} */
-     }
-/*   for (k=Parent->Help.begin(); k!=Parent->Help.end(); k++)
-     {
-	if (displayed.find(k->first) != displayed.end())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
-			k->first, 0, 
-			Parent->Help[i->first].size() * sizeof(map<mstring, mstring, mstring>) / 1024);
+			i->first.c_str(),
+			Parent->Messages[i->first].size() * sizeof(i->second) / 1024,
+			0);
 	}
-     } */
-
+     }
+     for (k=Parent->Help.begin(); k!=Parent->Help.end(); k++)
+     {
+	if (seen.find(k->first) != seen.end())
+	{
+	    size_t helpsz = 0;
+	    for (j=Parent->Help[k->first].begin(); j!=Parent->Help[k->first].end(); j++)
+	    {
+		helpsz += j->second.size() * sizeof(j->second);
+		helpsz += sizeof(j->first);
+	    }
+	    ::send(mynick, source, Parent->getMessage(source, "STATS/USE_LANG"),
+			k->first, 0,
+			(sizeof(k->first) + helpsz) / 1024);
+	}
+    }
 }
 
 void ServMsg::do_stats_All(mstring mynick, mstring source, mstring params)

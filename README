@@ -201,3 +201,71 @@ PARAMATER	SHORT	GROUP		OPTION
 5. FUNCTIONALITY
 ================
 
+Magick has 6 main services, and offers the ability to script either
+added functionality to these existing services, or create totally
+new services through its scripting language.  This section gives an
+overview of the main functionality and purpose of the hard-coded
+services.  Please note, the actual nicknames of each of the below
+services may be different on each network.
+
+NickServ is a services that allows users to register their IRC
+nicknames so that noone else may take them.  Users may then set
+various options on their nickname record, such as privacy mode,
+kill protection, etc that affect the way their nickname is
+treated, and how services respond to them.  They may also set
+purely informational fields in their nickname record thay is
+displayed on an INFO request.  NickName registration is required
+to execute many other commands in services, be added to a channel
+access list, or receive memos from other users.
+
+ChanServ is a service that allows users to register a channel on
+the IRC network, so that they may specify who has access to them,
+and who shall be automatically kicked from them.  This not only
+prevents such things as channel takeovers, but establishes a
+definate 'seniority' system in the channel.  ChanServ also allows
+users to set various options on their channel records, from the
+purely informational that is displayed in an INFO request, to
+options that change the behavior of services, and how users are
+treated in a channel.  This service also offers such features as
+on-join greetings, user-based greetings, etc.
+
+MemoServ is a service that allows users to send memos to other
+users, or post news articles to channels.  This service also
+allows such features as forwarding, or replying to memos, and
+even attaching files via. DCC to memos (to other users only).
+This service also intergrates with NickServ's ignore list, and
+ChanServ's access list to vary the ability to send, or read
+memos or news articles.
+
+CommServ is a service that maintains 'committees' or groups of
+users.  These groups can be simply a list of users who have a
+common interest, or can alter a user's access to certain features
+of services.  You may also send memos to all members of a committee
+or set logon messages for committees that all members will see
+on signon.  Services has 6 'default' committees:
+	SADMIN	- Services Adminstrators - Members of this
+		  committee are hard-coded into the Magick
+		  configuration file.
+	SOP	- Services Operators - Members of this committee
+		  are added by members of the SADMIN committee.
+	ADMIN	- Server Administrators - Members of this committee
+		  are added by members of the SADMIN committee.
+	OPER	- IRC Operators - Members of this committee are
+		  added by members of the ADMIN committee.
+	REGD	- All Registered Users - This committee may not be
+		  modified, and its members are dynamic.
+	ALL	- All Users - This committee may not be modified,
+		  and its members are dynamic.
+
+OperServ is a services that allows IRC Operators to keep control
+on the network.  This service offers functions like an Automatic
+Kill list, Clone Protection (and overriding), Services Ignore,
+IRC Operator Denying, aswell as the ability to JUPE (fake-link)
+a server, change a user or channels modes, and many more funcitons.
+
+ServMsg is mainly an informational service, users may get help,
+statistics and information about services, and the network they
+are connected to from this service.  This service also offers the
+ability for Server Administrators to send a global message that
+will be sent to all users on the network.
+

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/04/18 10:20:27  prez
+** Made helpfiles load on usage, like language files.
+**
 ** Revision 1.72  2000/04/06 12:52:50  prez
 ** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
 **
@@ -1303,7 +1306,10 @@ void OperServ::do_Unload(mstring mynick, mstring source, mstring params)
 
     mstring language = params.ExtractWord(2, " ");
 
-    if (Parent->UnloadExternalMessages(language))
+    bool unload1, unload2;
+    unload1 = Parent->UnloadExternalMessages(language);
+    unload2 = Parent->UnloadHelp(language);
+    if (unload1 || unload2)
     {
 	Parent->operserv.stats.i_Unload++;
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/UNLOAD"),

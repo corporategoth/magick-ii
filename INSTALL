@@ -203,7 +203,7 @@ operates.
      Print the version of Autoconf used to generate the `configure'
      script, and exit.
 
---with-acelib=path
+--with-acelib=file
 --with-aceinc=path
      This specifies where the makefile should look for the ACE library
 file, and its includes respectively.  You must specify full pathnames.
@@ -211,7 +211,7 @@ Verification on what you have entered is minimal (ie. will only verify
 the existance of the library file, and OS.h in the include directory).
 This should only be used if Magick does not detect the ACE library.
 
---with-zlib=path
+--with-zlib=file
 --with-zinc=path
      This specifies where the makefile should look for the ZLIB library
 file, and its includes respectively.  You must specify full pathnames.
@@ -225,7 +225,7 @@ it specifies to use the -pthreads option with GCC or CC when linking the
 magick binary.  This is used for systems where pthreads is ingrained in
 the standard C library, specifically, BSD.
 
---with-threadlib=path
+--with-threadlib=file
 --with-threadinc=path
      This specifies where the makefile should look for a threads library
 file, and its includes respectively.  You must specify full pathnames.
@@ -234,3 +234,4 @@ the existance of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
 
 `configure' also accepts some other, not widely useful, options.
+

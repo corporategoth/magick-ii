@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.119  2000/04/18 10:20:26  prez
+** Made helpfiles load on usage, like language files.
+**
 ** Revision 1.118  2000/04/16 14:29:43  prez
 ** Added stats for usage, and standardized grabbing paths, etc.
 **
@@ -118,8 +121,12 @@ class Magick
     friend class ServMsg;
 private:
 	vector<mstring> argv;
-	// Language, longname, string
+	// Language, token, string
 	map<mstring, map<mstring, mstring> > Messages;
+	// Language, token, vector<yescom, nocom, string>
+	map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > > Help;
+	vector<mstring> LoadHelpGroup(wxFileConfig *fconf, mstring basegroup);
+	// Token, string
 	map<mstring, mstring> LogMessages;
 	int doparamparse();
 	SignalHandler *signalhandler;
@@ -318,6 +325,7 @@ public:
 	bool LoadExternalMessages(mstring language);
 	bool LoadLogMessages(mstring language);
 	bool UnloadExternalMessages(mstring language);
+	bool UnloadHelp(mstring language);
 	mstring getMessage(const mstring& nick, const mstring& name);
 	mstring getMessage(const mstring& name)
 	    { return getMessageL(nickserv.DEF_Language(), name); }
