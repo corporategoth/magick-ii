@@ -3264,6 +3264,7 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
     WLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_On"));
     WLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Key"));
     WLOCK4((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
+    mstring old_key = setting.Mlock_Key;
     MCB(setting.Mlock_On);
     CB(1, setting.Mlock_Off);
     CB(2, setting.Mlock_Key);
@@ -3532,7 +3533,14 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 	{
 	    mstring modes_param;
 
-	    modes = "+";
+	    modes.erase();
+	    if (old_key != setting.Mlock_Key)
+	    {
+		modes << "-k";
+		modes_param << " " << old_key;
+	    }
+
+	    modes << "+";
 	    for (i = 0; i < setting.Mlock_On.size(); i++)
 	    {
 		if (!clive->HasMode(setting.Mlock_On[i]))

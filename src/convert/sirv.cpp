@@ -1127,12 +1127,14 @@ void sirv_load_sop()
         i = fgetc(f)<<8 | fgetc(f);
         while (--i >= 0)
 	{
-	    char *sop = sirv_read_string(f, sirv_OS_SOP_DB);
+	    char *s = sirv_read_string(f, sirv_OS_SOP_DB);
 	    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-		  Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(sop)))
-		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(mstring(sop),
+		 Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)) &&
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(s)))
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->insert(mstring(s),
 									Magick::instance().commserv.FirstName());
-	    free(sop);
+	    free(s);
 	}
         break;
       default:

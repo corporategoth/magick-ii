@@ -1488,8 +1488,10 @@ void ptlink_load_oper()
 	for (i = 0; i < n && !failed; i++) {
 	    ptlink_SAFE(ptlink_read_string(&s, f));
 	    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-		  Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)))
-		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(mstring(s),
+		 Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(s)) &&
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(s)))
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->insert(mstring(s),
 									Magick::instance().commserv.FirstName());
 	    free(s);
 	}

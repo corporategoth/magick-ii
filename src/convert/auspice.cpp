@@ -2162,10 +2162,17 @@ void auspice_load_admin()
                 }
 
 		// If they're a services op or admin in auspice, make them a sop in magick.
-		if (((ais->adflags & auspice_ADF_SERVICEOP) || (ais->adflags & auspice_ADF_SERVICEADMIN)) &&
+		if ((ais->adflags & auspice_ADF_SERVICEADMIN) &&
 		    !(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
 		      Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(ais->nick)))
 		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(
+					mstring(ais->nick), mstring(ais->who), mDateTime(ais->added));
+		else if ((ais->adflags & auspice_ADF_SERVICEOP) &&
+		    !(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(ais->nick)) &&
+		    !(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+		      Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(ais->nick)))
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->insert(
 					mstring(ais->nick), mstring(ais->who), mDateTime(ais->added));
 
 		auspice_deladmin(ais);
