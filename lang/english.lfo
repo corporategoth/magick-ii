@@ -93,7 +93,7 @@ STOP_COMPLETE    =$1 $2 shutdown procedure complete.
 ;
 [NICKSERV]
 REGISTER         =$1 registered nickname $2.
-DROP             =$1 droped nickname $2 ($3 slaves).
+DROP             =$1 dropped nickname $2 ($3 slaves).
 LINK             =$1 linked nickname $2 to $3.
 UNLINK           =$1 unlinked nickname $2 from $3.
 HOST             =$1 changed their host nickname from $2 to $3.
