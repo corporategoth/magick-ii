@@ -5,6 +5,9 @@ Makefile.in
 configure
 config.status
 config.cache
+config.guess
+config.sub
+stamp-h.in
 .deps
 RC*
 magick.pid
