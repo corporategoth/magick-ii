@@ -255,7 +255,7 @@ void LOG2(ACE_Log_Priority type, const mstring & msg);
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) do { T_Chatter __ch(x,y); } while (0)
 
-const char *strNonC__Exception = "NON-C++ EXCEPTION";
+extern const char *strNonC__Exception;
 
 // Exception catching ...
 #define BTCB() try {

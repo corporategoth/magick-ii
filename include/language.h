@@ -33,12 +33,13 @@ RCSID(language_h, "@(#) $Id$");
 **
 ** ======================================================================= */
 
-/* Automatically generated hard-coded language file.
- * Based upon lang/english.lng.
- * Created on Tue Jan  1 21:14:46 EST 2002
- */
+/*
+** Automatically generated hard-coded language file.
+** Based upon lang/english.lng.
+** Created on Sun Jul 28 09:09:01 EDT 2002
+*/
 
-const unsigned int def_langent = 940;
+const unsigned int def_langent = 945;
 const char *def_lang[] =
 {
 "; Magick IRC Services", "; (c) 1997-2002 Preston A. Elder <prez@magick.tm>",
@@ -372,13 +373,15 @@ const char *def_lang[] =
 	"SUSPEND            =\\     Suspended: $1 ago by $2", "SUSPENDFOR         =\\           For: $1",
 	"EMAIL              =\\        E-Mail: $1", "URL                =\\      WWW Page: http://$1",
 	"ICQ                =\\       ICQ UIN: $1", "AIM                =\\      AIM Name: $1",
+	"MSN                =\\    MSN E-Mail: $1", "YAHOO              =\\     Yahoo! ID: $1",
 	"DESCRIPTION        =\\   Description: $1", "COMMENT            =\\       Comment: $1",
 	"COMMITTEES         =\\    Committees: $1", "OPTIONS            =\\       Options: $1",
 	"HASPIC             =This user has a picture available ($1).  Type \\b/MSG $2 SEND $3\\b to download it.",
 	"ISONLINE           =This user is currently online.  Type \\b/whois $1\\b for more information.",
 	"NOEXPIRE           =non-expiring", "", ";", "; Textural names for the available SET's (NickServ).", ";",
 	"[NS_SET]", "PASSWORD           =Password", "EMAIL              =E-Mail Address", "URL                =WWW Page",
-	"ICQ                =ICQ UIN", "AIM                =AIM Name", "DESCRIPTION        =Physical Description",
+	"ICQ                =ICQ UIN", "AIM                =AIM Name", "MSN                =MSN Passport E-Mail",
+	"YAHOO              =Yahoo! Messenger ID", "DESCRIPTION        =Physical Description",
 	"COMMENT            =Comment", "PROTECT            =Kill Protection", "SECURE             =Secure",
 	"NOEXPIRE           =No Expire", "NOMEMO             =Denying Memos", "PRIVATE            =Private",
 	"PRIVMSG            =PRIVMSG", "LANGUAGE           =Language", "", ";",
@@ -474,6 +477,7 @@ const char *def_lang[] =
 	"ISNOTFORBIDDEN     =Channel $1 is not forbidden.", "ISSUSPENDED        =Channel $1 is suspended.",
 	"ISNOTSUSPENDED     =Channel $1 is not suspended.", "ISINUSE            =Channel $1 is currently in use.",
 	"ISNOTINUSE         =Channel $1 is not currently in use.",
+	"HASNOACCESS        =Nickname $1 does not have any access on any registered channels.",
 	"RESTRICT           =Channel $1 is registered and has $2 set.  Access restrictions apply.",
 	"HIGHERACCESS       =Nickname $1 is higher than you are on the $2 access list.",
 	"NOTZERO            =You may not add someone to the the access list at level zero.",

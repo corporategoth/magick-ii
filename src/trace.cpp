@@ -40,6 +40,8 @@ mstring threadname[tt_MAX] =
 {
 "LOST", "MAIN", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE"};
 
+const char *strNonC__Exception = "NON-C++ EXCEPTION";
+
 unsigned short makehex(const mstring & SLevel)
 {
     if (SLevel.length() != 6 || SLevel[0u] != '0' || (SLevel[1u] != 'x' && SLevel[1u] != 'X'))

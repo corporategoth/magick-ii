@@ -33,12 +33,13 @@ RCSID(logfile_h, "@(#) $Id$");
 **
 ** ======================================================================= */
 
-/* Automatically generated hard-coded log output file.
- * Based upon lang/english.lfo.
- * Created on Tue Jan  1 21:14:50 EST 2002
- */
+/*
+** Automatically generated hard-coded log output file.
+** Based upon lang/english.lfo.
+** Created on Sun Jul 28 09:09:05 EDT 2002
+*/
 
-const unsigned int def_logent = 370;
+const unsigned int def_logent = 377;
 const char *def_log[] =
 {
 "; Magick IRC Services", "; (c) 1997-2002 Preston A. Elder <prez@magick.tm>",
@@ -80,9 +81,10 @@ const char *def_log[] =
 	"; --------------------------------------------------------------", ";", "", ";",
 	"; These are responses to command line options or config options.", ";", "[COMMANDLINE]",
 	"TRANSLATED       =Preston A. Elder <prez@magick.tm>", "UNKNOWN_OPTION   =Unknown option $1, ignored.",
-	"NEEDPARAM        =Option $1 requires a parameter.",
+	"UNKNOWN_PARAM    =Unknown parameter $1 for option $1.", "NEEDPARAM        =Option $1 requires a parameter.",
 	"MUSTBENUMBER     =Parameter for $1 must be a positive number.",
 	"MUSTHAVEDIGITS   =Parameter for $1 must be $2 digits between $3 and $4 (inclusive).",
+	"INCORRECT_OS     =The $1 option is only available on $2 based operating systems.",
 	"TIMEORZERO       =Time value specified is invalid or zero, on value $1.",
 	"VALUETOOHIGH     =Value specified for $1 must be below or equal to $2.",
 	"NO_CFG_FILE      =Could not read config file $1, aborting.",
@@ -95,7 +97,9 @@ const char *def_log[] =
 	"TRACE_SYNTAX     =Parameter for --trace must be in the format of TYPE:LEVEL",
 	"ZERO_LEVEL       =Zero or error in parsing trace level, ignoring.",
 	"CFG_SYNTAX       =Configuration token \"$1\" contains a syntax error or invalid data.",
-	"UNKNOWN_PROTO    =Unknown protocol identifier $1, default ($2) used.",
+	"UNKNOWN_PROTO    =Error processing protocol file $1, default used.",
+	"UNKNOWN_AKILL    =Akill type specfied in protocol definition file does not exist.",
+	"UNKNOWN_SIGNON   =Signon type specfied in protocol definition file does not exist.",
 	"START_CONVERT    =Converting and loading foreign databases ...",
 	"START_LANG       =Loading default language file ...", "START_FORK       =Spawning into background ...",
 	"START_NOFORK     =Cannot spawn into background, running in foreground.\\n\\",
@@ -169,7 +173,8 @@ const char *def_log[] =
 	"GET              =$1 received a file attachment ($2 / $3 - $4) from $5.", "", ";",
 	"; These are used when a command is executed from CommServ.", ";", "[COMMSERV]",
 	"ADD              =$1 created a new committee called $2 with $3 as its head.",
-	"DEL              =$1 deleted committee $2.", "MEMO             =$1 sent a memo to all members of committee $2.",
+	"DEL              =$1 deleted committee $2 ($3 subcomittees).",
+	"MEMO             =$1 sent a memo to all members of committee $2.",
 	"MEMBER_ADD       =$1 added nickname $2 to committee $3.",
 	"MEMBER_DEL       =$1 removed nickname $2 from committee $3.",
 	"LOGON_ADD        =$1 added a new logon message to committee $2.",
@@ -224,9 +229,9 @@ const char *def_log[] =
 	"NEW_THREAD       =Starting new thread to handle excess load.",
 	"KILL_THREAD      =Killing thread, not enough work to warrant it.",
 	"NEW_THREAD_FAIL  =Failed to create new thread.",
-	"MAX_THREADS      =Maximum number of threads reached, cannot start a new one.", "", ";",
-	"; These are errors that come from system based", ";", "[SYS_ERRORS]",
-	"COULDNOTOPEN     =Could not open file $1 ($2) - #$3: $4.",
+	"MAX_THREADS      =Maximum number of threads reached, cannot start a new one.",
+	"NETSYNCED        =Network synchronised in $1 seconds.", "", ";", "; These are errors that come from system based",
+	";", "[SYS_ERRORS]", "COULDNOTOPEN     =Could not open file $1 ($2) - #$3: $4.",
 	"FILEOPERROR      =Could not perform $1 on file $2 - #$3: $4.",
 	"DIROPERROR       =Could not perform $1 on directory $2 - #$3: $4.",
 	"OPERROR          =Could not perform $1 - #$2: $3.",
@@ -282,6 +287,7 @@ const char *def_log[] =
 	"DCC_INIT         =DCC ID $1 initialised with $2 ($3).", "DCC_CLOSE        =DCC ID $1 completed successfully.",
 	"DCC_CANCEL       =DCC ID $1 failed to complete successfully.", "", ";",
 	"; These are errors (of varying severity) that we may encounter.", ";", "[ERROR]",
+	"SEQUENCE         =Execution sequence invalid ($1 may not follow $2).",
 	"REQ_BYNONUSER    =$1 command requested by non-existent user $2.",
 	"REQ_BYNONSERVICE =$1 command requested by non-service $2.",
 	"REQ_FORNONUSER   =$1 command requested by $2 for non-existent user $3.",
@@ -314,5 +320,7 @@ const char *def_log[] =
 	"DB_NOSANITY      =Database failed sanity check (usually because the wrong database version is used).",
 	"DB_NOPARSE       =Failed to parse databases (internal data structure is incorrect!).",
 	"WRONG_PASS_TYPE  =Hashed (one-way) passwords found - this binary does not support them!",
-	"KEY_CORRUPT      =Keyfile $1 failed validation checks (requires regeneration) - NOT USED!", ""};
+	"KEY_CORRUPT      =Keyfile $1 failed validation checks (requires regeneration) - NOT USED!",
+	"EXCEPTION_CAUGHTUNHANDLED = Caught an unhandled exception in file $1 line $2, this should be reported to the developers ASAP.",
+	""};
 #endif
