@@ -1,6 +1,6 @@
 =head1 NAME
 
-magick_keygen - Keyfile generator for Magick IRC Services
+magick_keygen - Key file generator for Magick IRC Services
 
 =head1 SYNOPSIS
 
@@ -12,12 +12,12 @@ This will generate an encrypted keyfile using two hard-coded keys
 in the binary (that are shared with the Magick binary) to ensure
 that the actual key used for Magick databases is never readable.
 
-If no paramaters are specified, the program will first ask you for
+If no parameters are specified, the program will first ask you for
 the output key filename (defaulting to F<magick.key>), and then it
 will ask you to enter the unencrypted key twice.
 
 You may type VERY long lines of text (by default, up to 1024 bytes)
-as your ke., however it may not contain a carriage return if entered
+as your key., however it may not contain a carriage return if entered
 interactively (ie. not via. the F<plainfile>).
 
 This program is written for use with Magick IRC Services, and contains
@@ -37,7 +37,7 @@ defaults to magick.key.
 =item plainfile
 
 This is a file which has the key you wish to use in clear text as
-its contents.  The file will be read verbatum (up to the maximum
+its contents.  The file will be read verbatim (up to the maximum
 key length) as the key, and may contain anything at all.
 
 IT IS RECOMMENDED YOU KEEP THIS FILE IN A SECURE LOCATION INCASE
@@ -67,7 +67,7 @@ methods of hiding keystrokes will be implemented.
 =head1 NOTES
 
 Magick may be obtained from B<http://www.magick.tm> or
-B<ftp://ftp.magick.tm/pub/Magick> and is distribted under
+B<ftp://ftp.magick.tm/pub/Magick> and is distributed under
 the I<GNU General Public License>.
 
 You will need to re-generate your Magick database key (with the

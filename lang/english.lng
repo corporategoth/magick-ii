@@ -133,7 +133,7 @@ AKILLTOOHIGH       =You may only specify a maximum of %s for an AKILL time limit
 NOFLUSH            =Memos with file attachments may not be flushed.
 NOATTACH           =Cannot send file attachments to channels.
 FILEINPROG         =Cannot begin a new memo or file transfer while a file transfer is in progress.
-COFOUNDER          =Cannot set the CoFounder the same as the Founder.
+COFOUNDER          =Cannot set the Co-Founder the same as the Founder.
 NOACCESS           =Access denied.
 NOT_SUPPORTED      =This functionality is not supported by the IRC Server in use.
 
@@ -158,7 +158,7 @@ LOOKUP_PUBLIC      =Public file %08x is %s, available for %s.
 NLOOKUP_MEMOATTACH =Memo Attachment %08x does not exist.
 NLOOKUP_PICTURE    =Picture %08x does not exist.
 NLOOKUP_PUBLIC     =Public file %08x does not exist.
-NLOOKUP_OTHER      =Unknown file catagory %s.
+NLOOKUP_OTHER      =Unknown file category %s.
 NOSPACE            =Not enough space for file, removed.
 NOSPACE2           =Not enough space for temporary file, please try again later.
 
@@ -212,7 +212,7 @@ CHAN_MODE          =%s just performed a mode change (%s) on channel %s.
 NICK_MODE          =%s just performed a mode change (%s) on nickname %s.
 AKILL_ADD          =%s just added AKILL on host %s for %s (%s).
 AKILL_EXTEND       =%s just extended the AKILL on host %s by %s.
-OPERDENY_ADD       =%s just added OperDeny on host %s.
+OPERDENY_ADD       =%s just added Oper Deny on host %s.
 QLINE              =%s just turned %s a quarantine on nicknames matching %s.
 NOOP               =%s just turned %s IRC Operator quarantine on server %s.
 KILL               =%s just silently killed user %s.
@@ -231,9 +231,9 @@ HTM_OFF            =Resuming standard operation...
 HTM_OFF_FORCE      =Resuming standard operation forced by %s...
 HTM_SET            =HTM threshold has been set to %s/s by %s.
 HTM                =Cannot execute command %s, currently in high-traffic mode - Please try again later.
-SIGNAL_LOAD        =Recieved signal #%d, server configuration file reloaded.
-SIGNAL_SAVE        =Recieved signal #%d, database save triggered.
-SIGNAL_KILL        =PANIC!  Recieved signal #%d, Last function was %s, shutting down!
+SIGNAL_LOAD        =Received signal #%d, server configuration file reloaded.
+SIGNAL_SAVE        =Received signal #%d, database save triggered.
+SIGNAL_KILL        =PANIC!  Received signal #%d, Last function was %s, shutting down!
 
 ENTLIST_CLEAR      =Value of %s has been cleared.
 ENTLIST_SET        =Value of %s has been set to %s.
@@ -286,8 +286,8 @@ CHAN_CMD13         =SET           %10d / NOEXPIRE      %10d
 CHAN_CMD14         =LOCK          %10d / UNLOCK        %10d
 
 OPER_CLONE         =Clone Override entries     : %d
-OPER_AKILL         =AutoKill entries           : %d
-OPER_OPERDENY      =OperDeny entries           : %d
+OPER_AKILL         =Auto Kill entries          : %d
+OPER_OPERDENY      =Oper Deny entries          : %d
 OPER_IGNORE        =Ignore entries             : %d
 OPER_CMD           =Successful Command Usage:
 OPER_CMD1          =TRACE         %10d / MODE          %10d
@@ -321,7 +321,7 @@ OTH_CMD11          =FILE ADD/DEL  %10d / FILE SEND     %10d
 OTH_CMD12          =FILE CHANGE   %10d / FILE CANCEL   %10d
 
 USE_CPU            =CPU Usage %s system and %s user.
-USE_TRAFFIC        =Sent %s (%s/s) and Recieved %s (%s/s) in %s.
+USE_TRAFFIC        =Sent %s (%s/s) and Received %s (%s/s) in %s.
 USE_NS_LIVE        =Live Nicknames      %5d (%s)
 USE_CS_LIVE        =Live Channels       %5d (%s)
 USE_NS_STORED      =Stored Nicknames    %5d (%s)
@@ -392,7 +392,7 @@ AKILL              =automatic kill
 OPERDENY           =IRC operator deny
 SIGNORE            =services ignore
 CHANNEL            =channel
-NICKNAME           =nicknams
+NICKNAME           =nicknames
 FILES              =available files
 
 ;
@@ -472,10 +472,10 @@ NOEXPIRE           =non-expiring
 ;
 [NS_SET]
 PASSWORD           =Password
-EMAIL              =E-Mail address
+EMAIL              =E-Mail Address
 URL                =WWW Page
-ICQ                =ICQ number
-DESCRIPTION        =Physical description
+ICQ                =ICQ Number
+DESCRIPTION        =Physical Description
 COMMENT            =Comment
 PROTECT            =Kill Protection
 SECURE             =Secure
@@ -486,13 +486,13 @@ PRIVMSG            =PRIVMSG
 LANGUAGE           =Language
 
 ;
-; This section contains the output used at the end of SUCCESSFULL
+; This section contains the output used at the end of SUCCESSFUL
 ; NickServ command performed on OTHER nicknames.
 ;
 [NS_OTH_COMMAND]
 REGISTERED         =Nickname %s is now registered under host %s.
 LINKED             =Nickname %s is now linked to %s.
-DROPPED            =Nickname %s has been dropped.
+DROPPED            =Nickname %s has been droped.
 UNLINKED           =Nickname %s has been unlinked.
 NEWHOST            =Nickname %s is now the host.
 IDENTIFIED         =Password accepted - you are now identified for nickname %s.
@@ -512,13 +512,13 @@ OPT_LOCKED         =%s option for nickname %s has been LOCKED to %s.
 OPT_UNLOCKED       =%s option for nickname %s has been UNLOCKED.
 
 ;
-; This section contains the output used at the end of SUCCESSFULL
+; This section contains the output used at the end of SUCCESSFUL
 ; NickServ command performed on YOUR nicknames.
 ;
 [NS_YOU_COMMAND]
 REGISTERED         =Your nickname is now registered under host %s.
 LINKED             =Your nickname is now linked to %s.
-DROPPED            =Your nickname has been dropped.
+DROPPED            =Your nickname has been droped.
 UNLINKED           =Your nickname has been unlinked.
 NEWHOST            =Your nickname is now the host.
 IDENTIFIED         =Password accepted - you are now identified.
@@ -540,7 +540,7 @@ NOSPACE            =Not enough space to store your picture, removed.
 [CS_INFO]
 IS                 =Information about %s:
 FOUNDER            =\    Founder: %s
-COFOUNDER          =\  CoFounder: %s
+COFOUNDER          =\ Co-Founder: %s
 DESCRIPTION        =Description: %s
 REGISTERED         =\ Registered: %s%s
 INUSEBY            =\  In Use By: %s
@@ -570,15 +570,15 @@ SPLIT_USERS        =split user(s)
 ;
 [CS_SET]
 FOUNDER            =Founder
-COFOUNDER          =CoFounder
+COFOUNDER          =Co-Founder
 PASSWORD           =Password
-EMAIL              =E-Mail address
+EMAIL              =E-Mail Address
 URL                =WWW Page
 DESCRIPTION        =Description
 COMMENT            =Comment
 TOPIC              =Topic
-MLOCK              =Mode lock
-BANTIME            =Bantime
+MLOCK              =Mode Lock
+BANTIME            =Ban Time
 PARTTIME           =Part Time
 KEEPTOPIC          =Keep Topic
 TOPICLOCK          =Topic Lock
@@ -590,9 +590,9 @@ ANARCHY            =Anarchy
 KICKONBAN          =Kick On Ban
 RESTRICTED         =Restricted
 JOIN               =Services Join
-REVENGE            =Revenge level
+REVENGE            =Revenge Level
 
-LVL_AUTODEOP       =Automatic DeOp/Voice
+LVL_AUTODEOP       =Automatic Deop/Devoice
 LVL_AUTOVOICE      =Automatic Voice
 LVL_AUTOOP         =Automatic Op
 LVL_READMEMO       =Read News
@@ -601,8 +601,8 @@ LVL_DELMEMO        =Delete News
 LVL_GREET          =Set Greeting
 LVL_OVERGREET      =Lock Greeting
 LVL_MESSAGE        =Write On-Join Message
-LVL_AKICK          =AutoKick Maintenance
-LVL_SUPER          =SuperOp
+LVL_AKICK          =Auto Kick Maintenance
+LVL_SUPER          =Super Op
 LVL_UNBAN          =Unban Server Bans
 LVL_ACCESS         =Access List Maintenance
 LVL_SET            =SET Modification
@@ -617,7 +617,7 @@ LVL_CMDCLEAR       =CLEAR Command
 
 REV_NONE           =Disabled
 REV_REVERSE        =Reverse Activity
-REV_DEOP           =DeOp Only
+REV_DEOP           =Deop Only
 REV_KICK           =Kick Only
 REV_BAN1           =Nick (nick!*@*) Ban
 REV_BAN2           =Mask (*!*user@*.host) Ban
@@ -647,8 +647,8 @@ BANNED             =You are already banned from channel %s.
 NOTBANNED          =You are not banned from channel %s.
 OTH_BANNED         =Nickname %s is already banned from channel %s.
 OTH_NOTBANNED      =Nickname %s is not banned from channel %s.
-TOOMANY            =You are Founder or CoFounder of too many channels.
-OTH_TOOMANY        =Nickname %s is Founder or CoFounder of too many channels.
+TOOMANY            =You are Founder or Co-Founder of too many channels.
+OTH_TOOMANY        =Nickname %s is Founder or Co-Founder of too many channels.
 IDENTIFIED         =You are already identified for channel %s.
 ISFORBIDDEN        =Channel %s is forbidden.
 ISNOTFORBIDDEN     =Channel %s is not forbidden.
@@ -665,12 +665,12 @@ ISNOTLOCKED        =%s for channel %s is not locked.
 NOREVENGE          =Revenge level %s is not valid.
 
 ;
-; This section contains the output used at the end of SUCCESSFULL
+; This section contains the output used at the end of SUCCESSFUL
 ; ChanServ commands.
 ;
 [CS_COMMAND]
 REGISTERED         =Channel %s has been registered with founder %s.
-DROPPED            =Channel %s has been dropped.
+DROPPED            =Channel %s has been droped.
 IDENTIFIED         =Password accepted - you are now identified as founder of %s.
 SET_TO             =%s for channel %s has been set to %s.
 UNSET              =%s for channel %s has been unset.
@@ -697,7 +697,7 @@ LEVEL_LIST         =%5d  %-9s  %s
 LEVEL_HAVE         =You have %s access on channel %s.
 
 ;
-; This section contains the output used at the end of SUCCESSFULL
+; This section contains the output used at the end of SUCCESSFUL
 ; CommServ commands, as well as all status outputs..
 ;
 [COMMSERV]
@@ -739,7 +739,7 @@ OPTIONS            =\   Options: %s
 MEMBERS            =members
 MESSAGES           =messages
 SET_HEAD           =Head
-SET_EMAIL          =E-Mail address
+SET_EMAIL          =E-Mail Address
 SET_URL            =WWW Page
 SET_SECURE         =Secure
 SET_PRIVATE        =Private
@@ -756,7 +756,7 @@ ISNOTLINKED        =Server %s is not linked.
 ISLANG             =Language %s is already loaded.
 ISNOTLANG          =Language %s is not loaded.
 NOLANG             =Language %s does not exist.
-ISOPERDENY         =You may not set mode +o, you are on OperDeny.
+ISOPERDENY         =You may not set mode +o, you are on Oper Deny.
 HTM                =HTM will trigger at %s/s, Current average traffic is %.1fKb/s.
 
 ;
@@ -797,8 +797,8 @@ CHAN_ACCESS        =Minimum access level is %d, and maximum is %d.
 CHAN_NEWS          =News articles expire after %s.
 
 MISC_INFLIGHT      =Memos are in-flight for %s.
-MISC_AKILL1        =Default AutoKill time is %s.
-MISC_AKILL2        =Maximum AutoKill times (by committee) are:
+MISC_AKILL1        =Default Auto Kill time is %s.
+MISC_AKILL2        =Maximum Auto Kill times (by committee) are:
 MISC_AKILL3        =    %s: %s
 MISC_CLONES        =Users may have up to %d clone(s) per host, which may be overridden up to %d.
 MISC_FLOOD1        =Flood is triggered with %d message(s) is %s.
@@ -808,7 +808,7 @@ MISC_COMM_OPT      =Default committee options are: %s
 
 
 ;
-; This section contains the output used at the end of SUCCESSFULL
+; This section contains the output used at the end of SUCCESSFUL
 ; OperServ commands.
 ;
 [OS_COMMAND]
@@ -853,7 +853,7 @@ REPLY              =[REPLY: "%s"] %s
 REPLY_ARG          =[REPLY(%s): "%s"] %s
 
 ;
-; This section contains the output used at the end of SUCCESSFULL
+; This section contains the output used at the end of SUCCESSFUL
 ; MemoServ commands.
 ;
 [MS_COMMAND]

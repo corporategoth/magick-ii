@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index11547.info.2.
+/tmp/sgmltmp.index22915.info.2.
 
    \input texinfo
 
@@ -40,9 +40,9 @@ flooding, abusive users, and many other things.
 
    Magick services adhere to RFC 1459, and many variants of it.  The
 changes to the base protocol will not be discussed in this document, as
-there are too many of them, and so many different destinct protocols
-around nowdays, however Magick has been designed to cope with them all,
-with a minimum of fuss (as long as they support services of this
+there are too many of them, and so many different distinct protocols
+around nowadays, however Magick has been designed to cope with them
+all, with a minimum of fuss (as long as they support services of this
 nature).
 
 * Menu:
@@ -122,12 +122,12 @@ II (testers not included):
 
         * Matt Heckaman
 
-`Supporters Who Dont Know It'
+`Supporters Who Don't Know It'
         * Coca-Cola Amatil        - Life Support *bleep ... bleep*
 
-        * Nescafe Blend 43        - See above (any kind of caffiene!)
+        * Nescafe Blend 43        - See above (any kind of caffeine!)
 
-        * Tschaicovski    - If you dont understand, you never will...
+        * Tschaicovski    - If you don't understand, you never will...
 
 
 File: index.info,  Node: Changes,  Prev: Authors,  Up: Introduction
@@ -158,14 +158,14 @@ Magick I
 rid myself of all the excess EsperNet baggage.
 
    * 1999/02/20 .4
-        * Added copyrights back from espernet, so they would stop
+        * Added copyrights back from EsperNet, so they would stop
           bitching at me for removing them (even though I DID modify
           the code to an extent they no longer resemble their
           services).  *shrug* some people.
 
         * Added configuration file (see DOC dir) (Ungod)
 
-        * Added messages.h to customize Magick output.
+        * Added messages.h to customise Magick output.
 
         * Added SYNC[lowbar]TIME (dbase save) showing option
 
@@ -183,13 +183,13 @@ rid myself of all the excess EsperNet baggage.
 
    * 1998/01/20 .3
         * Added MLOCK +i and +k support (ChanServ will keep channel if
-          noone in it!).
+          no one in it!).
 
         * doc/Distribution - READ it (and all files in that DIR!) :)
 
         * Removed time[lowbar]zone and added the "X time ago" formats
 
-        * Fixed lots and lots of bugs, and optimized alot of code!
+        * Fixed lots and lots of bugs, and optimised alot of code!
 
         * Replaced IRCOP[lowbar]OVERRIDE with OVERRIDE[lowbar]LEVEL (6
           levels)
@@ -506,42 +506,42 @@ directory):
      make
 
    Note on the above.  The `export ACE[lowbar]ROOT=' command may not
-work on your shell.  csh and tcsh users will have to se `set
+work on your shell.  csh and tcsh users will have to use `set
 ACE[lowbar]ROOT=', and on some other weird shells, just
-`ACE[lowbar]ROOT='.  Try them until you get one that doesnt error.
-Once you have one that doesnt have an error, just type `echo
+`ACE[lowbar]ROOT='.  Try them until you get one that doesn't error.
+Once you have one that doesn't have an error, just type `echo
 $ACE[lowbar]ROOT' to ensure it gives you your current directory, if
 not, keep trying.  I love unix standards :)
 
-   Note, If you get problems in the make with erorrs like:
+   Note, If you get problems in the make with errors like:
 
    ACE[lowbar]wrappers/include/makeinclude/wrapper[lowbar]macros.GNU,
 line 135: Missing dependency operator
 
    Your version of make is either old or not GNU standard.  ACE requires
 a GNU standard make program to compile.  First see if the program
-`gmake' exists, and if so try it, if not, or it doesnt work, please
+`gmake' exists, and if so try it, if not, or it doesn't work, please
 download it by going to http://www.gnu.org/software/make/make.html and
 downloading it from one of their mirror sites.  Incase your wondering
-`do I need root for this?'  No, you dont.  Just download it, compile
+`do I need root for this?'  No, you don't.  Just download it, compile
 it, and then type:
 
    alias make=/path/to/make-x.y/make
 
    Where /path/to are replaced with the full path before the make
 directory (eg. /home/myuser), and the x and y in the make-x.y directory
-are subtituted for the version of make you have.  Once you have aliased
-make, then try and build ACE again.
+are substituted for the version of make you have.  Once you have
+aliased make, then try and build ACE again.
 
    After ACE has been made, you have two options:
 
    * As root, you can copy *.so in the ace directory to /usr/local/lib
      and then copy *.h, *.i and *.cpp in the ace directory to
      /usr/local/include/ace, which you will have to create.  On linux
-     systems you will have to type 'ldconfig' after this.  Dont forget
+     systems you will have to type 'ldconfig' after this.  Don't forget
      to make the libs chmod 755, and the includes chmod 644.
 
-   * When you dont have root, use the -with-acelib and -with-aceinc
+   * When you don't have root, use the -with-acelib and -with-aceinc
      options to Magick's configure script to tell it where ACE is.
      Please note however, you will have to type the following line
      before you will be able to execute Magick:
@@ -679,7 +679,7 @@ Optional Features
 They may also pay attention to `-with-PACKAGE' options, where PACKAGE
 is something like `gnu-as' or `x' (for the X Window System).  The
 `README' should mention any `-enable-' and `-with-' options that the
-package recognizes.
+package recognises.
 
    For packages that use the X Window System, `configure' can usually
 find the X include and library files automatically, but if it doesn't,
@@ -729,7 +729,7 @@ File: index.info,  Node: Operation Controls,  Next: Security Tips,  Prev: Sharin
 Operation Controls
 ==================
 
-   `configure' recognizes the following options to control how it
+   `configure' recognises the following options to control how it
 operates.
 
 `--cache-file=FILE'
@@ -757,7 +757,7 @@ operates.
      -with-aceinc=path This specifies where the makefile should look
      for the ACE library file, and its includes respectively.  You must
      specify full pathnames.  Verification on what you have entered is
-     minimal (ie. will only verify the existance of the library file,
+     minimal (ie. will only verify the existence of the library file,
      and OS.h in the include directory).  This should only be used if
      Magick does not detect the ACE library.
 
@@ -765,7 +765,7 @@ operates.
      -with-zinc=path This specifies where the makefile should look for
      the ZLIB library file, and its includes respectively.  You must
      specify full pathnames.  Verification on what you have entered is
-     minimal (ie. will only verify the existance of the library file,
+     minimal (ie. will only verify the existence of the library file,
      and zlib.h in the include directory).  This should only be used if
      Magick does not detect the ZLIB library.
 
@@ -779,7 +779,7 @@ operates.
      -with-threadinc=path This specifies where the makefile should look
      for a threads library file, and its includes respectively.  You
      must specify full pathnames.  Verification on what you have
-     entered is minimal (ie. will only verify the existance of the
+     entered is minimal (ie. will only verify the existence of the
      library file, and the include directory exists).  This should only
      be used if Magick does not detect a threads library.
 
@@ -791,7 +791,7 @@ operates.
      or it may not have included a required library.  The include and
      libdir should both be directories where to find the include files
      or libraries, where lib should be the library name with the lib
-     prefix and the .so or .a postfix trucated.  eg. libpthread.so
+     prefix and the .so or .a postfix truncated.  eg. libpthread.so
      becomes pthread.
 
 `--enable-des'
@@ -817,7 +817,7 @@ operates.
      error checking and profiling software mpatrol
      (http://www.cbmamiga.demon.co.uk/mpatrol).  This software is
      useful in the fact it looks for memory access errors (eg.
-     accessing unitialized memory, exceeding memory bounds, not freeing
+     accessing unitialised memory, exceeding memory bounds, not freeing
      memory, etc).  However it slows the program down dramatically.
      Turning this on causes a new log file (mpatrol.log) to be created.
 
@@ -838,25 +838,25 @@ Security Tips
 magick communications are kept secure and encrypted.  The main methods
 of facilitating this are:
    * Databases and inter-magick communication is encrypted with a key
-     through 3DES.  This key resides in a keyfile.
+     through 3DES.  This key resides in a key file.
 
-   * The keyfile itself is encrypted with two keys generated at compile
-     time, to ensure the keyfile is never cleartext.
+   * The key file itself is encrypted with two keys generated at
+     compile time, to ensure the key file is never clear text.
 
-   * EACH compile creates new keyfile keys, which means you must
-     re-generate the keyfile each time you compile, ensuring it does
+   * EACH compile creates new key file keys, which means you must
+     re-generate the key file each time you compile, ensuring it does
      not get stale (and becomes invalid if someone gets it!)
 
    To ensure the security of your databases and communication, you
 should
    * Chose a long and complex database key, you must remember this
      somehow, incase you need to generate a new database key, however
-     you wont need it often.  Also choose long and varied keyfile keys,
-     they can be up to 1024 bytes long (or longer with the -with-keylen
-     paramater to configure)!
+     you wont need it often.  Also choose long and varied key file
+     keys, they can be up to 1024 bytes long (or longer with the
+     -with-keylen parameter to configure)!
 
    * Recompile magick every so often.  This forces you to re-generate
-     the database keyfile with new keys, which is always a good idea!
+     the database key file with new keys, which is always a good idea!
 
    Windows users will not automatically generate a new keyset with each
 compile.  A default (generic, consider it hacked) keyset is supplied
@@ -871,7 +871,7 @@ decrypt your databases (via. the config file) ASAP, as if you lose your
 key, and do not know the password to generate a new one, you may as
 well remove the file and start again.
 
-   Pre-compiled binaries will not be able to change the keyfile keys.
+   Pre-compiled binaries will not be able to change the key file keys.
 This could be considered an advantage of compiling yourself.
 
 
@@ -894,12 +894,12 @@ Support files
 
    All files and directories listed are relative to the current
 'Services Directory'. The services directory is set with the -dir
-commandline option. If none is specified, it will default to the
+command line option. If none is specified, it will default to the
 current directory.
 
 `magick.ini'
      This file is included with your Magick distribution in the docs
-     directory.  This file must either be specified on the commandline
+     directory.  This file must either be specified on the command line
      with the -config option, or in the services directory.  This file
      contains all settings that Magick II will use throughout its
      execution (these can be changed and reloaded online).
@@ -912,13 +912,13 @@ current directory.
      will be created if it does not exist.
 
 `magick.log'
-     This is the logfile which logs all activity of note that happens
+     This is the log file which logs all activity of note that happens
      inside Magick.  The verbosity of this log file can vary depending
      on the -debug option, or the VERBOSE config option.  This file may
-     be zero'd without any detremental effects, or if it is removed,
+     be zeroed without any decremental effects, or if it is removed,
      the OFF and ON online commands will re-establish the filehandle.
      This filename is a setting in the magick.ini file, and may be
-     changed.  This file is created if it doesnt exist.
+     changed.  This file is created if it doesn't exist.
 
 `magick.pid'
      This file indicates the process ID of the currently running Magick
@@ -943,38 +943,38 @@ current directory.
 `lang\*.lng'
      These files contain the responses Magick will send back to users
      for any command, or output from any procedure.  These files are
-     'tokenized', and are substituted with actual values.  The default
-     language file to used is set by the DEF[lowbar]LANGUAGE paramater
+     'tokenised', and are substituted with actual values.  The default
+     language file to used is set by the DEF[lowbar]LANGUAGE parameter
      in the magick.ini file, however languages may be set per-user.
 
 `lang\*.lfo'
      These files contain the log file outputs Magick will use for all
      messages going to the magick.log file.  These files are
-     'tokenized', and are substituted with actual values.  The file that
-     is used is set by the DEF[lowbar]LANGUAGE paramater in the
+     'tokenised', and are substituted with actual values.  The file that
+     is used is set by the DEF[lowbar]LANGUAGE parameter in the
      magick.ini file.
 
 `lang\*.hlp'
      These files contain the help text that Magick uses to respond to
      all HELP commands.  The default help file used is set by the
-     DEF[lowbar]LANGUAGE paramater in the magick.ini file, however
+     DEF[lowbar]LANGUAGE parameter in the magick.ini file, however
      languages may be set per-user.
 
 `files\pic'
      This directory is where all user's pictures are stored.  The files
-     themselves are stored as hexidecimal numbers, with no extension -
+     themselves are stored as hexadecimal numbers, with no extension -
      the map to real filenames is stored in the database.  The path
      name actually used is a setting in the magick.ini file.
 
 `files\memo'
      This directory is where all attachments are stored.  The files
-     themselves are stored as hexidecimal numbers, with no extension -
+     themselves are stored as hexadecimal numbers, with no extension -
      the map to real filenames is stored in the database.  The path
      name actually used is a setting in the magick.ini file.
 
 `files\public'
      This directory is where all files in the public filesystem are
-     stored.  The files themselves are stored as hexidecimal numbers,
+     stored.  The files themselves are stored as hexadecimal numbers,
      with no extension - the map to real filenames is stored in the
      database.  The path name actually used is a setting in the
      magick.ini file.
@@ -983,7 +983,7 @@ current directory.
      This directory is where all files involved in DCC transfers
      (sending or receiving) are stored.  These files are considered
      volatile, and if Magick is not running, can safely be removed. The
-     files themselves are stored as hexidecimal numbers, with no
+     files themselves are stored as hexadecimal numbers, with no
      extension. The path name actually used is a setting in the
      magick.ini file.
 
@@ -995,7 +995,7 @@ General Usage
 
    Magick once started, becomes a background process.  It accepts a
 number of command-line options that override the settings of their
-equivilants on load.  NOTE: If the config file is loaded again at
+equivalents on load.  NOTE: If the config file is loaded again at
 runtime, the settings in the config file will be used.
 
      --help (or -?)  Help output (summary of the below).
@@ -1003,9 +1003,9 @@ runtime, the settings in the config file will be used.
      --config X      Set the name of the config file.
      --convert X     Convert another version of services databases
                      to Magick II format, where X is the type of
-                     database to convert.  Currently recognized:
+                     database to convert.  Currently recognised:
                              magick
-     --trace X:Y     Set the trace level on startup, equivilant of
+     --trace X:Y     Set the trace level on startup, equivalent of
                      using the OperServ TRACE SET command while
                      running, where X is the trace type (or ALL), and
                      Y is the trace level in hex.
@@ -1056,16 +1056,16 @@ file's comments for more information on each option, and what it does.
      ./magick --config /etc/magick.ini
 
    After Magick is running, it should be totally driven through the
-on-line cilents (NickServ, ChanServ, OperServ, etc).  However, in
+on-line clients (NickServ, ChanServ, OperServ, etc).  However, in
 certain cases, events happen and these interfaces are either not
-available, not responding, too slow, or dont recognize you.  For this
+available, not responding, too slow, or don't recognise you.  For this
 eventuality, all UNIX SIGNALS have been trapped, and some perform extra
 functions that 'originally' intended.
 
-     SIGNAL  NUMBER  EQUIVILANT      DESCRIPTION
+     SIGNAL  NUMBER  EQUIVALENT      DESCRIPTION
      ------  ------  ----------      -----------
      SIGHUP  1       OS RELOAD       Re-loads the config file.
-     SIGINT  2       OS SIGNON       Attempts to sign on all cilents.
+     SIGINT  2       OS SIGNON       Attempts to sign on all clients.
      SIGTERM 15      OS UPDATE       Saves the databases.
 
    Some have queried me on why SIGTERM saves the databases.  During
@@ -1083,8 +1083,8 @@ will ask you to enter the data interactively.
 
    On unix terminals that support it, the text entered at the key
 prompts will be hidden, however to not bank on this, and always ensure
-noone can look over your shoulder of sniff your network traffic to find
-out what the clear-text password is.  The maximum size of a key is
+no one can look over your shoulder of sniff your network traffic to
+find out what the clear-text password is.  The maximum size of a key is
 specified at compile time, and may be changed with a configure option
 (see INSTALL for further details).
 
@@ -1124,11 +1124,11 @@ services.  Please note, the actual nicknames of each of the below
 services may be different on each network.
 
    NickServ is a services that allows users to register their IRC
-nicknames so that noone else may take them.  Users may then set various
-options on their nickname record, such as privacy mode, kill
+nicknames so that no one else may take them.  Users may then set
+various options on their nickname record, such as privacy mode, kill
 protection, etc that affect the way their nickname is treated, and how
 services respond to them.  They may also set purely informational
-fields in their nickname record thay is displayed on an INFO request.
+fields in their nickname record they is displayed on an INFO request.
 NickName registration is required to execute many other commands in
 services, be added to a channel access list, or receive memos from
 other users.
@@ -1136,10 +1136,10 @@ other users.
    ChanServ is a service that allows users to register a channel on the
 IRC network, so that they may specify who has access to them, and who
 shall be automatically kicked from them.  This not only prevents such
-things as channel takeovers, but establishes a definate 'seniority'
+things as channel takeovers, but establishes a definite 'seniority'
 system in the channel.  ChanServ also allows users to set various
 options on their channel records, from the purely informational that is
-displayed in an INFO request, to options that change the behavior of
+displayed in an INFO request, to options that change the behaviour of
 services, and how users are treated in a channel.  This service also
 offers such features as on-join greetings, user-based greetings, etc.
 
@@ -1147,7 +1147,7 @@ offers such features as on-join greetings, user-based greetings, etc.
 users, or post news articles to channels.  This service also allows
 such features as forwarding, or replying to memos, and even attaching
 files via. DCC to memos (to other users only).  This service also
-intergrates with NickServ's ignore list, and ChanServ's access list to
+integrates with NickServ's ignore list, and ChanServ's access list to
 vary the ability to send, or read memos or news articles.
 
    CommServ is a service that maintains 'committees' or groups of
@@ -1157,7 +1157,7 @@ You may also send memos to all members of a committee or set logon
 messages for committees that all members will see on signon.  Services
 has 6 'default' committees:
 `SADMIN'
-     Services Adminstrators - Members of this committee are hard-coded
+     Services Administrators - Members of this committee are hard-coded
      into the Magick configuration file.
 
 `SOP'
@@ -1183,15 +1183,15 @@ has 6 'default' committees:
    OperServ is a services that allows IRC Operators to keep control on
 the network.  This service offers functions like an Automatic Kill
 list, Clone Protection (and overriding), Services Ignore, IRC Operator
-Denying, aswell as the ability to JUPE (fake-link) a server, change a
-user or channels modes, and many more funcitons.
+Denying, as well as the ability to JUPE (fake-link) a server, change a
+user or channels modes, and many more functions.
 
    ServMsg is mainly an informational service, users may get help,
 statistics and information about services, and the network they are
 connected to from this service.  This service also offers the ability
 for Server Administrators to send a global message that will be sent to
 all users on the network, and services operators to offer files to
-users throuh the public file system.
+users through the public file system.
 
 
 File: index.info,  Node: Questions and Answers,  Next: License,  Prev: Usage,  Up: Top
@@ -1201,16 +1201,16 @@ Questions and Answers
 
 * Menu:
 
-* My IRCD isnt supported what can I do?::
+* My IRCD isn't supported what can I do?::
 
 
-File: index.info,  Node: My IRCD isnt supported what can I do?,  Up: Questions and Answers
+File: index.info,  Node: My IRCD isn't supported what can I do?,  Up: Questions and Answers
 
-My IRCD isnt supported what can I do?
-=====================================
+My IRCD isn't supported what can I do?
+======================================
 
    If this is the case, and none of the pre-defined IRCD's are
-compatable with it, please find out exactly (at a protocol level) how
+compatible with it, please find out exactly (at a protocol level) how
 your IRCD is different to the ones Magick supports (or ask the IRCD's
 author) and email the list of differences to the Magick Development
 Team.
@@ -1371,7 +1371,7 @@ software interchange; or,
 
    c) Accompany it with the information you received as to the offer to
 distribute corresponding source code.  (This alternative is allowed
-only for noncommercial distribution and only if you received the
+only for non-commercial distribution and only if you received the
 program in object code or executable form with such an offer, in accord
 with Subsection b above.)
 
@@ -1417,7 +1417,7 @@ restrictions on the recipients' exercise of the rights granted herein.
 You are not responsible for enforcing compliance by third parties to
 this License.
 
-   7. If, as a consequence of a court judgment or allegation of patent
+   7. If, as a consequence of a court judgement or allegation of patent
 infringement or for any other reason (not limited to patent issues),
 conditions are imposed on you (whether by court order, agreement or
 otherwise) that contradict the conditions of this License, they do not
@@ -1536,33 +1536,33 @@ Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 Tag Table:
 Node: Top110
 Node: Introduction472
-Node: Dedication1518
-Node: Authors2134
-Node: Changes4381
-Node: Magick II4544
-Node: Magick I4634
-Node: Services 3-08410
-Node: Pre-Services 3-012801
-Node: Installation13074
-Node: How to obtain Magick13488
-Node: Requirements13875
-Node: ACE Installation14721
-Node: Basic Installation17869
-Node: Compilers and Options20419
-Node: Compiling For Multiple Architectures21066
-Node: Installation Names22057
-Node: Optional Features23240
-Node: Specifying the System Type24010
-Node: Sharing Defaults25033
-Node: Operation Controls25679
-Node: Security Tips30247
-Node: Usage32251
-Node: Support files32423
-Node: General Usage37018
-Node: Functionality42784
-Node: Questions and Answers46587
-Node: My IRCD isnt supported what can I do?46774
-Node: License47223
-Node: Copyright62713
+Node: Dedication1519
+Node: Authors2135
+Node: Changes4384
+Node: Magick II4547
+Node: Magick I4637
+Node: Services 3-08414
+Node: Pre-Services 3-012805
+Node: Installation13078
+Node: How to obtain Magick13492
+Node: Requirements13879
+Node: ACE Installation14725
+Node: Basic Installation17881
+Node: Compilers and Options20431
+Node: Compiling For Multiple Architectures21078
+Node: Installation Names22069
+Node: Optional Features23252
+Node: Specifying the System Type24022
+Node: Sharing Defaults25045
+Node: Operation Controls25691
+Node: Security Tips30260
+Node: Usage32273
+Node: Support files32445
+Node: General Usage37044
+Node: Functionality42812
+Node: Questions and Answers46619
+Node: My IRCD isn't supported what can I do?46807
+Node: License47259
+Node: Copyright62751
 
 End Tag Table

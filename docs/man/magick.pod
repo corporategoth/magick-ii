@@ -21,7 +21,7 @@ and many other things.
 Magick services adhere to B<RFC 1459>, and many variants of it.
 The changes to the base protocol will not be discussed in this
 document, as there are too many of them, and so many different
-destinct protocols around nowdays, however Magick has been
+distinct protocols around nowadays, however Magick has been
 designed to cope with them all, with a minimum of fuss (as long
 as they support services of this nature).
 
@@ -47,7 +47,7 @@ will be used, and looked for in the services directory.
 =item --convert X
 
 Convert another version of services databases to Magick II format,
-where X is the type of database to convert.  Currently recognized:
+where X is the type of database to convert.  Currently recognised:
 
 =over 4
 
@@ -59,7 +59,7 @@ magick
 
 =item --trace X:Y
 
-Set the trace level on startup, equivilant of using the OperServ
+Set the trace level on startup, equivalent of using the OperServ
 TRACE SET command while running, where X is the trace type (or ALL),
 and Y is the trace level in hex.
 
@@ -99,7 +99,7 @@ which tells magick how to talk to the IRC server it links to.
 
 Override the B<STARTUP/LEVEL> value in the configuration file,
 which is the lowest services level Magick may have while active
-(for services failover purposes, higher level = less likely to
+(for services fail over purposes, higher level = less likely to
 be failed to).
 
 =item --lagtime X, -g
@@ -187,7 +187,7 @@ which is the delay between saving the database file.
 
 Override the B<CONFIG/CHECKTIME> value in the configuration file,
 which is the delay between things like checking for outbound
-channel modes, who we need to rename because they havnt ident'd,
+channel modes, who we need to rename because they haven't ident'd,
 if we need to unban any bans, and other checks that happen quickly.
 
 =item --ping X, -p
@@ -278,7 +278,7 @@ it, or start a DCC transfer if they are attaching a file).
 =item --logignore, -i
 
 Override the B<OPERSERV/LOG_IGNORE> value in the configuration file,
-which tells magick to log all messages recieved by a user that is
+which tells magick to log all messages received by a user that is
 ignored by services.  These messages are logged with a priority
 of DEBUG, so you will need B<FILES/VERBOSE> set to true to see them.
 
@@ -360,7 +360,7 @@ L<magick_keygen(1)>
 =head1 NOTES
 
 Magick may be obtained from B<http://www.magick.tm> or
-B<ftp://ftp.magick.tm/pub/Magick> and is distribted under
+B<ftp://ftp.magick.tm/pub/Magick> and is distributed under
 the I<GNU General Public License>.
 
 =head1 DEDICATION

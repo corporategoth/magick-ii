@@ -6,7 +6,7 @@
 ** (c) 1997-2000 Preston Elder <prez@magick.tm>
 ** (c) 1998-2000 William King <ungod@magick.tm>
 **
-** The above copywright may not be removed under any
+** The above copyright may not be removed under any
 ** circumstances, however it may be added to if any
 ** modifications are made to this file.  All modified
 ** code must be clearly documented and labelled.
@@ -24,17 +24,18 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.106  2000/08/19 10:59:46  prez
+** Revision 1.107  2000/09/19 08:05:24  prez
+** Ran text files through spell checker.
+**
+** Revision 1.20  2000/08/22 08:43:39  prez
+** Another re-write of locking stuff -- this time to essentially make all
+** locks re-entrant ourselves, without relying on implementations to do it.
+** Also stops us setting the same lock twice in the same thread.
+**
+** Revision 1.19  2000/08/19 10:59:46  prez
 ** Added delays between nick/channel registering and memo sending,
 ** Added limit of channels per reg'd nick
 ** Added setting of user modes when recognized on hard-coded committees
-**
-** Revision 1.105  2000/08/08 03:46:20  prez
-** Fixed problem with dcc not connecting (eg. connection refused) crashing
-** services.
-**
-** Revision 1.104  2000/08/07 22:41:32  prez
-** *** empty log message ***
 **
 ** Revision 1.18  2000/08/07 22:40:52  prez
 ** *** empty log message ***
@@ -92,7 +93,7 @@ static const char *ident_version_h = "@(#) $Id$";
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
 const int BUILD_NUMBER = 1;
-const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
+const mstring BUILD_TYPE = "Linux 2.4.0-test8 i686 unknown";
 const mstring BUILD_SYS = "haven";
 
 /* Versioning Information
@@ -100,11 +101,11 @@ const mstring BUILD_SYS = "haven";
  * All of the below information should only EVER be
  * changed by the Magick Development Team except the
  * PATCH? tags, which may be updated using the
- * add-patch and rem-patch utilies provided in the
+ * add-patch and rem-patch utilities provided in the
  * helper directory.  PLEASE do not change these
  * because you think it'd be funky to have 'MyNet
- * Services', we DO diserve SOME creditation for what
- * we've done, dont you think?
+ * Services', we DO deserve SOME credit for what
+ * we've done, don't you think?
  *
  * For a FULL release product (non-alpha/beta), the
  * RELEASE value will be blank (else it will contain
@@ -115,7 +116,7 @@ const mstring BUILD_SYS = "haven";
  * Up to 9 patch levels are allowed for, so if you write
  * a patch for magick that has to alter the actual code,
  * add your patch name to one of the patch levels.  Nine
- * are provided because often multipal patches are used
+ * are provided because often multiple patches are used
  * for various reasons, but if you need more than nine
  * patches on the original source, you should re-think.
  */
@@ -124,7 +125,7 @@ const mstring SLOGAN			= "Power to the PEOPLE!";
 const mstring EMAIL			= "magick@magick.tm";
 const mstring HOMEPAGE			= "http://www.magick.tm";
 const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/Magick";
-const mstring RELEASE			= "b3";
+const mstring RELEASE			= "b4";
 const mstring PATCH1			= "";
 const mstring PATCH2			= "";
 const mstring PATCH3			= "";
@@ -173,13 +174,13 @@ FULLNAME+" - "+SLOGAN,
 "",
 "Special Thanks To:",
 "    Coca Cola Amatil     Life support ... *bleep, bleep*",
-"    Nescafe Blend 43     See above (really, any kind of caffine!)",
-"    Tschaicovski         If you dont understand ... you never will.",
+"    Nescafe Blend 43     See above (really, any kind of caffeine!)",
+"    Tschaicovski         If you don't understand ... you never will.",
 "",
 "Also Thanks To:",
 "    Kelly Hill, Emma Ellison, Marieke Bermon, Matt Heckaman",
 "",
-"Library Creditations: ",
+"Library Credits: ",
 "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
 "    cint           http://root.cern.ch/root/Cint.html",
 "    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",

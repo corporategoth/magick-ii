@@ -48,30 +48,30 @@ cd ../..
 make
 
 Note on the above.  The `export ACE_ROOT=' command may not work on
-your shell.  csh and tcsh users will have to se `set ACE_ROOT=',
+your shell.  csh and tcsh users will have to use `set ACE_ROOT=',
 and on some other weird shells, just `ACE_ROOT='.  Try them until
-you get one that doesnt error.  Once you have one that doesnt have
+you get one that doesn't error.  Once you have one that doesn't have
 an error, just type `echo $ACE_ROOT' to ensure it gives you your
 current directory, if not, keep trying.  I love unix standards :)
 
-Note, If you get problems in the make with erorrs like:
+Note, If you get problems in the make with errors like:
 
 ACE_wrappers/include/makeinclude/wrapper_macros.GNU,
        line 135: Missing dependency operator
 
 Your version of make is either old or not GNU standard.  ACE requires
 a GNU standard make program to compile.  First see if the program
-`gmake' exists, and if so try it, if not, or it doesnt work, please
+`gmake' exists, and if so try it, if not, or it doesn't work, please
 download it by going to http://www.gnu.org/software/make/make.html
 and downloading it from one of their mirror sites.  Incase your
-wondering `do I need root for this?'  No, you dont.  Just download
+wondering `do I need root for this?'  No, you don't.  Just download
 it, compile it, and then type:
 
 alias make=/path/to/make-x.y/make
 
 Where /path/to are replaced with the full path before the make
 directory (eg. /home/myuser), and the x and y in the make-x.y
-directory are subtituted for the version of make you have.  Once
+directory are substituted for the version of make you have.  Once
 you have aliased make, then try and build ACE again.
 
 After ACE has been made, you have two options:
@@ -79,12 +79,12 @@ After ACE has been made, you have two options:
 1) As root, you can copy *.so in the ace directory to /usr/local/lib
    and then copy *.h, *.i and *.cpp in the ace directory to
    /usr/local/include/ace, which you will have to create.  On linux
-   systems you will have to type 'ldconfig' after this.  Dont forget
+   systems you will have to type 'ldconfig' after this.  Don't forget
    to make the libs chmod 755, and the includes chmod 644.
 
 -OR-
 
-2) When you dont have root, use the --with-acelib and --with-aceinc
+2) When you don't have root, use the --with-acelib and --with-aceinc
    options to Magick's configure script to tell it where ACE is.
    Please note however, you will have to type the following line
    before you will be able to execute Magick:
@@ -207,7 +207,7 @@ Optional Features
 They may also pay attention to `--with-PACKAGE' options, where PACKAGE
 is something like `gnu-as' or `x' (for the X Window System).  The
 `README' should mention any `--enable-' and `--with-' options that the
-package recognizes.
+package recognises.
 
    For packages that use the X Window System, `configure' can usually
 find the X include and library files automatically, but if it doesn't,
@@ -248,7 +248,7 @@ A warning: not all `configure' scripts look for a site script.
 Operation Controls
 ==================
 
-   `configure' recognizes the following options to control how it
+   `configure' recognises the following options to control how it
 operates.
 
 `--cache-file=FILE'
@@ -279,7 +279,7 @@ operates.
      This specifies where the makefile should look for the ACE library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
-the existance of the library file, and OS.h in the include directory).
+the existence of the library file, and OS.h in the include directory).
 This should only be used if Magick does not detect the ACE library.
 NOTE: this should point to the PARENT of the `ace' directory.
 
@@ -288,7 +288,7 @@ NOTE: this should point to the PARENT of the `ace' directory.
      This specifies where the makefile should look for the ZLIB library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
-the existance of the library file, and zlib.h in the include directory).
+the existence of the library file, and zlib.h in the include directory).
 This should only be used if Magick does not detect the ZLIB library.
 
 `--enable-bsdthreads'
@@ -302,7 +302,7 @@ the standard C library, specifically, BSD.
      This specifies where the makefile should look for a threads library
 file, and its includes respectively.  You must specify full pathnames.
 Verification on what you have entered is minimal (ie. will only verify
-the existance of the library file, and the include directory exists).
+the existence of the library file, and the include directory exists).
 This should only be used if Magick does not detect a threads library.
 
 `--with-include=path'
@@ -314,7 +314,7 @@ or undefined references, it may not have been able to find a header it
 needed, or it may not have included a required library.  The include
 and libdir should both be directories where to find the include files
 or libraries, where lib should be the library name with the lib prefix
-and the .so or .a postfix trucated.  eg. libpthread.so becomes pthread.
+and the .so or .a postfix truncated.  eg. libpthread.so becomes pthread.
 
 `--enable-des'
 `--disable-des'
@@ -340,7 +340,7 @@ big target asking for data corruption turning this off.
      This turns on or off the usage of the memory error checking and
 profiling software mpatrol (http://www.cbmamiga.demon.co.uk/mpatrol).
 This software is useful in the fact it looks for memory access errors
-(eg. accessing unitialized memory, exceeding memory bounds, not freeing
+(eg. accessing unitialised memory, exceeding memory bounds, not freeing
 memory, etc).  However it slows the program down dramatically.  Turning
 this on causes a new log file (mpatrol.log) to be created.
 
@@ -357,21 +357,21 @@ Security Tips
 magick communications are kept secure and encrypted.  The main methods
 of facilitating this are:
      * Databases and inter-magick communication is encrypted with a
-       key through 3DES.  This key resides in a keyfile.
-     * The keyfile itself is encrypted with two keys generated at
-       compile time, to ensure the keyfile is never cleartext.
-     * EACH compile creates new keyfile keys, which means you must
-       re-generate the keyfile each time you compile, ensuring it
+       key through 3DES.  This key resides in a key file.
+     * The key file itself is encrypted with two keys generated at
+       compile time, to ensure the key file is never clear text.
+     * EACH compile creates new key file keys, which means you must
+       re-generate the key file each time you compile, ensuring it
        does not get stale (and becomes invalid if someone gets it!)
 
 To ensure the security of your databases and communication, you should
      * Chose a long and complex database key, you must remember this
        somehow, incase you need to generate a new database key, however
-       you wont need it often.  Also choose long and varied keyfile
+       you wont need it often.  Also choose long and varied key file
        keys, they can be up to 1024 bytes long (or longer with the
-       --with-keylen paramater to configure)!
+       --with-keylen parameter to configure)!
      * Recompile magick every so often.  This forces you to re-generate
-       the database keyfile with new keys, which is always a good idea!
+       the database key file with new keys, which is always a good idea!
 
 Windows users will not automatically generate a new keyset with each
 compile.  A default (generic, consider it hacked) keyset is supplied
@@ -385,6 +385,6 @@ decrypt your databases (via. the config file) ASAP, as if you lose
 your key, and do not know the password to generate a new one, you
 may as well remove the file and start again.
 
-Pre-compiled binaries will not be able to change the keyfile keys.
+Pre-compiled binaries will not be able to change the key file keys.
 This could be considered an advantage of compiling yourself.  You
-will however need to re-generate your keyfile each new binary release.
+will however need to re-generate your key file each new binary release.
