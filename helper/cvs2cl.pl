@@ -865,10 +865,10 @@ sub derive_change_log ()
           if (! $passed_first_entry)
           {
             if ((! $started_first_entry)
-                && /^(\d\d\d\d-\d\d-\d\d\s+\d\d:\d\d)/) {
+                && /^\*\s+(\d\d\d\d-\d\d-\d\d\s+\d\d:\d\d)/) {
               $started_first_entry = 1;
             }
-            elsif (/^(\d\d\d\d-\d\d-\d\d\s+\d\d:\d\d)/) {
+            elsif (/^\*\s+(\d\d\d\d-\d\d-\d\d\s+\d\d:\d\d)/) {
               $passed_first_entry = 1;
               print NEW_LOG $_;
             }
