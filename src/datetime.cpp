@@ -730,3 +730,68 @@ int mDateTime::Year()
     DecodeDate(Year,Month,Day);
     return Year;
 }
+
+mstring mDateTime::Ago(bool call)
+{
+    mDateTime dummyvar=Now()-(*this);
+    // what the fuck does !! do exactly? not not???
+    // how to get GMT hmm.
+    //if(call)
+	//add GMT offset
+    return dummyvar.Disect(false);
+    
+}
+mstring mDateTime::Disect(bool call)
+{
+    mstring Result="";
+    int Years,Months,Days,Hours,Minutes,Seconds,MSecs;
+    DecodeDate(Years,Months,Days);
+    DecodeTime(Hours,Minutes,Seconds,MSecs);
+    if(Years>0)
+    {
+	Result<<
+	    Years<<" year"<<(Years==1?"":"s")<<" "<<
+	    Months<<" month"<<(Months==1?"":"s")<<" "<<
+	    Days<<" day"<<(Days==1?"":"s")<<" "<<
+	    (Hours>10?"":"0")<<Hours<<":"<<
+	    (Minutes>10?"":"0")<<Minutes<<":"<<
+	    (Seconds>10?"":"0")<<Seconds<<":";
+    }
+    else if(Months>0)
+    {
+	Result<<
+	    Months<<" month"<<(Months==1?"":"s")<<" "<<
+	    Days<<" day"<<(Days==1?"":"s")<<" "<<
+	    (Hours>10?"":"0")<<Hours<<":"<<
+	    (Minutes>10?"":"0")<<Minutes<<":"<<
+	    (Seconds>10?"":"0")<<Seconds<<":";
+    }
+    else if(Days>0)
+    {
+	Result<<
+	    Days<<" day"<<(Days==1?"":"s")<<" "<<
+	    (Hours>10?"":"0")<<Hours<<":"<<
+	    (Minutes>10?"":"0")<<Minutes<<":"<<
+	    (Seconds>10?"":"0")<<Seconds<<":";
+    }
+    else if(Hours>0)
+    {
+	Result<<
+	    Hours<<" hour"<<(Hours==1?"":"s")<<" "<<
+	    Minutes<<" minute"<<(Minutes==1?"":"s")<<" "<<
+	    Seconds<<" second"<<(Seconds==1?"":"s")<<" ";
+    }
+    else if(Minutes>0)
+    {
+	Result<<
+	    Minutes<<" minute"<<(Minutes==1?"":"s")<<" "<<
+	    Seconds<<" second"<<(Seconds==1?"":"s")<<" ";
+    }
+    else if(Seconds>0)
+    {
+	Result<<
+	    Seconds<<" second"<<(Seconds==1?"":"s")<<" ";
+    }
+    return Result;
+
+}

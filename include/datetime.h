@@ -178,6 +178,8 @@ public:
     int Day();
     int Month();
     int Year();
+    mstring Ago(bool call);
+    mstring Disect(bool call);
 
     friend bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date);
     friend bool DoEncodeTime(int Hour, int Min, int Sec, int MSec, mDateTime& Time);
