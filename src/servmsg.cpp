@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.57  2000/06/11 08:20:12  prez
+** More minor bug fixes, godda love testers.
+**
 ** Revision 1.56  2000/06/10 07:01:04  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -1138,7 +1141,7 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
     		priv.c_str());
     Log(LM_INFO, Parent->getLogMessage("SERVMSG/FILE_PRIV"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	file.c_str(), priv.c_str());
+	file.c_str(), ((priv == "") ? "ALL" : priv.c_str()));
     Parent->filesys.SetPriv(FileMap::Public, num, priv);
 }
 

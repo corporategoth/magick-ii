@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2000/06/11 08:20:12  prez
+** More minor bug fixes, godda love testers.
+**
 ** Revision 1.62  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -1386,7 +1389,7 @@ void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
 
     Parent->memoserv.stats.i_Forward++;
     Parent->nickserv.live[source.LowerCase()].InFlight.Memo(
-					    false, mynick, dest, text);
+					false, mynick, dest, text, true);
     Parent->nickserv.live[source.LowerCase()].InFlight.End(0);
 }
 

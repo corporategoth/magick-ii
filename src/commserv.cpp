@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/06/11 08:20:12  prez
+** More minor bug fixes, godda love testers.
+**
 ** Revision 1.59  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -1169,12 +1172,12 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
     if (comm->HeadCom() != "")
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/HEADCOM"),
-			comm->HeadCom().c_str());
+			comm->HeadCom().UpperCase().c_str());
     }
     else if (comm->Head() != "")
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV_INFO/HEAD"),
-			comm->Head().c_str());
+			Parent->getSname(comm->Head()).c_str());
     }
 
     if (comm->Email() != "")

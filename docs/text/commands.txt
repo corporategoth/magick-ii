@@ -361,6 +361,8 @@ FILE SEND <name>
     -- D
 FILE LOOKUP <type> <filename>
     -- D
+FILE DCC
+FILE CANCEL [id]
 
 OperServ
 ========

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2000/06/11 08:20:12  prez
+** More minor bug fixes, godda love testers.
+**
 ** Revision 1.102  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -307,9 +310,9 @@ void Nick_Live_t::InFlight_t::SetInProg()
 // New memo, send an old one if it isnt in-progress, and
 // cancel it if it was never started.
 void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
-				    mstring who, mstring message)
+			mstring who, mstring message, bool silent)
 {
-    FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message));
+    FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message, silent));
     if (!Parent->nickserv.IsStored(nick))
     {
 	send(mynick, nick, Parent->getMessage(nick, "NS_YOU_STATUS/ISNOTSTORED"));
@@ -382,12 +385,15 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
-    if (fileattach)
-	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING_FILE"),
-	    ToHumanTime(Parent->memoserv.InFlight()).c_str());
-    else
-	send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING"),
-	    ToHumanTime(Parent->memoserv.InFlight()).c_str());
+    if (!silent)
+    {
+	if (fileattach)
+	    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING_FILE"),
+		ToHumanTime(Parent->memoserv.InFlight()).c_str());
+	else
+	    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING"),
+		ToHumanTime(Parent->memoserv.InFlight()).c_str());
+    }
 }
 
 
@@ -619,7 +625,8 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 			Parent->nickserv.live[sender.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 			Parent->filesys.GetName(FileMap::Public, filenum).c_str(),
 			filenum, ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filenum)).c_str(),
-			Parent->filesys.GetPriv(FileMap::Public, filenum).c_str());
+			((Parent->filesys.GetPriv(FileMap::Public, filenum) == "") ?
+				"ALL" : Parent->filesys.GetPriv(FileMap::Public, filenum).c_str()));
 		}
 		else
 		{

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.121  2000/06/11 08:20:11  prez
+** More minor bug fixes, godda love testers.
+**
 ** Revision 1.120  2000/06/06 08:57:54  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -322,7 +325,7 @@ void mBase::notice(const mstring &dest, const mstring &pszFormat, ...)
     va_list argptr;
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
-    privmsgV(FirstName(), dest, pszFormat, argptr);
+    noticeV(FirstName(), dest, pszFormat, argptr);
     va_end(argptr);
 }
 

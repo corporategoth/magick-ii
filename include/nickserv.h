@@ -25,6 +25,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/06/11 08:20:11  prez
+** More minor bug fixes, godda love testers.
+**
 ** Revision 1.40  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -151,7 +154,7 @@ public:
 	// Called upon start
 	void SetInProg();
     public:
-	void Memo (bool file, mstring mynick, mstring recipiant, mstring message);
+	void Memo (bool file, mstring mynick, mstring recipiant, mstring message, bool silent = false);
 	void Continue(mstring message);
 	void Cancel();
 	void End(unsigned long filenum);
