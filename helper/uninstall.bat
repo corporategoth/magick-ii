@@ -15,15 +15,15 @@ REM Run as NT Service
 REM
 ECHO Removing service ...
 ECHO.
-"%*"\magick.exe --service stop %*
+"%*"\magick.exe --config "%*\magick.ini" --service stop
 IF NOT %ERRORLEVEL% == 0 GOTO Error
-"%*"\magick.exe --service remove %*
+"%*"\magick.exe --config "%*\magick.ini" --service remove %*
 IF NOT %ERRORLEVEL% == 0 GOTO Error
 
 :NotAsService
 uninst.exe -f"%*\Uninst.isu"
 ECHO You are about to remove all residual files in
-rmdir /S "%*"
+rd /S "%*"
 GOTO End
 
 :NeedParam
