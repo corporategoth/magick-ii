@@ -36,255 +36,264 @@ typedef wxOutputStream& (*__wxOutputManip)(wxOutputStream&);
 
 typedef enum 
 {
-  wxFromStart=SEEK_SET,
-  wxFromCurrent=SEEK_CUR,
-  wxFromEnd=SEEK_END
+    wxFromStart=SEEK_SET,
+	wxFromCurrent=SEEK_CUR,
+	wxFromEnd=SEEK_END
 } wxSeekMode;
 
 typedef enum 
 {
-  wxStream_NOERROR = 0,
-  wxStream_EOF,
-  wxStream_WRITE_ERR,
-  wxStream_READ_ERR
+    wxStream_NOERROR = 0,
+	wxStream_EOF,
+	wxStream_WRITE_ERR,
+	wxStream_READ_ERR
 } wxStreamError;
 
 wxOutputStream& wxEndL(wxOutputStream& o_stream);
 
 class wxStreamBuffer 
 {
- public:
-  typedef enum 
-  {
-    read = 0, write, read_write
-  } BufMode;
-  // -----------
-  // ctor & dtor
-  // -----------
-  wxStreamBuffer(wxStreamBase& stream, BufMode mode);
-  wxStreamBuffer(BufMode mode);
-  wxStreamBuffer(const wxStreamBuffer& buf);
-  ~wxStreamBuffer();
-
-  // -----------
-  // Filtered IO
-  // -----------
-  size_t Read(void *buffer, size_t size);
-  size_t Read(wxStreamBuffer *buf);
-  size_t Write(const void *buffer, size_t size);
-  size_t Write(wxStreamBuffer *buf);
-
-  size_t WriteBack(const unsigned char *buffer, size_t size);
-  bool WriteBack(unsigned char c);
-  unsigned char GetChar();
-  void PutChar(unsigned char c);
-  off_t Tell() const;
-  off_t Seek(off_t pos, wxSeekMode mode);
-
-  // --------------
-  // Buffer control
-  // --------------
-  void ResetBuffer();
-  void SetBufferIO(unsigned char *buffer_start, unsigned char *buffer_end);
-  void SetBufferIO(size_t bufsize);
-  unsigned char *GetBufferStart() const { return m_buffer_start; }
-  unsigned char *GetBufferEnd() const { return m_buffer_end; }
-  unsigned char *GetBufferPos() const { return m_buffer_pos; }
-  off_t GetIntPosition() const { return m_buffer_pos-m_buffer_start; }
-  void SetIntPosition(off_t pos) { m_buffer_pos = m_buffer_start+pos; }
-  size_t GetLastAccess() const { return m_buffer_end-m_buffer_start; }
-
-  void Fixed(bool fixed) { m_fixed = fixed; }
-  bool Fixed()const	 { return m_fixed; }
-  void Flushable(bool f) { m_flushable = f; }
-
-  bool FlushBuffer();
-  bool FillBuffer();
-  size_t GetDataLeft();
-  // --------------
-  // Administration
-  // --------------
-  wxStreamBase *Stream() { return m_stream; }
-
- protected:
-  unsigned char *AllocSpaceWBack(size_t needed_size);
-  size_t GetWBack(unsigned char *buf, size_t bsize);
-
-  void GetFromBuffer(void *buffer, size_t size);
-  void PutToBuffer(const void *buffer, size_t size);
-
- protected:
-  unsigned char *m_buffer_start, *m_buffer_end, *m_buffer_pos;
-  size_t m_buffer_size;
-
-  unsigned char *m_wback;
-  size_t m_wbacksize, m_wbackcur;
-
-  bool m_fixed, m_flushable;
-
-  wxStreamBase *m_stream;
-  BufMode m_mode;
-  bool m_destroybuf, m_destroystream;
+public:
+    typedef enum 
+    {
+	read = 0, write, read_write
+    } BufMode;
+    // -----------
+    // ctor & dtor
+    // -----------
+    wxStreamBuffer(wxStreamBase& stream, BufMode mode);
+    wxStreamBuffer(BufMode mode);
+    wxStreamBuffer(const wxStreamBuffer& buf);
+    ~wxStreamBuffer();
+    
+    // -----------
+    // Filtered IO
+    // -----------
+    size_t Read(void *buffer, size_t size);
+    size_t Read(wxStreamBuffer *buf);
+    size_t Write(const void *buffer, size_t size);
+    size_t Write(wxStreamBuffer *buf);
+    
+    size_t WriteBack(const unsigned char *buffer, size_t size);
+    bool WriteBack(unsigned char c);
+    unsigned char GetChar();
+    void PutChar(unsigned char c);
+    off_t Tell() const;
+    off_t Seek(off_t pos, wxSeekMode mode);
+    
+    // --------------
+    // Buffer control
+    // --------------
+    void ResetBuffer();
+    void SetBufferIO(unsigned char *buffer_start, unsigned char *buffer_end);
+    void SetBufferIO(size_t bufsize);
+    unsigned char *GetBufferStart() const { return m_buffer_start; }
+    unsigned char *GetBufferEnd() const { return m_buffer_end; }
+    unsigned char *GetBufferPos() const { return m_buffer_pos; }
+    off_t GetIntPosition() const { return m_buffer_pos-m_buffer_start; }
+    void SetIntPosition(off_t pos) { m_buffer_pos = m_buffer_start+pos; }
+    size_t GetLastAccess() const { return m_buffer_end-m_buffer_start; }
+    
+    void Fixed(bool fixed) { m_fixed = fixed; }
+    bool Fixed()const	 { return m_fixed; }
+    void Flushable(bool f) { m_flushable = f; }
+    
+    bool FlushBuffer();
+    bool FillBuffer();
+    size_t GetDataLeft();
+    // --------------
+    // Administration
+    // --------------
+    wxStreamBase *Stream() { return m_stream; }
+    
+protected:
+    unsigned char *AllocSpaceWBack(size_t needed_size);
+    size_t GetWBack(unsigned char *buf, size_t bsize);
+    
+    void GetFromBuffer(void *buffer, size_t size);
+    void PutToBuffer(const void *buffer, size_t size);
+    
+protected:
+    unsigned char *m_buffer_start, *m_buffer_end, *m_buffer_pos;
+    size_t m_buffer_size;
+    
+    unsigned char *m_wback;
+    size_t m_wbacksize, m_wbackcur;
+    
+    bool m_fixed, m_flushable;
+    
+    wxStreamBase *m_stream;
+    BufMode m_mode;
+    bool m_destroybuf, m_destroystream;
 };
 
 class wxStreamBase {
- public:
-  wxStreamBase();
-  virtual ~wxStreamBase();
-
-  wxStreamError LastError() const { return m_lasterror; }
-  virtual size_t StreamSize() const { return ~((size_t)0); }
-
- protected:
-  friend class wxStreamBuffer;
-
-  virtual size_t OnSysRead(void *buffer, size_t bufsize);
-  virtual size_t OnSysWrite(const void *buffer, size_t bufsize);
-  virtual off_t OnSysSeek(off_t seek, wxSeekMode mode);
-  virtual off_t OnSysTell() const;
-
- protected:
-  size_t m_lastcount;
-  wxStreamError m_lasterror;
+public:
+    wxStreamBase();
+    virtual ~wxStreamBase();
+    
+    wxStreamError LastError() const { return m_lasterror; }
+    virtual size_t StreamSize() const { return ~((size_t)0); }
+    
+protected:
+    friend class wxStreamBuffer;
+    
+    virtual size_t OnSysRead(void *buffer, size_t bufsize);
+    virtual size_t OnSysWrite(const void *buffer, size_t bufsize);
+    virtual off_t OnSysSeek(off_t seek, wxSeekMode mode);
+    virtual off_t OnSysTell() const;
+    
+protected:
+    size_t m_lastcount;
+    wxStreamError m_lasterror;
 };
 
 class wxInputStream: public wxStreamBase {
- public:
-  wxInputStream();
-  wxInputStream(wxStreamBuffer *sbuf);
-  virtual ~wxInputStream();
-
-  // IO functions
-  virtual unsigned char Peek();
-  unsigned char GetC();
-  wxInputStream& Read(void *buffer, size_t size);
-  wxInputStream& Read(wxOutputStream& stream_out);
-
-  // Position functions
-  off_t SeekI(off_t pos, wxSeekMode mode = wxFromStart);
-  off_t TellI() const;
-
-  // State functions
-  wxStreamBuffer *InputStreamBuffer() { return m_i_streambuf; }
-  size_t LastRead() { return wxStreamBase::m_lastcount; }
-
-  // Operators
-  wxInputStream& operator>>(wxOutputStream& out) { return Read(out);}
-  wxInputStream& operator>>(mstring& line);
-  wxInputStream& operator>>(char& c);
-  wxInputStream& operator>>(short& i);
-  wxInputStream& operator>>(int& i);
-  wxInputStream& operator>>(long& i);
-  wxInputStream& operator>>(double& i);
-  wxInputStream& operator>>(bool& b);
-
-  wxInputStream& operator>>(float& f) { double d; operator>>((double&)d); f = (float)d; return *this; }
-  wxInputStream& operator>>(unsigned char& c);
-  wxInputStream& operator>>(unsigned short& i);
-  wxInputStream& operator>>(unsigned int& i);
-  wxInputStream& operator>>(unsigned long& i);
-  wxInputStream& operator>>( __wxInputManip func) { return func(*this);}
-
- protected:
-  bool m_i_destroybuf;
-  wxStreamBuffer *m_i_streambuf;
+public:
+    wxInputStream();
+    wxInputStream(wxStreamBuffer *sbuf);
+    virtual ~wxInputStream();
+    
+    // IO functions
+    virtual unsigned char Peek();
+    unsigned char GetC();
+    wxInputStream& Read(void *buffer, size_t size);
+    wxInputStream& Read(wxOutputStream& stream_out);
+    
+    // Position functions
+    off_t SeekI(off_t pos, wxSeekMode mode = wxFromStart);
+    off_t TellI() const;
+    
+    // State functions
+    wxStreamBuffer *InputStreamBuffer() { return m_i_streambuf; }
+    size_t LastRead() { return wxStreamBase::m_lastcount; }
+    
+    // Operators
+    wxInputStream& operator>>(wxOutputStream& out) { return Read(out);}
+    wxInputStream& operator>>(mstring& line);
+    wxInputStream& operator>>(char& c);
+    wxInputStream& operator>>(short& i);
+    wxInputStream& operator>>(int& i);
+    wxInputStream& operator>>(long& i);
+    wxInputStream& operator>>(double& i);
+    wxInputStream& operator>>(bool& b);
+    
+    wxInputStream& operator>>(float& f) { double d; operator>>((double&)d); f = (float)d; return *this; }
+    wxInputStream& operator>>(unsigned char& c);
+    wxInputStream& operator>>(unsigned short& i);
+    wxInputStream& operator>>(unsigned int& i);
+    wxInputStream& operator>>(unsigned long& i);
+    wxInputStream& operator>>( __wxInputManip func) { return func(*this);}
+    
+    virtual unsigned long Read32();
+    virtual unsigned short Read16();
+    virtual unsigned char Read8();
+    virtual double ReadDouble();
+    virtual mstring ReadString();
+    
+protected:
+    bool m_i_destroybuf;
+    wxStreamBuffer *m_i_streambuf;
 };
 
 class wxOutputStream: public wxStreamBase {
- public:
-  wxOutputStream();
-  wxOutputStream(wxStreamBuffer *sbuf);
-  virtual ~wxOutputStream();
-
-  wxOutputStream& Write(const void *buffer, size_t size);
-  wxOutputStream& Write(wxInputStream& stream_in);
-
-  off_t SeekO(off_t pos, wxSeekMode mode = wxFromStart);
-  off_t TellO() const;
-
-  size_t LastWrite() const { return wxStreamBase::m_lastcount; }
-  wxStreamBuffer *OutputStreamBuffer() { return m_o_streambuf; }
-
-  void Sync();
-
-  wxOutputStream& operator<<(wxInputStream& out) { return Write(out); }
-  wxOutputStream& operator<<(const char *string);
-  wxOutputStream& operator<<(const mstring& string);
-  wxOutputStream& operator<<(char c);
-  wxOutputStream& operator<<(short i);
-  wxOutputStream& operator<<(int i);
-  wxOutputStream& operator<<(long i);
-  wxOutputStream& operator<<(double f);
-  wxOutputStream& operator<<(bool b);
-
-  wxOutputStream& operator<<(float f) { return operator<<((double)f); }
-  wxOutputStream& operator<<(unsigned char c);
-  wxOutputStream& operator<<(unsigned short i);
-  wxOutputStream& operator<<(unsigned int i);
-  wxOutputStream& operator<<(unsigned long i);
-  wxOutputStream& operator<<( __wxOutputManip func) { return func(*this); }
-
- protected:
-  bool m_o_destroybuf;
-  wxStreamBuffer *m_o_streambuf;
+public:
+    wxOutputStream();
+    wxOutputStream(wxStreamBuffer *sbuf);
+    virtual ~wxOutputStream();
+    
+    wxOutputStream& Write(const void *buffer, size_t size);
+    wxOutputStream& Write(wxInputStream& stream_in);
+    
+    off_t SeekO(off_t pos, wxSeekMode mode = wxFromStart);
+    off_t TellO() const;
+    
+    size_t LastWrite() const { return wxStreamBase::m_lastcount; }
+    wxStreamBuffer *OutputStreamBuffer() { return m_o_streambuf; }
+    
+    void Sync();
+    
+    wxOutputStream& operator<<(wxInputStream& out) { return Write(out); }
+    wxOutputStream& operator<<(const char *string);
+    wxOutputStream& operator<<(const mstring& string);
+    wxOutputStream& operator<<(char c);
+    wxOutputStream& operator<<(short i);
+    wxOutputStream& operator<<(int i);
+    wxOutputStream& operator<<(long i);
+    wxOutputStream& operator<<(double f);
+    wxOutputStream& operator<<(bool b);
+    
+    wxOutputStream& operator<<(float f) { return operator<<((double)f); }
+    wxOutputStream& operator<<(unsigned char c);
+    wxOutputStream& operator<<(unsigned short i);
+    wxOutputStream& operator<<(unsigned int i);
+    wxOutputStream& operator<<(unsigned long i);
+    wxOutputStream& operator<<( __wxOutputManip func) { return func(*this); }
+    
+    virtual wxOutputStream& Write32(unsigned long i);
+    virtual wxOutputStream& Write16(unsigned short i);
+    virtual wxOutputStream& Write8(unsigned char i);
+    virtual wxOutputStream& WriteDouble(double d);
+    virtual wxOutputStream& WriteString(const mstring& string);
+    
+protected:
+    bool m_o_destroybuf;
+    wxStreamBuffer *m_o_streambuf;
 };
 
 class wxFilterInputStream: public wxInputStream
 {
- public:
-  wxFilterInputStream();
-  wxFilterInputStream(wxInputStream& stream);
-  ~wxFilterInputStream();
-
-  virtual unsigned char Peek() { return m_parent_i_stream->Peek(); }
-
-  wxStreamError LastError() const { return m_parent_i_stream->LastError(); }
-  size_t StreamSize() const { return m_parent_i_stream->StreamSize(); }
-
- protected:
-  wxInputStream *m_parent_i_stream;
+public:
+    wxFilterInputStream();
+    wxFilterInputStream(wxInputStream& stream);
+    ~wxFilterInputStream();
+    
+    virtual unsigned char Peek() { return m_parent_i_stream->Peek(); }
+    
+    wxStreamError LastError() const { return m_parent_i_stream->LastError(); }
+    size_t StreamSize() const { return m_parent_i_stream->StreamSize(); }
+    
+protected:
+    wxInputStream *m_parent_i_stream;
 };
 
 class wxFilterOutputStream: public wxOutputStream {
- public:
-  wxFilterOutputStream();
-  wxFilterOutputStream(wxOutputStream& stream);
-  ~wxFilterOutputStream();
-
-  wxStreamError LastError() const { return m_parent_o_stream->LastError(); }
-  size_t StreamSize() const { return m_parent_o_stream->StreamSize(); }
-
- protected:
-  wxOutputStream *m_parent_o_stream;
+public:
+    wxFilterOutputStream();
+    wxFilterOutputStream(wxOutputStream& stream);
+    ~wxFilterOutputStream();
+    
+    wxStreamError LastError() const { return m_parent_o_stream->LastError(); }
+    size_t StreamSize() const { return m_parent_o_stream->StreamSize(); }
+    
+protected:
+    wxOutputStream *m_parent_o_stream;
 };
 
 class wxDataInputStream: public wxFilterInputStream {
 public:
-  wxDataInputStream(wxInputStream& s);
-  virtual ~wxDataInputStream();
-
-  unsigned long Read32();
-  unsigned short Read16();
-  unsigned char Read8();
-  double ReadDouble();
-  mstring ReadLine();
-  mstring ReadString();
-  wxDataInputStream& operator>>(mstring& line);
+    wxDataInputStream(wxInputStream& s);
+    virtual ~wxDataInputStream();
+    
+    virtual unsigned long Read32();
+    virtual unsigned short Read16();
+    virtual unsigned char Read8();
+    virtual double ReadDouble();
+    mstring ReadLine();
+    virtual mstring ReadString();
 };
 
 class wxDataOutputStream: public wxFilterOutputStream {
- public:
-  wxDataOutputStream(wxOutputStream& s);
-  virtual ~wxDataOutputStream();
-
-  wxOutputStream& Write32(unsigned long i);
-  wxOutputStream& Write16(unsigned short i);
-  wxOutputStream& Write8(unsigned char i);
-  wxOutputStream& WriteDouble(double d);
-  wxOutputStream& WriteLine(const mstring& line);
-  wxOutputStream& WriteString(const mstring& string);
-  wxOutputStream& operator<<(const char *string);
-  wxOutputStream& operator<<(const mstring& string);
+public:
+    wxDataOutputStream(wxOutputStream& s);
+    virtual ~wxDataOutputStream();
+    
+    virtual wxOutputStream& Write32(unsigned long i);
+    virtual wxOutputStream& Write16(unsigned short i);
+    virtual wxOutputStream& Write8(unsigned char i);
+    virtual wxOutputStream& WriteDouble(double d);
+    wxOutputStream& WriteLine(const mstring& line);
+    virtual wxOutputStream& WriteString(const mstring& string);
 };
 
 class wxMemoryStream: public wxInputStream,public wxOutputStream
@@ -307,33 +316,33 @@ protected:
 };
 
 class wxZlibInputStream: public wxFilterInputStream {
- public:
-  wxZlibInputStream(wxInputStream& stream);
-  virtual ~wxZlibInputStream();
-
- protected:
-  size_t OnSysRead(void *buffer, size_t size);
-
- protected:
-  size_t m_z_size;
-  unsigned char *m_z_buffer;
-  struct z_stream_s *m_inflate;
+public:
+    wxZlibInputStream(wxInputStream& stream);
+    virtual ~wxZlibInputStream();
+    
+protected:
+    size_t OnSysRead(void *buffer, size_t size);
+    
+protected:
+    size_t m_z_size;
+    unsigned char *m_z_buffer;
+    struct z_stream_s *m_inflate;
 };
 
 class wxZlibOutputStream: public wxFilterOutputStream {
- public:
-  wxZlibOutputStream(wxOutputStream& stream, int compression=6);
-  virtual ~wxZlibOutputStream();
-
-  void Sync();
-
- protected:
-  size_t OnSysWrite(const void *buffer, size_t size);
-
- protected:
-  size_t m_z_size;
-  unsigned char *m_z_buffer;
-  struct z_stream_s *m_deflate;
+public:
+    wxZlibOutputStream(wxOutputStream& stream, int compression=6);
+    virtual ~wxZlibOutputStream();
+    
+    void Sync();
+    
+protected:
+    size_t OnSysWrite(const void *buffer, size_t size);
+    
+protected:
+    size_t m_z_size;
+    unsigned char *m_z_buffer;
+    struct z_stream_s *m_deflate;
 };
 
 // ----------------------------------------------------------------------------
@@ -356,7 +365,7 @@ class wxZlibOutputStream: public wxFilterOutputStream {
 
 // default mode for the new files: corresponds to umask 022
 #define wxS_DEFAULT   (wxS_IRUSR | wxS_IWUSR | wxS_IRGRP | wxS_IWGRP |\
-                       wxS_IROTH | wxS_IWOTH)
+wxS_IROTH | wxS_IWOTH)
 
 // ----------------------------------------------------------------------------
 // class wxFile: raw file IO
@@ -368,176 +377,176 @@ extern FILE *fd_invalid;
 class wxFile
 {
 public:
-  // more file constants
-  // -------------------
+    // more file constants
+    // -------------------
     // opening mode
-  enum OpenMode { read, write, read_write, write_append };
+    enum OpenMode { read, write, read_write, write_append };
     // standard values for file descriptor
-
-  // static functions
-  // ----------------
+    
+    // static functions
+    // ----------------
     // check whether a regular file by this name exists
-  static bool Exists(const char *name);
+    static bool Exists(const char *name);
     // check whetther we can access the given file in given mode
     // (only read and write make sense here)
-  static bool Access(const char *name, OpenMode mode);
-
-  // ctors
-  // -----
+    static bool Access(const char *name, OpenMode mode);
+    
+    // ctors
+    // -----
     // def ctor
-  wxFile() { m_fd = fd_invalid; }
+    wxFile() { m_fd = fd_invalid; }
     // open specified file (may fail, use IsOpened())
-  wxFile(const char *szFileName, OpenMode mode = read);
+    wxFile(const char *szFileName, OpenMode mode = read);
     // attach to (already opened) file
-  wxFile(FILE *fd) { m_fd = fd; }
-
-  // open/close
+    wxFile(FILE *fd) { m_fd = fd; }
+    
+    // open/close
     // create a new file (with the default value of bOverwrite, it will fail if
     // the file already exists, otherwise it will overwrite it and succeed)
-  bool Create(const char *szFileName, bool bOverwrite = false);
-  bool Open(const char *szFileName, OpenMode mode = read);
-  bool Close();  // Close is a NOP if not opened
-
-  // assign an existing file descriptor and get it back from wxFile object
-  void Attach(FILE *fd) { Close(); m_fd = fd; }
-  void Detach()       { m_fd = fd_invalid;  }
-  FILE *fd() const { return m_fd; }
-
-  // read/write (unbuffered)
+    bool Create(const char *szFileName, bool bOverwrite = false);
+    bool Open(const char *szFileName, OpenMode mode = read);
+    bool Close();  // Close is a NOP if not opened
+    
+    // assign an existing file descriptor and get it back from wxFile object
+    void Attach(FILE *fd) { Close(); m_fd = fd; }
+    void Detach()       { m_fd = fd_invalid;  }
+    FILE *fd() const { return m_fd; }
+    
+    // read/write (unbuffered)
     // returns number of bytes read or ofsInvalid on error
-  off_t Read(void *pBuf, off_t nCount);
+    off_t Read(void *pBuf, off_t nCount);
     // returns true on success
-  size_t Write(const void *pBuf, size_t nCount);
+    size_t Write(const void *pBuf, size_t nCount);
     // returns true on success
-  bool Write(const mstring& s) { return Write(s.c_str(), s.length()) != 0; }
+    bool Write(const mstring& s) { return Write(s.c_str(), s.length()) != 0; }
     // flush data not yet written
-  bool Flush();
-
-  // file pointer operations (return ofsInvalid on failure)
+    bool Flush();
+    
+    // file pointer operations (return ofsInvalid on failure)
     // move ptr ofs bytes related to start/current off_t/end of file
-  int Seek(long ofs, wxSeekMode mode = wxFromStart) const;
+    int Seek(long ofs, wxSeekMode mode = wxFromStart) const;
     // move ptr to ofs bytes before the end
-  int SeekEnd(long ofs = 0) const { return Seek(ofs, wxFromEnd); }
+    int SeekEnd(long ofs = 0) const { return Seek(ofs, wxFromEnd); }
     // get current off_t
-  long Tell() const;
+    long Tell() const;
     // get current file length
-  long Length() const;
-
-  // simple accessors
+    long Length() const;
+    
+    // simple accessors
     // is file opened?
-  bool IsOpened() const { return m_fd != fd_invalid; }
+    bool IsOpened() const { return m_fd != fd_invalid; }
     // is end of file reached?
-  bool Eof() const;
+    bool Eof() const;
     // is an error occured?
-  bool Error() const { return m_error; }
-
-  // dtor closes the file if opened
-  ~wxFile();
-
+    bool Error() const { return m_error; }
+    
+    // dtor closes the file if opened
+    ~wxFile();
+    
 private:
-  // copy ctor and assignment operator are private because
-  // it doesn't make sense to copy files this way:
-  // attempt to do it will provoke a compile-time error.
-  wxFile(const wxFile&);
-  wxFile& operator=(const wxFile&);
-
-  FILE *m_fd; // file descriptor or INVALID_FD if not opened
-  bool m_error; // error memory
+    // copy ctor and assignment operator are private because
+    // it doesn't make sense to copy files this way:
+    // attempt to do it will provoke a compile-time error.
+    wxFile(const wxFile&);
+    wxFile& operator=(const wxFile&);
+    
+    FILE *m_fd; // file descriptor or INVALID_FD if not opened
+    bool m_error; // error memory
 };
 
 class wxTempFile
 {
 public:
-  // ctors
+    // ctors
     // default
-  wxTempFile() { }
+    wxTempFile() { }
     // associates the temp file with the file to be replaced and opens it
-  wxTempFile(const mstring& strName);
-
-  // open the temp file (strName is the name of file to be replaced)
-  bool Open(const mstring& strName);
-
-  // is the file opened?
-  bool IsOpened() const { return m_file.IsOpened(); }
-
-  // I/O (both functions return true on success, false on failure)
-  bool Write(const void *p, size_t n) { return m_file.Write(p, n) != 0; }
-  bool Write(const mstring& str)   { return m_file.Write(str); }
-
-  // different ways to close the file
+    wxTempFile(const mstring& strName);
+    
+    // open the temp file (strName is the name of file to be replaced)
+    bool Open(const mstring& strName);
+    
+    // is the file opened?
+    bool IsOpened() const { return m_file.IsOpened(); }
+    
+    // I/O (both functions return true on success, false on failure)
+    bool Write(const void *p, size_t n) { return m_file.Write(p, n) != 0; }
+    bool Write(const mstring& str)   { return m_file.Write(str); }
+    
+    // different ways to close the file
     // validate changes and delete the old file of name m_strName
-  bool Commit();
+    bool Commit();
     // discard changes
-  void Discard();
-
-  // dtor calls Discard() if file is still opened
- ~wxTempFile();
-
+    void Discard();
+    
+    // dtor calls Discard() if file is still opened
+    ~wxTempFile();
+    
 private:
-  // no copy ctor/assignment operator
-  wxTempFile(const wxTempFile&);
-  wxTempFile& operator=(const wxTempFile&);
-
-  mstring  m_strName,  // name of the file to replace in Commit()
-            m_strTemp;  // temporary file name
-  wxFile    m_file;     // the temporary file
+    // no copy ctor/assignment operator
+    wxTempFile(const wxTempFile&);
+    wxTempFile& operator=(const wxTempFile&);
+    
+    mstring  m_strName,  // name of the file to replace in Commit()
+	m_strTemp;  // temporary file name
+    wxFile    m_file;     // the temporary file
 };
 
 class wxFileInputStream: public wxInputStream {
- public:
-  wxFileInputStream(const mstring& ifileName);
-  wxFileInputStream(wxFile& file);
-  wxFileInputStream(int fd);
-  ~wxFileInputStream();
-
-  virtual unsigned char Peek();
-  size_t StreamSize() const;
-
-  bool Ok() const { return m_file->IsOpened(); }
-
- protected:
-  wxFileInputStream();
-
-  size_t OnSysRead(void *buffer, size_t size);
-  off_t OnSysSeek(off_t pos, wxSeekMode mode);
-  off_t OnSysTell() const;
-
- protected:
-  wxFile *m_file;
-  bool m_file_destroy;
+public:
+    wxFileInputStream(const mstring& ifileName);
+    wxFileInputStream(wxFile& file);
+    wxFileInputStream(int fd);
+    ~wxFileInputStream();
+    
+    virtual unsigned char Peek();
+    size_t StreamSize() const;
+    
+    bool Ok() const { return m_file->IsOpened(); }
+    
+protected:
+    wxFileInputStream();
+    
+    size_t OnSysRead(void *buffer, size_t size);
+    off_t OnSysSeek(off_t pos, wxSeekMode mode);
+    off_t OnSysTell() const;
+    
+protected:
+    wxFile *m_file;
+    bool m_file_destroy;
 };
 
 class wxFileOutputStream: public wxOutputStream {
- public:
-  wxFileOutputStream(const mstring& fileName, bool append=false);
-  wxFileOutputStream(wxFile& file);
-  wxFileOutputStream(int fd);
-  virtual ~wxFileOutputStream();
-
-  // To solve an ambiguity on GCC
-  inline wxOutputStream& Write(const void *buffer, size_t size)
-     { return wxOutputStream::Write(buffer, size); }
-
-  void Sync();
-  size_t StreamSize() const;
-
-  bool Ok() const { return m_file->IsOpened(); }
-
- protected:
-  wxFileOutputStream();
-
-  size_t OnSysWrite(const void *buffer, size_t size);
-  off_t OnSysSeek(off_t pos, wxSeekMode mode);
-  off_t OnSysTell() const;
-
- protected:
-  wxFile *m_file;
-  bool m_file_destroy;
+public:
+    wxFileOutputStream(const mstring& fileName, bool append=false);
+    wxFileOutputStream(wxFile& file);
+    wxFileOutputStream(int fd);
+    virtual ~wxFileOutputStream();
+    
+    // To solve an ambiguity on GCC
+    inline wxOutputStream& Write(const void *buffer, size_t size)
+    { return wxOutputStream::Write(buffer, size); }
+    
+    void Sync();
+    size_t StreamSize() const;
+    
+    bool Ok() const { return m_file->IsOpened(); }
+    
+protected:
+    wxFileOutputStream();
+    
+    size_t OnSysWrite(const void *buffer, size_t size);
+    off_t OnSysSeek(off_t pos, wxSeekMode mode);
+    off_t OnSysTell() const;
+    
+protected:
+    wxFile *m_file;
+    bool m_file_destroy;
 };
 
 class wxFileStream: public wxFileInputStream, public wxFileOutputStream {
- public:
-  wxFileStream(const mstring& fileName);
+public:
+    wxFileStream(const mstring& fileName);
 };
 
 
