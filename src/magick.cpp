@@ -39,7 +39,9 @@ Magick::Magick(int inargc, char **inargv)
 	argv.push_back(inargv[i]);
 
     i_level=0;
-    i_reconnect=true;
+    i_reconnect = true;
+    i_gotconnect = false;
+    i_connected = false;
     loggertask.open();
     events.open();
 }
@@ -269,7 +271,7 @@ int Magick::Start()
 
 //  ACE_INET_Addr addr(startup.Remote_Port(),startup.Remote_Server());
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
-    i_gotconnect = false;
+    GotConnect(false);
     i_server = tmp;
     ircsvchandler=new IrcSvcHandler;
     if(ACO_server.connect(ircsvchandler,addr)==-1)
@@ -286,6 +288,7 @@ int Magick::Start()
     CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
     server.raw("PASS " + startup.Server(tmp).second);
     server.raw("SERVER " + startup.Server_Name() + " 1 :" + startup.Server_Desc());
+    i_connected = true;
 
     // next thing to be done here is set up the acceptor mechanism to listen
     // for incoming "magickgui" connections and handle them.
@@ -307,6 +310,7 @@ int Magick::Start()
     if (ircsvchandler != NULL)
     {
   	ircsvchandler->shutdown();
+	delete ircsvchandler;
     }
     mBase::shutdown();
     while (mThread::size() > 2)
@@ -896,7 +900,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect())
+    if (!reconnect && Connected())
     {
 	for (i=0; i<nickserv.names.WordCount(" "); i++)
 	{
@@ -928,7 +932,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect())
+    if (!reconnect && Connected())
     {
 	for (i=0; i<chanserv.names.WordCount(" "); i++)
 	{
@@ -962,7 +966,7 @@ bool Magick::get_config_values()
 
     in.Read(ts_Services+"MEMO",&memoserv.memo,true);
     in.Read(ts_Services+"NEWS",&memoserv.news,true);
-    if (!reconnect && GotConnect() && (memoserv.memo || memoserv.news))
+    if (!reconnect && Connected() && (memoserv.memo || memoserv.news))
     {
 	for (i=0; i<memoserv.names.WordCount(" "); i++)
 	{
@@ -994,7 +998,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect())
+    if (!reconnect && Connected())
     {
 	for (i=0; i<operserv.names.WordCount(" "); i++)
 	{
@@ -1030,7 +1034,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect())
+    if (!reconnect && Connected())
     {
 	for (i=0; i<commserv.names.WordCount(" "); i++)
 	{
@@ -1062,7 +1066,7 @@ bool Magick::get_config_values()
 	}
     }
 
-    if (!reconnect && GotConnect())
+    if (!reconnect && Connected())
     {
 	for (i=0; i<servmsg.names.WordCount(" "); i++)
 	{
@@ -1429,7 +1433,7 @@ bool Magick::get_config_values()
     }
 
 /*
-    if (reconnect && GotConnect())
+    if (Reconnect() && Connected())
     {
 	server.raw("ERROR :Closing Link: Configuration reload required restart!");
 	ircsvchandler->shutdown();
@@ -1722,6 +1726,7 @@ void Magick::Disconnect()
 {
     NFT("Magick::Disconnect");
     i_reconnect = false;
+    i_connected = false;
     if (ircsvchandler != NULL)
 	ircsvchandler->shutdown();
 }

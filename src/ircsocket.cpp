@@ -43,7 +43,8 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     {
 	// sleep and then reconnect
 	CP(("No data, scheduling reconnect, then closing down"));
-	if(Parent->Reconnect() || !Parent->Shutdown())
+	Parent->Connected(false);
+	if(Parent->Reconnect() && !Parent->Shutdown())
 	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
 	return -1;
     }
@@ -134,7 +135,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 {
     FT("Reconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
 
-    if(Parent->config.Server_Relink()<1 || Parent->Reconnect() ||
+    if(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
 	    Parent->Shutdown())
 	return 0;
 
@@ -154,7 +155,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     //IrcServer server(ACE_Reactor::instance(),ACE_NONBLOCK);
 
-    Parent->i_gotconnect = false;
+    Parent->GotConnect(false);
     Parent->i_server = server;
     Parent->ircsvchandler=new IrcSvcHandler;
     if(Parent->ACO_server.connect(Parent->ircsvchandler,addr)==-1)
@@ -169,6 +170,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	CP(("Local connection point=%s port:%u",localaddr.get_host_name(),localaddr.get_port_number()));
 	Parent->server.raw("PASS " + details.second);
 	Parent->server.raw("SERVER " + Parent->startup.Server_Name() + " 1 :" + Parent->startup.Server_Desc());
+	Parent->Connected(true);
     }
     RET(0);
 }

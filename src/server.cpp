@@ -983,8 +983,6 @@ void NetworkServ::execute(const mstring & data)
 	    // repl: :our.server 303 source :local.nick
 	    if (Parent->nickserv.IsLive(source))
 		sraw("303 " + source + " :" + data.ExtractWord(3, ": "));
-
-	    Parent->GotConnect(true);
 	}
 	else
 	{
@@ -1275,6 +1273,7 @@ void NetworkServ::execute(const mstring & data)
 	    }
             else
             {
+		Parent->GotConnect(true);
 		SignOnAll();
             }
 	}

@@ -90,6 +90,7 @@ private:
   	IrcSvcHandler *ircsvchandler;
 	bool i_gotconnect;
 	mstring i_server;
+	bool i_connected;
 
 public:
 	// Stuff that NEEDS to be there first
@@ -226,6 +227,10 @@ public:
 	bool GotConnect()	    { return i_gotconnect; }
 	bool GotConnect(bool in)    { i_gotconnect = in; }
 	mstring Server()	    { return i_server; }
+	bool Connected()	    { return i_connected; }
+	bool Connected(bool in)	    { i_connected = in; }
+	void Disconnect();
+	void send(mstring text);
 	void save_databases();
 	void load_databases();
         Reconnect_Handler rh;
@@ -259,8 +264,6 @@ public:
 	    commserv.RemCommands();
 	}
 
-	void Disconnect();
-	void send(mstring text);
 };
 
 extern Magick *Parent;
