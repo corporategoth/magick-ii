@@ -29,6 +29,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.283  2000/12/29 15:46:13  prez
+** fixed up log validation
+**
 ** Revision 1.282  2000/12/29 15:31:55  prez
 ** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
 **
@@ -434,6 +437,8 @@ Magick::Magick(int inargc, char **inargv)
     ircsvchandler = NULL;
     logger = NULL;
     signalhandler = NULL;
+    events = NULL;
+    dcc = NULL;
     i_level=0;
     i_verbose = false;
     i_reconnect = true;
@@ -2926,9 +2931,12 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     return 0;
 }
 
-void Magick::ValidateLogger(ACE_Log_Msg *instance) const
+bool Magick::ValidateLogger(ACE_Log_Msg *instance) const
 {
     FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
+
+    if (instance == NULL)
+	return false;
 
     if (instance->msg_callback() != logger)
     {
@@ -2952,6 +2960,7 @@ void Magick::ValidateLogger(ACE_Log_Msg *instance) const
 	    instance->clr_flags(ACE_Log_Msg::MSG_CALLBACK);
 	}
     }
+    return true;
 }
 
 void Magick::ActivateLogger()

@@ -25,6 +25,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.144  2000/12/29 15:46:13  prez
+** fixed up log validation
+**
 ** Revision 1.143  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -222,8 +225,8 @@ public:
 
 
 #define LOG(X)	\
-	Parent->ValidateLogger(ACE_LOG_MSG); \
-	ACE_DEBUG(X);
+	if (Parent->ValidateLogger(ACE_LOG_MSG)) \
+		ACE_DEBUG(X);
 
 class Logger : public ACE_Log_Msg_Callback
 {
@@ -415,7 +418,7 @@ public:
 
 	void ActivateLogger();
 	void DeactivateLogger();
-	void ValidateLogger(ACE_Log_Msg *instance) const;
+	bool ValidateLogger(ACE_Log_Msg *instance) const;
 	bool Verbose()const		{ return i_verbose; }
 	mstring Services_Dir()const	{ return i_services_dir; }
 	mstring Config_File()const	{ return files.MakePath(i_config_file); }
