@@ -178,7 +178,7 @@ ace_main_i(int 1, char * * 0x00d412f0) line 45 + 13 bytes
 main(int 1, char * * 0x00d412f0) line 32 + 69 bytes
 */
     for (int i=0; i<t_indent; i++)
-        finalout += "|  ";
+        finalout += ".  ";
     finalout += message;
 //    out << finalout << wxEndL;
     cout << finalout << endl;
