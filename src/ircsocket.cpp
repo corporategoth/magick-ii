@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.175  2001/07/21 18:09:44  prez
+** Fixed IsBool in mstring and made SVINFO actually give a GMT timestamp.
+**
 ** Revision 1.174  2001/07/06 09:15:37  prez
 ** Fixed nickserv drop
 **
@@ -1179,7 +1182,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Parent->server.raw(tmp);
 	if (Parent->server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
-	    Parent->server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
+	    Parent->server.raw("SVINFO 3 1 0 :" + GMT(mDateTime::CurrentDateTime(), true).timetstring());
 	Parent->Connected(true);
     }
     CE(1, Parent->i_currentserver);

@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.130  2001/07/21 18:09:44  prez
+** Fixed IsBool in mstring and made SVINFO actually give a GMT timestamp.
+**
 ** Revision 1.129  2001/07/02 03:39:29  prez
 ** Fixed bug with users sending printf strings (mainly in memos).
 **
@@ -3045,20 +3048,21 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 
     mstring host   = params.ExtractWord(3, " ").LowerCase();
     mstring reason = params.After(" ", 3);
-    unsigned long time = Parent->operserv.Def_Expire();
+    unsigned long time;
 
-    if (FromHumanTime(reason.Before(" ")))
+    if (time = FromHumanTime(reason.Before(" ")))
     {
 	if (params.WordCount(" ") < 5)
 	{
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
+	    SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
 				message, mynick, message));
 	    return;
 	}
 
-	time = FromHumanTime(reason.Before(" "));
 	reason = reason.After(" ");
     }
+    else
+	time = Parent->operserv.Def_Expire();
 
     if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))

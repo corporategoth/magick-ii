@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.109  2001/07/21 18:09:44  prez
+** Fixed IsBool in mstring and made SVINFO actually give a GMT timestamp.
+**
 ** Revision 1.108  2001/07/16 03:36:14  prez
 ** Got rid of mstring's strcmp, now using memcmp.  Also did a little
 ** tweaking with the protocol support.
@@ -1176,7 +1179,7 @@ bool mstring::IsBool() const
 {
   if (IsSameAs("true", true) || IsSameAs("on", true) ||
       IsSameAs("yes", true) || IsSameAs("y", true) ||
-      IsSameAs("t", true) || compare("1") ||
+      IsSameAs("t", true) || IsSameAs("1") ||
       IsSameAs("false", true) || IsSameAs("off", true) ||
       IsSameAs("no", true) || IsSameAs("n", true) ||
       IsSameAs("f", true) || IsSameAs("0"))
