@@ -10,6 +10,7 @@
 // Licence:     wxWindows license
 ///////////////////////////////////////////////////////////////////////////////
 #include "confbase.h"
+#include "fileconf.h"
 #include "log.h"
 
 mstring wxExpandEnvVars(const mstring& str)
@@ -119,3 +120,240 @@ mstring wxExpandEnvVars(const mstring& str)
 
   return strResult;
 }
+
+
+// this function is used to properly interpret '..' in path
+void wxSplitPath(mArrayString& aParts, const mstring &sz)
+{
+  aParts.clear();
+
+  mstring strCurrent;
+  const char *pc = sz.c_str();
+  for ( ;; ) {
+    if ( *pc == '\0' || *pc == wxCONFIG_PATH_SEPARATOR ) {
+      if ( strCurrent == "." ) {
+        // ignore
+      }
+      else if ( strCurrent == ".." ) {
+        // go up one level
+        if ( aParts.size()==0 )
+          wxLogWarning(_("'%s' has extra '..', ignored."), sz);
+        else
+          aParts.erase(aParts.end() - 1);
+
+        strCurrent.Empty();
+      }
+      else if ( !strCurrent.IsEmpty() ) {
+        aParts.push_back(strCurrent);
+        strCurrent.Empty();
+      }
+      //else:
+        // could log an error here, but we prefer to ignore extra '/'
+
+      if ( *pc == '\0' )
+        return;
+    }
+    else
+      strCurrent += *pc;
+
+    pc++;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// global and class static variables
+// ----------------------------------------------------------------------------
+
+wxConfigBase *wxConfigBase::ms_pConfig     = NULL;
+bool          wxConfigBase::ms_bAutoCreate = true;
+
+// ============================================================================
+// implementation
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// wxConfigBase
+// ----------------------------------------------------------------------------
+
+// Not all args will always be used by derived classes, but
+// including them all in each class ensures compatibility.
+wxConfigBase::wxConfigBase(const mstring& appName, const mstring& vendorName,
+    const mstring& localFilename, const mstring& globalFilename, long style):
+        m_appName(appName), m_vendorName(vendorName), m_style(style)
+{
+    m_bExpandEnvVars = true;
+	m_bRecordDefaults = false;
+}
+
+wxConfigBase *wxConfigBase::Set(wxConfigBase *pConfig)
+{
+  wxConfigBase *pOld = ms_pConfig;
+  ms_pConfig = pConfig;
+  return pOld;
+}
+
+wxConfigBase *wxConfigBase::Create()
+{
+  if ( ms_bAutoCreate && ms_pConfig == NULL ) 
+  {
+/*    ms_pConfig =
+      new wxFileConfig("magick");*/
+  }
+
+  return ms_pConfig;
+}
+
+mstring wxConfigBase::Read(const mstring& key, const mstring& defVal) const
+{
+  mstring s;
+  Read(key, &s, defVal);
+  return s;
+}
+
+bool wxConfigBase::Read(const mstring& key, mstring *str, const mstring& defVal) const
+{
+    if (!Read(key, str))
+    {
+        *str = ExpandEnvVars(defVal);
+        return false;
+    }
+    else
+        return true;
+}
+
+bool wxConfigBase::Read(const mstring& key, long *pl, long defVal) const
+{
+    if (!Read(key, pl))
+    {
+        *pl = defVal;
+        return false;
+    }
+    else
+        return true;
+}
+
+bool wxConfigBase::Read(const mstring& key, double* val) const
+{
+    mstring str;
+    if (Read(key, & str))
+    {
+        *val = atof(str);
+        return true;
+    }
+    else
+        return false;
+}
+
+bool wxConfigBase::Read(const mstring& key, double* val, double defVal) const
+{
+    if (!Read(key, val))
+    {
+        *val = defVal;
+        return false;
+    }
+    else
+        return true;
+}
+
+bool wxConfigBase::Read(const mstring& key, bool* val) const
+{
+    long l;
+    if (Read(key, & l))
+    {
+        *val = (l != 0);
+        return true;
+    }
+    else
+        return false;
+}
+
+bool wxConfigBase::Read(const mstring& key, bool* val, bool defVal) const
+{
+    if (!Read(key, val))
+    {
+        *val = defVal;
+        return false;
+    }
+    else
+        return true;
+}
+
+// Convenience functions
+
+bool wxConfigBase::Read(const mstring& key, int *pi) const
+{
+    long l;
+    bool ret = Read(key, &l);
+    if (ret)
+        *pi = (int) l;
+    return ret;
+}
+
+bool wxConfigBase::Read(const mstring& key, int *pi, int defVal) const
+{
+    long l;
+    bool ret = Read(key, &l, (long) defVal);
+    *pi = (int) l;
+    return ret;
+}
+
+bool wxConfigBase::Write(const mstring& key, double val)
+{
+    mstring str;
+    str.Format("%f", val);
+    return Write(key, str);
+}
+
+bool wxConfigBase::Write(const mstring& key, bool value)
+{
+    long l = (value ? 1 : 0);
+    return Write(key, l);
+}
+
+mstring wxConfigBase::ExpandEnvVars(const mstring& str) const
+{
+    mstring tmp; // Required for BC++
+    if (IsExpandingEnvVars())
+        tmp = wxExpandEnvVars(str);
+    else
+        tmp = str;
+    return tmp;
+}
+
+// ----------------------------------------------------------------------------
+// wxConfigPathChanger
+// ----------------------------------------------------------------------------
+
+wxConfigPathChanger::wxConfigPathChanger(const wxConfigBase *pContainer,
+                                 const mstring& strEntry)
+{
+  m_pContainer = (wxConfigBase *)pContainer;
+  mstring strPath = strEntry.Before(wxCONFIG_PATH_SEPARATOR);
+
+  // special case of "/keyname" when there is nothing before "/"
+  if ( strPath.IsEmpty() && ((!strEntry.IsEmpty()) && strEntry[0] == wxCONFIG_PATH_SEPARATOR ))
+    strPath = wxCONFIG_PATH_SEPARATOR;
+
+  if ( !strPath.IsEmpty() ) {
+    // do change the path
+    m_bChanged = true;
+    m_strName = strEntry.Right(wxCONFIG_PATH_SEPARATOR);
+    m_strOldPath = m_pContainer->GetPath();
+    m_strOldPath += wxCONFIG_PATH_SEPARATOR;
+    m_pContainer->SetPath(strPath);
+  }
+  else {
+    // it's a name only, without path - nothing to do
+    m_bChanged = false;
+    m_strName = strEntry;
+  }
+}
+
+wxConfigPathChanger::~wxConfigPathChanger()
+{
+  // only restore path if it was changed
+  if ( m_bChanged ) {
+    m_pContainer->SetPath(m_strOldPath);
+  }
+}
+

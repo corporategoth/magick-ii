@@ -7,19 +7,26 @@
 #endif
 
 #include <vector>
+#include <map>
 using namespace std;
 
 #include "bob.hpp"
 #include "mstring.h"
+#include "fileconf.h"
 
 const int MAGICK_RET_NORMAL = 0;
 const int MAGICK_RET_RESTART = 1;
 const int MAGICK_RET_TERMINATE = 2;
 const int MAGICK_RET_ERROR = -1;
+
+typedef map<mstring,mstring> mapstringstring;
 class Magick
 {
 	vector<mstring> argv;
+	wxFileConfig* MagickIni;
+	mapstringstring Messages;
 public:
+	void LoadLocalMessages();
 	void dump_help(mstring& progname);
 	mstring getMessage(const mstring& name);
 	mstring config_file;

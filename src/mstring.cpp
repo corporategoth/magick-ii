@@ -23,6 +23,10 @@ mstring::mstring(inherited::size_type n, char c)
 :inherited(n,c)
 {
 }
+mstring::mstring(char c)
+:inherited(1,c)
+{
+}
 mstring::mstring(inherited::const_iterator first, inherited::const_iterator last)
 :inherited(first,last)
 {
@@ -62,9 +66,15 @@ mstring& mstring::operator=(const char *in)
 	return *this;
 }
 
+mstring& mstring::operator=(char in)
+{
+	*this=mstring(in);
+	return *this;
+}
+
 mstring& mstring::operator <<(char ch)
 {
-	*this=*this+mstring(1,ch);
+	*this=*this+mstring(ch);
 	return *this;
 }
 
@@ -86,12 +96,12 @@ bool mstring::IsSameAs(const mstring & in, bool bCaseSensitive)
 		return CmpNoCase(in)==0;
 }
 
-mstring mstring::Mid(size_t nFirst, size_t nCount)
+mstring mstring::Mid(size_t nFirst, size_t nCount) const
 {
 	return substr(nFirst, nCount);
 }
 
-mstring mstring::SubString(size_t from, size_t to)
+mstring mstring::SubString(size_t from, size_t to) const
 {
 	return Mid(from, (to - from + 1));
 }
@@ -101,36 +111,36 @@ mstring::mstring(const string & in)
 	*this=in.c_str();
 }
 
-mstring mstring::Left(size_t nCount)
+mstring mstring::Left(size_t nCount)const
 {
 	return Mid(0, nCount);
 }
 
-mstring mstring::Right(size_t nCount)
+mstring mstring::Right(size_t nCount)const
 {
 	return Mid(size()-nCount-1);
 }
 
-mstring mstring::Before(const mstring & in)
+mstring mstring::Before(const mstring & in) const
 {
 	return Mid(0,First(in)-1);
 }
 
-mstring mstring::After(const mstring & in)
+mstring mstring::After(const mstring & in) const
 {
 	return Mid(First(in)+1);
 }
 
-mstring mstring::RevBefore(const mstring & in)
+mstring mstring::RevBefore(const mstring & in) const
 {
 	// change find_last_of to Last(in)
-	return Mid(0,find_last_of(in)-1);
+	return Mid(0,Index(in,true,true)-1);
 }
 
-mstring mstring::RevAfter(const mstring & in)
+mstring mstring::RevAfter(const mstring & in) const
 {
 	// change find_last_of to Last(in)
-	return Mid(find_last_of(in)+1);
+	return Mid(Index(in,true,true)+in.size());
 }
 
 void mstring::MakeUpper()
@@ -300,36 +310,36 @@ void mstring::Empty()
 	*this="";
 }
 
-int mstring::Find(char ch, bool bFromEnd)
+int mstring::Find(char ch, bool bFromEnd) const
 {
 	const char *psz=bFromEnd?ACE_OS::strrchr(c_str(),ch) : ACE_OS::strchr(c_str(),ch);
 
 	return (psz==NULL)?-1:psz-c_str();
 }
 
-int mstring::Find(const mstring & in)
+int mstring::Find(const mstring & in) const
 {
 	const char *psz=ACE_OS::strstr(c_str(),in);
 
 	return (psz==NULL)?-1:psz-c_str();
 }
 
-size_t mstring::First(char c)
+size_t mstring::First(char c) const
 {
 	return Find(c);
 }
 
-size_t mstring::First(const mstring & in)
+size_t mstring::First(const mstring & in) const
 {
 	return Find(in);
 }
 
-size_t mstring::Index(char ch, int startpos)
+size_t mstring::Index(char ch, int startpos) const
 {
 	return find(ch,startpos);
 }
 
-size_t mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd)
+size_t mstring::Index(const mstring & in, bool caseSensitive, bool fromEnd) const
 {
 	size_t i;
 	
@@ -519,4 +529,15 @@ char &mstring::operator [ ](int pos)
 const char &mstring::operator[](int pos)const
 {
 	return ((string)*this)[pos];
+}
+
+size_t mstring::Len()
+{
+	return length();
+}
+
+char& mstring::Last()
+{
+	mstring Result=*this;
+	return Result[Result.Len()-1];
 }

@@ -430,4 +430,42 @@ private:
   bool m_error; // error memory
 };
 
+class wxTempFile
+{
+public:
+  // ctors
+    // default
+  wxTempFile() { }
+    // associates the temp file with the file to be replaced and opens it
+  wxTempFile(const mstring& strName);
+
+  // open the temp file (strName is the name of file to be replaced)
+  bool Open(const mstring& strName);
+
+  // is the file opened?
+  bool IsOpened() const { return m_file.IsOpened(); }
+
+  // I/O (both functions return true on success, false on failure)
+  bool Write(const void *p, size_t n) { return m_file.Write(p, n) != 0; }
+  bool Write(const mstring& str)   { return m_file.Write(str); }
+
+  // different ways to close the file
+    // validate changes and delete the old file of name m_strName
+  bool Commit();
+    // discard changes
+  void Discard();
+
+  // dtor calls Discard() if file is still opened
+ ~wxTempFile();
+
+private:
+  // no copy ctor/assignment operator
+  wxTempFile(const wxTempFile&);
+  wxTempFile& operator=(const wxTempFile&);
+
+  mstring  m_strName,  // name of the file to replace in Commit()
+            m_strTemp;  // temporary file name
+  wxFile    m_file;     // the temporary file
+};
+
 #endif

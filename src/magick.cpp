@@ -66,6 +66,14 @@ int Magick::Start()
 			}
 		}
 	}
+	MagickIni=new wxFileConfig("magick","",config_file,"");
+	if(MagickIni==NULL)
+	{
+		cerr << "Major fubar, couldn't allocate memory to read config file\nAborting"<<endl;
+		return MAGICK_RET_ERROR;
+	}
+	// load the local messages database and internal "default messages"
+
 
 	if(logfile!=NULL)
 		fclose(logfile);
@@ -104,4 +112,24 @@ void Magick::dump_help(mstring & progname)
 		<<"-offset hours           Specify the TimeZone offset for backups.\n"
 		<<"-live                   Dont fork (log screen + log file).\n"
 		<<endl;
+}
+
+void Magick::LoadLocalMessages()
+{
+	mstring tempstor=
+	"ERR_READ_DB=Error reading %s database."+
+	"ERR_WRITE_DB=Error writing %s database."+
+	"ERR_UNKNOWN_SERVMSG=Unknown message from server (%s).";
+
+	mstring currentword,rest=tempstor;
+
+	while(rest!="")
+	{
+		mstring name,value;
+		currentword=rest.Before('\n');
+		rest=rest.After('\n');
+		name=currentword.Before('=');
+		value=currentword.After('=');
+		Messages[name]=value;
+	}
 }

@@ -9,6 +9,7 @@
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 #include "mstream.h"
+#include "utils.h"
 #include <math.h>
 #include <zlib.h>
 #include <stdarg.h>
@@ -234,7 +235,7 @@ void wxStreamBuffer::PutToBuffer(const void *buffer, size_t size)
 
 void wxStreamBuffer::PutChar(char c)
 {
-  assert(m_stream != NULL);
+  wxASSERT(m_stream != NULL);
 
   if (!m_buffer_size) {
     m_stream->OnSysWrite(&c, 1);
@@ -254,7 +255,7 @@ char wxStreamBuffer::GetChar()
 {
   char c;
 
-  assert(m_stream != NULL);
+  wxASSERT(m_stream != NULL);
 
   if (!m_buffer_size) {
     m_stream->OnSysRead(&c, 1);
@@ -273,7 +274,7 @@ char wxStreamBuffer::GetChar()
 
 size_t wxStreamBuffer::Read(void *buffer, size_t size)
 {
-  assert(m_stream != NULL);
+  wxASSERT(m_stream != NULL);
 
   // ------------------
   // Buffering disabled
@@ -334,7 +335,7 @@ size_t wxStreamBuffer::Read(wxStreamBuffer *s_buf)
 
 size_t wxStreamBuffer::Write(const void *buffer, size_t size)
 {
-  assert(m_stream != NULL);
+  wxASSERT(m_stream != NULL);
 
   // ------------------
   // Buffering disabled
@@ -804,7 +805,7 @@ mstring wxDataInputStream::ReadLine()
         InputStreamBuffer()->WriteBack(c);
         break;
       }
-      line = line + mstring(1,c);
+      line =line + mstring(c);
       break;
     }
   }
@@ -1553,3 +1554,74 @@ bool wxFile::Eof() const
   return true;
 }
 
+// ============================================================================
+// implementation of wxTempFile
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// construction
+// ----------------------------------------------------------------------------
+wxTempFile::wxTempFile(const mstring& strName)
+{
+  Open(strName);
+}
+
+bool wxTempFile::Open(const mstring& strName)
+{
+  m_strName = strName;
+
+  // we want to create the file in the same directory as strName because
+  // otherwise rename() in Commit() might not work (if the files are on
+  // different partitions for example). Unfortunately, the only standard
+  // (POSIX) temp file creation function tmpnam() can't do it.
+  #if defined(__UNIX__)
+    static const char *szMktempSuffix = "XXXXXX";
+    m_strTemp << strName << szMktempSuffix;
+    mktemp((char *)m_strTemp.c_str()); // will do because length doesn't change
+  #else // Windows
+    mstring strPath;
+    wxSplitPath(strName, &strPath, NULL, NULL);
+    if ( strPath.IsEmpty() )
+      strPath = '.';  // GetTempFileName will fail if we give it empty string
+	char cm_strTemp[MAX_PATH];
+    if ( !GetTempFileName(strPath, "wx_",0, cm_strTemp))
+      wxLogLastError("GetTempFileName");
+    m_strTemp=cm_strTemp;
+  #endif  // Windows/Unix
+
+  return m_file.Open(m_strTemp, wxFile::write);
+}
+
+// ----------------------------------------------------------------------------
+// destruction
+// ----------------------------------------------------------------------------
+
+wxTempFile::~wxTempFile()
+{
+  if ( IsOpened() )
+    Discard();
+}
+
+bool wxTempFile::Commit()
+{
+  m_file.Close();
+
+  if ( wxFile::Exists(m_strName) && remove(m_strName) != 0 ) {
+    wxLogSysError(_("can't remove file '%s'"), m_strName.c_str());
+    return false;
+  }
+
+  if ( rename(m_strTemp, m_strName) != 0 ) {
+    wxLogSysError(_("can't commit changes to file '%s'"), m_strName.c_str());
+    return false;
+  }
+
+  return true;
+}
+
+void wxTempFile::Discard()
+{
+  m_file.Close();
+  if ( remove(m_strTemp) != 0 )
+    wxLogSysError(_("can't remove temporary file '%s'"), m_strTemp.c_str());
+}

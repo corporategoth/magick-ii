@@ -101,6 +101,14 @@ SOURCE=.\include\confbase.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\fileconf.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\fileconf.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\lockable.cpp
 # End Source File
 # Begin Source File
@@ -145,7 +153,23 @@ SOURCE=.\include\mstring.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\textfile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\textfile.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\docs\todo.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\utils.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\utils.h
 # End Source File
 # End Target
 # End Project

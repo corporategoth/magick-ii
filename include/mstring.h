@@ -7,6 +7,8 @@ class mstring:public string
 {
 	typedef string inherited;
 public:
+	char& Last();
+	size_t Len();
 	const char &operator[](int pos)const;
 	char &operator[](int pos);
 	const char &operator[](unsigned int pos)const;
@@ -29,12 +31,12 @@ public:
 	bool IsNull() const;
 	bool IsEmpty() const;
 	bool IsAscii() const;
-	size_t Index(const mstring& in, bool caseSensitive=true, bool fromEnd=false);
-	size_t Index(char ch, int startpos=0);
-	size_t First(const mstring& in);
-	size_t First(char c);
-	int Find(const mstring & in);
-	int Find(char ch, bool bFromEnd=false);
+	size_t Index(const mstring& in, bool caseSensitive=true, bool fromEnd=false)const;
+	size_t Index(char ch, int startpos=0)const;
+	size_t First(const mstring& in)const;
+	size_t First(char c)const;
+	int Find(const mstring & in)const;
+	int Find(char ch, bool bFromEnd=false)const;
 	void Empty();
 	bool Contains(const mstring& in);
 	mstring& Prepend(char ch, int count=1);
@@ -54,19 +56,20 @@ public:
 	mstring& Trim(bool bFromRight=true);
 	void MakeLower();
 	void MakeUpper();
-	mstring RevAfter(const mstring& in);
-	mstring RevBefore(const mstring& in);
-	mstring After(const mstring& in);
-	mstring Before(const mstring& in);
-	mstring Right(size_t nCount);
-	mstring Left(size_t nCount);
+	mstring RevAfter(const mstring& in) const;
+	mstring RevBefore(const mstring& in) const;
+	mstring After(const mstring& in) const;
+	mstring Before(const mstring& in) const;
+	mstring Right(size_t nCount)const;
+	mstring Left(size_t nCount)const;
 	 mstring(const string& in);
-	mstring SubString(size_t from, size_t to);
-	mstring Mid(size_t nFirst, size_t nCount=npos);
+	mstring SubString(size_t from, size_t to)const;
+	mstring Mid(size_t nFirst, size_t nCount=npos)const;
 	bool IsSameAs(const mstring& in, bool bCase=true);
 	int CmpNoCase(const mstring& in);
 	int Cmp(const mstring& in);
 	mstring& operator<<(char ch);
+	mstring& operator=(char in);
 	mstring& operator=(const string& in);
 	mstring& operator=(const mstring& in);
 	mstring& operator=(const char *in);
@@ -76,11 +79,44 @@ public:
 	mstring(const mstring& in, inherited::size_type pos, inherited::size_type n);
 	mstring(const char *in);
 	mstring(const char *in, inherited::size_type pos);
+	mstring(char c); 
 	mstring(inherited::size_type n, char c);
 	mstring(inherited::const_iterator first, inherited::const_iterator last);
 	mstring();
 
 	operator const char *() const { return c_str(); }
+
+    // non-destructive concatenation
+      //
+  friend mstring operator+(const mstring& string, char ch);
+      //
+  friend mstring operator+(char ch, const mstring& string);
+      //
+  friend mstring operator+(const mstring& string, const char *psz);
+      //
+  friend mstring operator+(const char *psz, const mstring& string);
+
 };
+
+inline mstring operator+(const mstring& string, char ch)
+{
+	mstring Result=string+mstring(ch);
+	return Result;
+}
+inline mstring operator+(char ch, const mstring& string)
+{
+	mstring Result=mstring(ch)+string;
+	return Result;
+}
+inline mstring operator+(const mstring& string, const char *psz)
+{
+	mstring Result=string+mstring(psz);
+	return Result;
+}
+inline mstring operator+(const char *psz, const mstring& string)
+{
+	mstring Result=mstring(psz)+string;
+	return Result;
+}
 
 #endif
