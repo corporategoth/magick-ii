@@ -2250,10 +2250,9 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.
-			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
-			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.sraw(((server.proto.Tokens() &&
+				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
+									       mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK((lck_Server, "WaitIsOn"));
@@ -2293,10 +2292,9 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.
-			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
-			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.sraw(((server.proto.Tokens() &&
+				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
+									       mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK((lck_Server, "WaitIsOn"));
@@ -2334,10 +2332,9 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.
-			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
-			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.sraw(((server.proto.Tokens() &&
+				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
+									       mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK((lck_Server, "WaitIsOn"));
@@ -2375,10 +2372,9 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.
-			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
-			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.sraw(((server.proto.Tokens() &&
+				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
+				  mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK((lck_Server, "WaitIsOn"));
@@ -2416,10 +2412,9 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.
-			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
-			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.sraw(((server.proto.Tokens() &&
+				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
+									       mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK((lck_Server, "WaitIsOn"));
@@ -2457,10 +2452,9 @@ bool Magick::get_config_values()
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.
-			sraw(((server.proto.Tokens() &&
-			       !server.proto.GetNonToken("ISON").empty()) ? server.proto.
-			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.sraw(((server.proto.Tokens() &&
+				  !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
+									       mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK((lck_Server, "WaitIsOn"));
@@ -2474,10 +2468,9 @@ bool Magick::get_config_values()
     in.Read(ts_Services + "QUIT_MESSAGE", startup.services_quitmsg, "");
 
     if (!isonstr.empty())
-	server.
-	    sraw(((server.proto.Tokens() &&
-		   !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" +
-		 isonstr);
+	server.sraw(((server.proto.Tokens() &&
+		      !server.proto.GetNonToken("ISON").empty()) ? server.proto.GetNonToken("ISON") :
+								   mstring("ISON")) + " :" + isonstr);
 
     in.Read(ts_Files + "UMASK", value_mstring, "027");
     files.umask = 0;
@@ -3084,9 +3077,8 @@ bool Magick::get_config_values()
 	comm = commserv.GetList(commserv.sop.Name);
     else
     {
-	comm =
-	    map_entry < Committee_t >
-	    (new Committee_t(commserv.sop.Name, *(commserv.GetList(commserv.sadmin.Name).entry()), "Services Operators"));
+	comm = map_entry < Committee_t > (new Committee_t(commserv.sop.Name, *(commserv.GetList(commserv.sadmin.Name).entry()),
+							  "Services Operators"));
 	commserv.AddList(comm);
     }
     comm->Secure(commserv.sop.Secure);
@@ -3097,9 +3089,8 @@ bool Magick::get_config_values()
 	comm = commserv.GetList(commserv.admin.Name);
     else
     {
-	comm =
-	    map_entry < Committee_t >
-	    (new Committee_t(commserv.admin.Name, *(commserv.GetList(commserv.sadmin.Name).entry()), "Server Administrators"));
+	comm = map_entry < Committee_t > (new Committee_t(commserv.admin.Name, *(commserv.GetList(commserv.sadmin.Name).entry()),
+							  "Server Administrators"));
 	commserv.AddList(comm);
     }
     comm->Secure(commserv.admin.Secure);
@@ -3110,9 +3101,8 @@ bool Magick::get_config_values()
 	comm = commserv.GetList(commserv.oper.Name);
     else
     {
-	comm =
-	    map_entry < Committee_t >
-	    (new Committee_t(commserv.oper.Name, *(commserv.GetList(commserv.admin.Name).entry()), "Server Operators"));
+	comm = map_entry < Committee_t > (new Committee_t(commserv.oper.Name, *(commserv.GetList(commserv.admin.Name).entry()),
+							  "Server Operators"));
 	commserv.AddList(comm);
     }
     comm->Secure(commserv.oper.Secure);
@@ -3131,9 +3121,8 @@ bool Magick::get_config_values()
     }
     else
     {
-	comm =
-	    map_entry < Committee_t >
-	    (new Committee_t(commserv.all.Name, *(commserv.GetList(commserv.admin.Name).entry()), "All Users"));
+	comm = map_entry < Committee_t > (new Committee_t(commserv.all.Name, *(commserv.GetList(commserv.admin.Name).entry()),
+							  "All Users"));
 	commserv.AddList(comm);
     }
     comm->Secure(false);
@@ -3152,9 +3141,8 @@ bool Magick::get_config_values()
     }
     else
     {
-	comm =
-	    map_entry < Committee_t >
-	    (new Committee_t(commserv.regd.Name, *(commserv.GetList(commserv.sop.Name).entry()), "Registered Users"));
+	comm = map_entry < Committee_t >(new Committee_t(commserv.regd.Name, *(commserv.GetList(commserv.sop.Name).entry()),
+							 "Registered Users"));
 	commserv.AddList(comm);
     }
     comm->Secure(false);
@@ -3163,10 +3151,9 @@ bool Magick::get_config_values()
 
     if (reconnect && Connected())
     {
-	server.
-	    raw(((server.proto.Tokens() &&
-		  !server.proto.GetNonToken("ERROR").empty()) ? server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
-		" :Closing Link: Configuration reload required restart!");
+	server.raw(((server.proto.Tokens() &&
+		     !server.proto.GetNonToken("ERROR").empty()) ? server.proto.GetNonToken("ERROR") :
+		     mstring("ERROR")) + " " + " :Closing Link: Configuration reload required restart!");
 	Disconnect();
     }
 

@@ -2981,14 +2981,14 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	    {
 		SEND(mynick, source, "MS_COMMAND/CS_SET",
 		     (Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), output, who,
-		      (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().
-		       getMessage("VALS/OFF"))));
+		      (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") :
+					 Magick::instance().getMessage("VALS/OFF"))));
 		output.erase();
 		LOG(LM_DEBUG, "MEMOSERV/SET",
 		    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		     Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"), count, who,
-		     (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().
-		      getMessage("VALS/OFF"))));
+		     (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") :
+					Magick::instance().getMessage("VALS/OFF"))));
 	    }
 	    if (nonnumeric)
 		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");

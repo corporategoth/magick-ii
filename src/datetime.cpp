@@ -763,90 +763,60 @@ mstring DisectTime(const long intime, const mstring & source)
 
     if (Years > 0)
     {
-	Result << Years << " " << (Years ==
-				   1 ? Magick::instance().getMessage(source,
-								     "VALS/TIME_YEAR") : Magick::instance().getMessage(source,
-														       "VALS/TIME_YEARS"));
+	Result << Years << " " << (Years == 1 ? Magick::instance().getMessage(source, "VALS/TIME_YEAR") :
+						Magick::instance().getMessage(source, "VALS/TIME_YEARS"));
 	if (Weeks)
-	    Result << ", " << Weeks << " " << (Weeks ==
-					       1 ? Magick::instance().getMessage(source,
-										 "VALS/TIME_WEEK") : Magick::instance().
-					       getMessage(source, "VALS/TIME_WEEKS"));
+	    Result << ", " << Weeks << " " << (Weeks == 1 ? Magick::instance().getMessage(source, "VALS/TIME_WEEK") :
+							    Magick::instance().getMessage(source, "VALS/TIME_WEEKS"));
 	if (Days)
-	    Result << ", " << Days << " " << (Days ==
-					      1 ? Magick::instance().getMessage(source,
-										"VALS/TIME_DAY") : Magick::instance().
-					      getMessage(source, "VALS/TIME_DAYS"));
+	    Result << ", " << Days << " " << (Days == 1 ? Magick::instance().getMessage(source, "VALS/TIME_DAY") :
+							  Magick::instance().getMessage(source, "VALS/TIME_DAYS"));
 	if (Hours || Minutes || Seconds)
-	    Result << ", " << (Hours >= 10 ? "" : "0") << Hours << ":" << (Minutes >=
-									   10 ? "" : "0") << Minutes << ":" << (Seconds >=
-														10 ? "" : "0")
-		<< Seconds;
+	    Result << ", " << (Hours >= 10 ? "" : "0") << Hours << ":" << (Minutes >= 10 ? "" : "0") << Minutes << ":" <<
+		      (Seconds >= 10 ? "" : "0") << Seconds;
     }
     else if (Weeks > 0)
     {
-	Result << Weeks << " " << (Weeks ==
-				   1 ? Magick::instance().getMessage(source,
-								     "VALS/TIME_WEEK") : Magick::instance().getMessage(source,
-														       "VALS/TIME_WEEKS"));
+	Result << Weeks << " " << (Weeks == 1 ? Magick::instance().getMessage(source, "VALS/TIME_WEEK") :
+						Magick::instance().getMessage(source, "VALS/TIME_WEEKS"));
 	if (Days)
-	    Result << ", " << Days << " " << (Days ==
-					      1 ? Magick::instance().getMessage(source,
-										"VALS/TIME_DAY") : Magick::instance().
-					      getMessage(source, "VALS/TIME_DAYS"));
+	    Result << ", " << Days << " " << (Days == 1 ? Magick::instance().getMessage(source, "VALS/TIME_DAY") :
+							  Magick::instance().getMessage(source, "VALS/TIME_DAYS"));
 	if (Hours || Minutes || Seconds)
-	    Result << ", " << (Hours >= 10 ? "" : "0") << Hours << ":" << (Minutes >=
-									   10 ? "" : "0") << Minutes << ":" << (Seconds >=
-														10 ? "" : "0")
-		<< Seconds;
+	    Result << ", " << (Hours >= 10 ? "" : "0") << Hours << ":" << (Minutes >= 10 ? "" : "0") << Minutes << ":" <<
+		      (Seconds >= 10 ? "" : "0") << Seconds;
     }
     else if (Days > 0)
     {
-	Result << Days << " " << (Days ==
-				  1 ? Magick::instance().getMessage(source,
-								    "VALS/TIME_DAY") : Magick::instance().getMessage(source,
-														     "VALS/TIME_DAYS"));
+	Result << Days << " " << (Days == 1 ? Magick::instance().getMessage(source, "VALS/TIME_DAY") :
+					      Magick::instance().getMessage(source, "VALS/TIME_DAYS"));
 	if (Hours || Minutes || Seconds)
-	    Result << ", " << (Hours >= 10 ? "" : "0") << Hours << ":" << (Minutes >=
-									   10 ? "" : "0") << Minutes << ":" << (Seconds >=
-														10 ? "" : "0")
-		<< Seconds;
+	    Result << ", " << (Hours >= 10 ? "" : "0") << Hours << ":" << (Minutes >= 10 ? "" : "0") << Minutes << ":" <<
+		      (Seconds >= 10 ? "" : "0") << Seconds;
     }
     else if (Hours > 0)
     {
-	Result << Hours << " " << (Hours ==
-				   1 ? Magick::instance().getMessage(source,
-								     "VALS/TIME_HOUR") : Magick::instance().getMessage(source,
-														       "VALS/TIME_HOURS"));
+	Result << Hours << " " << (Hours == 1 ? Magick::instance().getMessage(source, "VALS/TIME_HOUR") :
+						Magick::instance().getMessage(source, "VALS/TIME_HOURS"));
 	if (Minutes)
-	    Result << ", " << Minutes << " " << (Minutes ==
-						 1 ? Magick::instance().getMessage(source,
-										   "VALS/TIME_MIN") : Magick::instance().
-						 getMessage(source, "VALS/TIME_MINS"));
+	    Result << ", " << Minutes << " " << (Minutes == 1 ? Magick::instance().getMessage(source, "VALS/TIME_MIN") :
+								Magick::instance().getMessage(source, "VALS/TIME_MINS"));
 	if (Seconds)
-	    Result << ", " << Seconds << " " << (Seconds ==
-						 1 ? Magick::instance().getMessage(source,
-										   "VALS/TIME_SEC") : Magick::instance().
-						 getMessage(source, "VALS/TIME_SECS"));
+	    Result << ", " << Seconds << " " << (Seconds == 1 ? Magick::instance().getMessage(source, "VALS/TIME_SEC") :
+								Magick::instance().getMessage(source, "VALS/TIME_SECS"));
     }
     else if (Minutes > 0)
     {
-	Result << Minutes << " " << (Minutes ==
-				     1 ? Magick::instance().getMessage(source,
-								       "VALS/TIME_MIN") : Magick::instance().getMessage(source,
-															"VALS/TIME_MINS"));
+	Result << Minutes << " " << (Minutes == 1 ? Magick::instance().getMessage(source, "VALS/TIME_MIN") :
+						    Magick::instance().getMessage(source, "VALS/TIME_MINS"));
 	if (Seconds)
-	    Result << ", " << Seconds << " " << (Seconds ==
-						 1 ? Magick::instance().getMessage(source,
-										   "VALS/TIME_SEC") : Magick::instance().
-						 getMessage(source, "VALS/TIME_SECS"));
+	    Result << ", " << Seconds << " " << (Seconds == 1 ? Magick::instance().getMessage(source, "VALS/TIME_SEC") :
+								Magick::instance().getMessage(source, "VALS/TIME_SECS"));
     }
     else if (Seconds > 0)
     {
-	Result << Seconds << " " << (Seconds ==
-				     1 ? Magick::instance().getMessage(source,
-								       "VALS/TIME_SEC") : Magick::instance().getMessage(source,
-															"VALS/TIME_SECS"));
+	Result << Seconds << " " << (Seconds == 1 ? Magick::instance().getMessage(source, "VALS/TIME_SEC") :
+						    Magick::instance().getMessage(source, "VALS/TIME_SECS"));
     }
     else
     {

@@ -939,8 +939,7 @@ vector < unsigned long > FileMap::GetList(const FileMap::FileType type, const ms
 		    for (i = 1; i <= iter->second.second.WordCount(" "); i++)
 		    {
 			if (Magick::instance().commserv.IsList(iter->second.second.ExtractWord(i, " ")) &&
-			    Magick::instance().commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase())->
-			    IsOn(source))
+			    Magick::instance().commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase())->IsOn(source))
 			{
 			    retval.push_back(iter->first);
 			    break;

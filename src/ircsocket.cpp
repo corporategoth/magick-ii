@@ -37,12 +37,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 #include "magick.h"
 
 const char *Heartbeat_Handler::names[] =
-{
-"invalid", "worker", "main", "IRC server", "events", "DCC"};
+{ "invalid", "worker", "main", "IRC server", "events", "DCC" };
 
 static const char *immediate_process[] =
-{
-"PROTOCTL", "CAPAB", NULL};
+{ "PROTOCTL", "CAPAB", NULL };
 
 void *IrcSvcHandler::worker(void *in)
 {
@@ -393,9 +391,8 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 		if (Magick::instance().server.ServerSquit.find(si->first) != Magick::instance().server.ServerSquit.end())
 		{
 		    mstring *arg = NULL;
-		    if (Magick::instance().reactor().
-			cancel_timer(Magick::instance().server.ServerSquit[si->first],
-				     reinterpret_cast < const void ** > (arg)) && arg != NULL)
+		    if (Magick::instance().reactor().cancel_timer(Magick::instance().server.ServerSquit[si->first],
+								   reinterpret_cast < const void ** > (arg)) && arg != NULL)
 			delete arg;
 		}
 		if (!Magick::instance().Shutdown())
@@ -404,9 +401,9 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
 			ACE_OS::sleep(1);
 
 		    CP(("Scheduling SQUIT protect timer..."));
-		    Magick::instance().server.ServerSquit[si->first] =
-			Magick::instance().reactor().schedule_timer(&Magick::instance().server.squit, new mstring(si->first),
-								    ACE_Time_Value(Magick::instance().config.Squit_Protect()));
+		    Magick::instance().server.ServerSquit[si->first] = Magick::instance().reactor().schedule_timer(
+								&Magick::instance().server.squit, new mstring(si->first),
+								ACE_Time_Value(Magick::instance().config.Squit_Protect()));
 		}
 	    }
 	}
@@ -669,9 +666,8 @@ void IrcSvcHandler::enqueue(mMessage * mm)
 	// Make sure we have at LEAST our minimum ...
 	while (static_cast < unsigned int > (tm.count_threads()) < Magick::instance().config.Min_Threads())
 	{
-	    if (tm.
-		spawn(IrcSvcHandler::worker, reinterpret_cast < void * > (&Magick::instance()),
-		      THR_NEW_LWP | THR_DETACHED) != -1)
+	    if (tm.spawn(IrcSvcHandler::worker, reinterpret_cast < void * > (&Magick::instance()),
+			 THR_NEW_LWP | THR_DETACHED) != -1)
 	    {
 		NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 	    }
@@ -731,12 +727,10 @@ void IrcSvcHandler::enqueue(const mstring & message, const u_long pri)
 	// user numeric maximum length (combined with server numeric maximum
 	// length if necessary) ... assume its a user numeric ...
 	else if (Magick::instance().server.proto.Numeric.User() &&
-		 (Magick::instance().server.proto.Numeric.
-		  Combine() ? (source.length() == static_cast < size_t >
-			       (Magick::instance().server.proto.Numeric.Server() +
-				Magick::instance().server.proto.Numeric.User())) : (source.length() == static_cast < size_t >
-										    (Magick::instance().server.proto.Numeric.
-										     User()))))
+		 (Magick::instance().server.proto.Numeric.Combine() ?
+			(source.length() == static_cast < size_t > (Magick::instance().server.proto.Numeric.Server() +
+								    Magick::instance().server.proto.Numeric.User())) :
+			(source.length() == static_cast < size_t > (Magick::instance().server.proto.Numeric.User()))))
 	    source.prepend("!");
     }
 
@@ -1336,7 +1330,10 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 
     LOG(LM_INFO, "OTHER/CONNECTING", (server, details.second.first));
 
-#ifndef TEST_MODE
+#ifdef TEST_MODE
+	Magick::instance().ircsvchandler = new IrcSvcHandler();
+	Magick::instance().ircsvchandler->open(NULL);
+#else
     IrcConnector C_server(&Magick::instance().reactor(), ACE_NONBLOCK);
 
     unsigned int i;
@@ -1385,143 +1382,138 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 		CE(2, Magick::instance().i_localhost);
 	    }
 	}
-#else
-    Magick::instance().ircsvchandler = new IrcSvcHandler();
-    Magick::instance().ircsvchandler->open(NULL);
-#endif /* !TEST_MODE */
+#endif /* TEST_MODE */
 
-    if (!Magick::instance().server.proto.Protoctl().empty())
-	Magick::instance().server.raw(Magick::instance().server.proto.Protoctl());
+	if (!Magick::instance().server.proto.Protoctl().empty())
+	    Magick::instance().server.raw(Magick::instance().server.proto.Protoctl());
 
-    mstring tmp = "PASS " + details.second.second;
+	mstring tmp = "PASS " + details.second.second;
 
-    if (Magick::instance().server.proto.TSora())
-	tmp += " :TS";
-    Magick::instance().server.raw(tmp);
+	if (Magick::instance().server.proto.TSora())
+	    tmp += " :TS";
+	Magick::instance().server.raw(tmp);
 
-    // 5 args - server name, hops, server desc and numeric (optional) and timestamp.
+	// 5 args - server name, hops, server desc and numeric (optional) and timestamp.
 
-    Magick::instance().server.
-	raw(parseMessage
-	    (Magick::instance().server.proto.Server(),
-	     mVarArray(Magick::instance().startup.Server_Name(), 1, Magick::instance().startup.Server_Desc(),
-		       Magick::instance().server.proto.Numeric.ServerLineNumeric(details.second.third), time(NULL),
-		       Magick::instance().StartTime().timetstring())));
+	Magick::instance().server.raw(parseMessage(Magick::instance().server.proto.Server(),
+			mVarArray(Magick::instance().startup.Server_Name(), 1, Magick::instance().startup.Server_Desc(),
+				  Magick::instance().server.proto.Numeric.ServerLineNumeric(details.second.third),
+				  time(NULL), Magick::instance().StartTime().timetstring())));
 
-    if (Magick::instance().server.proto.TSora())
-	// SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
-	Magick::instance().server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
-    Magick::instance().Connected(true);
+	if (Magick::instance().server.proto.TSora())
+	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
+	    Magick::instance().server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
+	Magick::instance().Connected(true);
 #ifndef TEST_MODE
-}
+    }
 #endif
 
-CE(1, Magick::instance().i_currentserver);
-Magick::instance().DumpE();
+    CE(1, Magick::instance().i_currentserver);
+    Magick::instance().DumpE();
 
-DRET(0);
-ETCB();
+    DRET(0);
+    ETCB();
 }
 
-     int ToBeSquit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
-     {
-	 BTCB();
-	 mThread::Attach(tt_MAIN);
-	 // We ONLY get here if we didnt receive a SQUIT message in <10s
-	 // after any QUIT message with 2 valid servers in it
-	 FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
-	 static_cast < void > (tv);
-	 mstring *tmp = reinterpret_cast < mstring * > (const_cast < void * > (arg));
+int ToBeSquit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
+{
+    BTCB();
+    mThread::Attach(tt_MAIN);
+    // We ONLY get here if we didnt receive a SQUIT message in <10s
+    // after any QUIT message with 2 valid servers in it
+    FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
+    static_cast < void > (tv);
+    mstring *tmp = reinterpret_cast < mstring * > (const_cast < void * > (arg));
 
-	 {
-	     WLOCK((lck_Server, "ServerSquit"));
-	     Magick::instance().server.DumpB();
-	     CB(1, Magick::instance().server.ServerSquit.size());
-	     Magick::instance().server.ServerSquit.erase(*tmp);
-	     CE(1, Magick::instance().server.ServerSquit.size());
-	 }
+    {
+	WLOCK((lck_Server, "ServerSquit"));
+	Magick::instance().server.DumpB();
+	CB(1, Magick::instance().server.ServerSquit.size());
+	Magick::instance().server.ServerSquit.erase(*tmp);
+	CE(1, Magick::instance().server.ServerSquit.size());
+    }
 
-	 if (Magick::instance().server.IsList(*tmp))
-	 {
-	     LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, Magick::instance().server.GetList(*tmp)->Uplink()));
-	 }
-	 else
-	 {
-	     LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, "?"));
-	 }
+    if (Magick::instance().server.IsList(*tmp))
+    {
+	LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, Magick::instance().server.GetList(*tmp)->Uplink()));
+    }
+    else
+    {
+	LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, "?"));
+    }
 
-	 // QUIT all user's who faked it ...
-	 vector < mstring > chunked;
-	 {
-	     WLOCK2((lck_Server, "ToBeSquit"));
-	     if (Magick::instance().server.ToBeSquit.find(*tmp) != Magick::instance().server.ToBeSquit.end())
-	     {
-		 list < mstring >::iterator iter;
-		 CB(2, Magick::instance().server.ToBeSquit.size());
-		 for (iter = Magick::instance().server.ToBeSquit[*tmp].begin();
-		      iter != Magick::instance().server.ToBeSquit[*tmp].end(); iter++)
-		 {
-		     chunked.push_back(*iter);
-		 }
-		 Magick::instance().server.ToBeSquit.erase(*tmp);
-		 CE(2, Magick::instance().server.ToBeSquit.size());
-	     }
-	 }
-	 vector < mstring >::iterator k;
-	 for (k = chunked.begin(); k != chunked.end(); k++)
-	 {
-	     try
-	     {
-		 if (Magick::instance().nickserv.IsLiveAll(*k))
-		 {
-		     map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(*k);
-		     nlive->Quit("FAKE SQUIT - " + *tmp);
-		     Magick::instance().nickserv.RemLive(*k);
-		     mMessage::CheckDependancies(mMessage::NickNoExists, *k);
-		     if (nlive->Numeric())
-			 mMessage::CheckDependancies(mMessage::NickNoExists,
-						     "!" +
-						     Magick::instance().server.proto.Numeric.UserNumeric(nlive->Numeric()));
-		 }
-	     }
-	     catch (E_NickServ_Live & e)
-	     {
-		 switch (e.where())
-		 {
-		 case E_NickServ_Live::W_Get:
-		     switch (e.type())
-		     {
-		     case E_NickServ_Live::T_Invalid:
-		     case E_NickServ_Live::T_Blank:
-			 if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
-			 {
-			     Magick::instance().nickserv.RemLive(e.what());
-			 }
-			 break;
-		     default:
-			 break;
-		     }
-		     break;
-		 default:
-		     break;
-		 }
-	     }
-	     catch (exception & e)
-	     {
-		 LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", (e.what()));
-	     }
-	     catch (...)
-	     {
-		 NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
-	     }
-	 }
-	 Magick::instance().server.DumpE();
+    // QUIT all user's who faked it ...
+    vector < mstring > chunked;
+    {
+	WLOCK2((lck_Server, "ToBeSquit"));
+	if (Magick::instance().server.ToBeSquit.find(*tmp) != Magick::instance().server.ToBeSquit.end())
+	{
+	    list < mstring >::iterator iter;
+	    CB(2, Magick::instance().server.ToBeSquit.size());
+	    for (iter = Magick::instance().server.ToBeSquit[*tmp].begin();
+		 iter != Magick::instance().server.ToBeSquit[*tmp].end(); iter++)
+	    {
+		chunked.push_back(*iter);
+	    }
+	    Magick::instance().server.ToBeSquit.erase(*tmp);
+	    CE(2, Magick::instance().server.ToBeSquit.size());
+	}
+    }
 
-	 delete tmp;
+    vector < mstring >::iterator k;
+    for (k = chunked.begin(); k != chunked.end(); k++)
+    {
+	try
+	{
+	    if (Magick::instance().nickserv.IsLiveAll(*k))
+	    {
+		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(*k);
+		nlive->Quit("FAKE SQUIT - " + *tmp);
+		Magick::instance().nickserv.RemLive(*k);
+		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+		if (nlive->Numeric())
+		    mMessage::CheckDependancies(mMessage::NickNoExists, "!" +
+						Magick::instance().server.proto.Numeric.UserNumeric(nlive->Numeric()));
+	    }
+	}
+	catch (E_NickServ_Live & e)
+	{
+	    switch (e.where())
+	    {
+	    case E_NickServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Live::T_Invalid:
+		case E_NickServ_Live::T_Blank:
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
+		    {
+			Magick::instance().nickserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	    }
+	}
+	catch (exception & e)
+	{
+	    LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", (e.what()));
+	}
+	catch (...)
+	{
+	    NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
+	}
+    }
+    Magick::instance().server.DumpE();
 
-	 DRET(0);
-	 ETCB();
-     }
+    delete tmp;
+
+    DRET(0);
+    ETCB();
+}
 
 int Squit_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
@@ -2507,8 +2499,8 @@ void EventTask::do_check(mDateTime & synctime)
 		    Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(), chunked[i],
 						   Magick::instance().getMessage("NS_SET/PROTECT"));
 		Magick::instance().server.NICK(chunked[i],
-					       (Magick::instance().startup.Ownuser() ? chunked[i].
-						LowerCase() : Magick::instance().startup.Services_User()),
+					       (Magick::instance().startup.Ownuser() ? chunked[i].LowerCase() :
+						Magick::instance().startup.Services_User()),
 					       Magick::instance().startup.Services_Host(),
 					       Magick::instance().startup.Server_Name(),
 					       Magick::instance().nickserv.Enforcer_Name());

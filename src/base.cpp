@@ -582,8 +582,8 @@ void mMessage::AddDependancies()
 	case UserInChan:
 	    if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
 		Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
-		!Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(iter->second.Before(":")))->
-		IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+		!Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(
+			iter->second.Before(":")))->IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
 	    {
 		added++;
 		MLOCK2((lck_AllDeps));
@@ -602,8 +602,8 @@ void mMessage::AddDependancies()
 	case UserNoInChan:
 	    if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
 		Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
-		!Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(iter->second.Before(":")))->
-		IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+		!Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(
+			iter->second.Before(":")))->IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
 	    {
 		iter->third = true;
 	    }
@@ -740,8 +740,8 @@ bool mMessage::RecheckDependancies()
 	    case UserInChan:
 		if (!Magick::instance().server.GetChannel(iter->second.Before(":")).empty() &&
 		    !Magick::instance().server.GetUser(iter->second.After(":")).empty() &&
-		    Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(iter->second.Before(":")))->
-		    IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+		    Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(
+			iter->second.Before(":")))->IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -758,8 +758,8 @@ bool mMessage::RecheckDependancies()
 	    case UserNoInChan:
 		if (Magick::instance().server.GetChannel(iter->second.Before(":")).empty() ||
 		    Magick::instance().server.GetUser(iter->second.After(":")).empty() ||
-		    !Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(iter->second.Before(":")))->
-		    IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
+		    !Magick::instance().chanserv.GetLive(Magick::instance().server.GetChannel(
+			iter->second.Before(":")))->IsIn(Magick::instance().server.GetUser(iter->second.After(":"))))
 		{
 		    resolved = true;
 		    iter->third = true;
@@ -1003,13 +1003,10 @@ int mMessage::call()
 		CP(("Target changed, new params: %s", params_.c_str()));
 	    }
 	    else if (Magick::instance().server.proto.Numeric.User() &&
-		     (Magick::instance().server.proto.Numeric.
-		      Combine() ? (target.length() == static_cast < size_t >
-				   (Magick::instance().server.proto.Numeric.Server() +
-				    Magick::instance().server.proto.Numeric.User())) : (target.length() == static_cast <
-											size_t >
-											(Magick::instance().server.proto.
-											 Numeric.User()))))
+		     (Magick::instance().server.proto.Numeric. Combine() ?
+		      (target.length() == static_cast < size_t > (Magick::instance().server.proto.Numeric.Server() +
+								  Magick::instance().server.proto.Numeric.User())) :
+		      (target.length() == static_cast < size_t >(Magick::instance().server.proto.Numeric.User()))))
 	    {
 		mstring tmp = Magick::instance().server.GetUser("!" + target);
 
@@ -1270,8 +1267,8 @@ bool mBase::signon(const mstring & nickname) const
     else
     {
 	Magick::instance().server.NICK(nickname,
-				       (Magick::instance().startup.Ownuser() ? nickname.LowerCase() : Magick::instance().
-					startup.Services_User()), Magick::instance().startup.Services_Host(),
+				       (Magick::instance().startup.Ownuser() ? nickname.LowerCase() :
+					Magick::instance().startup.Services_User()), Magick::instance().startup.Services_Host(),
 				       Magick::instance().startup.Server_Name(), realname);
 	RET(true);
     }

@@ -427,8 +427,8 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 
 			if (!
 			    (!filenum || Magick::instance().memoserv.FileSize() == 0 ||
-			     Magick::instance().filesys.GetSize(FileMap::MemoAttach,
-								filenum) <= Magick::instance().memoserv.FileSize()))
+			     Magick::instance().filesys.GetSize(FileMap::MemoAttach, filenum) <=
+			     Magick::instance().memoserv.FileSize()))
 			{
 			    Magick::instance().filesys.EraseFile(FileMap::MemoAttach, filenum);
 			    NSEND(service, nick, "MS_COMMAND/TOOBIG");
@@ -452,8 +452,8 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			    {
 				LOG(LM_DEBUG, "MEMOSERV/FILE",
 				    (Magick::instance().nickserv.GetLive(sender)->Mask(Nick_Live_t::N_U_P_H),
-				     Magick::instance().filesys.GetName(FileMap::MemoAttach, filenum), fmstring("%08x",
-														filenum),
+				     Magick::instance().filesys.GetName(FileMap::MemoAttach, filenum),
+				     fmstring("%08x", filenum),
 				     ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::MemoAttach, filenum)),
 				     realrecipiant));
 			    }
@@ -538,8 +538,8 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			(Magick::instance().nickserv.GetLive(sender)->Mask(Nick_Live_t::N_U_P_H),
 			 Magick::instance().filesys.GetName(FileMap::Public, filenum), fmstring("%08x", filenum),
 			 ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Public, filenum)),
-			 ((Magick::instance().filesys.GetPriv(FileMap::Public, filenum).empty()) ? "ALL" : Magick::instance().
-			  filesys.GetPriv(FileMap::Public, filenum).c_str())));
+			 ((Magick::instance().filesys.GetPriv(FileMap::Public, filenum).empty()) ? "ALL" :
+			   Magick::instance().filesys.GetPriv(FileMap::Public, filenum).c_str())));
 		}
 		else
 		{
@@ -782,8 +782,8 @@ void Nick_Live_t::InFlight_t::DumpE() const
     ETCB();
 }
 
-Nick_Live_t::Nick_Live_t() : i_Numeric(0), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false),
-services(true)
+Nick_Live_t::Nick_Live_t()
+: i_Numeric(0), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false), services(true)
 {
     BTCB();
     NFT("Nick_Live_t::Nick_Live_t");
@@ -793,10 +793,11 @@ services(true)
 }
 
 Nick_Live_t::Nick_Live_t(const mstring & name, const mDateTime & signon, const mstring & server, const mstring & username,
-			 const mstring & hostname, const mstring & realname) : i_Name(name), i_Numeric(0),
-i_Signon_Time(signon), i_My_Signon_Time(mDateTime::CurrentDateTime()), i_Last_Action(mDateTime::CurrentDateTime()),
-i_realname(realname), i_user(username), i_host(hostname), i_alt_host(hostname), i_server(server.LowerCase()),
-last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false), services(false), InFlight(name)
+			 const mstring & hostname, const mstring & realname)
+: i_Name(name), i_Numeric(0), i_Signon_Time(signon), i_My_Signon_Time(mDateTime::CurrentDateTime()),
+i_Last_Action(mDateTime::CurrentDateTime()), i_realname(realname), i_user(username), i_host(hostname), i_alt_host(hostname),
+i_server(server.LowerCase()), last_msg_entries(0), flood_triggered_times(0), failed_passwds(0), identified(false),
+services(false), InFlight(name)
 {
     BTCB();
     FT("Nick_Live_t::Nick_Live_t", (name, signon, server, username, hostname, realname));
@@ -1443,8 +1444,7 @@ void Nick_Live_t::Mode(const mstring & in)
 			      || (Magick::instance().operserv.OperDeny_find(Mask(N_U_P_H)) &&
 				  !(nstored.entry() != NULL && nstored->IsOnline() &&
 				    Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-				    Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->
-				    IsIn(i_Name))))
+				    Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsIn(i_Name))))
 		    {
 			if (!Magick::instance().server.proto.SVSMODE().empty())
 			{

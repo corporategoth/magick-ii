@@ -1529,14 +1529,13 @@ void OperServ::do_NOOP(const mstring & mynick, const mstring & source, const mst
     Magick::instance().server.SVSNOOP(mynick, target, onoff.GetBool());
     Magick::instance().operserv.stats.i_Noop++;
     SEND(mynick, source, "OS_COMMAND/NOOP",
-	 ((onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	   getMessage(source, "VALS/OFF")), target));
-    ANNOUNCE(mynick, "MISC/NOOP",
-	     (source, (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF")),
-	      target));
-    LOG(LM_INFO, "OPERSERV/NOOP",
-	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target,
-	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") : Magick::instance().getMessage("VALS/OFF"))));
+	 ((onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			     Magick::instance().getMessage(source, "VALS/OFF")), target));
+    ANNOUNCE(mynick, "MISC/NOOP", (source, (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") :
+							      Magick::instance().getMessage("VALS/OFF")), target));
+    LOG(LM_INFO, "OPERSERV/NOOP", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target,
+	 (onoff.GetBool() ? Magick::instance().getMessage("VALS/ON") :
+			    Magick::instance().getMessage("VALS/OFF"))));
     ETCB();
 }
 

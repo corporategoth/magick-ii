@@ -1012,9 +1012,8 @@ void Chan_Live_t::SendMode(const mstring & in)
 			mstring arg = in.ExtractWord(param, " ");
 
 			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
-			    arg =
-				Magick::instance().server.proto.Numeric.UserNumeric(Magick::instance().nickserv.GetLive(arg)->
-										    Numeric());
+			    arg = Magick::instance().server.proto.Numeric.UserNumeric(
+								Magick::instance().nickserv.GetLive(arg)->Numeric());
 
 			if (add)
 			{
@@ -1052,9 +1051,8 @@ void Chan_Live_t::SendMode(const mstring & in)
 			mstring arg = in.ExtractWord(param, " ");
 
 			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
-			    arg =
-				Magick::instance().server.proto.Numeric.UserNumeric(Magick::instance().nickserv.GetLive(arg)->
-										    Numeric());
+			    arg = Magick::instance().server.proto.Numeric.UserNumeric(
+								Magick::instance().nickserv.GetLive(arg)->Numeric());
 
 			if (add)
 			{
@@ -1092,9 +1090,8 @@ void Chan_Live_t::SendMode(const mstring & in)
 			mstring arg = in.ExtractWord(param, " ");
 
 			if (Magick::instance().server.proto.Numeric.User() && Magick::instance().nickserv.IsLive(arg))
-			    arg =
-				Magick::instance().server.proto.Numeric.UserNumeric(Magick::instance().nickserv.GetLive(arg)->
-										    Numeric());
+			    arg = Magick::instance().server.proto.Numeric.UserNumeric(
+								Magick::instance().nickserv.GetLive(arg)->Numeric());
 
 			if (add)
 			{
@@ -2142,9 +2139,8 @@ void Chan_Stored_t::ChgNick(const mstring & nick, const mstring & newnick)
 		    clive->LockDown();
 
 		if (Akick->Entry() [0u] == '@' || Magick::instance().nickserv.IsLive(Akick->Entry()))
-		    clive->SendMode("+b " +
-				    Magick::instance().nickserv.GetLive(nick)->AltMask(Magick::instance().operserv.
-										       Ignore_Method()));
+		    clive->SendMode("+b " + Magick::instance().nickserv.GetLive(nick)->AltMask(
+							Magick::instance().operserv.Ignore_Method()));
 		else
 		    clive->SendMode("+b " + Akick->Entry());
 	    }

@@ -2406,13 +2406,13 @@ void CommServ::do_set_Secure(const mstring & mynick, const mstring & source, con
     Magick::instance().commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee,
-	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	   getMessage(source, "VALS/OFF"))));
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			     Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee,
-	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	  getMessage(source, "VALS/OFF"))));
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			    Magick::instance().getMessage(source, "VALS/OFF"))));
     ETCB();
 }
 
@@ -2479,13 +2479,13 @@ void CommServ::do_set_Private(const mstring & mynick, const mstring & source, co
     Magick::instance().commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee,
-	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	   getMessage(source, "VALS/OFF"))));
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			     Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee,
-	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	  getMessage(source, "VALS/OFF"))));
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			    Magick::instance().getMessage(source, "VALS/OFF"))));
     ETCB();
 }
 
@@ -2552,13 +2552,13 @@ void CommServ::do_set_OpenMemos(const mstring & mynick, const mstring & source, 
     Magick::instance().commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee,
-	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	   getMessage(source, "VALS/OFF"))));
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			     Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee,
-	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	  getMessage(source, "VALS/OFF"))));
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			    Magick::instance().getMessage(source, "VALS/OFF"))));
     ETCB();
 }
 
@@ -2621,13 +2621,13 @@ void CommServ::do_lock_Secure(const mstring & mynick, const mstring & source, co
     Magick::instance().commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee,
-	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	   getMessage(source, "VALS/OFF"))));
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			     Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee,
-	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	  getMessage(source, "VALS/OFF"))));
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			    Magick::instance().getMessage(source, "VALS/OFF"))));
     ETCB();
 }
 
@@ -2690,13 +2690,13 @@ void CommServ::do_lock_Private(const mstring & mynick, const mstring & source, c
     Magick::instance().commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee,
-	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	   getMessage(source, "VALS/OFF"))));
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			     Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee,
-	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	  getMessage(source, "VALS/OFF"))));
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			    Magick::instance().getMessage(source, "VALS/OFF"))));
     ETCB();
 }
 
@@ -2759,13 +2759,13 @@ void CommServ::do_lock_OpenMemos(const mstring & mynick, const mstring & source,
     Magick::instance().commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED",
 	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee,
-	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	   getMessage(source, "VALS/OFF"))));
+	  (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			     Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee,
-	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
-	  getMessage(source, "VALS/OFF"))));
+	 (onoff.GetBool() ? Magick::instance().getMessage(source, "VALS/ON") :
+			    Magick::instance().getMessage(source, "VALS/OFF"))));
     ETCB();
 }
 
@@ -3211,10 +3211,8 @@ void CommServ::PostLoad()
 	    {
 		MLOCK((lck_CommServ, lck_list, iter->first, "member"));
 		for (j = 1; j <= Magick::instance().operserv.Services_Admin().WordCount(", "); j++)
-		    comm->i_Members.
-			insert(entlist_t
-			       (Magick::instance().operserv.Services_Admin().ExtractWord(j, ", "),
-				Magick::instance().operserv.FirstName()));
+		    comm->i_Members.insert(entlist_t(Magick::instance().operserv.Services_Admin().ExtractWord(j, ", "),
+						     Magick::instance().operserv.FirstName()));
 	    }
 	    comm->Secure(SADMIN_Secure());
 	    comm->Private(SADMIN_Private());
