@@ -85,7 +85,7 @@ public:
     void assign(const vector<triplet<mstring,mstring,mstring> > &in) { lines = in; }
     void add(const mstring &yescom, const mstring &nocom, const mstring &line)
     {
-	lines.push_back(triplet<mstring,mstring,mstring>(yescom,nocom,(line.empty() ? " " : line)));
+	lines.push_back(triplet<mstring,mstring,mstring>(yescom,nocom,(line.empty() ? mstring(" ") : line)));
     }
 
     vector<mstring> get(const mstring &nick) const;
