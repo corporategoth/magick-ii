@@ -1,3 +1,13 @@
+* 2002-10-29 23:01  Preston A. Elder <prez@magick.tm>
+  src/chanserv.cpp (1.312):
+  
+  Fixed order of halfop commands
+
+* 2002-10-28 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.55):
+  
+  Created version 2.0s20021028
+
 * 2002-10-27 00:50  Preston A. Elder <prez@magick.tm>
   lang/english.hlp (1.54), lang/english.lfo (1.59):
   
