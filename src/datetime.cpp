@@ -554,17 +554,52 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)
   day=D;
 
 }
+void mDateTime::DecodeTime(int &hour, int &min, int &sec, int& msec)
+{
+	//(Hour * 3600000 + Min * 60000 + Sec * 1000 + MSec) / MSecsPerDay;
+	int CurrentVal=(int)(Val*(double)MSecsPerDay);
+	int LeftOver;
+
+	LeftOver=CurrentVal%3600000;
+	hour=CurrentVal/3600000;
+	CurrentVal=LeftOver;
+
+	LeftOver=CurrentVal%60000;
+	min=CurrentVal/60000;
+	CurrentVal=LeftOver;
+
+	LeftOver=CurrentVal%1000;
+	sec=CurrentVal/1000;
+	msec=LeftOver;
+}
+
+wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src)
+{
+	os<<src.Val;
+	return os;
+}
+wxInputStream& operator>>(wxInputStream& is, mDateTime& src)
+{
+	is>>src.Val;
+	return is;
+}
+
+mDateTime Now()
+{
+	return mDateTime::CurrentDateTime();
+}
+mDateTime Date()
+{
+	return mDateTime::CurrentDate();
+}
+mDateTime Time()
+{
+	return mDateTime::CurrentTime();
+}
+
 #if 0
-	void DecodeTime(int &hour, int &min, int &sec, int& msec); 
-
-wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src);
-wxInputStream& operator>>(wxInputStream& is, mDateTime& src);
-
-extern mDateTime Now();
-extern mDateTime Date();
-extern mDateTime Time();
-extern mDateTime StringToDate(const mstring& in);
-extern mDateTime StringToTime(const mstring& in);
-extern mDateTime StringToDateTime(const mstring& in);
+mDateTime StringToDate(const mstring& in);
+mDateTime StringToTime(const mstring& in);
+mDateTime StringToDateTime(const mstring& in);
 
 #endif
