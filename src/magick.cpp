@@ -235,7 +235,7 @@ int Magick::Init()
 
     unsigned int i = 0;
     int j = 0;
-    int Result;
+    int Result = MAGICK_RET_NORMAL;
 
     // this is our main routine, when it leaves here, this sucker's done.
 
@@ -322,13 +322,13 @@ int Magick::Init()
 		    return MAGICK_RET_ERROR;
 		}
 		if (argv[i].IsSameAs("insert", true))
-		    return MAGICK_RET_SERVICE_INSERT;
+		    Result = MAGICK_RET_SERVICE_INSERT;
 		else if (argv[i].IsSameAs("remove", true))
-		    return MAGICK_RET_SERVICE_REMOVE;
+		    Result = MAGICK_RET_SERVICE_REMOVE;
 		else if (argv[i].IsSameAs("start", true))
-		    return MAGICK_RET_SERVICE_START;
+		    Result = MAGICK_RET_SERVICE_START;
 		else if (argv[i].IsSameAs("stop", true))
-		    return MAGICK_RET_SERVICE_STOP;
+		    Result = MAGICK_RET_SERVICE_STOP;
 		else
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/UNKNOWN_PARAM", (argv[i], "--service"));
@@ -365,8 +365,11 @@ int Magick::Init()
     if (i_shutdown == true)
     {
 	NLOG(LM_EMERGENCY, "COMMANDLINE/STOP");
-	RET(MAGICK_RET_NORMAL);
+	RET(MAGICK_RET_DIE);
     }
+
+    if (Result != MAGICK_RET_NORMAL)
+	RET(Result);
 
     Result = doparamparse();
     if (Result != MAGICK_RET_NORMAL)

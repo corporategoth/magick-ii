@@ -107,15 +107,19 @@ int main(int argc, char **argv)
 
 	    fc->insert(SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, cmd.c_str());
 	}
+	Result = MAGICK_RET_NORMAL;
 	break;
     case MAGICK_RET_SERVICE_REMOVE:
 	fc->remove();
+	Result = MAGICK_RET_NORMAL;
 	break;
     case MAGICK_RET_SERVICE_START:
 	fc->start_svc();
+	Result = MAGICK_RET_NORMAL;
 	break;
     case MAGICK_RET_SERVICE_STOP:
 	fc->stop_svc();
+	Result = MAGICK_RET_NORMAL;
 	break;
 #endif /* WIN32 */
     case MAGICK_RET_NORMAL:
@@ -144,8 +148,6 @@ int main(int argc, char **argv)
     mThread::Detach();
     ACE::fini();
 
-    if (Result == MAGICK_RET_DIE)
-	Result = MAGICK_RET_NORMAL;
     return Result;
 }
 
