@@ -613,6 +613,10 @@ void OperServ::ToggleTrace(mstring mynick, mstring source, mstring params)
 		    mstring("\" is not valid, ignored."));
 	}
     }
+    else if (action == "VIEW")
+    {
+	// Its taken care of below :)
+    }
     else
     {
 	Parent->server.NOTICE(mynick, source, "Incorrect TRACE option.");
