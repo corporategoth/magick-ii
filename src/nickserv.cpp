@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.125  2000/08/10 23:59:03  prez
+** Fixed REC_FORNOTINCHAN
+**
 ** Revision 1.124  2000/08/10 22:44:24  prez
 ** Added 'binding to IP' options for shell servers, etc.  Also added akick
 ** triggers for when a user changes their nick and suddenly matches akick.
@@ -1323,7 +1326,7 @@ void Nick_Live_t::Name(mstring in)
 	else
 	{
 	    chunked.push_back(*iter);
-	    Log(LM_ERROR, Parent->getLogMessage("REC_FORNOTINCHAN"),
+	    Log(LM_ERROR, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
 		"NICK", oldnick.c_str(), iter->c_str());
 	}
     }
