@@ -58,32 +58,22 @@ using namespace std;
 
 // OperServ TRACE Syntax:
 //
-// TRACE SET 0x000000B0		Set exact TraceTypes
-// TRACE SET B			Just 3 flags
-// TRACE SET Func*		Just 1 flag
-// TRACE SET Func* Chat*	Just 2 flags
-// TRACE SET NS B		Just 3 flags
+// TRACE SET NS 0x00B0		Just 3 flags (0 works)
 // TRACE SET NS Func*		Just 1 flag
 // TRACE SET NS Func* Chat*	Just 2 flags
-// TRACE SET ALL B		Just 3 flags
+// TRACE SET ALL 0x00B0		Just 3 flags (0 works)
 // TRACE SET ALL Func*		Just 1 flag
 // TRACE SET ALL Func* Chat*	Just 2 flags
-// TRACE UP B			8 + 2 + 1 (3 flags)
-// TRACE UP Func*		4 (1 flag)
-// TRACE UP Func* Chat*		4 + 1 (2 flags)
-// TRACE UP NS B		8 + 2 + 1 (3 flags)
+// TRACE UP NS 0x00B0		8 + 2 + 1 (3 flags) (0 works)
 // TRACE UP NS Func*		4 (1 flag)
 // TRACE UP NS Func* Chat*	4 + 1 (2 flags)
-// TRACE UP ALL B		8 + 2 + 1 (3 flags)
+// TRACE UP ALL 0x00B0		8 + 2 + 1 (3 flags) (0 works)
 // TRACE UP ALL Func*		4 (1 flag)
 // TRACE UP ALL Func* Chat*	4 + 1 (2 flags)
-// TRACE DOWN B			8 + 2 + 1 (3 flags)
-// TRACE DOWN Func*		4 (1 flag)
-// TRACE DOWN Func* Chat*	4 + 1 (2 flags)
-// TRACE DOWN NS B		8 + 2 + 1 (3 flags)
+// TRACE DOWN NS 0x00B0		8 + 2 + 1 (3 flags) (0 works)
 // TRACE DOWN NS Func*		4 (1 flag)
 // TRACE DOWN NS Func* Chat*	4 + 1 (2 flags)
-// TRACE DOWN ALL B		8 + 2 + 1 (3 flags)
+// TRACE DOWN ALL 0x00B0	8 + 2 + 1 (3 flags) (0 works)
 // TRACE DOWN ALL Func*		4 (1 flag)
 // TRACE DOWN ALL Func* Chat*	4 + 1 (2 flags)
 //
@@ -150,57 +140,38 @@ public:
 
 class Trace
 {
-    static long TraceLevel;
-    enum TraceTypes {
-	TT_Off		= 0,
-	G_Stats		= 0x00000001,	// CPU/Memory and Global Flags
-	G_Source	= 0x00000002,	// Config / Language / Bob Script
-	G_Functions	= 0x00000004,	// Functions not covered below
-	G_Locking	= 0x00000008,	// All read/write locks
-	NS_Chatter	= 0x00000010,	// Nick & NickServ messages
-	NS_CheckPoint	= 0x00000020,	// Nick & NickServ checkpoints / flags
-	NS_Functions	= 0x00000040,	// Nick & NickServ functions
-	NS_Modify	= 0x00000080,	// Nick & NickServ data modification
-	CS_Chatter	= 0x00000100,	// Channel & ChanServ messages
-	CS_CheckPoint	= 0x00000200,	// Channel & ChanServ checkpoints / flags
-	CS_Functions	= 0x00000400,	// Channel & ChanServ functions
-	CS_Modify	= 0x00000800,	// Channel & ChanServ data modification
-	MS_Chatter	= 0x00001000,	// Memo & News messages
-	MS_CheckPoint	= 0x00002000,	// Memo & News checkpoints / flags
-	MS_Functions	= 0x00004000,	// Memo & News functions
-	MS_Modify	= 0x00008000,	// Memo & News data modification
-	OS_Chatter	= 0x00010000,	// OperServ messages
-	OS_CheckPoint	= 0x00020000,	// OperServ checkpoints / flags
-	OS_Functions	= 0x00040000,	// OperServ functions
-	OS_Modify	= 0x00080000,	// OperServ data modification
-	XS_Chatter	= 0x00100000,	// Other Services messages
-	XS_CheckPoint	= 0x00200000,	// Other Services checkpoints / flags
-	XS_Functions	= 0x00400000,	// Other Services functions
-	XS_Modify	= 0x00800000,	// Other Services data modification
-	NET_Chatter	= 0x01000000,	// Service Network messages
-	NET_CheckPoint	= 0x02000000,	// Service Network checkpoints / flags
-	NET_Functions	= 0x04000000,	// Service Network functions
-	NET_Sockets	= 0x08000000,	// Service Network sockets / DCC's
-	BOB_Chatter	= 0x10000000,	// BOB messages
-	BOB_Bind	= 0x20000000,	// BOB Hooks, Binds & Registers
-	BOB_Functions	= 0x40000000,	// BOB functions
-	BOB_External	= 0x80000000	// BOB external input/output
-    };
+public:
+    // For expansion -- 0x4C48
+    enum level_enum {
+	Off		= 0x0000,
+
+	// Config/Stats
+	Stats		= 0x0001,	// Cycle Statistics
+	Source		= 0x0002,	// Config Files
+	Bind		= 0x0004,	// Binding/Registering
+
+	// Code Tracing
+	CheckPoint	= 0x0100,	// CP(()) entries
+	Locking		= 0x0200,	// READ/WRITE/MUTEX
+	Functions	= 0x0800,	// Function Tracing
+
+	// Data Tracing
+	Changing	= 0x0100,	// WHATS being changed
+	Modify		= 0x0200,	// IN / OUT difference
+
+	// Live Tracing
+	Sockets		= 0x1000,	// Inbound Connections
+	Chatter 	= 0x2000,	// All text IN/OUT
+	External	= 0x8000,	// External command/output
+
+	Full		= 0xffff
+	};
+
+private:
+    static unsigned short traces[tt_MAX];
+    static level_enum SLevel;
 
 public:
-    static const long ALL_Functions;
-    enum level_enum { Off = 0,
-    	Stats = 1,
-	Chatter = 1,
-    	Source = 2,
-    	Bind = 2,
-	CheckPoint = 2,
-	Functions = 4,
-    	Locking = 8,
-    	Sockets = 8,
-	External = 8,
-	Modify = 8 };
-
     struct levelname_struct {
 	mstring name;
 	level_enum level;
@@ -210,61 +181,41 @@ public:
     };
     const static struct levelname_struct levelname[];
 
-private:
-
-    level_enum SLevel;
-    map<pair<threadtype_enum,level_enum>,TraceTypes> tmap;
-    typedef pair<threadtype_enum,level_enum> levelpair;
-
-    bool IsOnBig(TraceTypes level)
-	{ return (level & TraceLevel) ? true : false; }
-
-    TraceTypes resolve(level_enum level, threadtype_enum type);
-    TraceTypes resolve(level_enum level, ThreadID *tid);
-    TraceTypes resolve(threadtype_enum type);
-    TraceTypes resolve(ThreadID *tid);
-
-    void TurnUp(TraceTypes param)
-	{ TraceLevel |= param; }
-    void TurnDown(TraceTypes param)
-	{ TraceLevel &= ~param; }
-
-public:
-    Trace();
-    ~Trace();
+    Trace() {};
+    ~Trace() {};
     
-    level_enum ShortLevel(level_enum level) { return (SLevel = level); }
-    level_enum ShortLevel() { return SLevel; }
+    static level_enum ShortLevel(level_enum level) { return (SLevel = level); }
+    static level_enum ShortLevel() { return SLevel; }
 
-    void TurnSet(long param)
-	{ TraceLevel = param; }
+    static bool IsOn(threadtype_enum type, level_enum level)
+	{ return (traces[type] & level) ? true : false; }
+    static void TurnUp(threadtype_enum type, level_enum param)
+	{ traces[type] |= param; }
+    static void TurnDown(threadtype_enum type, level_enum param)
+	{ traces[type] &= ~param; }
+    static void TurnSet(threadtype_enum type, unsigned short param)
+	{ traces[type] = param; }
 
-    bool IsOn(level_enum level, threadtype_enum type)
-	{ return IsOnBig(resolve(level, type)); }
-    bool IsOn(level_enum level, ThreadID *tid)
-	{ return IsOnBig(resolve(level, tid)); }
-    bool IsOn(threadtype_enum type)
-	{ return IsOnBig(resolve(type)); }
-    bool IsOn(ThreadID *tid)
-	{ return IsOnBig(resolve(tid)); }
+    static bool IsOn(threadtype_enum type)
+	{ return IsOn(type, SLevel); }
+    static bool IsOn(ThreadID *tid, level_enum level)
+	{ return IsOn(tid->type(), level); }
+    static bool IsOn(ThreadID *tid)
+	{ return IsOn(tid->type(), SLevel); }
 
-    void TurnUp(level_enum level, threadtype_enum type)
-	{ TurnUp(resolve(level, type)); }
-    void TurnUp(level_enum level, ThreadID *tid)
-	{ TurnUp(resolve(level, tid)); }
-    void TurnUp(threadtype_enum type)
-	{ TurnUp(resolve(type)); }
-    void TurnUp(ThreadID *tid)
-	{ TurnUp(resolve(tid)); }
+    static bool TurnUp(threadtype_enum type)
+	{ TurnUp(type, SLevel); }
+    static void TurnUp(ThreadID *tid, level_enum level)
+	{ TurnUp(tid->type(), level); }
+    static void TurnUp(ThreadID *tid)
+	{ TurnUp(tid->type(), SLevel); }
 
-    void TurnDown(level_enum level, threadtype_enum type)
-	{ TurnDown(resolve(level, type)); }
-    void TurnDown(level_enum level, ThreadID *tid)
-	{ TurnDown(resolve(level, tid)); }
-    void TurnDown(threadtype_enum type)
-	{ TurnDown(resolve(type)); }
-    void TurnDown(ThreadID *tid)
-	{ TurnDown(resolve(tid)); }
+    static bool TurnDown(threadtype_enum type)
+	{ TurnDown(type, SLevel); }
+    static void TurnDown(ThreadID *tid, level_enum level)
+	{ TurnDown(tid->type(), level); }
+    static void TurnDown(ThreadID *tid)
+	{ TurnDown(tid->type(), SLevel); }
 };
 
 extern Trace *TraceObject;

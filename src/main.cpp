@@ -36,15 +36,13 @@ int main(int argc, char **argv)
     try
     {
 #endif
-        Trace internaltrace;
-	TraceObject = &internaltrace;
-#ifdef DEBUG
-	TraceObject->TurnSet(0xffffffff); // Full tracing.
-#else
-	TraceObject->TurnSet(0xffffffff&(~Trace::ALL_Functions)); // Full tracing - functions.
-#endif
 	// todo make it insert itself into the ThreadID data structures.
 	mThread::Attach(tt_MAIN, 1);
+#ifdef DEBUG
+	Trace::TurnSet(tt_MAIN, 0xffff); // Full tracing.
+#else
+	Trace::TurnSet(tt_MAIN, 0xffff&(~Trace::Functions)); // Full tracing - !functions.
+#endif
 
 	Start_Time=Now();
 	int Result;

@@ -17,71 +17,15 @@
 #include "trace.h"
 #include "lockable.h"
 
-const long Trace::ALL_Functions = G_Functions | NS_Functions | CS_Functions | MS_Functions | OS_Functions | XS_Functions | NET_Functions | BOB_Functions;
-
-long Trace::TraceLevel=0;
 mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
-Trace *TraceObject;
-
-Trace::Trace()
-{
-	SLevel = Off;
-
-	tmap[levelpair(tt_MAIN,Off)]		= TT_Off;
-	tmap[levelpair(tt_MAIN,Stats)]		= G_Stats;
-	tmap[levelpair(tt_MAIN,Source)]		= G_Source;
-	tmap[levelpair(tt_MAIN,Functions)]	= G_Functions;
-	tmap[levelpair(tt_MAIN,Locking)]	= G_Locking;
-
-	tmap[levelpair(tt_NickServ,Off)]	= TT_Off;
-	tmap[levelpair(tt_NickServ,Chatter)]	= NS_Chatter;
-	tmap[levelpair(tt_NickServ,CheckPoint)]	= NS_CheckPoint;
-	tmap[levelpair(tt_NickServ,Functions)]	= NS_Functions;
-	tmap[levelpair(tt_NickServ,Modify)]	= NS_Modify;
-
-	tmap[levelpair(tt_ChanServ,Off)]	= TT_Off;
-	tmap[levelpair(tt_ChanServ,Chatter)]	= CS_Chatter;
-	tmap[levelpair(tt_ChanServ,CheckPoint)]	= CS_CheckPoint;
-	tmap[levelpair(tt_ChanServ,Functions)]	= CS_Functions;
-	tmap[levelpair(tt_ChanServ,Modify)]	= CS_Modify;
-
-	tmap[levelpair(tt_MemoServ,Off)]	= TT_Off;
-	tmap[levelpair(tt_MemoServ,Chatter)]	= MS_Chatter;
-	tmap[levelpair(tt_MemoServ,CheckPoint)]	= MS_CheckPoint;
-	tmap[levelpair(tt_MemoServ,Functions)]	= MS_Functions;
-	tmap[levelpair(tt_MemoServ,Modify)]	= MS_Modify;
-
-	tmap[levelpair(tt_OperServ,Off)]	= TT_Off;
-	tmap[levelpair(tt_OperServ,Chatter)]	= OS_Chatter;
-	tmap[levelpair(tt_OperServ,CheckPoint)]	= OS_CheckPoint;
-	tmap[levelpair(tt_OperServ,Functions)]	= OS_Functions;
-	tmap[levelpair(tt_OperServ,Modify)]	= OS_Modify;
-
-	tmap[levelpair(tt_OtherServ,Off)]	= TT_Off;
-	tmap[levelpair(tt_OtherServ,Chatter)]	= XS_Chatter;
-	tmap[levelpair(tt_OtherServ,CheckPoint)]= XS_CheckPoint;
-	tmap[levelpair(tt_OtherServ,Functions)]	= XS_Functions;
-	tmap[levelpair(tt_OtherServ,Modify)]	= XS_Modify;
-
-	tmap[levelpair(tt_ServNet,Off)]		= TT_Off;
-	tmap[levelpair(tt_ServNet,Chatter)]	= NET_Chatter;
-	tmap[levelpair(tt_ServNet,CheckPoint)]	= NET_CheckPoint;
-	tmap[levelpair(tt_ServNet,Functions)]	= NET_Functions;
-	tmap[levelpair(tt_ServNet,Sockets)]	= NET_Sockets;
-
-	tmap[levelpair(tt_BOB,Off)]		= TT_Off;
-	tmap[levelpair(tt_BOB,Chatter)]		= BOB_Chatter;
-	tmap[levelpair(tt_BOB,Bind)]		= BOB_Bind;
-	tmap[levelpair(tt_BOB,Functions)]	= BOB_Functions;
-	tmap[levelpair(tt_BOB,External)]	= BOB_External;
-
-}
-
-Trace::~Trace() {}
+Trace::level_enum Trace::SLevel = Off;
+unsigned short Trace::traces[tt_MAX] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
 //todo change this to a vector< >
 const struct Trace::levelname_struct Trace::levelname[] = {
 	levelname_struct( "OFF", Off ),
+	levelname_struct( "FULL", Full ),
+	levelname_struct( "ALL", Full ),
 	levelname_struct( "STAT*", Stats ),
 	levelname_struct( "SOUR*", Source ),
 	levelname_struct( "SRC*", Source ),
@@ -95,31 +39,15 @@ const struct Trace::levelname_struct Trace::levelname[] = {
 	levelname_struct( "CHE*", CheckPoint ),
 	levelname_struct( "C*P*", CheckPoint ),
 	levelname_struct( "F*NC*", Functions ),
-	levelname_struct( "MOD*", Modify ) };
+	levelname_struct( "MOD*", Modify ),
+	levelname_struct( "CHANG*", Changing )
+	};
 
 
 int levelname_count()
 {
     return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
 }
-
-Trace::TraceTypes Trace::resolve(Trace::level_enum level, threadtype_enum type)
-{ 
-	return tmap[levelpair(type,level)]; 
-}
-Trace::TraceTypes Trace::resolve(Trace::level_enum level, ThreadID *tid)
-{ 
-	return resolve(level, tid->type());
-}
-Trace::TraceTypes Trace::resolve(threadtype_enum type)
-{ 
-	return resolve(SLevel, type);
-}
-Trace::TraceTypes Trace::resolve(ThreadID *tid)
-{ 
-	return resolve(SLevel, tid->type());
-}
-
 
 // ===================================================
 
@@ -175,11 +103,11 @@ void ThreadID::WriteOut(const mstring &message)
 
 // ===================================================
 
-//      \\ function()
+//      \  function()
 T_Functions::T_Functions(const mstring &name)
 {
     ShortLevel(Functions);
-    m_name+=name;
+    m_name=name;
     if (!(tid = mThread::find()))
 	return; // should throw an exception later
     if (IsOn(tid)) {
@@ -189,7 +117,7 @@ T_Functions::T_Functions(const mstring &name)
     tid->indentup();
 }
 
-//      \\ function( (char) T, (int) 5 )
+//      \  function( (char) T, (int) 5 )
 T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     ShortLevel(Functions);
@@ -209,7 +137,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
     tid->indentup();
 }
 
-//      // (char) Y
+//      /  (char) Y
 T_Functions::~T_Functions()
 { 
     ShortLevel(Functions);
