@@ -28,6 +28,10 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.166  2001/05/03 04:40:18  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.165  2001/05/02 02:35:27  prez
 ** Fixed dependancy system, and removed printf's - we no longer coredump on
 ** a 1000 user network.  As a bonus, we actually synd perfectly ;P
@@ -945,7 +949,7 @@ Server_t::Server_t(const mstring& name, const mstring& uplink, const int hops,
       i_Numeric(numeric), i_Uplink(uplink.LowerCase()), i_Hops(hops),
       i_Description(description), i_Ping(0), i_Lag(0), i_Jupe(false)
 {
-    FT("Server::Server", (name, uplink, hops, description, numeric));
+    FT("Server_t::Server_t", (name, uplink, hops, description, numeric));
     DumpE();
 }
 
@@ -1146,21 +1150,6 @@ vector<mstring> Server_t::AllDownlinks() const
     NRET(vector<mstring>, downlinks);
 }
 
-Server_t::~Server_t()
-{
-    NFT("Server_t::~Server_t");
-
-    if (Parent->Shutdown())
-	return;
-
-    // Take my sublinks with me (who will take theirs ...)
-    vector<mstring> Kill = Downlinks();
-    COM(("Destroying %d more servers", Kill.size()));
-    for (unsigned int i=0; i<Kill.size(); i++)
-	Parent->server.RemList(Kill[i]);
-    if (Kill.size() && Parent->server.OurUplink() == i_Name)
-	Parent->server.OurUplink("");
-}
 
 size_t Server_t::Usage() const
 {
@@ -1465,12 +1454,12 @@ Server_t &Server::GetList(const mstring &in) const
 
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void Server::RemList(const mstring &in) throw(E_Server_List)
+void Server::RemList(const mstring &in, bool downlinks) throw(E_Server_List)
 #else
-void Server::RemList(const mstring &in)
+void Server::RemList(const mstring &in, bool downlinks)
 #endif
 {
-    FT("Server::RemList", (in));
+    FT("Server::RemList", (in, downlinks));
 
     WLOCK(("Server", "list"));
     Server::list_t::iterator iter = i_list.find(in.LowerCase());
@@ -1483,12 +1472,41 @@ void Server::RemList(const mstring &in)
 	return;
 #endif
     }
-    WLOCK2(("Server", "list", iter->first));
+
+    vector<mstring> Kill;
+    { WLOCK2(("Server", "list", iter->first));
+    if (downlinks)
+    {
+	// Take my downlinks and all theirs with me
+//	Kill = iter->second->AllDownlinks();
+	Kill = iter->second.AllDownlinks();
+	CP(("Destroying %d more servers", Kill.size()));
+    }
+    // We are the uplink, so notify system we have no uplink!
+//  if (Parent->server.OurUplink() == iter->second->Name())
+    if (Parent->server.OurUplink() == iter->second.Name())
+	OurUplink("");
+
 //  if (iter->second != NULL)
 //  {
 //	delete iter->second;
 //  }
     i_list.erase(iter);
+    }
+
+    for (unsigned int i=0; i<Kill.size(); i++)
+    {
+	iter = i_list.find(Kill[i].LowerCase());
+	if (iter == i_list.end())
+	    continue;
+
+	WLOCK2(("Server", "list", iter->first));
+//	if (iter->second != NULL)
+//	{
+//	    delete iter->second;
+//	}
+	i_list.erase(iter);
+    }    
 }
 
 
@@ -4238,6 +4256,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		{
 		    if (IsList(sourceL))
 		    {
+			{
 			Server_t tmp(params.ExtractWord(1, ": ").LowerCase(),
 			    sourceL,
 			    atoi(params.ExtractWord(2, ": ").LowerCase().c_str()),
@@ -4250,6 +4269,7 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			AddList(&tmp);
 			LOG((LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			    params.ExtractWord(1, ": ").c_str(), sourceL.c_str()));
+			}
 
 			mMessage::CheckDependancies(mMessage::ServerExists, params.ExtractWord(1, ": "));
 			if (proto.Numeric())

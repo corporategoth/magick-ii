@@ -22,6 +22,10 @@ RCSID(mexceptions_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.3  2001/04/05 05:59:50  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -337,6 +341,33 @@ public:
     }
     const E_where where() const
 	{ return i_where; }
+    const E_type type() const
+	{ return i_type; }
+    const char *what() const
+	{ return i_reason; };
+};
+
+class E_Thread : public exception
+{
+public:
+    enum E_type { T_NotProcessing, T_Other };
+
+private:
+    E_type i_type;
+    char i_reason[1024];
+
+public:
+    E_Thread(const E_type type = T_Other, const char *reason = "")
+	: i_type(type)
+    {
+	ACE_OS::strncpy(i_reason, reason, 1024);
+    }
+    E_Thread(const char *reason)
+	: i_type(T_Other)
+    {
+	ACE_OS::strncpy(i_reason, reason, 1024);
+    }
+
     const E_type type() const
 	{ return i_type; }
     const char *what() const

@@ -264,6 +264,8 @@ LOCK_OPEN        =Failed to open %s lock for %s.
 LOCK_ACQUIRE     =Failed to acquire %s lock for %s.
 LOCK_RELEASE     =Failed to release %s lock for %s.
 LOCK_DUP         =Duplicate %s lock %s detected where only 1 allowed!
+THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!
+THREAD_DEAD_HALF =Over half of threads not processing, shutting down!
 EXCEPTION        =Exception thrown on line %d, column %d of %s.
 LOCKED_BIN       =System lock values do not match!  Binary recompile required!
 

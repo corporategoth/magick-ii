@@ -25,6 +25,10 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.67  2001/05/01 14:00:22  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -325,6 +329,8 @@ public:
 				const unsigned long numeric = 0);
     Server_t(const mstring& name, const mstring& uplink, const int hops,
 		const mstring& description, const unsigned long numeric = 0);
+    ~Server_t() {}
+
     void operator=(const Server_t &in);
     bool operator==(const Server_t &in) const
 	{ return (i_Name == in.i_Name); }
@@ -351,8 +357,6 @@ public:
     vector<mstring> Downlinks() const;
     vector<mstring> AllDownlinks() const;
     
-    ~Server_t();
-
     size_t Usage() const;
     void DumpB() const;
     void DumpE() const;
@@ -404,11 +408,11 @@ public:
 #ifdef MAGICK_HAS_EXCEPTIONS
     void AddList(Server_t *in) throw(E_Server_List);
     Server_t &GetList(const mstring &in) const throw(E_Server_List);
-    void RemList(const mstring &in) throw(E_Server_List);
+    void RemList(const mstring &in, bool downlinks = true) throw(E_Server_List);
 #else
     void AddServer(Server_t *in);
     Server_t &GetServer(const mstring &in);
-    void RemServer(const mstring &in);
+    void RemServer(const mstring &in, bool downlinks = true);
 #endif
     list_t::iterator ListBegin() { return i_list.begin(); }
     list_t::iterator ListEnd() { return i_list.end(); }

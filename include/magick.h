@@ -25,6 +25,10 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.157  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.156  2001/05/01 14:00:22  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -447,6 +451,7 @@ public:
 	unsigned int min_threads;
 	unsigned int low_water_mark;
 	unsigned int high_water_mark;
+	unsigned long heartbeat_time;
 	unsigned long msg_seen_time;
 	unsigned long msg_check_time;
     public:
@@ -463,6 +468,7 @@ public:
 	unsigned int Min_Threads()const	{ return min_threads; }
 	unsigned int Low_Water_Mark()const    { return low_water_mark; }
 	unsigned int High_Water_Mark()const    { return high_water_mark; }
+	unsigned long Heartbeat_Time()const	{ return heartbeat_time; }
 	unsigned long MSG_Seen_Time()const    { return msg_seen_time; }
 	unsigned long MSG_Check_Time()const    { return msg_check_time; }
     } config;

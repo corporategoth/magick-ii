@@ -249,6 +249,7 @@ HTM                =Cannot execute command %s, currently in high-traffic mode 
 SIGNAL_LOAD        =Received signal #%d, server configuration file reloaded.
 SIGNAL_SAVE        =Received signal #%d, database save triggered.
 SIGNAL_KILL        =PANIC!  Received signal #%d, Last function was %s, shutting down!
+THREAD_DEAD_HALF   =PANIC!  Over half of threads not processing, shutting down!
 
 ENTLIST_CLEAR      =Value of %s has been cleared.
 ENTLIST_SET        =Value of %s has been set to %s.

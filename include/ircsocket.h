@@ -25,6 +25,10 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.51  2001/05/01 14:00:21  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -198,13 +202,18 @@ typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcConnector;
 
 class EventTask : public ACE_Task<ACE_MT_SYNCH>
 {
+    map<ACE_thread_t,mDateTime> thread_heartbeat;
     mDateTime last_expire;
     mDateTime last_save;
     mDateTime last_check;
     mDateTime last_ping;
     mDateTime last_msgcheck;
+    mDateTime last_heartbeat;
     static void *save_databases(void *in = NULL);
 public:
+    void RemoveThread(ACE_thread_t thr = ACE_Thread::self());
+    void Heartbeat(ACE_thread_t thr = ACE_Thread::self());
+
     void ForceSave();
     void ForcePing();
     mstring SyncTime(const mstring& source = "") const;

@@ -27,6 +27,10 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.69  2001/05/02 04:57:07  prez
 ** Fixed up problems in failing to release locks
 **
@@ -336,6 +340,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
     rlock = NULL;
     wlock = NULL;
     mlock = NULL;
+
 
     if (type == L_Read)
     {
@@ -1049,7 +1054,6 @@ bool mThread::AcquireMapLock()
 	maplock = new mLock_Mutex("SelfToThreadIdMap");
     if (maplock->acquire() < 0)
     {
-printf("Acquiring SelfToThreadIdMap - ERROR!\n"); fflush(stdout);
 	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
 		"MUTEX", "SelfToThreadIdMap"));
 	return false;
@@ -1063,7 +1067,6 @@ bool mThread::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
-printf("Releasing SelfToThreadIdMap - ERROR!\n"); fflush(stdout);
 	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
 		"MUTEX", "SelfToThreadIdMap"));
 	return false;

@@ -27,6 +27,10 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.158  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.157  2001/05/02 02:35:26  prez
 ** Fixed dependancy system, and removed printf's - we no longer coredump on
 ** a 1000 user network.  As a bonus, we actually synd perfectly ;P
@@ -493,14 +497,19 @@ void mMessage::AddDependancies()
 	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
 	AddDepend(UserInChan, params_.ExtractWord(1, ": ").LowerCase() + ":" + source_.LowerCase());
     }
+    else if (msgtype_ == "SERVER")
+    {
+	// Uplink exists
+	AddDepend(ServerNoExists, params_.ExtractWord(1, ": ").LowerCase());
+    }
     else if (msgtype_ == "SJOIN")
     {
 	// ALL nick's mentioned
-	if (source_[0u] == '@' || source_.Contains("."))
+	if (source_[0u] == '@' || source_.Contains(".") || source_.empty())
 	{
 	    for (unsigned int i=1; i <= params_.After(":").WordCount(" "); i++)
 	    {
-		mstring nick(params_.After(":").ExtractWord(i, " "));
+		mstring nick(params_.After(":").ExtractWord(i, " ").LowerCase());
 		if (!nick.empty())
 		{
 		    char c = 0;
@@ -525,25 +534,45 @@ void mMessage::AddDependancies()
 		    }
 		    if (!IsNotNick)
 		    {
-			AddDepend(NickExists, nick.LowerCase());
-			AddDepend(UserNoInChan, params_.ExtractWord(2, ": ").LowerCase() + ":" + nick.LowerCase());
+			AddDepend(NickExists, nick);
+			AddDepend(UserNoInChan, params_.ExtractWord(2, ": ").LowerCase() + ":" + nick);
 		    }
 		}
 	    }
 	}
 	else
 	{
+	    for (unsigned int i=2; i<=params_.WordCount(": "); i++)
+	    {
+		char c = 0;
+		mstring chan = params_.ExtractWord(i, ": ").LowerCase();
+		while (c != chan[0u])
+		{
+		    c = chan[0u];
+		    switch(chan[0u])
+		    {
+		    case '@':
+		    case '%':
+		    case '+':
+		    case '*':
+		    case '~':
+			chan.erase(0, 0);
+			break;
+		    }
+		}
+		AddDepend(UserNoInChan, chan + ":" + source_.LowerCase());
+	    }
 	}
     }
     else if (msgtype_ == "SQUIT")
     {
 	// Uplink exists
-	AddDepend(ServerExists, params_.ExtractWord(1, ": "));
+	AddDepend(ServerExists, params_.ExtractWord(1, ": ").LowerCase());
     }
     else if (msgtype_ == "TOPIC")
     {
 	// Channel exists
-	AddDepend(ChanExists, params_.ExtractWord(1, ": "));
+	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
     }
 
     WLOCK2(("AllDependancies"));
@@ -736,7 +765,17 @@ int mMessage::call()
     if (source_ == " ")
     {
 	if (msgtype_.IsSameAs("SHUTDOWN", false))
+	{
 	    RET(-1);
+	}
+	else if (msgtype_.IsSameAs("SLEEP", false))
+	{
+	    sleep(FromHumanTime(params_) ? FromHumanTime(params_) : 1);
+	}
+	else if (msgtype_.IsSameAs("TEST", false))
+	{
+	    // Call back TestComplete
+	}
 	RET(0);
     }
 
@@ -1025,16 +1064,30 @@ int mBaseTask::svc(void)
     mMessage *msg = NULL;
     int retval = 0;
     
-    while(!Parent->Shutdown() && retval >= 0)
-    {
-	{ MLOCK(("MessageQueue"));
-	msg = dynamic_cast<mMessage *>(message_queue_.dequeue());
-	}
-	if (msg != NULL)
+    try {
+	while(!Parent->Shutdown() && retval >= 0)
 	{
-	    retval = msg->call();
-	    delete msg;
+	    { RLOCK(("Events"));
+	    if (Parent->events != NULL)
+		Parent->events->Heartbeat();
+	    }
+	    { MLOCK(("MessageQueue"));
+	    msg = dynamic_cast<mMessage *>(message_queue_.dequeue());
+	    }
+	    if (msg != NULL)
+	    {
+		retval = msg->call();
+		delete msg;
+	    }
 	}
+    }
+    catch (E_Thread &e)
+    {
+    }
+
+    { RLOCK(("Events"));
+    if (Parent->events != NULL)
+	Parent->events->RemoveThread();
     }
     DRET(retval);
 }
@@ -1151,6 +1204,18 @@ void mBaseTask::i_shutdown()
 {
     NFT("mBaseTask::i_shutdown");
     message_queue_.enqueue(new mMessage(" ", "SHUTDOWN", ""));
+}
+
+void mBaseTask::i_sleep(const mstring &in)
+{
+    NFT("mBaseTask::i_sleep");
+    message_queue_.enqueue(new mMessage(" ", "SLEEP", in));
+}
+
+void mBaseTask::i_test()
+{
+    NFT("mBaseTask::i_test");
+    message_queue_.enqueue(new mMessage(" ", "TEST", ""));
 }
 
 void mBase::push_message(const mstring& message)

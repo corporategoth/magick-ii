@@ -25,6 +25,10 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.60  2001/05/02 02:35:26  prez
 ** Fixed dependancy system, and removed printf's - we no longer coredump on
 ** a 1000 user network.  As a bonus, we actually synd perfectly ;P
@@ -209,10 +213,10 @@ public:
 	int acquire()		{ return acquire_read(); }
 	int tryacquire()		{ return tryacquire_read(); }
 
-	//void *operator new (size_t size)
-	//	{ return mLOCK::memory_area.malloc(sizeof(mLock_Read)); }
-	//void operator delete (void *ptr)
-	//	{ mLOCK::memory_area.free(ptr); }
+	void *operator new (size_t size)
+		{ return mLOCK::memory_area.malloc(sizeof(mLock_Read)); }
+	void operator delete (void *ptr)
+		{ mLOCK::memory_area.free(ptr); }
 };
 
 class mLock_Write : public ACE_RW_Thread_Mutex
@@ -225,23 +229,23 @@ public:
 	int acquire()		{ return acquire_write(); }
 	int tryacquire()		{ return tryacquire_write(); }
 
-	//void *operator new (size_t size)
-	//	{ return mLOCK::memory_area.malloc(sizeof(mLock_Write)); }
-	//void operator delete (void *ptr)
-	//	{ mLOCK::memory_area.free(ptr); }
+	void *operator new (size_t size)
+		{ return mLOCK::memory_area.malloc(sizeof(mLock_Write)); }
+	void operator delete (void *ptr)
+		{ mLOCK::memory_area.free(ptr); }
 };
 
-class mLock_Mutex : public ACE_Thread_Mutex
+class mLock_Mutex : public ACE_Recursive_Thread_Mutex
 {
-	typedef ACE_Thread_Mutex base;
+	typedef ACE_Recursive_Thread_Mutex base;
 public:
 	mLock_Mutex (const char *name = 0)
 		: base(name) {}
 
-	//void *operator new (size_t size)
-	//	{ return mLOCK::memory_area.malloc(sizeof(mLock_Mutex)); }
-	//void operator delete (void *ptr)
-	//	{ mLOCK::memory_area.free(ptr); }
+	void *operator new (size_t size)
+		{ return mLOCK::memory_area.malloc(sizeof(mLock_Mutex)); }
+	void operator delete (void *ptr)
+		{ mLOCK::memory_area.free(ptr); }
 };
 
 /* I hate having to do this ... but *shrug* */

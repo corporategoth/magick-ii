@@ -27,6 +27,10 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.109  2001/05/03 04:40:18  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.108  2001/05/01 14:00:24  prez
 ** Re-vamped locking system, and entire dependancy system.
 ** Will work again (and actually block across threads), however still does not
@@ -334,7 +338,7 @@ void ThreadID::Flush()
 	tid->t_intrace = true;
     list<pair<threadtype_enum, mstring> >::iterator iter;
     list<pair<threadtype_enum, mstring> > ThreadMessageQueue2;
-    vector<mstring> pre_messages;
+    list<mstring> pre_messages;
     { MLOCK(("ThreadMessageQueue"));
     for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end(); iter++)
     {
@@ -353,6 +357,9 @@ void ThreadID::Flush()
 
     if (messages.size() || pre_messages.size())
     {
+	mstring tmp;
+	tmp.Format("OUTPUT FROM THREAD ID %p", this);
+	pre_messages.push_front(tmp);
 	{ MLOCK(("TraceDump", logname()));
  	mFile::Dump(pre_messages, Parent->Services_Dir()+DirSlash+logname(), true, true);
 	mFile::Dump(messages, Parent->Services_Dir()+DirSlash+logname(), true, true);

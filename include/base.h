@@ -25,6 +25,10 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.90  2001/05/02 02:35:26  prez
 ** Fixed dependancy system, and removed printf's - we no longer coredump on
 ** a 1000 user network.  As a bonus, we actually synd perfectly ;P
@@ -265,11 +269,14 @@ public:
     void message(const mstring& message);
     int check_LWM();
     void i_shutdown();
+    void i_sleep(const mstring& time = "1s");
+    void i_test();
 };
 
 class mBase
 {
     friend int mBaseTask::open(void *in);
+    friend class EventTask;
 protected:
     mstring names;		// Names of service (space delimited)
     mstring realname;		// 'Real Name' of service

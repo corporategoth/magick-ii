@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.156  2001/05/03 04:40:17  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.155  2001/05/02 02:35:27  prez
 ** Fixed dependancy system, and removed printf's - we no longer coredump on
 ** a 1000 user network.  As a bonus, we actually synd perfectly ;P
@@ -970,6 +974,20 @@ void *EventTask::save_databases(void *in)
     return NULL;
 }
 
+void EventTask::RemoveThread(ACE_thread_t thr)
+{
+    NFT("EventTask::RemoveThread");
+    WLOCK(("Events", "thread_heartbeat"));
+    thread_heartbeat.erase(thr);
+}
+
+void EventTask::Heartbeat(ACE_thread_t thr)
+{
+    NFT("EventTask::Heartbeat");
+    WLOCK(("Events", "thread_heartbeat"));
+    thread_heartbeat[thr] = mDateTime::CurrentDateTime();
+}
+
 void EventTask::ForceSave()
 {
     NFT("EventTask::ForceSave");
@@ -1022,7 +1040,8 @@ int EventTask::svc(void)
     WLOCK3(("Events", "last_check"));
     WLOCK4(("Events", "last_ping"));
     WLOCK5(("Events", "last_msgcheck"));
-    last_expire = last_save = last_check = last_ping = last_msgcheck = mDateTime::CurrentDateTime();
+    WLOCK6(("Events", "last_heartbeat"));
+    last_expire = last_save = last_check = last_ping = last_msgcheck = last_heartbeat = mDateTime::CurrentDateTime();
     }
     DumpB();
 
@@ -1560,6 +1579,34 @@ int EventTask::svc(void)
 	    }}
 	    for (k=AllIds.begin(); k!=AllIds.end(); k++)
 		delete *k;
+	}}
+
+	{ RLOCK(("Events", "last_heartbeat"));
+	if (last_heartbeat.SecondsSince() > Parent->config.Heartbeat_Time())
+	{
+	    RLOCK(("Events", "thread_heartbeat"));
+	    map<ACE_thread_t,mDateTime>::iterator iter;
+	    size_t dead = 0;
+	    for (iter=thread_heartbeat.begin(); iter!=thread_heartbeat.end(); iter++)
+	    {
+		if (iter->second.SecondsSince() > Parent->config.Heartbeat_Time())
+		{
+		    dead++;
+#if defined(SIGQUIT) && (SIGQUIT != 0)
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/THREAD_DEAD")));
+		    ACE_Thread::kill(iter->first, SIGQUIT);
+#endif
+		}
+	    }
+	    if (dead >= (thread_heartbeat.size() / 2))
+	    {
+		announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/THREAD_DEAD_HALF"));
+		LOG((LM_EMERGENCY, Parent->getLogMessage("SYS_ERRORS/THREAD_DEAD_HALF")));
+	    }
+	    WLOCK(("Events", "last_heartbeat"));
+	    last_heartbeat = mDateTime::CurrentDateTime();
+	    for (i=0; i<thread_heartbeat.size(); i++)
+		mBase::BaseTask.i_test();
 	}}
 
 	{ RLOCK(("Events", "last_ping"));

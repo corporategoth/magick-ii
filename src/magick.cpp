@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.301  2001/05/03 04:40:18  prez
+** Fixed locking mechanism (now use recursive mutexes) ...
+** Also now have a deadlock/nonprocessing detection mechanism.
+**
 ** Revision 1.300  2001/05/02 02:35:27  prez
 ** Fixed dependancy system, and removed printf's - we no longer coredump on
 ** a 1000 user network.  As a bonus, we actually synd perfectly ;P
@@ -2564,6 +2568,11 @@ bool Magick::get_config_values()
     in.Read(ts_Config+"HIGH_WATER_MARK",config.high_water_mark, 15U);
     if (config.high_water_mark < config.low_water_mark)
 	config.high_water_mark = config.low_water_mark;
+    in.Read(ts_Config+"HEARTBEAT_TIME",value_mstring,"15m");
+    if (FromHumanTime(value_mstring))
+	config.heartbeat_time = FromHumanTime(value_mstring);
+    else
+	config.heartbeat_time = FromHumanTime("15m");
     in.Read(ts_Config+"MSG_SEEN_TIME",value_mstring,"30s");
     if (FromHumanTime(value_mstring))
 	config.msg_seen_time = FromHumanTime(value_mstring);
@@ -3057,6 +3066,12 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	LOG((LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SIGNON"), signum));
 	Parent->server.SignOnAll();
 	break;
+
+#if defined(SIGQUIT) && (SIGQUIT != 0)
+    case SIGQUIT:
+	throw(E_Thread(E_Thread::T_NotProcessing));
+	break;
+#endif
 
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
