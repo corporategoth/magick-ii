@@ -163,6 +163,26 @@ SOURCE=.\docs\policy
 SOURCE=.\docs\requirements
 # End Source File
 # End Group
+# Begin Group "lang files"
+
+# PROP Default_Filter ".lng"
+# Begin Source File
+
+SOURCE=.\lang\dark.lng
+# End Source File
+# Begin Source File
+
+SOURCE=.\lang\dutch.lng
+# End Source File
+# Begin Source File
+
+SOURCE=.\lang\english.lng
+# End Source File
+# Begin Source File
+
+SOURCE=.\lang\leet.lng
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\src\base.cpp

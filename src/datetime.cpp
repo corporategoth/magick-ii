@@ -261,7 +261,6 @@ mstring mDateTime::FormatString(const mstring& format)const
 	unsigned int i=0;
 	int count=0;
 	int ampmtype=0;
-	mstring buffer;
 	DecodeDate(Year,Month,Day);
 	DecodeTime(Hour,Min,Sec,MSec);
 	if(format.Find("a/p")!=-1)
@@ -273,7 +272,6 @@ mstring mDateTime::FormatString(const mstring& format)const
 
 	while(i<format.size())
 	{
-	    buffer="";
 		switch(tolower(format[i]))
 		{
 		case 'c':
@@ -289,14 +287,12 @@ mstring mDateTime::FormatString(const mstring& format)const
 			switch(count)
 			{
 			case 1:
-				buffer << Day;
-				Result<<buffer;
+				Result << Day;
 				break;
 			case 2:
 				if(Day<10)
 					Result<<"0";
-				buffer << Day;
-				Result<<buffer;
+				Result<<Day;
 				break;
 			case 3:
 				Result<<ShortDayNames[DayOfWeek()];
@@ -324,14 +320,12 @@ mstring mDateTime::FormatString(const mstring& format)const
 			switch(count)
 			{
 			case 1:
-				buffer << Month;
-				Result<<buffer;
+				Result<<Month;
 				break;
 			case 2:
 				if(Month<10)
 					Result<<"0";
-				buffer << Month;
-				Result<<buffer;
+				Result<<Month;
 				break;
 			case 3:
 				Result<<ShortMonthNames[Month-1];
@@ -353,12 +347,10 @@ mstring mDateTime::FormatString(const mstring& format)const
 			switch(count)
 			{
 			case 2:
-				buffer << Year%100;
-				Result<<buffer;
+				Result<<Year%100;
 				break;
 			case 4:
-				buffer << Year;
-				Result<<buffer;
+				Result<<Year;
 				break;
 			default:
 				wxLogError("mDateTime::FormatString Invalid year format string");
@@ -381,10 +373,9 @@ mstring mDateTime::FormatString(const mstring& format)const
 
 			}
 			if(ampmtype>0)
-				buffer << Hour%12;
+				Result << Hour%12;
 			else
-				buffer << Hour;
-			Result<<buffer;
+				Result << Hour;
 			break;
 		case 'n':
 			if(i+1<format.size()&&tolower(format[i+1])=='n')
@@ -393,8 +384,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 				if(Min<10)
 					Result<<"0";
 			}
-			buffer << Min;
-			Result<<buffer;
+			Result<<Min;
 			break;
 		case 's':
 			if(i+1<format.size()&&tolower(format[i+1])=='s')
@@ -403,8 +393,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 				if(Sec<10)
 					Result<<"0";
 			}
-			buffer << Sec;
-			Result<<buffer;
+			Result<<Sec;
 			break;
 		case 't':
 			if(i+1<format.size()&&tolower(format[i+1])=='t')

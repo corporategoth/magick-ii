@@ -404,8 +404,8 @@ void NetworkServ::execute(const mstring & data)
 	    map<mstring,Chan_Live_t>::iterator chan;
 	    for (chan=Parent->chanserv.live.begin(); chan!=Parent->chanserv.live.end(); chan++)
 	    {
-		SendSVR("322 " + source + " " + chan->first + " " + chan->second.Users() +
-			+ " :" + chan->second.Topic());
+		SendSVR("322 " + source + " " + chan->first + " " + mstring(chan->second.Users()) + 
+		    " :" + chan->second.Topic());
 	    }
 
 	    SendSVR("323 " + source + " :End of /LIST");
