@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/06/11 09:30:21  prez
+** Added propper MaxLine length, no more hard-coded constants.
+**
 ** Revision 1.9  2000/06/09 13:57:00  prez
 ** Added tracing to mconfig
 **
@@ -310,7 +313,8 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
         else if(currline.First('=')>0)
         {
             // new value
-            Result=RootNode.SetKey(currline.Before("="),currline.After("="));
+            Result=RootNode.SetKey(currline.Before("=").Trim(true),
+					currline.After("=").Trim(false));
         }
     }
     RET(Result);

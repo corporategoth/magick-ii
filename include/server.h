@@ -25,6 +25,9 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/06/11 09:30:20  prez
+** Added propper MaxLine length, no more hard-coded constants.
+**
 ** Revision 1.39  2000/06/10 07:01:02  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -88,8 +91,12 @@ static const char *ident_server_h = "@(#) $Id$";
 
 class Protocol
 {
+    // Protocol number
     unsigned int i_Number;
     unsigned int i_NickLen;
+    // Max length of line excluding nickname / comamnd.
+    // ie. reasonable max length (def: 512 - 62 = 450).
+    unsigned int i_MaxLine;
     map<mstring,mstring> tokens;
 
     bool i_Globops;
@@ -119,7 +126,8 @@ class Protocol
      * 
      * 1000 = NICK nick hops signon-time user host server :realname
      * 1001 = NICK nick hops signon-time user host server service :realname
-     * 1002 = NICK nick hops signon-time user host server service host :realname
+     * 1002 = NICK nick hops signon-time user host server service althost :realname
+     * 1003 - NICK nick hops signon-time user host althost server service :realname
      */
     unsigned int i_Signon;
     unsigned int i_Modes; /* Modes per line */
@@ -143,6 +151,7 @@ public:
 
     unsigned int Number()   { return i_Number; }
     unsigned int NickLen()  { return i_NickLen; }
+    unsigned int MaxLine()  { return i_MaxLine; }
     bool Globops()	    { return i_Globops; }
     bool Tokens()	    { return i_Tokens; }
     void Tokens(bool in)    { i_Tokens = in; }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2000/06/11 09:30:21  prez
+** Added propper MaxLine length, no more hard-coded constants.
+**
 ** Revision 1.103  2000/06/11 08:20:12  prez
 ** More minor bug fixes, godda love testers.
 **
@@ -4356,7 +4359,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	    if (Parent->nickserv.IsStored(nick->Sibling(i)) &&
 		Parent->nickserv.stored[nick->Sibling(i).LowerCase()].IsOnline())
 	    {
-		if (output.Len() + nick->Sibling(i).Len() > 450)
+		if (output.Len() + nick->Sibling(i).Len() > Parent->server.proto.MaxLine())
 		{
 		    ::send(mynick, source, Parent->getMessage(source, "NS_INFO/ONLINEAS"),
 						output.c_str());
@@ -4435,7 +4438,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	    (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
 	     Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
 	{
-	    if (output.Len() + iter->second.Name().Len() > 450)
+	    if (output.Len() + iter->second.Name().Len() > Parent->server.proto.MaxLine())
 	    {
 		::send(mynick, source, Parent->getMessage(source, "NS_INFO/COMMITTEES"),
 						output.c_str());

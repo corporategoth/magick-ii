@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/06/11 09:30:20  prez
+** Added propper MaxLine length, no more hard-coded constants.
+**
 ** Revision 1.52  2000/06/06 08:57:56  prez
 ** Finished off logging in backend processes except conver (which I will
 ** leave for now).  Also fixed some minor bugs along the way.
@@ -643,7 +646,7 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
 	  NumDays-=DayTable[i];
 	  i++;
   }
-  day=NumDays-1;
+  day=NumDays;
   month=M;
 
 }

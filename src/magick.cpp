@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.244  2000/06/11 09:30:20  prez
+** Added propper MaxLine length, no more hard-coded constants.
+**
 ** Revision 1.243  2000/06/10 07:01:03  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -1956,7 +1959,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(nickserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > 450)
+		if (isonstr.Len() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -1997,7 +2000,7 @@ bool Magick::get_config_values()
 	{
 	    if (!chanserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > 450)
+		if (isonstr.Len() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2036,7 +2039,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(memoserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > 450)
+		if (isonstr.Len() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2075,7 +2078,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(operserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > 450)
+		if (isonstr.Len() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2114,7 +2117,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(commserv.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > 450)
+		if (isonstr.Len() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);
@@ -2153,7 +2156,7 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(servmsg.names.ExtractWord(i+1, " ")))
 	    {
-		if (isonstr.Len() > 450)
+		if (isonstr.Len() > server.proto.MaxLine())
 		{
 		    server.sraw(((server.proto.Tokens() && server.proto.GetNonToken("ISON") != "") ?
 			server.proto.GetNonToken("ISON") : mstring("ISON")) + " " + isonstr);

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2000/06/11 09:30:21  prez
+** Added propper MaxLine length, no more hard-coded constants.
+**
 ** Revision 1.63  2000/06/11 08:20:12  prez
 ** More minor bug fixes, godda love testers.
 **
@@ -459,13 +462,14 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 			iter->Time().Ago().c_str());
 		unsigned int sentsize;
 		mstring output;
-		for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
+		for (sentsize = 0; sentsize < iter->Text().size();
+				sentsize+=Parent->server.proto.MaxLine())
 		{
-		    if (sentsize + 450 < iter->Text().size())
+		    if (sentsize + Parent->server.proto.MaxLine() < iter->Text().size())
 		    {
 			if (sentsize > 0)
 			    output << "...";
-			output << iter->Text().SubString(sentsize, sentsize+450)
+			output << iter->Text().SubString(sentsize, sentsize+Parent->server.proto.MaxLine())
 			       << "...";
 		    }
 		    else
@@ -517,13 +521,14 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 				j, iter->Sender().c_str(), iter->Sender().c_str(),
 				iter->Time().Ago().c_str());
 			unsigned int sentsize;
-			for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
+			for (sentsize = 0; sentsize < iter->Text().size();
+					sentsize+=Parent->server.proto.MaxLine())
 			{
-			    if (sentsize + 450 < iter->Text().size())
+			    if (sentsize + Parent->server.proto.MaxLine() < iter->Text().size())
 			    {
 				if (sentsize > 0)
 				    output << "...";
-				output << iter->Text().SubString(sentsize, sentsize+450)
+				output << iter->Text().SubString(sentsize, sentsize+Parent->server.proto.MaxLine())
 				    << "...";
 			    }
 			    else
@@ -592,13 +597,14 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 		}
 		unsigned int sentsize;
 		mstring output;
-		for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
+		for (sentsize = 0; sentsize < iter->Text().size();
+				sentsize+=Parent->server.proto.MaxLine())
 		{
-		    if (sentsize + 450 < iter->Text().size())
+		    if (sentsize + Parent->server.proto.MaxLine() < iter->Text().size())
 		    {
 			if (sentsize > 0)
 			    output << "...";
-			output << iter->Text().SubString(sentsize, sentsize+450)
+			output << iter->Text().SubString(sentsize, sentsize+Parent->server.proto.MaxLine())
 			       << "...";
 		    }
 		    else
@@ -658,13 +664,14 @@ void MemoServ::do_Read(mstring mynick, mstring source, mstring params)
 				iter->Time().Ago().c_str());
 			}
 			unsigned int sentsize;
-			for (sentsize = 0; sentsize < iter->Text().size(); sentsize+=450)
+			for (sentsize = 0; sentsize < iter->Text().size();
+					sentsize+=Parent->server.proto.MaxLine())
 			{
-			    if (sentsize + 450 < iter->Text().size())
+			    if (sentsize + Parent->server.proto.MaxLine() < iter->Text().size())
 			    {
 				if (sentsize > 0)
 				    output << "...";
-				output << iter->Text().SubString(sentsize, sentsize+450)
+				output << iter->Text().SubString(sentsize, sentsize+Parent->server.proto.MaxLine())
 				    << "...";
 			    }
 			    else
@@ -1176,11 +1183,12 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 	}
     }
 
-    if (text.size() > 450)
+    if (text.size() > Parent->server.proto.MaxLine())
     {
-	text.Truncate(450);
+	text.Truncate(Parent->server.proto.MaxLine());
 	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/TRUNCATE"),
-		    text.SubString(430, 450).c_str(), mynick.c_str());
+			text.SubString(Parent->server.proto.MaxLine()-20,
+		    	Parent->server.proto.MaxLine()).c_str(), mynick.c_str());
     }
 
     Parent->memoserv.stats.i_Send++;
@@ -1856,11 +1864,12 @@ void MemoServ::do_Continue(mstring mynick, mstring source, mstring params)
 
     mstring text = params.After(" ", 1);
 
-    if (text.size() > 450)
+    if (text.size() > Parent->server.proto.MaxLine())
     {
-	text.Truncate(450);
+	text.Truncate(Parent->server.proto.MaxLine());
 	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/TRUNCATE"),
-		    text.SubString(430, 450).c_str(), mynick.c_str());
+			text.SubString(Parent->server.proto.MaxLine()-20,
+			Parent->server.proto.MaxLine()).c_str(), mynick.c_str());
     }
 
     if (Parent->nickserv.live[source.LowerCase()].InFlight.Memo())
@@ -1953,11 +1962,12 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 	}
     }
 
-    if (text.size() > 450)
+    if (text.size() > Parent->server.proto.MaxLine())
     {
-	text.Truncate(450);
+	text.Truncate(Parent->server.proto.MaxLine());
 	::send(mynick, source, Parent->getMessage(source, "MS_STATUS/TRUNCATE"),
-		    text.SubString(430, 450).c_str(), mynick.c_str());
+			text.SubString(Parent->server.proto.MaxLine()-20,
+			Parent->server.proto.MaxLine()).c_str(), mynick.c_str());
     }
 
     Parent->memoserv.stats.i_File++;

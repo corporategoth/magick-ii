@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.103  2000/06/11 09:30:21  prez
+** Added propper MaxLine length, no more hard-coded constants.
+**
 ** Revision 1.102  2000/06/10 07:01:04  prez
 ** Fixed a bunch of little bugs ...
 **
@@ -171,6 +174,7 @@ Protocol::Protocol()
     NFT("Protocol::Protocol");
     i_Number = 0;
     i_NickLen = 9;
+    i_MaxLine = 450;
     i_Globops = false;
     i_Tokens = false;
     i_SVS = false;
@@ -1937,7 +1941,7 @@ void NetworkServ::execute(const mstring & data)
 	    mstring isonstr = "";
 	    for (unsigned int i=3; i<=data.WordCount(": "); i++)
 	    {
-		if (isonstr.Len() > 450)
+		if (isonstr.Len() > proto.MaxLine())
 		{
 		    sraw("303 " + source + " :" + isonstr);
 		    isonstr = "";
@@ -3277,7 +3281,7 @@ void NetworkServ::execute(const mstring & data)
 		mstring outline = "319 " + source + " " + target + " :";
 		for (iter=chans.begin(); iter!=chans.end(); iter++)
 		{
-		    if (outline.size() + iter->size() > 512)
+		    if (outline.size() + iter->size() > proto.MaxLine())
 		    {
 			sraw(outline);
 			outline = "319 " + source + " " + target + " :";
@@ -3501,7 +3505,7 @@ void NetworkServ::numeric_execute(const mstring & data)
 				if (joinline.Len())
 				    joinline << ",";
 				joinline << iter->first;
-				if (joinline.Len() > 450)
+				if (joinline.Len() > proto.MaxLine())
 				{
 				    JOIN(Parent->chanserv.FirstName(), joinline);
 				    joinline = "";

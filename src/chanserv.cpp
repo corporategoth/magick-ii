@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.176  2000/06/11 09:30:20  prez
+** Added propper MaxLine length, no more hard-coded constants.
+**
 ** Revision 1.175  2000/06/11 08:20:12  prez
 ** More minor bug fixes, godda love testers.
 **
@@ -5615,7 +5618,7 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
     for (i=0; i<chan->Users(); i++)
     {
 	user = Parent->getLname(chan->User(i));
-	if (output.size() + user.Len() > 450)
+	if (output.size() + user.Len() > Parent->server.proto.MaxLine())
 	{
 	    ::send(mynick, source, output);
 	    output = channel + ": ";
@@ -5637,7 +5640,7 @@ void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
     for (i=0; i<chan->Squit(); i++)
     {
 	user = Parent->getLname(chan->Squit(i));
-	if (output.size() + user.Len() > 450)
+	if (output.size() + user.Len() > Parent->server.proto.MaxLine())
 	{
 	    ::send(mynick, source, output);
 	    output = channel + " (SQUIT): ";
