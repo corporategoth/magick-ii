@@ -40,6 +40,8 @@ const int MAGICK_RET_INVALID_SERVICES_DIR   = -20;
 
 class Magick; // fwd reference, leave it here
 const mstring ChanSpec = "#&+";
+inline bool IsChan(mstring input)
+{ return (ChanSpec.Contains(input[0U])); }
 
 class SignalHandler : public ACE_Event_Handler
 {
@@ -263,12 +265,38 @@ public:
 	    commserv.RemCommands();
 	}
 
+	mstring getLname(mstring in)
+	{
+	    if (IsChan(in))
+	    {
+		if (chanserv.IsLive(in))
+		    return chanserv.live[in.LowerCase()].Name();
+	    }
+	    else
+	    {
+		if (nickserv.IsLive(in))
+		    return nickserv.live[in.LowerCase()].Name();
+	    }
+	    return "";
+	}
+
+	mstring getSname(mstring in)
+	{
+	    if (IsChan(in))
+	    {
+		if (chanserv.IsStored(in))
+		    return chanserv.stored[in.LowerCase()].Name();
+	    }
+	    else
+	    {
+		if (nickserv.IsStored(in))
+		    return nickserv.stored[in.LowerCase()].Name();
+	    }
+	    return "";
+	}
 };
 
 extern Magick *Parent;
 extern mDateTime StartTime;
-
-inline bool IsChan(mstring input)
-{ return (ChanSpec.Contains(input[0U])); }
 
 #endif

@@ -39,6 +39,8 @@ void ServMsg::AddCommands()
 	    "*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "GLOB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Global);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "STAT*", Parent->commserv.OPER_Name(), ServMsg::do_Stats);
 }
 
 void ServMsg::RemCommands()
@@ -59,7 +61,7 @@ void ServMsg::execute(const mstring & data)
     mstring source, msgtype, mynick, message, command;
     source  = data.ExtractWord(1, ": ");
     msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = data.ExtractWord(3, ": ");
+    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
     message = data.After(":", 2);
     command = message.Before(" ");
 
@@ -90,8 +92,7 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
     FT("ServMsg::do_BreakDown", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
-    ::send(mynick, source,
-	"SERVER                                         LAG  USERS (OPS).");
+    ::send(mynick, source, Parent->getMessage(source, "MISC/BREAKDOWN_HEAD"));
     mstring out;
     unsigned int users = 0, opers = 0;
 
@@ -184,6 +185,46 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 }
 
 
+void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
+{
+    FT("ServMsg::do_Stats", (mynick, source, params));
+
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NS_LIVE"),
+			Parent->nickserv.live.size(),
+			Parent->nickserv.live.size() * sizeof(Nick_Live_t) / 1024);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CS_LIVE"),
+			Parent->chanserv.live.size(),
+			Parent->chanserv.live.size() * sizeof(Chan_Live_t) / 1024);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NS_STORED"),
+			Parent->nickserv.stored.size(),
+			Parent->nickserv.stored.size() * sizeof(Nick_Stored_t) / 1024);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CS_STORED"),
+			Parent->chanserv.stored.size(),
+			Parent->chanserv.stored.size() * sizeof(Chan_Stored_t) / 1024);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/MEMO"),
+			Parent->memoserv.nick.size(),
+			Parent->memoserv.nick.size() * sizeof(Memo_t) / 1024);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NEWS"),
+			Parent->memoserv.channel.size(),
+			Parent->memoserv.channel.size() * sizeof(News_t) / 1024);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/COMMITTEE"),
+			Parent->commserv.list.size(),
+			Parent->commserv.list.size() * sizeof(Committee) / 1024);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPERSERV"),
+			Parent->operserv.Clone_size() +
+			Parent->operserv.Akill_size() +
+			Parent->operserv.OperDeny_size() +
+			Parent->operserv.Ignore_size(),
+			Parent->operserv.Clone_size() * sizeof(*Parent->operserv.Clone) / 1024 +
+			Parent->operserv.Akill_size() * sizeof(*Parent->operserv.Akill) / 1024 +
+			Parent->operserv.OperDeny_size() * sizeof(*Parent->operserv.OperDeny) / 1024 +
+			Parent->operserv.Ignore_size() * sizeof(*Parent->operserv.Ignore) / 1024);
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OTHER"),
+			Parent->server.ServerList.size(),
+			Parent->server.ServerList.size() * sizeof(Server) / 1024);
+}
+
+
 void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
 {
     FT("ServMsg::do_Global", (mynick, source, params));
@@ -204,8 +245,8 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
 	Parent->server.NOTICE(Parent->servmsg.FirstName(), "$" +
 						    iter->first, text);
     }
-    Parent->server.GLOBOPS(mynick, IRC_Bold + source + IRC_Off +
-				" just sent a message to ALL users.");
+    announce(mynick, Parent->getMessage(source, "MISC/GLOBAL_MSG"),
+				source.c_str());
 }
 
 

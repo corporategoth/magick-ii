@@ -591,7 +591,7 @@ void OperServ::execute(const mstring & data)
     mstring source, msgtype, mynick, message, command;
     source  = data.ExtractWord(1, ": ");
     msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = data.ExtractWord(3, ": ");
+    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
     message = data.After(":", 2);
     command = message.ExtractWord(1, " ").UpperCase();
 
@@ -668,7 +668,8 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 	}
 	else
 	{
-	    ::send(mynick, source, mstring("Invalid thread type \"") + ttype + mstring("\" is not valid."));
+	    ::send(mynick, source, Parent->getMessage(source, "OS_STATUS/INVALID_THREAD"),
+ 							ttype.c_str());
 	    return;
 	}
     }
@@ -735,8 +736,8 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		    }
 		}
 		if (j>=Trace::levelname.size())
-		    ::send(mynick, source, mstring("Trace level \"") + levels[i] +
-		        mstring("\" is not valid, ignored."));
+		    ::send(mynick, source, Paren->getMessage(soruce, "OS_STATUS/INVALID_LEVEL"),
+								levels[i].c_str());
 	    }
 	}
     }
@@ -769,8 +770,8 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		::send(mynick, source, mstring("Trace level \"") + levels[i] +
-		    mstring("\" is not valid, ignored."));
+		::send(mynick, source, Parent->getMessage(source, "OS_STATUS/INVALID_LEVEL"),
+								levels[i].c_str());
 	}
     }
     else if (action == "DOWN")
@@ -802,8 +803,8 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
 		}
 	    }
 	    if (j>=Trace::levelname.size())
-		::send(mynick, source, mstring("Trace level \"") + levels[i] +
-		    mstring("\" is not valid, ignored."));
+		::send(mynick, source, Parent->getMessage(source, "OS_STATUS/INVALID_LEVEL"),
+								levels[i].c_str());
 	}
     }
     else if (action == "VIEW" || action == "LIST")
@@ -812,7 +813,8 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	::send(mynick, source, "Incorrect TRACE option.");
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+			(message + action).c_str(), mynick.c_str(), message.c_str());
 	return;
     }
 

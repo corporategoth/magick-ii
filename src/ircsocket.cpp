@@ -39,7 +39,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     int recvResult;
     memset(data,0,513);
     recvResult=peer().recv(data,512);
-    if(recvResult==0 || Parent->Shutdown())
+    if(recvResult<=0 || Parent->Shutdown())
     {
 	// sleep and then reconnect
 	CP(("No data, scheduling reconnect, then closing down"));
@@ -50,6 +50,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     }
     // possibly mstring(data,0,recvResult); rather than mstring(data)
     // depends on null terminators etc.
+
     mstring data2 = flack + data;
     flack = "";
     // if(recvResult==-1) major problem.
@@ -63,12 +64,14 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	for(int i=1;i<data2.WordCount("\n\r");i++)
 	    if(data2.ExtractWord(i,"\n\r")!="")
 		mBase::push_message(data2.ExtractWord(i,"\n\r"));
+
 	if (flack == "")
 	    mBase::push_message(data2.ExtractWord(data2.WordCount("\n\r"),"\n\r"));
 
     }
     else
         flack = data2;
+
 
     RET(0);
 }

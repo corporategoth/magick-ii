@@ -100,6 +100,8 @@ ONCOMMITTEE        =You may only perform %s on a member of the %s committee.
 NOTONCOMMITTEE     =You may not perform %s on a member of the %s committee.
 ONPRIVCOMMITTEE    =You may only perform %s on a member of the privilaged committees.
 NOTONPRIVCOMMITTEE =You may not perform %s on a member of the privilaged committees.
+ONDYNAMIC          =You may only perform %s on a dynamic committee.
+NOTONDYNAMIC       =You may not perform %s on a dynamic committee.
 NEED_NICK_IDENT    =You must identify for %s.  Type /msg %s IDENTIFY <password> then try again.
 NEED_CHAN_IDENT    =You must identify for %s.  Type /msg %s IDENTIFY %s <password> then try again.
 COMPLEX_PASS       =Please choose a more complex password.
@@ -109,23 +111,44 @@ IGNORE_TRIGGER     =You have triggered services IGNORE (%d messages in %s).
 TEMP_IGNORE        =This is your %s ignore (of a maximum %d).  Services will not respond for %s.
 PERM_IGNORE        =You have been ignored the maximum %d times.  Services will no longer respond.
 PROTECTED          =This nickname has KILL protection enabled.  If you do not IDENTIFY, you will be killed.
+DEFCOMMITTEE       =Default committees may NOT be modified.
+
+[MISC]
 KILL_PASS_FAIL     =Too many password failures
 KILL_GHOST         =GHOST command used
 KILL_RECOVER       =RECOVER command used
 KILL_OPERDENY      =Tried to /OPER when DENIED
-
-[ANNOUNCE]
 NICK_GETPASS       =%s just performed a GETPASS on nickname %s (%s).
 CHAN_GETPASS       =%s just performed a GETPASS on channel %s (%s).
+GLOBAL_MSG         =%s just sent a message to ALL users.
+FLOOD_TEMP         =%s is FLOODING services.  Placed on temporary ignore.
+FLOOD_PERM         =%s is FLOODING services.  Placed on perminant ignore.
+BREAKDOWN_HEAD     =SERVER                                         LAG  USERS (OPS)
+ON                 =ON
+OFF                =OFF
+
+[STATS]
+NS_LIVE            =Live Nicknames      %5d (%dkb)
+CS_LIVE            =Live Channels       %5d (%dkb)
+NS_STORED          =Stored Nicknames    %5d (%dkb)
+CS_STORED          =Stored Channels     %5d (%dkb)
+MEMO               =User Memos          %5d (%dkb)
+NEWS               =News Articles       %5d (%dkb)
+COMMITTEE          =Committees          %5d (%dkb)
+OPERSERV           =OperServ Lists      %5d (%dkb)
+OTHER              =Other               %5d (%dkb)
 
 [LIST]
-LASTMOD            =\    Last modified %s ago by %s.
+LASTMOD            =Last modified %s ago by %s.
 MAXLIST            =You may only list up to %d entries at once.
+NICK_LIST          =Displaying nicknames matching %s:
+CHAN_LIST          =Displaying channels matching %s:
 DISPLAYED          =%d of %d entries displayed.
 
 DISPLAY            =Displaying all entries on %s list:
-DISPLAY_MATCH      =Displaying entries matching %s on %s list:
+DISPLAY_MATCH      =Displaying entries matching %s on %s list:
 ADD                =Added entry %s to %s list.
+ADD_NUMBER         =Added entry #%d to %s list.
 ADD_LEVEL          =Added entry %s to %s list at level %d.
 ADD_TIME           =Added entry %s to %s list for %s.
 CHANGE_LEVEL       =Changed entry %s on %s list to level %d.
@@ -135,11 +158,13 @@ DEL_MATCH          =Deleted %d entries matching %s from %s list.
 DEL_NUMBER         =Deleted entry #%s from %s list.
 EXISTS             =Entry %s already exists or is inclusive on %s list.
 NOTEXISTS          =No entries matching %s on %s list.
+NOTEXISTS_NUMBER   =No entry #%d exists on %s list.
 EMPTY              =No entries in %s list.
 
 DISPLAY2           =Displaying all entries on %s %s list:
 DISPLAY2_MATCH     =Displaying entries matching %s on %s %s list:
 ADD2               =Added entry %s to %s %s list.
+ADD2_NUMBER        =Added entry #%d to %s %s list.
 ADD2_LEVEL         =Added entry %s to %s %s list at level %d.
 ADD2_TIME          =Added entry %s to %s %s list for %s.
 CHANGE2_LEVEL      =Changed entry %s on %s %s list to level %d.
@@ -149,6 +174,7 @@ DEL2_MATCH         =Deleted %d entries matching %s from %s %s list.
 DEL2_NUMBER        =Deleted entry #%s from %s %s list.
 EXISTS2            =Entry %s already exists or is inclusive on %s %s list.
 NOTEXISTS2         =No entries matching %s on %s %s list.
+NOTEXISTS2_NUMBER  =No entry #%d exists on %s %s list.
 EMPTY2             =No entries in %s %s list.
 
 ACCESS             =access
@@ -156,9 +182,9 @@ IGNORE             =memo ignore
 LEVEL              =access level
 AKICK              =automatic kick
 GREET              =channel greeting
-JOINMSG            =on-join message
+JOINMSG            =on-join messages
 MEMBER             =member
-MESSAGES           =signon message
+MESSAGES           =signon messages
 CLONE              =clone override
 AKILL              =automatic kill
 OPERDENY           =IRC operator deny
@@ -250,8 +276,6 @@ NOMEMO             =Denying Memos
 PRIVATE            =Private
 PRIVMSG            =PRIVMSG
 LANGUAGE           =Language
-ON                 =ON
-OFF                =OFF
 
 ;
 ; This section contains the output used at the end of SUCCESSFULL
@@ -301,4 +325,50 @@ ISNOTSTORED        =Channel %s is not registered.
 
 [CS_COMMAND]
 IDENTIFIED         =Password accepted - you are now identified as founder of %s.
+
+[COMMSERV]
+ISSTORED           =Committee %s already exists.
+ISNOTSTORED        =Committee %s does not exist.
+NOTMODIFY          =Committee %s may not be modified online.
+MULTI_HEAD         =Committee %s has more than one head and cannot be re-assigned.
+MEMBER             =You are on the %s committee.
+NOTMEMBER          =You are not on the %s committee.
+HEAD               =You are head of the %s committee.
+NOTHEAD            =You are not head of the %s committee.
+OTH_MEMBER         =%s is on the %s committee.
+OTH_NOTMEMBER      =%s is not on the %s committee.
+OTH_HEAD           =%s is head of the %s committee.
+OTH_NOTHEAD        =%s is not head of the %s committee.
+NEW                =Committee %s has been created with head %s.
+KILL               =Committee %s has been deleted.
+MEMO               =Memo sent to all members of the %s committee.
+SET_TO             =%s for committee %s has been set to %s.
+DEFUNCT            =DEFUNCT
+
+[COMMSERV_INFO]
+DESCRIPTION        =%s is %s
+HEADCOM            =\    Head: %s
+HEAD               =\    Head: %s
+EMAIL              =\  E-Mail: %s
+URL                =WWW Page: %s
+STATS              =\   Stats: %s
+OPTIONS            =\ Options: %s
+MEMBERS            =members
+MESSAGES           =messages
+SET_HEAD           =Head
+SET_EMAIL          =E-Mail address
+SET_URL            =WWW Page
+SET_SECURE         =Secure
+SET_PRIVATE        =Private
+SET_OPENMEMOS      =Open Memos
+
+
+[OS_STATUS]
+INVALID_THREAD     =Thread type %s is not valid.
+INVALID_LEVEL      =Trace level %s is not valid (ignored).
+
+[OS_SETTINGS]
+
+
+[OS_COMMAND]
 

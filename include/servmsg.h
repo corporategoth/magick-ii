@@ -41,6 +41,7 @@ public:
     static void do_BreakDown(mstring mynick, mstring source, mstring params);
     static void do_BreakDown2(mstring mynick, mstring source, mstring previndent, mstring server);
     static void do_Global(mstring mynick, mstring source, mstring params);
+    static void do_Stats(mstring mynick, mstring source, mstring params);
 };
 
 #endif

@@ -164,7 +164,7 @@ void MemoServ::execute(const mstring & data)
     mstring source, msgtype, mynick, message, command;
     source  = data.ExtractWord(1, ": ");
     msgtype = data.ExtractWord(2, ": ").UpperCase();
-    mynick  = data.ExtractWord(3, ": ");
+    mynick  = Parent->getLname(data.ExtractWord(3, ": "));
     message = data.After(":", 2);
     command = message.Before(" ");
 
