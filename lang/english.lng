@@ -36,9 +36,6 @@
 ; purposes, from making it look prettier on IRC, to replacing
 ; the codes with a value direct from Magick.  There are three
 ; tables listed below which outline the codes and their meanings.
-; All lines in this file starting with ';' are comments.  If your
-; response string has leading spaces, you MUST put a '\' in front
-; of the first space, else leading spaces are stripped.
 ;
 ; In each string there are (or can be) $ replacement tokens,
 ; where the number after the $ is the paramater to replace
@@ -50,9 +47,13 @@
 ; $0 is ignored).  You cannot change the format of a token.
 ;
 ; The IRC beautifying codes are generally accepted codes that
-; have certain functions on ALL IRC clients.  The codes listed
-; are all 'control' codes, meaning you hold control then push
-; the key listed to insert the code.
+; have certain functions on ALL IRC clients.  Each of these
+; codes in their native forms are 'control' codes, meaning you
+; must hold control and hit the key to insert them (this is
+; represented as ^code, so for example CTRL+C = ^C).  While
+; you can still do that in this file, we also offer a method
+; for inserting these codes by putting a '\' (backslash) in
+; front of the code letter.
 ;
 ; The mIRC colour codes are here for convenience, but it is NOT
 ; recommended you use them, as there are a lot of IRC clients
@@ -390,7 +391,7 @@ ADD_LEVEL          =Added entry \b$1\b to $2 list at $3.
 ADD_TIME           =Added entry \b$1\b to $2 list for $3.
 CHANGE_LEVEL       =Changed entry \b$1\b on $2 list to level $3.
 CHANGE_TIME        =Changed entry \b$1\b on $2 list to $3.
-CHANGE_ALL         =Changed ALL entries on $1.
+CHANGE_ALL         =Changed ALL entries on $1 list.
 DEL                =Deleted entry \b$1\b from $2 list.
 DEL_MATCH          =Deleted $1 entries matching \b$2\b from $3 list.
 DEL_NUMBER         =Deleted entry \b#$1\b from $2 list.
@@ -407,7 +408,7 @@ ADD2_LEVEL         =Added entry \b$1\b to $2 $3 list at level $4.
 ADD2_TIME          =Added entry \b$1\b to $2 $3 list for $4.
 CHANGE2_LEVEL      =Changed entry \b$1\b on $2 $3 list to level $4.
 CHANGE2_TIME       =Changed entry \b$1\b on $2 $3 list to $4.
-CHANGE2_ALL        =Changed ALL entries on $1 $2.
+CHANGE2_ALL        =Changed ALL entries on $1 $2 list.
 DEL2               =Deleted entry \b$1\b from $2 $3 list.
 DEL2_MATCH         =Deleted $1 entries matching \b$2\b from $3 $4 list.
 DEL2_NUMBER        =Deleted entry \b#$1\b from $2 $3 list.
