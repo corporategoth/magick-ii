@@ -40,8 +40,6 @@ mstring threadname[tt_MAX] =
 {
 "LOST", "MAIN", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE"};
 
-const char *strNonC__Exception = "NON-C++ EXCEPTION";
-
 unsigned short makehex(const mstring & SLevel)
 {
     BTCB();
@@ -571,7 +569,7 @@ void T_CheckPoint::common(const mstring & input)
 
 //      ** file:line: details
 
-T_Exception::T_Exception(const char *file, const int line, const char *what)
+T_Exception::T_Exception(const char *file, const int line, const char *type, const char *what)
 {
     BTCB();
     ThreadID *tid = mThread::find();
@@ -582,7 +580,14 @@ T_Exception::T_Exception(const char *file, const int line, const char *what)
     {
 	mstring out;
 
-	out << "!! " << file << ":" << line << ": " << what;
+	out << "!! " << file << ":" << line << ": ";
+	if (type != NULL)
+	    out << "(" << type << ") ";
+	if (what != NULL)
+	    out << what;
+	else
+	    out << "NON-C++ EXCEPTION";
+
 	tid->WriteOut(out);
     }
     ETCB();

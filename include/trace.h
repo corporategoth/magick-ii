@@ -255,15 +255,13 @@ void LOG2(ACE_Log_Priority type, const mstring & msg);
 // In or Out chatter -- CH(enum, "...");
 #define CH(x,y) do { T_Chatter __ch(x,y); } while (0)
 
-extern const char *strNonC__Exception;
-
 // Exception catching ...
 #define BTCB() try {
 #define ETCB() } catch(exception &E) { \
-		T_Exception __tcb(__FILE__, __LINE__, E.what()); \
+		T_Exception __tcb(__FILE__, __LINE__, typeid(E).name(), E.what()); \
                 throw; \
         } catch(...) { \
-		T_Exception __tcb(__FILE__, __LINE__, strNonC__Exception); \
+		T_Exception __tcb(__FILE__, __LINE__, NULL, NULL); \
                 throw; \
         }
 
@@ -456,7 +454,7 @@ public:
 class T_Exception : public Trace
 {
 public:
-    T_Exception(const char *file, const int line, const char *what);
+    T_Exception(const char *file, const int line, const char *type, const char *what);
 
     ~T_Exception()
     {
