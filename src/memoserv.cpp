@@ -589,7 +589,7 @@ MemoServ::nick_memo_t & MemoServ::GetNick(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound, in.c_str()));
 #else
-	NLOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Memo", "Nick", "Get", "NotFound", in));
+	NLOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Memo", "Nick", "Get", "NotFound", in));
 	NRET(MemoServ::nick_memo_t &, GLOB_nick_memo_t);
 #endif
     }
@@ -598,7 +598,7 @@ MemoServ::nick_memo_t & MemoServ::GetNick(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Memo", "Nick", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Memo", "Nick", "Get", "Blank", in));
 	NRET(MemoServ::nick_memo_t &, GLOB_nick_memo_t);
 #endif
     }
@@ -629,7 +629,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_NotFound, in.c_str(), num));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "NotFound", in, num));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "NotFound", in, num));
 	NRET(Memo_t &, GLOB_Memo_t);
 #endif
     }
@@ -638,7 +638,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const
      * #ifdef MAGICK_HAS_EXCEPTIONS
      * throw(E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Invalid, in.c_str(), num))
      * #else
-     * LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "Invalid", in, num));
+     * LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "Invalid", in, num));
      * NRET(Memo_t &, GLOB_Memo_t);
      * #endif
      * }
@@ -648,7 +648,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Nick(E_MemoServ_Nick::W_Get, E_MemoServ_Nick::T_Blank, in.c_str(), num));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "Blank", in, num));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("Memo", "NickMemo", "Get", "Blank", in, num));
 	NRET(Memo_t &, GLOB_Memo_t);
 #endif
     }
@@ -887,7 +887,7 @@ MemoServ::channel_news_t & MemoServ::GetChannel(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("News", "Channel", "Get", "NotFound", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("News", "Channel", "Get", "NotFound", in));
 	NRET(MemoServ::channel_news_t &, GLOB_channel_news_t);
 #endif
     }
@@ -896,7 +896,7 @@ MemoServ::channel_news_t & MemoServ::GetChannel(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("News", "Channel", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("News", "Channel", "Get", "Blank", in));
 	NRET(MemoServ::channel_news_t &, GLOB_channel_news_t);
 #endif
     }
@@ -927,7 +927,7 @@ News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_NotFound, in.c_str(), num));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "NotFound", in, num));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "NotFound", in, num));
 	NRET(News_t &, GLOB_News_t);
 #endif
     }
@@ -936,7 +936,7 @@ News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const
      * #ifdef MAGICK_HAS_EXCEPTIONS
      * throw(E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Invalid, in.c_str(), num))
      * #else
-     * LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "Invalid", in, num));
+     * LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "Invalid", in, num));
      * NRET(News_t &, GLOB_News_t);
      * #endif
      * }
@@ -946,7 +946,7 @@ News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_MemoServ_Channel(E_MemoServ_Channel::W_Get, E_MemoServ_Channel::T_Blank, in.c_str(), num));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "Blank", in, num));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC2", ("News", "ChannelNews", "Get", "Blank", in, num));
 	NRET(News_t &, GLOB_News_t);
 #endif
     }

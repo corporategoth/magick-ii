@@ -1232,7 +1232,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_Server_List(E_Server_List::W_Get, E_Server_List::T_NotFound, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "NotFound", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "NotFound", in));
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }
@@ -1241,7 +1241,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_Server_List(E_Server_List::W_Get, E_Server_List::T_Invalid, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "Invalid", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "Invalid", in));
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }
@@ -1250,7 +1250,7 @@ map_entry < Server_t > Server::GetList(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_Server_List(E_Server_List::W_Get, E_Server_List::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Server", "List", "Get", "Blank", in));
 	NRET(Server_t &, GLOB_Server_t);
 #endif
     }

@@ -551,7 +551,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_NotFound, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "NotFound", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "NotFound", in));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
 #endif
     }
@@ -560,7 +560,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Invalid, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "Invalid", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "Invalid", in));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
 #endif
     }
@@ -569,7 +569,7 @@ map_entry < Chan_Stored_t > ChanServ::GetStored(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_ChanServ_Stored(E_ChanServ_Stored::W_Get, E_ChanServ_Stored::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Chan", "Stored", "Get", "Blank", in));
 	NRET(Chan_Stored_t &, GLOB_Chan_Stored_t);
 #endif
     }
@@ -675,7 +675,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_NotFound, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "NotFound", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "NotFound", in));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
 #endif
     }
@@ -684,7 +684,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Invalid, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "Invalid", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "Invalid", in));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
 #endif
     }
@@ -693,7 +693,7 @@ map_entry < Chan_Live_t > ChanServ::GetLive(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_ChanServ_Live(E_ChanServ_Live::W_Get, E_ChanServ_Live::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Chan", "Live", "Get", "Blank", in));
 	NRET(Chan_Live_t &, GLOB_Chan_Live_t);
 #endif
     }

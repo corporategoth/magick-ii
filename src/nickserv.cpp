@@ -430,7 +430,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_NotFound, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "NotFound", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "NotFound", in));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
 #endif
     }
@@ -439,7 +439,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Invalid, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "Invalid", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "Invalid", in));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
 #endif
     }
@@ -448,7 +448,7 @@ map_entry < Nick_Stored_t > NickServ::GetStored(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_NickServ_Stored(E_NickServ_Stored::W_Get, E_NickServ_Stored::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Stored", "Get", "Blank", in));
 	NRET(Nick_Stored_t &, GLOB_Nick_Stored_t);
 #endif
     }
@@ -564,7 +564,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_NotFound, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "NotFound", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "NotFound", in));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
 #endif
     }
@@ -573,7 +573,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Invalid, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "Invalid", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "Invalid", in));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
 #endif
     }
@@ -582,7 +582,7 @@ map_entry < Nick_Live_t > NickServ::GetLive(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_NickServ_Live(E_NickServ_Live::W_Get, E_NickServ_Live::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Live", "Get", "Blank", in));
 	RET(Nick_Live_t &, GLOB_Nick_Live_t);
 #endif
     }
@@ -684,7 +684,7 @@ const mDateTime &NickServ::GetRecovered(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_NotFound, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Recovered", "Get", "NotFound", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Recovered", "Get", "NotFound", in));
 	RET(mDateTime &, GLOB_mDateTime);
 #endif
     }
@@ -693,7 +693,7 @@ const mDateTime &NickServ::GetRecovered(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_NickServ_Recovered(E_NickServ_Recovered::W_Get, E_NickServ_Recovered::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Nick", "Recovered", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Nick", "Recovered", "Get", "Blank", in));
 	RET(mDateTime &, GLOB_mDateTime);
 #endif
     }

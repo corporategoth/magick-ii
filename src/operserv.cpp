@@ -1681,7 +1681,7 @@ void OperServ::do_Shutdown(const mstring & mynick, const mstring & source, const
 
     NSEND(mynick, source, "OS_COMMAND/SHUTDOWN");
     ANNOUNCE(mynick, "MISC/SHUTDOWN", (source, reason));
-    LOG(LM_CRITICAL, "OPERSERV/SHUTDOWN", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), reason));
+    LOG(LM_NOTICE, "OPERSERV/SHUTDOWN", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), reason));
     Magick::instance().Shutdown(true);
     Magick::instance().Die();
     ETCB();
@@ -1703,7 +1703,7 @@ void OperServ::do_Restart(const mstring & mynick, const mstring & source, const 
 
     NSEND(mynick, source, "OS_COMMAND/RESTART");
     ANNOUNCE(mynick, "MISC/RESTART", (source, reason));
-    LOG(LM_CRITICAL, "OPERSERV/RESTART", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), reason));
+    LOG(LM_NOTICE, "OPERSERV/RESTART", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), reason));
     Magick::instance().Die();
     ETCB();
 }

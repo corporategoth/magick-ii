@@ -688,7 +688,7 @@ void IrcSvcHandler::enqueue(mMessage * mm)
 	    {
 		if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance(), THR_NEW_LWP | THR_DETACHED) < 0)
 		{
-		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
+		    NLOG(LM_CRITICAL, "EVENT/NEW_THREAD_FAIL");
 		}
 		else
 		{
@@ -936,7 +936,7 @@ int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 		if (iter != threads.end())
 		{
 		    if (iter->second.first != H_Main)
-			LOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD", (names[iter->second.first]));
+			LOG(LM_ALERT, "SYS_ERRORS/THREAD_DEAD", (names[iter->second.first]));
 		    switch (iter->second.first)
 		    {
 		    case H_Worker:
@@ -1911,7 +1911,7 @@ int EventTask::svc(void)
 		if (tm->spawn(save_databases, reinterpret_cast < void * > (&Magick::instance()), THR_NEW_LWP | THR_DETACHED) <
 		    0)
 		{
-		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
+		    NLOG(LM_CRITICAL, "EVENT/NEW_THREAD_FAIL");
 		}
 		else
 #endif

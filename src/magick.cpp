@@ -212,7 +212,7 @@ void Magick::init()
     c = ACE_OS::getcwd(buf, 1024);
     if (c == NULL && errno)
     {
-	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", ("getcwd", ".", errno, strerror(errno)));
+	LOG(LM_CRITICAL, "SYS_ERRORS/DIROPERROR", ("getcwd", ".", errno, strerror(errno)));
 	return;
     }
     else
@@ -246,7 +246,7 @@ int Magick::Init()
     BTCB();
     if (CurrentState != Constructed)
     {
-	LOG(LM_ERROR, "ERROR/SEQUENCE", (Initialized, CurrentState));
+	LOG(LM_ALERT, "ERROR/SEQUENCE", (Initialized, CurrentState));
 	return MAGICK_RET_STATE;
     }
 
@@ -404,7 +404,7 @@ int Magick::Start()
     NFT("Magick::Start");
     if (CurrentState != Initialized && CurrentState != Stopped)
     {
-	LOG(LM_ERROR, "ERROR/SEQUENCE", (Started, CurrentState));
+	LOG(LM_ALERT, "ERROR/SEQUENCE", (Started, CurrentState));
 	RET(MAGICK_RET_STATE);
     }
 
@@ -449,7 +449,7 @@ int Magick::Start()
     Result = ACE_OS::getuid();
     if (Result == 0)
     {
-	NLOG(LM_ALERT, "SYS_ERRORS/RUN_AS_ROOT");
+	NLOG(LM_WARNING, "SYS_ERRORS/RUN_AS_ROOT");
     }
 
     // Need to shut down, it wont be carried over fork.
@@ -614,7 +614,7 @@ int Magick::Run()
     NFT("Magick::Run");
     if (CurrentState != Started)
     {
-	LOG(LM_ERROR, "ERROR/SEQUENCE", (Running, CurrentState));
+	LOG(LM_ALERT, "ERROR/SEQUENCE", (Running, CurrentState));
 	RET(MAGICK_RET_STATE);
     }
 
@@ -669,7 +669,7 @@ int Magick::Stop()
     NFT("Magick::Stop");
     if (CurrentState != Started && CurrentState != Running && CurrentState != RunCompleted)
     {
-	LOG(LM_ERROR, "ERROR/SEQUENCE", (Stopped, CurrentState));
+	LOG(LM_ALERT, "ERROR/SEQUENCE", (Stopped, CurrentState));
 	RET(MAGICK_RET_STATE);
     }
 
@@ -807,7 +807,7 @@ int Magick::Finish()
 
     if (CurrentState != Initialized && CurrentState != Stopped)
     {
-	LOG(LM_ERROR, "ERROR/SEQUENCE", (Finished, CurrentState));
+	LOG(LM_ALERT, "ERROR/SEQUENCE", (Finished, CurrentState));
 	RET(MAGICK_RET_STATE);
     }
 
@@ -3607,10 +3607,9 @@ pair < mstring, mstring > Magick::GetKeys() const
 	    keyfile.Read(tmp, MAX_KEYLEN);
 	    mCRYPT(tmp, key2, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 0);
 	    retval = pair < mstring, mstring > (key1, key2);
-	    fflush(stdout);
 	}
 	else
-	    LOG(LM_CRITICAL, "ERROR/KEY_CORRUPT", (files.KeyFile()));
+	    LOG(LM_ERROR, "ERROR/KEY_CORRUPT", (files.KeyFile()));
     }
 #endif
     NRET(pair < mstring_mstring >, retval);
@@ -3786,7 +3785,7 @@ void Magick::save_databases()
 	    if (zs != NULL && zs->Validate())
 		ls = zs;
 	    else
-		NLOG(LM_ALERT, "SYS_ERRORS/STAGE_FAIL");
+		NLOG(LM_ERROR, "SYS_ERRORS/STAGE_FAIL");
 	}
 
 	if (files.Encryption())
@@ -3798,7 +3797,7 @@ void Magick::save_databases()
 		if (cs != NULL && cs->Validate())
 		    ls = cs;
 		else
-		    NLOG(LM_ALERT, "SYS_ERRORS/STAGE_FAIL");
+		    NLOG(LM_ERROR, "SYS_ERRORS/STAGE_FAIL");
 	    }
 	}
 
@@ -3872,7 +3871,7 @@ void Magick::load_databases()
 		if (cs != NULL && cs->Validate())
 		    ls = cs;
 		else
-		    NLOG(LM_ALERT, "SYS_ERRORS/STAGE_FAIL");
+		    NLOG(LM_ERROR, "SYS_ERRORS/STAGE_FAIL");
 	    }
 	}
 
@@ -3882,7 +3881,7 @@ void Magick::load_databases()
 	    if (zs != NULL && zs->Validate())
 		ls = zs;
 	    else
-		NLOG(LM_ALERT, "SYS_ERRORS/STAGE_FAIL");
+		NLOG(LM_ERROR, "SYS_ERRORS/STAGE_FAIL");
 	}
 
 	vs = new VerifyStage(*ls, 0, XML_STRING, strlen(XML_STRING));

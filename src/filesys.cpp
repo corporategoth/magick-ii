@@ -1861,7 +1861,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_NotFound));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "NotFound"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "NotFound"));
 	NRET(DccXfer &, GLOB_DccXfer);
 #endif
     }
@@ -1870,7 +1870,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Invalid));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Invalid"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Invalid"));
 	NRET(DccXfer &, GLOB_DccXfer);
 #endif
     }
@@ -1879,7 +1879,7 @@ DccXfer &DccMap::GetXfers(const unsigned long in)
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_DccMap_Xfers(E_DccMap_Xfers::W_Get, E_DccMap_Xfers::T_Blank));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Blank"));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("DccMap", "Xfers", "Get", "Blank"));
 	NRET(DccXfer &, GLOB_DccXfer);
 #endif
     }

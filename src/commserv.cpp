@@ -872,7 +872,6 @@ void CommServ::AddList(Committee_t * in)
 	throw (E_CommServ_List(E_CommServ_List::W_Add, E_CommServ_List::T_NotFound));
 #else
 	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC", ("Comm", "List", "Add", "NotFound"));
-	LOG((LM_CRITICAL, "Exception - Comm:List:Add:NotFound"));
 	return;
 #endif
     }
@@ -904,7 +903,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_NotFound, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "NotFound", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "NotFound", in));
 	NRET(Committee_t &, GLOB_Committee_t);
 #endif
     }
@@ -913,7 +912,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_Invalid, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "Invalid", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "Invalid", in));
 	NRET(Committee_t &, GLOB_Committee_t);
 #endif
     }
@@ -922,7 +921,7 @@ map_entry < Committee_t > CommServ::GetList(const mstring & in) const
 #ifdef MAGICK_HAS_EXCEPTIONS
 	throw (E_CommServ_List(E_CommServ_List::W_Get, E_CommServ_List::T_Blank, in.c_str()));
 #else
-	LOG(LM_EMERGENCY, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "Blank", in));
+	LOG(LM_CRITICAL, "EXCEPTIONS/GENERIC1", ("Comm", "List", "Get", "Blank", in));
 	NRET(Committee_t &, GLOB_Committee_t);
 #endif
     }
