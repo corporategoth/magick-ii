@@ -257,7 +257,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     mstring change = in.ExtractWord(1, ": ");
     int fwdargs = 2;
     bool add = true;
-    for (unsigned int i=0; i<change.size(); i++)
+    unsigned int i;
+    for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
 	{
@@ -359,7 +360,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     }
 
     add = true;
-    for (unsigned int i=0; i<change.size(); i++)
+    for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
 	{
@@ -456,8 +457,9 @@ void Chan_Stored_t::defaults()
     mstring defaulted = Parent->chanserv.DEF_MLock();
     mstring locked = Parent->chanserv.LCK_MLock();
     bool add = true;
+    unsigned int i;
 
-    for (unsigned int i; i<defaulted.size(); i++)
+    for (i; i<defaulted.size(); i++)
     {
 	switch (defaulted[i])
 	{
@@ -493,7 +495,7 @@ void Chan_Stored_t::defaults()
     }
 
     add = true;
-    for (unsigned int i; i<locked.size(); i++)
+    for (i; i<locked.size(); i++)
     {
 	switch (locked[i])
 	{
@@ -643,8 +645,12 @@ int Chan_Stored_t::CheckPass(mstring nick, mstring password)
 mstring Chan_Stored_t::Mlock()
 {
     NFT("Chan_Stored_t::MLock");
-    RET((i_Mlock_On != "")  ? "+" + i_Mlock_On  : mstring("") +
-	(i_Mlock_Off != "") ? "-" + i_Mlock_Off : mstring(""));
+    mstring Result;
+    if(i_Mlock_On!="")
+	Result="+" + i_Mlock_On;
+    if(i_Mlock_Off!="")
+	Result=Result+"-" + i_Mlock_Off;
+    RET(Result);
 }
 
 
@@ -660,6 +666,7 @@ mstring Chan_Stored_t::Mlock(mstring mode)
     bool add = true;
     bool ignorek = false;
     bool ignorel = false;
+    unsigned int i;
 
     if (change.WordCount("k") > 2)
     {
@@ -676,7 +683,7 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	retval += "Multiple +/-l modes specified - ignoring";
     }
 
-    for (unsigned int i=0; i<change.size(); i++)
+    for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
 	{
@@ -747,7 +754,7 @@ mstring Chan_Stored_t::Mlock(mstring mode)
     }
 
     add = true;
-    for (unsigned int i=0; i<change.size(); i++)
+    for (i=0; i<change.size(); i++)
     {
 	switch(change[i])
 	{
@@ -788,9 +795,11 @@ mstring Chan_Stored_t::Mlock(mstring mode)
 	retval += ", ";
     if (i_Mlock_On != "" || i_Mlock_Off != "")
     {
-	retval += "MLOCK has been set to " +
-		(i_Mlock_On != "")  ? "+" + i_Mlock_On  : mstring("") +
-		(i_Mlock_Off != "") ? "-" + i_Mlock_Off : mstring("");
+	retval += "MLOCK has been set to ";
+	if(i_Mlock_On!="")
+	    retval += "+" + i_Mlock_On;
+	if(i_Mlock_Off!="")
+	    retval += "-" + i_Mlock_Off;
 	if (i_Mlock_Limit)
 	    retval << " " << i_Mlock_Limit;
     }

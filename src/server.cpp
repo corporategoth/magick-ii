@@ -173,8 +173,11 @@ void NetworkServ::AWAY(mstring nick, mstring reason)
     }
     else
     {
+	mstring tmpResult;
 	Parent->nickserv.live[nick.LowerCase()].Away(reason);
-	raw(":" + nick + " AWAY" + (reason != "") ? " : " + reason : mstring(""));
+	if(reason != "")
+	    tmpResult=" : " + reason;
+	raw(":" + nick + " AWAY" +  tmpResult);
     }
 }
 
@@ -375,8 +378,12 @@ void NetworkServ::PART(mstring nick, mstring channel, mstring reason)
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Part(channel);
-	raw(":" + nick + " PART " + channel +
-		(reason != "") ? " :" + reason : mstring(""));
+	mstring tmpResult;
+	if(reason!="")
+	    tmpResult=" :"+reason;
+	else
+	    tmpResult="";
+	raw(":" + nick + " PART " + channel + tmpResult);
     }
 }
 
@@ -1143,33 +1150,69 @@ void NetworkServ::execute(const mstring & data)
 	    // :source VERSION :our.server
 	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
 	    mstring tmp;
+	    if(RELEASE!="")
+		tmp+="-" + RELEASE;
+	    if(PATCH1!="")
+		tmp+="+"+PATCH1;
+	    if(PATCH2!="")
+		tmp+="+"+PATCH1;
+	    if(PATCH3!="")
+		tmp+="+"+PATCH1;
+	    if(PATCH4!="")
+		tmp+="+"+PATCH1;
+	    if(PATCH5!="")
+		tmp+="+"+PATCH1;
+	    if(PATCH6!="")
+		tmp+="+"+PATCH1;
+	    if(PATCH7!="")
+		tmp+="+"+PATCH1;
+	    if(PATCH8!="")
+		tmp+="+"+PATCH1;
+	    if(PATCH9!="")
+		tmp+="+"+PATCH1;
+	    if(Parent->operserv.GetNames() != "")
+		tmp+="O";
+	    else
+		tmp+="o";
+	    if(Parent->operserv.GetNames() != "" && Parent->operserv.Akill())
+		tmp+="A";
+	    else
+		tmp+="a";
+	    if(Parent->operserv.GetNames() != "" && Parent->operserv.Flood())
+		tmp+="F";
+	    else
+		tmp+="f";
+	    if(Parent->operserv.GetNames() != "" && Parent->operserv.OperDeny())
+		tmp+="D";
+	    else
+		tmp+="d";
+	    if(Parent->nickserv.GetNames() != "")
+		tmp+="N";
+	    else
+		tmp+="n";
+	    if(Parent->chanserv.GetNames() != "")
+		tmp+="C";
+	    else
+		tmp+="c";
+	    if(Parent->memoserv.GetNames() != "" && Parent->memoserv.Memo())
+		tmp+="M";
+	    else
+		tmp+="m";
+	    if(Parent->memoserv.GetNames() != "" && Parent->memoserv.News())
+		tmp+="W";
+	    else
+		tmp+="w";
+	    if(Parent->servmsg.GetNames() != "")
+		tmp+="H";
+	    else
+		tmp+="h";
+	    if(Parent->servmsg.ShowSync())
+		tmp+="Y";
+	    else
+		tmp+="y";
+	    tmp<<Parent->startup.Level();
 	    sraw("351 " + source + " " + PRODUCT + " " + Parent->startup.Server_Name() +
-			" :" + VERSION + ((RELEASE != "") ? ("-" + RELEASE).c_str() : "") +
-			((PATCH1 != "") ? ("+" + PATCH1).c_str() : "") +
-			((PATCH2 != "") ? ("+" + PATCH2).c_str() : "") +
-			((PATCH3 != "") ? ("+" + PATCH3).c_str() : "") +
-			((PATCH4 != "") ? ("+" + PATCH4).c_str() : "") +
-			((PATCH5 != "") ? ("+" + PATCH5).c_str() : "") +
-			((PATCH6 != "") ? ("+" + PATCH6).c_str() : "") +
-			((PATCH7 != "") ? ("+" + PATCH7).c_str() : "") +
-			((PATCH8 != "") ? ("+" + PATCH8).c_str() : "") +
-			((PATCH9 != "") ? ("+" + PATCH9).c_str() : "") + " (" +
-			((Parent->operserv.GetNames() != "")	? "O" : "o") +
-			((Parent->operserv.GetNames() != "" &&
-				Parent->operserv.Akill())	? "A" : "a") +
-			((Parent->operserv.GetNames() != "" &&
-				Parent->operserv.Flood())	? "F" : "f") +
-			((Parent->operserv.GetNames() != "" &&
-				Parent->operserv.OperDeny())	? "D" : "d") +
-			((Parent->nickserv.GetNames() != "")	? "N" : "n") +
-			((Parent->chanserv.GetNames() != "")	? "C" : "c") +
-			((Parent->memoserv.GetNames() != "" &&
-				Parent->memoserv.Memo())	? "M" : "m") +
-			((Parent->memoserv.GetNames() != "" &&
-				Parent->memoserv.News())	? "W" : "w") +
-			((Parent->servmsg.GetNames() != "")	? "H" : "h") +
-			(Parent->servmsg.ShowSync()		? "Y" : "y") +
-			(tmp << Parent->startup.Level()) + ")");
+			" :" + VERSION + tmp + ")");
 	}
 	else
 	{
