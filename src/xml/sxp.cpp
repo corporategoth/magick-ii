@@ -28,6 +28,9 @@ RCSID(sxp_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2002/01/14 07:19:59  prez
+** Fixed delete[] calls
+**
 ** Revision 1.34  2002/01/14 07:16:56  prez
 ** More pretty printing with a newer indent with C++ fixes (not totally done)
 **
