@@ -27,6 +27,9 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2001/11/18 01:03:29  prez
+** Fixed up the trace names.
+**
 ** Revision 1.110  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -155,7 +158,7 @@ RCSID(trace_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE", "LOST" };
+mstring threadname[tt_MAX] = { "LOST", "", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE" };
 
 unsigned short makehex (const mstring &SLevel)
 {
@@ -324,7 +327,7 @@ void ThreadID::WriteOut(const mstring &message)
 mstring ThreadID::logname() const
 {
     mstring name("trace");
-    if (t_internaltype!=tt_MAIN)
+    if (strlen(threadname[t_internaltype]))
 	name << "_" << threadname[t_internaltype];
     name << ".log";
     return name;

@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.183  2001/11/18 01:03:29  prez
+** Fixed up the trace names.
+**
 ** Revision 1.182  2001/11/17 03:16:02  prez
 ** Extra logging, actually made DCC identify as a DCC thread, and fixed some
 ** mkdir failures ...
@@ -934,16 +937,24 @@ void IrcSvcHandler::enqueue(mMessage *mm)
     }
 
     // Only spawn if we are less than our maximum ... and need it :)
-    if (static_cast<unsigned int>(tm.count_threads()) < Parent->config.Max_Threads() &&
-	message_queue.method_count() > static_cast<int>(tm.count_threads() * Parent->config.High_Water_Mark()))
+    if (message_queue.method_count() > static_cast<int>(tm.count_threads() * Parent->config.High_Water_Mark()))
     {
 	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	if(tm.spawn(IrcSvcHandler::worker) != -1)
+	if (static_cast<unsigned int>(tm.count_threads()) >= Parent->config.Max_Threads())
 	{
-	    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
+	    NLOG(LM_WARNING, "EVENT/MAX_THREADS");
 	}
 	else
-	    CP(("Could not start new thread to handle load!"));
+	{
+	    if (tm.spawn(IrcSvcHandler::worker) != -1)
+	    {
+		NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
+	    }
+	    else
+	    {
+		NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
+	    }
+	}
     }
 
     message_queue.enqueue(mm);
