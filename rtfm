@@ -1,0 +1,33 @@
+Magick II has been worked on long and hard by the
+Magick Development Team <magick-devel@magick.tm>.
+
+Please do us the courtacy of reading the documentation
+we have provided to help you use Magick before coming
+to us with queries about how to install or use it.
+We do not mind questions, but only AFTER you have read
+and tried to follow the documentation provided.  You
+will more than likely be ignore if you try and ask
+questions of us that are documented.
+
+The following documents are available for your reading:
+
+COPYING   The is the license agreement you are bound
+          to by downloading and/or using this product.
+INSTALL   Instructions on how to compile and install
+          this product, including pre-requisites.
+AUTHORS   All about the authors, who we owe a debt of
+          gratitude to, and who aided us all along.
+README    A basic guide on usage (not full manual)
+NEWS      This is a must read, it contains the latest
+          news that is important to ALL magick users.
+ChangeLog This is a detailed summary of all changes
+          that have been made over the history of
+          Magick.  This is where we came from.
+TODO      This is what we have planned for the future.
+
+Most help for this product is online (ie. /msg service
+help <command>), however there is a full user manual
+in the docs/<lang> directory, where lang is the two
+letter abbreviation for your language (eg. en for
+english, fr for french, etc).  These will be translated
+as people generously give their time to it.
