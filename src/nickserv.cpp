@@ -118,9 +118,9 @@ void Nick_Live_t::InFlight_t::SetInProg()
 // New memo, send an old one if it isnt in-progress, and
 // cancel it if it was never started.
 void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
-				    mstring user, mstring message)
+				    mstring who, mstring message)
 {
-    FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, user, message));
+    FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message));
     if (File())
     {
 	if (InProg())
@@ -147,24 +147,44 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 	    "You must register your nickname before you can send a memo.");
 	return;
     }
-    else if (Parent->nickserv.IsStored(user))
+
+    if (IsChan(who))
     {
-	send(mynick, nick,
-	    "Nickname " + user + " is not registered, cannot send memo.");
-	return;
+	if (!Parent->nickserv.IsStored(who))
+	{
+	    send(mynick, nick,
+		"Nickname " + who + " is not registered, cannot send memo.");
+	    return;
+	}
+
+	if (file)
+	{
+	    send(mynick, nick, "File attachments are not allowed to channels.");
+	    return;
+	}
     }
-    else if (file && !Parent->memoserv.Files())
+    else
     {
-	send(mynick, nick,
-	    "File attachments in MEMOs have been disabled.");
-	return;
+	if (!Parent->nickserv.IsStored(who))
+	{
+	    send(mynick, nick,
+		"Nickname " + who + " is not registered, cannot send memo.");
+	    return;
+	}
+
+	if (file && !Parent->memoserv.Files())
+	{
+	    send(mynick, nick, "File attachments in MEMOs have been disabled.");
+	    return;
+	}
     }
+
 
     memo = true;
     fileattach = file;
     service = mynick;
     sender = nick;
-    recipiant = user;
+    recipiant = who;
     text = message;
 
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
@@ -239,28 +259,46 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	    }
 	if (Parent->nickserv.IsStored(sender))
 	{
+	    if (Parent->nickserv.stored[sender.LowerCase()].Host() != "" &&
+		Parent->nickserv.IsStored(Parent->nickserv.stored[sender.LowerCase()].Host()))
+	    {
+		sender = Parent->nickserv.stored[Parent->nickserv.stored[sender.LowerCase()].Host()].Name();
+	    }
 	    if (memo)
 	    {
-		if (Parent->nickserv.IsStored(recipiant))
+		if (IsChan(recipiant))
 		{
-		    mstring realrecipiant = Parent->nickserv.stored[recipiant.LowerCase()].Host();
-		    if (realrecipiant == "")
-			realrecipiant = recipiant;
-		    if (recipiant == realrecipiant ||
-			Parent->nickserv.IsStored(realrecipiant))
+		    if (Parent->chanserv.IsStored(recipiant))
 		    {
-			Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
-			    Memo_t(realrecipiant, sender, text, filenum));
-			send(service, nick, "Memo has been sent to " + recipiant + " (" + realrecipiant + ").");
+			Parent->memoserv.channel[recipiant.LowerCase()].push_back(
+			    News_t(recipiant, sender, text));
+			send(service, nick, "Memo has been sent to " + recipiant + " (" +
+			    Parent->chanserv.stored[recipiant.LowerCase()].Founder() + ").");
+		    }
+		}
+		else
+		{
+		    if (Parent->nickserv.IsStored(recipiant))
+		    {
+			mstring realrecipiant = Parent->nickserv.stored[recipiant.LowerCase()].Host();
+			if (realrecipiant == "")
+			    realrecipiant = recipiant;
+			if (recipiant == realrecipiant ||
+			    Parent->nickserv.IsStored(realrecipiant))
+			{
+			    Parent->memoserv.nick[realrecipiant.LowerCase()].push_back(
+				Memo_t(realrecipiant, sender, text, filenum));
+			    send(service, nick, "Memo has been sent to " + recipiant + " (" + realrecipiant + ").");
+			}
+			else if (File())
+			{
+			    // Delete file from filesystem
+			}
 		    }
 		    else if (File())
 		    {
 			// Delete file from filesystem
 		    }
-		}
-		else if (File())
-		{
-		    // Delete file from filesystem
 		}
 	    }
 	    else

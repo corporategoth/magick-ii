@@ -2301,6 +2301,25 @@ bool Chan_Stored_t::L_Revenge()
 }
 
 
+bool Chan_Stored_t::Access_Level_change(mstring entry, long value, mstring nick)
+{
+    FT("Chan_Stored_t::Access_Level_change", (entry, value, nick));
+
+    if (Access_Level_find(entry))
+    {
+	i_Access.erase(Access_Level);
+	entlist_val_t<long> tmp(entry, value, nick);
+	Access_Level = i_Access.insert(i_Access_Level.end(), tmp);
+	RET(true);
+    }
+    else
+    {
+	Access_Level = i_Access_Level.end();
+	RET(false);
+    }
+}
+
+
 bool Chan_Stored_t::Access_Level_find(mstring entry)
 {
     FT("Chan_Stored_t::Access_Level_find", (entry));
@@ -2343,7 +2362,7 @@ long Chan_Stored_t::Access_Level_value(mstring entry)
 
 bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick, mDateTime modtime)
 {
-    FT("Chan_Stored_t::Access_insert", (entry, nick));
+    FT("Chan_Stored_t::Access_insert", (entry, value, nick, modtime));
 
     // Wildcards but no @
     if ((entry.Contains("*") || entry.Contains("?")) &&
@@ -4435,7 +4454,8 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access_Level"));
     if (cstored->Access_Level_find(what))
     {
-	cstored->Access_Level->Value(atol(level.c_str()), source);
+	cstored->Access_Level_change(cstored->Access_Level->Entry(),
+					    atol(level.c_str()), source);
 	::send(mynick, source, "Level for " + cstored->Access_Level->Entry() +
 				    " has now been set to " + level + ".");
     }
@@ -4480,8 +4500,9 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
     if (cstored->Access_Level_find(what) &&
 	Parent->chanserv.LVL(what) > Parent->chanserv.Level_Min())
     {
-	    cstored->Access_Level->Value(Parent->chanserv.LVL(what), source);
-	    ::send(mynick, source, "Level for " +
+	cstored->Access_Level_change(cstored->Access_Level->Entry(),
+				    Parent->chanserv.LVL(what), source);
+	::send(mynick, source, "Level for " +
 				    cstored->Access_Level->Entry() +
 				    " has now been set to " +
 				    ltoa(cstored->Access_Level->Value()) + ".");
@@ -4597,7 +4618,9 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
     MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Access"));
     if (cstored->Access_find(who))
     {
-	cstored->Access->Value(atol(level.c_str()), source);
+	mstring entry = cstored->Access->Entry();
+	cstored->Access_erase();
+	cstored->Access_insert(entry, atol(level.c_str()), source);
 	::send(mynick, source, "Level for " + cstored->Access->Entry() +
 				    " has now been changed to " + level + ".");
     }

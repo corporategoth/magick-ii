@@ -265,6 +265,7 @@ public:
     // FIND: Looks for EXACT MATCH of passed entry.
 //  bool Access_Level_insert(mstring entry, long value, mstring nick);
 //  bool Access_Level_erase();
+    bool Access_Level_change(mstring entry, long value, mstring nick);
     set<entlist_val_t<long> >::iterator Access_Level_begin()
 	{ return i_Access_Level.begin(); }
     set<entlist_val_t<long> >::iterator Access_Level_end()

@@ -451,7 +451,6 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 {
     FT("MemoServ::do_UnRead", (mynick, source, params));
 
-
     mstring message  = params.Before(" ").UpperCase();
     if (params.WordCount(" ") < 2)
     {
@@ -502,9 +501,9 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 		    iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
 	    {
 		iter->Unread(whoami);
-		::send(mynick, source, "All news articles for channel " +
-				    who + " have been marked unread.");
 	    }
+	    ::send(mynick, source, "All news articles for channel " +
+				    who + " have been marked unread.");
 	}
 	else
 	{
@@ -586,8 +585,8 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 		    iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
 	    {
 		iter->Unread();
-		::send(mynick, source, "All your memos have been marked unread.");
 	    }
+	    ::send(mynick, source, "All your memos have been marked unread.");
 	}
 	else
 	{
@@ -648,6 +647,103 @@ void MemoServ::do_UnRead(mstring mynick, mstring source, mstring params)
 void MemoServ::do_List(mstring mynick, mstring source, mstring params)
 {
     FT("MemoServ::do_List", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 1)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    if (IsChan(params.ExtractWord(2, " ")))
+    {
+	if (params.WordCount(" ") < 2)
+	{
+	    ::send(mynick, source, "Not enough paramaters");
+	    return;
+	}
+	mstring who = params.ExtractWord(2, " ");
+	mstring whoami = source.LowerCase();
+	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
+	{
+	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
+	}
+
+	if (!Parent->chanserv.IsStored(who))
+	{
+	    ::send(mynick, source, "No such channel " + who + ".");
+	    return;
+	}
+
+	if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "READMEMO"))
+	{
+	    ::send(mynick, source, "Access denied.");
+	    return;
+	}
+
+	if (!Parent->memoserv.IsChannel(who))
+	{
+	    ::send(mynick, source, "Channel " + who + " has no memos.");
+	    return;
+	}
+
+	list<News_t>::iterator iter;
+	int i = 1;
+	mstring output;
+	for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
+		iter != Parent->memoserv.channel[who.LowerCase()].end(); iter++)
+	{
+	    if (iter->IsRead(whoami))
+		output << " ";
+	    else
+		output << "*";
+	    output << "#" << i << " from " << iter->Sender() << " to "
+		<< iter->Channel() << " sent " << iter->Time().Ago() << " \"";
+	    if (iter->Text().size() > 20)
+		output << iter->Text().SubString(0, 19) << "...\"";
+	    else
+		output << iter->Text().SubString(0, iter->Text().size()-1) << "\"";
+	    ::send(mynick, source, output);
+	    output = "";
+	}
+    }
+    else
+    {
+	mstring who = source;
+
+	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
+	{
+	    who = Parent->nickserv.stored[source.LowerCase()].Host();
+	}
+
+	if (!Parent->memoserv.IsNick(who))
+	{
+	    ::send(mynick, source, "You have no memos.");
+	    return;
+	}
+
+	list<Memo_t>::iterator iter;
+	int i = 1;
+	mstring output;
+	for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
+		iter != Parent->memoserv.nick[who.LowerCase()].end(); iter++)
+	{
+	    if (iter->IsRead())
+		output << " ";
+	    else
+		output << "*";
+	    output << "#" << i << " from " << iter->Sender() <<
+		" sent " << iter->Time().Ago() << " \"";
+	    if (iter->Text().size() > 20)
+		output << iter->Text().SubString(0, 19) << "...\"";
+	    else
+		output << iter->Text().SubString(0, iter->Text().size()-1) << "\"";
+	    ::send(mynick, source, output);
+	    output = "";
+	}
+    }
 }
 
 
@@ -732,6 +828,231 @@ void MemoServ::do_Cancel(mstring mynick, mstring source, mstring params)
 void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 {
     FT("MemoServ::do_Del", (mynick, source, params));
+
+    mstring message  = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    if (IsChan(params.ExtractWord(2, " ")))
+    {
+	if (params.WordCount(" ") < 3)
+	{
+	    ::send(mynick, source, "Not enough paramaters");
+	    return;
+	}
+	mstring who = params.ExtractWord(2, " ");
+	mstring what = params.After(" ", 2);
+	mstring whoami = source.LowerCase();
+	if (Parent->nickserv.stored[whoami].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[whoami].Host()))
+	{
+	    whoami = Parent->nickserv.stored[whoami].Host().LowerCase();
+	}
+
+	if (!Parent->chanserv.IsStored(who))
+	{
+	    ::send(mynick, source, "No such channel " + who + ".");
+	    return;
+	}
+
+	if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "WRITEMEMO"))
+	{
+	    ::send(mynick, source, "Access denied.");
+	    return;
+	}
+
+	if (!Parent->memoserv.IsChannel(who))
+	{
+	    ::send(mynick, source, "Channel " + who + " has no memos.");
+	    return;
+	}
+
+	if (what.CmpNoCase("all"))
+	{
+	    if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "DELMEMO"))
+	    {
+		::send(mynick, source, "Access denied.");
+		return;
+	    }
+
+	    list<News_t>::iterator iter;
+	    int i = 1;
+	    mstring output;
+	    for (iter = Parent->memoserv.channel[who.LowerCase()].begin();
+		    iter != Parent->memoserv.channel[who.LowerCase()].end();)
+	    {
+		Parent->memoserv.channel[who.LowerCase()].erase(iter);
+		iter = Parent->memoserv.channel[who.LowerCase()].begin();
+	    }
+	    Parent->memoserv.channel.erase(who.LowerCase());
+	    ::send(mynick, source, "All news articles for channel " +
+				    who + " have been deleted.");
+	}
+	else
+	{
+	    int i, j=1, adjust=0;
+	    vector<int> numbers1 = ParseNumbers(what);
+	    set<int> numbers;
+	    set<int>::iterator ni;
+	    for (i=0; i<numbers1.size(); i++)
+		numbers.insert(numbers1[i]);
+
+	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    list<News_t>::iterator iter = Parent->memoserv.channel[who.LowerCase()].begin();
+	    mstring output, denied;
+	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
+	    {
+		if (*ni - adjust <= 0)
+		    nonnumeric = true;
+		else if (*ni - adjust > Parent->memoserv.channel[who.LowerCase()].size())
+		    triedabove = true;
+		else
+		{
+		    while (*ni - adjust > j &&
+			iter != Parent->memoserv.channel[who.LowerCase()].end())
+		    {
+			j++;
+			iter++;
+		    }
+		    if (iter != Parent->memoserv.channel[who.LowerCase()].end())
+		    {
+			if (!Parent->chanserv.stored[who.LowerCase()].GetAccess(whoami, "DELMEMO") &&
+			    iter->Sender().LowerCase() != who.LowerCase())
+			{
+			    if (denied != "")
+				denied << ", ";
+			    denied << j;
+			}
+			else
+			{
+			    if (output != "")
+				output << ", ";
+			    output << j;
+			    Parent->memoserv.channel[who.LowerCase()].erase(iter);
+			    iter = Parent->memoserv.channel[who.LowerCase()].begin();
+			    j=1;
+			    adjust++;
+			    displayed = true;
+			}
+		    }
+		}
+	    }
+	    if (Parent->memoserv.channel[who.LowerCase()].size() == 0)
+		Parent->memoserv.channel.erase(who.LowerCase());
+	    if (denied != "")
+	    {
+		::send(mynick, source, "News articles for channel " +
+					    who + " (" + denied +
+					    ") have NOT been deleted.");
+		denied = "";
+	    }
+	    if (output != "")
+	    {
+		::send(mynick, source, "News articles for channel " +
+					    who + " (" + output +
+					    ") have been deleted.");
+		output = "";
+	    }
+	    if (nonnumeric)
+		output << "Non-numeric arguments specified, ignored.";
+	    if (triedabove)
+		output << "All entries above " <<
+			Parent->memoserv.channel[who.LowerCase()].size() <<
+			" ignored.";
+	    if (output != "")
+		::send(mynick, source, output);
+	}
+    }
+    else
+    {
+	mstring who = source;
+	mstring what = params.After(" ", 1);
+
+	if (Parent->nickserv.stored[source.LowerCase()].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[source.LowerCase()].Host()))
+	{
+	    who = Parent->nickserv.stored[source.LowerCase()].Host();
+	}
+
+	if (!Parent->memoserv.IsNick(who))
+	{
+	    ::send(mynick, source, "You have no memos.");
+	    return;
+	}
+
+	if (what.CmpNoCase("all"))
+	{
+	    list<Memo_t>::iterator iter;
+	    int i = 1;
+	    mstring output;
+	    for (iter = Parent->memoserv.nick[who.LowerCase()].begin();
+		    iter != Parent->memoserv.nick[who.LowerCase()].end();)
+	    {
+		Parent->memoserv.nick[who.LowerCase()].erase(iter);
+		iter = Parent->memoserv.nick[who.LowerCase()].begin();
+	    }
+	    Parent->memoserv.nick.erase(who.LowerCase());
+	    ::send(mynick, source, "All your memos have been deleted.");
+	}
+	else
+	{
+	    int i, j=1, adjust = 0;
+	    vector<int> numbers1 = ParseNumbers(what);
+	    set<int> numbers;
+	    set<int>::iterator ni;
+	    for (i=0; i<numbers1.size(); i++)
+		numbers.insert(numbers1[i]);
+	    bool displayed = false, triedabove = false, nonnumeric = false;
+	    list<Memo_t>::iterator iter = Parent->memoserv.nick[who.LowerCase()].begin();
+	    mstring output;
+	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
+	    {
+		if (*ni - adjust <= 0)
+		    nonnumeric = true;
+		else if (*ni - adjust > Parent->memoserv.nick[who.LowerCase()].size())
+		    triedabove = true;
+		else
+		{
+		    while (*ni - adjust > j &&
+			iter != Parent->memoserv.nick[who.LowerCase()].end())
+		    {
+			j++;
+			iter++;
+		    }
+		    if (iter != Parent->memoserv.nick[who.LowerCase()].end())
+		    {
+			if (output != "")
+			    output << ", ";
+			output << j;
+			Parent->memoserv.nick[who.LowerCase()].erase(iter);
+			iter = Parent->memoserv.nick[who.LowerCase()].begin();
+			j=1;
+			adjust++;
+			displayed = true;
+		    }
+		}
+	    }
+	    if (Parent->memoserv.nick[who.LowerCase()].size() == 0)
+		Parent->memoserv.nick.erase(who.LowerCase());
+	    if (output != "")
+	    {
+		::send(mynick, source, "Your memos (" + output +
+					    ") have been deleted.");
+		output = "";
+	    }
+	    if (nonnumeric)
+		output << "Non-numeric arguments specified, ignored.";
+	    if (triedabove)
+		output << "All entries above " <<
+			Parent->memoserv.nick[who.LowerCase()].size() <<
+			" ignored.";
+	    if (output != "")
+		::send(mynick, source, output);
+	}
+    }
 }
 
 
