@@ -127,10 +127,18 @@ void OperServ::RemHost(const mstring & host)
     MCB(CloneList.size());
     if (CloneList.find(host.LowerCase()) != CloneList.end())
     {
+	CB(1, CloneList[host.LowerCase()].first);
 	if (CloneList[host.LowerCase()].first > 1)
+	{
 	    CloneList[host.LowerCase()].first--;
+	    CE(1, CloneList[host.LowerCase()].first);
+	}
 	else
+	{
+	    COM(("Removed CloneList entry ...\n"));
 	    CloneList.erase(host.LowerCase());
+	    CE(1, 0);
+	}
     }
     MCE(CloneList.size());
     ETCB();

@@ -454,14 +454,13 @@ int levelname_count()
 // ===================================================
 
 //      \  function()
-T_Function::T_Function(const char *file, const int line, const mstring & name) : m_name(name)
+T_Function::T_Function(const char *file, const int line, const mstring & name) : m_name(name), file_name(file), return_line(0)
 {
     BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
-    file_name = file;
     i_prevfunc = tid->LastFunc();
     tid->LastFunc(name);
     if (IsOn(tid, Function))
@@ -477,14 +476,14 @@ T_Function::T_Function(const char *file, const int line, const mstring & name) :
 }
 
 //      \  function( (char) T, (int) 5 )
-T_Function::T_Function(const char *file, const int line, const mstring & name, const mVarArray & args) : m_name(name)
+T_Function::T_Function(const char *file, const int line, const mstring & name, const mVarArray & args) : m_name(name),
+file_name(file), return_line(0)
 {
     BTCB();
     ThreadID *tid = mThread::find();
 
     if (tid == NULL || tid->InTrace())
 	return;			// should throw an exception later
-    file_name = file;
     i_prevfunc = tid->LastFunc();
     tid->LastFunc(name);
     if (IsOn(tid, Function))
@@ -520,7 +519,9 @@ T_Function::~T_Function()
     {
 	mstring message;
 
-	message << "/  " << file_name << ":" << return_line;
+	message << "/  ";
+	if (return_line)
+	    message << file_name << ":" << return_line;
 
 	if (!return_value.type().empty())
 	    message << ": (" << return_value.type() << ") " << return_value.AsString();

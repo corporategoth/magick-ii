@@ -1050,8 +1050,7 @@ void Magick::dump_help() const
 	 << "--convert X                Convert another version of services databases\n" <<
 	"                           to Magick II format, where X is the type of\n" <<
 	"                           database to convert.  Currently recognized:\n" <<
-	"                               magick (1.4), esper (4.4.8), epona (1.4.7)\n" <<
-	"                               sirv (N/A)\n"
+	"                               magick (1.4), esper (4.4.8), epona (1.4.7)\n"
 #endif
 #ifdef MAGICK_TRACE_WORKS
 	 << "--trace X:Y                Set the trace level on startup, equivilant of\n" <<
@@ -1708,10 +1707,6 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	    EPO_load_os_dbase();
 	    EPO_load_news();
 	    EPO_load_exceptions();
-	}
-	else if (second.IsSameAs("sirv", true))
-	{
-	    LOG(LM_STARTUP, "SYS_ERRORS/NOT_IMPLEMENTED", ("convert_sirv"));
 	}
 	else
 	{
