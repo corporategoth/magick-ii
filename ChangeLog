@@ -1,3 +1,67 @@
+* 2002-05-12 01:13  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.213):
+  
+  Fixed situation that causes an exception to be raised because of a
+  GetUser in PRIVMSG or NOTICE, because I was assuming the destination was
+  a user.
+
+* 2002-05-12 00:18  Preston A. Elder <prez@magick.tm>
+  configure.in (1.57):
+  
+  Fixed typo in the configure script
+
+* 2002-05-12 00:13  Preston A. Elder <prez@magick.tm>
+  include/chanserv.h (1.82):
+  
+  Fixed typo
+
+* 2002-05-11 23:11  Preston A. Elder <prez@magick.tm>
+  acconfig.h (1.17), include/chanserv.h (1.81), include/server.h (1.85),
+  src/chanserv.cpp (1.284), src/server.cpp (1.212):
+  
+  Some stuff I forgot to checkin
+
+* 2002-05-05 20:20  Preston A. Elder <prez@magick.tm>
+  gui/mct.java (1.6), gui/splash.jpg (1.1):
+  
+  Replaced old splash screen with new.
+
+* 2002-05-05 19:01  Preston A. Elder <prez@magick.tm>
+  gui/MagickMain.jpg (1.2):
+  
+  Changed from old splash screen to new one, and adjusted background colour
+  of the main page accordingly.
+
+* 2002-04-22 10:23  Nathan West <nwest@magick.tm>
+  docs/user_docbook.sgml (1.1):
+  
+  
+  first checkin
+
+* 2002-04-22 10:22  Nathan West <nwest@magick.tm>
+  docs/oper_docbook.sgml (1.2):
+  
+  
+  Replace bogus binary version (sorry PreZ!)
+
+* 2002-04-22 10:13  Nathan West <nwest@magick.tm>
+  docs/oper_docbook.sgml (1.1):
+  
+  
+  
+  SGML-ized oper.txt, initial docbook markup.
+
+* 2002-04-22 10:07  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.215), src/server.cpp (1.211):
+  
+  Some changes with how modes are handled on servers that dont allow
+  non-ops to change modes.
+
+* 2002-04-22 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.32):
+  
+  Created version 2.0s20020422
+
 * 2002-04-22 02:42  Preston A. Elder <prez@magick.tm>
   include/server.h (1.84), src/base.cpp (1.189), src/chanserv.cpp (1.283),
   src/ircsocket.cpp (1.214), src/nickserv.cpp (1.205), src/server.cpp
