@@ -517,12 +517,12 @@
 10 =REGD::Setting this value to "NONE" will clear it.
 
 [NICKSERV/SET/MSN]
-01 =REGD::SET MSN <sign-in name>
+01 =REGD::SET MSN <passport email>
 02 =REGD::
-03 =REGD::This is a field provided to represent your MSN sign-in
-04 =REGD::name.  Right now, it is a free-text field, however it
+03 =REGD::This is a field provided to represent your MSN passport
+04 =REGD::email.  Right now, it is a free-text field, however it
 05 =REGD::is recommended you ensure the data you put in this is
-06 =REGD::a valid sign-in name, as it may be used later for such
+06 =REGD::a valid passport email, as it may be used later for such
 07 =REGD::things as current users status, etc.
 08 =REGD::
 09 =REGD::This value will display as-is in your INFO display.

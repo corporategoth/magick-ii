@@ -477,12 +477,12 @@ in your info.
 Setting this to NONE will clear this field.
 
 
-<sect2>MSN<label id="NickServ_AIM">
+<sect2>MSN<label id="NickServ_MSN">
 <p>
 <verb>
-SYNTAX: SET MSN <sign-in name>
+SYNTAX: SET MSN <passport email>
 </verb>
-This will set your MSN Messenger sign-in name in services.  This is a
+This will set your MSN passport email sign-in name in services.  This is a
 purely informational field, and will show up in your INFO (<pageref id="NickServ_INFO">) display.
 Right now nothing is done with this information, but it is possible that
 a method may be put into services that allow them to also show your status
@@ -491,7 +491,7 @@ in your info.
 Setting this to NONE will clear this field.
 
 
-<sect2>YAHOO<label id="NickServ_AIM">
+<sect2>YAHOO<label id="NickServ_YAHOO">
 <p>
 <verb>
 SYNTAX: SET YAHOO <id>

@@ -619,9 +619,9 @@ Setting this to NONE will clear this field.
 2.2.6	MSN
 -----------
 
-SYNTAX: SET MSN <sign-in name>
+SYNTAX: SET MSN <passport email>
 
-This will set your MSN Messenger sign-in name in services.  This is a
+This will set your MSN passport email-in name in services.  This is a
 purely informational field, and will show up in your INFO (2.3.3) display.
 Right now nothing is done with this information, but it is possible that a
 method may be put into services that allow them to also show your status in
