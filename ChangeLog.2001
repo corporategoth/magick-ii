@@ -1,3 +1,8 @@
+* 2001-12-31 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.14):
+  
+  Created version 2.0s20011231
+
 * 2001-12-31 02:49  Preston A. Elder <prez@magick.tm>
   configure.in (1.50), include/config.h.in (1.25), include/pch.h (1.47),
   src/ircsocket.cpp (1.191):
