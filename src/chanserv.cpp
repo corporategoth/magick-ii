@@ -76,12 +76,12 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
     i_UserDef.clear();
     map<mstring,mstring>::iterator j;
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
-	i_UserDef.insert(*j);
+	i_UserDef[j->first]=j->second;
     modes=in.modes;
     users.clear();
     map<mstring, pair<bool, bool> >::iterator k;
     for(k=in.users.begin();k!=in.users.end();k++)
-	users.insert(*k);
+	users[k->first]=k->second;
 }
 
 bool Chan_Live_t::operator==(const Chan_Live_t &in) const
@@ -183,7 +183,7 @@ void userlist_t::operator=(const userlist_t &in)
     map<mstring,mstring>::iterator i;
     i_UserDef.clear();
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-	i_UserDef.insert(*i);
+	i_UserDef[i->first]=i->second;
 }
 
 bool userlist_t::operator==(const userlist_t &in) const
@@ -213,7 +213,7 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Mlock_Key=in.i_Mlock_Key;
     i_Mlock_Limit=in.i_Mlock_Limit;
 
-    list<userlist_t>::iterator j;
+    list<userlist_t>::const_iterator j;
     i_Access_Level.clear();
     for(j=in.i_Access_Level.begin();j!=in.i_Access_Level.end();j++)
 	i_Access_Level.push_back(*j);
@@ -228,7 +228,7 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 	i_Greet.push_back(*j);
 
     i_UserDef.clear();
-    map<mstring, mstring>::iterator i;
+    map<mstring, mstring>::const_iterator i;
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
     i_UserDef.insert(*i);
 
