@@ -28,3 +28,33 @@ mstring::mstring()
 :inherited("")
 {
 }
+
+mstring& mstring::operator <<(const mstring & s)
+{
+	*this=*this+s;
+	return *this;
+}
+
+mstring& mstring::operator <<(const char * psz)
+{
+	*this=*this+psz;
+	return *this;
+}
+
+mstring& mstring::operator =(const mstring & in)
+{
+	*this=string(in);
+	return *this;
+}
+
+mstring& mstring::operator =(const string & in)
+{
+	*this=in;
+	return *this;
+}
+
+mstring& mstring::operator <<(char ch)
+{
+	*this=*this+mstring(1,ch);
+	return *this;
+}

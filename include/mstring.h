@@ -7,6 +7,11 @@ class mstring:public string
 {
 	typedef string inherited;
 public:
+	mstring& operator<<(char ch);
+	mstring& operator=(const string& in);
+	mstring& operator=(const mstring& in);
+	mstring& operator<<(const char *psz);
+	mstring& operator<<(const mstring& s);
 	mstring(const mstring& in);
 	mstring(const mstring& in, inherited::size_type pos, inherited::size_type n);
 	mstring(const char *in);
