@@ -1013,8 +1013,8 @@ int mMessage::call()
 
 	    if (target.Contains("@"))
 	    {
+		params_.replace(target, target.Before("@"), false);
 		target.Truncate(target.Find("@"));
-		params_.replace(0, params_.find(" ") - 1, target);
 		CP(("Target changed, new params: %s", params_.c_str()));
 	    }
 	    else if (Magick::instance().server.proto.Numeric.User() &&
@@ -1027,8 +1027,8 @@ int mMessage::call()
 
 		if (!tmp.empty())
 		{
+		    params_.replace(target, tmp, false);
 		    target = tmp;
-		    params_.replace(0, params_.find(" ") - 1, target);
 		    CP(("Target changed, new params: %s", params_.c_str()));
 		}
 	    }
