@@ -174,10 +174,13 @@ bool Protocol::Set(const mstring & filename)
     SignonTypes.insert(1001);
     SignonTypes.insert(1002);
     SignonTypes.insert(1003);
+    SignonTypes.insert(1004);
     SignonTypes.insert(2000);
     SignonTypes.insert(2001);
     SignonTypes.insert(2002);
     SignonTypes.insert(2003);
+    SignonTypes.insert(2004);
+    SignonTypes.insert(2005);
     SignonTypes.insert(3000);
     SignonTypes.insert(4000);
 
@@ -2119,6 +2122,16 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 		   host << " " << server << " 1";
 	    out << " :" << name;
 	    break;
+	case 1004:
+	    token = "NICK";
+	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
+		out << proto.GetNonToken(token);
+	    else
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " " <<
+		   host << " " << server << " 1 " << ACE_OS::inet_addr("127.0.0.1");
+	    out << " :" << name;
+	    break;
 	case 2000:
 	    token = "NICK";
 	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
@@ -2160,6 +2173,28 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " " << user << " " << host << " " <<
 		   server << " 1 +" << outmodes << " " << host << " :" << name;
+	    tmp->Mode(outmodes);
+	    sendmode = false;
+	    break;
+	case 2004:
+	    token = "NICK";
+	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
+		out << proto.GetNonToken(token);
+	    else
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << outmodes << " " << user << " " <<
+		   host << " " << server << " 1 " << ACE_OS::inet_addr("127.0.0.1") << " :" << name;
+	    tmp->Mode(outmodes);
+	    sendmode = false;
+	    break;
+	case 2005:
+	    token = "NICK";
+	    if (proto.Tokens() && !proto.GetNonToken(token).empty())
+		out << proto.GetNonToken(token);
+	    else
+		out << token;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << outmodes << " " << user << " " <<
+		   host << " " << host << " " << server << " 1 " << ACE_OS::inet_addr("127.0.0.1") << " :" << name;
 	    tmp->Mode(outmodes);
 	    sendmode = false;
 	    break;
@@ -3191,7 +3226,7 @@ void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & 
 		LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", ("MODE", source, chan));
 	    }
 	}
-	else if (params.IsSameAs("0"))
+	else if (params.WordCount(" ") == 1)
 	{
 	    if (!proto.ISON())
 		process_eob();
@@ -3216,7 +3251,7 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 
 	mstring tmp = (" " + params + " ");
 	// Bahamut version of the PROTOCTL line
-	if (tmp.Contains(" TOKEN "))
+	if (tmp.Contains(" TOKEN ") || tmp.Contains(" TOKEN1 ") )
 	    proto.Tokens(true);
     }
     else if (msgtype == "CHATOPS")
@@ -3267,10 +3302,13 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 	case 1001:		// NICK nick hops time user host server 1 :realname
 	case 1002:		// NICK nick hops time user host server 0 real-host :realname
 	case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	case 1004:		// NICK nick hops time user real-host host server 0 ipaddress :realname
 	case 2000:		// NICK nick hops time mode user host server :realname
 	case 2001:		// NICK nick hops time mode user host server 0 :realname
 	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	case 2004:		// NICK nick hops time mode user host server 0 ipaddress :realname
+	case 2005:		// NICK nick hops time mode user host maskhost server 0 ipaddress :realname
 	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
 	    break;
 	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
@@ -3317,10 +3355,13 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 	case 1001:		// NICK nick hops time user host server 1 :realname
 	case 1002:		// NICK nick hops time user host server 0 real-host :realname
 	case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	case 1004:		// NICK nick hops time user real-host host server 0 ipaddress :realname
 	case 2000:		// NICK nick hops time mode user host server :realname
 	case 2001:		// NICK nick hops time mode user host server 0 :realname
 	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	case 2004:		// NICK nick hops time mode user host server 0 :realname
+	case 2005:		// NICK nick hops time mode user host maskhost server 0 ipaddress :realname
 	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
 	    break;
 	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
@@ -3460,6 +3501,10 @@ void Server::parse_E(mstring & source, const mstring & msgtype, const mstring & 
     {
 	// ERROR :This is my error
 	LOG(LM_NOTICE, "OTHER/SERVER_MSG", (msgtype, params.After(" :")));
+    }
+    else if (msgtype == "EXCEPTION")
+    {
+	// Thank you, drive through ...
     }
     else
     {
@@ -3623,6 +3668,9 @@ void Server::parse_J(mstring & source, const mstring & msgtype, const mstring & 
 	    mstring chan(IrcParam(params, 1).ExtractWord(i, ","));
 	    clive->Join(chan);
 	}
+    }
+    else if (msgtype == "JUPITER")
+    {
     }
     else
     {
@@ -3981,6 +4029,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		server = IrcParam(params, 6);
 		break;
 	    case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	    case 1004:		// NICK nick hops time user real-host host server 0 ipaddress :realname
 		server = IrcParam(params, 7);
 		break;
 	    case 2000:		// NICK nick hops time mode user host server :realname
@@ -3995,6 +4044,14 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
 		modes = IrcParam(params, 8);
 		server = IrcParam(params, 6);
+		break;
+	    case 2004:		// NICK nick hops time mode user host server 0 ipaddress :realname
+		modes = IrcParam(params, 4);
+		server = IrcParam(params, 7);
+		break;
+	    case 2005:		// NICK nick hops time mode user host maskhost server 0 ipaddress :realname
+		modes = IrcParam(params, 4);
+		server = IrcParam(params, 8);
 		break;
 	    case 3000:		// server NICK nick hops time user host [mode] ipaddr numeric :realname
 		modes = IrcParam(params, 6);
@@ -4044,7 +4101,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		{
 		    map_entry < Nick_Live_t >
 			tmp(new
-			    Nick_Live_t(IrcParam(params, 2),
+			    Nick_Live_t(IrcParam(params, 1),
 					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
 					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
 		    Magick::instance().nickserv.AddLive(tmp);
@@ -4072,6 +4129,17 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 		}
 		break;
 	    case 1003:		// NICK nick hops time user real-host host server 0 :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(IrcParam(params, 1),
+					static_cast < time_t > (atoul(IrcParam(params, 4))), server,
+					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
+		    tmp->AltHost(IrcParam(params, 6));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 1004:		// NICK nick hops time user real-host host server 0 ipaddress :realname
 		{
 		    map_entry < Nick_Live_t >
 			tmp(new
@@ -4125,6 +4193,29 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 					IrcParam(params, 4), IrcParam(params, 5), params.After(" :")));
 		    tmp->Mode(modes);
 		    tmp->AltHost(IrcParam(params, 9));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 2004:		// NICK nick hops time mode user host server 0 ipaddress :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(IrcParam(params, 1),
+					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+					IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
+		    tmp->Mode(modes);
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 2005:		// NICK nick hops time mode user host maskhost server 0 ipaddress :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(IrcParam(params, 1),
+					static_cast < time_t > (atoul(IrcParam(params, 3))), server,
+					IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
+		    tmp->Mode(modes);
+		    tmp->AltHost(IrcParam(params, 7));
 		    Magick::instance().nickserv.AddLive(tmp);
 		}
 		break;
@@ -4231,6 +4322,9 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 	    case '@':		// Op Msg
 	    case '%':		// HalfOp Msg
 	    case '+':		// Voice Msg
+	    case '*':		// Owner
+	    case '.':		// Owner
+	    case '~':		// Protected
 		dest.erase(0, 0);
 		break;
 	    }
@@ -4352,6 +4446,9 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	    case '@':		// Op Msg
 	    case '%':		// HalfOp Msg
 	    case '+':		// Voice Msg
+	    case '*':		// Owner
+	    case '.':		// Owner
+	    case '~':		// Protected
 		dest.erase(0, 0);
 		break;
 	    }
@@ -4375,7 +4472,7 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 
 	mstring tmp = (" " + params + " ");
 	// Bahamut version of the PROTOCTL line
-	if (tmp.Contains(" TOKEN "))
+	if (tmp.Contains(" TOKEN ") || tmp.Contains(" TOKEN1 "))
 	    proto.Tokens(true);
     }
     else
@@ -4493,6 +4590,10 @@ void Server::parse_R(mstring & source, const mstring & msgtype, const mstring & 
     else if (msgtype == "RESTART")
     {
 	// Will we ever get this via. net??  ignore.
+    }
+    else if (msgtype == "REXCEPTION")
+    {
+	// Thank you, drive through ...
     }
     else if (msgtype == "RPING")
     {
@@ -4639,6 +4740,96 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    }
 	}
     }
+    else if (msgtype == "SERVICE")
+    {
+	// NEW USER
+	mstring newnick = IrcParam(params, 1);
+
+	// DONT kill when we do SQUIT protection.
+	map < mstring, set < mstring > >::iterator i;
+	{
+	    RLOCK((lck_Server, "ToBeSquit"));
+	    for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
+	    {
+		WLOCK2((lck_Server, "ToBeSquit", i->first));
+		set < mstring >::iterator k = i->second.find(newnick.LowerCase());
+		if (k != i->second.end())
+		    i->second.erase(k);
+	    }
+	}
+
+	mstring server;
+	mstring modes;
+
+	server = IrcParam(params, 7);
+	if (proto.Numeric.Server() && !server.Contains("."))
+	    server.prepend("@");
+	server = GetServer(server);
+
+	if (Magick::instance().nickserv.IsLiveAll(newnick))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+	    COM(("Previous SQUIT checking if %s == %s and %s == %s", nlive->Squit().c_str(), server.c_str(),
+		 nlive->SignonTime().DateTimeString().c_str(),
+		 mDateTime(static_cast < time_t > (atoul(IrcParam(params, 3)))).DateTimeString().c_str()));
+	    // IF the squit server = us, and the signon time matches
+	    if (nlive->Squit().IsSameAs(server, true) &&
+		nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(IrcParam(params, 3)))))
+	    {
+		nlive->ClearSquit(modes);
+		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		if (nlive->Numeric())
+		    mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+		return;	// nice way to avoid repeating ones self :)
+	    }
+	    else
+	    {
+		nlive->Quit("SQUIT - " + nlive->Server());
+		Magick::instance().nickserv.RemLive(newnick);
+		mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
+		if (nlive->Numeric())
+		    mMessage::CheckDependancies(mMessage::NickNoExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+	    }
+	}
+	{
+	    map_entry < Nick_Live_t >
+		tmp(new
+		    Nick_Live_t(IrcParam(params, 1),
+				static_cast < time_t > (atoul(IrcParam(params, 2))), server,
+				IrcParam(params, 5), IrcParam(params, 6), params.After(" :")));
+	    Magick::instance().nickserv.AddLive(tmp);
+	}
+
+	if (Magick::instance().nickserv.IsLive(newnick))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+	    if (nlive->Server().empty())
+	    {
+		mMessage::KillDependancies(mMessage::NickExists, newnick);
+		if (nlive->Numeric())
+		    mMessage::KillDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+		KILL(Magick::instance().nickserv.FirstName(), newnick, nlive->RealName());
+		return;
+	    }
+
+	    {
+		WLOCK2((lck_Server, "i_UserMax"));
+		if (i_UserMax < Magick::instance().nickserv.LiveSize())
+		{
+		    MCB(i_UserMax);
+		    i_UserMax = Magick::instance().nickserv.LiveSize();
+		    MCE(i_UserMax);
+		}
+	    }
+
+	    set<mstring> wason;
+	    nlive->PostSignon(wason);
+
+	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
+	    if (nlive->Numeric())
+		mMessage::CheckDependancies(mMessage::NickExists, "!" + proto.Numeric.UserNumeric(nlive->Numeric()));
+	}
+    }
     else if (msgtype == "SGLINE")
     {
     }
@@ -4668,7 +4859,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	    if (params.Before(" :").WordCount(" ") >= 3)
 		modes = params.Before(" :").ExtractWord(3, " ");
 	    mstring mode_params, nick;
-	    bool oped, halfoped, voiced, owner, prot, isban, isexcept;
+	    bool oped, halfoped, voiced, owner, owner2, prot, isban, isexcept;
 
 	    if (modes.length())
 	    {
@@ -4687,7 +4878,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		{
 		    char c = 0;
 
-		    oped = halfoped = voiced = owner = prot = false;
+		    oped = halfoped = voiced = owner = owner2 = prot = false;
 		    isban = isexcept = false;
 		    while (c != nick[0u])
 		    {
@@ -4708,6 +4899,10 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			    break;
 			case '*':
 			    owner = true;
+			    nick.erase(0, 0);
+			    break;
+			case '.':
+			    owner2 = true;
 			    nick.erase(0, 0);
 			    break;
 			case '~':
@@ -4750,6 +4945,8 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'v', source, nick, chan));
 			    if (owner)
 				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'q', source, nick, chan));
+			    if (owner2)
+				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'u', source, nick, chan));
 			    if (prot)
 				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'a', source, nick, chan));
 			    continue;
@@ -4774,6 +4971,11 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			if (owner)
 			{
 			    modes += "q";
+			    mode_params += " " + nick;
+			}
+			if (owner2)
+			{
+			    modes += "u";
 			    mode_params += " " + nick;
 			}
 			if (prot)
@@ -4806,7 +5008,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 	else
 	{
 	    unsigned int i;
-	    bool oped, halfoped, voiced, owner, prot;
+	    bool oped, halfoped, voiced, owner, owner2, prot;
 	    mstring chan;
 
 	    if (Magick::instance().nickserv.IsLive(source))
@@ -4817,7 +5019,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 		    char c = 0;
 
 		    chan = IrcParam(params, i);
-		    oped = halfoped = voiced = owner = prot = false;
+		    oped = halfoped = voiced = owner = owner2 = prot = false;
 		    while (c != chan[0u])
 		    {
 			c = chan[0u];
@@ -4839,6 +5041,10 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			    owner = true;
 			    chan.erase(0, 0);
 			    break;
+			case '.':
+			    owner2 = true;
+			    chan.erase(0, 0);
+			    break;
 			case '~':
 			    prot = true;
 			    chan.erase(0, 0);
@@ -4856,6 +5062,8 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 			clive->Mode(nlive->Server(), "+v " + source);
 		    if (owner)
 			clive->Mode(nlive->Server(), "+q " + source);
+		    if (owner2)
+			clive->Mode(nlive->Server(), "+u " + source);
 		    if (prot)
 			clive->Mode(nlive->Server(), "+a " + source);
 		}
@@ -5113,6 +5321,70 @@ void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & 
     else if (msgtype == "TKL" || msgtype == "TKLINE")
     {
     }
+    else if (msgtype == "TMODE")
+    {
+	// :source TMODE source timestamp :mode
+	// :source TMODE #channel timestamp mode params...
+	// :server TMODE #channel timestamp mode params... creationtime
+	if (!GetChannel(IrcParam(params, 1)).empty())
+	{
+	    mstring chan = GetChannel(IrcParam(params, 1));
+
+	    if (!chan.empty())
+	    {
+		mstring mode = IrcParam(params, 3);
+
+		unsigned int i, wc = IrcParamCount(params);
+		mstring mode_param;
+		for (i=4; i<=wc; i++)
+		    mode_param += " " + IrcParam(params, i);
+
+		if (proto.Numeric.User())
+		{
+		    unsigned int fwdarg = 1;
+		    mstring new_param;
+
+		    for (unsigned int i = 0; i < mode.length() && fwdarg <= mode_param.WordCount(" "); i++)
+		    {
+			if (proto.ChanModeArg().Contains(mode[i]))
+			{
+			    // We MUST convert numerics to users ... *sigh*
+			    switch (mode[i])
+			    {
+			    case 'o':
+			    case 'h':
+			    case 'v':
+				new_param += " " + GetUser("!" + mode_param.ExtractWord(fwdarg, " "));
+				break;
+			    default:
+				new_param += " " + mode_param.ExtractWord(fwdarg, " ");
+			    }
+			    fwdarg++;
+			}
+		    }
+		    mode_param = new_param;
+		}
+		Magick::instance().chanserv.GetLive(chan)->Mode(source, mode + " " + mode_param);
+	    }
+	    else
+	    {
+		LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", ("MODE", source, IrcParam(params, 1)));
+	    }
+	}
+	else
+	{
+	    mstring nick = GetUser(IrcParam(params, 1));
+
+	    if (!nick.empty())
+	    {
+		Magick::instance().nickserv.GetLive(nick)->Mode(IrcParam(params, 3));
+	    }
+	    else
+	    {
+		LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", ("MODE", source, IrcParam(params, 1)));
+	    }
+	}
+    }
     else if (msgtype == "TOPIC")
     {
 	// :user TOPIC #channel :topic
@@ -5290,6 +5562,9 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	// We will ignore GZLINES because they're not relivant to us.
 	// we will not be glining our own clients ;P
     }
+    else if (msgtype == "UNJUPITER")
+    {
+    }
     else if (msgtype == "UNRQLINE")
     {
 	// We will ignore RQLINES because they're not relivant to us.
@@ -5341,10 +5616,13 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	case 1001:		// NICK nick hops time user host server 1 :realname
 	case 1002:		// NICK nick hops time user host server 0 real-host :realname
 	case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	case 1004:		// NICK nick hops time user real-host host server 0 ipaddress :realname
 	case 2000:		// NICK nick hops time mode user host server :realname
 	case 2001:		// NICK nick hops time mode user host server 0 :realname
 	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	case 2004:		// NICK nick hops time mode user host server 0 ipaddress :realname
+	case 2005:		// NICK nick hops time mode user host maskhost server 0 ipaddress :realname
 	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
 	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
 	    break;
@@ -5403,10 +5681,13 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 	case 1001:		// NICK nick hops time user host server 1 :realname
 	case 1002:		// NICK nick hops time user host server 0 real-host :realname
 	case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	case 1004:		// NICK nick hops time user real-host host server 0 ipaddress :realname
 	case 2000:		// NICK nick hops time mode user host server :realname
 	case 2001:		// NICK nick hops time mode user host server 0 :realname
 	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
 	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	case 2004:		// NICK nick hops time mode user host server 0 ipaddress :realname
+	case 2005:		// NICK nick hops time mode user host maskhost server 0 ipaddress :realname
 	case 3000:		// NICK nick hops time user host [mode] ipaddr numeric :realname
 	case 4000:		// CLIENT nick hops signon-time mode user host server nickid :realname
 	    break;

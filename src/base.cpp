@@ -222,28 +222,31 @@ void mMessage::AddDependancies()
 
     if (msgtype_ == "BURST")
     {
-	size_t i, offset = 3;
-	mstring modes = params_.ExtractWord(offset, " ");
-
-	if (modes[0u] != '+')
-	    modes.erase();
-	if (modes.length())
+	if (params_.WordCount(" ") > 2)
 	{
-	    offset++;
-	    for (i = 0; i < modes.length(); i++)
-		if (Magick::instance().server.proto.ChanModeArg().Contains(modes[i]))
-		    offset++;
-	}
+	    size_t i, offset = 3;
+	    mstring modes = params_.ExtractWord(offset, " ");
 
-	mstring users = params_.After(" ", offset);
-	for (i=1; i<=users.WordCount(","); i++)
-	{
-	    mstring nick(users.ExtractWord(i, ",").Before(":"));
+	    if (modes[0u] != '+')
+		modes.erase();
+	    if (modes.length())
+	    {
+		offset++;
+		for (i = 0; i < modes.length(); i++)
+		    if (Magick::instance().server.proto.ChanModeArg().Contains(modes[i]))
+			offset++;
+	    }
 
-	    if (Magick::instance().server.proto.Numeric.User())
-		AddDepend(NickExists, "!" + nick);
-	    else
-		AddDepend(NickExists, nick.LowerCase());
+	    mstring users = params_.After(" ", offset);
+	    for (i=1; i<=users.WordCount(","); i++)
+	    {
+		mstring nick(users.ExtractWord(i, ",").Before(":"));
+
+		if (Magick::instance().server.proto.Numeric.User())
+		    AddDepend(NickExists, "!" + nick);
+		else
+		    AddDepend(NickExists, nick.LowerCase());
+	    }
 	}
     }
     else if (msgtype_ == "JOIN")
@@ -403,6 +406,7 @@ void mMessage::AddDependancies()
 			case '%':
 			case '+':
 			case '*':
+			case '.':
 			case '~':
 			    nick.erase(0, 0);
 			    break;
@@ -437,6 +441,7 @@ void mMessage::AddDependancies()
 		    case '%':
 		    case '+':
 		    case '*':
+		    case '.':
 		    case '~':
 			chan.erase(0, 0);
 			break;

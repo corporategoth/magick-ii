@@ -1526,7 +1526,11 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	mstring tmp = "PASS " + server.Password();
 
 	if (Magick::instance().server.proto.TSora())
+	{
 	    tmp += " :TS";
+	    if (Magick::instance().server.proto.TSora() >= 7)
+		tmp << Magick::instance().server.proto.TSora();
+	}
 	Magick::instance().server.raw(tmp);
 
 	// 5 args - server name, hops, server desc and numeric (optional) and timestamp.
