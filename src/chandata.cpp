@@ -1813,14 +1813,11 @@ bool Chan_Stored_t::Join(const mstring & nick)
     {
 	if (!nlive->HasMode("o"))
 	{
-	    if (Magick::instance().chanserv.IsLive(i_Name))
-	    {
-		// This will extend the time we stay in channel if already active ...
-		clive->LockDown();
+	    // This will extend the time we stay in channel if already active ...
+	    clive->LockDown();
 
-		RLOCK2((lck_ChanServ, lck_stored, i_Name, "setting.Mlock_On"));
-		clive->SendMode("+" + setting.Mlock_On + "b " + nlive->AltMask(Magick::instance().operserv.Ignore_Method()));
-	    }
+	    RLOCK2((lck_ChanServ, lck_stored, i_Name, "setting.Mlock_On"));
+	    clive->SendMode("+" + setting.Mlock_On + "b " + nlive->AltMask(Magick::instance().operserv.Ignore_Method()));
 
 	    // Can only insert with reason or default, so its safe.
 	    mstring reason = parseMessage(Magick::instance().getMessage(nick, "CS_STATUS/ISFORBIDDEN"), mVarArray(i_Name));
@@ -1846,7 +1843,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 		modes << " " << setting.Mlock_Limit;
 	}
 
-	if (!modes.empty() && Magick::instance().chanserv.IsLive(i_Name))
+	if (!modes.empty())
 	{
 	    clive->SendMode("+" + modes + " " + setting.Mlock_Key + " " +
 			    (setting.Mlock_Limit ? mstring(setting.Mlock_Limit) : mstring("")));
@@ -1864,18 +1861,15 @@ bool Chan_Stored_t::Join(const mstring & nick)
 
 	if (rv && ((Akick->Entry().Contains("@")) || (nstored != NULL && nstored->IsOnline())))
 	{
-	    if (Magick::instance().chanserv.IsLive(i_Name))
-	    {
-		// If this user is the only user in channel
-		if (users == 1)
-		    clive->LockDown();
+	    // If this user is the only user in channel
+	   if (users == 1)
+		clive->LockDown();
 
-		// Committee or stored entry
-		if (Akick->Entry() [0u] == '@' || Magick::instance().nickserv.IsStored(Akick->Entry()))
-		    clive->SendMode("+b " + nlive->AltMask(Magick::instance().operserv.Ignore_Method()));
-		else
-		    clive->SendMode("+b " + Akick->Entry());
-	    }
+	    // Committee or stored entry
+	    if (Akick->Entry() [0u] == '@' || Magick::instance().nickserv.IsStored(Akick->Entry()))
+		clive->SendMode("+b " + nlive->AltMask(Magick::instance().operserv.Ignore_Method()));
+	    else
+		clive->SendMode("+b " + Akick->Entry());
 
 	    LOG(LM_DEBUG, "EVENT/AKICK", (nick, i_Name, Akick->Value()));
 
@@ -1886,16 +1880,14 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	}
     }
 
-    if (Restricted() && !Suspended() && GetAccess(nick) < 1)
+    long access = GetAccess(nick);
+    if (Restricted() && !Suspended() && access < 1)
     {
-	if (Magick::instance().chanserv.IsLive(i_Name))
-	{
-	    // If this user is the only user in channel
-	    if (users == 1)
-		clive->LockDown();
+	// If this user is the only user in channel
+	if (users == 1)
+	    clive->LockDown();
 
-	    clive->SendMode("+b " + nlive->AltMask(Magick::instance().operserv.Ignore_Method()));
-	}
+	clive->SendMode("+b " + nlive->AltMask(Magick::instance().operserv.Ignore_Method()));
 
 	LOG(LM_DEBUG, "EVENT/RESTRICTED", (nick, i_Name));
 
@@ -1932,7 +1924,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 		modes << " " << setting.Mlock_Limit;
 	}
 
-	if (!modes.empty() && Magick::instance().chanserv.IsLive(i_Name))
+	if (!modes.empty())
 	    clive->SendMode("+" + modes);
 
 	if (!burst)
@@ -1955,8 +1947,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	}
     }
 
-
-    if (GetAccess(nick) > 0)
+    if (access > 0)
     {
 	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "i_LastUsed"));
 	MCB(i_LastUsed);
@@ -1965,21 +1956,18 @@ bool Chan_Stored_t::Join(const mstring & nick)
     }
 
     // If the access level the user has is above the 'maximum', they're a founder
-    if (!Magick::instance().server.proto.FounderMode().empty() && GetAccess(nick) > Magick::instance().chanserv.Level_Max())
+    if (!Magick::instance().server.proto.FounderMode().empty() && access > Magick::instance().chanserv.Level_Max())
     {
 	for (unsigned int i = 0; i < Magick::instance().server.proto.FounderMode().length(); i++)
 	    clive->SendMode("+" + mstring(Magick::instance().server.proto.FounderMode()[i]) + " " + nick);
     }
 
-    if (Magick::instance().chanserv.IsLive(i_Name))
-    {
-	if (GetAccess(nick, "AUTOOP"))
-	    clive->SendMode("+o " + nick);
-	else if (Magick::instance().server.proto.ChanModeArg().Contains('h') && GetAccess(nick, "AUTOHALFOP"))
-	    clive->SendMode("+h " + nick);
-	else if (GetAccess(nick, "AUTOVOICE"))
-	    clive->SendMode("+v " + nick);
-    }
+    if (access >= Level_value("AUTOOP"))
+	clive->SendMode("+o " + nick);
+    else if (Magick::instance().server.proto.ChanModeArg().Contains('h') && access >= Level_value("AUTOHALFOP"))
+	clive->SendMode("+h " + nick);
+    if (access >= Level_value("AUTOVOICE"))
+	clive->SendMode("+v " + nick);
 
     if (Suspended())
     {
@@ -2019,7 +2007,7 @@ bool Chan_Stored_t::Join(const mstring & nick)
 	}
     }
 
-    if (!target.empty() && GetAccess(nick, "READMEMO") && Magick::instance().memoserv.IsChannel(i_Name))
+    if (!target.empty() && access >= Level_value("READMEMO") && Magick::instance().memoserv.IsChannel(i_Name))
     {
 	size_t count = Magick::instance().memoserv.ChannelNewsCount(i_Name, nick);
 
@@ -2299,6 +2287,14 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
     unsigned int fwdargs = 1, i, wc;
     bool add = true;
 
+    bool burst = false;
+
+    {
+	RLOCK((lck_IrcSvcHandler));
+	if (Magick::instance().ircsvchandler != NULL)
+	    burst = Magick::instance().ircsvchandler->Burst();
+    }
+
     wc = IrcParamCount(mode);
     mstring mode_param;
     for (i=2; i<=wc; i++)
@@ -2326,18 +2322,19 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 		{
 		    if (add)
 		    {
-			// If all of the following are true:
-			//    The mode was not set on services
-			//    The mode was not set on someone with CMDOP or AUTOOP access
-			//    The mode was either:
-			//       Set by a server, and anarchy is off
-			//       Not set by a server, and secureops is on
-			// or the mode was set on someone at or below AUTODEOP
-			if ((
-			     !(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			// If the mode was set on someone at or below AUTODEOP, OR
+			//  (The mode was not set on services AND
+			//   The mode was not set on someone with CMDOP or AUTOOP access AND
+			//   (the channel is secure ops OR
+			//    (the channel mode was set by a server AND
+			//     anarchy is not on
+			//    )
+			//   )
+			//  )
+			if (GetAccess(arg) <= Level_value("AUTODEOP") ||
+			    (!(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
 			     !(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) &&
-			     (setter.Contains(".") ? !Anarchy() : Secureops())
-			    ) || GetAccess(arg) <= Level_value("AUTODEOP"))
+			     (Secureops() || (!burst && setter.Contains(".") && !Anarchy()))))
 			{
 			    out_mode += "-o";
 			    out_param += " " + arg;
@@ -2364,18 +2361,19 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 		{
 		    if (add)
 		    {
-			// If all of the following are true:
-			//    The mode was not set on services
-			//    The mode was not set on someone with CMDHALFOP or AUTOHALFOP access
-			//    The mode was either:
-			//       Set by a server, and anarchy is off
-			//       Not set by a server, and secureops is on
-			// or the mode was set on someone at or below AUTODEOP
-			if ((
-			     !(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			// If the mode was set on someone at or below AUTODEOP, OR
+			//  (The mode was not set on services AND
+			//   The mode was not set on someone with CMDHALFOP or AUTOHALFOP access AND
+			//   (the channel is secure ops OR
+			//    (the channel mode was set by a server AND
+			//     anarchy is not on
+			//    )
+			//   )
+			//  )
+			if (GetAccess(arg) <= Level_value("AUTODEOP") ||
+			    (!(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
 			     !(GetAccess(arg, "CMDHALFOP") || GetAccess(arg, "AUTOHALFOP")) &&
-			     (setter.Contains(".") ? !Anarchy() : Secureops())
-			    ) || GetAccess(arg) <= Level_value("AUTODEOP"))
+			     (Secureops() || (!burst && setter.Contains(".") && !Anarchy()))))
 			{
 			    out_mode += "-h";
 			    out_param += " " + arg;
@@ -2391,18 +2389,19 @@ void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
 		{
 		    if (add)
 		    {
-			// If all of the following are true:
-			//    The mode was not set on services
-			//    The mode was not set on someone with CMDVOICE or AUTOVOICE access
-			//    The mode was either:
-			//       Set by a server, and anarchy is off
-			//       Not set by a server, and secureops is on
-			// or the mode was set on someone at or below AUTODEOP
-			if ((
-			     !(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
+			// If the mode was set on someone at or below AUTODEOP, OR
+			//  (The mode was not set on services AND
+			//   The mode was not set on someone with CMDHALFOP or AUTOHALFOP access AND
+			//   (the channel is secure ops OR
+			//    (the channel mode was set by a server AND
+			//     anarchy is not on
+			//    )
+			//   )
+			//  )
+			if (GetAccess(arg) <= Level_value("AUTODEOP") ||
+			    (!(Magick::instance().nickserv.IsLive(arg) && Magick::instance().nickserv.GetLive(arg)->IsServices()) &&
 			     !(GetAccess(arg, "CMDVOICE") || GetAccess(arg, "AUTOVOICE")) &&
-			     (setter.Contains(".") ? !Anarchy() : Secureops())
-			    ) || GetAccess(arg) <= Level_value("AUTODEOP"))
+			     (Secureops() || (!burst && setter.Contains(".") && !Anarchy()))))
 			{
 			    out_mode += "-v";
 			    out_param += " " + arg;

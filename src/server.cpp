@@ -3488,20 +3488,21 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 	// :source JOIN :#channel
 	mstring chan(IrcParam(params, 1));
 
-	Magick::instance().nickserv.GetLive(source)->Join(chan);
-	Magick::instance().chanserv.GetLive(chan)->Mode(source, "+o " + source);
+	map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(source);
+	nlive->Join(chan);
+	Magick::instance().chanserv.GetLive(chan)->Mode(nlive->Server(), "+o " + source);
     }
     else if (msgtype == "CYCLE")
     {
 	if (source.Contains("."))
 	    return;
 
-	map_entry<Nick_Live_t> clive = Magick::instance().nickserv.GetLive(source);
+	map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(source);
 	for (unsigned long i = 1; i <= IrcParam(params, 1).WordCount(","); i++)
 	{
 	    mstring chan(IrcParam(params, 1).ExtractWord(i, ","));
-	    clive->Part(chan);
-	    clive->Join(chan);
+	    nlive->Part(chan);
+	    nlive->Join(chan);
 	}
     }
     else

@@ -2005,16 +2005,48 @@ mstring Nick_Live_t::ChanIdentify(const mstring & channel, const mstring & passw
 
     if (Magick::instance().chanserv.IsStored(channel))
     {
-	unsigned int failtimes = Magick::instance().chanserv.GetStored(channel)->CheckPass(i_Name, password);
+	map_entry<Chan_Stored_t> cstored = Magick::instance().chanserv.GetStored(channel);
+	unsigned int failtimes = cstored->CheckPass(i_Name, password);
 
 	if (!failtimes)
 	{
+	    long oldlevel = cstored->GetAccess(i_Name);
+
 	    {
 		WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "chans_founder_identd"));
 		MCB(chans_founder_identd.size());
 		chans_founder_identd.insert(channel.LowerCase());
 		MCE(chans_founder_identd.size());
 	    }
+
+	    if (Magick::instance().chanserv.IsLive(channel))
+	    {
+		map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(channel);
+		if (clive->IsIn(i_Name))
+		{
+		    long level = cstored->GetAccess(i_Name);
+		    if (oldlevel < level)
+		    {
+			if (oldlevel < cstored->Level_value("AUTOOP") && level >= cstored->Level_value("AUTOOP"))
+			{
+			    if (!clive->IsOp(i_Name))
+				clive->SendMode("+o " + i_Name);
+			}
+			else if (Magick::instance().server.proto.ChanModeArg().Contains('h') &&
+				 oldlevel < cstored->Level_value("AUTOHALFOP") && level >= cstored->Level_value("AUTOHALFOP"))
+			{
+			    if (!clive->IsHalfOp(i_Name))
+				clive->SendMode("+h " + i_Name);
+			}
+			else if (oldlevel < cstored->Level_value("AUTOVOICE") && level >= cstored->Level_value("AUTOVOICE"))
+			{
+			    if (!clive->IsVoice(i_Name))
+				clive->SendMode("+v " + i_Name);
+			}
+		    }
+		}
+	    }
+
 	    retval = parseMessage(Magick::instance().getMessage(i_Name, "CS_COMMAND/IDENTIFIED"), mVarArray(channel));
 	}
 	else
@@ -2105,9 +2137,10 @@ mstring Nick_Live_t::Identify(const mstring & password)
 		    map_entry < Committee_t > comm(iter->second);
 		    if (comm->IsOn(i_Name))
 			wason.insert(comm->Name());
-
 		}
 	    }
+	    bool wasrecognized = (!nstored->Secure() && IsRecognized());
+
 	    {
 		WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "identified"));
 		WLOCK2((lck_NickServ, lck_live, i_Name.LowerCase(), "failed_passwds"));
@@ -2120,6 +2153,99 @@ mstring Nick_Live_t::Identify(const mstring & password)
 	    }
 
 	    PostSignon(wason, nstored->Secure() || !IsRecognized());
+
+	    set < mstring > jc;
+	    set < mstring >::iterator jci;
+	    vector < mstring > chunked;
+	    // Rename ourselves in all channels ...
+	    {
+		RLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "joined_channels"));
+		jc = joined_channels;
+	    }
+
+	    for (jci = jc.begin(); jci != jc.end(); jci++)
+	    {
+		if (Magick::instance().chanserv.IsStored(*jci))
+		{
+		    bool op = false, halfop = false, voice = false;
+		    {
+			map_entry<Chan_Stored_t> cstored = Magick::instance().chanserv.GetStored(*jci);
+
+			// If, by rights, my access should not have changed, continue.
+			if (wasrecognized && !cstored->Secure())
+			    continue;
+
+			// See if we're akicked first ...
+			{
+			    MLOCK((lck_ChanServ, lck_stored, cstored->Name(), "Akick"));
+			    bool rv = cstored->Akick_find(i_Name, Chan_Stored_t::C_IsOn);
+
+			    if (rv)
+			    {
+				if (Magick::instance().chanserv.IsLive(*jci))
+				{
+				    map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(*jci);
+
+				    // If this user is the only user in channel
+				    if (clive->Users() == 1)
+					clive->LockDown();
+
+				    if (cstored->Akick->Entry() [0u] == '@' || !cstored->Akick->Entry().Contains("@"))
+					clive->SendMode("+b " + AltMask(Magick::instance().operserv.Ignore_Method()));
+				    else
+					clive->SendMode("+b " + cstored->Akick->Entry());
+
+				    LOG(LM_DEBUG, "EVENT/AKICK", (i_Name, *jci, cstored->Akick->Value()));
+				    // Can only insert with reason or default, so its safe.
+				    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), i_Name, *jci, cstored->Akick->Value());
+				}
+				else
+				{
+				    chunked.push_back(*jci);
+				    LOG(LM_ERROR, "ERROR/REC_FORNOTINCHAN", ("NICK", i_Name, *jci));
+				}
+				continue;
+			    }
+			}
+
+			long access = cstored->GetAccess(i_Name);
+			if (access >= cstored->Level_value("AUTOOP"))
+			    op = true;
+			else if (Magick::instance().server.proto.ChanModeArg().Contains('h') && access >= cstored->Level_value("AUTOHALFOP"))
+			    halfop = true;
+			else if (access >= cstored->Level_value("AUTOVOICE"))
+			    voice = true;
+		    }
+
+		    if (op || halfop || voice)
+		    {
+			if (Magick::instance().chanserv.IsLive(*jci))
+			{
+			    map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(*jci);
+			    if (op && !clive->IsOp(i_Name))
+				clive->SendMode("+o " + i_Name);
+			    else if (halfop && !clive->IsHalfOp(i_Name))
+				clive->SendMode("+h " + i_Name);
+			    else if (voice && !clive->IsVoice(i_Name))
+				clive->SendMode("+v " + i_Name);
+			}
+			else
+			{
+			    chunked.push_back(*jci);
+			    LOG(LM_ERROR, "ERROR/REC_FORNOTINCHAN", ("NICK", i_Name, *jci));
+			}
+		    }
+		}
+	    }
+
+	    // Clean up non-existant channels ...
+	    {
+		WLOCK((lck_NickServ, lck_live, i_Name.LowerCase(), "joined_channels"));
+		CB(5, joined_channels.size());
+		for (unsigned int i = 0; i < chunked.size(); i++)
+		    joined_channels.erase(chunked[i]);
+		CE(5, joined_channels.size());
+	    }
 
 	    retval = Magick::instance().getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
 	}
