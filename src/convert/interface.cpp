@@ -121,7 +121,14 @@ void convert_db(convert_t c)
 	wrecked_load_message();
 	break;
     case CONVERT_TRIRCD:
-	LOG(LM_EMERGENCY, "COMMANDLINE/CANNOT_CONVERT", ("trircd"));
+	trircd_load_nick();
+	trircd_load_nickext();
+	trircd_load_chan();
+	trircd_load_chanext();
+	trircd_load_news();
+	trircd_load_akill();
+	trircd_load_oper();
+	trircd_load_exception();
 	break;
     case CONVERT_CYGNUS:
 	cygnus_load_nick();

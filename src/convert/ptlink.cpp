@@ -1187,8 +1187,6 @@ mstring ptlink_getmodes(short modes)
     ETCB();
 }
 
-
-
 #define ptlink_SAFE(x) do {					\
     if ((x) < 0) {					\
 	    SLOG(LM_EMERGENCY, "Read error on %s",( ptlink_NewsDBName));	\
@@ -1557,6 +1555,8 @@ Nick_Stored_t *Convert::ptlink_CreateNickEntry(ptlink_NickInfo * ni)
 	    out->setting.Protect = true;
 	if (ni->flags & ptlink_NI_PRIVATE && !out->L_Private())
 	    out->setting.Private = true;
+	if (ni->status & ptlink_NS_NO_EXPIRE && !Magick::instance().nickserv.LCK_NoExpire())
+	    out->setting.NoExpire = true;
 
 	if (ni->flags & ptlink_NI_SUSPENDED)
 	{
@@ -1564,12 +1564,8 @@ Nick_Stored_t *Convert::ptlink_CreateNickEntry(ptlink_NickInfo * ni)
 	    out->i_Suspend_Time = mDateTime::CurrentDateTime();
 	}
 
-	if (ni->status & ptlink_NS_NO_EXPIRE)
-	    out->setting.NoExpire = true;
-
 	return out;
     }
-
 
     ETCB();
 }
@@ -1647,6 +1643,9 @@ Chan_Stored_t *Convert::Convert::ptlink_CreateChanEntry(ptlink_ChanInfo * ci)
 	    out->i_Topic_Setter = mstring(ci->last_topic_setter);
 	 out->i_Topic_Set_Time = mDateTime(ci->last_topic_time);
 
+	if (ci->entry_message != NULL && strlen(ci->entry_message))
+	    out->Message_insert(ci->entry_message, Magick::instance().chanserv.FirstName());
+
 	long newlevel;
 	float mod = (float) Magick::instance().chanserv.Level_Max() / (float) ptlink_ACCESS_FOUNDER;
 
@@ -1694,53 +1693,62 @@ Chan_Stored_t *Convert::Convert::ptlink_CreateChanEntry(ptlink_ChanInfo * ci)
 	{
 	    for (i = 0; i < ptlink_CA_SIZE; ++i)
 	    {
+		if (ci->levels[i] == ptlink_ACCESS_INVALID)
+		    newlevel = Magick::instance().chanserv.Level_Max() + 2;
+		else if (ci->levels[i] == ptlink_ACCESS_FOUNDER)
+		    newlevel = Magick::instance().chanserv.Level_Max() + 1;
+		else if (ci->levels[i] < 0)
+		    newlevel = -1;
+		else
+		    newlevel = (long) ((float) ci->levels[i] * mod);
+
 		switch (i)
 		{
 		case ptlink_CA_AUTODEOP:
-		    out->Level_change("AUTODEOP", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("AUTODEOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_AUTOVOICE:
-		    out->Level_change("AUTOVOICE", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("AUTOVOICE", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_AUTOOP:
-		    out->Level_change("AUTOOP", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("AUTOOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_MEMOREAD:
-		    out->Level_change("READMEMO", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("READMEMO", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_MEMOSEND:
-		    out->Level_change("WRITEMEMO", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("WRITEMEMO", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_MEMODEL:
-		    out->Level_change("DELMEMO", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("DELMEMO", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_AKICK:
-		    out->Level_change("AKICK", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("AKICK", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_UNBAN:
-		    out->Level_change("UNBAN", ci->levels[i], Magick::instance().chanserv.FirstName());
-		    out->Level_change("CMDUNBAN", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("UNBAN", newlevel, Magick::instance().chanserv.FirstName());
+		    out->Level_change("CMDUNBAN", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_ACCESS_CHANGE:
-		    out->Level_change("ACCESS", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("ACCESS", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_ACCESS_LIST:
-		    out->Level_change("VIEW", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("VIEW", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_SET:
-		    out->Level_change("SET", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("SET", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_INVITE:
-		    out->Level_change("CMDINVITE", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("CMDINVITE", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_OPDEOP:
-		    out->Level_change("CMDOP", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("CMDOP", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_CLEAR:
-		    out->Level_change("CMDCLEAR", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("CMDCLEAR", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		case ptlink_CA_KICK:
-		    out->Level_change("CMDKICK", ci->levels[i], Magick::instance().chanserv.FirstName());
+		    out->Level_change("CMDKICK", newlevel, Magick::instance().chanserv.FirstName());
 		    break;
 		}
 	    }

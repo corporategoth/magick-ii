@@ -96,6 +96,11 @@ struct sirv_MemoList;
 struct ptlink_NickInfo;
 struct ptlink_ChanInfo;
 struct ptlink_MemoInfo;
+struct trircd_NickInfo;
+struct trircd_ChanInfo;
+struct trircd_MemoInfo;
+struct trircd_NickExt;
+struct trircd_ChanExt;
 
 class Convert
 {
@@ -140,6 +145,13 @@ public:
     static Chan_Stored_t *ptlink_CreateChanEntry(ptlink_ChanInfo *ci);
     static MemoServ::nick_memo_t ptlink_CreateMemoEntry(ptlink_MemoInfo *ml, const char *name);
     static MemoServ::channel_news_t ptlink_CreateNewsEntry(ptlink_MemoInfo *ml, const char *name);
+
+    static Nick_Stored_t *trircd_CreateNickEntry(trircd_NickInfo *ni);
+    static void trircd_UpdateNickEntry(trircd_NickExt *ne, char *name);
+    static Chan_Stored_t *trircd_CreateChanEntry(trircd_ChanInfo *ci);
+    static void trircd_UpdateChanEntry(trircd_ChanExt *ne, char *name);
+    static MemoServ::nick_memo_t trircd_CreateMemoEntry(trircd_MemoInfo *ml, const char *name);
+    static MemoServ::channel_news_t trircd_CreateNewsEntry(trircd_MemoInfo *ml, const char *name);
 
 };
 

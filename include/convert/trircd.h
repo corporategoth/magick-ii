@@ -35,6 +35,18 @@ RCSID(convert_trircd_h, "@(#) $Id$");
 
 #ifdef CONVERT
 
+/* Based upon the DB loading routines from trircd-services 4.26
+ * (c) 1999-2000 Andrew Church <achurch@achurch.org>
+ */
+
+void trircd_load_nick();
+void trircd_load_nickext();
+void trircd_load_chan();
+void trircd_load_chanext();
+void trircd_load_news();
+void trircd_load_akill();
+void trircd_load_oper();
+void trircd_load_exception();
 
 #endif /* CONVERT */
 #endif /* _CONVERT_TRIRCD_H */
