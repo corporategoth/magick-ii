@@ -119,6 +119,7 @@ Contents
 6.1.5	MODE
 6.1.6	PING
 6.1.7	SETTINGS
+6.1.8	KILLCHAN
 6.2	Services Operators
 6.2.1	OPERDENY
 6.2.2	HTM
@@ -1848,6 +1849,29 @@ OTHER will show all information that doesn't quite fit elsewhere,
 	maximum clone limits, flood protection and ignore thresholds,
 	and the default committee options.
 ALL will execute ALL of the above commands.
+
+You must be on the OPER or SOP committees to use this command.
+
+
+6.1.8	KILLCHAN
+----------------
+
+SYNTAX: KILLCHAN ADD <channel> [[+]time] <reason>
+        KILLCHAN DEL <channel|number>
+        KILLCHAN LIST [channel]
+
+This maintains the kill channel list.  The kill channel list is simply a
+list of channels that will akill all users who join, the time these akills
+will last for, and why the channel is akilling all users who join. The
+maximum time allowable is different for each committee, and set in the
+Magick configuration file.
+
+ADD will add a new channel to the kill channel list.
+DEL will remove either a channel or the numbered entry from the
+	kill channel list.  The entry numbers are shown on a LIST.
+LIST will list out all current entries on the kill channel list.
+	If a channel is specified (wildcards allowed), only entries
+	matching that wildcard will be displayed.
 
 You must be on the OPER or SOP committees to use this command.
 
