@@ -25,6 +25,9 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/07/24 17:50:35  ungod
+** should be finished... not tested
+**
 ** Revision 1.9  2000/06/23 14:23:37  ungod
 ** more completion of the ceNode class and more work done on mConfigEngine
 **
@@ -103,7 +106,7 @@ public:
     bool SaveFile();
     void Empty();
 
-    mstring &Read(const mstring &key, const mstring Defailt="");
+    mstring Read(const mstring &key, const mstring Defailt="");
     bool Read(const mstring &key, mstring &outvar, mstring Default="");
     bool Read(const mstring &key, bool &outvar, bool Default=true);
     bool Read(const mstring &key, int &outvar, int Default=0);

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2000/07/24 17:51:21  ungod
+** should be finished... not tested
+**
 ** Revision 1.13  2000/07/21 00:18:49  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -466,94 +469,202 @@ void mConfigEngine::Empty()
 }
 
 
-mstring &mConfigEngine::Read(const mstring &key, const mstring Default)
+mstring mConfigEngine::Read(const mstring &key, const mstring Default)
 {
     FT("mConfigEngine::Read", (key, Default));
-    RET((mstring &) key);
+    mstring Result;
+    Result=RootNode.GetKey(key,Default);
+    RET(Result);
 }
 
 bool mConfigEngine::Read(const mstring &key, mstring &outvar, mstring Default)
 {
     FT("mConfigEngine::Read", (key, "(mstring &) outvar", Default));
-    RET(false);
+    bool Result=true;
+    outvar=RootNode.GetKey(key,Default);
+    if(outvar="")
+    {
+        outvar=Default;
+        Result=false;
+    }
+    RET(Result);
 }
 
 bool mConfigEngine::Read(const mstring &key, bool &outvar, bool Default)
 {
     FT("mConfigEngine::Read", (key, "(bool &) outvar", Default));
-    RET(false);
+    mstring tmp;
+    bool Result=true;
+    tmp=RootNode.GetKey(key,Default);
+    if (tmp.CmpNoCase("true")==0 || tmp.CmpNoCase("on")==0 || tmp.CmpNoCase("yes")==0 ||
+     tmp.CmpNoCase("y")==0 || tmp.CmpNoCase("t")==0 || tmp == "1")
+        outvar=true;
+    else if(tmp.CmpNoCase("false")==0 || tmp.CmpNoCase("off")==0 || tmp.CmpNoCase("no")==0 ||
+     tmp.CmpNoCase("n")==0 || tmp.CmpNoCase("f")==0 || tmp == "0")
+        outvar=false;
+    else
+    {
+        outvar=Default;
+        Result=false;
+    }
+    RET(Result);
 }
 
 bool mConfigEngine::Read(const mstring &key, int &outvar, int Default)
 {
     FT("mConfigEngine::Read", (key, "(int &) outvar", Default));
-    RET(false);
+    mstring tmpvar;
+    bool Result=true;
+    tmpvar=RootNode.GetKey(key,Default);
+    if(tmpvar.IsNumber())
+        outvar=ACE_OS::atoi(tmpvar.c_str());
+    else
+    {
+        outvar=Default;
+        Result=false;
+    }
+    RET(Result);
 }
 
 bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int Default)
 {
     FT("mConfigEngine::Read", (key, "(unsigned int &) outvar", Default));
-    RET(false);
+    mstring tmpvar;
+    bool Result=true;
+    tmpvar=RootNode.GetKey(key,Default);
+    if(tmpvar.IsNumber())
+        outvar=ACE_OS::atoi(tmpvar.c_str());
+    else
+    {
+        outvar=Default;
+        Result=false;
+    }
+    RET(Result);
 }
 
 bool mConfigEngine::Read(const mstring &key, long &outvar, int Default)
 {
     FT("mConfigEngine::Read", (key, "(long &) outvar", Default));
-    RET(false);
+    mstring tmpvar;
+    char **endptr;
+    bool Result=true;
+    tmpvar=RootNode.GetKey(key,Default);
+    if(tmpvar.IsNumber())
+        outvar=ACE_OS::strtol(tmpvar.c_str(),endptr,10);
+    else
+    {
+        outvar=Default;
+        Result=false;
+    }
+    RET(Result);
 }
 
 bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned int Default)
 {
     FT("mConfigEngine::Read", (key, "(unsigned long &) outvar", Default));
-    RET(false);
+    mstring tmpvar;
+    char **endptr;
+    bool Result=true;
+    tmpvar=RootNode.GetKey(key,Default);
+    if(tmpvar.IsNumber())
+        outvar=ACE_OS::strtoul(tmpvar.c_str(),endptr,10);
+    else
+    {
+        outvar=Default;
+        Result=false;
+    }
+    RET(Result);
 }
 
 bool mConfigEngine::Read(const mstring &key, double &outvar, double Default)
 {
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
-    RET(false);
+    mstring tmpvar;
+    char **endptr;
+    bool Result=true;
+    tmpvar=RootNode.GetKey(key,Default);
+    if(tmpvar.IsNumber())
+        outvar=ACE_OS::strtod(tmpvar.c_str(),endptr);
+    else
+    {
+        outvar=Default;
+        Result=false;
+    }
+    RET(Result);
 }
 
 mstring mConfigEngine::Write(const mstring &key,const mstring &value)
 {
     FT("mConfigEngine::Write", (key, value));
-    RET("");
+    mstring Result=RootNode.Write(key,value);
+    RET(Result);
 }
 
 bool mConfigEngine::Write(const mstring &key,bool value)
 {
     FT("mConfigEngine::Write", (key, value));
-    RET(false);
+    bool Result;
+    Read(key,Result,false);
+    if(value==true)
+        Write(key,"True");
+    else
+        Write(key,"False");
+    RET(Result);
 }
 
 int mConfigEngine::Write(const mstring &key,int value)
 {
     FT("mConfigEngine::Write", (key, value));
-    RET(0);
+    mstring tmp;
+    tmp<<value;
+    int Result;
+    Read(key,Result,0);
+    Write(key,tmp);
+    RET(Result);
 }
 
 unsigned int mConfigEngine::Write(const mstring &key,unsigned int value)
 {
     FT("mConfigEngine::Write", (key, value));
-    RET(0);
+    mstring tmp;
+    tmp<<value;
+    unsigned int Result;
+    Read(key,Result,0U);
+    Write(key,tmp);
+    RET(Result);
 }
 
 long mConfigEngine::Write(const mstring &key,long value)
 {
     FT("mConfigEngine::Write", (key, value));
-    RET(0L);
+    mstring tmp;
+    tmp<<value;
+    long Result;
+    Read(key,Result,0);
+    Write(key,tmp);
+    RET(Result);
 }
 
 unsigned long mConfigEngine::Write(const mstring &key,unsigned long value)
 {
     FT("mConfigEngine::Write", (key, value));
-    RET(0L);
+    mstring tmp;
+    tmp<<value;
+    unsigned long Result;
+    Read(key,Result,0U);
+    Write(key,tmp);
+    RET(Result);
 }
 
 double mConfigEngine::Write(const mstring &key,double value)
 {
     FT("mConfigEngine::Write", (key, value));
-    RET(0.0);
+    mstring tmp;
+    tmp<<value;
+    double Result;
+    Read(key,Result,0.0);
+    Write(key,tmp);
+    RET(Result);
 }
 
 
