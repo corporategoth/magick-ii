@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.183  2001/07/05 05:59:12  prez
+** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
+**
 ** Revision 1.182  2001/07/03 06:00:07  prez
 ** More deadlock fixes ... also cleared up the Signal #6 problem.
 **
@@ -1351,26 +1354,36 @@ void Nick_Live_t::Join(const mstring& chan)
     // the channel to be completed.
     if (joined)
     {
-	if (Parent->chanserv.IsStored(chan))
-	    Parent->chanserv.GetStored(chan).Join(i_Name);
-	WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+	{ WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
 	MCB(joined_channels.size());
 	joined_channels.insert(chan.LowerCase());
 	MCE(joined_channels.size());
+	}
+	if (Parent->chanserv.IsStored(chan))
+	    Parent->chanserv.GetStored(chan).Join(i_Name);
     }
+    mMessage::CheckDependancies(mMessage::ChanExists, chan);
+    mMessage::CheckDependancies(mMessage::UserInChan, chan, i_Name);
 }
 
 
 void Nick_Live_t::Part(const mstring& chan)
 {
     FT("Nick_Live_t::Part", (chan));
+
+    { WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    MCB(joined_channels.size());
+    joined_channels.erase(chan.LowerCase());
+    MCE(joined_channels.size());
+    }
+
+    unsigned int res = 0;
     if (Parent->chanserv.IsLive(chan))
     {
 	// If this returns 0, then the channel is empty.
-	if (Parent->chanserv.GetLive(chan).Part(i_Name) == 0)
-	{
+	res = Parent->chanserv.GetLive(chan).Part(i_Name);
+	if (!res)
 	    Parent->chanserv.RemLive(chan);
-	}
     }
     else
     {
@@ -1378,22 +1391,29 @@ void Nick_Live_t::Part(const mstring& chan)
 		"PART", i_Name, chan));
     }
 
-    WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
-    MCB(joined_channels.size());
-    joined_channels.erase(chan.LowerCase());
-    MCE(joined_channels.size());
+    mMessage::CheckDependancies(mMessage::UserNoInChan, chan, i_Name);
+    if (!res)
+	mMessage::CheckDependancies(mMessage::ChanNoExists, chan);
 }
 
 void Nick_Live_t::Kick(const mstring& kicker, const mstring& chan)
 {
     FT("Nick_Live_t::Kick", (kicker, chan));
+
+    { WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
+    MCB(joined_channels.size());
+    joined_channels.erase(chan.LowerCase());
+    MCE(joined_channels.size());
+    }
+
+    unsigned int res = 0;
     if (Parent->chanserv.IsLive(chan))
     {
 	// If this returns 0, then the channel is empty.
-	if (Parent->chanserv.GetLive(chan).Kick(i_Name, kicker) == 0)
-	{
+	res = Parent->chanserv.GetLive(chan).Kick(i_Name, kicker);
+	if (!res)
 	    Parent->chanserv.RemLive(chan);
-	}
+	
     }
     else
     {
@@ -1401,10 +1421,9 @@ void Nick_Live_t::Kick(const mstring& kicker, const mstring& chan)
 		"KICK", kicker, chan));
     }
 
-    WLOCK(("NickServ", "live", i_Name.LowerCase(), "joined_channels"));
-    MCB(joined_channels.size());
-    joined_channels.erase(chan.LowerCase());
-    MCE(joined_channels.size());
+    mMessage::CheckDependancies(mMessage::UserNoInChan, chan, i_Name);
+    if (!res)
+	mMessage::CheckDependancies(mMessage::ChanNoExists, chan);
 }
 
 
@@ -5028,11 +5047,10 @@ void NickServ::AddCommands()
 		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
 #ifdef GETPASS
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"GETPASS*", Parent->commserv.SOP_Name(), NickServ::do_Getpass);
-#else
+		"GETPASS*", Parent->commserv.SADMIN_Name(), NickServ::do_Getpass);
+#endif
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SETPASS*", Parent->commserv.SOP_Name(), NickServ::do_Setpass);
-#endif
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LIVE*", Parent->commserv.SOP_Name(), NickServ::do_Live);
 
@@ -6778,7 +6796,7 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 	target, host));
 }
 
-#else /* GETPASS */
+#endif /* GETPASS */
 
 void NickServ::do_Setpass(const mstring &mynick, const mstring &source, const mstring &params)
 {
@@ -6844,8 +6862,6 @@ void NickServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, host));
 }
-
-#endif /* GETPASS */
 
 void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstring &params)
 {

@@ -25,10 +25,8 @@ RCSID(logfile_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.20  2001/05/05 17:33:57  prez
-** Changed log outputs from printf-style to tokenized style files.
-** Now use LOG/NLOG/SLOG/SNLOG rather than just LOG for output.  All
-** formatting must be done BEFORE its sent to the logger (use fmstring).
+** Revision 1.21  2001/07/05 05:59:05  prez
+** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
 **
 ** ========================================================== */
@@ -36,10 +34,10 @@ RCSID(logfile_h, "@(#) $Id$");
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Sat May  5 12:12:42 EDT 2001
+ * Created on Wed Jul  4 18:27:19 EDT 2001
  */
 
-unsigned int def_logent =     335;
+unsigned int def_logent =     343;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
@@ -100,6 +98,7 @@ char *def_log[] = {
 "ZERO_LEVEL       =Zero or error in parsing trace level, ignoring.",
 "CFG_SYNTAX       =Configuration token \"$1\" contains a syntax error or invalid data.",
 "UNKNOWN_PROTO    =Unknown protocol identifier $1, default ($2) used.",
+"START_CONVERT    =Converting and loading foreign databases ...",
 "START_LANG       =Loading default language file ...",
 "START_FORK       =Spawning into background ...",
 "START_EVENTS     =Starting events engine ...",
@@ -125,6 +124,7 @@ char *def_log[] = {
 "UNSUSPEND        =$1 unsuspended nickname $2.",
 "FORBID           =$1 forbade nickname $2 from being registered.",
 "GETPASS          =$1 retrieved the password for nickname $2 ($3).",
+"SETPASS          =$1 reset the password for nickname $2 ($3).",
 "ACCESS_ADD       =$1 added hostmask $2 to nickname $3.",
 "ACCESS_DEL       =$1 removed hostmask $2 from nickname $3.",
 "IGNORE_ADD       =$1 added nickname $2 to the ignore list for nickname $3.",
@@ -149,6 +149,7 @@ char *def_log[] = {
 "UNSUSPEND        =$1 unsuspended channel $2.",
 "FORBID           =$1 forbade channel $2 from being registered.",
 "GETPASS          =$1 retrieved the password for channel $2 ($3).",
+"SETPASS          =$1 reset the password for channel $2 ($3).",
 "MODE             =$1 changed mode \"$2\" on channel $3 with the MODE command.",
 "OP               =$1 oped $2 in channel $3 with the OP command.",
 "DEOP             =$1 deoped $2 in channel $3 with the DEOP command.",
@@ -161,6 +162,7 @@ char *def_log[] = {
 "UNBAN            =$1 unbanned $2 from channel $3 with the UNBAN command.",
 "COMMAND          =$1 executed the $2 command for channel $3.",
 "LEVEL            =$1 set the level of $2 to $3 for channel $4.",
+"LEVEL_ALL        =$1 reset all levels for channel $4.",
 "ACCESS_ADD       =$1 added $2 to the access list for channel $3 at level $4.",
 "ACCESS_CHANGE    =$1 changed $2 on the access list of channel $3 to level $4.",
 "ACCESS_DEL       =$1 removed $2 from the access list for channel $3.",
@@ -276,7 +278,7 @@ char *def_log[] = {
 "COULDNOTOPEN     =Could not open file $1 ($2) - #$3: $4.",
 "FILEOPERROR      =Could not perform $1 on file $2 - #$3: $4.",
 "DIROPERROR       =Could not perform $1 on directory $2 - #$3: $4.",
-"OPERROR          =Could nor perform $1 - #$2: $3.",
+"OPERROR          =Could not perform $1 - #$2: $3.",
 "FILEMAPFULL      =Could not find an available file number for type $1!",
 "MISSING_FILE1    =Removed physical file type $1, #$2 that did not have a file map entry.",
 "MISSING_FILE2    =Removed file map entry type $1, #$2 that did not have a physical file.",
@@ -297,7 +299,6 @@ char *def_log[] = {
 "LOCK_DUP         =Duplicate $1 lock $2 detected where only 1 allowed!",
 "THREAD_DEAD      =Non-processing thread detected - attempting to stop thread!",
 "THREAD_DEAD_HALF =Over half of threads not processing, shutting down!",
-"EXCEPTION        =Exception thrown on line $1, column $2 of $3.",
 "LOCKED_BIN       =System lock values do not match!  Binary recompile required!",
 "",
 "[EXCEPTIONS]",
@@ -348,10 +349,10 @@ char *def_log[] = {
 "; These are errors (of varying severity) that we may encounter.",
 ";",
 "[ERROR]",
-"SIGNAL           =RECEIVED SIGNAL $1, EXITING.",
 "REQ_BYNONUSER    =$1 command requested by non-existent user $2.",
 "REQ_BYNONSERVICE =$1 command requested by non-service $2.",
 "REQ_FORNONUSER   =$1 command requested by $2 for non-existent user $3.",
+"REQ_TOSERVICE    =$1 command requested by $2 to services user $3.",
 "REQ_TOUSER       =$1 command requested by $2 to existing user $3.",
 "REQ_FORNONCHAN   =$1 command requested by $2 for non-existent channel $3.",
 "REQ_FORNONSERVER =$1 command requested by $2 for non-existent server $3.",
@@ -373,8 +374,13 @@ char *def_log[] = {
 "NOLIMIT          =No limit specified when required for channel $1 from $2.",
 "NOLANGTOKEN      =Invalid token $1 for language $2 used, error returned.",
 "BADSET           =Tried to set BAD data ($1) for $2 on $3.",
-"DB_SANITY_FAIL   =Database load failed sanity checks (usually because of invalid key).",
-"DB_CORRUPT       =Database load failed due to data corruption.",
-"INVALID_TYPE     =Invalid data type $1 on message queue, ignored.",
+"DB_NOPROCESS     =Database failed the most basic checks, and was not processed.",
+"DB_NOKEY         =Database is encrypted, but either no key file or an invalid key file was used.",
+"DB_NODECRYPT     =Decryption of database failed (usually because the database is truncated).",
+"DB_NODECOMPRESS  =Decompression of databases failed (usually because the wrong key was used).",
+"DB_NOSANITY      =Database failed sanity check (usually because the wrong database version is used).",
+"DB_NOPARSE       =Failed to parse databases (internal data structure is incorrect!).",
+"WRONG_PASS_TYPE  =Hashed (one-way) passwords found - this binary does not support them!",
+"KEY_CORRUPT      =Keyfile $1 failed validation checks (requires regeneration) - NOT USED!",
 "" };
 #endif

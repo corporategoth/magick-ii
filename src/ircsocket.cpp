@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.172  2001/07/05 05:59:11  prez
+** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
+**
 ** Revision 1.171  2001/07/03 06:00:07  prez
 ** More deadlock fixes ... also cleared up the Signal #6 problem.
 **
@@ -666,7 +669,8 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 		&& arg != NULL)
 		delete arg;
 	}
-	Parent->server.ServerSquit[si->first] =
+	if (!Parent->Shutdown())
+	    Parent->server.ServerSquit[si->first] =
 		ACE_Reactor::instance()->schedule_timer(&Parent->server.squit,
 		new mstring(si->first),
 		ACE_Time_Value(Parent->config.Squit_Protect()));
@@ -676,24 +680,28 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     Parent->server.DumpE();
     }
   
-    NickServ::live_t::iterator iter;
-    vector<mstring> chunked;
-    { RLOCK(("NickServ", "live"));
-    for (iter=Parent->nickserv.LiveBegin(); iter != Parent->nickserv.LiveEnd(); iter++)
+    if (!Parent->Shutdown())
     {
-	RLOCK2(("NickServ", "live", iter->first));
-	if (iter->second.IsServices())
+	RLOCK(("NickServ", "live"));
+	NickServ::live_t::iterator iter;
+	vector<mstring> chunked;
+	for (iter=Parent->nickserv.LiveBegin(); iter != Parent->nickserv.LiveEnd(); iter++)
 	{
-	    chunked.push_back(iter->first);
+	    RLOCK2(("NickServ", "live", iter->first));
+	    if (iter->second.IsServices())
+	    {
+		chunked.push_back(iter->first);
+	    }
+	    else if (Parent->server.IsList(iter->second.Server()))
+	    {
+		iter->second.SetSquit();
+	    }
 	}
-	else if (Parent->server.IsList(iter->second.Server()))
-	{
-	    iter->second.SetSquit();
-	}
-    }}
-    // Sign off services if we have NO uplink
-    for (i=0; i<chunked.size(); i++)
-	Parent->server.QUIT(chunked[i], "SQUIT - " + Parent->startup.Server_Name());
+	// Sign off services if we have NO uplink
+	for (i=0; i<chunked.size(); i++)
+	    Parent->server.QUIT(chunked[i], "SQUIT - " + Parent->startup.Server_Name());
+    }
+
     { WLOCK(("Server", "list"));
     Parent->server.i_list.clear();
     }
@@ -897,15 +905,85 @@ void IrcSvcHandler::enqueue(const mstring &message, const u_long inpriority)
     if (msgtype == "303")
 	priority = P_Delay;
 
-    mMessage *msg = new mMessage(source, msgtype, params, priority);
-    if (!msg->OutstandingDependancies())
-	enqueue(msg);
-    /* else
-    {
-	ACE_Thread::yield();
-	if (!msg->RecheckDependancies())
+    try {
+	mMessage *msg = new mMessage(source, msgtype, params, priority);
+	if (!msg->OutstandingDependancies())
 	    enqueue(msg);
-    } */
+    }
+    catch (E_NickServ_Live &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Live::T_Invalid:
+		case E_NickServ_Live::T_Blank:
+		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+		    {
+			Parent->nickserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_ChanServ_Live &e)
+    {
+	switch(e.where())
+	{
+	    case E_ChanServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_ChanServ_Live::T_Invalid:
+		case E_ChanServ_Live::T_Blank:
+		    if (strlen(e.what()) && Parent->chanserv.IsLive(e.what()))
+		    {
+			Parent->chanserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_Server_List &e)
+    {
+	switch(e.where())
+	{
+	    case E_Server_List::W_Get:
+		switch (e.type())
+		{
+		case E_Server_List::T_Invalid:
+		case E_Server_List::T_Blank:
+		    if (strlen(e.what()) && Parent->server.IsList(e.what()))
+		    {
+			Parent->server.RemList(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (exception &e)
+    {
+	LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", ( e.what()));
+    }
+    catch (...)
+    {
+	NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
+    }
 }
 
 void IrcSvcHandler::enqueue_shutdown()
@@ -1145,11 +1223,44 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     vector<mstring>::iterator k;
     for (k=chunked.begin(); k!=chunked.end(); k++)
     {
-	if (Parent->nickserv.IsLiveAll(*k))
+	try
 	{
-	    Parent->nickserv.GetLive(*k).Quit("FAKE SQUIT - " + *tmp);
-	    Parent->nickserv.RemLive(*k);
-	    mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+	    if (Parent->nickserv.IsLiveAll(*k))
+	    {
+		Parent->nickserv.GetLive(*k).Quit("FAKE SQUIT - " + *tmp);
+		Parent->nickserv.RemLive(*k);
+		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+	    }
+	}
+	catch (E_NickServ_Live &e)
+	{
+	    switch(e.where())
+	    {
+		case E_NickServ_Live::W_Get:
+		    switch (e.type())
+		    {
+		    case E_NickServ_Live::T_Invalid:
+		    case E_NickServ_Live::T_Blank:
+			if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+			{
+			    Parent->nickserv.RemLive(e.what());
+			}
+			break;
+		    default:
+			break;
+		    }
+		    break;
+		default:
+		    break;
+	    }
+	}
+	catch (exception &e)
+	{
+	    LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", ( e.what()));
+	}
+	catch (...)
+	{
+	    NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
 	}
     }
     Parent->server.DumpE();
@@ -1191,11 +1302,44 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     vector<mstring>::iterator k;
     for (k=SquitMe.begin(); k != SquitMe.end(); k++)
     {
-	if (Parent->nickserv.IsLiveAll(*k))
+	try
 	{
-	    Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
-	    Parent->nickserv.RemLive(*k);
-	    mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+	    if (Parent->nickserv.IsLiveAll(*k))
+	    {
+		Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
+		Parent->nickserv.RemLive(*k);
+		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
+	    }
+	}
+	catch (E_NickServ_Live &e)
+	{
+	    switch(e.where())
+	    {
+		case E_NickServ_Live::W_Get:
+		    switch (e.type())
+		    {
+		    case E_NickServ_Live::T_Invalid:
+		    case E_NickServ_Live::T_Blank:
+			if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+			{
+			    Parent->nickserv.RemLive(e.what());
+			}
+			break;
+		    default:
+			break;
+		    }
+		    break;
+		default:
+		    break;
+	    }
+	}
+	catch (exception &e)
+	{
+	    LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", ( e.what()));
+	}
+	catch (...)
+	{
+	    NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
 	}
     }
 
@@ -1245,23 +1389,78 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // This is to part channels I'm not supposed to be
     // in (ie. dont have JOIN on, and I'm the only user
     // in them).  ie. after AKICK, etc.
-    if (Parent->chanserv.IsLive(*tmp) &&
-	Parent->chanserv.GetLive(*tmp).IsIn(
-			Parent->chanserv.FirstName()))
+    try
     {
-	Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
-	if (Parent->chanserv.IsLive(*tmp))
+	if (Parent->chanserv.IsLive(*tmp) &&
+		Parent->chanserv.GetLive(*tmp).IsIn(
+			Parent->chanserv.FirstName()))
 	{
-	    RLOCK(("ChanServ", "live", tmp->LowerCase()));
-	    Chan_Live_t &clive = Parent->chanserv.GetLive(tmp->LowerCase());
-	    clive.DumpB();
-	    { MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
-	    CB(1, clive.ph_timer);
-	    clive.ph_timer = 0;
-	    CE(1, clive.ph_timer);
+	    Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
+	    if (Parent->chanserv.IsLive(*tmp))
+	    {
+		RLOCK(("ChanServ", "live", tmp->LowerCase()));
+		Chan_Live_t &clive = Parent->chanserv.GetLive(tmp->LowerCase());
+		clive.DumpB();
+		{ MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
+		CB(1, clive.ph_timer);
+		clive.ph_timer = 0;
+		CE(1, clive.ph_timer);
+		}
+		clive.DumpE();
 	    }
-	    clive.DumpE();
 	}
+    }
+    catch (E_NickServ_Live &e)
+    {
+	switch(e.where())
+	{
+	    case E_NickServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_NickServ_Live::T_Invalid:
+		case E_NickServ_Live::T_Blank:
+		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+		    {
+			Parent->nickserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_ChanServ_Live &e)
+    {
+	switch(e.where())
+	{
+	    case E_ChanServ_Live::W_Get:
+		switch (e.type())
+		{
+		case E_ChanServ_Live::T_Invalid:
+		case E_ChanServ_Live::T_Blank:
+		    if (strlen(e.what()) && Parent->chanserv.IsLive(e.what()))
+		    {
+			Parent->chanserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (exception &e)
+    {
+	LOG(LM_CRITICAL, "EXCEPTIONS/UNHANDLED", ( e.what()));
+    }
+    catch (...)
+    {
+	NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
     }
     delete tmp;
     DRET(0);
@@ -2076,7 +2275,7 @@ int EventTask::svc(void)
 		{
 		case E_NickServ_Stored::T_Invalid:
 		case E_NickServ_Stored::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->nickserv.IsStored(e.what()))
 		    {
 			Parent->nickserv.RemStored(e.what());
 		    }
@@ -2098,7 +2297,7 @@ int EventTask::svc(void)
 		{
 		case E_NickServ_Live::T_Invalid:
 		case E_NickServ_Live::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
 		    {
 			Parent->nickserv.RemLive(e.what());
 		    }
@@ -2120,7 +2319,7 @@ int EventTask::svc(void)
 		{
 		case E_NickServ_Recovered::T_Invalid:
 		case E_NickServ_Recovered::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->nickserv.IsRecovered(e.what()))
 		    {
 			Parent->nickserv.RemRecovered(e.what());
 		    }
@@ -2142,7 +2341,7 @@ int EventTask::svc(void)
 		{
 		case E_ChanServ_Stored::T_Invalid:
 		case E_ChanServ_Stored::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->chanserv.IsStored(e.what()))
 		    {
 			Parent->chanserv.RemStored(e.what());
 		    }
@@ -2164,7 +2363,7 @@ int EventTask::svc(void)
 		{
 		case E_ChanServ_Live::T_Invalid:
 		case E_ChanServ_Live::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->chanserv.IsLive(e.what()))
 		    {
 			Parent->chanserv.RemLive(e.what());
 		    }
@@ -2186,7 +2385,7 @@ int EventTask::svc(void)
 		{
 		case E_CommServ_List::T_Invalid:
 		case E_CommServ_List::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->commserv.IsList(e.what()))
 		    {
 			Parent->commserv.RemList(e.what());
 		    }
@@ -2208,7 +2407,7 @@ int EventTask::svc(void)
 		{
 		case E_Server_List::T_Invalid:
 		case E_Server_List::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->server.IsList(e.what()))
 		    {
 			Parent->server.RemList(e.what());
 		    }
@@ -2238,7 +2437,7 @@ int EventTask::svc(void)
 		{
 		case E_DccMap_Xfers::T_Invalid:
 		case E_DccMap_Xfers::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && DccMap::IsXfers(atoi(e.what())))
 		    {
 			DccMap::RemXfers(atoi(e.what()));
 		    }

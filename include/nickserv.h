@@ -25,6 +25,9 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2001/07/05 05:59:05  prez
+** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
+**
 ** Revision 1.72  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -769,9 +772,8 @@ public:
     static void do_Forbid(const mstring &mynick, const mstring &source, const mstring &params);
 #ifdef GETPASS
     static void do_Getpass(const mstring &mynick, const mstring &source, const mstring &params);
-#else
-    static void do_Setpass(const mstring &mynick, const mstring &source, const mstring &params);
 #endif
+    static void do_Setpass(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_Live(const mstring &mynick, const mstring &source, const mstring &params);
     static void do_LiveOper(const mstring &mynick, const mstring &source, const mstring &params);
 

@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.185  2001/07/05 05:59:12  prez
+** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
+**
 ** Revision 1.184  2001/07/03 06:00:08  prez
 ** More deadlock fixes ... also cleared up the Signal #6 problem.
 **
@@ -1940,8 +1943,6 @@ void Server::JOIN(const mstring& nick, const mstring& channel)
 	for (unsigned int i=0; i<channel.WordCount(", "); i++)
 	{
 	    Parent->nickserv.GetLive(nick).Join(channel.ExtractWord(i+1, ", "));
-	    mMessage::CheckDependancies(mMessage::ChanExists, channel.ExtractWord(i+1, ", "));
-	    mMessage::CheckDependancies(mMessage::UserInChan, channel.ExtractWord(i+1, ", "), nick);
 	}
 	raw(":" + nick + " " +
 		((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
@@ -1994,9 +1995,6 @@ void Server::KICK(const mstring& nick, const mstring& dest,
 		((proto.Tokens() && !proto.GetNonToken("KICK").empty()) ?
 			proto.GetNonToken("KICK") : mstring("KICK")) +
 		" " + channel + " " + dest + " :" + reason);
-	mMessage::CheckDependancies(mMessage::UserNoInChan, channel, dest);
-	if (!Parent->chanserv.IsLive(channel))
-	    mMessage::CheckDependancies(mMessage::ChanNoExists, channel);
     }
 }
 
@@ -2394,9 +2392,6 @@ void Server::PART(const mstring& nick, const mstring& channel,
 		((proto.Tokens() && !proto.GetNonToken("PART").empty()) ?
 			proto.GetNonToken("PART") : mstring("PART")) +
 		" " + channel + tmpResult);
-	mMessage::CheckDependancies(mMessage::UserNoInChan, channel, nick);
-	if (!Parent->chanserv.IsLive(channel))
-	    mMessage::CheckDependancies(mMessage::ChanNoExists, channel);
     }
 }
 
@@ -3431,8 +3426,6 @@ void Server::parse_J(mstring &source, const mstring &msgtype, const mstring &par
 	    {
 		mstring chan(params.ExtractWord(i, ":, "));
 		Parent->nickserv.GetLive(sourceL).Join(chan);
-		mMessage::CheckDependancies(mMessage::ChanExists, chan);
-		mMessage::CheckDependancies(mMessage::UserInChan, chan, source);
 	    }
 	}
 	else
@@ -3476,9 +3469,6 @@ void Server::parse_K(mstring &source, const mstring &msgtype, const mstring &par
 	    // NOTE: as the message has already been broadcasted,
 	    // we still need to acomodate for it.
 	    Parent->nickserv.GetLive(params.ExtractWord(2, ": ")).Kick(source, params.ExtractWord(1, ": "));
-	    mMessage::CheckDependancies(mMessage::UserNoInChan, params.ExtractWord(1, ": "), params.ExtractWord(2, ": "));
-	    if (!Parent->chanserv.IsLive(params.ExtractWord(1, ": ")))
-		mMessage::CheckDependancies(mMessage::ChanNoExists, params.ExtractWord(1, ": "));
 	}
 	else if (msgtype=="KILL")
 	{
@@ -4151,7 +4141,6 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 
 	    // :source PART #channel :reason
 	    Parent->nickserv.GetLive(sourceL).Part(params.ExtractWord(1, ": "));
-	    mMessage::CheckDependancies(mMessage::UserNoInChan, params.ExtractWord(1, ": "), sourceL);
 	}
 	else if (msgtype=="PASS")
 	{
@@ -4628,10 +4617,6 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 		    {
 			Parent->chanserv.GetLive(chan).Mode(
 				Parent->chanserv.FirstName(), modes + " " + mode_params);
-
-			mMessage::CheckDependancies(mMessage::ChanExists, chan);
-			for (i=0; i<users.size(); i++)
-			    mMessage::CheckDependancies(mMessage::UserInChan, chan, users[i]);
 		    }
 		}
 		else if (modes.length() > 1)
@@ -4696,9 +4681,6 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			if (prot)
 			    Parent->chanserv.GetLive(chan).Mode(
 				Parent->chanserv.FirstName(), "+a " + source);
-
-			mMessage::CheckDependancies(mMessage::ChanExists, chan);
-			mMessage::CheckDependancies(mMessage::UserInChan, chan, source);
 		    }
 		}
 		else

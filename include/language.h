@@ -25,11 +25,8 @@ RCSID(language_h, "@(#) $Id$");
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.30  2001/05/06 03:03:07  prez
-** Changed all language sends to use $ style tokens too (aswell as logs), so we're
-** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
-** been changed to ANNOUNCE and NANNOUNCE.  All language files modified already.
-** Also added example lng and lfo file, so you can see the context of each line.
+** Revision 1.31  2001/07/05 05:59:05  prez
+** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
 **
 ** ========================================================== */
@@ -37,10 +34,10 @@ RCSID(language_h, "@(#) $Id$");
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Sat May  5 17:26:12 EDT 2001
+ * Created on Wed Jul  4 18:27:19 EDT 2001
  */
 
-unsigned int def_langent =     897;
+unsigned int def_langent =     909;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1997-2001 Preston A. Elder <prez@magick.tm>",
@@ -175,6 +172,8 @@ char *def_lang[] = {
 "COFOUNDER          =Cannot set the Co-Founder the same as the Founder.",
 "NOACCESS           =Access denied.",
 "NOT_SUPPORTED      =This functionality is not supported by the IRC Server in use.",
+"ISLOCKED_NICK      =$1 option is locked for ALL nicknames.",
+"ISLOCKED_CHAN      =$1 option is locked for ALL channels.",
 "",
 ";",
 "; This section deals with DCC actions.",
@@ -228,6 +227,8 @@ char *def_lang[] = {
 "ONLINE             =ONLINE",
 "SUSPENDED          =SUSPENDED",
 "FORBIDDEN          =FORBIDDEN",
+"LVL_FOUNDER        =FOUNDER",
+"LVL_DISABLED       =DISABLED",
 "SVC_AUTO           =Automatic",
 "SVC_MSG            =Message",
 "SVC_LOG            =Logging",
@@ -249,6 +250,8 @@ char *def_lang[] = {
 "EXPIRE_AKILL       =Expiring akill for $1 ($2) set by $3 for $4.",
 "NICK_GETPASS       =$1 just performed a GETPASS on nickname $2 ($3).",
 "CHAN_GETPASS       =$1 just performed a GETPASS on channel $2 ($3).",
+"NICK_SETPASS       =$1 just performed a SETPASS on nickname $2 ($3).",
+"CHAN_SETPASS       =$1 just performed a SETPASS on channel $2 ($3).",
 "GLOBAL_MSG         =$1 just sent a message to ALL users.",
 "FLOOD_TEMP         =$1 is FLOODING services.  Placed on temporary ignore.",
 "FLOOD_PERM         =$1 is FLOODING services.  Placed on permanent ignore.",
@@ -307,7 +310,8 @@ char *def_lang[] = {
 "NICK_CMD3          =HOST          $1 / IDENTIFY      $2",
 "NICK_CMD4          =GHOST         $1 / RECOVER       $2",
 "NICK_CMD5          =SUSPEND       $1 / UNSUSPEND     $2",
-"NICK_CMD6          =FORBID        $1 / GETPASS       $2",
+"NICK_CMD6A         =FORBID        $1 / GETPASS       $2",
+"NICK_CMD6B         =FORBID        $1 / SETPASS       $2",
 "NICK_CMD7          =ACCESS        $1 / IGNORE        $2",
 "NICK_CMD8          =SET           $1 / NOEXPIRE      $2",
 "NICK_CMD9          =LOCK          $1 / UNLOCK        $2",
@@ -319,7 +323,8 @@ char *def_lang[] = {
 "CHAN_CMD1          =REGISTER      $1 / DROP          $2",
 "CHAN_CMD2          =IDENTIFY      $1",
 "CHAN_CMD3          =SUSPEND       $1 / UNSUSPEND     $2",
-"CHAN_CMD4          =FORBID        $1 / GETPASS       $2",
+"CHAN_CMD4A         =FORBID        $1 / GETPASS       $2",
+"CHAN_CMD4B         =FORBID        $1 / SETPASS       $2",
 "CHAN_CMD5          =MODE          $1 / TOPIC         $2",
 "CHAN_CMD6          =OP            $1 / DEOP          $2",
 "CHAN_CMD7          =VOICE         $1 / DEVOICE       $2",
@@ -403,6 +408,7 @@ char *def_lang[] = {
 "ADD_TIME           =Added entry $1 to $2 list for $3.",
 "CHANGE_LEVEL       =Changed entry $1 on $2 list to level $3.",
 "CHANGE_TIME        =Changed entry $1 on $2 list to $3.",
+"CHANGE_ALL         =Changed ALL entries on $2.",
 "DEL                =Deleted entry $1 from $2 list.",
 "DEL_MATCH          =Deleted $1 entries matching $2 from $3 list.",
 "DEL_NUMBER         =Deleted entry #$1 from $2 list.",
@@ -419,6 +425,7 @@ char *def_lang[] = {
 "ADD2_TIME          =Added entry $1 to $2 $3 list for $4.",
 "CHANGE2_LEVEL      =Changed entry $1 on $2 $3 list to level $4.",
 "CHANGE2_TIME       =Changed entry $1 on $2 $3 list to $4.",
+"CHANGE2_ALL        =Changed ALL entries on $2 $3.",
 "DEL2               =Deleted entry $1 from $2 $3 list.",
 "DEL2_MATCH         =Deleted $1 entries matching $2 from $3 $4 list.",
 "DEL2_NUMBER        =Deleted entry #$1 from $2 $3 list.",
@@ -554,6 +561,7 @@ char *def_lang[] = {
 "UNSUSPENDED        =Nickname $1 has been unsuspended.",
 "FORBIDDEN          =Nickname $1 has been forbidden.",
 "GETPASS            =Password for nickname $1 ($2) is $3.",
+"SETPASS            =Password for nickname $1 ($2) reset to $3.",
 "LOCKED             =$1 for nickname $2 has been LOCKED to $3.",
 "UNLOCKED           =$1 for nickname $2 has been UNLOCKED.",
 "OPT_LOCKED         =$1 option for nickname $2 has been LOCKED to $3.",
@@ -737,6 +745,7 @@ char *def_lang[] = {
 "UNSUSPENDED        =Channel $1 has been unsuspended.",
 "FORBIDDEN          =Channel $1 has been forbidden.",
 "GETPASS            =Password for channel $1 ($2) is $3.",
+"SETPASS            =Password for channel $1 ($2) reset to $3.",
 "KICK               =Requested by $1 ($2)",
 "INVITE             =You have been invited to channel $1.",
 "OTH_INVITE         =You have been invited to channel $1 by $2.",
@@ -771,7 +780,7 @@ char *def_lang[] = {
 "ISNOTLOCKED        =$1 for committee $2 is not locked.",
 "SET_TO             =$1 for committee $2 has been set to $3.",
 "UNSET              =$1 for committee $2 has been unset.",
-"LOCKED             =$1 for committee $2 has been locked to .$3..",
+"LOCKED             =$1 for committee $2 has been locked to $3.",
 "UNLOCKED           =$1 for committee $2 has been unlocked.",
 "DEFUNCT            =DEFUNCT",
 "",
@@ -928,7 +937,7 @@ char *def_lang[] = {
 "CS_SET             =$1 for news article(s) $2 of channel $3 has been set to $4.",
 "CS_SET_ALL         =$1 for all news articles of channel $2 has been set to $3.",
 "NS_SET             =$1 for your memo(s) $2 has been set to $3",
-"NS_SET_ALL         =$1 for all your memos $2 has been set to $3",
+"NS_SET_ALL         =$1 for all your memos has been set to $2",
 "CANCEL             =Pending memo has been cancelled.",
 "PREVIEW            =Pending memo to $1 is currently:",
 "PENDING            =Memo is now pending.  You have $1 to continue or cancel it.",

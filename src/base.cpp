@@ -27,6 +27,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.172  2001/07/05 05:59:05  prez
+** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
+**
 ** Revision 1.171  2001/07/02 03:39:28  prez
 ** Fixed bug with users sending printf strings (mainly in memos).
 **
@@ -1093,7 +1096,7 @@ int mMessage::call()
 	if (target.Contains("@"))
 	{
 	    target.Truncate(target.Find("@"));
-	    params_.replace(0, params_.find(" ", 1)-1, target);
+	    params_.replace(0, params_.find(" ")-1, target);
 	    CP(("Target changed, new params: %s", params_.c_str()));
 	}
 
@@ -1150,7 +1153,7 @@ int mMessage::call()
 		{
 		case E_NickServ_Stored::T_Invalid:
 		case E_NickServ_Stored::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->nickserv.IsStored(e.what()))
 		    {
 			Parent->nickserv.RemStored(e.what());
 		    }
@@ -1172,7 +1175,7 @@ int mMessage::call()
 		{
 		case E_NickServ_Live::T_Invalid:
 		case E_NickServ_Live::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
 		    {
 			Parent->nickserv.RemLive(e.what());
 		    }
@@ -1194,7 +1197,7 @@ int mMessage::call()
 		{
 		case E_NickServ_Recovered::T_Invalid:
 		case E_NickServ_Recovered::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->nickserv.IsRecovered(e.what()))
 		    {
 			Parent->nickserv.RemRecovered(e.what());
 		    }
@@ -1216,7 +1219,7 @@ int mMessage::call()
 		{
 		case E_ChanServ_Stored::T_Invalid:
 		case E_ChanServ_Stored::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->chanserv.IsStored(e.what()))
 		    {
 			Parent->chanserv.RemStored(e.what());
 		    }
@@ -1238,7 +1241,7 @@ int mMessage::call()
 		{
 		case E_ChanServ_Live::T_Invalid:
 		case E_ChanServ_Live::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->chanserv.IsLive(e.what()))
 		    {
 			Parent->chanserv.RemLive(e.what());
 		    }
@@ -1260,7 +1263,7 @@ int mMessage::call()
 		{
 		case E_CommServ_List::T_Invalid:
 		case E_CommServ_List::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->commserv.IsList(e.what()))
 		    {
 			Parent->commserv.RemList(e.what());
 		    }
@@ -1282,7 +1285,7 @@ int mMessage::call()
 		{
 		case E_Server_List::T_Invalid:
 		case E_Server_List::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && Parent->server.IsList(e.what()))
 		    {
 			Parent->server.RemList(e.what());
 		    }
@@ -1312,7 +1315,7 @@ int mMessage::call()
 		{
 		case E_DccMap_Xfers::T_Invalid:
 		case E_DccMap_Xfers::T_Blank:
-		    if (strlen(e.what()))
+		    if (strlen(e.what()) && DccMap::IsXfers(atoi(e.what())))
 		    {
 			DccMap::RemXfers(atoi(e.what()));
 		    }

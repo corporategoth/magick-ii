@@ -200,6 +200,14 @@ more than one of any type, you can put a number from 2-8 after
 the LOCK, eg. RLOCK2(()), etc.  The argument inside the (()) is
 a vararray, so you may specify up to 16 'known' types (see
 variant.h for a list of known types).
+Magick also has the ability JUST to lock for an IF (ie. you only
+need the condition within the if, not while inside the conditional
+block).  These are accessed with RLOCK_IF((),cond),
+WLOCK_IF((), cond) and MLOCK((), cond).  As above the arguments
+inside the inner () is a vararray.  If you need a second IF in
+the same subroutine to be locked, then you may put the number 2
+after the LOCK_IF.  But remember, after the IF condition is
+evaluated, the lock will be gone.
 
 90% of all bugs in thread-based programs is because some data
 was accessed by 2 threads at once without propper locking.

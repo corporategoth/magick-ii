@@ -56,8 +56,9 @@
 07 =REGD::    DROP         UNLINK       HOST         SLAVES
 08 =REGD::    ACCESS       IGNORE       SET          SEND
 09 =SOP::And as a Services Operator, the following commands:
-10 =SOP::    GETPASS      SETPASS      LOCK         UNLOCK
-11 =SOP::    FORBID       SUSPEND      UNSUSPEND    LIVE
+10 =SOP::    SETPASS      LOCK         UNLOCK       FORBID
+11 =SOP:SADMIN:    SUSPEND      UNSUSPEND    LIVE
+11 =SADMIN::    GETPASS      SUSPEND      UNSUSPEND    LIVE
 12 =::
 13 =::You may request help on the syntax and functionality
 14 =::of any and all of the above commands by specifying
@@ -271,14 +272,12 @@
 05 =SOP::it to change their nick or be killed/renamed.
 
 [NICKSERV/GETPASS]
-01 =SOP::GETPASS <nickname>
-02 =SOP::
-03 =SOP::This will retrieve the nickname password for a user.
-04 =SOP::Please note that whenever this command is used, a
-05 =SOP::global message to all IRCOPS will be broadcast!
-06 =SOP:SADMIN:You may not retrieve the password of a Services
-07 =SOP:SADMIN:Administrator.
-08 =SOP::NOTE: This may not be available if SETPASS is enabled.
+01 =SADMIN::GETPASS <nickname>
+02 =SADMIN::
+03 =SADMIN::This will retrieve the nickname password for a user.
+04 =SADMIN::Please note that whenever this command is used, a
+05 =SADMIN::global message to all IRCOPS will be broadcast!
+06 =SADMIN::NOTE: This feature may or may not be available.
 
 [NICKSERV/SETPASS]
 01 =SOP::SETPASS <nickname> <password>
@@ -288,7 +287,6 @@
 05 =SOP::global message to all IRCOPS will be broadcast!
 06 =SOP:SADMIN:You may not reset the password of a Services
 07 =SOP:SADMIN:Administrator.
-08 =SOP::NOTE: This may not be available if GETPASS is enabled.
 
 [NICKSERV/LIVE]
 01 =SOP::LIVE [mask [maximum]]
@@ -678,15 +676,17 @@
 02 =::so that it may not be taken by anyone else.
 03 =::
 04 =::This service allows you to use the following commands:
-05 =::    HELP         INFO         LIST         IDENTIFY
+05 =:REGD:    HELP         INFO         LIST
+05 =REGD::    HELP         INFO         LIST         IDENTIFY
 06 =REGD::    REGISTER     DROP         USERS        INVITE
 07 =REGD::    OP           DEOP         VOICE        DEVOICE
 08 =REGD::    MODE         TOPIC        UNBAN        KICK
 09 =REGD::    REMOVE       SET          CLEAR        LEVEL
 10 =REGD::    ACCESS       AKICK        GREET        MESSAGE
 11 =SOP::And as a Services Operator, the following commands:
-12 =SOP::    GETPASS      SETPASS      LOCK         UNLOCK
-13 =SOP::    FORBID       SUSPEND      UNSUSPEND    LIVE
+12 =SOP::    SETPASS      LOCK         UNLOCK       FORBID
+13 =SOP:SADMIN:    SUSPEND      UNSUSPEND    LIVE
+13 =SADMIN::    GETPASS      SUSPEND      UNSUSPEND    LIVE
 14 =::
 15 =::You may request help on the syntax and functionality
 16 =::of any and all of the above commands by specifying
@@ -808,13 +808,13 @@
 05 =SOP::joins it out.
 
 [CHANSERV/GETPASS]
-01 =SOP::GETPASS <channel>
-02 =SOP::
-03 =SOP::This will retrieve the channel password for any
-04 =SOP::registered channel.
-05 =SOP::Please note that whenever this command is used, a
-06 =SOP::global message to all IRCOPS will be broadcast!
-07 =SOP::NOTE: This may not be available if SETPASS is enabled.
+01 =SADMIN::GETPASS <channel>
+02 =SADMIN::
+03 =SADMIN::This will retrieve the channel password for any
+04 =SADMIN::registered channel.
+05 =SADMIN::Please note that whenever this command is used, a
+06 =SADMIN::global message to all IRCOPS will be broadcast!
+07 =SADMIN::NOTE: This feature may or may not be available.
 
 [CHANSERV/SETPASS]
 01 =SOP::SETPASS <channel> <password>
@@ -823,7 +823,6 @@
 04 =SOP::registered channel.
 05 =SOP::Please note that whenever this command is used, a
 06 =SOP::global message to all IRCOPS will be broadcast!
-07 =SOP::NOTE: This may not be available if GETPASS is enabled.
 
 [CHANSERV/MODE]
 01 =REGD::MODE <channel> [modes]
@@ -2790,7 +2789,7 @@
 07B=SADMIN::    ADD          DEL          LIST
 
 [OPERSERV/OPERDENY/ADD]
-01 =SADMIN::OPERDENY ADD <mask>
+01 =SADMIN::OPERDENY ADD <mask> <reason>
 02 =SADMIN::
 03 =SADMIN::This will add the specified mask to the Oper Deny list
 04 =SADMIN::effectively stopping them from setting mode +o (opering
