@@ -178,7 +178,7 @@ ace_main_i(int 1, char * * 0x00d412f0) line 45 + 13 bytes
 main(int 1, char * * 0x00d412f0) line 32 + 69 bytes
 */
     for (int i=0; i<t_indent; i++)
-        finalout += "   ";
+        finalout += "|  ";
     finalout += message;
 //    out << finalout << wxEndL;
     cout << finalout << endl;
@@ -196,7 +196,7 @@ T_Functions::T_Functions(const mstring &name)
     m_name+=name;
     tid = mainthread;
     if (IsOn(tid)) {
-	mstring message = "\\\\ " + m_name + "()";
+	mstring message = "\\  " + m_name + "()";
 	tid->WriteOut(message);
     }
     tid->indentup();
@@ -209,7 +209,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
     m_name=name;
     tid = mainthread;
     if (IsOn(tid)) {
-	mstring message = "\\\\ " + m_name + "(";
+	mstring message = "\\  " + m_name + "(";
 	for (int i=0; i<args.count(); i++) {
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
 	    if (i < args.count() - 1)
@@ -231,9 +231,9 @@ T_Functions::~T_Functions()
     if (IsOn(tid)) {
 	mstring message;
 	if (strlen(return_value.type()))
-		message="// (" + return_value.type() + ") " + return_value.AsString();
+		message="/  (" + return_value.type() + ") " + return_value.AsString();
 	else
-		message="//";
+		message="/ ";
 	tid->WriteOut(message);
     }
 }
@@ -367,7 +367,7 @@ T_Locking::~T_Locking() {
     if (tid == NULL)
 	tid = mainthread;
     if (IsOn(tid)) {
-	if (name) {
+	if (strlen(name)) {
     	    mstring message;
 	    if(locktype == Read)
 	        message << ":- " << "R " << name;

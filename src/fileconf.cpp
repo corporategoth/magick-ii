@@ -841,7 +841,7 @@ ConfigGroup::ConfigGroup(ConfigGroup *pParent,
                            m_aSubgroups(CompareGroups),
                            m_strName(strName)
 {
-  FT("ConfigGroup::ConfigGroup", ("(ConfigGroup) pParent", strName, "(wxFileConfig) pConfig"));
+  FT("ConfigGroup::ConfigGroup", (pParent, strName, "(wxFileConfig) pConfig"));
   m_pConfig = pConfig;
   m_pParent = pParent;
   m_bDirty  = false;

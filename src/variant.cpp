@@ -66,7 +66,10 @@ mVariant::mVariant(const char * in)
 		value.StringValue=in;
 	}
 	else
-		truevaluetype=valuetype="NULL";
+	{
+		truevaluetype="char *";
+		valuetype="NULL";
+	}
 }
 
 mVariant::mVariant(const mstring& in)
@@ -114,7 +117,10 @@ mVariant::mVariant(void * in)
 		value.PtrValue=in;
 	}
 	else
-		truevaluetype=valuetype="NULL";
+	{
+		truevaluetype="void *";
+		valuetype="NULL";
+	}
 }
 
 mVariant::mVariant(const mVariant & in)
@@ -153,7 +159,10 @@ mVariant::mVariant(LineList *in)
         value.StringValue=(in->Text()).c_str();
     }
     else
-    	truevaluetype=valuetype="NULL";
+    {
+        truevaluetype="LineList";
+    	valuetype="NULL";
+    }
 }
 
 mVariant::mVariant(ConfigEntry *in)
@@ -165,7 +174,10 @@ mVariant::mVariant(ConfigEntry *in)
 	value.StringValue=(in->Name() + "=" + in->Value()).c_str();
     }
     else
-    	truevaluetype=valuetype="NULL";
+    {
+    	truevaluetype="ConfigEntry";
+    	valuetype="NULL";
+    }
 }
 
 mVariant::mVariant(ConfigGroup *in)
@@ -177,7 +189,10 @@ mVariant::mVariant(ConfigGroup *in)
 	value.StringValue=(in->Name()).c_str();
     }
     else
-    	truevaluetype=valuetype="NULL";
+    {
+	truevaluetype="ConfigGroup";
+	valuetype="NULL";
+    }
 }
 
 mVariant& mVariant::operator=(const mVariant& in)
