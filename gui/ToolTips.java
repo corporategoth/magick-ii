@@ -41,14 +41,14 @@ public class ToolTips
 	{ "Startup/SETMODE",		"The user modes that all services users will set on signon." },
 	{ "Startup/BIND",		"IP Address to bind to.  If you have more than one IP address\n" +
 					"attached to your machine, and you want to bind to a specific\n" +
-					"one, use this parameter.  Setting this to * will mean\n" +
+					"one, use this parameter.  Setting this to nothing will mean\n" +
 					"'bind to anything', usually being IP address of the first\n" +
 					"network interface on the machine." },
 	{ "Startup/REMOTES",		"Each entry in this table is an IRC server that Magick will\n" +
 					"attempt to connect to.  Magick will go through each entry in\n" +
 					"first priority order, then in a numerically sorted order.  You\n" +
 					"may not have two or more entries in this list with the same\n" +
-					"IP address." },
+					"IP address.  Clearing the IP address field will remove an entry." },
 	{ "Startup/ALLOWS",		"If any entries are listed in this table, ONLY servers listed\n" +
 					"in this table will be able to connect to the IRC network.  If\n" +
 					"a server connects with a name not in this table, Magick will\n" +
