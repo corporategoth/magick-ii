@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.247  2001/05/23 02:47:10  prez
+** *** empty log message ***
+**
 ** Revision 1.246  2001/05/23 02:43:47  prez
 ** Fixed the NOACCESS bug, the chanserv getpass/setpass bug and nickserv failed
 ** passwords kill bug.
@@ -7081,6 +7084,7 @@ void ChanServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
+    RLOCK(("ChanServ", "stored", channel.LowerCase()));
     Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
     channel = chan.Name();
     if (chan.Forbidden())
