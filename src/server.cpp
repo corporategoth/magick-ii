@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.169  2001/05/04 14:13:59  prez
+** Removed the silly msgs going to 'AUTH' on startup with some ircd's.
+**
 ** Revision 1.168  2001/05/04 04:47:15  prez
 ** Added SGLINE
 **
@@ -3963,8 +3966,12 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 
 	    if (!IsChan(params.ExtractWord(1, ": ")))
 	    {
-		LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+		{ RLOCK(("IrcSvcHandler"));
+		if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
+		{
+		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
 			"NOTICE", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+		}}
 	    }
 	}
 	else
@@ -4069,8 +4076,12 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 
 	    if (!IsChan(params.ExtractWord(1, ": ")))
 	    {
-		LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+		{ RLOCK(("IrcSvcHandler"));
+		if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
+		{
+		    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
 			"PRIVMSG", source.c_str(), params.ExtractWord(1, ": ").c_str()));
+		}}
 	    }
 	}
 	else if (msgtype=="PROTOCTL")
