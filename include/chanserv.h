@@ -183,7 +183,7 @@ public:
 
     mstring Name()			{ return i_Name; }
     mDateTime RegTime()			{ return i_RegTime; }
-    mDateTime LastUsed()		{ return i_LastUsed; }
+    mDateTime LastUsed();
     void Founder(mstring in);
     void CoFounder(mstring in);
     mstring Founder()			{ return i_Founder; }

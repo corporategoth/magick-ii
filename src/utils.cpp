@@ -311,6 +311,6 @@ mstring ToHumanTime(unsigned long in)
 	RET("unlimited");
     }
 
-    mDateTime mytime = Now() - (double) (in / (60 * 60 * 24));
+    mDateTime mytime = Now() - ((double) in / (60.0 * 60.0 * 24.0)) - 1.0;
     RET(mytime.Ago());
 }

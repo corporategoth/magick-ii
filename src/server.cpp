@@ -443,11 +443,7 @@ void NetworkServ::MODE(mstring nick, mstring channel, mstring mode)
     else
     {
 	Parent->chanserv.live[channel.LowerCase()].Mode(nick, mode);
-	if (mode.WordCount(" ") > 2)
-	    raw(":" + nick + " MODE " + channel + " " + mode.Before(" ") +
-					" :" + mode.After(" "));
-	else
-	    raw(":" + nick + " MODE " + channel + " " + mode.Before(" ") +
+	raw(":" + nick + " MODE " + channel + " " + mode.Before(" ") +
 					" " + mode.After(" "));
     }
 }

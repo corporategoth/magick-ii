@@ -73,8 +73,13 @@ bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, m
 
     if (!Clone_find(entry))
     {
-	entlist_val_t<pair<unsigned int, mstring> > tmp(entry, pair<unsigned int, mstring>(value, reason), nick);
-	Clone = i_Clone.insert(i_Clone.end(), tmp);
+	pair<set<entlist_val_t<pair<unsigned int, mstring> > >::iterator,bool> tmp;
+	tmp = i_Clone.insert(entlist_val_t<pair<unsigned int, mstring> >(
+			entry, pair<unsigned int, mstring>(value, reason), nick));
+	if (tmp.second)
+	    Clone = tmp.first;
+	else
+	    Clone = i_Clone.end();
 	RET(true);
     }
     else
@@ -156,8 +161,13 @@ bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, 
 
     if (!Akill_find(entry))
     {
-	entlist_val_t<pair<unsigned long, mstring> > tmp(entry, pair<unsigned long, mstring>(value, reason), nick);
-	Akill = i_Akill.insert(i_Akill.end(), tmp);
+	pair<set<entlist_val_t<pair<unsigned long, mstring> > >::iterator, bool> tmp;
+	tmp = i_Akill.insert(entlist_val_t<pair<unsigned long, mstring> >(
+			entry, pair<unsigned long, mstring>(value, reason), nick));
+	if (tmp.second)
+	    Akill = tmp.first;
+	else
+	    Akill = i_Akill.end();
 	RET(true);
     }
     else
@@ -250,8 +260,12 @@ bool OperServ::OperDeny_insert(mstring entry, mstring value, mstring nick)
 
     if (!OperDeny_find(entry))
     {
-	entlist_val_t<mstring> tmp(entry, value, nick);
-	OperDeny = i_OperDeny.insert(i_OperDeny.end(), tmp);
+	pair<set<entlist_val_t<mstring > >::iterator, bool> tmp;
+	tmp = i_OperDeny.insert(entlist_val_t<mstring>(entry, value, nick));
+	if (tmp.second)
+	    OperDeny = tmp.first;
+	else
+	    OperDeny = i_OperDeny.end();
 	RET(true);
     }
     else
@@ -349,8 +363,12 @@ bool OperServ::Ignore_insert(mstring entry, bool perm, mstring nick)
 
     if (!Ignore_find(entry))
     {
-	entlist_val_t<bool> tmp(entry, perm, nick);
-	Ignore = i_Ignore.insert(i_Ignore.end(), tmp);
+	pair<set<entlist_val_t<bool> >::iterator, bool> tmp;
+	tmp = i_Ignore.insert(entlist_val_t<bool>(entry, perm, nick));
+	if (tmp.second)
+	    Ignore = tmp.first;
+	else
+	    Ignore = i_Ignore.end();
 	RET(true);
     }
     else
@@ -443,7 +461,7 @@ void OperServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.SADMIN_Name(), OperServ::do_Help);
+	    "HELP", Parent->commserv.ALL_Name(), OperServ::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "TRACE", Parent->commserv.SADMIN_Name(), OperServ::do_Trace);
     Parent->commands.AddSystemCommand(GetInternalName(),

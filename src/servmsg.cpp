@@ -126,7 +126,8 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
 	for (iter = Parent->server.ServerList.begin();
 		iter != Parent->server.ServerList.end(); iter++)
 	{
-	    if (iter->second.Uplink() == "" && iter->second.Name() != "")
+	    if (iter->second.Name() != "" &&
+		iter->second.Uplink() == Parent->startup.Server_Name().LowerCase())
 		downlinks.push_back(iter->first);
 	}
     }

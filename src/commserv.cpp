@@ -97,8 +97,12 @@ bool Committee::insert(mstring entry, mstring nick, mDateTime modtime)
 		break;
     if (i_Members.empty() || iter == i_Members.end())
     {
-	entlist_t tmp(entry, nick, modtime);
-	member = i_Members.insert(i_Members.end(), tmp);
+	pair<entlist_ui, bool> tmp;
+	tmp = i_Members.insert(entlist_t(entry, nick, modtime));
+	if (tmp.second)
+	    member = tmp.first;
+	else
+	    member = i_Members.end();
 	RET(true);
     }
     else
@@ -252,12 +256,13 @@ bool Committee::MSG_insert(mstring entry, mstring nick)
 
     if (IsHead(nick))
     {
-	entlist_t tmp(entry, nick);
-	message = i_Messages.insert(i_Messages.end(), tmp);
+	i_Messages.push_back(entlist_t(entry, nick));
+	message = i_Messages.end(); message--;
 	RET(true);
     }
     else
     {
+	message = i_Messages.end();
 	RET(false);
     }
 }

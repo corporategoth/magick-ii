@@ -516,6 +516,8 @@ int EventTask::svc(void)
 			    k++;
 			}
 		    }
+		    cli->second.p_modes_off = "";
+		    cli->second.p_modes_off_params.clear();
 		    if (j>0 && cli->second.p_modes_on.size())
 			mode += "+";
 		    for (i=0, k=0; i<cli->second.p_modes_on.size(); i++, j++)
@@ -542,6 +544,8 @@ int EventTask::svc(void)
 			    k++;
 			}
 		    }
+		    cli->second.p_modes_on = "";
+		    cli->second.p_modes_on_params.clear();
 		    if (j>0)
 			modelines.push_back(mode + " " + modeparam);
 		    for (i=0; i<modelines.size(); i++)

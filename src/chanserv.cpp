@@ -925,7 +925,7 @@ void Chan_Stored_t::Join(mstring nick)
 	if (Parent->chanserv.IsLive(i_Name))
 	    if (Parent->chanserv.live[i_Name.LowerCase()].Users() == 1)
 	    {
-		Parent->chanserv.live[i_Name.LowerCase()].SendMode("+s");
+		Parent->chanserv.live[i_Name.LowerCase()].SendMode	("+s");
 		// Activate timer to PART in ? seconds ...
 		// Probably should set something in live to say that
 		// chanserv is only there to keep the channel (and probably
@@ -1054,8 +1054,10 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 			(!(GetAccess(mode.ExtractWord(fwdargs, ": "), "CMDOP") ||
 			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOOP")) &&
 			Secureops()))
-		send_off += "o";
-		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		{
+		    send_off += "o";
+		    send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		}
 	    }
 
 	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
@@ -1075,8 +1077,10 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 			(!(GetAccess(mode.ExtractWord(fwdargs, ": "), "CMDVOICE") ||
 			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOVOICE")) &&
 			Secureops()))
-		send_off += "v";
-		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		{
+		    send_off += "v";
+		    send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
+		}
 	    }
 
 	    if ( mstring(send_on_args+send_off_args).WordCount(" ") >= 3)
@@ -1277,7 +1281,7 @@ void Chan_Stored_t::defaults()
     vector<mstring> levels = Parent->chanserv.LVL();
     for (i=0; i<levels.size(); i++)
     {
-	if (Parent->chanserv.LVL(levels[i]) > Parent->chanserv.Level_Min())
+	if (Parent->chanserv.LVL(levels[i]) >= Parent->chanserv.Level_Min())
 	    i_Access_Level.insert(entlist_val_t<long>(levels[i],
 					Parent->chanserv.LVL(levels[i]),
 					Parent->chanserv.FirstName()));
@@ -1379,6 +1383,23 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_UserDef.insert(*i);
 }
 
+mDateTime Chan_Stored_t::LastUsed()
+{
+    NFT("Chan_Stored_t::LastUsed");
+
+    if (Parent->chanserv.IsLive(i_Name))
+    {
+	int i;
+	for (i=0; i<Parent->chanserv.live[i_Name.LowerCase()].Users(); i++)
+	{
+	    if (GetAccess(Parent->chanserv.live[i_Name.LowerCase()].User(i)) > 0)
+	    {
+		RET(Now());
+	    }
+	}
+    }
+    RET(i_LastUsed);
+}
 
 void Chan_Stored_t::Founder(mstring in)
 {
@@ -2297,9 +2318,14 @@ bool Chan_Stored_t::Access_Level_change(mstring entry, long value, mstring nick)
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access_Level"));
     if (Access_Level_find(entry))
     {
+	pair<set<entlist_val_t<long> >::iterator, bool> tmp;
 	i_Access.erase(Access_Level);
-	entlist_val_t<long> tmp(entry, value, nick);
-	Access_Level = i_Access.insert(i_Access_Level.end(), tmp);
+	tmp = i_Access_Level.insert(entlist_val_t<long>(
+			entry.UpperCase(), value, nick));
+	if (tmp.second)
+	    Access_Level = tmp.first;
+	else
+	    Access_Level = i_Access_Level.end();
 	RET(true);
     }
     else
@@ -2386,8 +2412,13 @@ bool Chan_Stored_t::Access_insert(mstring entry, long value, mstring nick, mDate
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Access"));
     if (!Access_find(entry))
     {
-	entlist_val_t<long> tmp(entry, value, nick, modtime);
-	Access = i_Access.insert(i_Access.end(), tmp);
+	pair<set<entlist_val_t<long> >::iterator, bool> tmp;
+	tmp = i_Access.insert(entlist_val_t<long>(
+				entry, value, nick, modtime));
+	if (tmp.second)
+	    Access = tmp.first;
+	else
+	    Access = i_Access.end();
 	RET(true);
     }
     else
@@ -2557,8 +2588,13 @@ bool Chan_Stored_t::Akick_insert(mstring entry, mstring value, mstring nick, mDa
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (!Akick_find(entry))
     {
-	entlist_val_t<mstring> tmp(entry, value, nick, modtime);
-	Akick = i_Akick.insert(i_Akick.end(), tmp);
+	pair<set<entlist_val_t<mstring> >::iterator, bool> tmp;
+	tmp = i_Akick.insert(entlist_val_t<mstring>(
+				entry, value, nick, modtime));
+	if (tmp.second)
+	    Akick = tmp.first;
+	else
+	    Akick = i_Akick.end();
 	RET(true);
     }
     else
@@ -2667,8 +2703,8 @@ bool Chan_Stored_t::Greet_insert(mstring entry, mstring nick, mDateTime modtime)
     MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
     if (!Greet_find(entry))
     {
-	entlist_t tmp(entry, nick, modtime);
-	Greet = i_Greet.insert(i_Greet.end(), tmp);
+	i_Greet.push_back(entlist_t(entry, nick, modtime));
+	Greet = i_Greet.end(); Greet--;
 	RET(true);
     }
     else
@@ -3711,7 +3747,7 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
-	target = params.ExtractWord(2, " ");
+	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
 	    ::send(mynick, source, "Nickname " + target + " is not online.");
@@ -3781,7 +3817,7 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
-	target = params.ExtractWord(2, " ");
+	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
 	    ::send(mynick, source, "Nickname " + target + " is not online.");
@@ -3866,7 +3902,7 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
 	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
 	 Parent->commserv.list[Parent->commserv.SOP_Name().LowerCase()].IsOn(source))))
     {
-	target = params.ExtractWord(2, " ");
+	target = params.ExtractWord(3, " ");
 	if (!Parent->nickserv.IsLive(target))
 	{
 	    ::send(mynick, source, "Nickname " + target + " is not online.");
@@ -4616,7 +4652,7 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	::send(mynick, source, "No such level type " + level + ".");
+	::send(mynick, source, "No such level type " + what + ".");
     }
 }
 
@@ -4694,10 +4730,10 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
 
     Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
 
-    mstring output;
+    mstring output = "";
     if (cstored->GetAccess(source, "SET"))
     {
-	output.Format("%30s  %s", "Title", "Level");
+	output.Format("%s  %s", "Level", "Title");
 	::send(mynick, source, output);
     }
     long myaccess = cstored->GetAccess(source);
@@ -4710,9 +4746,9 @@ void ChanServ::do_level_List(mstring mynick, mstring source, mstring params)
     {
 	if (haveset)
 	{
-	    mstring output;
-	    output.Format("%30s  %l", cstored->Access_Level->Entry().c_str(),
-					cstored->Access_Level->Value());
+	    output = "";
+	    output.Format("%5l  %s", cstored->Access_Level->Value(),
+					cstored->Access_Level->Entry().c_str());
 	    ::send(mynick, source, output);
 	}
 	else if(cstored->Access_Level->Value() >= myaccess)
