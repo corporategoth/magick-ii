@@ -989,18 +989,44 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
 void OperServ::do_Jupe(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Jupe", (mynick, source, params));
+    mstring message = params.Before(" ").UpperCase();
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring target = params.ExtractWord(2, " ");
+    mstring reason = params.After(" ", 2);
+
+    Parent->server.Jupe(target, reason);
+    ::send(mynick, source, "Server " + target + " JUPED.");
+    announce(mynick, "Server " + target + " JUPED by " + source + ".");
 }
 
 
 void OperServ::do_On(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_On", (mynick, source, params));
+
+    // Later, make the ability to turn on/off specific services
+    // also the ability to turn of either MSG, or AUTO or BOTH
+    Parent->MSG(true);
+    ::send(mynick, source, "Services will respond to messages.");
+    announce(mynick, "Services turned ON by " + source + ".");
 }
 
 
 void OperServ::do_Off(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Off", (mynick, source, params));
+
+    // Later, make the ability to turn on/off specific services
+    // also the ability to turn of either MSG, or AUTO or BOTH
+    Parent->MSG(false);
+    ::send(mynick, source, "Services will not respond to messages.");
+    announce(mynick, "Services turned OFF by " + source + ".");
 }
 
 
@@ -1021,6 +1047,27 @@ CONFIG:
 -   Minimum threads active is ?, Current threads active is ?.
 -   New thread will spawn each ? messages, and die when below ?.
 */
+    ::send(mynick, source, "Base level is " + mstring(itoa(Parent->startup.Level())) +
+		    ", Current level is " + mstring(itoa(Parent->level)) + ".");
+    ::send(mynick, source, "Services have " + mstring(itoa(Parent->startup.Server_size())) +
+		    " possible servers to connect to.");
+    ::send(mynick, source, "Level is increased if lag is more than " +
+		    ToHumanTime(Parent->startup.Lagtime()) + ".");
+    ::send(mynick, source, "Services will relink in " +
+		    ToHumanTime(Parent->config.Server_Relink()) +
+		    " upon server SQUIT.");
+    ::send(mynick, source, "SQUIT protection lasts " +
+		    ToHumanTime(Parent->config.Squit_Protect()) + ".");
+    ::send(mynick, source, "Users have " +
+		    ToHumanTime(Parent->config.Squit_Cancel()) +
+		    " to reconnect before SQUIT protection activates.");
+    ::send(mynick, source, "Databases are saved every " +
+		    ToHumanTime(Parent->config.Cycletime()) +
+		    " and sync in " + Parent->events.SyncTime());
+    ::send(mynick, source, "HyperActive cycle is " +
+		    ToHumanTime(Parent->config.Checktime()) +
+		    " and lag check is " +
+		    ToHumanTime(Parent->config.Ping_Frequency()) + ".");
 }
     
 void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)

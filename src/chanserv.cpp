@@ -1377,6 +1377,10 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     for(l=in.i_Greet.begin();l!=in.i_Greet.end();l++)
 	i_Greet.push_back(*l);
 
+    i_Message.clear();
+    for(l=in.i_Message.begin();l!=in.i_Message.end();l++)
+	i_Message.push_back(*l);
+
     i_UserDef.clear();
     map<mstring, mstring>::const_iterator i;
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
@@ -2758,6 +2762,64 @@ bool Chan_Stored_t::Greet_find(mstring nick)
 }
 
 
+bool Chan_Stored_t::Message_insert(mstring entry, mstring nick)
+{
+    FT("Chan_Stored_t::Message_insert", (entry, nick));
+
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+    i_Message.push_back(entlist_t(entry, nick));
+    Message = i_Message.end(); Message--;
+    RET(true);
+}
+
+
+bool Chan_Stored_t::Message_erase()
+{
+    NFT("Chan_Stored_t::Message_erase");
+
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+    if (Message != i_Message.end())
+    {
+	i_Message.erase(Message);
+	Message = i_Message.end();
+	RET(true);
+    }
+    else
+    {
+	RET(false);
+    }
+
+}
+
+
+bool Chan_Stored_t::Message_find(int num)
+{
+    FT("Chan_Stored_t::Message_find", (num));
+
+    if (num <= 0 || num > i_Message.size())
+    {
+	RET(false);
+    }
+
+    int i;
+    entlist_i iter = i_Message.end();
+    for (iter=i_Message.begin(), i=1; iter!=i_Message.end() && i<num;
+							    iter++, i++) ;
+
+    MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
+    if (iter != i_Message.end())
+    {
+	Message = iter;
+	RET(true);
+    }
+    else
+    {
+	Message = i_Message.end();
+	RET(false);
+    }
+}
+
+
 wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 {
     out<<in.i_Name<<in.i_RegTime<<in.i_Founder<<in.i_CoFounder<<in.i_Description<<in.i_Password<<in.i_URL<<in.i_Comment;
@@ -2787,6 +2849,10 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
     entlist_ci l;
     out<<in.i_Greet.size();
     for(l=in.i_Greet.begin();l!=in.i_Greet.end();l++)
+	out<<*k;
+
+    out<<in.i_Message.size();
+    for(l=in.i_Message.begin();l!=in.i_Message.end();l++)
 	out<<*k;
 
     map<mstring,mstring>::iterator i;
@@ -2842,6 +2908,14 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     {
 	in>>edummy;
 	out.i_Greet.push_back(edummy);
+    }
+
+    out.i_Message.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>edummy;
+	out.i_Message.push_back(edummy);
     }
 
     out.i_UserDef.clear();
@@ -2964,6 +3038,16 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "GREET* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_greet_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* ADD", Parent->commserv.REGD_Name(), ChanServ::do_message_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* DEL*", Parent->commserv.REGD_Name(), ChanServ::do_message_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* REM*", Parent->commserv.REGD_Name(), ChanServ::do_message_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* LIST", Parent->commserv.REGD_Name(), ChanServ::do_message_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_message_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* FOUND*", Parent->commserv.REGD_Name(), ChanServ::do_set_Founder);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* COFOUND*", Parent->commserv.REGD_Name(), ChanServ::do_set_CoFounder);
@@ -3075,7 +3159,13 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "A*KICK", Parent->commserv.REGD_Name(), do_1_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET", Parent->commserv.REGD_Name(), do_1_3param);
+	    "GREET* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GREET*", Parent->commserv.REGD_Name(), do_1_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* *", Parent->commserv.REGD_Name(), NULL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G*", Parent->commserv.REGD_Name(), do_1_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LEV* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -5344,6 +5434,135 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, "[" + cstored->Greet->Last_Modifier() +
 				"] " + cstored->Greet->Entry());
 	}
+    }
+}
+
+void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_message_Add", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel   = params.ExtractWord(2, " ");
+    mstring text      = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "MESSAGE"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    cstored->Message_insert(text, source);
+    ::send(mynick, source, "On-Join message #" + mstring(itoa(cstored->Message_size())) +
+			" has been added for channel " + cstored->Name());
+}
+
+void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_message_Del", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 4)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel = params.ExtractWord(2, " ");
+    mstring target  = params.ExtractWord(4, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "MESSAGE"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    if (!target.IsNumber() || target.Contains("."))
+    {
+	::send(mynick, source, "Entry must be a posetive whole number.");
+	return;
+    }
+
+    if (atoi(target) <= 0 || atoi(target) > cstored->Message_size())
+    {
+	::send(mynick, source, "Entry may only be between 1 and " +
+			mstring(itoa(cstored->Message_size())) + ".");
+	return;
+    }
+    if (cstored->Message_find(atoi(target)))
+    {
+        cstored->Message_erase();
+	::send(mynick, source, "Entry #" + target + " has been removed.");
+    }
+    else
+    {
+	::send(mynick, source, "Entry #" + target + " is not found.");
+    }
+}
+
+void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
+{
+    FT("ChanServ::do_message_List", (mynick, source, params));
+
+    mstring message = params.Before(" ") + " " +
+			params.ExtractWord(3, " ");
+
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters.");
+	return;
+    }
+
+    mstring channel = params.ExtractWord(2, " ");
+
+    if (!Parent->chanserv.IsStored(channel))
+    {
+	::send(mynick, source, "Channel " + channel + " is not registered.");
+	return;
+    }
+
+    Chan_Stored_t *cstored = &Parent->chanserv.stored[channel.LowerCase()];
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "MESSAGE"))
+    {
+	::send(mynick, source, "Access denied.");
+	return;
+    }
+
+    int i;
+    for (i=1, cstored->Message = cstored->Message_begin();
+				cstored->Message != cstored->Message_end();
+				cstored->Message++, i++)
+    {
+        ::send(mynick, source, mstring(itoa(i)) + ". " + cstored->Message->Entry());
     }
 }
 

@@ -415,7 +415,6 @@ void Magick::dump_help(mstring & progname)
          << "    -s, --save time                Override CYCLETIME in the config file.\n"
          << "    -v, --verbose                  Logs EVERY command to services.\n"
          << "    -l, --level level              Override LEVEL in config file.\n"
-         << "    -g, --gmt offset               Override GMT in config file.\n"
          << "    -f, --fg                       Output logs to console, fork() on CTRL-C.\n"
          << "    -r, --relink time              Override SERVER_RELINK in config file.\n"
          << "        --norelink                 Set SERVER_RELINK to 0.\n"
@@ -546,7 +545,6 @@ int Magick::doparamparse()
 		--relink X	-r
 		--norelink
 		--level X	-l
-		--gmt X		-g
 		--save X	-s	--update
 		--help		-?
 		--keyfile	-k
@@ -659,19 +657,6 @@ bool Magick::paramlong(mstring first, mstring second)
 	startup.level=atoi(second.c_str());
 	RET(true);
     }
-    else if(first=="--gmt")
-    {
-	if(second.IsEmpty() || second[0U]=='-')
-	{
-	    wxLogFatal(getMessage("ERR_REQ_PARAM").c_str(),"--gmt");
-	}
-	if(abs(atoi(second.c_str()))>=12)
-	{
-	    wxLogFatal("--gmt must be between -12 and 12");
-	}
-	startup.gmt=atoi(second.c_str());
-	RET(true);
-    }
     else if(first=="--save" || first=="--update")
     {
 	if(second.IsEmpty() || second[0U]=='-')
@@ -768,13 +753,6 @@ bool Magick::paramshort(mstring first, mstring second)
 		wxLogFatal("Paramater may only be used once");
 	    else
 		ArgUsed = paramlong ("--level", second);
-	}
-	else if(first[i]=='g')
-	{
-	    if (ArgUsed)
-		wxLogFatal("Paramater may only be used once");
-	    else
-		ArgUsed = paramlong ("--gmt", second);
 	}
 	else if(first[i]=='s')
 	{
@@ -1286,7 +1264,8 @@ void Magick::get_config_values()
     in.Read(ts_ChanServ+"LVL_WRITEMEMO",&chanserv.lvl["WRITEMEMO"],15);
     in.Read(ts_ChanServ+"LVL_DELMEMO",&chanserv.lvl["DELMEMO"],25);
     in.Read(ts_ChanServ+"LVL_GREET",&chanserv.lvl["GREET"],1);
-    in.Read(ts_ChanServ+"LVL_OVERGREET",&chanserv.lvl["OVERGREET"],1);
+    in.Read(ts_ChanServ+"LVL_OVERGREET",&chanserv.lvl["OVERGREET"],25);
+    in.Read(ts_ChanServ+"LVL_MESSAGE",&chanserv.lvl["MESSAGE"],20);
     in.Read(ts_ChanServ+"LVL_AKICK",&chanserv.lvl["AKICK"],20);
     in.Read(ts_ChanServ+"LVL_SUPER",&chanserv.lvl["SUPER"],25);
     in.Read(ts_ChanServ+"LVL_UNBAN",&chanserv.lvl["UNBAN"],10);

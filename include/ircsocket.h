@@ -59,6 +59,7 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
 public:
     void ForceSave() { last_save = mDateTime(0.0); }
     void ForcePing() { last_ping = mDateTime(0.0); }
+    mstring SyncTime() { return last_save.Ago(); }
     virtual int open(void *in=0);
     virtual int close(unsigned long in);
     virtual int svc(void);

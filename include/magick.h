@@ -93,11 +93,11 @@ public:
 		bool ownuser;
 		unsigned int level;
 		unsigned long lagtime;
-		float gmt;
 	public:
 		bool IsServer(mstring server);
 		triplet<unsigned int,mstring,unsigned int> Server(mstring server);
 		vector<mstring> PriorityList(unsigned int pri);
+		size_t Server_size() { return servers.size(); }
 
 		mstring Server_Name()const	{ return server_name; }
 		mstring Server_Desc()const	{ return server_desc; }

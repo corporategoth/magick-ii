@@ -87,6 +87,7 @@ public:
     // to see if there is a timer active to process the server's
     // squit, REGARDLESS of wether it is currently connected or not.
     bool IsSquit(mstring server);
+    void Jupe(mstring server, mstring reason);
 
     void AWAY(mstring nick, mstring reason = "");
     void GLOBOPS(mstring nick, mstring message);

@@ -251,6 +251,16 @@ bool NetworkServ::IsSquit(mstring server)
     RET((ServerSquit.find(server.LowerCase()) != ServerSquit.end()));
 }
 
+void NetworkServ::Jupe(mstring server, mstring reason)
+{
+    FT("NetworkServ::Jupe", (server, reason));
+    if (IsServer(server))
+	raw("SQUIT " + server.LowerCase() + " :JUPE command used.");
+	    // SERVER downlink hops :description
+	    // :uplink SERVER downlink hops :description
+    raw(":" + Parent->startup.Server_Name() + " SERVER " +
+		server.LowerCase() + " 1 :JUPED (" + reason + ")");
+}
 
 void NetworkServ::AWAY(mstring nick, mstring reason)
 {

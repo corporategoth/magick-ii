@@ -160,6 +160,7 @@ class Chan_Stored_t : public mUserDef
     set<entlist_val_t<long> > i_Access;
     set<entlist_val_t<mstring> > i_Akick;
     list<entlist_t> i_Greet;
+    list<entlist_t> i_Message;
 
     void ChgAttempt(mstring nick, mstring newnick);
     void Join(mstring nick);
@@ -326,7 +327,16 @@ public:
     size_t Greet_size()				{ return i_Greet.size(); }
     bool Greet_find(mstring nick);
     entlist_i Greet;
-    
+
+    // FIND: Looks for NUMBER of entry.
+    // INSERT: Adds if not found.
+    bool Message_insert(mstring entry, mstring nick);
+    bool Message_erase();
+    entlist_i Message_begin()			{ return i_Message.begin(); }
+    entlist_i Message_end()			{ return i_Message.end(); }
+    size_t Message_size()			{ return i_Message.size(); }
+    bool Message_find(int num);
+    entlist_i Message;
 };
 
 wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in);
@@ -463,6 +473,9 @@ public:
     static void do_greet_Add(mstring mynick, mstring source, mstring params);
     static void do_greet_Del(mstring mynick, mstring source, mstring params);
     static void do_greet_List(mstring mynick, mstring source, mstring params);
+    static void do_message_Add(mstring mynick, mstring source, mstring params);
+    static void do_message_Del(mstring mynick, mstring source, mstring params);
+    static void do_message_List(mstring mynick, mstring source, mstring params);
     static void do_set_Founder(mstring mynick, mstring source, mstring params);
     static void do_set_CoFounder(mstring mynick, mstring source, mstring params);
     static void do_set_Description(mstring mynick, mstring source, mstring params);
