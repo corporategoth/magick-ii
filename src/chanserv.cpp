@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.273  2001/12/24 21:16:42  prez
+** Fixed up aesthetic ACCESS/AKICK ADD/DEL outputs and updated for UNREAL support
+**
 ** Revision 1.272  2001/12/24 07:06:53  prez
 ** Made hostmasking more intelligent (ie. a narrower mask will take priority
 ** over a broader one on the access/akick list), and if a user is on more than
@@ -9878,6 +9881,8 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
 	mstring entry = cstored.Access->Entry();
 	if (entry[0u] == '@')
 	    entry.MakeUpper();
+	else if (Magick::instance().nickserv.IsStored(entry))
+	    entry = Magick::instance().getSname(entry);
 	cstored.Access_erase();
 	cstored.Access_insert(entry, num, source);
 	Magick::instance().chanserv.stats.i_Access++;
@@ -9976,6 +9981,8 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
 	    mstring entry = cstored.Access->Entry();
 	    if (entry[0u] == '@')
 		entry.MakeUpper();
+	    else if (Magick::instance().nickserv.IsStored(entry))
+		entry = Magick::instance().getSname(entry);
 	    SEND(mynick, source, "LIST/DEL2", (
 		    entry, channel,
 		    Magick::instance().getMessage(source, "LIST/ACCESS")));
@@ -10029,6 +10036,8 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
 	    mstring entry = cstored.Access->Entry();
 	    if (entry[0u] == '@')
 		entry.MakeUpper();
+	    else if (Magick::instance().nickserv.IsStored(entry))
+		entry = Magick::instance().getSname(entry);
 	    SEND(mynick, source, "LIST/DEL2", (
 		    entry, channel,
 		    Magick::instance().getMessage(source, "LIST/ACCESS")));
@@ -10116,13 +10125,11 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
     for (i=1, cstored.Access = cstored.Access_begin();
 	cstored.Access != cstored.Access_end(); cstored.Access++, i++)
     {
-	mstring entry;
-	if (cstored.Access->Entry()[0u] == '@')
-	    entry = cstored.Access->Entry().UpperCase();
-	else if (!Magick::instance().nickserv.IsStored(cstored.Access->Entry()))
-	    entry = cstored.Access->Entry();
-	else
-	    entry = Magick::instance().getSname(cstored.Access->Entry());
+	mstring entry = cstored.Access->Entry();
+	if (entry[0u] == '@')
+	    entry.MakeUpper();
+	else if (Magick::instance().nickserv.IsStored(entry))
+	    entry = Magick::instance().getSname(entry);
 	::sendV(mynick, source, "%4d. %3d %s (%s)", i, cstored.Access->Value(),
 		    entry.c_str(),
 		    parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
@@ -10417,6 +10424,8 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	    mstring entry = cstored.Akick->Entry();
 	    if (entry[0u] == '@')
 		entry.MakeUpper(); 
+	    else if (Magick::instance().nickserv.IsStored(entry))
+		entry = Magick::instance().getSname(entry);
 	    SEND(mynick, source, "LIST/DEL2", (
 		    entry, channel,
 		    Magick::instance().getMessage(source, "LIST/AKICK")));
@@ -10460,6 +10469,8 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	    mstring entry = cstored.Akick->Entry();
 	    if (entry[0u] == '@')
 		entry.MakeUpper();
+	    else if (Magick::instance().nickserv.IsStored(entry))
+		entry = Magick::instance().getSname(entry);
 	    SEND(mynick, source, "LIST/DEL2", (
 		    entry, channel,
 		    Magick::instance().getMessage(source, "LIST/AKICK")));
@@ -10546,13 +10557,11 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
     for (i=1, cstored.Akick = cstored.Akick_begin();
 	cstored.Akick != cstored.Akick_end(); cstored.Akick++, i++)
     {
-	mstring entry;
-	if (cstored.Akick->Entry()[0u] == '@')
-	    entry = cstored.Akick->Entry().UpperCase();
-	else if (!Magick::instance().nickserv.IsStored(cstored.Akick->Entry()))
-	    entry = cstored.Akick->Entry();
-	else
-	    entry = Magick::instance().getSname(cstored.Akick->Entry());
+	mstring entry = cstored.Akick->Entry();
+	if (entry[0u] == '@')
+	    entry.MakeUpper();
+	else if (Magick::instance().nickserv.IsStored(entry))
+	    entry = Magick::instance().getSname(entry);
 	::sendV(mynick, source, "%4d. %s (%s)", i, entry.c_str(),
 		    parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
 		    mVarArray(cstored.Akick->Last_Modify_Time().Ago(),

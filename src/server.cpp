@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.202  2001/12/24 21:16:43  prez
+** Fixed up aesthetic ACCESS/AKICK ADD/DEL outputs and updated for UNREAL support
+**
 ** Revision 1.201  2001/12/21 05:02:29  prez
 ** Changed over from using a global ACE_Reactor to using an instance inside
 ** of the Magick instance.
@@ -869,7 +872,7 @@ void Protocol::Set(const unsigned int in)
 	i_ChanModeArg = "ovbekld";
 	SetTokens(0000);
 	i_TSora = true;
-	i_Protoctl = "CAPAB QS EX";
+	i_Protoctl = "CAPAB QS EX CHW";
 	break;
 
     case 31: // Hybrid 7
@@ -880,7 +883,7 @@ void Protocol::Set(const unsigned int in)
 	i_ChanModeArg = "ovbeklIh";
 	SetTokens(0000);
 	i_TSora = true;
-	i_Protoctl = "CAPAB QS EX";
+	i_Protoctl = "CAPAB QS EX CHW";
 	break;
 
     case 40: // Elite
@@ -997,7 +1000,7 @@ void Protocol::Set(const unsigned int in)
 	i_BigTopic = true;
 	i_Akill = 1000;
 	i_Modes = 6;
-	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 SJ3 NS VHP";
+	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 VL SJ3 NS VHP";
 	// Check serveropts in s_debug.c for what the letters are
 	i_Server = "SERVER %s %d :U2301-CFhiIpnXS-%d %s";
 	i_Numeric = 3;
@@ -2367,17 +2370,20 @@ void Server::MODE(const mstring& nick, const mstring& channel,
 
 
 void Server::NICK(const mstring& nick, const mstring& user,
-	const mstring& host, const mstring& server, const mstring& name)
+	const mstring& host, const mstring& i_server, const mstring& name)
 {
-    FT("Server::NICK", (nick, user, host, server, name));
+    FT("Server::NICK", (nick, user, host, i_server, name));
 
     if (Magick::instance().nickserv.IsLive(nick))
     {
 	LOG(LM_WARNING, "ERROR/REQ_TOUSER", (
-		"NICK", server, nick));
+		"NICK", i_server, nick));
     }
     else
     {
+	mstring server(i_server);
+	if (proto.Numeric() && IsList(server))
+	    server = base64_to_str(GetList(server).Numeric());
 	mstring out, token;
 	switch (proto.Signon())
 	{
@@ -2504,7 +2510,7 @@ void Server::NICK(const mstring& nick, const mstring& user,
 	    else
 		out << token;
 	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" +" << user << " " << host << " " << server << " 1 +" <<
+		" " << user << " " << host << " " << server << " 1 +" <<
 		Magick::instance().startup.Setmode() << " " << host << " :" << name;
 	    break;
 	}

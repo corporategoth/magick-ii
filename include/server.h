@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2001/12/24 21:16:42  prez
+** Fixed up aesthetic ACCESS/AKICK ADD/DEL outputs and updated for UNREAL support
+**
 ** Revision 1.75  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -286,11 +289,13 @@ class Protocol
      * UMODE2      Allow the UMODE2 command (aka. :user MODE user mode)
      * NS          Allow use of server numerics (not just server name)
      * VHP         Enable virtual host support
+     * VL          v:line support (protocol based deny info)
+     * SJB64       Support 64-bit timestamps  (*)
      *
      * ZIP         Compress stream to irc server using zlib  (*)
      * QS          Quit Storm (ie. assume quit's on SQUIT)
      * EX          Channel mode +/-e (ban exception)
-     * CHW         Allow '@' or '+' before #channel in notice/privmsg  (*)
+     * CHW         Allow '@' or '+' before #channel in notice/privmsg
      * DE          Channel mode +/-d (deny, ie. regex ban)  (*)
      *
      * (*) = We do not support this at the moment.
@@ -456,9 +461,9 @@ public:
     Server_t &GetList(const mstring &in) const throw(E_Server_List);
     void RemList(const mstring &in, bool downlinks = true) throw(E_Server_List);
 #else
-    void AddServer(Server_t *in);
-    Server_t &GetServer(const mstring &in);
-    void RemServer(const mstring &in, bool downlinks = true);
+    void AddList(Server_t *in);
+    Server_t &GetList(const mstring &in);
+    void RemList(const mstring &in, bool downlinks = true);
 #endif
     list_t::iterator ListBegin() { return i_list.begin(); }
     list_t::iterator ListEnd() { return i_list.end(); }
