@@ -38,6 +38,7 @@ Magick::Magick(int inargc, char **inargv)
     i_config_file="magick.ini";
     for(int i=0;i<inargc;i++)
 	argv.push_back(inargv[i]);
+    LoadLogMessages("DEFAULT");
 
     i_level=0;
     i_reconnect = true;
@@ -441,13 +442,31 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     }
 
     // Otherwise just try and find it in the DEFAULTs.
-   CP(("Trying HARD-CODED language ..."));
+    CP(("Trying HARD-CODED language ..."));
     if (Messages["DEFAULT"].find(name.UpperCase()) !=
 		Messages["DEFAULT"].end())
     {
 	RET(Messages["DEFAULT"][name.UpperCase()]);
     }
     RET("Could not find message token \"" + name.UpperCase() + "\", please report this to your Services Admins.");
+}
+
+mstring Magick::getLogMessage(const mstring & name)
+{
+    FT("Magick::getLogMessage", (name));
+
+    // Load nickserv default language if its NOT loaded.
+    // and then look for the message of THAT type.
+    // Otherwise just try and find it in the DEFAULTs.
+
+    CP(("Trying to get log entry ..."));
+    if (LogMessages.find(name.UpperCase()) !=
+		LogMessages.end())
+    {
+	RET(LogMessages[name.UpperCase()]);
+    }
+    RET("Could not find log message token \"" + name.UpperCase() +
+			    "\", please check your language file.");
 }
 
 void Magick::dump_help(mstring & progname)
@@ -599,6 +618,87 @@ bool Magick::LoadExternalMessages(mstring language)
 	{
 	    RET(true);
 	}
+    }
+    RET(false);
+}
+
+bool Magick::LoadLogMessages(mstring language)
+{
+    FT("Magick::LoadLogMessages", (language));
+    // use the previously created name array to get the names to load
+    WLOCK(("Magick","LoadLogMessages"));
+
+    int i;
+    {
+#include "logfile.h"
+	remove((wxGetCwd()+DirSlash+"tmplang.lng").c_str());
+	wxFileOutputStream out(wxGetCwd()+DirSlash+"tmplang.lfo");
+
+	for(i=0;i<def_logent;i++)
+	{
+	    out.Write(def_log[i], strlen(def_log[i]));
+	    out << wxEndL;
+	}
+    }
+
+    // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
+    wxFileConfig *fconf;
+    remove("tmplang.lfo");
+    bool bContGroup, bContEntries;
+    long dummy1=0,dummy2=0;
+    mstring groupname,entryname,combined;
+    vector<mstring> entries;
+
+    fconf = new wxFileConfig("magick","",wxGetCwd()+DirSlash+"tmplang.lfo");
+    bContGroup=fconf->GetFirstGroup(groupname,dummy1);
+    // this code is fucked up and won't work. debug to find why it's not
+    // finding the entries when it is actually loading them.
+    // *sigh* spent an hour so far with no luck.
+    while(bContGroup)
+    {
+	fconf->SetPath(groupname);
+	bContEntries=fconf->GetFirstEntry(entryname,dummy2);
+	while(bContEntries)
+	{
+	    entries.push_back(groupname.UpperCase()+"/"+entryname.UpperCase());
+	    bContEntries=fconf->GetNextEntry(entryname,dummy2);
+	}
+	dummy2=0;
+	fconf->SetPath("..");
+	bContGroup=fconf->GetNextGroup(groupname,dummy1);
+    }
+    for (i=0; i<entries.size(); i++)
+	fconf->Read(entries[i], &LogMessages[entries[i]], mstring(""));
+    delete fconf;
+
+    if (language != "DEFAULT")
+    {
+	fconf = new wxFileConfig("magick","",wxGetCwd()+DirSlash+"lang"+DirSlash+language.LowerCase()+".lfo");
+	bContGroup=fconf->GetFirstGroup(groupname,dummy1);
+	// this code is fucked up and won't work. debug to find why it's not
+	// finding the entries when it is actually loading them.
+	// *sigh* spent an hour so far with no luck.
+	while(bContGroup)
+	{
+	    fconf->SetPath(groupname);
+	    bContEntries=fconf->GetFirstEntry(entryname,dummy2);
+	    while(bContEntries)
+	    {
+		entries.push_back(groupname.UpperCase()+"/"+entryname.UpperCase());
+		bContEntries=fconf->GetNextEntry(entryname,dummy2);
+	    }
+	    dummy2=0;
+	    fconf->SetPath("..");
+	    bContGroup=fconf->GetNextGroup(groupname,dummy1);
+	}
+	for (i=0; i<entries.size(); i++)
+	    fconf->Read(entries[i], &LogMessages[entries[i]], mstring(""));
+	delete fconf;
+    }
+
+    if (LogMessages.size())
+    {
+	RET(true);
     }
     RET(false);
 }
@@ -899,6 +999,7 @@ bool Magick::get_config_values()
     bool reconnect_clients = false;
     unsigned int i;
     mstring errstring;
+    mstring isonstr;
 
     // Check for \ or / or ?: in first chars.
     if ((errstring = i_config_file[0u]) == DirSlash || i_config_file[1u] == ':')
@@ -1028,7 +1129,12 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(nickserv.names.ExtractWord(i+1, " ")))
 	    {
-		nickserv.signon(nickserv.names.ExtractWord(i+1, " "));
+		if (isonstr.Len() > 450)
+		{
+		    server.sraw("ISON " + isonstr);
+		    isonstr = "";
+		}
+		isonstr += nickserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
     }
@@ -1060,9 +1166,12 @@ bool Magick::get_config_values()
 	{
 	    if (!chanserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
 	    {
-		chanserv.signon(chanserv.names.ExtractWord(i+1, " "));
-		if (i==0 && chanserv.hide)
-		    Parent->server.MODE(chanserv.names.ExtractWord(i+1, " "), "+s");
+		if (isonstr.Len() > 450)
+		{
+		    server.sraw("ISON " + isonstr);
+		    isonstr = "";
+		}
+		isonstr += chanserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
     }
@@ -1096,7 +1205,12 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(memoserv.names.ExtractWord(i+1, " ")))
 	    {
-		memoserv.signon(memoserv.names.ExtractWord(i+1, " "));
+		if (isonstr.Len() > 450)
+		{
+		    server.sraw("ISON " + isonstr);
+		    isonstr = "";
+		}
+		isonstr += memoserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
     }
@@ -1128,7 +1242,12 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(operserv.names.ExtractWord(i+1, " ")))
 	    {
-		operserv.signon(operserv.names.ExtractWord(i+1, " "));
+		if (isonstr.Len() > 450)
+		{
+		    server.sraw("ISON " + isonstr);
+		    isonstr = "";
+		}
+		isonstr += operserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
     }
@@ -1164,7 +1283,12 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(commserv.names.ExtractWord(i+1, " ")))
 	    {
-		commserv.signon(commserv.names.ExtractWord(i+1, " "));
+		if (isonstr.Len() > 450)
+		{
+		    server.sraw("ISON " + isonstr);
+		    isonstr = "";
+		}
+		isonstr += commserv.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
     }
@@ -1196,13 +1320,20 @@ bool Magick::get_config_values()
 	{
 	    if (!nickserv.IsLive(servmsg.names.ExtractWord(i+1, " ")))
 	    {
-		servmsg.signon(servmsg.names.ExtractWord(i+1, " "));
-		Parent->server.MODE(servmsg.names.ExtractWord(i+1, " "), "+o");
+		if (isonstr.Len() > 450)
+		{
+		    server.sraw("ISON " + isonstr);
+		    isonstr = "";
+		}
+		isonstr += servmsg.names.ExtractWord(i+1, " ") + " ";
 	    }
 	}
     }
 
     in.Read(ts_Services+"SHOWSYNC",&servmsg.showsync,true);
+
+    if (isonstr != "")
+	server.sraw("ISON " + isonstr);
 
     in.Read(ts_Files+"PIDFILE",&files.pidfile,"magick.pid");
     in.Read(ts_Files+"LOGFILE",&files.logfile,"magick.log");
@@ -1300,7 +1431,13 @@ bool Magick::get_config_values()
     in.Read(ts_NickServ+"LCK_PRIVATE",&nickserv.lck_private,false);
     in.Read(ts_NickServ+"DEF_PRIVMSG",&nickserv.def_privmsg,false);
     in.Read(ts_NickServ+"LCK_PRIVMSG",&nickserv.lck_privmsg,false);
-    in.Read(ts_NickServ+"DEF_LANGUAGE",&nickserv.def_language,"english");
+    in.Read(ts_NickServ+"DEF_LANGUAGE",&value_mstring,"english");
+    if (value_mstring != nickserv.def_language)
+    {
+	nickserv.def_language = value_mstring;
+	LogMessages.clear();
+	LoadLogMessages(nickserv.def_language);
+    }
     in.Read(ts_NickServ+"LCK_LANGUAGE",&nickserv.lck_language,false);
     in.Read(ts_NickServ+"PICSIZE",&nickserv.picsize,0);
     in.Read(ts_NickServ+"PICEXT",&nickserv.picext,"jpg gif bmp tif");

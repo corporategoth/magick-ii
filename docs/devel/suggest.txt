@@ -1,0 +1,71 @@
+
+Suggest Document.
+=================
+
+This is a 'requested' feature list from other people, or ideas
+we've thought up ourselves.  With comments about other things
+that will need to be done in order to acomodate each feature.
+
+* Proposed suggestion
++ Being worked on
+- Totally Unfeasable
+= Should be scripted
+x Done
+> Comment
+
++ File hold capability on MemoServ (With definable max files/bytes).
+  eg. /MSG MemoServ FILE nick filename [description]
+  and /MSG MemoServ GET 1   (just like READ, but only works for files).
+  Shows up in LIST as a file attachment, and when doing a READ ALL, it
+  will show the filename, and the description.  Also tells anyone trying
+  to send a file that the file quota is full for that user if it is.
+  > We will have to store all files as something like files/00000001 or
+    something, and keep a database of file #'s -> filenames (and who its for)
+  > We'll have to work on DCC SEND file name <--> MS FILE command matching.
+    We will also need a timeout (notice GET aborted due to timeout).
+  > Will not have RESUME ability -- if it dont complete, its removed.
+  > MUST have a SOP file removal command, and ability to resolve number to
+    filename/user for sop's (so they can remove larger files).
+x MS PREVIEW command.  Works like LIST, but shows FIRST x chars of memo.
+* OS SECUREOPER - deoper people who are not on the services OPER committee.
+x OS SECURE - cannot access operserv unless you're ON services OPER /
+  ADMIN / SOP / SADMIN committees.
+* Show max peak in last X amount of time (say last day, 3 days & week)
+  > Mebbe even be able to see graphical representations via. the web as
+    a Magick plugin (now theres an idea, plugins for magick).  Might be
+    better scripted tho.
+x Ability to have *long* memos, some way of getting round ircd's line length
+  limitations.  Have a /MSG MemoServ continue command just appends to the last
+  memo sent by that person (timeout ...?).
+  > Also might be an idea to have a notification of a truncated memo (ie. it
+    tells you 'Memo truncated, last text was "am hoping you will all agr".
+    Type /MS continue to continue memo').  This would mean we'd have to set
+    the 'Max memo size' to less than the IRCD limit so we can do the truncation,
+    and let the user know it was truncated (else we'll RECEIVE it truncated).
+    eg. 400 chars MAX per memo (text only here), and it will get truncated, and
+    we show them the last say 20 chars of the memo they sent.
+  > This will mean putting in a DELAY on sending memos so that they only get
+    sent when the 'continue' timeout has expired.  Continue ability is removed
+    on send of next memo, or say a /MS cancel command.
+  > How about /msg memoserv startmsg     /msg memoserv endmessage timeout of half hour = auto send
+= Work out some form of database redundancy (maybe backup copies) so
+  that if we get a fucked up database, all aint lost. (credit skold).
+  > I'd say this should be a shell script (Multipal versions of magick
+    will also accomodate this).
+= Ability to have logs go to a specified channel on the server
+  eg (#services) (credit skold).
+  > Scripted hook into 'LogOutput'?
+* More flood protection (eg. nickname flood, X nicks in X seconds = kill?)
+* Memo recall, ie, being able to delete unread memos you've sent to people.
+x Nomemo nick option, and a nomemo exempt list (similar to ignore, but
+  backwards, ignoring everyone and letting certain people thru)
+* If a misconfigured server fights with services (ie a missing uline) have
+  services go into a sort of standby mode, requiring any ircop to re enable
+  them once the server has been fixed or removed (and leave certain commands
+  like jupe active if the servers admin isnt around)
+x Have memoserv understand ranges, ie read 2,3,4 ... del 1-5,8 .. etc
+* Add a function to helpserv to forward messages to helpops
+x Have load_database do only standard streaming loading of m2 dbases
+    > have "loadolddbase" and "loadesperdbase" commands for services that need importing
+      of old version databases.
+* Secure Servers (Server cannot connect to network unless in services list of servers)

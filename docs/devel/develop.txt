@@ -1,0 +1,464 @@
+RCS-ID:      $Id$
+
+PreZ = FrontEnd -> BackEnd linkage, and automated logic
+Ungod = Lowlevel ace-interface code and bugfixing.
+Striker = Writing dummy functions based on .h files.
+
+Design Document.
+================
+
+This document is basically sort of a to-do from a design
+perspective.  This should outline how things are to fit
+together design-wise, by listing features that should be
+included, and how they fit together and interact.  This
+can be from small cosmetics to major implementations.
+A left-hand column has also been added to check off when
+things are done.
+
+* To be done
++ Being done
+x Done
+- Totally Unfeasable
+
+Guidelines
+==========
+
+Before checking ANY code into CVS, it MUST compile on both
+Windows (current standard being MS Visual C++ 5.0) and UNIX
+(current standard being gcc 2.95).  AND Magick as a whole
+should still be runable (and not segfault if your code is
+accessed) when run.  This is because at ANY time, an alpha
+distribution could be released, or we could start releasing
+weekly images, and they all need to compile and run.
+
+All code in Magick should be properly indented and commented
+for readability.  Someone else may have to look at your piece
+of code, to find out what it does, or debug it -- it should
+be easily understandable, or commented.
+
+Do not use unnessicary pointers.  If you can do with a string
+value which is a unique name of the value it would point to,
+then use a string value, and create a function of some kind
+to retrieve the value or a pointer to the value (with error
+checking).
+
+All code must be properly and appropriately traced.  Please
+read the guidelines below on Tracing.  Magick is supposed to
+be 'live debuggable' -- we dont want any 'trace blackholes'.
+The trace code is sufficiantly advanced, that we should not
+need to turn trace all the way up to find out what the code
+is doing -- and that we can cover all circumstances.  There
+is also enough room in the trace code for expansion that if
+we find we need another type of trace code, we can add it.
+
+ALL text messages that will be used either as a response
+back to a client, PART of a response back to a client, or
+as a log message should be in the LANGUAGE file, and the
+getMessage() or getMessageL() functions used to grab it from
+the language file.  These functions return an MSTRING with
+formatting codes, that can be used in a varargs list.  The
+idea is that Magick may be used in other countries, and they
+will select a different 'default' language, or their users
+might -- and we should be able to speak that language to
+the clients, AND in the log files, etc.
+
+Tracing
+=======
+
+Magick II developers MUST add trace code to any non-inline
+functions they create.  The types of tracing are listed
+below, and how/where/when to use them:
+
+Stats		0x0001
+    <TBA> should be used to print out vital statistics before
+	and after a process.
+Source		0x0002
+    <TBA> should be used to record the contents of input files.
+Bind		0x0004
+    <TBA> should be used when a scripted command is BOUND
+    <TBA> should be used when a scripted command is UNBOUND
+
+CheckPoint	0x0010
+    CP((str, arg...)) should be used at major points in a
+	function that indicate what it is doing at the time.
+	This can also be used to indicate the return value
+	of a function that returns a non-standard type, or
+	an inline function that does not have trace code.
+Comments	0x0020
+    COM((str, arg...)) should be used in for() and while()
+	loops to show up the values being worked on, or
+	looked at (useful for debugging infinate loops!).
+Locking		0x0040
+    This tracing is automatic when you use [RWM]LOCK(())
+Functions	0x0080
+    FT(name, (args)) or NFT(name) at the beginnging of EVERY
+	non-inline function.
+    RET(val) or NRET(type, val) at the END of every function
+	that does not return VOID.  NRET is used when the
+	return type is NOT a standard data type (see variant.h).
+
+Changing	0x0100
+    <TBA>
+Modify		0x0200
+    MB((args)) should be used at the BEGINNING of any data
+	modification (formatting is automatic).
+    ME((args)) should be called with the same args as MB, and
+	used at the END of any data modification.
+
+Sockets		0x1000
+    <TBA> should be used when creating sockets.
+    <TBA> should be used when quantifying sockets.
+    <TBA> shoulc be used when closing sockets.
+Chatter 	0x2000
+    CH(direction, str) should be used when receiving OR sending
+	data to or from clients.
+External	0x8000
+    <TBA> should be used with the external CALL being made
+    <TBA> should be used to capture the data RETURNED externally.
+
+NOTE: Tracing may be activated at run-time with:
+    magick --trace ALL:0xffff
+or at run-time with
+    /MSG OperServ TRACE SET ALL 0xffff
+
+You must specify your own trace level.
+
+RULE OF THUMB
+-------------
+
+Always code as if the guy who ends up maintaining, or testing
+your code will be a violent psychopath who knows where you live.
+ -- Dave Carhart
+
+Omnipotence has it's benefits, like knowing where you live.
+ -- Ungod
+
+People never know where you live when your dead.
+ -- PreZ
+
+CORE
+----
+
++ All threads mentioned need 2 values ... a Threshold, and Max.
+	Threshold being amount of messages in queue before it will
+	re-spawn a new thread.  Max being maximum number of threads.
+	Minimum is always 1, and once the thread is flushed (and the
+	main thread is below threshold), then the thread dies.  These
+	are not time-dependant, just message dependant (so you will
+	also need to factor average message processing time).
+
++ Language files setup (with a default language set in the ini)
+	(These files are a COMPLETE translation (except things like
+	names and hostmasks) of every scrap of text magick outputs.
+	We will write english ones, and send a call to others to
+	translate it to other languages and make 'funky' versions).
+ 
+x ini loading mechanism, allows for local and global ini files. (local
+	overrides global ini values but global values are unmodifiable)
+
++ All messages from IRCD read into main thread, which pushes them to "parser" thread,
+	responds to all the numeric codes, and passes on messages
+	that goto the services clients goto the generic services thread.
+	THRESHOLD:  ??    MAX:  ??
+
++ Tracing (internal debugging) to be added.  Includes tracing of marked
+	debug checkpoints, showing various veriables (eg. all data elements
+	of a user/channel entry), or even down to logging the entrance into
+	and exit out of any function.  This should be able to be 'turned up'
+	or 'turned down/off' via. operserv.
+		FuncTrace T("funcname", ...)
+	Has auto-indenting, with Thread ID's (0 for no thread), each thread
+	goes into a different file.  New spawned threads is a marker.
+	Problem: How to get the var args constructor to individually lable
+	each argument (no matter how many there are), and how to know what
+	type of argument it is (without blindly relying on streams).  Also
+	naming them would be good, mebbe just "funcname var1 var2" - what
+	would be ideal would be the ability to auto-grab the definition,
+	so we know that void funcname(char *var1, int var2); is what it is.
+
+* Services linking ability.  Keeping the services levels however.  Basically
+	if one set of services gets too lagged (defined in a shared-config),
+	or goes down: If another set of services of the same level is currently
+	on the network, then it takes over as 'master'.  When the first comes
+	back up, it stays as master, and the other one becomes a backup (which
+	one of the same level takes over is determined by the lag to the network
+	at the time the master goes down).  If none of the same level is on the
+	network, one of a higher level takes over, but hands back control to one
+	of a lower level as soon as it comes back and has reasonable lag again.
+	The failover (handover to another set of services) can be done manually.
+		A (1)	B (1)	C (2)	* = Master, - = Backup, x = Down
+		*	-	-	Normal
+		x	*	-	A goes down (fail to equivilant)
+		x	x	*	B goes down (fail to higher level)
+		x	*	-	B comes back up (fail to lower level)
+		-	*	-	A comes back up (no change)
+	There will need to be 'lag' thresholds in place to make it fail directly
+	to C if A is down, and B is too lagged to be of any use (ie. LAGTHRESH
+	might be 30s lag, if its above that, its taken out of the available fail-
+	to list -- unless it has the least lag of the ones in the fail-to list
+	or is the only one left).  We will also need to accomodate for losing
+	connection to the services network.
+
+x SQUIT protection.  Magick will keep a live server map of server,uplink.  When
+	A server squits off, then it creates a vector of 'split servers' (which
+	are removed from the live server map).  It then goes through the user list
+	and copies the user's server into a veriable called squit for each user
+	affected by the squit.  It then activates a timer for each squit server
+	which will each trigger in <user-defined> seconds.  After they triggers, it
+	will go through the user list, and delete any user that still has one of the
+	squit servers in its squit veriable.  On all NICK (signon) messages, if the
+	user already exists in the user map, it will compare the signon times.  If
+	the user has a server SQUIT veriable and the signon times match, it will
+	clear the SQUIT veriable (so they will not get removed when the timer
+	triggers).  If the signon times do not match, and there is a server in the
+	SQUIT veriable, the user is deleted and re-signed on like a new user.  If
+	there is no server in the SQUIT veriable, the user is collided.
+	IF a server reconnects and squits again before the trigger has activated,
+	then the old timer should be removed, and a new one set.  We will have to
+	keep a map of servers,timerid's to make this work.
+
+- Custom thread class: unfeasible, ACE_Tasks used, note: Attach and Detach must
+	be used (see chanserv::execute for an example) 
+
+* Priority Enqueing in mbase dependant upon service. include time-in value when
+	enqueueing message, when dequeueing, check now-timeout<time-in. if ! then
+	dump message.
+
+* Services interlink.  EVERY set of services thats sharing data links with
+	every other set of services on the network.  When a message needs to
+	be transferred, its sent out ALL links with a unique message ID.  They
+	then in turn send it on to the other servers.  Eventually, the message
+	will get to every server via. the quickest means.  It will ignore
+	message ID's its already seen.  We will have over 3,000,000,000 message
+	ID's to work with (all being 10 digits long), so we should be able to
+	time out old ones (remove from map of 'seen' messages) easily.
+	TODO:  Work out way to stop infinate recursion -- eg. transmit a
+	'path' with the message ID, so it wont send to servers in the path.
+	(probably 'if I've seen this, dont pass it on' method)
+
+* Keyfile for encryption. pass hostname throught hash as password to encrypt keyfile.
+
+x Add to mDateTime a 'Difference' function that will output the difference
+	of the stored value to the current time (Now()).  It should output
+	an mstring in the same format as disect_time from Magick I.  Dont
+	forget to account for plurals (ie. make it 1 hour, not 1 hours).
+		X seconds.
+		X minutes, X seconds
+		X hours, X minutes, X seconds
+		X days, XX:XX:XX
+		X years, X days, XX:XX:XX
+
+* Also add Year(), Month(), Day(), Jday(), Hour(), Min(), Sec() and Msec() to mDateTime
+	to extract the current value of each 'element'.
+	eg. on 13/9/99 at 13:12:43.905
+	Year() = 1999, Month() = 9, Day() = 13, Jday() = 258
+	Hour() = 13, Min() = 12, Sec() = 43, Msec() = 905
+
+* Redo the locking with some macros to setup/emulate  a try..finally type
+	scenario on gcc and msvc (and bcb at a later date). Note Function
+	macros only, so that we don't get that damn triplet argument fuckup again.
+
+Scripting
+---------
+
+* work out what functions/classes to surface to the scripting language
+	and their function definitions. note varargs style functions
+	can be supported easily.
+
+* do some samples (eg. VoteServ)
+
+* work out exactly how we are going to handle data storage to the
+	databases (user registers callback functions maybe that
+	can access surfaced functions?)
+
+
+Databases
+---------
+x bytesex independant data storage
+
+x compressed iostream filters
+
+x encrypted iostream filters
+
+- storage mechanism that stores data in the format (type, name, value)
+	strings are stored with 4 byte long value of length prefix
+	also begin block and end block types (asc of '{'/'}' maybe?) so
+	that we can have nested objects. ala chanserv is the main object
+	with nested channel objects which in turn have nested akicks and
+	nested bans etc.
+  + Note: this may be forgotten about and standard "dump the object" format used.
+
+* Method to determine (wether encrypted, compressed, or plain) what
+	flags are set on the datafile (including compression level,
+	possibly encryption type, magick internal version). (flags?!!!)
+
+* Store ALL dates / times in GMT ... when we load them live, we convert them
+	to local timezone (determined with __timezone) -- if TZ cant be
+	determined, we exit out and tell them to set TZ=??? (fallback).
+	OR -- we can use the TZ environment veriable exclusively.
+
+User Interface
+--------------
+
+x Command mapping classes/maps, etc.   All have:
+	- Service Type (nickname indipendant)
+	- Command mask (wildcards allowed)
+	- Committees (space seperated)
+	- Function to execute (or NULL)
+	To find a match, it will combine Service Type, command mask and
+	committees as keys.  This way you can have the same command for
+	different services, plus you can have 2 instances of the same
+	command for the same services, and depending what committee your on
+	you execute one or the other (eg. one for SADMINS, one for ALL).
+	It will keep searching the map until it matches all 3 conditions
+	(service type, command mask and committees), and break when one
+	matches, or it reaches the end of the map (it then returns 'Unknown
+	command').  There should actually be 2 maps, UserCommandMap (UCM)
+	and CommandMap (CM).  Default command should go into the CM, and
+	all scripted commands in UCM.  There will also be 3 global functions
+	used to search the map DoCommand() which searches UCM then CM,
+	DoUserCommand() which searches just the UCM, and DoDefaultCommand()
+	which searches just the CM.  All 3 functions will take 5 paramaters,
+	ServiceType (GetInternalName()), ServiceName, User, Command, Params.
+	If a match is found, the function will be called with 3 paramaters,
+	ServiceName, User, Params. When the function to execute is NULL
+	and all 3 key's match, the command is 'unbound' and cant be run.
+	NOTE: This will mean we must require scripted clients to be registered
+		first, with 'service ServiceType nick nick ...'.  This will
+		make the ServiceType nickname indipendant, and will mean that
+		we can add ServiceName to the command map, without worrying
+		what nickname it is using (just like NickServ, etc).
+	NOTE: The search command should return a BOOL.  The search command
+		will just execute the requested command, and return true if
+		it found any entry in the map (including NULL), false if no
+		events were found -- this way we can leave error checking
+		in the main (calling) function.
+	NOTE: All command functions must take 4 mstrings: mynick, source,
+		command and params.  Command is the EXACT command (not mask).
+
+* Help file editor (both GUI and text/ncurses)
+
+* Config editor (both GUI and text/ncurses)
+
+* GUI to be done in wxWindows2
+
+* Telnet and DCC ability.
+
+All Services
+------------
+
+x generic services thread is basically passed messages from the Server
+	thread that would goto a user-type client.  eg. PRIVMSG, NOTICE,
+	etc.  It is then to respond to any generic stuff that is replied
+	to the same way by all services (eg. PING), and then to pass any
+	messages that need unique attention to the individual service
+	threads.
+
+
+ChanServ
+--------
+
++ One central database with values that are stored, and live (as most of
+	it is common), with 2 container classes pointing to the database.
+	ones that are not stored are removed from the central database
+	when they are no longer used.  The save routine just stores all
+	the ones that are in the 'save' container class.
+
+x Have a 'template' channel setup, that any new channels will be based
+	upon, or similar functionality in the ini file so it is easy to
+	set the 'default' registration options.
+
+* Have the ability for SOP (?) to be able to lock certain paramaters,
+	(eg. if the channel has an offencive topic, a SOP can lock the
+	channel at +s, and even founder cant change it.  Sortof a forced
+	mlock -- whether they want it or not, but does not interfere with
+	any other mlock flags they may have set.  Same with flags, topic,
+	anything!).
+
+* Compression of outbound modes (configurable amount of modes per line).
+
+NickServ
+--------
+
+- One central database with values that are stored, and live (as most of
+	it is common), with 2 container classes pointing to the database.
+	ones that are not stored are removed from the central database
+	when they sign off.  The save routine just stores all the ones that
+	are in the 'save' container class.
+
+x A start.
+
+MemoServ
+--------
+
+x Copy across current functionality.
+
+x Add ability for channel memo's to know who has read them, so that they
+	dont get constantly reminded that there are news articles for the
+	channel if they have already read them.
+
+* add ability to set timeout of read memos (and ability to set as unread)
+	(only notified on signon/unaway of unread memos).
+
+* Add ability to e-mail memos to a user if required (say a command to do
+	it (specifying email address), or a nickserv setting to do it to
+	the stored email address for that nick record for all memos).
+
++ A start.
+
+
+OperServ
+--------
+
+x Committees to be setup.  Committees have a head, a TAG (one-word name), a
+	hidden ID (user never see's it) and a description.  Committee's each
+	have their own mass-memo list (settable as to wether they should be
+	postable by the head or all members), and their own logon message
+	setup (postable only by head of committee).  SOP's must create a new
+	user committee, and appoint the head.  The head can then set a new
+	head, change the description, set the committee private, etc.
+	Also added to info display of user is (unless committee private):
+		Committees: magick-dev (head), aussieops, oper
+
+x (cont) 4 hard-coded committees, being SADMIN for services admins (hard-coded
+	in the ini file),  SOP for services operators (added only by SADMIN),
+	ADMIN for server admins (added by SADMIN), and OPER for access to
+	operserv (added by ADMIN). Should be an INI setting to define wether
+	you need to be on the OPER list to have access to operserv or not.
+	These committees should also store who added them (and when).  Others
+	dont need to, since only the head can add people.
+
+* Possibly setup multiple-OPER lists, so you can essentially set different
+	'levels' of OPER's to access different commands (personally, I'm against
+	this, 5 levels is enough, SADMIN, SOP, ADMIN, OPER, and NONE).  Its
+	possible to say allow statistical information only to people who are
+	not on the OPER list.
+
+- More online statistics (including CPU load, memory usage of magick, CPU usage
+	of magick -- memory usage of various databases, etc).
+
+LOGGING
+-------
+
+x Implement an OpenArray and a TVarRec style class and an ARRAYOFCONST style macro
+
+* implement a logging guard of the type LogFunc::LogFunc(mstring& name, OpenArray& args);
+	this has a static boolean of Logging (To Log or not to log that is the question)
+	also a static map<threadid,level> so that it logs out level:threadid:
+
+x global map <theadid,servername> - in the magick object see log.cpp/log.h for how to use it.
+    being moved to static object mThread, as with all other threadtype stuff
+
+* finish revamping wxLog system.
+
+GENERAL CODING CONSTRUCTS
+-------------------------
+
++ change over the wxFile internals to use ACE_OS:: calls
+
++ everywhere we use message queue's we need to have a bool shutting_down,
+    when closing down task object, set it true, and push messages. while
+    loops must check after pulling off message whether the flag is true
+    before executing code and return 0; if true.
+
+- Abstract sockets via our streams mechanism.

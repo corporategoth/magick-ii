@@ -1,0 +1,51 @@
+This is basically a DOCO saying what you'll require
+to (R)UN it on any of the various systems ... and
+what will be required to (C)OMPILE it on them :)
+
+
+Win32
+(c) msvc preferably v6 or above.
+(r) win32 (note not win32s)
+
+
+General UNIX
+(c) gcc 2.95 or above
+(c) a threads library
+
+
+Linux
+(r) glibc 2.1 or above
+
+
+FreeBSD
+
+
+SunOS
+
+
+
+
+Compilation peculiarities
+=========================
+
+When using friends with templates, GCC needs:
+
+template<class X>
+class Example
+{
+    friend OutputStream operator<<<X> (OutputStream &in, Example<X> &out);
+    friend InputStream operator>><X> (InputStream &out, Example<X> &in);
+};
+
+MSVC cant handle it, and needs:
+
+template<class X>
+class Example
+{
+    friend OutputStream operator<< (OutputStream &in, Example<X> &out);
+    friend InputStream operator>> (InputStream &out, Example<X> &in);
+};
+
+The only difference being that the friend functions on GCC
+need to be specified as 'templatized' (ie. have the template
+class in <>'s after the function name).

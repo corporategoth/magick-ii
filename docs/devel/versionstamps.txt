@@ -1,0 +1,13 @@
+RCS-ID:      $Id$
+
+/version stamp example		ircd codebase/derived from	Contacts
+============================    ============================	===================
+
+UltimateIRCd2.5.2.Retro.Pre1	UltimateIRCd			Nak@VillageIRC.net,hamlet@powertech.no
+
+Aurora2.2-r.			Aurora				
+	* Adds SVSHOST (changing 'displayed host')
+	* Extra paramater to NICK command (displayed-host) as
+	  param 5 pushing REAL HOST to param 8.
+
+dfrelic1.1.			DAL DreamForge4.6.5

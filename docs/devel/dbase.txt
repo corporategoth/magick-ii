@@ -1,0 +1,183 @@
+(A) = Array
+
+NICKSERV
+========
+
+STORED
+------
+
+NICK
+Reg time
+email
+url
+
+1: Online as this nick
+  live (PTR)
+  host nick (PTR)
+2: Not online and slave
+  lastseen
+  host nick (PTR)
+3: Not online and not slave
+  realname
+  username
+  userhost
+  lastseen
+
+(A) access entries
+(A) ignore entries
+flags
+
+
+LIVE
+----
+
+NICK
+signon time
+realname
+username
+userhost
+server
+user modes
+(A) joined channels
+
+(A) last msg time (flood prot)
+times flood triggered
+failed passwords
+(A) ident'd as chan founder
+
+
+
+CHANSERV
+========
+
+STORED
+------
+
+NAME
+founder
+password
+description
+url
+reg time
+mlock on
+mlock off
+mlock limit
+mlock key
+
+1: In use
+   live
+2: not in use
+   last used
+   last topic
+   last topic setter
+   last topic time
+
+(A) access levels
+(A) access list
+(A) akick list
+(A) channel greets
+flags
+
+LIVE
+----
+
+NAME
+creation time
+topic
+topic setter
+topic time
+channel modes
+limit
+key
+(A) bans
+(A) users
+
+ON DISK BASIC FORMAT
+====================
+
+value pair = "name" as string, valuetype as int, value as valuetype
+
+valuetypes =	0	empty
+		1	string
+		2	char
+		3	int
+		4	double
+		5	uchar
+		6	uint
+		7	udouble
+		8	nesting start
+		9	nesting end
+		10	object start
+		11	object end
+		12	bool
+
+others to follow.
+
+eg. (data sent to stream)
+"chanserv" 1 NAME
+"mychan" 10
+"prez" 1 founder
+"foobar" 1 password
+"test" description
+"http://www.magick.tm" 1 url
+(double value) 4 reg time
+...
+"access levels" 8
+"access level1" 10
+"somedata" 1 "somestring data"
+"access level1" 11
+"access level2" 10
+"somedata" 1 "somestring data"
+"access level2" 11
+"access levels" 9
+...
+"access list" 8
+...
+"access list" 9
+...
+
+note type numbers are single uchar, strings are prefixed by uint size.
+
+
+COMMENT:
+The format should probably be 'tag type text', which means we dont
+need quotes, and the tag can only be 1 word (with _'s, etc)...
+Why not use []'s and paths thereov, eg (in chanserv dbase) ...
+
+[#darkernet]
+FOUNDER 1 PreZ
+PASSWORD 1 foobar
+DESCRIPTION 1 This is a junk description
+REG_TIME 4 (value)
+...
+[#darkernet/ACCESS]
+[#darkernet/ACCESS/1]
+MASK 1 PreZ
+LEVEL 3 30
+ADDEDBY 1 Ungod
+[#darkernet/ACCESS/2]
+...
+
+Even [#darkernet/ACCESS] may be optional -- this would make parsing
+kind of easy (hell, if we had one tag with the same name in each type,
+we could put in ='s and it could be read like a config file!) -- and
+it would be like you said (nested data) -- each section not needing
+an 'end' marker tho, its ended by the next section beginning (and if
+theres no path after the channel name, its the next channel).  Problem
+with this tho, is that we cant use '/', we'd have to use a char that
+cannot be part of a channel name ... reply??
+
+Reply:
+Ignore the quotes. i was using that as a visual example. for the strings
+a 4 byte length will be stored followed by the "string" contents. thereby
+enabling us to include anything inside the strings (even theoretically but not
+usably NULL's). basically, streaming in will be read the triplet (tag type data)
+if subobject/nesting, move our way down to a lower level (by basically calling 
+that subobjects reader and passing it the stream's current state.
+lower level keeps pulling objects off the stream till it hits the end of block
+marker upon which it just bugs back out to the level above it which keeps
+streaming shit off the stream and processing/nesting down as needs be. end
+effect, effective mid stream on the fly nesting of objects without the
+overhead of "sections". (short hand, use recursion to handle nesting, with the
+layout i suggested above, recursion is part of a logical process of reading in
+the data stream)

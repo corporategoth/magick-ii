@@ -116,12 +116,6 @@ const mstring contrib[] = {
 "    libdes         http://www.psy.uq.oz.au/~ftp/Crypto",
 "    zlib           http://www.cdrom.com/pub/infozip/zlib",
 "    cint           http://root.cern.ch/root/Cint.html",
-"",
-"Magick II may be freely distributed, but may NOT be modified",
-"in any way unless DETAILED lists of exactly what has been",
-"modified are kept, AND the original copyrights are untouched.",
-"Magick II and ALL derivatives must be bundled with FULL source",
-"code and documentation.  No charge may be imposed for Magick.",
 "---EOM---"
 };
 

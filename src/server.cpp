@@ -928,7 +928,7 @@ void NetworkServ::execute(const mstring & data)
 	    if (IsServer(data.ExtractWord(3, ": ")) ||
 	    	data.ExtractWord(3, ": ").LowerCase() == Parent->startup.Server_Name().LowerCase())
 	    {
-		sraw("NOTICE " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
+		raw("NOTICE " + source + " :Connect: Server " + data.ExtractWord(3, ": ") +
 			" already exists from " + Parent->startup.Server_Name());
 	    }
 	    else
@@ -1011,8 +1011,19 @@ void NetworkServ::execute(const mstring & data)
 	    // :soul.darker.net 303 heaven.darker.net :
 
 	    // repl: :our.server 303 source :local.nick
-	    if (Parent->nickserv.IsLive(source))
-		sraw("303 " + source + " :" + data.ExtractWord(3, ": "));
+	    mstring isonstr = "";
+	    for (int i=3; i<=data.WordCount(": "); i++)
+	    {
+		if (isonstr.Len() > 450)
+		{
+		    sraw("303 " + source + " :" + isonstr);
+		    isonstr = "";
+		}
+		if (Parent->nickserv.IsLive(data.ExtractWord(i, ": ")))
+		    isonstr += data.ExtractWord(i, ": ") + " ";
+	    }
+	    if (isonstr != "")
+		sraw("303 " + source + " :" + isonstr);
 	}
 	else
 	{
@@ -1057,6 +1068,9 @@ void NetworkServ::execute(const mstring & data)
 	    //:PreZ KILL kick`kill`abuse :castle.srealm.net.au!PreZ (blah)
 	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
 	    {
+		// sign on services again if they're killed.
+		if (Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].IsServices())
+		    sraw("ISON " + data.ExtractWord(3, ": "));
 		int wc = data.After(":", 2).WordCount("!");
 		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Quit(
 			"Killed (" + data.After(":", 2).After("!", wc-1) + ")");
@@ -1338,6 +1352,10 @@ void NetworkServ::execute(const mstring & data)
 	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
 		wxLogNotice("Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
 	}
+	else if (msgtype=="PROTOCOL")
+	{
+	    // This is valid from DAL4.4.15+
+	}
 	else
 	{
 	    wxLogWarning("Unknown message from server: %s", data.c_str());
@@ -1375,6 +1393,10 @@ void NetworkServ::execute(const mstring & data)
 		return; // Save else's, etc :)
 	    }
 
+	    // Kind of illegal to do, but accomodate anyway, re-signon
+	    // services if someone quits them (how?!?)
+	    if (Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].IsServices())
+		sraw("ISON " + data.ExtractWord(3, ": "));
 	    Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
 	    Parent->nickserv.live.erase(sourceL);
 	}

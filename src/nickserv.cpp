@@ -1205,14 +1205,14 @@ void Nick_Stored_t::Drop()
 
     // When we go, we take all our slaves with us!
     unsigned int i;
-    if (i_Host == "")
+    if (Host() == "")
     {
 	for (i=0; i<Siblings(); i++)
 	{
 	    Parent->nickserv.stored.erase(Sibling(i));
 	}
     }
-    else if (Parent->nickserv.IsStored(i_Host))
+    else
     {
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.erase(i_Name.LowerCase());
     }
@@ -1300,20 +1300,13 @@ void Nick_Stored_t::operator=(const Nick_Stored_t &in)
 mstring Nick_Stored_t::Email()
 {
     NFT("Nick_Stored_t::Email");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_Email);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Email());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Email());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Email());
     }
 }
 
@@ -1321,20 +1314,13 @@ mstring Nick_Stored_t::Email()
 void Nick_Stored_t::Email(mstring in)
 {
     FT("Nick_Stored_t::Email", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	i_Email = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Email(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Email(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].Email(in);
     }
 }
 
@@ -1342,20 +1328,13 @@ void Nick_Stored_t::Email(mstring in)
 mstring Nick_Stored_t::URL()
 {
     NFT("Nick_Stored_t::URL");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_URL);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].URL());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(URL());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].URL());
     }
 }
 
@@ -1363,20 +1342,13 @@ mstring Nick_Stored_t::URL()
 void Nick_Stored_t::URL(mstring in)
 {
     FT("Nick_Stored_t::URL", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	i_URL = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].URL(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	URL(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].URL(in);
     }
 }
 
@@ -1384,20 +1356,13 @@ void Nick_Stored_t::URL(mstring in)
 mstring Nick_Stored_t::ICQ()
 {
     NFT("Nick_Stored_t::ICQ");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_ICQ);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].ICQ());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(ICQ());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].ICQ());
     }
 }
 
@@ -1405,20 +1370,13 @@ mstring Nick_Stored_t::ICQ()
 void Nick_Stored_t::ICQ(mstring in)
 {
     FT("Nick_Stored_t::ICQ", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	i_ICQ = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].ICQ(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	ICQ(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].ICQ(in);
     }
 }
 
@@ -1426,20 +1384,13 @@ void Nick_Stored_t::ICQ(mstring in)
 mstring Nick_Stored_t::Description()
 {
     NFT("Nick_Stored_t::Description");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_Description);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Description());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Description());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Description());
     }
 }
 
@@ -1447,20 +1398,13 @@ mstring Nick_Stored_t::Description()
 void Nick_Stored_t::Description(mstring in)
 {
     FT("Nick_Stored_t::Description", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	i_Description = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Description();
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Description(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].Description();
     }
 }
 
@@ -1468,20 +1412,13 @@ void Nick_Stored_t::Description(mstring in)
 mstring Nick_Stored_t::Comment()
 {
     NFT("Nick_Stored_t::Comment");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_Comment);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Comment());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Comment());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Comment());
     }
 }
 
@@ -1489,20 +1426,13 @@ mstring Nick_Stored_t::Comment()
 void Nick_Stored_t::Comment(mstring in)
 {
     FT("Nick_Stored_t::Comment", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	i_Comment = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Comment(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Comment(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].Comment(in);
     }
 }
 
@@ -1510,21 +1440,14 @@ void Nick_Stored_t::Comment(mstring in)
 void Nick_Stored_t::Suspend(mstring name)
 {
     FT("Nick_Stored_t::Suspend", (name));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	i_Suspend_By = name;
 	i_Suspend_Time = Now();
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Suspend(name);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Suspend(name);
+	Parent->nickserv.stored[i_Host.LowerCase()].Suspend(name);
     }
 }
 
@@ -1532,41 +1455,38 @@ void Nick_Stored_t::Suspend(mstring name)
 void Nick_Stored_t::UnSuspend()
 {
     NFT("Nick_Stored_t::UnSuspend");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	i_Suspend_By = "";
     }
-    else if (Parent->nickserv.IsStored(i_Host))
+    else
     {
 	Parent->nickserv.stored[i_Host.LowerCase()].UnSuspend();
     }
-    else
+}
+
+mstring Nick_Stored_t::Host()
+{
+    NFT("Nick_Stored_t::Host");
+    if (i_Host != "" && !Parent->nickserv.IsStored(i_Host))
     {
 	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
-	UnSuspend();
     }
+    RET(i_Host);
 }
-
 
 mstring Nick_Stored_t::Password()
 {
     NFT("Nick_Stored_t::Password");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_Password);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Password());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Password());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Password());
     }
 }
 
@@ -1574,20 +1494,13 @@ mstring Nick_Stored_t::Password()
 void Nick_Stored_t::Password(mstring in)
 {
     FT("Nick_Stored_t::Password", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	i_Password = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Password(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Password(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].Password(in);
     }
 }
 
@@ -1596,7 +1509,7 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
 {
     FT("Nick_Stored_t::Slave", (nick, password, regtime));
 
-    if (i_Host == "")
+    if (Host() == "")
     {
 	CP(("Checking \"%s\" == \"%s\" ...", password.c_str(), i_Password.c_str()));
 	if (i_Forbidden  || password != i_Password)
@@ -1614,16 +1527,9 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
 	i_slaves.insert(nick.LowerCase());
 	RET(true);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Slave(nick, password, regtime));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Slave(nick, password, regtime));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Slave(nick, password, regtime));
     }
 }
 
@@ -1631,20 +1537,13 @@ bool Nick_Stored_t::Slave(mstring nick, mstring password, mDateTime regtime)
 unsigned int Nick_Stored_t::Siblings()
 {
     NFT("Nick_Stored_t::Siblings");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_slaves.size());
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Siblings());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Siblings());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Siblings());
     }
 }
 
@@ -1652,7 +1551,7 @@ unsigned int Nick_Stored_t::Siblings()
 mstring Nick_Stored_t::Sibling(unsigned int count)
 {
     FT("Nick_Stored_t::Siblings", (count));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	set<mstring>::iterator iter;
 	unsigned int i;
@@ -1665,16 +1564,9 @@ mstring Nick_Stored_t::Sibling(unsigned int count)
 	}
 	RET("");
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(count));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Sibling(count));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Sibling(count));
     }
 }
 
@@ -1686,20 +1578,13 @@ bool Nick_Stored_t::IsSibling(mstring nick)
     {
 	RET(true);
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(i_slaves.find(nick.LowerCase()) != i_slaves.end());
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsSibling(nick));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(IsSibling(nick));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsSibling(nick));
     }
 }
 
@@ -1859,11 +1744,11 @@ void Nick_Stored_t::ChangeOver(mstring oldnick)
 bool Nick_Stored_t::MakeHost()
 {
     NFT("Nick_Stored_t::MakeHost"); 
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(false);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
+    else
     {
 	// Re-point all slaves to me and copy the slaves list.
 	// Then clear the host's slave list, point host to me,
@@ -1912,24 +1797,17 @@ bool Nick_Stored_t::MakeHost()
 	i_Host = "";
 	RET(true);
     }
-    else
-    {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(MakeHost());
-    }
 }
 
 
 bool Nick_Stored_t::Unlink()
 {
     NFT("Nick_Stored_t::Unlink");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(false)
     }
-    else if (Parent->nickserv.IsStored(i_Host))
+    else
     {
 	i_slaves.clear();
 	i_Password = Parent->nickserv.stored[i_Host.LowerCase()].i_Password;
@@ -1954,19 +1832,12 @@ bool Nick_Stored_t::Unlink()
 	l_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].l_PRIVMSG;
 	i_Language = Parent->nickserv.stored[i_Host.LowerCase()].i_Language;
 	l_Language = Parent->nickserv.stored[i_Host.LowerCase()].l_Language;
-	i_Picture = Parent->nickserv.stored[i_Host.LowerCase()].i_Picture;
+	i_Picture = 0;
 	i_Suspend_By = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_By;
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
 	Parent->nickserv.stored[i_Host.LowerCase()].i_slaves.erase(i_Name.LowerCase());
 	i_Host = "";
 	RET(true);
-    }
-    else
-    {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Unlink());
     }
 }
 
@@ -1974,20 +1845,13 @@ bool Nick_Stored_t::Unlink()
 unsigned int Nick_Stored_t::Access()
 {
     NFT("Nick_Stored_t::Access");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_access.size());
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Access());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Access());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Access());
     }
 }
 
@@ -1995,7 +1859,7 @@ unsigned int Nick_Stored_t::Access()
 mstring Nick_Stored_t::Access(unsigned int count)
 {
     FT("Nick_Stored_t::Access", (count));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	set<mstring>::iterator iter;
 	unsigned int i;
@@ -2006,16 +1870,9 @@ mstring Nick_Stored_t::Access(unsigned int count)
 	    }
 	RET("");
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Access(count));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Access(count));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Access(count));
     }
 }
 
@@ -2023,7 +1880,7 @@ mstring Nick_Stored_t::Access(unsigned int count)
 bool Nick_Stored_t::AccessAdd(const mstring& in)
 {
     FT("Nick_Stored_t::AccessAdd", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	// Incorrect syntax
 	if (!(in.Contains("@") && in.WordCount("@") == 2))
@@ -2053,16 +1910,9 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
 	i_access.insert(in.LowerCase());
 	RET(true);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].AccessAdd(in));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(AccessAdd(in));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].AccessAdd(in));
     }
 }
 
@@ -2070,7 +1920,7 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
 unsigned int Nick_Stored_t::AccessDel(mstring in)
 {
     FT("Nick_Stored_t::AccessDel", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	vector<mstring> chunked;
 	set<mstring>::iterator iter;
@@ -2084,16 +1934,9 @@ unsigned int Nick_Stored_t::AccessDel(mstring in)
 	    i_access.erase(chunked[i].LowerCase());
 	RET(chunked.size());
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].AccessDel(in));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(AccessDel(in));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].AccessDel(in));
     }
 }
 
@@ -2101,7 +1944,7 @@ unsigned int Nick_Stored_t::AccessDel(mstring in)
 bool Nick_Stored_t::IsAccess(mstring in)
 {
     FT("Nick_Stored_t::IsAccess", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	set<mstring>::iterator iter;
 	for (iter=i_access.begin(); iter!=i_access.end(); iter++)
@@ -2111,16 +1954,9 @@ bool Nick_Stored_t::IsAccess(mstring in)
 	    }
 	RET(false);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsAccess(in));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(IsAccess(in));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsAccess(in));
     }
 }
 
@@ -2128,20 +1964,13 @@ bool Nick_Stored_t::IsAccess(mstring in)
 unsigned int Nick_Stored_t::Ignore()
 {
     NFT("Nick_Stored_t::Ignore");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_ignore.size());
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Ignore());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Ignore());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Ignore());
     }
 }
 
@@ -2149,7 +1978,7 @@ unsigned int Nick_Stored_t::Ignore()
 mstring Nick_Stored_t::Ignore(unsigned int count)
 {
     FT("Nick_Stored_t::Ignore", (count));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	set<mstring>::iterator iter;
 	unsigned int i;
@@ -2160,16 +1989,9 @@ mstring Nick_Stored_t::Ignore(unsigned int count)
 	    }
 	RET("");
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Ignore(count));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Ignore(count));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Ignore(count));
     }
 }
 
@@ -2177,7 +1999,7 @@ mstring Nick_Stored_t::Ignore(unsigned int count)
 bool Nick_Stored_t::IgnoreAdd(mstring in)
 {
     FT("Nick_Stored_t::IgnoreAdd", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	// Not stored nick
 	if (!Parent->nickserv.IsStored(in))
@@ -2193,16 +2015,9 @@ bool Nick_Stored_t::IgnoreAdd(mstring in)
 	i_ignore.insert(in.LowerCase());
 	RET(true);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IgnoreAdd(in));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(IgnoreAdd(in));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].IgnoreAdd(in));
     }
 }
 
@@ -2210,7 +2025,7 @@ bool Nick_Stored_t::IgnoreAdd(mstring in)
 unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 {
     FT("Nick_Stored_t::IgnoreDel", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	vector<mstring> chunked;
 	set<mstring>::iterator iter;
@@ -2224,16 +2039,9 @@ unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 	    i_ignore.erase(chunked[i].LowerCase());
 	RET(chunked.size());
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IgnoreDel(in));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(IgnoreDel(in));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].IgnoreDel(in));
     }
 }
 
@@ -2241,7 +2049,7 @@ unsigned int Nick_Stored_t::IgnoreDel(mstring in)
 bool Nick_Stored_t::IsIgnore(mstring in)
 {
     FT("Nick_Stored_t::IsIgnore", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	set<mstring>::iterator iter;
 	for (iter=i_ignore.begin(); iter!=i_ignore.end(); iter++)
@@ -2251,16 +2059,9 @@ bool Nick_Stored_t::IsIgnore(mstring in)
 	    }
 	RET(false);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsIgnore(in));
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(IsIgnore(in));
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].IsIgnore(in));
     }
 }
 
@@ -2272,20 +2073,13 @@ bool Nick_Stored_t::Protect()
     {
 	RET(Parent->nickserv.DEF_Protect());
     }
-    else if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(i_Protect);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Protect());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Protect());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Protect());
     }
 }
 
@@ -2293,21 +2087,14 @@ bool Nick_Stored_t::Protect()
 void Nick_Stored_t::Protect(bool in)
 {
     FT("Nick_Stored_t::Protect", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!L_Protect())
 	    i_Protect = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Protect(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Protect(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].Protect(in);
     }
 }
 
@@ -2319,20 +2106,13 @@ bool Nick_Stored_t::L_Protect()
     {
 	RET(true);
     }
-    else if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(l_Protect);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Protect());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(L_Protect());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Protect());
     }
 }
 
@@ -2340,21 +2120,14 @@ bool Nick_Stored_t::L_Protect()
 void Nick_Stored_t::L_Protect(bool in)
 {
     FT("Nick_Stored_t::L_Protect", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.LCK_Protect())
 	    l_Protect = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].L_Protect(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	L_Protect(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].L_Protect(in);
     }
 }
 
@@ -2366,20 +2139,13 @@ bool Nick_Stored_t::Secure()
     {
 	RET(Parent->nickserv.DEF_Secure());
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(i_Secure);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Secure());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Secure());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Secure());
     }
 }
 
@@ -2387,21 +2153,14 @@ bool Nick_Stored_t::Secure()
 void Nick_Stored_t::Secure(bool in)
 {
     FT("Nick_Stored_t::Secure", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!L_Secure())
 	    i_Secure = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Secure(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Secure(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].Secure(in);
     }
 }
 
@@ -2413,20 +2172,13 @@ bool Nick_Stored_t::L_Secure()
     {
 	RET(true);
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(l_Secure);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Secure());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(L_Secure());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Secure());
     }
 }
 
@@ -2434,21 +2186,14 @@ bool Nick_Stored_t::L_Secure()
 void Nick_Stored_t::L_Secure(bool in)
 {
     FT("Nick_Stored_t::L_Secure", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.LCK_Secure())
 	    l_Secure = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].L_Secure(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	L_Secure(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].L_Secure(in);
     }
 }
 
@@ -2460,20 +2205,13 @@ bool Nick_Stored_t::NoExpire()
     {
 	RET(Parent->nickserv.DEF_NoExpire());
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(i_NoExpire);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].NoExpire());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(NoExpire());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].NoExpire());
     }
 }
 
@@ -2481,21 +2219,14 @@ bool Nick_Stored_t::NoExpire()
 void Nick_Stored_t::NoExpire(bool in)
 {
     FT("Nick_Stored_t::NoExpire", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!L_NoExpire())
 	    i_NoExpire = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].NoExpire(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	NoExpire(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].NoExpire(in);
     }
 }
 
@@ -2507,20 +2238,13 @@ bool Nick_Stored_t::L_NoExpire()
     {
 	RET(true);
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(l_NoExpire);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_NoExpire());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(L_NoExpire());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_NoExpire());
     }
 }
 
@@ -2528,21 +2252,14 @@ bool Nick_Stored_t::L_NoExpire()
 void Nick_Stored_t::L_NoExpire(bool in)
 {
     FT("Nick_Stored_t::L_NoExpire", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.LCK_NoExpire())
 	    l_NoExpire = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].L_NoExpire(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	L_NoExpire(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].L_NoExpire(in);
     }
 }
 
@@ -2554,20 +2271,13 @@ bool Nick_Stored_t::NoMemo()
     {
 	RET(Parent->nickserv.DEF_NoMemo());
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(i_NoMemo);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].NoMemo());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(NoMemo());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].NoMemo());
     }
 }
 
@@ -2575,21 +2285,14 @@ bool Nick_Stored_t::NoMemo()
 void Nick_Stored_t::NoMemo(bool in)
 {
     FT("Nick_Stored_t::NoMemo", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!L_NoMemo())
 	    i_NoMemo = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].NoMemo(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	NoMemo(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].NoMemo(in);
     }
 }
 
@@ -2601,20 +2304,13 @@ bool Nick_Stored_t::L_NoMemo()
     {
 	RET(true);
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(l_NoMemo);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_NoMemo());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(L_NoMemo());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_NoMemo());
     }
 }
 
@@ -2622,21 +2318,14 @@ bool Nick_Stored_t::L_NoMemo()
 void Nick_Stored_t::L_NoMemo(bool in)
 {
     FT("Nick_Stored_t::L_NoMemo", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.LCK_NoMemo())
 	    l_NoMemo = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].L_NoMemo(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	L_NoMemo(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].L_NoMemo(in);
     }
 }
 
@@ -2648,20 +2337,13 @@ bool Nick_Stored_t::Private()
     {
 	RET(Parent->nickserv.DEF_Private());
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(i_Private);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Private());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Private());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Private());
     }
 }
 
@@ -2669,21 +2351,14 @@ bool Nick_Stored_t::Private()
 void Nick_Stored_t::Private(bool in)
 {
     FT("Nick_Stored_t::Private", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!L_Private())
 	    i_Private = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Private(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Private(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].Private(in);
     }
 }
 
@@ -2695,20 +2370,13 @@ bool Nick_Stored_t::L_Private()
     {
 	RET(true);
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(l_Private);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Private());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(L_Private());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Private());
     }
 }
 
@@ -2716,21 +2384,14 @@ bool Nick_Stored_t::L_Private()
 void Nick_Stored_t::L_Private(bool in)
 {
     FT("Nick_Stored_t::L_Private", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.LCK_Private())
 	    l_Private = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].L_Private(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	L_Private(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].L_Private(in);
     }
 }
 
@@ -2742,20 +2403,13 @@ bool Nick_Stored_t::PRIVMSG()
     {
 	RET(Parent->nickserv.DEF_PRIVMSG());
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(i_PRIVMSG);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].PRIVMSG());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(PRIVMSG());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].PRIVMSG());
     }
 }
 
@@ -2763,21 +2417,14 @@ bool Nick_Stored_t::PRIVMSG()
 void Nick_Stored_t::PRIVMSG(bool in)
 {
     FT("Nick_Stored_t::PRIVMSG", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!L_PRIVMSG())
 	i_PRIVMSG = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].PRIVMSG(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	PRIVMSG(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].PRIVMSG(in);
     }
 }
 
@@ -2789,20 +2436,13 @@ bool Nick_Stored_t::L_PRIVMSG()
     {
 	RET(true);
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(l_PRIVMSG);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_PRIVMSG());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(L_PRIVMSG());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_PRIVMSG());
     }
 }
 
@@ -2810,21 +2450,14 @@ bool Nick_Stored_t::L_PRIVMSG()
 void Nick_Stored_t::L_PRIVMSG(bool in)
 {
     FT("Nick_Stored_t::L_PRIVMSG", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.LCK_PRIVMSG())
 	l_PRIVMSG = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].L_PRIVMSG(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	L_PRIVMSG(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].L_PRIVMSG(in);
     }
 }
 
@@ -2836,20 +2469,13 @@ mstring Nick_Stored_t::Language()
     {
 	RET(Parent->nickserv.DEF_Language().UpperCase());
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(i_Language);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Language());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Language());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Language());
     }
 }
 
@@ -2857,21 +2483,14 @@ mstring Nick_Stored_t::Language()
 void Nick_Stored_t::Language(mstring in)
 {
     FT("Nick_Stored_t::Language", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!L_Language())
 	i_Language = in.UpperCase();
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].Language(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	Language(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].Language(in);
     }
 }
 
@@ -2883,20 +2502,13 @@ bool Nick_Stored_t::L_Language()
     {
 	RET(true);
     }
-    if (i_Host == "")
+    else if (Host() == "")
     {
 	RET(l_Language);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Language());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(L_Language());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Language());
     }
 }
 
@@ -2904,21 +2516,14 @@ bool Nick_Stored_t::L_Language()
 void Nick_Stored_t::L_Language(bool in)
 {
     FT("Nick_Stored_t::L_Language", (in));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.LCK_Language())
 	l_Language = in;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].L_Language(in);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	L_Language(in);
+	Parent->nickserv.stored[i_Host.LowerCase()].L_Language(in);
     }
 }
 
@@ -2926,20 +2531,13 @@ void Nick_Stored_t::L_Language(bool in)
 bool Nick_Stored_t::Suspended()
 {
     NFT("Nick_Stored_t::Suspended");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_Suspend_By != "");
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspended());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Suspended());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspended());
     }
 }
 
@@ -2947,20 +2545,13 @@ bool Nick_Stored_t::Suspended()
 mstring Nick_Stored_t::Suspend_By()
 {
     NFT("Nick_Stored_t::Suspend_By");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_Suspend_By);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspend_By());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Suspend_By());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspend_By());
     }
 }
 
@@ -2968,20 +2559,13 @@ mstring Nick_Stored_t::Suspend_By()
 mDateTime Nick_Stored_t::Suspend_Time()
 {
     NFT("Nick_Stored_t::Suspend_Time");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	RET(i_Suspend_Time);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspend_Time());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(Suspend_Time());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Suspend_Time());
     }
 }
 
@@ -2997,7 +2581,7 @@ void Nick_Stored_t::SendPic(mstring nick)
 unsigned long Nick_Stored_t::PicNum()
 {
     NFT("PicNum");
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.PicSize())
 	{
@@ -3005,16 +2589,9 @@ unsigned long Nick_Stored_t::PicNum()
 	}
 	RET(0);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].PicNum())
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(PicNum());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].PicNum())
     }
 }
 
@@ -3022,21 +2599,14 @@ unsigned long Nick_Stored_t::PicNum()
 void Nick_Stored_t::GotPic(unsigned long picnum)
 {
     FT("Nick_Stored_t::GotPic", (picnum));
-    if (i_Host == "")
+    if (Host() == "")
     {
 	if (!Parent->nickserv.PicSize())
 	    i_Picture = picnum;
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	Parent->nickserv.stored[i_Host.LowerCase()].GotPic(picnum);
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	GotPic(picnum);
+	Parent->nickserv.stored[i_Host.LowerCase()].GotPic(picnum);
     }
 }
 
@@ -3064,7 +2634,7 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
     {
 	RET(Now());
     }
-    else if (i_Host == "")
+    else if (Host() == "")
     {
 	mDateTime lastseen = i_LastSeenTime;
 	for (unsigned int i=0; i<Siblings(); i++)
@@ -3079,16 +2649,9 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
 	}
 	RET(lastseen);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].LastAllSeenTime());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(LastAllSeenTime());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].LastAllSeenTime());
     }
 }
 
@@ -3128,7 +2691,7 @@ mstring Nick_Stored_t::LastAllMask()
     {
 	RET("ONLINE");
     }
-    else if (i_Host == "")
+    else if (Host() == "")
     {
 	mDateTime lastseen = i_LastSeenTime;
 	mstring lastmask = Name() + "!" + LastMask();
@@ -3150,16 +2713,9 @@ mstring Nick_Stored_t::LastAllMask()
 	}
 	RET(lastmask);
     }
-    else if (Parent->nickserv.IsStored(i_Host))
-    {
-	RET(Parent->nickserv.stored[i_Host.LowerCase()].LastAllMask());
-    }
     else
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
-		i_Host.c_str(), i_Name.c_str());
-	i_Host = "";
-	RET(LastAllMask());
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].LastAllMask());
     }
 }
 
@@ -5801,14 +5357,19 @@ void NickServ::load_database(wxInputStream& in)
     // Go through the map and populate 'slaves',
     // clean up if nessicary.
     map<mstring,Nick_Stored_t>::iterator iter;
+    CP(("Linking nickname entries ..."));
     for (iter=stored.begin(); iter!=stored.end(); iter++)
     {
 	if (IsStored(iter->second.i_Host))
 	{
-	    stored[iter->second.i_Host.LowerCase()].i_slaves.insert(iter->second.i_Name.LowerCase());
+	    COM(("Nickname %s has been linked to %s ...",
+		iter->first.c_str(), iter->second.i_Host.c_str()));
+	    stored[iter->second.i_Host.LowerCase()].i_slaves.insert(iter->first);
 	}
 	else
 	{
+	    wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		iter->second.i_Host.c_str(), iter->first.c_str());
 	    iter->second.i_Host = "";
 	}
     }

@@ -1,0 +1,49 @@
+// $Id$
+Magick Development Team Policy
+
+Written as of Magick II.
+
+* ALL full releases should compile with NO errors or and minimal
+ (unavoidable) warnings on ANY supported platform.
+
+* Alpha releases are to be released in the design phase of
+  any release, for the alpha team to supply feedback of how
+  the core design could be changed, enhansed, etc.  This
+  includes the user interface (or proposed one) aswell as the
+  internal data structures, etc.
+  ALPHA TEAM: The code here is guarenteed to be incomplete.
+
+* Beta releases are to be released before ALL releases.
+  There can be (and usually will be) more than one beta release.
+  These are for the beta team to test out new features, etc and
+  supply feedback on any bugs found.  The object of this team is
+  to ensure no bugs get into full releases.  Beta releases will
+  be released after each major 'module' of code is completed.
+
+* A full release may not be released until AT LEAST 1 week (the
+  more time the better) has passed since the last beta release.
+
+* Patches are only to be released on full releases, and must only
+  contain BUG FIXES -- never any new features unless it in itself
+  is a bug fix.
+
+* The magick version number should always have a +aX or +bX code
+  appended to the end of it on Alpha and Beta releases.  Patches
+  to full release versions will always append a +pX.
+
+* Read/Write access to the central CVS archive may only EVER be
+  given to official Magick Development Team members.
+
+* Magick must ALWAYS be backward compatable -- any new features
+  must be able to upgrade any data files from any old version
+  of magick.  Magick's preferred way to do this is transperantly.
+  However if they totally conflict of bloat code too much, and
+  conversion utility is acceptable, however code must be internal
+  to Magick to inform the end-user of magick that it is required
+  to run this conversion utility to run this version of magick.
+
+* Always at least try and get you're compiles working before you
+  commit to the repository. Reasonable fubars will be understood
+  in the normal case of things, but code which has not even had an
+  attempt to compile at will be frowned upon if not thrown right
+  back out.

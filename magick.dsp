@@ -134,45 +134,69 @@ SOURCE=.\docs\rfcs\rfc959.txt
 SOURCE=".\docs\rfcs\The Client-To-Client Protocol (CTCP).txt"
 # End Source File
 # End Group
+# Begin Group "html"
+
+# PROP Default_Filter "*.htm; *.html"
 # Begin Source File
 
-SOURCE=.\docs\commands.txt
+SOURCE=.\docs\html\License.html
+# End Source File
+# End Group
+# Begin Group "text"
+
+# PROP Default_Filter "*.txt"
+# Begin Source File
+
+SOURCE=.\docs\text\commands.txt
 # End Source File
 # Begin Source File
 
-SOURCE=.\docs\communication.txt
+SOURCE=.\docs\text\formats.txt
 # End Source File
 # Begin Source File
 
-SOURCE=.\docs\config.h
+SOURCE=.\docs\text\install.txt
+# End Source File
+# End Group
+# Begin Group "devel"
+
+# PROP Default_Filter "*.*"
+# Begin Source File
+
+SOURCE=.\docs\devel\communication.txt
 # End Source File
 # Begin Source File
 
-SOURCE=.\docs\dbase
+SOURCE=.\docs\devel\config.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\docs\develop
+SOURCE=.\docs\devel\dbase.txt
 # End Source File
+# Begin Source File
+
+SOURCE=.\docs\devel\develop.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\devel\policy.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\devel\requirements.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\devel\suggest.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\devel\versionstamps.txt
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\docs\magick.ini
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\policy
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\requirements
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\suggest
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\versionstamps.txt
 # End Source File
 # End Group
 # Begin Group "lang files"

@@ -1,0 +1,21 @@
+Encryption:
+
+
+
+
+On startup:
+
+- Reads maigick.key file which is a file which
+  has the database key in it, encrypted with
+  a 'always decryptable' password.
+  -- 'always decrytable' password is hostname
+     passed through the MD5 alg. -- if hostname
+     changes, need to gen new key file.
+
+
+SAVE Data
+RESTORE Data
+
+Magick Client channel
+Magick <--> Magick
+

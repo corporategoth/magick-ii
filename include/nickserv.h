@@ -244,7 +244,7 @@ public:
     void Suspend(mstring name);
     void UnSuspend();
 
-    mstring Host() { return i_Host; }
+    mstring Host();
     unsigned int Siblings();
     mstring Sibling(unsigned int count);
     bool IsSibling(mstring nick);

@@ -1,0 +1,369 @@
+Key:
+<> = required value
+[] = optional value
+|  = OR
+
+NickServ
+========
+
+HELP [topic]
+REGISTER <password>
+    -- I
+DROP [nick]
+    -- I
+LINK <nick> <password>
+    -- I
+UNLINK [nick]
+    -- I
+HOST [nick]
+    -- I
+SLAVES [nick]
+IDENTIFY <password>
+    -- I
+INFO <nick>
+GHOST <nick> <password>
+    -- V
+RECOVER <nick> <password>
+    -- V
+LIST [mask [maximum]]
+SUSPEND <nick> <reason>
+    -- I
+UNSUSPEND <nick>
+    -- I
+FORBID <nick>
+    -- I
+GETPASS <nick>
+    -- I
+ACCESS CURRENT
+    -- V
+ACCESS ADD <mask>
+    -- V
+ACCESS DEL <mask|number>
+    -- V
+ACCESS LIST
+IGNORE ADD <nick>
+    -- V
+IGNORE DEL <nick|number>
+    -- V
+IGNORE LIST
+SET PASSWORD <value>
+    -- I
+SET EMAIL <value|NONE>
+    -- V
+SET URL <value|NONE>
+    -- V
+SET ICQ <value|NONE>
+    -- V
+SET DESCRIPTION <value|NONE>
+    -- V
+SET COMMENT <nick> <value|NONE>
+    -- V
+SET PICTURE [NONE]
+    -- V
+SET PROTECT <ON|OFF>
+    -- V
+SET SECURE <ON|OFF>
+    -- V
+SET NOEXPIRE <nick> <ON|OFF>
+    -- V
+SET NOMEMO <ON|OFF>
+    -- V
+SET PRIVATE <ON|OFF>
+    -- V
+SET PRIVMSG <ON|OFF>
+    -- V
+SET LANGUAGE <value|reset>
+    -- V
+LOCK PROTECT <nick> <ON|OFF>
+    -- V
+LOCK SECURE <nick> <ON|OFF>
+    -- V
+LOCK NOMEMO <nick> <ON|OFF>
+    -- V
+LOCK PRIVATE <nick> <ON|OFF>
+    -- V
+LOCK PRIVMSG <nick> <ON|OFF>
+    -- V
+LOCK LANGUAGE <nick> <value|reset>
+    -- V
+UNLOCK PROTECT <nick>
+    -- V
+UNLOCK SECURE <nick>
+    -- V
+UNLOCK NOMEMO <nick>
+    -- V
+UNLOCK PRIVATE <nick>
+    -- V
+UNLOCK PRIVMSG <nick>
+    -- V
+UNLOCK LANGUAGE <nick>
+    -- V
+
+ChanServ
+========
+
+HELP [topic]
+REGISTER <channel> <password> <description>
+    -- I
+DROP <channel>
+    -- I
+IDENTIFY <channel> <password>
+    -- I
+INFO <channel>
+LIST [mask [maximum]]
+SUSPEND <channel> <reason>
+    -- I
+UNSUSPEND <channel>
+    -- I
+FORBID <channel>
+    -- I
+GETPASS <channel>
+    -- I
+MODE <channel> [mode]
+    -- V
+OP <channel> [nick]
+    -- V
+DEOP <channel> [nick]
+    -- V
+VOICE <channel> [nick]
+    -- V
+DEVOICE <channel> [nick]
+    -- V
+TOPIC <channel> [topic]
+    -- V
+KICK <channel> <nick> [reason]
+    -- V
+ANONKICK <channel> <nick> [reason]
+    -- V
+USERS <channel>
+INVITE <channel> [nick]
+    -- V
+UNBAN <channel> [nick]
+    -- V
+CLEAR <channel> <USERS|MODES|OPS|VOICES|BANS|ALL>
+    -- I
+LEVEL <channel> SET <level> <value>
+    -- V
+LEVEL <channel> RESET <level>
+    -- V
+LEVEL <channel> LIST
+ACCESS <channel> ADD <nick> <level>
+    -- V
+ACCESS <channel> DEL <nick|number>
+    -- V
+ACCESS <channel> LIST
+AKICK <channel> ADD <nick|mask> [reason]
+    -- V
+AKICK <channel> DEL <nick|mask|number>
+    -- V
+AKICK <channel> LIST
+GREET <channel> ADD [!nick] [!]<reason>
+    -- V
+GREET <channel> DEL [nick]
+    -- V
+GREET <channel> LIST [ALL]
+MESSAGE <channel> ADD <message>
+    -- V
+MESSAGE <channel> DEL <number>
+    -- V
+MESSAGE <channel> LIST
+SET <channel> FOUNDER <nick>
+    -- I
+SET <channel> COFOUNDER <nick|NONE>
+    -- I
+SET <channel> DESCRIPTION <value>
+    -- V
+SET <channel> PASSWORD <value>
+    -- I
+SET <channel> EMAIL <value|NONE>
+    -- V
+SET <channel> URL <value|NONE>
+    -- V
+SET <channel> COMMENT <value|NONE>
+    -- V
+SET <channel> MLOCK <value|RESET>
+    -- V
+SET <channel> BANTIME <value|RESET>
+    -- V
+SET <channel> KEEPTOPIC <ON|OFF>
+    -- V
+SET <channel> TOPICLOCK <ON|OFF>
+    -- V
+SET <channel> PRIVATE <ON|OFF>
+    -- V
+SET <channel> SECUREOPS <ON|OFF>
+    -- V
+SET <channel> SECURE <ON|OFF>
+    -- V
+SET <channel> NOEXPIRE <ON|OFF>
+    -- V
+SET <channel> ANARCHY <ON|OFF>
+    -- V
+SET <channel> RESTRICTED <ON|OFF>
+    -- V
+SET <channel> JOIN <ON|OFF>
+    -- V
+SET <channel> REVENGE <value|RESET>
+    -- V
+LOCK <channel> MLOCK <value|RESET>
+    -- V
+LOCK <channel> BANTIME <value|RESET>
+    -- V
+LOCK <channel> KEEPTOPIC <ON|OFF>
+    -- V
+LOCK <channel> TOPICLOCK <ON|OFF>
+    -- V
+LOCK <channel> PRIVATE <ON|OFF>
+    -- V
+LOCK <channel> SECUREOPS <ON|OFF>
+    -- V
+LOCK <channel> SECURE <ON|OFF>
+    -- V
+LOCK <channel> NOEXPIRE <ON|OFF>
+    -- V
+LOCK <channel> ANARCHY <ON|OFF>
+    -- V
+LOCK <channel> RESTRICTED <ON|OFF>
+    -- V
+LOCK <channel> JOIN <ON|OFF>
+    -- V
+LOCK <channel> REVENGE <value|RESET>
+    -- V
+UNLOCK <channel> MLOCK
+    -- V
+UNLOCK <channel> BANTIME
+    -- V
+UNLOCK <channel> KEEPTOPIC
+    -- V
+UNLOCK <channel> TOPICLOCK
+    -- V
+UNLOCK <channel> PRIVATE
+    -- V
+UNLOCK <channel> SECUREOPS
+    -- V
+UNLOCK <channel> SECURE
+    -- V
+UNLOCK <channel> NOEXPIRE
+    -- V
+UNLOCK <channel> ANARCHY
+    -- V
+UNLOCK <channel> RESTRICTED
+    -- V
+UNLOCK <channel> JOIN
+    -- V
+UNLOCK <channel> REVENGE
+    -- V
+
+MemoServ
+========
+
+HELP [topic]
+READ [channel] <numbers|ALL|NEW>
+UNREAD [channel] <numbers|ALL>
+LIST [channel]
+SEND <nick|channel> <text>
+FLUSH
+REPLY [channel] <number> <text>
+FORWARD [channel] <number> <nick|channel>
+CANCEL
+DEL [channel] <number>
+CONTINUE <text>
+FILE <nick> <text>
+
+CommServ
+========
+
+HELP [topic]
+NEW <committee> <head> <description>
+    -- I
+KILL <committee>
+    -- I
+ADD <committee> <nick>
+    -- V
+DEL <committee> <nick|number>
+    -- V
+MEMO <committee> <text>
+    -- V
+LIST [mask [maximum]]
+INFO <committee>
+LOGON <committee> ADD <text>
+    -- I
+LOGON <committee> DEL <number>
+    -- I
+LOGON <committee> LIST
+SET <committee> HEAD <nick>
+    -- I
+SET <committee> EMAIL <value|NONE>
+    -- V
+SET <committee> URL <value|NONE>
+    -- V
+SET <committee> SECURE <ON|OFF>
+    -- V
+SET <committee> PRIVATE <ON|OFF>
+    -- V
+SET <committee> OPENMEMOS <ON|OFF>
+    -- V
+
+ServMsg
+=======
+
+HELP [topic]
+BREAKDOWN
+GLOBAL <text>
+    -- I
+STATS [NICK|CHANNEL|OTHER|USAGE|ALL]
+
+OperServ
+========
+
+HELP [topic]
+TRACE <UP|DOWN|SET> <type> <level|names>
+    -- I
+MODE <channel|nick> <mode>
+    -- I
+QLINE <nickmask> [reason]
+    -- I
+UNQLINE <nickmask>
+    -- I
+NOOP <server> <ON|OFF>
+    -- I
+KILL <nick> <reason>
+    -- I
+PING
+    -- V
+UPDATE
+    -- V
+SHUTDOWN
+    -- I
+RELOAD
+    -- I
+UNLOAD <language>
+    -- V
+JUPE <server> [reason]
+    -- I
+ON <service|ALL>
+    -- I
+OFF <service|ALL> [reason]
+    -- I
+SETTINGS <CONFIG|NICK|CHANNEL|OTHER|ALL>
+CLONE ADD <host> <amount> <reason>
+    -- V
+CLONE DEL <host|number>
+    -- V
+CLONE LIST
+AKILL ADD [time] <mask> <reason>
+    -- I
+AKILL DEL <mask|number>
+    -- I
+AKILL LIST
+OPERDENY ADD <mask> <reason>
+    -- I
+OPERDENY DEL <mask|number>
+    -- I
+OPERDENY LIST
+IGNORE ADD <mask>
+    -- I
+IGNORE DEL <mask|number>
+    -- I
+IGNORE LIST
+

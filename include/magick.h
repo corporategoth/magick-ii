@@ -56,6 +56,7 @@ private:
 	vector<mstring> argv;
 	// Language, longname, string
 	map<mstring, map<mstring, mstring> > Messages;
+	map<mstring, mstring> LogMessages;
 	int doparamparse();
 	SignalHandler *signalhandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
@@ -228,11 +229,13 @@ public:
 	bool get_config_values();
 	void LoadInternalMessages();
 	bool LoadExternalMessages(mstring language);
+	bool LoadLogMessages(mstring language);
 	bool UnloadExternalMessages(mstring language);
 	mstring getMessage(const mstring& nick, const mstring& name);
 	mstring getMessage(const mstring& name)
 	    { return getMessageL(nickserv.DEF_Language(), name); }
 	mstring getMessageL(const mstring& language, const mstring& name);
+	mstring getLogMessage(const mstring& name);
 	mstring parseEscapes(const mstring& in);
 	void AddCommands(void)
 	{
