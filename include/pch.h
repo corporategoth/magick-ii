@@ -1,7 +1,7 @@
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -21,6 +21,10 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.30  2001/01/01 05:32:44  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.29  2000/12/29 14:00:40  prez
 ** needed to include ace/Version.h
 **

@@ -8,8 +8,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.150  2001/01/01 05:32:45  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.149  2000/12/31 17:54:29  prez
 ** Added checking to see if 'http://' was entered in the SET URL commands.
 **
@@ -2894,8 +2898,15 @@ void NetworkServ::execute(const mstring & data)
 	}
 	break;
     case 'H':
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	if (msgtype=="HELP")
+	{
+	    // ignore ...
+	}
+	else
+	{
+	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
+	}
 	break;
     case 'I':
 	if (msgtype=="INFO")
@@ -3741,6 +3752,10 @@ void NetworkServ::execute(const mstring & data)
 			mBase::push_message(data);
 		}
 	    }
+	}
+	else if (msgtype=="SILENCE")
+	{
+	    // Another one to ignore ...
 	}
 	else if (msgtype=="SJOIN")
 	{
@@ -5038,9 +5053,6 @@ void NetworkServ::numeric_execute(const mstring & data)
 		proto.GetNonToken(proto.EndBurst()) != "") ?
 		proto.GetNonToken(proto.EndBurst()) : mstring(proto.EndBurst())));
 	break;
-    case 401:     // ERR_NOSUCHNICK
-	// Ignore it ...
-	break;
     case 436:     // ERR_NICKCOLLISION
 	// MUST handle.
 	break;
@@ -5057,8 +5069,10 @@ void NetworkServ::numeric_execute(const mstring & data)
 	Parent->Disconnect();
 	break;
     default:
-	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	// We dont bother with what we get back -- useless anyway.
+/*	LOG((LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str()));
+*/
 	break;
     }
 }

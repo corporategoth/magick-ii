@@ -25,6 +25,10 @@ static const char *ident_variant_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2001/01/01 05:32:44  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.32  2000/12/09 10:17:14  prez
 ** Added +h to unreal IRCD profile, and made variant more efficiant
 ** string wise by cutting out many operator= calls.
@@ -109,7 +113,7 @@ public:
 	mVariant();
 	// Magick Only stuff
 	mVariant(const mstring& in);
-	mVariant(const mDateTime in);
+	mVariant(const mDateTime& in);
 
 	mVariant& operator=(const mVariant& in);
 	bool operator==(const mVariant& in)const;

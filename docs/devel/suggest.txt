@@ -36,13 +36,15 @@ x Done
   like jupe active if the servers admin isnt around)
   > Personally, I think this is a bad idea, squit the server.
 * Add a function to helpserv to forward messages to helpops
-* Commands that have subcommands should be able to have 'help' as the
-  subcommand and it will swap it around and re-execute it as 'help command'.
-  (so essentially 'help command' or 'command help' will work).
 * 'Insufficiant Paramaters' should also have syntax :)
-
+* Should have a way to akill if nickname matches mask, or realname
+  contains wildcarded text (akill would be added as default ignore mask)
+* Should be able to akill on setting of topic containing wildcarded text.
+  > MAJOR potential for being abused!
+* Should be able to have permanent akills
+  > Dont like this personally coz I've seen it abused.
 * Restart command in OperServ.
-* Log and announce new max users (optional).
+* Log and announce new max users (optional) -- possibly store values.
 * Limit memos per user/channel (user definable with system max).
 * Ability to 'rename' a channel (eg. #aic -> #lucida).
 * Have AKILL check online to ensure they are not akilling anyone on

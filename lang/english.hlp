@@ -1,5 +1,6 @@
 ; Magick IRC Services
-; (c) 1996-1999 Preston A. Elder, W. King
+; (c) 1997-2001 Preston A. Elder <prez@magick.tm>
+; (c) 1998-2001 William King <ungod@magick.tm>
 ;
 ; English On-Line Help File
 ; Translated By: Preston A. Elder <prez@magick.tm>
@@ -66,7 +67,7 @@
 18 =::      may change what is displayed above.
 
 [NICKSERV/REGISTER]
-01 =::REGISTER <password>
+01 =::REGISTER <password> [email]
 02 =::
 03 =::This will make your nickname recognised with services.
 04 =::By doing so, services will reserve your nickname for
@@ -85,6 +86,11 @@
 17 =::total control over your nickname, including forbidding
 18 =::you access to it.  If you have lost your password, you
 19 =::can contact a Services Operator to retrieve it for you.
+20 =::
+21 =::Your email address is optional, and may be changed with
+22 =::the SET EMAIL command.  It is recommended you set an
+23 =::email address with services as it makes retrieving your
+24 =::much more secure (as operators can then email it to you).
 
 [NICKSERV/DROP]
 01 =REGD::DROP [nickname]

@@ -7,8 +7,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2001/01/01 05:32:44  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.85  2000/12/31 17:54:29  prez
 ** Added checking to see if 'http://' was entered in the SET URL commands.
 **
@@ -921,6 +925,8 @@ void CommServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"MEMB* VIEW", Parent->commserv.REGD_Name(), CommServ::do_member_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"MEMB* H*LP", Parent->commserv.REGD_Name(), do_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOG* ADD", Parent->commserv.REGD_Name(), CommServ::do_logon_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOG* DEL*", Parent->commserv.REGD_Name(), CommServ::do_logon_Del);
@@ -930,6 +936,8 @@ void CommServ::AddCommands()
 		"LOG* LIST", Parent->commserv.REGD_Name(), CommServ::do_logon_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOG* VIEW", Parent->commserv.REGD_Name(), CommServ::do_logon_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOG* H*LP", Parent->commserv.REGD_Name(), do_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* HEAD*", Parent->commserv.REGD_Name(), CommServ::do_set_Head);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -945,17 +953,23 @@ void CommServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* *MEMO*", Parent->commserv.REGD_Name(), CommServ::do_set_OpenMemos);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* H*LP", Parent->commserv.REGD_Name(), do_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK SEC*", Parent->commserv.SOP_Name(), CommServ::do_lock_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK PRIV*", Parent->commserv.SOP_Name(), CommServ::do_lock_Private);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK *MEMO*", Parent->commserv.SOP_Name(), CommServ::do_lock_OpenMemos);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOCK H*LP", Parent->commserv.SOP_Name(), do_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK SEC*", Parent->commserv.SOP_Name(), CommServ::do_unlock_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK PRIV*", Parent->commserv.SOP_Name(), CommServ::do_unlock_Private);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK *MEMO*", Parent->commserv.SOP_Name(), CommServ::do_unlock_OpenMemos);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK H*LP", Parent->commserv.SOP_Name(), do_3param);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"H*LP", Parent->commserv.ALL_Name(), CommServ::do_Help);
@@ -1015,6 +1029,8 @@ void CommServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"MEMB* VIEW", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+		"MEMB* H*LP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOG* ADD", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOG* DEL*", Parent->commserv.REGD_Name());
@@ -1024,6 +1040,8 @@ void CommServ::RemCommands()
 		"LOG* LIST", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOG* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOG* H*LP", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET* HEAD*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -1039,17 +1057,23 @@ void CommServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET* *MEMO*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* H*LP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOCK SEC*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOCK PRIV*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOCK *MEMO*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK H*LP", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK SEC*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK PRIV*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK *MEMO*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK H*LP", Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"H*LP", Parent->commserv.ALL_Name());

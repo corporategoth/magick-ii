@@ -3,7 +3,7 @@
 <article>
 <title>The Magick Handbook
 <author>Magick Development Team <tt>magick-devel@magick.tm</tt>
-<date>Version 2.0 , Wed Apr 26 21:23:35 EST 2000
+<date>Version 2.0, Mon Jan  1 13:15:02 EST 2001
 <abstract>
 This Handbook describes Magick Version 2.0
 </abstract>
@@ -968,8 +968,8 @@ Example 1:
 <tscreen><verb>
 ./magick_keygen
 Magick IRC Services - http://www.magick.tm
-    (c) 1997-2000 Preston A. Elder &lt;prez@magick.tm&gt;
-    (c) 1998-2000 William King &lt;ungod@magick.tm&gt;
+    (c) 1997-2001 Preston A. Elder &lt;prez@magick.tm&gt;
+    (c) 1998-2001 William King &lt;ungod@magick.tm&gt;
 
 Enter filename to output to [magick.key]:
 Enter database key:
@@ -983,8 +983,8 @@ Example 2:
 <tscreen><verb>
 ./magick_keygen magick.key magick.plain
 Magick IRC Services - http://www.magick.tm
-    (c) 1997-2000 Preston A. Elder &lt;prez@magick.tm&gt;
-    (c) 1998-2000 William King &lt;ungod@magick.tm&gt;
+    (c) 1997-2001 Preston A. Elder &lt;prez@magick.tm&gt;
+    (c) 1998-2001 William King &lt;ungod@magick.tm&gt;
 
 Created 1024 byte keyfile.
 </verb></tscreen>

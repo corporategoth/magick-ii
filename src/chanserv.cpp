@@ -7,8 +7,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.221  2001/01/01 05:32:44  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.220  2000/12/31 17:54:29  prez
 ** Added checking to see if 'http://' was entered in the SET URL commands.
 **
@@ -5283,6 +5287,8 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLEAR* *ALL*", Parent->commserv.REGD_Name(), ChanServ::do_clear_All);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* H*LP", Parent->commserv.REGD_Name(), do_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LEV* SET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Set);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LEV* RESET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Reset);
@@ -5290,6 +5296,8 @@ void ChanServ::AddCommands()
 	    "LEV* LIST", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LEV* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LEV* H*LP", Parent->commserv.REGD_Name(), do_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "ACC* ADD", Parent->commserv.REGD_Name(), ChanServ::do_access_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -5301,6 +5309,8 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "ACC* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_access_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ACC* H*LP", Parent->commserv.REGD_Name(), do_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "A*KICK ADD", Parent->commserv.REGD_Name(), ChanServ::do_akick_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "A*KICK DEL*", Parent->commserv.REGD_Name(), ChanServ::do_akick_Del);
@@ -5310,6 +5320,8 @@ void ChanServ::AddCommands()
 	    "A*KICK LIST", Parent->commserv.REGD_Name(), ChanServ::do_akick_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "A*KICK VIEW", Parent->commserv.REGD_Name(), ChanServ::do_akick_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK H*LP", Parent->commserv.REGD_Name(), do_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "GREET* ADD", Parent->commserv.REGD_Name(), ChanServ::do_greet_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -5321,6 +5333,8 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "GREET* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_greet_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GREET* H*LP", Parent->commserv.REGD_Name(), do_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "M*S*G* ADD", Parent->commserv.REGD_Name(), ChanServ::do_message_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "M*S*G* DEL*", Parent->commserv.REGD_Name(), ChanServ::do_message_Del);
@@ -5330,6 +5344,8 @@ void ChanServ::AddCommands()
 	    "M*S*G* LIST", Parent->commserv.REGD_Name(), ChanServ::do_message_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "M*S*G* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_message_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* H*LP", Parent->commserv.REGD_Name(), do_3param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* FOUND*", Parent->commserv.REGD_Name(), ChanServ::do_set_Founder);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -5377,6 +5393,8 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* REV*", Parent->commserv.REGD_Name(), ChanServ::do_set_Revenge);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* H*LP", Parent->commserv.REGD_Name(), do_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK M*LOCK", Parent->commserv.SOP_Name(), ChanServ::do_lock_Mlock);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK BAN*TIME", Parent->commserv.SOP_Name(), ChanServ::do_lock_BanTime);
@@ -5403,6 +5421,8 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "LOCK REV*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Revenge);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LOCK H*LP", Parent->commserv.SOP_Name(), do_3param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNLOCK M*LOCK", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Mlock);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNLOCK BAN*TIME", Parent->commserv.SOP_Name(), ChanServ::do_unlock_BanTime);
@@ -5428,6 +5448,8 @@ void ChanServ::AddCommands()
 	    "UNLOCK *JOIN*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Join);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNLOCK REV*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Revenge);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK H*LP", Parent->commserv.SOP_Name(), do_3param);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "H*LP", Parent->commserv.ALL_Name(), ChanServ::do_Help);
@@ -5538,6 +5560,8 @@ void ChanServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CLEAR* *ALL*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* H*LP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "LEV* SET*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "LEV* RESET*", Parent->commserv.REGD_Name());
@@ -5545,6 +5569,8 @@ void ChanServ::RemCommands()
 	    "LEV* LIST", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "LEV* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LEV* H*LP", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "ACC* ADD", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -5556,6 +5582,8 @@ void ChanServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "ACC* VIEW", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ACC* H*LP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "A*KICK ADD", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "A*KICK DEL*", Parent->commserv.REGD_Name());
@@ -5565,6 +5593,8 @@ void ChanServ::RemCommands()
 	    "A*KICK LIST", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "A*KICK VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK H*LP", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "GREET* ADD", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -5576,6 +5606,8 @@ void ChanServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "GREET* VIEW", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GREET* H*LP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "M*S*G* ADD", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "M*S*G* DEL*", Parent->commserv.REGD_Name());
@@ -5585,6 +5617,8 @@ void ChanServ::RemCommands()
 	    "M*S*G* LIST", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "M*S*G* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* H*LP", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SET* FOUND*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -5632,6 +5666,8 @@ void ChanServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SET* REV*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* H*LP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "LOCK M*LOCK", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "LOCK BAN*TIME", Parent->commserv.SOP_Name());
@@ -5658,6 +5694,8 @@ void ChanServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "LOCK REV*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LOCK H*LP", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "UNLOCK M*LOCK", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "UNLOCK BAN*TIME", Parent->commserv.SOP_Name());
@@ -5683,6 +5721,8 @@ void ChanServ::RemCommands()
 	    "UNLOCK *JOIN*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "UNLOCK REV*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK H*LP", Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "H*LP", Parent->commserv.ALL_Name());
@@ -6983,6 +7023,11 @@ void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
+    }
+
+    if (topic.IsSameAs("none", true))
+    {
+	topic = "";
     }
 
     Parent->chanserv.stats.i_Topic++;

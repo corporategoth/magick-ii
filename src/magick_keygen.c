@@ -1,7 +1,7 @@
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -19,6 +19,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2001/01/01 05:32:44  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.7  2000/09/05 10:53:07  prez
 ** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
 ** tracing -- also modified keygen to allow for cmdline generation (ie.
@@ -83,8 +87,8 @@ int main(int argc, char **argv)
 {
 #ifndef HASCRYPT
     printf("Magick IRC Services - http://www.magick.tm\n");
-    printf("    (c) 1997-2000 Preston A. Elder <prez@magick.tm>\n");
-    printf("    (c) 1998-2000 William King <ungod@magick.tm>\n\n");
+    printf("    (c) 1997-2001 Preston A. Elder <prez@magick.tm>\n");
+    printf("    (c) 1998-2001 William King <ungod@magick.tm>\n\n");
 
     fprintf(stderr, "You do not have encryption support.\n");
 
@@ -99,8 +103,8 @@ int main(int argc, char **argv)
 #endif
 
     printf("Magick IRC Services - http://www.magick.tm\n");
-    printf("    (c) 1997-2000 Preston A. Elder <prez@magick.tm>\n");
-    printf("    (c) 1998-2000 William King <ungod@magick.tm>\n\n");
+    printf("    (c) 1997-2001 Preston A. Elder <prez@magick.tm>\n");
+    printf("    (c) 1998-2001 William King <ungod@magick.tm>\n\n");
 
     memset(filename, 0, 512);
     memset(inkey, 0, KEYLEN);

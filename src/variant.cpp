@@ -7,8 +7,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2001/01/01 05:32:45  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.42  2000/12/09 10:17:14  prez
 ** Added +h to unreal IRCD profile, and made variant more efficiant
 ** string wise by cutting out many operator= calls.
@@ -139,7 +143,7 @@ mVariant::mVariant(const mstring& in)
 	  StringValue(in)
 {}
 
-mVariant::mVariant(const mDateTime in)
+mVariant::mVariant(const mDateTime& in)
 	: truevaluetype("mDateTime"),
 	  valuetype("mstring"),
 	  StringValue(in.DateTimeString())

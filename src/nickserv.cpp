@@ -7,8 +7,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.152  2001/01/01 05:32:44  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.151  2001/01/01 00:43:25  prez
 ** Make services realise when they're +o
 **
@@ -4724,6 +4728,8 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"ACC* VIEW", Parent->commserv.REGD_Name(), NickServ::do_access_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"ACC* H*LP", Parent->commserv.REGD_Name(), do_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"IGN* ADD", Parent->commserv.REGD_Name(), NickServ::do_ignore_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"IGN* DEL*", Parent->commserv.REGD_Name(), NickServ::do_ignore_Del);
@@ -4733,6 +4739,8 @@ void NickServ::AddCommands()
 		"IGN* LIST", Parent->commserv.REGD_Name(), NickServ::do_ignore_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"IGN* VIEW", Parent->commserv.REGD_Name(), NickServ::do_ignore_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"IGN* H*LP", Parent->commserv.REGD_Name(), do_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* PASS*", Parent->commserv.REGD_Name(), NickServ::do_set_Password);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -4764,6 +4772,8 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"SET* LANG*", Parent->commserv.REGD_Name(), NickServ::do_set_Language);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"SET* H*LP", Parent->commserv.REGD_Name(), do_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK PROT*", Parent->commserv.SOP_Name(), NickServ::do_lock_Protect);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK SEC*", Parent->commserv.SOP_Name(), NickServ::do_lock_Secure);
@@ -4778,6 +4788,8 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"LOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_lock_Language);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"LOCK H*LP", Parent->commserv.SOP_Name(), do_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK PROT*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Protect);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK SEC*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Secure);
@@ -4791,6 +4803,8 @@ void NickServ::AddCommands()
 		"UNLOCK PRIV*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Private);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Language);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK H*LP", Parent->commserv.SOP_Name(), do_2param);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"H*LP", Parent->commserv.ALL_Name(), NickServ::do_Help);
@@ -4872,6 +4886,8 @@ void NickServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"ACC* VIEW", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+		"ACC* H*LP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 		"IGN* ADD", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"IGN* DEL*", Parent->commserv.REGD_Name());
@@ -4881,6 +4897,8 @@ void NickServ::RemCommands()
 		"IGN* LIST", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"IGN* VIEW", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"IGN* H*LP", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET* PASS*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -4912,6 +4930,8 @@ void NickServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"SET* LANG*", Parent->commserv.REGD_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+		"SET* H*LP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOCK PROT*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOCK SEC*", Parent->commserv.SOP_Name());
@@ -4926,6 +4946,8 @@ void NickServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"LOCK LANG*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+		"LOCK H*LP", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK PROT*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK SEC*", Parent->commserv.SOP_Name());
@@ -4939,6 +4961,8 @@ void NickServ::RemCommands()
 		"UNLOCK PRIV*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK LANG*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK H*LP", Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"H*LP", Parent->commserv.ALL_Name());
@@ -5101,6 +5125,9 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
     }
 
     mstring password = params.ExtractWord(2, " ");
+    mstring email;
+    if (params.WordCount(" ") > 2)
+	email        = params.ExtractWord(3, " ");
 
     if (Parent->nickserv.IsStored(source))
     {
@@ -5121,10 +5148,28 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
     }
     else
     {
+	if (email.empty())
+	{
+	}
+	else if (!email.Contains("@"))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAIN"),
+		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), '@');
+	    return;
+	}
+	else if (email.WordCount("@") != 2)
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTCONTAINONE"),
+		Parent->getMessage(source, "NS_SET/EMAIL").c_str(), '@');
+	    return;
+	}
+
 	Parent->nickserv.live[source.LowerCase()].SetLastNickReg();
 	Parent->nickserv.stored[source.LowerCase()] = Nick_Stored_t(source, password);
 	Parent->nickserv.stored[source.LowerCase()].AccessAdd(
 	    Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::U_H).After("!"));
+	if (!email.empty())
+	    Parent->nickserv.stored[source.LowerCase()].Email(email);
 	Parent->nickserv.live[source.LowerCase()].Identify(password);
 	Parent->nickserv.stats.i_Register++;
 	::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/REGISTERED"),

@@ -7,8 +7,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2001/01/01 05:32:45  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.76  2000/12/29 15:31:55  prez
 ** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
 **
@@ -263,6 +267,9 @@ void ServMsg::AddCommands()
 	    "STAT* ALL*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), ServMsg::do_stats_All);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "STAT* H*LP", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FILE* LIST*", Parent->commserv.ALL_Name(), ServMsg::do_file_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FILE* VIEW*", Parent->commserv.ALL_Name(), ServMsg::do_file_List);
@@ -290,6 +297,8 @@ void ServMsg::AddCommands()
 	    "FILE* LOOK*", Parent->commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "FILE* RES*", Parent->commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FILE* H*LP", Parent->commserv.ALL_Name(), do_2param);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "H*LP", Parent->commserv.ALL_Name(), ServMsg::do_Help);
@@ -340,6 +349,9 @@ void ServMsg::RemCommands()
 	    "STAT* ALL*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "STAT* H*LP", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "FILE* LIST*", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "FILE* VIEW*", Parent->commserv.ALL_Name());
@@ -361,6 +373,8 @@ void ServMsg::RemCommands()
 	    "FILE* LOOK*", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "FILE* RES*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FILE* H*LP", Parent->commserv.ALL_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "HELP", Parent->commserv.ALL_Name());

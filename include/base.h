@@ -3,8 +3,8 @@
 #endif
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -25,6 +25,10 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2001/01/01 05:32:43  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.76  2000/12/23 22:22:23  prez
 ** 'constified' all classes (ie. made all functions that did not need to
 ** touch another non-const function const themselves, good for data integrity).
@@ -514,6 +518,10 @@ public:
 };
 void do_1_2param(mstring mynick, mstring source, mstring params);
 void do_1_3param(mstring mynick, mstring source, mstring params);
+void do_1_2paramswap(mstring mynick, mstring source, mstring params);
+void do_1_3paramswap(mstring mynick, mstring source, mstring params);
+void do_2param(mstring mynick, mstring source, mstring params);
+void do_3param(mstring mynick, mstring source, mstring params);
 
 #endif
 

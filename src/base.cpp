@@ -7,8 +7,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.146  2001/01/01 05:32:44  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.145  2000/12/29 22:00:17  prez
 ** Some changes to the message dequeing (using release now
 **
@@ -1196,7 +1200,9 @@ void do_1_2param(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = params.Before(" ", 2).UpperCase();
+    mstring command = params.Before(" ", 2);
+    command.MakeUpper();
+
     if (!Parent->commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
@@ -1217,9 +1223,118 @@ void do_1_3param(mstring mynick, mstring source, mstring params)
 			params.Before(" ").UpperCase().c_str());
 	return;
     }
-    mstring command = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring command = params.Before(" ") + " " + params.ExtractWord(3, " ");
+    command.MakeUpper();
+
     if (!Parent->commands.DoCommand(mynick, source, command, params))
+    {
+	// we're not worthy...
+//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+//			command.c_str(), mynick.c_str(),
+//			command.Before(" ").c_str());
+    }
+}
+
+void do_1_2paramswap(mstring mynick, mstring source, mstring params)
+{
+    FT("do_1_2paramswap", (mynick, source, params));
+    if (params.WordCount(" ") < 2)
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
+			params.Before(" ").UpperCase().c_str());
+	return;
+    }
+    mstring command = params.ExtractWord(2, " ") + " " + params.Before(" ");
+    command.MakeUpper();
+
+    mstring data = command;
+    if (params.WordCount(" ") > 2)
+	data += " " + params.After(" ", 2);
+
+    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    {
+	// we're not worthy...
+//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+//			command.c_str(), mynick.c_str(),
+//			command.Before(" ").c_str());
+    }
+
+}
+
+void do_1_3paramswap(mstring mynick, mstring source, mstring params)
+{
+    FT("do_1_3paramswap", (mynick, source, params));
+    if (params.WordCount(" ") < 3)
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
+			params.Before(" ").UpperCase().c_str());
+	return;
+    }
+    mstring command = params.ExtractWord(3, " ") + " " + params.Before(" ");
+    command.MakeUpper();
+
+    mstring data = params.ExtractWord(3, " ") + " " +
+	params.ExtractWord(2, " ") + " " + params.Before(" ");
+    if (params.WordCount(" ") > 3)
+	data += " " + params.After(" ", 3);
+
+    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    {
+	// we're not worthy...
+//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+//			command.c_str(), mynick.c_str(),
+//			command.Before(" ").c_str());
+    }
+}
+
+void do_2param(mstring mynick, mstring source, mstring params)
+{
+    FT("do_2param", (mynick, source, params));
+    if (params.WordCount(" ") < 2)
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
+			params.Before(" ").UpperCase().c_str());
+	return;
+    }
+    mstring command = params.ExtractWord(2, " ");
+    command.MakeUpper();
+
+    mstring data = command + " " + params.Before(" ");
+    if (params.WordCount(" ") > 2)
+	data += " " + params.After(" ", 2);
+
+    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    {
+	// we're not worthy...
+//	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),
+//			command.c_str(), mynick.c_str(),
+//			command.Before(" ").c_str());
+    }
+
+}
+
+void do_3param(mstring mynick, mstring source, mstring params)
+{
+    FT("do_3param", (mynick, source, params));
+    if (params.WordCount(" ") < 3)
+    {
+	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
+			params.Before(" ").UpperCase().c_str(), mynick.c_str(),
+			params.Before(" ").UpperCase().c_str());
+	return;
+    }
+    mstring command = params.ExtractWord(3, " ");
+    command.MakeUpper();
+
+    mstring data = params.ExtractWord(3, " ") + " " +
+	params.ExtractWord(2, " ") + " " + params.Before(" ");
+    if (params.WordCount(" ") > 3)
+	data += " " + params.After(" ", 3);
+
+    if (!Parent->commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
 //	send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/UNKNOWN_OPTION"),

@@ -10,8 +10,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.285  2001/01/01 05:32:44  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.284  2000/12/31 17:55:13  prez
 ** Moved SIGALRM to the ignored signals.
 **
@@ -426,9 +430,6 @@ mstring Magick::files_t::MakePath(mstring in)const
 
 Magick::Magick(int inargc, char **inargv)
 {
-    Parent=this;
-    FT("Magick::Magick", (inargc, "(char **) inargv"));
-    i_shutdown = false;
     char buf[1024];
     ACE_OS::getcwd(buf, 1024);
     i_services_dir=buf;
@@ -442,15 +443,16 @@ Magick::Magick(int inargc, char **inargv)
     signalhandler = NULL;
     events = NULL;
     dcc = NULL;
-    i_level=0;
+
+    i_level = 0;
+    i_localhost = 0;
     i_verbose = false;
+    i_auto = false;
+    i_shutdown = false;
     i_reconnect = true;
     i_gotconnect = false;
     i_connected = false;
     i_saving = false;
-    i_auto = false;
-
-    DumpB();
 }
 
 Magick::~Magick()
@@ -1043,8 +1045,8 @@ void Magick::dump_help() const
     // This needs to be re-written.
     cout << "\n"
 	 << FULLNAME + " - " + HOMEPAGE + "\n"
-	 << "    (c) 1997-2000 Preston A. Elder <prez@magick.tm>\n"
-	 << "    (c) 1998-2000 William King <ungod@magick.tm>\n"
+	 << "    (c) 1997-2001 Preston A. Elder <prez@magick.tm>\n"
+	 << "    (c) 1998-2001 William King <ungod@magick.tm>\n"
 	 << "\n"
 	 << "Syntax: " << i_programname << " [options]\n"
 	 << "\n"
@@ -3465,18 +3467,18 @@ size_t Magick::LFO_Usage() const
 void Magick::DumpB() const
 {
     MB(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
-	handlermap.size(), i_services_dir, i_config_file, i_programname,
-	i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect, i_localhost,
-	i_gotconnect, i_server));
-    MB(16, (i_connected, i_saving));
+	handlermap.size(), i_verbose, i_services_dir, i_config_file,
+	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
+	i_localhost, i_gotconnect));
+    MB(16, (i_server, i_connected, i_saving));
 }
 
 void Magick::DumpE() const
 {
     ME(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
-	handlermap.size(), i_services_dir, i_config_file, i_programname,
-	i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect, i_localhost,
-	i_gotconnect, i_server));
-    ME(16, (i_connected, i_saving));
+	handlermap.size(), i_verbose, i_services_dir, i_config_file,
+	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
+	i_localhost, i_gotconnect));
+    ME(16, (i_server, i_connected, i_saving));
 }
 

@@ -7,8 +7,8 @@
 
 /*  Magick IRC Services
 **
-** (c) 1997-2000 Preston Elder <prez@magick.tm>
-** (c) 1998-2000 William King <ungod@magick.tm>
+** (c) 1997-2001 Preston Elder <prez@magick.tm>
+** (c) 1998-2001 William King <ungod@magick.tm>
 **
 ** The above copywright may not be removed under any
 ** circumstances, however it may be added to if any
@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2001/01/01 05:32:45  prez
+** Updated copywrights.  Added 'reversed help' syntax (so ACCESS HELP ==
+** HELP ACCESS).
+**
 ** Revision 1.111  2000/12/29 15:31:55  prez
 ** Added locking/checking for dcc/events threads.  Also for ACE_Log_Msg
 **
@@ -896,6 +900,9 @@ void OperServ::AddCommands()
 	    "SET* *ALL*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_settings_All);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SET* H*LP", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLONE* ADD*", Parent->commserv.SOP_Name(), OperServ::do_clone_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLONE* DEL*", Parent->commserv.SOP_Name(), OperServ::do_clone_Del);
@@ -907,6 +914,9 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLONE* VIEW", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_clone_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CLONE* H*LP", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "A*KILL ADD*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_akill_Add);
@@ -923,6 +933,9 @@ void OperServ::AddCommands()
 	    "A*KILL VIEW", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_akill_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "A*KILL H*LP", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_2param);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "O*DENY* ADD*", Parent->commserv.SADMIN_Name(), OperServ::do_operdeny_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "O*DENY* DEL*", Parent->commserv.SADMIN_Name(), OperServ::do_operdeny_Del);
@@ -932,6 +945,8 @@ void OperServ::AddCommands()
 	    "O*DENY* LIST", Parent->commserv.SOP_Name(), OperServ::do_operdeny_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "O*DENY* VIEW", Parent->commserv.SOP_Name(), OperServ::do_operdeny_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "O*DENY* H*LP", Parent->commserv.SOP_Name(), do_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "IGN* ADD*", Parent->commserv.SOP_Name(), OperServ::do_ignore_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -944,6 +959,9 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "IGN* VIEW", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_ignore_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "IGN* H*LP", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), do_2param);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "H*LP", Parent->commserv.ALL_Name(), OperServ::do_Help);
@@ -1041,6 +1059,9 @@ void OperServ::RemCommands()
 	    "SET* *ALL*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SET* H*LP", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CLONE* ADD*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CLONE* DEL*", Parent->commserv.SOP_Name());
@@ -1051,6 +1072,9 @@ void OperServ::RemCommands()
 	    Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CLONE* VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CLONE* H*LP", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "A*KILL ADD*", Parent->commserv.OPER_Name() + " " +
@@ -1068,6 +1092,9 @@ void OperServ::RemCommands()
 	    "A*KILL VIEW", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
+	    "A*KILL H*LP", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
 	    "O*DENY* ADD*", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "O*DENY* DEL*", Parent->commserv.SADMIN_Name());
@@ -1077,6 +1104,8 @@ void OperServ::RemCommands()
 	    "O*DENY* LIST", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "O*DENY* VIEW", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "O*DENY* H*LP", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "IGN* ADD*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
@@ -1088,6 +1117,9 @@ void OperServ::RemCommands()
 	    Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "IGN* VIEW", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "IGN* H*LP", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
