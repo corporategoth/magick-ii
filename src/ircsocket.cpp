@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.170  2001/07/01 05:02:45  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.169  2001/06/17 09:39:07  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -623,7 +627,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     for (i=0; i<static_cast<unsigned int>(tm.count_threads()); i++)
 	enqueue_shutdown();
 
-    { WLOCK(("AllDependancies"));
+    { MLOCK(("AllDependancies"));
     mMessage::AllDependancies.clear();
     }
     { MLOCK(("MsgIdMap"));
@@ -893,6 +897,12 @@ void IrcSvcHandler::enqueue(const mstring &message, const u_long inpriority)
     mMessage *msg = new mMessage(source, msgtype, params, priority);
     if (!msg->OutstandingDependancies())
 	enqueue(msg);
+    /* else
+    {
+	ACE_Thread::yield();
+	if (!msg->RecheckDependancies())
+	    enqueue(msg);
+    } */
 }
 
 void IrcSvcHandler::enqueue_shutdown()
@@ -1256,22 +1266,28 @@ void *EventTask::save_databases(void *in)
 void EventTask::RemoveThread(ACE_thread_t thr)
 {
     NFT("EventTask::RemoveThread");
-    WLOCK(("Events", "thread_heartbeat"));
+    WLOCK(("Events", "thread_heartbead"));
+    MCB(thread_heartbeat.size());
     thread_heartbeat.erase(thr);
+    MCE(thread_heartbeat.size());
 }
 
 void EventTask::Heartbeat(ACE_thread_t thr)
 {
     NFT("EventTask::Heartbeat");
-    WLOCK(("Events", "thread_heartbeat"));
+    WLOCK(("Events", "thread_heartbead"));
+    MCB(thread_heartbeat.size());
     thread_heartbeat[thr] = mDateTime::CurrentDateTime();
+    MCE(thread_heartbeat.size());
 }
 
 void EventTask::AddChannelModePending(const mstring &in)
 {
     FT("EventTask::AddChannelModePending", (in));
     WLOCK(("Events", "cmodes_pending"));
+    MCB(cmodes_pending.size());
     cmodes_pending.insert(in);
+    MCE(cmodes_pending.size());
 }
 
 
@@ -1377,8 +1393,8 @@ int EventTask::svc(void)
 
 	// This is mainly used for 'only do this if users have had
 	// enough time to rectify the situation since sync' ...
-	{ RLOCK(("Events", "last_expire"));
-	if (last_expire.SecondsSince() >= Parent->config.Cycletime())
+	RLOCK_IF(("Events", "last_expire"),
+		last_expire.SecondsSince() >= Parent->config.Cycletime())
 	{
 	    CP(("Starting EXPIRATION check ..."));
 
@@ -1604,12 +1620,17 @@ int EventTask::svc(void)
 	    MCB(last_expire);
 	    last_expire = mDateTime::CurrentDateTime();
 	    MCE(last_expire);
-	}}
+	}
 
-	{ RLOCK(("Events", "last_save"));
 	if (Parent->Saving())
+	{
+	    WLOCK(("Events", "last_save"));
+	    MCB(last_save);
 	    last_save = mDateTime::CurrentDateTime();
-	if (last_save.SecondsSince() >= Parent->config.Savetime())
+	    MCE(last_save);
+	}
+	RLOCK2_IF(("Events", "last_save"),
+		last_save.SecondsSince() >= Parent->config.Savetime())
 	{
 	    CP(("Starting DATABASE SAVE ..."));
 	    tm.spawn(save_databases, NULL);
@@ -1618,10 +1639,10 @@ int EventTask::svc(void)
 	    MCB(last_save);
 	    last_save = mDateTime::CurrentDateTime();
 	    MCE(last_save);
-	}}
+	}
 
-	{ RLOCK(("Events", "last_check"));
-	if (last_check.SecondsSince() >= Parent->config.Checktime())
+	RLOCK2_IF(("Events", "last_check"),
+		last_check.SecondsSince() >= Parent->config.Checktime())
 	{
 	    CP(("Starting CHECK cycle ..."));
 
@@ -1768,14 +1789,16 @@ int EventTask::svc(void)
 	    MCB(last_check);
 	    last_check = mDateTime::CurrentDateTime();
 	    MCE(last_check);
-	}}
+	}
 
-	{ WLOCK(("Events", "cmodes_pending"));
+	{ RLOCK(("Events", "cmodes_pending"));
 	set<mstring>::iterator iter;
+	CP(("Starting PENDING MODES check ..."));
 	for (iter=cmodes_pending.begin(); iter!=cmodes_pending.end(); iter++)
 	{
 	    if (Parent->chanserv.IsLive(*iter))
 	    {
+		COM(("Looking at channel %s", iter->c_str()));
 		RLOCK(("ChanServ", "live", *iter));
 		Chan_Live_t &chan = Parent->chanserv.GetLive(*iter);
 		// Send pending ChanServ modes ...
@@ -1859,47 +1882,51 @@ int EventTask::svc(void)
 		    }
 		}
 	    }
-	}
+	}}
+	{ WLOCK(("Events", "cmodes_pending"));
+	MCB(cmodes_pending.size());
 	cmodes_pending.clear();
+	MCE(cmodes_pending.size());
 	}
 
 	chunked.clear();
-	{ RLOCK(("Events", "last_msgcheck"));
-	if (last_msgcheck.SecondsSince() > Parent->config.MSG_Check_Time())
+	RLOCK2_IF(("Events", "last_msgcheck"),
+		last_msgcheck.SecondsSince() > Parent->config.MSG_Check_Time())
 	{
-	    set<unsigned long> Ids;
+	    CP(("Starting EXPIRED MESSAGE check ..."));
 	    vector<mMessage *> Msgs;
-	    set<unsigned long>::iterator k;
 
-	    { WLOCK(("AllDependancies"));
-	    map<mMessage::type_t, map<mstring, set<unsigned long> > >::iterator i;
-	    for (i=mMessage::AllDependancies.begin(); i!=mMessage::AllDependancies.end(); i++)
+	    { MLOCK(("AllDependancies"));
+	    map<mMessage::type_t, map<mstring, set<unsigned long> > >::iterator j;
+	    for (j=mMessage::AllDependancies.begin(); j!=mMessage::AllDependancies.end(); j++)
 	    {
-		map<mstring, set<unsigned long> >::iterator j;
-		for (j=i->second.begin(); j!=i->second.end(); j++)
+		map<mstring, set<unsigned long> >::iterator k;
+		for (k=j->second.begin(); k!=j->second.end(); k++)
 		{
-		    for (k=j->second.begin(); k!=j->second.end(); k++)
+		    set<unsigned long> Ids;
+		    set<unsigned long>::iterator l;
+		    for (l=k->second.begin(); l!=k->second.end(); l++)
 		    {
 			{ MLOCK(("MsgIdMap"));
-			map<unsigned long, mMessage *>::iterator l = mMessage::MsgIdMap.find(*k);
-			if (l != mMessage::MsgIdMap.end())
+			map<unsigned long, mMessage *>::iterator m = mMessage::MsgIdMap.find(*l);
+			if (m != mMessage::MsgIdMap.end())
 			{
-			    if (l->second == NULL ||
-				l->second->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
+			    if (m->second == NULL ||
+				m->second->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
 			    {
-				Ids.insert(l->first);
-				Msgs.push_back(l->second);
-				mMessage::MsgIdMap.erase(l);
+				Ids.insert(m->first);
+				Msgs.push_back(m->second);
+				mMessage::MsgIdMap.erase(m);
 			    }
 			}}
 		    }
-		    for (k=Ids.begin(); k!=Ids.end(); k++)
-			j->second.erase(*k);
-		    if (!j->second.size())
-			chunked.push_back(j->first);
+		    for (l=Ids.begin(); l!=Ids.end(); l++)
+			k->second.erase(*l);
+		    if (!k->second.size())
+			chunked.push_back(k->first);
 		}
-		for (unsigned int k=0; k<chunked.size(); k++)
-		    i->second.erase(chunked[k]);
+		for (i=0; i<chunked.size(); i++)
+		    j->second.erase(chunked[i]);
 		chunked.clear();
 	    }}
 	    vector<mMessage *>::iterator m;
@@ -1907,20 +1934,29 @@ int EventTask::svc(void)
 	    {
 		{ RLOCK(("IrcSvcHandler"));
 		if (Parent->ircsvchandler != NULL)
+		{
+		    COM(("(%d) Requing without filled dependancies\n", (*m)->msgid()));
+		    (*m)->priority(static_cast<u_long>(P_DepFilled));
 		    Parent->ircsvchandler->enqueue(*m);
-		else
-		    delete *m;
 		}
+		else
+		{
+		    COM(("(%d) Deleting obsolete message\n", (*m)->msgid()));
+		    delete *m;
+		}}
 	    }
-		
-	}}
+	    WLOCK(("Events", "last_msgcheck"));
+	    MCB(last_msgcheck);
+	    last_msgcheck = mDateTime::CurrentDateTime();
+	    MCE(last_msgcheck);
+	}
 
-	{ RLOCK(("Events", "last_heartbeat"));
-	if (last_heartbeat.SecondsSince() > Parent->config.Heartbeat_Time())
+	RLOCK2_IF(("Events", "last_heartbeat"),
+		last_heartbeat.SecondsSince() > Parent->config.Heartbeat_Time())
 	{
-	    RLOCK(("Events", "thread_heartbeat"));
 	    vector<ACE_thread_t> dead;
 	    map<ACE_thread_t,mDateTime>::iterator iter;
+	    { RLOCK(("Events", "thread_heartbeat"));
 	    for (iter=thread_heartbeat.begin(); iter!=thread_heartbeat.end(); iter++)
 	    {
 		if (iter->second.SecondsSince() > Parent->config.Heartbeat_Time())
@@ -1933,34 +1969,36 @@ int EventTask::svc(void)
 		NANNOUNCE(Parent->operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
 		NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
 	    }
-	    else
+	    else if (dead.size())
 	    {
-		RLOCK(("IrcSvcHandler"));
-		if (Parent->ircsvchandler != NULL)
+		WLOCK(("Events", "thread_heartbeat"));
+		for (i=0; i<dead.size(); i++)
 		{
-		    for (i=0; i<dead.size(); i++)
-		    {
-			NLOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD");
+		    NLOG(LM_CRITICAL, "SYS_ERRORS/THREAD_DEAD");
+		    { RLOCK(("IrcSvcHandler"));
+		    if (Parent->ircsvchandler != NULL)
 			Parent->ircsvchandler->tm.cancel(dead[i]);
 		    }
+		    thread_heartbeat.erase(dead[i]);
 		}
-	    }
+	    }}
 	    { RLOCK(("IrcSvcHandler"));
 	    if (Parent->ircsvchandler != NULL)
 		for (i=0; i<thread_heartbeat.size(); i++)
 		    Parent->ircsvchandler->enqueue_test();
 	    }
 	    WLOCK(("Events", "last_heartbeat"));
+	    MCB(last_heartbeat);
 	    last_heartbeat = mDateTime::CurrentDateTime();
-	}}
+	    MCE(last_heartbeat);
+	}
 
-	{ RLOCK(("Events", "last_ping"));
-	if (last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
+	RLOCK2_IF(("Events", "last_ping"),
+		last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
 	{
 	    CP(("Starting SERVER PING ..."));
 
-	    vector<double> pingtimes;
-	    double min = -1, max = 0, sum = 0, avg = 0;
+	    double min = -1, max = 0, sum = 0, avg = 0, count = 0;
 	    { RLOCK2(("Server", "list"));
 	    for (si=Parent->server.ListBegin();
 		    si!=Parent->server.ListEnd(); si++)
@@ -1970,13 +2008,13 @@ int EventTask::svc(void)
 		    min = si->second.Lag();
 		if (si->second.Lag() > max)
 		    max = si->second.Lag();
-		pingtimes.push_back(si->second.Lag());
 		sum += si->second.Lag();
+		count++;
 	    }}
-	    if (pingtimes.size() >= 3)
-		avg = (sum - min - max) / static_cast<double>(pingtimes.size() - 2);
+	    if (count >= 3)
+		avg = (sum - min - max) / (count - 2);
 	    else
-		avg = sum / static_cast<double>(pingtimes.size());
+		avg = sum / count;
 
 	    if (avg > static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
 	    {
@@ -1991,25 +2029,23 @@ int EventTask::svc(void)
 	    }
 
 	    { RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler != NULL)
-		if (Parent->ircsvchandler->HTM_Level() <= 3)
+	    if (Parent->ircsvchandler != NULL &&
+		Parent->ircsvchandler->HTM_Level() <= 3)
+	    {
+		RLOCK2(("Server", "list"));
+		for (si = Parent->server.ListBegin();
+			si != Parent->server.ListEnd(); si++)
 		{
-		    RLOCK2(("Server", "list"));
-		    for (si=Parent->server.ListBegin();
-				si!=Parent->server.ListEnd();si++)
-		    {
-			RLOCK3(("Server", "list", si->first));
-			si->second.Ping();
-		    }
-		    NLOG(LM_TRACE, "EVENT/PING");
+		    RLOCK3(("Server", "list", si->first));
+		    si->second.Ping();
 		}
-	    }
+		NLOG(LM_TRACE, "EVENT/PING");
+	    }}
 	    WLOCK(("Events", "last_ping"));
 	    MCB(last_ping);
 	    last_ping = mDateTime::CurrentDateTime();
 	    MCE(last_ping);
-	}}
-
+	}
     }
     catch (E_NickServ_Stored &e)
     {
@@ -2204,6 +2240,7 @@ int EventTask::svc(void)
 	NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
     }
 
+	COM(("Completed Events Cycle"));
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);
     }

@@ -25,6 +25,10 @@ RCSID(stages_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2001/07/01 05:02:46  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.2  2001/06/02 16:27:04  prez
 ** Intergrated the staging system for dbase loading/saving.
 **
@@ -35,12 +39,8 @@ RCSID(stages_h, "@(#) $Id$");
 ** ========================================================== */
 
 #include "xml/sxp.h"
-#ifdef HASCRYPT
-#include "crypt/blowfish.h"
-#endif
 
 #define	DEF_STAGE_BUFFER	65536
-
 #define STAGE_TAG_XML		0x00000001
 #define STAGE_TAG_COMPRESS	0x00000002
 #define	STAGE_TAG_CRYPT		0x00000004

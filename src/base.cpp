@@ -27,6 +27,10 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.170  2001/07/01 05:02:45  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.169  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -466,7 +470,7 @@ void mMessage::AddDependancies()
 {
     NFT("mMessage::AddDependancies");
     WLOCK(("Dependancies", this));
-    bool added = false;
+    int added = 0;
 
     if (!source_.empty())
     {
@@ -630,24 +634,29 @@ void mMessage::AddDependancies()
 	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
     }
 
-    unsigned long msgid;
     { MLOCK(("MsgIdMap"));
-    msgid = LastMsgId++;
-    while (MsgIdMap.find(msgid) != MsgIdMap.end())
-	msgid = LastMsgId++;
+    msgid_ = LastMsgId++;
+    while (MsgIdMap.find(msgid_) != MsgIdMap.end())
+	msgid_ = LastMsgId++;
     }
 
     list<triplet<type_t, mstring, bool> >::iterator iter;
     for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
     {
+	int oldadded = added;
 	switch (iter->first)
 	{
 	case ServerExists:
 	    if (Parent->server.GetServer(iter->second).empty())
 	    {
-		added = true;
-		WLOCK2(("AllDependancies"));
-		AllDependancies[ServerExists][iter->second].insert(msgid);
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first][iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -657,9 +666,14 @@ void mMessage::AddDependancies()
 	case ServerNoExists:
 	    if (!Parent->server.GetServer(iter->second).empty())
 	    {
-		added = true;
-		WLOCK2(("AllDependancies"));
-		AllDependancies[ServerNoExists][iter->second].insert(msgid);
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first][iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -669,9 +683,14 @@ void mMessage::AddDependancies()
 	case NickExists:
 	    if (!Parent->nickserv.IsLive(iter->second))
 	    {
-		added = true;
-		WLOCK2(("AllDependancies"));
-		AllDependancies[NickExists][iter->second].insert(msgid);
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first][iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -681,9 +700,14 @@ void mMessage::AddDependancies()
 	case NickNoExists:
 	    if (Parent->nickserv.IsLive(iter->second))
 	    {
-		added = true;
-		WLOCK2(("AllDependancies"));
-		AllDependancies[NickNoExists][iter->second].insert(msgid);
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first][iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -693,9 +717,14 @@ void mMessage::AddDependancies()
 	case ChanExists:
 	    if (!Parent->chanserv.IsLive(iter->second))
 	    {
-		added = true;
-		WLOCK2(("AllDependancies"));
-		AllDependancies[ChanExists][iter->second].insert(msgid);
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first][iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -705,9 +734,14 @@ void mMessage::AddDependancies()
 	case ChanNoExists:
 	    if (Parent->chanserv.IsLive(iter->second))
 	    {
-		added = true;
-		WLOCK2(("AllDependancies"));
-		AllDependancies[ChanNoExists][iter->second].insert(msgid);
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first][iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -719,9 +753,14 @@ void mMessage::AddDependancies()
 	    {
 		if (!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 		{
-		    added = true;
-		    WLOCK2(("AllDependancies"));
-		    AllDependancies[UserInChan][iter->second].insert(msgid);
+		    added++;
+		    MLOCK2(("AllDependancies"));
+		    if (added == 1)
+		    {
+			MLOCK(("MsgIdMap"));
+			MsgIdMap[msgid_] = this;
+		    }
+		    AllDependancies[iter->first][iter->second].insert(msgid_);
 		}
 		else
 		{
@@ -730,17 +769,28 @@ void mMessage::AddDependancies()
 	    }
 	    else
 	    {
-		WLOCK2(("AllDependancies"));
-		AllDependancies[UserInChan][iter->second].insert(msgid);
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first][iter->second].insert(msgid_);
 	    }
 	    break;
 	case UserNoInChan:
 	    if (Parent->chanserv.IsLive(iter->second.Before(":")) &&
 		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 	    {
-		added = true;
-		WLOCK2(("AllDependancies"));
-		AllDependancies[UserNoInChan][iter->second].insert(msgid);
+		added++;
+		MLOCK2(("AllDependancies"));
+		if (added == 1)
+		{
+		    MLOCK(("MsgIdMap"));
+		    MsgIdMap[msgid_] = this;
+		}
+		AllDependancies[iter->first][iter->second].insert(msgid_);
 	    }
 	    else
 	    {
@@ -748,12 +798,170 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	}
+	if (oldadded != added)
+	    CP(("(%d) Added dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
     }
-    if (added)
+}
+
+bool mMessage::RecheckDependancies()
+{
+    NFT("mMessage::RecheckDependancies");
+    { WLOCK(("Dependancies", this));
+    bool resolved;
+
+    list<triplet<type_t, mstring, bool> >::iterator iter;
+    map<mstring, set<unsigned long> >::iterator i;
+    set<unsigned long>::iterator j;
+    for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
     {
-	MLOCK(("MsgIdMap"));
-	MsgIdMap[msgid] = this;
+	resolved = false;
+	switch (iter->first)
+	{
+	case ServerExists:
+	    if (!iter->third && !Parent->server.GetServer(iter->second).empty())
+	    {
+		resolved = true;
+		iter->third = true;
+		MLOCK2(("AllDependancies"));
+		if ((i = AllDependancies[iter->first].find(iter->second)) !=
+					AllDependancies[iter->first].end())
+		{
+		    if ((j = i->second.find(msgid_)) != i->second.end())
+			i->second.erase(j);
+		    if (!i->second.size())
+			AllDependancies[iter->first].erase(i);
+		}
+	    }
+	    break;
+	case ServerNoExists:
+	    if (!iter->third && Parent->server.GetServer(iter->second).empty())
+	    {
+		resolved = true;
+		iter->third = true;
+		MLOCK2(("AllDependancies"));
+		if ((i = AllDependancies[iter->first].find(iter->second)) !=
+					AllDependancies[iter->first].end())
+		{
+		    if ((j = i->second.find(msgid_)) != i->second.end())
+			i->second.erase(j);
+		    if (!i->second.size())
+			AllDependancies[iter->first].erase(i);
+		}
+	    }
+	    break;
+	case NickExists:
+	    if (!iter->third && Parent->nickserv.IsLive(iter->second))
+	    {
+		resolved = true;
+		iter->third = true;
+		MLOCK2(("AllDependancies"));
+		if ((i = AllDependancies[iter->first].find(iter->second)) !=
+					AllDependancies[iter->first].end())
+		{
+		    if ((j = i->second.find(msgid_)) != i->second.end())
+			i->second.erase(j);
+		    if (!i->second.size())
+			AllDependancies[iter->first].erase(i);
+		}
+	    }
+	    break;
+	case NickNoExists:
+	    if (!iter->third && !Parent->nickserv.IsLive(iter->second))
+	    {
+		resolved = true;
+		iter->third = true;
+		MLOCK2(("AllDependancies"));
+		if ((i = AllDependancies[iter->first].find(iter->second)) !=
+					AllDependancies[iter->first].end())
+		{
+		    if ((j = i->second.find(msgid_)) != i->second.end())
+			i->second.erase(j);
+		    if (!i->second.size())
+			AllDependancies[iter->first].erase(i);
+		}
+	    }
+	    break;
+	case ChanExists:
+	    if (!iter->third && Parent->chanserv.IsLive(iter->second))
+	    {
+		resolved = true;
+		iter->third = true;
+		MLOCK2(("AllDependancies"));
+		if ((i = AllDependancies[iter->first].find(iter->second)) !=
+					AllDependancies[iter->first].end())
+		{
+		    if ((j = i->second.find(msgid_)) != i->second.end())
+			i->second.erase(j);
+		    if (!i->second.size())
+			AllDependancies[iter->first].erase(i);
+		}
+	    }
+	    break;
+	case ChanNoExists:
+	    if (!iter->third && !Parent->chanserv.IsLive(iter->second))
+	    {
+		resolved = true;
+		iter->third = true;
+		MLOCK2(("AllDependancies"));
+		if ((i = AllDependancies[iter->first].find(iter->second)) !=
+					AllDependancies[iter->first].end())
+		{
+		    if ((j = i->second.find(msgid_)) != i->second.end())
+			i->second.erase(j);
+		    if (!i->second.size())
+			AllDependancies[iter->first].erase(i);
+		}
+	    }
+	    break;
+	case UserInChan:
+	    if (!iter->third && Parent->chanserv.IsLive(iter->second.Before(":")) &&
+		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+	    {
+		resolved = true;
+		iter->third = true;
+		MLOCK2(("AllDependancies"));
+		if ((i = AllDependancies[iter->first].find(iter->second)) !=
+					AllDependancies[iter->first].end())
+		{
+		    if ((j = i->second.find(msgid_)) != i->second.end())
+			i->second.erase(j);
+		    if (!i->second.size())
+			AllDependancies[iter->first].erase(i);
+		}
+	    }
+	    break;
+	case UserNoInChan:
+	    if (!iter->third && (!Parent->chanserv.IsLive(iter->second.Before(":")) ||
+		!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":"))))
+	    {
+		resolved = true;
+		iter->third = true;
+		MLOCK2(("AllDependancies"));
+		if ((i = AllDependancies[iter->first].find(iter->second)) !=
+					AllDependancies[iter->first].end())
+		{
+		    if ((j = i->second.find(msgid_)) != i->second.end())
+			i->second.erase(j);
+		    if (!i->second.size())
+			AllDependancies[iter->first].erase(i);
+		}
+	    }
+	    break;
+	}
+	if (resolved)
+	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
+    }}
+    if (!OutstandingDependancies())
+    {
+	CP(("No more dependancies for %d.", msgid_));
+	{ MLOCK(("MsgIdMap"));
+	map<unsigned long, mMessage *>::iterator k = MsgIdMap.find(msgid_);
+	if (k != MsgIdMap.end())
+	    MsgIdMap.erase(k);
+	}
+	RET(false);
     }
+    RET(true);
 }
 
 bool mMessage::OutstandingDependancies()
@@ -795,7 +1003,7 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 	target = param1.LowerCase();
     set<unsigned long> mydep;
 
-    { WLOCK(("AllDependancies"));
+    { MLOCK(("AllDependancies"));
     map<type_t, map<mstring, set<unsigned long> > >::iterator i = AllDependancies.find(type);
     if (i != AllDependancies.end())
     {
@@ -816,18 +1024,19 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 	if (iter != MsgIdMap.end())
 	{
 	    msg = iter->second;
-	    MsgIdMap.erase(iter);
+	    msg->DependancySatisfied(type, target);
+	    if (!msg->OutstandingDependancies())
+		MsgIdMap.erase(iter);
+	    else
+		msg = NULL;
 	}}
 	if (msg != NULL)
 	{
-	    msg->DependancySatisfied(type, target);
-	    if (!msg->OutstandingDependancies())
-	    {
-		msg->priority(static_cast<u_long>(P_DepFilled));
-		RLOCK(("IrcSvcHandler"));
-		if (Parent->ircsvchandler != NULL)
-		    Parent->ircsvchandler->enqueue(msg);
-	    }
+	    CP(("No more dependancies for %d.", msg->msgid()));
+	    msg->priority(static_cast<u_long>(P_DepFilled));
+	    RLOCK(("IrcSvcHandler"));
+	    if (Parent->ircsvchandler != NULL)
+		Parent->ircsvchandler->enqueue(msg);
 	}
     }
 }
@@ -842,6 +1051,7 @@ void mMessage::DependancySatisfied(mMessage::type_t type, const mstring& param)
     {
 	if (iter->first == type && iter->second == param)
 	{
+	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, (int) iter->first, iter->second.c_str()));
 	    iter->third = true;
 	}
     }

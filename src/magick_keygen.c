@@ -20,6 +20,10 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.18  2001/07/01 05:02:45  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.17  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -104,19 +108,27 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 #ifdef HASCRYPT
 #include <stdarg.h>
 #include "crypt/blowfish.h"
+#include "crypt/md5_locl.h"
 #ifdef HAVE_TERMIO_H
 #include <termio.h>
 #endif
 
 #define VERIFY_SIZE	128
-#define MIN_KEYLEN	16
-#define MAX_KEYLEN	((BF_ROUNDS+2)*4)
+#define MIN_KEYLEN	(BF_ROUNDS+2)
+#define MAX_KEYLEN	((BF_ROUNDS+2)*16)
+#define MAX_REAL_KEYLEN	((BF_ROUNDS+2)*4)
 #define DEF_KEYNAME	"magick.key"
 
 size_t mCRYPT(const char *in, char *out, const size_t size,
 	const char *key1, const char *key2, const int enc);
+void mHASH16(const char *in, const size_t size, char *out);
+void mHASH(const char *in, const size_t size, char *out);
 int mstring_snprintf(char *buf, const size_t size, const char *fmt, ...);
 int mstring_vsnprintf(char *buf, const size_t size, const char *fmt, va_list ap);
+
+#if MAX_KEYLEN < MAX_REAL_KEYLEN
+#define MAX_KEYLEN	MAX_REAL_KEYLEN
+#endif
 
 #endif /* HASCRYPT */
 
@@ -130,9 +142,9 @@ int main(int argc, char **argv)
     fprintf(stderr, "You do not have encryption support.\n");
 
 #else /* !HASCRYPT */
-    size_t i, key_size;
+    size_t i, key_size, mr_keylen, mr_count;
     char key1[MAX_KEYLEN+1], key2[MAX_KEYLEN+1], verify[MAX_KEYLEN+1], filename[512];
-    char instr[VERIFY_SIZE], outstr[VERIFY_SIZE];
+    char instr[VERIFY_SIZE], outstr[MD5_DIGEST_LENGTH];
     FILE *outfile, *tty;
 #ifdef HAVE_TERMIO_H
     struct termio tty_new, tty_orig;
@@ -254,17 +266,38 @@ int main(int argc, char **argv)
 #else
     mstring_snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
 #endif
-    mCRYPT(instr, outstr, VERIFY_SIZE, CRYPTO_KEY1, CRYPTO_KEY2, 1);
-    fwrite(outstr, sizeof(char), VERIFY_SIZE, outfile);
+    memset(outstr, 0, MD5_DIGEST_LENGTH);
+    mHASH16(instr, VERIFY_SIZE, outstr);
+    memset(verify, 0, MAX_KEYLEN+1);
+    mCRYPT(outstr, verify, MD5_DIGEST_LENGTH, CRYPTO_KEY1, CRYPTO_KEY2, 1);
+    fwrite(verify, sizeof(char), MD5_DIGEST_LENGTH, outfile);
+
+    mr_keylen = MAX_REAL_KEYLEN;
+    if (mr_keylen % MD5_DIGEST_LENGTH)
+	mr_keylen += MD5_DIGEST_LENGTH - (MD5_DIGEST_LENGTH % MAX_REAL_KEYLEN);
+    if (mr_keylen % MD5_DIGEST_LENGTH)
+	mr_count = (mr_keylen / MD5_DIGEST_LENGTH) + 1;
+    else
+	mr_count = (mr_keylen / MD5_DIGEST_LENGTH);
 
     memset(verify, 0, MAX_KEYLEN+1);
-    mCRYPT(key1, verify, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 1);
-    fwrite(verify, sizeof(char), MAX_KEYLEN, outfile);
+    key_size = (strlen(key1) / mr_count) + 1;
+    for(i=0; i<mr_count; i++)
+	mHASH16(&key1[i*key_size], key_size, &verify[i*MD5_DIGEST_LENGTH]);
+    memset(key1, 0, MAX_KEYLEN+1);
+    mCRYPT(verify, key1, MAX_REAL_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 1);
+    fwrite(key1, sizeof(char), MAX_REAL_KEYLEN, outfile);
+
     memset(verify, 0, MAX_KEYLEN+1);
-    mCRYPT(key2, verify, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 1);
-    fwrite(verify, sizeof(char), MAX_KEYLEN, outfile);
+    key_size = (strlen(key2) / mr_count) + 1;
+    for(i=0; i<mr_count; i++)
+	mHASH16(&key2[i*key_size], key_size, &verify[i*MD5_DIGEST_LENGTH]);
+    memset(key2, 0, MAX_KEYLEN+1);
+    mCRYPT(verify, key2, MAX_REAL_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 1);
+    fwrite(key2, sizeof(char), MAX_REAL_KEYLEN, outfile);
+
     fclose(outfile);
-    printf("Created %d byte keyfile.\n", VERIFY_SIZE + (2*MAX_KEYLEN));
+    printf("Created %d byte keyfile.\n", MD5_DIGEST_LENGTH + (2*MAX_REAL_KEYLEN));
 
 #endif /* !HASCRYPT */
     return 0;
@@ -303,6 +336,28 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
     }
 
     return i;
+}
+
+void mHASH16(const char *in, const size_t size, char *out)
+{
+    MD5_CTX c;
+    memset(out, 0, MD5_DIGEST_LENGTH);
+    MD5_Init(&c);
+    MD5_Update(&c, (unsigned char *) in, size);
+    MD5_Final(out, &c);
+    memset(&c, 0, sizeof(MD5_CTX));
+}
+
+void mHASH(const char *in, const size_t size, char *out)
+{
+    int i;
+    unsigned char md[MD5_DIGEST_LENGTH];
+    memset(md, 0, MD5_DIGEST_LENGTH);
+    mHASH16(in, size, md);
+    memset(out, 0, (MD5_DIGEST_LENGTH*2)+1);
+    for (i=0; i<MD5_DIGEST_LENGTH; i++)
+	sprintf(&out[i*2], "%02x", md[i]);
+    memset(md, 0, MD5_DIGEST_LENGTH);
 }
 
 int mstring_snprintf(char *buf, const size_t size, const char *fmt, ...)

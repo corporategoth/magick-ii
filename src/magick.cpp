@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.317  2001/07/01 05:02:45  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.316  2001/06/15 07:20:40  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -519,11 +523,6 @@ RCSID(magick_cpp, "@(#)$Id$");
 #ifdef CONVERT
 #include "convert_magick.h"
 #include "convert_esper.h"
-#endif
-#ifdef HASCRYPT
-#include "crypt/blowfish.h"
-#define VERIFY_SIZE	128
-#define MAX_KEYLEN	((BF_ROUNDS+2)*4)
 #endif
 
 static bool nofork = false;
@@ -3117,6 +3116,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     case SIGCHLD:
 	break;
 #endif
+
 #if defined(SIGPIPE) && (SIGPIPE!=0)
     case SIGPIPE:
 	{
@@ -3132,12 +3132,6 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SIGNON", ( signum));
 	Parent->server.SignOnAll();
 	break;
-
-#if defined(SIGQUIT) && (SIGQUIT != 0)
-    case SIGQUIT:
-	throw(E_Thread(E_Thread::T_NotProcessing));
-	break;
-#endif
 
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
@@ -3169,9 +3163,9 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 
 
     case SIGILL:	// illegal opcode, this suckers gone walkabouts..
-//#if defined(SIGIOT) && (SIGIOT != 0)
-//    case SIGIOT:	// abort(), exit immediately!
-//#endif
+#if defined(SIGIOT) && (SIGIOT != 0)
+    case SIGIOT:	// abort(), exit immediately!
+#endif
 #if defined(SIGBUS) && (SIGBUS != 0)
     case SIGBUS:	// BUS error (fatal)
 #endif
@@ -3554,19 +3548,22 @@ pair<mstring,mstring> Magick::GetKeys()const
     {
 	mFile keyfile(files.KeyFile());
 	char key1[MAX_KEYLEN], key2[MAX_KEYLEN], tmp[MAX_KEYLEN];
-	char instr[VERIFY_SIZE], outstr[VERIFY_SIZE];
+	char instr[MD5_DIGEST_LENGTH], outstr[MD5_DIGEST_LENGTH], verify[VERIFY_SIZE];
 
 	// First verify syntax is correct!
-	memset(instr, 0, VERIFY_SIZE);
-	keyfile.Read(instr, VERIFY_SIZE);
-	mCRYPT(instr, outstr, VERIFY_SIZE, CRYPTO_KEY1, CRYPTO_KEY2, 0);
-	memset(instr, 0, VERIFY_SIZE);
+	memset(instr, 0, MD5_DIGEST_LENGTH);
+	keyfile.Read(instr, MD5_DIGEST_LENGTH);
+	mCRYPT(instr, outstr, MD5_DIGEST_LENGTH, CRYPTO_KEY1, CRYPTO_KEY2, 0);
+	memset(verify, 0, VERIFY_SIZE);
 #if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
-	mstring::snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
+	mstring::snprintf(verify, VERIFY_SIZE, "%s %s Keyfile: %s %s %s", PACKAGE, VERSION, BUILD_NODE, BUILD_TYPE, BUILD_REL);
 #else
-	mstring::snprintf(instr, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
+	mstring::snprintf(verify, VERIFY_SIZE, "%s %s Keyfile: No host information available", PACKAGE, VERSION);
 #endif
-	if (memcmp(instr, outstr, VERIFY_SIZE) == 0)
+	memset(instr, 0, MD5_DIGEST_LENGTH);
+	mHASH16(verify, VERIFY_SIZE, instr);
+
+	if (memcmp(instr, outstr, MD5_DIGEST_LENGTH) == 0)
 	{
 	    /* Use keyfile keys to get REAL key */
 	    memset(tmp, 0, MAX_KEYLEN);

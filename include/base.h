@@ -25,6 +25,10 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2001/07/01 05:02:46  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.97  2001/06/15 07:20:39  prez
 ** Fixed windows compiling -- now works with MS Visual Studio 6.0
 **
@@ -244,6 +248,7 @@ class mMessage : public ACE_Method_Request
     friend class EventTask;
     friend class IrcSvcHandler;
 
+    unsigned long msgid_;
     mstring source_, msgtype_, params_;
     mDateTime creation_;
 
@@ -267,8 +272,10 @@ public:
 
     bool OutstandingDependancies();
     static void CheckDependancies(type_t type, const mstring& param1, const mstring& param2 = "");
+    bool RecheckDependancies();
     void DependancySatisfied(type_t type, const mstring& param);
 
+    unsigned long msgid() { return msgid_; }
     mstring source() { return source_; }
     mstring msgtype() { return msgtype_; }
     mstring params() { return params_; }

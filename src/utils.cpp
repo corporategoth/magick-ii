@@ -27,6 +27,10 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2001/07/01 05:02:46  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.69  2001/06/17 09:39:08  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -210,10 +214,6 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** ========================================================== */
 
 #include "magick.h"
-#ifdef HASCRYPT
-#include "crypt/blowfish.h"
-#endif
-#include "crypt/md5_locl.h"
 
 vector<int> ParseNumbers(mstring what)
 {
@@ -598,20 +598,23 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
 #endif
 }
 
+void mHASH16(const char *in, const size_t size, char *out)
+{
+    MD5_CTX c;
+    memset(out, 0, MD5_DIGEST_LENGTH);
+    MD5_Init(&c);
+    MD5_Update(&c, const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(in)), size);
+    MD5_Final(const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(out)), &c);
+    memset(&c, 0, sizeof(MD5_CTX));
+}
+
 void mHASH(const char *in, const size_t size, char *out)
 {
     unsigned char md[MD5_DIGEST_LENGTH];
-    MD5_CTX c;
-    memset(md, 0, MD5_DIGEST_LENGTH);
-    MD5_Init(&c);
-    MD5_Update(&c, const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(in)), size);
-    MD5_Final(md, &c);
-    memset(&c, 0, sizeof(MD5_CTX));
+    mHASH16(in, size, reinterpret_cast<char *>(md));
     memset(out, 0, (MD5_DIGEST_LENGTH*2)+1);
     for (int i=0; i<MD5_DIGEST_LENGTH; i++)
-    {
 	sprintf(&out[i*2], "%02x", md[i]);
-    }
     memset(md, 0, MD5_DIGEST_LENGTH);
 }
 

@@ -25,6 +25,10 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2001/07/01 05:02:46  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.43  2001/05/17 19:18:53  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -124,6 +128,12 @@ RCSID(utils_h, "@(#) $Id$");
 ** ========================================================== */
 
 #include "variant.h"
+#ifdef HASCRYPT
+#include "crypt/blowfish.h"
+#define VERIFY_SIZE	128
+#define MAX_KEYLEN	((BF_ROUNDS+2)*4)
+#endif
+#include "crypt/md5_locl.h"
 
 vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(const mstring &in);
@@ -134,6 +144,7 @@ mstring ToHumanSpace(const unsigned long in);
 mstring parseMessage(const mstring & message, const mVarArray& va = mVarArray::EmptyArray());
 size_t mCRYPT(const char *in, char *out, const size_t size,
 	const char *key1, const char *key2, const bool enc);
+void mHASH16(const char *in, const size_t size, char *out);
 void mHASH(const char *in, const size_t size, char *out);
 unsigned long str_to_base64(const mstring &in);
 mstring base64_to_str(unsigned long in);

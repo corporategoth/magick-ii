@@ -25,6 +25,10 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2001/07/01 05:02:46  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.62  2001/05/13 00:55:17  prez
 ** More patches to try and fix deadlocking ...
 **
@@ -292,12 +296,24 @@ public:
 	bool __if_res = false; \
 	{ RLOCK(x); __if_res = y; } \
 	if (__if_res)
+#define RLOCK2_IF(x, y) \
+	__if_res = false; \
+	{ RLOCK(x); __if_res = y; } \
+	if (__if_res)
 #define WLOCK_IF(x, y) \
 	bool __if_res = false; \
 	{ WLOCK(x); __if_res = y; } \
 	if (__if_res)
+#define WLOCK2_IF(x, y) \
+	__if_res = false; \
+	{ WLOCK(x); __if_res = y; } \
+	if (__if_res)
 #define MLOCK_IF(x, y) \
 	bool __if_res = false; \
+	{ MLOCK(x); __if_res = y; } \
+	if (__if_res)
+#define MLOCK2_IF(x, y) \
+	__if_res = false; \
 	{ MLOCK(x); __if_res = y; } \
 	if (__if_res)
 
@@ -329,8 +345,11 @@ public:
 #define MLOCK8(y)
 
 #define RLOCK_IF(x, y) if (y)
+#define RLOCK2_IF(x, y) if (y)
 #define WLOCK_IF(x, y) if (y)
+#define WLOCK2_IF(x, y) if (y)
 #define MLOCK_IF(x, y) if (y)
+#define MLOCK2_IF(x, y) if (y)
 
 #endif /* MAGICK_LOCKS_WORK */
 

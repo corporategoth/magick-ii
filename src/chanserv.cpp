@@ -27,6 +27,10 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.253  2001/07/01 05:02:45  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.252  2001/06/17 09:39:06  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -1540,37 +1544,38 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 	}
 	else if (Parent->server.proto.ChanModeArg().Contains(change[i]))
 	{
+	    mstring arg(in.ExtractWord(fwdargs, ": "));
 	    switch(change[i])
 	    {
 	    case 'o':
 		if (fwdargs <= wc)
 		{
-		if (IsIn(in.ExtractWord(fwdargs, ": ")))
+		if (IsIn(arg))
 		{
 		    if (add)
 		    {
 			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
-			users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = true;
+			users[arg.LowerCase()].first = true;
 			}
-			if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(fwdargs, ": ")))
-			    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', in.ExtractWord(fwdargs, ": "));
+			if (ModeExists(p_modes_on, p_modes_on_params, true, 'o', arg))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, 'o', arg);
 		    }
 		    else
 		    {
 			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
-			users[in.ExtractWord(fwdargs, ": ").LowerCase()].first = false;
+			users[arg.LowerCase()].first = false;
 			}
-			if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(fwdargs, ": ")))
-			    RemoveMode(p_modes_off, p_modes_off_params, false, 'o', in.ExtractWord(fwdargs, ": "));
+			if (ModeExists(p_modes_off, p_modes_off_params, false, 'o', arg))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, 'o', arg);
 		    }
 		    newmode += change[i];
-		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
+		    newmode_param += " " + arg;
 		}
 		else
 		{
 		    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
 			add ? '+' : '-', change[i], source,
-			in.ExtractWord(fwdargs, ": "), i_Name));
+			arg, i_Name));
 		}
 		fwdargs++;
 		}
@@ -1579,32 +1584,32 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 	    case 'v':
 		if (fwdargs <= wc)
 		{
-		if (IsIn(in.ExtractWord(fwdargs, ": ")))
+		if (IsIn(arg))
 		{
 		    if (add)
 		    {
 			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
-			users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = true;
+			users[arg.LowerCase()].second = true;
 			}
-			if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(fwdargs, ": ")))
-			    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', in.ExtractWord(fwdargs, ": "));
+			if (ModeExists(p_modes_on, p_modes_on_params, true, 'v', arg))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, 'v', arg);
 		    }
 		    else
 		    {
 			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "users"));
-			users[in.ExtractWord(fwdargs, ": ").LowerCase()].second = false;
+			users[arg.LowerCase()].second = false;
 			}
-			if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(fwdargs, ": ")))
-			    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', in.ExtractWord(fwdargs, ": "));
+			if (ModeExists(p_modes_off, p_modes_off_params, false, 'v', arg))
+			    RemoveMode(p_modes_off, p_modes_off_params, false, 'v', arg);
 		    }
 		    newmode += change[i];
-		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
+		    newmode_param += " " + arg;
 		}
 		else
 		{
 		    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
 			add ? '+' : '-', change[i], source,
-			in.ExtractWord(fwdargs, ": "), i_Name));
+			arg, i_Name));
 		}
 		fwdargs++;
 		}
@@ -1618,23 +1623,23 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		if (add)
 		{
 		    { WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "bans"));
-		    bans[in.ExtractWord(fwdargs, ": ").LowerCase()] = mDateTime::CurrentDateTime();
+		    bans[arg.LowerCase()] = mDateTime::CurrentDateTime();
 		    }
-		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": ")))
-			RemoveMode(p_modes_on, p_modes_on_params, true, 'b', in.ExtractWord(fwdargs, ": "));
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'b', arg))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'b', arg);
 		}
 		else
 		{
 		    { WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "bans"));
-		    bans.erase(in.ExtractWord(fwdargs, ": ").LowerCase());
+		    bans.erase(arg.LowerCase());
 		    }
-		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(fwdargs, ": ")))
-			RemoveMode(p_modes_off, p_modes_off_params, false, 'b', in.ExtractWord(fwdargs, ": "));
+		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'b', arg))
+			RemoveMode(p_modes_off, p_modes_off_params, false, 'b', arg);
 		}
 		CE(5, bans.size());
 		}
 		newmode += change[i];
-		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
+		newmode_param += " " + arg;
 		fwdargs++;
 		}
 		break;
@@ -1647,23 +1652,23 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		if (add)
 		{
 		    { WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
-		    exempt[in.ExtractWord(fwdargs, ": ").LowerCase()] = mDateTime::CurrentDateTime();
+		    exempt[arg.LowerCase()] = mDateTime::CurrentDateTime();
 		    }
-		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(fwdargs, ": ")))
-			RemoveMode(p_modes_on, p_modes_on_params, true, 'e', in.ExtractWord(fwdargs, ": "));
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'e', arg))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'e', arg);
 		}
 		else
 		{
 		    { WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "exempt"));
-		    exempt.erase(in.ExtractWord(fwdargs, ": ").LowerCase());
+		    exempt.erase(arg.LowerCase());
 		    }
-		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'e', in.ExtractWord(fwdargs, ": ")))
-			RemoveMode(p_modes_off, p_modes_off_params, false, 'e', in.ExtractWord(fwdargs, ": "));
+		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'e', arg))
+			RemoveMode(p_modes_off, p_modes_off_params, false, 'e', arg);
 		}
 		CE(5, exempt.size());
 		}
 		newmode += change[i];
-		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
+		newmode_param += " " + arg;
 		fwdargs++;
 		}
 		break;
@@ -1676,17 +1681,17 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		if (add)
 		{
 		    { WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
-		    i_Key = in.ExtractWord(fwdargs, ": ");
+		    i_Key = arg;
 		    }
-		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'k', in.ExtractWord(fwdargs, ": ")))
-			RemoveMode(p_modes_on, p_modes_on_params, true, 'k', in.ExtractWord(fwdargs, ": "));
+		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'k', arg))
+			RemoveMode(p_modes_on, p_modes_on_params, true, 'k', arg);
 		}
 		else
 		{
-		    if (i_Key != in.ExtractWord(fwdargs, ": "))
+		    if (i_Key != arg)
 		    {
 			LOG(LM_ERROR, "ERROR/KEYMISMATCH", (
-				i_Key, in.ExtractWord(fwdargs, ": "),
+				i_Key, arg,
 				i_Name, source));
 		    }
 		    { WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Key"));
@@ -1698,7 +1703,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		CE(5, i_Key);
 		}
 		newmode += change[i];
-		newmode_param += " " + in.ExtractWord(fwdargs, ": ");
+		newmode_param += " " + arg;
 		fwdargs++;
 		}
 		break;
@@ -1716,7 +1721,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 			WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
 			i_Limit = 0;
 		    }
-		    else if (!in.ExtractWord(fwdargs, ": ").IsNumber())
+		    else if (!arg.IsNumber())
 		    {
 			LOG(LM_ERROR, "ERROR/NOLIMIT", (i_Name, source));
 			WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
@@ -1725,12 +1730,12 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		    else
 		    {
 			{ WLOCK5(("ChanServ", "live", i_Name.LowerCase(), "i_Limit"));
-			i_Limit = atoi(in.ExtractWord(fwdargs, ": ").c_str());
+			i_Limit = atoi(arg.c_str());
 			}
-			if (ModeExists(p_modes_on, p_modes_on_params, true, 'l', in.ExtractWord(fwdargs, ": ")))
-			    RemoveMode(p_modes_on, p_modes_on_params, true, 'l', in.ExtractWord(fwdargs, ": "));
+			if (ModeExists(p_modes_on, p_modes_on_params, true, 'l', arg))
+			    RemoveMode(p_modes_on, p_modes_on_params, true, 'l', arg);
 			newmode += change[i];
-			newmode_param += " " + in.ExtractWord(fwdargs, ": ");
+			newmode_param += " " + arg;
 		    }
 		    CE(5, i_Limit);
 		    }
@@ -1753,7 +1758,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 		if (fwdargs <= wc)
 		{
 		    newmode += change[i];
-		    newmode_param += " " + in.ExtractWord(fwdargs, ": ");
+		    newmode_param += " " + arg;
 		    fwdargs++;
 		}
 	    }
@@ -2457,6 +2462,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 	}
 	else if (Parent->server.proto.ChanModeArg().Contains(change[i]))
 	{
+	    mstring arg = mode.ExtractWord(fwdargs, ": ");
 	    switch(change[i])
 	    {
 	    case 'o':
@@ -2464,21 +2470,25 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		{
 		if (add)
 		{
-		    if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Level_value("AUTODEOP") ||
-			(!(GetAccess(mode.ExtractWord(fwdargs, ": "), "CMDOP") ||
-			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOOP")) &&
-			Secureops()))
+		    // IF not services, AND (user is AUTODEOP OR (channel is
+		    // secure AND (user is not AUTOOP or CMDOP)))
+		    if (!(Parent->nickserv.IsLive(arg) &&
+			  Parent->nickserv.GetLive(arg).IsServices()) &&
+			(Access_value(arg) <= Level_value("AUTODEOP") ||
+			(!(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) &&
+			Secureops())))
 		    {
-			clive.SendMode("-o " + mode.ExtractWord(fwdargs, ": "));
+			clive.SendMode("-o " + arg);
 		    }
 		}
 		else if (!setter.Contains("."))
 		{
-		    if ((Parent->nickserv.IsLive(mode.ExtractWord(fwdargs, ": ")) &&
-			Parent->nickserv.GetLive(mode.ExtractWord(fwdargs, ": ")).IsServices()) ||
-			DoRevenge("DEOP", setter, mode.ExtractWord(fwdargs, ": ")))
+		    // If user is services or a beneficiary of revenge
+		    if ((Parent->nickserv.IsLive(arg) &&
+			Parent->nickserv.GetLive(arg).IsServices()) ||
+			DoRevenge("DEOP", setter, arg))
 		    {
-			clive.SendMode("+o " + mode.ExtractWord(fwdargs, ": "));
+			clive.SendMode("+o " + arg);
 		    }
 		}
 
@@ -2491,12 +2501,16 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		{
 		if (add)
 		{
-		    if (Access_value(mode.ExtractWord(fwdargs, ": ")) <= Level_value("AUTODEOP") ||
-			(!(GetAccess(mode.ExtractWord(fwdargs, ": "), "CMDVOICE") ||
-			  GetAccess(mode.ExtractWord(fwdargs, ": "), "AUTOVOICE")) &&
-			Secureops()))
+		    // IF not services, AND (user is AUTODEOP OR (channel is
+		    // secure AND (user is not AUTOVOICE or CMDVOICE)))
+		    if (!(Parent->nickserv.IsLive(arg) &&
+			  Parent->nickserv.GetLive(arg).IsServices()) &&
+			(Access_value(arg) <= Level_value("AUTODEOP") ||
+			(!(GetAccess(arg, "CMDVOICE") ||
+			  GetAccess(arg, "AUTOVOICE")) &&
+			Secureops())))
 		    {
-			clive.SendMode("-v " + mode.ExtractWord(fwdargs, ": "));
+			clive.SendMode("-v " + arg);
 		    }
 		}
 
@@ -2514,9 +2528,9 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    mstring bantype = "BAN1";
 		    unsigned int j;
 
-		    mstring nick = mode.ExtractWord(fwdargs, ": ").Before("!");
-		    mstring user = mode.ExtractWord(fwdargs, ": ").After("!").Before("@");
-		    mstring host = mode.ExtractWord(fwdargs, ": ").After("!").After("@");
+		    mstring nick = arg.Before("!");
+		    mstring user = arg.After("!").Before("@");
+		    mstring host = arg.After("!").After("@");
 
 		    if (host.Contains("*") || host.Contains("?"))
 			bantype = "BAN4";
@@ -2548,8 +2562,8 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    for (j=0; !DidRevenge && j<clive.Users(); j++)
 		    {
 			if (Parent->nickserv.IsLive(clive.User(j)) &&
-			    (Parent->nickserv.GetLive(clive.User(j)).Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "), true) ||
-			    Parent->nickserv.GetLive(clive.User(j)).AltMask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "), true)))
+			    (Parent->nickserv.GetLive(clive.User(j)).Mask(Nick_Live_t::N_U_P_H).Matches(arg, true) ||
+			    Parent->nickserv.GetLive(clive.User(j)).AltMask(Nick_Live_t::N_U_P_H).Matches(arg, true)))
 			{
 			    // Only do revenge or kickonban if user
 			    // is not exempt from bans (+e).
@@ -2558,7 +2572,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 			    {
 				DidRevenge = DoRevenge(bantype, setter, clive.User(j));
 				if (DidRevenge)
-				    clive.SendMode("-b " + mode.ExtractWord(fwdargs, ": "));
+				    clive.SendMode("-b " + arg);
 				else
 				    tobekicked.push_back(clive.User(j));
 			    }
@@ -2583,7 +2597,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Mlock_Key"));
 		if (add && i_Mlock_Off.Contains("k"))
 		{
-		    clive.SendMode("-k " + mode.ExtractWord(fwdargs, ": "));
+		    clive.SendMode("-k " + arg);
 		}
 		else if (!add && !i_Mlock_Key.empty())
 		{

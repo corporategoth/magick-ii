@@ -1,4 +1,4 @@
-dnl  Magick IRC Services
+dnl Magick IRC Services
 dnl
 dnl (c) 1997-2001 Preston Elder <prez@magick.tm>
 dnl (c) 1998-2001 William King <ungod@magick.tm>
@@ -8,7 +8,8 @@ dnl circumstances, however it may be added to if any
 dnl modifications are made to this file.  All modified
 dnl code must be clearly documented and labelled.
 
-dnl
+dnl $Id$
+
 dnl Standard stuff
 dnl ==============
 
@@ -27,7 +28,6 @@ AC_HEADER_STAT
 AC_LANG_CPLUSPLUS
 AC_CANONICAL_HOST
 
-dnl
 dnl Required stuff
 dnl ==============
 
@@ -63,30 +63,30 @@ dnl If we were (ie. acelib) we need to add -L<directory>
 dnl and -l<file> to the LIBS paramater.
 
 AC_ARG_WITH(acelib, [  --with-acelib=file      Location of ACE library file],
-	[if test -f ${withval}; then
-		libdir="`dirname ${withval}`"
-		libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
-		if test ! "x$libdir" = "x$libfile"; then
-			LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
-			export LD_LIBRARY_PATH
-			LIBS="$LIBS -L${libdir}"
-		fi
-		if test ! "x$libfile" = "x"; then
-			LIBS="$LIBS -l$libfile"
-		fi
-		libace=1
-		echo "checking for $libfile ... (specified) yes"
-	fi])
+  [if test -f ${withval}; then
+    libdir="`dirname ${withval}`"
+    libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
+    if test ! "x$libdir" = "x$libfile"; then
+      LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
+      export LD_LIBRARY_PATH
+      LIBS="$LIBS -L${libdir}"
+    fi
+    if test ! "x$libfile" = "x"; then
+      LIBS="$LIBS -l$libfile"
+    fi
+    libace=1
+    echo "checking for $libfile ... (specified) yes"
+  fi])
 
 dnl Same deal with includes, and adding a -I to the
 dnl C/CPP flags
 
 AC_ARG_WITH(aceinc, [  --with-aceinc=dir       Location of ACE include files],
-	[if test -f ${withval}/ace/OS.h; then
-		CPPFLAGS="$CPPFLAGS -I${withval}"
-		libacehead=1
-		echo "checking for ace/OS.h ... (specified) yes"
-	fi])
+  [if test -f ${withval}/ace/OS.h; then
+    CPPFLAGS="$CPPFLAGS -I${withval}"
+    libacehead=1
+    echo "checking for ace/OS.h ... (specified) yes"
+  fi])
 
 dnl ====================================================
 
@@ -95,8 +95,8 @@ dnl threads, because if we are, we need an special
 dnl paramater in $LIBS.
 
 AC_ARG_ENABLE(bsdthread, [  --enable-bsdthread      Use BSD-style (libc_r) pthreads],
-	[LIBS="$LIBS -pthread"
-	libthread=1])
+  [LIBS="$LIBS -pthread"
+  libthread=1])
 
 dnl Second we check if we were GIVEN the location of any.
 dnl threads implementation.
@@ -104,27 +104,27 @@ dnl If we were (ie. threadlib) we need to add -L<directory>
 dnl and -l<file> to the LIBS paramater.
 
 AC_ARG_WITH(threadlib, [  --with-threadlib=file   Location of threads library file],
-	[if test -f ${withval}; then
-		libdir="`dirname ${withval}`"
-		libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
-		if test ! "x$libdir" = "x$libfile"; then
-			LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
-			export LD_LIBRARY_PATH
-			LIBS="$LIBS -L${libdir}"
-		fi
-		if test ! "x$libfile" = "x"; then
-			LIBS="$LIBS -l$libfile"
-		fi
-		libthread=1
-		echo "checking for $libfile ... (specified) yes"
-	fi])
+  [if test -f ${withval}; then
+    libdir="`dirname ${withval}`"
+    libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
+    if test ! "x$libdir" = "x$libfile"; then
+      LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
+      export LD_LIBRARY_PATH
+      LIBS="$LIBS -L${libdir}"
+    fi
+    if test ! "x$libfile" = "x"; then
+      LIBS="$LIBS -l$libfile"
+    fi
+    libthread=1
+    echo "checking for $libfile ... (specified) yes"
+  fi])
 
 dnl Same deal with includes, and adding a -I to the
 dnl C/CPP flags
 
 AC_ARG_WITH(threadinc, [  --with-threadinc=dir    Location of threads include files],
-	[CPPFLAGS="$CPPFLAGS -I${withval}"
-	libthreadhead=1])
+  [CPPFLAGS="$CPPFLAGS -I${withval}"
+  libthreadhead=1])
 
 dnl ====================================================
 
@@ -133,52 +133,52 @@ dnl If we were (ie. zlib) we need to add -L<directory>
 dnl and -l<file> to the LIBS paramater.
 
 AC_ARG_WITH(zlib, [  --with-zlib=file        Location of compression library file],
-	[if test -f ${withval}; then
-		libdir="`dirname ${withval}`"
-		libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
-		if test ! "x$libdir" = "x$libfile"; then
-			LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
-			export LD_LIBRARY_PATH
-			LIBS="$LIBS -L${libdir}"
-		fi
-		if test ! "x$libfile" = "x"; then
-			LIBS="$LIBS -l$libfile"
-		fi
-		libz=1
-		echo "checking for $libfile ... (specified) yes"
-	fi])
+  [if test -f ${withval}; then
+    libdir="`dirname ${withval}`"
+    libfile="`echo \`basename ${withval}\` | sed -e s,^lib,, -e s,\.a$,, -e s,\.so$,,`"
+    if test ! "x$libdir" = "x$libfile"; then
+      LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${libdir}"
+      export LD_LIBRARY_PATH
+      LIBS="$LIBS -L${libdir}"
+    fi
+    if test ! "x$libfile" = "x"; then
+      LIBS="$LIBS -l$libfile"
+    fi
+    libz=1
+    echo "checking for $libfile ... (specified) yes"
+  fi])
 
 dnl Same deal with includes, and adding a -I to the
 dnl C/CPP flags
 
 AC_ARG_WITH(zinc, [  --with-zinc=dir         Location of compression include files],
-	[if test -f ${withval}/zlib.h; then
-		CPPFLAGS="$CPPFLAGS -I${withval}"
-		libzhead=1
-		ehco "checking for zlib.h ... (specified) yes"
-	fi])
+  [if test -f ${withval}/zlib.h; then
+    CPPFLAGS="$CPPFLAGS -I${withval}"
+    libzhead=1
+    ehco "checking for zlib.h ... (specified) yes"
+  fi])
 
 dnl ====================================================
 
 AC_ARG_WITH(locknode, [  --with-locknode=node    Nodename to lock binary for],
-	[BUILD_NODE=${withval}])
+  [BUILD_NODE=${withval}])
 
 AC_ARG_WITH(locktype, [  --with-locktype=type    System OS/CPU Type to lock binary for],
-	[BUILD_TYPE=${withval}])
+  [BUILD_TYPE=${withval}])
 
 AC_ARG_WITH(lockrel, [  --with-lockrel=rel      OS Release number to lock binary for],
- 	[BUILD_REL=${withval}])
+   [BUILD_REL=${withval}])
 
 AC_ARG_WITH(libdir, [  --with-libdir=dir       Add in search path for libraries],
-	[LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${withval}"
-	export LD_LIBRARY_PATH
-	LIBS="$LIBS -L${withval}"])
+  [LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${withval}"
+  export LD_LIBRARY_PATH
+  LIBS="$LIBS -L${withval}"])
 
 AC_ARG_WITH(lib, [  --with-lib=dir          Add in library],
-	[LIBS="$LIBS -l${withval}"])
+  [LIBS="$LIBS -l${withval}"])
 
 AC_ARG_WITH(include, [  --with-include=dir      Add in search path for includes],
-	[CPPFLAGS="$CPPFLAGS -I${withval}"])
+  [CPPFLAGS="$CPPFLAGS -I${withval}"])
 
 dnl ====================================================
 
@@ -186,13 +186,13 @@ dnl OK, ACE wasnt specified.  See if we can find
 dnl it in the LD_LIBRARY_PATH, if not, error out.
 
 if test 0$libace -eq 0; then
-AC_CHECK_LIB(ACE,	_make_ACE_Naming_Context,
-	[LIBS="$LIBS -lACE"
-	libace=1])
+AC_CHECK_LIB(ACE,  _make_ACE_Naming_Context,
+  [LIBS="$LIBS -lACE"
+  libace=1])
 fi
 
 if test 0$libace -eq 0; then
-	echo "
+  echo "
 ACE (Adaptive Communications Environment) is an essential
 part of Magick II, and is therefore required to compile
 and run it.  ACE could not be found on your system.  If you
@@ -203,7 +203,7 @@ where the includes are aswell, which you may do with the
 ACE_wrappers directory, NOT ACE_wrappers/ace).
 
 You may obtain ACE from http://www.cs.wustl.edu/~schmidt/ACE.html"
-	exit 1
+  exit 1
 fi
 
 dnl ====================================================
@@ -212,23 +212,23 @@ dnl OK, a threads lib wasnt specified.  See if we can
 dnl find one in the LD_LIBRARY_PATH, if not, error out.
 
 if test 0$libthread -eq 0; then
-AC_CHECK_LIB(pthread,	pthread_create,	
-	[LIBS="$LIBS -lpthread"
-	libthread=1])
-if test 0$libthread -eq 0; then
-AC_CHECK_LIB(pth,	pthread_create,	
-	[LIBS="$LIBS -lpth"
-	libthread=1])
-if test 0$libthread -eq 0; then
-AC_CHECK_LIB(thread,	thread_create,	
-	[LIBS="$LIBS -lthread"
-	libthread=1])
-fi
-fi
+  AC_CHECK_LIB(pthread,  pthread_create,  
+    [LIBS="$LIBS -lpthread"
+    libthread=1])
+  if test 0$libthread -eq 0; then
+    AC_CHECK_LIB(pth,  pthread_create,  
+      [LIBS="$LIBS -lpth"
+      libthread=1])
+    if test 0$libthread -eq 0; then
+      AC_CHECK_LIB(thread,  thread_create,  
+        [LIBS="$LIBS -lthread"
+        libthread=1])
+    fi
+  fi
 fi
 
 if test 0$libthread -eq 0; then
-	echo "
+  echo "
 Magick II requires a threads library to exist (and work)
 before it will run.  You do not have any threads
 implementation on your system.  If you have, but it just
@@ -242,7 +242,7 @@ NOTE: BSD threads are internal to libc, and so must pass
       threads, use --enable-bsdthread
 
 You may obtain GNU pth from http://www.gnu.org/software/pth"
-	exit 1
+  exit 1
 fi
 
 dnl ====================================================
@@ -251,19 +251,19 @@ dnl OK, ZLIB wasnt specified.  See if we can find
 dnl it in the LD_LIBRARY_PATH, if not, error out.
 
 if test 0$libz -eq 0; then
-AC_CHECK_LIB(z,		inflate,
-	[LIBS="$LIBS -lz"
-	libz=1])
-if test 0$libz -eq 0; then
-AC_CHECK_LIB(gz,	inflate,
-	[LIBS="$LIBS -lgz"
-	libz=1])
-fi
+  AC_CHECK_LIB(z,    inflate,
+    [LIBS="$LIBS -lz"
+    libz=1])
+  if test 0$libz -eq 0; then
+    AC_CHECK_LIB(gz,  inflate,
+      [LIBS="$LIBS -lgz"
+      libz=1])
+  fi
 fi
 
 
 if test 0$libz -eq 0; then
-	echo "
+  echo "
 The Z compression library (zlib) is required to compile and
 run Magick II.  zlib could not be found on your system.  If
 you have compiled it, please specify the library location with
@@ -273,15 +273,15 @@ where the includes are aswell, you may do this with the
 
 You may obtain zlib from
 ftp://ftp.freesoftware.com/pub/infozip/zlib/index.html"
-	exit 1
+  exit 1
 fi
 
 dnl ====================================================
 
 dnl Unlikely if you are using this that it will be windows ...
 case "$host" in
-	*Windows*)	AC_DEFINE(WIN32) ;;
-	*)		;;
+  *Windows*)  AC_DEFINE(WIN32) ;;
+  *)    ;;
 esac
 
 dnl ====================================================
@@ -292,203 +292,197 @@ dnl ====================================================
 
 AC_ARG_ENABLE(static, [  --enable-static         Create statically linked binaries
   --disable-static        Create dynamically linked binaries (default)],
-	[case "${enableval}" in
-		yes) static=true;;
-		no) static=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for STATIC option);;
-	 esac], [static=false])
+  [case "${enableval}" in
+    yes) static=true;;
+    no) static=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for STATIC option);;
+  esac], [static=false])
 if test "$static" = "true" ; then
    LDFLAGS="$LDFLAGS -static"
 fi
 
 AC_ARG_ENABLE(quick, [  --enable-quick          Do not increment build number
   --disable-quick         Increment build number (default)],
-	[case "${enableval}" in
-		yes) quick=true;;
-		no) quick=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for QUICK option);;
-	 esac], [quick=false])
+  [case "${enableval}" in
+    yes) quick=true;;
+    no) quick=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for QUICK option);;
+  esac], [quick=false])
 AM_CONDITIONAL(INCREMENT, test x$quick = xfalse)
 
 AC_ARG_ENABLE(crypt, [  --enable-crypt            Add encryption to Magick (default)
   --disable-crypt           Remove encryption from Magick],
-	[case "${enableval}" in
-		yes) crypt=true;;
-		no) crypt=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for CRYPT option);;
-	 esac], [crypt=true])
+  [case "${enableval}" in
+    yes) crypt=true;;
+    no) crypt=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for CRYPT option);;
+  esac], [crypt=true])
 if test "$crypt" = "true"; then
-	AC_DEFINE(HASCRYPT)
+  AC_DEFINE(HASCRYPT)
 fi
 
-AC_ARG_ENABLE(trace, [  --enable-trace          Enable TRACE code (little code bloat)
+AC_ARG_ENABLE(trace, [  --enable-trace          Enable TRACE code (code bloat)
   --disable-trace         Disable TRACE code (default)],
-	[case "${enableval}" in
-		yes) trace=true;;
-		no) trace=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for TRACE option);;
-	 esac], [trace=false])
+  [case "${enableval}" in
+    yes) trace=true;;
+    no) trace=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for TRACE option);;
+  esac], [trace=false])
 if test "$trace" = "true"; then
-	AC_DEFINE(MAGICK_TRACE_WORKS)
+  AC_DEFINE(MAGICK_TRACE_WORKS)
 fi
 
-AC_ARG_ENABLE(convert, [  --enable-convert        Enable CONVERSION code
-  --disable-convert       Disable CONVERSION code (default)],
-	[case "${enableval}" in
-		yes) convert=true;;
-		no) convert=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for CONVERT option);;
-	 esac], [convert=false])
+AC_ARG_ENABLE(convert, [  --enable-convert        Enable DB CONVERSION code
+  --disable-convert       Disable DB CONVERSION code (default)],
+  [case "${enableval}" in
+    yes) convert=true;;
+    no) convert=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for CONVERT option);;
+  esac], [convert=false])
 if test "$convert" = "true"; then
-	AC_DEFINE(CONVERT)
+  AC_DEFINE(CONVERT)
 fi
 
 AC_ARG_ENABLE(getpass, [  --enable-getpass        Enable GETPASS instead of SETPASS
   --disable-getpass       Enable SETPASS instead of GETPASS (default)],
-	[case "${enableval}" in
-		yes) getpass=true;;
-		no) getpass=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for GETPASS option);;
-	 esac], [getpass=false])
+  [case "${enableval}" in
+    yes) getpass=true;;
+    no) getpass=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for GETPASS option);;
+  esac], [getpass=false])
 if test "$getpass" = "true"; then
-	AC_DEFINE(GETPASS)
+  AC_DEFINE(GETPASS)
 fi
 
 AC_ARG_ENABLE(locks, [  --enable-locks          Enable thread locking (default)
   --disable-locks         Disable thread locking (dangerous!)],
-	[case "${enableval}" in
-		yes) locks=true;;
-		no) locks=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for LOCKS option);;
-	 esac], [locks=true])
+  [case "${enableval}" in
+    yes) locks=true;;
+    no) locks=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for LOCKS option);;
+  esac], [locks=true])
 if test "$locks" = "true"; then
-	AC_DEFINE(MAGICK_LOCKS_WORK)
+  AC_DEFINE(MAGICK_LOCKS_WORK)
 fi
 
 
-AC_ARG_ENABLE(hostlock, [  --enable-hostlock       Enable binary locking to this host (default)
-  --disable-hostlock      Disable binary locking to this host],
-	[case "${enableval}" in
-		yes) hostlock=true;;
-		no) hostlock=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for HOSTLOCK option);;
-	 esac], [hostlock=true])
+AC_ARG_ENABLE(hostlock, [  --enable-hostlock       Enable binary locking to a host (default)
+  --disable-hostlock      Disable binary locking to a host],
+  [case "${enableval}" in
+    yes) hostlock=true;;
+    no) hostlock=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for HOSTLOCK option);;
+  esac], [hostlock=true])
+
 if test "$hostlock" = "true"; then
-    if test -z "$BUILD_NODE" -o -z "$BUILD_TYPE" -o -z "$BUILD_REL"; then
-	if test -f ace_uname.cpp; then
-	    echo $ac_n "configuring system lock paramaters"" ... $ac_c"
-	    $CXX $LIBS $CPPFLAGS -o ace_uname ace_uname.cpp >/dev/null 2>&1
-	    if test -x ace_uname; then
-		if test -z "$BUILD_NODE"; then
-		    BUILD_NODE="`./ace_uname nodename`"
-		fi
-		if test -z "$BUILD_TYPE"; then
-		    BUILD_TYPE="`./ace_uname sysname`/`./ace_uname machine`"
-		fi
-		if test -z "$BUILD_REL"; then
-		    BUILD_REL="`./ace_uname release`"
-		fi
-		rm -f ace_uname
-		echo "$ac_t""done"
-	    else
-		echo "$ac_t""not done"
-	    fi
-	fi
+  echo $ac_n "configuring system lock paramaters"" ... $ac_c"
+  if test -z "$BUILD_NODE" -o -z "$BUILD_TYPE" -o -z "$BUILD_REL"; then
+    if test -f ace_uname.cpp; then
+      $CXX $LIBS $CPPFLAGS -o ace_uname ace_uname.cpp >/dev/null 2>&1
+      if test -x ace_uname; then
+        if test -z "$BUILD_NODE"; then
+          BUILD_NODE="`./ace_uname nodename`"
+        fi
+        if test -z "$BUILD_TYPE"; then
+          BUILD_TYPE="`./ace_uname sysname`/`./ace_uname machine`"
+        fi
+        if test -z "$BUILD_REL"; then
+          BUILD_REL="`./ace_uname release`"
+        fi
+        rm -f ace_uname
+      fi
     fi
-else
-    unset BUILD_NODE BUILD_TYPE BUILD_REL
-fi
-
-if test -z "$BUILD_NODE" -o -z "$BUILD_TYPE" -o -z "$BUILD_REL"; then
-    unset BUILD_NODE BUILD_TYPE BUILD_REL
-else
+  fi
+  if test -n "$BUILD_NODE" -a -n "$BUILD_TYPE" -a -n "$BUILD_REL"; then
+    echo "$ac_t""done"
     AM_CONDITIONAL(STAMPED, test 1)
+    CPPFLAGS="$CPPFLAGS -DBUILD_NODE=\"\\\"$BUILD_NODE\\\"\" \
+      -DBUILD_TYPE=\"\\\"$BUILD_TYPE\\\"\" \
+      -DBUILD_REL=\"\\\"$BUILD_REL\\\"\""
+  else
+    echo "$ac_t""not done"
+    unset BUILD_NODE BUILD_TYPE BUILD_REL
+  fi
+else
+  unset BUILD_NODE BUILD_TYPE BUILD_REL
 fi
-
 
 AC_ARG_ENABLE(mpatrol, [  --enable-mpatrol        Enable mpatrol (memory debug)
   --disable-mpatrol       Disable mpatrol (default)],
-	[case "${enableval}" in
-		yes) mpatrol=true;;
-		no) mpatrol=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for MPATROL option);;
-	 esac], [mpatrol=false])
+  [case "${enableval}" in
+    yes) mpatrol=true;;
+    no) mpatrol=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for MPATROL option);;
+  esac], [mpatrol=false])
 if test "$mpatrol" = "true"; then
-	AC_DEFINE(MAGICK_USE_MPATROL)
-	LIBS="$LIBS -lmpatrolmt -lbfd -liberty"
+  AC_DEFINE(MAGICK_USE_MPATROL)
+  LIBS="$LIBS -lmpatrolmt -lbfd -liberty"
 fi
 
 
 AC_ARG_ENABLE(efence, [  --enable-efence         Enable Electric Fence (memory debug)
   --disable-efence        Disable Electric Fence (default)],
-	[case "${enableval}" in
-		yes) efence=true;;
-		no) efence=false;;
-		*) AC_MSG_ERROR(bad value ${enableval} for EFENCE option);;
-	 esac], [efence=false])
+  [case "${enableval}" in
+    yes) efence=true;;
+    no) efence=false;;
+    *) AC_MSG_ERROR(bad value ${enableval} for EFENCE option);;
+  esac], [efence=false])
 if test "$efence" = "true"; then
-	AC_DEFINE(MAGICK_USE_EFENCE)
-	LIBS="$LIBS -lefence"
-fi
-
-dnl ====================================================
-
-if test -n "$BUILD_NODE" -o -n "$BUILD_TYPE" -o -n "$BUILD_REL"; then
-	CPPFLAGS="$CPPFLAGS -DBUILD_NODE=\"\\\"$BUILD_NODE\\\"\" \
-		-DBUILD_TYPE=\"\\\"$BUILD_TYPE\\\"\" \
-		-DBUILD_REL=\"\\\"$BUILD_REL\\\"\""
+  AC_DEFINE(MAGICK_USE_EFENCE)
+  LIBS="$LIBS -lefence"
 fi
 
 dnl ====================================================
 
 if test 0$libacehead -eq 0; then
-AC_CHECK_HEADER(ace/OS.h, [libacehead=1])
+  AC_CHECK_HEADER(ace/OS.h, [libacehead=1])
 fi
 
 if test 0$libacehead -eq 0; then
-	echo "
+  echo "
 The ACE library has been found, however you must specify
 the location of its header files with the --with-aceinc
 paramater (this should point to your ACE_wrappers directory,
 NOT ACE_wrappers/ace)."
-	exit 1
+  exit 1
 fi
 
 if test 0$libthreadhead -eq 0; then
-AC_CHECK_HEADER(pthread.h, [libthreadhead=1])
-if test 0$libthreadhead -eq 0; then
-AC_CHECK_HEADER(pthreads.h, [libthreadhead=1])
-if test 0$libthreadhead -eq 0; then
-AC_CHECK_HEADER(thread.h, [libthreadhead=1])
-fi
-fi
+  AC_CHECK_HEADER(pthread.h, [libthreadhead=1])
+  if test 0$libthreadhead -eq 0; then
+    AC_CHECK_HEADER(pthreads.h, [libthreadhead=1])
+    if test 0$libthreadhead -eq 0; then
+      AC_CHECK_HEADER(thread.h, [libthreadhead=1])
+    fi
+  fi
 fi
 
 if test 0$libacehead -eq 0; then
-	echo "
+  echo "
 A threads library has been found, however you must specify
 the location of its header files with the --with-threadinc
 paramater."
-	exit 1
+  exit 1
 fi
 
 if test 0$libzhead -eq 0; then
-AC_CHECK_HEADER(zlib.h, [libzhead=1])
+  AC_CHECK_HEADER(zlib.h, [libzhead=1])
 fi
 
 if test 0$libacehead -eq 0; then
-	echo "
+  echo "
 The Z library has been found, however you must specify the
 location of its header files with the --with-zinc paramater."
-	exit 1
+  exit 1
 fi
 
-dnl Find out which to use for C++ headers ...
+dnl Find out which to use for C headers ...
 AC_CHECK_HEADERS(mpatrol.h)
 AC_CHECK_HEADERS(termio.h)
 
+dnl Find out which to use for C++ headers ...
 AC_CHECK_HEADERS(exception, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)],
-	[AC_CHECK_HEADERS(exception.h, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)])])
+  [AC_CHECK_HEADERS(exception.h, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)])])
 AC_CHECK_HEADERS(list)
 AC_CHECK_HEADERS(map)
 AC_CHECK_HEADERS(queue)
@@ -498,6 +492,7 @@ AC_CHECK_HEADERS(string)
 AC_CHECK_HEADERS(utility)
 AC_CHECK_HEADERS(vector)
 
+dnl Find out which functions we must provide ...
 AC_CHECK_FUNCS(itoa)
 AC_CHECK_FUNCS(ltoa)
 AC_CHECK_FUNCS(ftoa)
@@ -521,8 +516,8 @@ $CC -o .max_keylen .max_keylen.c
 keylen=`./.max_keylen`; rm -f .max_keylen*
 
 fill="."
-while test `echo $fill | wc -c` -lt $keylen
-do	fill=`echo $fill | sed "s/\./\.\./g"`
+while test `echo $fill | wc -c` -lt $keylen; do
+  fill=`echo $fill | sed "s/\./\.\./g"`
 done
 len=`expr $keylen - 2`
 str="| Magick II Key Stamp 1 $fill"

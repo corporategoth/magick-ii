@@ -28,6 +28,10 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.182  2001/07/01 05:02:45  prez
+** Added changes to dependancy system so it wouldnt just remove a dependancy
+** after the first one was satisfied.
+**
 ** Revision 1.181  2001/06/17 09:39:07  prez
 ** Hopefully some more changes that ensure uptime (mainly to do with locking
 ** entries in an iterated search, and using copies of data instead of references
@@ -5122,7 +5126,9 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else if (msgtype=="SZLINE")
 	{
-	    // Ignore ...
+	    // Auto remove ... on relic IRCD, ignor otherwise
+	    if (proto.Number() == 53)
+		sraw("UNSZLINE " + params.ExtractWord(1, ": "));
 	}
 	else
 	{
@@ -5173,7 +5179,7 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 	    else
 	    {
 		LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
-			"MODE", source, params.ExtractWord(1, ": ")));
+			"TOPIC", source, params.ExtractWord(1, ": ")));
 	    }
 	}
 	else if (msgtype=="TRACE")
