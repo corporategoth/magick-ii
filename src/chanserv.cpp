@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.257  2001/07/05 15:23:53  prez
+** Fixed the channel topic carryover
+**
 ** Revision 1.256  2001/07/05 05:59:08  prez
 ** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
@@ -2967,6 +2970,9 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     l_Mlock_Off=in.l_Mlock_Off;
     i_Mlock_Key=in.i_Mlock_Key;
     i_Mlock_Limit=in.i_Mlock_Limit;
+    i_Topic=in.i_Topic;
+    i_Topic_Setter=in.i_Topic_Setter;
+    i_Topic_Set_Time=in.i_Topic_Set_Time;
 
     i_Bantime=in.i_Bantime;
     l_Bantime=in.l_Bantime;
@@ -3860,21 +3866,21 @@ unsigned int Chan_Stored_t::Mlock_Limit() const
 
 mstring Chan_Stored_t::Last_Topic() const
 {
-    NFT("Chan_Stored_t::i_Topic");
+    NFT("Chan_Stored_t::Last_Topic");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
     RET(i_Topic);
 }
 
 mstring Chan_Stored_t::Last_Topic_Setter() const
 {
-    NFT("Chan_Stored_t::i_Topic_Setter");
+    NFT("Chan_Stored_t::Last_Topic_Setter");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
     RET(i_Topic_Setter);
 }
 
 mDateTime Chan_Stored_t::Last_Topic_Set_Time() const
 {
-    NFT("Chan_Stored_t::i_Topic_Set_Time");
+    NFT("Chan_Stored_t::Last_Topic_Set_Time");
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
     RET(i_Topic_Set_Time);
 }

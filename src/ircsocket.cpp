@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.173  2001/07/05 15:23:54  prez
+** Fixed the channel topic carryover
+**
 ** Revision 1.172  2001/07/05 05:59:11  prez
 ** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
@@ -1422,6 +1425,28 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
 		    {
 			Parent->nickserv.RemLive(e.what());
+		    }
+		    break;
+		default:
+		    break;
+		}
+		break;
+	    default:
+		break;
+	}
+    }
+    catch (E_ChanServ_Stored &e)
+    {
+	switch(e.where())
+	{
+	    case E_ChanServ_Stored::W_Get:
+		switch (e.type())
+		{
+		case E_ChanServ_Stored::T_Invalid:
+		case E_ChanServ_Stored::T_Blank:
+		    if (strlen(e.what()) && Parent->chanserv.IsStored(e.what()))
+		    {
+			Parent->chanserv.RemStored(e.what());
 		    }
 		    break;
 		default:
