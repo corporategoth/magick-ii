@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.99  2000/09/06 12:10:14  prez
+** OOps, fixed compile error with operserv
+**
 ** Revision 1.98  2000/09/06 11:27:33  prez
 ** Finished the T_Modify / T_Changing traces, fixed a bug in clone
 ** adding (was adding clone liimt as the mask length), updated docos
@@ -2452,7 +2455,8 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	return;
     }
-    unsigned int i;
+
+    unsigned int i, num;
     bool super = (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 	Parent->commserv.list[Parent->commserv.SADMIN_Name().UpperCase()].IsOn(source));
     // i+1 below because unsigned i will always be >= 0
@@ -2488,7 +2492,7 @@ void OperServ::do_clone_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    unsigned int num = ACE_OS::atoi(amount.c_str());
+    num = ACE_OS::atoi(amount.c_str());
     if (num < 1 || num > Parent->operserv.Max_Clone())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
