@@ -104,9 +104,9 @@ void wxLogGeneric(wxLogLevel level, const char *szFormat, ...)
 IMPLEMENT_LOG_FUNCTION(FatalError)
 IMPLEMENT_LOG_FUNCTION(Error)
 IMPLEMENT_LOG_FUNCTION(Warning)
-IMPLEMENT_LOG_FUNCTION(Message)
+IMPLEMENT_LOG_FUNCTION(Notice)
 IMPLEMENT_LOG_FUNCTION(Info)
-IMPLEMENT_LOG_FUNCTION(Status)
+IMPLEMENT_LOG_FUNCTION(Debug)
 
 // same as info, but only if 'verbose' mode is on
 void wxLogVerbose(const char *szFormat, ...)
@@ -122,46 +122,6 @@ void wxLogVerbose(const char *szFormat, ...)
     wxLog::OnLog(wxLOG_Info, s_szBuf);
   }
 }
-
-// debug functions
-#ifdef DEBUG
-#define IMPLEMENT_LOG_DEBUG_FUNCTION(level)                       \
-  void wxLog##level(const char *szFormat, ...)                    \
-  {                                                               \
-    if ( wxLog::GetActiveTarget() != NULL ) {                     \
-      va_list argptr;                                             \
-      va_start(argptr, szFormat);                                 \
-      vsprintf(s_szBuf, szFormat, argptr);                        \
-      va_end(argptr);                                             \
-                                                                  \
-      wxLog::OnLog(wxLOG_##level, s_szBuf);                       \
-    }                                                             \
-  }
-
-  void wxLogTrace(wxTraceMask mask, const char *szFormat, ...)
-  {
-    wxLog *pLog = wxLog::GetActiveTarget();
-
-    // we check that all of mask bits are set in the current mask, so
-    // that wxLogTrace(wxTraceRefCount | wxTraceOle) will only do something
-    // if both bits are set.
-    if ( pLog != NULL && ((pLog->GetTraceMask() & mask) == mask) ) 
-	{
-      va_list argptr;
-      va_start(argptr, szFormat);
-      vsprintf(s_szBuf, szFormat, argptr);
-      va_end(argptr);
-
-      wxLog::OnLog(wxLOG_Trace, s_szBuf);
-    }
-  }
-
-#else // release
-  #define IMPLEMENT_LOG_DEBUG_FUNCTION(level)
-#endif
-
-IMPLEMENT_LOG_DEBUG_FUNCTION(Debug)
-IMPLEMENT_LOG_DEBUG_FUNCTION(Trace)
 
 // wxLogSysError: one uses the last error code, for other  you must give it
 // explicitly
@@ -285,25 +245,12 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
 
     case wxLOG_Info:
       if ( GetVerbose() )
-    case wxLOG_Message:
+    case wxLOG_Notice:
         DoLogString((str + szString).c_str());
       // fall through
 
-    case wxLOG_Status:
-      // nothing to do
-      break;
-
-    case wxLOG_Trace:
     case wxLOG_Debug:
-      #ifdef DEBUG
-              DoLogString(str << (level == wxLOG_Trace ? "Trace" : "Debug")
-                              << ": " << szString);
-      // JACS: we don't really want to prefix with 'Debug'. It's just extra
-      // verbiage.
-      // Ungod: yes we do, it's extra clarification
-      //        DoLogString(szString);
-      #endif
-
+      // nothing to do
       break;
 
     default:
@@ -366,7 +313,6 @@ wxLogStderr::~wxLogStderr()
 wxLog      *wxLog::ms_pLogger      = (wxLog *) NULL;
 bool        wxLog::ms_doLog        = true;
 bool        wxLog::ms_bAutoCreate  = true;
-wxTraceMask wxLog::ms_ulTraceMask  = (wxTraceMask)0;
 
 // ----------------------------------------------------------------------------
 // stdout error logging helper

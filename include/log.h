@@ -31,23 +31,13 @@ enum
   wxLOG_FatalError, // program can't continue, abort immediately
   wxLOG_Error,      // a serious error, user must be informed about it
   wxLOG_Warning,    // user is normally informed about it but may be ignored
-  wxLOG_Message,    // normal message (i.e. normal output of a non GUI app)
+  wxLOG_Notice,     // normal message (i.e. normal output of a non GUI app)
   wxLOG_Info,       // informational message (a.k.a. 'Verbose')
-  wxLOG_Status,     // informational: might go to the status line of GUI app
-  wxLOG_Debug,      // never shown to the user, disabled in release mode
-  wxLOG_Trace,      // trace messages are also only enabled in debug mode
+  wxLOG_Debug,      // outputted only when run in debug mode
   wxLOG_Progress,   // used for progress indicator (not yet)
   wxLOG_User = 100  // user defined levels start here
 };
 
-// meaning of different bits of the trace mask (which allows selectively
-// enable/disable some trace messages)
-#define wxTraceMemAlloc 0x0001  // trace memory allocation (new/delete)
-#define wxTraceMessages 0x0002  // trace window messages/X callbacks
-#define wxTraceResAlloc 0x0004  // trace GDI resource allocation
-#define wxTraceRefCount 0x0008  // trace various ref counting operations
-
-typedef unsigned long wxTraceMask;
 typedef unsigned long wxLogLevel;
 
 // ----------------------------------------------------------------------------
@@ -94,7 +84,7 @@ public:
     // change log target, pLogger may be NULL
   static wxLog *SetActiveTarget(wxLog *pLogger);
 
-  // functions controlling the default wxLog behaviour
+    // functions controlling the default wxLog behaviour
     // verbose mode is activated by standard command-line '-verbose' option
   void SetVerbose(bool bVerbose = true) { m_bVerbose = bVerbose; }
     // sets the format for timestamp prepended by wxLog::DoLog(): it's
@@ -102,8 +92,6 @@ public:
     // no time stamp at all if szTF is NULL or empty
     // NB: the string is not copied, so it's lifetime must be long enough!
   void SetTimeStampFormat(const char *szTF) { m_szTimeFormat = szTF; }
-    // trace mask (see wxTraceXXX constants for details)
-  static void SetTraceMask(wxTraceMask ulMask) { ms_ulTraceMask = ulMask; }
     // should GetActiveTarget() try to create a new log object if the current
     // is NULL?
   static void DontCreateOnDemand() { ms_bAutoCreate = false; }
@@ -113,8 +101,6 @@ public:
   bool GetVerbose() const { return m_bVerbose; }
     // get current time format
   const char *GetTimeStampFormat() const { return m_szTimeFormat; }
-    // get trace mask
-  static wxTraceMask GetTraceMask() { return ms_ulTraceMask; }
 
   // make dtor virtual for all derived classes
   virtual ~wxLog() { }
@@ -143,7 +129,6 @@ private:
   static wxLog      *ms_pLogger;      // currently active log sink
   static bool        ms_doLog;        // false => all logging disabled
   static bool        ms_bAutoCreate;  // automatically create new log targets?
-  static wxTraceMask ms_ulTraceMask;  // controls wxLogTrace behaviour
 };
 
 // ----------------------------------------------------------------------------
@@ -217,13 +202,13 @@ DECLARE_LOG_FUNCTION2(Generic, wxLogLevel level);
 DECLARE_LOG_FUNCTION(FatalError);
 DECLARE_LOG_FUNCTION(Error);
 DECLARE_LOG_FUNCTION(Warning);
-DECLARE_LOG_FUNCTION(Message);
+DECLARE_LOG_FUNCTION(Notice);
 DECLARE_LOG_FUNCTION(Info);
 DECLARE_LOG_FUNCTION(Verbose);
 
 // this function sends the log message to the status line of the top level
 // application frame, if any
-DECLARE_LOG_FUNCTION(Status);
+DECLARE_LOG_FUNCTION(Debug);
 
 // additional one: as wxLogError, but also logs last system call error code
 // and the corresponding error message if available
@@ -232,22 +217,6 @@ DECLARE_LOG_FUNCTION(SysError);
 // and another one which also takes the error code (for those broken APIs
 // that don't set the errno (like registry APIs in Win32))
 DECLARE_LOG_FUNCTION2(SysError, long lErrCode);
-
-// debug functions do nothing in release mode
-#ifdef  DEBUG
-  DECLARE_LOG_FUNCTION(Debug);
-
-  // first king of LogTrace is uncoditional: it doesn't check the level,
-  // while the second one does nothing if all of level bits are not set
-  // in wxLog::GetActive()->GetTraceMask().
-  DECLARE_LOG_FUNCTION(Trace);
-  DECLARE_LOG_FUNCTION2(Trace, wxTraceMask mask);
-#else   //!debug
-  // these functions do nothing
-  inline void wxLogDebug(const char *, ...) { }
-  inline void wxLogTrace(const char *, ...) { }
-  inline void wxLogTrace(wxTraceMask, const char *, ...) { }
-#endif
 
 // are we in 'verbose' mode?
 // (note that it's often handy to change this var manually from the
