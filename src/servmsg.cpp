@@ -1055,7 +1055,7 @@ void ServMsg::do_Stats(const mstring & mynick, const mstring & source, const mst
     }
 
     SEND(mynick, source, "STATS/GEN_UPTIME", (Magick::StartTime().Ago()));
-    if (Magick::StartTime() != Magick::instance().ResetTime())
+    if (Magick::StartTime().asSeconds() != Magick::instance().ResetTime().asSeconds())
 	SEND(mynick, source, "STATS/GEN_RESET", (Magick::instance().ResetTime().Ago()));
     SEND(mynick, source, "STATS/GEN_MAXUSERS", (Magick::instance().server.UserMax()));
     size_t opers = 0;
