@@ -119,6 +119,7 @@ public:
 	ChanServ chanserv;
 	NickServ nickserv;
 	NetworkServ server;
+	LoggerTask loggertask;
 
 protected:
 	bool i_shutdown;

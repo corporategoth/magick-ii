@@ -24,6 +24,7 @@
 
 #include "trace.h"
 #include "lockable.h"
+#include "magick.h"
 
 mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB", "LOST" };
 Trace::level_enum Trace::SLevel = Off;
@@ -114,8 +115,14 @@ void ThreadID::WriteOut(const mstring &message)
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";
     finalout += message;
-    *out << finalout << wxEndL;
-    out->Sync();
+    if(t_internaltype!=tt_MAIN&&i_Parent!=NULL)
+	i_Parent->loggertask.logmessage(out,finalout);
+    else
+    {
+	*out << finalout << wxEndL;
+	out->Sync();
+    }
+
 }
 
 // ===================================================
@@ -412,4 +419,6 @@ void LoggerTask::logmessage(wxOutputStream *out,const mstring& data)
 void LoggerTask::logmessage_i(wxOutputStream *out,const mstring& data)
 {
     //
+    *out << data.c_str() << wxEndL;
+    out->Sync();
 }
