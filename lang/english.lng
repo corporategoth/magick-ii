@@ -178,7 +178,8 @@ KILL_GHOST         =GHOST command used
 KILL_RECOVER       =RECOVER command used
 KILL_OPERDENY      =Tried to /OPER when DENIED
 KICK_RESTRICTED    =This channel is restricted.
-RENAMED            =You have been renamed for failure to identify.
+RENAMED_IDENT      =You have been renamed for failure to identify.
+RENAMED_FORBID     =You have been renamed as your nickname was forbidden.
 
 NICK_GETPASS       =%s just performed a GETPASS on nickname %s (%s).
 CHAN_GETPASS       =%s just performed a GETPASS on channel %s (%s).

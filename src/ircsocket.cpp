@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2000/06/25 11:58:03  prez
+** Fixed problem where messages from nickserv about killing user would not
+** be sent out (people would not know a nick was forbidden).
+**
 ** Revision 1.113  2000/06/25 10:32:41  prez
 ** Fixed channel forbid.
 **
@@ -1082,13 +1086,21 @@ int EventTask::svc(void)
 		{
 		    Parent->server.SVSNICK(Parent->nickserv.FirstName(),
 			oldnick, newnick);
-		    send(Parent->nickserv.FirstName(), newnick,
-			Parent->getMessage(newnick, "MISC/RENAMED"));
+		    if (nsi->second.Forbidden())
+			send(Parent->nickserv.FirstName(), newnick,
+				Parent->getMessage(newnick, "MISC/RENAMED_FORBID"));
+		    else
+			send(Parent->nickserv.FirstName(), newnick,
+				Parent->getMessage(newnick, "MISC/RENAMED_IDENT"));
 		}
 		else
 		{
-		    Parent->server.KILL(Parent->nickserv.FirstName(),
-			oldnick, Parent->getMessage("NS_SET/PROTECT"));
+		    if (nsi->second.Forbidden())
+			Parent->server.KILL(Parent->nickserv.FirstName(),
+				oldnick, Parent->getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
+		    else
+			Parent->server.KILL(Parent->nickserv.FirstName(),
+				oldnick, Parent->getMessage("NS_SET/PROTECT"));
 		    Parent->server.NICK(oldnick, (Parent->startup.Ownuser() ?
 				    oldnick.LowerCase() :
 				    Parent->startup.Services_User()),

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2000/06/25 11:58:03  prez
+** Fixed problem where messages from nickserv about killing user would not
+** be sent out (people would not know a nick was forbidden).
+**
 ** Revision 1.110  2000/06/25 10:32:41  prez
 ** Fixed channel forbid.
 **
@@ -1266,15 +1270,17 @@ void Nick_Live_t::Name(mstring in)
     {
 	if (Parent->nickserv.stored[i_Name.LowerCase()].Forbidden())
 	{
-	    Parent->nickserv.send(i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/FORBIDDEN"),
-						ToHumanTime(Parent->nickserv.Ident()).c_str());
+	    Parent->nickserv.send(Parent->nickserv.FirstName(),
+		i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/FORBIDDEN"),
+		ToHumanTime(Parent->nickserv.Ident()).c_str());
 	    return;
 	}
 	else if (Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
 	    Parent->nickserv.stored[i_Name.LowerCase()].Signon(i_realname, Mask(U_P_H).After("!"));
 	else if (Parent->nickserv.stored[i_Name.LowerCase()].Protect())
-	    Parent->nickserv.send(i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PROTECTED"),
-					ToHumanTime(Parent->nickserv.Ident()).c_str());
+	    Parent->nickserv.send(Parent->nickserv.FirstName(),
+		i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PROTECTED"),
+		ToHumanTime(Parent->nickserv.Ident()).c_str());
     }
 
     // Send notices for committees we were NOT on

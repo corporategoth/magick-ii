@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.108  2000/06/25 11:58:03  prez
+** Fixed problem where messages from nickserv about killing user would not
+** be sent out (people would not know a nick was forbidden).
+**
 ** Revision 1.107  2000/06/25 07:58:50  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -2538,15 +2542,16 @@ void NetworkServ::execute(const mstring & data)
 		
 		    if (Parent->nickserv.stored[sourceL].Forbidden())
 		    {
-			Parent->nickserv.send(sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-						ToHumanTime(Parent->nickserv.Ident()).c_str());
+			Parent->nickserv.send(Parent->nickserv.FirstName(),
+				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
+				ToHumanTime(Parent->nickserv.Ident()).c_str());
 		    }
 		    else if (Parent->nickserv.stored[sourceL].Protect() &&
 		    	     !Parent->nickserv.stored[sourceL].IsOnline())
 		    {
-			Parent->nickserv.send(sourceL,
-			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-			    ToHumanTime(Parent->nickserv.Ident()).c_str());
+			Parent->nickserv.send(Parent->nickserv.FirstName(),
+				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
+				ToHumanTime(Parent->nickserv.Ident()).c_str());
 		    }
 		}
 	    }
@@ -3017,15 +3022,16 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		if (Parent->nickserv.stored[sourceL].Forbidden())
 		{
-		    Parent->nickserv.send(sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-						ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    Parent->nickserv.send(Parent->nickserv.FirstName(),
+			sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
+			ToHumanTime(Parent->nickserv.Ident()).c_str());
 		}
 		else if (Parent->nickserv.stored[sourceL].Protect() &&
 			!Parent->nickserv.stored[sourceL].IsOnline())
 		{
-		    Parent->nickserv.send(sourceL,
-			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-					ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    Parent->nickserv.send(Parent->nickserv.FirstName(),
+			sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
+			ToHumanTime(Parent->nickserv.Ident()).c_str());
 		}
 	    }
 	}
@@ -3358,15 +3364,16 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		if (Parent->nickserv.stored[sourceL.LowerCase()].Forbidden())
 		{
-		    Parent->nickserv.send(sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-						ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    Parent->nickserv.send(Parent->nickserv.FirstName(),
+			sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
+			ToHumanTime(Parent->nickserv.Ident()).c_str());
 		}
 		else if (Parent->nickserv.stored[sourceL].Protect() &&
 			!Parent->nickserv.stored[sourceL].IsOnline())
 		{
-		    Parent->nickserv.send(sourceL,
-			    Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-					ToHumanTime(Parent->nickserv.Ident()).c_str());
+		    Parent->nickserv.send(Parent->nickserv.FirstName(),
+			sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
+			ToHumanTime(Parent->nickserv.Ident()).c_str());
 		}
 	    }
 	}
