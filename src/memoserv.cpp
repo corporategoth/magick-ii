@@ -2340,6 +2340,8 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
 	    RLOCK((lck_MemoServ, lck_nick, who.LowerCase()));
 	    MemoServ::nick_memo_t::iterator iter = Magick::instance().memoserv.NickMemoBegin(who);
 	    for (i = 1; i < num; iter++, i++);
+
+	    recipiant = iter->Sender();
 	    if (iter->File())
 		output =
 		    parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY_ARG"),
