@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.177  2001/06/03 05:04:53  prez
+** small fixes in operdeny and akill adding
+**
 ** Revision 1.176  2001/05/28 11:17:35  prez
 ** Added some more anti-deadlock stuff, and fixed nick ident warnings
 **
@@ -1693,7 +1696,7 @@ void Server::AKILL(const mstring& host, const mstring& reason,
     for (j=0; j<killusers.size(); j++)
     {
 	if (proto.Akill() < 2000)
-	    Parent->server.KILL(killer, killusers[j], reason);
+	    Parent->server.KILL(Parent->operserv.FirstName(), killusers[j], reason);
 	else
 	    mMessage::CheckDependancies(mMessage::NickNoExists, killusers[j]);
     }

@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.125  2001/06/03 05:04:53  prez
+** small fixes in operdeny and akill adding
+**
 ** Revision 1.124  2001/05/17 19:18:55  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -3410,10 +3413,10 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
 	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).Matches(host, true))
 	{
 	    // IF user is recognized and on sadmin, ignore.
-	    if (!(Parent->nickserv.IsStored(nlive->first) &&
+	    if (Parent->nickserv.IsStored(nlive->first) &&
 		Parent->nickserv.GetStored(nlive->first).IsOnline() &&
 		Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(nlive->first)))
+		Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(nlive->first))
 		continue;
 	    if (!Parent->server.proto.SVSMODE().empty())
 	    {
