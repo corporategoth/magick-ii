@@ -4,6 +4,9 @@
 ;
 ; Portuguese On-Line Language File
 ; Translated By: Bill Madeira <billm@surlink.net>
+; Please also edit the ERR_SYNTAX/TRANSLATED token to
+; reflect the above (this is displayed when someone
+; switches to your language).
 ;
 ; --------------------------------------------------------------
 ;

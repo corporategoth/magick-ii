@@ -1,11 +1,12 @@
 ; Magick IRC Services
-; (c) 1996-1999 Preston A. Elder, W. King
+; (c) 1997-2001 Preston A. Elder <prez@magick.tm>
+; (c) 1998-2001 William King <ungod@magick.tm>
 ;
 ; French On-Line Language File
-; Traduit par: Corvaisier francois <francois.corvaisier@idf.isismpp.fr>
-; Regarder aussi le fichier ERR_SYNTAX/TRANSLATED 
-; marque pour refleter ce qui precede (affiche quand quelq'un choisit votre 
-; langue).
+; Translated By: Corvaisier francois <francois.corvaisier@idf.isismpp.fr>
+; Please also edit the ERR_SYNTAX/TRANSLATED token to
+; reflect the above (this is displayed when someone
+; switches to your language).
 ;
 ; --------------------------------------------------------------
 ;

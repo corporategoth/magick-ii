@@ -1,0 +1,342 @@
+; Magick IRC Services
+; (c) 1997-2001 Preston A. Elder <prez@magick.tm>
+; (c) 1998-2001 William King <ungod@magick.tm>
+;
+; Swedish Log Output Language File
+; Translated By: Tommy Löfstedt <invaluable@hotmail.com>
+; Please also edit the COMMANDLINE/TRANSLATED token
+; to reflect the above (this is displayed on startup).
+;
+; --------------------------------------------------------------
+;
+; Denna fil är uppdelad i olika sektioner.  Detta så att
+; uppdelningen av gensvaren blir så logisk som möjligt.  OM du
+; ändrar sektionernas namn, eller gensvarens 'taggar' inom dem,
+; kommer inte Magick fungera som det ska.  OM du är utvecklare
+; och lägger till nya sektioner, var god observera att de INTE
+; kan ha '/' (slash, snedstreck) eller blanktecken (mellanslag,
+; tab) i namnen.
+;
+; Denna fil innehåller olika koder som ersätts med värden
+; direkt från Magick.  Se tabell nedan med koderna och deras
+; betydelse.  Alla rader i filen som börjar med ';' (semikolon,
+; som denna rad) är kommentarer.  Om din svarssträng har
+; inledande blanktecken, måste du ha ett '\' (backslash,
+; bakåtvänt-snedstreck) före första mellanslaget, annars
+; ignoreras de inledande blanktecknen.
+;
+; I varje sträng är det (eller kan det vara) $, som
+; ersättningstoken, där nummret efter tecknet '$' är den
+; parameter som ska ersätta '$x'.  Du kan ändra parametrarnas
+; ordning (eller ta bort dem) genom att helt enkelt byta
+; plats på dessa nummer.  När du börjar ett nummer med siffran
+; 0 tolkas de efterföljande siffrorna som ett eget tal
+; (användbart om du vill skriva ut ett tal direkt efter en
+; parameter).  Ex. $1$0123 skriver ut det som är i $1 och
+; efterföljs omedelbart av talet 123 (nollan ignoreras). Du
+; kan inte ändra parametrarnas format.
+;
+; ÖA: Vissa ord är svåra att översätta och vissa meningar har
+; egentligen ingen svensk motsvarighet.  Detta har resulterat i
+; att det på vissa ställen är 'svengelska'.  Vissa ord har jag
+; valt att konsekvent låta vara engelska, detta då inget svenskt
+; ord riktigt passar.  Hoppas du kan ha överseende med detta.
+;
+; --------------------------------------------------------------
+;
+
+;
+; Detta är utskrifterna vid kommandorads eller konfigurations inställningar.
+;
+[COMMANDLINE]
+TRANSLATED       =Tommy Löfstedt <invaluable@hotmail.com>
+UNKNOWN_OPTION   =Okännt kommando $1, ignoreras.
+NEEDPARAM        =Kommandot $1 kräver en parameter.
+MUSTBENUMBER     =Parametern till $1 måste vara ett positivt tal.
+TIMEORZERO       =Tidsvärdet du angett är inte godkännt eller noll för värdet $1.
+VALUETOOHIGH     =Värdet du angett för $1 måste vara mindre än eller lika med $2.
+NO_CFG_FILE      =Kan inte läsa konfigurationsfilen $1, avbryter.
+STOP             =KONFIGURATION: [Uppstart] STOPP-kod mottagen.
+ACTIVE           =$1 är redan aktiv eller så finns det en inaktiv PID fil, var god döda (eller ta bort) den innan du startar om.
+RECONNECT        =Återansluter till server på grund av att konfigurationen ändrats.
+CANNOT_CONVERT   =Databastypen $1 är ogiltig (avbryter).
+NO_KEYFILE       =Lösenordsfilen $1 finns inte.
+NONOPTION        =Endast inställningsargument tillåtna.
+ONEOPTION        =Du kan endast ange EN parameter efter en grupp av alternativ.
+TRACE_SYNTAX     =Parametern för --trace måste vara i formatet TYP:NIVÅ
+ZERO_LEVEL       =Noll eller fel vid tolkning av spårningsnivån, ignorerar.
+CFG_SYNTAX       =Konfigurationsalternativet "$1" innehåller syntaxfel eller ogiltliga data.
+UNKNOWN_PROTO    =Okännt protokoll $1, grundinställningsvärdet ($2) används.
+START_LANG       =Laddar Standardspråkfilen ...
+START_FORK       =Skapar i bakgrunden ...
+START_EVENTS     =Startar händelsemotorn ...
+START_CALIBRATE  =Kalibrerar trådtrösklarna ...
+START_COMPLETE   =$1 $2 uppstartsprocess klar.
+STOP_EVENTS      =Stannar händelsemotorn ...
+STOP_COMPLETE    =$1 $2 avstängningsprocess klar.
+
+;
+; Dessa används när ett kommando exekveras från NickServ.
+;
+[NICKSERV]
+REGISTER         =$1 registrerade aliaset $2.
+DROP             =$1 avsade sig aliaset $2 ($3 slavar).
+LINK             =$1 länkade aliaset $2 till $3.
+UNLINK           =$1 avlänkade aliaset $2 från $3.
+HOST             =$1 ändrade värdalias från $2 till $3.
+IDENTIFY         =$1 identifierade sig som $2.
+IDENTIFY_FAILED  =$1 misslyckades att identifiera sig som $2.
+GHOST            =$1 dödade aliaset $2 med ghost kommandot.
+RECOVER          =$1 begärde att services skulle återta aliaset $2.
+SUSPEND          =$1 avsatte $2 då denne $3.
+UNSUSPEND        =$1 tog bort avsättningen från $2.
+FORBID           =$1 förbjöd $2 från att registreras.
+GETPASS          =$1 mottog lösenordet till $2 ($3).
+ACCESS_ADD       =$1 lade till värdmasken $2 till aliaset $3.
+ACCESS_DEL       =$1 tog bort värdmasken $2 från aliaset $3.
+IGNORE_ADD       =$1 lade till aliaset $2 till ignorera-listan åt $3.
+IGNORE_DEL       =$1 tog bort aliaset $2 från ignorera-listan åt $3.
+PICTURE_ADD      =$1 lade till en bild åt alias $2 ($3 - $4).
+PICTURE_DEL      =$1 tog bort en bild från aliaset $2.
+SET_PASSWORD     =$1 ändrade lösenordet åt alias $2.
+SET              =$1 satte värdet för $2 åt aliaset $3 till $4.
+UNSET            =$1 tog bort värdet för $2 åt aliaset $3.
+LOCK             =$1 låste värdet för $2 åt aliaset $3 till $4.
+UNLOCK           =$1 låste upp värdet för $2 åt aliset $3.
+
+;
+; Dessa används när ett kommando exekveras från ChanServ.
+;
+[CHANSERV]
+REGISTER         =$1 registrerade kanalen $2.
+DROP             =$1 avsade sig kanalen $2 ($3).
+IDENTIFY         =$1 identifierade sig som grundare till kanalen $2.
+IDENTIFY_FAILED  =$1 misslyckades att identifiera sig som grundare till kanalen $2.
+SUSPEND          =$1 avsatte kanalen $2 då den $3.
+UNSUSPEND        =$1 tog bort avsättningen från kanalen $2.
+FORBID           =$1 förbjöd kanalen $2 från att registreras.
+GETPASS          =$1 mottog lösenordet för kanalen $2 ($3).
+MODE             =$1 ändrade läget "$2" i kanalen $3 med MODE kommandot.
+OP               =$1 gav $2 op i kanalen $3 med OP kommandot.
+DEOP             =$1 tog bort $2's op i kanalen $3 med DEOP kommandot.
+VOICE            =$1 gav $2 voice i kanalen $3 med VOICE kommandot.
+DEVOICE          =$1 tog bort $2's voice i kanalen $3 med DEVOICE kommandot.
+TOPIC            =$1 satte topicen i $2 med TOPIC kommandot.
+KICK             =$1 kickade $2 från kanalen $3 med KICK kommandot.
+ANONKICK         =$1 kickade $2 anonymt från kanalen $3 med REMOVE kommandot.
+INVITE           =$1 inbjöd $2 att komma till kanalen $3 med INVITE kommandot.
+UNBAN            =$1 tog bort bannlysningen av $2 från kanalen $3 med UNBAN kommandot.
+COMMAND          =$1 exekverade $2 kommandot i kanalen $3.
+LEVEL            =$1 ändrade nivån för $2 till $3 i kanalen $4.
+ACCESS_ADD       =$1 lade till $2 till behörighetslistan i kanalen $3. Nivå: $4.
+ACCESS_CHANGE    =$1 ändrade nivån för $2 på behörighetslistan i $3 till $4.
+ACCESS_DEL       =$1 tog bort $2 från behörighetslistan i $3.
+AKICK_ADD        =$1 lade till $2 till autokicklistan i kanalen $3.
+AKICK_DEL        =$1 tog bort $2 från autokicklistan i kanalen $3.
+GREET_ADD        =$1 lade till en hälsning till $2 i kanalen $3.
+GREET_DEL        =$1 tog bort hälsningen till $2 i kanalen $3.
+MESSAGE_ADD      =$1 lade till ett on-join meddelande i kanalen $2.
+MESSAGE_DEL      =$1 tog bort on-join meddelandet från kanalen $2.
+SET_PASSWORD     =$1 ändrade lösenord för $2.
+SET              =$1 satte värdet för $2 i kanalen $3 till $4.
+UNSET            =$1 tog bort värdet för $2 i kanalen $3.
+LOCK             =$1 låste värdet för $2 i kanalen $3 till $4.
+UNLOCK           =$1 låste upp värdet för $2 i kanalen $3.
+
+;
+; Dessa används när ett kommando exekveras från MemoServ.
+;
+[MEMOSERV]
+SEND             =$1 skickade en nyhetsartikel till $2.
+DEL              =$1 tog bort $2 nyhetsartikel(ar) från $3.
+DEL_ALL          =$1 tog bort alla nyhetsartiklar från $2.
+SET              =$1 satte värdet för $2 åt $3 nyhetsartikel(ar) i $4 till $5.
+SET_ALL          =$1 satte värdet för $2 åt alla nyhetsartiklar i $3 till $4.
+FILE             =$1 skickade en bifogad fil ($2 / $3 - $4) till $5.
+GET              =$1 tog emot en bifogad fil ($2 / $3 - $4) från $5.
+
+;
+; Dessa används när ett kommando exekveras från CommServ.
+;
+[COMMSERV]
+ADD              =$1 skapade en ny kommitté med namnet $2 med $3 som chef.
+DEL              =$1 tog bort kommittén $2.
+MEMO             =$1 skickade ett memo till alla medlemmar i kommittén $2.
+MEMBER_ADD       =$1 lade till alias $2 till kommittén $3.
+MEMBER_DEL       =$1 tog bort alias $2 från kommittén $3.
+LOGON_ADD        =$1 lade till ett nytt logon meddelande till kommittén $2.
+LOGON_DEL        =$1 tog bort ett logon meddelandet från kommittén $2.
+SET              =$1 satte värdet för $2 i kommittén $3 till $4.
+UNSET            =$1 tog bort värdet för $2 i kommittén $3.
+LOCK             =$1 låste värdet för $2 i kommittén $3 till $4.
+UNLOCK           =$1 låste upp värdet för $2 i kommittén $3.
+
+;
+; Dessa används när ett kommando exekveras från ServMsg.
+;
+[SERVMSG]
+GLOBAL           =$1 skickade meddelandet "$2" till alla användare.
+FILE_ADD         =$1 lade till filen $2 ($3 - $4) till de priviligerade $5 i offentligt filsystem.
+FILE_DEL         =$1 tog bort filen $2 ($3) från det offentliga filsystemet.
+FILE_RENAME      =$1 bytte namn på filen $2 till $3 i det offentliga filsystemet.
+FILE_PRIV        =$1 ändrade säkerhetsnivå på filen $2 till $3 i det offentliga filsystemet.
+FILE_SEND        =$1 laddade ner filen $2 från det offentliga filsystemet.
+FILE_LOOKUP      =$1 letade upp filen $2 av typen $3.
+
+;
+; Dessa används när ett kommando exekveras från OperServ.
+;
+[OPERSERV]
+MODE             =$1 satte läge "$2" i $3 med MODE kommandot.
+QLINE            =$1 satte $2 i karantän.
+UNQLINE          =$1 tog bort $2 från karantän.
+NOOP             =$1 satte karantän på alla IRC opar från servern $2 $3.
+KILL             =$1 dödade $2 tyst, med "$3".
+HIDE             =$1 ändrade värden (host) för $2 till $3.
+PING             =$1 startade server ping manuellt.
+UPDATE           =$1 startade databas uppdateringen manuellt.
+SHUTDOWN         =$1 BEGÄRDE ATT TJÄNSTERNA SKA STÄNGAS AV.
+RELOAD           =$1 laddade om konfigurationsfilen för tjänsterna.
+UNLOAD           =$1 tog bort språk: $2.
+JUPE             =$1 jupade servern $2 ($3).
+ONOFF            =$1 SATTE $2 $3 TJÄNSTEN.
+ONOFF_ONE        =$1 SATTE $2 $3 TJÄNSTEN FÖR $4.
+CLONE_ADD        =$1 lade till värden (host) $2 till 'åsidosatta kloner'-listan med $3 kloner.
+CLONE_DEL        =$1 tog bort värden (host) $2 från 'åsidosatta kloner'-listan.
+AKILL_ADD        =$1 lade till masken $2 till autokill-listan ($3) med anledningen: "$4".
+AKILL_DEL        =$1 tog bort masken $2 från autokill-listan.
+OPERDENY_ADD     =$1 lade till masken $2 till nekade opar-listan ($3).
+OPERDENY_DEL     =$1 tog bort masken $2 från nekade opar-listan.
+IGNORE_ADD       =$1 lade till masken $2 till services permanenta ignorera-lista.
+IGNORE_DEL       =$1 tog bort masken $2 från services permanenta ignorera-lista.
+IGNORED          =Ignorerade meddelande från $1: $2
+HTM_FORCE        =$1 tvingade fram HTM läge: $2.
+HTM_ON           =HTM läge $1 ($2 fördröjning) aktiverat ($3Kb/s > $4Kb/s).
+HTM_OFF          =HTM läge AV.
+HTM_SET          =$1 satte HTM tröskeln till $2/s.
+HTM_IGNORE       =Ignorerade meddelande från $1 (HTM läge): $2
+
+;
+; Dessa används när en automatiserad händelse startar.
+;
+[EVENT]
+EXPIRE_AKILL     =Akill för $1 ($2) satt av $3 i $4 upphör.
+EXPIRE_NICK      =Aliaset $1 ($2) upphör.
+EXPIRE_CHAN      =Kanalen $1 ($2) upphör.
+EXPIRE_NEWS      =Nyhetsartiklarna i $1 upphör.
+LOAD             =Laddar databaserna ...
+SAVE             =Databaserna sparade.
+UNBAN            =Tog bort bannlysningen på $1 från $2 då tiden ($3) gått ut.
+KILLPROTECT      =Dödade/bytte namn på $1 då denne misslyckats att identifiera sig för aliaset.
+PING             =Pingade alla servrar.
+LEVEL_UP         =LIVE NIVÅN ÖKADE MED ETT ($1 fördröjning i snitt).
+LEVEL_DOWN       =LIVE NIVÅN MINSKADE MED ETT ($1 fördröjning i snitt).
+AKICK            =Kickade $1 från $2 då denne passade AKICK masken ($3).
+RESTRICTED       =Kickade $1 från den begränsade kanalen $2.
+NEW_THREAD       =Startade en ny tråd att hantera excess load.
+KILL_THREAD      =Dödade tråden, inte tillräckligt med arbete för att tillåta den.
+
+;
+; Detta är meddelanden från systemet
+;
+[SYS_ERRORS]
+COULDNOTOPEN     =Kunde inte öppna filen $1 ($2) - #$3: $4.
+FILEOPERROR      =Kunde inte utföra $1 på filen $2 - #$3: $4.
+DIROPERROR       =Kunde inte utföra $1 på katalogen $2 - #$3: $4.
+OPERROR          =Kunde inte utföra $1 - #$2: $3.
+FILEMAPFULL      =Kunde inte hitta ett tillgängligt filnummer för typen $1!
+MISSING_FILE1    =Tog bort fysisk fil av typ $1, #$2 som inte hade ett filpostnummer.
+MISSING_FILE2    =Tog bort filpostnummret av typ $1, #$2 som inte hade en fysisk fil.
+SIGNAL_IGNORE    =Fångade signal #$1, ignorerar.
+SIGNAL_SAVE      =Fångade signal #$1, sparar databaserna.
+SIGNAL_LOAD      =Fångade signal #$1, laddar konfigurationsfilen.
+SIGNAL_RETRY     =Fångade signal #$1, försöker fortsätta.
+SIGNAL_KILL      =Fångade signal #$1 - senaste uppgiften var $2, försöker stänga av.
+SIGNAL_SIGNON    =Fångade signal #$1, loggar in alla klienter.
+SIGNAL_SPAWN     =Fångade signal #$1, skapar en ny process.
+NOT_IMPLEMENTED  =Angav $1, vilken inte är implementerad.
+INVALID_FORMAT   =Ogiltligt tecken $1$2 i datumformatet i $3.
+NOT_LITERAL      =Tecknet $1 måste vara inom citationstecken, om det ska tolkas som ett $1 i $2.
+RUN_AS_ROOT      =Att vara inloggad som ROOT skapar potentiella säkerhetsrisker!
+LOCK_OPEN        =Misslyckades att öppna $1 låset för $2.
+LOCK_ACQUIRE     =Misslyckades att skaffa $1 låset för $2.
+LOCK_RELEASE     =Misslyckades att släppa $1 låset för $2.
+LOCK_DUP         =Dubblett av $1 låset $2 upptäckt, där bara 1 är tillåten!
+THREAD_DEAD      =Icke-processerande tråd upptäckt - försöker stänga av tråden!
+THREAD_DEAD_HALF =Över hälften av alla trådar jobbar inte, stänger ned!
+LOCKED_BIN       =Systemets låsvärden matchar inte!  Återkompilering krävs!
+
+[EXCEPTIONS]
+GENERIC          =Undantag - $1:$2:$3:$4
+GENERIC1         =Undantag - $1:$2:$3:$4 - $5
+GENERIC2         =Undantag - $1:$2:$3:$4 - $5/$6
+UNHANDLED        =Ej hanterat Undantag: $1.
+UNKNOWN          =Ej hanterat Undantag: ingen information tillgänglig.
+DCC_REMOVED      =Felaktig DCC #$1 borttagen!
+NICK_S_REMOVED   =Felaktigt lagrat alias: $1 borttaget!
+NICK_L_REMOVED   =Felaktigt alias används: $1 borttaget!
+CHAN_S_REMOVED   =Felaktigt lagrat kanalnamn: $1 borttaget!
+CHAN_L_REMOVED   =Felaktigt kanalnamn används: $1 borttaget!
+
+;
+; Detta är en sektion för olika, blandade händelser.
+;
+[OTHER]
+SQUIT_FIRST      =Misstänkt SQUIT upptäckt, servrarna $1 och $2, väntar ...
+SQUIT_CANCEL     =Misstänkt SQUIT av servrarna $1 och $2 var falsk.
+SQUIT_SECOND     =SQUIT av servrarna $1 och $2 bekräftad, vidtar lämpliga åtgärder.
+KILL_CLONE       =Klonskyddet agerade på $1, dödar användaren.
+KILL_AKILL       =Dödar användaren $1 på autodöda-listan $2 ($3).
+KILL_UNKNOWN     =Dödade okänd användare $1.
+NOVALIDSERVERS   =Magick avbryter, inga giltliga servrar att ansluta till!
+CONNECTING       =Ansluter till server $1:$2 ...
+CONNECTED        =Anslutning upprättad och godkänd av servern $1.
+WRONGPASS        =Felaktigt lösenord vid anslutning till servern $1, hoppar över.
+WEAREBANNED      =Vi är k-linade från servern $1, hoppar över.
+REFUSED          =Anslutningen till servern $1:$2 nekades.
+CLOSED           =Anslutningen till servern $1 stängd.
+SERVER_MSG       =SERVER MEDDELANDE ($1): $2
+LINK             =Servern $1 har länkat till nätverket via $2.
+INVALIDLINK      =Servern $1 blev SQUIT från $2 då den inte är tillåten!
+KILLED           =Tjänsten $1 dödades av $2, försöker återställa.
+TEMP_IGNORE      =$1 ignoreras temporärt av tjänsterna.
+PERM_IGNORE      =$1 ignoreras permanent av tjänsterna.
+KILL_NICK_PASS   =Dödar användaren $1 då denne inte lyckats identifiera sig för aliaset $2.
+KILL_CHAN_PASS   =Dödar användaren $1 då denne inte lyckats identifiera sig som grundare för kanalen $2.
+LOAD_LANGUAGE    =Laddade den $1 språkfilen.
+LOAD_HELP        =Laddade den $1 hjälpfilen.
+REVENGE          =Hämnades på $1 i kanalen $2 för $3 på $4.
+DCC_INIT         =DCC ID $1 initierad med $2 ($3).
+DCC_CLOSE        =DCC ID $1 slutfördes utan fel.
+DCC_CANCEL       =DCC ID $1 misslyckades.
+
+;
+; Detta är felmeddelanden (av skiftande stränghet) som kan förekomma.
+;
+[ERROR]
+REQ_BYNONUSER    =$1 kommandot begärdes av den icke-existerande användaren $2.
+REQ_BYNONSERVICE =$1 kommandot begärdes av icke-tjänsten $2.
+REQ_FORNONUSER   =$1 kommandot begärdes av $2 på den icke-existerande användaren $3.
+REQ_TOUSER       =$1 kommandot begärdes av $2 på den existerande användaren $3.
+REQ_FORNONCHAN   =$1 kommandot begärdes av $2 på den icke-existerande kanalen $3.
+REQ_FORNONSERVER =$1 kommandot begärdes av $2 på den icke-existerande servern $3.
+REQ_NOTINCHAN    =$1 kommandot begärdes av $2 på $3 vilken inte är i kanalen $4.
+REQ_UNKNOWN      =Kommandotypen $1 på $2 ($3/$4/$5) sattes i kö för $6 sedan, men behandlades inte (okännd typ).
+UNKNOWN_MSG      =Okännt meddelande från servern: $1
+REC_FORNONUSER   =Mottog $1 från $2 på den icke existerande användaren $3.
+REC_FORNONCHAN   =Mottog $1 från $2 på den icke-existerande kanalen $3.
+REC_NOTINCHAN    =Mottog $1 från $2 på $3 vilken inte är i kanalen $4.
+REC_FORNOTINCHAN =Mottog $1 på $2 vilken inte är i kanalen $3.
+REC_FORNONSERVER =Mottog $1 från $2 på den icke-existerande servern $3.
+DUP_CHAN         =Dubbla $1 mottagna från $2 på kanalen $3.
+MODE_INEFFECT    =Ändring av LÄGE $1$2 mottagen från $3 för $4. Detta läge finns redan.
+MODE_NOTINCHAN   =Ändring av LÄGE $1$2 mottagen fårn $3 för $4 vilken inte är i kanalen $5.
+FOUNDER_NOTREGD  =Kanalen $1 har grundaren $2 vilken inte är registrerad (kanalen nedlagd).
+HOST_NOTREGD     =$1 var registrerad som värd åt $2, men finns inte (korrigerat)!
+SLAVE_NOTREGD    =$1 var registrerad som slav åt $2, med finns inte (korrigerat)!
+KEYMISMATCH      =Kanalnyckeln från $4 stämmer inte ($1 | $2) för kanalen $3.
+NOLIMIT          =Ingen gräns specifierad av $2, trots att det krävs för kanalen $1.
+NOLANGTOKEN      =Ogiltligt token $1 använt för språket $2, felmeddelandet returnerat.
+BADSET           =Försökte ange OGILTLIGT värde ($1) till $2 i $3.
+DB_SANITY_FAIL   =Vid laddningen av databasen misslyckades felkorrigeringen (vanligtvis p.g.a. en felaktig nyckel).
+DB_CORRUPT       =Laddningen av databasen misslyckades på grund av trasiga data.
