@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.222  2000/05/13 15:46:33  ungod
+** more xmlising magick
+**
 ** Revision 1.221  2000/05/13 15:06:42  ungod
 ** no message
 **
@@ -2834,19 +2837,49 @@ SXP::Tag Magick::tag_Magick("Magick");
 
 void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    /*if( pElement->IsA( OperServ::s_GetClassTag() ) )
+        pIn->ReadTo(&operserv);
+    if( pElement->IsA( NickServ::s_GetClassTag() ) )
+        pIn->ReadTo(&nickserv);
+    if( pElement->IsA( ChanServ::s_GetClassTag() ) )
+        pIn->ReadTo(&chanserv);
+    if( pElement->IsA( MemoServ::s_GetClassTag() ) )
+        pIn->ReadTo(&memoserv);
+    if( pElement->IsA( CommServ::s_GetClassTag() ) )
+        pIn->ReadTo(&commserv);
+    if( pElement->IsA( ServMsg::s_GetClassTag() ) )
+        pIn->ReadTo(&servmsg);
+    if( pElement->IsA( FileSys::s_GetClassTag() ) )
+        pIn->ReadTo(&filesys);
+    */
 }
 
 void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    // load up simple elements here. (ie single pieces of data)
 }
 
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
+    // not sure if this is the right place to do this
+    attribs["version"]=FileVersionNumber;
+    pOut->BeginObject(tag_Magick, attribs);
+
+	SXP::dict attr;
+	//pOut->WriteSubElement(&operserv, attr);
+	//pOut->WriteSubElement(&nickserv, attr);
+	//pOut->WriteSubElement(&chanserv, attr);
+	//pOut->WriteSubElement(&memoserv, attr);
+	//pOut->WriteSubElement(&commserv, attr);
+    //pOut->WriteSubElement(&servmsg, attr);
+    //pOut->WriteSubElement(&filesys, attr);
+
+	pOut->EndObject(tag_Magick);
 }
 
 void Magick::SaveXML()
 {
-	SXP::CFileOutStream o(files.Database().c_str());
+	SXP::CFileOutStream o(files.Database());
 	o.BeginXML();
 	SXP::dict attribs;
 	WriteElement(&o, attribs);
@@ -2855,6 +2888,6 @@ void Magick::SaveXML()
 void Magick::LoadXML()
 {
    	SXP::CParser p( this ); // let the parser know which is the object
-	p.FeedFile(	(char *)files.Database().c_str() );
+	p.FeedFile(	(char *)files.Database().c_str());
 }
 
