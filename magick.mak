@@ -56,15 +56,20 @@ CLEAN :
 	-@erase "$(INTDIR)\ASTFactory.obj"
 	-@erase "$(INTDIR)\BitSet.obj"
 	-@erase "$(INTDIR)\bob.obj"
+	-@erase "$(INTDIR)\cbc_cksm.obj"
+	-@erase "$(INTDIR)\cfb_enc.obj"
 	-@erase "$(INTDIR)\chanserv.obj"
 	-@erase "$(INTDIR)\CharBuffer.obj"
 	-@erase "$(INTDIR)\CharScanner.obj"
 	-@erase "$(INTDIR)\CommonToken.obj"
 	-@erase "$(INTDIR)\confbase.obj"
+	-@erase "$(INTDIR)\cryptstream.obj"
 	-@erase "$(INTDIR)\datetime.obj"
+	-@erase "$(INTDIR)\des_enc.obj"
 	-@erase "$(INTDIR)\EscLexer.obj"
 	-@erase "$(INTDIR)\EscParser.obj"
 	-@erase "$(INTDIR)\fileconf.obj"
+	-@erase "$(INTDIR)\ircsocket.obj"
 	-@erase "$(INTDIR)\LLkParser.obj"
 	-@erase "$(INTDIR)\lockable.obj"
 	-@erase "$(INTDIR)\log.obj"
@@ -77,6 +82,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Parser.obj"
 	-@erase "$(INTDIR)\ParserException.obj"
 	-@erase "$(INTDIR)\ScannerException.obj"
+	-@erase "$(INTDIR)\set_key.obj"
+	-@erase "$(INTDIR)\str2key.obj"
 	-@erase "$(INTDIR)\String.obj"
 	-@erase "$(INTDIR)\textfile.obj"
 	-@erase "$(INTDIR)\Token.obj"
@@ -91,9 +98,9 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "src\bob" /I "..\cryptlib21" /I "include"\
- /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"$(INTDIR)\\"\
- /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W3 /GX /O2 /I "include\bob" /I "..\cryptlib21" /I\
+ "include" /I "..\ace_wrappers" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS"\
+ /D "DES_UNROLL" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 CPP_OBJS=.\Release/
 CPP_SBRS=.
 BSC32=bscmake.exe
@@ -105,22 +112,27 @@ LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib\
  advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib\
  odbccp32.lib ace.lib ..\cryptlib21\Release\cl32.lib zlib.lib /nologo\
  /subsystem:console /incremental:no /pdb:"$(OUTDIR)\magick.pdb" /machine:I386\
- /out:"$(OUTDIR)\magick.exe" 
+ /out:"$(OUTDIR)\magick.exe" /libpath:"..\ace_wrappers\ace" 
 LINK32_OBJS= \
 	"$(INTDIR)\ANTLRException.obj" \
 	"$(INTDIR)\AST.obj" \
 	"$(INTDIR)\ASTFactory.obj" \
 	"$(INTDIR)\BitSet.obj" \
 	"$(INTDIR)\bob.obj" \
+	"$(INTDIR)\cbc_cksm.obj" \
+	"$(INTDIR)\cfb_enc.obj" \
 	"$(INTDIR)\chanserv.obj" \
 	"$(INTDIR)\CharBuffer.obj" \
 	"$(INTDIR)\CharScanner.obj" \
 	"$(INTDIR)\CommonToken.obj" \
 	"$(INTDIR)\confbase.obj" \
+	"$(INTDIR)\cryptstream.obj" \
 	"$(INTDIR)\datetime.obj" \
+	"$(INTDIR)\des_enc.obj" \
 	"$(INTDIR)\EscLexer.obj" \
 	"$(INTDIR)\EscParser.obj" \
 	"$(INTDIR)\fileconf.obj" \
+	"$(INTDIR)\ircsocket.obj" \
 	"$(INTDIR)\LLkParser.obj" \
 	"$(INTDIR)\lockable.obj" \
 	"$(INTDIR)\log.obj" \
@@ -133,6 +145,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Parser.obj" \
 	"$(INTDIR)\ParserException.obj" \
 	"$(INTDIR)\ScannerException.obj" \
+	"$(INTDIR)\set_key.obj" \
+	"$(INTDIR)\str2key.obj" \
 	"$(INTDIR)\String.obj" \
 	"$(INTDIR)\textfile.obj" \
 	"$(INTDIR)\Token.obj" \
@@ -158,11 +172,11 @@ OutDir=.\Debug
 
 !IF "$(RECURSE)" == "0" 
 
-ALL : "$(OUTDIR)\magick.exe"
+ALL : "$(OUTDIR)\magick.exe" "$(OUTDIR)\magick.bsc"
 
 !ELSE 
 
-ALL : "m_bob - Win32 Debug" "$(OUTDIR)\magick.exe"
+ALL : "m_bob - Win32 Debug" "$(OUTDIR)\magick.exe" "$(OUTDIR)\magick.bsc"
 
 !ENDIF 
 
@@ -172,41 +186,90 @@ CLEAN :"m_bob - Win32 DebugCLEAN"
 CLEAN :
 !ENDIF 
 	-@erase "$(INTDIR)\ANTLRException.obj"
+	-@erase "$(INTDIR)\ANTLRException.sbr"
 	-@erase "$(INTDIR)\AST.obj"
+	-@erase "$(INTDIR)\AST.sbr"
 	-@erase "$(INTDIR)\ASTFactory.obj"
+	-@erase "$(INTDIR)\ASTFactory.sbr"
 	-@erase "$(INTDIR)\BitSet.obj"
+	-@erase "$(INTDIR)\BitSet.sbr"
 	-@erase "$(INTDIR)\bob.obj"
+	-@erase "$(INTDIR)\bob.sbr"
+	-@erase "$(INTDIR)\cbc_cksm.obj"
+	-@erase "$(INTDIR)\cbc_cksm.sbr"
+	-@erase "$(INTDIR)\cfb_enc.obj"
+	-@erase "$(INTDIR)\cfb_enc.sbr"
 	-@erase "$(INTDIR)\chanserv.obj"
+	-@erase "$(INTDIR)\chanserv.sbr"
 	-@erase "$(INTDIR)\CharBuffer.obj"
+	-@erase "$(INTDIR)\CharBuffer.sbr"
 	-@erase "$(INTDIR)\CharScanner.obj"
+	-@erase "$(INTDIR)\CharScanner.sbr"
 	-@erase "$(INTDIR)\CommonToken.obj"
+	-@erase "$(INTDIR)\CommonToken.sbr"
 	-@erase "$(INTDIR)\confbase.obj"
+	-@erase "$(INTDIR)\confbase.sbr"
+	-@erase "$(INTDIR)\cryptstream.obj"
+	-@erase "$(INTDIR)\cryptstream.sbr"
 	-@erase "$(INTDIR)\datetime.obj"
+	-@erase "$(INTDIR)\datetime.sbr"
+	-@erase "$(INTDIR)\des_enc.obj"
+	-@erase "$(INTDIR)\des_enc.sbr"
 	-@erase "$(INTDIR)\EscLexer.obj"
+	-@erase "$(INTDIR)\EscLexer.sbr"
 	-@erase "$(INTDIR)\EscParser.obj"
+	-@erase "$(INTDIR)\EscParser.sbr"
 	-@erase "$(INTDIR)\fileconf.obj"
+	-@erase "$(INTDIR)\fileconf.sbr"
+	-@erase "$(INTDIR)\ircsocket.obj"
+	-@erase "$(INTDIR)\ircsocket.sbr"
 	-@erase "$(INTDIR)\LLkParser.obj"
+	-@erase "$(INTDIR)\LLkParser.sbr"
 	-@erase "$(INTDIR)\lockable.obj"
+	-@erase "$(INTDIR)\lockable.sbr"
 	-@erase "$(INTDIR)\log.obj"
+	-@erase "$(INTDIR)\log.sbr"
 	-@erase "$(INTDIR)\magick.obj"
+	-@erase "$(INTDIR)\magick.sbr"
 	-@erase "$(INTDIR)\main.obj"
+	-@erase "$(INTDIR)\main.sbr"
 	-@erase "$(INTDIR)\MismatchedTokenException.obj"
+	-@erase "$(INTDIR)\MismatchedTokenException.sbr"
 	-@erase "$(INTDIR)\mstream.obj"
+	-@erase "$(INTDIR)\mstream.sbr"
 	-@erase "$(INTDIR)\mstring.obj"
+	-@erase "$(INTDIR)\mstring.sbr"
 	-@erase "$(INTDIR)\NoViableAltException.obj"
+	-@erase "$(INTDIR)\NoViableAltException.sbr"
 	-@erase "$(INTDIR)\Parser.obj"
+	-@erase "$(INTDIR)\Parser.sbr"
 	-@erase "$(INTDIR)\ParserException.obj"
+	-@erase "$(INTDIR)\ParserException.sbr"
 	-@erase "$(INTDIR)\ScannerException.obj"
+	-@erase "$(INTDIR)\ScannerException.sbr"
+	-@erase "$(INTDIR)\set_key.obj"
+	-@erase "$(INTDIR)\set_key.sbr"
+	-@erase "$(INTDIR)\str2key.obj"
+	-@erase "$(INTDIR)\str2key.sbr"
 	-@erase "$(INTDIR)\String.obj"
+	-@erase "$(INTDIR)\String.sbr"
 	-@erase "$(INTDIR)\textfile.obj"
+	-@erase "$(INTDIR)\textfile.sbr"
 	-@erase "$(INTDIR)\Token.obj"
+	-@erase "$(INTDIR)\Token.sbr"
 	-@erase "$(INTDIR)\TokenBuffer.obj"
+	-@erase "$(INTDIR)\TokenBuffer.sbr"
 	-@erase "$(INTDIR)\trace.obj"
+	-@erase "$(INTDIR)\trace.sbr"
 	-@erase "$(INTDIR)\TreeParser.obj"
+	-@erase "$(INTDIR)\TreeParser.sbr"
 	-@erase "$(INTDIR)\utils.obj"
+	-@erase "$(INTDIR)\utils.sbr"
 	-@erase "$(INTDIR)\variant.obj"
+	-@erase "$(INTDIR)\variant.sbr"
 	-@erase "$(INTDIR)\vc50.idb"
 	-@erase "$(INTDIR)\vc50.pdb"
+	-@erase "$(OUTDIR)\magick.bsc"
 	-@erase "$(OUTDIR)\magick.exe"
 	-@erase "$(OUTDIR)\magick.ilk"
 	-@erase "$(OUTDIR)\magick.pdb"
@@ -214,36 +277,89 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "src\bob" /I\
- "..\cryptlib21" /I "include" /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS"\
+CPP_PROJ=/nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I\
+ "..\cryptlib21" /I "include" /I "..\ace_wrappers" /D "_DEBUG" /D "DEBUG" /D\
+ "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /Fr"$(INTDIR)\\"\
  /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 CPP_OBJS=.\Debug/
-CPP_SBRS=.
+CPP_SBRS=.\Debug/
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\magick.bsc" 
 BSC32_SBRS= \
-	
+	"$(INTDIR)\ANTLRException.sbr" \
+	"$(INTDIR)\AST.sbr" \
+	"$(INTDIR)\ASTFactory.sbr" \
+	"$(INTDIR)\BitSet.sbr" \
+	"$(INTDIR)\bob.sbr" \
+	"$(INTDIR)\cbc_cksm.sbr" \
+	"$(INTDIR)\cfb_enc.sbr" \
+	"$(INTDIR)\chanserv.sbr" \
+	"$(INTDIR)\CharBuffer.sbr" \
+	"$(INTDIR)\CharScanner.sbr" \
+	"$(INTDIR)\CommonToken.sbr" \
+	"$(INTDIR)\confbase.sbr" \
+	"$(INTDIR)\cryptstream.sbr" \
+	"$(INTDIR)\datetime.sbr" \
+	"$(INTDIR)\des_enc.sbr" \
+	"$(INTDIR)\EscLexer.sbr" \
+	"$(INTDIR)\EscParser.sbr" \
+	"$(INTDIR)\fileconf.sbr" \
+	"$(INTDIR)\ircsocket.sbr" \
+	"$(INTDIR)\LLkParser.sbr" \
+	"$(INTDIR)\lockable.sbr" \
+	"$(INTDIR)\log.sbr" \
+	"$(INTDIR)\magick.sbr" \
+	"$(INTDIR)\main.sbr" \
+	"$(INTDIR)\MismatchedTokenException.sbr" \
+	"$(INTDIR)\mstream.sbr" \
+	"$(INTDIR)\mstring.sbr" \
+	"$(INTDIR)\NoViableAltException.sbr" \
+	"$(INTDIR)\Parser.sbr" \
+	"$(INTDIR)\ParserException.sbr" \
+	"$(INTDIR)\ScannerException.sbr" \
+	"$(INTDIR)\set_key.sbr" \
+	"$(INTDIR)\str2key.sbr" \
+	"$(INTDIR)\String.sbr" \
+	"$(INTDIR)\textfile.sbr" \
+	"$(INTDIR)\Token.sbr" \
+	"$(INTDIR)\TokenBuffer.sbr" \
+	"$(INTDIR)\trace.sbr" \
+	"$(INTDIR)\TreeParser.sbr" \
+	"$(INTDIR)\utils.sbr" \
+	"$(INTDIR)\variant.sbr"
+
+"$(OUTDIR)\magick.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
+    $(BSC32) @<<
+  $(BSC32_FLAGS) $(BSC32_SBRS)
+<<
+
 LINK32=link.exe
 LINK32_FLAGS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib\
  advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib\
  odbccp32.lib aced.lib ..\cryptlib21\Debug\cl32d.lib zlib.lib /nologo\
  /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\magick.pdb" /debug\
- /machine:I386 /out:"$(OUTDIR)\magick.exe" /pdbtype:sept 
+ /machine:I386 /out:"$(OUTDIR)\magick.exe" /pdbtype:sept\
+ /libpath:"..\ace_wrappers\ace" 
 LINK32_OBJS= \
 	"$(INTDIR)\ANTLRException.obj" \
 	"$(INTDIR)\AST.obj" \
 	"$(INTDIR)\ASTFactory.obj" \
 	"$(INTDIR)\BitSet.obj" \
 	"$(INTDIR)\bob.obj" \
+	"$(INTDIR)\cbc_cksm.obj" \
+	"$(INTDIR)\cfb_enc.obj" \
 	"$(INTDIR)\chanserv.obj" \
 	"$(INTDIR)\CharBuffer.obj" \
 	"$(INTDIR)\CharScanner.obj" \
 	"$(INTDIR)\CommonToken.obj" \
 	"$(INTDIR)\confbase.obj" \
+	"$(INTDIR)\cryptstream.obj" \
 	"$(INTDIR)\datetime.obj" \
+	"$(INTDIR)\des_enc.obj" \
 	"$(INTDIR)\EscLexer.obj" \
 	"$(INTDIR)\EscParser.obj" \
 	"$(INTDIR)\fileconf.obj" \
+	"$(INTDIR)\ircsocket.obj" \
 	"$(INTDIR)\LLkParser.obj" \
 	"$(INTDIR)\lockable.obj" \
 	"$(INTDIR)\log.obj" \
@@ -256,6 +372,8 @@ LINK32_OBJS= \
 	"$(INTDIR)\Parser.obj" \
 	"$(INTDIR)\ParserException.obj" \
 	"$(INTDIR)\ScannerException.obj" \
+	"$(INTDIR)\set_key.obj" \
+	"$(INTDIR)\str2key.obj" \
 	"$(INTDIR)\String.obj" \
 	"$(INTDIR)\textfile.obj" \
 	"$(INTDIR)\Token.obj" \
@@ -354,7 +472,8 @@ DEP_CPP_ANTLR=\
 	".\include\antlr\config.hpp"\
 	
 
-"$(INTDIR)\ANTLRException.obj" : $(SOURCE) $(DEP_CPP_ANTLR) "$(INTDIR)"
+"$(INTDIR)\ANTLRException.obj"	"$(INTDIR)\ANTLRException.sbr" : $(SOURCE)\
+ $(DEP_CPP_ANTLR) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -386,7 +505,8 @@ DEP_CPP_AST_C=\
 	".\include\antlr\token.hpp"\
 	
 
-"$(INTDIR)\AST.obj" : $(SOURCE) $(DEP_CPP_AST_C) "$(INTDIR)"
+"$(INTDIR)\AST.obj"	"$(INTDIR)\AST.sbr" : $(SOURCE) $(DEP_CPP_AST_C)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -426,13 +546,17 @@ DEP_CPP_ASTFA=\
 	".\include\antlr\token.hpp"\
 	
 
-"$(INTDIR)\ASTFactory.obj" : $(SOURCE) $(DEP_CPP_ASTFA) "$(INTDIR)"
+"$(INTDIR)\ASTFactory.obj"	"$(INTDIR)\ASTFactory.sbr" : $(SOURCE)\
+ $(DEP_CPP_ASTFA) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
 
 SOURCE=.\src\antlr\BitSet.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
 DEP_CPP_BITSE=\
 	".\include\antlr\bitset.hpp"\
 	".\include\antlr\config.hpp"\
@@ -441,6 +565,20 @@ DEP_CPP_BITSE=\
 "$(INTDIR)\BitSet.obj" : $(SOURCE) $(DEP_CPP_BITSE) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_BITSE=\
+	".\include\antlr\bitset.hpp"\
+	".\include\antlr\config.hpp"\
+	
+
+"$(INTDIR)\BitSet.obj"	"$(INTDIR)\BitSet.sbr" : $(SOURCE) $(DEP_CPP_BITSE)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
 
 SOURCE=.\src\bob.cpp
 
@@ -456,115 +594,115 @@ DEP_CPP_BOB_C=\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers.i"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\event_handler.i"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\handle_set.i"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\mem_map.i"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\memory_pool.i"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block.i"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue.i"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor.i"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_config.i"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_object.i"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_repository.i"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\service_types.i"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\shared_object.i"\
-	{$(INCLUDE)}"ace\signal.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\sstring.i"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies.i"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch.i"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_options.i"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task.i"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread.i"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\thread_manager.i"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.i"\
 	
 NODEP_CPP_BOB_C=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\atomic_op.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers.i"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\event_handler.h"\
+	"..\..\program files\devstudio\vc\include\ace\event_handler.i"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.h"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.i"\
+	"..\..\program files\devstudio\vc\include\ace\handle_set.h"\
+	"..\..\program files\devstudio\vc\include\ace\handle_set.i"\
+	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\io_cntl_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\malloc.i"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_base.h"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\mem_map.h"\
+	"..\..\program files\devstudio\vc\include\ace\mem_map.i"\
+	"..\..\program files\devstudio\vc\include\ace\memory_pool.h"\
+	"..\..\program files\devstudio\vc\include\ace\memory_pool.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_block.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_block.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\module.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\module.h"\
+	"..\..\program files\devstudio\vc\include\ace\module.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\reactor.h"\
+	"..\..\program files\devstudio\vc\include\ace\reactor.i"\
+	"..\..\program files\devstudio\vc\include\ace\reactor_impl.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_config.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_repository.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_repository.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\shared_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\shared_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\signal.i"\
+	"..\..\program files\devstudio\vc\include\ace\sstring.h"\
+	"..\..\program files\devstudio\vc\include\ace\sstring.i"\
+	"..\..\program files\devstudio\vc\include\ace\strategies.h"\
+	"..\..\program files\devstudio\vc\include\ace\strategies.i"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.h"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\svc_conf_tokens.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch.i"\
+	"..\..\program files\devstudio\vc\include\ace\synch_options.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch_options.i"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\task.h"\
+	"..\..\program files\devstudio\vc\include\ace\task.i"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\thread.h"\
+	"..\..\program files\devstudio\vc\include\ace\thread.i"\
+	"..\..\program files\devstudio\vc\include\ace\thread_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\thread_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue.h"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
+	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.h"\
+	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.i"\
 	"..\bob\bob.h"\
 	"..\bob\bobexp.h"\
 	"..\bob\compiler.h"\
@@ -582,11 +720,134 @@ NODEP_CPP_BOB_C=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_BOB_C=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Addr.h"\
+	"..\ace_wrappers\ace\Atomic_Op.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\Connector.cpp"\
+	"..\ace_wrappers\ace\Connector.h"\
+	"..\ace_wrappers\ace\Connector.i"\
+	"..\ace_wrappers\ace\Containers.h"\
+	"..\ace_wrappers\ace\Containers_T.cpp"\
+	"..\ace_wrappers\ace\Containers_T.h"\
+	"..\ace_wrappers\ace\Containers_T.i"\
+	"..\ace_wrappers\ace\Dynamic.h"\
+	"..\ace_wrappers\ace\Event_Handler.h"\
+	"..\ace_wrappers\ace\Free_List.cpp"\
+	"..\ace_wrappers\ace\Free_List.h"\
+	"..\ace_wrappers\ace\Free_List.i"\
+	"..\ace_wrappers\ace\Functor.h"\
+	"..\ace_wrappers\ace\Functor_T.cpp"\
+	"..\ace_wrappers\ace\Functor_T.h"\
+	"..\ace_wrappers\ace\Functor_T.i"\
+	"..\ace_wrappers\ace\Handle_Set.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.cpp"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.i"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\INET_Addr.h"\
+	"..\ace_wrappers\ace\IO_Cntl_Msg.h"\
+	"..\ace_wrappers\ace\IPC_SAP.h"\
+	"..\ace_wrappers\ace\IPC_SAP.i"\
+	"..\ace_wrappers\ace\Local_Tokens.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Malloc_T.cpp"\
+	"..\ace_wrappers\ace\Malloc_T.h"\
+	"..\ace_wrappers\ace\Malloc_T.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Map_Manager.cpp"\
+	"..\ace_wrappers\ace\Map_Manager.h"\
+	"..\ace_wrappers\ace\Map_Manager.i"\
+	"..\ace_wrappers\ace\Mem_Map.h"\
+	"..\ace_wrappers\ace\Memory_Pool.h"\
+	"..\ace_wrappers\ace\Message_Block.h"\
+	"..\ace_wrappers\ace\Message_Block_T.cpp"\
+	"..\ace_wrappers\ace\Message_Block_T.h"\
+	"..\ace_wrappers\ace\Message_Block_T.i"\
+	"..\ace_wrappers\ace\Message_Queue.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Message_Queue_T.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.i"\
+	"..\ace_wrappers\ace\Module.cpp"\
+	"..\ace_wrappers\ace\Module.h"\
+	"..\ace_wrappers\ace\Module.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\Reactor.h"\
+	"..\ace_wrappers\ace\Reactor_Impl.h"\
+	"..\ace_wrappers\ace\Service_Config.h"\
+	"..\ace_wrappers\ace\Service_Object.h"\
+	"..\ace_wrappers\ace\Service_Repository.h"\
+	"..\ace_wrappers\ace\Service_Types.h"\
+	"..\ace_wrappers\ace\Shared_Object.h"\
+	"..\ace_wrappers\ace\Singleton.cpp"\
+	"..\ace_wrappers\ace\Singleton.h"\
+	"..\ace_wrappers\ace\Singleton.i"\
+	"..\ace_wrappers\ace\SOCK.h"\
+	"..\ace_wrappers\ace\SOCK.i"\
+	"..\ace_wrappers\ace\SOCK_Connector.h"\
+	"..\ace_wrappers\ace\SOCK_Connector.i"\
+	"..\ace_wrappers\ace\SOCK_IO.h"\
+	"..\ace_wrappers\ace\SOCK_IO.i"\
+	"..\ace_wrappers\ace\SOCK_Stream.h"\
+	"..\ace_wrappers\ace\SOCK_Stream.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\Strategies.h"\
+	"..\ace_wrappers\ace\Strategies_T.cpp"\
+	"..\ace_wrappers\ace\Strategies_T.h"\
+	"..\ace_wrappers\ace\Strategies_T.i"\
+	"..\ace_wrappers\ace\Stream_Modules.cpp"\
+	"..\ace_wrappers\ace\Stream_Modules.h"\
+	"..\ace_wrappers\ace\Stream_Modules.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Svc_Conf_Tokens.h"\
+	"..\ace_wrappers\ace\Svc_Handler.cpp"\
+	"..\ace_wrappers\ace\Svc_Handler.h"\
+	"..\ace_wrappers\ace\Svc_Handler.i"\
+	"..\ace_wrappers\ace\Synch.h"\
+	"..\ace_wrappers\ace\Synch_Options.h"\
+	"..\ace_wrappers\ace\Synch_T.cpp"\
+	"..\ace_wrappers\ace\Synch_T.h"\
+	"..\ace_wrappers\ace\Synch_T.i"\
+	"..\ace_wrappers\ace\Task.h"\
+	"..\ace_wrappers\ace\Task_T.cpp"\
+	"..\ace_wrappers\ace\Task_T.h"\
+	"..\ace_wrappers\ace\Task_T.i"\
+	"..\ace_wrappers\ace\Thread.h"\
+	"..\ace_wrappers\ace\Thread_Manager.h"\
+	"..\ace_wrappers\ace\Time_Value.h"\
+	"..\ace_wrappers\ace\Timer_Queue.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Timer_Queue_T.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.i"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.h"\
 	".\include\bob.hpp"\
+	".\include\bob\bob.h"\
+	".\include\bob\bobexp.h"\
+	".\include\bob\compiler.h"\
+	".\include\bob\eval.h"\
+	".\include\bob\execute.h"\
+	".\include\bob\function.h"\
+	".\include\bob\objects.h"\
+	".\include\bob\streams.h"\
 	".\include\chanserv.h"\
 	".\include\confbase.h"\
 	".\include\datetime.h"\
 	".\include\fileconf.h"\
+	".\include\ircsocket.h"\
 	".\include\lockable.h"\
 	".\include\log.h"\
 	".\include\magick.h"\
@@ -594,102 +855,68 @@ DEP_CPP_BOB_C=\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
 	".\include\trace.h"\
-	".\src\bob\bob.h"\
-	".\src\bob\bobexp.h"\
-	".\src\bob\compiler.h"\
-	".\src\bob\eval.h"\
-	".\src\bob\execute.h"\
-	".\src\bob\function.h"\
-	".\src\bob\objects.h"\
-	".\src\bob\streams.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\local_tokens.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\map_manager.cpp"\
-	{$(INCLUDE)}"ace\map_manager.h"\
-	{$(INCLUDE)}"ace\map_manager.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
 	
 
-"$(INTDIR)\bob.obj" : $(SOURCE) $(DEP_CPP_BOB_C) "$(INTDIR)"
+"$(INTDIR)\bob.obj"	"$(INTDIR)\bob.sbr" : $(SOURCE) $(DEP_CPP_BOB_C)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\des\cbc_cksm.c
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+DEP_CPP_CBC_C=\
+	"..\cryptlib21\capi.h"\
+	"..\cryptlib21\crypt.h"\
+	"..\cryptlib21\des\des.h"\
+	"..\cryptlib21\des\des_locl.h"\
+	
+
+"$(INTDIR)\cbc_cksm.obj" : $(SOURCE) $(DEP_CPP_CBC_C) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_CBC_C=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	
+
+"$(INTDIR)\cbc_cksm.obj"	"$(INTDIR)\cbc_cksm.sbr" : $(SOURCE) $(DEP_CPP_CBC_C)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\des\cfb_enc.c
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+DEP_CPP_CFB_E=\
+	"..\cryptlib21\capi.h"\
+	"..\cryptlib21\crypt.h"\
+	"..\cryptlib21\des\des.h"\
+	"..\cryptlib21\des\des_locl.h"\
+	
+
+"$(INTDIR)\cfb_enc.obj" : $(SOURCE) $(DEP_CPP_CFB_E) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_CFB_E=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	
+
+"$(INTDIR)\cfb_enc.obj"	"$(INTDIR)\cfb_enc.sbr" : $(SOURCE) $(DEP_CPP_CFB_E)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -700,11 +927,175 @@ SOURCE=.\src\chanserv.cpp
 !IF  "$(CFG)" == "magick - Win32 Release"
 
 DEP_CPP_CHANS=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Addr.h"\
+	"..\ace_wrappers\ace\Addr.i"\
+	"..\ace_wrappers\ace\Atomic_Op.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\Basic_Types.i"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config-WinCE.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\Connector.cpp"\
+	"..\ace_wrappers\ace\Connector.h"\
+	"..\ace_wrappers\ace\Connector.i"\
+	"..\ace_wrappers\ace\Containers.h"\
+	"..\ace_wrappers\ace\Containers.i"\
+	"..\ace_wrappers\ace\Containers_T.cpp"\
+	"..\ace_wrappers\ace\Containers_T.h"\
+	"..\ace_wrappers\ace\Containers_T.i"\
+	"..\ace_wrappers\ace\Dynamic.h"\
+	"..\ace_wrappers\ace\Dynamic.i"\
+	"..\ace_wrappers\ace\Event_Handler.h"\
+	"..\ace_wrappers\ace\Event_Handler.i"\
+	"..\ace_wrappers\ace\Free_List.cpp"\
+	"..\ace_wrappers\ace\Free_List.h"\
+	"..\ace_wrappers\ace\Free_List.i"\
+	"..\ace_wrappers\ace\Functor.h"\
+	"..\ace_wrappers\ace\Functor.i"\
+	"..\ace_wrappers\ace\Functor_T.cpp"\
+	"..\ace_wrappers\ace\Functor_T.h"\
+	"..\ace_wrappers\ace\Functor_T.i"\
+	"..\ace_wrappers\ace\Handle_Set.h"\
+	"..\ace_wrappers\ace\Handle_Set.i"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.i"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.cpp"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.i"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\INET_Addr.h"\
+	"..\ace_wrappers\ace\INET_Addr.i"\
+	"..\ace_wrappers\ace\IO_Cntl_Msg.h"\
+	"..\ace_wrappers\ace\iosfwd.h"\
+	"..\ace_wrappers\ace\IPC_SAP.h"\
+	"..\ace_wrappers\ace\IPC_SAP.i"\
+	"..\ace_wrappers\ace\Local_Tokens.h"\
+	"..\ace_wrappers\ace\Local_Tokens.i"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc.h"\
+	"..\ace_wrappers\ace\Malloc.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Malloc_T.cpp"\
+	"..\ace_wrappers\ace\Malloc_T.h"\
+	"..\ace_wrappers\ace\Malloc_T.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Map_Manager.cpp"\
+	"..\ace_wrappers\ace\Map_Manager.h"\
+	"..\ace_wrappers\ace\Map_Manager.i"\
+	"..\ace_wrappers\ace\Mem_Map.h"\
+	"..\ace_wrappers\ace\Mem_Map.i"\
+	"..\ace_wrappers\ace\Memory_Pool.h"\
+	"..\ace_wrappers\ace\Memory_Pool.i"\
+	"..\ace_wrappers\ace\Message_Block.h"\
+	"..\ace_wrappers\ace\Message_Block.i"\
+	"..\ace_wrappers\ace\Message_Block_T.cpp"\
+	"..\ace_wrappers\ace\Message_Block_T.h"\
+	"..\ace_wrappers\ace\Message_Block_T.i"\
+	"..\ace_wrappers\ace\Message_Queue.h"\
+	"..\ace_wrappers\ace\Message_Queue.i"\
+	"..\ace_wrappers\ace\Message_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Message_Queue_T.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.i"\
+	"..\ace_wrappers\ace\Module.cpp"\
+	"..\ace_wrappers\ace\Module.h"\
+	"..\ace_wrappers\ace\Module.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\Object_Manager.i"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\OS.i"\
+	"..\ace_wrappers\ace\Reactor.h"\
+	"..\ace_wrappers\ace\Reactor.i"\
+	"..\ace_wrappers\ace\Reactor_Impl.h"\
+	"..\ace_wrappers\ace\Service_Config.h"\
+	"..\ace_wrappers\ace\Service_Config.i"\
+	"..\ace_wrappers\ace\Service_Object.h"\
+	"..\ace_wrappers\ace\Service_Object.i"\
+	"..\ace_wrappers\ace\Service_Repository.h"\
+	"..\ace_wrappers\ace\Service_Repository.i"\
+	"..\ace_wrappers\ace\Service_Types.h"\
+	"..\ace_wrappers\ace\Service_Types.i"\
+	"..\ace_wrappers\ace\Shared_Object.h"\
+	"..\ace_wrappers\ace\Shared_Object.i"\
+	"..\ace_wrappers\ace\Signal.h"\
+	"..\ace_wrappers\ace\Signal.i"\
+	"..\ace_wrappers\ace\Singleton.cpp"\
+	"..\ace_wrappers\ace\Singleton.h"\
+	"..\ace_wrappers\ace\Singleton.i"\
+	"..\ace_wrappers\ace\SOCK.h"\
+	"..\ace_wrappers\ace\SOCK.i"\
+	"..\ace_wrappers\ace\SOCK_Connector.h"\
+	"..\ace_wrappers\ace\SOCK_Connector.i"\
+	"..\ace_wrappers\ace\SOCK_IO.h"\
+	"..\ace_wrappers\ace\SOCK_IO.i"\
+	"..\ace_wrappers\ace\SOCK_Stream.h"\
+	"..\ace_wrappers\ace\SOCK_Stream.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\SString.i"\
+	"..\ace_wrappers\ace\Strategies.h"\
+	"..\ace_wrappers\ace\Strategies.i"\
+	"..\ace_wrappers\ace\Strategies_T.cpp"\
+	"..\ace_wrappers\ace\Strategies_T.h"\
+	"..\ace_wrappers\ace\Strategies_T.i"\
+	"..\ace_wrappers\ace\Stream_Modules.cpp"\
+	"..\ace_wrappers\ace\Stream_Modules.h"\
+	"..\ace_wrappers\ace\Stream_Modules.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\SV_Semaphore_Complex.h"\
+	"..\ace_wrappers\ace\SV_Semaphore_Complex.i"\
+	"..\ace_wrappers\ace\SV_Semaphore_Simple.h"\
+	"..\ace_wrappers\ace\SV_Semaphore_Simple.i"\
+	"..\ace_wrappers\ace\Svc_Conf_Tokens.h"\
+	"..\ace_wrappers\ace\Svc_Handler.cpp"\
+	"..\ace_wrappers\ace\Svc_Handler.h"\
+	"..\ace_wrappers\ace\Svc_Handler.i"\
+	"..\ace_wrappers\ace\Synch.h"\
+	"..\ace_wrappers\ace\Synch.i"\
+	"..\ace_wrappers\ace\Synch_Options.h"\
+	"..\ace_wrappers\ace\Synch_Options.i"\
+	"..\ace_wrappers\ace\Synch_T.cpp"\
+	"..\ace_wrappers\ace\Synch_T.h"\
+	"..\ace_wrappers\ace\Synch_T.i"\
+	"..\ace_wrappers\ace\Task.h"\
+	"..\ace_wrappers\ace\Task.i"\
+	"..\ace_wrappers\ace\Task_T.cpp"\
+	"..\ace_wrappers\ace\Task_T.h"\
+	"..\ace_wrappers\ace\Task_T.i"\
+	"..\ace_wrappers\ace\Thread.h"\
+	"..\ace_wrappers\ace\Thread.i"\
+	"..\ace_wrappers\ace\Thread_Manager.h"\
+	"..\ace_wrappers\ace\Thread_Manager.i"\
+	"..\ace_wrappers\ace\Time_Value.h"\
+	"..\ace_wrappers\ace\Timer_Queue.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Timer_Queue_T.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.i"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.i"\
+	"..\ace_wrappers\ace\ws2tcpip.h"\
 	".\include\bob.hpp"\
+	".\include\bob\bob.h"\
+	".\include\bob\bobexp.h"\
+	".\include\bob\compiler.h"\
+	".\include\bob\eval.h"\
+	".\include\bob\execute.h"\
+	".\include\bob\function.h"\
+	".\include\bob\objects.h"\
+	".\include\bob\streams.h"\
 	".\include\chanserv.h"\
 	".\include\confbase.h"\
 	".\include\datetime.h"\
 	".\include\fileconf.h"\
+	".\include\ircsocket.h"\
 	".\include\lockable.h"\
 	".\include\log.h"\
 	".\include\magick.h"\
@@ -712,138 +1103,6 @@ DEP_CPP_CHANS=\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
 	".\include\trace.h"\
-	".\src\bob\bob.h"\
-	".\src\bob\bobexp.h"\
-	".\src\bob\compiler.h"\
-	".\src\bob\eval.h"\
-	".\src\bob\execute.h"\
-	".\src\bob\function.h"\
-	".\src\bob\objects.h"\
-	".\src\bob\streams.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\Auto_Ptr.cpp"\
-	{$(INCLUDE)}"ace\Auto_Ptr.h"\
-	{$(INCLUDE)}"ace\Auto_Ptr.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config-WinCE.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers.i"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\event_handler.i"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\handle_set.i"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\iosfwd.h"\
-	{$(INCLUDE)}"ace\local_tokens.h"\
-	{$(INCLUDE)}"ace\Local_Tokens.i"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\Malloc.h"\
-	{$(INCLUDE)}"ace\malloc.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\map_manager.cpp"\
-	{$(INCLUDE)}"ace\map_manager.h"\
-	{$(INCLUDE)}"ace\map_manager.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\mem_map.i"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\memory_pool.i"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block.i"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue.i"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor.i"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_config.i"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_object.i"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_repository.i"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\service_types.i"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\shared_object.i"\
-	{$(INCLUDE)}"ace\Signal.h"\
-	{$(INCLUDE)}"ace\signal.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\sstring.i"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies.i"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\SV_Semaphore_Complex.h"\
-	{$(INCLUDE)}"ace\SV_Semaphore_Complex.i"\
-	{$(INCLUDE)}"ace\SV_Semaphore_Simple.h"\
-	{$(INCLUDE)}"ace\SV_Semaphore_Simple.i"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch.i"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_options.i"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task.i"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread.i"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\thread_manager.i"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.i"\
-	{$(INCLUDE)}"ace\ws2tcpip.h"\
 	
 
 "$(INTDIR)\chanserv.obj" : $(SOURCE) $(DEP_CPP_CHANS) "$(INTDIR)"
@@ -853,11 +1112,134 @@ DEP_CPP_CHANS=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_CHANS=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Addr.h"\
+	"..\ace_wrappers\ace\Atomic_Op.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\Connector.cpp"\
+	"..\ace_wrappers\ace\Connector.h"\
+	"..\ace_wrappers\ace\Connector.i"\
+	"..\ace_wrappers\ace\Containers.h"\
+	"..\ace_wrappers\ace\Containers_T.cpp"\
+	"..\ace_wrappers\ace\Containers_T.h"\
+	"..\ace_wrappers\ace\Containers_T.i"\
+	"..\ace_wrappers\ace\Dynamic.h"\
+	"..\ace_wrappers\ace\Event_Handler.h"\
+	"..\ace_wrappers\ace\Free_List.cpp"\
+	"..\ace_wrappers\ace\Free_List.h"\
+	"..\ace_wrappers\ace\Free_List.i"\
+	"..\ace_wrappers\ace\Functor.h"\
+	"..\ace_wrappers\ace\Functor_T.cpp"\
+	"..\ace_wrappers\ace\Functor_T.h"\
+	"..\ace_wrappers\ace\Functor_T.i"\
+	"..\ace_wrappers\ace\Handle_Set.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.cpp"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.i"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\INET_Addr.h"\
+	"..\ace_wrappers\ace\IO_Cntl_Msg.h"\
+	"..\ace_wrappers\ace\IPC_SAP.h"\
+	"..\ace_wrappers\ace\IPC_SAP.i"\
+	"..\ace_wrappers\ace\Local_Tokens.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Malloc_T.cpp"\
+	"..\ace_wrappers\ace\Malloc_T.h"\
+	"..\ace_wrappers\ace\Malloc_T.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Map_Manager.cpp"\
+	"..\ace_wrappers\ace\Map_Manager.h"\
+	"..\ace_wrappers\ace\Map_Manager.i"\
+	"..\ace_wrappers\ace\Mem_Map.h"\
+	"..\ace_wrappers\ace\Memory_Pool.h"\
+	"..\ace_wrappers\ace\Message_Block.h"\
+	"..\ace_wrappers\ace\Message_Block_T.cpp"\
+	"..\ace_wrappers\ace\Message_Block_T.h"\
+	"..\ace_wrappers\ace\Message_Block_T.i"\
+	"..\ace_wrappers\ace\Message_Queue.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Message_Queue_T.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.i"\
+	"..\ace_wrappers\ace\Module.cpp"\
+	"..\ace_wrappers\ace\Module.h"\
+	"..\ace_wrappers\ace\Module.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\Reactor.h"\
+	"..\ace_wrappers\ace\Reactor_Impl.h"\
+	"..\ace_wrappers\ace\Service_Config.h"\
+	"..\ace_wrappers\ace\Service_Object.h"\
+	"..\ace_wrappers\ace\Service_Repository.h"\
+	"..\ace_wrappers\ace\Service_Types.h"\
+	"..\ace_wrappers\ace\Shared_Object.h"\
+	"..\ace_wrappers\ace\Singleton.cpp"\
+	"..\ace_wrappers\ace\Singleton.h"\
+	"..\ace_wrappers\ace\Singleton.i"\
+	"..\ace_wrappers\ace\SOCK.h"\
+	"..\ace_wrappers\ace\SOCK.i"\
+	"..\ace_wrappers\ace\SOCK_Connector.h"\
+	"..\ace_wrappers\ace\SOCK_Connector.i"\
+	"..\ace_wrappers\ace\SOCK_IO.h"\
+	"..\ace_wrappers\ace\SOCK_IO.i"\
+	"..\ace_wrappers\ace\SOCK_Stream.h"\
+	"..\ace_wrappers\ace\SOCK_Stream.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\Strategies.h"\
+	"..\ace_wrappers\ace\Strategies_T.cpp"\
+	"..\ace_wrappers\ace\Strategies_T.h"\
+	"..\ace_wrappers\ace\Strategies_T.i"\
+	"..\ace_wrappers\ace\Stream_Modules.cpp"\
+	"..\ace_wrappers\ace\Stream_Modules.h"\
+	"..\ace_wrappers\ace\Stream_Modules.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Svc_Conf_Tokens.h"\
+	"..\ace_wrappers\ace\Svc_Handler.cpp"\
+	"..\ace_wrappers\ace\Svc_Handler.h"\
+	"..\ace_wrappers\ace\Svc_Handler.i"\
+	"..\ace_wrappers\ace\Synch.h"\
+	"..\ace_wrappers\ace\Synch_Options.h"\
+	"..\ace_wrappers\ace\Synch_T.cpp"\
+	"..\ace_wrappers\ace\Synch_T.h"\
+	"..\ace_wrappers\ace\Synch_T.i"\
+	"..\ace_wrappers\ace\Task.h"\
+	"..\ace_wrappers\ace\Task_T.cpp"\
+	"..\ace_wrappers\ace\Task_T.h"\
+	"..\ace_wrappers\ace\Task_T.i"\
+	"..\ace_wrappers\ace\Thread.h"\
+	"..\ace_wrappers\ace\Thread_Manager.h"\
+	"..\ace_wrappers\ace\Time_Value.h"\
+	"..\ace_wrappers\ace\Timer_Queue.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Timer_Queue_T.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.i"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.h"\
 	".\include\bob.hpp"\
+	".\include\bob\bob.h"\
+	".\include\bob\bobexp.h"\
+	".\include\bob\compiler.h"\
+	".\include\bob\eval.h"\
+	".\include\bob\execute.h"\
+	".\include\bob\function.h"\
+	".\include\bob\objects.h"\
+	".\include\bob\streams.h"\
 	".\include\chanserv.h"\
 	".\include\confbase.h"\
 	".\include\datetime.h"\
 	".\include\fileconf.h"\
+	".\include\ircsocket.h"\
 	".\include\lockable.h"\
 	".\include\log.h"\
 	".\include\magick.h"\
@@ -865,102 +1247,10 @@ DEP_CPP_CHANS=\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
 	".\include\trace.h"\
-	".\src\bob\bob.h"\
-	".\src\bob\bobexp.h"\
-	".\src\bob\compiler.h"\
-	".\src\bob\eval.h"\
-	".\src\bob\execute.h"\
-	".\src\bob\function.h"\
-	".\src\bob\objects.h"\
-	".\src\bob\streams.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\local_tokens.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\map_manager.cpp"\
-	{$(INCLUDE)}"ace\map_manager.h"\
-	{$(INCLUDE)}"ace\map_manager.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
 	
 
-"$(INTDIR)\chanserv.obj" : $(SOURCE) $(DEP_CPP_CHANS) "$(INTDIR)"
+"$(INTDIR)\chanserv.obj"	"$(INTDIR)\chanserv.sbr" : $(SOURCE) $(DEP_CPP_CHANS)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -988,7 +1278,8 @@ DEP_CPP_CHARB=\
 	".\include\antlr\config.hpp"\
 	
 
-"$(INTDIR)\CharBuffer.obj" : $(SOURCE) $(DEP_CPP_CHARB) "$(INTDIR)"
+"$(INTDIR)\CharBuffer.obj"	"$(INTDIR)\CharBuffer.sbr" : $(SOURCE)\
+ $(DEP_CPP_CHARB) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1032,7 +1323,8 @@ DEP_CPP_CHARS=\
 	".\include\antlr\tokenizer.hpp"\
 	
 
-"$(INTDIR)\CharScanner.obj" : $(SOURCE) $(DEP_CPP_CHARS) "$(INTDIR)"
+"$(INTDIR)\CharScanner.obj"	"$(INTDIR)\CharScanner.sbr" : $(SOURCE)\
+ $(DEP_CPP_CHARS) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1064,7 +1356,8 @@ DEP_CPP_COMMO=\
 	".\include\antlr\token.hpp"\
 	
 
-"$(INTDIR)\CommonToken.obj" : $(SOURCE) $(DEP_CPP_COMMO) "$(INTDIR)"
+"$(INTDIR)\CommonToken.obj"	"$(INTDIR)\CommonToken.sbr" : $(SOURCE)\
+ $(DEP_CPP_COMMO) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1081,28 +1374,30 @@ DEP_CPP_CONFB=\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
+	
+NODEP_CPP_CONFB=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
 	
 
 "$(INTDIR)\confbase.obj" : $(SOURCE) $(DEP_CPP_CONFB) "$(INTDIR)"
@@ -1112,34 +1407,124 @@ DEP_CPP_CONFB=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_CONFB=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
 	".\include\confbase.h"\
+	".\include\datetime.h"\
 	".\include\fileconf.h"\
 	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
+	".\include\trace.h"\
 	
 
-"$(INTDIR)\confbase.obj" : $(SOURCE) $(DEP_CPP_CONFB) "$(INTDIR)"
+"$(INTDIR)\confbase.obj"	"$(INTDIR)\confbase.sbr" : $(SOURCE) $(DEP_CPP_CONFB)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\cryptstream.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+DEP_CPP_CRYPT=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\Basic_Types.i"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config-WinCE.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\iosfwd.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\Object_Manager.i"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\OS.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\SString.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\ws2tcpip.h"\
+	"..\cryptlib21\des\spr.h"\
+	".\include\cryptstream.h"\
+	".\include\log.h"\
+	".\include\mstream.h"\
+	".\include\mstring.h"\
+	
+NODEP_CPP_CRYPT=\
+	".\include\des_locl.h"\
+	
+
+"$(INTDIR)\cryptstream.obj" : $(SOURCE) $(DEP_CPP_CRYPT) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_CRYPT=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	".\include\cryptstream.h"\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	".\include\des\spr.h"\
+	".\include\log.h"\
+	".\include\mstream.h"\
+	".\include\mstring.h"\
+	
+
+"$(INTDIR)\cryptstream.obj"	"$(INTDIR)\cryptstream.sbr" : $(SOURCE)\
+ $(DEP_CPP_CRYPT) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1150,41 +1535,38 @@ SOURCE=.\src\datetime.cpp
 !IF  "$(CFG)" == "magick - Win32 Release"
 
 DEP_CPP_DATET=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\Basic_Types.i"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config-WinCE.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\iosfwd.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\Object_Manager.i"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\OS.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\SString.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\ws2tcpip.h"\
 	".\include\datetime.h"\
 	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\Auto_Ptr.cpp"\
-	{$(INCLUDE)}"ace\Auto_Ptr.h"\
-	{$(INCLUDE)}"ace\Auto_Ptr.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config-WinCE.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\iosfwd.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\sstring.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\ws2tcpip.h"\
 	
 
 "$(INTDIR)\datetime.obj" : $(SOURCE) $(DEP_CPP_DATET) "$(INTDIR)"
@@ -1194,32 +1576,63 @@ DEP_CPP_DATET=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_DATET=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
 	".\include\datetime.h"\
 	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
 	
 
-"$(INTDIR)\datetime.obj" : $(SOURCE) $(DEP_CPP_DATET) "$(INTDIR)"
+"$(INTDIR)\datetime.obj"	"$(INTDIR)\datetime.sbr" : $(SOURCE) $(DEP_CPP_DATET)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\des\des_enc.c
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+DEP_CPP_DES_E=\
+	"..\cryptlib21\capi.h"\
+	"..\cryptlib21\crypt.h"\
+	"..\cryptlib21\des\des.h"\
+	"..\cryptlib21\des\des_locl.h"\
+	
+
+"$(INTDIR)\des_enc.obj" : $(SOURCE) $(DEP_CPP_DES_E) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_DES_E=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	
+
+"$(INTDIR)\des_enc.obj"	"$(INTDIR)\des_enc.sbr" : $(SOURCE) $(DEP_CPP_DES_E)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1242,8 +1655,10 @@ DEP_CPP_ESCLE=\
 	".\include\antlr\token.hpp"\
 	".\include\antlr\tokenizer.hpp"\
 	".\include\mstring.h"\
-	".\include\EscLexer.hpp"\
-	".\include\esclexertokentypes.hpp"\
+	
+NODEP_CPP_ESCLE=\
+	".\src\esclexer.hpp"\
+	".\src\esclexertokentypes.hpp"\
 	
 
 "$(INTDIR)\EscLexer.obj" : $(SOURCE) $(DEP_CPP_ESCLE) "$(INTDIR)"
@@ -1264,12 +1679,13 @@ DEP_CPP_ESCLE=\
 	".\include\antlr\scannerexception.hpp"\
 	".\include\antlr\token.hpp"\
 	".\include\antlr\tokenizer.hpp"\
-	".\include\mstring.h"\
 	".\include\EscLexer.hpp"\
 	".\include\esclexertokentypes.hpp"\
+	".\include\mstring.h"\
 	
 
-"$(INTDIR)\EscLexer.obj" : $(SOURCE) $(DEP_CPP_ESCLE) "$(INTDIR)"
+"$(INTDIR)\EscLexer.obj"	"$(INTDIR)\EscLexer.sbr" : $(SOURCE) $(DEP_CPP_ESCLE)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1299,8 +1715,10 @@ DEP_CPP_ESCPA=\
 	".\include\antlr\tokenbuffer.hpp"\
 	".\include\antlr\tokenizer.hpp"\
 	".\include\mstring.h"\
-	".\include\esclexertokentypes.hpp"\
-	".\include\EscParser.hpp"\
+	
+NODEP_CPP_ESCPA=\
+	".\src\esclexertokentypes.hpp"\
+	".\src\escparser.hpp"\
 	
 
 "$(INTDIR)\EscParser.obj" : $(SOURCE) $(DEP_CPP_ESCPA) "$(INTDIR)"
@@ -1328,12 +1746,13 @@ DEP_CPP_ESCPA=\
 	".\include\antlr\token.hpp"\
 	".\include\antlr\tokenbuffer.hpp"\
 	".\include\antlr\tokenizer.hpp"\
-	".\include\mstring.h"\
 	".\include\esclexertokentypes.hpp"\
 	".\include\EscParser.hpp"\
+	".\include\mstring.h"\
 	
 
-"$(INTDIR)\EscParser.obj" : $(SOURCE) $(DEP_CPP_ESCPA) "$(INTDIR)"
+"$(INTDIR)\EscParser.obj"	"$(INTDIR)\EscParser.sbr" : $(SOURCE)\
+ $(DEP_CPP_ESCPA) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1351,28 +1770,30 @@ DEP_CPP_FILEC=\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
 	".\include\utils.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
+	
+NODEP_CPP_FILEC=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
 	
 
 "$(INTDIR)\fileconf.obj" : $(SOURCE) $(DEP_CPP_FILEC) "$(INTDIR)"
@@ -1382,35 +1803,341 @@ DEP_CPP_FILEC=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_FILEC=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
 	".\include\confbase.h"\
+	".\include\datetime.h"\
 	".\include\fileconf.h"\
 	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
+	".\include\trace.h"\
 	".\include\utils.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
 	
 
-"$(INTDIR)\fileconf.obj" : $(SOURCE) $(DEP_CPP_FILEC) "$(INTDIR)"
+"$(INTDIR)\fileconf.obj"	"$(INTDIR)\fileconf.sbr" : $(SOURCE) $(DEP_CPP_FILEC)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\ircsocket.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+DEP_CPP_IRCSO=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Addr.h"\
+	"..\ace_wrappers\ace\Addr.i"\
+	"..\ace_wrappers\ace\Atomic_Op.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\Basic_Types.i"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config-WinCE.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\Connector.cpp"\
+	"..\ace_wrappers\ace\Connector.h"\
+	"..\ace_wrappers\ace\Connector.i"\
+	"..\ace_wrappers\ace\Containers.h"\
+	"..\ace_wrappers\ace\Containers.i"\
+	"..\ace_wrappers\ace\Containers_T.cpp"\
+	"..\ace_wrappers\ace\Containers_T.h"\
+	"..\ace_wrappers\ace\Containers_T.i"\
+	"..\ace_wrappers\ace\Dynamic.h"\
+	"..\ace_wrappers\ace\Dynamic.i"\
+	"..\ace_wrappers\ace\Event_Handler.h"\
+	"..\ace_wrappers\ace\Event_Handler.i"\
+	"..\ace_wrappers\ace\Free_List.cpp"\
+	"..\ace_wrappers\ace\Free_List.h"\
+	"..\ace_wrappers\ace\Free_List.i"\
+	"..\ace_wrappers\ace\Functor.h"\
+	"..\ace_wrappers\ace\Functor.i"\
+	"..\ace_wrappers\ace\Functor_T.cpp"\
+	"..\ace_wrappers\ace\Functor_T.h"\
+	"..\ace_wrappers\ace\Functor_T.i"\
+	"..\ace_wrappers\ace\Handle_Set.h"\
+	"..\ace_wrappers\ace\Handle_Set.i"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.i"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.cpp"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.i"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\INET_Addr.h"\
+	"..\ace_wrappers\ace\INET_Addr.i"\
+	"..\ace_wrappers\ace\IO_Cntl_Msg.h"\
+	"..\ace_wrappers\ace\iosfwd.h"\
+	"..\ace_wrappers\ace\IPC_SAP.h"\
+	"..\ace_wrappers\ace\IPC_SAP.i"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc.h"\
+	"..\ace_wrappers\ace\Malloc.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Malloc_T.cpp"\
+	"..\ace_wrappers\ace\Malloc_T.h"\
+	"..\ace_wrappers\ace\Malloc_T.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Map_Manager.cpp"\
+	"..\ace_wrappers\ace\Map_Manager.h"\
+	"..\ace_wrappers\ace\Map_Manager.i"\
+	"..\ace_wrappers\ace\Mem_Map.h"\
+	"..\ace_wrappers\ace\Mem_Map.i"\
+	"..\ace_wrappers\ace\Memory_Pool.h"\
+	"..\ace_wrappers\ace\Memory_Pool.i"\
+	"..\ace_wrappers\ace\Message_Block.h"\
+	"..\ace_wrappers\ace\Message_Block.i"\
+	"..\ace_wrappers\ace\Message_Block_T.cpp"\
+	"..\ace_wrappers\ace\Message_Block_T.h"\
+	"..\ace_wrappers\ace\Message_Block_T.i"\
+	"..\ace_wrappers\ace\Message_Queue.h"\
+	"..\ace_wrappers\ace\Message_Queue.i"\
+	"..\ace_wrappers\ace\Message_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Message_Queue_T.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.i"\
+	"..\ace_wrappers\ace\Module.cpp"\
+	"..\ace_wrappers\ace\Module.h"\
+	"..\ace_wrappers\ace\Module.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\Object_Manager.i"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\OS.i"\
+	"..\ace_wrappers\ace\Reactor.h"\
+	"..\ace_wrappers\ace\Reactor.i"\
+	"..\ace_wrappers\ace\Reactor_Impl.h"\
+	"..\ace_wrappers\ace\Service_Config.h"\
+	"..\ace_wrappers\ace\Service_Config.i"\
+	"..\ace_wrappers\ace\Service_Object.h"\
+	"..\ace_wrappers\ace\Service_Object.i"\
+	"..\ace_wrappers\ace\Service_Repository.h"\
+	"..\ace_wrappers\ace\Service_Repository.i"\
+	"..\ace_wrappers\ace\Service_Types.h"\
+	"..\ace_wrappers\ace\Service_Types.i"\
+	"..\ace_wrappers\ace\Shared_Object.h"\
+	"..\ace_wrappers\ace\Shared_Object.i"\
+	"..\ace_wrappers\ace\Signal.h"\
+	"..\ace_wrappers\ace\Signal.i"\
+	"..\ace_wrappers\ace\Singleton.cpp"\
+	"..\ace_wrappers\ace\Singleton.h"\
+	"..\ace_wrappers\ace\Singleton.i"\
+	"..\ace_wrappers\ace\SOCK.h"\
+	"..\ace_wrappers\ace\SOCK.i"\
+	"..\ace_wrappers\ace\SOCK_Connector.h"\
+	"..\ace_wrappers\ace\SOCK_Connector.i"\
+	"..\ace_wrappers\ace\SOCK_IO.h"\
+	"..\ace_wrappers\ace\SOCK_IO.i"\
+	"..\ace_wrappers\ace\SOCK_Stream.h"\
+	"..\ace_wrappers\ace\SOCK_Stream.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\SString.i"\
+	"..\ace_wrappers\ace\Strategies.h"\
+	"..\ace_wrappers\ace\Strategies.i"\
+	"..\ace_wrappers\ace\Strategies_T.cpp"\
+	"..\ace_wrappers\ace\Strategies_T.h"\
+	"..\ace_wrappers\ace\Strategies_T.i"\
+	"..\ace_wrappers\ace\Stream_Modules.cpp"\
+	"..\ace_wrappers\ace\Stream_Modules.h"\
+	"..\ace_wrappers\ace\Stream_Modules.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\SV_Semaphore_Complex.h"\
+	"..\ace_wrappers\ace\SV_Semaphore_Complex.i"\
+	"..\ace_wrappers\ace\SV_Semaphore_Simple.h"\
+	"..\ace_wrappers\ace\SV_Semaphore_Simple.i"\
+	"..\ace_wrappers\ace\Svc_Conf_Tokens.h"\
+	"..\ace_wrappers\ace\Svc_Handler.cpp"\
+	"..\ace_wrappers\ace\Svc_Handler.h"\
+	"..\ace_wrappers\ace\Svc_Handler.i"\
+	"..\ace_wrappers\ace\Synch.h"\
+	"..\ace_wrappers\ace\Synch.i"\
+	"..\ace_wrappers\ace\Synch_Options.h"\
+	"..\ace_wrappers\ace\Synch_Options.i"\
+	"..\ace_wrappers\ace\Synch_T.cpp"\
+	"..\ace_wrappers\ace\Synch_T.h"\
+	"..\ace_wrappers\ace\Synch_T.i"\
+	"..\ace_wrappers\ace\Task.h"\
+	"..\ace_wrappers\ace\Task.i"\
+	"..\ace_wrappers\ace\Task_T.cpp"\
+	"..\ace_wrappers\ace\Task_T.h"\
+	"..\ace_wrappers\ace\Task_T.i"\
+	"..\ace_wrappers\ace\Thread.h"\
+	"..\ace_wrappers\ace\Thread.i"\
+	"..\ace_wrappers\ace\Thread_Manager.h"\
+	"..\ace_wrappers\ace\Thread_Manager.i"\
+	"..\ace_wrappers\ace\Time_Value.h"\
+	"..\ace_wrappers\ace\Timer_Queue.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Timer_Queue_T.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.i"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.i"\
+	"..\ace_wrappers\ace\ws2tcpip.h"\
+	".\include\ircsocket.h"\
+	".\include\mstream.h"\
+	".\include\mstring.h"\
+	".\include\trace.h"\
+	
+
+"$(INTDIR)\ircsocket.obj" : $(SOURCE) $(DEP_CPP_IRCSO) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_IRCSO=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Addr.h"\
+	"..\ace_wrappers\ace\Atomic_Op.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\Connector.cpp"\
+	"..\ace_wrappers\ace\Connector.h"\
+	"..\ace_wrappers\ace\Connector.i"\
+	"..\ace_wrappers\ace\Containers.h"\
+	"..\ace_wrappers\ace\Containers_T.cpp"\
+	"..\ace_wrappers\ace\Containers_T.h"\
+	"..\ace_wrappers\ace\Containers_T.i"\
+	"..\ace_wrappers\ace\Dynamic.h"\
+	"..\ace_wrappers\ace\Event_Handler.h"\
+	"..\ace_wrappers\ace\Free_List.cpp"\
+	"..\ace_wrappers\ace\Free_List.h"\
+	"..\ace_wrappers\ace\Free_List.i"\
+	"..\ace_wrappers\ace\Functor.h"\
+	"..\ace_wrappers\ace\Functor_T.cpp"\
+	"..\ace_wrappers\ace\Functor_T.h"\
+	"..\ace_wrappers\ace\Functor_T.i"\
+	"..\ace_wrappers\ace\Handle_Set.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.cpp"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.i"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\INET_Addr.h"\
+	"..\ace_wrappers\ace\IO_Cntl_Msg.h"\
+	"..\ace_wrappers\ace\IPC_SAP.h"\
+	"..\ace_wrappers\ace\IPC_SAP.i"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Malloc_T.cpp"\
+	"..\ace_wrappers\ace\Malloc_T.h"\
+	"..\ace_wrappers\ace\Malloc_T.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Map_Manager.cpp"\
+	"..\ace_wrappers\ace\Map_Manager.h"\
+	"..\ace_wrappers\ace\Map_Manager.i"\
+	"..\ace_wrappers\ace\Mem_Map.h"\
+	"..\ace_wrappers\ace\Memory_Pool.h"\
+	"..\ace_wrappers\ace\Message_Block.h"\
+	"..\ace_wrappers\ace\Message_Block_T.cpp"\
+	"..\ace_wrappers\ace\Message_Block_T.h"\
+	"..\ace_wrappers\ace\Message_Block_T.i"\
+	"..\ace_wrappers\ace\Message_Queue.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Message_Queue_T.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.i"\
+	"..\ace_wrappers\ace\Module.cpp"\
+	"..\ace_wrappers\ace\Module.h"\
+	"..\ace_wrappers\ace\Module.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\Reactor.h"\
+	"..\ace_wrappers\ace\Reactor_Impl.h"\
+	"..\ace_wrappers\ace\Service_Config.h"\
+	"..\ace_wrappers\ace\Service_Object.h"\
+	"..\ace_wrappers\ace\Service_Repository.h"\
+	"..\ace_wrappers\ace\Service_Types.h"\
+	"..\ace_wrappers\ace\Shared_Object.h"\
+	"..\ace_wrappers\ace\Singleton.cpp"\
+	"..\ace_wrappers\ace\Singleton.h"\
+	"..\ace_wrappers\ace\Singleton.i"\
+	"..\ace_wrappers\ace\SOCK.h"\
+	"..\ace_wrappers\ace\SOCK.i"\
+	"..\ace_wrappers\ace\SOCK_Connector.h"\
+	"..\ace_wrappers\ace\SOCK_Connector.i"\
+	"..\ace_wrappers\ace\SOCK_IO.h"\
+	"..\ace_wrappers\ace\SOCK_IO.i"\
+	"..\ace_wrappers\ace\SOCK_Stream.h"\
+	"..\ace_wrappers\ace\SOCK_Stream.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\Strategies.h"\
+	"..\ace_wrappers\ace\Strategies_T.cpp"\
+	"..\ace_wrappers\ace\Strategies_T.h"\
+	"..\ace_wrappers\ace\Strategies_T.i"\
+	"..\ace_wrappers\ace\Stream_Modules.cpp"\
+	"..\ace_wrappers\ace\Stream_Modules.h"\
+	"..\ace_wrappers\ace\Stream_Modules.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Svc_Conf_Tokens.h"\
+	"..\ace_wrappers\ace\Svc_Handler.cpp"\
+	"..\ace_wrappers\ace\Svc_Handler.h"\
+	"..\ace_wrappers\ace\Svc_Handler.i"\
+	"..\ace_wrappers\ace\Synch.h"\
+	"..\ace_wrappers\ace\Synch_Options.h"\
+	"..\ace_wrappers\ace\Synch_T.cpp"\
+	"..\ace_wrappers\ace\Synch_T.h"\
+	"..\ace_wrappers\ace\Synch_T.i"\
+	"..\ace_wrappers\ace\Task.h"\
+	"..\ace_wrappers\ace\Task_T.cpp"\
+	"..\ace_wrappers\ace\Task_T.h"\
+	"..\ace_wrappers\ace\Task_T.i"\
+	"..\ace_wrappers\ace\Thread.h"\
+	"..\ace_wrappers\ace\Thread_Manager.h"\
+	"..\ace_wrappers\ace\Time_Value.h"\
+	"..\ace_wrappers\ace\Timer_Queue.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Timer_Queue_T.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.i"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.h"\
+	".\include\confbase.h"\
+	".\include\datetime.h"\
+	".\include\fileconf.h"\
+	".\include\ircsocket.h"\
+	".\include\log.h"\
+	".\include\mstream.h"\
+	".\include\mstring.h"\
+	".\include\textfile.h"\
+	".\include\trace.h"\
+	
+
+"$(INTDIR)\ircsocket.obj"	"$(INTDIR)\ircsocket.sbr" : $(SOURCE)\
+ $(DEP_CPP_IRCSO) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1464,7 +2191,8 @@ DEP_CPP_LLKPA=\
 	".\include\antlr\tokenizer.hpp"\
 	
 
-"$(INTDIR)\LLkParser.obj" : $(SOURCE) $(DEP_CPP_LLKPA) "$(INTDIR)"
+"$(INTDIR)\LLkParser.obj"	"$(INTDIR)\LLkParser.sbr" : $(SOURCE)\
+ $(DEP_CPP_LLKPA) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1476,113 +2204,115 @@ SOURCE=.\src\lockable.cpp
 
 DEP_CPP_LOCKA=\
 	".\include\lockable.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers.i"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\event_handler.i"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\handle_set.i"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\mem_map.i"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\memory_pool.i"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block.i"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue.i"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor.i"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_config.i"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_object.i"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_repository.i"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\service_types.i"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\shared_object.i"\
-	{$(INCLUDE)}"ace\signal.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\sstring.i"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies.i"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch.i"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_options.i"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task.i"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread.i"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\thread_manager.i"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.i"\
+	
+NODEP_CPP_LOCKA=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\atomic_op.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers.i"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\event_handler.h"\
+	"..\..\program files\devstudio\vc\include\ace\event_handler.i"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.h"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.i"\
+	"..\..\program files\devstudio\vc\include\ace\handle_set.h"\
+	"..\..\program files\devstudio\vc\include\ace\handle_set.i"\
+	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\io_cntl_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\malloc.i"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_base.h"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\mem_map.h"\
+	"..\..\program files\devstudio\vc\include\ace\mem_map.i"\
+	"..\..\program files\devstudio\vc\include\ace\memory_pool.h"\
+	"..\..\program files\devstudio\vc\include\ace\memory_pool.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_block.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_block.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\module.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\module.h"\
+	"..\..\program files\devstudio\vc\include\ace\module.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\reactor.h"\
+	"..\..\program files\devstudio\vc\include\ace\reactor.i"\
+	"..\..\program files\devstudio\vc\include\ace\reactor_impl.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_config.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_repository.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_repository.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\shared_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\shared_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\signal.i"\
+	"..\..\program files\devstudio\vc\include\ace\sstring.h"\
+	"..\..\program files\devstudio\vc\include\ace\sstring.i"\
+	"..\..\program files\devstudio\vc\include\ace\strategies.h"\
+	"..\..\program files\devstudio\vc\include\ace\strategies.i"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.h"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\svc_conf_tokens.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch.i"\
+	"..\..\program files\devstudio\vc\include\ace\synch_options.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch_options.i"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\task.h"\
+	"..\..\program files\devstudio\vc\include\ace\task.i"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\thread.h"\
+	"..\..\program files\devstudio\vc\include\ace\thread.i"\
+	"..\..\program files\devstudio\vc\include\ace\thread_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\thread_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue.h"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
+	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.h"\
+	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.i"\
 	
 
 "$(INTDIR)\lockable.obj" : $(SOURCE) $(DEP_CPP_LOCKA) "$(INTDIR)"
@@ -1592,97 +2322,83 @@ DEP_CPP_LOCKA=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_LOCKA=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Atomic_Op.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\Containers.h"\
+	"..\ace_wrappers\ace\Containers_T.cpp"\
+	"..\ace_wrappers\ace\Containers_T.h"\
+	"..\ace_wrappers\ace\Containers_T.i"\
+	"..\ace_wrappers\ace\Event_Handler.h"\
+	"..\ace_wrappers\ace\Free_List.cpp"\
+	"..\ace_wrappers\ace\Free_List.h"\
+	"..\ace_wrappers\ace\Free_List.i"\
+	"..\ace_wrappers\ace\Handle_Set.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Local_Tokens.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Malloc_T.cpp"\
+	"..\ace_wrappers\ace\Malloc_T.h"\
+	"..\ace_wrappers\ace\Malloc_T.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Map_Manager.cpp"\
+	"..\ace_wrappers\ace\Map_Manager.h"\
+	"..\ace_wrappers\ace\Map_Manager.i"\
+	"..\ace_wrappers\ace\Mem_Map.h"\
+	"..\ace_wrappers\ace\Memory_Pool.h"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\Reactor.h"\
+	"..\ace_wrappers\ace\Service_Config.h"\
+	"..\ace_wrappers\ace\Service_Object.h"\
+	"..\ace_wrappers\ace\Shared_Object.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Svc_Conf_Tokens.h"\
+	"..\ace_wrappers\ace\Synch.h"\
+	"..\ace_wrappers\ace\Synch_Options.h"\
+	"..\ace_wrappers\ace\Synch_T.cpp"\
+	"..\ace_wrappers\ace\Synch_T.h"\
+	"..\ace_wrappers\ace\Synch_T.i"\
+	"..\ace_wrappers\ace\Thread.h"\
+	"..\ace_wrappers\ace\Timer_Queue.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Timer_Queue_T.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.i"\
+	"..\ace_wrappers\ace\Trace.h"\
+	".\include\confbase.h"\
+	".\include\datetime.h"\
+	".\include\fileconf.h"\
 	".\include\lockable.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
+	".\include\log.h"\
+	".\include\mstream.h"\
+	".\include\mstring.h"\
+	".\include\textfile.h"\
+	".\include\trace.h"\
 	
 
-"$(INTDIR)\lockable.obj" : $(SOURCE) $(DEP_CPP_LOCKA) "$(INTDIR)"
+"$(INTDIR)\lockable.obj"	"$(INTDIR)\lockable.sbr" : $(SOURCE) $(DEP_CPP_LOCKA)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
 
 SOURCE=.\src\log.cpp
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
 DEP_CPP_LOG_C=\
 	".\include\log.h"\
 	".\include\mstring.h"\
@@ -1691,6 +2407,20 @@ DEP_CPP_LOG_C=\
 "$(INTDIR)\log.obj" : $(SOURCE) $(DEP_CPP_LOG_C) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_LOG_C=\
+	".\include\log.h"\
+	".\include\mstring.h"\
+	
+
+"$(INTDIR)\log.obj"	"$(INTDIR)\log.sbr" : $(SOURCE) $(DEP_CPP_LOG_C)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
 
 SOURCE=.\src\magick.cpp
 
@@ -1726,117 +2456,115 @@ DEP_CPP_MAGIC=\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
-	".\include\EscLexer.hpp"\
-	".\include\EscParser.hpp"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers.i"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\event_handler.i"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\handle_set.i"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\mem_map.i"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\memory_pool.i"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block.i"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue.i"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor.i"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_config.i"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_object.i"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_repository.i"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\service_types.i"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\shared_object.i"\
-	{$(INCLUDE)}"ace\signal.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\sstring.i"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies.i"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch.i"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_options.i"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task.i"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread.i"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\thread_manager.i"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.i"\
 	
 NODEP_CPP_MAGIC=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\atomic_op.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers.i"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\event_handler.h"\
+	"..\..\program files\devstudio\vc\include\ace\event_handler.i"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.h"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.i"\
+	"..\..\program files\devstudio\vc\include\ace\handle_set.h"\
+	"..\..\program files\devstudio\vc\include\ace\handle_set.i"\
+	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\io_cntl_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\malloc.i"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_base.h"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\mem_map.h"\
+	"..\..\program files\devstudio\vc\include\ace\mem_map.i"\
+	"..\..\program files\devstudio\vc\include\ace\memory_pool.h"\
+	"..\..\program files\devstudio\vc\include\ace\memory_pool.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_block.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_block.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\module.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\module.h"\
+	"..\..\program files\devstudio\vc\include\ace\module.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\reactor.h"\
+	"..\..\program files\devstudio\vc\include\ace\reactor.i"\
+	"..\..\program files\devstudio\vc\include\ace\reactor_impl.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_config.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_repository.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_repository.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\shared_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\shared_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\signal.i"\
+	"..\..\program files\devstudio\vc\include\ace\sstring.h"\
+	"..\..\program files\devstudio\vc\include\ace\sstring.i"\
+	"..\..\program files\devstudio\vc\include\ace\strategies.h"\
+	"..\..\program files\devstudio\vc\include\ace\strategies.i"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.h"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\svc_conf_tokens.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch.i"\
+	"..\..\program files\devstudio\vc\include\ace\synch_options.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch_options.i"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\task.h"\
+	"..\..\program files\devstudio\vc\include\ace\task.i"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\thread.h"\
+	"..\..\program files\devstudio\vc\include\ace\thread.i"\
+	"..\..\program files\devstudio\vc\include\ace\thread_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\thread_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue.h"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
+	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.h"\
+	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.i"\
 	"..\bob\bob.h"\
 	"..\bob\bobexp.h"\
 	"..\bob\compiler.h"\
@@ -1845,6 +2573,8 @@ NODEP_CPP_MAGIC=\
 	"..\bob\function.h"\
 	"..\bob\objects.h"\
 	"..\bob\streams.h"\
+	".\src\esclexer.hpp"\
+	".\src\escparser.hpp"\
 	
 
 "$(INTDIR)\magick.obj" : $(SOURCE) $(DEP_CPP_MAGIC) "$(INTDIR)"
@@ -1854,6 +2584,120 @@ NODEP_CPP_MAGIC=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_MAGIC=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Addr.h"\
+	"..\ace_wrappers\ace\Atomic_Op.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\Connector.cpp"\
+	"..\ace_wrappers\ace\Connector.h"\
+	"..\ace_wrappers\ace\Connector.i"\
+	"..\ace_wrappers\ace\Containers.h"\
+	"..\ace_wrappers\ace\Containers_T.cpp"\
+	"..\ace_wrappers\ace\Containers_T.h"\
+	"..\ace_wrappers\ace\Containers_T.i"\
+	"..\ace_wrappers\ace\Dynamic.h"\
+	"..\ace_wrappers\ace\Event_Handler.h"\
+	"..\ace_wrappers\ace\Free_List.cpp"\
+	"..\ace_wrappers\ace\Free_List.h"\
+	"..\ace_wrappers\ace\Free_List.i"\
+	"..\ace_wrappers\ace\Functor.h"\
+	"..\ace_wrappers\ace\Functor_T.cpp"\
+	"..\ace_wrappers\ace\Functor_T.h"\
+	"..\ace_wrappers\ace\Functor_T.i"\
+	"..\ace_wrappers\ace\Handle_Set.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.cpp"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.i"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\INET_Addr.h"\
+	"..\ace_wrappers\ace\IO_Cntl_Msg.h"\
+	"..\ace_wrappers\ace\IPC_SAP.h"\
+	"..\ace_wrappers\ace\IPC_SAP.i"\
+	"..\ace_wrappers\ace\Local_Tokens.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Malloc_T.cpp"\
+	"..\ace_wrappers\ace\Malloc_T.h"\
+	"..\ace_wrappers\ace\Malloc_T.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Map_Manager.cpp"\
+	"..\ace_wrappers\ace\Map_Manager.h"\
+	"..\ace_wrappers\ace\Map_Manager.i"\
+	"..\ace_wrappers\ace\Mem_Map.h"\
+	"..\ace_wrappers\ace\Memory_Pool.h"\
+	"..\ace_wrappers\ace\Message_Block.h"\
+	"..\ace_wrappers\ace\Message_Block_T.cpp"\
+	"..\ace_wrappers\ace\Message_Block_T.h"\
+	"..\ace_wrappers\ace\Message_Block_T.i"\
+	"..\ace_wrappers\ace\Message_Queue.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Message_Queue_T.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.i"\
+	"..\ace_wrappers\ace\Module.cpp"\
+	"..\ace_wrappers\ace\Module.h"\
+	"..\ace_wrappers\ace\Module.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\Reactor.h"\
+	"..\ace_wrappers\ace\Reactor_Impl.h"\
+	"..\ace_wrappers\ace\Service_Config.h"\
+	"..\ace_wrappers\ace\Service_Object.h"\
+	"..\ace_wrappers\ace\Service_Repository.h"\
+	"..\ace_wrappers\ace\Service_Types.h"\
+	"..\ace_wrappers\ace\Shared_Object.h"\
+	"..\ace_wrappers\ace\Singleton.cpp"\
+	"..\ace_wrappers\ace\Singleton.h"\
+	"..\ace_wrappers\ace\Singleton.i"\
+	"..\ace_wrappers\ace\SOCK.h"\
+	"..\ace_wrappers\ace\SOCK.i"\
+	"..\ace_wrappers\ace\SOCK_Connector.h"\
+	"..\ace_wrappers\ace\SOCK_Connector.i"\
+	"..\ace_wrappers\ace\SOCK_IO.h"\
+	"..\ace_wrappers\ace\SOCK_IO.i"\
+	"..\ace_wrappers\ace\SOCK_Stream.h"\
+	"..\ace_wrappers\ace\SOCK_Stream.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\Strategies.h"\
+	"..\ace_wrappers\ace\Strategies_T.cpp"\
+	"..\ace_wrappers\ace\Strategies_T.h"\
+	"..\ace_wrappers\ace\Strategies_T.i"\
+	"..\ace_wrappers\ace\Stream_Modules.cpp"\
+	"..\ace_wrappers\ace\Stream_Modules.h"\
+	"..\ace_wrappers\ace\Stream_Modules.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Svc_Conf_Tokens.h"\
+	"..\ace_wrappers\ace\Svc_Handler.cpp"\
+	"..\ace_wrappers\ace\Svc_Handler.h"\
+	"..\ace_wrappers\ace\Svc_Handler.i"\
+	"..\ace_wrappers\ace\Synch.h"\
+	"..\ace_wrappers\ace\Synch_Options.h"\
+	"..\ace_wrappers\ace\Synch_T.cpp"\
+	"..\ace_wrappers\ace\Synch_T.h"\
+	"..\ace_wrappers\ace\Synch_T.i"\
+	"..\ace_wrappers\ace\Task.h"\
+	"..\ace_wrappers\ace\Task_T.cpp"\
+	"..\ace_wrappers\ace\Task_T.h"\
+	"..\ace_wrappers\ace\Task_T.i"\
+	"..\ace_wrappers\ace\Thread.h"\
+	"..\ace_wrappers\ace\Thread_Manager.h"\
+	"..\ace_wrappers\ace\Time_Value.h"\
+	"..\ace_wrappers\ace\Timer_Queue.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Timer_Queue_T.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.i"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.h"\
 	".\include\antlr\antlrexception.hpp"\
 	".\include\antlr\ast.hpp"\
 	".\include\antlr\astarray.hpp"\
@@ -1875,18 +2719,6 @@ DEP_CPP_MAGIC=\
 	".\include\antlr\tokenbuffer.hpp"\
 	".\include\antlr\tokenizer.hpp"\
 	".\include\bob.hpp"\
-	".\include\chanserv.h"\
-	".\include\confbase.h"\
-	".\include\datetime.h"\
-	".\include\fileconf.h"\
-	".\include\language.h"\
-	".\include\lockable.h"\
-	".\include\log.h"\
-	".\include\magick.h"\
-	".\include\mstream.h"\
-	".\include\mstring.h"\
-	".\include\textfile.h"\
-	".\include\trace.h"\
 	".\include\bob\bob.h"\
 	".\include\bob\bobexp.h"\
 	".\include\bob\compiler.h"\
@@ -1895,96 +2727,25 @@ DEP_CPP_MAGIC=\
 	".\include\bob\function.h"\
 	".\include\bob\objects.h"\
 	".\include\bob\streams.h"\
+	".\include\chanserv.h"\
+	".\include\confbase.h"\
+	".\include\datetime.h"\
 	".\include\EscLexer.hpp"\
 	".\include\EscParser.hpp"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\local_tokens.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\map_manager.cpp"\
-	{$(INCLUDE)}"ace\map_manager.h"\
-	{$(INCLUDE)}"ace\map_manager.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
+	".\include\fileconf.h"\
+	".\include\ircsocket.h"\
+	".\include\language.h"\
+	".\include\lockable.h"\
+	".\include\log.h"\
+	".\include\magick.h"\
+	".\include\mstream.h"\
+	".\include\mstring.h"\
+	".\include\textfile.h"\
+	".\include\trace.h"\
 	
 
-"$(INTDIR)\magick.obj" : $(SOURCE) $(DEP_CPP_MAGIC) "$(INTDIR)"
+"$(INTDIR)\magick.obj"	"$(INTDIR)\magick.sbr" : $(SOURCE) $(DEP_CPP_MAGIC)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2004,115 +2765,115 @@ DEP_CPP_MAIN_=\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers.i"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\event_handler.i"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\handle_set.i"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\mem_map.i"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\memory_pool.i"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block.i"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue.i"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor.i"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_config.i"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_object.i"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_repository.i"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\service_types.i"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\shared_object.i"\
-	{$(INCLUDE)}"ace\signal.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\sstring.i"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies.i"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch.i"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_options.i"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task.i"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread.i"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\thread_manager.i"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.i"\
 	
 NODEP_CPP_MAIN_=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\atomic_op.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers.i"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\containers_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\event_handler.h"\
+	"..\..\program files\devstudio\vc\include\ace\event_handler.i"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.h"\
+	"..\..\program files\devstudio\vc\include\ace\free_list.i"\
+	"..\..\program files\devstudio\vc\include\ace\handle_set.h"\
+	"..\..\program files\devstudio\vc\include\ace\handle_set.i"\
+	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\hash_map_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\io_cntl_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\malloc.i"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_base.h"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\malloc_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\mem_map.h"\
+	"..\..\program files\devstudio\vc\include\ace\mem_map.i"\
+	"..\..\program files\devstudio\vc\include\ace\memory_pool.h"\
+	"..\..\program files\devstudio\vc\include\ace\memory_pool.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_block.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_block.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_block_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue.i"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\message_queue_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\module.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\module.h"\
+	"..\..\program files\devstudio\vc\include\ace\module.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\reactor.h"\
+	"..\..\program files\devstudio\vc\include\ace\reactor.i"\
+	"..\..\program files\devstudio\vc\include\ace\reactor_impl.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_config.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_repository.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_repository.i"\
+	"..\..\program files\devstudio\vc\include\ace\service_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\service_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\shared_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\shared_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\signal.i"\
+	"..\..\program files\devstudio\vc\include\ace\sstring.h"\
+	"..\..\program files\devstudio\vc\include\ace\sstring.i"\
+	"..\..\program files\devstudio\vc\include\ace\strategies.h"\
+	"..\..\program files\devstudio\vc\include\ace\strategies.i"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\strategies_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.h"\
+	"..\..\program files\devstudio\vc\include\ace\stream_modules.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\svc_conf_tokens.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch.i"\
+	"..\..\program files\devstudio\vc\include\ace\synch_options.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch_options.i"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\synch_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\task.h"\
+	"..\..\program files\devstudio\vc\include\ace\task.i"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\task_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\thread.h"\
+	"..\..\program files\devstudio\vc\include\ace\thread.i"\
+	"..\..\program files\devstudio\vc\include\ace\thread_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\thread_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue.h"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.h"\
+	"..\..\program files\devstudio\vc\include\ace\timer_queue_t.i"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
+	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.h"\
+	"..\..\program files\devstudio\vc\include\ace\wfmo_reactor.i"\
 	"..\bob\bob.h"\
 	"..\bob\bobexp.h"\
 	"..\bob\compiler.h"\
@@ -2130,18 +2891,121 @@ NODEP_CPP_MAIN_=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_MAIN_=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Addr.h"\
+	"..\ace_wrappers\ace\Atomic_Op.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\Connector.cpp"\
+	"..\ace_wrappers\ace\Connector.h"\
+	"..\ace_wrappers\ace\Connector.i"\
+	"..\ace_wrappers\ace\Containers.h"\
+	"..\ace_wrappers\ace\Containers_T.cpp"\
+	"..\ace_wrappers\ace\Containers_T.h"\
+	"..\ace_wrappers\ace\Containers_T.i"\
+	"..\ace_wrappers\ace\Dynamic.h"\
+	"..\ace_wrappers\ace\Event_Handler.h"\
+	"..\ace_wrappers\ace\Free_List.cpp"\
+	"..\ace_wrappers\ace\Free_List.h"\
+	"..\ace_wrappers\ace\Free_List.i"\
+	"..\ace_wrappers\ace\Functor.h"\
+	"..\ace_wrappers\ace\Functor_T.cpp"\
+	"..\ace_wrappers\ace\Functor_T.h"\
+	"..\ace_wrappers\ace\Functor_T.i"\
+	"..\ace_wrappers\ace\Handle_Set.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.cpp"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.h"\
+	"..\ace_wrappers\ace\Hash_Map_Manager_T.i"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\INET_Addr.h"\
+	"..\ace_wrappers\ace\IO_Cntl_Msg.h"\
+	"..\ace_wrappers\ace\IPC_SAP.h"\
+	"..\ace_wrappers\ace\IPC_SAP.i"\
+	"..\ace_wrappers\ace\Local_Tokens.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Malloc_T.cpp"\
+	"..\ace_wrappers\ace\Malloc_T.h"\
+	"..\ace_wrappers\ace\Malloc_T.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Map_Manager.cpp"\
+	"..\ace_wrappers\ace\Map_Manager.h"\
+	"..\ace_wrappers\ace\Map_Manager.i"\
+	"..\ace_wrappers\ace\Mem_Map.h"\
+	"..\ace_wrappers\ace\Memory_Pool.h"\
+	"..\ace_wrappers\ace\Message_Block.h"\
+	"..\ace_wrappers\ace\Message_Block_T.cpp"\
+	"..\ace_wrappers\ace\Message_Block_T.h"\
+	"..\ace_wrappers\ace\Message_Block_T.i"\
+	"..\ace_wrappers\ace\Message_Queue.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Message_Queue_T.h"\
+	"..\ace_wrappers\ace\Message_Queue_T.i"\
+	"..\ace_wrappers\ace\Module.cpp"\
+	"..\ace_wrappers\ace\Module.h"\
+	"..\ace_wrappers\ace\Module.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\Reactor.h"\
+	"..\ace_wrappers\ace\Reactor_Impl.h"\
+	"..\ace_wrappers\ace\Service_Config.h"\
+	"..\ace_wrappers\ace\Service_Object.h"\
+	"..\ace_wrappers\ace\Service_Repository.h"\
+	"..\ace_wrappers\ace\Service_Types.h"\
+	"..\ace_wrappers\ace\Shared_Object.h"\
+	"..\ace_wrappers\ace\Singleton.cpp"\
+	"..\ace_wrappers\ace\Singleton.h"\
+	"..\ace_wrappers\ace\Singleton.i"\
+	"..\ace_wrappers\ace\SOCK.h"\
+	"..\ace_wrappers\ace\SOCK.i"\
+	"..\ace_wrappers\ace\SOCK_Connector.h"\
+	"..\ace_wrappers\ace\SOCK_Connector.i"\
+	"..\ace_wrappers\ace\SOCK_IO.h"\
+	"..\ace_wrappers\ace\SOCK_IO.i"\
+	"..\ace_wrappers\ace\SOCK_Stream.h"\
+	"..\ace_wrappers\ace\SOCK_Stream.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\Strategies.h"\
+	"..\ace_wrappers\ace\Strategies_T.cpp"\
+	"..\ace_wrappers\ace\Strategies_T.h"\
+	"..\ace_wrappers\ace\Strategies_T.i"\
+	"..\ace_wrappers\ace\Stream_Modules.cpp"\
+	"..\ace_wrappers\ace\Stream_Modules.h"\
+	"..\ace_wrappers\ace\Stream_Modules.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Svc_Conf_Tokens.h"\
+	"..\ace_wrappers\ace\Svc_Handler.cpp"\
+	"..\ace_wrappers\ace\Svc_Handler.h"\
+	"..\ace_wrappers\ace\Svc_Handler.i"\
+	"..\ace_wrappers\ace\Synch.h"\
+	"..\ace_wrappers\ace\Synch_Options.h"\
+	"..\ace_wrappers\ace\Synch_T.cpp"\
+	"..\ace_wrappers\ace\Synch_T.h"\
+	"..\ace_wrappers\ace\Synch_T.i"\
+	"..\ace_wrappers\ace\Task.h"\
+	"..\ace_wrappers\ace\Task_T.cpp"\
+	"..\ace_wrappers\ace\Task_T.h"\
+	"..\ace_wrappers\ace\Task_T.i"\
+	"..\ace_wrappers\ace\Thread.h"\
+	"..\ace_wrappers\ace\Thread_Manager.h"\
+	"..\ace_wrappers\ace\Time_Value.h"\
+	"..\ace_wrappers\ace\Timer_Queue.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.cpp"\
+	"..\ace_wrappers\ace\Timer_Queue_T.h"\
+	"..\ace_wrappers\ace\Timer_Queue_T.i"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\WFMO_Reactor.h"\
 	".\include\bob.hpp"\
-	".\include\chanserv.h"\
-	".\include\confbase.h"\
-	".\include\datetime.h"\
-	".\include\fileconf.h"\
-	".\include\lockable.h"\
-	".\include\log.h"\
-	".\include\magick.h"\
-	".\include\mstream.h"\
-	".\include\mstring.h"\
-	".\include\textfile.h"\
-	".\include\trace.h"\
 	".\include\bob\bob.h"\
 	".\include\bob\bobexp.h"\
 	".\include\bob\compiler.h"\
@@ -2150,94 +3014,21 @@ DEP_CPP_MAIN_=\
 	".\include\bob\function.h"\
 	".\include\bob\objects.h"\
 	".\include\bob\streams.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\atomic_op.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\containers.h"\
-	{$(INCLUDE)}"ace\containers_t.cpp"\
-	{$(INCLUDE)}"ace\containers_t.h"\
-	{$(INCLUDE)}"ace\containers_t.i"\
-	{$(INCLUDE)}"ace\event_handler.h"\
-	{$(INCLUDE)}"ace\free_list.cpp"\
-	{$(INCLUDE)}"ace\free_list.h"\
-	{$(INCLUDE)}"ace\free_list.i"\
-	{$(INCLUDE)}"ace\handle_set.h"\
-	{$(INCLUDE)}"ace\hash_map_manager.cpp"\
-	{$(INCLUDE)}"ace\hash_map_manager.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\io_cntl_msg.h"\
-	{$(INCLUDE)}"ace\local_tokens.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\malloc_t.cpp"\
-	{$(INCLUDE)}"ace\malloc_t.h"\
-	{$(INCLUDE)}"ace\malloc_t.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\map_manager.cpp"\
-	{$(INCLUDE)}"ace\map_manager.h"\
-	{$(INCLUDE)}"ace\map_manager.i"\
-	{$(INCLUDE)}"ace\mem_map.h"\
-	{$(INCLUDE)}"ace\memory_pool.h"\
-	{$(INCLUDE)}"ace\message_block.h"\
-	{$(INCLUDE)}"ace\message_block_t.cpp"\
-	{$(INCLUDE)}"ace\message_block_t.h"\
-	{$(INCLUDE)}"ace\message_block_t.i"\
-	{$(INCLUDE)}"ace\message_queue.h"\
-	{$(INCLUDE)}"ace\message_queue_t.cpp"\
-	{$(INCLUDE)}"ace\message_queue_t.h"\
-	{$(INCLUDE)}"ace\message_queue_t.i"\
-	{$(INCLUDE)}"ace\module.cpp"\
-	{$(INCLUDE)}"ace\module.h"\
-	{$(INCLUDE)}"ace\module.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\reactor.h"\
-	{$(INCLUDE)}"ace\reactor_impl.h"\
-	{$(INCLUDE)}"ace\service_config.h"\
-	{$(INCLUDE)}"ace\service_object.h"\
-	{$(INCLUDE)}"ace\service_repository.h"\
-	{$(INCLUDE)}"ace\service_types.h"\
-	{$(INCLUDE)}"ace\shared_object.h"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\strategies.h"\
-	{$(INCLUDE)}"ace\strategies_t.cpp"\
-	{$(INCLUDE)}"ace\strategies_t.h"\
-	{$(INCLUDE)}"ace\strategies_t.i"\
-	{$(INCLUDE)}"ace\stream_modules.cpp"\
-	{$(INCLUDE)}"ace\stream_modules.h"\
-	{$(INCLUDE)}"ace\stream_modules.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\svc_conf_tokens.h"\
-	{$(INCLUDE)}"ace\synch.h"\
-	{$(INCLUDE)}"ace\synch_options.h"\
-	{$(INCLUDE)}"ace\synch_t.cpp"\
-	{$(INCLUDE)}"ace\synch_t.h"\
-	{$(INCLUDE)}"ace\synch_t.i"\
-	{$(INCLUDE)}"ace\task.h"\
-	{$(INCLUDE)}"ace\task_t.cpp"\
-	{$(INCLUDE)}"ace\task_t.h"\
-	{$(INCLUDE)}"ace\task_t.i"\
-	{$(INCLUDE)}"ace\thread.h"\
-	{$(INCLUDE)}"ace\thread_manager.h"\
-	{$(INCLUDE)}"ace\timer_queue.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.cpp"\
-	{$(INCLUDE)}"ace\timer_queue_t.h"\
-	{$(INCLUDE)}"ace\timer_queue_t.i"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\wfmo_reactor.h"\
+	".\include\chanserv.h"\
+	".\include\confbase.h"\
+	".\include\datetime.h"\
+	".\include\fileconf.h"\
+	".\include\ircsocket.h"\
+	".\include\log.h"\
+	".\include\magick.h"\
+	".\include\mstream.h"\
+	".\include\mstring.h"\
+	".\include\textfile.h"\
+	".\include\trace.h"\
 	
 
-"$(INTDIR)\main.obj" : $(SOURCE) $(DEP_CPP_MAIN_) "$(INTDIR)"
+"$(INTDIR)\main.obj"	"$(INTDIR)\main.sbr" : $(SOURCE) $(DEP_CPP_MAIN_)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2276,7 +3067,8 @@ DEP_CPP_MISMA=\
 	".\include\antlr\token.hpp"\
 	
 
-"$(INTDIR)\MismatchedTokenException.obj" : $(SOURCE) $(DEP_CPP_MISMA)\
+"$(INTDIR)\MismatchedTokenException.obj"\
+	"$(INTDIR)\MismatchedTokenException.sbr" : $(SOURCE) $(DEP_CPP_MISMA)\
  "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
@@ -2294,28 +3086,30 @@ DEP_CPP_MSTRE=\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\utils.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
+	
+NODEP_CPP_MSTRE=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
 	
 
 "$(INTDIR)\mstream.obj" : $(SOURCE) $(DEP_CPP_MSTRE) "$(INTDIR)"
@@ -2327,32 +3121,34 @@ DEP_CPP_MSTRE=\
 DEP_CPP_MSTRE=\
 	"..\..\program files\devstudio\vc\include\zconf.h"\
 	"..\..\program files\devstudio\vc\include\zlib.h"\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
 	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\utils.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
 	
 
-"$(INTDIR)\mstream.obj" : $(SOURCE) $(DEP_CPP_MSTRE) "$(INTDIR)"
+"$(INTDIR)\mstream.obj"	"$(INTDIR)\mstream.sbr" : $(SOURCE) $(DEP_CPP_MSTRE)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2364,28 +3160,30 @@ SOURCE=.\src\mstring.cpp
 
 DEP_CPP_MSTRI=\
 	".\include\mstring.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
+	
+NODEP_CPP_MSTRI=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
 	
 
 "$(INTDIR)\mstring.obj" : $(SOURCE) $(DEP_CPP_MSTRI) "$(INTDIR)"
@@ -2395,29 +3193,31 @@ DEP_CPP_MSTRI=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_MSTRI=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
 	".\include\mstring.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
 	
 
-"$(INTDIR)\mstring.obj" : $(SOURCE) $(DEP_CPP_MSTRI) "$(INTDIR)"
+"$(INTDIR)\mstring.obj"	"$(INTDIR)\mstring.sbr" : $(SOURCE) $(DEP_CPP_MSTRI)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2453,7 +3253,8 @@ DEP_CPP_NOVIA=\
 	".\include\antlr\token.hpp"\
 	
 
-"$(INTDIR)\NoViableAltException.obj" : $(SOURCE) $(DEP_CPP_NOVIA) "$(INTDIR)"
+"$(INTDIR)\NoViableAltException.obj"	"$(INTDIR)\NoViableAltException.sbr" : \
+$(SOURCE) $(DEP_CPP_NOVIA) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2507,7 +3308,8 @@ DEP_CPP_PARSE=\
 	".\include\antlr\tokenizer.hpp"\
 	
 
-"$(INTDIR)\Parser.obj" : $(SOURCE) $(DEP_CPP_PARSE) "$(INTDIR)"
+"$(INTDIR)\Parser.obj"	"$(INTDIR)\Parser.sbr" : $(SOURCE) $(DEP_CPP_PARSE)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2535,7 +3337,8 @@ DEP_CPP_PARSER=\
 	".\include\antlr\parserexception.hpp"\
 	
 
-"$(INTDIR)\ParserException.obj" : $(SOURCE) $(DEP_CPP_PARSER) "$(INTDIR)"
+"$(INTDIR)\ParserException.obj"	"$(INTDIR)\ParserException.sbr" : $(SOURCE)\
+ $(DEP_CPP_PARSER) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2565,7 +3368,70 @@ DEP_CPP_SCANN=\
 	".\include\antlr\string.hpp"\
 	
 
-"$(INTDIR)\ScannerException.obj" : $(SOURCE) $(DEP_CPP_SCANN) "$(INTDIR)"
+"$(INTDIR)\ScannerException.obj"	"$(INTDIR)\ScannerException.sbr" : $(SOURCE)\
+ $(DEP_CPP_SCANN) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\des\set_key.c
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+DEP_CPP_SET_K=\
+	"..\cryptlib21\capi.h"\
+	"..\cryptlib21\crypt.h"\
+	"..\cryptlib21\des\des.h"\
+	"..\cryptlib21\des\des_locl.h"\
+	"..\cryptlib21\des\podd.h"\
+	"..\cryptlib21\des\sk.h"\
+	
+
+"$(INTDIR)\set_key.obj" : $(SOURCE) $(DEP_CPP_SET_K) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_SET_K=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	".\include\des\podd.h"\
+	".\include\des\sk.h"\
+	
+
+"$(INTDIR)\set_key.obj"	"$(INTDIR)\set_key.sbr" : $(SOURCE) $(DEP_CPP_SET_K)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=.\src\des\str2key.c
+
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+DEP_CPP_STR2K=\
+	"..\cryptlib21\capi.h"\
+	"..\cryptlib21\crypt.h"\
+	"..\cryptlib21\des\des.h"\
+	"..\cryptlib21\des\des_locl.h"\
+	
+
+"$(INTDIR)\str2key.obj" : $(SOURCE) $(DEP_CPP_STR2K) "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+DEP_CPP_STR2K=\
+	".\include\des\des.h"\
+	".\include\des\des_locl.h"\
+	
+
+"$(INTDIR)\str2key.obj"	"$(INTDIR)\str2key.sbr" : $(SOURCE) $(DEP_CPP_STR2K)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2577,9 +3443,22 @@ DEP_CPP_STRIN=\
 	".\include\antlr\string.hpp"\
 	
 
+!IF  "$(CFG)" == "magick - Win32 Release"
+
+
 "$(INTDIR)\String.obj" : $(SOURCE) $(DEP_CPP_STRIN) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
+
+!ELSEIF  "$(CFG)" == "magick - Win32 Debug"
+
+
+"$(INTDIR)\String.obj"	"$(INTDIR)\String.sbr" : $(SOURCE) $(DEP_CPP_STRIN)\
+ "$(INTDIR)"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
 
 SOURCE=.\src\textfile.cpp
 
@@ -2590,28 +3469,30 @@ DEP_CPP_TEXTF=\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
+	
+NODEP_CPP_TEXTF=\
+	"..\..\program files\devstudio\vc\include\ace\ace.h"\
+	"..\..\program files\devstudio\vc\include\ace\ace.i"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.h"\
+	"..\..\program files\devstudio\vc\include\ace\basic_types.i"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-borland.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32-common.h"\
+	"..\..\program files\devstudio\vc\include\ace\config-win32.h"\
+	"..\..\program files\devstudio\vc\include\ace\config.h"\
+	"..\..\program files\devstudio\vc\include\ace\inc_user_config.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_msg.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_priority.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.h"\
+	"..\..\program files\devstudio\vc\include\ace\log_record.i"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.cpp"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.h"\
+	"..\..\program files\devstudio\vc\include\ace\managed_object.i"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.h"\
+	"..\..\program files\devstudio\vc\include\ace\object_manager.i"\
+	"..\..\program files\devstudio\vc\include\ace\os.h"\
+	"..\..\program files\devstudio\vc\include\ace\os.i"\
+	"..\..\program files\devstudio\vc\include\ace\streams.h"\
+	"..\..\program files\devstudio\vc\include\ace\trace.h"\
 	
 
 "$(INTDIR)\textfile.obj" : $(SOURCE) $(DEP_CPP_TEXTF) "$(INTDIR)"
@@ -2621,32 +3502,38 @@ DEP_CPP_TEXTF=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_TEXTF=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	".\include\confbase.h"\
+	".\include\datetime.h"\
+	".\include\fileconf.h"\
 	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\textfile.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
+	".\include\trace.h"\
 	
 
-"$(INTDIR)\textfile.obj" : $(SOURCE) $(DEP_CPP_TEXTF) "$(INTDIR)"
+"$(INTDIR)\textfile.obj"	"$(INTDIR)\textfile.sbr" : $(SOURCE) $(DEP_CPP_TEXTF)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2676,7 +3563,8 @@ DEP_CPP_TOKEN=\
 	".\include\antlr\token.hpp"\
 	
 
-"$(INTDIR)\Token.obj" : $(SOURCE) $(DEP_CPP_TOKEN) "$(INTDIR)"
+"$(INTDIR)\Token.obj"	"$(INTDIR)\Token.sbr" : $(SOURCE) $(DEP_CPP_TOKEN)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2710,7 +3598,8 @@ DEP_CPP_TOKENB=\
 	".\include\antlr\tokenizer.hpp"\
 	
 
-"$(INTDIR)\TokenBuffer.obj" : $(SOURCE) $(DEP_CPP_TOKENB) "$(INTDIR)"
+"$(INTDIR)\TokenBuffer.obj"	"$(INTDIR)\TokenBuffer.sbr" : $(SOURCE)\
+ $(DEP_CPP_TOKENB) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2721,40 +3610,37 @@ SOURCE=.\src\trace.cpp
 !IF  "$(CFG)" == "magick - Win32 Release"
 
 DEP_CPP_TRACE=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\Basic_Types.i"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config-WinCE.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\iosfwd.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\Object_Manager.i"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\OS.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\SString.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\ws2tcpip.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\trace.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\Auto_Ptr.cpp"\
-	{$(INCLUDE)}"ace\Auto_Ptr.h"\
-	{$(INCLUDE)}"ace\Auto_Ptr.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config-WinCE.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\iosfwd.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\sstring.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\ws2tcpip.h"\
 	
 
 "$(INTDIR)\trace.obj" : $(SOURCE) $(DEP_CPP_TRACE) "$(INTDIR)"
@@ -2764,32 +3650,38 @@ DEP_CPP_TRACE=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_TRACE=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	".\include\confbase.h"\
 	".\include\datetime.h"\
+	".\include\fileconf.h"\
+	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
+	".\include\textfile.h"\
 	".\include\trace.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
 	
 
-"$(INTDIR)\trace.obj" : $(SOURCE) $(DEP_CPP_TRACE) "$(INTDIR)"
+"$(INTDIR)\trace.obj"	"$(INTDIR)\trace.sbr" : $(SOURCE) $(DEP_CPP_TRACE)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2839,7 +3731,8 @@ DEP_CPP_TREEP=\
 	".\include\antlr\treeparser.hpp"\
 	
 
-"$(INTDIR)\TreeParser.obj" : $(SOURCE) $(DEP_CPP_TREEP) "$(INTDIR)"
+"$(INTDIR)\TreeParser.obj"	"$(INTDIR)\TreeParser.sbr" : $(SOURCE)\
+ $(DEP_CPP_TREEP) "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2862,12 +3755,39 @@ DEP_CPP_UTILS=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_UTILS=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	".\include\confbase.h"\
+	".\include\datetime.h"\
+	".\include\fileconf.h"\
 	".\include\log.h"\
+	".\include\mstream.h"\
 	".\include\mstring.h"\
+	".\include\textfile.h"\
+	".\include\trace.h"\
 	".\include\utils.h"\
 	
 
-"$(INTDIR)\utils.obj" : $(SOURCE) $(DEP_CPP_UTILS) "$(INTDIR)"
+"$(INTDIR)\utils.obj"	"$(INTDIR)\utils.sbr" : $(SOURCE) $(DEP_CPP_UTILS)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -2878,40 +3798,37 @@ SOURCE=.\src\variant.cpp
 !IF  "$(CFG)" == "magick - Win32 Release"
 
 DEP_CPP_VARIA=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\Basic_Types.i"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config-WinCE.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\iosfwd.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Malloc_Base.h"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\Object_Manager.i"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\OS.i"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\SString.i"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	"..\ace_wrappers\ace\ws2tcpip.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
 	".\include\trace.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\Auto_Ptr.cpp"\
-	{$(INCLUDE)}"ace\Auto_Ptr.h"\
-	{$(INCLUDE)}"ace\Auto_Ptr.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\basic_types.i"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config-WinCE.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\iosfwd.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\malloc_base.h"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\object_manager.i"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\os.i"\
-	{$(INCLUDE)}"ace\sstring.h"\
-	{$(INCLUDE)}"ace\sstring.i"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
-	{$(INCLUDE)}"ace\ws2tcpip.h"\
 	
 
 "$(INTDIR)\variant.obj" : $(SOURCE) $(DEP_CPP_VARIA) "$(INTDIR)"
@@ -2921,32 +3838,38 @@ DEP_CPP_VARIA=\
 !ELSEIF  "$(CFG)" == "magick - Win32 Debug"
 
 DEP_CPP_VARIA=\
+	"..\ace_wrappers\ace\ACE.h"\
+	"..\ace_wrappers\ace\ACE.i"\
+	"..\ace_wrappers\ace\Basic_Types.h"\
+	"..\ace_wrappers\ace\config-win32-borland.h"\
+	"..\ace_wrappers\ace\config-win32-common.h"\
+	"..\ace_wrappers\ace\config-win32.h"\
+	"..\ace_wrappers\ace\config.h"\
+	"..\ace_wrappers\ace\inc_user_config.h"\
+	"..\ace_wrappers\ace\Log_Msg.h"\
+	"..\ace_wrappers\ace\Log_Priority.h"\
+	"..\ace_wrappers\ace\Log_Record.h"\
+	"..\ace_wrappers\ace\Log_Record.i"\
+	"..\ace_wrappers\ace\Managed_Object.cpp"\
+	"..\ace_wrappers\ace\Managed_Object.h"\
+	"..\ace_wrappers\ace\Managed_Object.i"\
+	"..\ace_wrappers\ace\Object_Manager.h"\
+	"..\ace_wrappers\ace\OS.h"\
+	"..\ace_wrappers\ace\SString.h"\
+	"..\ace_wrappers\ace\streams.h"\
+	"..\ace_wrappers\ace\Trace.h"\
+	".\include\confbase.h"\
 	".\include\datetime.h"\
+	".\include\fileconf.h"\
+	".\include\log.h"\
 	".\include\mstream.h"\
 	".\include\mstring.h"\
+	".\include\textfile.h"\
 	".\include\trace.h"\
-	{$(INCLUDE)}"ace\ace.h"\
-	{$(INCLUDE)}"ace\ace.i"\
-	{$(INCLUDE)}"ace\basic_types.h"\
-	{$(INCLUDE)}"ace\config-win32-borland.h"\
-	{$(INCLUDE)}"ace\config-win32-common.h"\
-	{$(INCLUDE)}"ace\config-win32.h"\
-	{$(INCLUDE)}"ace\config.h"\
-	{$(INCLUDE)}"ace\inc_user_config.h"\
-	{$(INCLUDE)}"ace\log_msg.h"\
-	{$(INCLUDE)}"ace\log_priority.h"\
-	{$(INCLUDE)}"ace\log_record.h"\
-	{$(INCLUDE)}"ace\log_record.i"\
-	{$(INCLUDE)}"ace\managed_object.cpp"\
-	{$(INCLUDE)}"ace\managed_object.h"\
-	{$(INCLUDE)}"ace\managed_object.i"\
-	{$(INCLUDE)}"ace\object_manager.h"\
-	{$(INCLUDE)}"ace\os.h"\
-	{$(INCLUDE)}"ace\streams.h"\
-	{$(INCLUDE)}"ace\trace.h"\
 	
 
-"$(INTDIR)\variant.obj" : $(SOURCE) $(DEP_CPP_VARIA) "$(INTDIR)"
+"$(INTDIR)\variant.obj"	"$(INTDIR)\variant.sbr" : $(SOURCE) $(DEP_CPP_VARIA)\
+ "$(INTDIR)"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

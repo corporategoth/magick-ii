@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "include\bob" /I "..\cryptlib21" /I "include" /I "..\ace_wrappers" /I "include\des" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "include\bob" /I "..\cryptlib21" /I "include" /I "..\ace_wrappers" /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0xc09 /d "NDEBUG"
 # ADD RSC /l 0xc09 /d "NDEBUG"
@@ -66,7 +66,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "..\cryptlib21" /I "include" /I "..\ace_wrappers" /I "include\des" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /Fr /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /Zi /Od /Gf /I "include\bob" /I "..\cryptlib21" /I "include" /I "..\ace_wrappers" /D "_DEBUG" /D "DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "DES_UNROLL" /Fr /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
