@@ -181,7 +181,7 @@ enum bool
 #include <ace/Connector.h>
 #include <ace/SOCK_Acceptor.h>
 #include <ace/SOCK_Connector.h>
-#include <ace/Activation_Queue.h>
+#include <ace/Message_Queue.h>
 #include <ace/NT_Service.h>
 
 #ifdef ACE_HAS_TOKENS_LIBRARY
