@@ -25,6 +25,9 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/12/09 10:33:47  prez
+** Added ACE style alloc as an option.
+**
 ** Revision 1.54  2000/12/05 07:48:26  prez
 ** *** empty log message ***
 **
@@ -95,28 +98,41 @@ static const char *ident_mstring_h = "@(#) $Id$";
  *
  * 1. C: malloc/free
  * 2. C++: new/delete
- * 3. CLUSTER: memory_area.alloc/memory_area.dealloc
+ * 3. ACE: new/delete with try/catch
+ * 4. CLUSTER: memory_area.alloc/memory_area.dealloc
  *
  */
-#define ALLOCTYPE	1
+#define ALLOCTYPE	3
 
-#if ALLOCTYPE == 3
+#if ALLOCTYPE == 4
 
 /* Use our own Memory Map for clustered alloc */
 #include "mmemory.h"
-#define ALLOC(X)	(char *) memory_area.alloc(X)
+#define ALLOC(X, Y)	X = (char *) memory_area.alloc(Y)
 #define DEALLOC(X)	memory_area.dealloc(X)
+
+#elif ALLOCTYPE == 3
+
+/* Duplicate ACE's new, but with no return's.
+#ifdef MAGICK_HAS_EXCEPTIONS
+#define ALLOC(X, Y)	try { X = new char[Y]; } \
+			catch (ACE_bad_alloc) { errno = ENOMEM; }
+#else
+#define ALLOC(X, Y)	X = new char[Y]; \
+			if (X == NULL) { errno = ENOMEM; }
+#endif
+#define DEALLOC(X)	delete [] X
 
 #elif ALLOCTYPE == 2
 
 /* Standard C++ Allocation */
-#define ALLOC(X)	new char[X]
+#define ALLOC(X, Y)	X = new char[Y]
 #define DEALLOC(X)	delete [] X
 
 #else
 
 /* Standard C Allocation */
-#define ALLOC(X)	(char *) malloc(X)
+#define ALLOC(X, Y)	X = (char *) malloc(Y)
 #define DEALLOC(X)	free(X)
 
 #endif
@@ -247,7 +263,7 @@ class mstring
 {
     char *i_str;
     size_t i_len, i_res;
-#if ALLOCTYPE == 3
+#if ALLOCTYPE == 4
     static MemoryManager<ACE_Thread_Mutex> memory_area;
 #endif
 
