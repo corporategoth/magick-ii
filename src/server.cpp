@@ -3968,6 +3968,9 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
     else if (msgtype == "MODULE")
     {
     }
+    else if (msgtype == "MYID")
+    {
+    }
     else
     {
 	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
@@ -4417,6 +4420,17 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	sraw(((proto.Tokens() &&
 	       !proto.GetNonToken("PONG").empty()) ? proto.GetNonToken("PONG") : mstring("PONG")) + " " +
 	     Magick::instance().startup.Server_Name() + " :" + source);
+
+	// For TRIRCD, it sends us PING's during burst, but then thinks we're not here ... (?!).
+	if_RLOCK ((lck_IrcSvcHandler), Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->Burst())
+	{
+	    if (IsList(source))
+	    {
+		map_entry<Server_t> server = GetList(source);
+		server->Pong();
+		server->Ping();
+	    }
+	}
     }
     else if (msgtype == "PONG")
     {
@@ -4427,7 +4441,6 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	// :server PONG server :our.server
 	if (IsList(source))
 	    GetList(source)->Pong();
-
     }
     else if (msgtype == "PRIVMSG")
     {
