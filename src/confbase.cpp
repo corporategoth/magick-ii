@@ -364,22 +364,13 @@ bool wxConfigBase::Read(const mstring& key, float* val, const float& defVal) con
     RET(retval);
 }
 
-static bool makebool(mstring intext)
-{
-  if (intext.CmpNoCase("true")==0 || intext.CmpNoCase("on")==0 || intext.CmpNoCase("yes")==0 ||
-      intext.CmpNoCase("y")==0 || intext.CmpNoCase("t")==0)
-    return true;
-  else
-    return false;
-}
-
 bool wxConfigBase::Read(const mstring& key, bool* val) const
 {
     FT("wxConfigBase::Read", (key, val));
     mstring str;
-    if (Read(key, & str))
+    if (Read(key, & str) && str.IsBool())
     {
-        *val = makebool(str);
+        *val = str.GetBool();
         RET(true);
     }
     else
@@ -391,8 +382,11 @@ bool wxConfigBase::Read(const mstring& key, bool* val, const bool& defVal) const
     FT("wxConfigBase", (key, val, defVal));
     mstring str, defStr;
     defStr << (defVal ? "TRUE" : "FALSE");
-    bool retval = Read(key, &str, defVal);
-    *val = makebool(str);
+    bool retval = (Read(key, &str, defVal) && str.IsBool());
+    if (!str.IsBool())
+	*val = defVal;
+    else
+	*val = str.GetBool();
     RET(retval);
 }
 

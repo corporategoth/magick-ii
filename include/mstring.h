@@ -97,6 +97,8 @@ public:
 	bool IsNumber() const;
 	bool IsNull() const;
 	bool IsEmpty() const;
+	bool IsBool() const;
+	bool GetBool() const;
 	char Last() const;
 	size_t Len() const;
 	bool IsAscii() const;
@@ -144,6 +146,8 @@ public:
 	pair<int,int> RegFind(const mstring& pattern)const;
 };
 
+bool makeboolF(mstring value);
+bool makeboolT(mstring value);
 extern const mstring DirSlash;
 
 #endif

@@ -444,6 +444,28 @@ bool mstring::IsWord() const
 	return true;
 }
 
+bool mstring::GetBool() const
+{
+  mstring tmp = *this;
+  if (tmp.CmpNoCase("true")==0 || tmp.CmpNoCase("on")==0 || tmp.CmpNoCase("yes")==0 ||
+      tmp.CmpNoCase("y")==0 || tmp.CmpNoCase("t")==0 || atoi(tmp.c_str()) == 1)
+    return true;
+  else
+    return false;
+}
+
+bool mstring::IsBool() const
+{
+  mstring tmp = *this;
+  if (tmp.CmpNoCase("true")==0 || tmp.CmpNoCase("on")==0 || tmp.CmpNoCase("yes")==0 ||
+      tmp.CmpNoCase("y")==0 || tmp.CmpNoCase("t")==0 || tmp == "1" ||
+      tmp.CmpNoCase("false")==0 || tmp.CmpNoCase("off")==0 || tmp.CmpNoCase("no")==0 ||
+      tmp.CmpNoCase("n")==0 || tmp.CmpNoCase("f")==0 || tmp == "0")
+    return true;
+  else
+    return false;
+}
+
 mstring mstring::LowerCase() const
 {
     mstring Result=*this;
@@ -835,3 +857,4 @@ bool mstring::Matches(const mstring& in)const
     return RxMatches(in2);
 	
 }
+
