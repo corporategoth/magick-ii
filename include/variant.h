@@ -25,6 +25,9 @@ RCSID(variant_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2001/04/09 07:55:26  prez
+** Fixed type of Empty
+**
 ** Revision 1.38  2001/04/05 05:59:51  prez
 ** Turned off -fno-default-inline, and split up server.cpp, it should
 ** compile again with no special options, and have default inlines :)
@@ -107,8 +110,7 @@ class mVariant
 	
 public:
     mVariant()
-	: truevaluetype("NULL"),
-	  valuetype(EMPTY) {}
+	: valuetype(EMPTY) {}
     mVariant(const mVariant& in)
 	{ *this = in; }
     mVariant(const bool in)
