@@ -141,6 +141,7 @@ void Magick::LoadInternalMessages()
 	// so that the language file strings are only loaded in memory while this function is in effect.
 #include "language.h"
 	int i;
+	remove("tmplang.lng");
 	wxFileOutputStream *fostream=new wxFileOutputStream("tmplang.lng");
 	for(i=0;i<def_langent;i++)
 	{
@@ -165,7 +166,7 @@ void Magick::LoadInternalMessages()
 		}
 		bContGroup=fconf.GetNextGroup(groupname,dummy1);
 	}
-
+	remove("tmplang.lng");
 }
 
 mstring Magick::parseEscapes(const mstring & in)
@@ -192,4 +193,8 @@ void Magick::LoadExternalMessages()
 
 	// use the previously created name array to get the names to load
 	ACE_Thread_Mutex_Guard guard(mutex);
+	wxFileConfig fconf("magick","","tmplang.lng");
+	int i;
+	for(i=0;i<MessageNamesLong.size();i++)
+		Messages[MessageNamesShort[i]]=fconf.Read(MessageNamesLong[i],Messages[MessageNamesShort[i]]);
 }
