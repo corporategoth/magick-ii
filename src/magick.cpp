@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.337  2001/12/24 22:54:42  prez
+** Removed error on systems where pthread_t is not an int
+**
 ** Revision 1.336  2001/12/21 05:02:29  prez
 ** Changed over from using a global ACE_Reactor to using an instance inside
 ** of the Magick instance.
@@ -648,7 +651,7 @@ Magick &Magick::instance(ACE_thread_t id)
 	return *(iter->second);
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    throw(E_Magick(E_Magick::T_NotFound, itoa(id)));
+    throw(E_Magick(E_Magick::T_NotFound));
 #else
     LOG(LM_CRITICAL, "EXCEPTIONS/MAGICK", (id));
     return GLOB_Magick;
