@@ -31,7 +31,10 @@ void mBase::push_message(const mstring& message)
     {
 	WLOCK lock("mBase","inputbuffer");
 	counter++;
-	Buffer_Tuple[counter]=message;
+        {
+	    WLOCK("thread_handler", "pop_message");
+	    Buffer_Tuple[counter]=message;
+	}
 	//Buffer_Queue
 	if(Buffer_Queue.is_full())
 	{
