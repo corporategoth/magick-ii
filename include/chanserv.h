@@ -114,7 +114,7 @@ public:
     {
 	return i_Name;
     }
-    void Creation_Time(const mDatetime & in);
+    void Creation_Time(const mDateTime & in);
     mDateTime Creation_Time() const;
 
     void Topic(const mstring & source, const mstring & topic, const mstring & setter, const mDateTime & time =
