@@ -18,7 +18,7 @@
 #include "chanserv.h"
 #include "lockable.h"
 #include "magick.h"
-
+#include "cryptstream.h"
 
 Chan_Live_t::Chan_Live_t()
 {
@@ -371,13 +371,134 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
 
 wxOutputStream &operator<<(wxOutputStream& out,userlist_t& in)
 {
+    out<<in.i_Entry<<in.i_Last_Modify_Time<<in.i_Last_Modifier;
+
+    map<mstring,mstring>::iterator j;
+    out<<in.i_UserDef.size();
+    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
+	out<<(mstring)j->first<<(mstring)j->second;
+    return out;
     return out;
 }
 wxInputStream &operator>>(wxInputStream& in, userlist_t& out)
 {
+    unsigned int i,count;
+    mstring dummy,dummy2;
+
+    in>>out.i_Entry>>out.i_Last_Modify_Time>>out.i_Last_Modifier;
+
+    out.i_UserDef.clear();
+    in>>count;
+    for(i=0;i<count;i++)
+    {
+	in>>dummy>>dummy2;
+	out.i_UserDef[dummy]=dummy2;
+    }
     return in;
 }
 
 userlist_t::userlist_t ()
 {
+    // these are probably not needed but best to be safe.
+    i_Entry=i_Last_Modifier="";
+    i_Last_Modify_Time=mDateTime(0.0);
+    i_UserDef.clear();
+}
+
+void ChanServ::load_database(void)
+{
+}
+
+void ChanServ::save_database(void)
+{
+    mstring savename=Parent->Files_CHAN_DB+".save";
+    if(wxFile::Exists(savename.c_str()))
+	remove(savename.c_str());
+    try
+    {
+        wxFileOutputStream outf(savename);
+	wxDataOutputStream *outd;
+	mEncryptStream *outc;
+	wxZlibOutputStream *outz;
+	wxDataOutputStream flagout(outf);
+	 
+	flagout<<FileVersionNumber;
+
+	if(Parent->Password!=""&&Parent->Files_COMPRESS_STREAMS==true)
+	{
+	    outc=new mEncryptStream(outf,Parent->Password);
+	    outz=new wxZlibOutputStream(*outc);
+	    outd=new wxDataOutputStream(*outz);
+	    flagout<<(char)3;
+	}
+	else if(Parent->Files_COMPRESS_STREAMS==true)
+	{
+	    outz=new wxZlibOutputStream(outf);
+	    outd=new wxDataOutputStream(*outz);
+	    flagout<<(char)2;
+	}
+	else if(Parent->Password!="")
+	{
+	    outc=new mEncryptStream(outf,Parent->Password);
+	    outd=new wxDataOutputStream(*outc);
+	    flagout<<(char)1;
+	}
+	else
+	{
+	    outd=new wxDataOutputStream(outf);
+	    flagout<<(char)0;
+	}
+	
+	//
+	map<mstring,Chan_Stored_t>::iterator i;
+	(*outd)<<stored.size();
+        // todo call script saving hooks.
+	for(i=stored.begin();i!=stored.end();i++)
+	{
+	    (*outd)<<i->second;
+	    // todo call script saving hooks.
+	}
+	 
+	if(Parent->Password!=""&&Parent->Files_COMPRESS_STREAMS==true)
+	{
+	    if(outd!=NULL)
+		delete outd;
+	    if(outz!=NULL)
+		delete outd;
+	    if(outc!=NULL)
+		delete outd;
+	}
+	else if(Parent->Files_COMPRESS_STREAMS==true)
+	{
+	    if(outd!=NULL)
+		delete outd;
+	    if(outz!=NULL)
+		delete outd;
+	}
+	else if(Parent->Password!="")
+	{
+	    if(outd!=NULL)
+		delete outd;
+	    if(outc!=NULL)
+		delete outd;
+	}
+	else
+	{
+	    if(outd!=NULL)
+		delete outd;
+	}
+
+    }
+    catch(...)
+    {
+        if(wxFile::Exists(savename.c_str()))
+	    remove(savename.c_str());
+	return;
+    }
+    if(wxFile::Exists(savename.c_str()))
+    {
+        if(wxFile::Exists(Parent->Files_CHAN_DB.c_str()))
+	    remove(Parent->Files_CHAN_DB.c_str());
+	rename(savename.c_str(),Parent->Files_CHAN_DB.c_str());
+    }
 }
