@@ -27,6 +27,9 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2001/05/07 03:14:20  prez
+** Changes to fix bsd
+**
 ** Revision 1.71  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -379,12 +382,6 @@ void mFile::Close()
     MLOCK(("mFile", i_name));
     if (IsOpened())
     {
-	opres = ACE_OS::fflush(fd);
-	if (opres != 0 && errno)
-	{
-	    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", (
-			"fflush", i_name, errno, strerror(errno)));
-	}
 	opres = ACE_OS::fclose(fd);
 	if (opres != 0 && errno)
 	{

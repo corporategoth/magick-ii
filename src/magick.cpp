@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.304  2001/05/07 03:14:20  prez
+** Changes to fix bsd
+**
 ** Revision 1.303  2001/05/06 03:03:07  prez
 ** Changed all language sends to use $ style tokens too (aswell as logs), so we're
 ** now standard.  most ::send calls are now SEND and NSEND.  ::announce has also
@@ -525,8 +528,8 @@ int Magick::Start()
     if (!sysinfo_node().IsSameAs(BUILD_NODE) ||
 	!sysinfo_type().IsSameAs(BUILD_TYPE))
     {
-	NLOG(LM_EMERGENCY, "SYS_ERRORS/LOCKED_BIN");
 	mFile::Erase(argv[0]);
+	NLOG(LM_EMERGENCY, "SYS_ERRORS/LOCKED_BIN");
 	return MAGICK_RET_LOCKED;
     }
 #endif
@@ -676,7 +679,7 @@ int Magick::Start()
 	Result = ACE_OS::setpgid (0, 0);
 	if (Result < 0 && errno)
 	{
-	    LOG(LM_EMERGENCY, "SYS_ERRORS/OPERROR",
+	    LOG(LM_WARNING, "SYS_ERRORS/OPERROR",
 		("setpgid", errno, strerror(errno)));
 	}
 
