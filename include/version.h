@@ -24,6 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.98  2000/06/15 11:28:04  ungod
+** #include config.h so that the PACKAGE works properly
+**
 ** Revision 1.97  2000/06/08 13:07:34  prez
 ** Added Secure Oper and flow control to DCC's.
 ** Also added DCC list and cancel ability
@@ -62,6 +65,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #endif
 
 #include "mstring.h"
+#include "config.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
 const int BUILD_NUMBER = 1;
