@@ -162,6 +162,10 @@ SOURCE=.\docs\policy
 
 SOURCE=.\docs\requirements
 # End Source File
+# Begin Source File
+
+SOURCE=.\docs\suggest
+# End Source File
 # End Group
 # Begin Group "lang files"
 
@@ -198,6 +202,14 @@ SOURCE=.\src\chanserv.cpp
 # Begin Source File
 
 SOURCE=.\include\chanserv.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\commserv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\commserv.h
 # End Source File
 # Begin Source File
 
@@ -252,22 +264,6 @@ SOURCE=.\src\fileconf.cpp
 # Begin Source File
 
 SOURCE=.\include\fileconf.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\servmsg.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\servmsg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\commserv.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\include\commserv.h
 # End Source File
 # Begin Source File
 
@@ -356,6 +352,14 @@ SOURCE=.\src\server.cpp
 # Begin Source File
 
 SOURCE=.\include\server.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\servmsg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\servmsg.h
 # End Source File
 # Begin Source File
 
