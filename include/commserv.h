@@ -25,6 +25,11 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/08/08 09:58:55  prez
+** Added ModeO to 4 pre-defined committees.
+** Also added back some deletes in xml in the hope that it
+** will free up some memory ...
+**
 ** Revision 1.35  2000/08/06 08:06:41  prez
 ** Fixed loading of logon messages in committee ..
 **
@@ -195,18 +200,22 @@ private:
     bool    sadmin_secure;
     bool    sadmin_private;
     bool    sadmin_openmemos;
+    bool    sadmin_modeo;
     mstring sop_name;
     bool    sop_secure;
     bool    sop_private;
     bool    sop_openmemos;
+    bool    sop_modeo;
     mstring admin_name;
     bool    admin_secure;
     bool    admin_private;
     bool    admin_openmemos;
+    bool    admin_modeo;
     mstring oper_name;
     bool    oper_secure;
     bool    oper_private;
     bool    oper_openmemos;
+    bool    oper_modeo;
     static SXP::Tag tag_CommServ;
 
     vector<Committee *> c_array;
@@ -252,18 +261,22 @@ public:
     bool    SADMIN_Secure()	{ return sadmin_secure; }
     bool    SADMIN_Private()	{ return sadmin_private; }
     bool    SADMIN_OpenMemos()	{ return sadmin_openmemos; }
+    bool    SADMIN_ModeO()	{ return sadmin_modeo; }
     mstring SOP_Name()		{ return sop_name; }
     bool    SOP_Secure()	{ return sop_secure; }
     bool    SOP_Private()	{ return sop_private; }
     bool    SOP_OpenMemos()	{ return sop_openmemos; }
+    bool    SOP_ModeO()		{ return sop_modeo; }
     mstring ADMIN_Name()	{ return admin_name; }
     bool    ADMIN_Secure()	{ return admin_secure; }
     bool    ADMIN_Private()	{ return admin_private; }
     bool    ADMIN_OpenMemos()	{ return admin_openmemos; }
+    bool    ADMIN_ModeO()	{ return admin_modeo; }
     mstring OPER_Name()		{ return oper_name; }
     bool    OPER_Secure()	{ return oper_secure; }
     bool    OPER_Private()	{ return oper_private; }
     bool    OPER_OpenMemos()	{ return oper_openmemos; }
+    bool    OPER_ModeO()	{ return oper_modeo; }
 
     map<mstring,Committee> list;
     bool IsList(mstring in);

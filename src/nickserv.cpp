@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.122  2000/08/08 09:58:56  prez
+** Added ModeO to 4 pre-defined committees.
+** Also added back some deletes in xml in the hope that it
+** will free up some memory ...
+**
 ** Revision 1.121  2000/08/07 12:20:28  prez
 ** Fixed akill and news expiry (flaw in logic), added transferral of
 ** memo list when set new nick as host, and fixed problems with commserv
@@ -573,7 +578,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	    if (Parent->nickserv.stored[sender.LowerCase()].Host() != "" &&
 		Parent->nickserv.IsStored(Parent->nickserv.stored[sender.LowerCase()].Host()))
 	    {
-		sender = Parent->nickserv.stored[Parent->nickserv.stored[sender.LowerCase()].Host()].Name();
+		sender = Parent->getSname(Parent->nickserv.stored[sender.LowerCase()].Host());
 	    }
 	    if (Memo())
 	    {
@@ -3813,15 +3818,15 @@ mstring Nick_Stored_t::LastAllMask()
 	unsigned int i;
 	for (i=0; i<Siblings(); i++)
 	{
-	    if (Parent->nickserv.stored[Sibling(i)].IsOnline())
+	    if (Parent->nickserv.stored[Sibling(i).LowerCase()].IsOnline())
 	    {
 		RET(Parent->getMessage("MISC/ONLINE"));
 	    }
-	    if (Parent->nickserv.stored[Sibling(i)].LastSeenTime() > lastseen)
+	    if (Parent->nickserv.stored[Sibling(i).LowerCase()].LastSeenTime() > lastseen)
 	    {
-		lastseen = Parent->nickserv.stored[Sibling(i)].LastSeenTime();
-		lastmask = Parent->nickserv.stored[Sibling(i)].Name() + "!" +
-				Parent->nickserv.stored[Sibling(i)].LastMask();
+		lastseen = Parent->nickserv.stored[Sibling(i).LowerCase()].LastSeenTime();
+		lastmask = Parent->nickserv.stored[Sibling(i).LowerCase()].Name() + "!" +
+				Parent->nickserv.stored[Sibling(i).LowerCase()].LastMask();
 	    }
 	}
 	RET(lastmask);

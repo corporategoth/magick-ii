@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2000/08/08 09:58:56  prez
+** Added ModeO to 4 pre-defined committees.
+** Also added back some deletes in xml in the hope that it
+** will free up some memory ...
+**
 ** Revision 1.68  2000/08/07 12:20:27  prez
 ** Fixed akill and news expiry (flaw in logic), added transferral of
 ** memo list when set new nick as host, and fixed problems with commserv
@@ -427,10 +432,30 @@ bool Committee::IsOn(mstring nick)
 {
     FT("Committee::IsOn", (nick));
 
-    if (i_Name == Parent->commserv.ALL_Name() &&
-	Parent->nickserv.IsLive(nick))
+    // If we aint online, we aint in nothing.
+    if (!Parent->nickserv.IsLive(nick))
+    {
+	RET(false);
+    }
+
+    if (i_Name == Parent->commserv.ALL_Name())
     {
 	RET(true);
+    }
+
+    // The committee we're looking at has ModeO set,
+    // but user doesnt have umode +o.
+    if (((i_Name == Parent->commserv.SADMIN_Name() &&
+	Parent->commserv.SADMIN_ModeO()) ||
+	(i_Name == Parent->commserv.SOP_Name() &&
+	Parent->commserv.SOP_ModeO()) ||
+	(i_Name == Parent->commserv.ADMIN_Name() &&
+	Parent->commserv.ADMIN_ModeO()) ||
+	(i_Name == Parent->commserv.OPER_Name() &&
+	Parent->commserv.OPER_ModeO())) &&
+	!Parent->nickserv.live[nick.LowerCase()].HasMode("o"))
+    {
+	RET(false);
     }
 
     // This returns wether we're CURRENTLY recognized

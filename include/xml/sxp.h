@@ -25,6 +25,11 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/08/08 09:58:55  prez
+** Added ModeO to 4 pre-defined committees.
+** Also added back some deletes in xml in the hope that it
+** will free up some memory ...
+**
 ** Revision 1.9  2000/07/30 12:40:52  prez
 ** Updated windows project files.
 **
@@ -770,11 +775,13 @@ SXP_NS_BEGIN
 		void DoShutdown() {
 			XML_ParserFree(m_parser);
 			while( !m_EHStack.empty() ) {
-				//delete m_EHStack.top();
+				if (m_EHStack.top() != NULL)
+					delete m_EHStack.top();
 				m_EHStack.pop();
 			}
 			while( !m_EStack.empty() ) {
-				//delete m_EStack.top();
+				if (m_EStack.top() != NULL)
+					delete m_EStack.top();
 				m_EStack.pop();
 			}
 			m_parser = 0;

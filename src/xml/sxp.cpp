@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/08/08 09:58:56  prez
+** Added ModeO to 4 pre-defined committees.
+** Also added back some deletes in xml in the hope that it
+** will free up some memory ...
+**
 ** Revision 1.11  2000/08/06 05:27:48  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -425,12 +430,18 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		}
 		if (retval == Z_STREAM_END || retval == Z_OK)
 		{
-		    if (buffer)
+		    if (buffer != NULL)
 			ACE_OS::free(buffer);
 		    new_sz = strm->total_out;
 		    buffer = (char *) ACE_OS::malloc(sizeof(char) * new_sz+1);
 		    ACE_OS::memset(buffer, 0, sizeof(char) * new_sz+1);
 		    memcpy(buffer, tmpbuf, new_sz);
+		    if (tmpbuf != NULL)
+			ACE_OS::free(tmpbuf);
+		    tmpbuf = NULL;
+		}
+		else
+		{
 		    if (tmpbuf != NULL)
 			ACE_OS::free(tmpbuf);
 		    tmpbuf = NULL;

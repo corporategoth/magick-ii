@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.194  2000/08/08 09:58:55  prez
+** Added ModeO to 4 pre-defined committees.
+** Also added back some deletes in xml in the hope that it
+** will free up some memory ...
+**
 ** Revision 1.193  2000/08/07 12:20:27  prez
 ** Fixed akill and news expiry (flaw in logic), added transferral of
 ** memo list when set new nick as host, and fixed problems with commserv
@@ -7880,8 +7885,8 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 	    {
 		// Kick stored user ...
 		mstring realnick = who;
-		if (Parent->nickserv.stored[who].Host() != "")
-		    realnick = Parent->nickserv.stored[who].Host();
+		if (Parent->nickserv.stored[who.LowerCase()].Host() != "")
+		    realnick = Parent->nickserv.stored[who.LowerCase()].Host();
 		if (Parent->chanserv.live[channel.LowerCase()].IsIn(realnick))
 		{
 		    Parent->server.KICK(mynick, realnick, channel,

@@ -29,6 +29,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.260  2000/08/08 09:58:56  prez
+** Added ModeO to 4 pre-defined committees.
+** Also added back some deletes in xml in the hope that it
+** will free up some memory ...
+**
 ** Revision 1.259  2000/08/06 05:27:47  prez
 ** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
 ** and infact disabled by default due to it interfering everywhere.
@@ -2515,18 +2520,22 @@ bool Magick::get_config_values()
     in.Read(ts_CommServ+"SADMIN_SECURE",commserv.sadmin_secure,true);
     in.Read(ts_CommServ+"SADMIN_PRIVATE",commserv.sadmin_private,false);
     in.Read(ts_CommServ+"SADMIN_OPENMEMOS",commserv.sadmin_openmemos,true);
+    in.Read(ts_CommServ+"SADMIN_MODEO",commserv.sadmin_modeo,true);
     in.Read(ts_CommServ+"SOP_NAME",commserv.sop_name,"SOP");
     in.Read(ts_CommServ+"SOP_SECURE",commserv.sop_secure,true);
     in.Read(ts_CommServ+"SOP_PRIVATE",commserv.sop_private,false);
     in.Read(ts_CommServ+"SOP_OPENMEMOS",commserv.sop_openmemos,true);
+    in.Read(ts_CommServ+"SOP_MODEO",commserv.sop_modeo,true);
     in.Read(ts_CommServ+"ADMIN_NAME",commserv.admin_name,"ADMIN");
     in.Read(ts_CommServ+"ADMIN_SECURE",commserv.admin_secure,true);
     in.Read(ts_CommServ+"ADMIN_PRIVATE",commserv.admin_private,false);
     in.Read(ts_CommServ+"ADMIN_OPENMEMOS",commserv.admin_openmemos,true);
+    in.Read(ts_CommServ+"ADMIN_MODEO",commserv.admin_modeo,true);
     in.Read(ts_CommServ+"OPER_NAME",commserv.oper_name,"OPER");
     in.Read(ts_CommServ+"OPER_SECURE",commserv.oper_secure,true);
     in.Read(ts_CommServ+"OPER_PRIVATE",commserv.oper_private,false);
     in.Read(ts_CommServ+"OPER_OPENMEMOS",commserv.oper_openmemos,true);
+    in.Read(ts_CommServ+"OPER_MODEO",commserv.oper_modeo,true);
     commserv.all_name.MakeUpper();
     commserv.regd_name.MakeUpper();
     commserv.sadmin_name.MakeUpper();
