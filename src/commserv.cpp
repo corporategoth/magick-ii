@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2000/06/18 13:31:48  prez
+** Fixed the casings, now ALL locks should set 'dynamic' values to the
+** same case (which means locks will match eachother, yippee!)
+**
 ** Revision 1.62  2000/06/18 12:49:27  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -139,7 +143,7 @@ Committee::Committee(mstring name, mstring head, mstring description)
     FT("Committee::Committee", (name, head, description));
 
     i_Name = name.UpperCase();
-    WLOCK(("CommServ", "list", i_Name));
+    WLOCK(("CommServ", "list", i_Name.UpperCase()));
     i_RegTime = Now();
     i_Head = head.LowerCase();
     i_HeadCom = "";
@@ -157,7 +161,7 @@ Committee::Committee(mstring name, Committee *head, mstring description)
 {
     FT("Committee::Committee", (name, "(Committee *) head", description));
     i_Name = name.UpperCase();
-    WLOCK(("CommServ", "list", i_Name));
+    WLOCK(("CommServ", "list", i_Name.UpperCase()));
     i_RegTime = Now();
     i_Head = "";
     i_HeadCom = head->Name();
@@ -175,7 +179,7 @@ Committee::Committee(mstring name, mstring description)
 {
     FT("Committee::Committee", (name, description));
     i_Name = name.UpperCase();
-    WLOCK(("CommServ", "list", i_Name));
+    WLOCK(("CommServ", "list", i_Name.UpperCase()));
     i_RegTime = Now();
     i_Head = "";
     i_HeadCom = "";
@@ -193,7 +197,7 @@ void Committee::operator=(const Committee &in)
 {
     FT("Committee::operator=", ("(const Committee &) in"));
 
-    WLOCK(("CommServ", "list", in.i_Name));
+    WLOCK(("CommServ", "list", in.i_Name.UpperCas()));
     i_Name = in.i_Name;
     i_RegTime = in.i_RegTime;
     i_Head = in.i_Head;
@@ -219,28 +223,28 @@ void Committee::operator=(const Committee &in)
 mDateTime Committee::RegTime()
 {
     NFT("Committee::RegTime");
-    RLOCK(("CommServ", "list", i_Name, "i_RegTime"));
+    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_RegTime"));
     RET(i_RegTime);
 }
 
 mstring Committee::HeadCom()
 {
     NFT("Committee::HeadCom");
-    RLOCK(("CommServ", "list", i_Name, "i_HeadCom"));
+    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     RET(i_HeadCom);
 }
 
 mstring Committee::Head()
 {
     NFT("Committee::Head");
-    RLOCK(("CommServ", "list", i_Name, "i_Head"));
+    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     RET(i_Head);
 }
 
 mstring Committee::Description()
 {
     NFT("Committee::Description");
-    RLOCK(("CommServ", "list", i_Name, "i_Description"));
+    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
     RET(i_Description);
 }
 
@@ -248,8 +252,8 @@ void Committee::Head(mstring newhead)
 {
     FT("Committee::Head", (newhead));
 
-    WLOCK(("CommServ", "list", i_Name, "i_HeadCom"));
-    WLOCK2(("CommServ", "list", i_Name, "i_Head"));
+    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+    WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     if (i_HeadCom != "")
 	i_HeadCom = "";
 
@@ -261,7 +265,7 @@ bool Committee::insert(mstring entry, mstring nick, mDateTime modtime)
     FT("Committee::insert", (entry, nick, modtime));
 
     entlist_ui iter;
-    MLOCK(("CommServ", "list", i_Name, "member"));
+    MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     if (!i_Members.empty())
 	for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
 	    if (iter->Entry().LowerCase() == entry.LowerCase())
@@ -287,7 +291,7 @@ bool Committee::erase()
 {
     NFT("Committee::erase");
 
-    MLOCK(("CommServ", "list", i_Name, "member"));
+    MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     if (member != i_Members.end())
     {
 	i_Members.erase(member);
@@ -304,7 +308,7 @@ bool Committee::find(mstring entry)
 {
     FT("Committee::find", (entry));
 
-    MLOCK(("CommServ", "list", i_Name, "member"));
+    MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     entlist_ui iter = i_Members.end();
     if (!i_Members.empty())
     {
@@ -353,21 +357,21 @@ bool Committee::IsIn(mstring nick)
 	target = Parent->nickserv.stored[target].Host().LowerCase();
 
     // We're a HEAD, in by DEFAULT
-    { RLOCK(("CommServ", "list", i_Name, "i_HeadCom"));
+    { RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     if (i_HeadCom != "" && Parent->commserv.IsList(i_HeadCom) &&
 	Parent->commserv.list[i_HeadCom].IsIn(target))
     {
 	RET(true);
     }}
 
-    { RLOCK(("CommServ", "list", i_Name, "i_Head"));
+    { RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     if (i_Head != "" && target == i_Head)
     {
 	RET(true);
     }}
 
     entlist_ui iter;
-    MLOCK(("CommServ", "list", i_Name, "member"));
+    MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
     {
 	if (target == iter->Entry().LowerCase())
@@ -407,8 +411,8 @@ bool Committee::IsHead(mstring nick)
 {
     FT("Committee::IsHead", (nick));
 
-    RLOCK(("CommServ", "list", i_Name, "i_Head"));
-    RLOCK2(("CommServ", "list", i_Name, "i_HeadCom"));
+    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+    RLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
     if (i_Head != "" && i_Head == nick.LowerCase())
     {
 	RET(true);
@@ -429,28 +433,28 @@ bool Committee::IsHead(mstring nick)
 void Committee::Email(mstring in)
 {
     FT("Committee::Email", (in));
-    WLOCK(("CommServ", "list", i_Name, "i_Email"));
+    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
     i_Email = in;
 }
 
 mstring Committee::Email()
 {
     NFT("Committee::Email");
-    RLOCK(("CommServ", "list", i_Name, "i_Email"));
+    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
     RET(i_Email);
 }
 
 void Committee::URL(mstring in)
 {
     FT("Committee::URL", (in));
-    WLOCK(("CommServ", "list", i_Name, "i_URL"));
+    WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
     i_URL = in;
 }
 
 mstring Committee::URL()
 {
     NFT("Committee::URL");
-    RLOCK(("CommServ", "list", i_Name, "i_URL"));
+    RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
     RET(i_URL);
 }
 
@@ -459,7 +463,7 @@ void Committee::Private(bool in)
     FT("Committee::Private", (in));
     if (!L_Private())
     {
-	WLOCK(("CommServ", "list", i_Name, "i_Private"));
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Private"));
 	i_Private = in;
     }
 }
@@ -470,7 +474,7 @@ void Committee::Secure(bool in)
     FT("Committee::Secure", (in));
     if (!L_Secure())
     {
-	WLOCK(("CommServ", "list", i_Name, "i_Secure"));
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
 	i_Secure = in;
     }
 }
@@ -481,7 +485,7 @@ bool Committee::Secure()
     NFT("Committee::Secure");
     if (!Parent->commserv.LCK_Secure())
     {
-	RLOCK(("CommServ", "list", i_Name, "i_Secure"));
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Secure"));
 	RET(i_Secure);
     }
     RET(Parent->commserv.DEF_Secure());
@@ -493,7 +497,7 @@ void Committee::L_Secure(bool in)
     FT("Committee::L_Secure", (in));
     if (!Parent->commserv.LCK_Secure())
     {
-	WLOCK(("CommServ", "list", i_Name, "l_Secure"));
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
 	l_Secure = in;
     }
 }
@@ -504,7 +508,7 @@ bool Committee::L_Secure()
     NFT("Committee::L_Secure");
     if (!Parent->commserv.LCK_Secure())
     {
-	RLOCK(("CommServ", "list", i_Name, "l_Secure"));
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Secure"));
 	RET(l_Secure);
     }
     RET(true);
@@ -516,7 +520,7 @@ bool Committee::Private()
     NFT("Committee::Private");
     if (!Parent->commserv.LCK_Private())
     {
-	RLOCK(("CommServ", "list", i_Name, "i_Private"));
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Private"));
 	RET(i_Private);
     }
     RET(Parent->commserv.DEF_Private());
@@ -528,7 +532,7 @@ void Committee::L_Private(bool in)
     FT("Committee::L_Private", (in));
     if (!Parent->commserv.LCK_Private())
     {
-	WLOCK(("CommServ", "list", i_Name, "l_Private"));
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Private"));
 	l_Private = in;
     }
 }
@@ -539,7 +543,7 @@ bool Committee::L_Private()
     NFT("Committee::L_Private");
     if (!Parent->commserv.LCK_Private())
     {
-	RLOCK(("CommServ", "list", i_Name, "l_Private"));
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_Private"));
 	RET(l_Private);
     }
     RET(true);
@@ -551,7 +555,7 @@ void Committee::OpenMemos(bool in)
     FT("Committee::OpenMemos", (in));
     if (!L_OpenMemos())
     {
-	WLOCK(("CommServ", "list", i_Name, "i_OpenMemos"));
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_OpenMemos"));
 	i_OpenMemos = in;
     }
 }
@@ -562,7 +566,7 @@ bool Committee::OpenMemos()
     NFT("Committee::OpenMemos");
     if (!Parent->commserv.LCK_OpenMemos())
     {
-	RLOCK(("CommServ", "list", i_Name, "i_OpenMemos"));
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_OpenMemos"));
 	RET(i_OpenMemos);
     }
     RET(Parent->commserv.DEF_OpenMemos());
@@ -574,7 +578,7 @@ void Committee::L_OpenMemos(bool in)
     FT("Committee::L_OpenMemos", (in));
     if (!Parent->commserv.LCK_OpenMemos())
     {
-	WLOCK(("CommServ", "list", i_Name, "l_OpenMemos"));
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "l_OpenMemos"));
 	l_OpenMemos = in;
     }
 }
@@ -585,7 +589,7 @@ bool Committee::L_OpenMemos()
     NFT("Committee::L_OpenMemos");
     if (!Parent->commserv.LCK_OpenMemos())
     {
-	RLOCK(("CommServ", "list", i_Name, "l_OpenMemos"));
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "l_OpenMemos"));
 	RET(l_OpenMemos);
     }
     RET(true);
@@ -596,7 +600,7 @@ bool Committee::MSG_insert(mstring entry, mstring nick)
 {
     FT("Committee::MSG_insert", (entry, nick));
 
-    MLOCK(("CommServ", "list", i_Name, "message"));
+    MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
     if (IsHead(nick))
     {
 	i_Messages.push_back(entlist_t(entry, nick));
@@ -615,7 +619,7 @@ bool Committee::MSG_erase()
 {
     NFT("Committee::MSG_erase");
 
-    MLOCK(("CommServ", "list", i_Name, "message"));
+    MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
     if (message != i_Messages.end())
     {
 	i_Messages.erase(message);
@@ -633,7 +637,7 @@ bool Committee::MSG_find(int number)
 {
     FT("Committee::MSG_find", (number));
 
-    MLOCK(("CommServ", "list", i_Name, "message"));
+    MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
     entlist_i iter = i_Messages.end();
     int i;
     if (!i_Messages.empty())
@@ -659,7 +663,7 @@ size_t Committee::Usage()
 {
     size_t retval = 0;
 
-    WLOCK(("CommServ", "list", i_Name));
+    WLOCK(("CommServ", "list", i_Name.UpperCase()));
     retval += i_Name.capacity();
     retval += sizeof(i_RegTime.Internal());
     retval += i_HeadCom.capacity();
@@ -1244,7 +1248,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	}
     }
 
-    MLOCK(("CommServ", "list", comm->Name(), "member"));
+    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
     for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
     {
 	if (Parent->nickserv.IsStored(comm->member->Entry()))
@@ -1460,7 +1464,7 @@ void CommServ::do_member_Add(mstring mynick, mstring source, mstring params)
     }
 
     Committee *comm = &Parent->commserv.list[committee];
-    MLOCK(("CommServ", "list", comm->Name(), "member"));
+    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
     comm->insert(member, source);
     Parent->commserv.stats.i_AddDel++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
@@ -1528,7 +1532,7 @@ void CommServ::do_member_Del(mstring mynick, mstring source, mstring params)
     }
 
     Committee *comm = &Parent->commserv.list[committee];
-    MLOCK(("CommServ", "list", comm->Name(), "member"));
+    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
     if (comm->find(member))
     {
 	Parent->commserv.stats.i_AddDel++;
@@ -1634,7 +1638,7 @@ int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee,
 	::send(mynick, source, output);
     }
 
-    MLOCK(("CommServ", "list", comm->Name(), "member"));
+    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "member"));
     for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
     {
 	output = "";
@@ -1681,7 +1685,7 @@ void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)
     }
 
     Committee *comm = &Parent->commserv.list[committee];
-    MLOCK(("CommServ", "list", comm->Name(), "message"));
+    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "message"));
     Parent->commserv.stats.i_Logon++;
     comm->MSG_insert(msgnum, source);
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2_NUMBER"),
@@ -1737,7 +1741,7 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
     }
 
     Committee *comm = &Parent->commserv.list[committee];
-    MLOCK(("CommServ", "list", comm->Name(), "message"));
+    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "message"));
     if (comm->MSG_find(num))
     {
 	Parent->commserv.stats.i_Logon++;
@@ -1809,7 +1813,7 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
     Committee *comm = &Parent->commserv.list[committee];
     ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
 		committee.c_str(), Parent->getMessage(source, "LIST/MESSAGES").c_str());
-    MLOCK(("CommServ", "list", comm->Name(), "message"));
+    MLOCK(("CommServ", "list", comm->Name().UpperCase(), "message"));
     for (i=1, comm->message = comm->MSG_begin();
 	comm->message != comm->MSG_end(); comm->message++, i++)
     {
@@ -2740,7 +2744,7 @@ void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Committee, attribs);
 
-	WLOCK(("CommServ", "list", i_Name));
+	WLOCK(("CommServ", "list", i_Name.UpperCase()));
 	pOut->WriteElement(tag_Name, i_Name);
 	pOut->WriteElement(tag_RegTime, i_RegTime);
 	pOut->WriteElement(tag_HeadCom, i_HeadCom);

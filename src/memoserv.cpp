@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2000/06/18 13:31:48  prez
+** Fixed the casings, now ALL locks should set 'dynamic' values to the
+** same case (which means locks will match eachother, yippee!)
+**
 ** Revision 1.66  2000/06/18 12:49:27  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -155,7 +159,7 @@ Memo_t::Memo_t(mstring nick, mstring sender, mstring text, unsigned long file)
 {
     FT("Memo_t::Memo_t", (nick, sender, text, file));
     i_Nick = nick;
-    WLOCK(("MemoServ", "nick", i_Nick));
+    WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
     i_Time = Now();
     i_Sender = sender;
     i_Text = text;
@@ -167,7 +171,7 @@ Memo_t::Memo_t(mstring nick, mstring sender, mstring text, unsigned long file)
 void Memo_t::operator=(const Memo_t &in)
 {
     FT("Memo_t::operator=", ("(const Memo_t &) in"));
-    WLOCK(("MemoServ", "nick", in.i_Nick));
+    WLOCK(("MemoServ", "nick", in.i_Nick.LowerCase()));
     i_Nick = in.i_Nick;
     i_Time = in.i_Time;
     i_Sender = in.i_Sender;
@@ -179,47 +183,47 @@ void Memo_t::operator=(const Memo_t &in)
 mstring Memo_t::Sender()
 {
     NFT(("Memo_t::Sender"));
-    RLOCK(("MemoServ", "nick", i_Nick, "i_Sender"));
+    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Sender"));
     RET(i_Sender);
 }
 
 mDateTime Memo_t::Time()
 {
     NFT(("Memo_t::Time"));
-    RLOCK(("MemoServ", "nick", i_Nick, "i_Time"));
+    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Time"));
     RET(i_Time);
 }
 
 mstring Memo_t::Text()
 {
     NFT(("Memo_t::Text"));
-    RLOCK(("MemoServ", "nick", i_Nick, "i_Text"));
+    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Text"));
     RET(i_Text);
 }
 
 unsigned long Memo_t::File()
 {
     NFT(("Memo_t::File"));
-    RLOCK(("MemoServ", "nick", i_Nick, "i_File"));
+    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_File"));
     RET(i_File);
 }
 
 bool Memo_t::IsRead()
 {
     NFT(("Memo_t::IsRead"));
-    RLOCK(("MemoServ", "nick", i_Nick, "i_Read"));
+    RLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
     RET(i_Read);
 }
 void Memo_t::Read()
 {
     NFT(("Memo_t::Read"));
-    WLOCK(("MemoServ", "nick", i_Nick, "i_Read"));
+    WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
     i_Read = true;
 }
 void Memo_t::Unread()
 {
     NFT(("Memo_t::Unread"));
-    WLOCK(("MemoServ", "nick", i_Nick, "i_Read"));
+    WLOCK(("MemoServ", "nick", i_Nick.LowerCase(), "i_Read"));
     i_Read = false;
 }
 
@@ -227,7 +231,7 @@ void Memo_t::Unread()
 size_t Memo_t::Usage()
 {
     size_t retval = 0;
-    WLOCK(("MemoServ", "nick", i_Nick));
+    WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
     retval += i_Nick.capacity();
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
@@ -248,7 +252,7 @@ News_t::News_t(mstring channel, mstring sender, mstring text)
 {
     FT("News_t::News_t", (channel, sender, text));
     i_Channel = channel;
-    WLOCK(("MemoServ", "channel", i_Channel));
+    WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
     i_Time = Now();
     i_Sender = sender;
     i_Text = text;
@@ -258,7 +262,7 @@ News_t::News_t(mstring channel, mstring sender, mstring text)
 void News_t::operator=(const News_t &in)
 {
     FT("News_t::operator=", ("(const News_t &) in"));
-    WLOCK(("MemoServ", "channel", in.i_Channel));
+    WLOCK(("MemoServ", "channel", in.i_Channel.LowerCase()));
     i_Channel = in.i_Channel;
     i_Time = in.i_Time;
     i_Sender = in.i_Sender;
@@ -270,21 +274,21 @@ void News_t::operator=(const News_t &in)
 mstring News_t::Sender()
 {
     NFT("News_t::Sender");
-    RLOCK(("MemoServ", "channel", i_Channel, "i_Sender"));
+    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Sender"));
     RET(i_Sender);
 }
 
 mDateTime News_t::Time()
 {
     NFT("News_t::Time");
-    RLOCK(("MemoServ", "channel", i_Channel, "i_Time"));
+    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Time"));
     RET(i_Time);
 }
 
 mstring News_t::Text()
 {
     NFT("News_t::Text");
-    RLOCK(("MemoServ", "channel", i_Channel, "i_Text"));
+    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Text"));
     RET(i_Text);
 }
 
@@ -297,7 +301,7 @@ bool News_t::IsRead(mstring name)
 	RET(false);
     if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
-    RLOCK(("MemoServ", "channel", i_Channel, "i_Read"));
+    RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     bool retval (i_Read.find(target.LowerCase())!=i_Read.end());
     RET(retval);
 }
@@ -311,7 +315,7 @@ void News_t::Read(mstring name)
 	return;
     if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
-    WLOCK(("MemoServ", "channel", i_Channel, "i_Read"));
+    WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     i_Read.insert(target.LowerCase());
 }
 
@@ -324,7 +328,7 @@ void News_t::Unread(mstring name)
 	return;
     if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	target = Parent->nickserv.stored[name.LowerCase()].Host();
-    WLOCK(("MemoServ", "channel", i_Channel, "i_Read"));
+    WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     i_Read.erase(name.LowerCase());
     i_Read.erase(target.LowerCase());
 }
@@ -332,7 +336,7 @@ void News_t::Unread(mstring name)
 size_t News_t::Usage()
 {
     size_t retval = 0;
-    WLOCK(("MemoServ", "channel", i_Channel));
+    WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
     retval += i_Channel.capacity();
     retval += i_Sender.capacity();
     retval += i_Text.capacity();
@@ -2175,7 +2179,7 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Memo_t, attribs);
 
-	WLOCK(("MemoServ", "nick", i_Nick));
+	WLOCK(("MemoServ", "nick", i_Nick.LowerCase()));
 	pOut->WriteElement(tag_Nick, i_Nick);
 	pOut->WriteElement(tag_Sender, i_Sender);
 	pOut->WriteElement(tag_Time, i_Time);
@@ -2220,7 +2224,7 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     //TODO: Add your source code here
 	pOut->BeginObject(tag_News_t, attribs);
 
-	WLOCK(("MemoServ", "nick", i_Channel));
+	WLOCK(("MemoServ", "channel", i_Channel.LowerCase()));
 	pOut->WriteElement(tag_Channel, i_Channel);
 	pOut->WriteElement(tag_Sender, i_Sender);
 	pOut->WriteElement(tag_Time, i_Time);

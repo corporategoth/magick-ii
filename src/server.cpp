@@ -27,6 +27,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.106  2000/06/18 13:31:48  prez
+** Fixed the casings, now ALL locks should set 'dynamic' values to the
+** same case (which means locks will match eachother, yippee!)
+**
 ** Revision 1.105  2000/06/18 12:49:27  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -409,7 +413,7 @@ mstring Protocol::GetNonToken(mstring in)
 Server::Server(mstring name, mstring description)
 {
     FT("Server::Server", (name, description));
-    MLOCK(("Server", "ServerList", name));
+    MLOCK(("Server", "ServerList", name.LowerCase()));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
     i_Uplink = Parent->startup.Server_Name().LowerCase();
@@ -423,7 +427,7 @@ Server::Server(mstring name, mstring description)
 Server::Server(mstring name, int hops, mstring description)
 {
     FT("Server::Server", (name, hops, description));
-    MLOCK(("Server", "ServerList", name));
+    MLOCK(("Server", "ServerList", name.LowerCase()));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
     i_Uplink = Parent->startup.Server_Name().LowerCase();
@@ -437,7 +441,7 @@ Server::Server(mstring name, int hops, mstring description)
 Server::Server(mstring name, mstring uplink, int hops, mstring description)
 {
     FT("Server::Server", (name, uplink, hops, description));
-    MLOCK(("Server", "ServerList", name));
+    MLOCK(("Server", "ServerList", name.LowerCase()));
     i_Name = name.LowerCase();
     i_AltName = name.LowerCase();
     i_Uplink = uplink.LowerCase();
@@ -450,7 +454,7 @@ Server::Server(mstring name, mstring uplink, int hops, mstring description)
 void Server::operator=(const Server &in)
 {
     FT("Server::operator=", ("(const Server &) in"));
-    MLOCK(("Server", "ServerList", in.i_Name));
+    MLOCK(("Server", "ServerList", in.i_Name.LowerCase()));
     i_Name = in.i_Name;
     i_AltName = in.i_AltName;
     i_Uplink = in.i_Uplink;
@@ -464,35 +468,35 @@ void Server::operator=(const Server &in)
 mstring Server::AltName()
 {
     NFT("Server::AltName");
-    RLOCK(("Server", "ServerList", i_Name, "i_AltName"));
+    RLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_AltName"));
     RET(i_AltName);
 }
 
 void Server::AltName(mstring in)
 {
     FT("Server::AltName", (in));
-    WLOCK(("Server", "ServerList", i_Name, "i_AltName"));
+    WLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_AltName"));
     i_AltName = in;
 }
 
 mstring Server::Uplink()
 {
     NFT("Server::Uplink");
-    RLOCK(("Server", "ServerList", i_Name, "i_Uplink"));
+    RLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Uplink"));
     RET(i_Uplink);
 }
 
 int Server::Hops()
 {
     NFT("Server::Hops");
-    RLOCK(("Server", "ServerList", i_Name, "i_Hops"));
+    RLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Hops"));
     RET(i_Hops);
 }
 
 mstring Server::Description()
 {
     NFT("Server::Description");
-    RLOCK(("Server", "ServerList", i_Name, "i_Description"));
+    RLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Description"));
     RET(i_Description);
 }
 
@@ -500,7 +504,7 @@ void Server::Ping()
 {
     NFT("Server::Ping");
 
-    WLOCK(("Server", "ServerList", i_Name, "i_Ping"));
+    WLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Ping"));
     if (!i_Ping)
     {
         Parent->server.sraw(((Parent->server.proto.Tokens() && Parent->server.proto.GetNonToken("PING") != "") ?
@@ -513,10 +517,10 @@ void Server::Ping()
 void Server::Pong()
 {
     NFT("Server::Pong");
-    WLOCK(("Server", "ServerList", i_Name, "i_Ping"));
+    WLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Ping"));
     if (i_Ping)
     {
-	WLOCK2(("Server", "ServerList", i_Name, "i_Lag"));
+	WLOCK2(("Server", "ServerList", i_Name.LowerCase(), "i_Lag"));
 	i_Lag = ACE_OS::gettimeofday().msec() - i_Ping;
 	COM(("The lag time of %s is %3.3f seconds.", i_Name.c_str(), i_Lag / 1000.0));
 	i_Ping = 0;
@@ -526,7 +530,7 @@ void Server::Pong()
 float Server::Lag()
 {
     NFT("Server::Lag");
-    RLOCK(("Server", "ServerList", i_Name, "i_Lag"));
+    RLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Lag"));
     float retval = i_Lag / 1000.0;
     RET(retval);
 }
@@ -534,7 +538,7 @@ float Server::Lag()
 bool Server::Jupe()
 {
     NFT("Server::Jupe");
-    RLOCK(("Server", "ServerList", i_Name, "i_Jupe"));
+    RLOCK(("Server", "ServerList", i_Name.LowerCase(), "i_Jupe"));
     RET(i_Jupe);
 }
 
@@ -623,7 +627,7 @@ Server::~Server()
 {
     NFT("Server::~Server");
 
-    WLOCK(("Server", "ServerList", i_Name));
+    WLOCK(("Server", "ServerList", i_Name.LowerCase()));
     if (Parent->Shutdown())
 	return;
 
@@ -640,7 +644,7 @@ size_t Server::Usage()
 {
     size_t retval = 0;
 
-    WLOCK(("Server", "ServerList", i_Name));
+    WLOCK(("Server", "ServerList", i_Name.LowerCase()));
     retval += i_Name.capacity();
     retval += i_AltName.capacity();
     retval += i_Uplink.capacity();
@@ -2377,7 +2381,7 @@ void NetworkServ::execute(const mstring & data)
 		for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 		{
 		    list<mstring>::iterator k;
-		    WLOCK(("Server", "ToBeSquit", i->first));
+		    WLOCK(("Server", "ToBeSquit", i->first.LowerCase()));
 		    for (k=i->second.begin(); k!=i->second.end(); k++)
 			if (*k == sourceL)
 			{
@@ -2838,7 +2842,7 @@ void NetworkServ::execute(const mstring & data)
 	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 	    {
 		list<mstring>::iterator k;
-		WLOCK(("ServeR", "ToBeSquit", i->first));
+		WLOCK(("Server", "ToBeSquit", i->first.LowerCase()));
 		for (k=i->second.begin(); k!=i->second.end(); k++)
 		    if (*k == sourceL)
 		    {
@@ -2939,7 +2943,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		if (iter->second.IsOn(sourceL))
 		{
-		    MLOCK(("CommServ", "lisT", iter->first, "message"));
+		    MLOCK(("CommServ", "list", iter->first, "message"));
 		    for (iter->second.message = iter->second.MSG_begin();
 			    iter->second.message != iter->second.MSG_end();
 			    iter->second.message++)
@@ -3203,7 +3207,7 @@ void NetworkServ::execute(const mstring & data)
 	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
 	    {
 		list<mstring>::iterator k;
-		WLOCK(("Server", "ToBeSquit", i->first));
+		WLOCK(("Server", "ToBeSquit", i->first.LowerCase()));
 		for (k=i->second.begin(); k!=i->second.end(); k++)
 		    if (*k == sourceL)
 		    {

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2000/06/18 13:31:48  prez
+** Fixed the casings, now ALL locks should set 'dynamic' values to the
+** same case (which means locks will match eachother, yippee!)
+**
 ** Revision 1.110  2000/06/18 12:49:27  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -629,7 +633,7 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 			Parent->chanserv.FirstName()))
     {
 	Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
-	MLOCK(("ChanServ", "live", tmp, "ph_timer"));
+	MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
 	Parent->chanserv.live[tmp->LowerCase()].ph_timer = 0;
     }
     delete tmp;

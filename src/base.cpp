@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.125  2000/06/18 13:31:47  prez
+** Fixed the casings, now ALL locks should set 'dynamic' values to the
+** same case (which means locks will match eachother, yippee!)
+**
 ** Revision 1.124  2000/06/18 12:49:26  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -284,7 +288,7 @@ bool mBase::signon(const mstring &nickname)
 {
     FT("mBase::signon", (nickname));
 
-    RLOCK(("NickServ", "live", nickname));
+    RLOCK(("NickServ", "live", nickname.LowerCase()));
     if (Parent->nickserv.IsLive(nickname))
     {
 	RET(false);
@@ -302,7 +306,7 @@ bool mBase::signoff(const mstring &nickname)
 {
     FT("mBase::signoff", (nickname));
 
-    RLOCK(("NickServ", "live", nickname));
+    RLOCK(("NickServ", "live", nickname.LowerCase()));
     if (Parent->nickserv.IsLive(nickname))
     {
 	Parent->server.QUIT(nickname);
@@ -346,8 +350,8 @@ void mBase::privmsgV(const mstring &source, const mstring &dest, const mstring &
     mstring message;
     message.FormatV(pszFormat.c_str(), argptr);
 
-    RLOCK(("NickServ", "live", dest));
-    RLOCK2(("ChanServ", "live", dest));
+    RLOCK(("NickServ", "live", dest.LowerCase()));
+    RLOCK2(("ChanServ", "live", dest.LowerCase()));
     if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
 	Parent->server.PRIVMSG(source, dest, message);
 }
@@ -383,8 +387,8 @@ void mBase::noticeV(const mstring &source, const mstring &dest, const mstring &p
 
     mstring message;
     message.FormatV(pszFormat.c_str(), argptr);
-    RLOCK(("NickServ", "live", dest));
-    RLOCK2(("ChanServ", "live", dest));
+    RLOCK(("NickServ", "live", dest.LowerCase()));
+    RLOCK2(("ChanServ", "live", dest.LowerCase()));
     if (IsName(source) && (Parent->nickserv.IsLive(dest) || Parent->chanserv.IsLive(dest)))
 	Parent->server.NOTICE(source, dest, message);
 }
@@ -416,7 +420,7 @@ void mBase::sendV(const mstring &source, const mstring &dest, const mstring &psz
 {
     FT("mBase::sendV", (source, dest, pszFormat));
 
-    RLOCK(("NickServ", "live", dest));
+    RLOCK(("NickServ", "live", dest.LowerCase()));
     if (IsName(source) && Parent->nickserv.IsLive(dest))
     {
 	if (!Parent->nickserv.LCK_PRIVMSG() && Parent->nickserv.IsStored(dest) &&
@@ -453,7 +457,7 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &pszForma
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
 
-    RLOCK(("NickServ", "live", source));
+    RLOCK(("NickServ", "live", source.LowerCase()));
     if (!Parent->nickserv.IsLive(source))
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
 		"PRIVMSG", source.c_str());
@@ -496,7 +500,7 @@ void notice(const mstring& source, const mstring &dest, const mstring &pszFormat
     va_list argptr;
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
-    RLOCK(("NickServ", "live", source));
+    RLOCK(("NickServ", "live", source.LowerCase()));
     if (!Parent->nickserv.IsLive(source))
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
 		"NOTICE", source.c_str());
@@ -539,7 +543,7 @@ void send(const mstring& source, const mstring &dest, const mstring &pszFormat, 
     va_list argptr;
     const char *str = pszFormat.c_str();
     va_start(argptr, str);
-    RLOCK(("NickServ", "live", source));
+    RLOCK(("NickServ", "live", source.LowerCase()));
     if (!Parent->nickserv.IsLive(source))
 	Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONUSER"),
 		"SEND", source.c_str());
@@ -697,7 +701,7 @@ int mBaseTask::message_i(const mstring& message)
 
     if (type == "PRIVMSG" || type == "NOTICE")
     {
-	RLOCK(("NickServ", "live", source));
+	RLOCK(("NickServ", "live", source.LowerCase()));
 	// Split stuff for NON-CHANNEL traffic.
 	if (!IsChan(target) && Parent->nickserv.IsLive(source))
 	{
