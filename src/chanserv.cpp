@@ -2267,25 +2267,15 @@ void ChanServ::do_Kick(const mstring & mynick, const mstring & source, const mst
 	return;
     }
 
-    if (!Magick::instance().chanserv.IsStored(channel))
+    map_entry < Chan_Stored_t > cstored;
+    if (Magick::instance().chanserv.IsStored(channel))
     {
-	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
-	return;
+	cstored = Magick::instance().chanserv.GetStored(channel);
+	channel = cstored->Name();
     }
-
-    map_entry < Chan_Stored_t > chan = Magick::instance().chanserv.GetStored(channel);
-    channel = chan->Name();
-
-    if (chan->Forbidden())
+    else
     {
-	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
-	return;
-    }
-
-    if (!chan->GetAccess(source, "CMDKICK"))
-    {
-	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
-	return;
+	channel = Magick::instance().getLname(channel);
     }
 
     if (!Magick::instance().nickserv.IsLive(target))
@@ -2294,16 +2284,39 @@ void ChanServ::do_Kick(const mstring & mynick, const mstring & source, const mst
 	return;
     }
 
+    target = Magick::instance().getLname(target);
     if (!Magick::instance().chanserv.GetLive(channel)->IsIn(target))
     {
 	SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (target, channel));
 	return;
     }
 
-    if (chan->GetAccess(target) > chan->GetAccess(source))
+    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Kick()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Kick())->IsOn(source)))
     {
-	SEND(mynick, source, "CS_STATUS/HIGHERACCESS", (target, channel));
-	return;
+	if (cstored.entry() == NULL)
+	{
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
+	    return;
+	}
+
+	if (cstored->Forbidden())
+	{
+	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	    return;
+	}
+
+	if (!cstored->GetAccess(source, "CMDKICK"))
+	{
+	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
+	    return;
+	}
+
+	if (cstored->GetAccess(target) > cstored->GetAccess(source))
+	{
+	    SEND(mynick, source, "CS_STATUS/HIGHERACCESS", (target, channel));
+	    return;
+	}
     }
 
     mstring output = parseMessage(Magick::instance().getMessage(target, "CS_COMMAND/KICK"), mVarArray(source, reason));
@@ -2505,56 +2518,68 @@ void ChanServ::do_Invite(const mstring & mynick, const mstring & source, const m
 	return;
     }
 
-    if (!Magick::instance().chanserv.IsStored(channel))
+    map_entry < Chan_Stored_t > cstored;
+    if (Magick::instance().chanserv.IsStored(channel))
     {
-	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
-	return;
-    }
-    map_entry < Chan_Stored_t > chan = Magick::instance().chanserv.GetStored(channel);
-    channel = Magick::instance().getSname(channel);
-
-    if (chan->Forbidden())
-    {
-	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
-	return;
-    }
-
-    // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 2 &&
-	(chan->GetAccess(source, "SUPER") ||
-	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Invite()) &&
-	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Invite())->IsOn(source))))
-    {
-	target = params.ExtractWord(3, " ");
-	if (!Magick::instance().nickserv.IsLive(target))
-	{
-	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (target));
-	    return;
-	}
-	else if (Magick::instance().chanserv.GetLive(channel)->IsIn(target))
-	{
-	    SEND(mynick, source, "CS_STATUS/OTH_IN", (target, channel));
-	    return;
-	}
-	SEND(mynick, target, "CS_COMMAND/OTH_INVITE", (channel, source));
+	cstored = Magick::instance().chanserv.GetStored(channel);
+	channel = cstored->Name();
     }
     else
     {
-	if (Magick::instance().chanserv.GetLive(channel)->IsIn(target))
+	channel = Magick::instance().getLname(channel);
+    }
+
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Invite()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Invite())->IsOn(source) &&
+	params.WordCount(" ") > 2)
+    {
+	target = params.ExtractWord(3, " ");
+    }
+    else
+    {
+	if (cstored.entry() == NULL)
 	{
-	    SEND(mynick, source, "CS_STATUS/IN", (channel));
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
 	    return;
 	}
-	else if (!chan->GetAccess(target, "CMDINVITE"))
+
+	if (cstored->Forbidden())
+	{
+	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	    return;
+	}
+
+	if (params.WordCount(" ") > 2 && cstored->GetAccess(source, "SUPER"))
+	    target = params.ExtractWord(3, " ");
+	else if (!cstored->GetAccess(target, "CMDINVITE"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
-	SEND(mynick, target, "CS_COMMAND/INVITE", (channel));
+    }
+
+    if (!Magick::instance().nickserv.IsLive(target))
+    {
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (target));
+	return;
+    }
+
+    target = Magick::instance().getLname(target);
+    if (Magick::instance().chanserv.GetLive(channel)->IsIn(target))
+    {
+	if (source.IsSameAs(target, true))
+	    SEND(mynick, source, "CS_STATUS/IN", (channel));
+	else
+	    SEND(mynick, source, "CS_STATUS/OTH_IN", (target, channel));
+	return;
     }
 
     Magick::instance().chanserv.stats.i_Invite++;
     Magick::instance().server.INVITE(mynick, target, channel);
+    if (source.IsSameAs(target, true))
+	SEND(mynick, target, "CS_COMMAND/INVITE", (channel));
+    else
+	SEND(mynick, target, "CS_COMMAND/OTH_INVITE", (channel, source));
     LOG(LM_DEBUG, "CHANSERV/INVITE",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), target, channel));
     ETCB();
@@ -2582,46 +2607,56 @@ void ChanServ::do_Unban(const mstring & mynick, const mstring & source, const ms
 	return;
     }
 
-    if (!Magick::instance().chanserv.IsStored(channel))
+    map_entry < Chan_Stored_t > cstored;
+    if (Magick::instance().chanserv.IsStored(channel))
     {
-	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
-	return;
-    }
-
-    map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(channel);
-    channel = cstored->Name();
-
-    if (cstored->Forbidden())
-    {
-	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
-	return;
-    }
-
-    // If we have 2 params, and we have SUPER access, or are a SOP
-    if (params.WordCount(" ") > 2 &&
-	(cstored->GetAccess(source, "SUPER") ||
-	 (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Unban()) &&
-	  Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Unban())->IsOn(source))))
-    {
-	target = params.ExtractWord(3, " ");
-	if (!Magick::instance().nickserv.IsLive(target))
-	{
-	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (target));
-	    return;
-	}
+	cstored = Magick::instance().chanserv.GetStored(channel);
+	channel = cstored->Name();
     }
     else
     {
-	if (!cstored->GetAccess(target, "CMDUNBAN"))
+	channel = Magick::instance().getLname(channel);
+    }
+
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Unban()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Unban())->IsOn(source) &&
+	params.WordCount(" ") > 2)
+    {
+	target = params.ExtractWord(3, " ");
+    }
+    else
+    {
+	if (cstored.entry() == NULL)
+	{
+	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
+	    return;
+	}
+
+	if (cstored->Forbidden())
+	{
+	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	    return;
+	}
+
+	if (params.WordCount(" ") > 2 && cstored->GetAccess(source, "SUPER"))
+	    target = params.ExtractWord(3, " ");
+	else if (!cstored->GetAccess(target, "CMDUNBAN"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
     }
 
+    if (!Magick::instance().nickserv.IsLive(target))
+    {
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (target));
+	return;
+    }
+
     vector < mstring > bans;
     map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(channel);
     map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(target);
+    target = nlive->Name();
     unsigned int i;
 
     for (i = 0; i < clive->Bans(); i++)

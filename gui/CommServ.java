@@ -61,6 +61,7 @@ public class CommServ extends TabbedPane
 		"OVR_CS_HALFOP",
 		"OVR_CS_VOICE",
 		"OVR_CS_INVITE",
+		"OVR_CS_KICK",
 		"OVR_CS_UNBAN",
 		"OVR_CS_CLEAR",
 	};

@@ -216,6 +216,7 @@ private:
     mstring ovr_cs_halfop;
     mstring ovr_cs_voice;
     mstring ovr_cs_invite;
+    mstring ovr_cs_kick;
     mstring ovr_cs_unban;
     mstring ovr_cs_clear;
     static SXP::Tag tag_CommServ;
@@ -470,6 +471,10 @@ public:
     mstring OVR_CS_Invite() const
     {
 	return ovr_cs_invite;
+    }
+    mstring OVR_CS_Kick() const
+    {
+	return ovr_cs_kick;
     }
     mstring OVR_CS_Unban() const
     {

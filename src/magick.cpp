@@ -3026,6 +3026,7 @@ bool Magick::get_config_values()
     in.Read(ts_CommServ + "OVR_CS_OP", commserv.ovr_cs_halfop, "ADMIN");
     in.Read(ts_CommServ + "OVR_CS_VOICE", commserv.ovr_cs_voice, "OPER");
     in.Read(ts_CommServ + "OVR_CS_INVITE", commserv.ovr_cs_invite, "SOP");
+    in.Read(ts_CommServ + "OVR_CS_KICK", commserv.ovr_cs_kick, "SOP");
     in.Read(ts_CommServ + "OVR_CS_UNBAN", commserv.ovr_cs_unban, "SOP");
     in.Read(ts_CommServ + "OVR_CS_CLEAR", commserv.ovr_cs_clear, "SADMIN");
     commserv.all.Name.MakeUpper();
@@ -3040,6 +3041,7 @@ bool Magick::get_config_values()
     commserv.ovr_cs_op.MakeUpper();
     commserv.ovr_cs_voice.MakeUpper();
     commserv.ovr_cs_invite.MakeUpper();
+    commserv.ovr_cs_kick.MakeUpper();
     commserv.ovr_cs_unban.MakeUpper();
     commserv.ovr_cs_clear.MakeUpper();
     AddCommands();
