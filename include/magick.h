@@ -22,6 +22,7 @@
 #include "fileconf.h"
 #include "datetime.h"	// Added by ClassView
 #include "trace.h"
+#include "server.h"
 #include "operserv.h"
 #include "nickserv.h"
 #include "chanserv.h"
@@ -30,6 +31,7 @@
 #include "ircsocket.h"
 #include "variant.h"
 #include "version.h"
+#include "log.h"
 
 const int MAGICK_RET_NORMAL		    = 0;
 const int MAGICK_RET_RESTART		    = 1;

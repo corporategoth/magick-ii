@@ -16,7 +16,6 @@
 // ===================================================
 
 #include "magick.h"
-#include "log.h"
 #include "EscLexer.hpp"
 #include "EscParser.hpp"
 #include "lockable.h"
@@ -153,6 +152,7 @@ int Magick::Start()
 	wxLogFatal("Major fubar, couldn't allocate memory to read config file.");
     }
     //okay, need a function here to load all the ini file defalts
+
     get_config_values();
     if(i_shutdown==true)
 	wxLogFatal("CONFIG: [Startup] STOP code received.");
@@ -160,6 +160,7 @@ int Magick::Start()
     Result=doparamparse();
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
+
 
     if(!check_config())
 	RET(MAGICK_RET_TERMINATE);
