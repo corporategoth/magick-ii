@@ -88,56 +88,41 @@
 /* Define if you have the vsnprintf function.  */
 #undef HAVE_VSNPRINTF
 
-/* Define if you have the <algorithm.h> header file.  */
-#undef HAVE_ALGORITHM_H
-
-/* Define if you have the <deque.h> header file.  */
-#undef HAVE_DEQUE_H
-
 /* Define if you have the <exception> header file.  */
 #undef HAVE_EXCEPTION
 
 /* Define if you have the <exception.h> header file.  */
 #undef HAVE_EXCEPTION_H
 
-/* Define if you have the <fstream.h> header file.  */
-#undef HAVE_FSTREAM_H
+/* Define if you have the <list> header file.  */
+#undef HAVE_LIST
 
-/* Define if you have the <iostream.h> header file.  */
-#undef HAVE_IOSTREAM_H
-
-/* Define if you have the <istream.h> header file.  */
-#undef HAVE_ISTREAM_H
-
-/* Define if you have the <list.h> header file.  */
-#undef HAVE_LIST_H
-
-/* Define if you have the <map.h> header file.  */
-#undef HAVE_MAP_H
+/* Define if you have the <map> header file.  */
+#undef HAVE_MAP
 
 /* Define if you have the <mpatrol.h> header file.  */
 #undef HAVE_MPATROL_H
 
-/* Define if you have the <ostream.h> header file.  */
-#undef HAVE_OSTREAM_H
+/* Define if you have the <queue> header file.  */
+#undef HAVE_QUEUE
 
-/* Define if you have the <queue.h> header file.  */
-#undef HAVE_QUEUE_H
+/* Define if you have the <set> header file.  */
+#undef HAVE_SET
 
-/* Define if you have the <set.h> header file.  */
-#undef HAVE_SET_H
+/* Define if you have the <stack> header file.  */
+#undef HAVE_STACK
 
-/* Define if you have the <stack.h> header file.  */
-#undef HAVE_STACK_H
-
-/* Define if you have the <strstream.h> header file.  */
-#undef HAVE_STRSTREAM_H
+/* Define if you have the <string> header file.  */
+#undef HAVE_STRING
 
 /* Define if you have the <termio.h> header file.  */
 #undef HAVE_TERMIO_H
 
-/* Define if you have the <vector.h> header file.  */
-#undef HAVE_VECTOR_H
+/* Define if you have the <utility> header file.  */
+#undef HAVE_UTILITY
+
+/* Define if you have the <vector> header file.  */
+#undef HAVE_VECTOR
 
 /* Name of package */
 #undef PACKAGE

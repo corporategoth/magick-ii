@@ -25,6 +25,9 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2001/04/08 18:53:09  prez
+** It now all compiles and RUNS with -fno-default-inline OFF.
+**
 ** Revision 1.46  2001/02/03 02:21:34  prez
 ** Loads of changes, including adding ALLOW to ini file, cleaning up
 ** the includes, RCSID, and much more.  Also cleaned up most warnings.
@@ -110,16 +113,18 @@ int main(int argc, char **argv)
     try
     {
 #endif
+	// Globals ...
+	Parent = NULL;
+	StartTime = mDateTime::CurrentDateTime();
 
 	int Result = MAGICK_RET_RESTART;
         mThread::Attach(tt_MAIN);
-	StartTime = mDateTime::CurrentDateTime();
 	while (Result == MAGICK_RET_RESTART)
 	{
 	    Magick internalobject(argc, argv);
 	    Parent = &internalobject;
 	    Result = internalobject.Start();
-	    FLUSH();
+	    Parent = NULL;
 	}
 	if (Result != MAGICK_RET_NORMAL)
 	{

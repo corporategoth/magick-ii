@@ -52,7 +52,6 @@ uses Unicode. */
 #endif
 
 #include <stddef.h>
-#include <stdlib.h>
 typedef wchar_t XML_Char;
 typedef wchar_t XML_LChar;
 

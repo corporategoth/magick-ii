@@ -27,6 +27,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2001/04/08 18:53:09  prez
+** It now all compiles and RUNS with -fno-default-inline OFF.
+**
 ** Revision 1.65  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -197,6 +200,9 @@ map<unsigned long, mSocket *> mSocket::SockMap;
 
 mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 {
+    if (StartTime == mDateTime(0.0) || Parent == NULL || Parent->ResetTime() == mDateTime(0.0))
+	return;
+
     int i;
 #ifdef MAGICK_TRACE_WORKS
     int count = 0;
@@ -413,6 +419,9 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 
 mLOCK::~mLOCK()
 {
+    if (StartTime == mDateTime(0.0) || Parent == NULL || Parent->ResetTime() == mDateTime(0.0))
+	return;
+
     int i;
     map<mstring, pair<locktype_enum, void *> > *lockroot = NULL;
     mLock_Mutex *mlock;
@@ -586,6 +595,9 @@ void mSocket::init()
     last_error = 0;
     sockid = 0;
     DestroyMe = false;
+
+    if (StartTime == mDateTime(0.0) || Parent == NULL || Parent->ResetTime() == mDateTime(0.0))
+	return;
 
     unsigned long i;
     MLOCK(("SockMap"));
@@ -904,6 +916,9 @@ mThread::selftothreadidmap_t mThread::selftothreadidmap;
 
 ThreadID* mThread::find(const ACE_thread_t thread)
 {
+    if (StartTime == mDateTime(0.0))
+	return NULL;
+
     ThreadID *tid = NULL;
     mLock_Mutex lock("SelfToThreadMap");
     if (lock.acquire() < 0)

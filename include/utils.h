@@ -25,6 +25,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2001/04/08 18:53:09  prez
+** It now all compiles and RUNS with -fno-default-inline OFF.
+**
 ** Revision 1.39  2001/04/02 02:13:27  prez
 ** Added inlines, fixed more of the exception code.
 **
@@ -167,21 +170,21 @@ bool operator<(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
 }
 
 template<class T1, class T2, class T3> inline
-bool operator>(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
-{
-    return !((Y < X) || (Y == X));
-}
-
-template<class T1, class T2, class T3> inline
 bool operator<=(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
 {
-    return !(Y > X);
+    return !(Y < X);
 }
 
 template<class T1, class T2, class T3> inline
 bool operator>=(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
 {
     return !(X < Y);
+}
+
+template<class T1, class T2, class T3> inline
+bool operator>(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
+{
+    return !(X <= Y);
 }
 
 template<class T1, class T2, class T3> inline

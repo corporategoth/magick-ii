@@ -27,6 +27,9 @@ RCSID(mstring_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2001/04/08 18:53:10  prez
+** It now all compiles and RUNS with -fno-default-inline OFF.
+**
 ** Revision 1.100  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -1730,4 +1733,3 @@ bool match_wild (const char *pattern, const char *str, bool nocase)
 }
 
 /********************************************************/
-

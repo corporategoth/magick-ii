@@ -25,7 +25,7 @@ a badly implemented threads library.
 You must compile each of the above products before attempting to
 build Magick.  Magick will look for them in the configure phase.
 
-Also, if you dont have about 200mb memory (including swap), and 120mb
+Also, if you dont have about 128mb memory (including swap), and 150mb
 hard disk space free, I wouldnt bother to compile magick.  Our main
 philosophy is to try and get Magick as efficiant at run-time as
 possible, to this end, we've had to trade off compile-time resources

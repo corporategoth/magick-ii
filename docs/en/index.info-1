@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index25595.info.2.
+/tmp/sgmltmp.index6946.info.2.
 
    \input texinfo
 
@@ -546,6 +546,36 @@ badly implemented threads library.
 
    You must compile each of the above products before attempting to
 build Magick.  Magick will look for them in the configure phase.
+
+   Also, if you dont have about 128mb memory (including swap), and 150mb
+hard disk space free, I wouldnt bother to compile magick.  Our main
+philosophy is to try and get Magick as efficiant at run-time as
+possible, to this end, we've had to trade off compile-time resources
+and resulting binary size.  What this means in english is, the final
+product is very efficient, however making it will take a large chunk
+out of your available resources.
+
+   Dont dispair tho.  Magick is also available in binary form from
+ftp://www.magick.tm/pub/magick.tm/bin - however if you want to use
+encryption, its recommended you compile magick yourself.  Why?  Magick
+encrypts the key file with 2 keys determined at compile- time.  These
+are never the same for 2 different compiles.  However if you get a
+pre-compiled binary, then others will have access to the same binary
+you have, and may be able to some how reverse engineer the keys for the
+keyfile inside, and be able to decrypt your key file.  So, if you use a
+pre-compiled binary, you should consider the key potentially
+compromised.  This is not to say you shouldnt bother using encryption
+in that instance, just that you should take extra precautions to ensure
+noone can access your key file and databases.
+
+   Host locking (ie. stopping magick from being run anywhere that
+doesnt have the same host and system type compiled into magick) is also
+impossible with pre-compiled binaries.  If you wish to add this level
+of protection in (ie. you want to ensure that even if someone DOES get
+your binaries, they cant run them without going through some special
+measures to try and do so), then you will need to re-compile.
+Essentially the rule of thumb is 'compile if you can, use pre-compiled
+binaries if you must'.
 
 
 File: index.info,  Node: ACE Installation,  Next: Basic Installation,  Prev: Requirements,  Up: Installation
@@ -1120,147 +1150,4 @@ current directory.
      files themselves are stored as hexadecimal numbers, with no
      extension. The path name actually used is a setting in the
      magick.ini file.
-
-
-File: index.info,  Node: General Usage,  Next: Functionality,  Prev: Support files,  Up: Usage
-
-General Usage
-=============
-
-   Magick once started, becomes a background process.  It accepts a
-number of command-line options that override the settings of their
-equivalents on load.  NOTE: If the config file is loaded again at
-runtime, the settings in the config file will be used.
-
-     --help (or -?)  Help output (summary of the below).
-     --dir X         Set the initial services directory.
-     --config X      Set the name of the config file.
-     --convert X     Convert another version of services databases
-                     to Magick II format, where X is the type of
-                     database to convert.  Currently recognised:
-                             magick (1.4)   esper (4.4.8)
-                     MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
-     --trace X:Y     Set the trace level on startup, equivalent of
-                     using the OperServ TRACE SET command while
-                     running, where X is the trace type (or ALL), and
-                     Y is the trace level in hex.
-                     MUST BE COMPILED INTO BINARY TO BE AVAILABLE.
-
-   All other command line options just override the configuration file
-settings.  Below is a list of the overrides available, and the settings
-they override in the configuration file.  Please see the configuration
-file's comments for more information on each option, and what it does.
-
-     PARAMATER       SHORT   GROUP           OPTION
-     ---------       -----   -----           ------
-     --name X        -n      STARTUP         SERVER_NAME
-     --desc X        -d      STARTUP         SERVER_DESC
-     --user X        -u      STARTUP         SERVICES_USER
-     --host X        -h      STARTUP         SERVICES_HOST
-     --ownuser       -o      STARTUP         OWNUSER=true
-     --protocol X    -P      STARTUP         PROTOCOL
-     --level X       -l      STARTUP         LEVEL
-     --lagtime X     -g      STARTUP         LAGTIME
-     --verbose       -v      FILES           VERBOSE=true
-     --log X         -L      FILES           LOGFILE
-     --logchan X     -C      FILES           LOGCHAN
-     --dbase X       -D      FILES           DATABASE
-     --langdir X     -S      FILES           LANGDIR
-     --encrypt       -E      FILES           ENCRYPTION=true
-     --decrypt       -e      FILES           ENCRYPTION=false
-     --keyfile X     -K      FILES           KEYFILE
-     --compress X    -c      FILES           COMPRESSION
-     --relink X      -r      CONFIG          SERVER_RELINK
-     --cycle X       -t      CONFIG          CYCLETIME
-     --save X        -w      CONFIG          SAVETIME
-     --check X       -T      CONFIG          CHECKTIME
-     --ping X        -p      CONFIG          PING_FREQUENCY
-     --thread X      -X      CONFIG          MIN_THREADS
-     --lwm X         -m      CONFIG          LOW_WATER_MARK
-     --hwm X         -M      CONFIG          HIGH_WATER_MARK
-     --append        -a      NICKSERV        APPEND_RENAME=true
-     --rename        -A      NICKSERV        APPEND_RENAME=false
-     --ident X       -R      NICKSERV        IDENT
-     --language X    -s      NICKSERV        DEF_LANGUAGE
-     --nodcc         -x      NICKSERV        PICEXT=  (nothing)
-                             MEMOSERV        FILES=0
-     --inflight X    -f      MEMOSERV        INFLIGHT
-     --logignore     -i      OPERSERV        LOG_IGNORE=true
-     --ignore X      -I      OPERSERV        IGNORE_METHOD
-
-   Example:
-
-     ./magick --config /etc/magick.ini
-
-   After Magick is running, it should be totally driven through the
-on-line clients (NickServ, ChanServ, OperServ, etc).  However, in
-certain cases, events happen and these interfaces are either not
-available, not responding, too slow, or don't recognise you.  For this
-eventuality, all UNIX SIGNALS have been trapped, and some perform extra
-functions that 'originally' intended.
-
-     SIGNAL  NUMBER  EQUIVALENT      DESCRIPTION
-     ------  ------  ----------      -----------
-     SIGHUP  1       OS RELOAD       Re-loads the config file.
-     SIGINT  2       OS SIGNON       Attempts to sign on all clients.
-     SIGPIPE 13      IGNORE          Flushes trace output immediately.
-     SIGTERM 15      OS UPDATE       Saves the databases.
-     SIGCHLD 17      IGNORE          Check to see if we're alive.
-
-   Some have queried me on why SIGTERM saves the databases.  During
-shutdown of many systems, the shutdown scripts will send a SIGTERM to
-all running processes, wait a while, then send a SIGKILL (9).  This
-gives us a chance to save our databases before we're killed.  This also
-means that you must use kill -KILL (kill -9) to kill Magick once it has
-been started.
-
-   To use encryption, you must generate a key file with the program
-magick[lowbar]keygen.  This program accepts a maximum of two arguments,
-being the output key filename, and an input file with the plain text
-version of the key respectively.  If neither argument is supplied, it
-will ask you to enter the data interactively.
-
-   On unix terminals that support it, the text entered at the key
-prompts will be hidden, however to not bank on this, and always ensure
-no one can look over your shoulder of sniff your network traffic to
-find out what the clear-text password is.  The maximum size of a key is
-specified at compile time, and may be changed with a configure option
-(see INSTALL for further details).
-
-   Example 1:
-
-     ./magick_keygen
-     Magick IRC Services - http://www.magick.tm
-         (c) 1997-2001 Preston A. Elder [lt    ]prez@magick.tm[gt    ]
-         (c) 1998-2001 William King [lt    ]ungod@magick.tm[gt    ]
-     
-     Enter filename to output to [magick.key]:
-     Enter database key:
-     Re-Enter database key:
-     
-     Created 362 byte keyfile.
-
-   Example 2:
-
-     ./magick_keygen magick.key magick.plain
-     Magick IRC Services - http://www.magick.tm
-         (c) 1997-2001 Preston A. Elder [lt    ]prez@magick.tm[gt    ]
-         (c) 1998-2001 William King [lt    ]ungod@magick.tm[gt    ]
-     
-     Created 1024 byte keyfile.
-
-   Tip:  Its usually a good idea to find a random file that doesnt
-change, or that you have a version of, and choose a random point
-somewhere in the middle (remember the starting point), and cut from
-that point on into a seperate file, then feed that as the plain magick
-key, and then remove your plain key file.  This way you will not have
-to remember a whole big key, just where the key is from, and the
-beginning point in the file (ensure it is a big file and dont tell
-anyone what file it is, where to get it or the starting point for
-security.  This is usually the easiest way to create a big key and
-remember it all without having to tax your brain, or worry about
-forgetting it.  NEVER EVER leave a plain key file (ie. your file with
-everything before the start point truncated) lying around - and do not
-use a file that may change from version to version of wherever you got
-it.
 

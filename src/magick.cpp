@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.296  2001/04/08 18:53:09  prez
+** It now all compiles and RUNS with -fno-default-inline OFF.
+**
 ** Revision 1.295  2001/04/02 02:11:23  prez
 ** Fixed up some inlining, and added better excption handling
 **
@@ -657,17 +660,6 @@ int Magick::Start()
     load_databases();
 
     FLUSH();
-    // Can only open these after fork if we want then to live
-    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS")));
-    { WLOCK(("Events"));
-    events = new EventTask;
-    events->open();
-    }
-    { WLOCK(("DCC"));
-    dcc = new DccMap;
-    dcc->open();
-    }
-
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler=new SignalHandler;
     ACE_Reactor::instance()->register_handler(SIGINT,signalhandler);
@@ -725,17 +717,17 @@ int Magick::Start()
 #endif
 #endif
 
-/* Please leave this somewhere in this file, as it
- * is quite handy when you are getting a segfault
- * after load but before you can turn on trace.
- *
-#ifdef MAGICK_TRACE_WORKS
-    Trace::TurnSet(tt_MAIN, 0xffff);
-    for (int i=tt_MAIN+1; i<tt_MAX; i++)
-	Trace::TurnSet((threadtype_enum) i, 0xffff);
-#endif
-*/
-    // etc.
+    i_ResetTime=mDateTime::CurrentDateTime();
+    // Can only open these after fork if we want then to live
+    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS")));
+    { WLOCK(("Events"));
+    events = new EventTask;
+    events->open();
+    }
+    { WLOCK(("DCC"));
+    dcc = new DccMap;
+    dcc->open();
+    }
 
     //LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_CALIBRATE")));
     // calibrate the threshholds.
@@ -747,10 +739,6 @@ int Magick::Start()
     // 
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
-
-    { WLOCK(("i_ResetTime"));
-    i_ResetTime=mDateTime::CurrentDateTime();
-    }
 
     // Use the reconnect handler to get a connection
 

@@ -30,7 +30,6 @@ your version of this file under either the MPL or the GPL.
 
 
 #include <stddef.h>
-#include <stdlib.h>
 
 #ifdef XML_UNICODE
 

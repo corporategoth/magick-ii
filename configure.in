@@ -40,7 +40,6 @@ dnl Stuff for a later date.  Right now, we'll keep it here.
 dnl NOTE: CFLAGS = C only, CXXFLAGS = C++ only, CPPFLAGS = both
 
 dnl Optimisation and Debugging flags
-dnl -O3   Increased optimisation
 dnl -g3   Increased output to gdb (for macros, etc)
 dnl -pg   Profiling output for gprof
 dnl -dm   Output memory stats when compile is done
@@ -55,7 +54,7 @@ dnl Add -fno-default-inline else gcc spinlocks (not-nice)
 CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"
 
 dnl Now we include SGI's STL -- if you have it
-dnl CXXFLAGS="$CXXFLAGS -ftemplate-depth-25 -I\$(top_srcdir)/include/stl"
+dnl CXXFLAGS="$CXXFLAGS -I\$(top_srcdir)/include/stlport"
 
 dnl ====================================================
 
@@ -448,25 +447,17 @@ fi
 dnl Find out which to use for C++ headers ...
 AC_CHECK_HEADERS(mpatrol.h)
 AC_CHECK_HEADERS(termio.h)
-AC_CHECK_HEADERS(iostream.h)
-AC_CHECK_HEADERS(istream.h)
-AC_CHECK_HEADERS(ostream.h)
-AC_CHECK_HEADERS(fstream.h)
-AC_CHECK_HEADERS(strstream.h)
-AC_CHECK_HEADERS(set.h)
-AC_CHECK_HEADERS(map.h)
-AC_CHECK_HEADERS(queue.h)
-AC_CHECK_HEADERS(stack.h)
-AC_CHECK_HEADERS(vector.h)
-AC_CHECK_HEADERS(list.h)
-AC_CHECK_HEADERS(deque.h)
-AC_CHECK_HEADERS(algorithm.h)
-AC_CHECK_HEADERS(exception.h, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)],
-	[AC_CHECK_HEADERS(exception, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)])])
-dnl Cant check this, conflicts with STD C
-dnl AC_CHECK_HEADERS(utility.h)
-dnl AC_CHECK_HEADERS(string.h)
-dnl AC_CHECK_HEADERS(wchar.h)
+
+AC_CHECK_HEADERS(exception, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)],
+	[AC_CHECK_HEADERS(exception.h, [AC_DEFINE(MAGICK_HAS_EXCEPTIONS)])])
+AC_CHECK_HEADERS(list)
+AC_CHECK_HEADERS(map)
+AC_CHECK_HEADERS(queue)
+AC_CHECK_HEADERS(stack)
+AC_CHECK_HEADERS(set)
+AC_CHECK_HEADERS(string)
+AC_CHECK_HEADERS(utility)
+AC_CHECK_HEADERS(vector)
 
 AC_CHECK_FUNCS(itoa)
 AC_CHECK_FUNCS(ltoa)

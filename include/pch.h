@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2001/04/08 18:53:09  prez
+** It now all compiles and RUNS with -fno-default-inline OFF.
+**
 ** Revision 1.35  2001/03/20 14:22:14  prez
 ** Finished phase 1 of efficiancy updates, we now pass mstring/mDateTime's
 ** by reference all over the place.  Next step is to stop using operator=
@@ -134,13 +137,23 @@
 #  include "config.h"
 #endif
 
+#ifdef STDC_HEADERS
+#  ifdef  __cplusplus
+#    include <cstdlib>
+#    include <cstdarg>
+#    include <cstring>
+#  else
+#    include <stdlib.h>
+#    include <stdio.h>
+#    include <string.h>
+#  endif
+#endif
+
 /* Standard C Extensions */
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
 #include <signal.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/stat.h>
 
 #if TIME_WITH_SYS_TIME
@@ -162,97 +175,60 @@
 
 /* Standard C++ Extensions ... */
 /* These all have IFDEF's because
- * unix machines tend to use .h files
+ * some unix machines dont have the
+ * standard ones, only a .h
  */
 #ifdef __cplusplus
-#  ifdef STDC_HEADERS
-#    include <cstdlib>
-#    include <cstdarg>
-#    include <cstring>
-#  endif
-
-/* Used with SGI's STL
-#define _STL_NO_CONCEPT_CHECKS
-*/
-
 #ifdef MAGICK_HAS_EXCEPTIONS
-#  ifdef HAVE_EXCEPTION_H
-#    include <exception.h>
-#  else
+#  ifdef HAVE_EXCEPTION
 #    include <exception>
+#  else
+#    include <exception.h>
 #  endif
 #endif
-#ifdef HAVE_ALGORITHM_H
-#  include <algorithm.h>
-#else
-#  include <algorithm>
-#endif
-#ifdef HAVE_DEQUE_H
-#  include <deque.h>
-#else
-#  include <deque>
-#endif
-#ifdef HAVE_IOSTREAM_H
-#  include <iostream.h>
-#else
-#  include <iostream>
-#endif
-#ifdef HAVE_FSTREAM_H
-#  include <fstream.h>
-#else
-#  include <fstream>
-#endif
-#ifdef HAVE_LIST_H
-#  include <list.h>
-#else
+#ifdef HAVE_LIST
 #  include <list>
-#endif
-#ifdef HAVE_MAP_H
-#  include <map.h>
 #else
+#  include <list.h>
+#endif
+#ifdef HAVE_MAP
 #  include <map>
-#endif
-#ifdef HAVE_QUEUE_H
-#  include <queue.h>
 #else
+#  include <map.h>
+#endif
+#ifdef HAVE_QUEUE
 #  include <queue>
-#endif
-#ifdef HAVE_STACK_H
-#  include <stack.h>
 #else
+#  include <queue.h>
+#endif
+#ifdef HAVE_STACK
 #  include <stack>
-#endif
-#ifdef HAVE_SET_H
-#  include <set.h>
 #else
+#  include <stack.h>
+#endif
+#ifdef HAVE_SET
 #  include <set>
-#endif
-#ifdef HAVE_STRING_H
-#  include <string.h>
 #else
+#  include <set.h>
+#endif
+#ifdef HAVE_STRING
 #  include <string>
-#endif
-#ifdef HAVE_STRSTREAM_H
-#  include <strstream.h>
 #else
-#  include <strstream>
+#  include <string.h>
 #endif
-#ifdef HAVE_UTILITY_H
-#  include <utility.h>
-#else
+#ifdef HAVE_UTILITY
 #  include <utility>
-#endif
-#ifdef HAVE_VECTOR_H
-#  include <vector.h>
 #else
+#  include <utility.h>
+#endif
+#ifdef HAVE_VECTOR
 #  include <vector>
+#else
+#  include <vector.h>
 #endif
 
 /* ACE Extensions */
 #include <ace/config.h>
-/* Used with SGI's STL
-#undef ACE_LACKS_AUTO_PTR
-*/
 #include <ace/Version.h>
 #include <ace/Activation_Queue.h>
 #include <ace/Auto_Ptr.h>
@@ -286,7 +262,7 @@
  * Below is an example if it was implemented in 6.5 */
 #if ACE_MAJOR_VERSION < 6 || (ACE_MAJOR_VERSION == 6 && ACE_MINOR_VERSION < 5)
 #include "ace_memory.h"
-#endif
+#endif /* ifdef __cplusplus */
 
 #define atoi(x)		ACE_OS::strtol(x, NULL, 10)
 #define atol(x)		ACE_OS::strtol(x, NULL, 10)
