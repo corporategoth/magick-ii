@@ -9,5 +9,3 @@ EXTRA_DIST = base.h chanserv.h commserv.h convert_magick.h convert_esper.h datet
 distclean-hdr:
 	-cp -f version.h-release version.h
 	-cp -f config.h.win config.h
-	-cp -f crypt.h.win crypt.h
-
