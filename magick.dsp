@@ -111,6 +111,14 @@ SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\mstring.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\mstring.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\docs\todo.txt
 # End Source File
 # End Target

@@ -7,14 +7,14 @@
 #endif
 
 #include <vector>
-#include <string>
 using namespace std;
 
 #include "bob.hpp"
+#include "mstring.h"
 
 class Magick
 {
-	vector<string> argv;
+	vector<mstring> argv;
 	Bob bob;
 public:
 	Magick(int inargc, char **inargv);
