@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2000/09/09 02:17:48  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.72  2000/09/05 10:53:06  prez
 ** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
 ** tracing -- also modified keygen to allow for cmdline generation (ie.
@@ -1551,7 +1556,7 @@ void CommServ::do_Info(mstring mynick, mstring source, mstring params)
 			output.c_str());
     if (Parent->servmsg.ShowSync())
 	::send(mynick, source, Parent->getMessage("MISC/SYNC"),
-			Parent->events->SyncTime().c_str());
+			Parent->events->SyncTime(source).c_str());
 }
 
 void CommServ::do_member_Add(mstring mynick, mstring source, mstring params)
@@ -1802,7 +1807,7 @@ int CommServ::do_member_List2(mstring mynick, mstring source, mstring committee,
 	    output << " [" << Parent->getMessage(source, "COMMSERV/DEFUNCT") << "]";
 	::send(mynick, source, output);
 	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD"),
-		ToHumanTime(comm->member->Last_Modify_Time().SecondsSince()).c_str(),
+		ToHumanTime(comm->member->Last_Modify_Time().SecondsSince(), source).c_str(),
 		comm->member->Last_Modifier().c_str());
     }
     RET(nextnum-number);
@@ -1977,7 +1982,7 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
 	output << i << ". " << comm->message->Entry();
 	::send(mynick, source, output);
 	::send(mynick, source, "    " + Parent->getMessage(source, "LIST/LASTMOD"),
-		ToHumanTime(comm->message->Last_Modify_Time().SecondsSince()).c_str(),
+		ToHumanTime(comm->message->Last_Modify_Time().SecondsSince(), source).c_str(),
 		comm->message->Last_Modifier().c_str());
     }
 }
@@ -2288,14 +2293,14 @@ void CommServ::do_set_Secure(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str(),
 		committee.c_str(), onoff.GetBool() ?
-			Parent->getMessage(source, "MISC/ON").c_str() :
-			Parent->getMessage(source, "MISC/OFF").c_str());
+			Parent->getMessage(source, "VALS/ON").c_str() :
+			Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("COMMSERV_INFO/SET_SECURE").c_str(),
 	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "MISC/ON").c_str() :
-		Parent->getMessage(source, "MISC/OFF").c_str());
+		Parent->getMessage(source, "VALS/ON").c_str() :
+		Parent->getMessage(source, "VALS/OFF").c_str());
 }
 
 
@@ -2368,14 +2373,14 @@ void CommServ::do_set_Private(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str(),
 		committee.c_str(), onoff.GetBool() ?
-			Parent->getMessage(source, "MISC/ON").c_str() :
-			Parent->getMessage(source, "MISC/OFF").c_str());
+			Parent->getMessage(source, "VALS/ON").c_str() :
+			Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE").c_str(),
 	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "MISC/ON").c_str() :
-		Parent->getMessage(source, "MISC/OFF").c_str());
+		Parent->getMessage(source, "VALS/ON").c_str() :
+		Parent->getMessage(source, "VALS/OFF").c_str());
 }
 
 
@@ -2449,14 +2454,14 @@ void CommServ::do_set_OpenMemos(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/SET_TO"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str(),
 		committee.c_str(), onoff.GetBool() ?
-			Parent->getMessage(source, "MISC/ON").c_str() :
-			Parent->getMessage(source, "MISC/OFF").c_str());
+			Parent->getMessage(source, "VALS/ON").c_str() :
+			Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_INFO, Parent->getLogMessage("COMMSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS").c_str(),
 	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "MISC/ON").c_str() :
-		Parent->getMessage(source, "MISC/OFF").c_str());
+		Parent->getMessage(source, "VALS/ON").c_str() :
+		Parent->getMessage(source, "VALS/OFF").c_str());
 }
 
 
@@ -2524,14 +2529,14 @@ void CommServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/LOCKED"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE").c_str(),
 		committee.c_str(), onoff.GetBool() ?
-			Parent->getMessage(source, "MISC/ON").c_str() :
-			Parent->getMessage(source, "MISC/OFF").c_str());
+			Parent->getMessage(source, "VALS/ON").c_str() :
+			Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_INFO, Parent->getLogMessage("COMMSERV/LOCKED"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("COMMSERV_INFO/SET_SECURE").c_str(),
 	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "MISC/ON").c_str() :
-		Parent->getMessage(source, "MISC/OFF").c_str());
+		Parent->getMessage(source, "VALS/ON").c_str() :
+		Parent->getMessage(source, "VALS/OFF").c_str());
 }
 
 
@@ -2599,14 +2604,14 @@ void CommServ::do_lock_Private(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/LOCKED"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE").c_str(),
 		committee.c_str(), onoff.GetBool() ?
-			Parent->getMessage(source, "MISC/ON").c_str() :
-			Parent->getMessage(source, "MISC/OFF").c_str());
+			Parent->getMessage(source, "VALS/ON").c_str() :
+			Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_INFO, Parent->getLogMessage("COMMSERV/LOCKED"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE").c_str(),
 	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "MISC/ON").c_str() :
-		Parent->getMessage(source, "MISC/OFF").c_str());
+		Parent->getMessage(source, "VALS/ON").c_str() :
+		Parent->getMessage(source, "VALS/OFF").c_str());
 }
 
 
@@ -2674,14 +2679,14 @@ void CommServ::do_lock_OpenMemos(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "COMMSERV/LOCKED"),
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS").c_str(),
 		committee.c_str(), onoff.GetBool() ?
-			Parent->getMessage(source, "MISC/ON").c_str() :
-			Parent->getMessage(source, "MISC/OFF").c_str());
+			Parent->getMessage(source, "VALS/ON").c_str() :
+			Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_INFO, Parent->getLogMessage("COMMSERV/LOCKED"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS").c_str(),
 	committee.c_str(), onoff.GetBool() ?
-		Parent->getMessage(source, "MISC/ON").c_str() :
-		Parent->getMessage(source, "MISC/OFF").c_str());
+		Parent->getMessage(source, "VALS/ON").c_str() :
+		Parent->getMessage(source, "VALS/OFF").c_str());
 }
 
 

@@ -25,6 +25,11 @@ static const char *ident_datetime_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/09/09 02:17:47  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.27  2000/07/28 14:49:34  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -228,7 +233,7 @@ public:
     int Year();
     int Year2();
     int Century();
-    mstring Ago(bool call = false);
+    mstring Ago(bool call = false, mstring source = "");
     unsigned long MSecondsSince();
     unsigned long SecondsSince();
     unsigned long MinutesSince();
@@ -241,7 +246,7 @@ public:
 
 };
 
-mstring DisectTime(long intime);
+mstring DisectTime(long intime, mstring source = "");
 
 extern mDateTime Now();
 extern mDateTime Date();

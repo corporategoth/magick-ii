@@ -25,6 +25,11 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/09/09 02:17:47  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.41  2000/09/06 11:27:33  prez
 ** Finished the T_Modify / T_Changing traces, fixed a bug in clone
 ** adding (was adding clone liimt as the mask length), updated docos
@@ -171,7 +176,7 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
 public:
     void ForceSave();
     void ForcePing();
-    mstring SyncTime();
+    mstring SyncTime(mstring source = "");
     virtual int open(void *in=0);
     virtual int close(unsigned long in);
     virtual int svc(void);

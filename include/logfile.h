@@ -24,9 +24,10 @@ static const char *ident_logfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.11  2000/08/08 03:46:20  prez
-** Fixed problem with dcc not connecting (eg. connection refused) crashing
-** services.
+** Revision 1.12  2000/09/09 02:17:47  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
 **
 **
 ** ========================================================== */
@@ -34,10 +35,10 @@ static const char *ident_logfile_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Tue Aug  8 09:04:30 EST 2000
+ * Created on Fri Sep  8 17:12:36 EST 2000
  */
 
-unsigned int def_logent =     319;
+unsigned int def_logent =     321;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -287,6 +288,7 @@ char *def_log[] = {
 "SIGNAL_LOAD      =Caught signal #%d, loading configuration file.",
 "SIGNAL_RETRY     =Caught signal #%d, attempting to retry.",
 "SIGNAL_KILL      =Caught signal #%d - last function was %s, attempting to shutdown.",
+"SIGNAL_SIGNON    =Caught signal #%d, re-signing on all clients.",
 "SIGNAL_SPAWN     =Caught signal #%d, spawning a new process.",
 "NOT_IMPLEMENTED  =Entered %s, which is not implemented.",
 "INVALID_FORMAT   =Invalid date format char %d%c in %s.",
@@ -358,5 +360,6 @@ char *def_log[] = {
 "NOLANGTOKEN      =Invalid token %s for language %s used, error returned.",
 "BADSET           =Tried to set BAD data (%s) for %s on %s.",
 "CORRUPT_DB       =Database file corrupted or invalid key in keyfile.",
+"INVALID_TYPE     =Invalid data type %d on message queue, ignored.",
 "" };
 #endif

@@ -29,6 +29,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.270  2000/09/09 02:17:48  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.269  2000/09/06 11:27:33  prez
 ** Finished the T_Modify / T_Changing traces, fixed a bug in clone
 ** adding (was adding clone liimt as the mask length), updated docos
@@ -860,7 +865,7 @@ mstring Magick::getMessage(const mstring & nick, const mstring & name)
 {
     FT("Magick::getMessage", (nick, name));
 
-    if (nickserv.IsStored(nick) &&
+    if (nick != "" && nickserv.IsStored(nick) &&
 	nickserv.stored[nick.LowerCase()].IsOnline())
     {
 	CP(("Using USER-DEIFNED language."));

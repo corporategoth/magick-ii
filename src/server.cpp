@@ -27,6 +27,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.126  2000/09/09 02:17:49  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.125  2000/09/07 08:13:17  prez
 ** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
 ** Also added CPU statistics and fixed problem with socket deletions.
@@ -1942,12 +1947,13 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
 	Parent->nickserv.live[nick.LowerCase()].AltHost(newhost);
 	mstring output;
 	
+	output << ":" << mynick << " ";
 	if (proto.Tokens() && proto.GetNonToken("SVSHOST") != "")
 	    output << proto.GetNonToken("SVSHOST");
 	else
 	    output << "SVSHOST";
 	output << " " << nick << " " << newhost << " :" << time(NULL);
-	sraw(output);
+	raw(output);
     }
 }
 
@@ -2838,14 +2844,14 @@ void NetworkServ::execute(const mstring & data)
 			{
 			    Parent->nickserv.send(Parent->nickserv.FirstName(),
 				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-				ToHumanTime(Parent->nickserv.Ident()).c_str());
+				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
 			}
 			else if (Parent->nickserv.stored[sourceL].Protect() &&
 		    	     !Parent->nickserv.stored[sourceL].IsOnline())
 			{
 			    Parent->nickserv.send(Parent->nickserv.FirstName(),
 				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-				ToHumanTime(Parent->nickserv.Ident()).c_str());
+				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
 			}
 		    }
 		}
@@ -3412,14 +3418,14 @@ void NetworkServ::execute(const mstring & data)
 		    {
 			Parent->nickserv.send(Parent->nickserv.FirstName(),
 				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-				ToHumanTime(Parent->nickserv.Ident()).c_str());
+				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
 		    }
 		    else if (Parent->nickserv.stored[sourceL].Protect() &&
 			!Parent->nickserv.stored[sourceL].IsOnline())
 		   {
 			Parent->nickserv.send(Parent->nickserv.FirstName(),
 				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-				ToHumanTime(Parent->nickserv.Ident()).c_str());
+				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
 		    }
 		}
 	    }
@@ -3796,14 +3802,14 @@ void NetworkServ::execute(const mstring & data)
 		    {
 			Parent->nickserv.send(Parent->nickserv.FirstName(),
 				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/FORBIDDEN"),
-				ToHumanTime(Parent->nickserv.Ident()).c_str());
+				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
 		    }
 		    else if (Parent->nickserv.stored[sourceL].Protect() &&
 			!Parent->nickserv.stored[sourceL].IsOnline())
 		   {
 			Parent->nickserv.send(Parent->nickserv.FirstName(),
 				sourceL, Parent->getMessage(sourceL, "ERR_SITUATION/PROTECTED"),
-				ToHumanTime(Parent->nickserv.Ident()).c_str());
+				ToHumanTime(Parent->nickserv.Ident(), sourceL).c_str());
 		    }
 		}
 	    }
@@ -3833,7 +3839,7 @@ void NetworkServ::execute(const mstring & data)
 			Parent->nickserv.live[target.LowerCase()].Name() +
 			"*=-" +
 			Parent->nickserv.live[target.LowerCase()].User() +
-			"@" + Parent->getMessage("MISC/ONLINE"));
+			"@" + Parent->getMessage("VALS/ONLINE"));
 		}
 
 	    }

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2000/09/09 02:17:49  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.48  2000/08/22 09:30:14  prez
 ** Modified md5 hash to always return non-binary characters
 **
@@ -333,16 +338,20 @@ unsigned long FromHumanTime(mstring in)
     RET(total);
 }
 
-mstring ToHumanTime(unsigned long in)
+mstring ToHumanTime(unsigned long in, mstring source)
 {
-    FT("ToHumanTime", (in));
+    FT("ToHumanTime", (in, source));
 
+    mstring retval;
     if (in==0)
     {
-	RET("unlimited");
+	retval = Parent->getMessage(source, "VALS/TIME_UNLIMITED");
+    }
+    else
+    {
+	retval = DisectTime((long) in, source);
     }
 
-    mstring retval = DisectTime((long) in);
     RET(retval);
 }
 

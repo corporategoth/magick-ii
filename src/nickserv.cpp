@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.131  2000/09/09 02:17:48  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.130  2000/09/05 10:53:07  prez
 ** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
 ** tracing -- also modified keygen to allow for cmdline generation (ie.
@@ -544,10 +549,10 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     {
 	if (fileattach)
 	    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING_FILE"),
-		ToHumanTime(Parent->memoserv.InFlight()).c_str());
+		ToHumanTime(Parent->memoserv.InFlight(), nick).c_str());
 	else
 	    send(service, nick, Parent->getMessage(nick, "MS_COMMAND/PENDING"),
-		ToHumanTime(Parent->memoserv.InFlight()).c_str());
+		ToHumanTime(Parent->memoserv.InFlight(), nick).c_str());
     }
 }
 
@@ -582,7 +587,7 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
     }
     MCE(text);
     send(service, nick, Parent->getMessage(nick, "MS_COMMAND/CONTINUE"),
-	    ToHumanTime(Parent->memoserv.InFlight()).c_str());
+	    ToHumanTime(Parent->memoserv.InFlight(), nick).c_str());
 }
 
 
@@ -1316,7 +1321,7 @@ bool Nick_Live_t::FloodTrigger()
 	{
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), true, i_Name);
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/IGNORE_TRIGGER"),
-			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time()).c_str());
+			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time(), i_Name).c_str());
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PERM_IGNORE"),
 			Parent->operserv.Ignore_Limit());
 	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/PERM_IGNORE"),
@@ -1328,10 +1333,10 @@ bool Nick_Live_t::FloodTrigger()
 	{
 	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), false, i_Name);
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/IGNORE_TRIGGER"),
-			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time()).c_str());
+			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time(), i_Name).c_str());
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/TEMP_IGNORE"),
 			ToHumanNumber(flood_triggered_times).c_str(), Parent->operserv.Ignore_Limit(),
-			ToHumanTime(Parent->operserv.Ignore_Time()).c_str());
+			ToHumanTime(Parent->operserv.Ignore_Time(), i_Name).c_str());
 	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/TEMP_IGNORE"),
 			Mask(N_U_P_H).c_str());
 	    announce(Parent->servmsg.FirstName(), Parent->getMessage("MISC/FLOOD_TEMP"),
@@ -1445,7 +1450,7 @@ void Nick_Live_t::Name(mstring in)
 	{
 	    Parent->nickserv.send(Parent->nickserv.FirstName(),
 		i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/FORBIDDEN"),
-		ToHumanTime(Parent->nickserv.Ident()).c_str());
+		ToHumanTime(Parent->nickserv.Ident(), i_Name).c_str());
 	    return;
 	}
 	else if (Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
@@ -1453,7 +1458,7 @@ void Nick_Live_t::Name(mstring in)
 	else if (Parent->nickserv.stored[i_Name.LowerCase()].Protect())
 	    Parent->nickserv.send(Parent->nickserv.FirstName(),
 		i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PROTECTED"),
-		ToHumanTime(Parent->nickserv.Ident()).c_str());
+		ToHumanTime(Parent->nickserv.Ident(), i_Name).c_str());
     }
 
     // Send notices for committees we were NOT on
@@ -4200,7 +4205,7 @@ mstring Nick_Stored_t::LastAllMask()
     NFT("Nick_Stored_t::LastAllMask");
     if (IsOnline())
     {
-	RET(Parent->getMessage("MISC/ONLINE"));
+	RET(Parent->getMessage("VALS/ONLINE"));
     }
     else if (Host() == "")
     {
@@ -4212,7 +4217,7 @@ mstring Nick_Stored_t::LastAllMask()
 	{
 	    if (Parent->nickserv.stored[Sibling(i).LowerCase()].IsOnline())
 	    {
-		RET(Parent->getMessage("MISC/ONLINE"));
+		RET(Parent->getMessage("VALS/ONLINE"));
 	    }
 	    if (Parent->nickserv.stored[Sibling(i).LowerCase()].LastSeenTime() > lastseen)
 	    {
@@ -4236,7 +4241,7 @@ mstring Nick_Stored_t::LastMask()
     NFT("Nick_Stored_t::LastMask");
     if (IsOnline())
     {
-	RET(Parent->getMessage("MISC/ONLINE"));
+	RET(Parent->getMessage("VALS/ONLINE"));
     }
     else
     {
@@ -4983,7 +4988,8 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
 		message.c_str(), ToHumanTime(Parent->nickserv.Delay() -
-		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince()).c_str());
+		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince(),
+		source).c_str());
     }
     else if (password.Len() < 5 || !password.CmpNoCase(source))
     {
@@ -5105,7 +5111,8 @@ void NickServ::do_Link(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
 		message.c_str(), ToHumanTime(Parent->nickserv.Delay() -
-		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince()).c_str());
+		Parent->nickserv.live[source.LowerCase()].LastNickReg().SecondsSince(),
+		source).c_str());
 	return;
     }
 
@@ -5602,7 +5609,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 		Parent->getLname(nick->Name()).c_str());
     if (Parent->servmsg.ShowSync())
 	::send(mynick, source, Parent->getMessage("MISC/SYNC"),
-			Parent->events->SyncTime().c_str());
+			Parent->events->SyncTime(source).c_str());
 }
 
 void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
@@ -6890,14 +6897,14 @@ void NickServ::do_set_Protect(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
 			Parent->getMessage(source, "NS_SET/PROTECT").c_str(),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/PROTECT").c_str(),
 	source.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_set_Secure(mstring mynick, mstring source, mstring params)
@@ -6940,14 +6947,14 @@ void NickServ::do_set_Secure(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
 			Parent->getMessage(source, "NS_SET/SECURE").c_str(),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/SECURE").c_str(),
 	source.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
@@ -7006,14 +7013,14 @@ void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_SET_TO"),
 			Parent->getMessage(source, "NS_SET/NOEXPIRE").c_str(),
 			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_NOTICE, Parent->getLogMessage("NICKSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/NOEXPIRE").c_str(),
 	nickname.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 
@@ -7057,14 +7064,14 @@ void NickServ::do_set_NoMemo(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
 			Parent->getMessage(source, "NS_SET/NOMEMO").c_str(),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/NOMEMO").c_str(),
 	source.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_set_Private(mstring mynick, mstring source, mstring params)
@@ -7107,14 +7114,14 @@ void NickServ::do_set_Private(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
 			Parent->getMessage(source, "NS_SET/PRIVATE").c_str(),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/PRIVATE").c_str(),
 	source.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
@@ -7157,14 +7164,14 @@ void NickServ::do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_YOU_COMMAND/OPT_SET_TO"),
 			Parent->getMessage(source, "NS_SET/PRIVMSG").c_str(),
 			onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/PRIVMSG").c_str(),
 	source.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
@@ -7284,14 +7291,14 @@ void NickServ::do_lock_Protect(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
 			Parent->getMessage(source, "NS_SET/PROTECT").c_str(),
 			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/PROTECT").c_str(),
 	nickname.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
@@ -7353,14 +7360,14 @@ void NickServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
 			Parent->getMessage(source, "NS_SET/SECURE").c_str(),
 			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/SECURE").c_str(),
 	nickname.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_lock_NoMemo(mstring mynick, mstring source, mstring params)
@@ -7422,14 +7429,14 @@ void NickServ::do_lock_NoMemo(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
 			Parent->getMessage(source, "NS_SET/NOMEMO").c_str(),
 			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/NOMEMO").c_str(),
 	nickname.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_lock_Private(mstring mynick, mstring source, mstring params)
@@ -7491,14 +7498,14 @@ void NickServ::do_lock_Private(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
 			Parent->getMessage(source, "NS_SET/PRIVATE").c_str(),
 			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/PRIVATE").c_str(),
 	nickname.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_lock_PRIVMSG(mstring mynick, mstring source, mstring params)
@@ -7560,14 +7567,14 @@ void NickServ::do_lock_PRIVMSG(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "NS_OTH_COMMAND/OPT_LOCKED"),
 			Parent->getMessage(source, "NS_SET/PRIVMSG").c_str(),
 			nickname.c_str(), onoff.GetBool() ?
-				Parent->getMessage(source, "MISC/ON").c_str() :
-				Parent->getMessage(source, "MISC/OFF").c_str());
+				Parent->getMessage(source, "VALS/ON").c_str() :
+				Parent->getMessage(source, "VALS/OFF").c_str());
     Log(LM_DEBUG, Parent->getLogMessage("NICKSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("NS_SET/PRIVMSG").c_str(),
 	nickname.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)

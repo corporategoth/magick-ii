@@ -169,6 +169,26 @@ NOACTIVE           =No DCC file transfers active.
 NODCCID            =No DCC transfer with ID %08x active.
 CANCEL             =DCC ID %08x has been cancelled.
 
+[VALS]
+TIME_SEC           =second
+TIME_SECS          =seconds
+TIME_MIN           =minute
+TIME_MINS          =minutes
+TIME_HOUR          =hour
+TIME_HOURS         =hours
+TIME_DAY           =day
+TIME_DAYS          =days
+TIME_WEEK          =week
+TIME_WEEKS         =weeks
+TIME_YEAR          =year
+TIME_YEARS         =years
+TIME_NOW           =now
+TIME_UNLIMITED     =unlimited
+TIME_NONE          =none
+ON                 =ON
+OFF                =OFF
+ONLINE             =ONLINE
+SUSPENDED          =SUSPENDED
 
 ;
 ; This section contains miscellaneous outputs from Magick.  eg.
@@ -221,13 +241,8 @@ REVENGE            =REVENGE: Do not %s %s
 SYNC               =Databases will sync in %s.
 LANG_LIST          =Available languages are:
 LANG_NOLIST        =Error generating list of available languages.
-
 BREAKDOWN_HEAD     =SERVER                                   LAG  USERS (OPS)
 BREAKDOWN          =%-35s  % 3.3fs  %5d (%3d)  %3.2f%%
-ON                 =ON
-OFF                =OFF
-ONLINE             =ONLINE
-SUSPENDED          =SUSPENDED
 
 ;
 ; This section contains the output of the STATS command.

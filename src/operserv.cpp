@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.101  2000/09/09 02:17:49  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.100  2000/09/07 08:13:17  prez
 ** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
 ** Also added CPU statistics and fixed problem with socket deletions.
@@ -1535,9 +1540,9 @@ void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
     Parent->server.SQLINE(mynick, target, reason);
     Parent->operserv.stats.i_Qline++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
-		target.c_str(), Parent->getMessage(source, "MISC/ON").c_str());
+		target.c_str(), Parent->getMessage(source, "VALS/ON").c_str());
     announce(mynick, Parent->getMessage("MISC/QLINE"),
-		source.c_str(), Parent->getMessage("MISC/ON").c_str(),
+		source.c_str(), Parent->getMessage("VALS/ON").c_str(),
 		target.c_str());
     Log(LM_INFO, Parent->getLogMessage("OPERSERV/QLINE"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
@@ -1567,9 +1572,9 @@ void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
     Parent->server.UNSQLINE(mynick, target);
     Parent->operserv.stats.i_Unqline++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/QLINE"),
-		target.c_str(), Parent->getMessage(source, "MISC/OFF").c_str());
+		target.c_str(), Parent->getMessage(source, "VALS/OFF").c_str());
     announce(mynick, Parent->getMessage("MISC/QLINE"),
-		source.c_str(), Parent->getMessage("MISC/OFF").c_str(),
+		source.c_str(), Parent->getMessage("VALS/OFF").c_str(),
 		target.c_str());
     Log(LM_INFO, Parent->getLogMessage("OPERSERV/UNQLINE"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
@@ -1615,19 +1620,19 @@ void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
     Parent->operserv.stats.i_Noop++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/NOOP"),
 	    onoff.GetBool() ?
-		Parent->getMessage(source, "MISC/ON").c_str() :
-		Parent->getMessage(source, "MISC/OFF").c_str(),
+		Parent->getMessage(source, "VALS/ON").c_str() :
+		Parent->getMessage(source, "VALS/OFF").c_str(),
 	    target.c_str());
     announce(mynick, Parent->getMessage("MISC/NOOP"),
 	    source.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str(),
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str(),
 	    target.c_str());
     Log(LM_INFO, Parent->getLogMessage("OPERSERV/NOOP"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	target.c_str(), onoff.GetBool() ?
-		Parent->getMessage("MISC/ON").c_str() :
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/ON").c_str() :
+		Parent->getMessage("VALS/OFF").c_str());
 }
 
 
@@ -1891,12 +1896,12 @@ void OperServ::do_On(mstring mynick, mstring source, mstring params)
     Parent->MSG(true);
     Parent->operserv.stats.i_OnOff++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
-	    Parent->getMessage(source, "MISC/ON").c_str());
-    announce(mynick, Parent->getMessage("MISC/ONOFF"),
-	    Parent->getMessage("MISC/ON").c_str(), source.c_str());
+	    Parent->getMessage(source, "VALS/ON").c_str());
+    announce(mynick, Parent->getMessage("VALS/ONOFF"),
+	    Parent->getMessage("VALS/ON").c_str(), source.c_str());
     Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("MISC/ON").c_str());
+	Parent->getMessage("VALS/ON").c_str());
 }
 
 
@@ -1910,12 +1915,12 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
     Parent->MSG(false);
     Parent->operserv.stats.i_OnOff++;
     ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/ONOFF"),
-	    Parent->getMessage(source, "MISC/OFF").c_str());
-    announce(mynick, Parent->getMessage("MISC/ONOFF"),
-	    Parent->getMessage("MISC/OFF").c_str(), source.c_str());
+	    Parent->getMessage(source, "VALS/OFF").c_str());
+    announce(mynick, Parent->getMessage("VALS/ONOFF"),
+	    Parent->getMessage("VALS/OFF").c_str(), source.c_str());
     Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/ONOFF"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	Parent->getMessage("MISC/OFF").c_str());
+	Parent->getMessage("VALS/OFF").c_str());
 }
 
 
@@ -1937,23 +1942,23 @@ void OperServ::do_HTM(mstring mynick, mstring source, mstring params)
 	{
 	    Parent->ircsvchandler->HTM(true);
 	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HTM"),
-		Parent->getMessage(source, "MISC/ON").c_str());
+		Parent->getMessage(source, "VALS/ON").c_str());
 	    announce(mynick, Parent->getMessage("MISC/HTM_ON_FORCE"),
 		source.c_str());
 	    Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_FORCE"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage("MISC/ON").c_str());
+		Parent->getMessage("VALS/ON").c_str());
 	}
 	else if (command == "OFF")
 	{
 	    Parent->ircsvchandler->HTM(false);
 	    ::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/HTM"),
-		Parent->getMessage(source, "MISC/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str());
 	    announce(mynick, Parent->getMessage("MISC/HTM_OFF_FORCE"),
 		source.c_str());
 	    Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_FORCE"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage("MISC/OFF").c_str());
+		Parent->getMessage("VALS/OFF").c_str());
 	}
 	else if (command == "SET")
 	{
@@ -2013,30 +2018,30 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LEVEL"),
 		    Parent->startup.Level(), Parent->Level());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LAG"),
-		    ToHumanTime(Parent->startup.Lagtime()).c_str());
+		    ToHumanTime(Parent->startup.Lagtime(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LAGCHECK"),
-		    ToHumanTime(Parent->config.Ping_Frequency()).c_str());
+		    ToHumanTime(Parent->config.Ping_Frequency(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SERVERS"),
 		    Parent->startup.Server_size());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_RELINK"),
-		    ToHumanTime(Parent->config.Server_Relink()).c_str());
+		    ToHumanTime(Parent->config.Server_Relink(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT1"),
-		    ToHumanTime(Parent->config.Squit_Protect()).c_str());
+		    ToHumanTime(Parent->config.Squit_Protect(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT2"),
-		    ToHumanTime(Parent->config.Squit_Cancel()).c_str());
+		    ToHumanTime(Parent->config.Squit_Cancel(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SYNC"),
-		    ToHumanTime(Parent->config.Savetime()).c_str(),
-		    Parent->events->SyncTime().c_str());
+		    ToHumanTime(Parent->config.Savetime(), source).c_str(),
+		    Parent->events->SyncTime(source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_CYCLE"),
-		    ToHumanTime(Parent->config.Cycletime()).c_str(),
-		    ToHumanTime(Parent->config.Checktime()).c_str());
+		    ToHumanTime(Parent->config.Cycletime(), source).c_str(),
+		    ToHumanTime(Parent->config.Checktime(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_DCC1"),
 		    ToHumanSpace(Parent->files.Blocksize()).c_str(),
-		    ToHumanTime(Parent->files.Timeout()).c_str());
+		    ToHumanTime(Parent->files.Timeout(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_DCC2"),
 		    ToHumanSpace(Parent->files.Min_Speed()).c_str(),
 		    ToHumanSpace(Parent->files.Max_Speed()).c_str(),
-		    ToHumanTime(Parent->files.Sampletime()).c_str());
+		    ToHumanTime(Parent->files.Sampletime(), source).c_str());
 }
     
 void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
@@ -2054,11 +2059,11 @@ void OperServ::do_settings_Nick(mstring mynick, mstring source, mstring params)
     }}
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_EXPIRE"),
-			ToHumanTime(Parent->nickserv.Expire()).c_str());
+			ToHumanTime(Parent->nickserv.Expire(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_IDENT"),
-			ToHumanTime(Parent->nickserv.Ident()).c_str());
+			ToHumanTime(Parent->nickserv.Ident(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_HOLD"),
-			ToHumanTime(Parent->nickserv.Release()).c_str());
+			ToHumanTime(Parent->nickserv.Release(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/NICK_PASS"),
 			Parent->nickserv.Passfail());
 
@@ -2167,16 +2172,16 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
     }}
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_EXPIRE"),
-		    ToHumanTime(Parent->chanserv.Expire()).c_str());
+		    ToHumanTime(Parent->chanserv.Expire(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_IDENT"),
 		    Parent->chanserv.Passfail());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_KEEPTIME"),
-		    ToHumanTime(Parent->chanserv.ChanKeep()).c_str());
+		    ToHumanTime(Parent->chanserv.ChanKeep(), source).c_str());
 
     mstring output = "";
     if (Parent->chanserv.LCK_Bantime())
 	output << IRC_Bold;
-    output << ToHumanTime(Parent->chanserv.DEF_Bantime());
+    output << ToHumanTime(Parent->chanserv.DEF_Bantime(), source);
     if (Parent->chanserv.LCK_Bantime())
 	output << IRC_Off;
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_BANTIME"),
@@ -2184,7 +2189,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
     output = "";
     if (Parent->chanserv.LCK_Parttime())
 	output << IRC_Bold;
-    output << ToHumanTime(Parent->chanserv.DEF_Parttime());
+    output << ToHumanTime(Parent->chanserv.DEF_Parttime(), source);
     if (Parent->chanserv.LCK_Parttime())
 	output << IRC_Off;
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_PARTTIME"),
@@ -2321,7 +2326,7 @@ void OperServ::do_settings_Channel(mstring mynick, mstring source, mstring param
 		    Parent->chanserv.Level_Min(),
 		    Parent->chanserv.Level_Max());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CHAN_NEWS"),
-		    ToHumanTime(Parent->memoserv.News_Expire()).c_str());
+		    ToHumanTime(Parent->memoserv.News_Expire(), source).c_str());
 }
 
 
@@ -2340,32 +2345,32 @@ void OperServ::do_settings_Other(mstring mynick, mstring source, mstring params)
     }}
 
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_INFLIGHT"),
-		    ToHumanTime(Parent->memoserv.InFlight()).c_str());
+		    ToHumanTime(Parent->memoserv.InFlight(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL1"),
-		    ToHumanTime(Parent->operserv.Def_Expire()).c_str());
+		    ToHumanTime(Parent->operserv.Def_Expire(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL2"));
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
 		    Parent->commserv.SADMIN_Name().c_str(),
-		    ToHumanTime(Parent->operserv.Expire_SAdmin()).c_str());
+		    ToHumanTime(Parent->operserv.Expire_SAdmin(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
 		    Parent->commserv.SOP_Name().c_str(),
-		    ToHumanTime(Parent->operserv.Expire_Sop()).c_str());
+		    ToHumanTime(Parent->operserv.Expire_Sop(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
 		    Parent->commserv.ADMIN_Name().c_str(),
-		    ToHumanTime(Parent->operserv.Expire_Admin()).c_str());
+		    ToHumanTime(Parent->operserv.Expire_Admin(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_AKILL3"),
 		    Parent->commserv.OPER_Name().c_str(),
-		    ToHumanTime(Parent->operserv.Expire_Oper()).c_str());
+		    ToHumanTime(Parent->operserv.Expire_Oper(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_CLONES"),
 		    Parent->operserv.Clone_Limit(),
 		    Parent->operserv.Max_Clone());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_FLOOD1"),
 		    Parent->operserv.Flood_Msgs(),
-		    ToHumanTime(Parent->operserv.Flood_Time()).c_str());
+		    ToHumanTime(Parent->operserv.Flood_Time(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_FLOOD2"),
-		    ToHumanTime(Parent->operserv.Ignore_Remove()).c_str());
+		    ToHumanTime(Parent->operserv.Ignore_Remove(), source).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/MISC_IGNORE"),
-		    ToHumanTime(Parent->operserv.Ignore_Time()).c_str(),
+		    ToHumanTime(Parent->operserv.Ignore_Time(), source).c_str(),
 		    Parent->operserv.Ignore_Limit());
     mstring output = "";
 
@@ -2728,7 +2733,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	if (time > Parent->operserv.Expire_SAdmin())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
-		    ToHumanTime(Parent->operserv.Expire_SAdmin()).c_str());
+		    ToHumanTime(Parent->operserv.Expire_SAdmin(), source).c_str());
 	    return;
 	}
     }
@@ -2738,7 +2743,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	if (time > Parent->operserv.Expire_Sop())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
-		    ToHumanTime(Parent->operserv.Expire_Sop()).c_str());
+		    ToHumanTime(Parent->operserv.Expire_Sop(), source).c_str());
 	    return;
 	}
     }
@@ -2748,7 +2753,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	if (time > Parent->operserv.Expire_Admin())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
-		    ToHumanTime(Parent->operserv.Expire_Admin()).c_str());
+		    ToHumanTime(Parent->operserv.Expire_Admin(), source).c_str());
 	    return;
 	}
     }
@@ -2758,7 +2763,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	if (time > Parent->operserv.Expire_Oper())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/AKILLTOOHIGH"),
-		    ToHumanTime(Parent->operserv.Expire_Oper()).c_str());
+		    ToHumanTime(Parent->operserv.Expire_Oper(), source).c_str());
 	    return;
 	}
     }
@@ -2821,13 +2826,13 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "LIST/CHANGE_TIME"),
 		    entry.c_str(),
 		    Parent->getMessage(source, "LIST/AKILL").c_str(),
-		    ToHumanTime(time).c_str());
+		    ToHumanTime(time, source).c_str());
 	announce(mynick, Parent->getMessage("MISC/AKILL_EXTEND"),
 		    source.c_str(), entry.c_str(),
-		    ToHumanTime(time).c_str());
+		    ToHumanTime(time, source).c_str());
 	Log(LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		entry.c_str(), ToHumanTime(time).c_str(), reason.c_str());
+		entry.c_str(), ToHumanTime(time, source).c_str(), reason.c_str());
     }
     else
     {
@@ -2836,13 +2841,13 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "LIST/ADD_TIME"),
 		    host.c_str(),
 		    Parent->getMessage(source, "LIST/AKILL").c_str(),
-		    ToHumanTime(time).c_str());
+		    ToHumanTime(time, source).c_str());
 	announce(mynick, Parent->getMessage("MISC/AKILL_ADD"),
 		    source.c_str(), host.c_str(),
-		    ToHumanTime(time).c_str(), reason.c_str());
+		    ToHumanTime(time, source).c_str(), reason.c_str());
 	Log(LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		host.c_str(), ToHumanTime(time).c_str(), reason.c_str());
+		host.c_str(), ToHumanTime(time, source).c_str(), reason.c_str());
     }}
 
     Parent->server.AKILL(host, reason, time, source);
@@ -2999,7 +3004,7 @@ void OperServ::do_akill_List(mstring mynick, mstring source, mstring params)
 			    Parent->operserv.Akill->Last_Modify_Time().Ago().c_str(),
 			    Parent->operserv.Akill->Last_Modifier().c_str());
 	    ::send(mynick, source, "     [%s] %s",
-			    ToHumanTime(Parent->operserv.Akill->Value().first).c_str(),
+			    ToHumanTime(Parent->operserv.Akill->Value().first, source).c_str(),
 			    Parent->operserv.Akill->Value().second.c_str());
 	    i++;
 	}

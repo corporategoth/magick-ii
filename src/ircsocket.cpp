@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.130  2000/09/09 02:17:48  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.129  2000/09/07 08:13:17  prez
 ** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
 ** Also added CPU statistics and fixed problem with socket deletions.
@@ -828,11 +833,12 @@ void EventTask::ForcePing()
     MCE(last_ping);
 }
 
-mstring EventTask::SyncTime()
+mstring EventTask::SyncTime(mstring source)
 {
-    NFT("EventTask::SyncTime");
+    FT("EventTask::SyncTime", (source));
     RLOCK(("Events", "last_save"));
-    mstring retval = ToHumanTime(Parent->config.Savetime() - (unsigned long)last_save.SecondsSince());
+    mstring retval = ToHumanTime(Parent->config.Savetime() -
+	(unsigned long)last_save.SecondsSince(), source);
     RET(retval);
 }
 

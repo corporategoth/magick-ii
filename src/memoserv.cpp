@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/09/09 02:17:48  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.75  2000/09/05 10:53:07  prez
 ** Only have operserv.cpp and server.cpp to go with T_Changing / T_Modify
 ** tracing -- also modified keygen to allow for cmdline generation (ie.
@@ -1442,7 +1447,8 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
 		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince(),
+		source).c_str());
 	return;
     }
 
@@ -1564,7 +1570,8 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
 		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince(),
+		source).c_str());
 	    return;
 	}
 
@@ -1618,7 +1625,8 @@ void MemoServ::do_Forward(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
 		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince(),
+		source).c_str());
 	    return;
 	}
 
@@ -1779,7 +1787,8 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
 		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince(),
+		source).c_str());
 	    return;
 	}
 
@@ -1839,7 +1848,8 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
 		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince(),
+		source).c_str());
 	    return;
 	}
 
@@ -2314,7 +2324,8 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTYET"),
 		message.c_str(), ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince()).c_str());
+		Parent->nickserv.live[source.LowerCase()].LastMemo().SecondsSince(),
+		source).c_str());
 	return;
     }
 

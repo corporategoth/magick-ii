@@ -25,6 +25,11 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/09/09 02:17:47  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.30  2000/08/22 08:43:39  prez
 ** Another re-write of locking stuff -- this time to essentially make all
 ** locks re-entrant ourselves, without relying on implementations to do it.
@@ -115,7 +120,7 @@ public:
 
 vector<int> ParseNumbers(mstring what);
 unsigned long FromHumanTime(mstring in);
-mstring ToHumanTime(unsigned long in);
+mstring ToHumanTime(unsigned long in, mstring source = "");
 mstring ToHumanNumber(unsigned long in);
 unsigned long FromHumanSpace(mstring in);
 mstring ToHumanSpace(unsigned long in);

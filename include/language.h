@@ -24,9 +24,10 @@ static const char *ident_language_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.21  2000/08/08 03:46:20  prez
-** Fixed problem with dcc not connecting (eg. connection refused) crashing
-** services.
+** Revision 1.22  2000/09/09 02:17:47  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
 **
 **
 ** ========================================================== */
@@ -34,10 +35,10 @@ static const char *ident_language_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Tue Aug  8 09:04:28 EST 2000
+ * Created on Fri Sep  8 17:12:26 EST 2000
  */
 
-unsigned int def_langent =     865;
+unsigned int def_langent =     884;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -161,6 +162,7 @@ char *def_lang[] = {
 "NEED_NICK_IDENT    =You must identify for %s.  Type /MSG %s IDENTIFY <password> then try again.",
 "NEED_CHAN_IDENT    =You must identify for %s.  Type /MSG %s IDENTIFY %s <password> then try again.",
 "COMPLEX_PASS       =Please choose a more complex password.",
+"NOTYET             =You may not perform %s for another %s.",
 "NICK_WRONG_PASS    =Password incorrect.  Your attempt has been logged.",
 "CHAN_WRONG_PASS    =Password incorrect for channel %s.  Your attempt has been logged.",
 "IGNORE_TRIGGER     =You have triggered services IGNORE (%d message(s) in %s).",
@@ -189,7 +191,7 @@ char *def_lang[] = {
 "NOCONNECT          =DCC %s failed (no connection established).",
 "FAILED             =DCC %s failed (internal server error).",
 "TIMEOUT            =DCC %s aborted (timeout).",
-"SOCKERR            =DCC %s aborted (socket error %d).",
+"SOCKERR            =DCC %s aborted (socket error %d - %s).",
 "TOOSLOW            =DCC %s aborted (transfer too slow).",
 "",
 "LOOKUP_MEMOATTACH  =Memo Attachment %08x is %s and belongs to %s, memo #%d (sent by %s, %s ago).",
@@ -209,6 +211,26 @@ char *def_lang[] = {
 "NODCCID            =No DCC transfer with ID %08x active.",
 "CANCEL             =DCC ID %08x has been cancelled.",
 "",
+"[VALS]",
+"TIME_SEC           =second",
+"TIME_SECS          =seconds",
+"TIME_MIN           =minute",
+"TIME_MINS          =minutes",
+"TIME_HOUR          =hour",
+"TIME_HOURS         =hours",
+"TIME_DAY           =day",
+"TIME_DAYS          =days",
+"TIME_WEEK          =week",
+"TIME_WEEKS         =weeks",
+"TIME_YEAR          =year",
+"TIME_YEARS         =years",
+"TIME_NOW           =now",
+"TIME_UNLIMITED     =unlimited",
+"TIME_NONE          =none",
+"ON                 =ON",
+"OFF                =OFF",
+"ONLINE             =ONLINE",
+"SUSPENDED          =SUSPENDED",
 "",
 ";",
 "; This section contains miscellaneous outputs from Magick.  eg.",
@@ -261,13 +283,8 @@ char *def_lang[] = {
 "SYNC               =Databases will sync in %s.",
 "LANG_LIST          =Available languages are:",
 "LANG_NOLIST        =Error generating list of available languages.",
-"",
 "BREAKDOWN_HEAD     =SERVER                                   LAG  USERS (OPS)",
-"BREAKDOWN          =\"%-35s  % 3.3fs  %5d (%3d)  %3.2f%%\"",
-"ON                 =ON",
-"OFF                =OFF",
-"ONLINE             =ONLINE",
-"SUSPENDED          =SUSPENDED",
+"BREAKDOWN          =%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 "",
 ";",
 "; This section contains the output of the STATS command.",
@@ -345,6 +362,7 @@ char *def_lang[] = {
 "OTH_CMD11          =FILE ADD/DEL  %10d / FILE SEND     %10d",
 "OTH_CMD12          =FILE CHANGE   %10d / FILE CANCEL   %10d",
 "",
+"USE_CPU            =CPU Usage %s system and %s user.",
 "USE_TRAFFIC        =Sent %s (%s/s) and Recieved %s (%s/s) in %s.",
 "USE_NS_LIVE        =Live Nicknames      %5d (%s)",
 "USE_CS_LIVE        =Live Channels       %5d (%s)",
@@ -671,6 +689,8 @@ char *def_lang[] = {
 "NOTBANNED          =You are not banned from channel %s.",
 "OTH_BANNED         =Nickname %s is already banned from channel %s.",
 "OTH_NOTBANNED      =Nickname %s is not banned from channel %s.",
+"TOOMANY            =You are Founder or CoFounder of too many channels.",
+"OTH_TOOMANY        =Nickname %s is Founder or CoFounder of too many channels.",
 "IDENTIFIED         =You are already identified for channel %s.",
 "ISFORBIDDEN        =Channel %s is forbidden.",
 "ISNOTFORBIDDEN     =Channel %s is not forbidden.",

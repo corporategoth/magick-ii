@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2000/09/09 02:17:49  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.65  2000/09/07 08:13:17  prez
 ** Fixed some of the erronous messages (SVSHOST, SQLINE, etc).
 ** Also added CPU statistics and fixed problem with socket deletions.
@@ -878,7 +883,12 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 	user = tmp.ru_utime;
 	sys  = tmp.ru_stime;
 	::send(mynick, source, Parent->getMessage(source, "STATS/USE_CPU"),
-		ToHumanTime(sys.sec()).c_str(), ToHumanTime(user.sec()).c_str());
+		(sys.sec() == 0) ?
+			Parent->getMessage(source, "VALS/TIME_NONE").c_str() :
+			ToHumanTime(sys.sec(), source).c_str(),
+		(user.sec() == 0) ?
+			Parent->getMessage(source, "VALS/TIME_NONE").c_str() :
+			ToHumanTime(user.sec(), source).c_str());
     }
 
     { RLOCK(("IrcSvcHandler"));
@@ -891,7 +901,7 @@ void ServMsg::do_stats_Usage(mstring mynick, mstring source, mstring params)
 		ToHumanSpace(Parent->ircsvchandler->Out_Traffic()).c_str(),
 		ToHumanSpace(Parent->ircsvchandler->Out_Traffic() /
 		Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str(),
-		ToHumanTime(Parent->ircsvchandler->Connect_Time().SecondsSince()).c_str());
+		ToHumanTime(Parent->ircsvchandler->Connect_Time().SecondsSince(), source).c_str());
     }}
 
     size = 0;

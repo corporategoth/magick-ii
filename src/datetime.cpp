@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/09/09 02:17:48  prez
+** Changed time functions to actuallt accept the source nick as a param
+** so that the time values (minutes, etc) can be customized.  Also added
+** weeks to the time output.
+**
 ** Revision 1.55  2000/07/29 21:58:53  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -829,10 +834,10 @@ unsigned long mDateTime::MSecondsSince()
     return CurrentVal;
 }
 
-mstring mDateTime::Ago(bool gmt)
+mstring mDateTime::Ago(bool gmt, mstring source)
 {
     // Later we find out if this is a GMT time.
-    return(DisectTime(SecondsSince()));
+    return(DisectTime(SecondsSince(), source));
 }
 
 unsigned long mDateTime::SecondsSince()
@@ -862,10 +867,10 @@ unsigned long mDateTime::YearsSince()
     return (int)((double) DaysSince() / 365.25);
 }
 
-mstring DisectTime(long intime)
+mstring DisectTime(long intime, mstring source)
 {
     mstring Result="";
-    long Years=0, Days=0, Hours=0, Minutes=0, Seconds=0, negamt=0;
+    long Years=0, Weeks=0, Days=0, Hours=0, Minutes=0, Seconds=0, negamt=0;
 
     if (intime < 0)
     {
@@ -881,6 +886,13 @@ mstring DisectTime(long intime)
     while (Seconds >= negamt)
     {
 	Years++;
+	Seconds -= negamt;
+    }
+
+    negamt = 60 * 60 * 24 * 7;
+    while (Seconds >= negamt)
+    {
+	Weeks++;
 	Seconds -= negamt;
     }
 
@@ -907,9 +919,31 @@ mstring DisectTime(long intime)
 
     if(Years>0)
     {
-	Result << Years << " year" << (Years==1 ? "" : "s");
+	Result << Years << " " << (Years==1 ?
+			Parent->getMessage(source, "VALS/TIME_YEAR") :
+			Parent->getMessage(source, "VALS/TIME_YEARS"));
+	if (Weeks)
+	    Result << ", " << Weeks << " " << (Weeks==1 ?
+			Parent->getMessage(source, "VALS/TIME_WEEK") :
+			Parent->getMessage(source, "VALS/TIME_WEEKS"));
 	if (Days)
-	    Result << ", " << Days << " day" << (Days==1 ? "" : "s");
+	    Result << ", " << Days << " " << (Days==1 ?
+			Parent->getMessage(source, "VALS/TIME_DAY") :
+			Parent->getMessage(source, "VALS/TIME_DAYS"));
+	if (Hours || Minutes || Seconds)
+	    Result << ", " << (Hours>=10 ? "" : "0") << Hours << ":" <<
+		    (Minutes>=10 ? "" : "0") << Minutes << ":" <<
+		    (Seconds>=10 ? "" : "0") << Seconds;
+    }
+    else if(Weeks>0)
+    {
+	Result << Weeks << " " << (Weeks==1 ?
+			Parent->getMessage(source, "VALS/TIME_WEEK") :
+			Parent->getMessage(source, "VALS/TIME_WEEKS"));
+	if (Days)
+	    Result << ", " << Days << " " << (Days==1 ?
+			Parent->getMessage(source, "VALS/TIME_DAY") :
+			Parent->getMessage(source, "VALS/TIME_DAYS"));
 	if (Hours || Minutes || Seconds)
 	    Result << ", " << (Hours>=10 ? "" : "0") << Hours << ":" <<
 		    (Minutes>=10 ? "" : "0") << Minutes << ":" <<
@@ -917,7 +951,9 @@ mstring DisectTime(long intime)
     }
     else if(Days>0)
     {
-	Result << Days << " day" << (Days==1 ? "" : "s");
+	Result << Days << " " << (Days==1 ?
+			Parent->getMessage(source, "VALS/TIME_DAY") :
+			Parent->getMessage(source, "VALS/TIME_DAYS"));
 	if (Hours || Minutes || Seconds)
 	    Result << ", " << (Hours>=10 ? "" : "0") << Hours << ":" <<
 		    (Minutes>=10 ? "" : "0") << Minutes << ":" <<
@@ -925,25 +961,37 @@ mstring DisectTime(long intime)
     }
     else if(Hours>0)
     {
-	Result << Hours << " hour" << (Hours==1 ? "" : "s");
+	Result << Hours << " " << (Hours==1 ?
+			Parent->getMessage(source, "VALS/TIME_HOUR") :
+			Parent->getMessage(source, "VALS/TIME_HOURS"));
 	if (Minutes)
-	    Result << ", " << Minutes << " minute" << (Minutes==1 ? "" : "s");
+	    Result << ", " << Minutes << " " << (Minutes==1 ?
+			Parent->getMessage(source, "VALS/TIME_MIN") :
+			Parent->getMessage(source, "VALS/TIME_MINS"));
 	if (Seconds)
-	    Result << ", " << Seconds << " second" << (Seconds==1 ? "" : "s");
+	    Result << ", " << Seconds << " " << (Seconds==1 ?
+			Parent->getMessage(source, "VALS/TIME_SEC") :
+			Parent->getMessage(source, "VALS/TIME_SECS"));
     }
     else if(Minutes>0)
     {
-	Result << Minutes << " minute" << (Minutes==1 ? "" : "s");
+	Result << Minutes << " " << (Minutes==1 ?
+			Parent->getMessage(source, "VALS/TIME_MIN") :
+			Parent->getMessage(source, "VALS/TIME_MINS"));
 	if (Seconds)
-	    Result << ", " << Seconds << " second" << (Seconds==1 ? "" : "s");
+	    Result << ", " << Seconds << " " << (Seconds==1 ?
+			Parent->getMessage(source, "VALS/TIME_SEC") :
+			Parent->getMessage(source, "VALS/TIME_SECS"));
     }
     else if(Seconds>0)
     {
-	Result << Seconds << " second" << (Seconds==1 ? "" : "s");
+	Result << Seconds << " " << (Seconds==1 ?
+			Parent->getMessage(source, "VALS/TIME_SEC") :
+			Parent->getMessage(source, "VALS/TIME_SECS"));
     }
     else
     {
-	Result << "now";
+	Result << Parent->getMessage(source, "VALS/TIME_NOW");
     }
     return Result;
 }
