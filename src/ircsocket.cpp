@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.193  2002/01/01 22:39:09  prez
+** Mistook the meaning of join ...
+**
 ** Revision 1.192  2002/01/01 22:16:56  prez
 ** Fixed memory leak properly in db saving ...
 **
@@ -468,15 +471,6 @@ void *IrcSvcHandler::worker(void *in)
     mThread::Attach(tt_mBase);
     Magick::register_instance((Magick *)in);
     FT("IrcSvcHandler::worker", (in));
-
-    { RLOCK(("IrcSvcHandler"));
-    if (Magick::instance().ircsvchandler != NULL)
-        if (Magick::instance().ircsvchandler->tm.join(ACE_Thread::self()) < 0)
-        {
-            NLOG(LM_ALERT, "EVENT/JOIN_THREAD_FAIL");
-        }
-    }
-
     mMessage *msg = NULL;
     bool active = true;
 
@@ -560,7 +554,8 @@ int IrcSvcHandler::open(void *in)
 
     // Only activate the threads when we're ready.
     tm.spawn_n(Magick::instance().config.Min_Threads(), IrcSvcHandler::worker,
-				(void *) &Magick::instance());
+				(void *) &Magick::instance(),
+				THR_NEW_LWP | THR_DETACHED);
 
     DumpB();
     CP(("IrcSvcHandler activated"));
@@ -994,7 +989,8 @@ void IrcSvcHandler::enqueue(mMessage *mm)
 	while (static_cast<unsigned int>(tm.count_threads()) <
 				Magick::instance().config.Min_Threads())
 	{
-	    if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance()) != -1)
+	    if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance(),
+			THR_NEW_LWP | THR_DETACHED) != -1)
 	    {
 		NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 	    }
@@ -1015,13 +1011,14 @@ void IrcSvcHandler::enqueue(mMessage *mm)
 	    }
 	    else
 	    {
-		if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance()) != -1)
+		if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance(),
+			THR_NEW_LWP | THR_DETACHED) < 0)
 		{
-		    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
+		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
 		}
 		else
 		{
-		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
+		    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 		}
 	    }
 	}
@@ -2073,13 +2070,18 @@ int EventTask::svc(void)
 		last_save.SecondsSince() >= Magick::instance().config.Savetime())
 	    {
 		CP(("Starting DATABASE SAVE ..."));
-		thrmgr.spawn(save_databases, (void *) &Magick::instance(),
-			THR_NEW_LWP | THR_DETACHED);
-
-		WLOCK(("Events", "last_save"));
-		MCB(last_save);
-		last_save = mDateTime::CurrentDateTime();
-		MCE(last_save);
+		if (thrmgr.spawn(save_databases, (void *) &Magick::instance(),
+			THR_NEW_LWP | THR_DETACHED) < 0)
+		{
+		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");
+		}
+		else
+		{
+		    WLOCK(("Events", "last_save"));
+		    MCB(last_save);
+		    last_save = mDateTime::CurrentDateTime();
+		    MCE(last_save);
+		}
 	    }
 
 	    RLOCK2_IF(("Events", "last_check"),
