@@ -269,14 +269,16 @@ void ChanServ::AddCommands()
 						 ChanServ::do_Setpass);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "MODE*", Magick::instance().commserv.REGD_Name(),
 						 ChanServ::do_Mode);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(), "OP*", Magick::instance().commserv.REGD_Name(),
-						 ChanServ::do_Op);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(), "D*OP*", Magick::instance().commserv.REGD_Name(),
-						 ChanServ::do_DeOp);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "H*OP*", Magick::instance().commserv.REGD_Name(),
 						 ChanServ::do_HalfOp);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "D*H*OP*", Magick::instance().commserv.REGD_Name(),
 						 ChanServ::do_DeHalfOp);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "H*D*OP*", Magick::instance().commserv.REGD_Name(),
+						 ChanServ::do_DeHalfOp);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "OP*", Magick::instance().commserv.REGD_Name(),
+						 ChanServ::do_Op);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "D*OP*", Magick::instance().commserv.REGD_Name(),
+						 ChanServ::do_DeOp);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "VOIC*", Magick::instance().commserv.REGD_Name(),
 						 ChanServ::do_Voice);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "D*VOIC*", Magick::instance().commserv.REGD_Name(),
@@ -443,10 +445,11 @@ void ChanServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "GET*PASS*", Magick::instance().commserv.SOP_Name());
 
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "MODE", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(), "OP*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(), "D*OP*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "H*OP*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "D*H*OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "H*D*OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "D*OP*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "VOIC*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "D*VOIC*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "TOPIC*", Magick::instance().commserv.REGD_Name());
