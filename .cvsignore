@@ -4,12 +4,14 @@ magick.plg
 magick.opt
 magick.ncb
 magick.pid
-magick.ini
 magick.exe
+magick.mnd
 magick
 magick.debug
+what
 err.out
 *.log
-*.~*
+*.ini
+*~
 magickbcc.dsk
 magickbcc$$$
