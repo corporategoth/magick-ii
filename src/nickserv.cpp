@@ -624,7 +624,7 @@ bool Nick_Live_t::FloodTrigger()
     NFT("Nick_Live_t::FloodTrigger");
 
     // We DONT ignore OPER's
-    if (HasMode("o"))
+    if (HasMode("o") || IsServices())
     {
 	RET(false);
     }

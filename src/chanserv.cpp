@@ -1059,7 +1059,7 @@ void Chan_Stored_t::Join(mstring nick)
 void Chan_Stored_t::Part(mstring nick)
 {
     FT("Chan_Stored_t::Part", (nick));
-    if (Access_value(nick)>0)
+    if (GetAccess(nick)>0)
 	i_LastUsed = Now();
 }
 
@@ -1068,12 +1068,20 @@ void Chan_Stored_t::Kick(mstring nick, mstring kicker)
 {
     FT("Chan_Stored_t::Kick", (nick, kicker));
 
-    // WE can kick anyone we want
-    if (Parent->nickserv.IsLive(kicker))
-	if (Parent->nickserv.live[kicker.LowerCase()].IsServices())
-	    return;
+    // Users shouldnt kick us, but we just rejoin!
+    if (Parent->nickserv.IsLive(nick) &&
+	Parent->nickserv.live[nick.LowerCase()].IsServices() &&
+	Join())
+    {
+	Parent->server.JOIN(nick, i_Name);
+    }
 
-    if (Access_value(nick)>Access_value(kicker))
+    // WE can kick anyone we want
+    if (Parent->nickserv.IsLive(kicker) &&
+	Parent->nickserv.live[kicker.LowerCase()].IsServices())
+	return;
+
+    if (GetAccess(nick)>GetAccess(kicker))
     {
 	// Check revenge, and do it.
     }
@@ -1184,7 +1192,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 	    break;
 
 	case 'b':
-	    if (Access_value(mode.ExtractWord(fwdargs, ": ")) >= Access_value(setter))
+	    if (GetAccess(mode.ExtractWord(fwdargs, ": ")) >= GetAccess(setter))
 	    {
 		send_off += "b";
 		send_off_args += " " + mode.ExtractWord(fwdargs, ": ");
@@ -2960,7 +2968,10 @@ wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in)
 
 wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
 {
-    set<entlist_val_t<long> >::size_type i,count;
+    size_t i, count;
+    set<entlist_t>::size_type ei,ecount;
+    set<entlist_val_t<long> >::size_type vli,vlcount;
+    set<entlist_val_t<long> >::size_type vsi,vscount;
     mstring dummy,dummy2;
     entlist_t edummy;
     entlist_val_t<long> eldummy;
@@ -2974,40 +2985,40 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
 
     out.i_Level.clear();
-    in>>count;
-    for(i=0;i<count;i++)
+    in>>vlcount;
+    for(vli=0;vli<vlcount;vli++)
     {
 	in>>eldummy;
 	out.i_Level.insert(eldummy);
     }
 
     out.i_Access.clear();
-    in>>count;
-    for(i=0;i<count;i++)
+    in>>vlcount;
+    for(vli=0;vli<vlcount;vli++)
     {
-	in>>edummy;
+	in>>eldummy;
 	out.i_Access.insert(eldummy);
     }
 
     out.i_Akick.clear();
-    in>>count;
-    for(i=0;i<count;i++)
+    in>>vscount;
+    for(vsi=0;vsi<vscount;vsi++)
     {
 	in>>esdummy;
 	out.i_Akick.insert(esdummy);
     }
 
     out.i_Greet.clear();
-    in>>count;
-    for(i=0;i<count;i++)
+    in>>ecount;
+    for(ei=0;ei<ecount;ei++)
     {
 	in>>edummy;
 	out.i_Greet.push_back(edummy);
     }
 
     out.i_Message.clear();
-    in>>count;
-    for(i=0;i<count;i++)
+    in>>ecount;
+    for(ei=0;ei<ecount;ei++)
     {
 	in>>edummy;
 	out.i_Message.push_back(edummy);
@@ -3836,6 +3847,9 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
 			chan->Name().c_str(),
 			Parent->getSname(chan->Founder()).c_str(),
 			chan->Password().c_str());
+    announce(mynick, Parent->getMessage("MISC/CHAN_GETPASS"),
+			source.c_str(), chan->Name().c_str(),
+			Parent->getSname(chan->Founder()).c_str());
 }
 
 void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
