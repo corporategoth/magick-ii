@@ -2546,7 +2546,7 @@ void NickServ::do_set_Password(const mstring & mynick, const mstring & source, c
     }
 
 #ifdef GETPASS
-    mstring oldpass = Magick::instance().nickserv.GetStored(source).Password();
+    mstring oldpass = Magick::instance().nickserv.GetStored(source)->Password();
 
     if (newpass.IsSameAs(oldpass, true) ||
 #else
