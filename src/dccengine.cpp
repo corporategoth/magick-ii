@@ -195,10 +195,11 @@ void DccEngine::decodeReply(const mstring & mynick, const mstring & source, cons
     BTCB();
     static_cast < void > (mynick);
     static_cast < void > (source);
-
-    FT("DccEngine::decodeReply", (in));
+    static_cast < void > (in);
 
 #if 0 // Unused code, for now, why bother wasting cycles ...
+
+    FT("DccEngine::decodeReply", (in));
 
     vector < mstring > ResVector;
     mstring ResMid = lowDequote(in);

@@ -770,11 +770,14 @@ size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
     if (iter != nick.end())
     {
 #ifdef HAVE_MEM_REF_CONST
-	retval = count_if(iter->second.begin(), iter->second.end(), mem_fun_ref(&Memo_t::IsRead));
+	if (isread)
+	    retval = count_if(iter->second.begin(), iter->second.end(), mem_fun_ref(&Memo_t::IsRead));
+	else
+	    retval = iter->second.size();
 #else
 	MemoServ::nick_memo_t::const_iterator i;
 	for (i=iter->second.begin(); i!=iter->second.end(); i++)
-	    if (i->IsRead())
+	    if (!isread || i->IsRead())
 		retval++;
 #endif
     }
@@ -1061,11 +1064,14 @@ size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, cons
     if (iter != channel.end())
     {
 #ifdef HAVE_MEM_FUN_CONST
-	retval = count_if(iter->second.begin(), iter->second.end(), bind2nd(mem_fun1_ref(&News_t::IsRead), user));
+	if (isread)
+	    retval = count_if(iter->second.begin(), iter->second.end(), bind2nd(mem_fun1_ref(&News_t::IsRead), user));
+	else
+	    retval = iter->second.size();
 #else
 	MemoServ::channel_news_t::const_iterator i;
 	for (i = iter->second.begin(); i != iter->second.end(); i++)
-	    if (i->IsRead(user))
+	    if (!isread || i->IsRead(user))
 		retval++;
 #endif
     }
