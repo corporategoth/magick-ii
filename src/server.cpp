@@ -266,8 +266,13 @@ void NetworkServ::execute(const mstring & data)
 	    else
 		Parent->nickserv.live[sourceL].Away(data.After(":", 2));
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'B':
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     case 'C':
 	if (msgtype=="CONNECT")
@@ -288,8 +293,13 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(3, ": ") + " not listed in irc.conf");
 	    }
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'D':
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     case 'E':
 	if (msgtype=="ERROR")
@@ -297,8 +307,13 @@ void NetworkServ::execute(const mstring & data)
 	    // ERROR :This is my error
 	    wxLogNotice("SERVER reported ERROR: %s", data.After(":").c_str());
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'F':
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     case 'G':
 	if (msgtype=="GLINE")
@@ -320,8 +335,13 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // useless chatter ... can be ignored.
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'H':
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     case 'I':
 	if (msgtype=="INFO")
@@ -345,6 +365,10 @@ void NetworkServ::execute(const mstring & data)
 	    if (Parent->nickserv.IsLive(source))
 		SendSVR("303 " + source + " :" + data.ExtractWord(3, ": "));
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'J':
 	if (msgtype=="JOIN")
@@ -352,6 +376,10 @@ void NetworkServ::execute(const mstring & data)
 	    // :source JOIN :#channel
 	    for (int i=3; i<=data.WordCount(":, "); i++)
 		Parent->nickserv.live[sourceL].Join(data.ExtractWord(i, ":, "));
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'K':
@@ -382,7 +410,7 @@ void NetworkServ::execute(const mstring & data)
 	    {
 		int wc = data.After(":", 2).WordCount("!");
 		Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Quit(
-			"Killed (" + data.After(":", 2).After("!", wc) + ")");
+			"Killed (" + data.After(":", 2).After("!", wc-1) + ")");
 		Parent->nickserv.live.erase(data.ExtractWord(3, ": ").LowerCase());
 	    }
 	    else
@@ -391,6 +419,10 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(3, ": ").c_str(), source.c_str());
 	    }
 
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'L':
@@ -425,6 +457,10 @@ void NetworkServ::execute(const mstring & data)
 
 	    SendSVR("323 " + source + " :End of /LIST");
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'M':
 	if (msgtype=="MODE")
@@ -456,6 +492,10 @@ void NetworkServ::execute(const mstring & data)
 		    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(4, ": "));
 		}
 	    }
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'N':
@@ -509,11 +549,23 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source NOTICE target/#channel :message
 	    // NOTICE target :message
+	    if (!source && !IsChan(data.ExtractWord(2, ": ")) 
+		wxLogNotice("Received NOTICE for unknown user " + data.ExtractWord(3, ": "));
+	    else if (source && !IsChan(data.ExtractWord(3, ": ")) 
+		wxLogNotice("Received NOTICE for unknown user " + data.ExtractWord(3, ": "));
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'O':
 	if (msgtype=="OPER")
 	{
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'P':
@@ -559,10 +611,14 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="PRIVMSG")
 	{
 	    // :source PRIVMSG target/#channel :message
-	    /*
-	    if (!IsChan(data.ExtractWord(3, ": ")) 
-		wxLogWarning("Received message for unknown user " + data.ExtractWord(3, ": "));
-	    */
+	    if (!source && !IsChan(data.ExtractWord(2, ": ")) 
+		wxLogNotice("Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
+	    else if (source && !IsChan(data.ExtractWord(3, ": ")) 
+		wxLogNotice("Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'Q':
@@ -573,6 +629,10 @@ void NetworkServ::execute(const mstring & data)
 	    Parent->nickserv.live[sourceL].Quit(data.After(":", 2));
 	    Parent->nickserv.live.erase(sourceL);
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'R':
 	if (msgtype=="RAKILL")
@@ -582,11 +642,15 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else if (msgtype=="REHASH")
 	{
-	    // Will we ever get this via. net??
+	    // Will we ever get this via. net??  ignore.
 	}
 	else if (msgtype=="RESTART")
 	{
-	    // Will we ever get this via. net??
+	    // Will we ever get this via. net??  ignore.
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'S':
@@ -640,20 +704,53 @@ void NetworkServ::execute(const mstring & data)
 	    // :source SUMMON user our.server *
 	    SendSVR("445 " + source + " :SUMMON has been disabled");
 	}
+	else if (msgtype=="SVSHOST")
+	{
+	    // Changing HOST (aurora)
+	}
 	else if (msgtype=="SVSKILL")
 	{
+	    // Same as KILL (but by services)
 	}
 	else if (msgtype=="SVSMODE")
 	{
-	}
-	else if (msgtype=="SVSMODE")
-	{
+	    // Handle just as mode, WITHOUT sanity
+	    if (IsChan(data.ExtractWord(3, ": ")))
+	    {
+		if (Parent->chanserv.IsLive(data.ExtractWord(3, ": ")))
+		{
+		    Parent->chanserv.live[data.ExtractWord(3, ": ").LowerCase()].Mode(source, data.After(" ", 3));
+		}
+		else
+		{
+		    wxLogWarning("MODE from %s received for non-existant channel %s", source.c_str(),
+			data.ExtractWord(3, ": ").c_str());
+		}
+	    }
+	    else
+	    {
+		if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+		{
+		    Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Mode(data.ExtractWord(4, ": "));
+		}
+		else
+		{
+		    wxLogWarning("MODE from %s received for non-existant user %s", source.c_str(),
+			data.ExtractWord(3, ": ").c_str());
+		}
+	    }
 	}
 	else if (msgtype=="SVSNICK")
 	{
+	    // forcably changed nicks (handle like nick)
 	}
 	else if (msgtype=="SVSNOOP")
 	{
+	    // Deny all OPERS on server, ignore.
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'T':
@@ -719,6 +816,10 @@ void NetworkServ::execute(const mstring & data)
 
 
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'U':
 	if (msgtype=="UNGLINE")
@@ -757,6 +858,10 @@ void NetworkServ::execute(const mstring & data)
 	    // :source USERS :our.server
 	    SendSVR("446 " + source + " :USERS has been disabled");
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'V':
 	if (msgtype=="VERSION")
@@ -791,6 +896,10 @@ void NetworkServ::execute(const mstring & data)
 			((Parent->helpserv.getnames() != "")	? "H" : "h") +
 			(Parent->Services_SHOWSYNC		? "Y" : "y") +
 			(tmp << Parent->Startup_LEVEL) + ")");
+	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
 	}
 	break;
     case 'W':
@@ -872,14 +981,22 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="WHOWAS")
 	{
 	}
+	else
+	{
+	    wxLogWarning("Unknown message from server: %s", data.c_str());
+	}
 	break;
     case 'X':
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     case 'Y':
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     case 'Z':
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     default:
+	wxLogWarning("Unknown message from server: %s", data.c_str());
 	break;
     }
 
