@@ -398,10 +398,11 @@ useful if you plan to compile alot, and dont want to have to re-
 compile the entire program each time you make a change, however it
 means you will not have an accurate build number indication.
 <P>
-<DT><B>--enable-des
---disable-des</B><DD><P>This turns on or off encryption support in Magick.  Some versions
-of Magick may not be distributed with DES encryption, in which case you
-will have to download it and enable it to use it.
+<DT><B>--enable-crypt
+--disable-crypt</B><DD><P>This turns on or off encryption support in Magick.  Some versions
+of Magick may not be distributed with encryption, in which case you
+will have to download it and enable it to use it.  The encryption of
+choice right now is 3BF (3 * blowfish).
 <P>
 <DT><B>--enable-trace
 --disable-trace</B><DD><P>This turns on or off the internal tracing functions of Magick.  This
@@ -451,9 +452,6 @@ This software is useful in the fact it looks for memory access errors
 memory, etc).  However it slows the program down dramatically.  Turning
 this on causes the program to stop at the first memory problem (so it
 is recommended you run this in a debugger).
-<P>
-<DT><B>--with-keylen=size</B><DD><P>This is the maximum size of the key file, and the input key that
-you may type in.  This defaults to 1024, and you should not need more.
 </DL>
 <P>`configure' also accepts some other, not widely useful, options.
 <P>
@@ -466,7 +464,7 @@ magick communications are kept secure and encrypted.  The main methods
 of facilitating this are:
 <UL>
 <LI>Databases and inter-magick communication is encrypted with a
-key through 3DES.  This key resides in a key file.</LI>
+key through 3BF.  This key resides in a key file.</LI>
 <LI>The key file itself is encrypted with two keys generated at
 compile time, to ensure the key file is never clear text.</LI>
 <LI>EACH compile creates new key file keys, which means you must
@@ -480,9 +478,7 @@ to regenerate your key file after this).</LI>
 <UL>
 <LI>Chose a long and complex database key, you must remember this
 somehow, incase you need to generate a new database key, however
-you wont need it often.  Also choose long and varied key file
-keys, they can be up to 1024 bytes long (or longer with the
---with-keylen parameter to configure)!</LI>
+you wont need it often.</LI>
 <LI>Use the magick_stampkeys utility on all your binaries at once
 and regenerate your keys every so often, so stop them becoming
 stale.</LI>

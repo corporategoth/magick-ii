@@ -162,7 +162,7 @@ stamped with, you will essentially create corrupted databases.
 Override the B<FILES/ENCRYPTION> value in the configuration file,
 setting it to false, which tells magick to decrypt the databases
 on load, and not re-encrypt it when it saves them.  This requires
-your F<magick.key> file to have the correct key to decrypt the
+your F<magick.key> file to have the correct keys to decrypt the
 databases (and to have been created with a version of
 F<magick_keygen> that is stamped with the same keyfile keys as 
 the current version of your F<magick> binary).
@@ -170,7 +170,7 @@ the current version of your F<magick> binary).
 =item --keyfile X, -K
 
 Override the B<FILES/KEYFILE> value in the configuration file,
-which is the file that contains the key to decrypt or encrypt
+which is the file that contains the keys to decrypt or encrypt
 databases.  This file is created with the F<magick_keygen> program.
 You MUST ensure you are using a version of F<magick_keygen> and
 F<magick> that were stamped with the same keyfile keys.  This
@@ -370,7 +370,7 @@ a reply to any HELP request.
 
 =head1 SEE ALSO
 
-L<magick_keygen(1)>, L<stampkeys(1)>
+L<magick_keygen(1)>, L<magick_stampkeys(1)>
 
 =head1 NOTES
 

@@ -1,12 +1,12 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index19723.info.2.
+/tmp/sgmltmp.index22427.info.2.
 
    \input texinfo
 
 
 Indirect:
 index.info-1: 110
-index.info-2: 45994
+index.info-2: 45732
 
 Tag Table:
 (Indirect)
@@ -31,16 +31,16 @@ Node: Optional Features27322
 Node: Specifying the System Type28092
 Node: Sharing Defaults29115
 Node: Operation Controls29761
-Node: Security Tips38338
-Node: Usage41050
-Node: Support files41222
-Node: General Usage45994
-Node: Functionality53124
-Node: Questions and Answers56931
-Node: What is the Home Site of Magick?57210
-Node: My IRCD isn't supported what can I do?58209
-Node: I like these services and want to pay the author!59009
-Node: License59779
-Node: Copyright75271
+Node: Security Tips38223
+Node: Usage40788
+Node: Support files40960
+Node: General Usage45732
+Node: Functionality51591
+Node: Questions and Answers55398
+Node: What is the Home Site of Magick?55677
+Node: My IRCD isn't supported what can I do?56676
+Node: I like these services and want to pay the author!57476
+Node: License58246
+Node: Copyright73738
 
 End Tag Table

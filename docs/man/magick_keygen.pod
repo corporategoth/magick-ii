@@ -4,21 +4,17 @@ magick_keygen - Key file generator for Magick IRC Services
 
 =head1 SYNOPSIS
 
-magick_keygen [B<keyfile> [B<plainfile>]]
+magick_keygen [B<keyfile>]
 
 =head1 DESCRIPTION
 
 This will generate an encrypted keyfile using two hard-coded keys
 in the binary (that are shared with the Magick binary) to ensure
-that the actual key used for Magick databases is never readable.
+that the actual keys used for Magick databases is never readable.
 
 If no parameters are specified, the program will first ask you for
 the output key filename (defaulting to F<magick.key>), and then it
-will ask you to enter the unencrypted key twice.
-
-You may type VERY long lines of text (by default, up to 1024 bytes)
-as your key, however it may not contain a carriage return if entered
-interactively (ie. not via. the F<plainfile>).
+will ask you to enter the unencrypted keys twice.
 
 This program is written for use with Magick IRC Services, and contains
 the two keys it will use to generate the keyfile stamped into it.
@@ -34,17 +30,6 @@ with the same keys, the keys this program will generate will be invalid.
 This is the output file that the keyfile will be generated to.  This
 defaults to magick.key.
 
-=item plainfile
-
-This is a file which has the key you wish to use in clear text as
-its contents.  The file will be read verbatim (up to the maximum
-key length) as the key, and may contain anything at all.
-
-IT IS RECOMMENDED YOU KEEP THIS FILE IN A SECURE LOCATION INCASE
-YOU NEED TO RE-GENERATE THE KEY, BUT DO NOT KEEP IT WITH THE
-ENCRYPTED KEY AS THIS WILL ESSENTIALLY CIRCUMVENT THE POINT OF
-AN ENCRYPTED KEY.
-
 =back
 
 =head1 
@@ -55,11 +40,11 @@ Specified in program.
 
 =head1 SEE ALSO
 
-L<magick(1)>, L<stampkeys(1)>
+L<magick(1)>, L<magick_stampkeys(1)>
 
 =head1 BUGS
 
-The key you type in may show up on the screen.  It is not supposed
+The keys you type in may show up on the screen.  It is not supposed
 to. This is due to the fact your system does not have TERMIO, which
 is required to 'hide' the keystrokes.  Hopefully later other
 methods of hiding keystrokes will be implemented.
@@ -70,8 +55,8 @@ Magick may be obtained from B<http://www.magick.tm> or
 B<ftp://ftp.magick.tm/pub/magick.tm> and is distributed under
 the I<GNU General Public License>.
 
-You will need to re-generate your Magick database key (with the
-same key entered the first time) each time you re-stemp the
+You will need to re-generate your Magick database keys (with the
+same keys entered the first time) each time you re-stemp the
 F<magick> and F<magick_keygen> binaries.
 
 If you forget the plain text key needed to re-generate your keyfile,
