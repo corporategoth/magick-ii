@@ -7,7 +7,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <time.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 
 #include <ace/Activation_Queue.h>
 #include <ace/Auto_Ptr.h>

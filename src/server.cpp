@@ -97,13 +97,18 @@ mstring Server::Description()
 void Server::Ping()
 {
     NFT("Server::Ping");
-
     if (!i_Ping)
     {
-	SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
+        SendSVR("PING " + Parent->Startup_SERVER_NAME + " :" + i_Name);
+#ifndef _MSC_VER
 	timeval *tmp;
 	gettimeofday(tmp, NULL);
-	i_Ping = (double) tmp->tv_sec + ((double) tmp->tv_usec / 1000.0);
+	i_Ping = (double)tmp->tv_sec + ((double)tmp->tv_usec / 1000.0);
+#else
+	SYSTEMTIME lpSystemTime;
+	GetSystemTime(&lpSystemTime);
+	i_Ping=((double)lpSystemTime.wHour*3600.0)+((double)lpSystemTime.wMinute*60.0)+(double)lpSystemTime.wSecond+((double)lpSystemTime.wMilliseconds/1000.0);
+#endif
    }
 }
 
@@ -112,10 +117,16 @@ void Server::Pong()
     NFT("Server::Pong");
     if (i_Ping)
     {
+#ifndef _MSC_VER
 	timeval *tmp;
 	gettimeofday(tmp, NULL);
 	i_Lag = ((double) tmp->tv_sec + ((double) tmp->tv_usec / 1000.0)) - i_Ping;
-	i_Ping = 0;
+#else
+        SYSTEMTIME lpSystemTime;
+	GetSystemTime(&lpSystemTime);
+	i_Lag=(((double)lpSystemTime.wHour*3600.0)+((double)lpSystemTime.wMinute*60.0)+(double)lpSystemTime.wSecond+((double)lpSystemTime.wMilliseconds/1000.0))-i_Ping;
+#endif
+	i_Ping = 0.0;
     }
 }
 

@@ -25,6 +25,8 @@ int IrcSvcHandler::open(void *in)
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     //activate();
     // todo activate the task
+    ACE_Reactor::instance()->schedule_timer(&sph,0,ACE_Time_Value(Parent->Config_PING_FREQUENCY),ACE_Time_Value(Parent->Config_PING_FREQUENCY));
+
     CP(("SvcHandler activated"));
     RET(0);
 }
@@ -48,26 +50,26 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     }
     // possibly mstring(data,0,recvResult); rather than mstring(data)
     // depends on null terminators etc.
-    mstring data2 = Parent->flack + data;
+    mstring data2 = flack + data;
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down    
 
     if(data2.Contains("\n")||data2.Contains("\r"))
     {
 	if (data2.Last() == '\n' || data2.Last() == '\r')
-	    Parent->flack = "";
+	    flack = "";
 	else
-	    Parent->flack = data2.ExtractWord(data2.WordCount("\n\r"), "\n\r");
+	    flack = data2.ExtractWord(data2.WordCount("\n\r"), "\n\r");
 
 	for(int i=0;i<data2.WordCount("\n\r")-1;i++)
 	    if(data2.ExtractWord(i+1,"\n\r")!="")
 		mBase::push_message(data2.ExtractWord(i+1,"\n\r"));
-	if (Parent->flack == "")
+	if (flack == "")
 	    mBase::push_message(data2.ExtractWord(data2.WordCount("\n\r"),"\n\r"));
 
     }
     else
-        Parent->flack += data2;
+        flack += data2;
 
     RET(0);
 }
@@ -84,6 +86,8 @@ int IrcSvcHandler::send(const mstring & data)
 
 int IrcSvcHandler::close(unsigned long in)
 {
+    // todo: shutdown the ping timer
+    ACE_Reactor::instance()->cancel_timer(&sph);
     FT("IrcSvcHandler::close",(in));
     CP(("Socket closed"));
     RET(handle_close());
@@ -110,6 +114,16 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Parent->ircsvchandler->send(passcmd);
 	mstring servercmd="SERVER "+Parent->Startup_SERVER_NAME+" 1 :"+Parent->Startup_SERVER_DESC+"\n";
 	Parent->ircsvchandler->send(servercmd);
+    }
+    return 0;
+}
+
+int ServerPing_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
+{
+    map<mstring,Server>::iterator i;
+    for(i=Parent->server.ServerList.begin();i!=Parent->server.ServerList.end();i++)
+    {
+	i->second.Ping();
     }
     return 0;
 }
