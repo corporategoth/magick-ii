@@ -17,6 +17,8 @@
 #include "trace.h"
 #include "lockable.h"
 
+static const long Trace::ALL_Functions;   = G_Functions | NS_Functions | CS_Functions | MS_Functions | OS_Functions | XS_Functions | NET_Functions | BOB_Functions;
+
 long Trace::TraceLevel=0;
 mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
 Trace *TraceObject;

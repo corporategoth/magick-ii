@@ -188,7 +188,7 @@ class Trace
     };
 
 public:
-    static const long ALL_Functions   = G_Functions | NS_Functions | CS_Functions | MS_Functions | OS_Functions | XS_Functions | NET_Functions | BOB_Functions;
+    static const long ALL_Functions;
     enum level_enum { Off = 0,
     	Stats = 1,
 	Chatter = 1,
