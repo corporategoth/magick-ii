@@ -25,6 +25,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.63  2002/01/02 08:30:09  prez
+** Fixed the shutdown code.  Also added a thread manager as a magick member.
+**
 ** Revision 1.62  2001/12/26 23:30:35  prez
 ** More fixes to see if I can fix the memory leak ...
 **
@@ -224,6 +227,8 @@ public:
 
 class EventTask : public ACE_Task<ACE_MT_SYNCH>
 {
+    typedef ACE_Task<ACE_MT_SYNCH> internal;
+
     set<mstring> cmodes_pending;
     Magick *magick_instance;
     mDateTime last_expire;
@@ -239,6 +244,7 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
     void do_modes(mDateTime &synctime);
 
 public:
+    EventTask(ACE_Thread_Manager *tm = 0) : internal(tm) {}
     void AddChannelModePending(const mstring &in);
 
     void ForceSave();

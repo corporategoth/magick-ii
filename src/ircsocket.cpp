@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.194  2002/01/02 08:30:09  prez
+** Fixed the shutdown code.  Also added a thread manager as a magick member.
+**
 ** Revision 1.193  2002/01/01 22:39:09  prez
 ** Mistook the meaning of join ...
 **
@@ -1222,11 +1225,11 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		{
 		case H_Worker:
 		    { RLOCK2(("IrcSvcHandler"));
-		    ACE_Thread_Manager *thr_mgr;
+		    ACE_Thread_Manager *thr_mgr = NULL;
 		    if (Magick::instance().ircsvchandler != NULL)
 			thr_mgr = &Magick::instance().ircsvchandler->tm;
 		    else
-			thr_mgr = ACE_Thread_Manager::instance();
+			thr_mgr = &Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 		    if (iter->second.third)
 		    {
@@ -1250,7 +1253,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		    {
 			ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 			if (thr_mgr == NULL)
-			    thr_mgr = ACE_Thread_Manager::instance();
+			    thr_mgr = &Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 			if (iter->second.third)
 			{
@@ -1271,7 +1274,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		    {
 			ACE_Thread_Manager *thr_mgr = Magick::instance().events->thr_mgr();
 			if (thr_mgr == NULL)
-			    thr_mgr = ACE_Thread_Manager::instance();
+			    thr_mgr = &Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 			if (iter->second.third)
 			{
@@ -1286,7 +1289,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 			    threads.erase(iter);
 			    }
 			    if (!Magick::instance().events->fini())
-				Magick::instance().events->close(0);
+				Magick::instance().events->wait();
 			    delete Magick::instance().events;
 			    Magick::instance().events = NULL;
 			}
@@ -1298,7 +1301,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		    {
 			ACE_Thread_Manager *thr_mgr = Magick::instance().dcc->thr_mgr();
 			if (thr_mgr == NULL)
-			    thr_mgr = ACE_Thread_Manager::instance();
+			    thr_mgr = &Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 			if (iter->second.third)
 			{
@@ -1313,7 +1316,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 			    threads.erase(iter);
 			    }
 			    if (!Magick::instance().dcc->fini())
-				Magick::instance().dcc->close(0);
+				Magick::instance().dcc->wait();
 			    delete Magick::instance().dcc;
 			    Magick::instance().dcc = NULL;
 			}
@@ -1331,7 +1334,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if (Magick::instance().events == NULL)
     {
 	WLOCK(("Events"));
-	Magick::instance().events = new EventTask;
+	Magick::instance().events = new EventTask(&Magick::instance().thr_mgr());
 	Magick::instance().events->open();
     }}
 
@@ -1339,7 +1342,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if (Magick::instance().dcc == NULL)
     {
 	WLOCK(("DCC"));
-	Magick::instance().dcc = new DccMap;
+	Magick::instance().dcc = new DccMap(&Magick::instance().thr_mgr());
 	Magick::instance().dcc->open();
     }}
 
@@ -1475,7 +1478,7 @@ int Disconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *ar
 	{
 	    ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 	    if (thr_mgr == NULL)
-		thr_mgr = ACE_Thread_Manager::instance();
+		thr_mgr = &Magick::instance().thr_mgr();
 	    ACE_thread_t id;
 	    thr_mgr->thread_list(Magick::instance().ircsvchandler, &id, 1);
 	    thr_mgr->cancel_task(Magick::instance().ircsvchandler);
@@ -2014,7 +2017,6 @@ int EventTask::svc(void)
     }
     DumpB();
 
-    ACE_Thread_Manager thrmgr;
     mDateTime synctime;
     while(!Magick::instance().Shutdown())
     {
@@ -2070,7 +2072,10 @@ int EventTask::svc(void)
 		last_save.SecondsSince() >= Magick::instance().config.Savetime())
 	    {
 		CP(("Starting DATABASE SAVE ..."));
-		if (thrmgr.spawn(save_databases, (void *) &Magick::instance(),
+		ACE_Thread_Manager *tm = thr_mgr();
+		if (tm == NULL)
+		    tm = &Magick::instance().thr_mgr();
+		if (tm->spawn(save_databases, (void *) &Magick::instance(),
 			THR_NEW_LWP | THR_DETACHED) < 0)
 		{
 		    NLOG(LM_ERROR, "EVENT/NEW_THREAD_FAIL");

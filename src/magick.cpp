@@ -29,6 +29,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.341  2002/01/02 08:30:09  prez
+** Fixed the shutdown code.  Also added a thread manager as a magick member.
+**
 ** Revision 1.340  2002/01/02 04:44:57  prez
 ** Made the main loop wait for events to close instead of trying to close
 ** them manually ...
@@ -1007,13 +1010,13 @@ int Magick::Start()
 		PACKAGE, VERSION));
     // Can only open these after fork if we want then to live
     { WLOCK(("Events"));
-    events = new EventTask;
+    events = new EventTask(&thr_mgr());
     if (events == NULL)
     {
 	RET(MAGICK_RET_ERROR);
     }}
     { WLOCK(("DCC"));
-    dcc = new DccMap;
+    dcc = new DccMap(&thr_mgr());
     if (dcc == NULL)
     {
 	RET(MAGICK_RET_ERROR);
@@ -3532,7 +3535,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 	    if (Magick::instance().ircsvchandler != NULL)
 		thr_mgr = &Magick::instance().ircsvchandler->tm;
 	    else
-		thr_mgr = ACE_Thread_Manager::instance();
+		thr_mgr = &Magick::instance().thr_mgr();
 	    }
 	    break;
 	case Heartbeat_Handler::H_IrcServer:
@@ -3541,7 +3544,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 		thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 	    }
 	    if (thr_mgr == NULL)
-		thr_mgr = ACE_Thread_Manager::instance();
+		thr_mgr = &Magick::instance().thr_mgr();
 	    Magick::instance().Disconnect();
 	    if (Magick::instance().dh_timer > 0)
 		Magick::instance().reactor().cancel_timer(Magick::instance().dh_timer);
@@ -3552,14 +3555,15 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 	    if (Magick::instance().events != NULL)
 	    {
 		thr_mgr = Magick::instance().events->thr_mgr();
-		if (!Magick::instance().events->fini())
-		    Magick::instance().events->close(0);
+		// Cant afford to do the wait ...
+//		if (!Magick::instance().events->fini())
+//		    Magick::instance().events->wait();
 		delete Magick::instance().events;
 		Magick::instance().events = NULL;
 	    }
 	    if (thr_mgr == NULL)
-		thr_mgr = ACE_Thread_Manager::instance();
-	    Magick::instance().events = new EventTask;
+		thr_mgr = &Magick::instance().thr_mgr();
+	    Magick::instance().events = new EventTask(&Magick::instance().thr_mgr());
 	    Magick::instance().events->open((void *) &Magick::instance());
 	    }
 	    break;
@@ -3568,14 +3572,15 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 	    if (Magick::instance().dcc != NULL)
 	    {
 		thr_mgr = Magick::instance().dcc->thr_mgr();
-		if (!Magick::instance().dcc->fini())
-		    Magick::instance().dcc->close(0);
+		// Cant afford to do the wait ...
+//		if (!Magick::instance().dcc->fini())
+//		    Magick::instance().dcc->close();
 		delete Magick::instance().dcc;
 		Magick::instance().dcc = NULL;
 	    }
 	    if (thr_mgr == NULL)
-		thr_mgr = ACE_Thread_Manager::instance();
-	    Magick::instance().dcc = new DccMap;
+		thr_mgr = &Magick::instance().thr_mgr();
+	    Magick::instance().dcc = new DccMap(&Magick::instance().thr_mgr());
 	    Magick::instance().dcc->open((void *) &Magick::instance());
 	    }
 	    break;
@@ -4085,7 +4090,7 @@ void Magick::Disconnect(const bool reconnect)
 	    {
 		ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 		if (thr_mgr == NULL)
-		    thr_mgr = ACE_Thread_Manager::instance();
+		    thr_mgr = &Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
 		thr_mgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
 #endif

@@ -25,6 +25,9 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.50  2002/01/02 08:30:09  prez
+** Fixed the shutdown code.  Also added a thread manager as a magick member.
+**
 ** Revision 1.49  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -354,6 +357,8 @@ public:
 
 class DccMap : public ACE_Task<ACE_MT_SYNCH>
 {
+    typedef ACE_Task<ACE_MT_SYNCH> internal;
+
     // Damn solaris already HAS a 'queue'
     static std::queue<unsigned long> active;
 
@@ -387,6 +392,8 @@ private:
     static xfers_t xfers;
 
 public:
+    DccMap(ACE_Thread_Manager *tm = 0) : internal(tm) {}
+
     int open(void *in = 0);
     int close(u_long flags = 0);
     int svc(void);

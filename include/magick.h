@@ -25,6 +25,9 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.175  2002/01/02 08:30:09  prez
+** Fixed the shutdown code.  Also added a thread manager as a magick member.
+**
 ** Revision 1.174  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -359,6 +362,7 @@ private:
 
     static map<ACE_thread_t, Magick *> InstanceMap;
     ACE_Reactor i_reactor;
+    ACE_Thread_Manager i_thr_mgr;
 
     vector<mstring> argv;
     // Language, token, string
@@ -426,7 +430,8 @@ public:
 #else
     static Magick &instance(ACE_thread_t id = ACE_Thread::self());
 #endif
-    ACE_Reactor &reactor() { return i_reactor; }
+    ACE_Reactor &reactor()		{ return i_reactor; }
+    ACE_Thread_Manager &thr_mgr()	{ return i_thr_mgr; }
 
     // Config Values
     class startup_t {
