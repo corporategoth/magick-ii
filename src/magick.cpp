@@ -973,6 +973,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 {
     FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
     static bool gotfirstsigsegv=false;
+    static mDateTime lastsigsegv;
     // todo: fill this sucker in
     switch(signum)
     {
@@ -994,11 +995,19 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	{
 	    gotfirstsigsegv==true;
 	    CP(("Got first sigsegv call, giving it another chance"));
+	    lastsigsegv=Now();
 	}
 	else
 	{
-	    CP(("Got second sigsegv call, giving magick the boot"));
-	    RET(-1);
+	    if(lastsigsegv+mDateTime(0,0,5,0)<Now())
+	    {
+		lastsigsegv=Now();
+	    }
+	    else
+	    {
+		CP(("Got second sigsegv call, giving magick the boot"));
+		RET(-1);
+	    }
 	}
 	break;
 #ifdef SIGBUS
