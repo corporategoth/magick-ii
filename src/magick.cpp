@@ -151,6 +151,17 @@ void Magick::LoadInternalMessages()
 #include "language.h"
 	int i;
 	remove("tmplang.lng");
+
+	/* Why not just:
+	{
+		ostream out("tmplang.lng");
+		for (i=0;i<def_langent;i++, def_lang++)
+			out << def_lang[i] << endl;
+	}
+	No memory allocation, and it closes itself :)
+	You need a wxFileOutputStream for a strait string -> file write?
+	Also -- why cant we go string away -> parser (no tmp file!) */
+
 	wxFileOutputStream *fostream=new wxFileOutputStream("tmplang.lng");
 	for(i=0;i<def_langent;i++)
 	{
