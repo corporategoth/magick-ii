@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.176  2001/05/22 05:17:44  prez
+** Fixed nickserv ident from slave nick bug.
+**
 ** Revision 1.175  2001/05/17 19:18:55  prez
 ** Added ability to chose GETPASS or SETPASS.
 **
@@ -3012,19 +3015,27 @@ void Nick_Stored_t::Password(const mstring& in)
 bool Nick_Stored_t::CheckPass(const mstring& password)
 {
     FT("Nick_Stored_t::CheckPass", (password));
-#ifdef GETPASS
-    mstring check(password);
-#else
-    char chkpass[33];
-    mHASH(password.c_str(), password.length(), chkpass);
-    mstring check(chkpass);
-#endif
-    RLOCK_IF(("NickServ", "stored", i_Name.LowerCase(), "i_Password"),
-	i_Password == check)
+    if (Host().empty())
     {
-	RET(true);
+#ifdef GETPASS
+	mstring check(password);
+#else
+	char chkpass[33];
+	mHASH(password.c_str(), password.length(), chkpass);
+	mstring check(chkpass);
+#endif
+	RLOCK_IF(("NickServ", "stored", i_Name.LowerCase(), "i_Password"),
+	    i_Password == check)
+	{
+	    RET(true);
+	}
+	RET(false);
     }
-    RET(false);
+    else
+    {
+	bool retval = Parent->nickserv.GetStored(i_Host).CheckPass(password);
+	RET(retval);
+    }
 }
 
 
