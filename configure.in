@@ -1,0 +1,24 @@
+AC_INIT(Makefile)
+
+PACKAGE=magick
+VERSION=2.0
+
+CFLAGS="$CFLAGS -I$(top_srcdir)/include"
+CPPFLAGS="$CPPFLAGS -I$(top_srcdir)/include"
+
+AC_PROG_MAKE_SET(make)
+AC_PROG_INSTALL(install-sh)
+AC_ARG_PROGRAM
+
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_RANLIB
+
+AC_CHECK_LIB(ACE,     _make_ACE_Naming_Context,         LIBS="$LIBS -lACE")
+AC_CHECK_LIB(pthread, pthread_self, LIBS="$LIBS -lpthread")
+AC_CHECK_LIB(z,       inflate,      LIBS="$LIBS -lz")
+
+AC_DEFINE(MAGICK_HAS_EXCEPTIONS)
+AC_DEFINE(HASCRYPT)
+
+AC_OUTPUT([Makefile src/antlr/Makefile src/des/Makefile src/xml/Makefile src/Makefile])

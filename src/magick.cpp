@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.214  2000/04/06 12:52:50  prez
+** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
+**
 ** Revision 1.213  2000/04/04 03:21:34  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -2228,6 +2231,23 @@ vector<mstring> Magick::startup_t::PriorityList(unsigned int pri)
     NRET(vector<mstring>, list);
 }
 
+mstring Magick::GetKey()
+{
+    NFT("Magick::GetKey");
+    mstring retval = "";
+    if (files.Encryption())
+    {
+	if (wxFile::Exists(files.KeyFile().c_str()))
+	{
+	    wxFile keyfile(files.KeyFile().c_str());
+	    char tmp[4096];
+	    memset(tmp, 0, 4096);
+	    keyfile.Read(&tmp, 4096);
+	    retval = tmp;
+	}
+    }
+    NRET(mstring, retval);
+}
 
 void Magick::load_databases()
 {
@@ -2265,22 +2285,24 @@ void Magick::load_databases()
 	//input->Sync();
 	input = &finput;
 	delete dinput;
-	CP(("Data TAG: %s | %d.%d | %d | %d", tag.c_str(), ver_major, ver_minor, compressed, encrypted));
+	CP(("Data TAG: %s | %u.%u | %d | %d", tag.c_str(), ver_major, ver_minor, compressed, encrypted));
 
 	if (tag != FileIdentificationTag)
 	    wxLogFatal(getLogMessage("COMMANDLINE/DBASE_ID"));
-	if (ver != FileVersionNumber)
-	    wxLogFatal(getLogMessage("COMMANDLINE/DBASE_VER"));
 
 	// Thread pipes ... create them.
-/*	if (encrypted)
+	if (encrypted)
 	{
-	    cinput = new wxCryptInputStream(*input);
+	    if (GetKey() == "")
+	    {
+		wxLogError("Database is encrypted but no keyfile found, load aborted.");
+		return;
+	    }
+	    cinput = new wxCryptInputStream(*input, GetKey());
 	    input = cinput;
-	} */
+	}
 	if (compressed)
 	{
-CP(("Compressed datastream active ..."));
 	    zinput = new wxZlibInputStream(*input);
 	    input = zinput;
 	}
@@ -2298,17 +2320,16 @@ CP(("Compressed datastream active ..."));
 
 	// Clean up ..
 	delete dinput;
-/*	if (encrypted)
+	if (encrypted)
 	{
 	    delete cinput;
-	} */
+	}
 	if (compressed)
 	{
-CP(("Compressed datastream inactive ..."));
 	    delete zinput;
 	}
 	input = &finput;
-	wxLogInfo(getLogMessage("EVENT/LOAD"));
+	wxLogInfo(getLogMessage("EVENT/LOAD"), ver_major, ver_minor);
     }
 }
 
@@ -2325,33 +2346,37 @@ void Magick::save_databases()
 	databasefile = wxGetCwd()+DirSlash+files.Database();
 
     CP(("Database Filename being used: %s", databasefile.c_str()));
-    wxFileOutputStream foutput(databasefile);
-	
-    if (foutput.Ok())
+    wxFile dbase((files.Database() + ".new").c_str(), wxFile::write);
+
+    if (dbase.IsOpened())
     {
-	wxCryptOutputStream *cinput;
+	wxFileOutputStream *foutput;
+	wxCryptOutputStream *coutput;
 	wxZlibOutputStream *zoutput;
 	wxDataOutputStream *doutput;
-	wxOutputStream *output = &foutput;
+	wxOutputStream *output;
 
-	CP(("Data TAG: %s | %d | %d | %d", FileIdentificationTag.c_str(),
-		FileVersionNumber, (files.Compression() != 0), files.Encryption()));
+	foutput = new wxFileOutputStream(dbase);
+	output = foutput;
+
+	CP(("Data TAG: %s | %u.%u | %d | %d", FileIdentificationTag.c_str(),
+		FileVersionNumber / 0x10000, FileVersionNumber % 0x10000,
+		(files.Compression() != 0), files.Encryption()));
 	doutput = new wxDataOutputStream(*output);
 	output = doutput;
 	*output << FileIdentificationTag << FileVersionNumber <<
 		(files.Compression() != 0) << files.Encryption();
 	output->Sync();
-	output = &foutput;
+	output = foutput;
 	delete doutput;
 
-/*	if (files.Encryption())
+	if (GetKey() != "")
 	{
-	    coutput = new wxCryptOutputStream(*output);
+	    coutput = new wxCryptOutputStream(*output, GetKey());
 	    output = coutput;
-	} */
+	}
 	if (files.Compression())
 	{
-CP(("Compressed datastream active ..."));
 	    zoutput = new wxZlibOutputStream(*output, files.Compression());
 	    output = zoutput;
 	}
@@ -2359,30 +2384,59 @@ CP(("Compressed datastream active ..."));
 	output = doutput;
 
 	operserv.save_database(*output);
+	if (dbase.Error()) goto cleanup;
+
 	nickserv.save_database(*output);
+	if (dbase.Error()) goto cleanup;
+
 	chanserv.save_database(*output);
+	if (dbase.Error()) goto cleanup;
+
 	memoserv.save_database(*output);
+	if (dbase.Error()) goto cleanup;
+
 	commserv.save_database(*output);
+	if (dbase.Error()) goto cleanup;
+
 	servmsg.save_database(*output);
+	if (dbase.Error()) goto cleanup;
+
 	filesys.save_database(*output);
+	if (dbase.Error()) goto cleanup;
 	// Scripted services?
 
 	// clean up ...
 	output->Sync();
+cleanup:
 	delete doutput;
-/*	if (files.Encryption())
+	if (files.Encryption())
 	{
 	    delete coutput;
-	} */
+	}
 	if (files.Compression())
 	{
-CP(("Compressed datastream inactive ..."));
 	    delete zoutput;
 	}
-	output = &foutput;
+	delete foutput;
+	output = NULL;
 
-	wxLogVerbose(getLogMessage("EVENT/SAVE"));
+	if (!dbase.Error())
+	{
+	    dbase.Close();
+	    wxFileInputStream in((files.Database() + ".new").c_str());
+	    wxFileOutputStream out(files.Database().c_str());
+	    if (in.Ok() && out.Ok())
+	    {
+		out << in;
+		remove((files.Database() + ".new").c_str());
+		wxLogVerbose(getLogMessage("EVENT/SAVE"));
+		return;
+	    }
+	}
     }
+    remove((files.Database() + ".new").c_str());
+    wxLogError("Error saving databases, aborted ...");
+    announce(operserv.FirstName(), "Warning, dbases not saved ..");
 }
 
 void Magick::Disconnect()

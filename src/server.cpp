@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2000/04/06 12:52:50  prez
+** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
+**
 ** Revision 1.88  2000/04/04 03:21:36  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -272,7 +275,6 @@ void Protocol::Set(unsigned int in)
 	i_Tokens = true;
 	i_SVS = true;
 	i_Globops = true;
-	i_P12 = true;
 	i_Signon = 1001;
 	i_Akill = 1;
 	i_Modes = 6;
@@ -1865,6 +1867,16 @@ void NetworkServ::execute(const mstring & data)
 		case 0001:
 		    break;
 		case 1000: // NICK nick hops time user host server :realname
+		    Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(7, ": "),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.After(":")
+			);
+		    break;
 		case 1001: // NICK nick hops time user host server 1 :realname
 		    Parent->nickserv.live[sourceL] =
 			Nick_Live_t(
@@ -2249,16 +2261,50 @@ void NetworkServ::execute(const mstring & data)
 	    // hops = servers from us
 	    // services = 1 for service, 0 for user
 	    // DAL4.4.15+ SNICK name hops time user host server services modes :real name
-	    Parent->nickserv.live[sourceL] =
-		    Nick_Live_t(
-			data.ExtractWord(2, ": "),
-			(time_t) atol(data.ExtractWord(4, ": ")),
-			data.ExtractWord(7, ": "),
-			data.ExtractWord(5, ": "),
-			data.ExtractWord(6, ": "),
-			data.After(":")
-		    );
-	    Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
+
+	    switch (proto.Signon())
+	    {
+	    case 0000:
+	    case 0001:
+		break;
+	    case 1000: // SNICK nick hops time user host server modes :realname
+		Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(7, ": "),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.After(":")
+			);
+		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(8, ": "));
+		break;
+	    case 1001: // SNICK nick hops time user host server 1 modes :realname
+		Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(7, ": "),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(6, ": "),
+			    data.After(":")
+			);
+		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(9, ": "));
+		break;
+	    case 1002: // SNICK nick hops time user host server 0 real-host modes :realname
+		Parent->nickserv.live[sourceL] =
+			Nick_Live_t(
+			    data.ExtractWord(2, ": "),
+			    (time_t) atol(data.ExtractWord(4, ": ")),
+			    data.ExtractWord(7, ": "),
+			    data.ExtractWord(5, ": "),
+			    data.ExtractWord(9, ": "),
+			    data.After(":")
+			);
+		Parent->nickserv.live[sourceL].AltHost(data.ExtractWord(6, ": "));
+		Parent->nickserv.live[sourceL].Mode(data.ExtractWord(10, ": "));
+		break;
+	    }
 	    if (i_UserMax < Parent->nickserv.live.size())
 		i_UserMax = Parent->nickserv.live.size();
 

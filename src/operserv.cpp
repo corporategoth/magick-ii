@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2000/04/06 12:52:50  prez
+** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
+**
 ** Revision 1.71  2000/04/04 03:21:35  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -589,7 +592,7 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "KILL*", Parent->commserv.SOP_Name(), OperServ::do_Kill);
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "HIDE*", Parent->commserv.SOP_Name(), OperServ::do_Hide);
+	    "HIDE*", Parent->commserv.ADMIN_Name(), OperServ::do_Hide);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "*PING*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), OperServ::do_Ping);

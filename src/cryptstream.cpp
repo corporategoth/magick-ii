@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2000/04/06 12:52:50  prez
+** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
+**
 ** Revision 1.14  2000/03/30 11:24:53  prez
 ** Added threads to the filesys establishment.
 **
@@ -57,6 +60,7 @@ static const char *ident = "@(#)$Id$";
 
 #include "cryptstream.h"
 #include "log.h"
+#include "trace.h"
 extern "C"
 {
 #include "des/spr.h"
@@ -75,8 +79,6 @@ wxCryptOutputStream::wxCryptOutputStream(wxOutputStream& stream, const mstring& 
     des_string_to_2keys((char *)passphrase.c_str(),&ckey1,&ckey2);
     des_set_key(&ckey1,key1);
     des_set_key(&ckey2,key2);
-#else
-     ppgiven=false;
 #endif
 }
 
@@ -93,20 +95,22 @@ wxCryptInputStream::wxCryptInputStream(wxInputStream& stream, const mstring& pas
     des_string_to_2keys((char *)passphrase.c_str(),&ckey1,&ckey2);
     des_set_key(&ckey1,key1);
     des_set_key(&ckey2,key2);
-#else
-    ppgiven=false;
 #endif
 }
 
 size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
 {
     wxASSERT(buffer!=NULL);
+    FT("wxCryptOutputStream::OnSysWrite", ("const viod *) buffer", size));
+
+#ifdef HASCRYPT
     if(ppgiven==false)
     {
+#endif
 	Write(buffer,size);
-	return size;
-    }
+	RET(size);
 #ifdef HASCRYPT
+    }
     unsigned char *buff=new unsigned char[size];
     unsigned char *buff2=new unsigned char[size];
     try
@@ -129,19 +133,22 @@ size_t wxCryptOutputStream::OnSysWrite(const void *buffer, size_t size)
 	delete [] buff;
     if(buff2!=NULL)
 	delete [] buff2;
+    RET(size);
 #endif
-    return size;
 }
 
 size_t wxCryptInputStream::OnSysRead(void *buffer, size_t size)
 {
     wxASSERT(buffer!=NULL);
+    FT("wxCryptOutputStream::OnSysRead", ("const viod *) buffer", size));
+#ifdef HASCRYPT
     if(ppgiven==false)
     {
+#endif
 	Read(buffer,size);
-	return size;
-    }
+	RET(size);
 #ifdef HASCRYPT
+    }
     unsigned char *buff=new unsigned char[size];
     unsigned char *buff2=new unsigned char[size];
     try
@@ -164,7 +171,7 @@ size_t wxCryptInputStream::OnSysRead(void *buffer, size_t size)
 	delete [] buff;
     if(buff2!=NULL)
 	delete [] buff2;
+    RET(size);
 #endif
-    return size;
 }
 

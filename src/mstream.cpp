@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/04/06 12:52:50  prez
+** Various code changes, but mainly added AUTOMAKE/AUTOCONF files :)
+**
 ** Revision 1.55  2000/03/24 15:35:18  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -1275,7 +1278,7 @@ wxZlibInputStream::wxZlibInputStream(wxInputStream& stream)
 
   err = inflateInit(m_inflate);
   if (err != Z_OK) {
-  // prez, can we put some sort of logging here?
+    CP(("inflateInit failed (err != Z_OK)"));
     inflateEnd(m_inflate);
     delete m_inflate;
     return;
@@ -1296,6 +1299,7 @@ wxZlibInputStream::~wxZlibInputStream()
 
 size_t wxZlibInputStream::OnSysRead(void *buffer, size_t size)
 {
+  FT("wxZlibOutputStream::OnSysRead", ("(const void *) buffer", size));
   int err;
 
   m_inflate->next_out = (unsigned char *)buffer;
@@ -1309,15 +1313,17 @@ size_t wxZlibInputStream::OnSysRead(void *buffer, size_t size)
       m_inflate->avail_in = m_parent_i_stream->LastRead();
 
       if (m_parent_i_stream->LastError() != wxStream_NOERROR)
-        return (size - m_inflate->avail_in);
+        RET(size - m_inflate->avail_in);
     }
     err = inflate(m_inflate, Z_FINISH);
     if (err == Z_STREAM_END)
-      return (size - m_inflate->avail_in);
-  // prez: we need an error trace here too. if (err!=Z_OK&&err!=Z_STREAM_END)
+    {
+      RET(size - m_inflate->avail_in);
+    }
+    CP(("inflate failed (err != Z_STREAM_END)"));
   }
 
-  return size-m_inflate->avail_in;
+  RET(size-m_inflate->avail_in);
 }
 
 //////////////////////
@@ -1337,7 +1343,7 @@ wxZlibOutputStream::wxZlibOutputStream(wxOutputStream& stream, int compression)
 
   err = deflateInit(m_deflate, compression);
   if (err != Z_OK) {
-  // prez: we need an error trace here too.
+    CP(("deflateInit failed (err != Z_OK)"));
     deflateEnd(m_deflate);
     return;
   }
@@ -1359,8 +1365,7 @@ wxZlibOutputStream::~wxZlibOutputStream()
   err = deflate(m_deflate, Z_FINISH);
   if (err != Z_STREAM_END)
   {
-	// prez: change this to *our* tracing mechanism
-    wxLogDebug( "wxZlibOutputStream: an error occured while closing the stream.\n" );
+    CP(("deflate failed (err != Z_STREAM_END)"));
     return;
   }
 
@@ -1379,7 +1384,7 @@ void wxZlibOutputStream::Sync()
 
   err = deflate(m_deflate, Z_FULL_FLUSH);
   if (err != Z_OK) {
-  // prez: we need an error trace here too. if (err!=Z_OK)
+    CP(("deflate failed (err != Z_OK)"));
     return;
   }
 
@@ -1391,7 +1396,7 @@ void wxZlibOutputStream::Sync()
      m_deflate->avail_out = m_z_size;
      err = deflate(m_deflate, Z_FULL_FLUSH);
      if (err != Z_OK) {
-  // prez: we need an error trace here too. if (err!=Z_OK)
+        CP(("deflate failed (err != Z_OK)"));
         return;
      }
   }
@@ -1404,6 +1409,7 @@ void wxZlibOutputStream::Sync()
 
 size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
 {
+  FT("wxZlibOutputStream::OnSysWrite", ("(const void *) buffer", size));
   int err;
 
   m_deflate->next_in = (unsigned char *)buffer;
@@ -1414,18 +1420,19 @@ size_t wxZlibOutputStream::OnSysWrite(const void *buffer, size_t size)
     if (m_deflate->avail_out == 0) {
       m_parent_o_stream->Write(m_z_buffer, m_z_size);
       if (m_parent_o_stream->LastError() != wxStream_NOERROR)
-        return (size - m_deflate->avail_in);
+        RET(size - m_deflate->avail_in);
 
       m_deflate->next_out = m_z_buffer;
       m_deflate->avail_out = m_z_size;
     }
 
     err = deflate(m_deflate, Z_NO_FLUSH);
-    if (err != Z_OK)
-  // prez: we need an error trace here too. if (err!=Z_OK)
-      return (size - m_deflate->avail_in);
+    if (err != Z_OK) {
+      CP(("deflate failed (err != Z_OK)"));
+      RET(size - m_deflate->avail_in);
+    }
   }
-  return size;
+  RET(size);
 }
 
 /*#ifdef __BORLANDC__

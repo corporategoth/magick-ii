@@ -2186,7 +2186,7 @@
 06B=SOP::    OPERDENY     MODE         PING         SETTINGS
 07 =ADMIN::And as a Server Admin, the following commands:
 08 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
-09 =ADMIN::    KILL
+09 =ADMIN::    KILL         HIDE
 10 =SADMIN::And as a Services Admin, the following commands:
 11 =SADMIN::    TRACE        UNLOAD       RELOAD       IDENTIFY
 12 =SADMIN::    UPDATE       SHUTDOWN     ON           OFF
@@ -2331,6 +2331,15 @@
 05 =ADMIN::and the user will not know they have been killed, it
 06 =ADMIN::will look as if the server kicked them off with the
 07 =ADMIN::reason you specify.
+
+[OPERSERV/HIDE]
+01 =ADMIN::HIDE <nickname> <new-host>
+02 =ADMIN::
+03 =ADMIN::If the IRC server supports it, this will change a
+04 =ADMIN::users host to whatever you specify.  This should be
+05 =ADMIN::used with caution, as some IRC clients compare the
+06 =ADMIN::address in a DCC request and what they are logged
+07 =ADMIN::on as before establishing a DCC.
 
 [OPERSERV/PING]
 01 =OPER SOP::PING
