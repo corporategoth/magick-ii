@@ -40,6 +40,7 @@ void mBase::push_message(const mstring& message)
 	    return;
 	}
     }
+    CH(T_Chatter::From,message);
     BaseTask.message(message);
 }
 
@@ -149,7 +150,8 @@ void mBaseTask::message_i(const mstring& message)
     mstring tmp[2];
     tmp[0]=message.ExtractWord(2,": ").UpperCase();
     tmp[1]=message.ExtractWord(3,": ").UpperCase();
-	    
+
+    CH(T_Chatter::From,message);	    
     // check if on ignore list and throw to the "ignore logging service" if log ignored user commands is on.
     // maybe we should have a hit count for logging? x ignores in x minutes = start logging that sucker. 
 
