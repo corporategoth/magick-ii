@@ -15,5 +15,5 @@ rm -f version.h~
 mv version.h version.h~
 sed	-e "s/BUILD_NUMBER.*;/BUILD_NUMBER = $build;/" \
 	-e "s/BUILD_TYPE.*;/BUILD_TYPE = \"`uname -mrsp`\";/" \
-	-e "s/BUILD_SYS.*;/BUILD_SYS = \"`hostname -f`\";/" \
+	-e "s/BUILD_SYS.*;/BUILD_SYS = \"`hostname`\";/" \
 	version.h~ >version.h
