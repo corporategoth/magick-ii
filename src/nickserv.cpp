@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.88  2000/05/14 04:02:54  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.87  2000/05/13 08:26:44  ungod
 ** no message
 **
@@ -6075,6 +6078,57 @@ void NickServ::load_database(wxInputStream& in)
 
     // Go through the map and populate 'slaves',
     // clean up if nessicary.
+    map<mstring,Nick_Stored_t>::iterator iter;
+    CP(("Linking nickname entries ..."));
+    for (iter=stored.begin(); iter!=stored.end(); iter++)
+    {
+	if (IsStored(iter->second.i_Host))
+	{
+	    COM(("Nickname %s has been linked to %s ...",
+		iter->first.c_str(), iter->second.i_Host.c_str()));
+	    stored[iter->second.i_Host.LowerCase()].i_slaves.insert(iter->first);
+	}
+	else if (iter->second.i_Host != "")
+	{
+	    wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		iter->second.i_Host.c_str(), iter->first.c_str());
+	    iter->second.i_Host = "";
+	}
+    }
+}
+
+SXP::Tag NickServ::tag_NickServ("NickServ");
+
+void NickServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    Nick_Stored_t d1;
+    if( pElement->IsA( d1.GetClassTag() ) )
+    {
+	pIn->ReadTo(&d1);
+	if (d1.Name() != "")
+	    stored[d1.Name().LowerCase()] = d1;
+    }
+}
+
+void NickServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    // load up simple elements here. (ie single pieces of data)
+}
+
+void NickServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    // not sure if this is the right place to do this
+    pOut->BeginObject(tag_NickServ, attribs);
+
+    map<mstring, Nick_Stored_t>::iterator iter;
+    for (iter = stored.begin(); iter != stored.end(); iter++)
+	pOut->WriteSubElement(&iter->second, attribs);
+
+    pOut->EndObject(tag_NickServ);
+}
+
+void NickServ::PostLoad()
+{
     map<mstring,Nick_Stored_t>::iterator iter;
     CP(("Linking nickname entries ..."));
     for (iter=stored.begin(); iter!=stored.end(); iter++)

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2000/05/14 04:02:54  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.74  2000/04/30 03:48:30  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -2833,4 +2836,101 @@ void OperServ::save_database(wxOutputStream& out)
 	    out<<*ignore_i;
 	    COM(("Entry IGNORE %s saved ...", ignore_i->Entry().c_str()));
 	}
+}
+
+SXP::Tag OperServ::tag_OperServ("OperServ");
+SXP::Tag OperServ::tag_Clone("Clone");
+SXP::Tag OperServ::tag_Akill("Akill");
+SXP::Tag OperServ::tag_OperDeny("OperDeny");
+SXP::Tag OperServ::tag_Ignore("Ignore");
+
+void OperServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    set<entlist_t>::size_type ei,ecount;
+    set<entlist_val_t<long> >::size_type vli,vlcount;
+    set<entlist_val_t<mstring> >::size_type vsi,vscount;
+    mstring dummy,dummy2;
+    entlist_t edummy;
+    entlist_val_t<long> eldummy;
+    entlist_val_t<mstring> esdummy;
+
+    //TODO: Add your source code here
+
+    if( pElement->IsA(tag_Clone) )
+    {
+	entlist_val_t<pair<unsigned int, mstring> > tmp;
+	pIn->ReadTo(&tmp);
+	i_Clone.insert(tmp);
+    }
+
+    if( pElement->IsA(tag_Akill) )
+    {
+	entlist_val_t<pair<unsigned long, mstring> > tmp;
+	pIn->ReadTo(&tmp);
+	i_Akill.insert(tmp);
+    }
+
+    if( pElement->IsA(tag_OperDeny) )
+    {
+	entlist_val_t<mstring> tmp;
+	pIn->ReadTo(&tmp);
+	i_OperDeny.insert(tmp);
+    }
+
+    if( pElement->IsA(tag_Ignore) )
+    {
+	entlist_val_t<bool> tmp;
+	pIn->ReadTo(&tmp);
+	i_Ignore.insert(tmp);
+    }
+}
+
+void OperServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator i;
+    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator j;
+    set<entlist_val_t<mstring> >::iterator k;
+    set<entlist_val_t<bool> >::iterator l;
+
+    //TODO: Add your source code here
+	pOut->BeginObject(tag_OperServ, attribs);
+
+	for(i=i_Clone.begin(); i!=i_Clone.end(); i++)
+	{
+	    pOut->BeginObject(tag_Clone, attribs);
+	    pOut->WriteSubElement((entlist_val_t<pair<unsigned int, mstring> > *) &(*i), attribs);
+	    pOut->EndObject(tag_Clone);
+	}
+
+	for(j=i_Akill.begin(); j!=i_Akill.end(); j++)
+	{
+	    pOut->BeginObject(tag_Akill, attribs);
+	    pOut->WriteSubElement((entlist_val_t<pair<unsigned long, mstring> > *) &(*j), attribs);
+	    pOut->EndObject(tag_Akill);
+	}
+
+	for(k=i_OperDeny.begin(); k!=i_OperDeny.end(); k++)
+	{
+	    pOut->BeginObject(tag_OperDeny, attribs);
+	    pOut->WriteSubElement((entlist_val_t<mstring> *) &(*k), attribs);
+	    pOut->EndObject(tag_OperDeny);
+	}
+
+	for(l=i_Ignore.begin(); l!=i_Ignore.end(); l++)
+	{
+	    // Only save PERM entries
+	    if (l->Value())
+	    {
+		pOut->BeginObject(tag_Ignore, attribs);
+		pOut->WriteSubElement((entlist_val_t<bool> *) &(*l), attribs);
+		pOut->EndObject(tag_Ignore);
+	    }
+	}
+
+	pOut->EndObject(tag_OperServ);
+}
+
+void OperServ::PostLoad()
+{
+    // Linkage, etc
 }

@@ -24,6 +24,9 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.33  2000/05/14 04:02:52  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.32  2000/04/04 03:21:34  prez
 ** Added support for SVSHOST where applicable.
 **
@@ -52,7 +55,7 @@ static const char *ident_operserv_h = "@(#) $Id$";
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
 // but then again, maybe not.
-class OperServ : public mBase
+class OperServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
     friend class Nick_Live_t;
@@ -93,6 +96,9 @@ private:
     // Returns TRUE if KILL
     bool AddHost(mstring host);
     void RemHost(mstring host);
+
+    static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny,
+	tag_Ignore;
 public:
     class stats_t
     {
@@ -248,6 +254,12 @@ public:
     static void do_ignore_Add(mstring mynick, mstring source, mstring params);
     static void do_ignore_Del(mstring mynick, mstring source, mstring params);
     static void do_ignore_List(mstring mynick, mstring source, mstring params);
+
+    SXP::Tag& GetClassTag() const { return tag_OperServ; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void PostLoad();
 };
 
 #endif

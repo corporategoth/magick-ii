@@ -24,6 +24,9 @@ static const char *ident_filesys_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/05/14 04:02:52  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.10  2000/05/03 14:12:22  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -67,7 +70,7 @@ static const char *ident_filesys_h = "@(#) $Id$";
 
 unsigned short FindAvailPort();
 
-class FileMap
+class FileMap : public SXP::IPersistObj
 {
 public:
     enum FileType { MemoAttach, Picture, Public };
@@ -87,8 +90,14 @@ public:
 
     void load_database(wxInputStream& in);
     void save_database(wxOutputStream& in);
+    virtual SXP::Tag& GetClassTag() const { return tag_FileMap; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void PostLoad();
 private:
     map<FileType, map<unsigned long, pair<mstring, mstring> > > i_FileMap;
+    static SXP::Tag tag_FileMap, tag_File;
 };
 
 class DccXfer

@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.224  2000/05/14 04:02:53  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.223  2000/05/13 15:50:07  ungod
 ** Getting Magick::BeginElement right this time.
 **
@@ -2840,21 +2843,36 @@ SXP::Tag Magick::tag_Magick("Magick");
 
 void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    /*if( pElement->IsA( operserv.GetClassTag() ) )
+    if( pElement->IsA( operserv.GetClassTag() ) )
+    {
         pIn->ReadTo(&operserv);
+        operserv.PostLoad();
+    }
     if( pElement->IsA( nickserv.GetClassTag() ) )
+    {
         pIn->ReadTo(&nickserv);
+        nickserv.PostLoad();
+    }
     if( pElement->IsA( chanserv.GetClassTag() ) )
+    {
         pIn->ReadTo(&chanserv);
+        chanserv.PostLoad();
+    }
     if( pElement->IsA( memoserv.GetClassTag() ) )
+    {
         pIn->ReadTo(&memoserv);
+        memoserv.PostLoad();
+    }
     if( pElement->IsA( commserv.GetClassTag() ) )
+    {
         pIn->ReadTo(&commserv);
-    if( pElement->IsA( servmsg.GetClassTag() ) )
-        pIn->ReadTo(&servmsg);
+        commserv.PostLoad();
+    }
     if( pElement->IsA( filesys.GetClassTag() ) )
+    {
         pIn->ReadTo(&filesys);
-    */
+        filesys.PostLoad();
+    }
 }
 
 void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
@@ -2868,16 +2886,14 @@ void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
     attribs["version"]=FileVersionNumber;
     pOut->BeginObject(tag_Magick, attribs);
 
-	SXP::dict attr;
-	//pOut->WriteSubElement(&operserv, attr);
-	//pOut->WriteSubElement(&nickserv, attr);
-	//pOut->WriteSubElement(&chanserv, attr);
-	//pOut->WriteSubElement(&memoserv, attr);
-	//pOut->WriteSubElement(&commserv, attr);
-    //pOut->WriteSubElement(&servmsg, attr);
-    //pOut->WriteSubElement(&filesys, attr);
+    pOut->WriteSubElement(&operserv, attribs);
+    pOut->WriteSubElement(&nickserv, attribs);
+    pOut->WriteSubElement(&chanserv, attribs);
+    pOut->WriteSubElement(&memoserv, attribs);
+    pOut->WriteSubElement(&commserv, attribs);
+    pOut->WriteSubElement(&filesys, attribs);
 
-	pOut->EndObject(tag_Magick);
+    pOut->EndObject(tag_Magick);
 }
 
 void Magick::SaveXML()

@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.122  2000/05/14 04:02:52  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.121  2000/05/13 15:06:42  ungod
 ** no message
 **
@@ -158,6 +161,7 @@ private:
 	mstring i_server;
 	bool i_connected;
 
+	static SXP::Tag tag_Magick;
 public:
 	LoggerTask *loggertask;
 	EventTask *events;
@@ -395,7 +399,6 @@ public:
 	    }
 	    return "";
 	}
-    static SXP::Tag tag_Magick;
     virtual SXP::Tag& GetClassTag() const { return tag_Magick; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.166  2000/05/14 04:02:52  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.165  2000/05/10 11:46:59  prez
 ** added back memo timers
 **
@@ -3673,14 +3676,40 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_Suspend_By) )		pElement->Retrieve(i_Suspend_By);
 	if( pElement->IsA(tag_Suspend_Time) )		pElement->Retrieve(i_Suspend_Time);
 
-/* Ungod; here is where i need to load a subclass
-
     if( pElement->IsA(tag_Level) )
     {
-        mstring tmp;
-        pElement->Retrieve(tmp);
-        i_level.insert(tmp);
-    } */
+	entlist_val_t<long> tmp;
+	pIn->ReadTo(&tmp);
+	i_Level.insert(tmp);
+    }
+
+    if( pElement->IsA(tag_Access) )
+    {
+	entlist_val_t<long> tmp;
+	pIn->ReadTo(&tmp);
+	i_Access.insert(tmp);
+    }
+
+    if( pElement->IsA(tag_Akick) )
+    {
+	entlist_val_t<mstring> tmp;
+	pIn->ReadTo(&tmp);
+	i_Akick.insert(tmp);
+    }
+
+    if( pElement->IsA(tag_Greet) )
+    {
+	entlist_t tmp;
+	pIn->ReadTo(&tmp);
+	i_Greet.push_back(tmp);
+    }
+
+    if( pElement->IsA(tag_Message) )
+    {
+	entlist_t tmp;
+	pIn->ReadTo(&tmp);
+	i_Message.push_back(tmp);
+    }
 
     if( pElement->IsA(tag_UserDef) )
     {
@@ -3692,9 +3721,9 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 {
-    set<entlist_val_t<long> >::const_iterator j;
-    set<entlist_val_t<mstring> >::const_iterator k;
-    entlist_ci l;
+    set<entlist_val_t<long> >::iterator j;
+    set<entlist_val_t<mstring> >::iterator k;
+    entlist_i l;
 
     //TODO: Add your source code here
 	pOut->BeginObject(tag_Chan_Stored_t, attribs);
@@ -3748,12 +3777,40 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->WriteElement(tag_Suspend_By, i_Suspend_By);
 	pOut->WriteElement(tag_Suspend_Time, i_Suspend_Time);
 
-/* Ungod; here is where i need to save a subclass
-
-	for(j=i_level.begin(); j!=i_level.end(); j++)
+	for(j=i_Level.begin(); j!=i_Level.end(); j++)
 	{
-	    pOut->WriteElement(tag_Level, *j);
-	} */
+	    pOut->BeginObject(tag_Level, attribs);
+	    pOut->WriteSubElement((entlist_val_t<long> *) &(*j), attribs);
+	    pOut->EndObject(tag_Level);
+	}
+
+	for(j=i_Access.begin(); j!=i_Access.end(); j++)
+	{
+	    pOut->BeginObject(tag_Access, attribs);
+	    pOut->WriteSubElement((entlist_val_t<long> *) &(*j), attribs);
+	    pOut->EndObject(tag_Access);
+	}
+
+	for(k=i_Akick.begin(); k!=i_Akick.end(); k++)
+	{
+	    pOut->BeginObject(tag_Akick, attribs);
+	    pOut->WriteSubElement((entlist_val_t<mstring> *) &(*k), attribs);
+	    pOut->EndObject(tag_Akick);
+	}
+
+	for(l=i_Greet.begin(); l!=i_Greet.end(); l++)
+	{
+	    pOut->BeginObject(tag_Greet, attribs);
+	    pOut->WriteSubElement(&(*l), attribs);
+	    pOut->EndObject(tag_Greet);
+	}
+
+	for(l=i_Message.begin(); l!=i_Message.end(); l++)
+	{
+	    pOut->BeginObject(tag_Message, attribs);
+	    pOut->WriteSubElement(&(*l), attribs);
+	    pOut->EndObject(tag_Message);
+	}
 
         map<mstring,mstring>::const_iterator iter;
         for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
@@ -9494,3 +9551,37 @@ void ChanServ::load_database(wxInputStream& in)
 }
 
 
+SXP::Tag ChanServ::tag_ChanServ("ChanServ");
+
+void ChanServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    Chan_Stored_t d1;
+    if( pElement->IsA( d1.GetClassTag() ) )
+    {
+	pIn->ReadTo(&d1);
+	if (d1.Name() != "")
+	    stored[d1.Name().LowerCase()] = d1;
+    }
+}
+
+void ChanServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    // load up simple elements here. (ie single pieces of data)
+}
+
+void ChanServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    // not sure if this is the right place to do this
+    pOut->BeginObject(tag_ChanServ, attribs);
+
+    map<mstring, Chan_Stored_t>::iterator iter;
+    for (iter = stored.begin(); iter != stored.end(); iter++)
+	pOut->WriteSubElement(&iter->second, attribs);
+
+    pOut->EndObject(tag_ChanServ);
+}
+
+void ChanServ::PostLoad()
+{
+    // Linkage, etc
+}

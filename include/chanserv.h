@@ -24,6 +24,9 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/05/14 04:02:52  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.36  2000/05/08 14:42:01  prez
 ** More on xmlisation of nickserv and chanserv
 **
@@ -436,7 +439,7 @@ public:
 wxOutputStream &operator<<(wxOutputStream& out,Chan_Stored_t& in);
 wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out);
 
-class ChanServ : public mBase
+class ChanServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
 private:
@@ -480,6 +483,7 @@ private:
     long level_min;		// Minimum access level
     long level_max;		// Maximum access level
     map<mstring, long> lvl;
+    static SXP::Tag tag_ChanServ;
 
     void AddCommands();
     void RemCommands();
@@ -703,6 +707,12 @@ public:
     static void do_unlock_Restricted(mstring mynick, mstring source, mstring params);
     static void do_unlock_Join(mstring mynick, mstring source, mstring params);
     static void do_unlock_Revenge(mstring mynick, mstring source, mstring params);
+
+    virtual SXP::Tag& GetClassTag() const { return tag_ChanServ; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void PostLoad();
 };
 
 #endif

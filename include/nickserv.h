@@ -24,6 +24,9 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/05/14 04:02:52  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.36  2000/05/08 14:42:01  prez
 ** More on xmlisation of nickserv and chanserv
 **
@@ -409,7 +412,7 @@ wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out);
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
 // but then again, maybe not.
-class NickServ : public mBase
+class NickServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
 private:
@@ -437,6 +440,7 @@ private:
     bool lck_language;		// Language is locked?
     unsigned long picsize;	// MAX size of a personal pic
     mstring picext;		// Valid PIC extensions
+    static SXP::Tag tag_NickServ;
 
     void AddCommands();
     void RemCommands();
@@ -583,6 +587,12 @@ public:
     static void do_unlock_Private(mstring mynick, mstring source, mstring params);
     static void do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params);
     static void do_unlock_Language(mstring mynick, mstring source, mstring params);
+
+    virtual SXP::Tag& GetClassTag() const { return tag_NickServ; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void PostLoad();
 };
 
 #endif

@@ -24,6 +24,9 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/05/14 04:02:52  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.27  2000/05/09 09:11:59  prez
 ** Added XMLisation to non-mapped structures ... still need to
 ** do the saving stuff ...
@@ -139,7 +142,7 @@ public:
 wxOutputStream &operator<<(wxOutputStream& out,Committee& in);
 wxInputStream &operator>>(wxInputStream& in, Committee& out);
 
-class CommServ : public mBase
+class CommServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
 private:
@@ -167,6 +170,7 @@ private:
     bool    oper_secure;
     bool    oper_private;
     bool    oper_openmemos;
+    static SXP::Tag tag_CommServ;
 
     void AddCommands();
     void RemCommands();
@@ -259,6 +263,12 @@ public:
     static void do_unlock_Secure(mstring mynick, mstring source, mstring params);
     static void do_unlock_Private(mstring mynick, mstring source, mstring params);
     static void do_unlock_OpenMemos(mstring mynick, mstring source, mstring params);
+
+    virtual SXP::Tag& GetClassTag() const { return tag_CommServ; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void PostLoad();
 };
 
 #endif

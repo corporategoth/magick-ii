@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2000/05/14 04:02:54  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.53  2000/05/13 07:05:46  prez
 ** Added displaying of sizes to all file fields..
 **
@@ -2021,4 +2024,61 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
             pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
         }
 	pOut->EndObject(tag_News_t);
+}
+
+SXP::Tag MemoServ::tag_MemoServ("MemoServ");
+
+void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    Memo_t d1;
+    if( pElement->IsA( d1.GetClassTag() ) )
+    {
+	pIn->ReadTo(&d1);
+	if (d1.Nick() != "")
+	    nick[d1.Nick().LowerCase()].push_back(d1);
+    }
+
+    News_t d2;
+    if( pElement->IsA( d2.GetClassTag() ) )
+    {
+	pIn->ReadTo(&d2);
+	if (d2.Channel() != "")
+	    channel[d2.Channel().LowerCase()].push_back(d2);
+    }
+}
+
+void MemoServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    // load up simple elements here. (ie single pieces of data)
+}
+
+void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    // not sure if this is the right place to do this
+    pOut->BeginObject(tag_MemoServ, attribs);
+
+    map<mstring, list<Memo_t> >::iterator i1;
+    list<Memo_t>::iterator i2;
+    map<mstring, list<News_t> >::iterator j1;
+    list<News_t>::iterator j2;
+
+    for (i1 = nick.begin(); i1 != nick.end(); i1++)
+	for (i2=i1->second.begin(); i2!=i1->second.end(); i2++)
+	{
+	    pOut->WriteSubElement(&(*i2), attribs);
+	}
+
+    for (j1 = channel.begin(); j1 != channel.end(); j1++)
+	for (j2=j1->second.begin(); j2!=j1->second.end(); j2++)
+	{
+	    pOut->WriteSubElement(&(*j2), attribs);
+	}
+
+    pOut->EndObject(tag_MemoServ);
+}
+
+
+void MemoServ::PostLoad()
+{
+    // Linkage, etc
 }

@@ -13,7 +13,7 @@ that will need to be done in order to acomodate each feature.
 x Done
 > Comment
 
-+ File hold capability on MemoServ (With definable max files/bytes).
+x File hold capability on MemoServ (With definable max files/bytes).
   eg. /MSG MemoServ FILE nick filename [description]
   and /MSG MemoServ GET 1   (just like READ, but only works for files).
   Shows up in LIST as a file attachment, and when doing a READ ALL, it
@@ -69,3 +69,4 @@ x Have load_database do only standard streaming loading of m2 dbases
     > have "loadolddbase" and "loadesperdbase" commands for services that need importing
       of old version databases.
 * Secure Servers (Server cannot connect to network unless in services list of servers)
+* Per-Channel clone limits/override lists (for kicking out)

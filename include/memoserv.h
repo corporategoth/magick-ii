@@ -24,6 +24,9 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.26  2000/05/14 04:02:52  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.25  2000/05/09 09:11:59  prez
 ** Added XMLisation to non-mapped structures ... still need to
 ** do the saving stuff ...
@@ -144,7 +147,7 @@ public:
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
 // but then again, maybe not.
-class MemoServ : public mBase
+class MemoServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
 private:
@@ -152,6 +155,7 @@ private:
     unsigned long inflight;
     unsigned int files;
     unsigned long filesize;
+    static SXP::Tag tag_MemoServ;
 
     void AddCommands();
     void RemCommands();
@@ -218,6 +222,12 @@ public:
     static void do_Del(mstring mynick, mstring source, mstring params);
     static void do_Continue(mstring mynick, mstring source, mstring params);
     static void do_File(mstring mynick, mstring source, mstring params);
+
+    virtual SXP::Tag& GetClassTag() const { return tag_MemoServ; }
+    virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement);
+    virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs);
+    void PostLoad();
 };
 
 #endif

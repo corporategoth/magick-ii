@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/05/14 04:02:53  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.15  2000/05/03 14:12:22  prez
 ** Added 'public' filesystem, ie. the ability to add
 ** arbitary files for download via. servmsg (sops may
@@ -391,6 +394,63 @@ void FileMap::load_database(wxInputStream& in)
 	}
 	COM(("Entry FILE MAP %d loaded ...", (int) val1));
     }
+}
+
+
+SXP::Tag FileMap::tag_FileMap("FileMap");
+SXP::Tag FileMap::tag_File("File");
+
+void FileMap::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    mstring in;
+    FileMap::FileType type;
+    unsigned long number;
+    mstring name;
+    mstring priv;
+    if(pElement->IsA(tag_File))
+    {
+	pElement->Retrieve(in);
+	if (in.WordCount("\n") == 4)
+	{
+	    type = (FileMap::FileType) atoi(in.ExtractWord(1, "\n").c_str());
+	    number = strtoul(in.ExtractWord(2, "\n").c_str(), NULL, 10);
+	    name = in.ExtractWord(3, "\n");
+	    priv = in.ExtractWord(4, "\n");
+	    i_FileMap[type][number] = pair<mstring,mstring>(name,priv);
+	}
+    }
+}
+
+void FileMap::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    // load up simple elements here. (ie single pieces of data)
+}
+
+void FileMap::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    // not sure if this is the right place to do this
+    pOut->BeginObject(tag_FileMap, attribs);
+
+    map<FileType, map<unsigned long, pair<mstring, mstring> > >::iterator i1;
+    map<unsigned long, pair<mstring, mstring> >::iterator i2;
+    mstring out;
+
+    for (i1=i_FileMap.begin(); i1!=i_FileMap.end(); i1++)
+	for(i2=i1->second.begin(); i2!=i1->second.end(); i2++)
+	{
+	    out = "";
+	    out << (int) i1->first << "\n" << i2->first << "\n" <<
+		i2->second.first << "\n" << i2->second.second;
+	    pOut->WriteElement(tag_File, out);
+	}
+
+    pOut->EndObject(tag_FileMap);
+}
+
+
+void FileMap::PostLoad()
+{
+    // Linkage, etc
 }
 
 DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,

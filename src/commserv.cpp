@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2000/05/14 04:02:53  prez
+** Finished off per-service XML stuff, and we should be ready to go.
+**
 ** Revision 1.52  2000/05/10 11:46:59  prez
 ** added back memo timers
 **
@@ -2388,7 +2391,20 @@ void Committee::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_set_Private) )	pElement->Retrieve(i_Private);
 	if( pElement->IsA(tag_set_Secure) )	pElement->Retrieve(i_Secure);
 
-/* Ungod: more entlist lists and sets */
+    if( pElement->IsA(tag_Members) )
+    {
+	entlist_t tmp;
+	pIn->ReadTo(&tmp);
+	i_Members.insert(tmp);
+    }
+
+    if( pElement->IsA(tag_Messages) )
+    {
+	entlist_t tmp;
+	pIn->ReadTo(&tmp);
+	i_Messages.push_back(tmp);
+    }
+
 
     if( pElement->IsA(tag_UserDef) )
     {
@@ -2414,7 +2430,21 @@ void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 	pOut->WriteElement(tag_set_Private, i_Private);
 	pOut->WriteElement(tag_set_Secure, i_Secure);
 
-/* Ungod: more entlist lists and sets */
+	entlist_ui l;
+	for(l=i_Members.begin(); l!=i_Members.end(); l++)
+	{
+	    pOut->BeginObject(tag_Members, attribs);
+	    pOut->WriteSubElement((entlist_t *) &(*l), attribs);
+	    pOut->EndObject(tag_Members);
+	}
+
+	entlist_i k;
+	for(k=i_Messages.begin(); k!=i_Messages.end(); k++)
+	{
+	    pOut->BeginObject(tag_Messages, attribs);
+	    pOut->WriteSubElement(&(*k), attribs);
+	    pOut->EndObject(tag_Messages);
+	}
 
         map<mstring,mstring>::const_iterator iter;
         for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
@@ -2423,4 +2453,40 @@ void Committee::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
         }
 
 	pOut->EndObject(tag_Committee);
+}
+
+SXP::Tag CommServ::tag_CommServ("CommServ");
+
+void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    Committee d1;
+    if( pElement->IsA( d1.GetClassTag() ) )
+    {
+	pIn->ReadTo(&d1);
+	if (d1.Name() != "")
+	    list[d1.Name().UpperCase()] = d1;
+    }
+}
+
+void CommServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
+{
+    // load up simple elements here. (ie single pieces of data)
+}
+
+void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+{
+    // not sure if this is the right place to do this
+    pOut->BeginObject(tag_CommServ, attribs);
+
+    map<mstring, Committee>::iterator iter;
+    for (iter = list.begin(); iter != list.end(); iter++)
+	pOut->WriteSubElement(&iter->second, attribs);
+
+    pOut->EndObject(tag_CommServ);
+}
+
+
+void CommServ::PostLoad()
+{
+    // Linkage, etc
 }
