@@ -25,6 +25,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2001/08/05 04:53:25  prez
+** Fixes for topic under hybrid
+**
 ** Revision 1.72  2001/08/04 18:32:01  prez
 ** Made some changes for Hybrid 6 -- we now work with it ... mostly.
 **
@@ -210,6 +213,7 @@ class Protocol
     bool i_P12;
     bool i_TSora;
     bool i_SJoin;
+    bool i_BigTopic;
 
     /* AKILL types
      *
@@ -314,6 +318,7 @@ public:
     void SJoin(const bool in)	  { i_SJoin = in; }
     bool P12() const		  { return i_P12; }
     bool TSora() const		  { return i_TSora; }
+    bool BigTopic() const	  { return i_BigTopic; }
     unsigned int Akill() const    { return i_Akill; }
     unsigned int Signon() const   { return i_Signon; }
     unsigned int Modes() const    { return i_Modes; }

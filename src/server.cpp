@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.192  2001/08/05 04:53:25  prez
+** Fixes for topic under hybrid
+**
 ** Revision 1.191  2001/08/04 18:32:02  prez
 ** Made some changes for Hybrid 6 -- we now work with it ... mostly.
 **
@@ -730,7 +733,7 @@ void Protocol::SetTokens(const unsigned int type)
 Protocol::Protocol()
     : i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false),
       i_Helpops(false), i_Tokens(false), i_P12(false), i_TSora(false),
-      i_SJoin(false), i_Akill(0), i_Signon(0), i_Modes(3),
+      i_SJoin(false), i_BigTopic(false), i_Akill(0), i_Signon(0), i_Modes(3),
       i_ChanModeArg("ovbkl"), i_Server("SERVER %s %d :%s"), i_Numeric(0)
 {
     NFT("Protocol::Protocol");
@@ -759,6 +762,7 @@ void Protocol::Set(const unsigned int in)
 	break;
 
     case 10: // DAL < 4.4.15
+	i_BigTopic = true;
 	i_NickLen = 32;
 	i_Signon = 1000;
 	i_Globops = true;
@@ -772,6 +776,7 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 1001;
 	i_Globops = true;
 	i_Helpops = true;
+	i_BigTopic = true;
 	i_Akill = 1000;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
@@ -789,6 +794,7 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 2001;
 	i_Globops = true;
 	i_Helpops = true;
+	i_BigTopic = true;
 	i_Akill = 1001;
 	i_Modes = 6;
 	i_TSora = true;
@@ -836,6 +842,7 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 1001;
 	i_Globops = true;
 	i_Helpops = true;
+	i_BigTopic = true;
 	i_Akill = 1000;
 	i_SVSNICK = "SVSNICK";
 	i_SVSMODE = "SVSMODE";
@@ -850,6 +857,7 @@ void Protocol::Set(const unsigned int in)
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Helpops = true;
+	i_BigTopic = true;
 	i_Signon = 1001;
 	i_Akill = 1000;
 	i_Modes = 6;
@@ -868,6 +876,7 @@ void Protocol::Set(const unsigned int in)
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Helpops = true;
+	i_BigTopic = true;
 	i_P12 = true;
 	i_SJoin = true;
 	i_Signon = 1003;
@@ -889,6 +898,7 @@ void Protocol::Set(const unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
+	i_BigTopic = true;
 	i_Akill = 2002;
 	i_Modes = 6;
 	i_TSora = true;
@@ -919,6 +929,7 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 1002;
 	i_Globops = true;
 	i_Helpops = true;
+	i_BigTopic = true;
 	i_Akill = 1000;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
@@ -937,6 +948,7 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 2003;
 	i_Globops = true;
 	i_Helpops = true;
+	i_BigTopic = true;
 	i_Akill = 1000;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN NICKv2 SJOIN SJOIN2 UMODE2 SJ3 NS VHP";
@@ -958,6 +970,7 @@ void Protocol::Set(const unsigned int in)
 	i_Signon = 1001;
 	i_Globops = true;
 	i_Helpops = true;
+	i_BigTopic = true;
 	i_Akill = 1000;
 	i_Modes = 6;
 	i_Protoctl = "PROTOCTL NOQUIT TOKEN SAFELIST";
@@ -2901,11 +2914,16 @@ void Server::TOPIC(const mstring& nick, const mstring& setter,
 	    send << proto.GetNonToken("TOPIC");
 	else
 	    send << "TOPIC";
-	if (topic.empty())
-	    send << " " << channel << " " << setter;
-	else
-	    send << " " << channel << " " <<
-		setter << " " << time.timetstring() << " :" << topic;
+	
+	send << " " << channel;
+	if (proto.BigTopic())
+	    send << " " << setter;
+	if (!topic.empty())
+	{
+	    if (proto.BigTopic())
+		send << " " << time.timetstring();
+	    send << " :" << topic;
+	}
 
 	Parent->chanserv.GetLive(channel).Topic(nick, topic, setter, time);
 	raw(send);
@@ -5245,23 +5263,40 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 	}
 	else if (msgtype=="TOPIC")
 	{
+	    // :user TOPIC #channel :topic
+	    // :user TOPIC #channel
+	    // -OR-
 	    // :server/user TOPIC #channel setter time :topic
 	    // :server/user TOPIC #channel setter
 	    // TIME is not standard (time is optional);
 
 	    if (Parent->chanserv.IsLive(params.ExtractWord(1, ": ")))
 	    {
-		if (!params.ExtractWord(3, ": ").empty())
+		if (params.Contains(":"))
 		{ // Setting
-		    Parent->chanserv.GetLive(params.ExtractWord(1, ": ")).Topic(
-			source, params.After(":"), params.ExtractWord(2, ": "),
-		        static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))
-		    );
+		    if (params.Before(":").WordCount(" ") < 2)
+			Parent->chanserv.GetLive(params.ExtractWord(1, ": ")).Topic(
+				source, params.After(":"), source,
+				mDateTime::CurrentDateTime());
+		    else if (params.Before(":").WordCount(" ") < 3)
+			Parent->chanserv.GetLive(params.ExtractWord(1, ": ")).Topic(
+				source, params.After(":"),
+				params.ExtractWord(2, ": "),
+				mDateTime::CurrentDateTime());
+		    else
+			Parent->chanserv.GetLive(params.ExtractWord(1, ": ")).Topic(
+				source, params.After(":"),
+				params.ExtractWord(2, ": "),
+				static_cast<time_t>(atoul(params.ExtractWord(3, ": "))));
 		}
 		else
 		{ // Clearing
-		    Parent->chanserv.GetLive(params.ExtractWord(1, ": ")).Topic(
-		        source, "", params.ExtractWord(2, ": "));
+		    if (params.WordCount(" ") < 2)
+			Parent->chanserv.GetLive(params.ExtractWord(1, ": ")).Topic(
+				source, "", source);
+		    else
+			Parent->chanserv.GetLive(params.ExtractWord(1, ": ")).Topic(
+				source, "", params.ExtractWord(2, ": "));
 		}
 	    }
 	    else

@@ -61,6 +61,15 @@ hybrid rejects it.  Also all users who dont identify will be
 killed, not renamed, and options like SETMODE (under CommServ
 in the magick.ini file) will have no effect.
 
+You will also find that ChanServ cannot set a topic in a channel
+unless it is IN the channel, and op'd.  You can force ChanServ
+to join every registered channel by setting both the configuration
+items [ChanServ/DEF_JOIN] and [ChanServ/LCK_JOIN] to true.  This
+only means the users must op ChanServ to make topic changes work.
+Because of the above point, ChanServ wont op itself.  I may make
+all modes come from services themselves when hybrid is in use at
+a later date ... but to me thats more of a hack.
+
 Not much I can do about this, hybrid was NOT designed for use
 with services, and it shows.  Hybrid, unlike alot of other IRCDs
 is a 'paranoid' IRCD.  Most IRCD's out there will basically
