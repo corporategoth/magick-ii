@@ -27,6 +27,11 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.114  2001/12/20 08:02:33  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.113  2001/12/16 01:30:46  prez
 ** More changes to fix up warnings ... added some new warning flags too!
 **
@@ -348,6 +353,9 @@ mstring ThreadID::logname() const
 void ThreadID::Flush()
 {
 #ifdef MAGICK_TRACE_WORKS
+    if (!Magick::instance_exists())
+	return;
+
     ThreadID *tid = mThread::find();
     if (tid != NULL)
 	tid->t_intrace = true;
@@ -376,8 +384,8 @@ void ThreadID::Flush()
 	tmp.Format("OUTPUT FROM THREAD ID %p", this);
 	pre_messages.push_front(tmp);
 	{ MLOCK(("TraceDump", logname()));
- 	mFile::Dump(pre_messages, Parent->Services_Dir()+DirSlash+logname(), true, true);
-	mFile::Dump(messages, Parent->Services_Dir()+DirSlash+logname(), true, true);
+ 	mFile::Dump(pre_messages, Magick::instance().Services_Dir()+DirSlash+logname(), true, true);
+	mFile::Dump(messages, Magick::instance().Services_Dir()+DirSlash+logname(), true, true);
 	}
 	messages.clear();
     }

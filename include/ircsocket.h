@@ -25,6 +25,11 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2001/12/20 08:02:31  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.60  2001/11/28 13:40:47  prez
 ** Added UMASK option to config.  Also made the 'dead thread' protection
 ** send a SIGIOT signal to try and get the thread to die gracefully, else
@@ -217,6 +222,7 @@ public:
 class EventTask : public ACE_Task<ACE_MT_SYNCH>
 {
     set<mstring> cmodes_pending;
+    Magick *magick_instance;
     mDateTime last_expire;
     mDateTime last_save;
     mDateTime last_check;

@@ -27,6 +27,11 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.47  2001/12/10 09:43:17  prez
 ** Updated to remove '-' in front of release name in version tags.
 **
@@ -322,7 +327,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 		X-N-AS ::= '\000'  | '\002' .. '\037' | '\041' .. '\377'
 	    */
 
-	    Parent->server.NOTICE(mynick, source, encode("FINGER",
+	    Magick::instance().server.NOTICE(mynick, source, encode("FINGER",
 		mstring(PACKAGE) + " Service - " + mynick));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="VERSION")
@@ -361,7 +366,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 		tmp += "+" + PATCH9;
 	    tmp << ":" << sysinfo_type();
 
-	    Parent->server.NOTICE(mynick, source, encode("VERSION", tmp));
+	    Magick::instance().server.NOTICE(mynick, source, encode("VERSION", tmp));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="SOURCE")
 	{
@@ -379,7 +384,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    */
 	    mstring tmp;
 	    tmp << PACKAGE << "-" << VERSION << RELEASE;
-	    Parent->server.NOTICE(mynick, source, encode("SOURCE",
+	    Magick::instance().server.NOTICE(mynick, source, encode("SOURCE",
 		    DOWNLOAD+":"+tmp+".tar.gz"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="USERINFO")
@@ -390,7 +395,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    where the # is the value of the string the client's user has set.
 	    */
 
-	    Parent->server.NOTICE(mynick, source, encode("USERINFO",
+	    Magick::instance().server.NOTICE(mynick, source, encode("USERINFO",
 		    FULLNAME+" - "+SLOGAN));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="CLIENTINFO")
@@ -407,7 +412,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    tag's subcommand. And so on.
 	    */
 
-	    Parent->server.NOTICE(mynick, source, encode("CLIENTINFO",
+	    Magick::instance().server.NOTICE(mynick, source, encode("CLIENTINFO",
 		    mstring("ACTION SED DCC FINGER VERSION SOURCE "
 		    "USERINFO CLIENTINFO ERRMSG PING TIME")));
 	}
@@ -431,7 +436,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    query" or "failed decrypting text".
 	    */
 
-	    Parent->server.NOTICE(mynick, source, encode(ResHigh + " :No Error"));
+	    Magick::instance().server.NOTICE(mynick, source, encode(ResHigh + " :No Error"));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="PING")
 	{
@@ -447,7 +452,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 	    current time to obtain the delay between clients over the IRC network
 	    */
 
-	    Parent->server.NOTICE(mynick, source, encode(ResHigh));
+	    Magick::instance().server.NOTICE(mynick, source, encode(ResHigh));
 	}
 	else if(ResHigh.Before(" ").UpperCase()=="TIME")
 	{
@@ -464,7 +469,7 @@ void DccEngine::decodeRequest(const mstring& mynick, const mstring& source,
 		\001TIME :Thu Aug 11 22:52:51 1994 CST\001
 	    */
 
-	    Parent->server.NOTICE(mynick, source, encode("TIME", mDateTime::CurrentDateTime().DateTimeString()));
+	    Magick::instance().server.NOTICE(mynick, source, encode("TIME", mDateTime::CurrentDateTime().DateTimeString()));
 	}
 	else
 	{
@@ -569,11 +574,11 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     // threshold (which sould be checked in the actual memoserv
     // FILE command).  If we will allow the DCC, then add it to
     // the file map (file # -> name & user)
-    if (!Parent->nickserv.IsLive(source))
+    if (!Magick::instance().nickserv.IsLive(source))
 	return;
 
-    if (!(Parent->nickserv.GetLive(source).InFlight.File() &&
-	!Parent->nickserv.GetLive(source).InFlight.InProg()))
+    if (!(Magick::instance().nickserv.GetLive(source).InFlight.File() &&
+	!Magick::instance().nickserv.GetLive(source).InFlight.InProg()))
     {
 	SEND(mynick, source, "DCC/NOREQUEST", (
 						"GET"));
@@ -581,9 +586,9 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     }
 
 
-    if (Parent->nickserv.GetLive(source).InFlight.Picture())
+    if (Magick::instance().nickserv.GetLive(source).InFlight.Picture())
     {
-	if (size && Parent->nickserv.PicSize() && size > Parent->nickserv.PicSize())
+	if (size && Magick::instance().nickserv.PicSize() && size > Magick::instance().nickserv.PicSize())
 	{
 	    SEND(mynick, source, "DCC/TOOBIG", ( "GET"));
 	    return;
@@ -591,10 +596,10 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	
 	mstring extension = filename.ExtractWord(filename.WordCount("."), ".").LowerCase();
 	if (!(filename.Contains(".") &&
-	    (" " + Parent->nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
+	    (" " + Magick::instance().nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
 	{
 	    NSEND(mynick, source, "NS_YOU_STATUS/INVALIDEXT");
-	    Parent->nickserv.GetLive(source).InFlight.Cancel();
+	    Magick::instance().nickserv.GetLive(source).InFlight.Cancel();
 	    return;
 	}
 	else
@@ -603,9 +608,9 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	}
     }
 
-    if (Parent->nickserv.GetLive(source).InFlight.Memo())
+    if (Magick::instance().nickserv.GetLive(source).InFlight.Memo())
     {
-	if (size && Parent->memoserv.FileSize() && size > Parent->memoserv.FileSize())
+	if (size && Magick::instance().memoserv.FileSize() && size > Magick::instance().memoserv.FileSize())
 	{
 	    SEND(mynick, source, "DCC/TOOBIG", ( "GET"));
 	    return;
@@ -615,7 +620,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     // Spawn this in a new thread, and we're done, it takes over.
 
     { RLOCK(("DCC"));
-    if (Parent->dcc != NULL)
-	Parent->dcc->Connect(addr, mynick, source, filename, size);
+    if (Magick::instance().dcc != NULL)
+	Magick::instance().dcc->Connect(addr, mynick, source, filename, size);
     }
 }

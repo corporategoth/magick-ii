@@ -27,6 +27,11 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.187  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.186  2001/12/16 01:30:45  prez
 ** More changes to fix up warnings ... added some new warning flags too!
 **
@@ -442,25 +447,25 @@ const char *Heartbeat_Handler::names[] = { "invalid", "worker", "main",
 
 void *IrcSvcHandler::worker(void *in)
 {
-    static_cast<void>(in);
     mThread::Attach(tt_mBase);
+    Magick::register_instance((Magick *)in);
     FT("IrcSvcHandler::worker", (in));
     mMessage *msg = NULL;
     bool active = true;
 
-    Parent->hh.AddThread(Heartbeat_Handler::H_Worker);    
+    Magick::instance().hh.AddThread(Heartbeat_Handler::H_Worker);    
     try {
-	while(!Parent->Shutdown() && active)
+	while(!Magick::instance().Shutdown() && active)
 	{
-	    Parent->hh.Heartbeat();
+	    Magick::instance().hh.Heartbeat();
 
 	    { RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler != NULL)
+	    if (Magick::instance().ircsvchandler != NULL)
 	    {
 		MLOCK(("MessageQueue"));
-	    	msg = dynamic_cast<mMessage *>(Parent->ircsvchandler->message_queue.dequeue());
+	    	msg = dynamic_cast<mMessage *>(Magick::instance().ircsvchandler->message_queue.dequeue());
 	    }}
-	    while (Parent->Pause())
+	    while (Magick::instance().Pause())
 		ACE_OS::sleep(1);
 	    if (msg != NULL)
 	    {
@@ -472,20 +477,20 @@ void *IrcSvcHandler::worker(void *in)
 
 	    size_t msgcnt = 0, thrcnt = 0;
 	    { RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler != NULL)
+	    if (Magick::instance().ircsvchandler != NULL)
 	    {
-		msgcnt = Parent->ircsvchandler->message_queue.method_count();
-		thrcnt = Parent->ircsvchandler->tm.count_threads();
+		msgcnt = Magick::instance().ircsvchandler->message_queue.method_count();
+		thrcnt = Magick::instance().ircsvchandler->tm.count_threads();
 	    }}
 
 	    CP(("thread count = %d, message queue = %d, lwm = %d, hwm = %d",
 		thrcnt, msgcnt,
-		Parent->config.Low_Water_Mark() + (Parent->config.High_Water_Mark() * (thrcnt-2)),
-		thrcnt * Parent->config.High_Water_Mark()));
+		Magick::instance().config.Low_Water_Mark() + (Magick::instance().config.High_Water_Mark() * (thrcnt-2)),
+		thrcnt * Magick::instance().config.High_Water_Mark()));
 
-	    if(thrcnt > Parent->config.Min_Threads() &&
-		msgcnt < Parent->config.Low_Water_Mark() +
-		(Parent->config.High_Water_Mark() * (thrcnt-2)))
+	    if(thrcnt > Magick::instance().config.Min_Threads() &&
+		msgcnt < Magick::instance().config.Low_Water_Mark() +
+		(Magick::instance().config.High_Water_Mark() * (thrcnt-2)))
 	    {
 		COM(("Low water mark reached, killing thread."));
 		NLOG(LM_NOTICE, "EVENT/KILL_THREAD");
@@ -500,7 +505,8 @@ void *IrcSvcHandler::worker(void *in)
 	e.what();
     }
 
-    Parent->hh.RemoveThread();
+    Magick::instance().hh.RemoveThread();
+    Magick::deregister_instance();
     DRET(static_cast<void *>(NULL));
 }
 
@@ -511,22 +517,23 @@ int IrcSvcHandler::open(void *in)
     //mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::open", (in));
     this->reactor()->register_handler(this, ACE_Event_Handler::READ_MASK);
-    Parent->hh.AddThread(Heartbeat_Handler::H_IrcServer);
+    Magick::instance().hh.AddThread(Heartbeat_Handler::H_IrcServer);
 
-    sock.Bind(&Parent->ircsvchandler->peer(), D_From, false);
-    sock.Resolve(S_IrcServer, Parent->CurrentServer());
+    sock.Bind(&Magick::instance().ircsvchandler->peer(), D_From, false);
+    sock.Resolve(S_IrcServer, Magick::instance().CurrentServer());
 
     in_traffic = out_traffic = 0;
     connect_time = mDateTime::CurrentDateTime();
     htm_level = 0;
-    htm_gap = Parent->operserv.Init_HTM_Gap();
-    htm_threshold = Parent->operserv.Init_HTM_Thresh();
+    htm_gap = Magick::instance().operserv.Init_HTM_Gap();
+    htm_threshold = Magick::instance().operserv.Init_HTM_Thresh();
     last_htm_check = mDateTime::CurrentDateTime();
     i_burst = true;
     i_synctime = mDateTime(0.0);
 
     // Only activate the threads when we're ready.
-    tm.spawn_n(Parent->config.Min_Threads(), IrcSvcHandler::worker);
+    tm.spawn_n(Magick::instance().config.Min_Threads(), IrcSvcHandler::worker,
+				(void *) &Magick::instance());
 
     DumpB();
     CP(("IrcSvcHandler activated"));
@@ -539,7 +546,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 
     mThread::Attach(tt_MAIN);
     FT("IrcSvcHandler::handle_input", ("(ACE_HANDLE) hin"));
-    Parent->hh.Heartbeat();
+    Magick::instance().hh.Heartbeat();
 
     //todo this is the sucker that get's data from the socket, so this is our main routine.
     // might set this up to be an active object here.
@@ -547,7 +554,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     int recvResult;
     memset(data,0,513);
     recvResult=sock.recv(data,512);
-    if(recvResult<=0 || Parent->Shutdown())
+    if(recvResult<=0 || Magick::instance().Shutdown())
 	return -1;
 
     // possibly mstring(data,0,recvResult); rather than mstring(data)
@@ -560,7 +567,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     
     { WLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
-		iter->first < now - static_cast<time_t>(Parent->operserv.Max_HTM_Gap()+2); iter = traffic.begin())
+		iter->first < now - static_cast<time_t>(Magick::instance().operserv.Max_HTM_Gap()+2); iter = traffic.begin())
 	traffic.erase(iter->first);
     if (traffic.find(now) == traffic.end())
 	traffic[now] = 0;
@@ -585,9 +592,9 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	RLOCK(("IrcSvcHandler", "htm_threshold"));
 	if (total > (htm_gap * htm_threshold))
 	{
-	    if (htm_gap > static_cast<time_t>(Parent->operserv.Max_HTM_Gap()))
+	    if (htm_gap > static_cast<time_t>(Magick::instance().operserv.Max_HTM_Gap()))
 	    {
-		NANNOUNCE(Parent->operserv.FirstName(),
+		NANNOUNCE(Magick::instance().operserv.FirstName(),
 			"MISC/HTM_DIE");
 		CP(("HTM gap limit reached"));
 		return -1;
@@ -595,19 +602,19 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	    else
 	    {
 		if (!htm_level)
-		    ANNOUNCE(Parent->operserv.FirstName(),
+		    ANNOUNCE(Magick::instance().operserv.FirstName(),
 			"MISC/HTM_ON", (
 			fmstring("%.1f", static_cast<float>(total) /
 				static_cast<float>(htm_gap) / 1024.0),
 			fmstring("%.1f", static_cast<float>(htm_threshold) / 1024.0)));
 		else if (htm_level < 3)
-		    ANNOUNCE(Parent->operserv.FirstName(),
+		    ANNOUNCE(Magick::instance().operserv.FirstName(),
 			"MISC/HTM_STILL", (
 			htm_level + 1, htm_gap,
 			fmstring("%.1f", static_cast<float>(total) /
 				static_cast<float>(htm_gap) / 1024.0)));
 		else
-		    ANNOUNCE(Parent->operserv.FirstName(),
+		    ANNOUNCE(Magick::instance().operserv.FirstName(),
 			"MISC/HTM_TURBO", (
 			htm_level + 1, htm_gap,
 			fmstring("%.1f", static_cast<float>(total) /
@@ -622,10 +629,10 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 	}
 	else if (htm_level)
 	{
-	    NANNOUNCE(Parent->operserv.FirstName(),
+	    NANNOUNCE(Magick::instance().operserv.FirstName(),
 		"MISC/HTM_OFF");
 	    htm_level = 0;
-	    htm_gap = Parent->operserv.Init_HTM_Gap();
+	    htm_gap = Magick::instance().operserv.Init_HTM_Gap();
 	    NLOG(LM_NOTICE, "OPERSERV/HTM_OFF");
 	}
     }}
@@ -678,7 +685,7 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
     FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
     CP(("IrcSvcHandler closed"));
 
-    LOG(LM_ERROR, "OTHER/CLOSED", (Parent->CurrentServer()));
+    LOG(LM_ERROR, "OTHER/CLOSED", (Magick::instance().CurrentServer()));
 
     unsigned int i;
     // We DONT want any processing once we're gone ...
@@ -708,73 +715,73 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 
     // Should I do this with SQUIT protection ...?
     { WLOCK(("NickServ", "recovered"));
-    Parent->nickserv.recovered.clear();
+    Magick::instance().nickserv.recovered.clear();
     }
 
     // Essentially here, we enact SQUIT protection ...
     { WLOCK(("Server", "ToBeSquit"));
     WLOCK2(("Server", "ServerSquit"));
-    Parent->server.DumpB();
-    CB(0, Parent->server.ToBeSquit.size());
-    CB(1, Parent->server.ServerSquit.size());
+    Magick::instance().server.DumpB();
+    CB(0, Magick::instance().server.ToBeSquit.size());
+    CB(1, Magick::instance().server.ServerSquit.size());
     Server::list_t::iterator si;
     { RLOCK(("Server", "list"));
-    for (si=Parent->server.ListBegin(); si!=Parent->server.ListEnd(); si++)
+    for (si=Magick::instance().server.ListBegin(); si!=Magick::instance().server.ListEnd(); si++)
     {
 	RLOCK2(("Server", "list", si->first));
-	if (Parent->server.ToBeSquit.find(si->first) != Parent->server.ToBeSquit.end())
-	    Parent->server.ToBeSquit.erase(si->first);
-	if (Parent->server.ServerSquit.find(si->first) != Parent->server.ServerSquit.end())
+	if (Magick::instance().server.ToBeSquit.find(si->first) != Magick::instance().server.ToBeSquit.end())
+	    Magick::instance().server.ToBeSquit.erase(si->first);
+	if (Magick::instance().server.ServerSquit.find(si->first) != Magick::instance().server.ServerSquit.end())
 	{
 	    mstring *arg = NULL;
 	    if (ACE_Reactor::instance()->cancel_timer(
-		Parent->server.ServerSquit[si->first], reinterpret_cast<const void **>(arg))
+		Magick::instance().server.ServerSquit[si->first], reinterpret_cast<const void **>(arg))
 		&& arg != NULL)
 		delete arg;
 	}
-	if (!Parent->Shutdown())
+	if (!Magick::instance().Shutdown())
 	{
-	    while (Parent->Pause())
+	    while (Magick::instance().Pause())
 		ACE_OS::sleep(1);
 
 	    CP(("Scheduling SQUIT protect timer..."));
-	    Parent->server.ServerSquit[si->first] =
-		ACE_Reactor::instance()->schedule_timer(&Parent->server.squit,
+	    Magick::instance().server.ServerSquit[si->first] =
+		ACE_Reactor::instance()->schedule_timer(&Magick::instance().server.squit,
 		new mstring(si->first),
-		ACE_Time_Value(Parent->config.Squit_Protect()));
+		ACE_Time_Value(Magick::instance().config.Squit_Protect()));
 	}
     }}
-    CE(1, Parent->server.ServerSquit.size());
-    CE(0, Parent->server.ToBeSquit.size());
-    Parent->server.DumpE();
+    CE(1, Magick::instance().server.ServerSquit.size());
+    CE(0, Magick::instance().server.ToBeSquit.size());
+    Magick::instance().server.DumpE();
     }
   
-    if (!Parent->Shutdown())
+    if (!Magick::instance().Shutdown())
     {
 	RLOCK(("NickServ", "live"));
 	NickServ::live_t::iterator iter;
 	vector<mstring> chunked;
-	for (iter=Parent->nickserv.LiveBegin(); iter != Parent->nickserv.LiveEnd(); iter++)
+	for (iter=Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 	{
 	    RLOCK2(("NickServ", "live", iter->first));
 	    if (iter->second.IsServices())
 	    {
 		chunked.push_back(iter->first);
 	    }
-	    else if (Parent->server.IsList(iter->second.Server()))
+	    else if (Magick::instance().server.IsList(iter->second.Server()))
 	    {
 		iter->second.SetSquit();
 	    }
 	}
 	// Sign off services if we have NO uplink
 	for (i=0; i<chunked.size(); i++)
-	    Parent->server.QUIT(chunked[i], "SQUIT - " + Parent->startup.Server_Name());
+	    Magick::instance().server.QUIT(chunked[i], "SQUIT - " + Magick::instance().startup.Server_Name());
     }
 
     { WLOCK(("Server", "list"));
-    Parent->server.i_list.clear();
+    Magick::instance().server.i_list.clear();
     }
-    Parent->server.OurUplink("");
+    Magick::instance().server.OurUplink("");
 
     // Let other threads process shutdown instruction
     // Otherwise cancel them.
@@ -798,21 +805,21 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
     // This sets fini() == 1
     if (sock.IsConnected())
 	sock.close();
-    Parent->Connected(false);
+    Magick::instance().Connected(false);
 
-    if (!Parent->Shutdown() && Parent->Reconnect() &&
-	Parent->config.Server_Relink() >= 1)
+    if (!Magick::instance().Shutdown() && Magick::instance().Reconnect() &&
+	Magick::instance().config.Server_Relink() >= 1)
     {
 	CP(("Scheduling reconnect"));
-	while (Parent->Pause())
+	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
 
-	ACE_Reactor::instance()->schedule_timer(&(Parent->rh), NULL, 
-		ACE_Time_Value(Parent->config.Server_Relink()));
+	ACE_Reactor::instance()->schedule_timer(&(Magick::instance().rh), NULL, 
+		ACE_Time_Value(Magick::instance().config.Server_Relink()));
     }
 
-    if (Parent->hh.ThreadType() == Heartbeat_Handler::H_IrcServer)
-	Parent->hh.RemoveThread();
+    if (Magick::instance().hh.ThreadType() == Heartbeat_Handler::H_IrcServer)
+	Magick::instance().hh.RemoveThread();
     this->reactor()->remove_handler(this, ACE_Event_Handler::READ_MASK);
 //  this->destroy();
     DRET(0);
@@ -867,12 +874,12 @@ void IrcSvcHandler::HTM(const bool in)
     if (in)
     {
 	htm_level = 4;
-	htm_gap = Parent->operserv.HTM_On_Gap();
+	htm_gap = Magick::instance().operserv.HTM_On_Gap();
     }
     else
     {
 	htm_level = 0;
-	htm_gap = Parent->operserv.Init_HTM_Gap();
+	htm_gap = Magick::instance().operserv.Init_HTM_Gap();
     }
     CE(1, htm_level);
     CE(2, htm_gap);
@@ -886,7 +893,7 @@ size_t IrcSvcHandler::Average(time_t secs) const
     size_t total = 0;
     int i = 0;
     map<time_t, size_t>::const_iterator iter;
-    if (secs > static_cast<time_t>(Parent->operserv.Max_HTM_Gap()))
+    if (secs > static_cast<time_t>(Magick::instance().operserv.Max_HTM_Gap()))
 	secs = 0;
     RLOCK(("IrcSvcHandler", "traffic"));
     for (iter=traffic.begin(); iter != traffic.end() &&
@@ -950,9 +957,9 @@ void IrcSvcHandler::enqueue(mMessage *mm)
 	return;
 
     // Make sure we have at LEAST our minimum ...
-    while (static_cast<unsigned int>(tm.count_threads()) < Parent->config.Min_Threads())
+    while (static_cast<unsigned int>(tm.count_threads()) < Magick::instance().config.Min_Threads())
     {
-	if (tm.spawn(IrcSvcHandler::worker) != -1)
+	if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance()) != -1)
 	{
 	    NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 	}
@@ -961,16 +968,16 @@ void IrcSvcHandler::enqueue(mMessage *mm)
     }
 
     // Only spawn if we are less than our maximum ... and need it :)
-    if (message_queue.method_count() > static_cast<int>(tm.count_threads() * Parent->config.High_Water_Mark()))
+    if (message_queue.method_count() > static_cast<int>(tm.count_threads() * Magick::instance().config.High_Water_Mark()))
     {
 	CP(("Queue is full - Starting new thread and increasing watermarks ..."));
-	if (static_cast<unsigned int>(tm.count_threads()) >= Parent->config.Max_Threads())
+	if (static_cast<unsigned int>(tm.count_threads()) >= Magick::instance().config.Max_Threads())
 	{
 	    NLOG(LM_WARNING, "EVENT/MAX_THREADS");
 	}
 	else
 	{
-	    if (tm.spawn(IrcSvcHandler::worker) != -1)
+	    if (tm.spawn(IrcSvcHandler::worker, (void *) &Magick::instance()) != -1)
 	    {
 		NLOG(LM_NOTICE, "EVENT/NEW_THREAD");
 	    }
@@ -1025,9 +1032,9 @@ void IrcSvcHandler::enqueue(const mstring &message, const u_long pri)
 		{
 		case E_NickServ_Live::T_Invalid:
 		case E_NickServ_Live::T_Blank:
-		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
 		    {
-			Parent->nickserv.RemLive(e.what());
+			Magick::instance().nickserv.RemLive(e.what());
 		    }
 		    break;
 		default:
@@ -1047,9 +1054,9 @@ void IrcSvcHandler::enqueue(const mstring &message, const u_long pri)
 		{
 		case E_ChanServ_Live::T_Invalid:
 		case E_ChanServ_Live::T_Blank:
-		    if (strlen(e.what()) && Parent->chanserv.IsLive(e.what()))
+		    if (strlen(e.what()) && Magick::instance().chanserv.IsLive(e.what()))
 		    {
-			Parent->chanserv.RemLive(e.what());
+			Magick::instance().chanserv.RemLive(e.what());
 		    }
 		    break;
 		default:
@@ -1069,9 +1076,9 @@ void IrcSvcHandler::enqueue(const mstring &message, const u_long pri)
 		{
 		case E_Server_List::T_Invalid:
 		case E_Server_List::T_Blank:
-		    if (strlen(e.what()) && Parent->server.IsList(e.what()))
+		    if (strlen(e.what()) && Magick::instance().server.IsList(e.what()))
 		    {
-			Parent->server.RemList(e.what());
+			Magick::instance().server.RemList(e.what());
 		    }
 		    break;
 		default:
@@ -1135,7 +1142,7 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     mThread::Attach(tt_MAIN);
     FT("Heartbeat_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
 
-    if (Parent->Shutdown())
+    if (Magick::instance().Shutdown())
 	DRET(0);
 
     vector<ACE_thread_t> dead;
@@ -1149,14 +1156,14 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     {
 	COM(("Checking %s thread (last checkin %s)", names[iter->second.first],
 				iter->second.second.DateTimeString().c_str()));
-	if (iter->second.second.SecondsSince() > Parent->config.Heartbeat_Time())
+	if (iter->second.second.SecondsSince() > Magick::instance().config.Heartbeat_Time())
 	{
 	    dead.push_back(iter->first);
 	}
     }
     if (dead.size() > (threads.size() / 2))
     {
-	NANNOUNCE(Parent->operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
+	NANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/THREAD_DEAD_HALF");
 	NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_HALF");
     }
     else if (dead.size())
@@ -1174,8 +1181,8 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		case H_Worker:
 		    { RLOCK2(("IrcSvcHandler"));
 		    ACE_Thread_Manager *thr_mgr;
-		    if (Parent->ircsvchandler != NULL)
-			thr_mgr = &Parent->ircsvchandler->tm;
+		    if (Magick::instance().ircsvchandler != NULL)
+			thr_mgr = &Magick::instance().ircsvchandler->tm;
 		    else
 			thr_mgr = ACE_Thread_Manager::instance();
 #if defined(SIGIOT) && (SIGIOT != 0)
@@ -1191,82 +1198,82 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		    }}
 		    break;
 		case H_Main:
-		    NANNOUNCE(Parent->operserv.FirstName(),
+		    NANNOUNCE(Magick::instance().operserv.FirstName(),
 					"MISC/THREAD_DEAD_MAIN");
 		    NLOG(LM_EMERGENCY, "SYS_ERRORS/THREAD_DEAD_MAIN");
 		    break;
 		case H_IrcServer:
 		    { RLOCK2(("IrcSvcHandler"));
-		    if (Parent->ircsvchandler != NULL)
+		    if (Magick::instance().ircsvchandler != NULL)
 		    {
-			ACE_Thread_Manager *thr_mgr = Parent->ircsvchandler->thr_mgr();
+			ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 			if (thr_mgr == NULL)
 			    thr_mgr = ACE_Thread_Manager::instance();
 #if defined(SIGIOT) && (SIGIOT != 0)
 			if (iter->second.third)
 			{
-			    thr_mgr->kill_task(Parent->ircsvchandler, SIGIOT);
+			    thr_mgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
 			    iter->second.third = false;
 			}
 			else
 #endif
 			{
-			    Parent->dh_timer = -1;
-			    Parent->Disconnect();
+			    Magick::instance().dh_timer = -1;
+			    Magick::instance().Disconnect();
 			}
 		    }}
 		    break;
 		case H_Events:
 		    { WLOCK2(("Events"));
-		    if (Parent->events != NULL)
+		    if (Magick::instance().events != NULL)
 		    {
-			ACE_Thread_Manager *thr_mgr = Parent->events->thr_mgr();
+			ACE_Thread_Manager *thr_mgr = Magick::instance().events->thr_mgr();
 			if (thr_mgr == NULL)
 			    thr_mgr = ACE_Thread_Manager::instance();
 #if defined(SIGIOT) && (SIGIOT != 0)
 			if (iter->second.third)
 			{
-			    thr_mgr->kill_task(Parent->events, SIGIOT);
+			    thr_mgr->kill_task(Magick::instance().events, SIGIOT);
 			    iter->second.third = false;
 			}
 			else
 #endif
 			{
-			    thr_mgr->cancel_task(Parent->events);
+			    thr_mgr->cancel_task(Magick::instance().events);
 			    { WLOCK(("Heartbeat_Handler", "threads"));
 			    threads.erase(iter);
 			    }
-			    if (!Parent->events->fini())
-				Parent->events->close(0);
-			    delete Parent->events;
-			    Parent->events = NULL;
+			    if (!Magick::instance().events->fini())
+				Magick::instance().events->close(0);
+			    delete Magick::instance().events;
+			    Magick::instance().events = NULL;
 			}
 		    }}
 		    break;
 		case H_DCC:
 		    { WLOCK2(("DCC"));
-		    if (Parent->dcc != NULL)
+		    if (Magick::instance().dcc != NULL)
 		    {
-			ACE_Thread_Manager *thr_mgr = Parent->dcc->thr_mgr();
+			ACE_Thread_Manager *thr_mgr = Magick::instance().dcc->thr_mgr();
 			if (thr_mgr == NULL)
 			    thr_mgr = ACE_Thread_Manager::instance();
 #if defined(SIGIOT) && (SIGIOT != 0)
 			if (iter->second.third)
 			{
-			    thr_mgr->kill_task(Parent->dcc, SIGIOT);
+			    thr_mgr->kill_task(Magick::instance().dcc, SIGIOT);
 			    iter->second.third = false;
 			}
 			else
 #endif
 			{
-			    thr_mgr->cancel_task(Parent->dcc);
+			    thr_mgr->cancel_task(Magick::instance().dcc);
 			    { WLOCK(("Heartbeat_Handler", "threads"));
 			    threads.erase(iter);
 			    }
-			    if (!Parent->dcc->fini())
-				Parent->dcc->close(0);
-			    delete Parent->dcc;
-			    Parent->dcc = NULL;
+			    if (!Magick::instance().dcc->fini())
+				Magick::instance().dcc->close(0);
+			    delete Magick::instance().dcc;
+			    Magick::instance().dcc = NULL;
 			}
 		    }}
 		    break;
@@ -1279,33 +1286,33 @@ int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     // Ensure we always have events and DCC tasks.
     { RLOCK(("Events"));
-    if (Parent->events == NULL)
+    if (Magick::instance().events == NULL)
     {
 	WLOCK(("Events"));
-	Parent->events = new EventTask;
-	Parent->events->open();
+	Magick::instance().events = new EventTask;
+	Magick::instance().events->open();
     }}
 
     { RLOCK(("DCC"));
-    if (Parent->dcc == NULL)
+    if (Magick::instance().dcc == NULL)
     {
 	WLOCK(("DCC"));
-	Parent->dcc = new DccMap;
-	Parent->dcc->open();
+	Magick::instance().dcc = new DccMap;
+	Magick::instance().dcc->open();
     }}
 
     // Force workers to checkin ...
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL)
+    if (Magick::instance().ircsvchandler != NULL)
 	for (i=0; i<threads.size(); i++)
-	    Parent->ircsvchandler->enqueue_test();
+	    Magick::instance().ircsvchandler->enqueue_test();
     }
 
-    while (Parent->Pause())
+    while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
 
     ACE_Reactor::instance()->schedule_timer(this, 0,
-		ACE_Time_Value(Parent->config.Heartbeat_Time()));
+		ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
     DRET(0);
 }
 
@@ -1384,8 +1391,8 @@ mstring Reconnect_Handler::FindNext(const mstring& i_server) {
     //     ELSE return next server of this priority
     // ELSE return NULL
 
-    if (Parent->startup.IsServer(server)) {
-	vector<mstring> serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).first);
+    if (Magick::instance().startup.IsServer(server)) {
+	vector<mstring> serverlist = Magick::instance().startup.PriorityList(Magick::instance().startup.Server(server).first);
 	vector<mstring>::iterator iter;
 	for (iter=serverlist.begin(); iter!=serverlist.end(); iter++)
 	    if (*iter == server)
@@ -1395,7 +1402,7 @@ mstring Reconnect_Handler::FindNext(const mstring& i_server) {
 
 	if (iter == serverlist.end())
 	{
-	    serverlist = Parent->startup.PriorityList(Parent->startup.Server(server).first+1);
+	    serverlist = Magick::instance().startup.PriorityList(Magick::instance().startup.Server(server).first+1);
 
 	    if (serverlist.size())
 	    {
@@ -1418,25 +1425,25 @@ int Disconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *ar
     mThread::Attach(tt_MAIN);
     FT("Disconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
 
-    Parent->dh_timer = 0;
+    Magick::instance().dh_timer = 0;
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL)
+    if (Magick::instance().ircsvchandler != NULL)
     {
-	if (Parent->hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
+	if (Magick::instance().hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
 	{
-	    ACE_Thread_Manager *thr_mgr = Parent->ircsvchandler->thr_mgr();
+	    ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 	    if (thr_mgr == NULL)
 		thr_mgr = ACE_Thread_Manager::instance();
 	    ACE_thread_t id;
-	    thr_mgr->thread_list(Parent->ircsvchandler, &id, 1);
-	    thr_mgr->cancel_task(Parent->ircsvchandler);
-	    Parent->hh.RemoveThread(id);
+	    thr_mgr->thread_list(Magick::instance().ircsvchandler, &id, 1);
+	    thr_mgr->cancel_task(Magick::instance().ircsvchandler);
+	    Magick::instance().hh.RemoveThread(id);
 	}
-	if (!Parent->ircsvchandler->fini())
-	    Parent->ircsvchandler->close(0);
+	if (!Magick::instance().ircsvchandler->fini())
+	    Magick::instance().ircsvchandler->close(0);
 	WLOCK(("IrcSvcHandler"));
-	delete Parent->ircsvchandler;
-	Parent->ircsvchandler = NULL;
+	delete Magick::instance().ircsvchandler;
+	Magick::instance().ircsvchandler = NULL;
     }}
 
     DRET(0);
@@ -1450,34 +1457,34 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     mThread::Attach(tt_MAIN);
     FT("Reconnect_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
 
-    if(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
-	    Parent->Shutdown())
+    if(Magick::instance().config.Server_Relink()<1 || !Magick::instance().Reconnect() ||
+	    Magick::instance().Shutdown())
 	DRET(0);
 
     mstring server;
-    if (Parent->startup.Server_size())
+    if (Magick::instance().startup.Server_size())
     {
-	if (Parent->GotConnect())
+	if (Magick::instance().GotConnect())
 	{
-	    server = Parent->startup.PriorityList(1)[0];
-	    while (!server.empty() && !Parent->startup.IsAllowed(server, Parent->startup.Server_Name()))
+	    server = Magick::instance().startup.PriorityList(1)[0];
+	    while (!server.empty() && !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
 	    {
 		server = FindNext(server);
 	    }
 	} else {
-	    server = Parent->CurrentServer();
+	    server = Magick::instance().CurrentServer();
 	    if (!server.empty())
 	    {
 		server = FindNext(server);
-		while (!server.empty() && !Parent->startup.IsAllowed(server, Parent->startup.Server_Name()))
+		while (!server.empty() && !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
 		{
 		    server = FindNext(server);
 		}
 	    }
 	    if (server.empty())
 	    {
-		server = Parent->startup.PriorityList(1)[0];
-		while (!server.empty() && !Parent->startup.IsAllowed(server, Parent->startup.Server_Name()))
+		server = Magick::instance().startup.PriorityList(1)[0];
+		while (!server.empty() && !Magick::instance().startup.IsAllowed(server, Magick::instance().startup.Server_Name()))
 		{
 		    server = FindNext(server);
 		}
@@ -1489,18 +1496,18 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	NLOG(LM_EMERGENCY, "OTHER/NOVALIDSERVERS");
     }
 
-    pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > details = Parent->startup.Server(server);
+    pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > details = Magick::instance().startup.Server(server);
 
     ACE_INET_Addr addr(details.second.first, server);
 
-    Parent->DumpB();
-    CB(1, Parent->i_currentserver);
-    Parent->GotConnect(false);
-    Parent->i_currentserver = server;
-    Parent->server.proto.Tokens(false);
+    Magick::instance().DumpB();
+    CB(1, Magick::instance().i_currentserver);
+    Magick::instance().GotConnect(false);
+    Magick::instance().i_currentserver = server;
+    Magick::instance().server.proto.Tokens(false);
 
-    if (Parent->Connected())
-	Parent->Disconnect();
+    if (Magick::instance().Connected())
+	Magick::instance().Disconnect();
 
     LOG(LM_INFO, "OTHER/CONNECTING", (server, details.second.first));
 
@@ -1509,7 +1516,7 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     unsigned int i;
     for (i=1; i<5; i++)
     {
-        mstring octet = Parent->startup.Bind().ExtractWord(i, ".", false);
+        mstring octet = Magick::instance().startup.Bind().ExtractWord(i, ".", false);
 	if (!octet.IsNumber() || atoi(octet.c_str()) < 0 ||
 		atoi(octet.c_str()) > 255)
 	    break;
@@ -1518,13 +1525,13 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     ACE_INET_Addr laddr;
     unsigned short port = mSocket::FindAvailPort();
     if (i==5)
-	laddr.set(port, Parent->startup.Bind().c_str());
+	laddr.set(port, Magick::instance().startup.Bind().c_str());
     else
 	laddr.set(port);
 
     int res = 0;
     { WLOCK(("IrcSvcHandler"));
-    res = C_server.connect(Parent->ircsvchandler, addr,
+    res = C_server.connect(Magick::instance().ircsvchandler, addr,
     		ACE_Synch_Options::defaults, laddr);
     }
     if (res == -1)
@@ -1533,42 +1540,42 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	//okay we got a connection problem here. log it and try again
 	CP(("Refused connection, rescheduling and trying again ..."));
 
-	while (Parent->Pause())
+	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
-	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
+	ACE_Reactor::instance()->schedule_timer(&(Magick::instance().rh),0,ACE_Time_Value(Magick::instance().config.Server_Relink()));
     }
     else
     {
 	{ RLOCK(("IrcSvcHandler"));
-	if (Parent->ircsvchandler != NULL)
+	if (Magick::instance().ircsvchandler != NULL)
 	{
-	    CB(2, Parent->i_localhost);
-	    Parent->i_localhost = Parent->ircsvchandler->Local_IP();
-	    CE(2, Parent->i_localhost);
+	    CB(2, Magick::instance().i_localhost);
+	    Magick::instance().i_localhost = Magick::instance().ircsvchandler->Local_IP();
+	    CE(2, Magick::instance().i_localhost);
 	}}
-	if (!Parent->server.proto.Protoctl().empty())
-	    Parent->server.raw(Parent->server.proto.Protoctl());
-	if (Parent->server.proto.TSora())
-	    Parent->server.raw("PASS " + details.second.second + " :TS");
+	if (!Magick::instance().server.proto.Protoctl().empty())
+	    Magick::instance().server.raw(Magick::instance().server.proto.Protoctl());
+	if (Magick::instance().server.proto.TSora())
+	    Magick::instance().server.raw("PASS " + details.second.second + " :TS");
 	else
-	    Parent->server.raw("PASS " + details.second.second);
+	    Magick::instance().server.raw("PASS " + details.second.second);
 	mstring tmp;
-	if (Parent->server.proto.Numeric())
-	    tmp.Format(Parent->server.proto.Server().c_str(),
-		Parent->startup.Server_Name().c_str(), 1,
-		details.second.third, Parent->startup.Server_Desc().c_str());
+	if (Magick::instance().server.proto.Numeric())
+	    tmp.Format(Magick::instance().server.proto.Server().c_str(),
+		Magick::instance().startup.Server_Name().c_str(), 1,
+		details.second.third, Magick::instance().startup.Server_Desc().c_str());
 	else
-	    tmp.Format(Parent->server.proto.Server().c_str(),
-		Parent->startup.Server_Name().c_str(), 1,
-		Parent->startup.Server_Desc().c_str());
-	Parent->server.raw(tmp);
-	if (Parent->server.proto.TSora())
+	    tmp.Format(Magick::instance().server.proto.Server().c_str(),
+		Magick::instance().startup.Server_Name().c_str(), 1,
+		Magick::instance().startup.Server_Desc().c_str());
+	Magick::instance().server.raw(tmp);
+	if (Magick::instance().server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
-	    Parent->server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
-	Parent->Connected(true);
+	    Magick::instance().server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
+	Magick::instance().Connected(true);
     }
-    CE(1, Parent->i_currentserver);
-    Parent->DumpE();
+    CE(1, Magick::instance().i_currentserver);
+    Magick::instance().DumpE();
 
     DRET(0);
 }
@@ -1583,15 +1590,15 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
     { WLOCK(("Server", "ServerSquit"));
-    Parent->server.DumpB();
-    CB(1, Parent->server.ServerSquit.size());
-    Parent->server.ServerSquit.erase(*tmp);
-    CE(1, Parent->server.ServerSquit.size());
+    Magick::instance().server.DumpB();
+    CB(1, Magick::instance().server.ServerSquit.size());
+    Magick::instance().server.ServerSquit.erase(*tmp);
+    CE(1, Magick::instance().server.ServerSquit.size());
     }
 
-    if (Parent->server.IsList(*tmp))
+    if (Magick::instance().server.IsList(*tmp))
     {
-	LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, Parent->server.GetList(tmp->LowerCase()).Uplink()));
+	LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, Magick::instance().server.GetList(tmp->LowerCase()).Uplink()));
     }
     else
     {
@@ -1601,26 +1608,26 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     // QUIT all user's who faked it ...
     vector<mstring> chunked;
     { WLOCK2(("Server", "ToBeSquit"));
-    if (Parent->server.ToBeSquit.find(*tmp) != Parent->server.ToBeSquit.end())
+    if (Magick::instance().server.ToBeSquit.find(*tmp) != Magick::instance().server.ToBeSquit.end())
     {
 	list<mstring>::iterator iter;
-	CB(2, Parent->server.ToBeSquit.size());
-	for (iter=Parent->server.ToBeSquit[*tmp].begin(); iter!=Parent->server.ToBeSquit[*tmp].end(); iter++)
+	CB(2, Magick::instance().server.ToBeSquit.size());
+	for (iter=Magick::instance().server.ToBeSquit[*tmp].begin(); iter!=Magick::instance().server.ToBeSquit[*tmp].end(); iter++)
 	{
 	    chunked.push_back(*iter);
 	}
-	Parent->server.ToBeSquit.erase(*tmp);
-	CE(2, Parent->server.ToBeSquit.size());
+	Magick::instance().server.ToBeSquit.erase(*tmp);
+	CE(2, Magick::instance().server.ToBeSquit.size());
     }}  
     vector<mstring>::iterator k;
     for (k=chunked.begin(); k!=chunked.end(); k++)
     {
 	try
 	{
-	    if (Parent->nickserv.IsLiveAll(*k))
+	    if (Magick::instance().nickserv.IsLiveAll(*k))
 	    {
-		Parent->nickserv.GetLive(*k).Quit("FAKE SQUIT - " + *tmp);
-		Parent->nickserv.RemLive(*k);
+		Magick::instance().nickserv.GetLive(*k).Quit("FAKE SQUIT - " + *tmp);
+		Magick::instance().nickserv.RemLive(*k);
 		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
 	    }
 	}
@@ -1633,9 +1640,9 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 		    {
 		    case E_NickServ_Live::T_Invalid:
 		    case E_NickServ_Live::T_Blank:
-			if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+			if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
 			{
-			    Parent->nickserv.RemLive(e.what());
+			    Magick::instance().nickserv.RemLive(e.what());
 			}
 			break;
 		    default:
@@ -1655,7 +1662,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    NLOG(LM_CRITICAL, "EXCEPTIONS/UNKNOWN");
 	}
     }
-    Parent->server.DumpE();
+    Magick::instance().server.DumpE();
 
     delete tmp;
     DRET(0);
@@ -1672,21 +1679,21 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 
     { WLOCK(("Server", "ServerSquit"));
     WLOCK2(("Server", "ToBeSquit"));
-    Parent->server.DumpB();
-    CB(1, Parent->server.ServerSquit.size());
-    CB(2, Parent->server.ToBeSquit.size());
-    Parent->server.ServerSquit.erase(*tmp);
-    Parent->server.ToBeSquit.erase(*tmp);
-    CE(1, Parent->server.ServerSquit.size());
-    CE(2, Parent->server.ToBeSquit.size());
-    Parent->server.DumpE();
+    Magick::instance().server.DumpB();
+    CB(1, Magick::instance().server.ServerSquit.size());
+    CB(2, Magick::instance().server.ToBeSquit.size());
+    Magick::instance().server.ServerSquit.erase(*tmp);
+    Magick::instance().server.ToBeSquit.erase(*tmp);
+    CE(1, Magick::instance().server.ServerSquit.size());
+    CE(2, Magick::instance().server.ToBeSquit.size());
+    Magick::instance().server.DumpE();
     }
 
     // QUIT all user's who did not come back from SQUIT
     vector<mstring> SquitMe;
     NickServ::live_t::iterator i;
     { RLOCK(("NickServ", "live"));
-    for (i=Parent->nickserv.LiveBegin(); i != Parent->nickserv.LiveEnd(); i++)
+    for (i=Magick::instance().nickserv.LiveBegin(); i != Magick::instance().nickserv.LiveEnd(); i++)
     {
 	RLOCK2(("NickServ", "live", i->first));
 	if (i->second.Squit() == *tmp)
@@ -1697,10 +1704,10 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     {
 	try
 	{
-	    if (Parent->nickserv.IsLiveAll(*k))
+	    if (Magick::instance().nickserv.IsLiveAll(*k))
 	    {
-		Parent->nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
-		Parent->nickserv.RemLive(*k);
+		Magick::instance().nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
+		Magick::instance().nickserv.RemLive(*k);
 		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
 	    }
 	}
@@ -1713,9 +1720,9 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 		    {
 		    case E_NickServ_Live::T_Invalid:
 		    case E_NickServ_Live::T_Blank:
-			if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+			if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
 			{
-			    Parent->nickserv.RemLive(e.what());
+			    Magick::instance().nickserv.RemLive(e.what());
 			}
 			break;
 		    default:
@@ -1750,10 +1757,10 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     static_cast<void>(tv);
     mstring *tmp = reinterpret_cast<mstring *>(const_cast<void *>(arg));
 
-    if (Parent->nickserv.IsLiveAll(*tmp))
+    if (Magick::instance().nickserv.IsLiveAll(*tmp))
     {
 	RLOCK(("NickServ", "live", tmp->LowerCase()));
-	Nick_Live_t &entry = Parent->nickserv.GetLive(tmp->LowerCase());
+	Nick_Live_t &entry = Magick::instance().nickserv.GetLive(tmp->LowerCase());
 	if (entry.InFlight.File())
 	{
 	    if (!entry.InFlight.InProg())
@@ -1786,15 +1793,15 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     // in them).  ie. after AKICK, etc.
     try
     {
-	if (Parent->chanserv.IsLive(*tmp) &&
-		Parent->chanserv.GetLive(*tmp).IsIn(
-			Parent->chanserv.FirstName()))
+	if (Magick::instance().chanserv.IsLive(*tmp) &&
+		Magick::instance().chanserv.GetLive(*tmp).IsIn(
+			Magick::instance().chanserv.FirstName()))
 	{
-	    Parent->server.PART(Parent->chanserv.FirstName(), *tmp);
-	    if (Parent->chanserv.IsLive(*tmp))
+	    Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), *tmp);
+	    if (Magick::instance().chanserv.IsLive(*tmp))
 	    {
 		RLOCK(("ChanServ", "live", tmp->LowerCase()));
-		Chan_Live_t &clive = Parent->chanserv.GetLive(tmp->LowerCase());
+		Chan_Live_t &clive = Magick::instance().chanserv.GetLive(tmp->LowerCase());
 		clive.DumpB();
 		{ MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
 		CB(1, clive.ph_timer);
@@ -1814,9 +1821,9 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 		{
 		case E_NickServ_Live::T_Invalid:
 		case E_NickServ_Live::T_Blank:
-		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
 		    {
-			Parent->nickserv.RemLive(e.what());
+			Magick::instance().nickserv.RemLive(e.what());
 		    }
 		    break;
 		default:
@@ -1836,9 +1843,9 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 		{
 		case E_ChanServ_Stored::T_Invalid:
 		case E_ChanServ_Stored::T_Blank:
-		    if (strlen(e.what()) && Parent->chanserv.IsStored(e.what()))
+		    if (strlen(e.what()) && Magick::instance().chanserv.IsStored(e.what()))
 		    {
-			Parent->chanserv.RemStored(e.what());
+			Magick::instance().chanserv.RemStored(e.what());
 		    }
 		    break;
 		default:
@@ -1858,9 +1865,9 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 		{
 		case E_ChanServ_Live::T_Invalid:
 		case E_ChanServ_Live::T_Blank:
-		    if (strlen(e.what()) && Parent->chanserv.IsLive(e.what()))
+		    if (strlen(e.what()) && Magick::instance().chanserv.IsLive(e.what()))
 		    {
-			Parent->chanserv.RemLive(e.what());
+			Magick::instance().chanserv.RemLive(e.what());
 		    }
 		    break;
 		default:
@@ -1887,7 +1894,9 @@ void *EventTask::save_databases(void *in)
 {
     static_cast<void>(in);
     mThread::Attach(tt_MAIN);
-    Parent->save_databases();
+    Magick::register_instance((Magick *) in);
+    Magick::instance().save_databases();
+    Magick::deregister_instance();
     mThread::Detach();
     return NULL;
 }
@@ -1924,15 +1933,15 @@ mstring EventTask::SyncTime(const mstring& source) const
 {
     FT("EventTask::SyncTime", (source));
     RLOCK(("Events", "last_save"));
-    mstring retval = ToHumanTime(Parent->config.Savetime() -
+    mstring retval = ToHumanTime(Magick::instance().config.Savetime() -
 	last_save.SecondsSince(), source);
     RET(retval);
 }
 
 int EventTask::open(void *in)
 {
-    static_cast<void>(in);
     FT("EventTask::open", ("(void *) in"));
+    magick_instance = (Magick *)in;
     int retval = activate();
     RET(retval);
 }
@@ -1949,9 +1958,10 @@ int EventTask::close(unsigned long in)
 int EventTask::svc(void)
 {
     mThread::Attach(tt_MAIN);
+    Magick::register_instance(magick_instance);
     // The biggie, so big, it has its own zip code ... uhh .. thread.
     NFT("EventTask::svc");
-    Parent->hh.AddThread(Heartbeat_Handler::H_Events);
+    Magick::instance().hh.AddThread(Heartbeat_Handler::H_Events);
 
     bool proc;
     { WLOCK(("Events", "last_expire"));
@@ -1965,22 +1975,22 @@ int EventTask::svc(void)
 
     ACE_Thread_Manager thrmgr;
     mDateTime synctime;
-    while(!Parent->Shutdown())
+    while(!Magick::instance().Shutdown())
     {
-	Parent->hh.Heartbeat();
+	Magick::instance().hh.Heartbeat();
 
 	proc = true;
 	// Make sure we're turned on ...
-	if (!Parent->AUTO() || Parent->Pause())
+	if (!Magick::instance().AUTO() || Magick::instance().Pause())
 	    proc = false;
 	else
 	{
 	    // Make sure we're sync'd to network ...
 	    RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler == NULL || Parent->ircsvchandler->Burst())
+	    if (Magick::instance().ircsvchandler == NULL || Magick::instance().ircsvchandler->Burst())
 		proc = false;
 	    else
-		synctime = Parent->ircsvchandler->SyncTime();
+		synctime = Magick::instance().ircsvchandler->SyncTime();
 	}
 
 	if (!proc)
@@ -1999,7 +2009,7 @@ int EventTask::svc(void)
 	    // This is mainly used for 'only do this if users have had
 	    // enough time to rectify the situation since sync' ...
 	    RLOCK_IF(("Events", "last_expire"),
-		last_expire.SecondsSince() >= Parent->config.Cycletime())
+		last_expire.SecondsSince() >= Magick::instance().config.Cycletime())
 	    {
 		do_expire(synctime);
 		WLOCK(("Events", "last_expire"));
@@ -2008,7 +2018,7 @@ int EventTask::svc(void)
 		MCE(last_expire);
 	    }
 
-	    if (Parent->Saving())
+	    if (Magick::instance().Saving())
 	    {
 		WLOCK(("Events", "last_save"));
 		MCB(last_save);
@@ -2016,10 +2026,10 @@ int EventTask::svc(void)
 		MCE(last_save);
 	    }
 	    RLOCK2_IF(("Events", "last_save"),
-		last_save.SecondsSince() >= Parent->config.Savetime())
+		last_save.SecondsSince() >= Magick::instance().config.Savetime())
 	    {
 		CP(("Starting DATABASE SAVE ..."));
-		thrmgr.spawn(save_databases, NULL);
+		thrmgr.spawn(save_databases, (void *) &Magick::instance());
 
 		WLOCK(("Events", "last_save"));
 		MCB(last_save);
@@ -2028,7 +2038,7 @@ int EventTask::svc(void)
 	    }
 
 	    RLOCK2_IF(("Events", "last_check"),
-		last_check.SecondsSince() >= Parent->config.Checktime())
+		last_check.SecondsSince() >= Magick::instance().config.Checktime())
 	    {
 		do_check(synctime);
 		WLOCK(("Events", "last_check"));
@@ -2037,12 +2047,12 @@ int EventTask::svc(void)
 		MCE(last_check);
 	    }
 
-	    if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
+	    if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
 		do_modes(synctime);
 
 
 	    RLOCK2_IF(("Events", "last_msgcheck"),
-		last_msgcheck.SecondsSince() > Parent->config.MSG_Check_Time())
+		last_msgcheck.SecondsSince() > Magick::instance().config.MSG_Check_Time())
 	    {
 		do_msgcheck(synctime);
 		WLOCK(("Events", "last_msgcheck"));
@@ -2052,7 +2062,7 @@ int EventTask::svc(void)
 	    }
 
 	    RLOCK2_IF(("Events", "last_ping"),
-		last_ping.SecondsSince() >= Parent->config.Ping_Frequency())
+		last_ping.SecondsSince() >= Magick::instance().config.Ping_Frequency())
 	    {
 		do_ping(synctime);
 		WLOCK(("Events", "last_ping"));
@@ -2070,9 +2080,9 @@ int EventTask::svc(void)
 		{
 		case E_NickServ_Stored::T_Invalid:
 		case E_NickServ_Stored::T_Blank:
-		    if (strlen(e.what()) && Parent->nickserv.IsStored(e.what()))
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsStored(e.what()))
 		    {
-			Parent->nickserv.RemStored(e.what());
+			Magick::instance().nickserv.RemStored(e.what());
 		    }
 		    break;
 		default:
@@ -2092,9 +2102,9 @@ int EventTask::svc(void)
 		{
 		case E_NickServ_Live::T_Invalid:
 		case E_NickServ_Live::T_Blank:
-		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
 		    {
-			Parent->nickserv.RemLive(e.what());
+			Magick::instance().nickserv.RemLive(e.what());
 		    }
 		    break;
 		default:
@@ -2114,9 +2124,9 @@ int EventTask::svc(void)
 		{
 		case E_NickServ_Recovered::T_Invalid:
 		case E_NickServ_Recovered::T_Blank:
-		    if (strlen(e.what()) && Parent->nickserv.IsRecovered(e.what()))
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsRecovered(e.what()))
 		    {
-			Parent->nickserv.RemRecovered(e.what());
+			Magick::instance().nickserv.RemRecovered(e.what());
 		    }
 		    break;
 		default:
@@ -2136,9 +2146,9 @@ int EventTask::svc(void)
 		{
 		case E_ChanServ_Stored::T_Invalid:
 		case E_ChanServ_Stored::T_Blank:
-		    if (strlen(e.what()) && Parent->chanserv.IsStored(e.what()))
+		    if (strlen(e.what()) && Magick::instance().chanserv.IsStored(e.what()))
 		    {
-			Parent->chanserv.RemStored(e.what());
+			Magick::instance().chanserv.RemStored(e.what());
 		    }
 		    break;
 		default:
@@ -2158,9 +2168,9 @@ int EventTask::svc(void)
 		{
 		case E_ChanServ_Live::T_Invalid:
 		case E_ChanServ_Live::T_Blank:
-		    if (strlen(e.what()) && Parent->chanserv.IsLive(e.what()))
+		    if (strlen(e.what()) && Magick::instance().chanserv.IsLive(e.what()))
 		    {
-			Parent->chanserv.RemLive(e.what());
+			Magick::instance().chanserv.RemLive(e.what());
 		    }
 		    break;
 		default:
@@ -2180,9 +2190,9 @@ int EventTask::svc(void)
 		{
 		case E_CommServ_List::T_Invalid:
 		case E_CommServ_List::T_Blank:
-		    if (strlen(e.what()) && Parent->commserv.IsList(e.what()))
+		    if (strlen(e.what()) && Magick::instance().commserv.IsList(e.what()))
 		    {
-			Parent->commserv.RemList(e.what());
+			Magick::instance().commserv.RemList(e.what());
 		    }
 		    break;
 		default:
@@ -2202,9 +2212,9 @@ int EventTask::svc(void)
 		{
 		case E_Server_List::T_Invalid:
 		case E_Server_List::T_Blank:
-		    if (strlen(e.what()) && Parent->server.IsList(e.what()))
+		    if (strlen(e.what()) && Magick::instance().server.IsList(e.what()))
 		    {
-			Parent->server.RemList(e.what());
+			Magick::instance().server.RemList(e.what());
 		    }
 		    break;
 		default:
@@ -2258,7 +2268,8 @@ int EventTask::svc(void)
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);
     }
-    Parent->hh.RemoveThread();
+    Magick::instance().hh.RemoveThread();
+    Magick::deregister_instance();
     DRET(0);
 }
 
@@ -2278,40 +2289,40 @@ void EventTask::do_expire(mDateTime &synctime)
     {
 	vector<mstring> expired_akills;
 	MLOCK(("OperServ","Akill"));
-	for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
-	    Parent->operserv.Akill != Parent->operserv.Akill_end();
-	    Parent->operserv.Akill++)
+	for (Magick::instance().operserv.Akill = Magick::instance().operserv.Akill_begin();
+	    Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end();
+	    Magick::instance().operserv.Akill++)
 	{
-	    if (Parent->operserv.Akill->Last_Modify_Time().SecondsSince() >
-		    Parent->operserv.Akill->Value().first)
+	    if (Magick::instance().operserv.Akill->Last_Modify_Time().SecondsSince() >
+		    Magick::instance().operserv.Akill->Value().first)
 	    {
-		expired_akills.push_back(Parent->operserv.Akill->Entry());
+		expired_akills.push_back(Magick::instance().operserv.Akill->Entry());
 	    }
 	}
 	// OK, ugly, but it avoids SET re-ordering...
 	for (i=0; i<expired_akills.size(); i++)
 	{
-	    for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
-		Parent->operserv.Akill != Parent->operserv.Akill_end();
-		Parent->operserv.Akill++)
-		if (Parent->operserv.Akill->Entry() == expired_akills[i])
+	    for (Magick::instance().operserv.Akill = Magick::instance().operserv.Akill_begin();
+		Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end();
+		Magick::instance().operserv.Akill++)
+		if (Magick::instance().operserv.Akill->Entry() == expired_akills[i])
 	    break;
 
-	    if (Parent->operserv.Akill != Parent->operserv.Akill_end())
+	    if (Magick::instance().operserv.Akill != Magick::instance().operserv.Akill_end())
 	    {
-		Parent->server.RAKILL(Parent->operserv.Akill->Entry());
+		Magick::instance().server.RAKILL(Magick::instance().operserv.Akill->Entry());
 		LOG(LM_INFO, "EVENT/EXPIRE_AKILL",
-			(Parent->operserv.Akill->Entry(),
-			Parent->operserv.Akill->Value().second,
-			Parent->operserv.Akill->Last_Modifier(),
-			ToHumanTime(Parent->operserv.Akill->Value().first)));
-		ANNOUNCE(Parent->operserv.FirstName(),
+			(Magick::instance().operserv.Akill->Entry(),
+			Magick::instance().operserv.Akill->Value().second,
+			Magick::instance().operserv.Akill->Last_Modifier(),
+			ToHumanTime(Magick::instance().operserv.Akill->Value().first)));
+		ANNOUNCE(Magick::instance().operserv.FirstName(),
 			"MISC/EXPIRE_AKILL", (
-			Parent->operserv.Akill->Entry(),
-			Parent->operserv.Akill->Value().second,
-			Parent->operserv.Akill->Last_Modifier(),
-			ToHumanTime(Parent->operserv.Akill->Value().first)));
-		Parent->operserv.Akill_erase();
+			Magick::instance().operserv.Akill->Entry(),
+			Magick::instance().operserv.Akill->Value().second,
+			Magick::instance().operserv.Akill->Last_Modifier(),
+			ToHumanTime(Magick::instance().operserv.Akill->Value().first)));
+		Magick::instance().operserv.Akill_erase();
 	    }
 	}
     }
@@ -2324,8 +2335,8 @@ void EventTask::do_expire(mDateTime &synctime)
     {
 	vector<pair<mstring,mstring> > expired_nicks;
 	{ RLOCK2(("NickServ", "stored"));
-	for (nsi = Parent->nickserv.StoredBegin();
-		nsi != Parent->nickserv.StoredEnd(); nsi++)
+	for (nsi = Magick::instance().nickserv.StoredBegin();
+		nsi != Magick::instance().nickserv.StoredEnd(); nsi++)
 	{
 	    RLOCK3(("NickServ", "stored", nsi->first));
 	    if (!(nsi->second.NoExpire() || nsi->second.Forbidden() ||
@@ -2334,7 +2345,7 @@ void EventTask::do_expire(mDateTime &synctime)
 		if (nsi->second.Host().empty())
 		{
 		    if (nsi->second.LastAllSeenTime().SecondsSince() >
-			Parent->nickserv.Expire())
+			Magick::instance().nickserv.Expire())
 		    {
 			expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Name()));
 		    }
@@ -2342,7 +2353,7 @@ void EventTask::do_expire(mDateTime &synctime)
 		else
 		{
 		    if (nsi->second.LastSeenTime().SecondsSince() >
-			Parent->nickserv.Expire())
+			Magick::instance().nickserv.Expire())
 		    {
 			expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Host()));
 		    }
@@ -2351,10 +2362,10 @@ void EventTask::do_expire(mDateTime &synctime)
 	}}
 	for (i=0; i<expired_nicks.size(); i++)
 	{
-	    if (Parent->nickserv.IsStored(expired_nicks[i].first))
+	    if (Magick::instance().nickserv.IsStored(expired_nicks[i].first))
 	    {
-		Parent->nickserv.GetStored(expired_nicks[i].first).Drop();
-		Parent->nickserv.RemStored(expired_nicks[i].first);
+		Magick::instance().nickserv.GetStored(expired_nicks[i].first).Drop();
+		Magick::instance().nickserv.RemStored(expired_nicks[i].first);
 		LOG(LM_INFO, "EVENT/EXPIRE_NICK", (expired_nicks[i].first,
 			    expired_nicks[i].second));
 	    }
@@ -2371,7 +2382,7 @@ void EventTask::do_expire(mDateTime &synctime)
 		case E_NickServ_Stored::T_Blank:
 		    if (strlen(e.what()))
 		    {
-			Parent->nickserv.RemStored(e.what());
+			Magick::instance().nickserv.RemStored(e.what());
 		    }
 		    break;
 		default:
@@ -2388,23 +2399,23 @@ void EventTask::do_expire(mDateTime &synctime)
     {
 	vector<pair<mstring, mstring> > expired_chans;
 	{ RLOCK2(("ChanServ", "stored"));
-	for (csi = Parent->chanserv.StoredBegin();
-		csi != Parent->chanserv.StoredEnd(); csi++)
+	for (csi = Magick::instance().chanserv.StoredBegin();
+		csi != Magick::instance().chanserv.StoredEnd(); csi++)
 	{
 	    RLOCK3(("ChanServ", "stored", csi->first));
 	    if (!(csi->second.NoExpire() || csi->second.Forbidden() ||
 		csi->second.Suspended()))
 	    {
 		if (csi->second.LastUsed().SecondsSince() >
-		    Parent->chanserv.Expire())
+		    Magick::instance().chanserv.Expire())
 		    expired_chans.push_back(pair<mstring,mstring>(csi->second.Name(), csi->second.Founder()));
 	    }
 	}}
 	for (i=0; i<expired_chans.size(); i++)
 	{
-	    if (Parent->chanserv.IsStored(expired_chans[i].first))
+	    if (Magick::instance().chanserv.IsStored(expired_chans[i].first))
 	    {
-		Parent->chanserv.RemStored(expired_chans[i].first);
+		Magick::instance().chanserv.RemStored(expired_chans[i].first);
 		LOG(LM_INFO, "EVENT/EXPIRE_CHAN", (expired_chans[i].first, expired_chans[i].second));
 	    }
 	}
@@ -2420,7 +2431,7 @@ void EventTask::do_expire(mDateTime &synctime)
 		case E_ChanServ_Stored::T_Blank:
 		    if (strlen(e.what()))
 		    {
-			Parent->chanserv.RemStored(e.what());
+			Magick::instance().chanserv.RemStored(e.what());
 		    }
 		    break;
 		default:
@@ -2438,15 +2449,15 @@ void EventTask::do_expire(mDateTime &synctime)
 	map<mstring, vector<size_t> > expired_news;
 	map<mstring, vector<size_t> >::iterator iter;
 	{ RLOCK2(("MemoServ", "channel"));
-	for (ni=Parent->memoserv.ChannelBegin();
-		ni!=Parent->memoserv.ChannelEnd(); ni++)
+	for (ni=Magick::instance().memoserv.ChannelBegin();
+		ni!=Magick::instance().memoserv.ChannelEnd(); ni++)
 	{
 	    size_t cnt = 0;
 	    RLOCK3(("MemoServ", "channel", ni->first));
 	    for (lni=ni->second.begin(), i=0; lni != ni->second.end(); lni++, i++)
 	    {
 		if (!lni->NoExpire() && lni->Time().SecondsSince() >
-		    Parent->memoserv.News_Expire())
+		    Magick::instance().memoserv.News_Expire())
 		{
 		    LOG(LM_DEBUG, "EVENT/EXPIRE_NEWS", (lni->Channel()));
 		    expired_news[ni->first].push_back(i);
@@ -2465,13 +2476,13 @@ void EventTask::do_expire(mDateTime &synctime)
 		size_t adjust = 0;
 		for (i=0; i < iter->second.size(); i++)
 		{
-		    Parent->memoserv.RemChannelNews(iter->first, iter->second[i] - adjust);
+		    Magick::instance().memoserv.RemChannelNews(iter->first, iter->second[i] - adjust);
 		    adjust++;
 		}
 	    }
 	    else
 	    {
-		Parent->memoserv.RemChannel(iter->first);
+		Magick::instance().memoserv.RemChannel(iter->first);
 	    }
 	}
     }
@@ -2491,27 +2502,27 @@ void EventTask::do_check(mDateTime &synctime)
     unsigned int i;
     vector<mstring> chunked;
 
-    if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
+    if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
     { RLOCK2(("ChanServ", "live"));
-    for (cli=Parent->chanserv.LiveBegin();
-	    cli!=Parent->chanserv.LiveEnd(); cli++)
+    for (cli=Magick::instance().chanserv.LiveBegin();
+	    cli!=Magick::instance().chanserv.LiveEnd(); cli++)
     {
 	RLOCK3(("ChanServ", "live", cli->first));
 	bool found = false;
 	unsigned long bantime = 0, parttime = 0;
 
-	if (Parent->chanserv.IsStored(cli->first))
+	if (Magick::instance().chanserv.IsStored(cli->first))
 	{
-	    bantime = Parent->chanserv.GetStored(cli->first).Bantime();
-	    parttime = Parent->chanserv.GetStored(cli->first).Parttime();
+	    bantime = Magick::instance().chanserv.GetStored(cli->first).Bantime();
+	    parttime = Magick::instance().chanserv.GetStored(cli->first).Parttime();
 	    found = true;
 	}
 	// Removing bans ...
-	if (found && (!Parent->chanserv.LCK_Bantime() ||
-	    Parent->chanserv.DEF_Bantime()))
+	if (found && (!Magick::instance().chanserv.LCK_Bantime() ||
+	    Magick::instance().chanserv.DEF_Bantime()))
 	{
-	    if (Parent->chanserv.LCK_Bantime())
-		bantime = Parent->chanserv.DEF_Bantime();
+	    if (Magick::instance().chanserv.LCK_Bantime())
+		bantime = Magick::instance().chanserv.DEF_Bantime();
 	    if (bantime)
 	    {
 		vector<mstring> rem;
@@ -2559,21 +2570,21 @@ void EventTask::do_check(mDateTime &synctime)
     // grace time on ident (if KillProtect is on, and they
     // are not on access list or secure is on).
     chunked.clear();
-    if (synctime.SecondsSince() >= Parent->nickserv.Ident() &&
-	Parent->nickserv.IsLive(Parent->nickserv.FirstName()))
+    if (synctime.SecondsSince() >= Magick::instance().nickserv.Ident() &&
+	Magick::instance().nickserv.IsLive(Magick::instance().nickserv.FirstName()))
     {
 	{ RLOCK(("NickServ", "live"));
-	for (nli = Parent->nickserv.LiveBegin();
-		    nli != Parent->nickserv.LiveEnd(); nli++)
+	for (nli = Magick::instance().nickserv.LiveBegin();
+		    nli != Magick::instance().nickserv.LiveEnd(); nli++)
 	{
 	    RLOCK2(("NickServ", "live", nli->first));
-	    if (Parent->nickserv.IsStored(nli->first))
+	    if (Magick::instance().nickserv.IsStored(nli->first))
 	    {
-		if (!Parent->nickserv.GetStored(nli->first).IsOnline() &&
-			Parent->nickserv.GetStored(nli->first).Protect() &&
+		if (!Magick::instance().nickserv.GetStored(nli->first).IsOnline() &&
+			Magick::instance().nickserv.GetStored(nli->first).Protect() &&
 			!nli->second.IsServices() && nli->second.Squit().empty() &&
 			nli->second.MySignonTime().SecondsSince() >=
-				    Parent->nickserv.Ident())
+				    Magick::instance().nickserv.Ident())
 		{
 		    chunked.push_back(nli->second.Name());
 		}
@@ -2581,49 +2592,49 @@ void EventTask::do_check(mDateTime &synctime)
 	}}
 	for (i=0; i<chunked.size(); i++)
 	{
-	    if (!Parent->nickserv.IsLive(chunked[i]) ||
-		!Parent->nickserv.IsStored(chunked[i]))
+	    if (!Magick::instance().nickserv.IsLive(chunked[i]) ||
+		!Magick::instance().nickserv.IsStored(chunked[i]))
 		continue;
 
-	    mstring newnick = Parent->nickserv.findnextnick(chunked[i]);
-	    LOG(LM_INFO, "EVENT/KILLPROTECT", (Parent->nickserv.GetLive(chunked[i]).Mask(Nick_Live_t::N_U_P_H)));
-	    if (!newnick.empty() && !Parent->server.proto.SVSNICK().empty())
+	    mstring newnick = Magick::instance().nickserv.findnextnick(chunked[i]);
+	    LOG(LM_INFO, "EVENT/KILLPROTECT", (Magick::instance().nickserv.GetLive(chunked[i]).Mask(Nick_Live_t::N_U_P_H)));
+	    if (!newnick.empty() && !Magick::instance().server.proto.SVSNICK().empty())
 	    {
-		if (Parent->nickserv.GetStored(chunked[i]).Forbidden())
-		    NSEND(Parent->nickserv.FirstName(), chunked[i], "MISC/RENAMED_FORBID");
+		if (Magick::instance().nickserv.GetStored(chunked[i]).Forbidden())
+		    NSEND(Magick::instance().nickserv.FirstName(), chunked[i], "MISC/RENAMED_FORBID");
 		else
-		    NSEND(Parent->nickserv.FirstName(), chunked[i], "MISC/RENAMED_IDENT");
-		Parent->server.SVSNICK(Parent->nickserv.FirstName(),
+		    NSEND(Magick::instance().nickserv.FirstName(), chunked[i], "MISC/RENAMED_IDENT");
+		Magick::instance().server.SVSNICK(Magick::instance().nickserv.FirstName(),
 			chunked[i], newnick);
 	    }
 	    else
 	    {
-		if (Parent->nickserv.GetStored(chunked[i]).Forbidden())
-		    Parent->server.KILL(Parent->nickserv.FirstName(),
-			chunked[i], Parent->getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
+		if (Magick::instance().nickserv.GetStored(chunked[i]).Forbidden())
+		    Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(),
+			chunked[i], Magick::instance().getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
 		else
-		    Parent->server.KILL(Parent->nickserv.FirstName(),
-			chunked[i], Parent->getMessage("NS_SET/PROTECT"));
-		Parent->server.NICK(chunked[i], (Parent->startup.Ownuser() ?
+		    Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(),
+			chunked[i], Magick::instance().getMessage("NS_SET/PROTECT"));
+		Magick::instance().server.NICK(chunked[i], (Magick::instance().startup.Ownuser() ?
 			    chunked[i].LowerCase() :
-			    Parent->startup.Services_User()),
-			    Parent->startup.Services_Host(),
-			    Parent->startup.Server_Name(),
-			    Parent->nickserv.Enforcer_Name());
+			    Magick::instance().startup.Services_User()),
+			    Magick::instance().startup.Services_Host(),
+			    Magick::instance().startup.Server_Name(),
+			    Magick::instance().nickserv.Enforcer_Name());
 	    }
-	    Parent->nickserv.AddRecovered(chunked[i], mDateTime::CurrentDateTime());
+	    Magick::instance().nickserv.AddRecovered(chunked[i], mDateTime::CurrentDateTime());
 	}
 		
 	// Sign off clients we've decided to take.
 	chunked.clear();
 	{ RLOCK(("NickServ", "recovered"));
-	for (di = Parent->nickserv.RecoveredBegin();
-		di != Parent->nickserv.RecoveredEnd(); di++)
+	for (di = Magick::instance().nickserv.RecoveredBegin();
+		di != Magick::instance().nickserv.RecoveredEnd(); di++)
 	{
-	    if (di->second.SecondsSince() >= Parent->nickserv.Release())
+	    if (di->second.SecondsSince() >= Magick::instance().nickserv.Release())
 	    {
-		if (Parent->nickserv.IsLive(di->first) &&
-			Parent->nickserv.GetLive(di->first).IsServices())
+		if (Magick::instance().nickserv.IsLive(di->first) &&
+			Magick::instance().nickserv.GetLive(di->first).IsServices())
 		{
 		    chunked.push_back(di->first);
 		}
@@ -2631,8 +2642,8 @@ void EventTask::do_check(mDateTime &synctime)
 	}}
 	for (i=0; i<chunked.size(); i++)
 	{
-	    Parent->nickserv.RemRecovered(chunked[i]);
-	    Parent->server.QUIT(chunked[i], "RECOVER period expired");
+	    Magick::instance().nickserv.RemRecovered(chunked[i]);
+	    Magick::instance().server.QUIT(chunked[i], "RECOVER period expired");
 	}
     }
 }
@@ -2656,11 +2667,11 @@ void EventTask::do_modes(mDateTime &synctime)
     map<mstring,vector<mstring> >::iterator ml;
     for (iter=cmp.begin(); iter!=cmp.end(); iter++)
     {
-	if (Parent->chanserv.IsLive(*iter))
+	if (Magick::instance().chanserv.IsLive(*iter))
 	{
 	    COM(("Looking at channel %s", iter->c_str()));
 	    RLOCK(("ChanServ", "live", *iter));
-	    Chan_Live_t &chan = Parent->chanserv.GetLive(*iter);
+	    Chan_Live_t &chan = Magick::instance().chanserv.GetLive(*iter);
 	    if (!chan.p_modes_on.empty() || !chan.p_modes_off.empty())
 	    {
 		unsigned int j, k;
@@ -2673,7 +2684,7 @@ void EventTask::do_modes(mDateTime &synctime)
 		for (i=0, j=0, k=0; i<chan.p_modes_off.size(); i++)
 		{
 		    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_off[i], j, k));
-		    if (j>=Parent->server.proto.Modes())
+		    if (j>=Magick::instance().server.proto.Modes())
 		    {
 			modelines[*iter].push_back(mode + " " + modeparam);
 			mode.erase();
@@ -2684,7 +2695,7 @@ void EventTask::do_modes(mDateTime &synctime)
 			mode += "-";
 		    mode += chan.p_modes_off[i];
 		    if (chan.p_modes_off[i] != 'l' &&
-			Parent->server.proto.ChanModeArg().Contains(chan.p_modes_off[i]))
+			Magick::instance().server.proto.ChanModeArg().Contains(chan.p_modes_off[i]))
 		    {
 			if (!modeparam.empty())
 			    modeparam += " ";
@@ -2705,7 +2716,7 @@ void EventTask::do_modes(mDateTime &synctime)
 		for (i=0, k=0; i<chan.p_modes_on.size(); i++)
 		{
 		    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_on[i], j, k));
-		    if (j>=Parent->server.proto.Modes())
+		    if (j>=Magick::instance().server.proto.Modes())
 		    {
 			modelines[*iter].push_back(mode + " " + modeparam);
 			mode.erase();
@@ -2715,7 +2726,7 @@ void EventTask::do_modes(mDateTime &synctime)
 		    if (mode.empty())
 			mode += "+";
 		    mode += chan.p_modes_on[i];
-		    if (Parent->server.proto.ChanModeArg().Contains(chan.p_modes_on[i]))
+		    if (Magick::instance().server.proto.ChanModeArg().Contains(chan.p_modes_on[i]))
 		    {
 			if (!modeparam.empty())
 			    modeparam += " ";
@@ -2736,7 +2747,7 @@ void EventTask::do_modes(mDateTime &synctime)
     for (ml=modelines.begin(); ml!=modelines.end(); ml++)
     {
 	for (i=0; i<ml->second.size(); i++)
-	    Parent->server.MODE(Parent->chanserv.FirstName(),
+	    Magick::instance().server.MODE(Magick::instance().chanserv.FirstName(),
 		ml->first, ml->second[i]);
     }
 }
@@ -2766,7 +2777,7 @@ void EventTask::do_msgcheck(mDateTime &synctime)
 		if (m != mMessage::MsgIdMap.end())
 		{
 		    if (m->second == NULL ||
-			m->second->creation().SecondsSince() > Parent->config.MSG_Seen_Time())
+			m->second->creation().SecondsSince() > Magick::instance().config.MSG_Seen_Time())
 		    {
 			Ids.insert(m->first);
 			if (m->second != NULL)
@@ -2788,11 +2799,11 @@ void EventTask::do_msgcheck(mDateTime &synctime)
     for (m=Msgs.begin(); m!=Msgs.end(); m++)
     {
 	{ RLOCK(("IrcSvcHandler"));
-	if (Parent->ircsvchandler != NULL)
+	if (Magick::instance().ircsvchandler != NULL)
 	{
 	    COM(("(%d) Requing without filled dependancies\n", (*m)->msgid()));
 	    (*m)->priority(static_cast<u_long>(P_DepFilled));
-	    Parent->ircsvchandler->enqueue(*m);
+	    Magick::instance().ircsvchandler->enqueue(*m);
 	}
 	else
 	{
@@ -2811,8 +2822,8 @@ void EventTask::do_ping(mDateTime &synctime)
 
     double min = -1, max = 0, sum = 0, avg = 0, count = 0;
     { RLOCK2(("Server", "list"));
-    for (si=Parent->server.ListBegin();
-	    si!=Parent->server.ListEnd(); si++)
+    for (si=Magick::instance().server.ListBegin();
+	    si!=Magick::instance().server.ListEnd(); si++)
     {
 	RLOCK3(("Server", "list", si->first));
 	if (min == -1 || si->second.Lag() < min)
@@ -2827,25 +2838,25 @@ void EventTask::do_ping(mDateTime &synctime)
     else
 	avg = sum / count;
 
-    if (avg > static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
+    if (avg > static_cast<double>(Magick::instance().startup.Lagtime() * (Magick::instance().Level() - Magick::instance().startup.Level() + 1)))
     {
-	Parent->LevelUp();
+	Magick::instance().LevelUp();
 	LOG(LM_WARNING, "EVENT/LEVEL_UP", (fmstring("%.3f", avg)));
     }
-    else if (Parent->Level() > Parent->startup.Level() &&
-	avg <= static_cast<double>(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
+    else if (Magick::instance().Level() > Magick::instance().startup.Level() &&
+	avg <= static_cast<double>(Magick::instance().startup.Lagtime() * (Magick::instance().Level() - Magick::instance().startup.Level())))
     {
-	Parent->LevelDown();
+	Magick::instance().LevelDown();
 	LOG(LM_WARNING, "EVENT/LEVEL_DOWN", (fmstring("%.3f", avg)));
     }
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() <= 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() <= 3)
     {
 	RLOCK2(("Server", "list"));
-	for (si = Parent->server.ListBegin();
-		si != Parent->server.ListEnd(); si++)
+	for (si = Magick::instance().server.ListBegin();
+		si != Magick::instance().server.ListEnd(); si++)
 	{
 	    RLOCK3(("Server", "list", si->first));
 	    si->second.Ping();

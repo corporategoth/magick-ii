@@ -27,6 +27,11 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.86  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.85  2001/12/16 01:30:45  prez
 ** More changes to fix up warnings ... added some new warning flags too!
 **
@@ -983,11 +988,11 @@ bool FileMap::Exists(const FileMap::FileType type, const unsigned long num)
     filename.Format("%08x", num);
 
     if (type == MemoAttach)
-	filename.prepend(Parent->files.MemoAttach() + DirSlash);
+	filename.prepend(Magick::instance().files.MemoAttach() + DirSlash);
     else if (type == Picture)
-	filename.prepend(Parent->files.Picture() + DirSlash);
+	filename.prepend(Magick::instance().files.Picture() + DirSlash);
     else if (type == Public)
-    	filename.prepend(Parent->files.Public() + DirSlash);
+    	filename.prepend(Magick::instance().files.Public() + DirSlash);
 
     if (mFile::Exists(filename))
     {
@@ -1045,11 +1050,11 @@ mstring FileMap::GetRealName(const FileMap::FileType type, const unsigned long n
 	filename.Format("%08x", num);
 
 	if (type == MemoAttach)
-	    filename.prepend(Parent->files.MemoAttach() + DirSlash);
+	    filename.prepend(Magick::instance().files.MemoAttach() + DirSlash);
 	else if (type == Picture)
-	    filename.prepend(Parent->files.Picture() + DirSlash);
+	    filename.prepend(Magick::instance().files.Picture() + DirSlash);
 	else if (type == Public)
-    	    filename.prepend(Parent->files.Public() + DirSlash);
+    	    filename.prepend(Magick::instance().files.Public() + DirSlash);
     	RET(filename);
     }
     RET("");
@@ -1173,8 +1178,8 @@ vector<unsigned long> FileMap::GetList(const FileMap::FileType type, const mstri
 		else
 		    for (i=1; i<=iter->second.second.WordCount(" "); i++)
 		    {
-			if (Parent->commserv.IsList(iter->second.second.ExtractWord(i, " ")) &&
-			    Parent->commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase()).IsOn(source))
+			if (Magick::instance().commserv.IsList(iter->second.second.ExtractWord(i, " ")) &&
+			    Magick::instance().commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase()).IsOn(source))
 			{
 			    retval.push_back(iter->first);
 			    break;
@@ -1217,11 +1222,11 @@ size_t FileMap::FileSysSize(const FileMap::FileType type) const
     size_t retval = 0;
 
     if (type == MemoAttach)
-	retval = mFile::DirUsage(Parent->files.MemoAttach());
+	retval = mFile::DirUsage(Magick::instance().files.MemoAttach());
     else if (type == Picture)
-	retval = mFile::DirUsage(Parent->files.Picture());
+	retval = mFile::DirUsage(Magick::instance().files.Picture());
     else if (type == Public)
-	retval = mFile::DirUsage(Parent->files.Public());
+	retval = mFile::DirUsage(Magick::instance().files.Public());
 
     RET(retval);
 }
@@ -1316,21 +1321,21 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& sock,
 	const mstring& mynick, const mstring& source,
 	const FileMap::FileType filetype, const unsigned long filenum)
 	: i_Socket(sock), i_Source(source), i_Mynick(mynick),
-	  i_Filename(Parent->filesys.GetName(filetype, filenum)),
-	  i_Blocksize(Parent->files.Blocksize()), i_Type(Send), i_DccId(dccid)
+	  i_Filename(Magick::instance().filesys.GetName(filetype, filenum)),
+	  i_Blocksize(Magick::instance().files.Blocksize()), i_Type(Send), i_DccId(dccid)
 {
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock",
 			mynick, source, static_cast<int>(filetype), filenum));
 
     // Setup Paramaters
     i_Transiant = NULL;
-//    i_Blocksize = Parent->files.Blocksize();
-    i_Tempfile.Format("%s%s%08x", Parent->files.TempDir().c_str(),
+//    i_Blocksize = Magick::instance().files.Blocksize();
+    i_Tempfile.Format("%s%s%08x", Magick::instance().files.TempDir().c_str(),
 		 DirSlash.c_str(), i_DccId);
-//    i_Filename = Parent->filesys.GetName(filetype, filenum);
+//    i_Filename = Magick::instance().filesys.GetName(filetype, filenum);
 
     // Verify Paramaters
-    if (!Parent->nickserv.IsLive(i_Source))
+    if (!Magick::instance().nickserv.IsLive(i_Source))
 	return;
     if (i_Filename.empty())
     {
@@ -1340,10 +1345,10 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& sock,
     }
 
     // Set 'Ready to Transfer'
-    mstring tmp = Parent->filesys.GetRealName(filetype, filenum);
+    mstring tmp = Magick::instance().filesys.GetRealName(filetype, filenum);
     if (tmp.empty())
     {
-	Parent->filesys.EraseFile(filetype, filenum);
+	Magick::instance().filesys.EraseFile(filetype, filenum);
 	SEND(mynick, source, "DCC/NOFILE", (
 					"SEND"));
 	return;
@@ -1355,7 +1360,7 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& sock,
     if (i_Filesize <= 0)
     {
 	i_File.Close();
-	Parent->filesys.EraseFile(filetype, filenum);
+	Magick::instance().filesys.EraseFile(filetype, filenum);
 	SEND(mynick, source, "DCC/NOFILE", (
 					"SEND"));
 	return;
@@ -1378,7 +1383,7 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& sock,
 	const mstring& mynick, const mstring& source, const mstring& filename,
 	const size_t filesize, const size_t blocksize)
 	: i_Socket(sock), i_Source(source), i_Mynick(mynick),
-	  i_Filename(filename), i_Blocksize(Parent->files.Blocksize()),
+	  i_Filename(filename), i_Blocksize(Magick::instance().files.Blocksize()),
 	  i_Type(Get), i_DccId(dccid)	  
 {
     FT("DccXfer::DccXfer", (dccid, "(mSocket *) sock",
@@ -1386,22 +1391,22 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& sock,
 
     // Setup Paramaters
     i_Transiant = NULL;
-//    i_Blocksize = Parent->files.Blocksize();
+//    i_Blocksize = Magick::instance().files.Blocksize();
     if (blocksize > 0)
 	i_Blocksize = blocksize;
-    i_Tempfile.Format("%s%s%08x", Parent->files.TempDir().c_str(),
+    i_Tempfile.Format("%s%s%08x", Magick::instance().files.TempDir().c_str(),
 		 DirSlash.c_str(), i_DccId);
 //    i_Filename = filename;
 
 
     // Verify Paramaters
-    if (!Parent->nickserv.IsLive(i_Source))
+    if (!Magick::instance().nickserv.IsLive(i_Source))
 	return;
 
-    if (Parent->nickserv.GetLive(i_Source).InFlight.File() &&
-	!Parent->nickserv.GetLive(i_Source).InFlight.InProg())
+    if (Magick::instance().nickserv.GetLive(i_Source).InFlight.File() &&
+	!Magick::instance().nickserv.GetLive(i_Source).InFlight.InProg())
     {
-	Parent->nickserv.GetLive(i_Source).InFlight.SetInProg();
+	Magick::instance().nickserv.GetLive(i_Source).InFlight.SetInProg();
     }
     else
     {
@@ -1460,48 +1465,48 @@ DccXfer::~DccXfer()
     // If we know the size, verify it, else we take
     // what we get!
     if (i_Type == Get &&
-	Parent->nickserv.IsLiveAll(i_Source) &&
-	Parent->nickserv.GetLive(i_Source).InFlight.File() &&
-	Parent->nickserv.GetLive(i_Source).InFlight.InProg())
+	Magick::instance().nickserv.IsLiveAll(i_Source) &&
+	Magick::instance().nickserv.GetLive(i_Source).InFlight.File() &&
+	Magick::instance().nickserv.GetLive(i_Source).InFlight.InProg())
     {
 	if ((i_Filesize > 0) ? i_Total == i_Filesize
 			  : i_Total > 0)
 	{
 	    mstring tmp;
 	    FileMap::FileType filetype = FileMap::Unknown;
-	    if (Parent->nickserv.GetLive(i_Source).InFlight.Memo())
+	    if (Magick::instance().nickserv.GetLive(i_Source).InFlight.Memo())
 		filetype = FileMap::MemoAttach;
-	    else if (Parent->nickserv.GetLive(i_Source).InFlight.Picture())
+	    else if (Magick::instance().nickserv.GetLive(i_Source).InFlight.Picture())
 		filetype = FileMap::Picture;
-	    else if (Parent->nickserv.GetLive(i_Source).InFlight.Public())
+	    else if (Magick::instance().nickserv.GetLive(i_Source).InFlight.Public())
 		filetype = FileMap::Public;
-	    unsigned long filenum = Parent->filesys.NewFile(filetype, i_Filename);
+	    unsigned long filenum = Magick::instance().filesys.NewFile(filetype, i_Filename);
 	    if (filenum)
 	    {
 		if (filetype == FileMap::MemoAttach)
-		    tmp.Format("%s%s%08x", Parent->files.MemoAttach().c_str(),
+		    tmp.Format("%s%s%08x", Magick::instance().files.MemoAttach().c_str(),
 			DirSlash.c_str(), filenum);
 		else if (filetype == FileMap::Picture)
-		    tmp.Format("%s%s%08x", Parent->files.Picture().c_str(),
+		    tmp.Format("%s%s%08x", Magick::instance().files.Picture().c_str(),
 			DirSlash.c_str(), filenum);
 		else if (filetype == FileMap::Public)
-		    tmp.Format("%s%s%08x", Parent->files.Public().c_str(),
+		    tmp.Format("%s%s%08x", Magick::instance().files.Public().c_str(),
 			DirSlash.c_str(), filenum);
 
 		if (mFile::Exists(i_Tempfile))
 		{
 		    mFile::Copy(i_Tempfile, tmp);
-		    Parent->nickserv.GetLive(i_Source).InFlight.File(filenum);
+		    Magick::instance().nickserv.GetLive(i_Source).InFlight.File(filenum);
 		    CP(("Added entry %d to FileMap", filenum));
 		}
 		else
-		    Parent->nickserv.GetLive(i_Source).InFlight.File(0);
+		    Magick::instance().nickserv.GetLive(i_Source).InFlight.File(0);
 	    }
 	    else
-		Parent->nickserv.GetLive(i_Source).InFlight.File(0);
+		Magick::instance().nickserv.GetLive(i_Source).InFlight.File(0);
 	}
 	else
-	    Parent->nickserv.GetLive(i_Source).InFlight.File(0);
+	    Magick::instance().nickserv.GetLive(i_Source).InFlight.File(0);
     }
 
     if (mFile::Exists(i_Tempfile))
@@ -1623,8 +1628,8 @@ void DccXfer::Cancel()
     RLOCK(("DccMap", "xfers", i_DccId, "i_Source"));
     WLOCK(("DccMap", "xfers", i_DccId, "i_Total"));
     WLOCK2(("DccMap", "xfers", i_DccId, "i_File"));
-    if (Parent->nickserv.IsLiveAll(i_Source))
-	Parent->nickserv.GetLive(i_Source).InFlight.Cancel();
+    if (Magick::instance().nickserv.IsLiveAll(i_Source))
+	Magick::instance().nickserv.GetLive(i_Source).InFlight.Cancel();
     MCB(i_Total);
     CB(1, i_File.Length());
     i_Total = 0;
@@ -1645,8 +1650,8 @@ void DccXfer::Action()
     {
 	COM(("Executing action for DCC %d GET", i_DccId));
 	XferAmt = 0;
-	if (i_Traffic.size() && (Parent->files.Max_Speed() == 0 ||
-		Average() <= Parent->files.Max_Speed()))
+	if (i_Traffic.size() && (Magick::instance().files.Max_Speed() == 0 ||
+		Average() <= Magick::instance().files.Max_Speed()))
 	{
 	    XferAmt = i_Socket.recv(reinterpret_cast<void *>(&i_Transiant[i_XferTotal]),
 			i_Blocksize - i_XferTotal, 1);
@@ -1658,7 +1663,7 @@ void DccXfer::Action()
 	map<time_t, size_t>::iterator iter;
 	time_t now = time(NULL);
 	for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
-		iter->first < now - static_cast<time_t>(Parent->files.Sampletime()+2);
+		iter->first < now - static_cast<time_t>(Magick::instance().files.Sampletime()+2);
 		iter = i_Traffic.begin())
 	    i_Traffic.erase(iter->first);
 	if (i_Traffic.find(now) == i_Traffic.end())
@@ -1716,8 +1721,8 @@ void DccXfer::Action()
 	    }
 	}
 	if (i_File.IsOpened() &&
-		i_Traffic.size() > Parent->files.Sampletime() &&
-		Average() < Parent->files.Min_Speed())
+		i_Traffic.size() > Magick::instance().files.Sampletime() &&
+		Average() < Magick::instance().files.Min_Speed())
 	{
 	    SEND(i_Mynick, i_Source, "DCC/TOOSLOW", (
 						"GET"));
@@ -1728,8 +1733,8 @@ void DccXfer::Action()
     {
 	COM(("Executing action for DCC %d SEND", i_DccId));
 	XferAmt = 0;
-	if (i_Traffic.size() && (Parent->files.Max_Speed() == 0 ||
-		Average() <= Parent->files.Max_Speed()))
+	if (i_Traffic.size() && (Magick::instance().files.Max_Speed() == 0 ||
+		Average() <= Magick::instance().files.Max_Speed()))
 	{
 	    if (i_XferTotal == i_Blocksize)
 	    {
@@ -1786,7 +1791,7 @@ void DccXfer::Action()
 	map<time_t, size_t>::iterator iter;
 	time_t now = time(NULL);
 	for (iter=i_Traffic.begin(); iter != i_Traffic.end() &&
-		iter->first < now - static_cast<time_t>(Parent->files.Sampletime()+2);
+		iter->first < now - static_cast<time_t>(Magick::instance().files.Sampletime()+2);
 		iter = i_Traffic.begin())
 	    i_Traffic.erase(iter->first);
 	if (i_Traffic.find(now) == i_Traffic.end())
@@ -1822,8 +1827,8 @@ void DccXfer::Action()
 	    }
 	}
 	if (i_File.IsOpened() &&
-		i_Traffic.size() > Parent->files.Sampletime() &&
-		Average() < Parent->files.Min_Speed())
+		i_Traffic.size() > Magick::instance().files.Sampletime() &&
+		Average() < Magick::instance().files.Min_Speed())
 	{
 	    SEND(i_Mynick, i_Source, "DCC/TOOSLOW", (
 						"GET"));
@@ -1840,7 +1845,7 @@ size_t DccXfer::Average(time_t secs) const
     size_t total = 0;
     int i = 0;
     map<time_t, size_t>::const_iterator iter;
-    if (secs > static_cast<time_t>(Parent->files.Sampletime()))
+    if (secs > static_cast<time_t>(Magick::instance().files.Sampletime()))
 	secs = 0;
 
     RLOCK(("DccMap", "xfers", i_DccId, "i_Traffic"));
@@ -1900,17 +1905,23 @@ void DccXfer::DumpE() const
 
 int DccMap::open(void *in)
 {
-    static_cast<void>(in);
-
     FT("DccMap::open", ("(void *) in"));
+    magick_instance = (Magick *)in;
     int retval = activate();
     RET(retval);
 }
 
 int DccMap::close(const unsigned long in)
 {
-    static_cast<void>(in);
     FT("DccMap::close", (in));
+
+    bool registered = false;
+    if (!Magick::instance_exists())
+    {
+	Magick::register_instance(magick_instance);
+	registered = true;
+    }
+
     // dump all and close open file handles.
     DccMap::xfers_t::iterator iter;
     RLOCK(("DccMap", "xfers"));
@@ -1928,22 +1939,26 @@ int DccMap::close(const unsigned long in)
     for (iter=XfersBegin(); XfersSize(); iter=XfersBegin())
 	RemXfers(iter->first);
 
+    if (registered)
+	Magick::deregister_instance();
+
     RET(0);
 }
 
 int DccMap::svc(void)
 {
     mThread::Attach(tt_MAIN);
+    Magick::register_instance(magick_instance);
     NFT("DccMap::svc");
-    Parent->hh.AddThread(Heartbeat_Handler::H_DCC);
+    Magick::instance().hh.AddThread(Heartbeat_Handler::H_DCC);
 
     unsigned long WorkId;
-    while (!Parent->Shutdown())
+    while (!Magick::instance().Shutdown())
     {
 	/*COM(("Active Size is %d", active.size()));*/
 
-	Parent->hh.Heartbeat();
-	if (!active.size() || Parent->Pause())
+	Magick::instance().hh.Heartbeat();
+	if (!active.size() || Magick::instance().Pause())
 	{
 	    ACE_OS::sleep(1);
 	    continue;
@@ -1989,7 +2004,7 @@ int DccMap::svc(void)
 	dcc.Action();
 	// Below LOW SPEED threshold OR
 	// No data in X seconds...
-	if (dcc.LastData().SecondsSince() > Parent->files.Timeout())
+	if (dcc.LastData().SecondsSince() > Magick::instance().files.Timeout())
 	{
 	    SEND(dcc.Mynick(), dcc.Source(), "DCC/TIMEOUT",
 		((dcc.Type() == DccXfer::Get) ? "GET" : "SEND"));
@@ -2002,7 +2017,8 @@ int DccMap::svc(void)
 	}
 	FLUSH(); // Force TRACE output dump
     }
-    Parent->hh.RemoveThread();
+    Magick::instance().hh.RemoveThread();
+    Magick::deregister_instance();
     DRET(0);
 }
 
@@ -2185,8 +2201,9 @@ void *DccMap::Connect2(void *in)
     FT("DccMap::Connect2", ("(void *) in"));
 
     NewSocket *val = reinterpret_cast<NewSocket *>(in);
+    Magick::register_instance(val->magick_instance);
 
-    mSocket DCC_SOCK(val->address, Parent->files.Timeout());
+    mSocket DCC_SOCK(val->address, Magick::instance().files.Timeout());
     if (DCC_SOCK.IsConnected())
     {
 	unsigned long WorkId;
@@ -2218,6 +2235,7 @@ void *DccMap::Connect2(void *in)
     if (val != NULL)
 	delete val;
 
+    Magick::deregister_instance();
     DRET(0);
 }
 
@@ -2227,8 +2245,9 @@ void *DccMap::Accept2(void *in)
     FT("DccMap::Accept2", ("(void *) in"));
 
     NewSocket *val = reinterpret_cast<NewSocket *>(in);
+    Magick::register_instance(val->magick_instance);
 
-    mSocket DCC_SOCK(val->port, Parent->files.Timeout());
+    mSocket DCC_SOCK(val->port, Magick::instance().files.Timeout());
     if (DCC_SOCK.IsConnected())
     {
 	unsigned long WorkId;
@@ -2260,6 +2279,7 @@ void *DccMap::Accept2(void *in)
     if (val != NULL)
 	delete val;
 
+    Magick::deregister_instance();
     DRET(0);
 }
 
@@ -2270,6 +2290,7 @@ void DccMap::Connect(const ACE_INET_Addr& address,
     FT("DccMap::Connect", ("(ACE_INET_Addr) address", mynick,
 			source, filename, filesize, blocksize));
     NewSocket *tmp = new NewSocket;
+    tmp->magick_instance = &Magick::instance();
     tmp->address = address;
     tmp->source = source;
     tmp->mynick = mynick;
@@ -2286,6 +2307,7 @@ void DccMap::Accept(const unsigned short port, const mstring& mynick,
 {
     FT("DccMap::Accept", (port, mynick, source, static_cast<int>(filetype), filenum));
     NewSocket *tmp = new NewSocket;
+    tmp->magick_instance = &Magick::instance();
     tmp->port = port;
     tmp->source = source;
     tmp->mynick = mynick;

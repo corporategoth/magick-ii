@@ -22,6 +22,11 @@ RCSID(mexceptions_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2001/12/20 08:02:31  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.6  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -369,6 +374,33 @@ public:
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     E_Thread(const char *p_reason) throw()
+	: i_type(T_Other)
+    {
+	ACE_OS::strncpy(i_reason, p_reason, 1024);
+    }
+
+    const E_type type() const throw()
+	{ return i_type; }
+    const char *what() const throw()
+	{ return i_reason; };
+};
+
+class E_Magick : public exception
+{
+public:
+    enum E_type { T_NotFound, T_Invalid, T_Other };
+
+private:
+    E_type i_type;
+    char i_reason[1024];
+
+public:
+    E_Magick(const E_type p_type = T_Other, const char *p_reason = "") throw()
+	: i_type(p_type)
+    {
+	ACE_OS::strncpy(i_reason, p_reason, 1024);
+    }
+    E_Magick(const char *p_reason) throw()
 	: i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);

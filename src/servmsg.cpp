@@ -27,6 +27,11 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2001/12/20 08:02:33  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.94  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -312,170 +317,170 @@ void ServMsg::AddCommands()
     NFT("ServMsg::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* NICK*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Nick);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* CHAN*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Channel);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* OPER*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Oper);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* OTH*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Other);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* USAGE", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Usage);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* ALL*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), ServMsg::do_stats_All);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* H*LP", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), do_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* LIST*", Parent->commserv.ALL_Name(), ServMsg::do_file_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* VIEW*", Parent->commserv.ALL_Name(), ServMsg::do_file_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* ADD*", Parent->commserv.SOP_Name(), ServMsg::do_file_Add);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* DEL*", Parent->commserv.SOP_Name(), ServMsg::do_file_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* REM*", Parent->commserv.SOP_Name(), ServMsg::do_file_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* REN*", Parent->commserv.SOP_Name(), ServMsg::do_file_Rename);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* PRIV*", Parent->commserv.SOP_Name(), ServMsg::do_file_Priv);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* SEC*", Parent->commserv.SOP_Name(), ServMsg::do_file_Priv);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* SEND*", Parent->commserv.ALL_Name(), ServMsg::do_file_Send);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* DCC*", Parent->commserv.SOP_Name(), ServMsg::do_file_Dcc);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* KILL*", Parent->commserv.SOP_Name(), ServMsg::do_file_Cancel);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* CAN*", Parent->commserv.SOP_Name(), ServMsg::do_file_Cancel);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* LOOK*", Parent->commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* RES*", Parent->commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* H*LP", Parent->commserv.ALL_Name(), do_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT* NICK*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name(), ServMsg::do_stats_Nick);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT* CHAN*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name(), ServMsg::do_stats_Channel);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT* OPER*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name(), ServMsg::do_stats_Oper);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT* OTH*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name(), ServMsg::do_stats_Other);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT* USAGE", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name(), ServMsg::do_stats_Usage);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT* ALL*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name(), ServMsg::do_stats_All);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT* H*LP", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name(), do_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* LIST*", Magick::instance().commserv.ALL_Name(), ServMsg::do_file_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* VIEW*", Magick::instance().commserv.ALL_Name(), ServMsg::do_file_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* ADD*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* DEL*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* REM*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* REN*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Rename);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* PRIV*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Priv);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* SEC*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Priv);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* SEND*", Magick::instance().commserv.ALL_Name(), ServMsg::do_file_Send);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* DCC*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Dcc);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* KILL*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Cancel);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* CAN*", Magick::instance().commserv.SOP_Name(), ServMsg::do_file_Cancel);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* LOOK*", Magick::instance().commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* RES*", Magick::instance().commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* H*LP", Magick::instance().commserv.ALL_Name(), do_2param);
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ASK*", Parent->commserv.ALL_Name(), ServMsg::do_Ask);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "QUEST*", Parent->commserv.ALL_Name(), ServMsg::do_Ask);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "H*LP*OP*", Parent->commserv.ALL_Name(), ServMsg::do_Ask);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "H*LP", Parent->commserv.ALL_Name(), ServMsg::do_Help);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CRED*", Parent->commserv.ALL_Name(), ServMsg::do_Credits);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CONTRIB*", Parent->commserv.ALL_Name(), ServMsg::do_Contrib);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LANG*", Parent->commserv.REGD_Name(), ServMsg::do_Languages);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GLOB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Global);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ASK*", Magick::instance().commserv.ALL_Name(), ServMsg::do_Ask);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "QUEST*", Magick::instance().commserv.ALL_Name(), ServMsg::do_Ask);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "H*LP*OP*", Magick::instance().commserv.ALL_Name(), ServMsg::do_Ask);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "H*LP", Magick::instance().commserv.ALL_Name(), ServMsg::do_Help);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CRED*", Magick::instance().commserv.ALL_Name(), ServMsg::do_Credits);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CONTRIB*", Magick::instance().commserv.ALL_Name(), ServMsg::do_Contrib);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LANG*", Magick::instance().commserv.REGD_Name(), ServMsg::do_Languages);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "BREAKD*", Magick::instance().commserv.ALL_Name(), ServMsg::do_BreakDown);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "*MAP", Magick::instance().commserv.ALL_Name(), ServMsg::do_BreakDown);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GLOB*", Magick::instance().commserv.ADMIN_Name(), ServMsg::do_Global);
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT* *", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "STAT*", Parent->commserv.REGD_Name(), do_Stats);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE* *", Parent->commserv.ALL_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE*", Parent->commserv.ALL_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT* *", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "STAT*", Magick::instance().commserv.REGD_Name(), do_Stats);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE* *", Magick::instance().commserv.ALL_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE*", Magick::instance().commserv.ALL_Name(), do_1_2param);
 }
 
 void ServMsg::RemCommands()
 {
     NFT("ServMsg::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT* NICK*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT* CHAN*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT* OPER*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT* OTH*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT* USAGE", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT* ALL*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT* H*LP", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* LIST*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* VIEW*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* ADD*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* DEL*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* REM*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* REN*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* PRIV*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* SEC*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* SEND*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* LOOK*", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* RES*", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* H*LP", Parent->commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT* NICK*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT* CHAN*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT* OPER*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT* OTH*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT* USAGE", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT* ALL*", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT* H*LP", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* LIST*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* VIEW*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* ADD*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* DEL*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* REM*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* REN*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* PRIV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* SEC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* SEND*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* LOOK*", Magick::instance().commserv.SADMIN_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* RES*", Magick::instance().commserv.SADMIN_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* H*LP", Magick::instance().commserv.ALL_Name());
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ASK*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "QUEST*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "H*LP*OP*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "H*LP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CRED*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CONTRIB*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LANG*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "BREAKD*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "*MAP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GLOB*", Parent->commserv.ADMIN_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ASK*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "QUEST*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "H*LP*OP*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "H*LP", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CRED*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CONTRIB*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LANG*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "BREAKD*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "*MAP", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GLOB*", Magick::instance().commserv.ADMIN_Name());
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT* *", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "STAT*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE* *", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE*", Parent->commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT* *", Magick::instance().commserv.OPER_Name() + " " +
+	    Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "STAT*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE* *", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE*", Magick::instance().commserv.ALL_Name());
 }
 
 void ServMsg::execute(mstring& source, const mstring& msgtype, const mstring& params)
@@ -485,7 +490,7 @@ void ServMsg::execute(mstring& source, const mstring& msgtype, const mstring& pa
     //okay this is the main servmsg command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring mynick(Magick::instance().getLname(params.ExtractWord(1, ": ")));
     mstring message(params.After(":"));
     mstring command(message.Before(" "));
 
@@ -497,7 +502,7 @@ void ServMsg::execute(mstring& source, const mstring& msgtype, const mstring& pa
 	    DccEngine::decodeReply(mynick, source, message);
     }
     else if (msgtype == "PRIVMSG" &&
-	!Parent->commands.DoCommand(mynick, source, command, message))
+	!Magick::instance().commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -513,18 +518,18 @@ void ServMsg::do_Help(const mstring &mynick, const mstring &source, const mstrin
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (message));
 	return;
     }}
 
-    mstring HelpTopic = Parent->servmsg.GetInternalName();
+    mstring HelpTopic = Magick::instance().servmsg.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
     HelpTopic.replace(" ", "/");
-    vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
+    vector<mstring> help = Magick::instance().getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
     for (i=0; i<help.size(); i++)
@@ -538,14 +543,14 @@ void ServMsg::do_Credits(const mstring &mynick, const mstring &source, const mst
 
     mstring message  = params.Before(" ").UpperCase();
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (message));
 	return;
     }}
 
-    Parent->servmsg.stats.i_Credits++;
+    Magick::instance().servmsg.stats.i_Credits++;
     for (int i=0; credits[i] != "---EOM---"; i++)
 	if (credits[i].length())
 	    ::sendV(mynick, source, credits[i], mynick.c_str());
@@ -560,15 +565,15 @@ void ServMsg::do_Contrib(const mstring &mynick, const mstring &source, const mst
 
     mstring message  = params.Before(" ").UpperCase();
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
 	return;
     }}
 
-    Parent->servmsg.stats.i_Credits++;
+    Magick::instance().servmsg.stats.i_Credits++;
     for (int i=0; contrib[i] != "---EOM---"; i++)
 	if (contrib[i].length())
 	    ::sendV(mynick, source, contrib[i], mynick.c_str());
@@ -583,15 +588,15 @@ void ServMsg::do_Languages(const mstring &mynick, const mstring &source, const m
 
     mstring message  = params.Before(" ").UpperCase();
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
 	return;
     }}
 
-    set<mstring> langs = mFile::DirList(Parent->files.Langdir(), "*.lng");
+    set<mstring> langs = mFile::DirList(Magick::instance().files.Langdir(), "*.lng");
     mstring output, val;
     if (langs.size())
     {
@@ -599,7 +604,7 @@ void ServMsg::do_Languages(const mstring &mynick, const mstring &source, const m
 	set<mstring>::iterator i;
 	for (i=langs.begin(); i != langs.end(); i++)
 	{
-	    if (output.length() > Parent->server.proto.MaxLine())
+	    if (output.length() > Magick::instance().server.proto.MaxLine())
 	    {
 		::send(mynick, source, "    " + output);
 		output.erase();
@@ -608,10 +613,10 @@ void ServMsg::do_Languages(const mstring &mynick, const mstring &source, const m
 	    val.Truncate(val.Find(".", true));
 	    if (output.length())
 		output += ", ";
-	    if (val.UpperCase() == Parent->nickserv.DEF_Language())
+	    if (val.UpperCase() == Magick::instance().nickserv.DEF_Language())
 		output += IRC_Bold;
 	    output += val.UpperCase();
-	    if (val.UpperCase() == Parent->nickserv.DEF_Language())
+	    if (val.UpperCase() == Magick::instance().nickserv.DEF_Language())
 		output += IRC_Off;
 	}
 	if (output.length())
@@ -631,8 +636,8 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -645,7 +650,7 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
     map<mstring,pair<unsigned int,unsigned int> > ServCounts;
     NickServ::live_t::iterator k;
     { RLOCK(("NickServ", "live"));
-    for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
+    for (k=Magick::instance().nickserv.LiveBegin(); k!=Magick::instance().nickserv.LiveEnd(); k++)
     {
 	RLOCK2(("NickServ", "live", k->first));
 	if (ServCounts.find(k->second.Server().LowerCase()) == ServCounts.end())
@@ -661,10 +666,10 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
 	}
     }}
     ::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
-	    Parent->startup.Server_Name().LowerCase().c_str(), 0.0,
+	    Magick::instance().startup.Server_Name().LowerCase().c_str(), 0.0,
 	    ServCounts[""].first, ServCounts[""].second,
 	    100.0 * static_cast<float>(ServCounts[""].first) /
-	    static_cast<float>(Parent->nickserv.LiveSize()));
+	    static_cast<float>(Magick::instance().nickserv.LiveSize()));
     do_BreakDown2(ServCounts, mynick, source, "", "");
 }
 
@@ -682,35 +687,35 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
     {
 	Server::list_t::iterator iter;
 	RLOCK(("Server", "list"));
-	for (iter = Parent->server.ListBegin();
-		iter != Parent->server.ListEnd(); iter++)
+	for (iter = Magick::instance().server.ListBegin();
+		iter != Magick::instance().server.ListEnd(); iter++)
 	{
 	    RLOCK2(("Server", "list", iter->first));
 	    if (!iter->second.Name().empty() &&
-		iter->second.Uplink() == Parent->startup.Server_Name().LowerCase())
+		iter->second.Uplink() == Magick::instance().startup.Server_Name().LowerCase())
 		downlinks.push_back(iter->first);
 	}
     }
     else
     {
-	if (Parent->server.IsList(server))
-	    downlinks = Parent->server.GetList(server).Downlinks();
+	if (Magick::instance().server.IsList(server))
+	    downlinks = Magick::instance().server.GetList(server).Downlinks();
     }
 
     for (unsigned int i=0; i<downlinks.size(); i++)
     {
-	if (Parent->server.IsList(downlinks[i]))
+	if (Magick::instance().server.IsList(downlinks[i]))
 	{
 	    users = ServCounts[downlinks[i]].first;
 	    opers = ServCounts[downlinks[i]].second;
-	    lag = Parent->server.GetList(downlinks[i]).Lag();
-	    servername = Parent->server.GetList(downlinks[i]).AltName();
+	    lag = Magick::instance().server.GetList(downlinks[i]).Lag();
+	    servername = Magick::instance().server.GetList(downlinks[i]).AltName();
 	    if (i<downlinks.size()-1)
 	    {
 		::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 			(previndent + "|-" + servername).c_str(), lag, users, opers,
 			100.0 * static_cast<float>(users) /
-			static_cast<float>(Parent->nickserv.LiveSize()));
+			static_cast<float>(Magick::instance().nickserv.LiveSize()));
 		do_BreakDown2(ServCounts, mynick, source, previndent + "| ", downlinks[i]);
 	    }
 	    else
@@ -718,7 +723,7 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 		::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
 			(previndent + "`-" + servername).c_str(), lag, users, opers,
 			100.0 * static_cast<float>(users) /
-			static_cast<float>(Parent->nickserv.LiveSize()));
+			static_cast<float>(Magick::instance().nickserv.LiveSize()));
 		do_BreakDown2(ServCounts, mynick, source, previndent + "  ", downlinks[i]);
 	    }
 	}
@@ -732,8 +737,8 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
 
     mstring message = params.Before(" ", 2);
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -742,18 +747,18 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
 
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
-	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
     {
-	Parent->nickserv.stats.clear();
+	Magick::instance().nickserv.stats.clear();
 	return;
     }
 
     unsigned long linked = 0, suspended = 0, forbidden = 0;
     NickServ::stored_t::iterator i;
     { RLOCK(("NickServ", "stored"));
-    for (i=Parent->nickserv.StoredBegin();
-		i!=Parent->nickserv.StoredEnd(); i++)
+    for (i=Magick::instance().nickserv.StoredBegin();
+		i!=Magick::instance().nickserv.StoredEnd(); i++)
     {
 	RLOCK2(("NickServ", "stored", i->first));
 	if (i->second.Forbidden())
@@ -768,48 +773,48 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
     }}
 
     SEND(mynick, source, "STATS/NICK_REGD", (
-		Parent->nickserv.StoredSize(), linked));
+		Magick::instance().nickserv.StoredSize(), linked));
     SEND(mynick, source, "STATS/NICK_DENIED", (
 		suspended, forbidden));
     SEND(mynick, source, "STATS/NICK_CMD", (
-		ToHumanTime(Parent->nickserv.stats.ClearTime().SecondsSince())));
+		ToHumanTime(Magick::instance().nickserv.stats.ClearTime().SecondsSince())));
     SEND(mynick, source, "STATS/NICK_CMD1", (
-		fmstring("%10d", Parent->nickserv.stats.Register()),
-		fmstring("%10d", Parent->nickserv.stats.Drop())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Register()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Drop())));
     SEND(mynick, source, "STATS/NICK_CMD2", (
-		fmstring("%10d", Parent->nickserv.stats.Link()),
-		fmstring("%10d", Parent->nickserv.stats.Unlink())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Link()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Unlink())));
     SEND(mynick, source, "STATS/NICK_CMD3", (
-		fmstring("%10d", Parent->nickserv.stats.Host()),
-		fmstring("%10d", Parent->nickserv.stats.Identify())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Host()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Identify())));
     SEND(mynick, source, "STATS/NICK_CMD4", (
-		fmstring("%10d", Parent->nickserv.stats.Ghost()),
-		fmstring("%10d", Parent->nickserv.stats.Recover())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Ghost()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Recover())));
     SEND(mynick, source, "STATS/NICK_CMD5", (
-		fmstring("%10d", Parent->nickserv.stats.Suspend()),
-		fmstring("%10d", Parent->nickserv.stats.Unsuspend())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Suspend()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Unsuspend())));
 #ifdef GETPASS
     SEND(mynick, source, "STATS/NICK_CMD6A", (
-		fmstring("%10d", Parent->nickserv.stats.Forbid()),
-		fmstring("%10d", Parent->nickserv.stats.Getpass())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Forbid()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Getpass())));
 #else
     SEND(mynick, source, "STATS/NICK_CMD6B", (
-		fmstring("%10d", Parent->nickserv.stats.Forbid()),
-		fmstring("%10d", Parent->nickserv.stats.Getpass())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Forbid()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Getpass())));
 #endif
     SEND(mynick, source, "STATS/NICK_CMD7", (
-		fmstring("%10d", Parent->nickserv.stats.Access()),
-		fmstring("%10d", Parent->nickserv.stats.Ignore())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Access()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Ignore())));
     SEND(mynick, source, "STATS/NICK_CMD8", (
-		fmstring("%10d", Parent->nickserv.stats.Set()),
-		fmstring("%10d", Parent->nickserv.stats.NoExpire())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Set()),
+		fmstring("%10d", Magick::instance().nickserv.stats.NoExpire())));
     SEND(mynick, source, "STATS/NICK_CMD9", (
-		fmstring("%10d", Parent->nickserv.stats.Lock()),
-		fmstring("%10d", Parent->nickserv.stats.Unlock())));
+		fmstring("%10d", Magick::instance().nickserv.stats.Lock()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Unlock())));
     SEND(mynick, source, "STATS/NICK_CMD10", (
-		fmstring("%10d", Parent->nickserv.stats.SetPicture()),
-		fmstring("%10d", Parent->nickserv.stats.Send())));
-    Parent->servmsg.stats.i_Stats++;
+		fmstring("%10d", Magick::instance().nickserv.stats.SetPicture()),
+		fmstring("%10d", Magick::instance().nickserv.stats.Send())));
+    Magick::instance().servmsg.stats.i_Stats++;
 }
 
 
@@ -819,8 +824,8 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
 
     mstring message = params.Before(" ", 2);
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -829,18 +834,18 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
 
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
-	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
     {
-	Parent->chanserv.stats.clear();
+	Magick::instance().chanserv.stats.clear();
 	return;
     }
 
     unsigned long suspended = 0, forbidden = 0;
     ChanServ::stored_t::iterator i;
     { RLOCK(("ChanServ", "stored"));
-    for (i=Parent->chanserv.StoredBegin();
-		i!=Parent->chanserv.StoredEnd(); i++)
+    for (i=Magick::instance().chanserv.StoredBegin();
+		i!=Magick::instance().chanserv.StoredEnd(); i++)
     {
 	RLOCK2(("ChanServ", "stored", i->first));
 	if (i->second.Forbidden())
@@ -853,62 +858,62 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
     }}
 
     SEND(mynick, source, "STATS/CHAN_REGD", (
-		Parent->chanserv.StoredSize()));
+		Magick::instance().chanserv.StoredSize()));
     SEND(mynick, source, "STATS/CHAN_DENIED", (
 		suspended, forbidden));
     SEND(mynick, source, "STATS/CHAN_CMD", (
-		ToHumanTime(Parent->chanserv.stats.ClearTime().SecondsSince())));
+		ToHumanTime(Magick::instance().chanserv.stats.ClearTime().SecondsSince())));
     SEND(mynick, source, "STATS/CHAN_CMD1", (
-		fmstring("%10d", Parent->chanserv.stats.Register()),
-		fmstring("%10d", Parent->chanserv.stats.Drop())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Register()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Drop())));
     SEND(mynick, source, "STATS/CHAN_CMD2", (
-		fmstring("%10d", Parent->chanserv.stats.Identify())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Identify())));
     SEND(mynick, source, "STATS/CHAN_CMD3", (
-		fmstring("%10d", Parent->chanserv.stats.Suspend()),
-		fmstring("%10d", Parent->chanserv.stats.Unsuspend())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Suspend()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Unsuspend())));
 #ifdef GETPASS
     SEND(mynick, source, "STATS/CHAN_CMD4A", (
-		fmstring("%10d", Parent->chanserv.stats.Forbid()),
-		fmstring("%10d", Parent->chanserv.stats.Getpass())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Forbid()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Getpass())));
 #else
     SEND(mynick, source, "STATS/CHAN_CMD4B", (
-		fmstring("%10d", Parent->chanserv.stats.Forbid()),
-		fmstring("%10d", Parent->chanserv.stats.Getpass())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Forbid()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Getpass())));
 #endif
     SEND(mynick, source, "STATS/CHAN_CMD5", (
-		fmstring("%10d", Parent->chanserv.stats.Mode()),
-		fmstring("%10d", Parent->chanserv.stats.Topic())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Mode()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Topic())));
     SEND(mynick, source, "STATS/CHAN_CMD6", (
-		fmstring("%10d", Parent->chanserv.stats.Op()),
-		fmstring("%10d", Parent->chanserv.stats.Deop())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Op()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Deop())));
     SEND(mynick, source, "STATS/CHAN_CMD7", (
-		fmstring("%10d", Parent->chanserv.stats.Halfop()),
-		fmstring("%10d", Parent->chanserv.stats.Dehalfop())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Halfop()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Dehalfop())));
     SEND(mynick, source, "STATS/CHAN_CMD8", (
-		fmstring("%10d", Parent->chanserv.stats.Voice()),
-		fmstring("%10d", Parent->chanserv.stats.Devoice())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Voice()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Devoice())));
     SEND(mynick, source, "STATS/CHAN_CMD9", (
-		fmstring("%10d", Parent->chanserv.stats.Kick()),
-		fmstring("%10d", Parent->chanserv.stats.Anonkick())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Kick()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Anonkick())));
     SEND(mynick, source, "STATS/CHAN_CMD10", (
-		fmstring("%10d", Parent->chanserv.stats.Invite()),
-		fmstring("%10d", Parent->chanserv.stats.Unban())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Invite()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Unban())));
     SEND(mynick, source, "STATS/CHAN_CMD11", (
-		fmstring("%10d", Parent->chanserv.stats.Clear()),
-		fmstring("%10d", Parent->chanserv.stats.Akick())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Clear()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Akick())));
     SEND(mynick, source, "STATS/CHAN_CMD12", (
-		fmstring("%10d", Parent->chanserv.stats.Level()),
-		fmstring("%10d", Parent->chanserv.stats.Access())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Level()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Access())));
     SEND(mynick, source, "STATS/CHAN_CMD13", (
-		fmstring("%10d", Parent->chanserv.stats.Greet()),
-		fmstring("%10d", Parent->chanserv.stats.Message())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Greet()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Message())));
     SEND(mynick, source, "STATS/CHAN_CMD14", (
-		fmstring("%10d", Parent->chanserv.stats.Set()),
-		fmstring("%10d", Parent->chanserv.stats.NoExpire())));
+		fmstring("%10d", Magick::instance().chanserv.stats.Set()),
+		fmstring("%10d", Magick::instance().chanserv.stats.NoExpire())));
     SEND(mynick, source, "STATS/CHAN_CMD15", (
-		fmstring("%10d", Parent->chanserv.stats.Lock()),
-		fmstring("%10d", Parent->chanserv.stats.Unlock())));
-    Parent->servmsg.stats.i_Stats++;
+		fmstring("%10d", Magick::instance().chanserv.stats.Lock()),
+		fmstring("%10d", Magick::instance().chanserv.stats.Unlock())));
+    Magick::instance().servmsg.stats.i_Stats++;
 }
 
 
@@ -918,8 +923,8 @@ void ServMsg::do_stats_Other(const mstring &mynick, const mstring &source, const
 
     mstring message = params.Before(" ", 2);
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -928,81 +933,81 @@ void ServMsg::do_stats_Other(const mstring &mynick, const mstring &source, const
 
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
-	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
     {
-	Parent->memoserv.stats.clear();
-	Parent->commserv.stats.clear();
-	Parent->servmsg.stats.clear();
+	Magick::instance().memoserv.stats.clear();
+	Magick::instance().commserv.stats.clear();
+	Magick::instance().servmsg.stats.clear();
 	return;
     }
 
 
 
     SEND(mynick, source, "STATS/OTH_MEMO", (
-		Parent->memoserv.NickSize()));
+		Magick::instance().memoserv.NickSize()));
     SEND(mynick, source, "STATS/OTH_NEWS", (
-		Parent->memoserv.ChannelSize()));
+		Magick::instance().memoserv.ChannelSize()));
     SEND(mynick, source, "STATS/OTH_COMM", (
-		Parent->commserv.ListSize()));
+		Magick::instance().commserv.ListSize()));
 
     SEND(mynick, source, "STATS/OTH_CMD", (
-		Parent->memoserv.GetInternalName(),
-		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince())));
+		Magick::instance().memoserv.GetInternalName(),
+		ToHumanTime(Magick::instance().operserv.stats.ClearTime().SecondsSince())));
     SEND(mynick, source, "STATS/OTH_CMD1", (
-		fmstring("%10d", Parent->memoserv.stats.Read()),
-		fmstring("%10d", Parent->memoserv.stats.Unread())));
+		fmstring("%10d", Magick::instance().memoserv.stats.Read()),
+		fmstring("%10d", Magick::instance().memoserv.stats.Unread())));
     SEND(mynick, source, "STATS/OTH_CMD2", (
-		fmstring("%10d", Parent->memoserv.stats.Send()),
-		fmstring("%10d", Parent->memoserv.stats.Flush())));
+		fmstring("%10d", Magick::instance().memoserv.stats.Send()),
+		fmstring("%10d", Magick::instance().memoserv.stats.Flush())));
     SEND(mynick, source, "STATS/OTH_CMD3", (
-		fmstring("%10d", Parent->memoserv.stats.Reply()),
-		fmstring("%10d", Parent->memoserv.stats.Forward())));
+		fmstring("%10d", Magick::instance().memoserv.stats.Reply()),
+		fmstring("%10d", Magick::instance().memoserv.stats.Forward())));
     SEND(mynick, source, "STATS/OTH_CMD4", (
-		fmstring("%10d", Parent->memoserv.stats.Cancel()),
-		fmstring("%10d", Parent->memoserv.stats.Del())));
+		fmstring("%10d", Magick::instance().memoserv.stats.Cancel()),
+		fmstring("%10d", Magick::instance().memoserv.stats.Del())));
     SEND(mynick, source, "STATS/OTH_CMD5", (
-		fmstring("%10d", Parent->memoserv.stats.Continue()),
-		fmstring("%10d", Parent->memoserv.stats.Set())));
+		fmstring("%10d", Magick::instance().memoserv.stats.Continue()),
+		fmstring("%10d", Magick::instance().memoserv.stats.Set())));
     SEND(mynick, source, "STATS/OTH_CMD6", (
-		fmstring("%10d", Parent->memoserv.stats.File()),
-		fmstring("%10d", Parent->memoserv.stats.Get())));
+		fmstring("%10d", Magick::instance().memoserv.stats.File()),
+		fmstring("%10d", Magick::instance().memoserv.stats.Get())));
 
     SEND(mynick, source, "STATS/OTH_CMD", (
-		Parent->commserv.GetInternalName(),
-		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince())));
+		Magick::instance().commserv.GetInternalName(),
+		ToHumanTime(Magick::instance().operserv.stats.ClearTime().SecondsSince())));
     SEND(mynick, source, "STATS/OTH_CMD11", (
-		fmstring("%10d", Parent->commserv.stats.Add()),
-		fmstring("%10d", Parent->commserv.stats.Del())));
+		fmstring("%10d", Magick::instance().commserv.stats.Add()),
+		fmstring("%10d", Magick::instance().commserv.stats.Del())));
     SEND(mynick, source, "STATS/OTH_CMD12", (
-		fmstring("%10d", Parent->commserv.stats.Member()),
-		fmstring("%10d", Parent->commserv.stats.Logon())));
+		fmstring("%10d", Magick::instance().commserv.stats.Member()),
+		fmstring("%10d", Magick::instance().commserv.stats.Logon())));
     SEND(mynick, source, "STATS/OTH_CMD13", (
-		fmstring("%10d", Parent->commserv.stats.Memo()),
-		fmstring("%10d", Parent->commserv.stats.Set())));
+		fmstring("%10d", Magick::instance().commserv.stats.Memo()),
+		fmstring("%10d", Magick::instance().commserv.stats.Set())));
     SEND(mynick, source, "STATS/OTH_CMD14", (
-		fmstring("%10d", Parent->commserv.stats.Lock()),
-		fmstring("%10d", Parent->commserv.stats.Unlock())));
+		fmstring("%10d", Magick::instance().commserv.stats.Lock()),
+		fmstring("%10d", Magick::instance().commserv.stats.Unlock())));
 
     SEND(mynick, source, "STATS/OTH_CMD", (
-		Parent->servmsg.GetInternalName(),
-		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince())));
+		Magick::instance().servmsg.GetInternalName(),
+		ToHumanTime(Magick::instance().operserv.stats.ClearTime().SecondsSince())));
     SEND(mynick, source, "STATS/OTH_CMD21", (
-		fmstring("%10d", Parent->servmsg.stats.Global()),
-		fmstring("%10d", Parent->servmsg.stats.Credits())));
+		fmstring("%10d", Magick::instance().servmsg.stats.Global()),
+		fmstring("%10d", Magick::instance().servmsg.stats.Credits())));
     SEND(mynick, source, "STATS/OTH_CMD22", (
-		fmstring("%10d", Parent->servmsg.stats.Ask()),
-		fmstring("%10d", Parent->servmsg.stats.Stats())));
+		fmstring("%10d", Magick::instance().servmsg.stats.Ask()),
+		fmstring("%10d", Magick::instance().servmsg.stats.Stats())));
     SEND(mynick, source, "STATS/OTH_CMD23", (
-		fmstring("%10d", Parent->servmsg.stats.File_Add()),
-		fmstring("%10d", Parent->servmsg.stats.File_Del())));
+		fmstring("%10d", Magick::instance().servmsg.stats.File_Add()),
+		fmstring("%10d", Magick::instance().servmsg.stats.File_Del())));
     SEND(mynick, source, "STATS/OTH_CMD24", (
-		fmstring("%10d", Parent->servmsg.stats.File_Priv()),
-		fmstring("%10d", Parent->servmsg.stats.File_Rename())));
+		fmstring("%10d", Magick::instance().servmsg.stats.File_Priv()),
+		fmstring("%10d", Magick::instance().servmsg.stats.File_Rename())));
     SEND(mynick, source, "STATS/OTH_CMD25", (
-		fmstring("%10d", Parent->servmsg.stats.File_Send()),
-		fmstring("%10d", Parent->servmsg.stats.File_Cancel())));
-    Parent->servmsg.stats.i_Stats++;
+		fmstring("%10d", Magick::instance().servmsg.stats.File_Send()),
+		fmstring("%10d", Magick::instance().servmsg.stats.File_Cancel())));
+    Magick::instance().servmsg.stats.i_Stats++;
 }
 
 
@@ -1012,8 +1017,8 @@ void ServMsg::do_stats_Oper(const mstring &mynick, const mstring &source, const 
 
     mstring message = params.Before(" ", 2);
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1022,61 +1027,61 @@ void ServMsg::do_stats_Oper(const mstring &mynick, const mstring &source, const 
 
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
-	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
     {
-	Parent->operserv.stats.clear();
+	Magick::instance().operserv.stats.clear();
 	return;
     }
 
 
     SEND(mynick, source, "STATS/OPER_CLONE", (
-		Parent->operserv.Clone_size()));
+		Magick::instance().operserv.Clone_size()));
     SEND(mynick, source, "STATS/OPER_AKILL", (
-		Parent->operserv.Akill_size()));
+		Magick::instance().operserv.Akill_size()));
     SEND(mynick, source, "STATS/OPER_OPERDENY", (
-		Parent->operserv.OperDeny_size()));
+		Magick::instance().operserv.OperDeny_size()));
     SEND(mynick, source, "STATS/OPER_IGNORE", (
-		Parent->operserv.Ignore_size()));
+		Magick::instance().operserv.Ignore_size()));
 
     SEND(mynick, source, "STATS/OPER_CMD", (
-		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince())));
+		ToHumanTime(Magick::instance().operserv.stats.ClearTime().SecondsSince())));
     SEND(mynick, source, "STATS/OPER_CMD1", (
-		fmstring("%10d", Parent->operserv.stats.Trace()),
-		fmstring("%10d", Parent->operserv.stats.Mode())));
-    if (!(Parent->server.proto.SQLINE().empty() ||
-	Parent->server.proto.UNSQLINE().empty()))
+		fmstring("%10d", Magick::instance().operserv.stats.Trace()),
+		fmstring("%10d", Magick::instance().operserv.stats.Mode())));
+    if (!(Magick::instance().server.proto.SQLINE().empty() ||
+	Magick::instance().server.proto.UNSQLINE().empty()))
     {
 	SEND(mynick, source, "STATS/OPER_CMD2", (
-		fmstring("%10d", Parent->operserv.stats.Qline()),
-		fmstring("%10d", Parent->operserv.stats.Unqline())));
+		fmstring("%10d", Magick::instance().operserv.stats.Qline()),
+		fmstring("%10d", Magick::instance().operserv.stats.Unqline())));
     }
-    if (!(Parent->server.proto.SVSNOOP().empty() ||
-	Parent->server.proto.SVSKILL().empty()))
+    if (!(Magick::instance().server.proto.SVSNOOP().empty() ||
+	Magick::instance().server.proto.SVSKILL().empty()))
     {
 	SEND(mynick, source, "STATS/OPER_CMD3", (
-		fmstring("%10d", Parent->operserv.stats.Noop()),
-		fmstring("%10d", Parent->operserv.stats.Kill())));
+		fmstring("%10d", Magick::instance().operserv.stats.Noop()),
+		fmstring("%10d", Magick::instance().operserv.stats.Kill())));
     }
     SEND(mynick, source, "STATS/OPER_CMD4", (
-		fmstring("%10d", Parent->operserv.stats.Ping()),
-		fmstring("%10d", Parent->operserv.stats.Update())));
+		fmstring("%10d", Magick::instance().operserv.stats.Ping()),
+		fmstring("%10d", Magick::instance().operserv.stats.Update())));
     SEND(mynick, source, "STATS/OPER_CMD5", (
-		fmstring("%10d", Parent->operserv.stats.Reload()),
-		fmstring("%10d", Parent->operserv.stats.Unload())));
+		fmstring("%10d", Magick::instance().operserv.stats.Reload()),
+		fmstring("%10d", Magick::instance().operserv.stats.Unload())));
     SEND(mynick, source, "STATS/OPER_CMD6", (
-		fmstring("%10d", Parent->operserv.stats.Jupe()),
-		fmstring("%10d", Parent->operserv.stats.OnOff())));
+		fmstring("%10d", Magick::instance().operserv.stats.Jupe()),
+		fmstring("%10d", Magick::instance().operserv.stats.OnOff())));
     SEND(mynick, source, "STATS/OPER_CMD7", (
-		fmstring("%10d", Parent->operserv.stats.Clone()),
-		fmstring("%10d", Parent->operserv.stats.Akill())));
+		fmstring("%10d", Magick::instance().operserv.stats.Clone()),
+		fmstring("%10d", Magick::instance().operserv.stats.Akill())));
     SEND(mynick, source, "STATS/OPER_CMD8", (
-		fmstring("%10d", Parent->operserv.stats.OperDeny()),
-		fmstring("%10d", Parent->operserv.stats.Ignore())));
-    if (!Parent->server.proto.SVSHOST().empty())
+		fmstring("%10d", Magick::instance().operserv.stats.OperDeny()),
+		fmstring("%10d", Magick::instance().operserv.stats.Ignore())));
+    if (!Magick::instance().server.proto.SVSHOST().empty())
 	SEND(mynick, source, "STATS/OPER_CMD9", (
-		fmstring("%10d", Parent->operserv.stats.Hide())));
-    Parent->servmsg.stats.i_Stats++;
+		fmstring("%10d", Magick::instance().operserv.stats.Hide())));
+    Magick::instance().servmsg.stats.i_Stats++;
 }
 
 
@@ -1088,8 +1093,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 
     mstring message = params.Before(" ", 2);
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1104,77 +1109,77 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	sys  = tmp.ru_stime;
 	SEND(mynick, source, "STATS/USE_CPU", (
 		((sys.sec() == 0) ?
-			Parent->getMessage(source, "VALS/TIME_NONE") :
+			Magick::instance().getMessage(source, "VALS/TIME_NONE") :
 			ToHumanTime(sys.sec(), source)),
 		((user.sec() == 0) ?
-			Parent->getMessage(source, "VALS/TIME_NONE") :
+			Magick::instance().getMessage(source, "VALS/TIME_NONE") :
 			ToHumanTime(user.sec(), source))));
 	}
 
 	{ RLOCK(("IrcSvcHandler"));
-	if (Parent->ircsvchandler != NULL)
+	if (Magick::instance().ircsvchandler != NULL)
 	{
 	SEND(mynick, source, "STATS/USE_TRAFFIC", (
-		ToHumanSpace(Parent->ircsvchandler->In_Traffic()),
-		ToHumanSpace(Parent->ircsvchandler->In_Traffic() /
-		Parent->ircsvchandler->Connect_Time().SecondsSince()),
-		ToHumanSpace(Parent->ircsvchandler->Out_Traffic()),
-		ToHumanSpace(Parent->ircsvchandler->Out_Traffic() /
-		Parent->ircsvchandler->Connect_Time().SecondsSince()),
-		ToHumanTime(Parent->ircsvchandler->Connect_Time().SecondsSince(), source)));
+		ToHumanSpace(Magick::instance().ircsvchandler->In_Traffic()),
+		ToHumanSpace(Magick::instance().ircsvchandler->In_Traffic() /
+		Magick::instance().ircsvchandler->Connect_Time().SecondsSince()),
+		ToHumanSpace(Magick::instance().ircsvchandler->Out_Traffic()),
+		ToHumanSpace(Magick::instance().ircsvchandler->Out_Traffic() /
+		Magick::instance().ircsvchandler->Connect_Time().SecondsSince()),
+		ToHumanTime(Magick::instance().ircsvchandler->Connect_Time().SecondsSince(), source)));
 	}}
 
 	size = 0;
 	NickServ::live_t::iterator i;
 	{ RLOCK(("NickServ", "live"));
-	for (i=Parent->nickserv.LiveBegin(); i!=Parent->nickserv.LiveEnd(); i++)
+	for (i=Magick::instance().nickserv.LiveBegin(); i!=Magick::instance().nickserv.LiveEnd(); i++)
 	{
 	RLOCK2(("NickServ", "live", i->first));
 	size += i->first.capacity();
 	size += i->second.Usage();
     }}
     SEND(mynick, source, "STATS/USE_NS_LIVE", (
-	fmstring("%5d", Parent->nickserv.LiveSize()),ToHumanSpace(size)));
+	fmstring("%5d", Magick::instance().nickserv.LiveSize()),ToHumanSpace(size)));
     size = 0;
     ChanServ::live_t::iterator j;
     { RLOCK(("ChanServ", "live"));
-    for (j=Parent->chanserv.LiveBegin(); j!=Parent->chanserv.LiveEnd(); j++)
+    for (j=Magick::instance().chanserv.LiveBegin(); j!=Magick::instance().chanserv.LiveEnd(); j++)
     {
 	RLOCK2(("ChanServ", "live", j->first));
 	size += j->first.capacity();
 	size += j->second.Usage();
     }}
     SEND(mynick, source, "STATS/USE_CS_LIVE", (
-	fmstring("%5d", Parent->chanserv.LiveSize()), ToHumanSpace(size)));
+	fmstring("%5d", Magick::instance().chanserv.LiveSize()), ToHumanSpace(size)));
     size = 0;
     NickServ::stored_t::iterator k;
     { RLOCK(("NickServ", "stored"));
-    for (k=Parent->nickserv.StoredBegin(); k!=Parent->nickserv.StoredEnd(); k++)
+    for (k=Magick::instance().nickserv.StoredBegin(); k!=Magick::instance().nickserv.StoredEnd(); k++)
     {
 	RLOCK2(("NickServ", "stored", i->first));
 	size += k->first.capacity();
 	size += k->second.Usage();
     }}
     SEND(mynick, source, "STATS/USE_NS_STORED", (
-	fmstring("%5d", Parent->nickserv.StoredSize()), ToHumanSpace(size)));
+	fmstring("%5d", Magick::instance().nickserv.StoredSize()), ToHumanSpace(size)));
     size = 0;
     ChanServ::stored_t::iterator l;
     { RLOCK(("ChanServ", "stored"));
-    for (l=Parent->chanserv.StoredBegin(); l!=Parent->chanserv.StoredEnd(); l++)
+    for (l=Magick::instance().chanserv.StoredBegin(); l!=Magick::instance().chanserv.StoredEnd(); l++)
     {
 	RLOCK2(("chanServ", "stored", i->first));
 	size += l->first.capacity();
 	size += l->second.Usage();
     }}
     SEND(mynick, source, "STATS/USE_CS_STORED", (
-	fmstring("%5d", Parent->chanserv.StoredSize()), ToHumanSpace(size)));
+	fmstring("%5d", Magick::instance().chanserv.StoredSize()), ToHumanSpace(size)));
 
     size = 0;
     MemoServ::nick_t::iterator m1;
     MemoServ::nick_memo_t::iterator m2;
     { RLOCK(("MemoServ", "nick"));
-    for (count = 0, m1=Parent->memoserv.NickBegin();
-			m1!=Parent->memoserv.NickEnd(); m1++)
+    for (count = 0, m1=Magick::instance().memoserv.NickBegin();
+			m1!=Magick::instance().memoserv.NickEnd(); m1++)
     {
 	{ RLOCK2(("MemoServ", "nick", m1->first));
 	size += m1->first.capacity();
@@ -1191,8 +1196,8 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     MemoServ::channel_t::iterator n1;
     MemoServ::channel_news_t::iterator n2;
     { RLOCK(("MemoServ", "channel"));
-    for (count = 0, n1=Parent->memoserv.ChannelBegin();
-			n1!=Parent->memoserv.ChannelEnd(); n1++)
+    for (count = 0, n1=Magick::instance().memoserv.ChannelBegin();
+			n1!=Magick::instance().memoserv.ChannelEnd(); n1++)
     {
 	size += n1->first.capacity();
 	{ RLOCK2(("MemoServ", "channel", n1->first));
@@ -1208,46 +1213,46 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     size = 0;
     CommServ::list_t::iterator o;
     { RLOCK(("CommServ", "list"));
-    for (o=Parent->commserv.ListBegin(); o!=Parent->commserv.ListEnd(); o++)
+    for (o=Magick::instance().commserv.ListBegin(); o!=Magick::instance().commserv.ListEnd(); o++)
     {
 	RLOCK2(("CommServ", "list", o->first));
 	size += o->first.capacity();
 	size += o->second.Usage();
     }}
     SEND(mynick, source, "STATS/USE_COMMITTEE", (
-	fmstring("%5d", Parent->commserv.ListSize()), ToHumanSpace(size)));
+	fmstring("%5d", Magick::instance().commserv.ListSize()), ToHumanSpace(size)));
 
 
     SEND(mynick, source, "STATS/USE_OPERSERV", (
-		fmstring("%5d", (Parent->operserv.Clone_size() +
-		Parent->operserv.Akill_size() +
-		Parent->operserv.OperDeny_size() +
-		Parent->operserv.Ignore_size())),
-		ToHumanSpace(Parent->operserv.Clone_Usage() +
-		Parent->operserv.Akill_Usage() +
-		Parent->operserv.OperDeny_Usage() +
-		Parent->operserv.Ignore_Usage())));
+		fmstring("%5d", (Magick::instance().operserv.Clone_size() +
+		Magick::instance().operserv.Akill_size() +
+		Magick::instance().operserv.OperDeny_size() +
+		Magick::instance().operserv.Ignore_size())),
+		ToHumanSpace(Magick::instance().operserv.Clone_Usage() +
+		Magick::instance().operserv.Akill_Usage() +
+		Magick::instance().operserv.OperDeny_Usage() +
+		Magick::instance().operserv.Ignore_Usage())));
 
     size = 0;
     Server::list_t::iterator p;
     { RLOCK(("Server", "list"));
-    for (p=Parent->server.ListBegin(); p!=Parent->server.ListEnd(); p++)
+    for (p=Magick::instance().server.ListBegin(); p!=Magick::instance().server.ListEnd(); p++)
     {
 	RLOCK2(("Server", "list", p->first));
 	size += p->first.capacity();
 	size += p->second.Usage();
     }}
     SEND(mynick, source, "STATS/USE_OTHER", (
-	fmstring("%5d", Parent->server.ListSize()), ToHumanSpace(size)));
+	fmstring("%5d", Magick::instance().server.ListSize()), ToHumanSpace(size)));
 
     NSEND(mynick, source, "STATS/USE_LANGHEAD");
 
     set<mstring> tmp, lang;
     set<mstring>::iterator iter;
-    tmp.clear(); tmp = Parent->LNG_Loaded();
+    tmp.clear(); tmp = Magick::instance().LNG_Loaded();
     for (iter=tmp.begin(); iter!=tmp.end(); iter++)
 	lang.insert(*iter);
-    tmp.clear(); tmp = Parent->HLP_Loaded();
+    tmp.clear(); tmp = Magick::instance().HLP_Loaded();
     for (iter=tmp.begin(); iter!=tmp.end(); iter++)
 	lang.insert(*iter);
 
@@ -1255,11 +1260,11 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     for (q=lang.begin(); q!=lang.end(); q++)
     {
 	::sendV(mynick, source, "%-20s %7s  %7s",
-		q->c_str(), ToHumanSpace(Parent->LNG_Usage(*q)).c_str(),
-		ToHumanSpace(Parent->HLP_Usage(*q)).c_str());
+		q->c_str(), ToHumanSpace(Magick::instance().LNG_Usage(*q)).c_str(),
+		ToHumanSpace(Magick::instance().HLP_Usage(*q)).c_str());
 	
     }
-    Parent->servmsg.stats.i_Stats++;
+    Magick::instance().servmsg.stats.i_Stats++;
 }
 
 void ServMsg::do_stats_All(const mstring &mynick, const mstring &source, const mstring &params)
@@ -1268,8 +1273,8 @@ void ServMsg::do_stats_All(const mstring &mynick, const mstring &source, const m
 
     mstring message = params.Before(" ", 2);
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1281,7 +1286,7 @@ void ServMsg::do_stats_All(const mstring &mynick, const mstring &source, const m
     do_stats_Channel(mynick, source, params);
     do_stats_Oper(mynick, source, params);
     do_stats_Other(mynick, source, params);
-    Parent->servmsg.stats.i_Stats -= 5;
+    Magick::instance().servmsg.stats.i_Stats -= 5;
     do_stats_Usage(mynick, source, params);
 }
 
@@ -1290,10 +1295,10 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
     FT("ServMsg::do_Stats", (mynick, source, params));
 
     if (params.WordCount(" ") > 1 &&
-	((Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source)) ||
-	 (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))))
+	((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source)) ||
+	 (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source))))
     {
 	do_1_2param(mynick, source, params);
 	return;
@@ -1301,8 +1306,8 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
 
     mstring message = params.Before(" ");
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1310,29 +1315,29 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
     }}
 
     SEND(mynick, source, "STATS/GEN_UPTIME", (
-		StartTime.Ago()));
-    if (StartTime != Parent->ResetTime())
+		Magick::StartTime().Ago()));
+    if (Magick::StartTime() != Magick::instance().ResetTime())
 	SEND(mynick, source, "STATS/GEN_RESET", (
-		Parent->ResetTime().Ago()));
+		Magick::instance().ResetTime().Ago()));
     SEND(mynick, source, "STATS/GEN_MAXUSERS", (
-		Parent->server.UserMax()));
+		Magick::instance().server.UserMax()));
     size_t opers = 0;
     NickServ::live_t::iterator k;
     { RLOCK(("NickServ", "live"));
-    for (k=Parent->nickserv.LiveBegin(); k!=Parent->nickserv.LiveEnd(); k++)
+    for (k=Magick::instance().nickserv.LiveBegin(); k!=Magick::instance().nickserv.LiveEnd(); k++)
     {
 	RLOCK2(("NickServ", "live", k->first));
 	if (k->second.HasMode("o"))
 		opers++;
     }}
     SEND(mynick, source, "STATS/GEN_USERS", (
-		Parent->nickserv.LiveSize(), opers));
+		Magick::instance().nickserv.LiveSize(), opers));
 
-    if ((Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1)))
+    if ((Magick::instance().operserv.CloneList_size() - Magick::instance().operserv.CloneList_size(1)))
 	SEND(mynick, source, "STATS/GEN_CLONES", (
-		Parent->operserv.CloneList_sum() - Parent->operserv.CloneList_size(),
-		Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1)));
-    Parent->servmsg.stats.i_Stats++;
+		Magick::instance().operserv.CloneList_sum() - Magick::instance().operserv.CloneList_size(),
+		Magick::instance().operserv.CloneList_size() - Magick::instance().operserv.CloneList_size(1)));
+    Magick::instance().servmsg.stats.i_Stats++;
 }
 
 
@@ -1347,8 +1352,8 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
     mstring message  = params.Before(" ", 2).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1358,63 +1363,63 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
     if (params.WordCount(" ") < 3)
     {
 	mask = "*";
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else if (params.WordCount(" ") < 4)
     {
 	mask = params.ExtractWord(3, " ").LowerCase();
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else
     {
 	mask = params.ExtractWord(3, " ").LowerCase();
 	listsize = atoi(params.ExtractWord(4, " ").c_str());
-	if (listsize > Parent->config.Maxlist())
+	if (listsize > Magick::instance().config.Maxlist())
 	{
 	    mstring output;
 	    SEND(mynick, source, "LIST/MAXLIST", (
-					Parent->config.Maxlist()));
+					Magick::instance().config.Maxlist()));
 	    return;
 	}
     }
 
-    vector<unsigned long> filelist = Parent->filesys.GetList(FileMap::Public, source);
+    vector<unsigned long> filelist = Magick::instance().filesys.GetList(FileMap::Public, source);
 
     if (!filelist.size())
     {
  	SEND(mynick, source, "LIST/EMPTY", (
- 			Parent->getMessage(source, "LIST/FILES")));
+ 			Magick::instance().getMessage(source, "LIST/FILES")));
  	return;
     }
 
     SEND(mynick, source, "LIST/DISPLAY_MATCH", (
-    		mask, Parent->getMessage(source, "LIST/FILES")));
+    		mask, Magick::instance().getMessage(source, "LIST/FILES")));
 
-    bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source));
+    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source));
 
     for (j=0, i=0, count = 0; j < filelist.size(); j++)
     {
-	if (Parent->filesys.GetName(FileMap::Public, filelist[j]).Matches(mask, true))
+	if (Magick::instance().filesys.GetName(FileMap::Public, filelist[j]).Matches(mask, true))
 	{
 	    if (i < listsize)
 	    {
 		if (issop)
 		    ::sendV(mynick, source, "%s (%s) [%s]",
-			Parent->filesys.GetName(FileMap::Public, filelist[j]).c_str(),
-			ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filelist[j])).c_str(),
-			Parent->filesys.GetPriv(FileMap::Public, filelist[j]).c_str());
+			Magick::instance().filesys.GetName(FileMap::Public, filelist[j]).c_str(),
+			ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Public, filelist[j])).c_str(),
+			Magick::instance().filesys.GetPriv(FileMap::Public, filelist[j]).c_str());
 		else
 		{
 		    display = false;
-		    priv = Parent->filesys.GetPriv(FileMap::Public, filelist[j]);
+		    priv = Magick::instance().filesys.GetPriv(FileMap::Public, filelist[j]);
 		    if (priv.empty())
 			display = true;
 		    else
 		    {
 			for (unsigned int k=1; k<=priv.WordCount(" "); k++)
-			    if (Parent->commserv.IsList(priv.ExtractWord(k, " ")) &&
-				Parent->commserv.GetList(priv.ExtractWord(k, " ")).IsOn(source))
+			    if (Magick::instance().commserv.IsList(priv.ExtractWord(k, " ")) &&
+				Magick::instance().commserv.GetList(priv.ExtractWord(k, " ")).IsOn(source))
 			    {
 				display = true;
 				break;
@@ -1422,8 +1427,8 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
 		    }
 		    if (display)
 			::sendV(mynick, source, "%s (%s)",
-				Parent->filesys.GetName(FileMap::Public, filelist[j]).c_str(),
-				ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filelist[j])).c_str());
+				Magick::instance().filesys.GetName(FileMap::Public, filelist[j]).c_str(),
+				ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Public, filelist[j])).c_str());
 		}
 		
 		i++;
@@ -1443,8 +1448,8 @@ void ServMsg::do_file_Add(const mstring &mynick, const mstring &source, const ms
     mstring message  = params.Before(" ", 2).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1462,8 +1467,8 @@ void ServMsg::do_file_Add(const mstring &mynick, const mstring &source, const ms
     if (params.WordCount(" ") > 2)
 	priv = params.After(" ", 2).UpperCase();
 
-    Parent->servmsg.stats.i_file_Add++;
-    Parent->nickserv.GetLive(source).InFlight.Public(mynick, priv);
+    Magick::instance().servmsg.stats.i_file_Add++;
+    Magick::instance().nickserv.GetLive(source).InFlight.Public(mynick, priv);
 }
 
 
@@ -1480,20 +1485,20 @@ void ServMsg::do_file_Del(const mstring &mynick, const mstring &source, const ms
     }
 
     mstring file = params.ExtractWord(3, " ");
-    unsigned long num = Parent->filesys.GetNum(FileMap::Public, file);
+    unsigned long num = Magick::instance().filesys.GetNum(FileMap::Public, file);
 
     if (!num)
     {
  	SEND(mynick, source, "LIST/NOTEXISTS", (
- 		file, Parent->getMessage(source, "LIST/FILES")));
+ 		file, Magick::instance().getMessage(source, "LIST/FILES")));
  	return;
     }
 
-    Parent->servmsg.stats.i_file_Del++;
+    Magick::instance().servmsg.stats.i_file_Del++;
     SEND(mynick, source, "LIST/DEL", (
-    		Parent->filesys.GetName(FileMap::Public, num),
-    		Parent->getMessage(source,"LIST/FILES")));
-    Parent->filesys.EraseFile(FileMap::Public, num);
+    		Magick::instance().filesys.GetName(FileMap::Public, num),
+    		Magick::instance().getMessage(source,"LIST/FILES")));
+    Magick::instance().filesys.EraseFile(FileMap::Public, num);
 }
 
 
@@ -1511,24 +1516,24 @@ void ServMsg::do_file_Rename(const mstring &mynick, const mstring &source, const
 
     mstring file    = params.ExtractWord(3, " ");
     mstring newfile = params.ExtractWord(4, " ");
-    unsigned long num = Parent->filesys.GetNum(FileMap::Public, file);
+    unsigned long num = Magick::instance().filesys.GetNum(FileMap::Public, file);
 
     if (!num)
     {
  	SEND(mynick, source, "LIST/NOTEXISTS", (
- 		file, Parent->getMessage(source, "LIST/FILES")));
+ 		file, Magick::instance().getMessage(source, "LIST/FILES")));
  	return;
     }
 
-    Parent->servmsg.stats.i_file_Rename++;
+    Magick::instance().servmsg.stats.i_file_Rename++;
     SEND(mynick, source, "LIST/CHANGE_TIME", (
-    		Parent->filesys.GetName(FileMap::Public, num),
-    		Parent->getMessage(source, "LIST/FILES"),
+    		Magick::instance().filesys.GetName(FileMap::Public, num),
+    		Magick::instance().getMessage(source, "LIST/FILES"),
     		newfile));
     LOG(LM_INFO, "SERVMSG/FILE_RENAME", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	file, newfile));
-    Parent->filesys.Rename(FileMap::Public, num, newfile);
+    Magick::instance().filesys.Rename(FileMap::Public, num, newfile);
 }
 
 
@@ -1548,25 +1553,25 @@ void ServMsg::do_file_Priv(const mstring &mynick, const mstring &source, const m
     mstring priv;
     if (params.WordCount(" ") > 3)
 	priv = params.After(" ", 3).UpperCase();
-    unsigned long num = Parent->filesys.GetNum(FileMap::Public, file);
+    unsigned long num = Magick::instance().filesys.GetNum(FileMap::Public, file);
 
     if (!num)
     {
  	SEND(mynick, source, "LIST/NOTEXISTS", (
- 		file, Parent->getMessage(source, "LIST/FILES")));
+ 		file, Magick::instance().getMessage(source, "LIST/FILES")));
  	return;
     }
 
-    Parent->servmsg.stats.i_file_Priv++;
+    Magick::instance().servmsg.stats.i_file_Priv++;
     SEND(mynick, source, "LIST/CHANGE2_TIME", (
-    		Parent->filesys.GetName(FileMap::Public, num),
-    		Parent->getMessage(source, "LIST/FILES"),
-    		Parent->getMessage(source, "LIST/ACCESS"),
+    		Magick::instance().filesys.GetName(FileMap::Public, num),
+    		Magick::instance().getMessage(source, "LIST/FILES"),
+    		Magick::instance().getMessage(source, "LIST/ACCESS"),
     		priv));
     LOG(LM_INFO, "SERVMSG/FILE_PRIV", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	file, ((priv.empty()) ? "ALL" : priv.c_str())));
-    Parent->filesys.SetPriv(FileMap::Public, num, priv);
+    Magick::instance().filesys.SetPriv(FileMap::Public, num, priv);
 }
 
 
@@ -1577,8 +1582,8 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     mstring message  = params.Before(" ", 2).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1593,17 +1598,17 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     }
 
     mstring filename = params.ExtractWord(3, " ");
-    unsigned long filenum = Parent->filesys.GetNum(FileMap::Public, filename);
+    unsigned long filenum = Magick::instance().filesys.GetNum(FileMap::Public, filename);
 
     bool display = false;
-    mstring priv = Parent->filesys.GetPriv(FileMap::Public, filenum);
+    mstring priv = Magick::instance().filesys.GetPriv(FileMap::Public, filenum);
     if (priv.empty())
 	display = true;
     else
     {
 	for (unsigned int k=1; k<=priv.WordCount(" "); k++)
-	    if (Parent->commserv.IsList(priv.ExtractWord(k, " ")) &&
-		Parent->commserv.GetList(priv.ExtractWord(k, " ")).IsOn(source))
+	    if (Magick::instance().commserv.IsList(priv.ExtractWord(k, " ")) &&
+		Magick::instance().commserv.GetList(priv.ExtractWord(k, " ")).IsOn(source))
 	    {
 		display = true;
 		break;
@@ -1613,39 +1618,39 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     if (!(filenum && display))
     {
 	SEND(mynick, source, "LIST/NOTEXISTS", (
-		filename, Parent->getMessage(source, "LIST/FILES")));
+		filename, Magick::instance().getMessage(source, "LIST/FILES")));
 	return;
     }
 
-    filename = Parent->filesys.GetName(FileMap::Public, filenum);
-    size_t filesize = Parent->filesys.GetSize(FileMap::Public, filenum);
+    filename = Magick::instance().filesys.GetName(FileMap::Public, filenum);
+    size_t filesize = Magick::instance().filesys.GetSize(FileMap::Public, filenum);
     if (filename.empty() || filesize <= 0)
     {
 	SEND(mynick, source, "LIST/NOTEXISTS", (
-		filename, Parent->getMessage(source, "LIST/FILES")));
+		filename, Magick::instance().getMessage(source, "LIST/FILES")));
 	return;
     }
 
-    if (!(Parent->files.TempDirSize() == 0 ||
-	mFile::DirUsage(Parent->files.TempDir()) <=
-	Parent->files.TempDirSize()))
+    if (!(Magick::instance().files.TempDirSize() == 0 ||
+	mFile::DirUsage(Magick::instance().files.TempDir()) <=
+	Magick::instance().files.TempDirSize()))
     {
 	NSEND(mynick, source, "DCC/NOSPACE2");
 	return;
     }
 
     { RLOCK(("DCC"));
-    if (Parent->dcc != NULL)
+    if (Magick::instance().dcc != NULL)
     {
-	Parent->servmsg.stats.i_file_Send++;
+	Magick::instance().servmsg.stats.i_file_Send++;
 	LOG(LM_INFO, "SERVMSG/FILE_SEND", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		filename));
 	unsigned short port = mSocket::FindAvailPort();
 	::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
-		" " + mstring(Parent->LocalHost()) + " " +
+		" " + mstring(Magick::instance().LocalHost()) + " " +
 		mstring(port) + " " + mstring(filesize)));
-	Parent->dcc->Accept(port, mynick, source, FileMap::Public, filenum);
+	Magick::instance().dcc->Accept(port, mynick, source, FileMap::Public, filenum);
     }}
 }
 
@@ -1760,10 +1765,10 @@ void ServMsg::do_file_Cancel(const mstring &mynick, const mstring &source, const
     else
     {
 	{ RLOCK2(("DCC"));
-	if (Parent->dcc != NULL)
+	if (Magick::instance().dcc != NULL)
 	{
-	    Parent->dcc->Cancel(number);
-	    Parent->servmsg.stats.i_file_Cancel++;
+	    Magick::instance().dcc->Cancel(number);
+	    Magick::instance().servmsg.stats.i_file_Cancel++;
 	    SEND(mynick, source, "DCC/CANCEL", (
 		fmstring("%08x", number)));
 	}}
@@ -1816,12 +1821,12 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
     if (type.Matches("M*A*", true))
     {
 	type = "MemoAttach";
-    	if (Parent->filesys.Exists(FileMap::MemoAttach, number))
+    	if (Magick::instance().filesys.Exists(FileMap::MemoAttach, number))
     	{
     	    MemoServ::nick_t::iterator i;
     	    MemoServ::nick_memo_t::iterator j;
 	    RLOCK(("MemoServ", "nick"));
-	    for (i=Parent->memoserv.NickBegin(); i!=Parent->memoserv.NickEnd(); i++)
+	    for (i=Magick::instance().memoserv.NickBegin(); i!=Magick::instance().memoserv.NickEnd(); i++)
 	    {
 		RLOCK2(("MemoServ", "nick", i->first));
 	    	for(k=1, j=i->second.begin(); j!=i->second.end(); j++, k++)
@@ -1830,10 +1835,10 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	    	    {
 			SEND(mynick, source, "DCC/LOOKUP_MEMOATTACH", (
 				fmstring("%08x", number),
-				Parent->filesys.GetName(FileMap::MemoAttach, number),
+				Magick::instance().filesys.GetName(FileMap::MemoAttach, number),
 				j->Nick(), k, j->Sender(), j->Time().Ago()));
 			LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
-				Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+				Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 				fmstring("%08x", number), type));
 	  		return;
 	    	    }
@@ -1846,11 +1851,11 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
     else if (type.Matches("PIC*", true))
     {
 	type = "Picture";
-    	if (Parent->filesys.Exists(FileMap::Picture, number))
+    	if (Magick::instance().filesys.Exists(FileMap::Picture, number))
     	{
     	    map<mstring, Nick_Stored_t >::iterator i;
 	    RLOCK(("NickServ", "stored"));
-	    for (i=Parent->nickserv.StoredBegin(); i!=Parent->nickserv.StoredEnd(); i++)
+	    for (i=Magick::instance().nickserv.StoredBegin(); i!=Magick::instance().nickserv.StoredEnd(); i++)
 	    {
 		RLOCK2(("NickServ", "stored", i->first));
 	    	if (i->second.PicNum() == number)
@@ -1858,7 +1863,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 		    SEND(mynick, source, "DCC/LOOKUP_PICTURE", (
 	  		fmstring("%08x", number), i->second.Name()));
 		    LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
-			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+			Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 			fmstring("%08x", number), type));
 	  	    return;
 	    	}
@@ -1870,14 +1875,14 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
     else if (type.Matches("PUB*", true))
     {
 	type = "Public";
-    	if (Parent->filesys.Exists(FileMap::Public, number))
+    	if (Magick::instance().filesys.Exists(FileMap::Public, number))
     	{
 	    SEND(mynick, source, "DCC/LOOKUP_PUBLIC", (
 	  		fmstring("%08x", number),
-			Parent->filesys.GetName(FileMap::Public, number),
-	  		Parent->filesys.GetPriv(FileMap::Public, number)));
+			Magick::instance().filesys.GetName(FileMap::Public, number),
+	  		Magick::instance().filesys.GetPriv(FileMap::Public, number)));
 	    LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		fmstring("%08x", number), type));
 	    return;
     	}
@@ -1907,18 +1912,18 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
 
     Server::list_t::iterator iter;
     RLOCK(("Server", "list"));
-    for (iter=Parent->server.ListBegin();
-			iter != Parent->server.ListEnd(); iter++)
+    for (iter=Magick::instance().server.ListBegin();
+			iter != Magick::instance().server.ListEnd(); iter++)
     {
 	RLOCK2(("Server", "list", iter->first));
-	Parent->server.NOTICE(Parent->servmsg.FirstName(), "$" +
+	Magick::instance().server.NOTICE(Magick::instance().servmsg.FirstName(), "$" +
 						    iter->first, text);
     }
-    Parent->servmsg.stats.i_Global++;
+    Magick::instance().servmsg.stats.i_Global++;
     ANNOUNCE(mynick, "MISC/GLOBAL_MSG", (
 				source));
     LOG(LM_NOTICE, "SERVMSG/GLOBAL", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H), text));
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H), text));
 }
 
 void ServMsg::do_Ask(const mstring &mynick, const mstring &source, const mstring &params)
@@ -1926,7 +1931,7 @@ void ServMsg::do_Ask(const mstring &mynick, const mstring &source, const mstring
     FT("ServMsg::do_Ask", (mynick, source, params));
 
     mstring message  = params.Before(" ").UpperCase();
-    if (!Parent->server.proto.Helpops())
+    if (!Magick::instance().server.proto.Helpops())
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
@@ -1940,7 +1945,7 @@ void ServMsg::do_Ask(const mstring &mynick, const mstring &source, const mstring
     }
     mstring text = params.After(" ");
 
-    Parent->servmsg.stats.i_Ask++;
-    Parent->server.HELPOPS(mynick, source + " (ASK) - " + text);
+    Magick::instance().servmsg.stats.i_Ask++;
+    Magick::instance().server.HELPOPS(mynick, source + " (ASK) - " + text);
 }
 

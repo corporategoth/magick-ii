@@ -25,6 +25,11 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.53  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.52  2001/11/30 09:01:56  prez
 ** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
 ** Pause(bool) functions. This should help if/when we decide to implement
@@ -150,58 +155,42 @@ int main(int argc, char **argv)
     {
 #endif
 	// Globals ...
-	Parent = NULL;
-	StartTime = mDateTime::CurrentDateTime();
+	Magick::StartTime(mDateTime::CurrentDateTime());
 
 	int Result = MAGICK_RET_RESTART;
 	mThread::Attach(tt_MAIN);
 	while (Result == MAGICK_RET_RESTART)
 	{
-	    if (Parent != NULL)
-		delete Parent;
-	    Parent = new Magick(argc, argv);
-	    if (Parent == NULL)
-	    {
-		ACE_OS::fprintf(stderr, "Failed to allocate memory to start ...\n");
-		ACE_OS::fflush(stderr);
-		Result = MAGICK_RET_ERROR;
-		break;
-	    }
+	    Magick instance(argc, argv);
+	    Magick::register_instance(&instance);
 	    ACE_Reactor::close_singleton();
 
-	    Result = Parent->Init();
+	    Result = instance.Init();
 	    if (Result != MAGICK_RET_NORMAL)
 		continue;
 
-	    Result = Parent->Start();
+	    Result = instance.Start();
 	    if (Result != MAGICK_RET_NORMAL)
 	    {
-		Parent->Finish();
+		instance.Finish();
 		continue;
 	    }
-	    Result = Parent->Run();
+	    Result = instance.Run();
 	    if (Result != MAGICK_RET_NORMAL)
 	    {
-		Parent->Stop();
-		Parent->Finish();
+		instance.Stop();
+		instance.Finish();
 		continue;
 	    }
 	
-	    Result = Parent->Stop();
+	    Result = instance.Stop();
 	    if (Result != MAGICK_RET_NORMAL)
 	    {
-		Parent->Finish();
+		instance.Finish();
 		continue;
 	    }
 
-	    Result = Parent->Finish();
-	    if (Result != MAGICK_RET_NORMAL)
-		continue;
-	}
-	if (Parent != NULL)
-	{
-	    delete Parent;
-	    Parent = NULL;
+	    Result = instance.Finish();
 	}
 	mThread::Detach();
 

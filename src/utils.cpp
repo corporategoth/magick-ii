@@ -27,6 +27,11 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2001/12/20 08:02:33  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.74  2001/12/09 11:25:52  prez
 ** Some windows compilation fixes ...
 **
@@ -409,7 +414,7 @@ mstring ToHumanTime(const unsigned long in, const mstring &source)
     mstring retval;
     if (in==0)
     {
-	retval = Parent->getMessage(source, "VALS/TIME_UNLIMITED");
+	retval = Magick::instance().getMessage(source, "VALS/TIME_UNLIMITED");
     }
     else
     {

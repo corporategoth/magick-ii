@@ -25,6 +25,11 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.102  2001/12/20 08:02:31  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.101  2001/11/12 01:05:00  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -360,13 +365,13 @@ void announceV(const mstring &source, const char *pszFormat, ...);
 void announce(const mstring &source, const mstring &message);
 
 #define SEND(W, X, Y, Z) \
-	::send(W, X, parseMessage(Parent->getMessage(X, Y), mVarArray Z))
+	::send(W, X, parseMessage(Magick::instance().getMessage(X, Y), mVarArray Z))
 #define NSEND(W, X, Y) \
-	::send(W, X, parseMessage(Parent->getMessage(X, Y), mVarArray::EmptyArray()))
+	::send(W, X, parseMessage(Magick::instance().getMessage(X, Y), mVarArray::EmptyArray()))
 #define ANNOUNCE(X, Y, Z) \
-	::announce(X, parseMessage(Parent->getMessage(Y), mVarArray Z))
+	::announce(X, parseMessage(Magick::instance().getMessage(Y), mVarArray Z))
 #define NANNOUNCE(X, Y) \
-	::announce(X, parseMessage(Parent->getMessage(Y), mVarArray::EmptyArray()))
+	::announce(X, parseMessage(Magick::instance().getMessage(Y), mVarArray::EmptyArray()))
 
 extern SXP::Tag tag_entlist_val_t;
 extern SXP::Tag tag_entlist_t;

@@ -27,6 +27,11 @@ RCSID(convert_magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.7  2001/11/12 01:05:02  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -239,7 +244,7 @@ load_ns_dbase (void)
 
 	    nick = CreateNickEntry(ni);
 	    if (!nick.Name().empty())
-		Parent->nickserv.AddStored(&nick);
+		Magick::instance().nickserv.AddStored(&nick);
 	    delnick(ni);
 	}
 	break;
@@ -304,7 +309,7 @@ load_ns_dbase (void)
 
 		nick = CreateNickEntry(ni);
 		if (!nick.Name().empty())
-		    Parent->nickserv.AddStored(&nick);
+		    Magick::instance().nickserv.AddStored(&nick);
 		delnick(ni);
 	    }
 	break;
@@ -349,7 +354,7 @@ load_ns_dbase (void)
 
 		nick = CreateNickEntry(ni);
 		if (!nick.Name().empty())
-		    Parent->nickserv.AddStored(&nick);
+		    Magick::instance().nickserv.AddStored(&nick);
 		delnick(ni);
 	    }
 	break;
@@ -446,7 +451,7 @@ CreateNickEntry(NickInfo_CUR *ni)
 
 	if (ni->flags & NI_SUSPENDED)
 	{
-	    out.i_Suspend_By = Parent->nickserv.FirstName();
+	    out.i_Suspend_By = Magick::instance().nickserv.FirstName();
 	    out.i_Suspend_Time = mDateTime::CurrentDateTime();
 	    if (ni->last_usermask != NULL && strlen(ni->last_usermask))
 		out.i_Comment = mstring(ni->last_usermask);
@@ -461,11 +466,11 @@ CreateNickEntry(NickInfo_CUR *ni)
 	{
 	    out.setting.NoExpire = true;
 	    // NOT a SADMIN, and OPER does exist.
-	    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		  Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(out.i_Name)) &&
-		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).insert(
-		    mstring(out.i_Name), Parent->commserv.FirstName());
+	    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(out.i_Name)) &&
+		Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).insert(
+		    mstring(out.i_Name), Magick::instance().commserv.FirstName());
 	}
 
 	return out;
@@ -618,7 +623,7 @@ load_cs_dbase (void)
 
 		chan = CreateChanEntry(ci);
 		if (!chan.Name().empty())
-		    Parent->chanserv.AddStored(&chan);
+		    Magick::instance().chanserv.AddStored(&chan);
 		delchan(ci);
 	    }			/* while (fgetc(f) == 1) */
 	break;			/* case 5, etc. */
@@ -799,7 +804,7 @@ load_cs_dbase (void)
 
 		chan = CreateChanEntry(ci);
 		if (!chan.Name().empty())
-		    Parent->chanserv.AddStored(&chan);
+		    Magick::instance().chanserv.AddStored(&chan);
 		delchan(ci);
 	    }			/* while (fgetc(f) == 1) */
 	break;			/* case 3, etc. */
@@ -967,7 +972,7 @@ load_cs_dbase (void)
 
 		chan = CreateChanEntry(ci);
 		if (!chan.Name().empty())
-		    Parent->chanserv.AddStored(&chan);
+		    Magick::instance().chanserv.AddStored(&chan);
 		delchan(ci);
 	    }
 	break;			/* case 1, etc. */
@@ -1078,7 +1083,7 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	    modelock << " " << ci->mlock_limit;
 	}
 	if (modelock.length())
-	    out.Mlock(Parent->chanserv.FirstName(), modelock);
+	    out.Mlock(Magick::instance().chanserv.FirstName(), modelock);
 	for (i=0, i_access = ci->access; i<ci->accesscount; ++i, ++i_access)
 	{
 	    if (i_access->name == NULL)
@@ -1086,7 +1091,7 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	    if (i_access->is_nick > 0)
 	    {
 		out.Access_insert(i_access->name, i_access->level,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 	    }
 	}
 	for (i=0, akick = ci->akick; i<ci->akickcount; ++i, ++akick)
@@ -1095,10 +1100,10 @@ CreateChanEntry(ChanInfo_CUR *ci)
 		continue;
 	    if (akick->reason != NULL)
 		out.Akick_insert(akick->name, akick->reason,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 	    else
 		out.Akick_insert(akick->name,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 	}
 
 	if (ci->flags & CI_KEEPTOPIC && !out.L_Keeptopic())
@@ -1175,69 +1180,69 @@ CreateChanEntry(ChanInfo_CUR *ci)
 		{
 		case CA_AUTODEOP:
 		    out.Level_change("AUTODEOP", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_AUTOVOICE:
 		    out.Level_change("AUTOVOICE", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_AUTOOP:
 		    out.Level_change("AUTOOP", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_READMEMO:
 		    out.Level_change("READMEMO", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_WRITEMEMO:
 		    out.Level_change("WRITEMEMO", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_DELMEMO:
 		    out.Level_change("DELMEMO", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_AKICK:
 		    out.Level_change("AKICK", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_STARAKICK:
 		    out.Level_change("SUPER", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    out.Level_change("OVERGREET", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_UNBAN:
 		    out.Level_change("UNBAN", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_ACCESS:
 		    out.Level_change("ACCESS", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_SET:
 		    out.Level_change("SET", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDINVITE:
 		    out.Level_change("CMDINVITE", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDUNBAN:
 		    out.Level_change("CMDUNBAN", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDVOICE:
 		    out.Level_change("CMDVOICE", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDOP:
 		    out.Level_change("CMDOP", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDCLEAR:
 		    out.Level_change("CMDCLEAR", ci->cmd_access[i],
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		}
 	    }
@@ -1284,7 +1289,7 @@ load_ms_dbase (void)
 
 		memo = CreateMemoEntry(ml);
 		if (memo.size())
-		    Parent->memoserv.AddNick(memo);
+		    Magick::instance().memoserv.AddNick(memo);
 		del_memolist(ml);
 	    }
 	break;
@@ -1335,7 +1340,7 @@ load_news_dbase (void)
 
 		news = CreateNewsEntry(nl);
 		if (news.size())
-		    Parent->memoserv.AddChannel(news);
+		    Magick::instance().memoserv.AddChannel(news);
 		del_newslist(nl);
 	    }
 	}
@@ -1465,14 +1470,14 @@ load_sop ()
 	    SLOG(LM_EMERGENCY, "Read error on $1", ( sop_db));
 	}
 
-	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()))
+	if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()))
 	{
 	    for (j=0; j<nsop; ++j)
 	    {
- 		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(sops[j].nick)))
-		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
-		    mstring(sops[j].nick), Parent->commserv.FirstName());
+ 		if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(sops[j].nick)))
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).insert(
+		    mstring(sops[j].nick), Magick::instance().commserv.FirstName());
 	    }
 	}
 	free(sops);
@@ -1527,15 +1532,15 @@ load_message ()
 		continue;
 
 	    if (messages[j].type == M_LOGON &&
-		Parent->commserv.IsList(Parent->commserv.ALL_Name()))
+		Magick::instance().commserv.IsList(Magick::instance().commserv.ALL_Name()))
 	    {
-		Parent->commserv.GetList(Parent->commserv.ALL_Name()).MSG_insert(
+		Magick::instance().commserv.GetList(Magick::instance().commserv.ALL_Name()).MSG_insert(
 			mstring(messages[j].text), mstring(messages[j].who));
 	    }
 	    else if (messages[j].type == M_OPER &&
-		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
+		Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
 	    {
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).MSG_insert(
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).MSG_insert(
 			mstring(messages[j].text), mstring(messages[j].who));
 	    }
 	}
@@ -1597,14 +1602,14 @@ load_akill ()
 	    {
 		if (akills[j].time == 0)
 		{
-		    Parent->operserv.Akill_insert(mstring(akills[j].mask),
-			Parent->operserv.Expire_Sop(),
+		    Magick::instance().operserv.Akill_insert(mstring(akills[j].mask),
+			Magick::instance().operserv.Expire_Sop(),
 			mstring(akills[j].reason), mstring(akills[j].who));
 		}
 		else
 		{
-		    Parent->operserv.Akill_insert(mstring(akills[j].mask),
-			Parent->operserv.Def_Expire(),
+		    Magick::instance().operserv.Akill_insert(mstring(akills[j].mask),
+			Magick::instance().operserv.Def_Expire(),
 			mstring(akills[j].reason), mstring(akills[j].who),
 			mDateTime(akills[j].time));
 		}
@@ -1655,14 +1660,14 @@ load_akill ()
 	    {
 		if (akills[j].time == 0)
 		{
-		    Parent->operserv.Akill_insert(mstring(akills[j].mask),
-			Parent->operserv.Expire_Sop(),
+		    Magick::instance().operserv.Akill_insert(mstring(akills[j].mask),
+			Magick::instance().operserv.Expire_Sop(),
 			mstring(akills[j].reason), mstring(akills[j].who));
 		}
 		else
 		{
-		    Parent->operserv.Akill_insert(mstring(akills[j].mask),
-			Parent->operserv.Def_Expire(),
+		    Magick::instance().operserv.Akill_insert(mstring(akills[j].mask),
+			Magick::instance().operserv.Def_Expire(),
 			mstring(akills[j].reason), mstring(akills[j].who),
 			mDateTime(akills[j].time));
 		}
@@ -1728,7 +1733,7 @@ load_clone ()
 	{
 	    if (clones[j].host != NULL && clones[j].reason != NULL)
 	    {
-		Parent->operserv.Clone_insert(mstring(clones[j].host),
+		Magick::instance().operserv.Clone_insert(mstring(clones[j].host),
 		    clones[j].amount, mstring(clones[j].reason),
 		    mstring(clones[j].who), mDateTime(clones[j].time));
 	    }

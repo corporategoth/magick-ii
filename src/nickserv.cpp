@@ -27,6 +27,11 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.192  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.191  2001/11/30 09:01:56  prez
 ** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
 ** Pause(bool) functions. This should help if/when we decide to implement
@@ -571,11 +576,11 @@ void Nick_Live_t::InFlight_t::ChgNick(const mstring& newnick)
 	{
 	    delete arg;
 	}
-	while (Parent->Pause())
+	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
-	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+	timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(nick.LowerCase()),
-			ACE_Time_Value(Parent->memoserv.InFlight()));
+			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
 	CE(1, timer);
     }
     MCE(nick);
@@ -682,7 +687,7 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
 	const mstring& who, const mstring& message, const bool silent)
 {
     FT("Nick_Live_t::InFlight_t::Memo", (file, mynick, who, message, silent));
-    if (!Parent->nickserv.IsStored(nick))
+    if (!Magick::instance().nickserv.IsStored(nick))
     {
 	NSEND(mynick, nick, "NS_YOU_STATUS/ISNOTSTORED");
 	return;
@@ -690,7 +695,7 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
 
     if (IsChan(who))
     {
-	if (!Parent->chanserv.IsStored(who))
+	if (!Magick::instance().chanserv.IsStored(who))
 	{
 	    SEND(mynick, nick, "CS_STATUS/ISNOTSTORED", (
 		    who));
@@ -705,29 +710,29 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     }
     else
     {
-	if (!Parent->nickserv.IsStored(who))
+	if (!Magick::instance().nickserv.IsStored(who))
 	{
 	    SEND(mynick, nick, "NS_OTH_STATUS/ISNOTSTORED", (
 			who));
 	    return;
 	}
-	if (Parent->nickserv.GetStored(who).Forbidden())
+	if (Magick::instance().nickserv.GetStored(who).Forbidden())
 	{
 	    SEND(mynick, nick, "NS_OTH_STATUS/ISFORBIDDEN", (
-			Parent->getSname(who)));
+			Magick::instance().getSname(who)));
 	    return;
 	}
 
-	if (file && !Parent->memoserv.Files())
+	if (file && !Magick::instance().memoserv.Files())
 	{
 	    NSEND(mynick, nick, "MS_SYNTAX/FILEDISABLED");
 	    return;
 	}
     }
 
-    if (file && !(Parent->files.TempDirSize() == 0 ||
-	mFile::DirUsage(Parent->files.TempDir()) <=
-		Parent->files.TempDirSize()))
+    if (file && !(Magick::instance().files.TempDirSize() == 0 ||
+	mFile::DirUsage(Magick::instance().files.TempDir()) <=
+		Magick::instance().files.TempDirSize()))
     {
 	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
@@ -761,11 +766,11 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
     }
 
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
-    while (Parent->Pause())
+    while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+    timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(sender.LowerCase()),
-			ACE_Time_Value(Parent->memoserv.InFlight()));
+			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }
     DumpE();
 
@@ -774,10 +779,10 @@ void Nick_Live_t::InFlight_t::Memo (const bool file, const mstring& mynick,
 	RLOCK_IF(("NickServ", "live", nick.LowerCase(), "InFlight", "fileattach"),
 		fileattach)
 	    SEND(mynick, nick, "MS_COMMAND/PENDING_FILE", (
-		ToHumanTime(Parent->memoserv.InFlight(), nick)));
+		ToHumanTime(Magick::instance().memoserv.InFlight(), nick)));
 	else
 	    SEND(mynick, nick, "MS_COMMAND/PENDING", (
-		ToHumanTime(Parent->memoserv.InFlight(), nick)));
+		ToHumanTime(Magick::instance().memoserv.InFlight(), nick)));
     }
 }
 
@@ -806,16 +811,16 @@ void Nick_Live_t::InFlight_t::Continue(const mstring& message)
 	{
 	    delete arg;
 	}
-	while (Parent->Pause())
+	while (Magick::instance().Pause())
 	    ACE_OS::sleep(1);
-	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+	timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(nick.LowerCase()),
-			ACE_Time_Value(Parent->memoserv.InFlight()));
+			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
 	CE(1, timer);
     }}
     MCE(text);
     SEND(service, nick, "MS_COMMAND/CONTINUE", (
-	    ToHumanTime(Parent->memoserv.InFlight(), nick)));
+	    ToHumanTime(Magick::instance().memoserv.InFlight(), nick)));
 }
 
 
@@ -879,37 +884,37 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 	    MCE(timer);
 	}}
 	RLOCK(("NickServ", "live", nick.LowerCase(), "InFlight"));
-	if (Parent->nickserv.IsStored(sender))
+	if (Magick::instance().nickserv.IsStored(sender))
 	{
-	    if (!Parent->nickserv.GetStored(sender).Host().empty())
+	    if (!Magick::instance().nickserv.GetStored(sender).Host().empty())
 	    {
-		sender = Parent->nickserv.GetStored(sender).Host();
+		sender = Magick::instance().nickserv.GetStored(sender).Host();
 	    }
 	    if (Memo())
 	    {
 		if (IsChan(recipiant))
 		{
-		    if (Parent->chanserv.IsStored(recipiant))
+		    if (Magick::instance().chanserv.IsStored(recipiant))
 		    {
 			News_t tmp(recipiant, sender, text);
-			Parent->memoserv.AddChannelNews(&tmp);
+			Magick::instance().memoserv.AddChannelNews(&tmp);
 
-			Chan_Stored_t cstored = Parent->chanserv.GetStored(recipiant);
+			Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(recipiant);
 			SEND(service, nick, "MS_COMMAND/SENT", (
 			    recipiant, cstored.Founder()));
 			LOG(LM_DEBUG, "MEMOSERV/SEND", (
-				Parent->nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
+				Magick::instance().nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
 				recipiant));
 
 			RLOCK3(("MemoServ", "channel", recipiant.LowerCase()));
-			MemoServ::channel_news_t &newslist = Parent->memoserv.GetChannel(recipiant);
-			if (Parent->chanserv.IsLive(recipiant))
+			MemoServ::channel_news_t &newslist = Magick::instance().memoserv.GetChannel(recipiant);
+			if (Magick::instance().chanserv.IsLive(recipiant))
 			{
-			    Chan_Live_t clive = Parent->chanserv.GetLive(recipiant);
+			    Chan_Live_t clive = Magick::instance().chanserv.GetLive(recipiant);
 			    unsigned int i;
 			    for(i=0; i<clive.Users(); i++)
 			    {
-				if (Parent->nickserv.IsStored(clive.User(i)) &&
+				if (Magick::instance().nickserv.IsStored(clive.User(i)) &&
 				    cstored.GetAccess(clive.User(i), "READMEMO"))
 				{
 				    SEND(service, clive.User(i), "MS_COMMAND/CS_NEW", (
@@ -922,55 +927,55 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 		}
 		else
 		{
-		    if (Parent->nickserv.IsStored(recipiant))
+		    if (Magick::instance().nickserv.IsStored(recipiant))
 		    {
-			mstring realrecipiant = Parent->nickserv.GetStored(recipiant).Host();
+			mstring realrecipiant = Magick::instance().nickserv.GetStored(recipiant).Host();
 			if (realrecipiant.empty())
 			    realrecipiant = recipiant;
 
-			if (!(!filenum || Parent->memoserv.FileSize() == 0 ||
-			    Parent->filesys.GetSize(FileMap::MemoAttach, filenum) <=
-			    Parent->memoserv.FileSize()))
+			if (!(!filenum || Magick::instance().memoserv.FileSize() == 0 ||
+			    Magick::instance().filesys.GetSize(FileMap::MemoAttach, filenum) <=
+			    Magick::instance().memoserv.FileSize()))
 			{
-			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+			    Magick::instance().filesys.EraseFile(FileMap::MemoAttach, filenum);
 			    NSEND(service, nick, "MS_COMMAND/TOOBIG");
 			}
-			else if (!(!filenum || Parent->files.MemoAttachSize() == 0 ||
-			    Parent->filesys.FileSysSize(FileMap::MemoAttach) <=
-			    Parent->files.MemoAttachSize()))
+			else if (!(!filenum || Magick::instance().files.MemoAttachSize() == 0 ||
+			    Magick::instance().filesys.FileSysSize(FileMap::MemoAttach) <=
+			    Magick::instance().files.MemoAttachSize()))
 			{
-			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+			    Magick::instance().filesys.EraseFile(FileMap::MemoAttach, filenum);
 			    NSEND(service, nick, "MS_COMMAND/NOSPACE");
 			}
 			else if (recipiant.IsSameAs(realrecipiant, true) ||
-			    Parent->nickserv.IsStored(realrecipiant))
+			    Magick::instance().nickserv.IsStored(realrecipiant))
 			{
 			    Memo_t tmp(realrecipiant, sender, text, filenum);
-			    Parent->memoserv.AddNickMemo(&tmp);
+			    Magick::instance().memoserv.AddNickMemo(&tmp);
 
 			    if (filenum)
 			    {
 				LOG(LM_DEBUG, "MEMOSERV/FILE", (
-					Parent->nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
-					Parent->filesys.GetName(FileMap::MemoAttach, filenum),
+					Magick::instance().nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
+					Magick::instance().filesys.GetName(FileMap::MemoAttach, filenum),
 					fmstring("%08x", filenum),
-					ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, filenum)),
+					ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::MemoAttach, filenum)),
 					realrecipiant));
 			    }
 			    SEND(service, nick, "MS_COMMAND/SENT", (
 				recipiant, realrecipiant));
 
 			    RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
-			    MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(realrecipiant);
+			    MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(realrecipiant);
 			    RLOCK3(("NickServ", "stored", realrecipiant.LowerCase()));
-			    Nick_Stored_t nstored = Parent->nickserv.GetStored(realrecipiant);
+			    Nick_Stored_t nstored = Magick::instance().nickserv.GetStored(realrecipiant);
 			    if (nstored.IsOnline())
 				SEND(service, realrecipiant, "MS_COMMAND/NS_NEW", (
 				    memolist.size(), service, memolist.size()));
 			    unsigned int i;
 			    for (i=0; i < nstored.Siblings(); i++)
 			    {
-				if (Parent->nickserv.GetStored(nstored.Sibling(i)).IsOnline())
+				if (Magick::instance().nickserv.GetStored(nstored.Sibling(i)).IsOnline())
 				{
 				    SEND(service, nstored.Sibling(i), "MS_COMMAND/NS_NEW", (
 					memolist.size(), service, memolist.size()));
@@ -979,41 +984,41 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 			}
 			else if (File())
 			{
-			    Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+			    Magick::instance().filesys.EraseFile(FileMap::MemoAttach, filenum);
 			    NSEND(service, nick, "MS_COMMAND/CANCEL");
 			}
 		    }
 		    else if (File())
 		    {
-			Parent->filesys.EraseFile(FileMap::MemoAttach, filenum);
+			Magick::instance().filesys.EraseFile(FileMap::MemoAttach, filenum);
 			NSEND(service, nick, "MS_COMMAND/CANCEL");
 		    }
 		}
 	    }
 	    else if (Picture())
 	    {
-		if (filenum && !(Parent->memoserv.FileSize() == 0 ||
-		    Parent->filesys.GetSize(FileMap::Picture, filenum) <=
-		    Parent->nickserv.PicSize()))
+		if (filenum && !(Magick::instance().memoserv.FileSize() == 0 ||
+		    Magick::instance().filesys.GetSize(FileMap::Picture, filenum) <=
+		    Magick::instance().nickserv.PicSize()))
 		{
-		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
+		    Magick::instance().filesys.EraseFile(FileMap::Picture, filenum);
 		    NSEND(service, nick, "NS_YOU_COMMAND/TOOBIG");
 		}
-		else if (filenum && !(Parent->files.PictureSize() == 0 ||
-		    Parent->filesys.FileSysSize(FileMap::Picture) <=
-		    Parent->files.PictureSize()))
+		else if (filenum && !(Magick::instance().files.PictureSize() == 0 ||
+		    Magick::instance().filesys.FileSysSize(FileMap::Picture) <=
+		    Magick::instance().files.PictureSize()))
 		{
-		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
+		    Magick::instance().filesys.EraseFile(FileMap::Picture, filenum);
 		    NSEND(service, nick, "NS_YOU_COMMAND/NOSPACE");
 		}
 		else if (filenum)
 		{
-		    Parent->nickserv.GetStored(sender).GotPic(filenum);
+		    Magick::instance().nickserv.GetStored(sender).GotPic(filenum);
 		    NSEND(service, nick, "NS_YOU_COMMAND/SAVED");
 		    LOG(LM_DEBUG, "NICKSERV/PICTURE_ADD", (
-			Parent->nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
+			Magick::instance().nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
 			sender, fmstring("%08x", filenum),
-			ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, filenum))));
+			ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Picture, filenum))));
 		}
 		else
 		{
@@ -1022,26 +1027,26 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 	    }
 	    else if (Public())
 	    {
-		if (filenum && !(Parent->files.PublicSize() == 0 ||
-		    Parent->filesys.FileSysSize(FileMap::Public) <=
-		    Parent->files.PublicSize()))
+		if (filenum && !(Magick::instance().files.PublicSize() == 0 ||
+		    Magick::instance().filesys.FileSysSize(FileMap::Public) <=
+		    Magick::instance().files.PublicSize()))
 		{
-		    Parent->filesys.EraseFile(FileMap::Public, filenum);
+		    Magick::instance().filesys.EraseFile(FileMap::Public, filenum);
 		    NSEND(service, nick, "DCC/NOSPACE");
 		}
 		else if (filenum)
 		{
 		    SEND(service, nick, "LIST/ADD", (
-    			Parent->filesys.GetName(FileMap::Public, filenum),
-    			Parent->getMessage(nick,"LIST/FILES")));
-		    Parent->filesys.SetPriv(FileMap::Public, filenum, text);
+    			Magick::instance().filesys.GetName(FileMap::Public, filenum),
+    			Magick::instance().getMessage(nick,"LIST/FILES")));
+		    Magick::instance().filesys.SetPriv(FileMap::Public, filenum, text);
 		    LOG(LM_DEBUG, "SERVMSG/FILE_ADD", (
-			Parent->nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
-			Parent->filesys.GetName(FileMap::Public, filenum),
+			Magick::instance().nickserv.GetLive(sender).Mask(Nick_Live_t::N_U_P_H),
+			Magick::instance().filesys.GetName(FileMap::Public, filenum),
 			fmstring("%08x", filenum),
-			ToHumanSpace(Parent->filesys.GetSize(FileMap::Public, filenum)),
-			((Parent->filesys.GetPriv(FileMap::Public, filenum).empty()) ?
-				"ALL" : Parent->filesys.GetPriv(FileMap::Public, filenum).c_str())));
+			ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Public, filenum)),
+			((Magick::instance().filesys.GetPriv(FileMap::Public, filenum).empty()) ?
+				"ALL" : Magick::instance().filesys.GetPriv(FileMap::Public, filenum).c_str())));
 		}
 		else
 		{
@@ -1057,20 +1062,20 @@ void Nick_Live_t::InFlight_t::End(const unsigned long filenum)
 void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
 {
     FT("Nick_Live_t::InFlight_t::Picture", (mynick));
-    if (!Parent->nickserv.IsStored(nick))
+    if (!Magick::instance().nickserv.IsStored(nick))
     {
 	NSEND(mynick, nick, "NS_YOU_STATUS/ISNOTSTORED");
 	return;
     }
-    else if (Parent->nickserv.PicExt().empty())
+    else if (Magick::instance().nickserv.PicExt().empty())
     {
 	NSEND(mynick, nick, "NS_YOU_STATUS/PICDISABLED");
 	return;
     }
 
-    if (!(Parent->files.TempDirSize() == 0 ||
-	mFile::DirUsage(Parent->files.TempDir()) <=
-		Parent->files.TempDirSize()))
+    if (!(Magick::instance().files.TempDirSize() == 0 ||
+	mFile::DirUsage(Magick::instance().files.TempDir()) <=
+		Magick::instance().files.TempDirSize()))
     {
 	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
@@ -1102,11 +1107,11 @@ void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
     }
 
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
-    while (Parent->Pause())
+    while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+    timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(sender.LowerCase()),
-			ACE_Time_Value(Parent->memoserv.InFlight()));
+			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }
     DumpE();
 
@@ -1117,15 +1122,15 @@ void Nick_Live_t::InFlight_t::Picture(const mstring& mynick)
 void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& committees)
 {
     FT("Nick_Live_t::InFlight_t::Public", (mynick, committees));
-    if (!Parent->nickserv.IsStored(nick))
+    if (!Magick::instance().nickserv.IsStored(nick))
     {
 	NSEND(mynick, nick, "NS_YOU_STATUS/ISNOTSTORED");
 	return;
     }
 
-    if (!(Parent->files.TempDirSize() == 0 ||
-	mFile::DirUsage(Parent->files.TempDir()) <=
-		Parent->files.TempDirSize()))
+    if (!(Magick::instance().files.TempDirSize() == 0 ||
+	mFile::DirUsage(Magick::instance().files.TempDir()) <=
+		Magick::instance().files.TempDirSize()))
     {
 	NSEND(mynick, nick, "DCC/NOSPACE2");
 	return;
@@ -1158,11 +1163,11 @@ void Nick_Live_t::InFlight_t::Public(const mstring& mynick, const mstring& commi
     }
 
     { MLOCK(("NickServ", "live", nick.LowerCase(), "InFlight", "timer"));
-    while (Parent->Pause())
+    while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+    timer = ACE_Reactor::instance()->schedule_timer(&Magick::instance().nickserv.ifh,
 			new mstring(sender.LowerCase()),
-			ACE_Time_Value(Parent->memoserv.InFlight()));
+			ACE_Time_Value(Magick::instance().memoserv.InFlight()));
     }
     DumpE();
 
@@ -1282,38 +1287,38 @@ Nick_Live_t::Nick_Live_t(const mstring& name, const mDateTime& signon,
 
     // User is on AKILL, add the mask, and No server will kill
     { MLOCK(("OperServ", "Akill"));
-    if (Parent->operserv.Akill_find(i_user + "@" + i_host))
+    if (Magick::instance().operserv.Akill_find(i_user + "@" + i_host))
     {
-	mstring reason(Parent->operserv.Akill->Value().second);
+	mstring reason(Magick::instance().operserv.Akill->Value().second);
 	// Do this cos it will be removed when we KILL,
 	// and we dont wanna get out of touch.
-	Parent->operserv.AddHost(i_host);
+	Magick::instance().operserv.AddHost(i_host);
 	i_server.erase();
 	i_realname = reason;
 	LOG(LM_INFO, "OTHER/KILL_AKILL", (
-		Mask(N_U_P_H), Parent->operserv.Akill->Entry(),
+		Mask(N_U_P_H), Magick::instance().operserv.Akill->Entry(),
 		reason));
-	Parent->server.AKILL(Parent->operserv.Akill->Entry(), reason,
-			Parent->operserv.Akill->Value().first -
-				Parent->operserv.Akill->Last_Modify_Time().SecondsSince(),
-			Parent->operserv.Akill->Last_Modifier());
+	Magick::instance().server.AKILL(Magick::instance().operserv.Akill->Entry(), reason,
+			Magick::instance().operserv.Akill->Value().first -
+				Magick::instance().operserv.Akill->Last_Modify_Time().SecondsSince(),
+			Magick::instance().operserv.Akill->Last_Modifier());
 	return;
     }}
 
     // User triggered CLONE protection, No server will kill
-    if (Parent->operserv.AddHost(i_host))
+    if (Magick::instance().operserv.AddHost(i_host))
     {
 	LOG(LM_INFO, "OTHER/KILL_CLONE", (
 		Mask(N_U_P_H)));
 	i_server.erase();
-	i_realname = Parent->operserv.Def_Clone();
+	i_realname = Magick::instance().operserv.Def_Clone();
 	return;
     }
 
-    if (Parent->nickserv.IsStored(i_Name))
+    if (Magick::instance().nickserv.IsStored(i_Name))
     {
-	if (IsRecognized() && !Parent->nickserv.GetStored(i_Name).Secure())
-	    Parent->nickserv.GetStored(i_Name).Signon(i_realname, Mask(U_P_H).After("!"));
+	if (IsRecognized() && !Magick::instance().nickserv.GetStored(i_Name).Secure())
+	    Magick::instance().nickserv.GetStored(i_Name).Signon(i_realname, Mask(U_P_H).After("!"));
     }
     DumpE();
 }
@@ -1380,14 +1385,14 @@ void Nick_Live_t::Join(const mstring& chan)
 {
     FT("Nick_Live_t::Join", (chan));
     bool joined = true;
-    if (Parent->chanserv.IsLive(chan))
+    if (Magick::instance().chanserv.IsLive(chan))
     {
-	joined = Parent->chanserv.GetLive(chan).Join(i_Name);
+	joined = Magick::instance().chanserv.GetLive(chan).Join(i_Name);
     }
     else
     {
 	Chan_Live_t tmp(chan, i_Name);
-	Parent->chanserv.AddLive(&tmp);
+	Magick::instance().chanserv.AddLive(&tmp);
     }
     // We do this seperately coz we require initialisation of
     // the channel to be completed.
@@ -1398,8 +1403,8 @@ void Nick_Live_t::Join(const mstring& chan)
 	joined_channels.insert(chan.LowerCase());
 	MCE(joined_channels.size());
 	}
-	if (Parent->chanserv.IsStored(chan))
-	    Parent->chanserv.GetStored(chan).Join(i_Name);
+	if (Magick::instance().chanserv.IsStored(chan))
+	    Magick::instance().chanserv.GetStored(chan).Join(i_Name);
     }
     mMessage::CheckDependancies(mMessage::ChanExists, chan);
     mMessage::CheckDependancies(mMessage::UserInChan, chan, i_Name);
@@ -1417,12 +1422,12 @@ void Nick_Live_t::Part(const mstring& chan)
     }
 
     unsigned int res = 0;
-    if (Parent->chanserv.IsLive(chan))
+    if (Magick::instance().chanserv.IsLive(chan))
     {
 	// If this returns 0, then the channel is empty.
-	res = Parent->chanserv.GetLive(chan).Part(i_Name);
+	res = Magick::instance().chanserv.GetLive(chan).Part(i_Name);
 	if (!res)
-	    Parent->chanserv.RemLive(chan);
+	    Magick::instance().chanserv.RemLive(chan);
     }
     else
     {
@@ -1446,12 +1451,12 @@ void Nick_Live_t::Kick(const mstring& kicker, const mstring& chan)
     }
 
     unsigned int res = 0;
-    if (Parent->chanserv.IsLive(chan))
+    if (Magick::instance().chanserv.IsLive(chan))
     {
 	// If this returns 0, then the channel is empty.
-	res = Parent->chanserv.GetLive(chan).Kick(i_Name, kicker);
+	res = Magick::instance().chanserv.GetLive(chan).Kick(i_Name, kicker);
 	if (!res)
-	    Parent->chanserv.RemLive(chan);
+	    Magick::instance().chanserv.RemLive(chan);
 	
     }
     else
@@ -1472,16 +1477,16 @@ void Nick_Live_t::Quit(const mstring& reason)
 
     { RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
     if (!(IsServices() || HasMode("o")))
-	Parent->operserv.RemHost(i_host);
+	Magick::instance().operserv.RemHost(i_host);
     }
 
     // Check if we're currently being TEMP ignored ...
     { MLOCK(("OperServ","Ignore"));
-    if (Parent->operserv.Ignore_find(Mask(N_U_P_H)))
+    if (Magick::instance().operserv.Ignore_find(Mask(N_U_P_H)))
     {
-	if (Parent->operserv.Ignore->Value() != true)
+	if (Magick::instance().operserv.Ignore->Value() != true)
 	{
-	    Parent->operserv.Ignore_erase();
+	    Magick::instance().operserv.Ignore_erase();
 	}
     }}
 
@@ -1496,11 +1501,11 @@ void Nick_Live_t::Quit(const mstring& reason)
 
     unsigned long i;
     { RLOCK(("DCC"));
-    if (Parent->dcc != NULL)
+    if (Magick::instance().dcc != NULL)
     {
-	vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
+	vector<unsigned long> dccs = Magick::instance().dcc->GetList(i_Name);
         for (i=0; i<dccs.size(); i++)
-	    Parent->dcc->Cancel(dccs[i], true);
+	    Magick::instance().dcc->Cancel(dccs[i], true);
     }}
     if (InFlight.Exists())
 	InFlight.End(0u);
@@ -1508,13 +1513,13 @@ void Nick_Live_t::Quit(const mstring& reason)
     // Ensure our failures dont affect future users ...
     { RLOCK(("NickServ", "live", i_Name.LowerCase(), "try_chan_ident"));
     for (i=0; i<try_chan_ident.size(); i++)
-	if (Parent->chanserv.IsStored(try_chan_ident[i]))
-	    Parent->chanserv.GetStored(try_chan_ident[i]).Quit(i_Name);
+	if (Magick::instance().chanserv.IsStored(try_chan_ident[i]))
+	    Magick::instance().chanserv.GetStored(try_chan_ident[i]).Quit(i_Name);
     }
 
-    if (Parent->nickserv.IsStored(i_Name) &&
-	Parent->nickserv.GetStored(i_Name).IsOnline())
-	Parent->nickserv.GetStored(i_Name).Quit(reason);
+    if (Magick::instance().nickserv.IsStored(i_Name) &&
+	Magick::instance().nickserv.GetStored(i_Name).IsOnline())
+	Magick::instance().nickserv.GetStored(i_Name).Quit(reason);
 }
 
 
@@ -1546,19 +1551,19 @@ bool Nick_Live_t::FloodTrigger()
 
     // Check if we're currently being ignored ...
     { MLOCK(("OperServ", "Ignore"));
-    if (Parent->operserv.Ignore_size())
+    if (Magick::instance().operserv.Ignore_size())
     {
-	if (Parent->operserv.Ignore_find(Mask(N_U_P_H)))
+	if (Magick::instance().operserv.Ignore_find(Mask(N_U_P_H)))
 	{
 	    // IF we havnt ignored for long enough yet, or its perminant ...
-	    if (Parent->operserv.Ignore->Last_Modify_Time().SecondsSince() <= Parent->operserv.Ignore_Time()
-		|| Parent->operserv.Ignore->Value() == true)
+	    if (Magick::instance().operserv.Ignore->Last_Modify_Time().SecondsSince() <= Magick::instance().operserv.Ignore_Time()
+		|| Magick::instance().operserv.Ignore->Value() == true)
 	    {
 		RET(true);
 	    }
 	    else
 	    {
-		Parent->operserv.Ignore_erase();
+		Magick::instance().operserv.Ignore_erase();
 	    }
 	}
     }}
@@ -1566,7 +1571,7 @@ bool Nick_Live_t::FloodTrigger()
     // Clean up previous entries and push current entry
     { WLOCK(("NickServ", "live", i_Name.LowerCase(), "last_msg_times"));
     MCB(last_msg_times.size());
-    while (last_msg_times.size() && last_msg_times[0u].SecondsSince() > Parent->operserv.Flood_Time())
+    while (last_msg_times.size() && last_msg_times[0u].SecondsSince() > Magick::instance().operserv.Flood_Time())
 	last_msg_times.erase(last_msg_times.begin());
     last_msg_times.push_back(mDateTime::CurrentDateTime());
     MCE(last_msg_times.size());
@@ -1574,7 +1579,7 @@ bool Nick_Live_t::FloodTrigger()
 
     // Check if we just triggered ignore.
     RLOCK_IF(("NickServ", "live", i_Name.LowerCase(), "last_msg_times"),
-	last_msg_times.size() > Parent->operserv.Flood_Msgs())
+	last_msg_times.size() > Magick::instance().operserv.Flood_Msgs())
     {
 	RLOCK(("NickServ", "live", i_Name.LowerCase(), "flood_triggered_times"));
 	CB(1, flood_triggered_times);
@@ -1582,29 +1587,29 @@ bool Nick_Live_t::FloodTrigger()
 	flood_triggered_times++;
 	}
 	// Add To ignore, they're naughty.
-	if (flood_triggered_times >= Parent->operserv.Ignore_Limit())
+	if (flood_triggered_times >= Magick::instance().operserv.Ignore_Limit())
 	{
-	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), true, i_Name);
-	    SEND(Parent->servmsg.FirstName(), i_Name, "ERR_SITUATION/IGNORE_TRIGGER", (
-			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time(), i_Name)));
-	    SEND(Parent->servmsg.FirstName(), i_Name, "ERR_SITUATION/PERM_IGNORE", (
-			Parent->operserv.Ignore_Limit()));
+	    Magick::instance().operserv.Ignore_insert(Mask(Magick::instance().operserv.Ignore_Method()), true, i_Name);
+	    SEND(Magick::instance().servmsg.FirstName(), i_Name, "ERR_SITUATION/IGNORE_TRIGGER", (
+			Magick::instance().operserv.Flood_Msgs(), ToHumanTime(Magick::instance().operserv.Flood_Time(), i_Name)));
+	    SEND(Magick::instance().servmsg.FirstName(), i_Name, "ERR_SITUATION/PERM_IGNORE", (
+			Magick::instance().operserv.Ignore_Limit()));
 	    LOG(LM_NOTICE, "OTHER/PERM_IGNORE", (
 			Mask(N_U_P_H)));
-	    ANNOUNCE(Parent->servmsg.FirstName(), "MISC/FLOOD_PERM", (
+	    ANNOUNCE(Magick::instance().servmsg.FirstName(), "MISC/FLOOD_PERM", (
 			i_Name));
 	}
 	else
 	{
-	    Parent->operserv.Ignore_insert(Mask(Parent->operserv.Ignore_Method()), false, i_Name);
-	    SEND(Parent->servmsg.FirstName(), i_Name, "ERR_SITUATION/IGNORE_TRIGGER", (
-			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time(), i_Name)));
-	    SEND(Parent->servmsg.FirstName(), i_Name, "ERR_SITUATION/TEMP_IGNORE", (
-			ToHumanNumber(flood_triggered_times), Parent->operserv.Ignore_Limit(),
-			ToHumanTime(Parent->operserv.Ignore_Time(), i_Name)));
+	    Magick::instance().operserv.Ignore_insert(Mask(Magick::instance().operserv.Ignore_Method()), false, i_Name);
+	    SEND(Magick::instance().servmsg.FirstName(), i_Name, "ERR_SITUATION/IGNORE_TRIGGER", (
+			Magick::instance().operserv.Flood_Msgs(), ToHumanTime(Magick::instance().operserv.Flood_Time(), i_Name)));
+	    SEND(Magick::instance().servmsg.FirstName(), i_Name, "ERR_SITUATION/TEMP_IGNORE", (
+			ToHumanNumber(flood_triggered_times), Magick::instance().operserv.Ignore_Limit(),
+			ToHumanTime(Magick::instance().operserv.Ignore_Time(), i_Name)));
 	    LOG(LM_NOTICE, "OTHER/TEMP_IGNORE", (
 			Mask(N_U_P_H)));
-	    ANNOUNCE(Parent->servmsg.FirstName(), "MISC/FLOOD_TEMP", (
+	    ANNOUNCE(Magick::instance().servmsg.FirstName(), "MISC/FLOOD_TEMP", (
 			i_Name));
 	}
  
@@ -1637,7 +1642,7 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
     // we have joined by a nick change.
     CommServ::list_t::iterator iter2;
     { RLOCK2(("CommServ", "list"));
-    for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
+    for (iter2 = Magick::instance().commserv.ListBegin(); iter2 != Magick::instance().commserv.ListEnd();
 								iter2++)
     {
 	RLOCK3(("CommServ", "list", iter2->first));
@@ -1646,11 +1651,11 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
     }}
 
     { RLOCK(("DCC"));
-    if (Parent->dcc != NULL)
+    if (Magick::instance().dcc != NULL)
     {
-	vector<unsigned long> dccs = Parent->dcc->GetList(i_Name);
+	vector<unsigned long> dccs = Magick::instance().dcc->GetList(i_Name);
 	for (i=0; i<dccs.size(); i++)
-	    Parent->dcc->GetXfers(dccs[i]).ChgNick(in);
+	    Magick::instance().dcc->GetXfers(dccs[i]).ChgNick(in);
     }}
 
     // Carry over failed attempts (so /nick doesnt cure all!)
@@ -1658,16 +1663,16 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
     { RLOCK(("NickServ", "live", i_Name.LowerCase(), "try_chan_ident"));
     for (i=0; i<try_chan_ident.size(); i++)
     {
-	if (Parent->chanserv.IsStored(try_chan_ident[i]))
-	    Parent->chanserv.GetStored(try_chan_ident[i]).ChgAttempt(i_Name, in);
+	if (Magick::instance().chanserv.IsStored(try_chan_ident[i]))
+	    Magick::instance().chanserv.GetStored(try_chan_ident[i]).ChgAttempt(i_Name, in);
     }}
 
     MCB(i_Name);
-    if (Parent->nickserv.IsStored(i_Name))
+    if (Magick::instance().nickserv.IsStored(i_Name))
     {
 	// We are not related (by brotherhood, or parentage)
-	if (!(Parent->nickserv.GetStored(i_Name).IsSibling(in) ||
-	    Parent->nickserv.GetStored(i_Name).Host().IsSameAs(in, true)))
+	if (!(Magick::instance().nickserv.GetStored(i_Name).IsSibling(in) ||
+	    Magick::instance().nickserv.GetStored(i_Name).Host().IsSameAs(in, true)))
 	{
 	    WLOCK(("NickServ", "live", i_Name.LowerCase(), "identified"));
 	    WLOCK2(("NickServ", "live", i_Name.LowerCase(), "chans_founder_identd"));
@@ -1683,7 +1688,7 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
 	    CE(4, failed_passwds);
 	}
 	// Last Seen and Last Quit
-	Parent->nickserv.GetStored(i_Name).ChgNick(in);
+	Magick::instance().nickserv.GetStored(i_Name).ChgNick(in);
     }
 
     // WooHoo, we have a new nick!
@@ -1704,9 +1709,9 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
     }
     for (iter=jc.begin(); iter!=jc.end(); iter++)
     {
-	if (Parent->chanserv.IsLive(*iter))
+	if (Magick::instance().chanserv.IsLive(*iter))
 	{
-	    Parent->chanserv.GetLive(*iter).ChgNick(oldnick, i_Name);
+	    Magick::instance().chanserv.GetLive(*iter).ChgNick(oldnick, i_Name);
 	}
 	else
 	{
@@ -1725,10 +1730,10 @@ set<mstring> Nick_Live_t::Name(const mstring& in)
     }
     MCE(i_Name);
 
-    if (Parent->nickserv.IsStored(i_Name))
+    if (Magick::instance().nickserv.IsStored(i_Name))
     {
-	if (IsRecognized() && !Parent->nickserv.GetStored(i_Name).Secure())
-	    Parent->nickserv.GetStored(i_Name).Signon(i_realname, Mask(U_P_H).After("!"));
+	if (IsRecognized() && !Magick::instance().nickserv.GetStored(i_Name).Secure())
+	    Magick::instance().nickserv.GetStored(i_Name).Signon(i_realname, Mask(U_P_H).After("!"));
     }
 
     NRET(set<mstring>, wason);
@@ -1741,11 +1746,11 @@ void Nick_Live_t::SendMode(const mstring& in)
 
     if (IsServices())
     {
-	Parent->server.MODE(i_Name, in);
+	Magick::instance().server.MODE(i_Name, in);
     }
-    else if (!Parent->server.proto.SVSMODE().empty())
+    else if (!Magick::instance().server.proto.SVSMODE().empty())
     {
-	Parent->server.SVSMODE(Parent->nickserv.FirstName(), i_Name, in);
+	Magick::instance().server.SVSMODE(Magick::instance().nickserv.FirstName(), i_Name, in);
     }
 }
 
@@ -1786,7 +1791,7 @@ void Nick_Live_t::Mode(const mstring& in)
 		    set<mstring> wason;
 		    CommServ::list_t::iterator iter2;
 		    { RLOCK(("CommServ", "list"));
-		    for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
+		    for (iter2 = Magick::instance().commserv.ListBegin(); iter2 != Magick::instance().commserv.ListEnd();
 								iter2++)
 		    {
 			RLOCK2(("CommServ", "list", iter2->first));
@@ -1796,32 +1801,32 @@ void Nick_Live_t::Mode(const mstring& in)
 
 		    modes += in[i];
 		    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
-		    Parent->operserv.RemHost(i_host);
+		    Magick::instance().operserv.RemHost(i_host);
 		    }
 		    // IF we are SecureOper and NOT (on oper list && recoznized)
 		    // OR user is on OperDeny and NOT (on sadmin list && recognized)
 		    // Yeah, one UUUUUUGLY if.
 		    MLOCK_IF(("OperServ", "OperDeny"),
-			(Parent->operserv.SecureOper() &&
-			!(Parent->nickserv.IsStored(i_Name) &&
-			Parent->nickserv.GetStored(i_Name).IsOnline() &&
-			Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-			Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(i_Name))) ||
-			(Parent->operserv.OperDeny_find(Mask(N_U_P_H)) &&
-			!(Parent->nickserv.IsStored(i_Name) &&
-			Parent->nickserv.GetStored(i_Name).IsOnline() &&
-			Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-			Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(i_Name))))
+			(Magick::instance().operserv.SecureOper() &&
+			!(Magick::instance().nickserv.IsStored(i_Name) &&
+			Magick::instance().nickserv.GetStored(i_Name).IsOnline() &&
+			Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+			Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsIn(i_Name))) ||
+			(Magick::instance().operserv.OperDeny_find(Mask(N_U_P_H)) &&
+			!(Magick::instance().nickserv.IsStored(i_Name) &&
+			Magick::instance().nickserv.GetStored(i_Name).IsOnline() &&
+			Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+			Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsIn(i_Name))))
 		    {
-			if (!Parent->server.proto.SVSMODE().empty())
+			if (!Magick::instance().server.proto.SVSMODE().empty())
 			{
 			    SendMode("-o");
-			    NSEND(Parent->operserv.FirstName(), i_Name, "OS_STATUS/ISOPERDENY");
+			    NSEND(Magick::instance().operserv.FirstName(), i_Name, "OS_STATUS/ISOPERDENY");
 			}
 			else
 			{
-			    Parent->server.KILL(Parent->operserv.FirstName(),
-		    	    	i_Name, Parent->getMessage(i_Name, "MISC/KILL_OPERDENY"));
+			    Magick::instance().server.KILL(Magick::instance().operserv.FirstName(),
+		    	    	i_Name, Magick::instance().getMessage(i_Name, "MISC/KILL_OPERDENY"));
 			    return;
 			}
 		    }
@@ -1829,32 +1834,32 @@ void Nick_Live_t::Mode(const mstring& in)
 		    {
 			mstring setmode;
 			{ RLOCK(("CommServ", "list"));
-			for (iter2 = Parent->commserv.ListBegin(); iter2 != Parent->commserv.ListEnd();
+			for (iter2 = Magick::instance().commserv.ListBegin(); iter2 != Magick::instance().commserv.ListEnd();
 								iter2++)
 			{
 			    RLOCK2(("CommServ", "list", iter2->first));
 			    if (iter2->second.IsOn(i_Name) && wason.find(iter2->first) == wason.end())
 			    {
-				if (!Parent->server.proto.SVSMODE().empty())
+				if (!Magick::instance().server.proto.SVSMODE().empty())
 				{
-				    if (iter2->first == Parent->commserv.ALL_Name())
-					setmode += Parent->commserv.ALL_SetMode();
-				    else if (iter2->first == Parent->commserv.REGD_Name())
-					setmode += Parent->commserv.REGD_SetMode();
-				    else if (iter2->first == Parent->commserv.OPER_Name())
-					setmode += Parent->commserv.OPER_SetMode();
-				    else if (iter2->first == Parent->commserv.ADMIN_Name())
-					setmode += Parent->commserv.ADMIN_SetMode();
-				    else if (iter2->first == Parent->commserv.SOP_Name())
-					setmode += Parent->commserv.SOP_SetMode();
-				    else if (iter2->first == Parent->commserv.SADMIN_Name())
-					setmode += Parent->commserv.SADMIN_SetMode();
+				    if (iter2->first == Magick::instance().commserv.ALL_Name())
+					setmode += Magick::instance().commserv.ALL_SetMode();
+				    else if (iter2->first == Magick::instance().commserv.REGD_Name())
+					setmode += Magick::instance().commserv.REGD_SetMode();
+				    else if (iter2->first == Magick::instance().commserv.OPER_Name())
+					setmode += Magick::instance().commserv.OPER_SetMode();
+				    else if (iter2->first == Magick::instance().commserv.ADMIN_Name())
+					setmode += Magick::instance().commserv.ADMIN_SetMode();
+				    else if (iter2->first == Magick::instance().commserv.SOP_Name())
+					setmode += Magick::instance().commserv.SOP_SetMode();
+				    else if (iter2->first == Magick::instance().commserv.SADMIN_Name())
+					setmode += Magick::instance().commserv.SADMIN_SetMode();
 				}
 
 				for (iter2->second.message = iter2->second.MSG_begin();
 					iter2->second.message != iter2->second.MSG_end(); iter2->second.message++)
 				{
-				    Parent->servmsg.send(i_Name, "[" + IRC_Bold + iter2->first + IRC_Off +
+				    Magick::instance().servmsg.send(i_Name, "[" + IRC_Bold + iter2->first + IRC_Off +
 					    "] " + iter2->second.message->Entry());
 				}
 			    }
@@ -1875,7 +1880,7 @@ void Nick_Live_t::Mode(const mstring& in)
 		else if (!add && modes.Contains(in[i]))
 		{
 		    { RLOCK(("NickServ", "live", i_Name.LowerCase(), "i_host"));
-		    Parent->operserv.AddHost(i_host);
+		    Magick::instance().operserv.AddHost(i_host);
 		    }
 		    modes.Remove(in[i]);
 		}
@@ -2042,7 +2047,7 @@ void Nick_Live_t::SetSquit()
 
     { RLOCK2(("NickServ", "live", i_Name.LowerCase(), "i_host"));
     if (!IsServices())
-	Parent->operserv.RemHost(i_host);
+	Magick::instance().operserv.RemHost(i_host);
     }
 
     set<mstring> jc;
@@ -2052,8 +2057,8 @@ void Nick_Live_t::SetSquit()
     jc = joined_channels;
     }
     for (c=jc.begin(); c!=jc.end(); c++)
-	if (Parent->chanserv.IsLive(*c))
-	    Parent->chanserv.GetLive(*c).SquitUser(i_Name);
+	if (Magick::instance().chanserv.IsLive(*c))
+	    Magick::instance().chanserv.GetLive(*c).SquitUser(i_Name);
 	else
 	{
 	    chunked.push_back(*c);
@@ -2097,8 +2102,8 @@ void Nick_Live_t::ClearSquit(const mstring& inmodes)
     CE(2, joined_channels.size());
     }
     for (i=jc.begin(); i!=jc.end(); i++)
-	if (Parent->chanserv.IsLive(*i))
-	    Parent->chanserv.GetLive(*i).UnSquitUser(i_Name);
+	if (Magick::instance().chanserv.IsLive(*i))
+	    Magick::instance().chanserv.GetLive(*i).UnSquitUser(i_Name);
 	else
 	{
 	    LOG(LM_ERROR, "ERROR/REC_FORNONCHAN", (
@@ -2106,12 +2111,12 @@ void Nick_Live_t::ClearSquit(const mstring& inmodes)
 	}
 
     RLOCK_IF(("NickServ", "live", i_Name.LowerCase(), "i_host"),
-	!IsServices() && Parent->operserv.AddHost(i_host))
+	!IsServices() && Magick::instance().operserv.AddHost(i_host))
     {
 	LOG(LM_INFO, "OTHER/KILL_CLONE", (
 		Mask(N_U_P_H)));
-	Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
-			Parent->operserv.Def_Clone());
+	Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(), i_Name,
+			Magick::instance().operserv.Def_Clone());
 	return;
     }
 }
@@ -2279,9 +2284,9 @@ mstring Nick_Live_t::ChanIdentify(const mstring& channel, const mstring& passwor
 {
     FT("Nick_Live_t::ChanIdentify", (channel, password));
     mstring retval;
-    if (Parent->chanserv.IsStored(channel))
+    if (Magick::instance().chanserv.IsStored(channel))
     {
-	unsigned int failtimes = Parent->chanserv.GetStored(channel).CheckPass(i_Name, password);
+	unsigned int failtimes = Magick::instance().chanserv.GetStored(channel).CheckPass(i_Name, password);
 	if (!failtimes)
 	{
 	    { WLOCK(("NickServ", "live", i_Name.LowerCase(), "chans_founder_identd"));
@@ -2289,7 +2294,7 @@ mstring Nick_Live_t::ChanIdentify(const mstring& channel, const mstring& passwor
 	    chans_founder_identd.insert(channel.LowerCase());
 	    MCE(chans_founder_identd.size());
 	    }
-	    retval = parseMessage(Parent->getMessage(i_Name, "CS_COMMAND/IDENTIFIED"),
+	    retval = parseMessage(Magick::instance().getMessage(i_Name, "CS_COMMAND/IDENTIFIED"),
 						mVarArray(channel));
 	}
 	else
@@ -2307,26 +2312,26 @@ mstring Nick_Live_t::ChanIdentify(const mstring& channel, const mstring& passwor
 		MCE(try_chan_ident.size());
 	    }}
 
-	    if (failtimes >= Parent->chanserv.Passfail())
+	    if (failtimes >= Magick::instance().chanserv.Passfail())
 	    {
 		LOG(LM_NOTICE, "OTHER/KILL_CHAN_PASS", (
 			Mask(N_U_P_H), channel));
-		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
-			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
+		Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(), i_Name,
+			Magick::instance().getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
 		RET("");
 	    }
 	    else
 	    {
 		LOG(LM_INFO, "CHANSERV/IDENTIFY_FAILED", (
 			Mask(N_U_P_H), channel));
-		retval = parseMessage(Parent->getMessage(i_Name, "ERR_SITUATION/CHAN_WRONG_PASS"),
+		retval = parseMessage(Magick::instance().getMessage(i_Name, "ERR_SITUATION/CHAN_WRONG_PASS"),
 								mVarArray(channel));
 	    }
 	}
     }
     else
     {
-	retval = parseMessage(Parent->getMessage(i_Name, "CS_STATUS/ISNOTSTORED"),
+	retval = parseMessage(Magick::instance().getMessage(i_Name, "CS_STATUS/ISNOTSTORED"),
 							mVarArray(channel));
     }
     RET(retval);
@@ -2362,16 +2367,16 @@ mstring Nick_Live_t::Identify(const mstring& password)
     RLOCK_IF(("NickServ", "live", i_Name.LowerCase(), "identified"),
 	identified)
     {
-	retval = Parent->getMessage(i_Name, "NS_YOU_STATUS/IDENTIFIED");
+	retval = Magick::instance().getMessage(i_Name, "NS_YOU_STATUS/IDENTIFIED");
     }
-    else if (Parent->nickserv.IsStored(i_Name))
+    else if (Magick::instance().nickserv.IsStored(i_Name))
     {
-	if (Parent->nickserv.GetStored(i_Name).CheckPass(password))
+	if (Magick::instance().nickserv.GetStored(i_Name).CheckPass(password))
 	{
 	    set<mstring> wason;
 	    CommServ::list_t::iterator iter;
 	    { RLOCK(("CommServ", "list"));
-	    for (iter = Parent->commserv.ListBegin(); iter != Parent->commserv.ListEnd();
+	    for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd();
 									    iter++)
 	    {
 		RLOCK2(("CommServ", "list", iter->first));
@@ -2388,12 +2393,12 @@ mstring Nick_Live_t::Identify(const mstring& password)
 	    CE(1, failed_passwds);
 	    MCE(identified);
 	    }
-	    if (Parent->nickserv.GetStored(i_Name).Secure())
-		Parent->nickserv.GetStored(i_Name).Signon(i_realname, Mask(U_P_H).After("!"));
+	    if (Magick::instance().nickserv.GetStored(i_Name).Secure())
+		Magick::instance().nickserv.GetStored(i_Name).Signon(i_realname, Mask(U_P_H).After("!"));
 
 	    // Send notices for committees we were NOT on
 	    { RLOCK(("CommServ", "list"));
-	    for (iter = Parent->commserv.ListBegin(); iter != Parent->commserv.ListEnd();
+	    for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd();
 									    iter++)
 	    {
 		RLOCK2(("CommServ", "list", iter->first));
@@ -2402,12 +2407,12 @@ mstring Nick_Live_t::Identify(const mstring& password)
 		    for (iter->second.message = iter->second.MSG_begin();
 			iter->second.message != iter->second.MSG_end(); iter->second.message++)
 		    {
-			Parent->servmsg.send(i_Name, "[" + IRC_Bold + iter->first +
+			Magick::instance().servmsg.send(i_Name, "[" + IRC_Bold + iter->first +
 					IRC_Off + "] " + iter->second.message->Entry());
 		    }
 		}
 	    }}
-	    retval = Parent->getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
+	    retval = Magick::instance().getMessage(i_Name, "NS_YOU_COMMAND/IDENTIFIED");
 	}
 	else
 	{
@@ -2417,25 +2422,25 @@ mstring Nick_Live_t::Identify(const mstring& password)
 	    MCE(failed_passwds);
 	    }
 	    RLOCK2_IF(("NickServ", "live", i_Name.LowerCase(), "failed_passwds"),
-		failed_passwds >= Parent->nickserv.Passfail())
+		failed_passwds >= Magick::instance().nickserv.Passfail())
 	    {
 		LOG(LM_NOTICE, "OTHER/KILL_NICK_PASS", (
 			Mask(N_U_P_H), i_Name));
-		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
-			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
+		Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(), i_Name,
+			Magick::instance().getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
 		RET("");
 	    }
 	    else
 	    {
 		LOG(LM_INFO, "NICKSERV/IDENTIFY_FAILED", (
 			Mask(N_U_P_H), i_Name));
-		retval = Parent->getMessage(i_Name, "ERR_SITUATION/NICK_WRONG_PASS");
+		retval = Magick::instance().getMessage(i_Name, "ERR_SITUATION/NICK_WRONG_PASS");
 	    }
 	}
     }
     else
     {
-	retval = Parent->getMessage(i_Name, "NS_YOU_STATUS/ISNOTSTORED");
+	retval = Magick::instance().getMessage(i_Name, "NS_YOU_STATUS/ISNOTSTORED");
     }
     RET(retval);
 }
@@ -2460,9 +2465,9 @@ bool Nick_Live_t::IsRecognized() const
 {
     NFT("Nick_Live_t::IsRecognised");
     bool retval = false;
-    if (Parent->nickserv.IsStored(i_Name))
+    if (Magick::instance().nickserv.IsStored(i_Name))
     {
-	retval = Parent->nickserv.GetStored(i_Name).IsAccess(Mask(U_P_H).After("!"));
+	retval = Magick::instance().nickserv.GetStored(i_Name).IsAccess(Mask(U_P_H).After("!"));
     }
     RET(retval);
 }
@@ -2620,12 +2625,12 @@ void Nick_Stored_t::Signon(const mstring& realname, const mstring& mask)
     mstring who = Host();
     if (who.empty())
 	who = i_Name;
-    if (Parent->memoserv.IsNick(who))
+    if (Magick::instance().memoserv.IsNick(who))
     {
-	unsigned int count = Parent->memoserv.NickMemoCount(who);
+	unsigned int count = Magick::instance().memoserv.NickMemoCount(who);
 	if (count)
-	    SEND(Parent->memoserv.FirstName(), i_Name, "MS_STATUS/NS_UNREAD", (
-		count, Parent->memoserv.FirstName()));
+	    SEND(Magick::instance().memoserv.FirstName(), i_Name, "MS_STATUS/NS_UNREAD", (
+		count, Magick::instance().memoserv.FirstName()));
     }
 }
 
@@ -2648,13 +2653,13 @@ void Nick_Stored_t::defaults()
 {
     NFT("Nick_Stored_t::defaults");
 
-    setting.Protect = Parent->nickserv.DEF_Protect();
-    setting.Secure = Parent->nickserv.DEF_Secure();
-    setting.NoMemo = Parent->nickserv.DEF_NoMemo();
-    setting.Private = Parent->nickserv.DEF_Private();
-    setting.PRIVMSG = Parent->nickserv.DEF_PRIVMSG();
-    setting.Language = Parent->nickserv.DEF_Language().UpperCase();
-    setting.NoExpire = Parent->nickserv.DEF_NoExpire();
+    setting.Protect = Magick::instance().nickserv.DEF_Protect();
+    setting.Secure = Magick::instance().nickserv.DEF_Secure();
+    setting.NoMemo = Magick::instance().nickserv.DEF_NoMemo();
+    setting.Private = Magick::instance().nickserv.DEF_Private();
+    setting.PRIVMSG = Magick::instance().nickserv.DEF_PRIVMSG();
+    setting.Language = Magick::instance().nickserv.DEF_Language().UpperCase();
+    setting.NoExpire = Magick::instance().nickserv.DEF_NoExpire();
     setting.Forbidden = false;
     setting.Picture = 0;
 
@@ -2682,10 +2687,10 @@ Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mstring& password)
 
     defaults();
     Password(password);
-    if (Parent->nickserv.IsLive(i_Name))
+    if (Magick::instance().nickserv.IsLive(i_Name))
     {
-	i_LastRealName = Parent->nickserv.GetLive(i_Name).RealName();
-	i_LastMask = Parent->nickserv.GetLive(i_Name).Mask(Nick_Live_t::U_P_H).After("!");
+	i_LastRealName = Magick::instance().nickserv.GetLive(i_Name).RealName();
+	i_LastMask = Magick::instance().nickserv.GetLive(i_Name).Mask(Nick_Live_t::U_P_H).After("!");
 	i_LastSeenTime = mDateTime::CurrentDateTime();
     }
     DumpE();
@@ -2709,10 +2714,10 @@ Nick_Stored_t::Nick_Stored_t(const mstring& nick, const mDateTime& regtime,
     FT("Nick_Stored_t::Nick_Stored_t", (nick, "(const Nick_Stored_t &) in"));
 
     defaults();
-    if (Parent->nickserv.IsLive(i_Name))
+    if (Magick::instance().nickserv.IsLive(i_Name))
     {
-	i_LastRealName = Parent->nickserv.GetLive(i_Name).RealName();
-	i_LastMask = Parent->nickserv.GetLive(i_Name).Mask(Nick_Live_t::U_P_H).After("!");
+	i_LastRealName = Magick::instance().nickserv.GetLive(i_Name).RealName();
+	i_LastMask = Magick::instance().nickserv.GetLive(i_Name).Mask(Nick_Live_t::U_P_H).After("!");
     }
     DumpE();
 }
@@ -2739,26 +2744,26 @@ unsigned long Nick_Stored_t::Drop()
 	    mstring nick = Sibling(0);
 	    if (!nick.empty())
 	    {
-		dropped += Parent->nickserv.GetStored(nick).Drop();
-		Parent->nickserv.RemStored(nick);
+		dropped += Magick::instance().nickserv.GetStored(nick).Drop();
+		Magick::instance().nickserv.RemStored(nick);
 	    }
 	}
     }
     else
     {
 	WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
-	Parent->nickserv.GetStored(i_Host).i_slaves.erase(i_Name.LowerCase());
+	Magick::instance().nickserv.GetStored(i_Host).i_slaves.erase(i_Name.LowerCase());
     }
 
-    if (Parent->memoserv.IsNick(i_Name))
-	Parent->memoserv.RemNick(i_Name);
+    if (Magick::instance().memoserv.IsNick(i_Name))
+	Magick::instance().memoserv.RemNick(i_Name);
 
     // Now we go for our channels ...
     vector<mstring> killchans;
     ChanServ::stored_t::iterator iter;
     { RLOCK(("ChanServ", "stored"));
-    for (iter = Parent->chanserv.StoredBegin();
-	    iter != Parent->chanserv.StoredEnd(); iter++)
+    for (iter = Magick::instance().chanserv.StoredBegin();
+	    iter != Magick::instance().chanserv.StoredEnd(); iter++)
     {
 	RLOCK2(("ChanServ", "stored", iter->first));
 	if (iter->second.Founder().IsSameAs(i_Name, true))
@@ -2770,7 +2775,7 @@ unsigned long Nick_Stored_t::Drop()
 		iter->second.Founder(i_Host);
 	    }
 	    else if (!iter->second.CoFounder().empty() &&
-		Parent->nickserv.IsStored(iter->second.CoFounder()))
+		Magick::instance().nickserv.IsStored(iter->second.CoFounder()))
 	    {
 		iter->second.Founder(iter->second.CoFounder());
 	    }
@@ -2808,7 +2813,7 @@ unsigned long Nick_Stored_t::Drop()
 
     for (i=0; i<killchans.size(); i++)
     {
-	Parent->chanserv.RemStored(killchans[i]);
+	Magick::instance().chanserv.RemStored(killchans[i]);
     }
 
     RET(dropped);
@@ -2878,7 +2883,7 @@ mstring Nick_Stored_t::Email()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).Email();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).Email();
 	RET(retval);
     }
 }
@@ -2896,7 +2901,7 @@ void Nick_Stored_t::Email(const mstring& in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Email(in);
+	Magick::instance().nickserv.GetStored(i_Host).Email(in);
     }
 }
 
@@ -2911,7 +2916,7 @@ mstring Nick_Stored_t::URL()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).URL();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).URL();
 	RET(retval);
     }
 }
@@ -2929,7 +2934,7 @@ void Nick_Stored_t::URL(const mstring& in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).URL(in);
+	Magick::instance().nickserv.GetStored(i_Host).URL(in);
     }
 }
 
@@ -2944,7 +2949,7 @@ mstring Nick_Stored_t::ICQ()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).ICQ();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).ICQ();
 	RET(retval);
     }
 }
@@ -2962,7 +2967,7 @@ void Nick_Stored_t::ICQ(const mstring& in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).ICQ(in);
+	Magick::instance().nickserv.GetStored(i_Host).ICQ(in);
     }
 }
 
@@ -2977,7 +2982,7 @@ mstring Nick_Stored_t::AIM()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).AIM();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).AIM();
 	RET(retval);
     }
 }
@@ -2995,7 +3000,7 @@ void Nick_Stored_t::AIM(const mstring& in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).AIM(in);
+	Magick::instance().nickserv.GetStored(i_Host).AIM(in);
     }
 }
 
@@ -3010,7 +3015,7 @@ mstring Nick_Stored_t::Description()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).Description();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).Description();
 	RET(retval);
     }
 }
@@ -3028,7 +3033,7 @@ void Nick_Stored_t::Description(const mstring& in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Description();
+	Magick::instance().nickserv.GetStored(i_Host).Description();
     }
 }
 
@@ -3043,7 +3048,7 @@ mstring Nick_Stored_t::Comment()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).Comment();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).Comment();
 	RET(retval);
     }
 }
@@ -3061,7 +3066,7 @@ void Nick_Stored_t::Comment(const mstring& in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Comment(in);
+	Magick::instance().nickserv.GetStored(i_Host).Comment(in);
     }
 }
 
@@ -3082,7 +3087,7 @@ void Nick_Stored_t::Suspend(const mstring& name)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Suspend(name);
+	Magick::instance().nickserv.GetStored(i_Host).Suspend(name);
     }
 }
 
@@ -3099,7 +3104,7 @@ void Nick_Stored_t::UnSuspend()
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).UnSuspend();
+	Magick::instance().nickserv.GetStored(i_Host).UnSuspend();
     }
 }
 
@@ -3109,7 +3114,7 @@ mstring Nick_Stored_t::Host()
     mstring retval;
     RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_Host"));
     if (!i_Host.empty())
-	if (!Parent->nickserv.IsStored(i_Host))
+	if (!Magick::instance().nickserv.IsStored(i_Host))
 	{
 	    LOG(LM_ERROR, "ERROR/HOST_NOTREGD", (
 		i_Host, i_Name));
@@ -3119,7 +3124,7 @@ mstring Nick_Stored_t::Host()
 	    MCE(i_Host);
 	}
 	else
-	    retval = Parent->nickserv.GetStored(i_Host).Name();
+	    retval = Magick::instance().nickserv.GetStored(i_Host).Name();
     RET(retval);
 }
 
@@ -3133,7 +3138,7 @@ mstring Nick_Stored_t::Password()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).Password();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).Password();
 	RET(retval);
     }
 }
@@ -3157,7 +3162,7 @@ void Nick_Stored_t::Password(const mstring& in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Password(in);
+	Magick::instance().nickserv.GetStored(i_Host).Password(in);
     }
 }
 
@@ -3182,7 +3187,7 @@ bool Nick_Stored_t::CheckPass(const mstring& password)
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).CheckPass(password);
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).CheckPass(password);
 	RET(retval);
     }
 }
@@ -3201,14 +3206,14 @@ bool Nick_Stored_t::Slave(const mstring& nick, const mstring& password,
 	    RET(false);
 	}}
 
-	if (Parent->nickserv.IsStored(nick))
+	if (Magick::instance().nickserv.IsStored(nick))
 	{
 	    ChangeOver(nick);
-	    Parent->nickserv.RemStored(nick);
+	    Magick::instance().nickserv.RemStored(nick);
 	}
 
 	Nick_Stored_t tmp(nick, regtime, *this);
-	Parent->nickserv.AddStored(&tmp);
+	Magick::instance().nickserv.AddStored(&tmp);
 	WLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
 	MCB(i_slaves.size());
 	i_slaves.insert(nick.LowerCase());
@@ -3217,7 +3222,7 @@ bool Nick_Stored_t::Slave(const mstring& nick, const mstring& password,
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).Slave(nick, password, regtime);
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).Slave(nick, password, regtime);
 	RET(retval);
     }
 }
@@ -3233,7 +3238,7 @@ unsigned int Nick_Stored_t::Siblings()
     }
     else
     {
-	retval = Parent->nickserv.GetStored(i_Host).Siblings();
+	retval = Magick::instance().nickserv.GetStored(i_Host).Siblings();
     }
     RET(retval);
 }
@@ -3251,7 +3256,7 @@ mstring Nick_Stored_t::Sibling(const unsigned int count)
 	{ RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
 	for (i=0, iter=i_slaves.begin(); iter!=i_slaves.end(); iter++, i++)
 	{
-	    if (Parent->nickserv.IsStored(*iter))
+	    if (Magick::instance().nickserv.IsStored(*iter))
 	    {
 		if (i==count)
 		{
@@ -3278,7 +3283,7 @@ mstring Nick_Stored_t::Sibling(const unsigned int count)
     }
     else
     {
-	retval = Parent->nickserv.GetStored(i_Host).Sibling(count);
+	retval = Magick::instance().nickserv.GetStored(i_Host).Sibling(count);
     }
     RET(retval);
 }
@@ -3297,7 +3302,7 @@ bool Nick_Stored_t::IsSibling(const mstring& nick)
 	{ RLOCK(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
 	retval = (i_slaves.find(nick.LowerCase()) != i_slaves.end());
 	}
-	if (retval && !Parent->nickserv.IsStored(nick))
+	if (retval && !Magick::instance().nickserv.IsStored(nick))
 	{
 	    LOG(LM_ERROR, "ERROR/SLAVE_NOTREGD", (
 			nick, i_Name));
@@ -3311,7 +3316,7 @@ bool Nick_Stored_t::IsSibling(const mstring& nick)
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).IsSibling(nick);
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).IsSibling(nick);
 	RET(retval);
     }
 }
@@ -3327,14 +3332,14 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 
     CommServ::list_t::iterator citer;
     { RLOCK(("CommServ", "list"));
-    for (citer = Parent->commserv.ListBegin();
-			    citer != Parent->commserv.ListEnd(); citer++)
+    for (citer = Magick::instance().commserv.ListBegin();
+			    citer != Magick::instance().commserv.ListEnd(); citer++)
     {
 	found = false;
 	RLOCK2(("CommServ", "list", citer->first));
-	if (citer->second.Name() != Parent->commserv.ALL_Name() &&
-	    citer->second.Name() != Parent->commserv.REGD_Name() &&
-	    citer->second.Name() != Parent->commserv.SADMIN_Name())
+	if (citer->second.Name() != Magick::instance().commserv.ALL_Name() &&
+	    citer->second.Name() != Magick::instance().commserv.REGD_Name() &&
+	    citer->second.Name() != Magick::instance().commserv.SADMIN_Name())
 	{
 	    MLOCK(("CommServ", "list", citer->first, "member"));
 	    if (citer->second.find(i_Name))
@@ -3367,8 +3372,8 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 
     ChanServ::stored_t::iterator csiter;
     { RLOCK(("ChanServ", "stored"));
-    for (csiter = Parent->chanserv.StoredBegin();
-			csiter != Parent->chanserv.StoredEnd(); csiter++)
+    for (csiter = Magick::instance().chanserv.StoredBegin();
+			csiter != Magick::instance().chanserv.StoredEnd(); csiter++)
     {
 	RLOCK2(("ChanServ", "stored", csiter->first));
 	if (csiter->second.Founder().IsSameAs(oldnick, true))
@@ -3457,8 +3462,8 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
     
     NickServ::stored_t::iterator niter;
     { RLOCK(("NickServ", "stored"));
-    for (niter = Parent->nickserv.StoredBegin();
-			niter != Parent->nickserv.StoredEnd(); niter++)
+    for (niter = Magick::instance().nickserv.StoredBegin();
+			niter != Magick::instance().nickserv.StoredEnd(); niter++)
     {
 	RLOCK2(("NickServ", "stored", niter->first));
 	if (niter->first != i_Name.LowerCase() &&
@@ -3471,14 +3476,14 @@ void Nick_Stored_t::ChangeOver(const mstring& oldnick)
 	}
     }}
 
-    if (Parent->memoserv.IsNick(oldnick))
-	Parent->memoserv.NickMemoConvert(oldnick, i_Name);
+    if (Magick::instance().memoserv.IsNick(oldnick))
+	Magick::instance().memoserv.NickMemoConvert(oldnick, i_Name);
 
     MemoServ::channel_t::iterator cniter;
     MemoServ::channel_news_t::iterator cnliter;
     { RLOCK(("MemoServ", "channel"));
-    for (cniter = Parent->memoserv.ChannelBegin();
-			cniter != Parent->memoserv.ChannelEnd(); cniter++)
+    for (cniter = Magick::instance().memoserv.ChannelBegin();
+			cniter != Magick::instance().memoserv.ChannelEnd(); cniter++)
     {
 	RLOCK2(("MemoServ", "channel", cniter->first));
 	for (cnliter = cniter->second.begin();
@@ -3508,14 +3513,14 @@ bool Nick_Stored_t::MakeHost()
 	WLOCK(("NickServ", "stored", i_Name.LowerCase()));
 	RLOCK(("NickServ", "stored", i_Host.LowerCase()));
 	DumpB();
-	Nick_Stored_t &host = Parent->nickserv.GetStored(i_Host);
+	Nick_Stored_t &host = Magick::instance().nickserv.GetStored(i_Host);
 	for (unsigned int i=0; i<host.Siblings(); i++)
 	{
 	    if (host.Sibling(i).LowerCase() != i_Name.LowerCase())
 	    {
 		i_slaves.insert(host.Sibling(i));
 		WLOCK2(("NickServ", "stored", host.Sibling(i).LowerCase(), "i_Host"));
-		Parent->nickserv.GetStored(host.Sibling(i)).i_Host = i_Name.LowerCase();
+		Magick::instance().nickserv.GetStored(host.Sibling(i)).i_Host = i_Name.LowerCase();
 	    }
 	}
 	i_slaves.insert(i_Host.LowerCase());
@@ -3570,7 +3575,7 @@ bool Nick_Stored_t::Unlink()
 	WLOCK(("NickServ", "stored", i_Name.LowerCase()));
 	RLOCK(("NickServ", "stored", i_Host.LowerCase()));
 	DumpB();
-	Nick_Stored_t &host = Parent->nickserv.GetStored(i_Host);
+	Nick_Stored_t &host = Magick::instance().nickserv.GetStored(i_Host);
 	i_slaves.clear();
 	i_Password = host.i_Password;
 	i_Email = host.i_Email;
@@ -3618,7 +3623,7 @@ unsigned int Nick_Stored_t::Access()
     }
     else
     {
-	retval = Parent->nickserv.GetStored(i_Host).Access();
+	retval = Magick::instance().nickserv.GetStored(i_Host).Access();
     }
     RET(retval);
 }
@@ -3641,7 +3646,7 @@ mstring Nick_Stored_t::Access(const unsigned int count)
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).Access(count);
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).Access(count);
 	RET(retval);
     }
 }
@@ -3685,7 +3690,7 @@ bool Nick_Stored_t::AccessAdd(const mstring& in)
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).AccessAdd(in);
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).AccessAdd(in);
 	RET(retval);
     }
 }
@@ -3714,7 +3719,7 @@ unsigned int Nick_Stored_t::AccessDel(const mstring& in)
     }
     else
     {
-	retval = Parent->nickserv.GetStored(i_Host).AccessDel(in);
+	retval = Magick::instance().nickserv.GetStored(i_Host).AccessDel(in);
     }
     RET(retval);
 }
@@ -3736,7 +3741,7 @@ bool Nick_Stored_t::IsAccess(const mstring& in)
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).IsAccess(in);
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).IsAccess(in);
 	RET(retval);
     }
 }
@@ -3752,7 +3757,7 @@ unsigned int Nick_Stored_t::Ignore()
     }
     else
     {
-	retval = Parent->nickserv.GetStored(i_Host).Ignore();
+	retval = Magick::instance().nickserv.GetStored(i_Host).Ignore();
     }
     RET(retval);
 }
@@ -3775,7 +3780,7 @@ mstring Nick_Stored_t::Ignore(const unsigned int count)
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).Ignore(count);
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).Ignore(count);
 	RET(retval);
     }
 }
@@ -3788,13 +3793,13 @@ bool Nick_Stored_t::IgnoreAdd(const mstring& in)
     {
 	mstring target(in.LowerCase());
 	// Not stored nick
-	if (!Parent->nickserv.IsStored(target))
+	if (!Magick::instance().nickserv.IsStored(target))
 	{
 	    RET(false);
 	}
 
-	if (!Parent->nickserv.GetStored(target).Host().empty())
-	    target = Parent->nickserv.GetStored(target).Host();
+	if (!Magick::instance().nickserv.GetStored(target).Host().empty())
+	    target = Magick::instance().nickserv.GetStored(target).Host();
 	
 	if (IsIgnore(target))
 	{
@@ -3808,7 +3813,7 @@ bool Nick_Stored_t::IgnoreAdd(const mstring& in)
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).IgnoreAdd(in);
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).IgnoreAdd(in);
 	RET(retval);
     }
 }
@@ -3830,9 +3835,9 @@ unsigned int Nick_Stored_t::IgnoreDel(const mstring& in)
 		chunked.push_back(*iter);
 	    }
 
-	if (Parent->nickserv.IsStored(in))
+	if (Magick::instance().nickserv.IsStored(in))
 	{
-	    target = Parent->nickserv.GetStored(in).Host();
+	    target = Magick::instance().nickserv.GetStored(in).Host();
 	    if (!target.empty())
 	    {
 		for (iter=i_ignore.begin(); iter!=i_ignore.end(); iter++)
@@ -3850,7 +3855,7 @@ unsigned int Nick_Stored_t::IgnoreDel(const mstring& in)
     }
     else
     {
-	retval = Parent->nickserv.GetStored(i_Host).IgnoreDel(in);
+	retval = Magick::instance().nickserv.GetStored(i_Host).IgnoreDel(in);
     }
     RET(retval);
 }
@@ -3869,9 +3874,9 @@ bool Nick_Stored_t::IsIgnore(const mstring& in)
 	    {
 		RET(true);
 	    }
-	if (Parent->nickserv.IsStored(target))
+	if (Magick::instance().nickserv.IsStored(target))
 	{
-	    target = Parent->nickserv.GetStored(target).Host();
+	    target = Magick::instance().nickserv.GetStored(target).Host();
 	    if (!target.empty())
 	    {
 		for (iter=i_ignore.begin(); iter!=i_ignore.end(); iter++)
@@ -3885,7 +3890,7 @@ bool Nick_Stored_t::IsIgnore(const mstring& in)
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).IsIgnore(in);
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).IsIgnore(in);
 	RET(retval);
     }
 }
@@ -3894,9 +3899,9 @@ bool Nick_Stored_t::IsIgnore(const mstring& in)
 bool Nick_Stored_t::Protect()
 {
     NFT("Nick_Stored_t::Protect");
-    if (Parent->nickserv.LCK_Protect())
+    if (Magick::instance().nickserv.LCK_Protect())
     {
-	RET(Parent->nickserv.DEF_Protect());
+	RET(Magick::instance().nickserv.DEF_Protect());
     }
     else if (Host().empty())
     {
@@ -3905,7 +3910,7 @@ bool Nick_Stored_t::Protect()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).Protect();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).Protect();
 	RET(retval);
     }
 }
@@ -3926,7 +3931,7 @@ void Nick_Stored_t::Protect(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Protect(in);
+	Magick::instance().nickserv.GetStored(i_Host).Protect(in);
     }
 }
 
@@ -3934,7 +3939,7 @@ void Nick_Stored_t::Protect(const bool in)
 bool Nick_Stored_t::L_Protect()
 {
     NFT("Nick_Stored_t::L_Protect");
-    if (Parent->nickserv.LCK_Protect())
+    if (Magick::instance().nickserv.LCK_Protect())
     {
 	RET(true);
     }
@@ -3945,7 +3950,7 @@ bool Nick_Stored_t::L_Protect()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).L_Protect();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).L_Protect();
 	RET(retval);
     }
 }
@@ -3956,7 +3961,7 @@ void Nick_Stored_t::L_Protect(const bool in)
     FT("Nick_Stored_t::L_Protect", (in));
     if (Host().empty())
     {
-	if (!Parent->nickserv.LCK_Protect())
+	if (!Magick::instance().nickserv.LCK_Protect())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "lock.Protect"));
 	    MCB(lock.Protect);
@@ -3966,7 +3971,7 @@ void Nick_Stored_t::L_Protect(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).L_Protect(in);
+	Magick::instance().nickserv.GetStored(i_Host).L_Protect(in);
     }
 }
 
@@ -3974,9 +3979,9 @@ void Nick_Stored_t::L_Protect(const bool in)
 bool Nick_Stored_t::Secure()
 {
     NFT("Nick_Stored_t::Secure");
-    if (Parent->nickserv.LCK_Secure())
+    if (Magick::instance().nickserv.LCK_Secure())
     {
-	RET(Parent->nickserv.DEF_Secure());
+	RET(Magick::instance().nickserv.DEF_Secure());
     }
     else if (Host().empty())
     {
@@ -3985,7 +3990,7 @@ bool Nick_Stored_t::Secure()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).Secure();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).Secure();
 	RET(retval);
     }
 }
@@ -4006,7 +4011,7 @@ void Nick_Stored_t::Secure(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Secure(in);
+	Magick::instance().nickserv.GetStored(i_Host).Secure(in);
     }
 }
 
@@ -4014,7 +4019,7 @@ void Nick_Stored_t::Secure(const bool in)
 bool Nick_Stored_t::L_Secure()
 {
     NFT("Nick_Stored_t::L_Secure");
-    if (Parent->nickserv.LCK_Secure())
+    if (Magick::instance().nickserv.LCK_Secure())
     {
 	RET(true);
     }
@@ -4025,7 +4030,7 @@ bool Nick_Stored_t::L_Secure()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).L_Secure();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).L_Secure();
 	RET(retval);
     }
 }
@@ -4036,7 +4041,7 @@ void Nick_Stored_t::L_Secure(const bool in)
     FT("Nick_Stored_t::L_Secure", (in));
     if (Host().empty())
     {
-	if (!Parent->nickserv.LCK_Secure())
+	if (!Magick::instance().nickserv.LCK_Secure())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "lock.Secure"));
 	    MCB(lock.Secure);
@@ -4046,7 +4051,7 @@ void Nick_Stored_t::L_Secure(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).L_Secure(in);
+	Magick::instance().nickserv.GetStored(i_Host).L_Secure(in);
     }
 }
 
@@ -4054,9 +4059,9 @@ void Nick_Stored_t::L_Secure(const bool in)
 bool Nick_Stored_t::NoExpire()
 {
     NFT("Nick_Stored_t::NoExpire");
-    if (Parent->nickserv.LCK_NoExpire())
+    if (Magick::instance().nickserv.LCK_NoExpire())
     {
-	RET(Parent->nickserv.DEF_NoExpire());
+	RET(Magick::instance().nickserv.DEF_NoExpire());
     }
     else if (Host().empty())
     {
@@ -4065,7 +4070,7 @@ bool Nick_Stored_t::NoExpire()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).NoExpire();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).NoExpire();
 	RET(retval);
     }
 }
@@ -4076,7 +4081,7 @@ void Nick_Stored_t::NoExpire(const bool in)
     FT("Nick_Stored_t::NoExpire", (in));
     if (Host().empty())
     {
-	if (!Parent->nickserv.LCK_NoExpire())
+	if (!Magick::instance().nickserv.LCK_NoExpire())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "setting.NoExpire"));
 	    MCB(setting.NoExpire);
@@ -4086,7 +4091,7 @@ void Nick_Stored_t::NoExpire(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).NoExpire(in);
+	Magick::instance().nickserv.GetStored(i_Host).NoExpire(in);
     }
 }
 
@@ -4094,9 +4099,9 @@ void Nick_Stored_t::NoExpire(const bool in)
 bool Nick_Stored_t::NoMemo()
 {
     NFT("Nick_Stored_t::NoMemo");
-    if (Parent->nickserv.LCK_NoMemo())
+    if (Magick::instance().nickserv.LCK_NoMemo())
     {
-	RET(Parent->nickserv.DEF_NoMemo());
+	RET(Magick::instance().nickserv.DEF_NoMemo());
     }
     else if (Host().empty())
     {
@@ -4105,7 +4110,7 @@ bool Nick_Stored_t::NoMemo()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).NoMemo();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).NoMemo();
 	RET(retval);
     }
 }
@@ -4126,7 +4131,7 @@ void Nick_Stored_t::NoMemo(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).NoMemo(in);
+	Magick::instance().nickserv.GetStored(i_Host).NoMemo(in);
     }
 }
 
@@ -4134,7 +4139,7 @@ void Nick_Stored_t::NoMemo(const bool in)
 bool Nick_Stored_t::L_NoMemo()
 {
     NFT("Nick_Stored_t::L_NoMemo");
-    if (Parent->nickserv.LCK_NoMemo())
+    if (Magick::instance().nickserv.LCK_NoMemo())
     {
 	RET(true);
     }
@@ -4145,7 +4150,7 @@ bool Nick_Stored_t::L_NoMemo()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).L_NoMemo();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).L_NoMemo();
 	RET(retval);
     }
 }
@@ -4156,7 +4161,7 @@ void Nick_Stored_t::L_NoMemo(const bool in)
     FT("Nick_Stored_t::L_NoMemo", (in));
     if (Host().empty())
     {
-	if (!Parent->nickserv.LCK_NoMemo())
+	if (!Magick::instance().nickserv.LCK_NoMemo())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "lock.NoMemo"));
 	    MCB(lock.NoMemo);
@@ -4166,7 +4171,7 @@ void Nick_Stored_t::L_NoMemo(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).L_NoMemo(in);
+	Magick::instance().nickserv.GetStored(i_Host).L_NoMemo(in);
     }
 }
 
@@ -4174,9 +4179,9 @@ void Nick_Stored_t::L_NoMemo(const bool in)
 bool Nick_Stored_t::Private()
 {
     NFT("Nick_Stored_t::Private");
-    if (Parent->nickserv.LCK_Private())
+    if (Magick::instance().nickserv.LCK_Private())
     {
-	RET(Parent->nickserv.DEF_Private());
+	RET(Magick::instance().nickserv.DEF_Private());
     }
     else if (Host().empty())
     {
@@ -4185,7 +4190,7 @@ bool Nick_Stored_t::Private()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).Private();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).Private();
 	RET(retval);
     }
 }
@@ -4206,7 +4211,7 @@ void Nick_Stored_t::Private(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Private(in);
+	Magick::instance().nickserv.GetStored(i_Host).Private(in);
     }
 }
 
@@ -4214,7 +4219,7 @@ void Nick_Stored_t::Private(const bool in)
 bool Nick_Stored_t::L_Private()
 {
     NFT("Nick_Stored_t::L_Private");
-    if (Parent->nickserv.LCK_Private())
+    if (Magick::instance().nickserv.LCK_Private())
     {
 	RET(true);
     }
@@ -4225,7 +4230,7 @@ bool Nick_Stored_t::L_Private()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).L_Private();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).L_Private();
 	RET(retval);
     }
 }
@@ -4236,7 +4241,7 @@ void Nick_Stored_t::L_Private(const bool in)
     FT("Nick_Stored_t::L_Private", (in));
     if (Host().empty())
     {
-	if (!Parent->nickserv.LCK_Private())
+	if (!Magick::instance().nickserv.LCK_Private())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "lock.Private"));
 	    MCB(lock.Private);
@@ -4246,7 +4251,7 @@ void Nick_Stored_t::L_Private(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).L_Private(in);
+	Magick::instance().nickserv.GetStored(i_Host).L_Private(in);
     }
 }
 
@@ -4254,9 +4259,9 @@ void Nick_Stored_t::L_Private(const bool in)
 bool Nick_Stored_t::PRIVMSG()
 {
     NFT("Nick_Stored_t::PRIVMSG");
-    if (Parent->nickserv.LCK_PRIVMSG())
+    if (Magick::instance().nickserv.LCK_PRIVMSG())
     {
-	RET(Parent->nickserv.DEF_PRIVMSG());
+	RET(Magick::instance().nickserv.DEF_PRIVMSG());
     }
     else if (Host().empty())
     {
@@ -4265,7 +4270,7 @@ bool Nick_Stored_t::PRIVMSG()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).PRIVMSG();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).PRIVMSG();
 	RET(retval);
     }
 }
@@ -4286,7 +4291,7 @@ void Nick_Stored_t::PRIVMSG(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).PRIVMSG(in);
+	Magick::instance().nickserv.GetStored(i_Host).PRIVMSG(in);
     }
 }
 
@@ -4294,7 +4299,7 @@ void Nick_Stored_t::PRIVMSG(const bool in)
 bool Nick_Stored_t::L_PRIVMSG()
 {
     NFT("Nick_Stored_t::L_PRIVMSG");
-    if (Parent->nickserv.LCK_PRIVMSG())
+    if (Magick::instance().nickserv.LCK_PRIVMSG())
     {
 	RET(true);
     }
@@ -4305,7 +4310,7 @@ bool Nick_Stored_t::L_PRIVMSG()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).L_PRIVMSG();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).L_PRIVMSG();
 	RET(retval);
     }
 }
@@ -4316,7 +4321,7 @@ void Nick_Stored_t::L_PRIVMSG(const bool in)
     FT("Nick_Stored_t::L_PRIVMSG", (in));
     if (Host().empty())
     {
-	if (!Parent->nickserv.LCK_PRIVMSG())
+	if (!Magick::instance().nickserv.LCK_PRIVMSG())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "lock.PRIVMSG"));
 	    MCB(lock.PRIVMSG);
@@ -4326,7 +4331,7 @@ void Nick_Stored_t::L_PRIVMSG(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).L_PRIVMSG(in);
+	Magick::instance().nickserv.GetStored(i_Host).L_PRIVMSG(in);
     }
 }
 
@@ -4334,9 +4339,9 @@ void Nick_Stored_t::L_PRIVMSG(const bool in)
 mstring Nick_Stored_t::Language()
 {
     NFT("Nick_Stored_t::Language");
-    if (Parent->nickserv.LCK_Language())
+    if (Magick::instance().nickserv.LCK_Language())
     {
-	RET(Parent->nickserv.DEF_Language().UpperCase());
+	RET(Magick::instance().nickserv.DEF_Language().UpperCase());
     }
     else if (Host().empty())
     {
@@ -4345,7 +4350,7 @@ mstring Nick_Stored_t::Language()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).Language();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).Language();
 	RET(retval);
     }
 }
@@ -4366,7 +4371,7 @@ void Nick_Stored_t::Language(const mstring& in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).Language(in);
+	Magick::instance().nickserv.GetStored(i_Host).Language(in);
     }
 }
 
@@ -4374,7 +4379,7 @@ void Nick_Stored_t::Language(const mstring& in)
 bool Nick_Stored_t::L_Language()
 {
     NFT("Nick_Stored_t::L_Language");
-    if (Parent->nickserv.LCK_Language())
+    if (Magick::instance().nickserv.LCK_Language())
     {
 	RET(true);
     }
@@ -4385,7 +4390,7 @@ bool Nick_Stored_t::L_Language()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).L_Language();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).L_Language();
 	RET(retval);
     }
 }
@@ -4396,7 +4401,7 @@ void Nick_Stored_t::L_Language(const bool in)
     FT("Nick_Stored_t::L_Language", (in));
     if (Host().empty())
     {
-	if (!Parent->nickserv.LCK_Language())
+	if (!Magick::instance().nickserv.LCK_Language())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "lock.Language"));
 	    MCB(lock.Language);
@@ -4406,7 +4411,7 @@ void Nick_Stored_t::L_Language(const bool in)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).L_Language(in);
+	Magick::instance().nickserv.GetStored(i_Host).L_Language(in);
     }
 }
 
@@ -4421,7 +4426,7 @@ bool Nick_Stored_t::Suspended()
     }
     else
     {
-	bool retval = Parent->nickserv.GetStored(i_Host).Suspended();
+	bool retval = Magick::instance().nickserv.GetStored(i_Host).Suspended();
 	RET(retval);
     }
 }
@@ -4437,7 +4442,7 @@ mstring Nick_Stored_t::Suspend_By()
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).Suspend_By();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).Suspend_By();
 	RET(retval);
     }
 }
@@ -4453,7 +4458,7 @@ mDateTime Nick_Stored_t::Suspend_Time()
     }
     else
     {
-	mDateTime retval = Parent->nickserv.GetStored(i_Host).Suspend_Time();
+	mDateTime retval = Magick::instance().nickserv.GetStored(i_Host).Suspend_Time();
 	RET(retval);
     }
 }
@@ -4471,7 +4476,7 @@ unsigned long Nick_Stored_t::PicNum()
     NFT("PicNum");
     if (Host().empty())
     {
-	if (!Parent->nickserv.PicExt().empty())
+	if (!Magick::instance().nickserv.PicExt().empty())
 	{
 	    RLOCK(("NickServ", "stored", i_Name.LowerCase(), "setting.Picture"));
 	    RET(setting.Picture);
@@ -4480,7 +4485,7 @@ unsigned long Nick_Stored_t::PicNum()
     }
     else
     {
-	unsigned long retval = Parent->nickserv.GetStored(i_Host).PicNum();
+	unsigned long retval = Magick::instance().nickserv.GetStored(i_Host).PicNum();
 	RET(retval);
     }
 }
@@ -4491,7 +4496,7 @@ void Nick_Stored_t::GotPic(const unsigned long picnum)
     FT("Nick_Stored_t::GotPic", (picnum));
     if (Host().empty())
     {
-	if (!Parent->nickserv.PicExt().empty())
+	if (!Magick::instance().nickserv.PicExt().empty())
 	{
 	    WLOCK(("NickServ", "stored", i_Name.LowerCase(), "setting.Picture"));
 	    MCB(setting.Picture);
@@ -4501,7 +4506,7 @@ void Nick_Stored_t::GotPic(const unsigned long picnum)
     }
     else
     {
-	Parent->nickserv.GetStored(i_Host).GotPic(picnum);
+	Magick::instance().nickserv.GetStored(i_Host).GotPic(picnum);
     }
 }
 
@@ -4510,12 +4515,12 @@ bool Nick_Stored_t::IsOnline()
 {
     NFT("Nick_Stored_t::IsOnline");
 
-    if (Parent->nickserv.IsLive(i_Name))
+    if (Magick::instance().nickserv.IsLive(i_Name))
     {
 	// Not secure and recognized
 	// or not suspended and identified
-	if ((!Suspended() && Parent->nickserv.GetLive(i_Name).IsIdentified()) ||
-	    (!Secure() && Parent->nickserv.GetLive(i_Name).IsRecognized()))
+	if ((!Suspended() && Magick::instance().nickserv.GetLive(i_Name).IsIdentified()) ||
+	    (!Secure() && Magick::instance().nickserv.GetLive(i_Name).IsRecognized()))
 	{
 	    RET(true);
 	}
@@ -4540,14 +4545,14 @@ mDateTime Nick_Stored_t::LastAllSeenTime()
 	unsigned int i;
 	for (i=0; i<Siblings(); i++)
 	{
-	    if (Parent->nickserv.GetStored(Sibling(i)).LastSeenTime() > lastseen)
-		lastseen = Parent->nickserv.GetStored(Sibling(i)).LastSeenTime();
+	    if (Magick::instance().nickserv.GetStored(Sibling(i)).LastSeenTime() > lastseen)
+		lastseen = Magick::instance().nickserv.GetStored(Sibling(i)).LastSeenTime();
 	}
 	RET(lastseen);
     }
     else
     {
-	mDateTime retval = Parent->nickserv.GetStored(i_Host).LastAllSeenTime();
+	mDateTime retval = Magick::instance().nickserv.GetStored(i_Host).LastAllSeenTime();
 	RET(retval);
     }
 }
@@ -4573,7 +4578,7 @@ mstring Nick_Stored_t::LastRealName()
     NFT("Nick_Stored_t::LastRealName");
     if (IsOnline())
     {
-	mstring retval = Parent->nickserv.GetLive(i_Name).RealName();
+	mstring retval = Magick::instance().nickserv.GetLive(i_Name).RealName();
 	RET(retval);
     }
     else
@@ -4589,7 +4594,7 @@ mstring Nick_Stored_t::LastAllMask()
     NFT("Nick_Stored_t::LastAllMask");
     if (IsOnline())
     {
-	RET(Parent->getMessage("VALS/ONLINE"));
+	RET(Magick::instance().getMessage("VALS/ONLINE"));
     }
     else if (Host().empty())
     {
@@ -4601,22 +4606,22 @@ mstring Nick_Stored_t::LastAllMask()
 	unsigned int i;
 	for (i=0; i<Siblings(); i++)
 	{
-	    if (Parent->nickserv.GetStored(Sibling(i)).IsOnline())
+	    if (Magick::instance().nickserv.GetStored(Sibling(i)).IsOnline())
 	    {
-		RET(Parent->getMessage("VALS/ONLINE"));
+		RET(Magick::instance().getMessage("VALS/ONLINE"));
 	    }
-	    if (Parent->nickserv.GetStored(Sibling(i)).LastSeenTime() > lastseen)
+	    if (Magick::instance().nickserv.GetStored(Sibling(i)).LastSeenTime() > lastseen)
 	    {
-		lastseen = Parent->nickserv.GetStored(Sibling(i)).LastSeenTime();
-		lastmask = Parent->nickserv.GetStored(Sibling(i)).Name() + "!" +
-				Parent->nickserv.GetStored(Sibling(i)).LastMask();
+		lastseen = Magick::instance().nickserv.GetStored(Sibling(i)).LastSeenTime();
+		lastmask = Magick::instance().nickserv.GetStored(Sibling(i)).Name() + "!" +
+				Magick::instance().nickserv.GetStored(Sibling(i)).LastMask();
 	    }
 	}
 	RET(lastmask);
     }
     else
     {
-	mstring retval = Parent->nickserv.GetStored(i_Host).LastAllMask();
+	mstring retval = Magick::instance().nickserv.GetStored(i_Host).LastAllMask();
 	RET(retval);
     }
 }
@@ -4627,7 +4632,7 @@ mstring Nick_Stored_t::LastMask()
     NFT("Nick_Stored_t::LastMask");
     if (IsOnline())
     {
-	RET(Parent->getMessage("VALS/ONLINE"));
+	RET(Magick::instance().getMessage("VALS/ONLINE"));
     }
     else
     {
@@ -4678,7 +4683,7 @@ size_t Nick_Stored_t::MyChannels() const
     size_t count = 0;
     ChanServ::stored_t::const_iterator i;
     RLOCK(("ChanServ", "stored"));
-    for (i=Parent->chanserv.StoredBegin(); i!=Parent->chanserv.StoredEnd(); i++)
+    for (i=Magick::instance().chanserv.StoredBegin(); i!=Magick::instance().chanserv.StoredEnd(); i++)
     {
 	RLOCK2(("ChanServ", "stored", i->first));
 	if (i->second.Founder().IsSameAs(i_Name, true) ||
@@ -5038,17 +5043,17 @@ mstring NickServ::findnextnick(const mstring& in)
     unsigned int i, attempts = 64;
 
     CP(("Renaming nickname %s", in.c_str()));
-    if (Parent->nickserv.Append_Rename())
+    if (Magick::instance().nickserv.Append_Rename())
     {
-	for (i=0; i<Parent->nickserv.Suffixes().length(); i++)
+	for (i=0; i<Magick::instance().nickserv.Suffixes().length(); i++)
 	{
 	    mstring retval(in);
-	    while (retval.length() < Parent->server.proto.NickLen())
+	    while (retval.length() < Magick::instance().server.proto.NickLen())
 	    {
-		retval += Parent->nickserv.Suffixes()[i];
+		retval += Magick::instance().nickserv.Suffixes()[i];
 		COM(("Attempting to use %s", retval.c_str()));
-		if (!Parent->nickserv.IsLiveAll(retval) &&
-		    !Parent->nickserv.IsStored(retval))
+		if (!Magick::instance().nickserv.IsLiveAll(retval) &&
+		    !Magick::instance().nickserv.IsStored(retval))
 		{
 		    RET(retval);
 		}
@@ -5062,11 +5067,11 @@ mstring NickServ::findnextnick(const mstring& in)
 	{
 	    mstring retval;
 	    retval.Format("%s%05d",
-		    Parent->nickserv.Suffixes().c_str(),
+		    Magick::instance().nickserv.Suffixes().c_str(),
 		    rand() % 99999);
 	    COM(("Attempting to use %s", retval.c_str()));
-	    if (!Parent->nickserv.IsLiveAll(retval) &&
-		!Parent->nickserv.IsStored(retval))
+	    if (!Magick::instance().nickserv.IsLiveAll(retval) &&
+		!Magick::instance().nickserv.IsStored(retval))
 	    {
 		RET(retval);
 	    }
@@ -5080,171 +5085,171 @@ void NickServ::AddCommands()
     NFT("NickServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC* CUR*", Parent->commserv.REGD_Name(), NickServ::do_access_Current);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC* ADD", Parent->commserv.REGD_Name(), NickServ::do_access_Add);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC* DEL*", Parent->commserv.REGD_Name(), NickServ::do_access_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC* ERA*", Parent->commserv.REGD_Name(), NickServ::do_access_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC* LIST", Parent->commserv.REGD_Name(), NickServ::do_access_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC* VIEW", Parent->commserv.REGD_Name(), NickServ::do_access_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC* H*LP", Parent->commserv.REGD_Name(), do_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN* ADD", Parent->commserv.REGD_Name(), NickServ::do_ignore_Add);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN* DEL*", Parent->commserv.REGD_Name(), NickServ::do_ignore_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN* ERA*", Parent->commserv.REGD_Name(), NickServ::do_ignore_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN* LIST", Parent->commserv.REGD_Name(), NickServ::do_ignore_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN* VIEW", Parent->commserv.REGD_Name(), NickServ::do_ignore_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN* H*LP", Parent->commserv.REGD_Name(), do_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* PASS*", Parent->commserv.REGD_Name(), NickServ::do_set_Password);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* E*MAIL*", Parent->commserv.REGD_Name(), NickServ::do_set_Email);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* URL", Parent->commserv.REGD_Name(), NickServ::do_set_URL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* WWW*", Parent->commserv.REGD_Name(), NickServ::do_set_URL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* WEB*", Parent->commserv.REGD_Name(), NickServ::do_set_URL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* ICQ*", Parent->commserv.REGD_Name(), NickServ::do_set_ICQ);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* AIM*", Parent->commserv.REGD_Name(), NickServ::do_set_AIM);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* DESC*", Parent->commserv.REGD_Name(), NickServ::do_set_Description);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* COMM*", Parent->commserv.SOP_Name(), NickServ::do_set_Comment);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* PIC*", Parent->commserv.REGD_Name(), NickServ::do_set_Picture);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* PROT*", Parent->commserv.REGD_Name(), NickServ::do_set_Protect);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* SEC*", Parent->commserv.REGD_Name(), NickServ::do_set_Secure);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* NOEX*", Parent->commserv.SOP_Name(), NickServ::do_set_NoExpire);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* NOMEMO", Parent->commserv.REGD_Name(), NickServ::do_set_NoMemo);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* PRIVM*", Parent->commserv.REGD_Name(), NickServ::do_set_PRIVMSG);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* *MSG", Parent->commserv.REGD_Name(), NickServ::do_set_PRIVMSG);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* PRIV*", Parent->commserv.REGD_Name(), NickServ::do_set_Private);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* LANG*", Parent->commserv.REGD_Name(), NickServ::do_set_Language);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* H*LP", Parent->commserv.REGD_Name(), do_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK PROT*", Parent->commserv.SOP_Name(), NickServ::do_lock_Protect);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK SEC*", Parent->commserv.SOP_Name(), NickServ::do_lock_Secure);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK NOMEMO", Parent->commserv.SOP_Name(), NickServ::do_lock_NoMemo);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK PRIVM*", Parent->commserv.SOP_Name(), NickServ::do_lock_PRIVMSG);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK *MSG", Parent->commserv.SOP_Name(), NickServ::do_lock_PRIVMSG);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK PRIV*", Parent->commserv.SOP_Name(), NickServ::do_lock_Private);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_lock_Language);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK H*LP", Parent->commserv.SOP_Name(), do_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK PROT*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Protect);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK SEC*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Secure);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK NOMEMO", Parent->commserv.SOP_Name(), NickServ::do_unlock_NoMemo);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK PRIVM*", Parent->commserv.SOP_Name(), NickServ::do_unlock_PRIVMSG);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK *MSG", Parent->commserv.SOP_Name(), NickServ::do_unlock_PRIVMSG);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK PRIV*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Private);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Language);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK H*LP", Parent->commserv.SOP_Name(), do_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC* CUR*", Magick::instance().commserv.REGD_Name(), NickServ::do_access_Current);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC* ADD", Magick::instance().commserv.REGD_Name(), NickServ::do_access_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC* DEL*", Magick::instance().commserv.REGD_Name(), NickServ::do_access_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC* ERA*", Magick::instance().commserv.REGD_Name(), NickServ::do_access_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC* LIST", Magick::instance().commserv.REGD_Name(), NickServ::do_access_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC* VIEW", Magick::instance().commserv.REGD_Name(), NickServ::do_access_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC* H*LP", Magick::instance().commserv.REGD_Name(), do_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"IGN* ADD", Magick::instance().commserv.REGD_Name(), NickServ::do_ignore_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"IGN* DEL*", Magick::instance().commserv.REGD_Name(), NickServ::do_ignore_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"IGN* ERA*", Magick::instance().commserv.REGD_Name(), NickServ::do_ignore_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"IGN* LIST", Magick::instance().commserv.REGD_Name(), NickServ::do_ignore_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"IGN* VIEW", Magick::instance().commserv.REGD_Name(), NickServ::do_ignore_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"IGN* H*LP", Magick::instance().commserv.REGD_Name(), do_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* PASS*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_Password);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* E*MAIL*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_Email);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* URL", Magick::instance().commserv.REGD_Name(), NickServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* WWW*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* WEB*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* ICQ*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_ICQ);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* AIM*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_AIM);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* DESC*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_Description);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* COMM*", Magick::instance().commserv.SOP_Name(), NickServ::do_set_Comment);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* PIC*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_Picture);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* PROT*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_Protect);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* SEC*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* NOEX*", Magick::instance().commserv.SOP_Name(), NickServ::do_set_NoExpire);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* NOMEMO", Magick::instance().commserv.REGD_Name(), NickServ::do_set_NoMemo);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* PRIVM*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_PRIVMSG);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* *MSG", Magick::instance().commserv.REGD_Name(), NickServ::do_set_PRIVMSG);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* PRIV*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* LANG*", Magick::instance().commserv.REGD_Name(), NickServ::do_set_Language);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* H*LP", Magick::instance().commserv.REGD_Name(), do_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK PROT*", Magick::instance().commserv.SOP_Name(), NickServ::do_lock_Protect);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK SEC*", Magick::instance().commserv.SOP_Name(), NickServ::do_lock_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK NOMEMO", Magick::instance().commserv.SOP_Name(), NickServ::do_lock_NoMemo);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK PRIVM*", Magick::instance().commserv.SOP_Name(), NickServ::do_lock_PRIVMSG);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK *MSG", Magick::instance().commserv.SOP_Name(), NickServ::do_lock_PRIVMSG);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK PRIV*", Magick::instance().commserv.SOP_Name(), NickServ::do_lock_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK LANG*", Magick::instance().commserv.SOP_Name(), NickServ::do_lock_Language);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK H*LP", Magick::instance().commserv.SOP_Name(), do_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK PROT*", Magick::instance().commserv.SOP_Name(), NickServ::do_unlock_Protect);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK SEC*", Magick::instance().commserv.SOP_Name(), NickServ::do_unlock_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK NOMEMO", Magick::instance().commserv.SOP_Name(), NickServ::do_unlock_NoMemo);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK PRIVM*", Magick::instance().commserv.SOP_Name(), NickServ::do_unlock_PRIVMSG);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK *MSG", Magick::instance().commserv.SOP_Name(), NickServ::do_unlock_PRIVMSG);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK PRIV*", Magick::instance().commserv.SOP_Name(), NickServ::do_unlock_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK LANG*", Magick::instance().commserv.SOP_Name(), NickServ::do_unlock_Language);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK H*LP", Magick::instance().commserv.SOP_Name(), do_2param);
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"H*LP", Parent->commserv.ALL_Name(), NickServ::do_Help);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"REG*", Parent->commserv.ALL_Name(), NickServ::do_Register);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"DROP*", Parent->commserv.REGD_Name(), NickServ::do_Drop);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LINK*", Parent->commserv.ALL_Name(), NickServ::do_Link);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"U*LIN*", Parent->commserv.REGD_Name(), NickServ::do_UnLink);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"HOST", Parent->commserv.REGD_Name(), NickServ::do_Host);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"*SLAV*", Parent->commserv.REGD_Name(), NickServ::do_Slaves);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"INF*", Parent->commserv.ALL_Name(), NickServ::do_Info);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"GHOST*", Parent->commserv.ALL_Name(), NickServ::do_Ghost);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"REC*", Parent->commserv.ALL_Name(), NickServ::do_Recover);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LIST*", Parent->commserv.ALL_Name(), NickServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SEND*", Parent->commserv.ALL_Name(), NickServ::do_Send);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SUSP*", Parent->commserv.SOP_Name(), NickServ::do_Suspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"H*LP", Magick::instance().commserv.ALL_Name(), NickServ::do_Help);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"REG*", Magick::instance().commserv.ALL_Name(), NickServ::do_Register);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"DROP*", Magick::instance().commserv.REGD_Name(), NickServ::do_Drop);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LINK*", Magick::instance().commserv.ALL_Name(), NickServ::do_Link);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"U*LIN*", Magick::instance().commserv.REGD_Name(), NickServ::do_UnLink);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"HOST", Magick::instance().commserv.REGD_Name(), NickServ::do_Host);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"*SLAV*", Magick::instance().commserv.REGD_Name(), NickServ::do_Slaves);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ID*", Magick::instance().commserv.ALL_Name(), NickServ::do_Identify);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SID*", Magick::instance().commserv.ALL_Name(), NickServ::do_Identify);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"INF*", Magick::instance().commserv.ALL_Name(), NickServ::do_Info);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"GHOST*", Magick::instance().commserv.ALL_Name(), NickServ::do_Ghost);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"REC*", Magick::instance().commserv.ALL_Name(), NickServ::do_Recover);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LIST*", Magick::instance().commserv.ALL_Name(), NickServ::do_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SEND*", Magick::instance().commserv.ALL_Name(), NickServ::do_Send);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SUSP*", Magick::instance().commserv.SOP_Name(), NickServ::do_Suspend);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNSUS*", Magick::instance().commserv.SOP_Name(), NickServ::do_UnSuspend);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"FORB*", Magick::instance().commserv.SOP_Name(), NickServ::do_Forbid);
 #ifdef GETPASS
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"GETPASS*", Parent->commserv.SADMIN_Name(), NickServ::do_Getpass);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"GETPASS*", Magick::instance().commserv.SADMIN_Name(), NickServ::do_Getpass);
 #endif
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SETPASS*", Parent->commserv.SOP_Name(), NickServ::do_Setpass);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LIVE*", Parent->commserv.SOP_Name(), NickServ::do_Live);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SETPASS*", Magick::instance().commserv.SOP_Name(), NickServ::do_Setpass);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LIVE*", Magick::instance().commserv.SOP_Name(), NickServ::do_Live);
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
     // it, you must add a terminator command (ie. "CMD* *"
     // in the command map, and NULL as the function).
     // This must be BEFORE the wildcarded map ("CMD*")
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SET*", Parent->commserv.REGD_Name(), do_1_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LOCK", Parent->commserv.REGD_Name(), do_1_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK", Parent->commserv.REGD_Name(), do_1_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ACC*", Parent->commserv.REGD_Name(), do_1_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"IGN*", Parent->commserv.REGD_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"SET*", Magick::instance().commserv.REGD_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"LOCK", Magick::instance().commserv.REGD_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"UNLOCK", Magick::instance().commserv.REGD_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"ACC*", Magick::instance().commserv.REGD_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"IGN* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+		"IGN*", Magick::instance().commserv.REGD_Name(), do_1_2param);
 }
 
 void NickServ::RemCommands()
@@ -5252,165 +5257,165 @@ void NickServ::RemCommands()
     NFT("NickServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC* CUR*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC* ADD", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC* DEL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC* ERA*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC* LIST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC* VIEW", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"IGN* ADD", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"IGN* DEL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"IGN* ERA*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"IGN* LIST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"IGN* VIEW", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"IGN* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* PASS*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* E*MAIL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* URL", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* WWW*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* WEB*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* ICQ*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* AIM*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* DESC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* COMM*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* PIC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* PROT*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* SEC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* NOEX*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* NOMEMO", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* PRIVM*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* *MSG", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* PRIV*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* LANG*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK PROT*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK SEC*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK NOMEMO", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK PRIVM*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK *MSG", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK PRIV*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK LANG*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK H*LP", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK PROT*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK SEC*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK NOMEMO", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK PRIVM*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK *MSG", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK PRIV*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK LANG*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK H*LP", Parent->commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC* CUR*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC* ADD", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC* DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC* ERA*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC* LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC* VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"IGN* ADD", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"IGN* DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"IGN* ERA*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"IGN* LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"IGN* VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"IGN* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* PASS*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* E*MAIL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* URL", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* WWW*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* WEB*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* ICQ*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* AIM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* DESC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* COMM*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* PIC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* PROT*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* SEC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* NOEX*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* NOMEMO", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* PRIVM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* *MSG", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* PRIV*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* LANG*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK PROT*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK SEC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK NOMEMO", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK PRIVM*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK *MSG", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK PRIV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK LANG*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK H*LP", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK PROT*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK SEC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK NOMEMO", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK PRIVM*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK *MSG", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK PRIV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK LANG*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK H*LP", Magick::instance().commserv.SOP_Name());
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"H*LP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"REG*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"DROP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LINK*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"U*LIN*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"HOST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"*SLAV*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ID*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"INF*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"GHOST*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"REC*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LIST*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SEND*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SUSP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNSUS*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"FORB*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"GET*PASS*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LIVE*", Parent->commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"H*LP", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"REG*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"DROP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LINK*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"U*LIN*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"HOST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"*SLAV*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ID*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"INF*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"GHOST*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"REC*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LIST*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SEND*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SUSP*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNSUS*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"FORB*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"GET*PASS*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LIVE*", Magick::instance().commserv.SOP_Name());
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
     // it, you must add a terminator command (ie. "CMD* *"
     // in the command map, and NULL as the function).
     // This must be BEFORE the wildcarded map ("CMD*")
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SET*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LOCK", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ACC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"IGN* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"IGN*", Parent->commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"SET*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"LOCK", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"UNLOCK", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"ACC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"IGN* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+		"IGN*", Magick::instance().commserv.REGD_Name());
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -5748,7 +5753,7 @@ void NickServ::execute(mstring& source, const mstring& msgtype, const mstring& p
     //okay this is the main nickserv command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring mynick(Magick::instance().getLname(params.ExtractWord(1, ": ")));
     mstring message(params.After(":"));
     mstring command(message.Before(" "));
 
@@ -5760,7 +5765,7 @@ void NickServ::execute(mstring& source, const mstring& msgtype, const mstring& p
 	    DccEngine::decodeReply(mynick, source, message);
     }
     else if (msgtype == "PRIVMSG" &&
-	!Parent->commands.DoCommand(mynick, source, command, message))
+	!Magick::instance().commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -5775,19 +5780,19 @@ void NickServ::do_Help(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
 	return;
     }}
 
-    mstring HelpTopic = Parent->nickserv.GetInternalName();
+    mstring HelpTopic = Magick::instance().nickserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
     HelpTopic.replace(" ", "/");
-    vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
+    vector<mstring> help = Magick::instance().getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
     for (i=0; i<help.size(); i++)
@@ -5811,17 +5816,17 @@ void NickServ::do_Register(const mstring &mynick, const mstring &source, const m
     if (params.WordCount(" ") > 2)
 	email        = params.ExtractWord(3, " ");
 
-    if (Parent->nickserv.IsStored(source))
+    if (Magick::instance().nickserv.IsStored(source))
     {
 	NSEND(mynick, source, "NS_YOU_STATUS/ISSTORED");
     }
-    else if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-		Parent->nickserv.GetLive(source).LastNickReg().SecondsSince() <
-    		Parent->nickserv.Delay())
+    else if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+		Magick::instance().nickserv.GetLive(source).LastNickReg().SecondsSince() <
+    		Magick::instance().nickserv.Delay())
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->nickserv.Delay() -
-		Parent->nickserv.GetLive(source).LastNickReg().SecondsSince(),
+		message, ToHumanTime(Magick::instance().nickserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastNickReg().SecondsSince(),
 		source)));
     }
     else if (password.length() < 5 || password.IsSameAs(source, true))
@@ -5836,26 +5841,26 @@ void NickServ::do_Register(const mstring &mynick, const mstring &source, const m
 	else if (!email.Contains("@"))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-		Parent->getMessage(source, "NS_SET/EMAIL"), '@'));
+		Magick::instance().getMessage(source, "NS_SET/EMAIL"), '@'));
 	    return;
 	}
 	else if (email.WordCount("@") != 2)
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAINONE", (
-		Parent->getMessage(source, "NS_SET/EMAIL"), '@'));
+		Magick::instance().getMessage(source, "NS_SET/EMAIL"), '@'));
 	    return;
 	}
 
 	RLOCK(("NickServ", "live", source.LowerCase()));
-	Nick_Live_t &nlive = Parent->nickserv.GetLive(source);
+	Nick_Live_t &nlive = Magick::instance().nickserv.GetLive(source);
 	nlive.SetLastNickReg();
 	Nick_Stored_t tmp(source, password);
 	tmp.AccessAdd(nlive.Mask(Nick_Live_t::U_H).After("!"));
 	if (!email.empty())
 	    tmp.Email(email);
-	Parent->nickserv.AddStored(&tmp);
+	Magick::instance().nickserv.AddStored(&tmp);
 	nlive.Identify(password);
-	Parent->nickserv.stats.i_Register++;
+	Magick::instance().nickserv.stats.i_Register++;
 	SEND(mynick, source, "NS_YOU_COMMAND/REGISTERED", (
 		nlive.Mask(Nick_Live_t::U_H).After("!")));
 	LOG(LM_INFO, "NICKSERV/REGISTER", (
@@ -5875,34 +5880,34 @@ void NickServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
     {
 	target = source;
 
-	if (!Parent->nickserv.GetLive(source).IsIdentified())
+	if (!Magick::instance().nickserv.GetLive(source).IsIdentified())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
 				message, mynick));
 	    return;
 	}
     }
-    else if (Parent->nickserv.IsStored(params.ExtractWord(2, " ")))
+    else if (Magick::instance().nickserv.IsStored(params.ExtractWord(2, " ")))
     {
-	target = Parent->getSname(params.ExtractWord(2, " "));
+	target = Magick::instance().getSname(params.ExtractWord(2, " "));
 
-	if (Parent->nickserv.GetStored(target).IsSibling(source))
+	if (Magick::instance().nickserv.GetStored(target).IsSibling(source))
 	{
 	    // Our sibling, and we're not identified ...
-	    if (!Parent->nickserv.GetLive(source).IsIdentified())
+	    if (!Magick::instance().nickserv.GetLive(source).IsIdentified())
 	    {
 		SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
 				message, mynick));
 		return;
 	    }
 	}
-	else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	     Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))
+	else if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source))
 	{
 	     // NOT our sibling, and its either a sop or oper ...
-	     if ((Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsIn(target)) ||
-	     (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	     Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target)))
+	     if ((Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsIn(target)) ||
+	     (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsIn(target)))
 	     {
 		SEND(mynick, source, "ERR_SITUATION/NOTONPRIVCOMMITTEE", (message));
 		return;
@@ -5922,17 +5927,17 @@ void NickServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    Parent->nickserv.stats.i_Drop++;
-    unsigned long dropped = Parent->nickserv.GetStored(target).Drop();
-    Parent->nickserv.RemStored(target);
-    if (!Parent->nickserv.IsStored(source))
-	Parent->nickserv.GetLive(source).UnIdentify();
+    Magick::instance().nickserv.stats.i_Drop++;
+    unsigned long dropped = Magick::instance().nickserv.GetStored(target).Drop();
+    Magick::instance().nickserv.RemStored(target);
+    if (!Magick::instance().nickserv.IsStored(source))
+	Magick::instance().nickserv.GetLive(source).UnIdentify();
     if (source == target)
 	NSEND(mynick, source, "NS_YOU_COMMAND/DROPPED");
     else
 	SEND(mynick, source, "NS_OTH_COMMAND/DROPPED", (target));
     LOG(LM_INFO, "NICKSERV/DROP", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, dropped-1));
 
 }
@@ -5952,39 +5957,39 @@ void NickServ::do_Link(const mstring &mynick, const mstring &source, const mstri
     mstring hostnick = params.ExtractWord(2, " ");
     mstring password = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(hostnick))
+    if (!Magick::instance().nickserv.IsStored(hostnick))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 							hostnick));
 	return;
     }
-    if (!Parent->nickserv.GetStored(hostnick).Host().empty())
-	hostnick = Parent->nickserv.GetStored(hostnick).Host();
+    if (!Magick::instance().nickserv.GetStored(hostnick).Host().empty())
+	hostnick = Magick::instance().nickserv.GetStored(hostnick).Host();
     else
-	hostnick = Parent->getSname(hostnick);
+	hostnick = Magick::instance().getSname(hostnick);
 
-    if (Parent->nickserv.GetStored(hostnick).Forbidden())
+    if (Magick::instance().nickserv.GetStored(hostnick).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 					hostnick));
 	return;
     }
 
-    if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-		Parent->nickserv.GetLive(source).LastNickReg().SecondsSince() <
-    		Parent->nickserv.Delay())
+    if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+		Magick::instance().nickserv.GetLive(source).LastNickReg().SecondsSince() <
+    		Magick::instance().nickserv.Delay())
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->nickserv.Delay() -
-		Parent->nickserv.GetLive(source).LastNickReg().SecondsSince(),
+		message, ToHumanTime(Magick::instance().nickserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastNickReg().SecondsSince(),
 		source)));
 	return;
     }
 
     mDateTime regtime = mDateTime::CurrentDateTime();
-    if (Parent->nickserv.IsStored(source))
+    if (Magick::instance().nickserv.IsStored(source))
     {
-	mstring myhost = Parent->nickserv.GetStored(source).Host();
+	mstring myhost = Magick::instance().nickserv.GetStored(source).Host();
 	if (myhost.empty())
 	{
 	    if (source.IsSameAs(hostnick))
@@ -6004,24 +6009,24 @@ void NickServ::do_Link(const mstring &mynick, const mstring &source, const mstri
 	    }
 	}
 
-	if (!Parent->nickserv.GetLive(source).IsIdentified())
+	if (!Magick::instance().nickserv.GetLive(source).IsIdentified())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
 					message, mynick));
 	    return;
 	}
-	regtime = Parent->nickserv.GetStored(source).RegTime();
+	regtime = Magick::instance().nickserv.GetStored(source).RegTime();
     }
 
-    if (Parent->nickserv.GetStored(hostnick).Slave(source, password, regtime))
+    if (Magick::instance().nickserv.GetStored(hostnick).Slave(source, password, regtime))
     {
-	Parent->nickserv.GetLive(source).SetLastNickReg();
-	Parent->nickserv.stats.i_Link++;
-	Parent->nickserv.GetLive(source).Identify(password);
+	Magick::instance().nickserv.GetLive(source).SetLastNickReg();
+	Magick::instance().nickserv.stats.i_Link++;
+	Magick::instance().nickserv.GetLive(source).Identify(password);
 	SEND(mynick, source, "NS_YOU_COMMAND/LINKED", (
 					hostnick));
 	LOG(LM_INFO, "NICKSERV/LINK", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source, hostnick));
     }
     else
@@ -6036,7 +6041,7 @@ void NickServ::do_UnLink(const mstring &mynick, const mstring &source, const mst
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (!Parent->nickserv.GetLive(source).IsIdentified())
+    if (!Magick::instance().nickserv.GetLive(source).IsIdentified())
     {
 	SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
 						message, mynick));
@@ -6048,36 +6053,36 @@ void NickServ::do_UnLink(const mstring &mynick, const mstring &source, const mst
 	mstring target = params.ExtractWord(2, " ");
 
 	
-	if (!Parent->nickserv.IsStored(target))
+	if (!Magick::instance().nickserv.IsStored(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						target));
 	    return;
 	}
 
-	target = Parent->getSname(target);
-	if (Parent->nickserv.GetStored(target).Host().empty())
+	target = Magick::instance().getSname(target);
+	if (Magick::instance().nickserv.GetStored(target).Host().empty())
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISHOST", (
 							target));
 	    return;
 	}
 
-	if (!(Parent->nickserv.GetStored(target).IsSibling(source) ||
-		Parent->nickserv.GetStored(target).Host().IsSameAs(source, true)))
+	if (!(Magick::instance().nickserv.GetStored(target).IsSibling(source) ||
+		Magick::instance().nickserv.GetStored(target).Host().IsSameAs(source, true)))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTYOURS", (
 							target));
 	    return;
 	}
 	
-	if (Parent->nickserv.GetStored(target).Unlink())
+	if (Magick::instance().nickserv.GetStored(target).Unlink())
 	{
-	    Parent->nickserv.stats.i_Unlink++;
+	    Magick::instance().nickserv.stats.i_Unlink++;
 	    SEND(mynick, source, "NS_OTH_COMMAND/UNLINKED", (
 							target));
 	    LOG(LM_INFO, "NICKSERV/UNLINK", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source, target));
 	}
 	else
@@ -6086,19 +6091,19 @@ void NickServ::do_UnLink(const mstring &mynick, const mstring &source, const mst
     }
     else
     {
-	if (Parent->nickserv.GetStored(source).Host().empty())
+	if (Magick::instance().nickserv.GetStored(source).Host().empty())
 	{
 	    NSEND(mynick, source, "NS_YOU_STATUS/ISHOST");
 	    return;
 	}
 
-	if (Parent->nickserv.GetStored(source).Unlink())
+	if (Magick::instance().nickserv.GetStored(source).Unlink())
 	{
-	    Parent->nickserv.stats.i_Unlink++;
-	    mstring target = Parent->nickserv.GetStored(source).Host();
+	    Magick::instance().nickserv.stats.i_Unlink++;
+	    mstring target = Magick::instance().nickserv.GetStored(source).Host();
 	    NSEND(mynick, source, "NS_YOU_COMMAND/UNLINKED");
 	    LOG(LM_INFO, "NICKSERV/UNLINK", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source, target));
 	}
 	else
@@ -6115,7 +6120,7 @@ void NickServ::do_Host(const mstring &mynick, const mstring &source, const mstri
     if (params.WordCount(" ") > 1)
 	newhost = params.ExtractWord(2, " ");
 
-    if (!Parent->nickserv.GetLive(source).IsIdentified())
+    if (!Magick::instance().nickserv.GetLive(source).IsIdentified())
     {
 	SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
 						message, mynick));
@@ -6124,15 +6129,15 @@ void NickServ::do_Host(const mstring &mynick, const mstring &source, const mstri
 
     if (!newhost.empty())
     {
-	if (!Parent->nickserv.IsStored(newhost))
+	if (!Magick::instance().nickserv.IsStored(newhost))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						newhost));
 	    return;
 	}
 
-	newhost = Parent->getSname(newhost);
-	if (Parent->nickserv.GetStored(newhost).Host().empty())
+	newhost = Magick::instance().getSname(newhost);
+	if (Magick::instance().nickserv.GetStored(newhost).Host().empty())
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISHOST", (
 						newhost));
@@ -6140,31 +6145,31 @@ void NickServ::do_Host(const mstring &mynick, const mstring &source, const mstri
 	}
 
 	if (!(source.IsSameAs(newhost, true) ||
-		Parent->nickserv.GetStored(newhost).IsSibling(source) ||
-		Parent->nickserv.GetStored(newhost).Host().IsSameAs(source, true)))
+		Magick::instance().nickserv.GetStored(newhost).IsSibling(source) ||
+		Magick::instance().nickserv.GetStored(newhost).Host().IsSameAs(source, true)))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTLINKED", (
 						newhost));
 	    return;
 	}
 
-	mstring oldhost = Parent->nickserv.GetStored(newhost).Host();
-	Parent->nickserv.stats.i_Host++;
-	Parent->nickserv.GetStored(newhost).MakeHost();
+	mstring oldhost = Magick::instance().nickserv.GetStored(newhost).Host();
+	Magick::instance().nickserv.stats.i_Host++;
+	Magick::instance().nickserv.GetStored(newhost).MakeHost();
 	SEND(mynick, source, "NS_OTH_COMMAND/NEWHOST", (
 						newhost));
 	LOG(LM_INFO, "NICKSERV/HOST", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		oldhost, newhost));
     }
     else
     {
-	mstring oldhost = Parent->nickserv.GetStored(source).Host();
-	Parent->nickserv.stats.i_Host++;
-	Parent->nickserv.GetStored(source).MakeHost();
+	mstring oldhost = Magick::instance().nickserv.GetStored(source).Host();
+	Magick::instance().nickserv.stats.i_Host++;
+	Magick::instance().nickserv.GetStored(source).MakeHost();
 	NSEND(mynick, source, "NS_YOU_COMMAND/NEWHOST");
 	LOG(LM_INFO, "NICKSERV/HOST", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		oldhost, source));
     }
 }
@@ -6177,23 +6182,23 @@ void NickServ::do_Slaves(const mstring &mynick, const mstring &source, const mst
     mstring target;
     if (params.WordCount(" ") < 2)
     {
-	target = Parent->getSname(source);
+	target = Magick::instance().getSname(source);
     }
     else
     {
-	if (Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-		Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))
+	if (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source))
 	{
 	    target = params.ExtractWord(2, " ");
-	    if (!Parent->nickserv.IsStored(target))
+	    if (!Magick::instance().nickserv.IsStored(target))
 	    {
 		SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						target));
 		return;
 	    }
 
-	    target = Parent->getSname(target);
-	    if (Parent->nickserv.GetStored(target).Forbidden())
+	    target = Magick::instance().getSname(target);
+	    if (Magick::instance().nickserv.GetStored(target).Forbidden())
 	    {
 		SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 					target));
@@ -6201,14 +6206,14 @@ void NickServ::do_Slaves(const mstring &mynick, const mstring &source, const mst
 	    }
 	}
 	else
-	    target = Parent->getSname(source);
+	    target = Magick::instance().getSname(source);
     }
 
     mstring output;
-    if (!Parent->nickserv.GetStored(target).Host().empty())
-	target = Parent->nickserv.GetStored(target).Host();
+    if (!Magick::instance().nickserv.GetStored(target).Host().empty())
+	target = Magick::instance().nickserv.GetStored(target).Host();
 
-    Nick_Stored_t nick = Parent->nickserv.GetStored(target);
+    Nick_Stored_t nick = Magick::instance().nickserv.GetStored(target);
     output << IRC_Bold << target << IRC_Off << " (" <<
 	nick.Siblings() << "):";
 
@@ -6239,28 +6244,28 @@ void NickServ::do_Identify(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    if (!Parent->nickserv.IsStored(source))
+    if (!Magick::instance().nickserv.IsStored(source))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						source));
 	return;
     }
 
-    if (Parent->nickserv.GetStored(source).Suspended())
+    if (Magick::instance().nickserv.GetStored(source).Suspended())
     {
 	NSEND(mynick, source, "NS_YOU_STATUS/ISSUSPENDED");
 	return;
     }
 
-    bool wasident = Parent->nickserv.GetLive(source).IsIdentified();
+    bool wasident = Magick::instance().nickserv.GetLive(source).IsIdentified();
     mstring password = params.ExtractWord(2, " ");
-    mstring output = Parent->nickserv.GetLive(source).Identify(password);
+    mstring output = Magick::instance().nickserv.GetLive(source).Identify(password);
     if (!wasident &&
-	Parent->nickserv.GetLive(source).IsIdentified())
+	Magick::instance().nickserv.GetLive(source).IsIdentified())
     {
-	Parent->nickserv.stats.i_Identify++;
+	Magick::instance().nickserv.stats.i_Identify++;
 	LOG(LM_INFO, "NICKSERV/IDENTIFY", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source));
     }
     if (!output.empty())
@@ -6274,8 +6279,8 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -6292,14 +6297,14 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     unsigned int i;
     mstring target   = params.ExtractWord(2, " ");
     mstring output;
-    if (!Parent->nickserv.IsStored(target))
+    if (!Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						target));
 	return;
     }
 
-    Nick_Stored_t nick = Parent->nickserv.GetStored(target);
+    Nick_Stored_t nick = Magick::instance().nickserv.GetStored(target);
 
     if (nick.Forbidden())
     {
@@ -6312,11 +6317,11 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 			nick.Name(), nick.LastRealName()));
     if (!nick.Host().empty())
 	SEND(mynick, source, "NS_INFO/HOST", (
-		Parent->nickserv.GetStored(nick.Host()).Name()));
+		Magick::instance().nickserv.GetStored(nick.Host()).Name()));
     output.erase();
-    if (nick.NoExpire() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))
-	output << " (" << Parent->getMessage(source, "NS_INFO/NOEXPIRE") << ")";
+    if (nick.NoExpire() && Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source))
+	output << " (" << Magick::instance().getMessage(source, "NS_INFO/NOEXPIRE") << ")";
 	SEND(mynick, source, "NS_INFO/REGISTERED", (
 		nick.RegTime().Ago(), output));
 
@@ -6325,21 +6330,21 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	output.erase();
 	bool isonline = false;
 	if (!nick.Host().empty() &&
-	    Parent->nickserv.GetStored(nick.Host()).IsOnline())
-	    output = Parent->nickserv.GetLive(nick.Host()).Name() + " ";
+	    Magick::instance().nickserv.GetStored(nick.Host()).IsOnline())
+	    output = Magick::instance().nickserv.GetLive(nick.Host()).Name() + " ";
 	for (i=0; i<nick.Siblings(); i++)
 	{
-	    if (Parent->nickserv.IsStored(nick.Sibling(i)) &&
-		Parent->nickserv.GetStored(nick.Sibling(i)).IsOnline())
+	    if (Magick::instance().nickserv.IsStored(nick.Sibling(i)) &&
+		Magick::instance().nickserv.GetStored(nick.Sibling(i)).IsOnline())
 	    {
-		if (output.length() + nick.Sibling(i).length() > Parent->server.proto.MaxLine())
+		if (output.length() + nick.Sibling(i).length() > Magick::instance().server.proto.MaxLine())
 		{
 		    SEND(mynick, source, "NS_INFO/ONLINEAS", (
 						output));
 		    output.erase();
 		    isonline = true;
 		}
-		output += Parent->nickserv.GetLive(nick.Sibling(i)).Name() + " ";
+		output += Magick::instance().nickserv.GetLive(nick.Sibling(i)).Name() + " ";
 	    }
 	}
 	if (!output.empty())
@@ -6350,16 +6355,16 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	}
 	if (!isonline)
 	{
-	    if (!nick.Private() || (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source)))
+	    if (!nick.Private() || (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source)))
 		SEND(mynick, source, "NS_INFO/LASTALLMASK", (
 						nick.LastAllMask()));
 	    SEND(mynick, source, "NS_INFO/LASTALLSEEN", (
 					nick.LastAllSeenTime().Ago()));
 	    if (nick.LastAllMask().UpperCase() !=
 		mstring(nick.Name() + "!" + nick.LastMask()).UpperCase() &&
-		(!nick.Private() || (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))))
+		(!nick.Private() || (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source))))
 		SEND(mynick, source, "NS_INFO/LASTMASK", (
 					 nick.LastMask()));
 	    if (nick.LastAllSeenTime() != nick.LastSeenTime())
@@ -6395,10 +6400,10 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    SEND(mynick, source, "NS_INFO/DESCRIPTION", (
 					nick.Description()));
 	if (!nick.Comment().empty() &&
-	    ((Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source)) ||
-	    (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))))
+	    ((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source)) ||
+	    (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source))))
 	    SEND(mynick, source, "NS_INFO/COMMENT", (
 					nick.Comment()));
     }
@@ -6406,23 +6411,23 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     output.erase();
     CommServ::list_t::iterator iter;
     { RLOCK(("CommServ", "list"));
-    for (iter=Parent->commserv.ListBegin();
-		iter!=Parent->commserv.ListEnd(); iter++)
+    for (iter=Magick::instance().commserv.ListBegin();
+		iter!=Magick::instance().commserv.ListEnd(); iter++)
     {
 	RLOCK2(("CommServ", "list", iter->first));
 	// IF committee is not ALL or REGD
 	// AND if it has a headcom, we're not in it
 	// AND the committee isnt private or the requesting user is in OPER
-	if (iter->first != Parent->commserv.ALL_Name() &&
-	    iter->first != Parent->commserv.REGD_Name() &&
+	if (iter->first != Magick::instance().commserv.ALL_Name() &&
+	    iter->first != Magick::instance().commserv.REGD_Name() &&
 	    (iter->second.HeadCom().empty() ||
-	    !(Parent->commserv.IsList(iter->second.HeadCom()) &&
-	      Parent->commserv.GetList(iter->second.HeadCom().UpperCase()).IsIn(nick.Name()))) &&
+	    !(Magick::instance().commserv.IsList(iter->second.HeadCom()) &&
+	      Magick::instance().commserv.GetList(iter->second.HeadCom().UpperCase()).IsIn(nick.Name()))) &&
 	    iter->second.IsIn(target) && (!iter->second.Private() ||
-	    (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	     Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))))
+	    (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source))))
 	{
-	    if (output.length() + iter->second.Name().length() > Parent->server.proto.MaxLine())
+	    if (output.length() + iter->second.Name().length() > Magick::instance().server.proto.MaxLine())
 	    {
 		SEND(mynick, source, "NS_INFO/COMMITTEES", (
 						output));
@@ -6451,7 +6456,7 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    firstoption = false;
 	if (nick.L_Protect())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "NS_SET/PROTECT");
+	output << Magick::instance().getMessage(source, "NS_SET/PROTECT");
 	if (nick.L_Protect())
 	    output << IRC_Off;
     }
@@ -6464,7 +6469,7 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    firstoption = false;
 	if (nick.L_Secure())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "NS_SET/SECURE");
+	output << Magick::instance().getMessage(source, "NS_SET/SECURE");
 	if (nick.L_Secure())
 	    output << IRC_Off;
     }
@@ -6477,7 +6482,7 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    firstoption = false;
 	if (nick.L_NoMemo())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "NS_SET/NOMEMO");
+	output << Magick::instance().getMessage(source, "NS_SET/NOMEMO");
 	if (nick.L_NoMemo())
 	    output << IRC_Off;
     }
@@ -6490,7 +6495,7 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    firstoption = false;
 	if (nick.L_Private())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "NS_SET/PRIVATE");
+	output << Magick::instance().getMessage(source, "NS_SET/PRIVATE");
 	if (nick.L_Private())
 	    output << IRC_Off;
     }
@@ -6499,17 +6504,17 @@ void NickServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	SEND(mynick, source, "NS_INFO/OPTIONS", (
 						output));
     if (nick.PicNum() &&
-	Parent->filesys.Exists(FileMap::Picture, nick.PicNum()))
+	Magick::instance().filesys.Exists(FileMap::Picture, nick.PicNum()))
 	SEND(mynick, source, "NS_INFO/HASPIC", (
-				ToHumanSpace(Parent->filesys.GetSize(FileMap::Picture, nick.PicNum())),
+				ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Picture, nick.PicNum())),
 				mynick, nick.Name()));
     if (nick.IsOnline())
 	SEND(mynick, source,  "NS_INFO/ISONLINE", (
-		Parent->getLname(nick.Name())));
+		Magick::instance().getLname(nick.Name())));
     { RLOCK(("Events"));
-    if (Parent->servmsg.ShowSync() && Parent->events != NULL)
+    if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
 	SEND(mynick, source, "MISC/SYNC", (
-			Parent->events->SyncTime(source)));
+			Magick::instance().events->SyncTime(source)));
     }
 }
 
@@ -6535,45 +6540,45 @@ void NickServ::do_Ghost(const mstring &mynick, const mstring &source, const mstr
 	return;
     }
 
-    if (!Parent->nickserv.IsStored(nick))
+    if (!Magick::instance().nickserv.IsStored(nick))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						nick));
 	return;
     }
 
-    if (!Parent->nickserv.IsLive(nick))
+    if (!Magick::instance().nickserv.IsLive(nick))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 						nick));
 	return;
     }
 
-    nick = Parent->getLname(nick);
-    if (Parent->nickserv.GetStored(nick).Forbidden())
+    nick = Magick::instance().getLname(nick);
+    if (Magick::instance().nickserv.GetStored(nick).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						nick));
 	return;
     }
 
-    if (!Parent->nickserv.GetStored(nick).CheckPass(pass))
+    if (!Magick::instance().nickserv.GetStored(nick).CheckPass(pass))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NICK_WRONG_PASS");
 	return;
     }
 
-    Parent->server.ANONKILL(mynick, nick, source + " (" +
-				Parent->getMessage(nick, "MISC/KILL_GHOST") + ")");
-    if (Parent->nickserv.IsRecovered(nick))
+    Magick::instance().server.ANONKILL(mynick, nick, source + " (" +
+				Magick::instance().getMessage(nick, "MISC/KILL_GHOST") + ")");
+    if (Magick::instance().nickserv.IsRecovered(nick))
     {
-	Parent->nickserv.RemRecovered(nick);
+	Magick::instance().nickserv.RemRecovered(nick);
     }
-    Parent->nickserv.stats.i_Ghost++;
+    Magick::instance().nickserv.stats.i_Ghost++;
     SEND(mynick, source, "NS_OTH_COMMAND/RELEASED", (
 				nick));
     LOG(LM_DEBUG, "NICKSERV/GHOST", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	nick));
 }
 
@@ -6599,45 +6604,45 @@ void NickServ::do_Recover(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    if (!Parent->nickserv.IsStored(nick))
+    if (!Magick::instance().nickserv.IsStored(nick))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nick));
 	return;
     }
 
-    nick = Parent->getSname(nick);
-    if (Parent->nickserv.GetStored(nick).Forbidden())
+    nick = Magick::instance().getSname(nick);
+    if (Magick::instance().nickserv.GetStored(nick).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						nick));
 	return;
     }
 
-    if (!Parent->nickserv.GetStored(nick).CheckPass(pass))
+    if (!Magick::instance().nickserv.GetStored(nick).CheckPass(pass))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NICK_WRONG_PASS");
 	return;
     }
 
-    if (Parent->nickserv.IsLive(nick))
+    if (Magick::instance().nickserv.IsLive(nick))
     {
-	Parent->server.KILL(mynick, Parent->getLname(nick), source + " (" +
-			Parent->getMessage(nick, "MISC/KILL_RECOVER") + ")");
+	Magick::instance().server.KILL(mynick, Magick::instance().getLname(nick), source + " (" +
+			Magick::instance().getMessage(nick, "MISC/KILL_RECOVER") + ")");
     }
 
-    Parent->server.NICK(nick, (Parent->startup.Ownuser() ? nick.LowerCase() :
-				Parent->startup.Services_User()),
-				Parent->startup.Services_Host(),
-				Parent->startup.Server_Name(),
-				Parent->nickserv.Enforcer_Name());
+    Magick::instance().server.NICK(nick, (Magick::instance().startup.Ownuser() ? nick.LowerCase() :
+				Magick::instance().startup.Services_User()),
+				Magick::instance().startup.Services_Host(),
+				Magick::instance().startup.Server_Name(),
+				Magick::instance().nickserv.Enforcer_Name());
 
-    Parent->nickserv.AddRecovered(nick, mDateTime::CurrentDateTime());
-    Parent->nickserv.stats.i_Recover++;
+    Magick::instance().nickserv.AddRecovered(nick, mDateTime::CurrentDateTime());
+    Magick::instance().nickserv.stats.i_Recover++;
     SEND(mynick, source, "NS_OTH_COMMAND/HELD", (
 				nick));
     LOG(LM_DEBUG, "NICKSERV/RECOVER", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	nick));
 }
 
@@ -6651,8 +6656,8 @@ void NickServ::do_List(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -6662,22 +6667,22 @@ void NickServ::do_List(const mstring &mynick, const mstring &source, const mstri
     if (params.WordCount(" ") < 2)
     {
 	mask = "*";
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else if (params.WordCount(" ") < 3)
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
 	listsize = atoi(params.ExtractWord(3, " ").c_str());
-	if (listsize > Parent->config.Maxlist())
+	if (listsize > Magick::instance().config.Maxlist())
 	{
 	    mstring output;
 	    SEND(mynick, source, "LIST/MAXLIST", (
-					Parent->config.Maxlist()));
+					Magick::instance().config.Maxlist()));
 	    return;
 	}
     }
@@ -6687,14 +6692,14 @@ void NickServ::do_List(const mstring &mynick, const mstring &source, const mstri
     NickServ::stored_t::iterator iter;
 
 
-    bool isoper = (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source));
-    bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source));
+    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source));
+    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source));
 
     { RLOCK(("NickServ", "stored"));
-    for (iter = Parent->nickserv.StoredBegin(), i=0, count = 0;
-			iter != Parent->nickserv.StoredEnd(); iter++)
+    for (iter = Magick::instance().nickserv.StoredBegin(), i=0, count = 0;
+			iter != Magick::instance().nickserv.StoredEnd(); iter++)
     {
 	RLOCK2(("NickServ", "stored", iter->first));
 	if (iter->second.Name().Matches(mask, true))
@@ -6717,7 +6722,7 @@ void NickServ::do_List(const mstring &mynick, const mstring &source, const mstri
 		if (iter->second.Forbidden())
 		{
 		    ::send(mynick, source, iter->second.Name() + "  (" +
-			Parent->getMessage(source, "VALS/FORBIDDEN") + ")");
+			Magick::instance().getMessage(source, "VALS/FORBIDDEN") + ")");
 		}
 		else
 		{
@@ -6740,8 +6745,8 @@ void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -6757,22 +6762,22 @@ void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 
     mstring target   = params.ExtractWord(2, " ");
 
-    if (!Parent->nickserv.IsStored(target))
+    if (!Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 							target));
 	return;
     }
 
-    target = Parent->getSname(target);
-    if (Parent->nickserv.GetStored(target).Forbidden())
+    target = Magick::instance().getSname(target);
+    if (Magick::instance().nickserv.GetStored(target).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
 	return;
     }
 
-    unsigned long picnum = Parent->nickserv.GetStored(target).PicNum();
+    unsigned long picnum = Magick::instance().nickserv.GetStored(target).PicNum();
     if (!picnum)
     {
 	SEND(mynick, source, "NS_OTH_STATUS/NOPIC", (
@@ -6780,41 +6785,41 @@ void NickServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    if (!Parent->filesys.Exists(FileMap::Picture, picnum))
+    if (!Magick::instance().filesys.Exists(FileMap::Picture, picnum))
     {
-	Parent->nickserv.GetStored(target).GotPic(0);
+	Magick::instance().nickserv.GetStored(target).GotPic(0);
 	SEND(mynick, source, "DCC/NOFILE", (
 							"SEND"));
 	return;
     }
 
-    mstring filename = 	Parent->filesys.GetName(FileMap::Picture, picnum);
-    size_t filesize = Parent->filesys.GetSize(FileMap::Picture, picnum);
+    mstring filename = 	Magick::instance().filesys.GetName(FileMap::Picture, picnum);
+    size_t filesize = Magick::instance().filesys.GetSize(FileMap::Picture, picnum);
     if (filename.empty() || filesize <= 0)
     {
-	Parent->nickserv.GetStored(target).GotPic(0);
+	Magick::instance().nickserv.GetStored(target).GotPic(0);
 	SEND(mynick, source, "DCC/NOFILE", (
 							"SEND"));
 	return;
     }
 
-    if (!(Parent->files.TempDirSize() == 0 ||
-	mFile::DirUsage(Parent->files.TempDir()) <=
-		Parent->files.TempDirSize()))
+    if (!(Magick::instance().files.TempDirSize() == 0 ||
+	mFile::DirUsage(Magick::instance().files.TempDir()) <=
+		Magick::instance().files.TempDirSize()))
     {
 	NSEND(mynick, source, "DCC/NOSPACE2");
 	return;
     }
 
     { RLOCK(("DCC"));
-    if (Parent->dcc != NULL)
+    if (Magick::instance().dcc != NULL)
     {
-	Parent->nickserv.stats.i_Send++;
+	Magick::instance().nickserv.stats.i_Send++;
 	unsigned short port = mSocket::FindAvailPort();
 	::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
-		" " + mstring(Parent->LocalHost()) + " " +
+		" " + mstring(Magick::instance().LocalHost()) + " " +
 		mstring(port) + " " + mstring(filesize)));
-	Parent->dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
+	Magick::instance().dcc->Accept(port, mynick, source, FileMap::Picture, picnum);
     }}
 }
 
@@ -6833,42 +6838,42 @@ void NickServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
     mstring target   = params.ExtractWord(2, " ");
     mstring reason   = params.After(" ", 2);
 
-    if (!Parent->nickserv.IsStored(target))
+    if (!Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 							target));
 	return;
     }
 
-    target = Parent->getSname(target);
-    if (Parent->nickserv.GetStored(target).Forbidden())
+    target = Magick::instance().getSname(target);
+    if (Magick::instance().nickserv.GetStored(target).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
 	return;
     }
 
-    if (Parent->nickserv.GetStored(target).Suspended())
+    if (Magick::instance().nickserv.GetStored(target).Suspended())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISSUSPENDED", (
 							target));
 	return;
     }
 
-    if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target))
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsIn(target))
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTONCOMMITTEE", (
-				message, Parent->commserv.OPER_Name()));
+				message, Magick::instance().commserv.OPER_Name()));
 	return;
     }
 
-    Parent->nickserv.GetStored(target).Suspend(source, reason);
-    Parent->nickserv.stats.i_Suspend++;
+    Magick::instance().nickserv.GetStored(target).Suspend(source, reason);
+    Magick::instance().nickserv.stats.i_Suspend++;
     SEND(mynick, source, "NS_OTH_COMMAND/SUSPENDED", (
 						target));
     LOG(LM_NOTICE, "NICKSERV/SUSPEND", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, reason));
 }
 
@@ -6886,34 +6891,34 @@ void NickServ::do_UnSuspend(const mstring &mynick, const mstring &source, const 
 
     mstring target = params.ExtractWord(2, " ");
 
-    if (!Parent->nickserv.IsStored(target))
+    if (!Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 							target));
 	return;
     }
 
-    target = Parent->getSname(target);
-    if (Parent->nickserv.GetStored(target).Forbidden())
+    target = Magick::instance().getSname(target);
+    if (Magick::instance().nickserv.GetStored(target).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
 	return;
     }
 
-    if (!Parent->nickserv.GetStored(target).Suspended())
+    if (!Magick::instance().nickserv.GetStored(target).Suspended())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSUSPENDED", (
 							target));
 	return;
     }
 
-    Parent->nickserv.GetStored(target).UnSuspend();
-    Parent->nickserv.stats.i_Unsuspend++;
+    Magick::instance().nickserv.GetStored(target).UnSuspend();
+    Magick::instance().nickserv.stats.i_Unsuspend++;
     SEND(mynick, source, "NS_OTH_COMMAND/UNSUSPENDED", (
 						target));
     LOG(LM_NOTICE, "NICKSERV/UNSUSPEND", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target));
 }
 
@@ -6930,29 +6935,29 @@ void NickServ::do_Forbid(const mstring &mynick, const mstring &source, const mst
     }
 
     mstring target   = params.ExtractWord(2, " ");
-    if (Parent->nickserv.IsStored(target))
+    if (Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISSTORED", (
-					Parent->getSname(target)));
+					Magick::instance().getSname(target)));
 	return;
     }
 
-    if ((Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target)) ||
-	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target)))
+    if ((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsIn(target)) ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsIn(target)))
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTONPRIVCOMMITTEE", (message));
 	return;
     }
 
     Nick_Stored_t tmp(target);
-    Parent->nickserv.AddStored(&tmp);
-    Parent->nickserv.stats.i_Forbid++;
+    Magick::instance().nickserv.AddStored(&tmp);
+    Magick::instance().nickserv.stats.i_Forbid++;
     SEND(mynick, source, "NS_OTH_COMMAND/FORBIDDEN", (
 					target));
     LOG(LM_NOTICE, "NICKSERV/FORBID", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target));
 }
 
@@ -6972,15 +6977,15 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 
     mstring target   = params.ExtractWord(2, " ");
 
-    if (!Parent->nickserv.IsStored(target))
+    if (!Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						target));
 	return;
     }
 
-    target = Parent->getSname(target);
-    if (Parent->nickserv.GetStored(target).Forbidden())
+    target = Magick::instance().getSname(target);
+    if (Magick::instance().nickserv.GetStored(target).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
@@ -6988,15 +6993,15 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
     }
 
     // If we are NOT a SADMIN, and target is a PRIV GROUP.
-    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(source)) &&
-	(Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(target) ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsIn(target)) ||
-	(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.ADMIN_Name()).IsIn(target)) ||
-	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target))))
+    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsIn(source)) &&
+	(Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsIn(target) ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsIn(target)) ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name()).IsIn(target)) ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsIn(target))))
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTONPRIVCOMMITTEE", (
 						message));
@@ -7004,19 +7009,19 @@ void NickServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
     }
 
     mstring host, password;
-    Nick_Stored_t nick = Parent->nickserv.GetStored(target);
+    Nick_Stored_t nick = Magick::instance().nickserv.GetStored(target);
     host = nick.Host();
     if (host.empty())
 	host = nick.Name();
     password = nick.Password();
 
-    Parent->nickserv.stats.i_Getpass++;
+    Magick::instance().nickserv.stats.i_Getpass++;
     SEND(mynick, source, "NS_OTH_COMMAND/GETPASS", (
 			target, host, password));
     ANNOUNCE(mynick, "MISC/NICK_GETPASS", (
 			source, target, host));
     LOG(LM_NOTICE, "NICKSERV/GETPASS", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, host));
 }
 
@@ -7037,15 +7042,15 @@ void NickServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
     mstring target   = params.ExtractWord(2, " ");
     mstring password = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(target))
+    if (!Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						target));
 	return;
     }
 
-    target = Parent->getSname(target);
-    if (Parent->nickserv.GetStored(target).Forbidden())
+    target = Magick::instance().getSname(target);
+    if (Magick::instance().nickserv.GetStored(target).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
@@ -7053,15 +7058,15 @@ void NickServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
     }
 
     // If we are NOT a SADMIN, and target is a PRIV GROUP.
-    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(source)) &&
-	(Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsIn(target) ||
-	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsIn(target)) ||
-	(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.ADMIN_Name()).IsIn(target)) ||
-	(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsIn(target))))
+    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsIn(source)) &&
+	(Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsIn(target) ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsIn(target)) ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name()).IsIn(target)) ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsIn(target))))
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTONPRIVCOMMITTEE", (
 						message));
@@ -7070,20 +7075,20 @@ void NickServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
 
     mstring host;
     { RLOCK(("NickServ", "stored", target.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(target);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(target);
     host = nick.Host();
     if (host.empty())
 	host = nick.Name();
     nick.Password(password);
     }
 
-    Parent->nickserv.stats.i_Getpass++;
+    Magick::instance().nickserv.stats.i_Getpass++;
     SEND(mynick, source, "NS_OTH_COMMAND/SETPASS", (
 			target, host, password));
     ANNOUNCE(mynick, "MISC/NICK_SETPASS", (
 			source, target, host));
     LOG(LM_NOTICE, "NICKSERV/SETPASS", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, host));
 }
 
@@ -7097,8 +7102,8 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -7108,22 +7113,22 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     if (params.WordCount(" ") < 2)
     {
 	mask = "*!*@*";
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else if (params.WordCount(" ") < 3)
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
 	listsize = atoi(params.ExtractWord(3, " ").c_str());
-	if (listsize > Parent->config.Maxlist())
+	if (listsize > Magick::instance().config.Maxlist())
 	{
 	    mstring output;
 	    SEND(mynick, source, "LIST/MAXLIST", (
-					Parent->config.Maxlist()));
+					Magick::instance().config.Maxlist()));
 	    return;
 	}
     }
@@ -7133,7 +7138,7 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     else if (!mask.Contains("@"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-				Parent->getMessage(source, "LIST/NICKNAME"), '@'));
+				Magick::instance().getMessage(source, "LIST/NICKNAME"), '@'));
 	return;
     }
     else if (!mask.Contains("!"))
@@ -7144,8 +7149,8 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     NickServ::live_t::iterator iter;
 
     { RLOCK(("NickServ", "live"));
-    for (iter = Parent->nickserv.LiveBegin(), i=0, count = 0;
-			iter != Parent->nickserv.LiveEnd(); iter++)
+    for (iter = Magick::instance().nickserv.LiveBegin(), i=0, count = 0;
+			iter != Magick::instance().nickserv.LiveEnd(); iter++)
     {
 	RLOCK2(("NickServ", "live", iter->first));
 	if (iter->second.Mask(Nick_Live_t::N_U_P_H).Matches(mask, true))
@@ -7158,7 +7163,7 @@ void NickServ::do_Live(const mstring &mynick, const mstring &source, const mstri
 		::send(mynick, source, iter->second.Mask(Nick_Live_t::N_U_P_H) + " (" +
 					((!iter->second.Server().empty()) ?
 						iter->second.Server() :
-						Parent->startup.Server_Name()) +
+						Magick::instance().startup.Server_Name()) +
 					((!iter->second.Squit().empty()) ? " (SQUIT)" : "") +
 					"): +" + iter->second.Mode());
 		i++;
@@ -7183,24 +7188,24 @@ void NickServ::do_access_Current(const mstring &mynick, const mstring &source, c
 	return;
     }
 
-    if (Parent->nickserv.GetStored(source).AccessAdd(
-	    Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!")))
+    if (Magick::instance().nickserv.GetStored(source).AccessAdd(
+	    Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!")))
     {
-	Parent->nickserv.stats.i_Access++;
+	Magick::instance().nickserv.stats.i_Access++;
 	SEND(mynick, source, "LIST/ADD", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!"),
-		Parent->getMessage(source, "LIST/ACCESS")));
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!"),
+		Magick::instance().getMessage(source, "LIST/ACCESS")));
 	LOG(LM_DEBUG, "NICKSERV/ACCESS_ADD", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!"),
 		source));
 
     }
     else
     {
 	SEND(mynick, source, "LIST/EXISTS", (
-		mstring(Parent->nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!")),
-		Parent->getMessage(source, "LIST/ACCESS")));
+		mstring(Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::U_H).After("!")),
+		Magick::instance().getMessage(source, "LIST/ACCESS")));
     }
 }
 
@@ -7221,30 +7226,30 @@ void NickServ::do_access_Add(const mstring &mynick, const mstring &source, const
     if (hostmask.Contains("!"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
-				Parent->getMessage(source, "LIST/ACCESS"), '!'));
+				Magick::instance().getMessage(source, "LIST/ACCESS"), '!'));
 	return;
     }
 
     if (!hostmask.Contains("@"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-				Parent->getMessage(source, "LIST/ACCESS"), '@'));
+				Magick::instance().getMessage(source, "LIST/ACCESS"), '@'));
 	return;
     }
 
-    if (Parent->nickserv.GetStored(source).AccessAdd(hostmask))
+    if (Magick::instance().nickserv.GetStored(source).AccessAdd(hostmask))
     {
-	Parent->nickserv.stats.i_Access++;
+	Magick::instance().nickserv.stats.i_Access++;
 	SEND(mynick, source, "LIST/ADD", (
-			hostmask, Parent->getMessage(source, "LIST/ACCESS")));
+			hostmask, Magick::instance().getMessage(source, "LIST/ACCESS")));
 	LOG(LM_DEBUG, "NICKSERV/ACCESS_ADD", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		hostmask, source));
     }
     else
     {
 	SEND(mynick, source, "LIST/EXISTS", (
-			hostmask, Parent->getMessage(source, "LIST/ACCESS")));
+			hostmask, Magick::instance().getMessage(source, "LIST/ACCESS")));
     }
 }
 
@@ -7271,45 +7276,45 @@ void NickServ::do_access_Del(const mstring &mynick, const mstring &source, const
 	}
 
 	unsigned int num = atoi(hostmask.c_str());
-	if (num <= 0 || num > Parent->nickserv.GetStored(source).Access())
+	if (num <= 0 || num > Magick::instance().nickserv.GetStored(source).Access())
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-			1, Parent->nickserv.GetStored(source).Access()));
+			1, Magick::instance().nickserv.GetStored(source).Access()));
 	    return;
 	}
 
-	hostmask = Parent->nickserv.GetStored(source).Access(num-1);
+	hostmask = Magick::instance().nickserv.GetStored(source).Access(num-1);
     }
 
     if (hostmask.Contains("!"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (
-				Parent->getMessage(source, "LIST/ACCESS"), '!'));
+				Magick::instance().getMessage(source, "LIST/ACCESS"), '!'));
 	return;
     }
 
     if (!hostmask.Contains("@"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-				Parent->getMessage(source, "LIST/ACCESS"), '@'));
+				Magick::instance().getMessage(source, "LIST/ACCESS"), '@'));
 	return;
     }
 
-    unsigned int count = Parent->nickserv.GetStored(source).AccessDel(hostmask);
+    unsigned int count = Magick::instance().nickserv.GetStored(source).AccessDel(hostmask);
     if (count)
     {
-	Parent->nickserv.stats.i_Access++;
+	Magick::instance().nickserv.stats.i_Access++;
 	SEND(mynick, source, "LIST/DEL_MATCH", (
 			count, hostmask,
-			Parent->getMessage(source, "LIST/ACCESS")));
+			Magick::instance().getMessage(source, "LIST/ACCESS")));
 	LOG(LM_DEBUG, "NICKSERV/ACCESS_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		hostmask, source));
     }
     else
     {
 	SEND(mynick, source, "LIST/NOTEXISTS", (
-			hostmask, Parent->getMessage(source, "LIST/ACCESS")));
+			hostmask, Magick::instance().getMessage(source, "LIST/ACCESS")));
     }
 }
 
@@ -7318,11 +7323,11 @@ void NickServ::do_access_List(const mstring &mynick, const mstring &source, cons
     FT("NickServ::do_access_List", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
-    mstring target = Parent->getSname(source);
+    mstring target = Magick::instance().getSname(source);
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -7330,19 +7335,19 @@ void NickServ::do_access_List(const mstring &mynick, const mstring &source, cons
     }}
 
     if (params.WordCount(" ") >= 3 &&
-	Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))
+	Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsStored(target))
+	if (!Magick::instance().nickserv.IsStored(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 					target));
 	    return;
 	}
 
-	target = Parent->getSname(target);
-	if (Parent->nickserv.GetStored(target).Forbidden())
+	target = Magick::instance().getSname(target);
+	if (Magick::instance().nickserv.GetStored(target).Forbidden())
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
@@ -7350,32 +7355,32 @@ void NickServ::do_access_List(const mstring &mynick, const mstring &source, cons
 	}
     }
 
-    if (Parent->nickserv.GetStored(target).Access())
+    if (Magick::instance().nickserv.GetStored(target).Access())
     {
 	if (!source.IsSameAs(target, true))
 	    SEND(mynick, source, "LIST/DISPLAY2", (
-			target, Parent->getMessage(source, "LIST/ACCESS")));
+			target, Magick::instance().getMessage(source, "LIST/ACCESS")));
 	else
 	    SEND(mynick, source, "LIST/DISPLAY", (
-			Parent->getMessage(source, "LIST/ACCESS")));
+			Magick::instance().getMessage(source, "LIST/ACCESS")));
     }
     else
     {
 	if (!source.IsSameAs(target, true))
 	    SEND(mynick, source, "LIST/EMPTY2", (
-			target, Parent->getMessage(source, "LIST/ACCESS")));
+			target, Magick::instance().getMessage(source, "LIST/ACCESS")));
 	else
 	    SEND(mynick, source, "LIST/EMPTY", (
-			Parent->getMessage(source, "LIST/ACCESS")));
+			Magick::instance().getMessage(source, "LIST/ACCESS")));
 	return;
     }
 
     unsigned int i;
     mstring retval;
-    for (i=0; i<Parent->nickserv.GetStored(target).Access(); i++)
+    for (i=0; i<Magick::instance().nickserv.GetStored(target).Access(); i++)
     {
 	retval.erase();
-	retval << i+1 << ". " << Parent->nickserv.GetStored(target).Access(i);
+	retval << i+1 << ". " << Magick::instance().nickserv.GetStored(target).Access(i);
 	::send(mynick, source, retval);
     }
 }
@@ -7394,34 +7399,34 @@ void NickServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
 
     mstring target = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(target))
+    if (!Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 						target));
 	return;
     }
 
-    target = Parent->getSname(target);
-    if (Parent->nickserv.GetStored(target).Forbidden())
+    target = Magick::instance().getSname(target);
+    if (Magick::instance().nickserv.GetStored(target).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
 	return;
     }
 
-    if (Parent->nickserv.GetStored(source).IgnoreAdd(target))
+    if (Magick::instance().nickserv.GetStored(source).IgnoreAdd(target))
     {
-	Parent->nickserv.stats.i_Ignore++;
+	Magick::instance().nickserv.stats.i_Ignore++;
 	SEND(mynick, source, "LIST/ADD", (
-			target, Parent->getMessage(source, "LIST/IGNORE")));
+			target, Magick::instance().getMessage(source, "LIST/IGNORE")));
 	LOG(LM_DEBUG, "NICKSERV/IGNORE_ADD", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		target, source));
     }
     else
     {
 	SEND(mynick, source, "LIST/EXISTS", (
-			target, Parent->getMessage(source, "LIST/IGNORE")));
+			target, Magick::instance().getMessage(source, "LIST/IGNORE")));
     }
 }
 
@@ -7448,31 +7453,31 @@ void NickServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 	}
 
 	unsigned int num = atoi(target.c_str());
-	if (num <= 0 || num > Parent->nickserv.GetStored(source).Ignore())
+	if (num <= 0 || num > Magick::instance().nickserv.GetStored(source).Ignore())
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-			1, Parent->nickserv.GetStored(source).Ignore()));
+			1, Magick::instance().nickserv.GetStored(source).Ignore()));
 	    return;
 	}
 
-	target = Parent->nickserv.GetStored(source).Ignore(num-1);
+	target = Magick::instance().nickserv.GetStored(source).Ignore(num-1);
     }
 
-    unsigned int count = Parent->nickserv.GetStored(source).IgnoreDel(target);
+    unsigned int count = Magick::instance().nickserv.GetStored(source).IgnoreDel(target);
     if (count)
     {
-	Parent->nickserv.stats.i_Ignore++;
+	Magick::instance().nickserv.stats.i_Ignore++;
 	SEND(mynick, source, "LIST/DEL_MATCH", (
 			count, target,
-			Parent->getMessage(source, "LIST/IGNORE")));
+			Magick::instance().getMessage(source, "LIST/IGNORE")));
 	LOG(LM_DEBUG, "NICKSERV/IGNORE_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		target, source));
     }
     else
     {
 	SEND(mynick, source, "LIST/NOTEXISTS", (
-			target, Parent->getMessage(source, "LIST/IGNORE")));
+			target, Magick::instance().getMessage(source, "LIST/IGNORE")));
     }
 
 }
@@ -7482,11 +7487,11 @@ void NickServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
     FT("NickServ::do_ignore_List", (mynick, source, params));
 
     mstring message  = params.Before(" ", 2).UpperCase();
-    mstring target = Parent->getSname(source);
+    mstring target = Magick::instance().getSname(source);
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -7494,19 +7499,19 @@ void NickServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
     }}
 
     if (params.WordCount(" ") >= 3 &&
-	Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))
+	Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsStored(target))
+	if (!Magick::instance().nickserv.IsStored(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				target));
 	    return;
 	}
 
-	target = Parent->getSname(target);
-	if (Parent->nickserv.GetStored(target).Forbidden())
+	target = Magick::instance().getSname(target);
+	if (Magick::instance().nickserv.GetStored(target).Forbidden())
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
@@ -7514,32 +7519,32 @@ void NickServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
 	}
     }
 
-    if (Parent->nickserv.GetStored(target).Ignore())
+    if (Magick::instance().nickserv.GetStored(target).Ignore())
     {
 	if (!source.IsSameAs(target, true))
 	    SEND(mynick, source, "LIST/DISPLAY2", (
-			target, Parent->getMessage(source, "LIST/IGNORE")));
+			target, Magick::instance().getMessage(source, "LIST/IGNORE")));
 	else
 	    SEND(mynick, source, "LIST/DISPLAY", (
-			Parent->getMessage(source, "LIST/IGNORE")));
+			Magick::instance().getMessage(source, "LIST/IGNORE")));
     }
     else
     {
 	if (!source.IsSameAs(target, true))
 	    SEND(mynick, source, "LIST/EMPTY2", (
-			target, Parent->getMessage(source, "LIST/IGNORE")));
+			target, Magick::instance().getMessage(source, "LIST/IGNORE")));
 	else
 	    SEND(mynick, source, "LIST/EMPTY", (
-			Parent->getMessage(source, "LIST/IGNORE")));
+			Magick::instance().getMessage(source, "LIST/IGNORE")));
 	return;
     }
 
     unsigned int i;
     mstring retval;
-    for (i=0; i<Parent->nickserv.GetStored(target).Ignore(); i++)
+    for (i=0; i<Magick::instance().nickserv.GetStored(target).Ignore(); i++)
     {
 	retval.erase();
-	retval << i+1 << ". " << Parent->nickserv.GetStored(target).Ignore(i);
+	retval << i+1 << ". " << Magick::instance().nickserv.GetStored(target).Ignore(i);
 	::send(mynick, source, retval);
     }
 }
@@ -7558,14 +7563,14 @@ void NickServ::do_set_Password(const mstring &mynick, const mstring &source, con
 
     mstring newpass = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.GetLive(source).IsIdentified())
+    if (!Magick::instance().nickserv.GetLive(source).IsIdentified())
     {
 	SEND(mynick, source, "ERR_SITUATION/NEED_NICK_IDENT", (
 			message, mynick));
 	return;
     }
 
-    mstring oldpass = Parent->nickserv.GetStored(source).Password();
+    mstring oldpass = Magick::instance().nickserv.GetStored(source).Password();
     if (newpass.IsSameAs(oldpass, true) || newpass.IsSameAs(source, true) ||
 	newpass.length() < 5)
     {
@@ -7573,12 +7578,12 @@ void NickServ::do_set_Password(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    Parent->nickserv.GetStored(source).Password(newpass);
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).Password(newpass);
+    Magick::instance().nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
-		Parent->getMessage(source, "NS_SET/PASSWORD"), newpass));
+		Magick::instance().getMessage(source, "NS_SET/PASSWORD"), newpass));
     LOG(LM_INFO, "NICKSERV/SET_PASSWORD", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source));
 }
 
@@ -7601,34 +7606,34 @@ void NickServ::do_set_Email(const mstring &mynick, const mstring &source, const 
     else if (!newvalue.Contains("@"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-		Parent->getMessage(source, "NS_SET/EMAIL"), '@'));
+		Magick::instance().getMessage(source, "NS_SET/EMAIL"), '@'));
 	return;
     }
     else if (newvalue.WordCount("@") != 2)
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAINONE", (
-		Parent->getMessage(source, "NS_SET/EMAIL"), '@'));
+		Magick::instance().getMessage(source, "NS_SET/EMAIL"), '@'));
 	return;
     }
 
-    Parent->nickserv.GetStored(source).Email(newvalue);
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).Email(newvalue);
+    Magick::instance().nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
-		Parent->getMessage(source, "NS_SET/EMAIL"), newvalue));
+		Magick::instance().getMessage(source, "NS_SET/EMAIL"), newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/EMAIL"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/EMAIL"),
 		source, newvalue));
     }
     else
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
-		Parent->getMessage(source, "NS_SET/EMAIL")));
+		Magick::instance().getMessage(source, "NS_SET/EMAIL")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/EMAIL"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/EMAIL"),
 		source));
     }
 }
@@ -7655,25 +7660,25 @@ void NickServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
 	newvalue.erase(0, 6);
     }
 
-    Parent->nickserv.GetStored(source).URL(newvalue);
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).URL(newvalue);
+    Magick::instance().nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
-		Parent->getMessage(source, "NS_SET/URL"),
+		Magick::instance().getMessage(source, "NS_SET/URL"),
 		"http://" + newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/URL"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/URL"),
 		source, "http://" + newvalue));
     }
     else
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
-		Parent->getMessage(source, "NS_SET/URL")));
+		Magick::instance().getMessage(source, "NS_SET/URL")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/URL"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/URL"),
 		source));
     }
 }
@@ -7707,24 +7712,24 @@ void NickServ::do_set_ICQ(const mstring &mynick, const mstring &source, const ms
     }
 
 
-    Parent->nickserv.GetStored(source).ICQ(newvalue);
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).ICQ(newvalue);
+    Magick::instance().nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
-		Parent->getMessage(source, "NS_SET/ICQ"), newvalue));
+		Magick::instance().getMessage(source, "NS_SET/ICQ"), newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/ICQ"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/ICQ"),
 		source, newvalue));
     }
     else
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
-		Parent->getMessage(source, "NS_SET/ICQ")));
+		Magick::instance().getMessage(source, "NS_SET/ICQ")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/ICQ"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/ICQ"),
 		source));
     }
 }
@@ -7746,24 +7751,24 @@ void NickServ::do_set_AIM(const mstring &mynick, const mstring &source, const ms
     if (newvalue.IsSameAs("none", true))
 	newvalue.erase();
 
-    Parent->nickserv.GetStored(source).AIM(newvalue);
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).AIM(newvalue);
+    Magick::instance().nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
-		Parent->getMessage(source, "NS_SET/AIM"), newvalue));
+		Magick::instance().getMessage(source, "NS_SET/AIM"), newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/AIM"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/AIM"),
 		source, newvalue));
     }
     else
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
-		Parent->getMessage(source, "NS_SET/AIM")));
+		Magick::instance().getMessage(source, "NS_SET/AIM")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/AIM"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/AIM"),
 		source));
     }
 }
@@ -7785,24 +7790,24 @@ void NickServ::do_set_Description(const mstring &mynick, const mstring &source, 
     if (newvalue.IsSameAs("none", true))
 	newvalue.erase();
 
-    Parent->nickserv.GetStored(source).Description(newvalue);
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).Description(newvalue);
+    Magick::instance().nickserv.stats.i_Set++;
     if (!newvalue.empty())
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
-		Parent->getMessage(source, "NS_SET/DESCRIPTION"), newvalue));
+		Magick::instance().getMessage(source, "NS_SET/DESCRIPTION"), newvalue));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/DESCRIPTION"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/DESCRIPTION"),
 		source, newvalue));
     }
     else
     {
 	SEND(mynick, source, "NS_YOU_COMMAND/UNSET", (
-		Parent->getMessage(source, "NS_SET/DESCRIPTION")));
+		Magick::instance().getMessage(source, "NS_SET/DESCRIPTION")));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/DESCRIPTION"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/DESCRIPTION"),
 		source));
     }
 }
@@ -7822,15 +7827,15 @@ void NickServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
     mstring target = params.ExtractWord(3, " ");
     mstring comment = params.After(" ", 3);
 
-    if (!Parent->nickserv.IsStored(target))
+    if (!Magick::instance().nickserv.IsStored(target))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 		target));
 	return;
     }
 
-    target = Parent->getSname(target);
-    if (Parent->nickserv.GetStored(target).Forbidden())
+    target = Magick::instance().getSname(target);
+    if (Magick::instance().nickserv.GetStored(target).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						target));
@@ -7840,26 +7845,26 @@ void NickServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
     if (comment.IsSameAs("none", true))
 	comment.erase();
 
-    Parent->nickserv.GetStored(target).Comment(comment);
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(target).Comment(comment);
+    Magick::instance().nickserv.stats.i_Set++;
     if (!comment.empty())
     {
 	SEND(mynick, source, "NS_OTH_COMMAND/SET_TO", (
-		Parent->getMessage(source, "NS_SET/COMMENT"),
+		Magick::instance().getMessage(source, "NS_SET/COMMENT"),
 		target, comment));
 	LOG(LM_DEBUG, "NICKSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/COMMENT"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/COMMENT"),
 		target, comment));
     }
     else
     {
 	SEND(mynick, source, "NS_OTH_COMMAND/UNSET", (
-		Parent->getMessage(source, "NS_SET/COMMENT"),
+		Magick::instance().getMessage(source, "NS_SET/COMMENT"),
 		target));
 	LOG(LM_DEBUG, "NICKSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("NS_SET/COMMENT"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("NS_SET/COMMENT"),
 		target));
     }
 }
@@ -7876,32 +7881,32 @@ void NickServ::do_set_Picture(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (Parent->nickserv.PicExt().empty())
+    if (Magick::instance().nickserv.PicExt().empty())
     {
 	NSEND(mynick, source, "NS_YOU_STATUS/PICDISABLED");
 	return;
     }
 
-    Parent->nickserv.stats.i_SetPicture++;
+    Magick::instance().nickserv.stats.i_SetPicture++;
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("none", true))
     {
-	if (Parent->nickserv.GetStored(source).PicNum())
-	    Parent->filesys.EraseFile(FileMap::Picture,
-		Parent->nickserv.GetStored(source).PicNum());
-	Parent->nickserv.GetStored(source).GotPic(0u);
+	if (Magick::instance().nickserv.GetStored(source).PicNum())
+	    Magick::instance().filesys.EraseFile(FileMap::Picture,
+		Magick::instance().nickserv.GetStored(source).PicNum());
+	Magick::instance().nickserv.GetStored(source).GotPic(0u);
 	NSEND(mynick, source, "NS_YOU_COMMAND/REMOVED");
 	LOG(LM_DEBUG, "NICKSERV/PICTURE_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		source));
     }
     else
     {
-	if (Parent->nickserv.GetStored(source).PicNum())
-	    Parent->filesys.EraseFile(FileMap::Picture,
-		Parent->nickserv.GetStored(source).PicNum());
-	Parent->nickserv.GetStored(source).GotPic(0u);
-	Parent->nickserv.GetLive(source).InFlight.Picture(mynick);
+	if (Magick::instance().nickserv.GetStored(source).PicNum())
+	    Magick::instance().filesys.EraseFile(FileMap::Picture,
+		Magick::instance().nickserv.GetStored(source).PicNum());
+	Magick::instance().nickserv.GetStored(source).GotPic(0u);
+	Magick::instance().nickserv.GetLive(source).InFlight.Picture(mynick);
     }
 }
 
@@ -7919,16 +7924,16 @@ void NickServ::do_set_Protect(const mstring &mynick, const mstring &source, cons
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (Parent->nickserv.GetStored(source).L_Protect())
+    if (Magick::instance().nickserv.GetStored(source).L_Protect())
     {
 	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
-				Parent->getMessage(source, "NS_SET/PROTECT")));
+				Magick::instance().getMessage(source, "NS_SET/PROTECT")));
 	return;
     }
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_Protect())
+	if (Magick::instance().nickserv.DEF_Protect())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -7940,19 +7945,19 @@ void NickServ::do_set_Protect(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    Parent->nickserv.GetStored(source).Protect(onoff.GetBool());
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).Protect(onoff.GetBool());
+    Magick::instance().nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
-			Parent->getMessage(source, "NS_SET/PROTECT"),
+			Magick::instance().getMessage(source, "NS_SET/PROTECT"),
 			(onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PROTECT"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PROTECT"),
 	source, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params)
@@ -7969,16 +7974,16 @@ void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (Parent->nickserv.GetStored(source).L_Secure())
+    if (Magick::instance().nickserv.GetStored(source).L_Secure())
     {
 	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
-				Parent->getMessage(source, "NS_SET/SECURE")));
+				Magick::instance().getMessage(source, "NS_SET/SECURE")));
 	return;
     }
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_Secure())
+	if (Magick::instance().nickserv.DEF_Secure())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -7990,19 +7995,19 @@ void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    Parent->nickserv.GetStored(source).Secure(onoff.GetBool());
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).Secure(onoff.GetBool());
+    Magick::instance().nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
-			Parent->getMessage(source, "NS_SET/SECURE"),
+			Magick::instance().getMessage(source, "NS_SET/SECURE"),
 			(onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/SECURE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/SECURE"),
 	source, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8020,32 +8025,32 @@ void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 		nickname));
 	return;
     }
-    nickname = Parent->getSname(nickname);
+    nickname = Magick::instance().getSname(nickname);
 
-    if (Parent->nickserv.GetStored(nickname).Forbidden())
+    if (Magick::instance().nickserv.GetStored(nickname).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 						nickname));
 	return;
     }
 
-    if (Parent->nickserv.LCK_NoExpire())
+    if (Magick::instance().nickserv.LCK_NoExpire())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISLOCKED", (
-				Parent->getMessage(source, "NS_SET/NOEXPIRE"),
+				Magick::instance().getMessage(source, "NS_SET/NOEXPIRE"),
 				nickname));
 	return;
     }
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_NoExpire())
+	if (Magick::instance().nickserv.DEF_NoExpire())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8057,19 +8062,19 @@ void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    Parent->nickserv.GetStored(nickname).NoExpire(onoff.GetBool());
-    Parent->nickserv.stats.i_NoExpire++;
+    Magick::instance().nickserv.GetStored(nickname).NoExpire(onoff.GetBool());
+    Magick::instance().nickserv.stats.i_NoExpire++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_SET_TO", (
-			Parent->getMessage(source, "NS_SET/NOEXPIRE"),
+			Magick::instance().getMessage(source, "NS_SET/NOEXPIRE"),
 			nickname, (onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_NOTICE, "NICKSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/NOEXPIRE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/NOEXPIRE"),
 	nickname, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 
@@ -8087,16 +8092,16 @@ void NickServ::do_set_NoMemo(const mstring &mynick, const mstring &source, const
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (Parent->nickserv.GetStored(source).L_NoMemo())
+    if (Magick::instance().nickserv.GetStored(source).L_NoMemo())
     {
 	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
-				Parent->getMessage(source, "NS_SET/NOMEMO")));
+				Magick::instance().getMessage(source, "NS_SET/NOMEMO")));
 	return;
     }
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_NoMemo())
+	if (Magick::instance().nickserv.DEF_NoMemo())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8108,19 +8113,19 @@ void NickServ::do_set_NoMemo(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    Parent->nickserv.GetStored(source).NoMemo(onoff.GetBool());
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).NoMemo(onoff.GetBool());
+    Magick::instance().nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
-			Parent->getMessage(source, "NS_SET/NOMEMO"),
+			Magick::instance().getMessage(source, "NS_SET/NOMEMO"),
 			(onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/NOMEMO"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/NOMEMO"),
 	source, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_Private(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8137,16 +8142,16 @@ void NickServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (Parent->nickserv.GetStored(source).L_Private())
+    if (Magick::instance().nickserv.GetStored(source).L_Private())
     {
 	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
-				Parent->getMessage(source, "NS_SET/PRIVATE")));
+				Magick::instance().getMessage(source, "NS_SET/PRIVATE")));
 	return;
     }
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_Private())
+	if (Magick::instance().nickserv.DEF_Private())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8158,19 +8163,19 @@ void NickServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    Parent->nickserv.GetStored(source).Private(onoff.GetBool());
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).Private(onoff.GetBool());
+    Magick::instance().nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
-			Parent->getMessage(source, "NS_SET/PRIVATE"),
+			Magick::instance().getMessage(source, "NS_SET/PRIVATE"),
 			(onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PRIVATE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PRIVATE"),
 	source, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8187,16 +8192,16 @@ void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, cons
 
     mstring onoff = params.ExtractWord(3, " ");
 
-    if (Parent->nickserv.GetStored(source).L_PRIVMSG())
+    if (Magick::instance().nickserv.GetStored(source).L_PRIVMSG())
     {
 	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
-				Parent->getMessage(source, "NS_SET/PRIVMSG")));
+				Magick::instance().getMessage(source, "NS_SET/PRIVMSG")));
 	return;
     }
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_PRIVMSG())
+	if (Magick::instance().nickserv.DEF_PRIVMSG())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8208,19 +8213,19 @@ void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    Parent->nickserv.GetStored(source).PRIVMSG(onoff.GetBool());
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).PRIVMSG(onoff.GetBool());
+    Magick::instance().nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
-			Parent->getMessage(source, "NS_SET/PRIVMSG"),
+			Magick::instance().getMessage(source, "NS_SET/PRIVMSG"),
 			(onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PRIVMSG"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PRIVMSG"),
 	source, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_Language(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8230,8 +8235,8 @@ void NickServ::do_set_Language(const mstring &mynick, const mstring &source, con
     mstring message  = params.Before(" ", 2).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -8247,21 +8252,21 @@ void NickServ::do_set_Language(const mstring &mynick, const mstring &source, con
 
     mstring lang = params.ExtractWord(3, " ").UpperCase();
 
-    if (Parent->nickserv.GetStored(source).L_Language())
+    if (Magick::instance().nickserv.GetStored(source).L_Language())
     {
 	SEND(mynick, source, "NS_YOU_STATUS/ISLOCKED", (
-				Parent->getMessage(source, "NS_SET/LANGUAGE")));
+				Magick::instance().getMessage(source, "NS_SET/LANGUAGE")));
 	return;
     }
 
     if (lang.IsSameAs("default", true) || lang.IsSameAs("reset", true))
     {
-	lang = Parent->nickserv.DEF_Language().UpperCase();
+	lang = Magick::instance().nickserv.DEF_Language().UpperCase();
     }
     else
     {
 	// check for valid language ...
-	if (!mFile::Exists(Parent->files.Langdir()+DirSlash+lang.LowerCase()+".lng"))
+	if (!mFile::Exists(Magick::instance().files.Langdir()+DirSlash+lang.LowerCase()+".lng"))
 	{
 	    SEND(mynick, source, "OS_STATUS/NOLANG", (
 			lang));
@@ -8269,15 +8274,15 @@ void NickServ::do_set_Language(const mstring &mynick, const mstring &source, con
 	}
     }
 
-    Parent->nickserv.GetStored(source).Language(lang);
-    Parent->nickserv.stats.i_Set++;
+    Magick::instance().nickserv.GetStored(source).Language(lang);
+    Magick::instance().nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/SET_TO", (
-			Parent->getMessage(source, "NS_SET/LANGUAGE"),
+			Magick::instance().getMessage(source, "NS_SET/LANGUAGE"),
 			mstring(lang + " (" +
-			Parent->getMessage(source, "ERR_SYNTAX/TRANSLATED") + ")")));
+			Magick::instance().getMessage(source, "ERR_SYNTAX/TRANSLATED") + ")")));
     LOG(LM_DEBUG, "NICKSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/LANGUAGE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/LANGUAGE"),
 	source, lang));
 }
 
@@ -8296,7 +8301,7 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
@@ -8305,7 +8310,7 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_Protect())
+	if (Magick::instance().nickserv.DEF_Protect())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8317,15 +8322,15 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (Parent->nickserv.LCK_Protect())
+    if (Magick::instance().nickserv.LCK_Protect())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/PROTECT")));
+				Magick::instance().getMessage(source, "NS_SET/PROTECT")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8338,18 +8343,18 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
     nick.Protect(onoff.GetBool());
     nick.L_Protect(true);
     }
-    Parent->nickserv.stats.i_Lock++;
+    Magick::instance().nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
-			Parent->getMessage(source, "NS_SET/PROTECT"),
+			Magick::instance().getMessage(source, "NS_SET/PROTECT"),
 			nickname, (onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PROTECT"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PROTECT"),
 	nickname, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8367,7 +8372,7 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
@@ -8376,7 +8381,7 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_Secure())
+	if (Magick::instance().nickserv.DEF_Secure())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8388,15 +8393,15 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (Parent->nickserv.LCK_Secure())
+    if (Magick::instance().nickserv.LCK_Secure())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/SECURE")));
+				Magick::instance().getMessage(source, "NS_SET/SECURE")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8409,18 +8414,18 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     nick.Secure(onoff.GetBool());
     nick.L_Secure(true);
     }
-    Parent->nickserv.stats.i_Lock++;
+    Magick::instance().nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
-			Parent->getMessage(source, "NS_SET/SECURE"),
+			Magick::instance().getMessage(source, "NS_SET/SECURE"),
 			nickname, (onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/SECURE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/SECURE"),
 	nickname, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8438,7 +8443,7 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
@@ -8447,7 +8452,7 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_NoMemo())
+	if (Magick::instance().nickserv.DEF_NoMemo())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8459,15 +8464,15 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (Parent->nickserv.LCK_NoMemo())
+    if (Magick::instance().nickserv.LCK_NoMemo())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/NOMEMO")));
+				Magick::instance().getMessage(source, "NS_SET/NOMEMO")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8480,18 +8485,18 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
     nick.NoMemo(onoff.GetBool());
     nick.L_NoMemo(true);
     }
-    Parent->nickserv.stats.i_Lock++;
+    Magick::instance().nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
-			Parent->getMessage(source, "NS_SET/NOMEMO"),
+			Magick::instance().getMessage(source, "NS_SET/NOMEMO"),
 			nickname, (onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/NOMEMO"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/NOMEMO"),
 	nickname, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8509,7 +8514,7 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
@@ -8518,7 +8523,7 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_Private())
+	if (Magick::instance().nickserv.DEF_Private())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8530,15 +8535,15 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (Parent->nickserv.LCK_Private())
+    if (Magick::instance().nickserv.LCK_Private())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/PRIVATE")));
+				Magick::instance().getMessage(source, "NS_SET/PRIVATE")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8551,18 +8556,18 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     nick.Private(onoff.GetBool());
     nick.L_Private(true);
     }
-    Parent->nickserv.stats.i_Lock++;
+    Magick::instance().nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
-			Parent->getMessage(source, "NS_SET/PRIVATE"),
+			Magick::instance().getMessage(source, "NS_SET/PRIVATE"),
 			nickname, (onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PRIVATE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PRIVATE"),
 	nickname, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8580,7 +8585,7 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
     mstring nickname = params.ExtractWord(3, " ");
     mstring onoff    = params.ExtractWord(4, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
@@ -8589,7 +8594,7 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->nickserv.DEF_PRIVMSG())
+	if (Magick::instance().nickserv.DEF_PRIVMSG())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -8601,15 +8606,15 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (Parent->nickserv.LCK_PRIVMSG())
+    if (Magick::instance().nickserv.LCK_PRIVMSG())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/PRIVMSG")));
+				Magick::instance().getMessage(source, "NS_SET/PRIVMSG")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8622,18 +8627,18 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
     nick.PRIVMSG(onoff.GetBool());
     nick.L_PRIVMSG(true);
     }
-    Parent->nickserv.stats.i_Lock++;
+    Magick::instance().nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
-			Parent->getMessage(source, "NS_SET/PRIVMSG"),
+			Magick::instance().getMessage(source, "NS_SET/PRIVMSG"),
 			nickname, (onoff.GetBool() ?
-				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF"))));
+				Magick::instance().getMessage(source, "VALS/ON") :
+				Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PRIVMSG"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PRIVMSG"),
 	nickname, (onoff.GetBool() ?
-		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"))));
+		Magick::instance().getMessage("VALS/ON") :
+		Magick::instance().getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8643,8 +8648,8 @@ void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, co
     mstring message  = params.Before(" ", 2).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -8661,7 +8666,7 @@ void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, co
     mstring nickname = params.ExtractWord(3, " ");
     mstring lang     = params.ExtractWord(4, " ").UpperCase();
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
@@ -8670,24 +8675,24 @@ void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, co
 
     if (lang.IsSameAs("default", true) || lang.IsSameAs("reset", true))
     {
-	lang = Parent->nickserv.DEF_Language().UpperCase();
+	lang = Magick::instance().nickserv.DEF_Language().UpperCase();
     }
-    else if (!mFile::Exists(Parent->files.Langdir()+DirSlash+lang.LowerCase()+".lng"))
+    else if (!mFile::Exists(Magick::instance().files.Langdir()+DirSlash+lang.LowerCase()+".lng"))
     {
 	SEND(mynick, source, "OS_STATUS/NOLANG", (
 			lang));
 	return;
     }
 
-    if (Parent->nickserv.LCK_Language())
+    if (Magick::instance().nickserv.LCK_Language())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/LANGUAGE")));
+				Magick::instance().getMessage(source, "NS_SET/LANGUAGE")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8700,14 +8705,14 @@ void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, co
     nick.Language(lang);
     nick.L_Language(true);
     }
-    Parent->nickserv.stats.i_Lock++;
+    Magick::instance().nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/LOCKED", (
-			Parent->getMessage(source, "NS_SET/LANGUAGE"),
+			Magick::instance().getMessage(source, "NS_SET/LANGUAGE"),
 			nickname, mstring(lang + " (" +
-			Parent->getMessageL(lang, "ERR_SYNTAX/TRANSLATED") + ")")));
+			Magick::instance().getMessageL(lang, "ERR_SYNTAX/TRANSLATED") + ")")));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/LANGUAGE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/LANGUAGE"),
 	nickname, lang));
 }
 
@@ -8725,22 +8730,22 @@ void NickServ::do_unlock_Protect(const mstring &mynick, const mstring &source, c
 
     mstring nickname = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
 	return;
     }
 
-    if (Parent->nickserv.LCK_Protect())
+    if (Magick::instance().nickserv.LCK_Protect())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/PROTECT")));
+				Magick::instance().getMessage(source, "NS_SET/PROTECT")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8751,13 +8756,13 @@ void NickServ::do_unlock_Protect(const mstring &mynick, const mstring &source, c
 
     nick.L_Protect(false);
     }
-    Parent->nickserv.stats.i_Unlock++;
+    Magick::instance().nickserv.stats.i_Unlock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
-			Parent->getMessage(source, "NS_SET/PROTECT"),
+			Magick::instance().getMessage(source, "NS_SET/PROTECT"),
 			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PROTECT"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PROTECT"),
 	nickname));
 }
 
@@ -8775,22 +8780,22 @@ void NickServ::do_unlock_Secure(const mstring &mynick, const mstring &source, co
 
     mstring nickname = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
 	return;
     }
 
-    if (Parent->nickserv.LCK_Secure())
+    if (Magick::instance().nickserv.LCK_Secure())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/SECURE")));
+				Magick::instance().getMessage(source, "NS_SET/SECURE")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8801,13 +8806,13 @@ void NickServ::do_unlock_Secure(const mstring &mynick, const mstring &source, co
 
     nick.L_Secure(false);
     }
-    Parent->nickserv.stats.i_Unlock++;
+    Magick::instance().nickserv.stats.i_Unlock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
-			Parent->getMessage(source, "NS_SET/SECURE"),
+			Magick::instance().getMessage(source, "NS_SET/SECURE"),
 			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/SECURE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/SECURE"),
 	nickname));
 }
 
@@ -8825,22 +8830,22 @@ void NickServ::do_unlock_NoMemo(const mstring &mynick, const mstring &source, co
 
     mstring nickname = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
 	return;
     }
 
-    if (Parent->nickserv.LCK_NoMemo())
+    if (Magick::instance().nickserv.LCK_NoMemo())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/NOMEMO")));
+				Magick::instance().getMessage(source, "NS_SET/NOMEMO")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8851,13 +8856,13 @@ void NickServ::do_unlock_NoMemo(const mstring &mynick, const mstring &source, co
 
     nick.L_NoMemo(false);
     }
-    Parent->nickserv.stats.i_Unlock++;
+    Magick::instance().nickserv.stats.i_Unlock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
-			Parent->getMessage(source, "NS_SET/NOMEMO"),
+			Magick::instance().getMessage(source, "NS_SET/NOMEMO"),
 			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/NOMEMO"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/NOMEMO"),
 	nickname));
 }
 
@@ -8875,22 +8880,22 @@ void NickServ::do_unlock_Private(const mstring &mynick, const mstring &source, c
 
     mstring nickname = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
 	return;
     }
 
-    if (Parent->nickserv.LCK_Private())
+    if (Magick::instance().nickserv.LCK_Private())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/PRIVATE")));
+				Magick::instance().getMessage(source, "NS_SET/PRIVATE")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8901,13 +8906,13 @@ void NickServ::do_unlock_Private(const mstring &mynick, const mstring &source, c
 
     nick.L_Private(false);
     }
-    Parent->nickserv.stats.i_Unlock++;
+    Magick::instance().nickserv.stats.i_Unlock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
-			Parent->getMessage(source, "NS_SET/PRIVATE"),
+			Magick::instance().getMessage(source, "NS_SET/PRIVATE"),
 			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PRIVATE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PRIVATE"),
 	nickname));
 }
 
@@ -8925,22 +8930,22 @@ void NickServ::do_unlock_PRIVMSG(const mstring &mynick, const mstring &source, c
 
     mstring nickname = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
 	return;
     }
 
-    if (Parent->nickserv.LCK_PRIVMSG())
+    if (Magick::instance().nickserv.LCK_PRIVMSG())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/PRIVMSG")));
+				Magick::instance().getMessage(source, "NS_SET/PRIVMSG")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -8951,13 +8956,13 @@ void NickServ::do_unlock_PRIVMSG(const mstring &mynick, const mstring &source, c
 
     nick.L_PRIVMSG(false);
     }
-    Parent->nickserv.stats.i_Unlock++;
+    Magick::instance().nickserv.stats.i_Unlock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_UNLOCKED", (
-			Parent->getMessage(source, "NS_SET/PRIVMSG"),
+			Magick::instance().getMessage(source, "NS_SET/PRIVMSG"),
 			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/PRIVMSG"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/PRIVMSG"),
 	nickname));
 }
 
@@ -8975,22 +8980,22 @@ void NickServ::do_unlock_Language(const mstring &mynick, const mstring &source, 
 
     mstring nickname = params.ExtractWord(3, " ");
 
-    if (!Parent->nickserv.IsStored(nickname))
+    if (!Magick::instance().nickserv.IsStored(nickname))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 				nickname));
 	return;
     }
 
-    if (Parent->nickserv.LCK_Language())
+    if (Magick::instance().nickserv.LCK_Language())
     {
 	SEND(mynick, source, "ERR_SITUATION/ISLOCKED_NICK", (
-				Parent->getMessage(source, "NS_SET/LANGUAGE")));
+				Magick::instance().getMessage(source, "NS_SET/LANGUAGE")));
 	return;
     }
 
     { RLOCK(("NickServ", "stored", nickname.LowerCase()));
-    Nick_Stored_t &nick = Parent->nickserv.GetStored(nickname);
+    Nick_Stored_t &nick = Magick::instance().nickserv.GetStored(nickname);
     nickname = nick.Name();
     if (nick.Forbidden())
     {
@@ -9001,13 +9006,13 @@ void NickServ::do_unlock_Language(const mstring &mynick, const mstring &source, 
 
     nick.L_Language(false);
     }
-    Parent->nickserv.stats.i_Unlock++;
+    Magick::instance().nickserv.stats.i_Unlock++;
     SEND(mynick, source, "NS_OTH_COMMAND/UNLOCKED", (
-			Parent->getMessage(source, "NS_SET/LANGUAGE"),
+			Magick::instance().getMessage(source, "NS_SET/LANGUAGE"),
 			nickname));
     LOG(LM_DEBUG, "NICKSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("NS_SET/LANGUAGE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("NS_SET/LANGUAGE"),
 	nickname));
 }
 

@@ -25,6 +25,11 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2001/12/20 08:02:31  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.46  2001/11/28 13:40:47  prez
 ** Added UMASK option to config.  Also made the 'dead thread' protection
 ** send a SIGIOT signal to try and get the thread to die gracefully, else
@@ -345,6 +350,7 @@ class DccMap : public ACE_Task<ACE_MT_SYNCH>
     // Damn solaris already HAS a 'queue'
     static std::queue<unsigned long> active;
 
+    Magick *magick_instance;
     ACE_Thread_Manager tm;
     struct NewSocket
     {
@@ -352,6 +358,7 @@ class DccMap : public ACE_Task<ACE_MT_SYNCH>
 	mstring source;
 
 	// Connector
+        Magick *magick_instance;
 	ACE_INET_Addr address;
 	mstring filename;
 	size_t filesize;

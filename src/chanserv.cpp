@@ -27,6 +27,11 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.267  2001/12/20 08:02:31  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.266  2001/11/30 09:01:56  prez
 ** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
 ** Pause(bool) functions. This should help if/when we decide to implement
@@ -564,10 +569,10 @@ unsigned int Chan_Live_t::Part(const mstring& nick)
 	users.find(nick.LowerCase())!=users.end())
     {
 	mstring target = nick.LowerCase();
-	if (Parent->nickserv.IsStored(nick) &&
-	    Parent->nickserv.GetStored(nick).IsOnline() &&
-	    !Parent->nickserv.GetStored(nick).Host().empty())
-	    target = Parent->nickserv.GetStored(nick).Host().LowerCase();
+	if (Magick::instance().nickserv.IsStored(nick) &&
+	    Magick::instance().nickserv.GetStored(nick).IsOnline() &&
+	    !Magick::instance().nickserv.GetStored(nick).Host().empty())
+	    target = Magick::instance().nickserv.GetStored(nick).Host().LowerCase();
 	MCB(users.size());
 	CB(1, recent_parts.size());
 	{ WLOCK(("ChanServ", "live", i_Name.LowerCase(), "recent_parts"));
@@ -594,8 +599,8 @@ unsigned int Chan_Live_t::Part(const mstring& nick)
 	}
 	CE(1, recent_parts.size());
 	MCE(users.size());
-	if (Parent->chanserv.IsStored(i_Name))
-	    Parent->chanserv.GetStored(i_Name).Part(nick);
+	if (Magick::instance().chanserv.IsStored(i_Name))
+	    Magick::instance().chanserv.GetStored(i_Name).Part(nick);
     }
     else
     {
@@ -607,8 +612,8 @@ unsigned int Chan_Live_t::Part(const mstring& nick)
 	    squit.erase(nick.LowerCase());
 	    }
 	    MCE(squit.size());
-	    if (Parent->chanserv.IsStored(i_Name))
-		Parent->chanserv.GetStored(i_Name).Part(nick);
+	    if (Magick::instance().chanserv.IsStored(i_Name))
+		Magick::instance().chanserv.GetStored(i_Name).Part(nick);
 	}
 	else
 	{
@@ -675,8 +680,8 @@ unsigned int Chan_Live_t::Kick(const mstring& nick, const mstring& kicker)
 	users.erase(nick.LowerCase());
 	}
 	MCE(users.size());
-	if (Parent->chanserv.IsStored(i_Name))
-	    Parent->chanserv.GetStored(i_Name).Kick(nick, kicker);
+	if (Magick::instance().chanserv.IsStored(i_Name))
+	    Magick::instance().chanserv.GetStored(i_Name).Kick(nick, kicker);
     }
     else
     {
@@ -688,8 +693,8 @@ unsigned int Chan_Live_t::Kick(const mstring& nick, const mstring& kicker)
 	    squit.erase(nick.LowerCase());
 	    }
 	    MCE(squit.size());
-	    if (Parent->chanserv.IsStored(i_Name))
-		Parent->chanserv.GetStored(i_Name).Kick(nick, kicker);
+	    if (Magick::instance().chanserv.IsStored(i_Name))
+		Magick::instance().chanserv.GetStored(i_Name).Kick(nick, kicker);
 	}
 	else
 	{
@@ -714,8 +719,8 @@ void Chan_Live_t::ChgNick(const mstring& nick, const mstring& newnick)
 	users.erase(nick.LowerCase());
 	}
 	MCE(users.size());
-	if (Parent->chanserv.IsStored(i_Name))
-	    Parent->chanserv.GetStored(i_Name).ChgNick(nick, newnick);
+	if (Magick::instance().chanserv.IsStored(i_Name))
+	    Magick::instance().chanserv.GetStored(i_Name).ChgNick(nick, newnick);
     }
     else
     {
@@ -812,8 +817,8 @@ void Chan_Live_t::Topic(const mstring& source, const mstring& topic, const mstri
     CE(2, i_Topic_Set_Time);
     MCE(i_Topic);
     }
-    if (Parent->chanserv.IsStored(i_Name))
-	Parent->chanserv.GetStored(i_Name).Topic(source, topic, setter, settime);
+    if (Magick::instance().chanserv.IsStored(i_Name))
+	Magick::instance().chanserv.GetStored(i_Name).Topic(source, topic, setter, settime);
 }
 
 
@@ -1189,16 +1194,16 @@ void Chan_Live_t::LockDown()
 {
     NFT("Chan_Live_t::LockDown");
 
-    Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+    Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
     // Override the MLOCK checking.
     SendMode("+s");
     MLOCK(("ChanServ", "live", i_Name.LowerCase(), "ph_timer"));
     MCB(ph_timer);
-    while (Parent->Pause())
+    while (Magick::instance().Pause())
 	ACE_OS::sleep(1);
-    ph_timer = ACE_Reactor::instance()->schedule_timer(&(Parent->chanserv.ph),
+    ph_timer = ACE_Reactor::instance()->schedule_timer(&(Magick::instance().chanserv.ph),
 			    new mstring(i_Name),
-			    ACE_Time_Value(Parent->chanserv.ChanKeep()));
+			    ACE_Time_Value(Magick::instance().chanserv.ChanKeep()));
     MCE(ph_timer);
 }
 
@@ -1206,9 +1211,9 @@ void Chan_Live_t::UnLock()
 {
     NFT("Chan_Live_t::UnLock");
 
-    if (Parent->chanserv.IsStored(i_Name))
+    if (Magick::instance().chanserv.IsStored(i_Name))
     {
-	if (!Parent->chanserv.GetStored(i_Name).Mlock_On().Contains("s") && modes.Contains("s"))
+	if (!Magick::instance().chanserv.GetStored(i_Name).Mlock_On().Contains("s") && modes.Contains("s"))
 	    SendMode("-s");
     }
 
@@ -1244,7 +1249,7 @@ bool Chan_Live_t::ModeExists(const mstring& mode, const vector<mstring>& mode_pa
 
     for (param=0, i=0; i<mode.size(); i++)
     {
-	if (Parent->server.proto.ChanModeArg().Contains(mode[i]))
+	if (Magick::instance().server.proto.ChanModeArg().Contains(mode[i]))
 	{
 	    if (mode[i] == reqmode && param < mode_params.size()
 		&& mode_params[param] == reqparam)
@@ -1276,7 +1281,7 @@ void Chan_Live_t::RemoveMode(mstring& mode, vector<mstring>& mode_params,
 
     for (param=0, i=0; i<mode.size(); i++)
     {
-	if (Parent->server.proto.ChanModeArg().Contains(mode[i]))
+	if (Magick::instance().server.proto.ChanModeArg().Contains(mode[i]))
 	{
 	    if (reqmode == mode[i] && param < mode_params.size())
 	    {
@@ -1323,10 +1328,10 @@ void Chan_Live_t::SendMode(const mstring& in)
     mstring s_key, s_mlock_on, s_mlock_off;
     int s_limit = 0;
 
-    if (Parent->chanserv.IsStored(i_Name))
+    if (Magick::instance().chanserv.IsStored(i_Name))
     {
 	cstored = true;
-	Chan_Stored_t cs = Parent->chanserv.GetStored(i_Name);
+	Chan_Stored_t cs = Magick::instance().chanserv.GetStored(i_Name);
 	s_key = cs.Mlock_Key();
 	s_mlock_on = cs.Mlock_On();
 	s_mlock_off = cs.Mlock_Off();
@@ -1351,7 +1356,7 @@ void Chan_Live_t::SendMode(const mstring& in)
 	{
 	    add = false;
 	}
-	else if (Parent->server.proto.ChanModeArg().Contains(mode[i]))
+	else if (Magick::instance().server.proto.ChanModeArg().Contains(mode[i]))
 	{
 	    switch (mode[i])
 	    {
@@ -1632,8 +1637,8 @@ void Chan_Live_t::SendMode(const mstring& in)
     MCE(p_modes_on);
     }
     RLOCK2(("Events"));
-    if (Parent->events != NULL)
-	Parent->events->AddChannelModePending(i_Name);
+    if (Magick::instance().events != NULL)
+	Magick::instance().events->AddChannelModePending(i_Name);
 }
 
 
@@ -1669,7 +1674,7 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
 	    add = false;
 	    newmode += change[i];
 	}
-	else if (Parent->server.proto.ChanModeArg().Contains(change[i]))
+	else if (Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 	{
 	    mstring arg(in.ExtractWord(fwdargs, ": "));
 	    switch(change[i])
@@ -1962,8 +1967,8 @@ void Chan_Live_t::Mode(const mstring& source, const mstring& in)
     MCE(modes);
     }
 
-    if (Parent->chanserv.IsStored(i_Name))
-	Parent->chanserv.GetStored(i_Name).Mode(source,
+    if (Magick::instance().chanserv.IsStored(i_Name))
+	Magick::instance().chanserv.GetStored(i_Name).Mode(source,
 						newmode + newmode_param);
 }
 
@@ -2114,45 +2119,45 @@ bool Chan_Stored_t::Join(const mstring& nick)
 {
     FT("Chan_Stored_t::Join", (nick));
 
-    if (!Parent->nickserv.IsLive(nick))
+    if (!Magick::instance().nickserv.IsLive(nick))
     {
 	LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
 			"JOIN", i_Name, nick));
 	RET(false);
     }
-    Nick_Live_t nlive = Parent->nickserv.GetLive(nick);
+    Nick_Live_t nlive = Magick::instance().nickserv.GetLive(nick);
 
-    if (!Parent->chanserv.IsLive(i_Name))
+    if (!Magick::instance().chanserv.IsLive(i_Name))
     {
 	LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", (
 			"JOIN", nick, i_Name));
 	RET(false);
     }
-    Chan_Live_t clive = Parent->chanserv.GetLive(i_Name);
+    Chan_Live_t clive = Magick::instance().chanserv.GetLive(i_Name);
     size_t users = clive.Users();
 
     if (nlive.IsServices() &&
-	Parent->chanserv.FirstName().IsSameAs(nick, true))
+	Magick::instance().chanserv.FirstName().IsSameAs(nick, true))
     {
-	if (Parent->chanserv.IsLive(i_Name))
-	    Parent->chanserv.GetLive(i_Name).SendMode("+o " + nick);
+	if (Magick::instance().chanserv.IsLive(i_Name))
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("+o " + nick);
 	RET(true);
     }
 
     bool burst = false;
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL)
-	burst = Parent->ircsvchandler->Burst();
+    if (Magick::instance().ircsvchandler != NULL)
+	burst = Magick::instance().ircsvchandler->Burst();
     }    
 
     if (Forbidden())
     {
 	if (!nlive.HasMode("o"))
 	{
-	    if (Parent->chanserv.IsLive(i_Name))
+	    if (Magick::instance().chanserv.IsLive(i_Name))
 	    {
 		RLOCK(("ChanServ", "live", i_Name));
-		Chan_Live_t &cptr = Parent->chanserv.GetLive(i_Name);
+		Chan_Live_t &cptr = Magick::instance().chanserv.GetLive(i_Name);
 
 		// If this user is the only user in channel
 		if (users == 1)
@@ -2160,13 +2165,13 @@ bool Chan_Stored_t::Join(const mstring& nick)
 
 		RLOCK2(("ChanServ", "stored", i_Name, "setting.Mlock_On"));
 		cptr.SendMode("+" + setting.Mlock_On +
-			"b " + nlive.AltMask(Parent->operserv.Ignore_Method()));
+			"b " + nlive.AltMask(Magick::instance().operserv.Ignore_Method()));
 	    }
 
 	    // Can only insert with reason or default, so its safe.
-	    mstring reason = parseMessage(Parent->getMessage(nick, "CS_STATUS/ISFORBIDDEN"),
+	    mstring reason = parseMessage(Magick::instance().getMessage(nick, "CS_STATUS/ISFORBIDDEN"),
 						mVarArray(i_Name));
-	    Parent->server.KICK(Parent->chanserv.FirstName(), nick,
+	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), nick,
 		i_Name, reason);
 	    RET(false);
 	}
@@ -2176,18 +2181,18 @@ bool Chan_Stored_t::Join(const mstring& nick)
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (Akick_find(nick))
     {
-	if (Parent->chanserv.IsLive(i_Name))
+	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
 	    RLOCK(("ChanServ", "live", i_Name));
-	    Chan_Live_t &cptr = Parent->chanserv.GetLive(i_Name);
+	    Chan_Live_t &cptr = Magick::instance().chanserv.GetLive(i_Name);
 
 	    // If this user is the only user in channel
 	    if (users == 1)
 		cptr.LockDown();
 
-	    if (Parent->nickserv.IsStored(Akick->Entry()))
+	    if (Magick::instance().nickserv.IsStored(Akick->Entry()))
 		cptr.SendMode("+b " +
-			nlive.AltMask(Parent->operserv.Ignore_Method()));
+			nlive.AltMask(Magick::instance().operserv.Ignore_Method()));
 	    else
 		cptr.SendMode("+b " +
 			Akick->Entry());
@@ -2197,7 +2202,7 @@ bool Chan_Stored_t::Join(const mstring& nick)
 			nick, i_Name, Akick->Value()));
 
 	// Can only insert with reason or default, so its safe.
-	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
+	Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), nick,
 		i_Name, Akick->Value());
 
 	RET(false);
@@ -2205,35 +2210,35 @@ bool Chan_Stored_t::Join(const mstring& nick)
 
     if (Restricted() && !Suspended() && GetAccess(nick) < 1)
     {
-	if (Parent->chanserv.IsLive(i_Name))
+	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
 	    RLOCK(("ChanServ", "live", i_Name));
-	    Chan_Live_t &cptr = Parent->chanserv.GetLive(i_Name);
+	    Chan_Live_t &cptr = Magick::instance().chanserv.GetLive(i_Name);
 
 	    // If this user is the only user in channel
 	    if (users == 1)
 		cptr.LockDown();
 
 	    cptr.SendMode("+b " +
-			nlive.AltMask(Parent->operserv.Ignore_Method()));
+			nlive.AltMask(Magick::instance().operserv.Ignore_Method()));
 	}
 
 	LOG(LM_DEBUG, "EVENT/RESTRICTED", (
 			nick, i_Name));
 
 	// Can only insert with reason or default, so its safe.
-	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
-		i_Name, Parent->getMessage(nick, "MISC/KICK_RESTRICTED"));
+	Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), nick,
+		i_Name, Magick::instance().getMessage(nick, "MISC/KICK_RESTRICTED"));
 
 	RET(false);
     }
 
-    if (Parent->chanserv.IsLive(i_Name))
-	Parent->chanserv.GetLive(i_Name).UnLock();
+    if (Magick::instance().chanserv.IsLive(i_Name))
+	Magick::instance().chanserv.GetLive(i_Name).UnLock();
     if (!Join() && users == 2 &&
-			clive.IsIn(Parent->chanserv.FirstName()))
+			clive.IsIn(Magick::instance().chanserv.FirstName()))
     {
-	Parent->server.PART(Parent->chanserv.FirstName(), i_Name);
+	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), i_Name);
 	users--;
     }
 
@@ -2254,9 +2259,9 @@ bool Chan_Stored_t::Join(const mstring& nick)
 	    modes << " " << setting.Mlock_Limit;
 	}
 
-	if (!modes.empty() && Parent->chanserv.IsLive(i_Name))
+	if (!modes.empty() && Magick::instance().chanserv.IsLive(i_Name))
 	{
-	    Parent->chanserv.GetLive(i_Name).SendMode("+" + modes + " " + setting.Mlock_Key + " " +
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("+" + modes + " " + setting.Mlock_Key + " " +
 			(setting.Mlock_Limit ? mstring(setting.Mlock_Limit) : mstring("")));
 	}
 
@@ -2266,14 +2271,14 @@ bool Chan_Stored_t::Join(const mstring& nick)
 	// Carry over topic ..
 	if (!burst && Keeptopic() && !i_Topic.empty())
 	{
-	    Parent->server.TOPIC(Parent->chanserv.FirstName(),
+	    Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(),
 		i_Topic_Setter, i_Name, i_Topic, i_Topic_Set_Time);
 	}}
     }
 
     if (!burst && Join() && users == 1)
     {
-	Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
 	users++;
     }
 
@@ -2285,15 +2290,15 @@ bool Chan_Stored_t::Join(const mstring& nick)
 	MCE(i_LastUsed);
     }
 
-    if (Parent->chanserv.IsLive(i_Name))
+    if (Magick::instance().chanserv.IsLive(i_Name))
     {
 	if (GetAccess(nick, "AUTOOP"))
-	    Parent->chanserv.GetLive(i_Name).SendMode("+o " + nick);
-	else if (Parent->server.proto.ChanModeArg().Contains('h') &&
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("+o " + nick);
+	else if (Magick::instance().server.proto.ChanModeArg().Contains('h') &&
 		GetAccess(nick, "AUTOHALFOP"))
-	    Parent->chanserv.GetLive(i_Name).SendMode("+h " + nick);
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("+h " + nick);
 	else if (GetAccess(nick, "AUTOVOICE"))
-	    Parent->chanserv.GetLive(i_Name).SendMode("+v " + nick);
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("+v " + nick);
     }
 
     if (Suspended())
@@ -2304,16 +2309,16 @@ bool Chan_Stored_t::Join(const mstring& nick)
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Message"));
     for(Message = Message_begin(); Message != Message_end(); Message++)
     {
-	if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
-	    Parent->chanserv.notice(nick, "[" + i_Name + "] " + Message->Entry());
+	if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
+	    Magick::instance().chanserv.notice(nick, "[" + i_Name + "] " + Message->Entry());
     }}
 
     mstring target;
-    if (Parent->nickserv.IsStored(nick))
+    if (Magick::instance().nickserv.IsStored(nick))
     {
-	target = Parent->nickserv.GetStored(nick).Host();
+	target = Magick::instance().nickserv.GetStored(nick).Host();
 	if (target.empty())
-	    target = Parent->nickserv.GetStored(nick).Name();
+	    target = Magick::instance().nickserv.GetStored(nick).Name();
 
 	MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Greet"));
 	if (Greet_find(target) &&
@@ -2321,27 +2326,27 @@ bool Chan_Stored_t::Join(const mstring& nick)
 	{
 	    if (Greet->Entry()[0U] == '!')
 	    {
-		if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
-		    Parent->chanserv.privmsg(i_Name, "[" + nick + "] " +
+		if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
+		    Magick::instance().chanserv.privmsg(i_Name, "[" + nick + "] " +
 					Greet->Entry().After("!"));
 	    }
 	    else
 	    {
-		if (Parent->nickserv.IsLive(Parent->chanserv.FirstName()))
-		    Parent->chanserv.privmsg(i_Name, "[" + nick + "] " +
+		if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.FirstName()))
+		    Magick::instance().chanserv.privmsg(i_Name, "[" + nick + "] " +
 						Greet->Entry());
 	    }
 	}
     }
 
     if (!target.empty() && GetAccess(nick, "READMEMO") &&
-	Parent->memoserv.IsChannel(i_Name))
+	Magick::instance().memoserv.IsChannel(i_Name))
     {
-	size_t count = Parent->memoserv.ChannelNewsCount(i_Name, nick);
+	size_t count = Magick::instance().memoserv.ChannelNewsCount(i_Name, nick);
 	if (count)
-	    SEND(Parent->memoserv.FirstName(), nick, "MS_STATUS/CS_UNREAD", (
+	    SEND(Magick::instance().memoserv.FirstName(), nick, "MS_STATUS/CS_UNREAD", (
 		i_Name, count,
-		Parent->memoserv.FirstName(), i_Name));
+		Magick::instance().memoserv.FirstName(), i_Name));
     }
     RET(true);
 }
@@ -2351,8 +2356,8 @@ void Chan_Stored_t::Part(const mstring& nick)
 {
     FT("Chan_Stored_t::Part", (nick));
 
-    if (Parent->nickserv.IsLive(nick) &&
-	Parent->nickserv.GetLive(nick).IsServices())
+    if (Magick::instance().nickserv.IsLive(nick) &&
+	Magick::instance().nickserv.GetLive(nick).IsServices())
 	return;
 
     if (GetAccess(nick)>0)
@@ -2364,26 +2369,26 @@ void Chan_Stored_t::Part(const mstring& nick)
     }
 
     size_t users = 0;
-    if (Parent->chanserv.IsLive(i_Name))
-	users = Parent->chanserv.GetLive(i_Name).Users();
+    if (Magick::instance().chanserv.IsLive(i_Name))
+	users = Magick::instance().chanserv.GetLive(i_Name).Users();
 
     if (users == 1 && Join())
     {
-	Parent->server.PART(Parent->chanserv.FirstName(), i_Name);
+	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), i_Name);
 	users--;
     }
 
     if (users == 0 && (Mlock_On().Contains("i") || !Mlock_Key().empty()))
     {
-	Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
-	if (Parent->chanserv.IsLive(i_Name))
+	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), i_Name);
+	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
 	    mstring mode("+s");
 	    if (Mlock_On().Contains("i"))
 		mode << "+i";
 	    if (!Mlock_Key().empty())
 		mode << "+k " + Mlock_Key();
-	    Parent->chanserv.GetLive(i_Name).SendMode(mode);
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode(mode);
 	}
     }
 }
@@ -2394,16 +2399,16 @@ void Chan_Stored_t::Kick(const mstring& nick, const mstring& kicker)
     FT("Chan_Stored_t::Kick", (nick, kicker));
 
     // Users shouldnt kick us, but we just rejoin!
-    if (Parent->nickserv.IsLive(nick) &&
-	Parent->nickserv.GetLive(nick).IsServices())
+    if (Magick::instance().nickserv.IsLive(nick) &&
+	Magick::instance().nickserv.GetLive(nick).IsServices())
     {
 	if (Join())
-	    Parent->server.JOIN(nick, i_Name);
+	    Magick::instance().server.JOIN(nick, i_Name);
 	return;
     }
 
     if (DoRevenge("KICK", kicker, nick))
-	Parent->server.INVITE(Parent->chanserv.FirstName(),
+	Magick::instance().server.INVITE(Magick::instance().chanserv.FirstName(),
 		nick, i_Name);
 }
 
@@ -2411,14 +2416,14 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 {
     FT("Chan_Stored_t::ChgNick", (nick, newnick));
 
-    if (!Parent->chanserv.IsLive(i_Name))
+    if (!Magick::instance().chanserv.IsLive(i_Name))
     {
 	LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", (
 			"NICK", nick, i_Name));
 	return;
     }
 
-    if (!Parent->nickserv.IsLiveAll(nick))
+    if (!Magick::instance().nickserv.IsLiveAll(nick))
     {
 	LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
 			"NICK", i_Name, nick));
@@ -2426,8 +2431,8 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
     }
 
     size_t users = 0;
-    if (Parent->chanserv.IsLive(i_Name))
-	users = Parent->chanserv.GetLive(i_Name).Users();
+    if (Magick::instance().chanserv.IsLive(i_Name))
+	users = Magick::instance().chanserv.GetLive(i_Name).Users();
 
     // Check we dont now trigger AKICK
     // We supply the OLD nick to check the mask, and then the
@@ -2435,18 +2440,18 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
     { MLOCK(("ChanServ", "stored", i_Name.LowerCase(), "Akick"));
     if (Akick_find(nick) || Akick_find(newnick, false))
     {
-	if (Parent->chanserv.IsLive(i_Name))
+	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
 	    RLOCK(("ChanServ", "live", i_Name));
-	    Chan_Live_t &cptr = Parent->chanserv.GetLive(i_Name);
+	    Chan_Live_t &cptr = Magick::instance().chanserv.GetLive(i_Name);
 
 	    // If this user is the only user in channel
 	    if (users == 1)
 		cptr.LockDown();
 
-	    if (Parent->nickserv.IsLive(Akick->Entry()))
+	    if (Magick::instance().nickserv.IsLive(Akick->Entry()))
 		cptr.SendMode("+b " +
-			Parent->nickserv.GetLive(nick).AltMask(Parent->operserv.Ignore_Method()));
+			Magick::instance().nickserv.GetLive(nick).AltMask(Magick::instance().operserv.Ignore_Method()));
 	    else
 		cptr.SendMode("+b " + Akick->Entry());
 	}
@@ -2455,7 +2460,7 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 			newnick, i_Name, Akick->Value()));
 
 	// Can only insert with reason or default, so its safe.
-	Parent->server.KICK(Parent->chanserv.FirstName(), newnick,
+	Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), newnick,
 		i_Name, Akick->Value());
 
 	return;
@@ -2467,16 +2472,16 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 
     if (Restricted() && !Suspended() && GetAccess(nick) < 1)
     {
-	if (Parent->chanserv.IsLive(i_Name))
+	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
 	    RLOCK(("ChanServ", "live", i_Name));
-	    Chan_Live_t &cptr = Parent->chanserv.GetLive(i_Name);
+	    Chan_Live_t &cptr = Magick::instance().chanserv.GetLive(i_Name);
 
 	    // If this user is the only user in channel
 	    if (users == 1)
 		cptr.LockDown();
 
-	    mstring mask = nlive.AltMask(Parent->operserv.Ignore_Method());
+	    mstring mask = nlive.AltMask(Magick::instance().operserv.Ignore_Method());
 	    if (mask.SubString(0, 1) != "*!")
 	    {
 		mask.replace(0, mask.find("!")-1, newnick);
@@ -2488,8 +2493,8 @@ void Chan_Stored_t::ChgNick(const mstring& nick, const mstring& newnick)
 			newnick, i_Name));
 
 	// Can only insert with reason or default, so its safe.
-	Parent->server.KICK(Parent->chanserv.FirstName(), newnick,
-		i_Name, Parent->getMessage(newnick, "MISC/KICK_RESTRICTED"));
+	Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), newnick,
+		i_Name, Magick::instance().getMessage(newnick, "MISC/KICK_RESTRICTED"));
 
 	return;
     }
@@ -2514,16 +2519,16 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
     bool burst = false;
     // Still in burst ...
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL && Parent->ircsvchandler->Burst())
+    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->Burst())
 	burst = true;
     }
 
     // Its us re-setting it!
-    if (!source.Contains(".") && Parent->nickserv.IsLive(source) &&
-	Parent->nickserv.GetLive(source).IsServices())
+    if (!source.Contains(".") && Magick::instance().nickserv.IsLive(source) &&
+	Magick::instance().nickserv.GetLive(source).IsServices())
 	return;
 
-    if (!Parent->chanserv.IsLive(i_Name))
+    if (!Magick::instance().chanserv.IsLive(i_Name))
     {
 	LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", (
 			"TOPIC", source, i_Name));
@@ -2533,11 +2538,11 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
     if (Suspended())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Comment"));
-	Parent->server.TOPIC(Parent->chanserv.FirstName(),
-			Parent->chanserv.FirstName(), i_Name, "[" + IRC_Bold +
-			Parent->getMessage("VALS/SUSPENDED") + IRC_Off + "] " +
+	Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(),
+			Magick::instance().chanserv.FirstName(), i_Name, "[" + IRC_Bold +
+			Magick::instance().getMessage("VALS/SUSPENDED") + IRC_Off + "] " +
 			i_Comment + " [" + IRC_Bold +
-			Parent->getMessage("VALS/SUSPENDED") + IRC_Off + "]",
+			Magick::instance().getMessage("VALS/SUSPENDED") + IRC_Off + "]",
 			settime - (1.0 / (60.0 * 60.0 * 24.0)));
 	return;
     }
@@ -2551,7 +2556,7 @@ void Chan_Stored_t::Topic(const mstring& source, const mstring& topic,
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
 	RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Setter"));
 	RLOCK3(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic_Set_Time"));
-	Parent->server.TOPIC(Parent->chanserv.FirstName(),
+	Magick::instance().server.TOPIC(Magick::instance().chanserv.FirstName(),
 			i_Topic_Setter, i_Name, i_Topic,
 			settime - (1.0 / (60.0 * 60.0 * 24.0)));
     }
@@ -2579,11 +2584,11 @@ void Chan_Stored_t::SetTopic(const mstring& source, const mstring& setter,
     FT("Chan_Stored_t::SetTopic", (source, setter, topic));
 
     // Its us re-setting it!
-    if (!setter.Contains(".") && Parent->nickserv.IsLive(setter) &&
-	Parent->nickserv.GetLive(setter).IsServices())
+    if (!setter.Contains(".") && Magick::instance().nickserv.IsLive(setter) &&
+	Magick::instance().nickserv.GetLive(setter).IsServices())
 	return;
 
-    if (!Parent->chanserv.IsLive(i_Name))
+    if (!Magick::instance().chanserv.IsLive(i_Name))
     {
 	LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", (
 			"TOPIC", source, i_Name));
@@ -2606,8 +2611,8 @@ void Chan_Stored_t::SetTopic(const mstring& source, const mstring& setter,
     CE(2, i_Topic_Set_Time);
     MCE(i_Topic);
     }
-    Parent->server.TOPIC(source, setter, i_Name, topic,
-	Parent->chanserv.GetLive(i_Name).Topic_Set_Time() -
+    Magick::instance().server.TOPIC(source, setter, i_Name, topic,
+	Magick::instance().chanserv.GetLive(i_Name).Topic_Set_Time() -
 		(1.0 / (60.0 * 60.0 * 24.0)));
 }
 
@@ -2617,18 +2622,18 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
     FT("Chan_Stored_t::Mode", (setter, mode));
     // ENFORCE mlock
 
-    if (!Parent->chanserv.IsLive(i_Name))
+    if (!Magick::instance().chanserv.IsLive(i_Name))
     {
 	LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", (
 			"MODE", setter, i_Name));
 	return;
     }
 
-    if (Parent->nickserv.IsLive(setter) &&
-	Parent->nickserv.GetLive(setter).IsServices())
+    if (Magick::instance().nickserv.IsLive(setter) &&
+	Magick::instance().nickserv.GetLive(setter).IsServices())
 	    return;
 
-    Chan_Live_t clive = Parent->chanserv.GetLive(i_Name);
+    Chan_Live_t clive = Magick::instance().chanserv.GetLive(i_Name);
     mstring out_mode, out_param;
     mstring change(mode.Before(" "));
     unsigned int fwdargs = 2, i, wc = mode.WordCount(": ");
@@ -2643,7 +2648,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 	{
 	    add = false;
 	}
-	else if (Parent->server.proto.ChanModeArg().Contains(change[i]))
+	else if (Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 	{
 	    mstring arg = mode.ExtractWord(fwdargs, ": ");
 	    switch(change[i])
@@ -2657,8 +2662,8 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    // not (services user set mode), AND (user is AUTODEOP OR
 		    // (channel is secure ops AND (user is not AUTOOP or CMDOP)))
 		    if (!(setter.Contains(".") && Anarchy()) &&
-			!(Parent->nickserv.IsLive(arg) &&
-			  Parent->nickserv.GetLive(arg).IsServices()) &&
+			!(Magick::instance().nickserv.IsLive(arg) &&
+			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
 			(Access_value(arg) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDOP") || GetAccess(arg, "AUTOOP")) &&
 			Secureops())))
@@ -2671,8 +2676,8 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		{
 		    // If user is services or a beneficiary of revenge
 		    // deop the setter ... bad boy ... tsk tsk ...
-		    if ((Parent->nickserv.IsLive(arg) &&
-			Parent->nickserv.GetLive(arg).IsServices()) ||
+		    if ((Magick::instance().nickserv.IsLive(arg) &&
+			Magick::instance().nickserv.GetLive(arg).IsServices()) ||
 			DoRevenge("DEOP", setter, arg))
 		    {
 			out_mode += "-o";
@@ -2693,8 +2698,8 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    // not (services user set mode), AND (user is AUTODEOP OR
 		    // (channel is secure ops AND (user is not AUTOHALFOP or CMDHALFOP)))
 		    if (!(setter.Contains(".") && Anarchy()) &&
-			!(Parent->nickserv.IsLive(arg) &&
-			  Parent->nickserv.GetLive(arg).IsServices()) &&
+			!(Magick::instance().nickserv.IsLive(arg) &&
+			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
 			(Access_value(arg) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDHALFOP") ||
 			  GetAccess(arg, "AUTOHALFOP")) &&
@@ -2718,8 +2723,8 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    // not (services user set mode), AND (user is AUTODEOP OR
 		    // (channel is secure ops AND (user is not AUTOVOICE or CMDVOICE)))
 		    if (!(setter.Contains(".") && Anarchy()) &&
-			!(Parent->nickserv.IsLive(arg) &&
-			  Parent->nickserv.GetLive(arg).IsServices()) &&
+			!(Magick::instance().nickserv.IsLive(arg) &&
+			  Magick::instance().nickserv.GetLive(arg).IsServices()) &&
 			(Access_value(arg) <= Level_value("AUTODEOP") ||
 			(!(GetAccess(arg, "CMDVOICE") ||
 			  GetAccess(arg, "AUTOVOICE")) &&
@@ -2777,14 +2782,14 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 
 		    for (j=0; !DidRevenge && j<clive.Users(); j++)
 		    {
-			if (Parent->nickserv.IsLive(clive.User(j)) &&
-			    (Parent->nickserv.GetLive(clive.User(j)).Mask(Nick_Live_t::N_U_P_H).Matches(arg, true) ||
-			    Parent->nickserv.GetLive(clive.User(j)).AltMask(Nick_Live_t::N_U_P_H).Matches(arg, true)))
+			if (Magick::instance().nickserv.IsLive(clive.User(j)) &&
+			    (Magick::instance().nickserv.GetLive(clive.User(j)).Mask(Nick_Live_t::N_U_P_H).Matches(arg, true) ||
+			    Magick::instance().nickserv.GetLive(clive.User(j)).AltMask(Nick_Live_t::N_U_P_H).Matches(arg, true)))
 			{
 			    // Only do revenge or kickonban if user
 			    // is not exempt from bans (+e).
-			    if (!(clive.MatchExempt(Parent->nickserv.GetLive(clive.User(j)).Mask(Nick_Live_t::N_U_P_H)) ||
-				clive.MatchExempt(Parent->nickserv.GetLive(clive.User(j)).AltMask(Nick_Live_t::N_U_P_H))))
+			    if (!(clive.MatchExempt(Magick::instance().nickserv.GetLive(clive.User(j)).Mask(Nick_Live_t::N_U_P_H)) ||
+				clive.MatchExempt(Magick::instance().nickserv.GetLive(clive.User(j)).AltMask(Nick_Live_t::N_U_P_H))))
 			    {
 				DidRevenge = DoRevenge(bantype, setter, clive.User(j));
 				if (DidRevenge)
@@ -2801,7 +2806,7 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 		    {
 			for (j=0; j<tobekicked.size(); j++)
 			{
-			    Parent->server.KICK(Parent->chanserv.FirstName(), tobekicked[j], i_Name, Parent->chanserv.DEF_Akick_Reason());
+			    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), tobekicked[j], i_Name, Magick::instance().chanserv.DEF_Akick_Reason());
 		        }
 		    }
 		}
@@ -2867,8 +2872,8 @@ void Chan_Stored_t::Mode(const mstring& setter, const mstring& mode)
 	    }
 	}
     }
-    if (out_mode.size() && Parent->chanserv.IsLive(i_Name))
-	Parent->chanserv.GetLive(i_Name).SendMode(out_mode + out_param);
+    if (out_mode.size() && Magick::instance().chanserv.IsLive(i_Name))
+	Magick::instance().chanserv.GetLive(i_Name).SendMode(out_mode + out_param);
 }
 
 
@@ -2884,35 +2889,35 @@ void Chan_Stored_t::defaults()
     lock.Mlock_Off.erase();
     setting.Mlock_Limit = 0;
     
-    setting.Bantime = Parent->chanserv.DEF_Bantime();
+    setting.Bantime = Magick::instance().chanserv.DEF_Bantime();
     lock.Bantime = false;
-    setting.Parttime = Parent->chanserv.DEF_Parttime();
+    setting.Parttime = Magick::instance().chanserv.DEF_Parttime();
     lock.Parttime = false;
-    setting.Keeptopic = Parent->chanserv.DEF_Keeptopic();
+    setting.Keeptopic = Magick::instance().chanserv.DEF_Keeptopic();
     lock.Keeptopic = false;
-    setting.Topiclock = Parent->chanserv.DEF_Topiclock();
+    setting.Topiclock = Magick::instance().chanserv.DEF_Topiclock();
     lock.Topiclock = false;
-    setting.Private = Parent->chanserv.DEF_Private();
+    setting.Private = Magick::instance().chanserv.DEF_Private();
     lock.Private = false;
-    setting.Secureops = Parent->chanserv.DEF_Secureops();
+    setting.Secureops = Magick::instance().chanserv.DEF_Secureops();
     lock.Secureops = false;
-    setting.Secure = Parent->chanserv.DEF_Secure();
+    setting.Secure = Magick::instance().chanserv.DEF_Secure();
     lock.Secure = false;
-    setting.Anarchy = Parent->chanserv.DEF_Anarchy();
+    setting.Anarchy = Magick::instance().chanserv.DEF_Anarchy();
     lock.Anarchy = false;
-    setting.KickOnBan = Parent->chanserv.DEF_KickOnBan();
+    setting.KickOnBan = Magick::instance().chanserv.DEF_KickOnBan();
     lock.KickOnBan = false;
-    setting.Restricted = Parent->chanserv.DEF_Restricted();
+    setting.Restricted = Magick::instance().chanserv.DEF_Restricted();
     lock.Restricted = false;
-    setting.Join = Parent->chanserv.DEF_Join();
+    setting.Join = Magick::instance().chanserv.DEF_Join();
     lock.Join = false;
-    setting.Revenge = Parent->chanserv.DEF_Revenge();
+    setting.Revenge = Magick::instance().chanserv.DEF_Revenge();
     lock.Revenge = false;
     setting.Forbidden = false;
-    setting.NoExpire = Parent->chanserv.DEF_NoExpire();
+    setting.NoExpire = Magick::instance().chanserv.DEF_NoExpire();
 
-    mstring defaulted = Parent->chanserv.DEF_MLock();
-    mstring locked = Parent->chanserv.LCK_MLock();
+    mstring defaulted = Magick::instance().chanserv.DEF_MLock();
+    mstring locked = Magick::instance().chanserv.LCK_MLock();
     bool add = true;
     unsigned int i;
 
@@ -2926,7 +2931,7 @@ void Chan_Stored_t::defaults()
 	{
 	    add = false;
 	}
-	else if (!Parent->server.proto.ChanModeArg().Contains(defaulted[i]))
+	else if (!Magick::instance().server.proto.ChanModeArg().Contains(defaulted[i]))
 	{
 	    if (add)
 	    {
@@ -2956,7 +2961,7 @@ void Chan_Stored_t::defaults()
 	{
 	    add = false;
 	}
-	else if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
+	else if (!Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 	{
 	    if (add)
 	    {
@@ -2975,13 +2980,13 @@ void Chan_Stored_t::defaults()
 	}
     }
 
-    vector<mstring> levels = Parent->chanserv.LVL();
+    vector<mstring> levels = Magick::instance().chanserv.LVL();
     for (i=0; i<levels.size(); i++)
     {
-	if (Parent->chanserv.LVL(levels[i]) >= Parent->chanserv.Level_Min())
+	if (Magick::instance().chanserv.LVL(levels[i]) >= Magick::instance().chanserv.Level_Min())
 	    i_Level.insert(entlist_val_t<long>(levels[i],
-					Parent->chanserv.LVL(levels[i]),
-					Parent->chanserv.FirstName()));
+					Magick::instance().chanserv.LVL(levels[i]),
+					Magick::instance().chanserv.FirstName()));
     }    
 }
 
@@ -2990,9 +2995,9 @@ bool Chan_Stored_t::DoRevenge(const mstring& i_type, const mstring& target,
 {
     FT("Chan_Stored_t::DoRevenge", (i_type, target, source));
 
-    if (!(Parent->chanserv.IsLive(i_Name) &&
-	Parent->nickserv.IsLive(source) &&
-	Parent->nickserv.IsLive(target)))
+    if (!(Magick::instance().chanserv.IsLive(i_Name) &&
+	Magick::instance().nickserv.IsLive(source) &&
+	Magick::instance().nickserv.IsLive(target)))
 	RET(false);
 
     mstring type(i_type);
@@ -3011,18 +3016,18 @@ bool Chan_Stored_t::DoRevenge(const mstring& i_type, const mstring& target,
 DoRevenge_DeOp:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
-	    Parent->chanserv.GetLive(i_Name).SendMode("-o " + target);
-	    SEND(Parent->chanserv.FirstName(), target, "MISC/REVENGE", (
-			type, Parent->getLname(source)));
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("-o " + target);
+	    SEND(Magick::instance().chanserv.FirstName(), target, "MISC/REVENGE", (
+			type, Magick::instance().getLname(source)));
 	}
 	else if (tmp == "KICK")
 	{
 DoRevenge_Kick:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
-	    mstring reason = parseMessage(Parent->getMessage(source, "MISC/REVENGE"),
-			mVarArray(type, Parent->getLname(source)));
-	    Parent->server.KICK(Parent->chanserv.FirstName(),
+	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			mVarArray(type, Magick::instance().getLname(source)));
+	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(),
 			target, i_Name, reason);
 	}
 	else if (tmp == "BAN1")
@@ -3030,11 +3035,11 @@ DoRevenge_Kick:
 DoRevenge_Ban1:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
-	    Parent->chanserv.GetLive(i_Name).SendMode("-o+b " + target + " " +
-		Parent->nickserv.GetLive(target).AltMask(Nick_Live_t::N));
-	    mstring reason = parseMessage(Parent->getMessage(source, "MISC/REVENGE"),
-			mVarArray(type, Parent->getLname(source)));
-	    Parent->server.KICK(Parent->chanserv.FirstName(),
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("-o+b " + target + " " +
+		Magick::instance().nickserv.GetLive(target).AltMask(Nick_Live_t::N));
+	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			mVarArray(type, Magick::instance().getLname(source)));
+	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(),
 			target, i_Name, reason);
 	}
 	else if (tmp == "BAN2")
@@ -3042,11 +3047,11 @@ DoRevenge_Ban1:
 DoRevenge_Ban2:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
-	    Parent->chanserv.GetLive(i_Name).SendMode("-o+b " + target + " " +
-		Parent->nickserv.GetLive(target).AltMask(Nick_Live_t::U_H));
-	    mstring reason = parseMessage(Parent->getMessage(source, "MISC/REVENGE"),
-			mVarArray(type, Parent->getLname(source)));
-	    Parent->server.KICK(Parent->chanserv.FirstName(),
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("-o+b " + target + " " +
+		Magick::instance().nickserv.GetLive(target).AltMask(Nick_Live_t::U_H));
+	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			mVarArray(type, Magick::instance().getLname(source)));
+	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(),
 			target, i_Name, reason);
 	}
 	else if (tmp == "BAN3")
@@ -3054,11 +3059,11 @@ DoRevenge_Ban2:
 DoRevenge_Ban3:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
-	    Parent->chanserv.GetLive(i_Name).SendMode("-o+b " + target + " " +
-		Parent->nickserv.GetLive(target).AltMask(Nick_Live_t::P_H));
-	    mstring reason = parseMessage(Parent->getMessage(source, "MISC/REVENGE"),
-			mVarArray(type, Parent->getLname(source)));
-	    Parent->server.KICK(Parent->chanserv.FirstName(),
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("-o+b " + target + " " +
+		Magick::instance().nickserv.GetLive(target).AltMask(Nick_Live_t::P_H));
+	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			mVarArray(type, Magick::instance().getLname(source)));
+	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(),
 			target, i_Name, reason);
 	}
 	else if (tmp == "BAN4")
@@ -3066,11 +3071,11 @@ DoRevenge_Ban3:
 DoRevenge_Ban4:
 	    if (type.SubString(0, 2) == "BAN")
 		type = "BAN";
-	    Parent->chanserv.GetLive(i_Name).SendMode("-o+b " + target + " " +
-		Parent->nickserv.GetLive(target).AltMask(Nick_Live_t::H));
-	    mstring reason = parseMessage(Parent->getMessage(source, "MISC/REVENGE"),
-			mVarArray(type, Parent->getLname(source)));
-	    Parent->server.KICK(Parent->chanserv.FirstName(),
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode("-o+b " + target + " " +
+		Magick::instance().nickserv.GetLive(target).AltMask(Nick_Live_t::H));
+	    mstring reason = parseMessage(Magick::instance().getMessage(source, "MISC/REVENGE"),
+			mVarArray(type, Magick::instance().getLname(source)));
+	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(),
 			target, i_Name, reason);
 	}
 	else if (tmp == "MIRROR")
@@ -3215,9 +3220,9 @@ mDateTime Chan_Stored_t::LastUsed()
 {
     NFT("Chan_Stored_t::LastUsed");
 
-    if (Parent->chanserv.IsLive(i_Name))
+    if (Magick::instance().chanserv.IsLive(i_Name))
     {
-	Chan_Live_t clive = Parent->chanserv.GetLive(i_Name);
+	Chan_Live_t clive = Magick::instance().chanserv.GetLive(i_Name);
 	for (unsigned int i=0; i<clive.Users(); i++)
 	{
 	    if (GetAccess(clive.User(i)) > 0)
@@ -3241,7 +3246,7 @@ void Chan_Stored_t::Founder(const mstring& in)
 {
     FT("Chan_Stored_t::Founder", (in));
 
-    if (!Parent->nickserv.IsStored(in))
+    if (!Magick::instance().nickserv.IsStored(in))
     {
 	LOG(LM_WARNING, "ERROR/BADSET", (
 		in, "FOUNDER", i_Name));
@@ -3274,7 +3279,7 @@ void Chan_Stored_t::CoFounder(const mstring& in)
 {
     FT("Chan_Stored_t::CoFounder", (in));
 
-    if (in.length() && !Parent->nickserv.IsStored(in))
+    if (in.length() && !Magick::instance().nickserv.IsStored(in))
     {
 	LOG(LM_WARNING, "ERROR/BADSET", (
 		in, "COFOUNDER", i_Name));
@@ -3499,7 +3504,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
     {
 	ignorek = true;
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "ERR_SYNTAX/MULTI_MODE"),
+	output = parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/MULTI_MODE"),
 		    				mVarArray('k'));
 	retval.push_back(output);
     }
@@ -3507,7 +3512,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
     {
 	ignorel = true;
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "ERR_SYNTAX/MULTI_MODE"),
+	output = parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/MULTI_MODE"),
 		    				mVarArray('l'));
 	retval.push_back(output);
     }
@@ -3522,7 +3527,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	{
 	    add = false;
 	}
-	else if (Parent->server.proto.ChanModeArg().Contains(change[i]))
+	else if (Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 	{
 	    switch (change[i])
 	    {
@@ -3532,7 +3537,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		    if (fwdargs > mode.WordCount(": "))
 		    {
 			output.erase();
-			output = Parent->getMessage(source, "ERR_SYNTAX/NOKEY");
+			output = Magick::instance().getMessage(source, "ERR_SYNTAX/NOKEY");
 			retval.push_back(output);
 			fwdargs--;
 		    }
@@ -3550,7 +3555,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		    if (fwdargs > mode.WordCount(": "))
 		    {
 			output.erase();
-			output = Parent->getMessage(source, "ERR_SYNTAX/NOLIMIT");
+			output = Magick::instance().getMessage(source, "ERR_SYNTAX/NOLIMIT");
 			retval.push_back(output);
 			fwdargs--;
 		    }
@@ -3558,13 +3563,13 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 			mode.ExtractWord(fwdargs, ": ").Contains("."))
 		    {
 			output.erase();
-			output = Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER");
+			output = Magick::instance().getMessage(source, "ERR_SYNTAX/WHOLENUMBER");
 			retval.push_back(output);
 		    }
 		    else if (atol(mode.ExtractWord(fwdargs, ": ")) < 1)
 		    {
 			output.erase();
-			output = parseMessage(Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+			output = parseMessage(Magick::instance().getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
 			    					mVarArray(1, 32768));
 			retval.push_back(output);
 		    }
@@ -3596,7 +3601,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	{
 	    if (add)
 	    {
-		if (!Parent->server.proto.ChanModeArg().Contains(change[i]))
+		if (!Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 		{
 		    if (!setting.Mlock_On.Contains(change[i]))
 			setting.Mlock_On += change[i];
@@ -3607,7 +3612,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	    else
 	    {
 		// Nothing with arguments unless its k or l
-		if (!Parent->server.proto.ChanModeArg().Contains(change[i]) ||
+		if (!Magick::instance().server.proto.ChanModeArg().Contains(change[i]) ||
 		    ((change[i]=='k' && !ignorek) || (change[i]=='l' && !ignorel)))
 		{
 		    if (!setting.Mlock_Off.Contains(change[i]))
@@ -3621,7 +3626,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 
     RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_Off"));
     RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_On"));
-    mstring locked(Parent->chanserv.LCK_MLock() +
+    mstring locked(Magick::instance().chanserv.LCK_MLock() +
 	"+" + lock.Mlock_On + "-" + lock.Mlock_Off);
     mstring override_on;
     mstring override_off;
@@ -3642,7 +3647,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	{
 	    if (add)
 	    {
-		if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		if (!Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		{
 		    if (!setting.Mlock_On.Contains(locked[i]))
 		    {
@@ -3664,7 +3669,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		    setting.Mlock_Limit = 0;
 
 		if (locked[i] == 'k' || locked[i] == 'l' ||
-		    !Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		    !Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		{
 		    if (!setting.Mlock_Off.Contains(locked[i]))
 		    {
@@ -3687,7 +3692,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	if (!output2.empty())
 	    output2 += "  ";
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_REVERSED"),
+	output = parseMessage(Magick::instance().getMessage(source, "CS_COMMAND/MLOCK_REVERSED"),
 	    mVarArray((!override_on.empty() ? ("+" + override_on ) : mstring("")) +
 	     (!override_off.empty() ? ("-" + override_off) : mstring(""))));
 	output2 += output;
@@ -3697,7 +3702,7 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	if (!output2.empty())
 	    output2 += "  ";
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_FORCED"),
+	output = parseMessage(Magick::instance().getMessage(source, "CS_COMMAND/MLOCK_FORCED"),
 	    mVarArray((!forced_on.empty() ? ("+" + forced_on ) : mstring("")) +
 	     (!forced_off.empty() ? ("-" + forced_off) : mstring(""))));
 	output2 += output;
@@ -3716,11 +3721,11 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	if (!setting.Mlock_Off.empty())
 	    modes << "-" << setting.Mlock_Off;
 
-	if (Parent->nickserv.IsLive(source))
+	if (Magick::instance().nickserv.IsLive(source))
 	{
 	    LOG(LM_DEBUG, "CHANSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/MLOCK"), i_Name, modes));
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/MLOCK"), i_Name, modes));
 	}
 
 	if (!setting.Mlock_Key.empty())
@@ -3729,13 +3734,13 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 	    modes << " " << setting.Mlock_Limit;
 
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_SET"),
+	output = parseMessage(Magick::instance().getMessage(source, "CS_COMMAND/MLOCK_SET"),
 				mVarArray(i_Name, modes));
 	retval.push_back(output);
 
-	if (Parent->chanserv.IsLive(i_Name))
+	if (Magick::instance().chanserv.IsLive(i_Name))
 	{
-	    Chan_Live_t clive = Parent->chanserv.GetLive(i_Name);
+	    Chan_Live_t clive = Magick::instance().chanserv.GetLive(i_Name);
 	    mstring modes_param;
 	    modes = "+";
 	    for (i=0; i<setting.Mlock_On.size(); i++)
@@ -3768,22 +3773,22 @@ vector<mstring> Chan_Stored_t::Mlock(const mstring& source, const mstring& mode)
 		modes << "+l";
 		modes_param << " " << setting.Mlock_Limit;
 	    }
-	    if (modes.length() > 2 && Parent->chanserv.IsLive(i_Name))
-		Parent->chanserv.GetLive(i_Name).SendMode(modes + modes_param);
+	    if (modes.length() > 2 && Magick::instance().chanserv.IsLive(i_Name))
+		Magick::instance().chanserv.GetLive(i_Name).SendMode(modes + modes_param);
 	}
     }
     else
     {	
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_UNSET"),
+	output = parseMessage(Magick::instance().getMessage(source, "CS_COMMAND/MLOCK_UNSET"),
 				mVarArray(i_Name));
 	retval.push_back(output);
 
-	if (Parent->nickserv.IsLive(source))
+	if (Magick::instance().nickserv.IsLive(source))
 	{
 	    LOG(LM_DEBUG, "CHANSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/MLOCK"), i_Name));
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/MLOCK"), i_Name));
 	}
     }
     CE(1, setting.Mlock_Off);
@@ -3802,7 +3807,7 @@ mstring Chan_Stored_t::L_Mlock() const
     RLOCK2(("ChanServ", "stored", i_Name.LowerCase(), "lock.Mlock_On"));
     mstring mode_on(lock.Mlock_On);
     mstring mode_off(lock.Mlock_Off);
-    mstring locked(Parent->chanserv.LCK_MLock());
+    mstring locked(Magick::instance().chanserv.LCK_MLock());
     bool add = true;
     unsigned int i;
     for (i=0; i<locked.size(); i++)
@@ -3819,7 +3824,7 @@ mstring Chan_Stored_t::L_Mlock() const
 	{
 	    if (add)
 	    {
-		if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		if (!Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		{
 		    if (!mode_on.Contains(locked[i]))
 			mode_on += locked[i];
@@ -3830,7 +3835,7 @@ mstring Chan_Stored_t::L_Mlock() const
 	    else
 	    {
 		if (locked[i] == 'k' || locked[i] == 'l' ||
-		    !Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		    !Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		{
 		    if (!mode_off.Contains(locked[i]))
 			mode_off += locked[i];
@@ -3879,7 +3884,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 	{
 	    if (add)
 	    {
-		if (!Parent->server.proto.ChanModeArg().Contains(change[i]))
+		if (!Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 		{
 		    if (!lock.Mlock_On.Contains(change[i]))
 			lock.Mlock_On += change[i];
@@ -3890,7 +3895,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 	    else
 	    {
 		if (change[i] == 'l' || change[i] == 'k' ||
-		    !Parent->server.proto.ChanModeArg().Contains(change[i]))
+		    !Magick::instance().server.proto.ChanModeArg().Contains(change[i]))
 		{
 		    if (!lock.Mlock_Off.Contains(change[i]))
 			lock.Mlock_Off += change[i];
@@ -3901,7 +3906,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 	}
     }
 
-    mstring locked(Parent->chanserv.LCK_MLock());
+    mstring locked(Magick::instance().chanserv.LCK_MLock());
     mstring override_on;
     mstring override_off;
     add = true;
@@ -3919,7 +3924,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 	{
 	    if (add)
 	    {
-		if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		if (!Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		{
 		    if (lock.Mlock_Off.Contains(locked[i]))
 		    {
@@ -3931,7 +3936,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
 	    else
 	    {
 		if (locked[i] == 'l' || locked[i] == 'k' ||
-		    !Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		    !Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		{
 		    if (lock.Mlock_On.Contains(locked[i]))
 		    {
@@ -3988,7 +3993,7 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
     if (!override_on.empty() || !override_off.empty())
     {
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_REVERSED"),
+	output = parseMessage(Magick::instance().getMessage(source, "CS_COMMAND/MLOCK_REVERSED"),
 	    mVarArray((!override_on.empty() ? ("+" + override_on ) : mstring("")) +
 	     (!override_off.empty() ? ("-" + override_off) : mstring(""))));
 	retval.push_back(output);
@@ -3996,30 +4001,30 @@ vector<mstring> Chan_Stored_t::L_Mlock(const mstring& source, const mstring& mod
     if (!lock.Mlock_On.empty() || !lock.Mlock_Off.empty())
     {
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_LOCK"),
+	output = parseMessage(Magick::instance().getMessage(source, "CS_COMMAND/MLOCK_LOCK"),
 	    mVarArray(i_Name.c_str(),
 	    ((!lock.Mlock_On.empty() ? ("+" + lock.Mlock_On )  : mstring("")) +
 	     (!lock.Mlock_Off.empty() ? ("-" + lock.Mlock_Off)  : mstring("")))));
 	retval.push_back(output);
-	if (Parent->chanserv.IsLive(i_Name))
-	    Parent->chanserv.GetLive(i_Name).SendMode(
+	if (Magick::instance().chanserv.IsLive(i_Name))
+	    Magick::instance().chanserv.GetLive(i_Name).SendMode(
 		"+" + setting.Mlock_On + "-" + setting.Mlock_Off);
 
 	LOG(LM_DEBUG, "CHANSERV/LOCK", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/MLOCK"), i_Name,
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/MLOCK"), i_Name,
 		((!lock.Mlock_On.empty() ? ("+" + lock.Mlock_On )  : mstring("")) +
 		(!lock.Mlock_Off.empty() ? ("-" + lock.Mlock_Off)  : mstring("")))));
     }
     else
     {
 	output.erase();
-	output = parseMessage(Parent->getMessage(source, "CS_COMMAND/MLOCK_UNLOCK"),
+	output = parseMessage(Magick::instance().getMessage(source, "CS_COMMAND/MLOCK_UNLOCK"),
 						mVarArray(i_Name));
 	retval.push_back(output);
 	LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/MLOCK"), i_Name));
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/MLOCK"), i_Name));
     }
     CE(1, lock.Mlock_On);
     MCE(lock.Mlock_Off);
@@ -4077,19 +4082,19 @@ void Chan_Stored_t::Bantime(const unsigned long in)
 unsigned long Chan_Stored_t::Bantime() const
 {
     NFT("Chan_Stored_t::Bantime");
-    if (!Parent->chanserv.LCK_Bantime())
+    if (!Magick::instance().chanserv.LCK_Bantime())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Bantime"));
 	RET(setting.Bantime);
     }
-    RET(Parent->chanserv.DEF_Bantime());
+    RET(Magick::instance().chanserv.DEF_Bantime());
 }
 
 
 void Chan_Stored_t::L_Bantime(const bool in)
 {
     FT("Chan_Stored_t::L_Bantime", (in));
-    if (!Parent->chanserv.LCK_Bantime())
+    if (!Magick::instance().chanserv.LCK_Bantime())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Bantime"));
 	MCB(lock.Bantime);
@@ -4102,7 +4107,7 @@ void Chan_Stored_t::L_Bantime(const bool in)
 bool Chan_Stored_t::L_Bantime() const 
 {
     NFT("Chan_Stored_t::L_Bantime");
-    if (!Parent->chanserv.LCK_Bantime())
+    if (!Magick::instance().chanserv.LCK_Bantime())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Bantime"));
 	RET(lock.Bantime);
@@ -4127,19 +4132,19 @@ void Chan_Stored_t::Parttime(const unsigned long in)
 unsigned long Chan_Stored_t::Parttime() const
 {
     NFT("Chan_Stored_t::Parttime");
-    if (!Parent->chanserv.LCK_Parttime())
+    if (!Magick::instance().chanserv.LCK_Parttime())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Parttime"));
 	RET(setting.Parttime);
     }
-    RET(Parent->chanserv.DEF_Parttime());
+    RET(Magick::instance().chanserv.DEF_Parttime());
 }
 
 
 void Chan_Stored_t::L_Parttime(const bool in)
 {
     FT("Chan_Stored_t::L_Parttime", (in));
-    if (!Parent->chanserv.LCK_Parttime())
+    if (!Magick::instance().chanserv.LCK_Parttime())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Parttime"));
 	MCB(lock.Parttime);
@@ -4152,7 +4157,7 @@ void Chan_Stored_t::L_Parttime(const bool in)
 bool Chan_Stored_t::L_Parttime() const
 {
     NFT("Chan_Stored_t::L_Parttime");
-    if (!Parent->chanserv.LCK_Parttime())
+    if (!Magick::instance().chanserv.LCK_Parttime())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Parttime"));
 	RET(lock.Parttime);
@@ -4177,19 +4182,19 @@ void Chan_Stored_t::Keeptopic(const bool in)
 bool Chan_Stored_t::Keeptopic() const
 {
     NFT("Chan_Stored_t::Keeptopic");
-    if (!Parent->chanserv.LCK_Keeptopic())
+    if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Keeptopic"));
 	RET(setting.Keeptopic);
     }
-    RET(Parent->chanserv.DEF_Keeptopic());
+    RET(Magick::instance().chanserv.DEF_Keeptopic());
 }
 
 
 void Chan_Stored_t::L_Keeptopic(const bool in)
 {
     FT("Chan_Stored_t::L_Keeptopic", (in));
-    if (!Parent->chanserv.LCK_Keeptopic())
+    if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Keeptopic"));
 	MCB(lock.Keeptopic);
@@ -4202,7 +4207,7 @@ void Chan_Stored_t::L_Keeptopic(const bool in)
 bool Chan_Stored_t::L_Keeptopic() const
 {
     NFT("Chan_Stored_t::L_Keeptopic");
-    if (!Parent->chanserv.LCK_Keeptopic())
+    if (!Magick::instance().chanserv.LCK_Keeptopic())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Keeptopic"));
 	RET(lock.Keeptopic);
@@ -4227,19 +4232,19 @@ void Chan_Stored_t::Topiclock(const bool in)
 bool Chan_Stored_t::Topiclock() const
 {
     NFT("Chan_Stored_t::Topiclock");
-    if (!Parent->chanserv.LCK_Topiclock())
+    if (!Magick::instance().chanserv.LCK_Topiclock())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Topiclock"));
 	RET(setting.Topiclock);
     }
-    RET(Parent->chanserv.DEF_Topiclock());
+    RET(Magick::instance().chanserv.DEF_Topiclock());
 }
 
 
 void Chan_Stored_t::L_Topiclock(const bool in)
 {
     FT("Chan_Stored_t::L_Topiclock", (in));
-    if (!Parent->chanserv.LCK_Topiclock())
+    if (!Magick::instance().chanserv.LCK_Topiclock())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Topiclock"));
 	MCB(lock.Topiclock);
@@ -4252,7 +4257,7 @@ void Chan_Stored_t::L_Topiclock(const bool in)
 bool Chan_Stored_t::L_Topiclock() const
 {
     NFT("Chan_Stored_t::L_Topiclock");
-    if (!Parent->chanserv.LCK_Topiclock())
+    if (!Magick::instance().chanserv.LCK_Topiclock())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Topiclock"));
 	RET(lock.Topiclock);
@@ -4277,19 +4282,19 @@ void Chan_Stored_t::Private(const bool in)
 bool Chan_Stored_t::Private() const
 {
     NFT("Chan_Stored_t::Private");
-    if (!Parent->chanserv.LCK_Private())
+    if (!Magick::instance().chanserv.LCK_Private())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Private"));
 	RET(setting.Private);
     }
-    RET(Parent->chanserv.DEF_Private());
+    RET(Magick::instance().chanserv.DEF_Private());
 }
 
 
 void Chan_Stored_t::L_Private(const bool in)
 {
     FT("Chan_Stored_t::L_Private", (in));
-    if (!Parent->chanserv.LCK_Private())
+    if (!Magick::instance().chanserv.LCK_Private())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Private"));
 	MCB(lock.Private);
@@ -4302,7 +4307,7 @@ void Chan_Stored_t::L_Private(const bool in)
 bool Chan_Stored_t::L_Private() const
 {
     NFT("Chan_Stored_t::L_Private");
-    if (!Parent->chanserv.LCK_Private())
+    if (!Magick::instance().chanserv.LCK_Private())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Private"));
 	RET(lock.Private);
@@ -4327,19 +4332,19 @@ void Chan_Stored_t::Secureops(const bool in)
 bool Chan_Stored_t::Secureops() const
 {
     NFT("Chan_Stored_t::Secureops");
-    if (!Parent->chanserv.LCK_Secureops())
+    if (!Magick::instance().chanserv.LCK_Secureops())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secureops"));
 	RET(setting.Secureops);
     }
-    RET(Parent->chanserv.DEF_Secureops());
+    RET(Magick::instance().chanserv.DEF_Secureops());
 }
 
 
 void Chan_Stored_t::L_Secureops(const bool in)
 {
     FT("Chan_Stored_t::L_Secureops", (in));
-    if (!Parent->chanserv.LCK_Secureops())
+    if (!Magick::instance().chanserv.LCK_Secureops())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secureops"));
 	MCB(lock.Secureops);
@@ -4352,7 +4357,7 @@ void Chan_Stored_t::L_Secureops(const bool in)
 bool Chan_Stored_t::L_Secureops() const
 {
     NFT("Chan_Stored_t::L_Secureops");
-    if (!Parent->chanserv.LCK_Secureops())
+    if (!Magick::instance().chanserv.LCK_Secureops())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secureops"));
 	RET(lock.Secureops);
@@ -4377,19 +4382,19 @@ void Chan_Stored_t::Secure(const bool in)
 bool Chan_Stored_t::Secure() const
 {
     NFT("Chan_Stored_t::Secure");
-    if (!Parent->chanserv.LCK_Secure())
+    if (!Magick::instance().chanserv.LCK_Secure())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Secure"));
 	RET(setting.Secure);
     }
-    RET(Parent->chanserv.DEF_Secure());
+    RET(Magick::instance().chanserv.DEF_Secure());
 }
 
 
 void Chan_Stored_t::L_Secure(const bool in)
 {
     FT("Chan_Stored_t::L_Secure", (in));
-    if (!Parent->chanserv.LCK_Secure())
+    if (!Magick::instance().chanserv.LCK_Secure())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secure"));
 	MCB(lock.Secure);
@@ -4402,7 +4407,7 @@ void Chan_Stored_t::L_Secure(const bool in)
 bool Chan_Stored_t::L_Secure() const
 {
     NFT("Chan_Stored_t::L_Secure");
-    if (!Parent->chanserv.LCK_Secure())
+    if (!Magick::instance().chanserv.LCK_Secure())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Secure"));
 	RET(lock.Secure);
@@ -4414,7 +4419,7 @@ bool Chan_Stored_t::L_Secure() const
 void Chan_Stored_t::NoExpire(const bool in)
 {
     FT("Chan_Stored_t::NoExpire", (in));
-    if (!Parent->chanserv.LCK_NoExpire())
+    if (!Magick::instance().chanserv.LCK_NoExpire())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.NoExpire"));
 	MCB(setting.NoExpire);
@@ -4427,12 +4432,12 @@ void Chan_Stored_t::NoExpire(const bool in)
 bool Chan_Stored_t::NoExpire() const
 {
     NFT("Chan_Stored_t::NoExpire");
-    if (!Parent->chanserv.LCK_NoExpire())
+    if (!Magick::instance().chanserv.LCK_NoExpire())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.NoExpire"));
 	RET(setting.NoExpire);
     }
-    RET(Parent->chanserv.DEF_NoExpire());
+    RET(Magick::instance().chanserv.DEF_NoExpire());
 }
 
 
@@ -4452,19 +4457,19 @@ void Chan_Stored_t::Anarchy(const bool in)
 bool Chan_Stored_t::Anarchy() const
 {
     NFT("Chan_Stored_t::Anarchy");
-    if (!Parent->chanserv.LCK_Anarchy())
+    if (!Magick::instance().chanserv.LCK_Anarchy())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Anarchy"));
 	RET(setting.Anarchy);
     }
-    RET(Parent->chanserv.DEF_Anarchy());
+    RET(Magick::instance().chanserv.DEF_Anarchy());
 }
 
 
 void Chan_Stored_t::L_Anarchy(const bool in)
 {
     FT("Chan_Stored_t::L_Anarchy", (in));
-    if (!Parent->chanserv.LCK_Anarchy())
+    if (!Magick::instance().chanserv.LCK_Anarchy())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Anarchy"));
 	MCB(lock.Anarchy);
@@ -4477,7 +4482,7 @@ void Chan_Stored_t::L_Anarchy(const bool in)
 bool Chan_Stored_t::L_Anarchy() const
 {
     NFT("Chan_Stored_t::L_Anarchy");
-    if (!Parent->chanserv.LCK_Anarchy())
+    if (!Magick::instance().chanserv.LCK_Anarchy())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Anarchy"));
 	RET(lock.Anarchy);
@@ -4502,19 +4507,19 @@ void Chan_Stored_t::KickOnBan(const bool in)
 bool Chan_Stored_t::KickOnBan() const
 {
     NFT("Chan_Stored_t::KickOnBan");
-    if (!Parent->chanserv.LCK_KickOnBan())
+    if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.KickOnBan"));
 	RET(setting.KickOnBan);
     }
-    RET(Parent->chanserv.DEF_KickOnBan());
+    RET(Magick::instance().chanserv.DEF_KickOnBan());
 }
 
 
 void Chan_Stored_t::L_KickOnBan(const bool in)
 {
     FT("Chan_Stored_t::L_KickOnBan", (in));
-    if (!Parent->chanserv.LCK_KickOnBan())
+    if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.KickOnBan"));
 	MCB(lock.KickOnBan);
@@ -4527,7 +4532,7 @@ void Chan_Stored_t::L_KickOnBan(const bool in)
 bool Chan_Stored_t::L_KickOnBan() const
 {
     NFT("Chan_Stored_t::L_KickOnBan");
-    if (!Parent->chanserv.LCK_KickOnBan())
+    if (!Magick::instance().chanserv.LCK_KickOnBan())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.KickOnBan"));
 	RET(lock.KickOnBan);
@@ -4552,19 +4557,19 @@ void Chan_Stored_t::Restricted(const bool in)
 bool Chan_Stored_t::Restricted() const
 {
     NFT("Chan_Stored_t::Restricted");
-    if (!Parent->chanserv.LCK_Restricted())
+    if (!Magick::instance().chanserv.LCK_Restricted())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Restricted"));
 	RET(setting.Restricted);
     }
-    RET(Parent->chanserv.DEF_Restricted());
+    RET(Magick::instance().chanserv.DEF_Restricted());
 }
 
 
 void Chan_Stored_t::L_Restricted(const bool in)
 {
     FT("Chan_Stored_t::L_Restricted", (in));
-    if (!Parent->chanserv.LCK_Restricted())
+    if (!Magick::instance().chanserv.LCK_Restricted())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Restricted"));
 	MCB(lock.Restricted);
@@ -4577,7 +4582,7 @@ void Chan_Stored_t::L_Restricted(const bool in)
 bool Chan_Stored_t::L_Restricted() const
 {
     NFT("Chan_Stored_t::L_Restricted");
-    if (!Parent->chanserv.LCK_Restricted())
+    if (!Magick::instance().chanserv.LCK_Restricted())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Restricted"));
 	RET(lock.Restricted);
@@ -4602,19 +4607,19 @@ void Chan_Stored_t::Join(const bool in)
 bool Chan_Stored_t::Join() const
 {
     NFT("Chan_Stored_t::Join");
-    if (!Parent->chanserv.LCK_Join())
+    if (!Magick::instance().chanserv.LCK_Join())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Join"));
 	RET(setting.Join);
     }
-    RET(Parent->chanserv.DEF_Join());
+    RET(Magick::instance().chanserv.DEF_Join());
 }
 
 
 void Chan_Stored_t::L_Join(const bool in)
 {
     FT("Chan_Stored_t::L_Join", (in));
-    if (!Parent->chanserv.LCK_Join())
+    if (!Magick::instance().chanserv.LCK_Join())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Join"));
 	MCB(lock.Join);
@@ -4627,7 +4632,7 @@ void Chan_Stored_t::L_Join(const bool in)
 bool Chan_Stored_t::L_Join() const
 {
     NFT("Chan_Stored_t::L_Join");
-    if (!Parent->chanserv.LCK_Join())
+    if (!Magick::instance().chanserv.LCK_Join())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Join"));
 	RET(lock.Join);
@@ -4654,19 +4659,19 @@ bool Chan_Stored_t::Revenge(const mstring& in)
 mstring Chan_Stored_t::Revenge() const
 {
     NFT("Chan_Stored_t::Revenge");
-    if (!Parent->chanserv.LCK_Revenge())
+    if (!Magick::instance().chanserv.LCK_Revenge())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "setting.Revenge"));
 	RET(setting.Revenge);
     }
-    RET(Parent->chanserv.DEF_Revenge());
+    RET(Magick::instance().chanserv.DEF_Revenge());
 }
 
 
 void Chan_Stored_t::L_Revenge(const bool in)
 {
     FT("Chan_Stored_t::L_Revenge", (in));
-    if (!Parent->chanserv.LCK_Revenge())
+    if (!Magick::instance().chanserv.LCK_Revenge())
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Revenge"));
 	MCB(lock.Revenge);
@@ -4679,7 +4684,7 @@ void Chan_Stored_t::L_Revenge(const bool in)
 bool Chan_Stored_t::L_Revenge() const
 {
     NFT("Chan_Stored_t::L_Revenge");
-    if (!Parent->chanserv.LCK_Revenge())
+    if (!Magick::instance().chanserv.LCK_Revenge())
     {
 	RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "lock.Revenge"));
 	RET(lock.Revenge);
@@ -4798,13 +4803,13 @@ bool Chan_Stored_t::Access_insert(const mstring& i_entry, const long value,
     // Add *! if its not *!*@*
     if (!entry.Contains("@"))
     {
-	if (!Parent->nickserv.IsStored(entry))
+	if (!Magick::instance().nickserv.IsStored(entry))
 	{
 	    RET(false);
 	}
 	else
 	{
-	    entry = Parent->nickserv.GetStored(entry).Host();
+	    entry = Magick::instance().nickserv.GetStored(entry).Host();
 	    if (entry.empty())
 		entry = i_entry.LowerCase();
 	}
@@ -4873,9 +4878,9 @@ bool Chan_Stored_t::Access_find(const mstring& entry, const bool livelook)
 		break;
 
 	// FIND host nickname
-	if (iter == i_Access.end() && Parent->nickserv.IsStored(entry))
+	if (iter == i_Access.end() && Magick::instance().nickserv.IsStored(entry))
 	{
-	    mstring tmp = Parent->nickserv.GetStored(entry).Host();
+	    mstring tmp = Magick::instance().nickserv.GetStored(entry).Host();
 	    if (!tmp.empty())
 		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
 		    if (iter->Entry().IsSameAs(tmp, true))
@@ -4893,9 +4898,9 @@ bool Chan_Stored_t::Access_find(const mstring& entry, const bool livelook)
 	    }
 	    else
 	    {
-		if (livelook && Parent->nickserv.IsLive(entry))
+		if (livelook && Magick::instance().nickserv.IsLive(entry))
 		{
-		    mstring mask = Parent->nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H);
+		    mstring mask = Magick::instance().nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H);
 
 		    for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
 			if (mask.Matches(iter->Entry(), true))
@@ -4940,22 +4945,22 @@ long Chan_Stored_t::GetAccess(const mstring& entry)
 
     long retval = 0;
 
-    if (!Parent->nickserv.IsLive(entry))
+    if (!Magick::instance().nickserv.IsLive(entry))
     {
 	RET(retval);
     }
 
-    if (Parent->nickserv.GetLive(entry).IsChanIdentified(i_Name) && !Suspended())
+    if (Magick::instance().nickserv.GetLive(entry).IsChanIdentified(i_Name) && !Suspended())
     {
-	retval = Parent->chanserv.Level_Max() + 1;
+	retval = Magick::instance().chanserv.Level_Max() + 1;
 	RET(retval);
     }
 
     mstring realentry;
-    if (Parent->nickserv.IsStored(entry) &&
-	Parent->nickserv.GetStored(entry).IsOnline())
+    if (Magick::instance().nickserv.IsStored(entry) &&
+	Magick::instance().nickserv.GetStored(entry).IsOnline())
     {
-	realentry = Parent->nickserv.GetStored(entry).Host().LowerCase();
+	realentry = Magick::instance().nickserv.GetStored(entry).Host().LowerCase();
 	if (realentry.empty())
 	    realentry = entry.LowerCase();
     }
@@ -4966,32 +4971,32 @@ long Chan_Stored_t::GetAccess(const mstring& entry)
 
     if (Suspended())
     {
-	if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).IsOn(realentry))
+	if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(realentry))
 	{
-	    retval = Parent->chanserv.Level_Max() + 1;
+	    retval = Magick::instance().chanserv.Level_Max() + 1;
 	}
-	else if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(realentry))
+	else if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(realentry))
 	{
 	    retval = Level_value("SUPER");
 	}
-	else if (Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.ADMIN_Name()).IsOn(realentry))
+	else if (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name()).IsOn(realentry))
 	{
 	    retval = Level_value("AUTOOP");
 	}
-	else if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(realentry))
+	else if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(realentry))
 	{
 	    retval = Level_value("AUTOVOICE");
 	}
     }
-    else if (Secure() ? Parent->nickserv.GetLive(entry).IsIdentified() : 1)
+    else if (Secure() ? Magick::instance().nickserv.GetLive(entry).IsIdentified() : 1)
     {
 	if (i_Founder.LowerCase() == realentry.LowerCase())
 	{
-	    retval = Parent->chanserv.Level_Max() + 1;
+	    retval = Magick::instance().chanserv.Level_Max() + 1;
 	}
 	else
 	{
@@ -5033,13 +5038,13 @@ bool Chan_Stored_t::Akick_insert(const mstring& i_entry, const mstring& value,
     // Add *! if its not *!*@*
     if (!entry.Contains("@"))
     {
-	if (!Parent->nickserv.IsStored(entry))
+	if (!Magick::instance().nickserv.IsStored(entry))
 	{
 	    RET(false);
 	}
 	else
 	{
-	    entry = Parent->nickserv.GetStored(entry).Host();
+	    entry = Magick::instance().nickserv.GetStored(entry).Host();
 	    if (entry.empty())
 		entry = i_entry.LowerCase();
 	}
@@ -5076,7 +5081,7 @@ bool Chan_Stored_t::Akick_insert(const mstring& entry, const mstring& nick,
 {
     FT("Chan_Stored_t::Akick_insert", (entry, nick, modtime));
     MCB(i_Akick.size());
-    bool retval = Akick_insert(entry, Parent->chanserv.DEF_Akick_Reason(), nick, modtime);
+    bool retval = Akick_insert(entry, Magick::instance().chanserv.DEF_Akick_Reason(), nick, modtime);
     MCE(i_Akick.size());
     RET(retval);
 }
@@ -5117,9 +5122,9 @@ bool Chan_Stored_t::Akick_find(const mstring& entry, const bool livelook)
 		break;
 
 	// FIND host nickname
-	if (iter == i_Akick.end() && Parent->nickserv.IsStored(entry))
+	if (iter == i_Akick.end() && Magick::instance().nickserv.IsStored(entry))
 	{
-	    mstring tmp = Parent->nickserv.GetStored(entry).Host();
+	    mstring tmp = Magick::instance().nickserv.GetStored(entry).Host();
 	    if (!tmp.empty())
 		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
 		    if (iter->Entry().IsSameAs(tmp, true))
@@ -5135,9 +5140,9 @@ bool Chan_Stored_t::Akick_find(const mstring& entry, const bool livelook)
 		    if (entry.Matches(iter->Entry(), true))
 			break;
 	    }
-	    else if (livelook && Parent->nickserv.IsLive(entry))
+	    else if (livelook && Magick::instance().nickserv.IsLive(entry))
 	    {
-		mstring mask(Parent->nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H));
+		mstring mask(Magick::instance().nickserv.GetLive(entry).Mask(Nick_Live_t::N_U_P_H));
 
 		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
 		    if (mask.Matches(iter->Entry(), true))
@@ -5853,237 +5858,237 @@ void ChanServ::AddCommands()
     NFT("ChanServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* USER*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Users);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* OP*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Ops);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* H*OP*", Parent->commserv.REGD_Name(), ChanServ::do_clear_HalfOps);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* VOICE*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Voices);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* MODE*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Modes);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* BAN*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Bans);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* ALL", Parent->commserv.REGD_Name(), ChanServ::do_clear_All);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* H*LP", Parent->commserv.REGD_Name(), do_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV* SET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Set);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV* RESET*", Parent->commserv.REGD_Name(), ChanServ::do_level_Reset);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV* LIST", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_level_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV* H*LP", Parent->commserv.REGD_Name(), do_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ACC* ADD", Parent->commserv.REGD_Name(), ChanServ::do_access_Add);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ACC* DEL*", Parent->commserv.REGD_Name(), ChanServ::do_access_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ACC* REM*", Parent->commserv.REGD_Name(), ChanServ::do_access_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ACC* LIST", Parent->commserv.REGD_Name(), ChanServ::do_access_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ACC* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_access_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ACC* H*LP", Parent->commserv.REGD_Name(), do_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KICK ADD", Parent->commserv.REGD_Name(), ChanServ::do_akick_Add);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KICK DEL*", Parent->commserv.REGD_Name(), ChanServ::do_akick_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KICK REM*", Parent->commserv.REGD_Name(), ChanServ::do_akick_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KICK LIST", Parent->commserv.REGD_Name(), ChanServ::do_akick_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KICK VIEW", Parent->commserv.REGD_Name(), ChanServ::do_akick_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KICK H*LP", Parent->commserv.REGD_Name(), do_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET* ADD", Parent->commserv.REGD_Name(), ChanServ::do_greet_Add);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET* DEL*", Parent->commserv.REGD_Name(), ChanServ::do_greet_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET* REM*", Parent->commserv.REGD_Name(), ChanServ::do_greet_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET* LIST", Parent->commserv.REGD_Name(), ChanServ::do_greet_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_greet_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET* H*LP", Parent->commserv.REGD_Name(), do_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "M*S*G* ADD", Parent->commserv.REGD_Name(), ChanServ::do_message_Add);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "M*S*G* DEL*", Parent->commserv.REGD_Name(), ChanServ::do_message_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "M*S*G* REM*", Parent->commserv.REGD_Name(), ChanServ::do_message_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "M*S*G* LIST", Parent->commserv.REGD_Name(), ChanServ::do_message_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "M*S*G* VIEW", Parent->commserv.REGD_Name(), ChanServ::do_message_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "M*S*G* H*LP", Parent->commserv.REGD_Name(), do_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* FOUND*", Parent->commserv.REGD_Name(), ChanServ::do_set_Founder);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* COFOUND*", Parent->commserv.REGD_Name(), ChanServ::do_set_CoFounder);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* DESC*", Parent->commserv.REGD_Name(), ChanServ::do_set_Description);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* PASS*", Parent->commserv.REGD_Name(), ChanServ::do_set_Password);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* E*MAIL*", Parent->commserv.REGD_Name(), ChanServ::do_set_Email);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* URL", Parent->commserv.REGD_Name(), ChanServ::do_set_URL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* WWW*", Parent->commserv.REGD_Name(), ChanServ::do_set_URL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* WEB*", Parent->commserv.REGD_Name(), ChanServ::do_set_URL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* COMM*", Parent->commserv.SOP_Name(), ChanServ::do_set_Comment);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* M*LOCK", Parent->commserv.REGD_Name(), ChanServ::do_set_Mlock);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* BAN*TIME", Parent->commserv.REGD_Name(), ChanServ::do_set_BanTime);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* PART*TIME", Parent->commserv.REGD_Name(), ChanServ::do_set_PartTime);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* KEEP*", Parent->commserv.REGD_Name(), ChanServ::do_set_KeepTopic);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_set_TopicLock);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* PRIV*", Parent->commserv.REGD_Name(), ChanServ::do_set_Private);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* SEC*OP*", Parent->commserv.REGD_Name(), ChanServ::do_set_SecureOps);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* SEC*", Parent->commserv.REGD_Name(), ChanServ::do_set_Secure);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* NOEX*", Parent->commserv.SOP_Name(), ChanServ::do_set_NoExpire);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* ANAR*", Parent->commserv.REGD_Name(), ChanServ::do_set_Anarchy);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* KICK*", Parent->commserv.REGD_Name(), ChanServ::do_set_KickOnBan);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* RES*", Parent->commserv.REGD_Name(), ChanServ::do_set_Restricted);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* *JOIN*", Parent->commserv.REGD_Name(), ChanServ::do_set_Join);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* REV*", Parent->commserv.REGD_Name(), ChanServ::do_set_Revenge);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* H*LP", Parent->commserv.REGD_Name(), do_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK M*LOCK", Parent->commserv.SOP_Name(), ChanServ::do_lock_Mlock);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK BAN*TIME", Parent->commserv.SOP_Name(), ChanServ::do_lock_BanTime);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK PART*TIME", Parent->commserv.SOP_Name(), ChanServ::do_lock_PartTime);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK KEEP*", Parent->commserv.SOP_Name(), ChanServ::do_lock_KeepTopic);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK TOPIC*", Parent->commserv.SOP_Name(), ChanServ::do_lock_TopicLock);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK PRIV*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Private);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK SEC*OP*", Parent->commserv.SOP_Name(), ChanServ::do_lock_SecureOps);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK SEC*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Secure);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK ANAR*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Anarchy);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK KICK*", Parent->commserv.SOP_Name(), ChanServ::do_lock_KickOnBan);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK RES*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Restricted);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK *JOIN*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Join);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK REV*", Parent->commserv.SOP_Name(), ChanServ::do_lock_Revenge);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK H*LP", Parent->commserv.SOP_Name(), do_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK M*LOCK", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Mlock);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK BAN*TIME", Parent->commserv.SOP_Name(), ChanServ::do_unlock_BanTime);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK PART*TIME", Parent->commserv.SOP_Name(), ChanServ::do_unlock_PartTime);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK KEEP*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_KeepTopic);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK TOPIC*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_TopicLock);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK PRIV*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Private);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK SEC*OP*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_SecureOps);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK SEC*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Secure);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK ANAR*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Anarchy);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK KICK*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_KickOnBan);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK RES*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Restricted);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK *JOIN*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Join);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK REV*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Revenge);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK H*LP", Parent->commserv.SOP_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* USER*", Magick::instance().commserv.REGD_Name(), ChanServ::do_clear_Users);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* OP*", Magick::instance().commserv.REGD_Name(), ChanServ::do_clear_Ops);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* H*OP*", Magick::instance().commserv.REGD_Name(), ChanServ::do_clear_HalfOps);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* VOICE*", Magick::instance().commserv.REGD_Name(), ChanServ::do_clear_Voices);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* MODE*", Magick::instance().commserv.REGD_Name(), ChanServ::do_clear_Modes);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* BAN*", Magick::instance().commserv.REGD_Name(), ChanServ::do_clear_Bans);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* ALL", Magick::instance().commserv.REGD_Name(), ChanServ::do_clear_All);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LEV* SET*", Magick::instance().commserv.REGD_Name(), ChanServ::do_level_Set);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LEV* RESET*", Magick::instance().commserv.REGD_Name(), ChanServ::do_level_Reset);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LEV* LIST", Magick::instance().commserv.REGD_Name(), ChanServ::do_level_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LEV* VIEW", Magick::instance().commserv.REGD_Name(), ChanServ::do_level_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LEV* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ACC* ADD", Magick::instance().commserv.REGD_Name(), ChanServ::do_access_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ACC* DEL*", Magick::instance().commserv.REGD_Name(), ChanServ::do_access_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ACC* REM*", Magick::instance().commserv.REGD_Name(), ChanServ::do_access_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ACC* LIST", Magick::instance().commserv.REGD_Name(), ChanServ::do_access_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ACC* VIEW", Magick::instance().commserv.REGD_Name(), ChanServ::do_access_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ACC* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK ADD", Magick::instance().commserv.REGD_Name(), ChanServ::do_akick_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK DEL*", Magick::instance().commserv.REGD_Name(), ChanServ::do_akick_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK REM*", Magick::instance().commserv.REGD_Name(), ChanServ::do_akick_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK LIST", Magick::instance().commserv.REGD_Name(), ChanServ::do_akick_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK VIEW", Magick::instance().commserv.REGD_Name(), ChanServ::do_akick_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GREET* ADD", Magick::instance().commserv.REGD_Name(), ChanServ::do_greet_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GREET* DEL*", Magick::instance().commserv.REGD_Name(), ChanServ::do_greet_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GREET* REM*", Magick::instance().commserv.REGD_Name(), ChanServ::do_greet_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GREET* LIST", Magick::instance().commserv.REGD_Name(), ChanServ::do_greet_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GREET* VIEW", Magick::instance().commserv.REGD_Name(), ChanServ::do_greet_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GREET* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* ADD", Magick::instance().commserv.REGD_Name(), ChanServ::do_message_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* DEL*", Magick::instance().commserv.REGD_Name(), ChanServ::do_message_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* REM*", Magick::instance().commserv.REGD_Name(), ChanServ::do_message_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* LIST", Magick::instance().commserv.REGD_Name(), ChanServ::do_message_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* VIEW", Magick::instance().commserv.REGD_Name(), ChanServ::do_message_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* FOUND*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Founder);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* COFOUND*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_CoFounder);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* DESC*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Description);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* PASS*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Password);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* E*MAIL*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Email);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* URL", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* WWW*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* WEB*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* COMM*", Magick::instance().commserv.SOP_Name(), ChanServ::do_set_Comment);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* M*LOCK", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Mlock);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* BAN*TIME", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_BanTime);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* PART*TIME", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_PartTime);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* KEEP*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_KeepTopic);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* TOPIC*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_TopicLock);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* PRIV*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* SEC*OP*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_SecureOps);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* SEC*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* NOEX*", Magick::instance().commserv.SOP_Name(), ChanServ::do_set_NoExpire);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* ANAR*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Anarchy);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* KICK*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_KickOnBan);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* RES*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Restricted);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* *JOIN*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Join);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* REV*", Magick::instance().commserv.REGD_Name(), ChanServ::do_set_Revenge);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK M*LOCK", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_Mlock);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK BAN*TIME", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_BanTime);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK PART*TIME", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_PartTime);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK KEEP*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_KeepTopic);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK TOPIC*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_TopicLock);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK PRIV*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK SEC*OP*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_SecureOps);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK SEC*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK ANAR*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_Anarchy);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK KICK*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_KickOnBan);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK RES*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_Restricted);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK *JOIN*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_Join);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK REV*", Magick::instance().commserv.SOP_Name(), ChanServ::do_lock_Revenge);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK H*LP", Magick::instance().commserv.SOP_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK M*LOCK", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_Mlock);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK BAN*TIME", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_BanTime);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK PART*TIME", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_PartTime);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK KEEP*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_KeepTopic);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK TOPIC*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_TopicLock);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK PRIV*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK SEC*OP*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_SecureOps);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK SEC*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK ANAR*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_Anarchy);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK KICK*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_KickOnBan);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK RES*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_Restricted);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK *JOIN*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_Join);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK REV*", Magick::instance().commserv.SOP_Name(), ChanServ::do_unlock_Revenge);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK H*LP", Magick::instance().commserv.SOP_Name(), do_3param);
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "H*LP", Parent->commserv.ALL_Name(), ChanServ::do_Help);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "REG*", Parent->commserv.REGD_Name(), ChanServ::do_Register);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "DROP", Parent->commserv.REGD_Name(), ChanServ::do_Drop);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ID*", Parent->commserv.REGD_Name(), ChanServ::do_Identify);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "INFO*", Parent->commserv.ALL_Name(), ChanServ::do_Info);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LIST*", Parent->commserv.ALL_Name(), ChanServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SUSP*", Parent->commserv.SOP_Name(), ChanServ::do_Suspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNSUSP*", Parent->commserv.SOP_Name(), ChanServ::do_UnSuspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FORB*", Parent->commserv.SOP_Name(), ChanServ::do_Forbid);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "H*LP", Magick::instance().commserv.ALL_Name(), ChanServ::do_Help);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "REG*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Register);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "DROP", Magick::instance().commserv.REGD_Name(), ChanServ::do_Drop);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ID*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Identify);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "INFO*", Magick::instance().commserv.ALL_Name(), ChanServ::do_Info);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LIST*", Magick::instance().commserv.ALL_Name(), ChanServ::do_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SUSP*", Magick::instance().commserv.SOP_Name(), ChanServ::do_Suspend);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNSUSP*", Magick::instance().commserv.SOP_Name(), ChanServ::do_UnSuspend);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FORB*", Magick::instance().commserv.SOP_Name(), ChanServ::do_Forbid);
 #ifdef GETPASS
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GETPASS*", Parent->commserv.SADMIN_Name(), ChanServ::do_Getpass);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GETPASS*", Magick::instance().commserv.SADMIN_Name(), ChanServ::do_Getpass);
 #endif
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SETPASS*", Parent->commserv.SOP_Name(), ChanServ::do_Setpass);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "MODE*", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "OP*", Parent->commserv.REGD_Name(), ChanServ::do_Op);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "D*OP*", Parent->commserv.REGD_Name(), ChanServ::do_DeOp);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "H*OP*", Parent->commserv.REGD_Name(), ChanServ::do_HalfOp);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "D*H*OP*", Parent->commserv.REGD_Name(), ChanServ::do_DeHalfOp);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_Voice);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "D*VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_DeVoice);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_Topic);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "KICK*", Parent->commserv.REGD_Name(), ChanServ::do_Kick);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "REM*", Parent->commserv.REGD_Name(), ChanServ::do_AnonKick);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "USER*", Parent->commserv.REGD_Name(), ChanServ::do_Users);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "INV*", Parent->commserv.REGD_Name(), ChanServ::do_Invite);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNBAN*", Parent->commserv.REGD_Name(), ChanServ::do_Unban);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LIVE*", Parent->commserv.SOP_Name(), ChanServ::do_Live);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SETPASS*", Magick::instance().commserv.SOP_Name(), ChanServ::do_Setpass);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "MODE*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Mode);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "OP*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Op);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "D*OP*", Magick::instance().commserv.REGD_Name(), ChanServ::do_DeOp);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "H*OP*", Magick::instance().commserv.REGD_Name(), ChanServ::do_HalfOp);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "D*H*OP*", Magick::instance().commserv.REGD_Name(), ChanServ::do_DeHalfOp);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "VOIC*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Voice);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "D*VOIC*", Magick::instance().commserv.REGD_Name(), ChanServ::do_DeVoice);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "TOPIC*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Topic);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "KICK*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Kick);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "REM*", Magick::instance().commserv.REGD_Name(), ChanServ::do_AnonKick);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "USER*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Users);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "INV*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Invite);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNBAN*", Magick::instance().commserv.REGD_Name(), ChanServ::do_Unban);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LIVE*", Magick::instance().commserv.SOP_Name(), ChanServ::do_Live);
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -6091,42 +6096,42 @@ void ChanServ::AddCommands()
     // in the command map, and NULL as the function).
     // This must be BEFORE the wildcarded map ("CMD*")
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CLEAR*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LEV*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ACC* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ACC*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KICK *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "A*KICK", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GREET*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "M*S*G* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "M*S*G*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK *", Parent->commserv.SOP_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK", Parent->commserv.SOP_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK *", Parent->commserv.SOP_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK", Parent->commserv.SOP_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CLEAR*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LEV* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LEV*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ACC* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ACC*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "A*KICK", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GREET* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GREET*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "M*S*G*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK *", Magick::instance().commserv.SOP_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK", Magick::instance().commserv.SOP_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK *", Magick::instance().commserv.SOP_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK", Magick::instance().commserv.SOP_Name(), do_1_3param);
 }
 
 void ChanServ::RemCommands()
@@ -6135,234 +6140,234 @@ void ChanServ::RemCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* USER*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* H*OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* VOICE*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* MODE*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* BAN*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* ALL", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LEV* SET*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LEV* RESET*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LEV* LIST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LEV* VIEW", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LEV* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ACC* ADD", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ACC* DEL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ACC* REM*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ACC* LIST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ACC* VIEW", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ACC* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "A*KICK ADD", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "A*KICK DEL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "A*KICK REM*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "A*KICK LIST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "A*KICK VIEW", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "A*KICK H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GREET* ADD", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GREET* DEL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GREET* REM*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GREET* LIST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GREET* VIEW", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GREET* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "M*S*G* ADD", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "M*S*G* DEL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "M*S*G* REM*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "M*S*G* LIST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "M*S*G* VIEW", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "M*S*G* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* FOUND*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* COFOUND*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* DESC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* PASS*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* E*MAIL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* URL", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* WWW*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* WEB*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* COMM*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* M*LOCK", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* BAN*TIME", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* PART*TIME", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* KEEP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* TOPIC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* PRIV*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* SEC*OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* SEC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* NOEX*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* ANAR*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* KICK*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* RES*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* *JOIN*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* REV*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* H*LP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK M*LOCK", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK BAN*TIME", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK PART*TIME", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK KEEP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK TOPIC*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK PRIV*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK SEC*OP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK SEC*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK ANAR*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK KICK*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK RES*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK *JOIN*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK REV*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK H*LP", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK M*LOCK", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK BAN*TIME", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK PART*TIME", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK KEEP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK TOPIC*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK PRIV*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK SEC*OP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK SEC*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK ANAR*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK KICK*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK RES*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK *JOIN*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK REV*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK H*LP", Parent->commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* USER*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* H*OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* VOICE*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* MODE*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* BAN*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* ALL", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LEV* SET*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LEV* RESET*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LEV* LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LEV* VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LEV* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ACC* ADD", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ACC* DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ACC* REM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ACC* LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ACC* VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ACC* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK ADD", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK REM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GREET* ADD", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GREET* DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GREET* REM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GREET* LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GREET* VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GREET* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* ADD", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* REM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* FOUND*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* COFOUND*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* DESC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* PASS*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* E*MAIL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* URL", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* WWW*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* WEB*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* COMM*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* M*LOCK", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* BAN*TIME", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* PART*TIME", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* KEEP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* TOPIC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* PRIV*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* SEC*OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* SEC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* NOEX*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* ANAR*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* KICK*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* RES*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* *JOIN*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* REV*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK M*LOCK", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK BAN*TIME", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK PART*TIME", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK KEEP*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK TOPIC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK PRIV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK SEC*OP*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK SEC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK ANAR*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK KICK*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK RES*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK *JOIN*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK REV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK H*LP", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK M*LOCK", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK BAN*TIME", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK PART*TIME", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK KEEP*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK TOPIC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK PRIV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK SEC*OP*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK SEC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK ANAR*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK KICK*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK RES*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK *JOIN*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK REV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK H*LP", Magick::instance().commserv.SOP_Name());
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "H*LP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "REG*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "DROP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ID*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "INFO*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LIST*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SUSP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNSUSP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FORB*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GET*PASS*", Parent->commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "H*LP", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "REG*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "DROP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ID*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "INFO*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LIST*", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SUSP*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNSUSP*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FORB*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GET*PASS*", Magick::instance().commserv.SOP_Name());
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "MODE", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "D*OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "H*OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "D*H*OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "VOIC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "D*VOIC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "TOPIC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "KICK*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "REM*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "USER*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "INV*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNBAN*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LIVE*", Parent->commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "MODE", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "D*OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "H*OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "D*H*OP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "VOIC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "D*VOIC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "TOPIC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "KICK*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "REM*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "USER*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "INV*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNBAN*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LIVE*", Magick::instance().commserv.SOP_Name());
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -6370,42 +6375,42 @@ void ChanServ::RemCommands()
     // in the command map, and NULL as the function).
     // This must be BEFORE the wildcarded map ("CMD*")
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CLEAR*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LEV* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LEV*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ACC* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ACC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "A*KICK *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "A*KICK", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GREET* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GREET*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "M*S*G* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "M*S*G*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK *", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK *", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK", Parent->commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CLEAR*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LEV* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LEV*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ACC* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ACC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "A*KICK", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GREET* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GREET*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "M*S*G*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK *", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK *", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK", Magick::instance().commserv.SOP_Name());
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -6642,7 +6647,7 @@ void ChanServ::execute(mstring& source, const mstring& msgtype, const mstring& p
     //okay this is the main chanserv command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring mynick(Magick::instance().getLname(params.ExtractWord(1, ": ")));
     mstring message(params.After(":"));
     mstring command(message.Before(" "));
 
@@ -6654,7 +6659,7 @@ void ChanServ::execute(mstring& source, const mstring& msgtype, const mstring& p
 	    DccEngine::decodeReply(mynick, source, message);
     }
     else if (msgtype == "PRIVMSG" &&
-	!Parent->commands.DoCommand(mynick, source, command, message))
+	!Magick::instance().commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -6670,19 +6675,19 @@ void ChanServ::do_Help(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
 	return;
     }}
 
-    mstring HelpTopic = Parent->chanserv.GetInternalName();
+    mstring HelpTopic = Magick::instance().chanserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
     HelpTopic.replace(" ", "/");
-    vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
+    vector<mstring> help = Magick::instance().getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
     for (i=0; i<help.size(); i++)
@@ -6705,36 +6710,36 @@ void ChanServ::do_Register(const mstring &mynick, const mstring &source, const m
     mstring password  = params.ExtractWord(3, " ");
     mstring desc      = params.After(" ", 3);
 
-    if (Parent->chanserv.IsStored(channel))
+    if (Magick::instance().chanserv.IsStored(channel))
     {
-	if (Parent->chanserv.GetStored(channel).Forbidden())
+	if (Magick::instance().chanserv.GetStored(channel).Forbidden())
 	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	else
 	    SEND(mynick, source, "CS_STATUS/ISSTORED", (channel));
  	return;
     }
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		    channel));
 	return;
     }
 
-    if (!Parent->chanserv.GetLive(channel).IsOp(source))
+    if (!Magick::instance().chanserv.GetLive(channel).IsOp(source))
     {
 	SEND(mynick, source, "CS_STATUS/NOTOPPED", (
 		    channel));
 	return;
     }
 
-    if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-	Parent->nickserv.GetLive(source).LastChanReg().SecondsSince() <
-    		Parent->chanserv.Delay())
+    if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+	Magick::instance().nickserv.GetLive(source).LastChanReg().SecondsSince() <
+    		Magick::instance().chanserv.Delay())
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->chanserv.Delay() -
-		Parent->nickserv.GetLive(source).LastChanReg().SecondsSince(),
+		message, ToHumanTime(Magick::instance().chanserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastChanReg().SecondsSince(),
 		source)));
 	return;
     }
@@ -6746,34 +6751,34 @@ void ChanServ::do_Register(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    mstring founder = Parent->nickserv.GetStored(source).Host();
+    mstring founder = Magick::instance().nickserv.GetStored(source).Host();
     if (founder.empty())
-	founder = Parent->getSname(source);
+	founder = Magick::instance().getSname(source);
 
-    if (Parent->chanserv.Max_Per_Nick() &&
-	Parent->nickserv.GetStored(founder).MyChannels() >=
-	Parent->chanserv.Max_Per_Nick())
+    if (Magick::instance().chanserv.Max_Per_Nick() &&
+	Magick::instance().nickserv.GetStored(founder).MyChannels() >=
+	Magick::instance().chanserv.Max_Per_Nick())
     {
 	NSEND(mynick, source, "CS_STATUS/TOOMANY");
 	return;
     }
 
     Chan_Stored_t tmp(channel, founder, password, desc);
-    Parent->chanserv.AddStored(&tmp);
+    Magick::instance().chanserv.AddStored(&tmp);
     if (tmp.Join())
-	Parent->server.JOIN(Parent->chanserv.FirstName(), channel);
+	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), channel);
     { RLOCK(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
-    Parent->nickserv.GetLive(source).SetLastChanReg();
+    Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
+    Magick::instance().nickserv.GetLive(source).SetLastChanReg();
     tmp.Topic(clive.Topic(), clive.Topic_Setter(), clive.Topic_Set_Time());
     clive.SendMode(tmp.Mlock());
     }
-    Parent->nickserv.GetLive(source).ChanIdentify(channel, password);
-    Parent->chanserv.stats.i_Register++;
+    Magick::instance().nickserv.GetLive(source).ChanIdentify(channel, password);
+    Magick::instance().chanserv.stats.i_Register++;
     SEND(mynick, source, "CS_COMMAND/REGISTERED", (
 		channel, founder));
     LOG(LM_INFO, "CHANSERV/REGISTER", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	channel));
 }
 
@@ -6791,37 +6796,37 @@ void ChanServ::do_Drop(const mstring &mynick, const mstring &source, const mstri
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (!((Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	 Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source)) ||
-	Parent->nickserv.GetLive(source).IsChanIdentified(channel)))
+    if (!((Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source)) ||
+	Magick::instance().nickserv.GetLive(source).IsChanIdentified(channel)))
     {
 	SEND(mynick, source, "ERR_SITUATION/NEED_CHAN_IDENT", (
 		message, mynick, channel));
 	return;
     }
 
-    mstring founder = Parent->chanserv.GetStored(channel).Founder();
-    if (Parent->chanserv.GetStored(channel).Join() &&
-	Parent->chanserv.IsLive(channel) &&
-	Parent->chanserv.GetLive(channel).IsIn(Parent->chanserv.FirstName()))
+    mstring founder = Magick::instance().chanserv.GetStored(channel).Founder();
+    if (Magick::instance().chanserv.GetStored(channel).Join() &&
+	Magick::instance().chanserv.IsLive(channel) &&
+	Magick::instance().chanserv.GetLive(channel).IsIn(Magick::instance().chanserv.FirstName()))
     {
-	Parent->server.PART(Parent->chanserv.FirstName(), channel);
+	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
     }
-    Parent->chanserv.RemStored(channel);
-    Parent->nickserv.GetLive(source).UnChanIdentify(channel);
-    Parent->chanserv.stats.i_Drop++;
+    Magick::instance().chanserv.RemStored(channel);
+    Magick::instance().nickserv.GetLive(source).UnChanIdentify(channel);
+    Magick::instance().chanserv.stats.i_Drop++;
     SEND(mynick, source, "CS_COMMAND/DROPPED", (
 	    channel));
     LOG(LM_INFO, "CHANSERV/DROP", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	channel, founder));
 }
 
@@ -6840,21 +6845,21 @@ void ChanServ::do_Identify(const mstring &mynick, const mstring &source, const m
     mstring channel   = params.ExtractWord(2, " ");
     mstring pass      = params.ExtractWord(3, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.GetStored(channel).Suspended())
+    if (Magick::instance().chanserv.GetStored(channel).Suspended())
     {
 	SEND(mynick, source, "CS_STATUS/ISSUSPENDED", (channel));
 	return;
@@ -6862,13 +6867,13 @@ void ChanServ::do_Identify(const mstring &mynick, const mstring &source, const m
 
     mstring output;
     { RLOCK(("NickServ", "live", source.LowerCase()));
-    Nick_Live_t &nlive = Parent->nickserv.GetLive(source);
+    Nick_Live_t &nlive = Magick::instance().nickserv.GetLive(source);
     bool wasident = nlive.IsChanIdentified(channel);
     output = nlive.ChanIdentify(channel, pass);
     if (!wasident &&
 	nlive.IsChanIdentified(channel))
     {
-	Parent->chanserv.stats.i_Identify++;
+	Magick::instance().chanserv.stats.i_Identify++;
 	LOG(LM_INFO, "CHANSERV/IDENTIFY", (
 		nlive.Mask(Nick_Live_t::N_U_P_H),
 		channel));
@@ -6885,8 +6890,8 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
     mstring output;
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -6902,14 +6907,14 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Magick::instance().chanserv.GetStored(channel);
 
     if (chan.Forbidden())
     {
@@ -6928,45 +6933,45 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 		chan.Description()));
 
     output.erase();
-    if (chan.NoExpire() && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source))
-	output << " (" << Parent->getMessage(source, "CS_INFO/NOEXPIRE") << ")";
+    if (chan.NoExpire() && Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source))
+	output << " (" << Magick::instance().getMessage(source, "CS_INFO/NOEXPIRE") << ")";
     SEND(mynick, source, "CS_INFO/REGISTERED", (
 		chan.RegTime().Ago(), output));
-    if (!(chan.Private()) || (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source)))
+    if (!(chan.Private()) || (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source)))
     {
-	if (Parent->chanserv.IsLive(channel))
+	if (Magick::instance().chanserv.IsLive(channel))
 	{
-	    Chan_Live_t clive = Parent->chanserv.GetLive(channel);
+	    Chan_Live_t clive = Magick::instance().chanserv.GetLive(channel);
 	    output.erase();
 	    if (clive.Ops())
 	    {
-		output << clive.Ops() << " " << Parent->getMessage(source, "CS_INFO/OPS");
+		output << clive.Ops() << " " << Magick::instance().getMessage(source, "CS_INFO/OPS");
 	    }
 	    if (clive.HalfOps())
 	    {
 		if (!output.empty())
 		    output << ", ";
-		output << clive.HalfOps() << " " << Parent->getMessage(source, "CS_INFO/HALFOPS");
+		output << clive.HalfOps() << " " << Magick::instance().getMessage(source, "CS_INFO/HALFOPS");
 	    }
 	    if (clive.Voices())
 	    {
 		if (!output.empty())
 		    output << ", ";
-		output << clive.Voices() << " " << Parent->getMessage(source, "CS_INFO/VOICES");
+		output << clive.Voices() << " " << Magick::instance().getMessage(source, "CS_INFO/VOICES");
 	    }
 	    if (clive.Users())
 	    {
 		if (!output.empty())
 		    output << ", ";
-		output << clive.Users() << " " << Parent->getMessage(source, "CS_INFO/USERS");
+		output << clive.Users() << " " << Magick::instance().getMessage(source, "CS_INFO/USERS");
 	    }
 	    if (clive.Squit())
 	    {
 		if (!output.empty())
 		    output << ", ";
-		output << clive.Squit() << " " << Parent->getMessage(source, "CS_INFO/SPLIT_USERS");
+		output << clive.Squit() << " " << Magick::instance().getMessage(source, "CS_INFO/SPLIT_USERS");
 	    }
 	    SEND(mynick, source, "CS_INFO/INUSEBY", (
 		output));
@@ -6995,10 +7000,10 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    SEND(mynick, source, "CS_INFO/URL", (
 		chan.URL()));
 	 if (!chan.Comment().empty() &&
-	    ((Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source)) ||
-	    (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	    Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source))))
+	    ((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source)) ||
+	    (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source))))
 	    SEND(mynick, source, "CS_INFO/COMMENT", (
 		chan.Comment()));
     }
@@ -7015,7 +7020,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 		chan.Mlock()));
     if (!chan.Revenge().empty())
 	SEND(mynick, source, "CS_INFO/REVENGE", (
-	    Parent->getMessage(source, "CS_SET/REV_" + chan.Revenge())));
+	    Magick::instance().getMessage(source, "CS_SET/REV_" + chan.Revenge())));
     if (chan.Bantime())
 	SEND(mynick, source, "CS_INFO/BANTIME", (
 		ToHumanTime(chan.Bantime(), source)));
@@ -7030,7 +7035,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << ", ";
 	if (chan.L_Keeptopic())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "CS_SET/KEEPTOPIC");
+	output << Magick::instance().getMessage(source, "CS_SET/KEEPTOPIC");
 	if (chan.L_Keeptopic())
 	    output << IRC_Off;
     }
@@ -7041,7 +7046,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << ", ";
 	if (chan.L_Topiclock())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "CS_SET/TOPICLOCK");
+	output << Magick::instance().getMessage(source, "CS_SET/TOPICLOCK");
 	if (chan.L_Topiclock())
 	    output << IRC_Off;
     }
@@ -7052,7 +7057,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << ", ";
 	if (chan.L_Private())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "CS_SET/PRIVATE");
+	output << Magick::instance().getMessage(source, "CS_SET/PRIVATE");
 	if (chan.L_Private())
 	    output << IRC_Off;
     }
@@ -7063,7 +7068,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << ", ";
 	if (chan.L_Secureops())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "CS_SET/SECUREOPS");
+	output << Magick::instance().getMessage(source, "CS_SET/SECUREOPS");
 	if (chan.L_Secureops())
 	    output << IRC_Off;
     }
@@ -7074,7 +7079,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << ", ";
 	if (chan.L_Secure())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "CS_SET/SECURE");
+	output << Magick::instance().getMessage(source, "CS_SET/SECURE");
 	if (chan.L_Secure())
 	    output << IRC_Off;
     }
@@ -7085,7 +7090,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << ", ";
 	if (chan.L_Restricted())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "CS_SET/RESTRICTED");
+	output << Magick::instance().getMessage(source, "CS_SET/RESTRICTED");
 	if (chan.L_Restricted())
 	    output << IRC_Off;
     }
@@ -7096,7 +7101,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << ", ";
 	if (chan.L_Anarchy())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "CS_SET/ANARCHY");
+	output << Magick::instance().getMessage(source, "CS_SET/ANARCHY");
 	if (chan.L_Anarchy())
 	    output << IRC_Off;
     }
@@ -7107,7 +7112,7 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << ", ";
 	if (chan.L_KickOnBan())
 	    output << IRC_Bold;
-	output << Parent->getMessage(source, "CS_SET/KICKONBAN");
+	output << Magick::instance().getMessage(source, "CS_SET/KICKONBAN");
 	if (chan.L_KickOnBan())
 	    output << IRC_Off;
     }
@@ -7116,9 +7121,9 @@ void ChanServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	SEND(mynick, source, "CS_INFO/OPTIONS", (
 	    output));
     { RLOCK(("Events"));
-    if (Parent->servmsg.ShowSync() && Parent->events != NULL)
+    if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
 	SEND(mynick, source, "MISC/SYNC", (
-			Parent->events->SyncTime(source)));
+			Magick::instance().events->SyncTime(source)));
     }
 }
 
@@ -7134,21 +7139,21 @@ void ChanServ::do_List(const mstring &mynick, const mstring &source, const mstri
     if (params.WordCount(" ") < 2)
     {
 	mask = "*";
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else if (params.WordCount(" ") < 3)
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
 	listsize = atoi(params.ExtractWord(3, " ").c_str());
-	if (listsize > Parent->config.Maxlist())
+	if (listsize > Magick::instance().config.Maxlist())
 	{
 	    SEND(mynick, source, "LIST/MAXLIST", (
-		    Parent->config.Maxlist()));
+		    Magick::instance().config.Maxlist()));
 	    return;
 	}
     }
@@ -7157,13 +7162,13 @@ void ChanServ::do_List(const mstring &mynick, const mstring &source, const mstri
 					mask));
     ChanServ::stored_t::iterator iter;
 
-    bool isoper = (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).IsOn(source));
-    bool issop = (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.SOP_Name()).IsOn(source));
+    bool isoper = (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source));
+    bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source));
     { RLOCK(("ChanServ", "stored"));
-    for (iter = Parent->chanserv.StoredBegin(), i=0, count = 0;
-			iter != Parent->chanserv.StoredEnd(); iter++)
+    for (iter = Magick::instance().chanserv.StoredBegin(), i=0, count = 0;
+			iter != Magick::instance().chanserv.StoredEnd(); iter++)
     {
 	RLOCK2(("ChanServ", "stored", iter->first));
 	if (iter->second.Name().Matches(mask, true))
@@ -7183,7 +7188,7 @@ void ChanServ::do_List(const mstring &mynick, const mstring &source, const mstri
 		if (iter->second.Forbidden())
 		{
 		    ::send(mynick, source, iter->second.Name() + "  " +
-			Parent->getMessage(source, "VALS/FORBIDDEN"));
+			Magick::instance().getMessage(source, "VALS/FORBIDDEN"));
 		}
 		else
 		{
@@ -7214,39 +7219,39 @@ void ChanServ::do_Suspend(const mstring &mynick, const mstring &source, const ms
     mstring channel   = params.ExtractWord(2, " ");
     mstring reason    = params.After(" ", 2);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).Suspend(source, reason);
-    Parent->chanserv.stats.i_Suspend++;
+    Magick::instance().chanserv.GetStored(channel).Suspend(source, reason);
+    Magick::instance().chanserv.stats.i_Suspend++;
     SEND(mynick, source, "CS_COMMAND/SUSPENDED", (
 	    channel));
     LOG(LM_NOTICE, "CHANSERV/SUSPEND", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	channel, reason));
-    if (Parent->chanserv.IsLive(channel))
+    if (Magick::instance().chanserv.IsLive(channel))
     {
-	Parent->server.TOPIC(mynick, mynick, channel, "[" + IRC_Bold +
-			Parent->getMessage("VALS/SUSPENDED") +
+	Magick::instance().server.TOPIC(mynick, mynick, channel, "[" + IRC_Bold +
+			Magick::instance().getMessage("VALS/SUSPENDED") +
 			IRC_Off + "] " + reason + " [" + IRC_Bold +
-			Parent->getMessage("VALS/SUSPENDED") + IRC_Off + "]",
-			Parent->chanserv.GetLive(channel).Topic_Set_Time() -
+			Magick::instance().getMessage("VALS/SUSPENDED") + IRC_Off + "]",
+			Magick::instance().chanserv.GetLive(channel).Topic_Set_Time() -
 				(1.0 / (60.0 * 60.0 * 24.0)));
 
 	RLOCK(("ChanServ", "live", channel.LowerCase()));
-	Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
-	Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
+	Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
+	Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(channel);
 	clive.SendMode("-" + clive.Mode() + " " + clive.Key());
 	if (!cstored.Mlock().empty())
 	    clive.SendMode(cstored.Mlock() + " " + cstored.Mlock_Key() + " " +
@@ -7290,31 +7295,31 @@ void ChanServ::do_UnSuspend(const mstring &mynick, const mstring &source, const 
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.IsLive(channel))
-	Parent->server.TOPIC(mynick, mynick, channel, "",
-			Parent->chanserv.GetLive(channel).Topic_Set_Time() -
+    if (Magick::instance().chanserv.IsLive(channel))
+	Magick::instance().server.TOPIC(mynick, mynick, channel, "",
+			Magick::instance().chanserv.GetLive(channel).Topic_Set_Time() -
 				(1.0 / (60.0 * 60.0 * 24.0)));
 
-    Parent->chanserv.GetStored(channel).UnSuspend();
-    Parent->chanserv.stats.i_Unsuspend++;
+    Magick::instance().chanserv.GetStored(channel).UnSuspend();
+    Magick::instance().chanserv.stats.i_Unsuspend++;
     SEND(mynick, source, "CS_COMMAND/UNSUSPENDED", (
 	    channel));
     LOG(LM_NOTICE, "CHANSERV/UNSUSPEND", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	channel));
 }
 
@@ -7332,7 +7337,7 @@ void ChanServ::do_Forbid(const mstring &mynick, const mstring &source, const mst
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (Parent->chanserv.IsStored(channel))
+    if (Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISSTORED", (
 		channel));
@@ -7340,28 +7345,28 @@ void ChanServ::do_Forbid(const mstring &mynick, const mstring &source, const mst
     }
 
     Chan_Stored_t tmp(channel);
-    Parent->chanserv.AddStored(&tmp);
-    Parent->chanserv.stats.i_Forbid++;
+    Magick::instance().chanserv.AddStored(&tmp);
+    Magick::instance().chanserv.stats.i_Forbid++;
     SEND(mynick, source, "CS_COMMAND/FORBIDDEN", (
 	    channel));
     LOG(LM_NOTICE, "CHANSERV/FORBID", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	channel));
 
-    if (Parent->chanserv.IsLive(channel))
+    if (Magick::instance().chanserv.IsLive(channel))
     {
 	unsigned int i;
 	vector<mstring> kickees;
-	Chan_Live_t clive = Parent->chanserv.GetLive(channel);
+	Chan_Live_t clive = Magick::instance().chanserv.GetLive(channel);
 	for (i=0; i<clive.Users(); i++)
 	{
 		kickees.push_back(clive.User(i));
 	}
 	for (i=0; i<kickees.size(); i++)
 	{
-	    mstring reason = parseMessage(Parent->getMessage(kickees[i], "CS_STATUS/ISFORBIDDEN"),
+	    mstring reason = parseMessage(Magick::instance().getMessage(kickees[i], "CS_STATUS/ISFORBIDDEN"),
 							mVarArray(channel));
-	    Parent->server.KICK(Parent->chanserv.FirstName(), kickees[i],
+	    Magick::instance().server.KICK(Magick::instance().chanserv.FirstName(), kickees[i],
 		channel, reason);
 	}
     }
@@ -7382,14 +7387,14 @@ void ChanServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Magick::instance().chanserv.GetStored(channel);
     channel = chan.Name();
     if (chan.Forbidden())
     {
@@ -7397,27 +7402,27 @@ void ChanServ::do_Getpass(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    if (!Parent->nickserv.IsStored(chan.Founder()))
+    if (!Magick::instance().nickserv.IsStored(chan.Founder()))
     {
 	LOG(LM_CRITICAL, "ERROR/FOUNDER_NOTREGD", (
 			chan.Name(), chan.Founder()));
-	Parent->chanserv.RemStored(channel);
+	Magick::instance().chanserv.RemStored(channel);
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Parent->chanserv.stats.i_Getpass++;
+    Magick::instance().chanserv.stats.i_Getpass++;
     SEND(mynick, source, "CS_COMMAND/GETPASS", (
 			chan.Name(),
-			Parent->getSname(chan.Founder()),
+			Magick::instance().getSname(chan.Founder()),
 			chan.Password()));
     ANNOUNCE(mynick, "MISC/CHAN_GETPASS", (
 			source, chan.Name(),
-			Parent->getSname(chan.Founder())));
+			Magick::instance().getSname(chan.Founder())));
     LOG(LM_NOTICE, "CHANSERV/GETPASS", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	chan.Name(), Parent->getSname(chan.Founder())));
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	chan.Name(), Magick::instance().getSname(chan.Founder())));
 }
 
 #endif /* GETPASS */
@@ -7437,7 +7442,7 @@ void ChanServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
     mstring channel   = params.ExtractWord(2, " ");
     mstring password  = params.ExtractWord(3, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -7452,7 +7457,7 @@ void ChanServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &chan = Magick::instance().chanserv.GetStored(channel);
     channel = chan.Name();
     if (chan.Forbidden())
     {
@@ -7460,28 +7465,28 @@ void ChanServ::do_Setpass(const mstring &mynick, const mstring &source, const ms
 	return;
     }
 
-    if (!Parent->nickserv.IsStored(chan.Founder()))
+    if (!Magick::instance().nickserv.IsStored(chan.Founder()))
     {
 	LOG(LM_CRITICAL, "ERROR/FOUNDER_NOTREGD", (
 			chan.Name(), chan.Founder()));
-	Parent->chanserv.RemStored(channel);
+	Magick::instance().chanserv.RemStored(channel);
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Parent->chanserv.stats.i_Getpass++;
+    Magick::instance().chanserv.stats.i_Getpass++;
     chan.Password(password);
     SEND(mynick, source, "CS_COMMAND/SETPASS", (
 			chan.Name(),
-			Parent->getSname(chan.Founder()),
+			Magick::instance().getSname(chan.Founder()),
 			password));
     ANNOUNCE(mynick, "MISC/CHAN_SETPASS", (
 			source, chan.Name(),
-			Parent->getSname(chan.Founder())));
+			Magick::instance().getSname(chan.Founder())));
     LOG(LM_NOTICE, "CHANSERV/SETPASS", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	chan.Name(), Parent->getSname(chan.Founder())));
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	chan.Name(), Magick::instance().getSname(chan.Founder())));
 }
 
 void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstring &params)
@@ -7498,7 +7503,7 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
@@ -7506,37 +7511,37 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
     }
 
     bool change = false;
-    if (Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source))
     {
-	if (Parent->chanserv.IsStored(channel))
-	    channel = Parent->getSname(channel);
+	if (Magick::instance().chanserv.IsStored(channel))
+	    channel = Magick::instance().getSname(channel);
 	else
-	    channel = Parent->getLname(channel);
+	    channel = Magick::instance().getLname(channel);
 
 	// If we have 2 params, and we have SUPER access, or are a SOP
 	if (params.WordCount(" ") > 2 && 
-	    Parent->commserv.IsList(Parent->commserv.OVR_CS_Mode()) &&
-	    Parent->commserv.GetList(Parent->commserv.OVR_CS_Mode()).IsOn(source))
+	    Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Mode()) &&
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Mode()).IsOn(source))
 	    change = true;
     }
     else
     {
-	if (!Parent->chanserv.IsStored(channel))
+	if (!Magick::instance().chanserv.IsStored(channel))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	    return;
 	}
-	channel = Parent->getSname(channel);
+	channel = Magick::instance().getSname(channel);
 
-	if (Parent->chanserv.GetStored(channel).Forbidden())
+	if (Magick::instance().chanserv.GetStored(channel).Forbidden())
 	{
 	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	    return;
 	}
 
-	if (!Parent->chanserv.GetStored(channel).GetAccess(source, "VIEW"))
+	if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "VIEW"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
@@ -7544,7 +7549,7 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 
 	// If we have 2 params, and we have SUPER access, or are a SOP
 	if (params.WordCount(" ") > 2 && 
-	    Parent->chanserv.GetStored(channel).GetAccess(source, "CMDMODE"))
+	    Magick::instance().chanserv.GetStored(channel).GetAccess(source, "CMDMODE"))
 	    change = true;
 
     }
@@ -7553,17 +7558,17 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
     if (change)
     {
 	mstring modes = params.After(" ", 2);
-	Parent->chanserv.GetLive(channel).SendMode(modes);
-	Parent->chanserv.stats.i_Mode++;
+	Magick::instance().chanserv.GetLive(channel).SendMode(modes);
+	Magick::instance().chanserv.stats.i_Mode++;
 	LOG(LM_DEBUG, "CHANSERV/MODE", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		modes, channel));
     }
     else
     {
 	mstring output;
 	{ RLOCK(("ChanServ", "live", channel.LowerCase()));
-	Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+	Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
 	output << clive.Name() << ": +" << clive.Mode();
 	if (!clive.Key().empty())
 	    output << "k";
@@ -7575,7 +7580,7 @@ void ChanServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 	    output << " " << clive.Limit();
 	}
 
-	Parent->chanserv.stats.i_Mode++;
+	Magick::instance().chanserv.stats.i_Mode++;
 	::send(mynick, source, output);
     }
 }
@@ -7595,21 +7600,21 @@ void ChanServ::do_Op(const mstring &mynick, const mstring &source, const mstring
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = source;
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Magick::instance().chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -7621,23 +7626,23 @@ void ChanServ::do_Op(const mstring &mynick, const mstring &source, const mstring
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(chan.GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Op()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Op()).IsOn(source))))
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Op()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Op()).IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsLive(target))
+	if (!Magick::instance().nickserv.IsLive(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (Parent->chanserv.GetLive(channel).IsOp(target))
+	else if (Magick::instance().chanserv.GetLive(channel).IsOp(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_OPPED", (
 		    target, channel));
@@ -7646,23 +7651,23 @@ void ChanServ::do_Op(const mstring &mynick, const mstring &source, const mstring
 	else if (chan.Secureops() &&
 		!(chan.GetAccess(target, "CMDOP") ||
 		 chan.GetAccess(target, "AUTOOP")) &&
-		!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Op()) &&
-		 Parent->commserv.GetList(Parent->commserv.OVR_CS_Op()).IsOn(source)))
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Op()) &&
+		 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Op()).IsOn(source)))
 	{
 	    SEND(mynick, source, "CS_STATUS/RESTRICT", (
-		channel, Parent->getMessage(source, "CS_SET/SECUREOPS")));
+		channel, Magick::instance().getMessage(source, "CS_SET/SECUREOPS")));
 	    return;
 	}
     }
     else
     {
-	if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (Parent->chanserv.GetLive(channel).IsOp(target))
+	else if (Magick::instance().chanserv.GetLive(channel).IsOp(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OPPED", (
 		    channel));
@@ -7675,10 +7680,10 @@ void ChanServ::do_Op(const mstring &mynick, const mstring &source, const mstring
 	}
     }
 
-    Parent->chanserv.stats.i_Op++;
-    Parent->chanserv.GetLive(channel).SendMode("+o " + target);
+    Magick::instance().chanserv.stats.i_Op++;
+    Magick::instance().chanserv.GetLive(channel).SendMode("+o " + target);
     LOG(LM_DEBUG, "CHANSERV/OP", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -7697,22 +7702,22 @@ void ChanServ::do_DeOp(const mstring &mynick, const mstring &source, const mstri
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = source;
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
@@ -7720,24 +7725,24 @@ void ChanServ::do_DeOp(const mstring &mynick, const mstring &source, const mstri
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
-	(Parent->chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Op()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Op()).IsOn(source))))
+	(Magick::instance().chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Op()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Op()).IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsLive(target))
+	if (!Magick::instance().nickserv.IsLive(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsOp(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsOp(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTOPPED", (
 		    target, channel));
@@ -7746,13 +7751,13 @@ void ChanServ::do_DeOp(const mstring &mynick, const mstring &source, const mstri
     }
     else
     {
-	if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsOp(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsOp(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/NOTOPPED", (
 		    channel));
@@ -7760,10 +7765,10 @@ void ChanServ::do_DeOp(const mstring &mynick, const mstring &source, const mstri
 	}
     }
 
-    Parent->chanserv.stats.i_Deop++;
-    Parent->chanserv.GetLive(channel).SendMode("-o " + target);
+    Magick::instance().chanserv.stats.i_Deop++;
+    Magick::instance().chanserv.GetLive(channel).SendMode("-o " + target);
     LOG(LM_DEBUG, "CHANSERV/DEOP", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -7771,7 +7776,7 @@ void ChanServ::do_HalfOp(const mstring &mynick, const mstring &source, const mst
 {
     FT("ChanServ::do_HalfOp", (mynick, source, params));
 
-    if (!Parent->server.proto.ChanModeArg().Contains('h'))
+    if (!Magick::instance().server.proto.ChanModeArg().Contains('h'))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
@@ -7788,21 +7793,21 @@ void ChanServ::do_HalfOp(const mstring &mynick, const mstring &source, const mst
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = source;
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Magick::instance().chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -7814,23 +7819,23 @@ void ChanServ::do_HalfOp(const mstring &mynick, const mstring &source, const mst
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(chan.GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_HalfOp()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_HalfOp()).IsOn(source))))
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_HalfOp()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_HalfOp()).IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsLive(target))
+	if (!Magick::instance().nickserv.IsLive(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (Parent->chanserv.GetLive(channel).IsHalfOp(target))
+	else if (Magick::instance().chanserv.GetLive(channel).IsHalfOp(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_HALFOPPED", (
 		    target, channel));
@@ -7839,23 +7844,23 @@ void ChanServ::do_HalfOp(const mstring &mynick, const mstring &source, const mst
 	else if (chan.Secureops() &&
 		!(chan.GetAccess(target, "CMDHALFOP") ||
 		 chan.GetAccess(target, "AUTOHALFOP")) &&
-		!(Parent->commserv.IsList(Parent->commserv.OVR_CS_HalfOp()) &&
-		 Parent->commserv.GetList(Parent->commserv.OVR_CS_HalfOp()).IsOn(source)))
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_HalfOp()) &&
+		 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_HalfOp()).IsOn(source)))
 	{
 	    SEND(mynick, source, "CS_STATUS/RESTRICT", (
-		channel, Parent->getMessage(source, "CS_SET/SECUREOPS")));
+		channel, Magick::instance().getMessage(source, "CS_SET/SECUREOPS")));
 	    return;
 	}
     }
     else
     {
-	if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (Parent->chanserv.GetLive(channel).IsHalfOp(target))
+	else if (Magick::instance().chanserv.GetLive(channel).IsHalfOp(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/HALFOPPED", (
 		    channel));
@@ -7868,10 +7873,10 @@ void ChanServ::do_HalfOp(const mstring &mynick, const mstring &source, const mst
 	}
     }
 
-    Parent->chanserv.stats.i_Halfop++;
-    Parent->chanserv.GetLive(channel).SendMode("+h " + target);
+    Magick::instance().chanserv.stats.i_Halfop++;
+    Magick::instance().chanserv.GetLive(channel).SendMode("+h " + target);
     LOG(LM_DEBUG, "CHANSERV/HALFOP", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -7879,7 +7884,7 @@ void ChanServ::do_DeHalfOp(const mstring &mynick, const mstring &source, const m
 {
     FT("ChanServ::do_DeHalfOp", (mynick, source, params));
 
-    if (!Parent->server.proto.ChanModeArg().Contains('h'))
+    if (!Magick::instance().server.proto.ChanModeArg().Contains('h'))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
@@ -7896,22 +7901,22 @@ void ChanServ::do_DeHalfOp(const mstring &mynick, const mstring &source, const m
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = source;
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
@@ -7919,24 +7924,24 @@ void ChanServ::do_DeHalfOp(const mstring &mynick, const mstring &source, const m
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
-	(Parent->chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_HalfOp()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_HalfOp()).IsOn(source))))
+	(Magick::instance().chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_HalfOp()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_HalfOp()).IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsLive(target))
+	if (!Magick::instance().nickserv.IsLive(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsHalfOp(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsHalfOp(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTHALFOPPED", (
 		    target, channel));
@@ -7945,13 +7950,13 @@ void ChanServ::do_DeHalfOp(const mstring &mynick, const mstring &source, const m
     }
     else
     {
-	if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsHalfOp(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsHalfOp(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/NOTHALFOPPED", (
 		    channel));
@@ -7959,10 +7964,10 @@ void ChanServ::do_DeHalfOp(const mstring &mynick, const mstring &source, const m
 	}
     }
 
-    Parent->chanserv.stats.i_Dehalfop++;
-    Parent->chanserv.GetLive(channel).SendMode("-h " + target);
+    Magick::instance().chanserv.stats.i_Dehalfop++;
+    Magick::instance().chanserv.GetLive(channel).SendMode("-h " + target);
     LOG(LM_DEBUG, "CHANSERV/DEHALFOP", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -7981,21 +7986,21 @@ void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstr
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = source;
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Magick::instance().chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -8007,23 +8012,23 @@ void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstr
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(chan.GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Voice()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Voice()).IsOn(source))))
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Voice()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Voice()).IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsLive(target))
+	if (!Magick::instance().nickserv.IsLive(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (Parent->chanserv.GetLive(channel).IsVoice(target))
+	else if (Magick::instance().chanserv.GetLive(channel).IsVoice(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_VOICED", (
 		    target, channel));
@@ -8032,23 +8037,23 @@ void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstr
 	else if (chan.Secureops() &&
 		!(chan.GetAccess(target, "CMDVOICE") ||
 		 chan.GetAccess(target, "AUTOVOICE")) &&
-		!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Voice()) &&
-		 Parent->commserv.GetList(Parent->commserv.OVR_CS_Voice()).IsOn(source)))
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Voice()) &&
+		 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Voice()).IsOn(source)))
 	{
 	    SEND(mynick, source, "CS_STATUS/RESTRICT", (
-		    channel, Parent->getMessage(source, "CS_SET/SECUREOPS")));
+		    channel, Magick::instance().getMessage(source, "CS_SET/SECUREOPS")));
 	    return;
 	}
     }
     else
     {
-	if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (Parent->chanserv.GetLive(channel).IsVoice(target))
+	else if (Magick::instance().chanserv.GetLive(channel).IsVoice(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/VOICED", (
 		    channel));
@@ -8061,10 +8066,10 @@ void ChanServ::do_Voice(const mstring &mynick, const mstring &source, const mstr
 	}
     }
 
-    Parent->chanserv.stats.i_Voice++;
-    Parent->chanserv.GetLive(channel).SendMode("+v " + target);
+    Magick::instance().chanserv.stats.i_Voice++;
+    Magick::instance().chanserv.GetLive(channel).SendMode("+v " + target);
     LOG(LM_DEBUG, "CHANSERV/VOICE", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -8083,22 +8088,22 @@ void ChanServ::do_DeVoice(const mstring &mynick, const mstring &source, const ms
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = source;
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
@@ -8106,24 +8111,24 @@ void ChanServ::do_DeVoice(const mstring &mynick, const mstring &source, const ms
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
-	(Parent->chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Voice()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Voice()).IsOn(source))))
+	(Magick::instance().chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Voice()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Voice()).IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsLive(target))
+	if (!Magick::instance().nickserv.IsLive(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsVoice(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsVoice(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTVOICED", (
 		    target, channel));
@@ -8132,13 +8137,13 @@ void ChanServ::do_DeVoice(const mstring &mynick, const mstring &source, const ms
     }
     else
     {
-	if (!Parent->chanserv.GetLive(channel).IsIn(target))
+	if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
 	    return;
 	}
-	else if (!Parent->chanserv.GetLive(channel).IsVoice(target))
+	else if (!Magick::instance().chanserv.GetLive(channel).IsVoice(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/NOTVOICED", (
 		    channel));
@@ -8146,10 +8151,10 @@ void ChanServ::do_DeVoice(const mstring &mynick, const mstring &source, const ms
 	}
     }
 
-    Parent->chanserv.stats.i_Devoice++;
-    Parent->chanserv.GetLive(channel).SendMode("-v " + target);
+    Magick::instance().chanserv.stats.i_Devoice++;
+    Magick::instance().chanserv.GetLive(channel).SendMode("-v " + target);
     LOG(LM_DEBUG, "CHANSERV/DEVOICE", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -8168,14 +8173,14 @@ void ChanServ::do_Topic(const mstring &mynick, const mstring &source, const mstr
     mstring channel   = params.ExtractWord(2, " ");
     mstring topic     = params.After(" ", 2);
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -8183,7 +8188,7 @@ void ChanServ::do_Topic(const mstring &mynick, const mstring &source, const mstr
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &chan = Magick::instance().chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -8203,10 +8208,10 @@ void ChanServ::do_Topic(const mstring &mynick, const mstring &source, const mstr
 	topic.erase();
     }
 
-    Parent->chanserv.stats.i_Topic++;
+    Magick::instance().chanserv.stats.i_Topic++;
     chan.SetTopic(mynick, source, topic);
     LOG(LM_DEBUG, "CHANSERV/TOPIC", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	channel));
 }
 
@@ -8228,23 +8233,23 @@ void ChanServ::do_Kick(const mstring &mynick, const mstring &source, const mstri
     if (params.WordCount(" ") >= 4)
 	reason = params.After(" ", 3);
     else
-	reason = Parent->chanserv.DEF_Akick_Reason();
+	reason = Magick::instance().chanserv.DEF_Akick_Reason();
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Magick::instance().chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -8259,14 +8264,14 @@ void ChanServ::do_Kick(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    if (!Parent->nickserv.IsLive(target))
+    if (!Magick::instance().nickserv.IsLive(target))
     {
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	return;
     }
 
-    if (!Parent->chanserv.GetLive(channel).IsIn(target))
+    if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
     {
 	SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
@@ -8280,12 +8285,12 @@ void ChanServ::do_Kick(const mstring &mynick, const mstring &source, const mstri
 	return;
     }
 
-    mstring output = parseMessage(Parent->getMessage(target, "CS_COMMAND/KICK"),
+    mstring output = parseMessage(Magick::instance().getMessage(target, "CS_COMMAND/KICK"),
 	    				mVarArray(source, reason));
-    Parent->chanserv.stats.i_Kick++;
-    Parent->server.KICK(mynick, target, channel, output);
+    Magick::instance().chanserv.stats.i_Kick++;
+    Magick::instance().server.KICK(mynick, target, channel, output);
     LOG(LM_DEBUG, "CHANSERV/KICK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -8305,21 +8310,21 @@ void ChanServ::do_AnonKick(const mstring &mynick, const mstring &source, const m
     mstring target    = params.ExtractWord(3, " ");
     mstring reason    = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t chan = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t chan = Magick::instance().chanserv.GetStored(channel);
     channel = chan.Name();
 
     if (chan.Forbidden())
@@ -8334,14 +8339,14 @@ void ChanServ::do_AnonKick(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    if (!Parent->nickserv.IsLive(target))
+    if (!Magick::instance().nickserv.IsLive(target))
     {
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	return;
     }
 
-    if (!Parent->chanserv.GetLive(channel).IsIn(target))
+    if (!Magick::instance().chanserv.GetLive(channel).IsIn(target))
     {
 	    SEND(mynick, source, "CS_STATUS/OTH_NOTIN", (
 		    target, channel));
@@ -8355,10 +8360,10 @@ void ChanServ::do_AnonKick(const mstring &mynick, const mstring &source, const m
 	return;
     }
 
-    Parent->chanserv.stats.i_Anonkick++;
-    Parent->server.KICK(mynick, target, channel, reason);
+    Magick::instance().chanserv.stats.i_Anonkick++;
+    Magick::instance().server.KICK(mynick, target, channel, reason);
     LOG(LM_DEBUG, "CHANSERV/ANONKICK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -8369,8 +8374,8 @@ void ChanServ::do_Users(const mstring &mynick, const mstring &source, const mstr
     mstring message = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -8386,53 +8391,53 @@ void ChanServ::do_Users(const mstring &mynick, const mstring &source, const mstr
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source))
     {
-	if (Parent->chanserv.IsStored(channel))
-	    channel = Parent->getSname(channel);
+	if (Magick::instance().chanserv.IsStored(channel))
+	    channel = Magick::instance().getSname(channel);
 	else
-	    channel = Parent->getLname(channel);
+	    channel = Magick::instance().getLname(channel);
     }
     else
     {
-	if (!Parent->chanserv.IsStored(channel))
+	if (!Magick::instance().chanserv.IsStored(channel))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	    return;
 	}
-	channel = Parent->getSname(channel);
+	channel = Magick::instance().getSname(channel);
 
-	if (Parent->chanserv.GetStored(channel).Forbidden())
+	if (Magick::instance().chanserv.GetStored(channel).Forbidden())
 	{
 	    SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	    return;
 	}
 
-	if (!Parent->chanserv.GetStored(channel).GetAccess(source, "VIEW"))
+	if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "VIEW"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
     }
 
-    Chan_Live_t chan = Parent->chanserv.GetLive(channel);
+    Chan_Live_t chan = Magick::instance().chanserv.GetLive(channel);
     channel = chan.Name();
     unsigned int i;
     mstring user, output = channel + ": ";
 
     for (i=0; i<chan.Users(); i++)
     {
-	user = Parent->getLname(chan.User(i));
-	if (output.size() + user.length() > Parent->server.proto.MaxLine())
+	user = Magick::instance().getLname(chan.User(i));
+	if (output.size() + user.length() > Magick::instance().server.proto.MaxLine())
 	{
 	    ::send(mynick, source, output);
 	    output = channel + ": ";
@@ -8457,8 +8462,8 @@ void ChanServ::do_Users(const mstring &mynick, const mstring &source, const mstr
     output = channel + " (SPLIT): ";
     for (i=0; i<chan.Squit(); i++)
     {
-	user = Parent->getLname(chan.Squit(i));
-	if (output.size() + user.length() > Parent->server.proto.MaxLine())
+	user = Magick::instance().getLname(chan.Squit(i));
+	if (output.size() + user.length() > Magick::instance().server.proto.MaxLine())
 	{
 	    ::send(mynick, source, output);
 	    output = channel + " (SQUIT): ";
@@ -8484,22 +8489,22 @@ void ChanServ::do_Invite(const mstring &mynick, const mstring &source, const mst
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = source;
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
@@ -8507,18 +8512,18 @@ void ChanServ::do_Invite(const mstring &mynick, const mstring &source, const mst
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
-	(Parent->chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Invite()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Invite()).IsOn(source))))
+	(Magick::instance().chanserv.GetStored(channel).GetAccess(source, "SUPER") ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Invite()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Invite()).IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsLive(target))
+	if (!Magick::instance().nickserv.IsLive(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
 	    return;
 	}
-	else if (Parent->chanserv.GetLive(channel).IsIn(target))
+	else if (Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_IN", (
 		    target, channel));
@@ -8529,13 +8534,13 @@ void ChanServ::do_Invite(const mstring &mynick, const mstring &source, const mst
     }
     else
     {
-	if (Parent->chanserv.GetLive(channel).IsIn(target))
+	if (Magick::instance().chanserv.GetLive(channel).IsIn(target))
 	{
 	    SEND(mynick, source, "CS_STATUS/IN", (
 		    channel));
 	    return;
 	}
-	else if (!Parent->chanserv.GetStored(channel).GetAccess(target, "CMDINVITE"))
+	else if (!Magick::instance().chanserv.GetStored(channel).GetAccess(target, "CMDINVITE"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
@@ -8544,10 +8549,10 @@ void ChanServ::do_Invite(const mstring &mynick, const mstring &source, const mst
 		channel));
     }
 
-    Parent->chanserv.stats.i_Invite++;
-    Parent->server.INVITE(mynick, target, channel);
+    Magick::instance().chanserv.stats.i_Invite++;
+    Magick::instance().server.INVITE(mynick, target, channel);
     LOG(LM_DEBUG, "CHANSERV/INVITE", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -8566,21 +8571,21 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
     mstring channel   = params.ExtractWord(2, " ");
     mstring target    = source;
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -8592,11 +8597,11 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 2 && 
 	(cstored.GetAccess(source, "SUPER") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_CS_Unban()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Unban()).IsOn(source))))
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Unban()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Unban()).IsOn(source))))
     {
 	target = params.ExtractWord(3, " ");
-	if (!Parent->nickserv.IsLive(target))
+	if (!Magick::instance().nickserv.IsLive(target))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTINUSE", (
 		    target));
@@ -8614,8 +8619,8 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
 
     vector<mstring> bans;
     { RLOCK2(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
-    Nick_Live_t nlive = Parent->nickserv.GetLive(target);
+    Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
+    Nick_Live_t nlive = Magick::instance().nickserv.GetLive(target);
     unsigned int i;
     for (i=0; i < clive.Bans(); i++)
     {
@@ -8630,7 +8635,7 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
     }
     if (bans.size())
     {
-	Parent->chanserv.stats.i_Unban++;
+	Magick::instance().chanserv.stats.i_Unban++;
 	if (source.IsSameAs(target, true))
 	    SEND(mynick, source, "CS_COMMAND/UNBANNED", (
 		    channel));
@@ -8638,7 +8643,7 @@ void ChanServ::do_Unban(const mstring &mynick, const mstring &source, const mstr
 	    SEND(mynick, source, "CS_COMMAND/OTH_UNBANNED", (
 		    target, channel));
 	LOG(LM_DEBUG, "CHANSERV/UNBAN", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		target, channel));
     }
     else
@@ -8662,8 +8667,8 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (message));
 	return;
@@ -8672,22 +8677,22 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     if (params.WordCount(" ") < 2)
     {
 	mask = "*";
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else if (params.WordCount(" ") < 3)
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
-	listsize = Parent->config.Listsize();
+	listsize = Magick::instance().config.Listsize();
     }
     else
     {
 	mask = params.ExtractWord(2, " ").LowerCase();
 	listsize = atoi(params.ExtractWord(3, " ").c_str());
-	if (listsize > Parent->config.Maxlist())
+	if (listsize > Magick::instance().config.Maxlist())
 	{
 	    mstring output;
 	    SEND(mynick, source, "LIST/MAXLIST", (
-					Parent->config.Maxlist()));
+					Magick::instance().config.Maxlist()));
 	    return;
 	}
     }
@@ -8696,8 +8701,8 @@ void ChanServ::do_Live(const mstring &mynick, const mstring &source, const mstri
     ChanServ::live_t::iterator iter;
 
     { RLOCK(("ChanServ", "live"));
-    for (iter = Parent->chanserv.LiveBegin(), i=0, count = 0;
-			iter != Parent->chanserv.LiveEnd(); iter++)
+    for (iter = Magick::instance().chanserv.LiveBegin(), i=0, count = 0;
+			iter != Magick::instance().chanserv.LiveEnd(); iter++)
     {
 	RLOCK2(("ChanServ", "live", iter->first));
 	if (iter->second.Name().Matches(mask, true))
@@ -8739,8 +8744,8 @@ void ChanServ::do_clear_Users(const mstring &mynick, const mstring &source, cons
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -8756,31 +8761,31 @@ void ChanServ::do_clear_Users(const mstring &mynick, const mstring &source, cons
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Clear()).IsOn(source)))
+    if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -8788,23 +8793,23 @@ void ChanServ::do_clear_Users(const mstring &mynick, const mstring &source, cons
 
     unsigned int i;
     vector<mstring> kickees;
-    Chan_Live_t clive = Parent->chanserv.GetLive(channel);
+    Chan_Live_t clive = Magick::instance().chanserv.GetLive(channel);
     for (i=0; i<clive.Users(); i++)
     {
 	mstring user = clive.User(i);
-	if (!user.IsSameAs(source) && Parent->nickserv.IsLive(user) &&
-		!Parent->nickserv.GetLive(user).IsServices())
+	if (!user.IsSameAs(source) && Magick::instance().nickserv.IsLive(user) &&
+		!Magick::instance().nickserv.GetLive(user).IsServices())
 	    kickees.push_back(user);
     }
     for (i=0; i<kickees.size(); i++)
     {
-	mstring output = parseMessage(Parent->getMessage(kickees[i], "CS_COMMAND/CLEAR"),
+	mstring output = parseMessage(Magick::instance().getMessage(kickees[i], "CS_COMMAND/CLEAR"),
 				mVarArray(message, source, channel));
-	Parent->server.KICK(mynick, kickees[i], channel, output);
+	Magick::instance().server.KICK(mynick, kickees[i], channel, output);
     }
-    Parent->chanserv.stats.i_Clear++;
+    Magick::instance().chanserv.stats.i_Clear++;
     LOG(LM_INFO, "CHANSERV/COMMAND", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	message, channel));
 }
 
@@ -8816,8 +8821,8 @@ void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const 
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -8833,31 +8838,31 @@ void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const 
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Clear()).IsOn(source)))
+    if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -8867,13 +8872,13 @@ void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const 
     if (message.After(" ").Matches("ALL", true))
 	allmode = true;
 
-    Chan_Live_t clt = Parent->chanserv.GetLive(channel);
+    Chan_Live_t clt = Magick::instance().chanserv.GetLive(channel);
     vector<mstring> deop;
     unsigned int i;
     for (i=0; i<clt.Ops(); i++)
     {
-	if (!Parent->nickserv.IsLive(clt.Op(i)) ||
-		Parent->nickserv.GetLive(clt.Op(i)).IsServices())
+	if (!Magick::instance().nickserv.IsLive(clt.Op(i)) ||
+		Magick::instance().nickserv.GetLive(clt.Op(i)).IsServices())
 	    continue;
 	deop.push_back(clt.Op(i));
 	if (!allmode)
@@ -8882,16 +8887,16 @@ void ChanServ::do_clear_Ops(const mstring &mynick, const mstring &source, const 
     }
 
     { RLOCK(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+    Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
     for (i=0; i<deop.size(); i++)
     {
 	clive.SendMode("-o " + deop[i]);
     }}
     if (!allmode)
     {
-	Parent->chanserv.stats.i_Clear++;
+	Magick::instance().chanserv.stats.i_Clear++;
 	LOG(LM_INFO, "CHANSERV/COMMAND", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		message, channel));
     }
 }
@@ -8900,7 +8905,7 @@ void ChanServ::do_clear_HalfOps(const mstring &mynick, const mstring &source, co
 {
     FT("ChanServ::do_clear_HalfOps", (mynick, source, params));
 
-    if (!Parent->server.proto.ChanModeArg().Contains('h'))
+    if (!Magick::instance().server.proto.ChanModeArg().Contains('h'))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOT_SUPPORTED");
 	return;
@@ -8910,8 +8915,8 @@ void ChanServ::do_clear_HalfOps(const mstring &mynick, const mstring &source, co
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -8927,31 +8932,31 @@ void ChanServ::do_clear_HalfOps(const mstring &mynick, const mstring &source, co
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Clear()).IsOn(source)))
+    if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -8961,13 +8966,13 @@ void ChanServ::do_clear_HalfOps(const mstring &mynick, const mstring &source, co
     if (message.After(" ").Matches("ALL", true))
 	allmode = true;
 
-    Chan_Live_t clt = Parent->chanserv.GetLive(channel);
+    Chan_Live_t clt = Magick::instance().chanserv.GetLive(channel);
     vector<mstring> dehalfop, ops;
     unsigned int i;
     for (i=0; i<clt.HalfOps(); i++)
     {
-	if (!Parent->nickserv.IsLive(clt.HalfOp(i)) ||
-		Parent->nickserv.GetLive(clt.HalfOp(i)).IsServices())
+	if (!Magick::instance().nickserv.IsLive(clt.HalfOp(i)) ||
+		Magick::instance().nickserv.GetLive(clt.HalfOp(i)).IsServices())
 	    continue;
 	dehalfop.push_back(clt.HalfOp(i));
 	if (!allmode)
@@ -8982,7 +8987,7 @@ void ChanServ::do_clear_HalfOps(const mstring &mynick, const mstring &source, co
     }
 
     { RLOCK(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+    Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
     for (i=0; i<dehalfop.size(); i++)
     {
 	clive.SendMode("-h " + dehalfop[i]);
@@ -8990,9 +8995,9 @@ void ChanServ::do_clear_HalfOps(const mstring &mynick, const mstring &source, co
 
     if (!allmode)
     {
-	Parent->chanserv.stats.i_Clear++;
+	Magick::instance().chanserv.stats.i_Clear++;
 	LOG(LM_INFO, "CHANSERV/COMMAND", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		message, channel));
     }
 }
@@ -9005,8 +9010,8 @@ void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, con
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -9022,31 +9027,31 @@ void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, con
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Clear()).IsOn(source)))
+    if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9056,13 +9061,13 @@ void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, con
     if (message.After(" ").Matches("ALL", true))
 	allmode = true;
 
-    Chan_Live_t clt = Parent->chanserv.GetLive(channel);
+    Chan_Live_t clt = Magick::instance().chanserv.GetLive(channel);
     vector<mstring> devoice, ops;
     unsigned int i;
     for (i=0; i<clt.Voices(); i++)
     {
-	if (!Parent->nickserv.IsLive(clt.Voice(i)) ||
-		Parent->nickserv.GetLive(clt.Voice(i)).IsServices())
+	if (!Magick::instance().nickserv.IsLive(clt.Voice(i)) ||
+		Magick::instance().nickserv.GetLive(clt.Voice(i)).IsServices())
 	    continue;
 	devoice.push_back(clt.Voice(i));
 	if (!allmode)
@@ -9077,7 +9082,7 @@ void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, con
     }
 
     { RLOCK(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+    Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
     for (i=0; i<devoice.size(); i++)
     {
 	clive.SendMode("-v " + devoice[i]);
@@ -9085,9 +9090,9 @@ void ChanServ::do_clear_Voices(const mstring &mynick, const mstring &source, con
 
     if (!allmode)
     {
-	Parent->chanserv.stats.i_Clear++;
+	Magick::instance().chanserv.stats.i_Clear++;
 	LOG(LM_INFO, "CHANSERV/COMMAND", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		message, channel));
     }
 }
@@ -9100,8 +9105,8 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -9117,31 +9122,31 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Clear()).IsOn(source)))
+    if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9155,7 +9160,7 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
     unsigned int i;
     mstring mode;
     { RLOCK2(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+    Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
 
     mode << "-" << clive.Mode();
     if (clive.Limit())
@@ -9170,7 +9175,7 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
 	    ops.push_back(clive.Op(i));
 	}
     }}
-    { Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
+    { Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(channel);
     if (!cstored.Mlock_On().empty())
     {
 	mode = "+" + cstored.Mlock_On();
@@ -9183,21 +9188,21 @@ void ChanServ::do_clear_Modes(const mstring &mynick, const mstring &source, cons
 	if (!cstored.Mlock_Key().empty())
 	    mode << " " << cstored.Mlock_Key();
 	
-	Parent->chanserv.GetLive(channel).SendMode(mode);
+	Magick::instance().chanserv.GetLive(channel).SendMode(mode);
     }}
     if (!allmode)
     {
 	for (i=0; i<ops.size(); i++)
 	{
-	    if (!Parent->nickserv.IsLive(ops[i]) ||
-		Parent->nickserv.GetLive(ops[i]).IsServices())
+	    if (!Magick::instance().nickserv.IsLive(ops[i]) ||
+		Magick::instance().nickserv.GetLive(ops[i]).IsServices())
 		continue;
 	    SEND(mynick, ops[i], "CS_COMMAND/CLEAR", (
 		    message, source, channel));
 	}
-	Parent->chanserv.stats.i_Clear++;
+	Magick::instance().chanserv.stats.i_Clear++;
 	LOG(LM_INFO, "CHANSERV/COMMAND", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		message, channel));
     }
 }
@@ -9210,8 +9215,8 @@ void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -9227,31 +9232,31 @@ void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Clear()).IsOn(source)))
+    if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9264,7 +9269,7 @@ void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const
     vector<mstring> ops, bans;
     unsigned int i;
     { RLOCK(("ChanServ", "live", channel.LowerCase()));
-    Chan_Live_t &clive = Parent->chanserv.GetLive(channel);
+    Chan_Live_t &clive = Magick::instance().chanserv.GetLive(channel);
 
     // Need to get a list first, else it may not work.
     for (i=0; i<clive.Bans(); i++)
@@ -9283,15 +9288,15 @@ void ChanServ::do_clear_Bans(const mstring &mynick, const mstring &source, const
     {
 	for (i=0; i<ops.size(); i++)
 	{
-	    if (!Parent->nickserv.IsLive(ops[i]) ||
-		Parent->nickserv.GetLive(ops[i]).IsServices())
+	    if (!Magick::instance().nickserv.IsLive(ops[i]) ||
+		Magick::instance().nickserv.GetLive(ops[i]).IsServices())
 		continue;
 	    SEND(mynick, ops[i], "CS_COMMAND/CLEAR", (
 		    message, source, channel));
 	}
-	Parent->chanserv.stats.i_Clear++;
+	Magick::instance().chanserv.stats.i_Clear++;
 	LOG(LM_INFO, "CHANSERV/COMMAND", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		message, channel));
     }
 }
@@ -9304,8 +9309,8 @@ void ChanServ::do_clear_All(const mstring &mynick, const mstring &source, const 
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -9321,31 +9326,31 @@ void ChanServ::do_clear_All(const mstring &mynick, const mstring &source, const 
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsLive(channel))
+    if (!Magick::instance().chanserv.IsLive(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTINUSE", (
 		channel));
 	return;
     }
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (!Parent->chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_CS_Clear()) &&
-	 Parent->commserv.GetList(Parent->commserv.OVR_CS_Clear()).IsOn(source)))
+    if (!Magick::instance().chanserv.GetStored(channel).GetAccess(source, "CMDCLEAR") &&
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_CS_Clear()) &&
+	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_CS_Clear()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9357,11 +9362,11 @@ void ChanServ::do_clear_All(const mstring &mynick, const mstring &source, const 
     ChanServ::do_clear_Voices(mynick, source, params);
     ChanServ::do_clear_Bans(mynick, source, params);
 
-    Parent->chanserv.stats.i_Clear++;
-    ::notice(mynick, channel, parseMessage(Parent->getMessage("CS_COMMAND/CLEAR"),
+    Magick::instance().chanserv.stats.i_Clear++;
+    ::notice(mynick, channel, parseMessage(Magick::instance().getMessage("CS_COMMAND/CLEAR"),
 		mVarArray(message, source, channel)));
     LOG(LM_INFO, "CHANSERV/COMMAND", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	message, channel));
 }
 
@@ -9383,7 +9388,7 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
     mstring what      = params.ExtractWord(4, " ");
     mstring level     = params.ExtractWord(5, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -9393,11 +9398,11 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
     long num = 0;
     if (level.Matches("F*ND*R", true))
     {
-	num = Parent->chanserv.Level_Max()+1;
+	num = Magick::instance().chanserv.Level_Max()+1;
     }
     else if (level.Matches("DIS*", true))
     {
-	num = Parent->chanserv.Level_Max()+2;
+	num = Magick::instance().chanserv.Level_Max()+2;
     }
     else if (!level.IsNumber() || level.Contains("."))
     {
@@ -9409,17 +9414,17 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
 	num = atol(level.c_str());
     }
 
-    if (num < Parent->chanserv.Level_Min() ||
-	num > Parent->chanserv.Level_Max()+2)
+    if (num < Magick::instance().chanserv.Level_Min() ||
+	num > Magick::instance().chanserv.Level_Max()+2)
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-		Parent->chanserv.Level_Min(),
-		Parent->chanserv.Level_Max()+2));
+		Magick::instance().chanserv.Level_Min(),
+		Magick::instance().chanserv.Level_Max()+2));
 	return;
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9429,7 +9434,7 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored.GetAccess(source) <= Parent->chanserv.Level_Max())
+    if (cstored.GetAccess(source) <= Magick::instance().chanserv.Level_Max())
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9439,13 +9444,13 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
     if (cstored.Level_find(what))
     {
 	const_cast<entlist_val_t<long> *>(&(*cstored.Level))->Value(num, source);
-	Parent->chanserv.stats.i_Level++;
+	Magick::instance().chanserv.stats.i_Level++;
 	SEND(mynick, source, "LIST/CHANGE2_LEVEL", (
 		    cstored.Level->Entry(), channel,
-		    Parent->getMessage(source, "LIST/LEVEL"),
+		    Magick::instance().getMessage(source, "LIST/LEVEL"),
 		    cstored.Level->Value()));
 	LOG(LM_DEBUG, "CHANSERV/LEVEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		cstored.Level->Entry(), cstored.Level->Value(),
 		channel));
     }
@@ -9453,7 +9458,7 @@ void ChanServ::do_level_Set(const mstring &mynick, const mstring &source, const 
     {
 	SEND(mynick, source, "LIST/NOTEXISTS2", (
 		    what, channel,
-		    Parent->getMessage(source, "LIST/LEVEL")));
+		    Magick::instance().getMessage(source, "LIST/LEVEL")));
     }
 }
 
@@ -9474,7 +9479,7 @@ void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring what      = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -9482,7 +9487,7 @@ void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, cons
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9492,7 +9497,7 @@ void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, cons
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored.GetAccess(source) <= Parent->chanserv.Level_Max())
+    if (cstored.GetAccess(source) <= Magick::instance().chanserv.Level_Max())
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9502,17 +9507,17 @@ void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, cons
     if (!what.Matches("ALL", true))
     {
 	if (cstored.Level_find(what) &&
-		Parent->chanserv.LVL(what) > Parent->chanserv.Level_Min())
+		Magick::instance().chanserv.LVL(what) > Magick::instance().chanserv.Level_Min())
 	{
 	    const_cast<entlist_val_t<long> *>(&(*cstored.Level))->Value(
-		Parent->chanserv.LVL(cstored.Level->Entry()), source);
-	    Parent->chanserv.stats.i_Level++;
+		Magick::instance().chanserv.LVL(cstored.Level->Entry()), source);
+	    Magick::instance().chanserv.stats.i_Level++;
 	    SEND(mynick, source, "LIST/CHANGE2_LEVEL", (
 		    cstored.Level->Entry(), channel,
-		    Parent->getMessage(source, "LIST/LEVEL"),
+		    Magick::instance().getMessage(source, "LIST/LEVEL"),
 		    cstored.Level->Value()));
 	    LOG(LM_DEBUG, "CHANSERV/LEVEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		cstored.Level->Entry(), cstored.Level->Value(),
 		channel));
 	}
@@ -9520,7 +9525,7 @@ void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, cons
 	{
 	    SEND(mynick, source, "LIST/NOTEXISTS2", (
 		    what, channel,
-		    Parent->getMessage(source, "LIST/LEVEL")));
+		    Magick::instance().getMessage(source, "LIST/LEVEL")));
 	}
     }
     else
@@ -9529,13 +9534,13 @@ void ChanServ::do_level_Reset(const mstring &mynick, const mstring &source, cons
 		cstored.Level != cstored.Level_end(); cstored.Level++)
 	{
 	    const_cast<entlist_val_t<long> *>(&(*cstored.Level))->Value(
-		Parent->chanserv.LVL(cstored.Level->Entry()), source);
+		Magick::instance().chanserv.LVL(cstored.Level->Entry()), source);
 	}
-	Parent->chanserv.stats.i_Level++;
+	Magick::instance().chanserv.stats.i_Level++;
 	SEND(mynick, source, "LIST/CHANGE2_ALL", (
-		channel, Parent->getMessage(source, "LIST/LEVEL")));
+		channel, Magick::instance().getMessage(source, "LIST/LEVEL")));
 	LOG(LM_DEBUG, "CHANSERV/LEVEL_ALL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		channel));
     }
 }
@@ -9548,8 +9553,8 @@ void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -9568,14 +9573,14 @@ void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const
     if (params.WordCount(" ") > 3)
 	what = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9586,8 +9591,8 @@ void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const
 
     long myaccess = cstored.GetAccess(source);
     bool haveset = cstored.GetAccess(source, "SET");
-    if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	Parent->commserv.GetList(Parent->commserv.SOP_Name().UpperCase()).IsIn(source))
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name().UpperCase()).IsIn(source))
 	haveset = true;
 
     if (haveset)
@@ -9604,21 +9609,21 @@ void ChanServ::do_level_List(const mstring &mynick, const mstring &source, const
 	if (haveset)
 	{
 	    mstring value;
-	    if (cstored.Level->Value() == Parent->chanserv.Level_Max()+2)
-		value = Parent->getMessage(source, "VALS/LVL_DISABLED");
-	    else if (cstored.Level->Value() == Parent->chanserv.Level_Max()+1)
-		value = Parent->getMessage(source, "VALS/LVL_FOUNDER");
+	    if (cstored.Level->Value() == Magick::instance().chanserv.Level_Max()+2)
+		value = Magick::instance().getMessage(source, "VALS/LVL_DISABLED");
+	    else if (cstored.Level->Value() == Magick::instance().chanserv.Level_Max()+1)
+		value = Magick::instance().getMessage(source, "VALS/LVL_FOUNDER");
 	    else
 		value = cstored.Level->Value();
 	    ::sendV(mynick, source, "%10s  %-15s  %s",
 		    value.c_str(), cstored.Level->Entry().c_str(),
-		    Parent->getMessage(source, "CS_SET/LVL_" + cstored.Level->Entry()).c_str());
+		    Magick::instance().getMessage(source, "CS_SET/LVL_" + cstored.Level->Entry()).c_str());
 	}
 	else if(cstored.Level->Entry() != "AUTODEOP" &&
 		cstored.Level->Value() <= myaccess)
 	{
 	    SEND(mynick, source, "CS_COMMAND/LEVEL_HAVE", (
-		    Parent->getMessage(source, "CS_SET/LVL_" + cstored.Level->Entry()),
+		    Magick::instance().getMessage(source, "CS_SET/LVL_" + cstored.Level->Entry()),
 		    channel));
 	}
     }
@@ -9642,22 +9647,22 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
     mstring who       = params.ExtractWord(4, " ");
     mstring level     = params.ExtractWord(5, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    if (!Parent->nickserv.IsStored(who))
+    if (!Magick::instance().nickserv.IsStored(who))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 		who));
 	return;
     }
 
-    who = Parent->getSname(who);
-    if (Parent->nickserv.GetStored(who).Forbidden())
+    who = Magick::instance().getSname(who);
+    if (Magick::instance().nickserv.GetStored(who).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 		who));
@@ -9677,17 +9682,17 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (num < Parent->chanserv.Level_Min() ||
-	num > Parent->chanserv.Level_Max())
+    if (num < Magick::instance().chanserv.Level_Min() ||
+	num > Magick::instance().chanserv.Level_Max())
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-		Parent->chanserv.Level_Min(),
-		Parent->chanserv.Level_Max()));
+		Magick::instance().chanserv.Level_Min(),
+		Magick::instance().chanserv.Level_Max()));
 	return;
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9722,25 +9727,25 @@ void ChanServ::do_access_Add(const mstring &mynick, const mstring &source, const
 
 	cstored.Access_erase();
 	cstored.Access_insert(entry, num, source);
-	Parent->chanserv.stats.i_Access++;
+	Magick::instance().chanserv.stats.i_Access++;
 	SEND(mynick, source, "LIST/CHANGE2_LEVEL", (
 		    cstored.Access->Entry(), channel,
-		    Parent->getMessage(source, "LIST/ACCESS"),
+		    Magick::instance().getMessage(source, "LIST/ACCESS"),
 		    num));
 	LOG(LM_DEBUG, "CHANSERV/ACCESS_CHANGE", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		cstored.Access->Entry(), channel, num));
     }
     else
     {
 	cstored.Access_insert(who, num, source);
-	Parent->chanserv.stats.i_Access++;
+	Magick::instance().chanserv.stats.i_Access++;
 	SEND(mynick, source, "LIST/ADD2_LEVEL", (
 		    cstored.Access->Entry(), channel,
-		    Parent->getMessage(source, "LIST/ACCESS"),
+		    Magick::instance().getMessage(source, "LIST/ACCESS"),
 		    num));
 	LOG(LM_DEBUG, "CHANSERV/ACCESS_ADD", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		cstored.Access->Entry(), channel, num));
     }
 }
@@ -9762,7 +9767,7 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
     mstring channel   = params.ExtractWord(2, " ");
     mstring who       = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -9770,7 +9775,7 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9814,12 +9819,12 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
 		return;
 	    }
 
-	    Parent->chanserv.stats.i_Access++;
+	    Magick::instance().chanserv.stats.i_Access++;
 	    SEND(mynick, source, "LIST/DEL2", (
 		    cstored.Access->Entry(), channel,
-		    Parent->getMessage(source, "LIST/ACCESS")));
+		    Magick::instance().getMessage(source, "LIST/ACCESS")));
 	    LOG(LM_DEBUG, "CHANSERV/ACCESS_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		cstored.Access->Entry(), channel));
 	    cstored.Access_erase();
 	}
@@ -9827,7 +9832,7 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
 	{
 	    SEND(mynick, source, "LIST/NOTEXISTS2_NUMBER", (
 		    num, channel,
-		    Parent->getMessage(source, "LIST/ACCESS")));
+		    Magick::instance().getMessage(source, "LIST/ACCESS")));
 	}
     }
     else
@@ -9842,12 +9847,12 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
 		return;
 	    }
 
-	    Parent->chanserv.stats.i_Access++;
+	    Magick::instance().chanserv.stats.i_Access++;
 	    SEND(mynick, source, "LIST/DEL2", (
 		    cstored.Access->Entry(), channel,
-		    Parent->getMessage(source, "LIST/ACCESS")));
+		    Magick::instance().getMessage(source, "LIST/ACCESS")));
 	    LOG(LM_DEBUG, "CHANSERV/ACCESS_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		cstored.Access->Entry(), channel));
 	    cstored.Access_erase();
 	}
@@ -9855,7 +9860,7 @@ void ChanServ::do_access_Del(const mstring &mynick, const mstring &source, const
 	{
 	    SEND(mynick, source, "LIST/NOTEXISTS2", (
 		    who, channel,
-		    Parent->getMessage(source, "LIST/ACCESS")));
+		    Magick::instance().getMessage(source, "LIST/ACCESS")));
 	}
     }
 }
@@ -9868,8 +9873,8 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -9885,14 +9890,14 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9903,8 +9908,8 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "VIEW") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source)))
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -9914,13 +9919,13 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
     {
 	SEND(mynick, source, "LIST/DISPLAY2", (
 		    channel,
-		    Parent->getMessage(source, "LIST/ACCESS")));
+		    Magick::instance().getMessage(source, "LIST/ACCESS")));
     }
     else
     {
 	SEND(mynick, source, "LIST/EMPTY2", (
 		    channel,
-		    Parent->getMessage(source, "LIST/ACCESS")));
+		    Magick::instance().getMessage(source, "LIST/ACCESS")));
 	return;
     }
 
@@ -9931,8 +9936,8 @@ void ChanServ::do_access_List(const mstring &mynick, const mstring &source, cons
 	cstored.Access != cstored.Access_end(); cstored.Access++, i++)
     {
 	::sendV(mynick, source, "%4d. %3d %s (%s)", i, cstored.Access->Value(),
-		    Parent->getSname(cstored.Access->Entry()).c_str(),
-		    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
+		    Magick::instance().getSname(cstored.Access->Entry()).c_str(),
+		    parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
 		    mVarArray(cstored.Access->Last_Modify_Time().Ago(),
 		    cstored.Access->Last_Modifier())).c_str());
     }
@@ -9954,11 +9959,11 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
 
     mstring channel   = params.ExtractWord(2, " ");
     mstring who       = params.ExtractWord(4, " ");
-    mstring reason    = Parent->chanserv.DEF_Akick_Reason();
+    mstring reason    = Magick::instance().chanserv.DEF_Akick_Reason();
     if (params.WordCount(" ") > 4)
 	reason        = params.After(" ", 4);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -9966,7 +9971,7 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -9987,7 +9992,7 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
 	if (!who.Contains("@"))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-		    Parent->getMessage(source, "LIST/AKICK"), '@'));
+		    Magick::instance().getMessage(source, "LIST/AKICK"), '@'));
 	    return;
 	}
 	else if (!who.Contains("!"))
@@ -10016,35 +10021,35 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
 	    }
 	}
 	// IF we have less than 1 char for 
-	if (!super && num <= Parent->config.Starthresh())
+	if (!super && num <= Magick::instance().config.Starthresh())
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
-			Parent->getMessage(source, "LIST/AKICK"),
-			Parent->config.Starthresh()));
+			Magick::instance().getMessage(source, "LIST/AKICK"),
+			Magick::instance().config.Starthresh()));
 	    return;
 	}
 	else if (num <= 1)
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/STARTHRESH", (
-			Parent->getMessage(source, "LIST/AKICK"), 1));
+			Magick::instance().getMessage(source, "LIST/AKICK"), 1));
 	    return;
 	}
     }
-    else if (!Parent->nickserv.IsStored(who))
+    else if (!Magick::instance().nickserv.IsStored(who))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 		who));
 	return;
     }
-    else if (Parent->nickserv.GetStored(who).Forbidden())
+    else if (Magick::instance().nickserv.GetStored(who).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
-		Parent->getSname(who)));
+		Magick::instance().getSname(who)));
 	return;
     }
     else
     {
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 	MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Access"));
 	if (cstored.Access_find(who))
 	{
@@ -10068,60 +10073,60 @@ void ChanServ::do_akick_Add(const mstring &mynick, const mstring &source, const 
     {
 	SEND(mynick, source, "LIST/EXISTS2", (
 		who, channel,
-		Parent->getMessage(source, "LIST/AKICK")));
+		Magick::instance().getMessage(source, "LIST/AKICK")));
     }
     else
     {
 	cstored.Akick_insert(who, reason, source);
-	Parent->chanserv.stats.i_Akick++;
+	Magick::instance().chanserv.stats.i_Akick++;
 	SEND(mynick, source, "LIST/ADD2", (
 		who, channel,
-		Parent->getMessage(source, "LIST/AKICK")));
+		Magick::instance().getMessage(source, "LIST/AKICK")));
 	LOG(LM_DEBUG, "CHANSERV/AKICK_ADD", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		who, channel));
 
-	if (Parent->chanserv.IsLive(channel.c_str()))
+	if (Magick::instance().chanserv.IsLive(channel.c_str()))
 	{
 	    unsigned int i;
 	    if (who.Contains("@"))
 	    {
 		// Kick matching users ...
 		vector<mstring> kickees;
-		Chan_Live_t chan = Parent->chanserv.GetLive(channel);
+		Chan_Live_t chan = Magick::instance().chanserv.GetLive(channel);
 		for (i=0; i<chan.Users(); i++)
 		{
 		    // MAN these commands can get REAL long .. ;)
-		    if (Parent->nickserv.IsLive(chan.User(i)) &&
-			Parent->nickserv.GetLive(chan.User(i)).Mask(Nick_Live_t::N_U_P_H).Matches(who, true))
+		    if (Magick::instance().nickserv.IsLive(chan.User(i)) &&
+			Magick::instance().nickserv.GetLive(chan.User(i)).Mask(Nick_Live_t::N_U_P_H).Matches(who, true))
 		    {
 			kickees.push_back(chan.User(i));
 		    }
 		}
 		for (i=0; i<kickees.size(); i++)
 		{
-		    Parent->server.KICK(mynick, kickees[i], channel,
-				((!reason.empty()) ? reason : Parent->chanserv.DEF_Akick_Reason()));
+		    Magick::instance().server.KICK(mynick, kickees[i], channel,
+				((!reason.empty()) ? reason : Magick::instance().chanserv.DEF_Akick_Reason()));
 		}
 	    }
 	    else
 	    {
 		// Kick stored user ...
-		mstring realnick = Parent->nickserv.GetStored(who).Host();
+		mstring realnick = Magick::instance().nickserv.GetStored(who).Host();
 		if (realnick.empty())
 		    realnick = who;
-		if (Parent->chanserv.GetLive(channel).IsIn(realnick))
+		if (Magick::instance().chanserv.GetLive(channel).IsIn(realnick))
 		{
-		    Parent->server.KICK(mynick, realnick, channel,
-			((!reason.empty()) ? reason : Parent->chanserv.DEF_Akick_Reason()));
+		    Magick::instance().server.KICK(mynick, realnick, channel,
+			((!reason.empty()) ? reason : Magick::instance().chanserv.DEF_Akick_Reason()));
 		}
-		Nick_Stored_t nick = Parent->nickserv.GetStored(realnick);
+		Nick_Stored_t nick = Magick::instance().nickserv.GetStored(realnick);
 		for (i=0; i<nick.Siblings(); i++)
 		{
-		    if (Parent->chanserv.GetLive(channel).IsIn(nick.Sibling(i)))
+		    if (Magick::instance().chanserv.GetLive(channel).IsIn(nick.Sibling(i)))
 		    {
-			Parent->server.KICK(mynick, nick.Sibling(i), channel,
-				((!reason.empty()) ? reason : Parent->chanserv.DEF_Akick_Reason()));
+			Magick::instance().server.KICK(mynick, nick.Sibling(i), channel,
+				((!reason.empty()) ? reason : Magick::instance().chanserv.DEF_Akick_Reason()));
 		    }
 		}
 	    }
@@ -10146,7 +10151,7 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
     mstring channel   = params.ExtractWord(2, " ");
     mstring who       = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -10154,7 +10159,7 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10191,12 +10196,12 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 				i++, cstored.Akick++) ;
 	if (cstored.Akick != cstored.Akick_end())
 	{
-	    Parent->chanserv.stats.i_Akick++;
+	    Magick::instance().chanserv.stats.i_Akick++;
 	    SEND(mynick, source, "LIST/DEL2", (
 		    cstored.Akick->Entry(), channel,
-		    Parent->getMessage(source, "LIST/AKICK")));
+		    Magick::instance().getMessage(source, "LIST/AKICK")));
 	    LOG(LM_DEBUG, "CHANSERV/AKICK_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		cstored.Akick->Entry(), channel));
 	    cstored.Akick_erase();
 	}
@@ -10204,7 +10209,7 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	{
 	    SEND(mynick, source, "LIST/NOTEXISTS2_NUMBER", (
 		    num, channel,
-		    Parent->getMessage(source, "LIST/AKICK")));
+		    Magick::instance().getMessage(source, "LIST/AKICK")));
 	}
     }
     else
@@ -10214,7 +10219,7 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	    if (!who.Contains("@"))
 	    {
 		SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-		    Parent->getMessage(source, "LIST/AKICK"), '@'));
+		    Magick::instance().getMessage(source, "LIST/AKICK"), '@'));
 		return;
 	    }
 	    else if (!who.Contains("!"))
@@ -10226,12 +10231,12 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Akick"));
 	if (cstored.Akick_find(who))
 	{
-	    Parent->chanserv.stats.i_Akick++;
+	    Magick::instance().chanserv.stats.i_Akick++;
 	    SEND(mynick, source, "LIST/DEL2", (
 		    cstored.Akick->Entry(), channel,
-		    Parent->getMessage(source, "LIST/AKICK")));
+		    Magick::instance().getMessage(source, "LIST/AKICK")));
 	    LOG(LM_DEBUG, "CHANSERV/AKICK_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		cstored.Akick->Entry(), channel));
 	    cstored.Akick_erase();
 	}
@@ -10239,7 +10244,7 @@ void ChanServ::do_akick_Del(const mstring &mynick, const mstring &source, const 
 	{
 	    SEND(mynick, source, "LIST/NOTEXISTS2", (
 		    who, channel,
-		    Parent->getMessage(source, "LIST/AKICK")));
+		    Magick::instance().getMessage(source, "LIST/AKICK")));
 	}
     }
 }
@@ -10252,8 +10257,8 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -10269,14 +10274,14 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10287,8 +10292,8 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!cstored.GetAccess(source, "VIEW") &&
-	!(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source)))
+	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source)))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -10298,13 +10303,13 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
     {
 	SEND(mynick, source, "LIST/DISPLAY2", (
 		    channel,
-		    Parent->getMessage(source, "LIST/AKICK")));
+		    Magick::instance().getMessage(source, "LIST/AKICK")));
     }
     else
     {
 	SEND(mynick, source, "LIST/EMPTY2", (
 		    channel,
-		    Parent->getMessage(source, "LIST/AKICK")));
+		    Magick::instance().getMessage(source, "LIST/AKICK")));
 	return;
     }
 
@@ -10314,7 +10319,7 @@ void ChanServ::do_akick_List(const mstring &mynick, const mstring &source, const
 	cstored.Akick != cstored.Akick_end(); cstored.Akick++, i++)
     {
 	::sendV(mynick, source, "%4d. %s (%s)", i, cstored.Akick->Entry().c_str(),
-		    parseMessage(Parent->getMessage(source, "LIST/LASTMOD"),
+		    parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
 		    mVarArray(cstored.Akick->Last_Modify_Time().Ago(),
 		    cstored.Akick->Last_Modifier())).c_str());
 	::send(mynick, source, "      " + cstored.Akick->Value());
@@ -10336,10 +10341,10 @@ void ChanServ::do_greet_Add(const mstring &mynick, const mstring &source, const 
     }
 
     mstring channel   = params.ExtractWord(2, " ");
-    mstring target    = Parent->getSname(source);
+    mstring target    = Magick::instance().getSname(source);
     mstring option    = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -10347,7 +10352,7 @@ void ChanServ::do_greet_Add(const mstring &mynick, const mstring &source, const 
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10365,14 +10370,14 @@ void ChanServ::do_greet_Add(const mstring &mynick, const mstring &source, const 
 	{
 	    target = params.ExtractWord(4, " ").After("@");
 	    option = params.After(" ", 4);
-	    if (!Parent->nickserv.IsStored(target))
+	    if (!Magick::instance().nickserv.IsStored(target))
 	    {
 		SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 		    target));
 		return;
 	    }
-	    target = Parent->getSname(target);
-	    if (Parent->nickserv.GetStored(target).Forbidden())
+	    target = Magick::instance().getSname(target);
+	    if (Magick::instance().nickserv.GetStored(target).Forbidden())
 	    {
 		SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 			target));
@@ -10393,9 +10398,9 @@ void ChanServ::do_greet_Add(const mstring &mynick, const mstring &source, const 
 	    option = option.After("!");
     }
 
-    if (!Parent->nickserv.GetStored(target).Host().empty())
+    if (!Magick::instance().nickserv.GetStored(target).Host().empty())
     {
-	target = Parent->nickserv.GetStored(target).Host();
+	target = Magick::instance().nickserv.GetStored(target).Host();
     }
 
     { MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Greet"));
@@ -10411,12 +10416,12 @@ void ChanServ::do_greet_Add(const mstring &mynick, const mstring &source, const 
 	cstored.Greet_erase();
     }}
     cstored.Greet_insert(option, target);
-    Parent->chanserv.stats.i_Greet++;
+    Magick::instance().chanserv.stats.i_Greet++;
     SEND(mynick, source, "LIST/ADD2", (
 		target, channel,
-		Parent->getMessage(source, "LIST/GREET")));
+		Magick::instance().getMessage(source, "LIST/GREET")));
     LOG(LM_DEBUG, "CHANSERV/GREET_ADD", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	target, channel));
 }
 
@@ -10435,9 +10440,9 @@ void ChanServ::do_greet_Del(const mstring &mynick, const mstring &source, const 
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring target = Parent->getSname(source);
+    mstring target = Magick::instance().getSname(source);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -10445,7 +10450,7 @@ void ChanServ::do_greet_Del(const mstring &mynick, const mstring &source, const 
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10462,18 +10467,18 @@ void ChanServ::do_greet_Del(const mstring &mynick, const mstring &source, const 
 	{ MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Greet"));
 	if (!cstored.Greet_find(target))
 	{
-	    if (Parent->nickserv.IsStored(target))
+	    if (Magick::instance().nickserv.IsStored(target))
 	    {
-		target = Parent->nickserv.GetStored(target).Host();
+		target = Magick::instance().nickserv.GetStored(target).Host();
 		if (target.empty())
-		    target = Parent->getSname(target);
+		    target = Magick::instance().getSname(target);
 	    }
 
 	    if (!cstored.Greet_find(target))
 	    {
 		SEND(mynick, source, "LIST/NOTEXISTS2", (
 			target, channel,
-			Parent->getMessage(source, "LIST/GREET")));
+			Magick::instance().getMessage(source, "LIST/GREET")));
 		return;
 	    }
 	}}
@@ -10487,15 +10492,15 @@ void ChanServ::do_greet_Del(const mstring &mynick, const mstring &source, const 
     if (!source.IsSameAs(target, true))
     {
 	cstored.Greet_erase();
-	Parent->chanserv.stats.i_Greet++;
+	Magick::instance().chanserv.stats.i_Greet++;
 	SEND(mynick, source, "LIST/DEL2", (
 			target, channel,
-			Parent->getMessage(source, "LIST/GREET")));
+			Magick::instance().getMessage(source, "LIST/GREET")));
     }
     else
     {
-	if (!Parent->nickserv.GetStored(target).Host().empty())
-	    target = Parent->nickserv.GetStored(target).Host();
+	if (!Magick::instance().nickserv.GetStored(target).Host().empty())
+	    target = Magick::instance().nickserv.GetStored(target).Host();
 
 	{ MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Greet"));
 	if (cstored.Greet_find(target))
@@ -10508,19 +10513,19 @@ void ChanServ::do_greet_Del(const mstring &mynick, const mstring &source, const 
 		return;
 	    }
 	    cstored.Greet_erase();
-	    Parent->chanserv.stats.i_Greet++;
+	    Magick::instance().chanserv.stats.i_Greet++;
 	    SEND(mynick, source, "LIST/DEL2", (
 			target, channel,
-			Parent->getMessage(source, "LIST/GREET")));
+			Magick::instance().getMessage(source, "LIST/GREET")));
 	    LOG(LM_DEBUG, "CHANSERV/GREET_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		target, channel));
 	}
 	else
 	{
 	    SEND(mynick, source, "LIST/NOTEXISTS2", (
 			target, channel,
-			Parent->getMessage(source, "LIST/GREET")));
+			Magick::instance().getMessage(source, "LIST/GREET")));
 	}}
     }
 }
@@ -10533,8 +10538,8 @@ void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -10552,14 +10557,14 @@ void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const
     mstring target;
     bool all = false;
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10571,8 +10576,8 @@ void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (params.WordCount(" ") > 3 &&
 	(cstored.GetAccess(source, "OVERGREET") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))))
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source))))
     {
 	if (params.ExtractWord(4, " ").IsSameAs("all", true))
 	    all = true;
@@ -10586,13 +10591,13 @@ void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const
     }
     else
     {
-	target = Parent->getSname(source);
+	target = Magick::instance().getSname(source);
     }
 
-    if (!target.empty() && Parent->nickserv.IsStored(target))
+    if (!target.empty() && Magick::instance().nickserv.IsStored(target))
     {
-	if (!Parent->nickserv.GetStored(target).Host().empty())
-	    target = Parent->nickserv.GetStored(target).Host();
+	if (!Magick::instance().nickserv.GetStored(target).Host().empty())
+	    target = Magick::instance().nickserv.GetStored(target).Host();
     }
 
     bool found = false;
@@ -10613,11 +10618,11 @@ void ChanServ::do_greet_List(const mstring &mynick, const mstring &source, const
 	if (all)
 	    SEND(mynick, source, "LIST/EMPTY2", (
 			channel,
-			Parent->getMessage(source, "LIST/GREET")));
+			Magick::instance().getMessage(source, "LIST/GREET")));
 	else
 	    SEND(mynick, source, "LIST/NOTEXISTS2", (
 			target, channel,
-			Parent->getMessage(source, "LIST/GREET")));
+			Magick::instance().getMessage(source, "LIST/GREET")));
     }
 }
 
@@ -10638,7 +10643,7 @@ void ChanServ::do_message_Add(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring text      = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -10646,7 +10651,7 @@ void ChanServ::do_message_Add(const mstring &mynick, const mstring &source, cons
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10662,7 +10667,7 @@ void ChanServ::do_message_Add(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (cstored.Message_size() >= Parent->chanserv.Max_Messages())
+    if (cstored.Message_size() >= Magick::instance().chanserv.Max_Messages())
     {
 	SEND(mynick, source, "CS_STATUS/MAX_MESSAGES", (
 		channel));
@@ -10670,12 +10675,12 @@ void ChanServ::do_message_Add(const mstring &mynick, const mstring &source, cons
     }
 
     cstored.Message_insert(text, source);
-    Parent->chanserv.stats.i_Message++;
+    Magick::instance().chanserv.stats.i_Message++;
     SEND(mynick, source, "LIST/ADD2_NUMBER", (
 		cstored.Message_size(), channel,
-		Parent->getMessage(source, "LIST/JOINMSG")));
+		Magick::instance().getMessage(source, "LIST/JOINMSG")));
     LOG(LM_DEBUG, "CHANSERV/MESSAGE_ADD", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	channel));
 }
 
@@ -10696,7 +10701,7 @@ void ChanServ::do_message_Del(const mstring &mynick, const mstring &source, cons
     mstring channel = params.ExtractWord(2, " ");
     mstring target  = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -10710,7 +10715,7 @@ void ChanServ::do_message_Del(const mstring &mynick, const mstring &source, cons
     }
 
     RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10738,7 +10743,7 @@ void ChanServ::do_message_Del(const mstring &mynick, const mstring &source, cons
     {
 	SEND(mynick, source, "LIST/EMPTY2", (
 		channel,
-		Parent->getMessage(source, "LIST/JOINMSG")));
+		Magick::instance().getMessage(source, "LIST/JOINMSG")));
 	return;
     }
 
@@ -10746,19 +10751,19 @@ void ChanServ::do_message_Del(const mstring &mynick, const mstring &source, cons
     if (cstored.Message_find(num))
     {
         cstored.Message_erase();
-	Parent->chanserv.stats.i_Message++;
+	Magick::instance().chanserv.stats.i_Message++;
 	SEND(mynick, source, "LIST/DEL2_NUMBER", (
 		num, channel,
-		Parent->getMessage(source, "LIST/JOINMSG")));
+		Magick::instance().getMessage(source, "LIST/JOINMSG")));
 	LOG(LM_DEBUG, "CHANSERV/MESSAGE_DEL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		channel));
     }
     else
     {
 	SEND(mynick, source, "LIST/NOTEXISTS2_NUMBER", (
 		num, channel,
-		Parent->getMessage(source, "LIST/JOINMSG")));
+		Magick::instance().getMessage(source, "LIST/JOINMSG")));
     }}
 }
 
@@ -10770,8 +10775,8 @@ void ChanServ::do_message_List(const mstring &mynick, const mstring &source, con
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -10787,14 +10792,14 @@ void ChanServ::do_message_List(const mstring &mynick, const mstring &source, con
 
     mstring channel = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    Chan_Stored_t cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10805,8 +10810,8 @@ void ChanServ::do_message_List(const mstring &mynick, const mstring &source, con
 
     // If we have 2 params, and we have SUPER access, or are a SOP
     if (!(cstored.GetAccess(source, "MESSAGE") ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
-	Parent->commserv.GetList(Parent->commserv.OVR_View()).IsOn(source))))
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View()).IsOn(source))))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -10816,12 +10821,12 @@ void ChanServ::do_message_List(const mstring &mynick, const mstring &source, con
     {
 	SEND(mynick, source, "LIST/EMPTY2", (
 		channel,
-		Parent->getMessage(source, "LIST/JOINMSG")));
+		Magick::instance().getMessage(source, "LIST/JOINMSG")));
 	return;
     }
 
     SEND(mynick, source, "LIST/DISPLAY2", (
-	    channel, Parent->getMessage(source, "LIST/JOINMSG")));
+	    channel, Magick::instance().getMessage(source, "LIST/JOINMSG")));
 
     { MLOCK(("ChanServ", "stored", cstored.Name().LowerCase(), "Message"));
     int i;
@@ -10850,37 +10855,37 @@ void ChanServ::do_set_Founder(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring founder   = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    if (!Parent->nickserv.IsStored(founder))
+    if (!Magick::instance().nickserv.IsStored(founder))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 		founder));
 	return;
     }
-    else if (Parent->nickserv.GetStored(founder).Forbidden())
+    else if (Magick::instance().nickserv.GetStored(founder).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
-		Parent->getSname(founder)));
+		Magick::instance().getSname(founder)));
 	return;
     }
-    else if (!Parent->nickserv.GetStored(founder).Host().empty())
+    else if (!Magick::instance().nickserv.GetStored(founder).Host().empty())
     {
-	founder = Parent->nickserv.GetStored(founder).Host();
+	founder = Magick::instance().nickserv.GetStored(founder).Host();
     }
     else
     {
-	founder = Parent->getSname(founder);
+	founder = Magick::instance().getSname(founder);
     }
 
-    if (Parent->chanserv.Max_Per_Nick() &&
-	Parent->nickserv.GetStored(founder).MyChannels() >=
-	Parent->chanserv.Max_Per_Nick())
+    if (Magick::instance().chanserv.Max_Per_Nick() &&
+	Magick::instance().nickserv.GetStored(founder).MyChannels() >=
+	Magick::instance().chanserv.Max_Per_Nick())
     {
 	SEND(mynick, source, "CS_STATUS/OTH_TOOMANY", (
 				founder));
@@ -10888,7 +10893,7 @@ void ChanServ::do_set_Founder(const mstring &mynick, const mstring &source, cons
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10897,9 +10902,9 @@ void ChanServ::do_set_Founder(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (!(cstored.GetAccess(source) > Parent->chanserv.Level_Max() ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_Owner()) &&
-	Parent->commserv.GetList(Parent->commserv.OVR_Owner()).IsOn(source))))
+    if (!(cstored.GetAccess(source) > Magick::instance().chanserv.Level_Max() ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner()).IsOn(source))))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -10907,13 +10912,13 @@ void ChanServ::do_set_Founder(const mstring &mynick, const mstring &source, cons
 
     cstored.Founder(founder);
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/FOUNDER"),
+	    Magick::instance().getMessage(source, "CS_SET/FOUNDER"),
 	    channel, founder));
     LOG(LM_INFO, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/FOUNDER"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/FOUNDER"),
 	channel, founder));
 }
 
@@ -10934,37 +10939,37 @@ void ChanServ::do_set_CoFounder(const mstring &mynick, const mstring &source, co
     mstring channel   = params.ExtractWord(2, " ");
     mstring founder   = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
 
-    if (!Parent->nickserv.IsStored(founder))
+    if (!Magick::instance().nickserv.IsStored(founder))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 		founder));
 	return;
     }
-    else if (Parent->nickserv.GetStored(founder).Forbidden())
+    else if (Magick::instance().nickserv.GetStored(founder).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
-		Parent->getSname(founder)));
+		Magick::instance().getSname(founder)));
 	return;
     }
-    else if (!Parent->nickserv.GetStored(founder).Host().empty())
+    else if (!Magick::instance().nickserv.GetStored(founder).Host().empty())
     {
-	founder = Parent->nickserv.GetStored(founder).Host();
+	founder = Magick::instance().nickserv.GetStored(founder).Host();
     }
     else
     {
-	founder = Parent->getSname(founder);
+	founder = Magick::instance().getSname(founder);
     }
 
-    if (Parent->chanserv.Max_Per_Nick() &&
-	Parent->nickserv.GetStored(founder).MyChannels() >=
-	Parent->chanserv.Max_Per_Nick())
+    if (Magick::instance().chanserv.Max_Per_Nick() &&
+	Magick::instance().nickserv.GetStored(founder).MyChannels() >=
+	Magick::instance().chanserv.Max_Per_Nick())
     {
 	SEND(mynick, source, "CS_STATUS/OTH_TOOMANY", (
 				founder));
@@ -10972,7 +10977,7 @@ void ChanServ::do_set_CoFounder(const mstring &mynick, const mstring &source, co
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -10987,9 +10992,9 @@ void ChanServ::do_set_CoFounder(const mstring &mynick, const mstring &source, co
 	return;
     }
 
-    if (!(cstored.GetAccess(source) > Parent->chanserv.Level_Max() ||
-	(Parent->commserv.IsList(Parent->commserv.OVR_Owner()) &&
-	Parent->commserv.GetList(Parent->commserv.OVR_Owner()).IsOn(source))))
+    if (!(cstored.GetAccess(source) > Magick::instance().chanserv.Level_Max() ||
+	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner()) &&
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner()).IsOn(source))))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -10997,25 +11002,25 @@ void ChanServ::do_set_CoFounder(const mstring &mynick, const mstring &source, co
 
     cstored.CoFounder(founder);
     } 
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     if (founder.empty())
     {
 	SEND(mynick, source, "CS_COMMAND/UNSET", (
-	    Parent->getMessage(source, "CS_SET/COFOUNDER"),
+	    Magick::instance().getMessage(source, "CS_SET/COFOUNDER"),
 	    channel));
 	LOG(LM_INFO, "CHANSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/COFOUNDER"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/COFOUNDER"),
 		channel));
     }
     else
     {
 	SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/COFOUNDER"),
+	    Magick::instance().getMessage(source, "CS_SET/COFOUNDER"),
 	    channel, founder));
 	LOG(LM_INFO, "CHANSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/COFOUNDER"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/COFOUNDER"),
 		channel, founder));
     }
 }
@@ -11037,7 +11042,7 @@ void ChanServ::do_set_Description(const mstring &mynick, const mstring &source, 
     mstring channel   = params.ExtractWord(2, " ");
     mstring option    = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11045,7 +11050,7 @@ void ChanServ::do_set_Description(const mstring &mynick, const mstring &source, 
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11063,13 +11068,13 @@ void ChanServ::do_set_Description(const mstring &mynick, const mstring &source, 
 
     cstored.Description(option);
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/DESCRIPTION"),
+	    Magick::instance().getMessage(source, "CS_SET/DESCRIPTION"),
 	    channel, option));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/DESCRIPTION"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/DESCRIPTION"),
 	channel, option));
 }
 
@@ -11090,7 +11095,7 @@ void ChanServ::do_set_Password(const mstring &mynick, const mstring &source, con
     mstring channel   = params.ExtractWord(2, " ");
     mstring password  = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11105,7 +11110,7 @@ void ChanServ::do_set_Password(const mstring &mynick, const mstring &source, con
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11115,7 +11120,7 @@ void ChanServ::do_set_Password(const mstring &mynick, const mstring &source, con
     }
 
     // If we have 2 params, and we have SUPER access, or are a SOP
-    if (cstored.GetAccess(source) <= Parent->chanserv.Level_Max())
+    if (cstored.GetAccess(source) <= Magick::instance().chanserv.Level_Max())
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	return;
@@ -11123,12 +11128,12 @@ void ChanServ::do_set_Password(const mstring &mynick, const mstring &source, con
 
     cstored.Password(password);
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/PASSWORD"),
+	    Magick::instance().getMessage(source, "CS_SET/PASSWORD"),
 	    channel, password));
     LOG(LM_INFO, "CHANSERV/SET_PASSWORD", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	channel));
 }
 
@@ -11149,7 +11154,7 @@ void ChanServ::do_set_Email(const mstring &mynick, const mstring &source, const 
     mstring channel   = params.ExtractWord(2, " ");
     mstring option    = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11161,18 +11166,18 @@ void ChanServ::do_set_Email(const mstring &mynick, const mstring &source, const 
     else if (!option.Contains("@"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-		Parent->getMessage(source, "CS_SET/EMAIL"), '@'));
+		Magick::instance().getMessage(source, "CS_SET/EMAIL"), '@'));
 	return;
     }
     else if (option.WordCount("@") != 2)
     {
 	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAINONE", (
-		Parent->getMessage(source, "CS_SET/EMAIL"), '@'));
+		Magick::instance().getMessage(source, "CS_SET/EMAIL"), '@'));
 	return;
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     // If we have 2 params, and we have SUPER access, or are a SOP
@@ -11184,25 +11189,25 @@ void ChanServ::do_set_Email(const mstring &mynick, const mstring &source, const 
 
     cstored.Email(option);
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     if (option.empty())
     {
 	SEND(mynick, source, "CS_COMMAND/UNSET", (
-	    Parent->getMessage(source, "CS_SET/EMAIL"),
+	    Magick::instance().getMessage(source, "CS_SET/EMAIL"),
 	    channel));
 	LOG(LM_DEBUG, "CHANSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/EMAIL"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/EMAIL"),
 		channel));
     }
     else
     {
 	SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/EMAIL"),
+	    Magick::instance().getMessage(source, "CS_SET/EMAIL"),
 	    channel, option));
 	LOG(LM_DEBUG, "CHANSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/EMAIL"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/EMAIL"),
 		channel, option));
     }
 }
@@ -11224,7 +11229,7 @@ void ChanServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
     mstring channel   = params.ExtractWord(2, " ");
     mstring option    = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11240,7 +11245,7 @@ void ChanServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11258,25 +11263,25 @@ void ChanServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
 
     cstored.URL(option);
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     if (option.empty())
     {
 	SEND(mynick, source, "CS_COMMAND/UNSET", (
-	    Parent->getMessage(source, "CS_SET/URL"),
+	    Magick::instance().getMessage(source, "CS_SET/URL"),
 	    channel));
 	LOG(LM_DEBUG, "CHANSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/URL"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/URL"),
 		channel));
     }
     else
     {
 	SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/URL"),
+	    Magick::instance().getMessage(source, "CS_SET/URL"),
 	    channel, "http://" + option));
 	LOG(LM_DEBUG, "CHANSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/URL"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/URL"),
 		channel, "http://" + option));
     }
 }
@@ -11298,7 +11303,7 @@ void ChanServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring option    = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11309,7 +11314,7 @@ void ChanServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
 	option.erase();
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11320,25 +11325,25 @@ void ChanServ::do_set_Comment(const mstring &mynick, const mstring &source, cons
 
     cstored.Comment(option);
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     if (option.empty())
     {
 	SEND(mynick, source, "CS_COMMAND/UNSET", (
-	    Parent->getMessage(source, "CS_SET/COMMENT"),
+	    Magick::instance().getMessage(source, "CS_SET/COMMENT"),
 	    channel));
 	LOG(LM_DEBUG, "CHANSERV/UNSET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/COMMENT"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/COMMENT"),
 		channel));
     }
     else
     {
 	SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/COMMENT"),
+	    Magick::instance().getMessage(source, "CS_SET/COMMENT"),
 	    channel, option));
 	LOG(LM_DEBUG, "CHANSERV/SET", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage("CS_SET/COMMENT"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage("CS_SET/COMMENT"),
 		channel, option));
     }
 }
@@ -11360,7 +11365,7 @@ void ChanServ::do_set_Mlock(const mstring &mynick, const mstring &source, const 
     mstring channel   = params.ExtractWord(2, " ");
     mstring option    = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11369,12 +11374,12 @@ void ChanServ::do_set_Mlock(const mstring &mynick, const mstring &source, const 
 
     if (option.IsSameAs("default", true) || option.IsSameAs("reset", true))
     {
-	option = Parent->chanserv.DEF_MLock();
+	option = Magick::instance().chanserv.DEF_MLock();
     }
 
     vector<mstring> retval;
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11392,7 +11397,7 @@ void ChanServ::do_set_Mlock(const mstring &mynick, const mstring &source, const 
 
     retval = cstored.Mlock(source, option);
     } 
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     for (unsigned int i=0; i<retval.size(); i++)
 	::send(mynick, source, retval[i]);
 }
@@ -11414,7 +11419,7 @@ void ChanServ::do_set_BanTime(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring value     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11423,7 +11428,7 @@ void ChanServ::do_set_BanTime(const mstring &mynick, const mstring &source, cons
 
     unsigned long num = FromHumanTime(value);
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11442,20 +11447,20 @@ void ChanServ::do_set_BanTime(const mstring &mynick, const mstring &source, cons
     if (cstored.L_Bantime())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/BANTIME"),
+		Magick::instance().getMessage(source, "CS_SET/BANTIME"),
 		channel));
 	return;
     }
 
     cstored.Bantime(num);
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/BANTIME"),
+	    Magick::instance().getMessage(source, "CS_SET/BANTIME"),
 	    channel, ToHumanTime(num, source)));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/BANTIME"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/BANTIME"),
 	channel, ToHumanTime(num, source)));
 }
 
@@ -11476,7 +11481,7 @@ void ChanServ::do_set_PartTime(const mstring &mynick, const mstring &source, con
     mstring channel   = params.ExtractWord(2, " ");
     mstring value     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11485,7 +11490,7 @@ void ChanServ::do_set_PartTime(const mstring &mynick, const mstring &source, con
 
     unsigned long num = FromHumanTime(value);
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11504,20 +11509,20 @@ void ChanServ::do_set_PartTime(const mstring &mynick, const mstring &source, con
     if (cstored.L_Parttime())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/PARTTIME"),
+		Magick::instance().getMessage(source, "CS_SET/PARTTIME"),
 		channel));
 	return;
     }
 
     cstored.Parttime(num);
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/PARTTIME"),
+	    Magick::instance().getMessage(source, "CS_SET/PARTTIME"),
 	    channel, ToHumanTime(num, source)));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/PARTTIME"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/PARTTIME"),
 	channel, ToHumanTime(num, source)));
 }
 
@@ -11538,7 +11543,7 @@ void ChanServ::do_set_KeepTopic(const mstring &mynick, const mstring &source, co
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11547,7 +11552,7 @@ void ChanServ::do_set_KeepTopic(const mstring &mynick, const mstring &source, co
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Keeptopic())
+	if (Magick::instance().chanserv.DEF_Keeptopic())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -11560,7 +11565,7 @@ void ChanServ::do_set_KeepTopic(const mstring &mynick, const mstring &source, co
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11579,25 +11584,25 @@ void ChanServ::do_set_KeepTopic(const mstring &mynick, const mstring &source, co
     if (cstored.L_Keeptopic())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
+		Magick::instance().getMessage(source, "CS_SET/KEEPTOPIC"),
 		channel));
 	return;
     }
 
     cstored.Keeptopic(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
+	    Magick::instance().getMessage(source, "CS_SET/KEEPTOPIC"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/KEEPTOPIC"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/KEEPTOPIC"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11617,7 +11622,7 @@ void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, co
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11626,7 +11631,7 @@ void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, co
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Topiclock())
+	if (Magick::instance().chanserv.DEF_Topiclock())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -11639,7 +11644,7 @@ void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, co
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11658,25 +11663,25 @@ void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, co
     if (cstored.L_Topiclock())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/TOPICLOCK"),
+		Magick::instance().getMessage(source, "CS_SET/TOPICLOCK"),
 		channel));
 	return;
     }
 
     cstored.Topiclock(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/TOPICLOCK"),
+	    Magick::instance().getMessage(source, "CS_SET/TOPICLOCK"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/KEEPTOPIC"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/KEEPTOPIC"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11696,7 +11701,7 @@ void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11705,7 +11710,7 @@ void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Private())
+	if (Magick::instance().chanserv.DEF_Private())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -11718,7 +11723,7 @@ void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11737,25 +11742,25 @@ void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     if (cstored.L_Private())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/PRIVATE"),
+		Magick::instance().getMessage(source, "CS_SET/PRIVATE"),
 		channel));
 	return;
     }
 
     cstored.Private(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/PRIVATE"),
+	    Magick::instance().getMessage(source, "CS_SET/PRIVATE"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/PRIVATE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/PRIVATE"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11775,7 +11780,7 @@ void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, co
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11784,7 +11789,7 @@ void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, co
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Secureops())
+	if (Magick::instance().chanserv.DEF_Secureops())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -11797,7 +11802,7 @@ void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, co
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11816,25 +11821,25 @@ void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, co
     if (cstored.L_Secureops())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/SECUREOPS"),
+		Magick::instance().getMessage(source, "CS_SET/SECUREOPS"),
 		channel));
 	return;
     }
 
     cstored.Secureops(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/SECUREOPS"),
+	    Magick::instance().getMessage(source, "CS_SET/SECUREOPS"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/SECUREOPS"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/SECUREOPS"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11854,7 +11859,7 @@ void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11863,7 +11868,7 @@ void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Secure())
+	if (Magick::instance().chanserv.DEF_Secure())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -11876,7 +11881,7 @@ void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11895,25 +11900,25 @@ void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     if (cstored.L_Secure())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/SECURE"),
+		Magick::instance().getMessage(source, "CS_SET/SECURE"),
 		channel));
 	return;
     }
 
     cstored.Secure(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/SECURE"),
+	    Magick::instance().getMessage(source, "CS_SET/SECURE"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/SECURE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/SECURE"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11933,7 +11938,7 @@ void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -11942,7 +11947,7 @@ void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_NoExpire())
+	if (Magick::instance().chanserv.DEF_NoExpire())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -11955,7 +11960,7 @@ void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -11964,28 +11969,28 @@ void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (Parent->chanserv.LCK_NoExpire())
+    if (Magick::instance().chanserv.LCK_NoExpire())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/NOEXPIRE"),
+		Magick::instance().getMessage(source, "CS_SET/NOEXPIRE"),
 		channel));
 	return;
     }
 
     cstored.NoExpire(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_NoExpire++;
+    Magick::instance().chanserv.stats.i_NoExpire++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/NOEXPIRE"),
+	    Magick::instance().getMessage(source, "CS_SET/NOEXPIRE"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/NOEXPIRE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/NOEXPIRE"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12005,7 +12010,7 @@ void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12014,7 +12019,7 @@ void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, cons
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Anarchy())
+	if (Magick::instance().chanserv.DEF_Anarchy())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12027,7 +12032,7 @@ void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, cons
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12046,25 +12051,25 @@ void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, cons
     if (cstored.L_Anarchy())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/ANARCHY"),
+		Magick::instance().getMessage(source, "CS_SET/ANARCHY"),
 		channel));
 	return;
     }
 
     cstored.Anarchy(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/ANARCHY"),
+	    Magick::instance().getMessage(source, "CS_SET/ANARCHY"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/ANARCHY"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/ANARCHY"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12084,7 +12089,7 @@ void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, co
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12093,7 +12098,7 @@ void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, co
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_KickOnBan())
+	if (Magick::instance().chanserv.DEF_KickOnBan())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12106,7 +12111,7 @@ void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, co
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12125,25 +12130,25 @@ void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, co
     if (cstored.L_KickOnBan())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/KICKONBAN"),
+		Magick::instance().getMessage(source, "CS_SET/KICKONBAN"),
 		channel));
 	return;
     }
 
     cstored.KickOnBan(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/KICKONBAN"),
+	    Magick::instance().getMessage(source, "CS_SET/KICKONBAN"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/KICKONBAN"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/KICKONBAN"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12163,7 +12168,7 @@ void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, c
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12172,7 +12177,7 @@ void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, c
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Restricted())
+	if (Magick::instance().chanserv.DEF_Restricted())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12185,7 +12190,7 @@ void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, c
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12204,25 +12209,25 @@ void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, c
     if (cstored.L_Restricted())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/RESTRICTED"),
+		Magick::instance().getMessage(source, "CS_SET/RESTRICTED"),
 		channel));
 	return;
     }
 
     cstored.Restricted(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/RESTRICTED"),
+	    Magick::instance().getMessage(source, "CS_SET/RESTRICTED"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/RESTRICTED"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/RESTRICTED"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12233,8 +12238,8 @@ void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const m
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -12251,7 +12256,7 @@ void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const m
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12260,7 +12265,7 @@ void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const m
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Join())
+	if (Magick::instance().chanserv.DEF_Join())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12273,7 +12278,7 @@ void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const m
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12292,36 +12297,36 @@ void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const m
     if (cstored.L_Join())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/JOIN"),
+		Magick::instance().getMessage(source, "CS_SET/JOIN"),
 		channel));
 	return;
     }
 
     cstored.Join(onoff.GetBool());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/JOIN"),
+	    Magick::instance().getMessage(source, "CS_SET/JOIN"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/JOIN"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/JOIN"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
-    if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
-	!Parent->chanserv.GetLive(channel).IsIn(
-		Parent->chanserv.FirstName()))
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
+    if (onoff.GetBool() && Magick::instance().chanserv.IsLive(channel) &&
+	!Magick::instance().chanserv.GetLive(channel).IsIn(
+		Magick::instance().chanserv.FirstName()))
     {
-	Parent->server.JOIN(Parent->chanserv.FirstName(), channel);
+	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), channel);
     }
-    else if (!onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
-	Parent->chanserv.GetLive(channel).IsIn(
-		Parent->chanserv.FirstName()))
+    else if (!onoff.GetBool() && Magick::instance().chanserv.IsLive(channel) &&
+	Magick::instance().chanserv.GetLive(channel).IsIn(
+		Magick::instance().chanserv.FirstName()))
     {
-	Parent->server.PART(Parent->chanserv.FirstName(), channel);
+	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
     }
 }
 
@@ -12342,7 +12347,7 @@ void ChanServ::do_set_Revenge(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring option    = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12351,9 +12356,9 @@ void ChanServ::do_set_Revenge(const mstring &mynick, const mstring &source, cons
 
     if (option.IsSameAs("default", true) || option.IsSameAs("reset", true))
     {
-	option = Parent->chanserv.DEF_Revenge();
+	option = Magick::instance().chanserv.DEF_Revenge();
     }
-    else if (!Parent->chanserv.IsRevengeLevel(option))
+    else if (!Magick::instance().chanserv.IsRevengeLevel(option))
     {
 	SEND(mynick, source, "CS_STATUS/NOREVENGE", (
 		option.UpperCase()));
@@ -12361,7 +12366,7 @@ void ChanServ::do_set_Revenge(const mstring &mynick, const mstring &source, cons
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12380,23 +12385,23 @@ void ChanServ::do_set_Revenge(const mstring &mynick, const mstring &source, cons
     if (cstored.L_Revenge())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/REVENGE"),
+		Magick::instance().getMessage(source, "CS_SET/REVENGE"),
 		channel));
 	return;
     }
 
     cstored.Revenge(option.UpperCase());
     }
-    Parent->chanserv.stats.i_Set++;
+    Magick::instance().chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
-	    Parent->getMessage(source, "CS_SET/REVENGE"),
+	    Magick::instance().getMessage(source, "CS_SET/REVENGE"),
 	    channel,
-	    Parent->getMessage(source, "CS_SET/REV_" + option.UpperCase())));
+	    Magick::instance().getMessage(source, "CS_SET/REV_" + option.UpperCase())));
     LOG(LM_DEBUG, "CHANSERV/SET", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/REVENGE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/REVENGE"),
 	channel,
-	Parent->getMessage("CS_SET/REV_" + option.UpperCase())));
+	Magick::instance().getMessage("CS_SET/REV_" + option.UpperCase())));
 }
 
 void ChanServ::do_lock_Mlock(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12416,7 +12421,7 @@ void ChanServ::do_lock_Mlock(const mstring &mynick, const mstring &source, const
     mstring channel   = params.ExtractWord(2, " ");
     mstring option    = params.After(" ", 3);
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12425,12 +12430,12 @@ void ChanServ::do_lock_Mlock(const mstring &mynick, const mstring &source, const
 
     if (option.IsSameAs("default", true) || option.IsSameAs("reset", true))
     {
-	option = Parent->chanserv.DEF_MLock();
+	option = Magick::instance().chanserv.DEF_MLock();
     }
 
     vector<mstring> retval;
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12441,7 +12446,7 @@ void ChanServ::do_lock_Mlock(const mstring &mynick, const mstring &source, const
 
     retval = cstored.L_Mlock(source, option);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     for (unsigned int i=0; i<retval.size(); i++)
 	::send(mynick, source, retval[i]);
 }
@@ -12463,7 +12468,7 @@ void ChanServ::do_lock_BanTime(const mstring &mynick, const mstring &source, con
     mstring channel   = params.ExtractWord(2, " ");
     mstring value     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12472,7 +12477,7 @@ void ChanServ::do_lock_BanTime(const mstring &mynick, const mstring &source, con
 
     unsigned long num = FromHumanTime(value);
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12481,10 +12486,10 @@ void ChanServ::do_lock_BanTime(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (Parent->chanserv.LCK_Bantime())
+    if (Magick::instance().chanserv.LCK_Bantime())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/BANTIME"),
+		Magick::instance().getMessage(source, "CS_SET/BANTIME"),
 		channel));
 	return;
     }
@@ -12493,13 +12498,13 @@ void ChanServ::do_lock_BanTime(const mstring &mynick, const mstring &source, con
     cstored.Bantime(num);
     cstored.L_Bantime(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/BANTIME"),
+	    Magick::instance().getMessage(source, "CS_SET/BANTIME"),
 	    channel, ToHumanTime(num)));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/BANTIME"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/BANTIME"),
 	channel, ToHumanTime(num)));
 }
 
@@ -12520,7 +12525,7 @@ void ChanServ::do_lock_PartTime(const mstring &mynick, const mstring &source, co
     mstring channel   = params.ExtractWord(2, " ");
     mstring value     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12529,7 +12534,7 @@ void ChanServ::do_lock_PartTime(const mstring &mynick, const mstring &source, co
 
     unsigned long num = FromHumanTime(value);
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12538,10 +12543,10 @@ void ChanServ::do_lock_PartTime(const mstring &mynick, const mstring &source, co
 	return;
     }
 
-    if (Parent->chanserv.LCK_Parttime())
+    if (Magick::instance().chanserv.LCK_Parttime())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/PARTTIME"),
+		Magick::instance().getMessage(source, "CS_SET/PARTTIME"),
 		channel));
 	return;
     }
@@ -12550,13 +12555,13 @@ void ChanServ::do_lock_PartTime(const mstring &mynick, const mstring &source, co
     cstored.Parttime(num);
     cstored.L_Parttime(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/PARTTIME"),
+	    Magick::instance().getMessage(source, "CS_SET/PARTTIME"),
 	    channel, ToHumanTime(num, source)));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/PARTTIME"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/PARTTIME"),
 	channel, ToHumanTime(num, source)));
 }
 
@@ -12577,7 +12582,7 @@ void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, c
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12586,7 +12591,7 @@ void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, c
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Keeptopic())
+	if (Magick::instance().chanserv.DEF_Keeptopic())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12599,7 +12604,7 @@ void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, c
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12608,10 +12613,10 @@ void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, c
 	return;
     }
 
-    if (Parent->chanserv.LCK_Keeptopic())
+    if (Magick::instance().chanserv.LCK_Keeptopic())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
+		Magick::instance().getMessage(source, "CS_SET/KEEPTOPIC"),
 		channel));
 	return;
     }
@@ -12620,18 +12625,18 @@ void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, c
     cstored.Keeptopic(onoff.GetBool());
     cstored.L_Keeptopic(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
+	    Magick::instance().getMessage(source, "CS_SET/KEEPTOPIC"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/KEEPTOPIC"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/KEEPTOPIC"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12651,7 +12656,7 @@ void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, c
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12660,7 +12665,7 @@ void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, c
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Topiclock())
+	if (Magick::instance().chanserv.DEF_Topiclock())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12673,7 +12678,7 @@ void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, c
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12682,10 +12687,10 @@ void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, c
 	return;
     }
 
-    if (Parent->chanserv.LCK_Topiclock())
+    if (Magick::instance().chanserv.LCK_Topiclock())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/TOPICLOCK"),
+		Magick::instance().getMessage(source, "CS_SET/TOPICLOCK"),
 		channel));
 	return;
     }
@@ -12694,18 +12699,18 @@ void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, c
     cstored.Topiclock(onoff.GetBool());
     cstored.L_Topiclock(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/TOPICLOCK"),
+	    Magick::instance().getMessage(source, "CS_SET/TOPICLOCK"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/TOPICLOCK"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/TOPICLOCK"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12725,7 +12730,7 @@ void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12734,7 +12739,7 @@ void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Private())
+	if (Magick::instance().chanserv.DEF_Private())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12747,7 +12752,7 @@ void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12756,10 +12761,10 @@ void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (Parent->chanserv.LCK_Private())
+    if (Magick::instance().chanserv.LCK_Private())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/PRIVATE"),
+		Magick::instance().getMessage(source, "CS_SET/PRIVATE"),
 		channel));
 	return;
     }
@@ -12768,18 +12773,18 @@ void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     cstored.Private(onoff.GetBool());
     cstored.L_Private(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/PRIVATE"),
+	    Magick::instance().getMessage(source, "CS_SET/PRIVATE"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/PRIVATE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/PRIVATE"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12799,7 +12804,7 @@ void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, c
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12808,7 +12813,7 @@ void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, c
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Secureops())
+	if (Magick::instance().chanserv.DEF_Secureops())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12821,7 +12826,7 @@ void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, c
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12830,10 +12835,10 @@ void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, c
 	return;
     }
 
-    if (Parent->chanserv.LCK_Secureops())
+    if (Magick::instance().chanserv.LCK_Secureops())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/SECUREOPS"),
+		Magick::instance().getMessage(source, "CS_SET/SECUREOPS"),
 		channel));
 	return;
     }
@@ -12842,18 +12847,18 @@ void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, c
     cstored.Secureops(onoff.GetBool());
     cstored.L_Secureops(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/SECUREOPS"),
+	    Magick::instance().getMessage(source, "CS_SET/SECUREOPS"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/SECUREOPS"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/SECUREOPS"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12873,7 +12878,7 @@ void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12882,7 +12887,7 @@ void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Secure())
+	if (Magick::instance().chanserv.DEF_Secure())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12895,7 +12900,7 @@ void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12904,10 +12909,10 @@ void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (Parent->chanserv.LCK_Secure())
+    if (Magick::instance().chanserv.LCK_Secure())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/SECURE"),
+		Magick::instance().getMessage(source, "CS_SET/SECURE"),
 		channel));
 	return;
     }
@@ -12916,18 +12921,18 @@ void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     cstored.Secure(onoff.GetBool());
     cstored.L_Secure(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/SECURE"),
+	    Magick::instance().getMessage(source, "CS_SET/SECURE"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/SECURE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/SECURE"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12947,7 +12952,7 @@ void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, con
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -12956,7 +12961,7 @@ void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, con
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Anarchy())
+	if (Magick::instance().chanserv.DEF_Anarchy())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -12969,7 +12974,7 @@ void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, con
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -12978,10 +12983,10 @@ void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (Parent->chanserv.LCK_Anarchy())
+    if (Magick::instance().chanserv.LCK_Anarchy())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/ANARCHY"),
+		Magick::instance().getMessage(source, "CS_SET/ANARCHY"),
 		channel));
 	return;
     }
@@ -12990,18 +12995,18 @@ void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, con
     cstored.Anarchy(onoff.GetBool());
     cstored.L_Anarchy(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/ANARCHY"),
+	    Magick::instance().getMessage(source, "CS_SET/ANARCHY"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/ANARCHY"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/ANARCHY"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params)
@@ -13021,7 +13026,7 @@ void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, c
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -13030,7 +13035,7 @@ void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, c
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_KickOnBan())
+	if (Magick::instance().chanserv.DEF_KickOnBan())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -13043,7 +13048,7 @@ void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, c
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -13052,10 +13057,10 @@ void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, c
 	return;
     }
 
-    if (Parent->chanserv.LCK_KickOnBan())
+    if (Magick::instance().chanserv.LCK_KickOnBan())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/KICKONBAN"),
+		Magick::instance().getMessage(source, "CS_SET/KICKONBAN"),
 		channel));
 	return;
     }
@@ -13064,18 +13069,18 @@ void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, c
     cstored.KickOnBan(onoff.GetBool());
     cstored.L_KickOnBan(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/KICKONBAN"),
+	    Magick::instance().getMessage(source, "CS_SET/KICKONBAN"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/KICKONBAN"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/KICKONBAN"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, const mstring &params)
@@ -13095,7 +13100,7 @@ void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, 
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -13104,7 +13109,7 @@ void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, 
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Restricted())
+	if (Magick::instance().chanserv.DEF_Restricted())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -13117,7 +13122,7 @@ void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, 
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -13126,10 +13131,10 @@ void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, 
 	return;
     }
 
-    if (Parent->chanserv.LCK_Restricted())
+    if (Magick::instance().chanserv.LCK_Restricted())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/RESTRICTED"),
+		Magick::instance().getMessage(source, "CS_SET/RESTRICTED"),
 		channel));
 	return;
     }
@@ -13138,18 +13143,18 @@ void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, 
 	cstored.Restricted(onoff.GetBool());
     cstored.L_Restricted(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/RESTRICTED"),
+	    Magick::instance().getMessage(source, "CS_SET/RESTRICTED"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/RESTRICTED"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/RESTRICTED"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const mstring &params)
@@ -13160,8 +13165,8 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
 		params.ExtractWord(3, " ")).UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -13178,7 +13183,7 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -13187,7 +13192,7 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
 
     if (onoff.IsSameAs("default", true) || onoff.IsSameAs("reset", true))
     {
-	if (Parent->chanserv.DEF_Join())
+	if (Magick::instance().chanserv.DEF_Join())
 	    onoff = "TRUE";
 	else
 	    onoff = "FALSE";
@@ -13200,7 +13205,7 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -13209,10 +13214,10 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
 	return;
     }
 
-    if (Parent->chanserv.LCK_Join())
+    if (Magick::instance().chanserv.LCK_Join())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/JOIN"),
+		Magick::instance().getMessage(source, "CS_SET/JOIN"),
 		channel));
 	return;
     }
@@ -13221,29 +13226,29 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
     cstored.Join(onoff.GetBool());
     cstored.L_Join(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/JOIN"),
+	    Magick::instance().getMessage(source, "CS_SET/JOIN"),
 	    channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/JOIN"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/JOIN"),
 	channel, (onoff.GetBool() ?
-		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"))));
-	if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
-	!Parent->chanserv.GetLive(channel).IsIn(
-		Parent->chanserv.FirstName()))
+		Magick::instance().getMessage(source, "VALS/ON") :
+		Magick::instance().getMessage(source, "VALS/OFF"))));
+	if (onoff.GetBool() && Magick::instance().chanserv.IsLive(channel) &&
+	!Magick::instance().chanserv.GetLive(channel).IsIn(
+		Magick::instance().chanserv.FirstName()))
 	{
-	Parent->server.JOIN(Parent->chanserv.FirstName(), channel);
+	Magick::instance().server.JOIN(Magick::instance().chanserv.FirstName(), channel);
 	}
-	else if (!onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
-	Parent->chanserv.GetLive(channel).IsIn(
-		Parent->chanserv.FirstName()))
+	else if (!onoff.GetBool() && Magick::instance().chanserv.IsLive(channel) &&
+	Magick::instance().chanserv.GetLive(channel).IsIn(
+		Magick::instance().chanserv.FirstName()))
 	{
-	Parent->server.PART(Parent->chanserv.FirstName(), channel);
+	Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), channel);
 	}
 }
 
@@ -13264,7 +13269,7 @@ void ChanServ::do_lock_Revenge(const mstring &mynick, const mstring &source, con
     mstring channel   = params.ExtractWord(2, " ");
     mstring option    = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -13273,9 +13278,9 @@ void ChanServ::do_lock_Revenge(const mstring &mynick, const mstring &source, con
 
     if (option.IsSameAs("default", true) || option.IsSameAs("reset", true))
     {
-	option = Parent->chanserv.DEF_Revenge();
+	option = Magick::instance().chanserv.DEF_Revenge();
     }
-    else if (!Parent->chanserv.IsRevengeLevel(option))
+    else if (!Magick::instance().chanserv.IsRevengeLevel(option))
     {
 	SEND(mynick, source, "CS_STATUS/NOREVENGE", (
 		option.UpperCase()));
@@ -13283,7 +13288,7 @@ void ChanServ::do_lock_Revenge(const mstring &mynick, const mstring &source, con
     }
 
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -13292,10 +13297,10 @@ void ChanServ::do_lock_Revenge(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (Parent->chanserv.LCK_Revenge())
+    if (Magick::instance().chanserv.LCK_Revenge())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/REVENGE"),
+		Magick::instance().getMessage(source, "CS_SET/REVENGE"),
 		channel));
 	return;
     }
@@ -13304,16 +13309,16 @@ void ChanServ::do_lock_Revenge(const mstring &mynick, const mstring &source, con
     cstored.Revenge(option.UpperCase());
     cstored.L_Revenge(true);
     }
-    Parent->chanserv.stats.i_Lock++;
+    Magick::instance().chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
-	    Parent->getMessage(source, "CS_SET/REVENGE"),
+	    Magick::instance().getMessage(source, "CS_SET/REVENGE"),
 	    channel,
-	    Parent->getMessage(source, "CS_SET/REV_" + option.UpperCase())));
+	    Magick::instance().getMessage(source, "CS_SET/REV_" + option.UpperCase())));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/REVENGE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/REVENGE"),
 	channel,
-	Parent->getMessage("CS_SET/REV_" + option.UpperCase())));
+	Magick::instance().getMessage("CS_SET/REV_" + option.UpperCase())));
 }
 
 void ChanServ::do_unlock_Mlock(const mstring &mynick, const mstring &source, const mstring &params)
@@ -13332,7 +13337,7 @@ void ChanServ::do_unlock_Mlock(const mstring &mynick, const mstring &source, con
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
@@ -13341,7 +13346,7 @@ void ChanServ::do_unlock_Mlock(const mstring &mynick, const mstring &source, con
 
     vector<mstring> retval;
     { RLOCK(("ChanServ", "stored", channel.LowerCase()));
-    Chan_Stored_t &cstored = Parent->chanserv.GetStored(channel);
+    Chan_Stored_t &cstored = Magick::instance().chanserv.GetStored(channel);
     channel = cstored.Name();
 
     if (cstored.Forbidden())
@@ -13352,7 +13357,7 @@ void ChanServ::do_unlock_Mlock(const mstring &mynick, const mstring &source, con
 
     retval = cstored.L_Mlock(source, "");
     }
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.stats.i_Unlock++;
     for (unsigned int i=0; i<retval.size(); i++)
 	::send(mynick, source, retval[i]);
 }
@@ -13373,36 +13378,36 @@ void ChanServ::do_unlock_BanTime(const mstring &mynick, const mstring &source, c
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Bantime())
+    if (Magick::instance().chanserv.LCK_Bantime())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/BANTIME"),
+		Magick::instance().getMessage(source, "CS_SET/BANTIME"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Bantime(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Bantime(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/BANTIME"),
+	    Magick::instance().getMessage(source, "CS_SET/BANTIME"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/BANTIME"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/BANTIME"),
 	channel));
 }
 
@@ -13422,36 +13427,36 @@ void ChanServ::do_unlock_PartTime(const mstring &mynick, const mstring &source, 
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Parttime())
+    if (Magick::instance().chanserv.LCK_Parttime())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/PARTTIME"),
+		Magick::instance().getMessage(source, "CS_SET/PARTTIME"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Parttime(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Parttime(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/PARTTIME"),
+	    Magick::instance().getMessage(source, "CS_SET/PARTTIME"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/PARTTIME"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/PARTTIME"),
 	channel));
 }
 
@@ -13471,36 +13476,36 @@ void ChanServ::do_unlock_KeepTopic(const mstring &mynick, const mstring &source,
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Keeptopic())
+    if (Magick::instance().chanserv.LCK_Keeptopic())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
+		Magick::instance().getMessage(source, "CS_SET/KEEPTOPIC"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Keeptopic(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Keeptopic(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
+	    Magick::instance().getMessage(source, "CS_SET/KEEPTOPIC"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/KEEPTOPIC"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/KEEPTOPIC"),
 	channel));
 }
 
@@ -13521,36 +13526,36 @@ void ChanServ::do_unlock_TopicLock(const mstring &mynick, const mstring &source,
     mstring channel   = params.ExtractWord(2, " ");
     mstring onoff     = params.ExtractWord(4, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Topiclock())
+    if (Magick::instance().chanserv.LCK_Topiclock())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/TOPICLOCK"),
+		Magick::instance().getMessage(source, "CS_SET/TOPICLOCK"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Topiclock(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Topiclock(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/TOPICLOCK"),
+	    Magick::instance().getMessage(source, "CS_SET/TOPICLOCK"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/TOPICLOCK"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/TOPICLOCK"),
 	channel));
 }
 
@@ -13570,36 +13575,36 @@ void ChanServ::do_unlock_Private(const mstring &mynick, const mstring &source, c
 
     mstring channel   = params.ExtractWord(2, " ");
  
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Private())
+    if (Magick::instance().chanserv.LCK_Private())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/PRIVATE"),
+		Magick::instance().getMessage(source, "CS_SET/PRIVATE"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Private(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Private(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/PRIVATE"),
+	    Magick::instance().getMessage(source, "CS_SET/PRIVATE"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/PRIVATE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/PRIVATE"),
 	channel));
 }
 
@@ -13619,36 +13624,36 @@ void ChanServ::do_unlock_SecureOps(const mstring &mynick, const mstring &source,
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Secureops())
+    if (Magick::instance().chanserv.LCK_Secureops())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/SECUREOPS"),
+		Magick::instance().getMessage(source, "CS_SET/SECUREOPS"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Secureops(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Secureops(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/SECUREOPS"),
+	    Magick::instance().getMessage(source, "CS_SET/SECUREOPS"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/SECUREOPS"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/SECUREOPS"),
 	channel));
 }
 
@@ -13668,36 +13673,36 @@ void ChanServ::do_unlock_Secure(const mstring &mynick, const mstring &source, co
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Secure())
+    if (Magick::instance().chanserv.LCK_Secure())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/SECURE"),
+		Magick::instance().getMessage(source, "CS_SET/SECURE"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Secure(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Secure(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/SECURE"),
+	    Magick::instance().getMessage(source, "CS_SET/SECURE"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/SECURE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/SECURE"),
 	channel));
 }
 
@@ -13717,36 +13722,36 @@ void ChanServ::do_unlock_Anarchy(const mstring &mynick, const mstring &source, c
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Anarchy())
+    if (Magick::instance().chanserv.LCK_Anarchy())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/ANARCHY"),
+		Magick::instance().getMessage(source, "CS_SET/ANARCHY"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Anarchy(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Anarchy(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/ANARCHY"),
+	    Magick::instance().getMessage(source, "CS_SET/ANARCHY"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/ANARCHY"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/ANARCHY"),
 	channel));
 }
 
@@ -13766,36 +13771,36 @@ void ChanServ::do_unlock_KickOnBan(const mstring &mynick, const mstring &source,
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_KickOnBan())
+    if (Magick::instance().chanserv.LCK_KickOnBan())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/KICKONBAN"),
+		Magick::instance().getMessage(source, "CS_SET/KICKONBAN"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_KickOnBan(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_KickOnBan(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/KICKONBAN"),
+	    Magick::instance().getMessage(source, "CS_SET/KICKONBAN"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/KICKONBAN"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/KICKONBAN"),
 	channel));
 }
 
@@ -13815,36 +13820,36 @@ void ChanServ::do_unlock_Restricted(const mstring &mynick, const mstring &source
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Restricted())
+    if (Magick::instance().chanserv.LCK_Restricted())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/RESTRICTED"),
+		Magick::instance().getMessage(source, "CS_SET/RESTRICTED"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Restricted(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Restricted(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/RESTRICTED"),
+	    Magick::instance().getMessage(source, "CS_SET/RESTRICTED"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/RESTRICTED"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/RESTRICTED"),
 	channel));
 }
 
@@ -13864,36 +13869,36 @@ void ChanServ::do_unlock_Join(const mstring &mynick, const mstring &source, cons
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Join())
+    if (Magick::instance().chanserv.LCK_Join())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/JOIN"),
+		Magick::instance().getMessage(source, "CS_SET/JOIN"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Join(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Join(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/JOIN"),
+	    Magick::instance().getMessage(source, "CS_SET/JOIN"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/JOIN"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/JOIN"),
 	channel));
 }
 
@@ -13913,36 +13918,36 @@ void ChanServ::do_unlock_Revenge(const mstring &mynick, const mstring &source, c
 
     mstring channel   = params.ExtractWord(2, " ");
 
-    if (!Parent->chanserv.IsStored(channel))
+    if (!Magick::instance().chanserv.IsStored(channel))
     {
 	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		channel));
 	return;
     }
-    channel = Parent->getSname(channel);
+    channel = Magick::instance().getSname(channel);
 
-    if (Parent->chanserv.GetStored(channel).Forbidden())
+    if (Magick::instance().chanserv.GetStored(channel).Forbidden())
     {
 	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
 	return;
     }
 
-    if (Parent->chanserv.LCK_Revenge())
+    if (Magick::instance().chanserv.LCK_Revenge())
     {
 	SEND(mynick, source, "CS_STATUS/ISLOCKED", (
-		Parent->getMessage(source, "CS_SET/REVENGE"),
+		Magick::instance().getMessage(source, "CS_SET/REVENGE"),
 		channel));
 	return;
     }
 
-    Parent->chanserv.GetStored(channel).L_Revenge(false);
-    Parent->chanserv.stats.i_Unlock++;
+    Magick::instance().chanserv.GetStored(channel).L_Revenge(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
     SEND(mynick, source, "CS_COMMAND/UNLOCKED", (
-	    Parent->getMessage(source, "CS_SET/REVENGE"),
+	    Magick::instance().getMessage(source, "CS_SET/REVENGE"),
 	    channel));
     LOG(LM_DEBUG, "CHANSERV/UNLOCK", (
-	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-	Parent->getMessage("CS_SET/REVENGE"),
+	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().getMessage("CS_SET/REVENGE"),
 	channel));
 }
 
@@ -14106,7 +14111,7 @@ void ChanServ::PostLoad()
     }
     cs_array.clear();
 
-    mstring locked = Parent->chanserv.LCK_MLock();
+    mstring locked = Magick::instance().chanserv.LCK_MLock();
 
     ChanServ::stored_t::iterator iter;
     RLOCK(("ChanServ", "stored"));
@@ -14156,7 +14161,7 @@ void ChanServ::PostLoad()
 	    {
 		if (add)
 		{
-		    if (!Parent->server.proto.ChanModeArg().Contains(locked[i]))
+		    if (!Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		    {
 			if (!iter->second.setting.Mlock_On.Contains(locked[i]))
 			    iter->second.setting.Mlock_On += locked[i];
@@ -14172,7 +14177,7 @@ void ChanServ::PostLoad()
 			iter->second.setting.Mlock_Limit = 0;
 
 		    if (locked[i] == 'k' || locked[i] == 'l' ||
-			!Parent->server.proto.ChanModeArg().Contains(locked[i]))
+			!Magick::instance().server.proto.ChanModeArg().Contains(locked[i]))
 		    {
 			if (!iter->second.setting.Mlock_Off.Contains(locked[i]))
 			    iter->second.setting.Mlock_Off += locked[i];

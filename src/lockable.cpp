@@ -27,6 +27,11 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.76  2001/12/16 01:30:45  prez
 ** More changes to fix up warnings ... added some new warning flags too!
 **
@@ -275,7 +280,8 @@ bool mLOCK::ReleaseMapLock()
 mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 {
     islocked = false;
-    if (StartTime == mDateTime(0.0) || Parent == NULL || Parent->ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
+	Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     int i;
@@ -605,7 +611,8 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 
 mLOCK::~mLOCK()
 {
-    if (StartTime == mDateTime(0.0) || Parent == NULL || Parent->ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
+	Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     int i;
@@ -785,7 +792,8 @@ void mSocket::init()
     sockid = 0;
     DestroyMe = false;
 
-    if (StartTime == mDateTime(0.0) || Parent == NULL || Parent->ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
+	Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     unsigned long i;
@@ -887,7 +895,7 @@ bool mSocket::Connect(const mstring &host, const unsigned short port, const unsi
 bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
 {
     FT("mSocket::Accept", (port, timeout));
-    ACE_INET_Addr addr(port, Parent->LocalHost());
+    ACE_INET_Addr addr(port, Magick::instance().LocalHost());
 
     WLOCK(("mSocket", sockid));
     if (sock != NULL)
@@ -1142,7 +1150,7 @@ bool mThread::ReleaseMapLock()
 
 ThreadID* mThread::find(const ACE_thread_t thread)
 {
-    if (StartTime == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0))
 	return NULL;
 
     if (!AcquireMapLock())

@@ -29,6 +29,11 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.335  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.334  2001/12/12 07:19:20  prez
 ** Added check for snprintf, and changed *toa functions to use snprintf.  Also
 ** moved magick::snprintf and magick::vsnprintf to just snprintf and vsnprintf
@@ -594,10 +599,57 @@ RCSID(magick_cpp, "@(#)$Id$");
 static bool nofork = false;
 #endif
 
-//#define LOGGING
+mDateTime Magick::i_StartTime;
+map<ACE_thread_t, Magick *> Magick::InstanceMap;
+#ifndef MAGICK_HAS_EXCEPTIONS
+static Magick GLOB_Magick;
+#endif
 
-mDateTime StartTime;
-Magick *Parent;
+#ifdef MAGICK_HAS_EXCEPTIONS
+void Magick::register_instance(Magick *ins, ACE_thread_t id) throw(E_Magick)
+#else
+void Magick::register_instance(Magick *ins, ACE_thread_t id)
+#endif
+{
+    if (ins == NULL)
+    {
+#ifdef MAGICK_HAS_EXCEPTIONS
+	throw(E_Magick(E_Magick::T_Invalid));
+#endif
+	return;
+    }
+
+    InstanceMap[id] = ins;
+}
+
+void Magick::deregister_instance(ACE_thread_t id)
+{
+    InstanceMap.erase(id);
+}
+
+bool Magick::instance_exists(ACE_thread_t id)
+{
+    map<ACE_thread_t, Magick *>::iterator iter = InstanceMap.find(id);
+    return (iter != InstanceMap.end());
+}
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+Magick &Magick::instance(ACE_thread_t id) throw(E_Magick)
+#else
+Magick &Magick::instance(ACE_thread_t id)
+#endif
+{
+    map<ACE_thread_t, Magick *>::iterator iter = InstanceMap.find(id);
+    if (iter != InstanceMap.end() && iter->second != NULL)
+	return *(iter->second);
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+    throw(E_Magick(E_Magick::T_NotFound, itoa(id)));
+#else
+    LOG(LM_CRITICAL, "EXCEPTIONS/MAGICK", (id));
+    return GLOB_Magick;
+#endif
+}
 
 Magick::Magick(int inargc, char **inargv)
     : i_verbose(false), i_level(0), i_pause(false), i_auto(false),
@@ -628,6 +680,20 @@ Magick::Magick(int inargc, char **inargv)
     else
 	i_services_dir=buf;
     CurrentState = Constructed;
+}
+
+Magick::~Magick()
+{
+    // Remove all entries from the instance map pointing to us ...
+    vector<ACE_thread_t> chunked;
+    map<ACE_thread_t, Magick *>::iterator iter;
+    for (iter=InstanceMap.begin(); iter!=InstanceMap.end(); iter++)
+    {
+	if (iter->second == this)
+	    chunked.push_back(iter->first);
+    }
+    for (unsigned int i=0; i<chunked.size(); i++)
+	InstanceMap.erase(chunked[i]);
 }
 
 static bool firstrun;
@@ -814,6 +880,7 @@ int Magick::Start()
 	{
 	    RET(MAGICK_RET_NORMAL);
 	}
+	Magick::register_instance(this);
 	firstrun = false;
 	ACE_LOG_MSG->sync(ProgramName().c_str());
 	errno = 0;
@@ -951,16 +1018,16 @@ int Magick::Run()
     NLOG(LM_STARTUP, "COMMANDLINE/START_EVENTS");
     { WLOCK(("Events"));
     if (events != NULL)
-	events->open();
+	events->open((void *) this);
     }
     { WLOCK(("DCC"));
     if (dcc != NULL)
-	dcc->open();
+	dcc->open((void *) this);
     }
 
-    ACE_Reactor::instance()->schedule_timer(&Parent->hh, 0,
-		ACE_Time_Value(Parent->config.Heartbeat_Time()));
-    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value::zero);
+    ACE_Reactor::instance()->schedule_timer(&Magick::instance().hh, 0,
+		ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
+    ACE_Reactor::instance()->schedule_timer(&(Magick::instance().rh),0,ACE_Time_Value::zero);
     AUTO(true); // Activate events from here.
 
     // next thing to be done here is set up the acceptor mechanism to listen
@@ -3433,65 +3500,65 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 
     case SIGINT:	// Re-signon all clients
 	LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SIGNON", ( signum));
-	Parent->server.SignOnAll();
+	Magick::instance().server.SignOnAll();
 	break;
 
 #if defined(SIGIOT) && (SIGIOT != 0)
     case SIGIOT:	// Thread abort ...
     {
 	ACE_Thread_Manager *thr_mgr = NULL;
-	switch (Parent->hh.ThreadType())
+	switch (Magick::instance().hh.ThreadType())
 	{
 	case Heartbeat_Handler::H_Worker:
 	    { RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler != NULL)
-		thr_mgr = &Parent->ircsvchandler->tm;
+	    if (Magick::instance().ircsvchandler != NULL)
+		thr_mgr = &Magick::instance().ircsvchandler->tm;
 	    else
 		thr_mgr = ACE_Thread_Manager::instance();
 	    }
 	    break;
 	case Heartbeat_Handler::H_IrcServer:
 	    { RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler != NULL)
-		thr_mgr = Parent->ircsvchandler->thr_mgr();
+	    if (Magick::instance().ircsvchandler != NULL)
+		thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 	    }
 	    if (thr_mgr == NULL)
 		thr_mgr = ACE_Thread_Manager::instance();
-	    Parent->Disconnect();
-	    if (Parent->dh_timer > 0)
-		ACE_Reactor::instance()->cancel_timer(Parent->dh_timer);
-	    Parent->dh_timer = 0;
+	    Magick::instance().Disconnect();
+	    if (Magick::instance().dh_timer > 0)
+		ACE_Reactor::instance()->cancel_timer(Magick::instance().dh_timer);
+	    Magick::instance().dh_timer = 0;
 	    break;
 	case Heartbeat_Handler::H_Events:
 	    { WLOCK(("Events"));
-	    if (Parent->events != NULL)
+	    if (Magick::instance().events != NULL)
 	    {
-		thr_mgr = Parent->events->thr_mgr();
-		if (!Parent->events->fini())
-		    Parent->events->close(0);
-		delete Parent->events;
-		Parent->events = NULL;
+		thr_mgr = Magick::instance().events->thr_mgr();
+		if (!Magick::instance().events->fini())
+		    Magick::instance().events->close(0);
+		delete Magick::instance().events;
+		Magick::instance().events = NULL;
 	    }
 	    if (thr_mgr == NULL)
 		thr_mgr = ACE_Thread_Manager::instance();
-	    Parent->events = new EventTask;
-	    Parent->events->open();
+	    Magick::instance().events = new EventTask;
+	    Magick::instance().events->open((void *) &Magick::instance());
 	    }
 	    break;
 	case Heartbeat_Handler::H_DCC:
 	    { WLOCK(("DCC"));
-	    if (Parent->dcc != NULL)
+	    if (Magick::instance().dcc != NULL)
 	    {
-		thr_mgr = Parent->dcc->thr_mgr();
-		if (!Parent->dcc->fini())
-		    Parent->dcc->close(0);
-		delete Parent->dcc;
-		Parent->dcc = NULL;
+		thr_mgr = Magick::instance().dcc->thr_mgr();
+		if (!Magick::instance().dcc->fini())
+		    Magick::instance().dcc->close(0);
+		delete Magick::instance().dcc;
+		Magick::instance().dcc = NULL;
 	    }
 	    if (thr_mgr == NULL)
 		thr_mgr = ACE_Thread_Manager::instance();
-	    Parent->dcc = new DccMap;
-	    Parent->dcc->open();
+	    Magick::instance().dcc = new DccMap;
+	    Magick::instance().dcc->open((void *) &Magick::instance());
 	    }
 	    break;
 	case Heartbeat_Handler::H_Main: // Its a REAL SIGABRT ...
@@ -3503,16 +3570,16 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 	    }
 	    tid = mThread::find();
 	    LOG(LM_ALERT, "SYS_ERRORS/SIGNAL_KILL", ( signum, tid->LastFunc()));
-	    ANNOUNCE(Parent->operserv.FirstName(), "MISC/SIGNAL_KILL", ( signum, tid->LastFunc()));
+	    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_KILL", ( signum, tid->LastFunc()));
 	    ACE_OS::sleep(1);
-	    Parent->Shutdown(true);
-	    Parent->Die();
+	    Magick::instance().Shutdown(true);
+	    Magick::instance().Die();
 	    return -1;
 	default:
 	    // Invalid ... WTF? ignore.
 	    break;
 	}
-	Parent->hh.RemoveThread();
+	Magick::instance().hh.RemoveThread();
 	if (thr_mgr != NULL)
 	    thr_mgr->exit();
 	break;
@@ -3522,11 +3589,11 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
 	{ RLOCK(("Events"));
-	if (Parent->events != NULL)
+	if (Magick::instance().events != NULL)
 	{
 	    LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SAVE", ( signum));
-	    ANNOUNCE(Parent->operserv.FirstName(), "MISC/SIGNAL_SAVE", ( signum));
-	    Parent->events->ForceSave();
+	    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_SAVE", ( signum));
+	    Magick::instance().events->ForceSave();
 	}}
 	break;
 #endif
@@ -3535,14 +3602,14 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 #if defined(SIGHUP) && (SIGHUP != 0)
     case SIGHUP:	// Reload CFG/DB's
 	LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_LOAD", ( signum));
-	if (!Parent->get_config_values())
+	if (!Magick::instance().get_config_values())
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NO_CFG_FILE", (
-	    					Parent->Config_File()));
+	    					Magick::instance().Config_File()));
 	}
 	else
 	{
-	    ANNOUNCE(Parent->operserv.FirstName(), "MISC/SIGNAL_LOAD", ( signum));
+	    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_LOAD", ( signum));
 	}
 	break;
 #endif
@@ -3561,10 +3628,10 @@ int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
 	}
 	tid = mThread::find();
 	LOG(LM_ALERT, "SYS_ERRORS/SIGNAL_KILL", ( signum, tid->LastFunc()));
-	ANNOUNCE(Parent->operserv.FirstName(), "MISC/SIGNAL_KILL", ( signum, tid->LastFunc()));
+	ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_KILL", ( signum, tid->LastFunc()));
 	ACE_OS::sleep(1);
-	Parent->Shutdown(true);
-	Parent->Die();
+	Magick::instance().Shutdown(true);
+	Magick::instance().Die();
 	return -1;
 	break;
 
@@ -3645,7 +3712,7 @@ Logger::Logger()
     NFT("Logger::Logger");
     ACE_Log_Msg::enable_debug_messages();
 
-    fout.Open(Parent->files.Logfile(), "a");
+    fout.Open(Magick::instance().files.Logfile(), "a");
 }
 
 Logger::~Logger()
@@ -3677,7 +3744,7 @@ void Logger::log(ACE_Log_Record &log_record)
 
     // Stuff you have to turn VERBOSE on to see
     case LM_DEBUG:
-	if (!Parent->Verbose())
+	if (!Magick::instance().Verbose())
 	    return;
 	text_priority = "DEBUG";
 	break;
@@ -3749,16 +3816,16 @@ void Logger::log(ACE_Log_Record &log_record)
 
     fout.Flush();
 
-    if (!Parent->files.Logchan().empty() && Parent->Connected())
+    if (!Magick::instance().files.Logchan().empty() && Magick::instance().Connected())
     {
 	{ RLOCK(("IrcSvcHandler"));
-	if (Parent->ircsvchandler != NULL && !Parent->ircsvchandler->Burst())
+	if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
 	{
-	    if (Parent->chanserv.IsLive(Parent->files.Logchan()))
+	    if (Magick::instance().chanserv.IsLive(Magick::instance().files.Logchan()))
 	    {
 		for (i=1; i<=tmp.WordCount("\n\r"); i++)
-		    Parent->server.PRIVMSG(Parent->operserv.FirstName(),
-			Parent->files.Logchan(), out + tmp.ExtractWord(i, "\n\r"));
+		    Magick::instance().server.PRIVMSG(Magick::instance().operserv.FirstName(),
+			Magick::instance().files.Logchan(), out + tmp.ExtractWord(i, "\n\r"));
 	    }
 	}}
     }
@@ -3783,7 +3850,7 @@ void Logger::open()
 
     if (!fout.IsOpened())
     {
-	fout.Open(Parent->files.Logfile(), "a");
+	fout.Open(Magick::instance().files.Logfile(), "a");
     }
 }
 
@@ -3986,7 +4053,7 @@ fflush(stdout);
 void Magick::Disconnect(const bool reconnect)
 {
     FT("Magick::Disconnect", (reconnect));
-    Parent->server.SignOffAll(startup.Services_Quitmsg());
+    Magick::instance().server.SignOffAll(startup.Services_Quitmsg());
     MCB(i_reconnect);
     i_reconnect = reconnect;
     MCE(i_reconnect);
@@ -3994,17 +4061,17 @@ void Magick::Disconnect(const bool reconnect)
     { RLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
-	if (Parent->hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
+	if (Magick::instance().hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
 	{
 	    if(dh_timer == 0)
 	    {
-		ACE_Thread_Manager *thr_mgr = Parent->ircsvchandler->thr_mgr();
+		ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
 		if (thr_mgr == NULL)
 		    thr_mgr = ACE_Thread_Manager::instance();
 #if defined(SIGIOT) && (SIGIOT != 0)
-		thr_mgr->kill_task(Parent->ircsvchandler, SIGIOT);
+		thr_mgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
 #endif
-		while (Parent->Pause())
+		while (Magick::instance().Pause())
 		    ACE_OS::sleep(1);
 		dh_timer = ACE_Reactor::instance()->schedule_timer(&dh,
 					NULL, ACE_Time_Value(10));

@@ -27,6 +27,11 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.7  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.6  2001/12/12 07:43:52  prez
 ** Some more platform changes.  Made it look for _snprintf and _vsnprintf
 ** aswell (is the case on windows).  Also updated windows config.h.win.
@@ -374,7 +379,7 @@ void EPO_load_old_ns_dbase(EPO_dbFILE *f, int ver)
 
 		nick = EPO_CreateNickEntry(na, NULL);
 		if (!nick.Name().empty())
-		    Parent->nickserv.AddStored(&nick);
+		    Magick::instance().nickserv.AddStored(&nick);
 	    } else {
 		/* This nick was a master nick, so it also has all the
 		 * core info! =) 
@@ -456,10 +461,10 @@ void EPO_load_old_ns_dbase(EPO_dbFILE *f, int ver)
 		    	
 		nick = EPO_CreateNickEntry(na, nc);
 		if (!nick.Name().empty())
-		    Parent->nickserv.AddStored(&nick);
+		    Magick::instance().nickserv.AddStored(&nick);
 		memo = EPO_CreateMemoEntry(&nc->memos, nc->display);
 		if (memo.size())
-		    Parent->memoserv.AddNick(memo);
+		    Magick::instance().memoserv.AddNick(memo);
 		EPO_delcore(nc);
 	    }
 	    EPO_delnick(na);
@@ -572,7 +577,7 @@ void EPO_load_ns_dbase(void)
 
 	    memo = EPO_CreateMemoEntry(&nc->memos, nc->display);
 	    if (memo.size())
-		Parent->memoserv.AddNick(memo);
+		Magick::instance().memoserv.AddNick(memo);
 	} /* while (EPO_getc_db(f) != 0) */
 	*nclast = NULL;
     } /* for (i) */
@@ -610,7 +615,7 @@ void EPO_load_ns_dbase(void)
 
 	    nick = EPO_CreateNickEntry(na, nc);
 	    if (!nick.Name().empty())
-		Parent->nickserv.AddStored(&nick);
+		Magick::instance().nickserv.AddStored(&nick);
 	    EPO_delnick(na);
 	} /* while (EPO_getc_db(f) != 0) */
     } /* for (i) */
@@ -1039,11 +1044,11 @@ void EPO_load_cs_dbase(void)
 	    }
 	    chan = EPO_CreateChanEntry(ci);
 	    if (!chan.Name().empty())
-		Parent->chanserv.AddStored(&chan);
+		Magick::instance().chanserv.AddStored(&chan);
 
 	    news = EPO_CreateNewsEntry(&ci->memos, ci->name);
 	    if (news.size())
-		Parent->memoserv.AddChannel(news);
+		Magick::instance().memoserv.AddChannel(news);
 	    EPO_delchan(ci);
 	} /* while (EPO_getc_db(f) != 0) */
     } /* for (i) */
@@ -1151,16 +1156,16 @@ void EPO_load_news()
 	    news->time = tmp32;
 
 	    if (news->type == EPO_NEWS_LOGON &&
-		Parent->commserv.IsList(Parent->commserv.ALL_Name()))
+		Magick::instance().commserv.IsList(Magick::instance().commserv.ALL_Name()))
 	    {
-		Parent->commserv.GetList(Parent->commserv.ALL_Name()).MSG_insert(
+		Magick::instance().commserv.GetList(Magick::instance().commserv.ALL_Name()).MSG_insert(
 			mstring(news->text), mstring(news->who),
 			mDateTime(news->time));
 	    }
 	    else if (news->type == EPO_NEWS_OPER &&
-		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
+		Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
 	    {
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).MSG_insert(
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).MSG_insert(
 			mstring(news->text), mstring(news->who),
 			mDateTime(news->time));
 	    }
@@ -1228,7 +1233,7 @@ static void EPO_load_old_akill(void)
 	/* Sanity checks *sigh* */
 	/* No nicknames allowed! */
 	if (!strchr(ak->user, '!')) {
-	    Parent->operserv.Akill_insert(mstring(mask),
+	    Magick::instance().operserv.Akill_insert(mstring(mask),
 		ak->expires-ak->seton,
 		mstring(ak->reason), mstring(ak->by),
 		mDateTime(ak->seton));
@@ -1288,10 +1293,10 @@ void EPO_load_os_dbase(void)
 	for (i = 0; i < n && !failed; i++) {
 	    SAFE(EPO_read_string(&s, f));
 	    if (s) {
- 		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
-		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
-		    mstring(s), Parent->commserv.FirstName());
+ 		if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(s)))
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).insert(
+		    mstring(s), Magick::instance().commserv.FirstName());
 	    	free(s);
 	    }
 	}
@@ -1323,7 +1328,7 @@ void EPO_load_os_dbase(void)
     	    SAFE(EPO_read_int32(&tmp32, f));
     	    ak->expires = tmp32;
 
-	    Parent->operserv.Akill_insert(
+	    Magick::instance().operserv.Akill_insert(
 		mstring(ak->user) + "@" + mstring(ak->host),
 		ak->expires-ak->seton,
 		mstring(ak->reason), mstring(ak->by),
@@ -1493,7 +1498,7 @@ void EPO_load_exceptions()
 
 	    if (exception->mask != NULL && exception->reason != NULL)
 	    {
-		Parent->operserv.Clone_insert(mstring(exception->mask),
+		Magick::instance().operserv.Clone_insert(mstring(exception->mask),
 		    exception->limit, mstring(exception->reason),
 		    mstring(exception->who), mDateTime(exception->time));
 	    }
@@ -1574,28 +1579,28 @@ Nick_Stored_t EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc)
 	    out.setting.PRIVMSG = true;
 	if (nc->flags & EPO_NI_PRIVATE && !out.L_Private())
 	    out.setting.Private = true;
-	if (na->status & EPO_NS_NO_EXPIRE && !Parent->nickserv.LCK_NoExpire())
+	if (na->status & EPO_NS_NO_EXPIRE && !Magick::instance().nickserv.LCK_NoExpire())
 	    out.setting.NoExpire = true;
 
 	if ((nc->flags & EPO_NI_SERVICES_ADMIN) &&
-	    Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
-	    !Parent->commserv.GetList(Parent->commserv.SOP_Name()).find(na->nick))
+	    Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
+	    !Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).find(na->nick))
 	{
-	    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(na->nick)))
-		Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
-			mstring(na->nick), Parent->commserv.FirstName());
+	    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(na->nick)))
+		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).insert(
+			mstring(na->nick), Magick::instance().commserv.FirstName());
 	}
 	else if ((nc->flags & EPO_NI_SERVICES_OPER) &&
-	    Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
-	    !Parent->commserv.GetList(Parent->commserv.OPER_Name()).find(na->nick))
+	    Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	    !Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).find(na->nick))
 	{
-	    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(na->nick)) &&
-		!(Parent->commserv.IsList(Parent->commserv.ADMIN_Name()) &&
-		Parent->commserv.GetList(Parent->commserv.ADMIN_Name()).find(na->nick)))
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).insert(
-			mstring(na->nick), Parent->commserv.FirstName());
+	    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(na->nick)) &&
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+		Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name()).find(na->nick)))
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).insert(
+			mstring(na->nick), Magick::instance().commserv.FirstName());
 	}
 
 	switch (nc->language)
@@ -1757,7 +1762,7 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 	out.i_LastUsed = mDateTime(ci->last_used);
 
 	long newlevel;
-	float mod = (float) Parent->chanserv.Level_Max() / (float) EPO_ACCESS_FOUNDER;
+	float mod = (float) Magick::instance().chanserv.Level_Max() / (float) EPO_ACCESS_FOUNDER;
 	for (i=0, i_access = ci->access; i<ci->accesscount; ++i, ++i_access)
 	{
 	    if (i_access->nick == NULL)
@@ -1769,7 +1774,7 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 	    if (newlevel == 0)
 		newlevel = 1;
 	    out.Access_insert(i_access->nick, newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 	}
 	for (i=0, akick = ci->akick; i<ci->akickcount; ++i, ++akick)
 	{
@@ -1793,7 +1798,7 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 	out.i_Topic_Set_Time = mDateTime(ci->last_topic_time);
 
 	if (ci->entry_message != NULL && strlen(ci->entry_message))
-	    out.Message_insert(ci->entry_message, Parent->chanserv.FirstName());
+	    out.Message_insert(ci->entry_message, Magick::instance().chanserv.FirstName());
 
 	if (ci->flags & EPO_CI_KEEPTOPIC && !out.L_Keeptopic())
 	    out.setting.Keeptopic = true;
@@ -1807,7 +1812,7 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 	    out.setting.Restricted = true;
 	if (ci->flags & EPO_CI_SECURE && !out.L_Secure())
 	    out.setting.Secure = true;
-	if (ci->flags & EPO_CI_NO_EXPIRE && !Parent->chanserv.LCK_NoExpire())
+	if (ci->flags & EPO_CI_NO_EXPIRE && !Magick::instance().chanserv.LCK_NoExpire())
 	    out.setting.NoExpire = true;
 
 	mstring modelock;
@@ -1833,16 +1838,16 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 	    modelock << " " << ci->mlock_limit;
 	}
 	if (modelock.length())
-	    out.Mlock(Parent->chanserv.FirstName(), modelock);
+	    out.Mlock(Magick::instance().chanserv.FirstName(), modelock);
 
 	if (ci->levels != NULL)
 	{
 	    for (i=0; i<EPO_CA_SIZE; ++i)
 	    {
 		if (ci->levels[i] == EPO_ACCESS_INVALID)
-		    newlevel = Parent->chanserv.Level_Max() + 2;
+		    newlevel = Magick::instance().chanserv.Level_Max() + 2;
 		else if (ci->levels[i] == EPO_ACCESS_FOUNDER)
-		    newlevel = Parent->chanserv.Level_Max() + 1;
+		    newlevel = Magick::instance().chanserv.Level_Max() + 1;
 		else if (ci->levels[i] < 0)
 		    newlevel = -1;
 		else
@@ -1852,55 +1857,55 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 		{
 		case EPO_CA_INVITE:
 		    out.Level_change("CMDINVITE", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_AKICK:
 		    out.Level_change("AKICK", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_SET:
 		    out.Level_change("SET", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_UNBAN:
 		    out.Level_change("UNBAN", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    out.Level_change("CMDUNBAN", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_AUTOOP:
 		    out.Level_change("AUTOOP", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_AUTODEOP:
 		    out.Level_change("AUTODEOP", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_AUTOVOICE:
 		    out.Level_change("AUTOVOICE", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_OPDEOP:
 		    out.Level_change("CMDOP", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_ACCESS_LIST:
 		    out.Level_change("VIEW", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_CLEAR:
 		    out.Level_change("CMDCLEAR", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_NOJOIN:
 		    break;
 		case EPO_CA_ACCESS_CHANGE:
 		    out.Level_change("ACCESS", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_MEMO:
 		    out.Level_change("WRITEMEMO", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_ASSIGN:
 		    break;
@@ -1914,21 +1919,21 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 		    break;
 		case EPO_CA_GREET:
 		    out.Level_change("GREET", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_VOICEME:
 		    out.Level_change("CMDVOICE", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_VOICE:
 		    break;
 		case EPO_CA_GETKEY:
 		    out.Level_change("CMDMODE", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_AUTOHALFOP:
 		    out.Level_change("AUTOHALFOP", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_AUTOPROTECT:
 		    break;
@@ -1936,7 +1941,7 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 		    break;
 		case EPO_CA_HALFOPME:
 		    out.Level_change("CMDHALFOP", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_HALFOP:
 		    break;
@@ -1948,7 +1953,7 @@ Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci)
 		    break;
 		case EPO_CA_KICK:
 		    out.Level_change("CMDKICK", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case EPO_CA_SIGNKICK:
 		    break;

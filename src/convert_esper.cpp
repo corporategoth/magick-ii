@@ -27,6 +27,11 @@ RCSID(convert_esper_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.10  2001/11/17 07:18:12  prez
 ** Fixed up unbanning, so it gets ALL bans ...
 **
@@ -355,7 +360,7 @@ void ESP_load_old_ns_dbase(ESP_dbFILE *f, int ver)
 
 	    nick = ESP_CreateNickEntry(ni);
 	    if (!nick.Name().empty())
-		Parent->nickserv.AddStored(&nick);
+		Magick::instance().nickserv.AddStored(&nick);
 	    ESP_delnick(ni);
 	} /* while (ESP_getc_db(f) != 0) */
     } /* for (i) */
@@ -483,10 +488,10 @@ void ESP_load_ns_dbase(void)
 
 		nick = ESP_CreateNickEntry(ni);
 		if (!nick.Name().empty())
-		    Parent->nickserv.AddStored(&nick);
+		    Magick::instance().nickserv.AddStored(&nick);
 		memo = ESP_CreateMemoEntry(&ni->memos, ni->nick);
 		if (memo.size())
-		    Parent->memoserv.AddNick(memo);
+		    Magick::instance().memoserv.AddNick(memo);
 		ESP_delnick(ni);
 	    } /* while (ESP_getc_db(f) != 0) */
 	} /* for (i) */
@@ -775,7 +780,7 @@ void ESP_load_old_cs_dbase(ESP_dbFILE *f, int ver)
 
 	    chan = ESP_CreateChanEntry(ci);
 	    if (!chan.Name().empty())
-		Parent->chanserv.AddStored(&chan);
+		Magick::instance().chanserv.AddStored(&chan);
 	    ESP_delchan(ci);
 	} /* while (ESP_getc_db(f) != 0) */
     } /* for (i) */
@@ -928,10 +933,10 @@ void ESP_load_cs_dbase(void)
 
 		chan = ESP_CreateChanEntry(ci);
 		if (!chan.Name().empty())
-		    Parent->chanserv.AddStored(&chan);
+		    Magick::instance().chanserv.AddStored(&chan);
 		news = ESP_CreateNewsEntry(&ci->memos, ci->name);
 		if (news.size())
-		    Parent->memoserv.AddChannel(news);
+		    Magick::instance().memoserv.AddChannel(news);
 		ESP_delchan(ci);
 	    } /* while (ESP_getc_db(f) != 0) */
 	} /* for (i) */
@@ -1094,7 +1099,7 @@ void ESP_load_old_ms_dbase(void)
 
 		memo = ESP_CreateMemoEntry(&mi, old_memolist.nick);
 		if (memo.size())
-		    Parent->memoserv.AddNick(memo);
+		    Magick::instance().memoserv.AddNick(memo);
 
 		for (j = 0; j < old_memolist.n_memos; j++) {
 		    if (memos[j].text)
@@ -1163,16 +1168,16 @@ void ESP_load_news()
 		continue;
 
 	    if (news[i].type == ESP_NEWS_LOGON &&
-		Parent->commserv.IsList(Parent->commserv.ALL_Name()))
+		Magick::instance().commserv.IsList(Magick::instance().commserv.ALL_Name()))
 	    {
-		Parent->commserv.GetList(Parent->commserv.ALL_Name()).MSG_insert(
+		Magick::instance().commserv.GetList(Magick::instance().commserv.ALL_Name()).MSG_insert(
 			mstring(news[i].text), mstring(news[i].who),
 			mDateTime(news[i].time));
 	    }
 	    else if (news[i].type == ESP_NEWS_OPER &&
-		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
+		Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
 	    {
-		Parent->commserv.GetList(Parent->commserv.OPER_Name()).MSG_insert(
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).MSG_insert(
 			mstring(news[i].text), mstring(news[i].who),
 			mDateTime(news[i].time));
 	    }
@@ -1223,17 +1228,17 @@ void ESP_load_os_dbase(void)
       case 6:
       case 5:
 	SAFE(ESP_read_int16(&n, f));
-	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()))
+	if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()))
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
 		if (s == NULL)
 		    continue;
 
- 		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
-		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
-		    mstring(s), Parent->commserv.FirstName());
+ 		if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(s)))
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).insert(
+		    mstring(s), Magick::instance().commserv.FirstName());
 		free(s); 
 	    }
 	}
@@ -1247,17 +1252,17 @@ void ESP_load_os_dbase(void)
 	}
 	if (!failed)
 	    SAFE(ESP_read_int16(&n, f));
-	if (Parent->commserv.IsList(Parent->commserv.OPER_Name()))
+	if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
 		if (s == NULL)
 		    continue;
 
- 		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
-		    Parent->commserv.GetList(Parent->commserv.OPER_Name()).insert(
-		    mstring(s), Parent->commserv.FirstName());
+ 		if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(s)))
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).insert(
+		    mstring(s), Magick::instance().commserv.FirstName());
 		free(s);
 	    }
 	}
@@ -1280,17 +1285,17 @@ void ESP_load_os_dbase(void)
       case 4:
       case 3:
 	SAFE(ESP_read_int16(&n, f));
-	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()))
+	if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()))
 	{
 	    for (i = 0; i < n && !failed; i++) {
 		SAFE(ESP_read_string(&s, f));
 		if (s == NULL)
 		    continue;
 
- 		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
-		     Parent->commserv.GetList(Parent->commserv.SADMIN_Name()).find(s)))
-		    Parent->commserv.GetList(Parent->commserv.SOP_Name()).insert(
-		    mstring(s), Parent->commserv.FirstName());
+ 		if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(s)))
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).insert(
+		    mstring(s), Magick::instance().commserv.FirstName());
 		free(s);
 	    }
 	}
@@ -1365,7 +1370,7 @@ void ESP_load_akill(void)
 	{
 	    if (akills[i].mask != NULL && akills[i].reason != NULL)
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		Magick::instance().operserv.Akill_insert(mstring(akills[i].mask),
 		    akills[i].expires-akills[i].time,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
@@ -1405,7 +1410,7 @@ void ESP_load_akill(void)
 	{
 	    if (akills[i].mask != NULL && akills[i].reason != NULL)
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		Magick::instance().operserv.Akill_insert(mstring(akills[i].mask),
 		    akills[i].expires-akills[i].time,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
@@ -1442,7 +1447,7 @@ void ESP_load_akill(void)
 	{
 	    if (akills[i].mask != NULL && akills[i].reason != NULL)
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		Magick::instance().operserv.Akill_insert(mstring(akills[i].mask),
 		    akills[i].expires-akills[i].time,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
@@ -1478,7 +1483,7 @@ void ESP_load_akill(void)
 	{
 	    if (akills[i].mask != NULL && akills[i].reason != NULL)
 	    {
-		Parent->operserv.Akill_insert(mstring(akills[i].mask),
+		Magick::instance().operserv.Akill_insert(mstring(akills[i].mask),
 		    akills[i].expires-akills[i].time,
 		    mstring(akills[i].reason), mstring(akills[i].who),
 		    mDateTime(akills[i].time));
@@ -1549,7 +1554,7 @@ void ESP_load_exceptions()
         for (i = 0; i < ESP_nexceptions; i++) {
 	    if (exceptions[i].mask != NULL && exceptions[i].reason != NULL)
 	    {
-		Parent->operserv.Clone_insert(mstring(exceptions[i].mask),
+		Magick::instance().operserv.Clone_insert(mstring(exceptions[i].mask),
 		    exceptions[i].limit, mstring(exceptions[i].reason),
 		    mstring(exceptions[i].who), mDateTime(exceptions[i].time));
 	    }
@@ -1623,7 +1628,7 @@ Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni)
 	    out.setting.Secure = true;
 	if (ni->flags & ESP_NI_PRIVATE && !out.L_Private())
 	    out.setting.Private = true;
-	if (ni->status & ESP_NS_NO_EXPIRE && !Parent->nickserv.LCK_NoExpire())
+	if (ni->status & ESP_NS_NO_EXPIRE && !Magick::instance().nickserv.LCK_NoExpire())
 	    out.setting.NoExpire = true;
 
 	if (ni->flags & ESP_NI_SUSPENDED)
@@ -1732,7 +1737,7 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	out.i_LastUsed = mDateTime(ci->last_used);
 
 	long newlevel;
-	float mod = (float) Parent->chanserv.Level_Max() / (float) ESP_ACCESS_FOUNDER;
+	float mod = (float) Magick::instance().chanserv.Level_Max() / (float) ESP_ACCESS_FOUNDER;
 	for (i=0, i_access = ci->access; i<ci->accesscount; ++i, ++i_access)
 	{
 	    if (i_access->nick == NULL)
@@ -1744,7 +1749,7 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	    if (newlevel == 0)
 		newlevel = 1;
 	    out.Access_insert(i_access->nick, newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 	}
 	for (i=0, akick = ci->akick; i<ci->akickcount; ++i, ++akick)
 	{
@@ -1782,7 +1787,7 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	out.i_Topic_Set_Time = mDateTime(ci->last_topic_time);
 
 	if (ci->entry_message != NULL && strlen(ci->entry_message))
-	    out.Message_insert(ci->entry_message, Parent->chanserv.FirstName());
+	    out.Message_insert(ci->entry_message, Magick::instance().chanserv.FirstName());
 
 	if (ci->flags & ESP_CI_KEEPTOPIC && !out.L_Keeptopic())
 	    out.setting.Keeptopic = true;
@@ -1798,7 +1803,7 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	    out.setting.Anarchy = true;
 	if (ci->flags & ESP_CI_SECURE && !out.L_Secure())
 	    out.setting.Secure = true;
-	if (ci->flags & ESP_CI_NO_EXPIRE && !Parent->chanserv.LCK_NoExpire())
+	if (ci->flags & ESP_CI_NO_EXPIRE && !Magick::instance().chanserv.LCK_NoExpire())
 	    out.setting.NoExpire = true;
 
 	mstring modelock;
@@ -1824,16 +1829,16 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 	    modelock << " " << ci->mlock_limit;
 	}
 	if (modelock.length())
-	    out.Mlock(Parent->chanserv.FirstName(), modelock);
+	    out.Mlock(Magick::instance().chanserv.FirstName(), modelock);
 
 	if (ci->levels != NULL)
 	{
 	    for (i=0; i<ESP_CA_SIZE; ++i)
 	    {
 		if (ci->levels[i] == ESP_ACCESS_INVALID)
-		    newlevel = Parent->chanserv.Level_Max() + 2;
+		    newlevel = Magick::instance().chanserv.Level_Max() + 2;
 		else if (ci->levels[i] == ESP_ACCESS_FOUNDER)
-		    newlevel = Parent->chanserv.Level_Max() + 1;
+		    newlevel = Magick::instance().chanserv.Level_Max() + 1;
 		else if (ci->levels[i] < 0)
 		    newlevel = -1;
 		else
@@ -1843,55 +1848,55 @@ Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci)
 		{
 		case ESP_CA_INVITE:
 		    out.Level_change("CMDINVITE", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_AKICK:
 		    out.Level_change("AKICK", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_SET:
 		    out.Level_change("SET", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_UNBAN:
 		    out.Level_change("UNBAN", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    out.Level_change("CMDUNBAN", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_AUTOOP:
 		    out.Level_change("AUTOOP", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_AUTODEOP:
 		    out.Level_change("AUTODEOP", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_AUTOVOICE:
 		    out.Level_change("AUTOVOICE", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_OPDEOP:
 		    out.Level_change("CMDOP", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_ACCESS_LIST:
 		    out.Level_change("VIEW", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_CLEAR:
 		    out.Level_change("CMDCLEAR", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_NOJOIN:
 		    break;
 		case ESP_CA_ACCESS_CHANGE:
 		    out.Level_change("ACCESS", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		case ESP_CA_MEMO:
 		    out.Level_change("WRITEMEMO", newlevel,
-			Parent->chanserv.FirstName());
+			Magick::instance().chanserv.FirstName());
 		    break;
 		}
 	    }

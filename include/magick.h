@@ -25,6 +25,11 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.171  2001/12/20 08:02:31  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.170  2001/11/30 09:02:17  prez
 ** Changed Magick to have Init(), Start(), Run(), Stop(), Finish() and
 ** Pause(bool) functions. This should help if/when we decide to implement
@@ -291,11 +296,7 @@ const int MAGICK_RET_ERROR		= -1;
 const int MAGICK_RET_LOCKED		= -2;
 const int MAGICK_RET_STATE		= -3;
 
-class Magick; // fwd reference, leave it here
 const mstring ChanSpec = "#&+!";
-
-extern Magick *Parent;
-extern mDateTime StartTime;
 
 inline bool IsChan(mstring input)
 { return (ChanSpec.Contains(input[0U])); }
@@ -306,18 +307,6 @@ public:
     int handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext);
 };
 
-
-#define LOG2(X)	\
-	if (Parent != NULL && Parent->ValidateLogger(ACE_LOG_MSG)) { \
-		ACE_DEBUG(X); Parent->EndLogMessage(ACE_LOG_MSG); }
-#define LOG(X, Y, Z) \
-	{ LOG2((X, parseMessage(Parent->getLogMessage(Y), mVarArray Z))); }
-#define NLOG(X, Y) \
-	{ LOG2((X, parseMessage(Parent->getLogMessage(Y)))); }
-#define SLOG(X, Y, Z) \
-	{ LOG2((X, parseMessage(Y, mVarArray Z))); }
-#define NSLOG(X, Y) \
-	{ LOG2((X, parseMessage(Y))); }
 
 class Logger : public ACE_Log_Msg_Callback
 {
@@ -333,6 +322,21 @@ public:
     bool opened() const;
 };
 
+#define LOG2(X)	\
+	if (Magick::instance_exists() && \
+	    Magick::instance().ValidateLogger(ACE_LOG_MSG)) { \
+		ACE_DEBUG(X); \
+		Magick::instance().EndLogMessage(ACE_LOG_MSG); } \
+
+#define LOG(X, Y, Z) \
+	{ LOG2((X, parseMessage(Magick::instance().getLogMessage(Y), mVarArray Z))); }
+#define NLOG(X, Y) \
+	{ LOG2((X, parseMessage(Magick::instance().getLogMessage(Y)))); }
+#define SLOG(X, Y, Z) \
+	{ LOG2((X, parseMessage(Y, mVarArray Z))); }
+#define NSLOG(X, Y) \
+	{ LOG2((X, parseMessage(Y))); }
+
 
 class Magick : public SXP::IPersistObj
 {
@@ -341,6 +345,8 @@ class Magick : public SXP::IPersistObj
 private:
     enum { Unknown = 0, Constructed, Initialized, Started,
 		Running, RunCompleted, Stopped, Finished } CurrentState;
+
+    static map<ACE_thread_t, Magick *> InstanceMap;
 
     vector<mstring> argv;
     // Language, token, string
@@ -361,6 +367,7 @@ private:
     mstring i_config_file;
     mstring i_programname;
 
+    static mDateTime i_StartTime;
     mDateTime i_ResetTime;
     unsigned int i_level;
     bool i_pause;
@@ -394,6 +401,19 @@ public:
 
     // Other stuff ...
     Server server;
+
+#ifdef MAGICK_HAS_EXCEPTIONS
+    static void register_instance(Magick *ins, ACE_thread_t id = ACE_Thread::self()) throw(E_Magick);
+#else
+    static void register_instance(Magick *ins, ACE_thread_t id = ACE_Thread::self());
+#endif
+    static void deregister_instance(ACE_thread_t id = ACE_Thread::self());
+    static bool instance_exists(ACE_thread_t id = ACE_Thread::self());
+#ifdef MAGICK_HAS_EXCEPTIONS
+    static Magick &instance(ACE_thread_t id = ACE_Thread::self()) throw(E_Magick);
+#else
+    static Magick &instance(ACE_thread_t id = ACE_Thread::self());
+#endif
 
     // Config Values
     class startup_t {
@@ -469,12 +489,12 @@ public:
 		if (in[1u] == ':' && mstring(in[2u]) == DirSlash)
 		    return in;
 		else
-		    return Parent->Services_Dir() + DirSlash + in;
+		    return Magick::instance().Services_Dir() + DirSlash + in;
 #else
 		if (mstring(in[0u]) == DirSlash)
 		    return in;
 		else
-		    return Parent->Services_Dir() + DirSlash + in;
+		    return Magick::instance().Services_Dir() + DirSlash + in;
 #endif
 	    }
 	mode_t Umask()const	    { return umask; }
@@ -553,7 +573,7 @@ public:
 
     // Current STATES, and switching between them.
     Magick(int inargc, char **inargv);
-    ~Magick() {}
+    ~Magick();
 
     // Init and Finish are only EVER called once
     // Start should be called after Init or Stop
@@ -565,11 +585,13 @@ public:
     int Stop();
     int Finish();
 
-    void Pause(bool in)	{ i_pause = in; }
-    bool Pause()	{ return i_pause; }
+    void Pause(bool in)			{ i_pause = in; }
+    bool Pause()			{ return i_pause; }
 
-    mDateTime ResetTime()const    { return i_ResetTime; }
-    unsigned int Level()const    { return i_level; }
+    static void StartTime(const mDateTime &in)	{ i_StartTime = in; }
+    static mDateTime StartTime()	{ return i_StartTime; }
+    mDateTime ResetTime()const		{ return i_ResetTime; }
+    unsigned int Level()const		{ return i_level; }
     void LevelUp()
     {
 	i_level++;
@@ -702,5 +724,7 @@ public:
     void DumpB() const;
     void DumpE() const;
 };
+
+
 
 #endif

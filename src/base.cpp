@@ -27,6 +27,11 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.177  2001/12/20 08:02:31  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.176  2001/11/18 03:26:53  prez
 ** More changes re: trace names, and made the command system know the
 ** difference between 'insufficiant access' and 'unknown command'.
@@ -482,9 +487,9 @@ mMessage::mMessage(const mstring& p_source, const mstring& p_msgtype,
 	: ACE_Method_Request(p_priority), source_(p_source), params_(p_params),
 	  creation_(mDateTime::CurrentDateTime())
 {
-    if (source_ != " " && Parent->server.proto.Tokens())
+    if (source_ != " " && Magick::instance().server.proto.Tokens())
     {
-	mstring tmp(Parent->server.proto.GetToken(p_msgtype));
+	mstring tmp(Magick::instance().server.proto.GetToken(p_msgtype));
 	if (!tmp.empty())
 	    msgtype_ = tmp;
     }
@@ -549,7 +554,7 @@ void mMessage::AddDependancies()
 	AddDepend(NickNoExists, params_.ExtractWord(1, ": ").LowerCase());
 	if (source_.empty())
 	{
-	    switch (Parent->server.proto.Signon())
+	    switch (Magick::instance().server.proto.Signon())
 	    {
 	    case 0000:
 		AddDepend(ServerExists, params_.ExtractWord(4, ": ").LowerCase());
@@ -674,7 +679,7 @@ void mMessage::AddDependancies()
 	switch (iter->first)
 	{
 	case ServerExists:
-	    if (Parent->server.GetServer(iter->second).empty())
+	    if (Magick::instance().server.GetServer(iter->second).empty())
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -691,7 +696,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case ServerNoExists:
-	    if (!Parent->server.GetServer(iter->second).empty())
+	    if (!Magick::instance().server.GetServer(iter->second).empty())
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -708,7 +713,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case NickExists:
-	    if (!Parent->nickserv.IsLive(iter->second))
+	    if (!Magick::instance().nickserv.IsLive(iter->second))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -725,7 +730,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case NickNoExists:
-	    if (Parent->nickserv.IsLive(iter->second))
+	    if (Magick::instance().nickserv.IsLive(iter->second))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -742,7 +747,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case ChanExists:
-	    if (!Parent->chanserv.IsLive(iter->second))
+	    if (!Magick::instance().chanserv.IsLive(iter->second))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -759,7 +764,7 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case ChanNoExists:
-	    if (Parent->chanserv.IsLive(iter->second))
+	    if (Magick::instance().chanserv.IsLive(iter->second))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -776,9 +781,9 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case UserInChan:
-	    if (Parent->chanserv.IsLive(iter->second.Before(":")))
+	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":")))
 	    {
-		if (!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+		if (!Magick::instance().chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 		{
 		    added++;
 		    MLOCK2(("AllDependancies"));
@@ -807,8 +812,8 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case UserNoInChan:
-	    if (Parent->chanserv.IsLive(iter->second.Before(":")) &&
-		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
+		Magick::instance().chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -848,7 +853,7 @@ bool mMessage::RecheckDependancies()
 	switch (iter->first)
 	{
 	case ServerExists:
-	    if (!iter->third && !Parent->server.GetServer(iter->second).empty())
+	    if (!iter->third && !Magick::instance().server.GetServer(iter->second).empty())
 	    {
 		resolved = true;
 		iter->third = true;
@@ -864,7 +869,7 @@ bool mMessage::RecheckDependancies()
 	    }
 	    break;
 	case ServerNoExists:
-	    if (!iter->third && Parent->server.GetServer(iter->second).empty())
+	    if (!iter->third && Magick::instance().server.GetServer(iter->second).empty())
 	    {
 		resolved = true;
 		iter->third = true;
@@ -880,7 +885,7 @@ bool mMessage::RecheckDependancies()
 	    }
 	    break;
 	case NickExists:
-	    if (!iter->third && Parent->nickserv.IsLive(iter->second))
+	    if (!iter->third && Magick::instance().nickserv.IsLive(iter->second))
 	    {
 		resolved = true;
 		iter->third = true;
@@ -896,7 +901,7 @@ bool mMessage::RecheckDependancies()
 	    }
 	    break;
 	case NickNoExists:
-	    if (!iter->third && !Parent->nickserv.IsLive(iter->second))
+	    if (!iter->third && !Magick::instance().nickserv.IsLive(iter->second))
 	    {
 		resolved = true;
 		iter->third = true;
@@ -912,7 +917,7 @@ bool mMessage::RecheckDependancies()
 	    }
 	    break;
 	case ChanExists:
-	    if (!iter->third && Parent->chanserv.IsLive(iter->second))
+	    if (!iter->third && Magick::instance().chanserv.IsLive(iter->second))
 	    {
 		resolved = true;
 		iter->third = true;
@@ -928,7 +933,7 @@ bool mMessage::RecheckDependancies()
 	    }
 	    break;
 	case ChanNoExists:
-	    if (!iter->third && !Parent->chanserv.IsLive(iter->second))
+	    if (!iter->third && !Magick::instance().chanserv.IsLive(iter->second))
 	    {
 		resolved = true;
 		iter->third = true;
@@ -944,8 +949,8 @@ bool mMessage::RecheckDependancies()
 	    }
 	    break;
 	case UserInChan:
-	    if (!iter->third && Parent->chanserv.IsLive(iter->second.Before(":")) &&
-		Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+	    if (!iter->third && Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
+		Magick::instance().chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
 	    {
 		resolved = true;
 		iter->third = true;
@@ -961,8 +966,8 @@ bool mMessage::RecheckDependancies()
 	    }
 	    break;
 	case UserNoInChan:
-	    if (!iter->third && (!Parent->chanserv.IsLive(iter->second.Before(":")) ||
-		!Parent->chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":"))))
+	    if (!iter->third && (!Magick::instance().chanserv.IsLive(iter->second.Before(":")) ||
+		!Magick::instance().chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":"))))
 	    {
 		resolved = true;
 		iter->third = true;
@@ -1068,8 +1073,8 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
 	    CP(("No more dependancies for %d.", msg->msgid()));
 	    msg->priority(static_cast<u_long>(P_DepFilled));
 	    RLOCK(("IrcSvcHandler"));
-	    if (Parent->ircsvchandler != NULL)
-		Parent->ircsvchandler->enqueue(msg);
+	    if (Magick::instance().ircsvchandler != NULL)
+		Magick::instance().ircsvchandler->enqueue(msg);
 	}
     }
 }
@@ -1118,7 +1123,7 @@ int mMessage::call()
 
     try {
 
-    if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Parent->nickserv.IsLive(source_) &&
+    if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(source_) &&
 	!IsChan(params_.ExtractWord(1, ": ")))
     {
 	mstring target(params_.ExtractWord(1, ": "));
@@ -1129,40 +1134,40 @@ int mMessage::call()
 	    CP(("Target changed, new params: %s", params_.c_str()));
 	}
 
-	if (!Parent->nickserv.GetLive(source_).FloodTrigger())
+	if (!Magick::instance().nickserv.GetLive(source_).FloodTrigger())
 	{
 	    // Find out if the target nick is one of the services 'clones'
 	    // Pass the message to them if so.
 	    // before even that, check if it's script overriden via
-	    //     Parent->checkifhandled(servername,command)
-	    // if so, Parent->doscripthandle(server,command,data);
+	    //     Magick::instance().checkifhandled(servername,command)
+	    // if so, Magick::instance().doscripthandle(server,command,data);
 
-	    if (Parent->operserv.IsName(target))
-		Parent->operserv.execute(source_, msgtype_, params_);
+	    if (Magick::instance().operserv.IsName(target))
+		Magick::instance().operserv.execute(source_, msgtype_, params_);
 
-	    else if (Parent->nickserv.IsName(target) && Parent->nickserv.MSG())
-		Parent->nickserv.execute(source_, msgtype_, params_);
+	    else if (Magick::instance().nickserv.IsName(target) && Magick::instance().nickserv.MSG())
+		Magick::instance().nickserv.execute(source_, msgtype_, params_);
 
-	    else if (Parent->chanserv.IsName(target) && Parent->chanserv.MSG())
-		Parent->chanserv.execute(source_, msgtype_, params_);
+	    else if (Magick::instance().chanserv.IsName(target) && Magick::instance().chanserv.MSG())
+		Magick::instance().chanserv.execute(source_, msgtype_, params_);
 
-	    else if (Parent->memoserv.IsName(target) && Parent->memoserv.MSG())
-		Parent->memoserv.execute(source_, msgtype_, params_);
+	    else if (Magick::instance().memoserv.IsName(target) && Magick::instance().memoserv.MSG())
+		Magick::instance().memoserv.execute(source_, msgtype_, params_);
 
-	    else if (Parent->commserv.IsName(target) && Parent->commserv.MSG())
-		Parent->commserv.execute(source_, msgtype_, params_);
+	    else if (Magick::instance().commserv.IsName(target) && Magick::instance().commserv.MSG())
+		Magick::instance().commserv.execute(source_, msgtype_, params_);
 
-	    else if (Parent->servmsg.IsName(target) && Parent->servmsg.MSG())
-		Parent->servmsg.execute(source_, msgtype_, params_);
+	    else if (Magick::instance().servmsg.IsName(target) && Magick::instance().servmsg.MSG())
+		Magick::instance().servmsg.execute(source_, msgtype_, params_);
 
 	    // else check if it's script handled, might do up a list of script servers
 	    // in the magick object to check against, else trash it.
 
 	    else	// PRIVMSG or NOTICE to non-service
-		Parent->server.execute(source_, msgtype_, params_);
+		Magick::instance().server.execute(source_, msgtype_, params_);
 
 	}
-	else if (Parent->operserv.Log_Ignore())
+	else if (Magick::instance().operserv.Log_Ignore())
 	{
 	    // Check if we're to log ignore messages, and log them here.
 	    LOG(LM_DEBUG, "OPERSERV/IGNORED", (
@@ -1170,7 +1175,7 @@ int mMessage::call()
 	}
     }
     else
-	Parent->server.execute(source_, msgtype_, params_);
+	Magick::instance().server.execute(source_, msgtype_, params_);
 
     }
     catch (E_NickServ_Stored &e)
@@ -1182,9 +1187,9 @@ int mMessage::call()
 		{
 		case E_NickServ_Stored::T_Invalid:
 		case E_NickServ_Stored::T_Blank:
-		    if (strlen(e.what()) && Parent->nickserv.IsStored(e.what()))
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsStored(e.what()))
 		    {
-			Parent->nickserv.RemStored(e.what());
+			Magick::instance().nickserv.RemStored(e.what());
 		    }
 		    break;
 		default:
@@ -1204,9 +1209,9 @@ int mMessage::call()
 		{
 		case E_NickServ_Live::T_Invalid:
 		case E_NickServ_Live::T_Blank:
-		    if (strlen(e.what()) && Parent->nickserv.IsLiveAll(e.what()))
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
 		    {
-			Parent->nickserv.RemLive(e.what());
+			Magick::instance().nickserv.RemLive(e.what());
 		    }
 		    break;
 		default:
@@ -1226,9 +1231,9 @@ int mMessage::call()
 		{
 		case E_NickServ_Recovered::T_Invalid:
 		case E_NickServ_Recovered::T_Blank:
-		    if (strlen(e.what()) && Parent->nickserv.IsRecovered(e.what()))
+		    if (strlen(e.what()) && Magick::instance().nickserv.IsRecovered(e.what()))
 		    {
-			Parent->nickserv.RemRecovered(e.what());
+			Magick::instance().nickserv.RemRecovered(e.what());
 		    }
 		    break;
 		default:
@@ -1248,9 +1253,9 @@ int mMessage::call()
 		{
 		case E_ChanServ_Stored::T_Invalid:
 		case E_ChanServ_Stored::T_Blank:
-		    if (strlen(e.what()) && Parent->chanserv.IsStored(e.what()))
+		    if (strlen(e.what()) && Magick::instance().chanserv.IsStored(e.what()))
 		    {
-			Parent->chanserv.RemStored(e.what());
+			Magick::instance().chanserv.RemStored(e.what());
 		    }
 		    break;
 		default:
@@ -1270,9 +1275,9 @@ int mMessage::call()
 		{
 		case E_ChanServ_Live::T_Invalid:
 		case E_ChanServ_Live::T_Blank:
-		    if (strlen(e.what()) && Parent->chanserv.IsLive(e.what()))
+		    if (strlen(e.what()) && Magick::instance().chanserv.IsLive(e.what()))
 		    {
-			Parent->chanserv.RemLive(e.what());
+			Magick::instance().chanserv.RemLive(e.what());
 		    }
 		    break;
 		default:
@@ -1292,9 +1297,9 @@ int mMessage::call()
 		{
 		case E_CommServ_List::T_Invalid:
 		case E_CommServ_List::T_Blank:
-		    if (strlen(e.what()) && Parent->commserv.IsList(e.what()))
+		    if (strlen(e.what()) && Magick::instance().commserv.IsList(e.what()))
 		    {
-			Parent->commserv.RemList(e.what());
+			Magick::instance().commserv.RemList(e.what());
 		    }
 		    break;
 		default:
@@ -1314,9 +1319,9 @@ int mMessage::call()
 		{
 		case E_Server_List::T_Invalid:
 		case E_Server_List::T_Blank:
-		    if (strlen(e.what()) && Parent->server.IsList(e.what()))
+		    if (strlen(e.what()) && Magick::instance().server.IsList(e.what()))
 		    {
-			Parent->server.RemList(e.what());
+			Magick::instance().server.RemList(e.what());
 		    }
 		    break;
 		default:
@@ -1365,15 +1370,15 @@ bool mBase::signon(const mstring &nickname) const
 {
     FT("mBase::signon", (nickname));
 
-    if (Parent->nickserv.IsLive(nickname))
+    if (Magick::instance().nickserv.IsLive(nickname))
     {
 	RET(false);
     }
     else
     {
-	Parent->server.NICK(nickname,
-		(Parent->startup.Ownuser() ? nickname.LowerCase() : Parent->startup.Services_User()),
-		Parent->startup.Services_Host(), Parent->startup.Server_Name(), realname);
+	Magick::instance().server.NICK(nickname,
+		(Magick::instance().startup.Ownuser() ? nickname.LowerCase() : Magick::instance().startup.Services_User()),
+		Magick::instance().startup.Services_Host(), Magick::instance().startup.Server_Name(), realname);
 	RET(true);
     }
 }
@@ -1382,9 +1387,9 @@ bool mBase::signoff(const mstring &nickname, const mstring &msg) const
 {
     FT("mBase::signoff", (nickname));
 
-    if (Parent->nickserv.IsLive(nickname))
+    if (Magick::instance().nickserv.IsLive(nickname))
     {
-	Parent->server.QUIT(nickname, msg);
+	Magick::instance().server.QUIT(nickname, msg);
 	RET(true);
     }
     else
@@ -1428,8 +1433,8 @@ void mBase::privmsg(const mstring &source, const mstring &dest, const mstring &m
 {
     FT("mBase::privmsg", (source, dest, message));
 
-    if (IsName(source) && !Parent->getLname(dest).empty())
-	Parent->server.PRIVMSG(source, dest, message);
+    if (IsName(source) && !Magick::instance().getLname(dest).empty())
+	Magick::instance().server.PRIVMSG(source, dest, message);
 }
 
 
@@ -1467,8 +1472,8 @@ void mBase::notice(const mstring &source, const mstring &dest, const mstring &me
 {
     FT("mBase::notice", (source, dest, message));
 
-    if (IsName(source) && !Parent->getLname(dest).empty())
-	Parent->server.NOTICE(source, dest, message);
+    if (IsName(source) && !Magick::instance().getLname(dest).empty())
+	Magick::instance().server.NOTICE(source, dest, message);
 }
 
 void mBase::sendV(const mstring &dest, const char *pszFormat, ...) const
@@ -1505,12 +1510,12 @@ void mBase::send(const mstring &source, const mstring &dest, const mstring &mess
 {
     FT("mBase::send", (source, dest, message));
 
-    if (IsName(source) && Parent->nickserv.IsLive(dest))
+    if (IsName(source) && Magick::instance().nickserv.IsLive(dest))
     {
-	if (!Parent->nickserv.LCK_PRIVMSG() && Parent->nickserv.IsStored(dest) &&
-		Parent->nickserv.GetStored(dest).IsOnline())
+	if (!Magick::instance().nickserv.LCK_PRIVMSG() && Magick::instance().nickserv.IsStored(dest) &&
+		Magick::instance().nickserv.GetStored(dest).IsOnline())
 	{
-	    if (Parent->nickserv.GetStored(dest).PRIVMSG()) {
+	    if (Magick::instance().nickserv.GetStored(dest).PRIVMSG()) {
 		privmsg(source, dest, message);
 	    }
 	    else
@@ -1520,7 +1525,7 @@ void mBase::send(const mstring &source, const mstring &dest, const mstring &mess
 	}
 	else
 	{
-	    if (Parent->nickserv.DEF_PRIVMSG())
+	    if (Magick::instance().nickserv.DEF_PRIVMSG())
 	    {
 		privmsg(source, dest, message);
 	    }
@@ -1549,23 +1554,23 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &message)
 {
     FT("privmsg", (source, dest, message));
 
-    if (Parent->operserv.IsName(source))
-	Parent->operserv.privmsg(source, dest, message);
+    if (Magick::instance().operserv.IsName(source))
+	Magick::instance().operserv.privmsg(source, dest, message);
 
-    else if (Parent->nickserv.IsName(source))
-	Parent->nickserv.privmsg(source, dest, message);
+    else if (Magick::instance().nickserv.IsName(source))
+	Magick::instance().nickserv.privmsg(source, dest, message);
 
-    else if (Parent->chanserv.IsName(source))
-	Parent->chanserv.privmsg(source, dest, message);
+    else if (Magick::instance().chanserv.IsName(source))
+	Magick::instance().chanserv.privmsg(source, dest, message);
 
-    else if (Parent->memoserv.IsName(source))
-	Parent->memoserv.privmsg(source, dest, message);
+    else if (Magick::instance().memoserv.IsName(source))
+	Magick::instance().memoserv.privmsg(source, dest, message);
 
-    else if (Parent->commserv.IsName(source))
-	Parent->commserv.privmsg(source, dest, message);
+    else if (Magick::instance().commserv.IsName(source))
+	Magick::instance().commserv.privmsg(source, dest, message);
 
-    else if (Parent->servmsg.IsName(source))
-	Parent->servmsg.privmsg(source, dest, message);
+    else if (Magick::instance().servmsg.IsName(source))
+	Magick::instance().servmsg.privmsg(source, dest, message);
 
     // scripted hosts ...
     else
@@ -1591,23 +1596,23 @@ void notice(const mstring& source, const mstring &dest, const mstring &message)
 {
     FT("notice", (source, dest, message));
 
-    if (Parent->operserv.IsName(source))
-	Parent->operserv.notice(source, dest, message);
+    if (Magick::instance().operserv.IsName(source))
+	Magick::instance().operserv.notice(source, dest, message);
 
-    else if (Parent->nickserv.IsName(source))
-	Parent->nickserv.notice(source, dest, message);
+    else if (Magick::instance().nickserv.IsName(source))
+	Magick::instance().nickserv.notice(source, dest, message);
 
-    else if (Parent->chanserv.IsName(source))
-	Parent->chanserv.notice(source, dest, message);
+    else if (Magick::instance().chanserv.IsName(source))
+	Magick::instance().chanserv.notice(source, dest, message);
 
-    else if (Parent->memoserv.IsName(source))
-	Parent->memoserv.notice(source, dest, message);
+    else if (Magick::instance().memoserv.IsName(source))
+	Magick::instance().memoserv.notice(source, dest, message);
 
-    else if (Parent->commserv.IsName(source))
-	Parent->commserv.notice(source, dest, message);
+    else if (Magick::instance().commserv.IsName(source))
+	Magick::instance().commserv.notice(source, dest, message);
 
-    else if (Parent->servmsg.IsName(source))
-	Parent->servmsg.notice(source, dest, message);
+    else if (Magick::instance().servmsg.IsName(source))
+	Magick::instance().servmsg.notice(source, dest, message);
 
     // scripted hosts ...
     else
@@ -1633,23 +1638,23 @@ void send(const mstring& source, const mstring &dest, const mstring &message)
 {
     FT("send", (source, dest, message));
 
-    if (Parent->operserv.IsName(source))
-	Parent->operserv.send(source, dest, message);
+    if (Magick::instance().operserv.IsName(source))
+	Magick::instance().operserv.send(source, dest, message);
 
-    else if (Parent->nickserv.IsName(source))
-	Parent->nickserv.send(source, dest, message);
+    else if (Magick::instance().nickserv.IsName(source))
+	Magick::instance().nickserv.send(source, dest, message);
 
-    else if (Parent->chanserv.IsName(source))
-	Parent->chanserv.send(source, dest, message);
+    else if (Magick::instance().chanserv.IsName(source))
+	Magick::instance().chanserv.send(source, dest, message);
 
-    else if (Parent->memoserv.IsName(source))
-	Parent->memoserv.send(source, dest, message);
+    else if (Magick::instance().memoserv.IsName(source))
+	Magick::instance().memoserv.send(source, dest, message);
 
-    else if (Parent->commserv.IsName(source))
-	Parent->commserv.send(source, dest, message);
+    else if (Magick::instance().commserv.IsName(source))
+	Magick::instance().commserv.send(source, dest, message);
 
-    else if (Parent->servmsg.IsName(source))
-	Parent->servmsg.send(source, dest, message);
+    else if (Magick::instance().servmsg.IsName(source))
+	Magick::instance().servmsg.send(source, dest, message);
 
     // scripted hosts ...
     else
@@ -1674,7 +1679,7 @@ void announceV(const mstring& source, const char *pszFormat, ...)
 void announce(const mstring& source, const mstring& message)
 {
     FT("announce", (source, message));
-    Parent->server.GLOBOPS(source, message);
+    Magick::instance().server.GLOBOPS(source, message);
 }
 
 // Command Map stuff ...
@@ -1775,18 +1780,18 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &servic
     // ENDIF
     // RETURN false;
 
-    if (Parent->operserv.IsName(service))
-	type = Parent->operserv.GetInternalName().LowerCase();
-    else if (Parent->nickserv.IsName(service))
-	type = Parent->nickserv.GetInternalName().LowerCase();
-    else if (Parent->chanserv.IsName(service))
-	type = Parent->chanserv.GetInternalName().LowerCase();
-    else if (Parent->memoserv.IsName(service))
-	type = Parent->memoserv.GetInternalName().LowerCase();
-    else if (Parent->commserv.IsName(service))
-	type = Parent->commserv.GetInternalName().LowerCase();
-    else if (Parent->servmsg.IsName(service))
-	type = Parent->servmsg.GetInternalName().LowerCase();
+    if (Magick::instance().operserv.IsName(service))
+	type = Magick::instance().operserv.GetInternalName().LowerCase();
+    else if (Magick::instance().nickserv.IsName(service))
+	type = Magick::instance().nickserv.GetInternalName().LowerCase();
+    else if (Magick::instance().chanserv.IsName(service))
+	type = Magick::instance().chanserv.GetInternalName().LowerCase();
+    else if (Magick::instance().memoserv.IsName(service))
+	type = Magick::instance().memoserv.GetInternalName().LowerCase();
+    else if (Magick::instance().commserv.IsName(service))
+	type = Magick::instance().commserv.GetInternalName().LowerCase();
+    else if (Magick::instance().servmsg.IsName(service))
+	type = Magick::instance().servmsg.GetInternalName().LowerCase();
     //else
     //  scripted stuff ...
 
@@ -1808,8 +1813,8 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &servic
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
-		    if (Parent->commserv.IsList(list)
-			&& Parent->commserv.GetList(list).IsOn(user))
+		    if (Magick::instance().commserv.IsList(list)
+			&& Magick::instance().commserv.GetList(list).IsOn(user))
 		    {
 			retval.first = true;
 			NRET(pair<bool_functor>,retval);
@@ -1839,18 +1844,18 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &serv
     // ENDIF
     // RETURN false;
 
-    if (Parent->operserv.IsName(service))
-	type = Parent->operserv.GetInternalName().LowerCase();
-    else if (Parent->nickserv.IsName(service))
-	type = Parent->nickserv.GetInternalName().LowerCase();
-    else if (Parent->chanserv.IsName(service))
-	type = Parent->chanserv.GetInternalName().LowerCase();
-    else if (Parent->memoserv.IsName(service))
-	type = Parent->memoserv.GetInternalName().LowerCase();
-    else if (Parent->commserv.IsName(service))
-	type = Parent->commserv.GetInternalName().LowerCase();
-    else if (Parent->servmsg.IsName(service))
-	type = Parent->servmsg.GetInternalName().LowerCase();
+    if (Magick::instance().operserv.IsName(service))
+	type = Magick::instance().operserv.GetInternalName().LowerCase();
+    else if (Magick::instance().nickserv.IsName(service))
+	type = Magick::instance().nickserv.GetInternalName().LowerCase();
+    else if (Magick::instance().chanserv.IsName(service))
+	type = Magick::instance().chanserv.GetInternalName().LowerCase();
+    else if (Magick::instance().memoserv.IsName(service))
+	type = Magick::instance().memoserv.GetInternalName().LowerCase();
+    else if (Magick::instance().commserv.IsName(service))
+	type = Magick::instance().commserv.GetInternalName().LowerCase();
+    else if (Magick::instance().servmsg.IsName(service))
+	type = Magick::instance().servmsg.GetInternalName().LowerCase();
     //else
     //  scripted stuff ...
 
@@ -1872,8 +1877,8 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &serv
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
-		    if (Parent->commserv.IsList(list)
-			 && Parent->commserv.GetList(list).IsOn(user))
+		    if (Magick::instance().commserv.IsList(list)
+			 && Magick::instance().commserv.GetList(list).IsOn(user))
 		    {
 			retval.first = true;
 			NRET(pair<bool_functor>,retval);
@@ -2035,7 +2040,7 @@ void do_1_2param(const mstring &mynick, const mstring &source, const mstring &pa
     mstring command(params.Before(" ", 2));
     command.MakeUpper();
 
-    if (!Parent->commands.DoCommand(mynick, source, command, params))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
@@ -2058,7 +2063,7 @@ void do_1_3param(const mstring &mynick, const mstring &source, const mstring &pa
     mstring command(params.Before(" ") + " " + params.ExtractWord(3, " "));
     command.MakeUpper();
 
-    if (!Parent->commands.DoCommand(mynick, source, command, params))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
@@ -2080,7 +2085,7 @@ void do_1_4param(const mstring &mynick, const mstring &source, const mstring &pa
     mstring command(params.Before(" ") + " " + params.ExtractWord(4, " "));
     command.MakeUpper();
 
-    if (!Parent->commands.DoCommand(mynick, source, command, params))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
@@ -2106,7 +2111,7 @@ void do_1_2paramswap(const mstring &mynick, const mstring &source, const mstring
     if (params.WordCount(" ") > 2)
 	data += " " + params.After(" ", 2);
 
-    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
@@ -2134,7 +2139,7 @@ void do_1_3paramswap(const mstring &mynick, const mstring &source, const mstring
     if (params.WordCount(" ") > 3)
 	data += " " + params.After(" ", 3);
 
-    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
@@ -2162,7 +2167,7 @@ void do_1_4paramswap(const mstring &mynick, const mstring &source, const mstring
     if (params.WordCount(" ") > 4)
 	data += " " + params.After(" ", 4);
 
-    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
@@ -2188,7 +2193,7 @@ void do_2param(const mstring &mynick, const mstring &source, const mstring &para
     if (params.WordCount(" ") > 2)
 	data += " " + params.After(" ", 2);
 
-    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
@@ -2216,7 +2221,7 @@ void do_3param(const mstring &mynick, const mstring &source, const mstring &para
     if (params.WordCount(" ") > 3)
 	data += " " + params.After(" ", 3);
 
-    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
@@ -2244,7 +2249,7 @@ void do_4param(const mstring &mynick, const mstring &source, const mstring &para
     if (params.WordCount(" ") > 4)
 	data += " " + params.After(" ", 4);
 
-    if (!Parent->commands.DoCommand(mynick, source, command, data))
+    if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
 //	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (

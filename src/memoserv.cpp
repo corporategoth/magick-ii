@@ -27,6 +27,11 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.107  2001/12/20 08:02:32  prez
+** Massive change -- 'Parent' has been changed to Magick::instance(), will
+** soon also move the ACE_Reactor over, and will be able to have multipal
+** instances of Magick in the same process if necessary.
+**
 ** Revision 1.106  2001/11/12 01:05:03  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -502,10 +507,10 @@ bool News_t::IsRead(const mstring& name)
 {
     FT("News_t::IsRead", (name));
     mstring target(name);
-    if (!Parent->nickserv.IsStored(name))
+    if (!Magick::instance().nickserv.IsStored(name))
 	RET(false);
-    if (!Parent->nickserv.GetStored(name).Host().empty())
-	target = Parent->nickserv.GetStored(name).Host();
+    if (!Magick::instance().nickserv.GetStored(name).Host().empty())
+	target = Magick::instance().nickserv.GetStored(name).Host();
     RLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     bool retval (i_Read.find(target.LowerCase())!=i_Read.end());
     RET(retval);
@@ -516,10 +521,10 @@ void News_t::Read(const mstring& name)
 {
     FT("News_t::Read", (name));
     mstring target = name;
-    if (!Parent->nickserv.IsStored(name))
+    if (!Magick::instance().nickserv.IsStored(name))
 	return;
-    if (!Parent->nickserv.GetStored(name).Host().empty())
-	target = Parent->nickserv.GetStored(name).Host();
+    if (!Magick::instance().nickserv.GetStored(name).Host().empty())
+	target = Magick::instance().nickserv.GetStored(name).Host();
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     MCB(i_Read.size());
     i_Read.insert(target.LowerCase());
@@ -531,10 +536,10 @@ void News_t::Unread(const mstring& name)
 {
     FT("News_t::Unread", (name));
     mstring target = name;
-    if (!Parent->nickserv.IsStored(name))
+    if (!Magick::instance().nickserv.IsStored(name))
 	return;
-    if (!Parent->nickserv.GetStored(name).Host().empty())
-	target = Parent->nickserv.GetStored(name).Host();
+    if (!Magick::instance().nickserv.GetStored(name).Host().empty())
+	target = Magick::instance().nickserv.GetStored(name).Host();
     WLOCK(("MemoServ", "channel", i_Channel.LowerCase(), "i_Read"));
     MCB(i_Read.size());
     i_Read.erase(name.LowerCase());
@@ -587,66 +592,66 @@ void MemoServ::AddCommands()
     NFT("MemoServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "H*LP", Parent->commserv.ALL_Name(), MemoServ::do_Help);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "READ*", Parent->commserv.REGD_Name(), MemoServ::do_Read);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNREAD*", Parent->commserv.REGD_Name(), MemoServ::do_UnRead);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GET*", Parent->commserv.REGD_Name(), MemoServ::do_Get);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LIST*", Parent->commserv.REGD_Name(), MemoServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "VIEW*", Parent->commserv.REGD_Name(), MemoServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SEND*", Parent->commserv.REGD_Name(), MemoServ::do_Send);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FLUSH*", Parent->commserv.REGD_Name(), MemoServ::do_Flush);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FORW*", Parent->commserv.REGD_Name(), MemoServ::do_Forward);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "F*W*D", Parent->commserv.REGD_Name(), MemoServ::do_Forward);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "REP*", Parent->commserv.REGD_Name(), MemoServ::do_Reply);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CAN*", Parent->commserv.REGD_Name(), MemoServ::do_Cancel);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ABOR*", Parent->commserv.REGD_Name(), MemoServ::do_Cancel);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "DEL*", Parent->commserv.REGD_Name(), MemoServ::do_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ERA*", Parent->commserv.REGD_Name(), MemoServ::do_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CONT*", Parent->commserv.REGD_Name(), MemoServ::do_Continue);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "P*VIEW*", Parent->commserv.REGD_Name(), MemoServ::do_Preview);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FILE*", Parent->commserv.REGD_Name(), MemoServ::do_File);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*ATTACH", Parent->commserv.REGD_Name(), MemoServ::do_File);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "H*LP", Magick::instance().commserv.ALL_Name(), MemoServ::do_Help);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "READ*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Read);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNREAD*", Magick::instance().commserv.REGD_Name(), MemoServ::do_UnRead);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "GET*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Get);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LIST*", Magick::instance().commserv.REGD_Name(), MemoServ::do_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "VIEW*", Magick::instance().commserv.REGD_Name(), MemoServ::do_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SEND*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Send);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FLUSH*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Flush);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FORW*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Forward);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "F*W*D", Magick::instance().commserv.REGD_Name(), MemoServ::do_Forward);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "REP*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Reply);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CAN*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Cancel);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ABOR*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Cancel);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "DEL*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "ERA*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "CONT*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Continue);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "P*VIEW*", Magick::instance().commserv.REGD_Name(), MemoServ::do_Preview);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "FILE*", Magick::instance().commserv.REGD_Name(), MemoServ::do_File);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "*ATTACH", Magick::instance().commserv.REGD_Name(), MemoServ::do_File);
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* NOEX*", Parent->commserv.REGD_Name(), MemoServ::do_set_NoExpire);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* NOEX*", Magick::instance().commserv.REGD_Name(), MemoServ::do_set_NoExpire);
 
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* #*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET* *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SET*", Parent->commserv.REGD_Name(), do_1_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK #*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LOCK", Parent->commserv.REGD_Name(), do_1_2param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK #*", Parent->commserv.REGD_Name(), do_1_3param);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK *", Parent->commserv.REGD_Name(), NULL);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOCK", Parent->commserv.REGD_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* #*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "SET*", Magick::instance().commserv.REGD_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK #*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "LOCK", Magick::instance().commserv.REGD_Name(), do_1_2param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK #*", Magick::instance().commserv.REGD_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(),
+	    "UNLOCK", Magick::instance().commserv.REGD_Name(), do_1_2param);
 }
 
 void MemoServ::RemCommands()
@@ -654,66 +659,66 @@ void MemoServ::RemCommands()
     NFT("MemoServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "H*LP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "READ*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNREAD*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GET*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LIST*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "VIEW*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SEND*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FLUSH*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FORW*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "F*W*D", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "REP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CAN*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ABOR*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "DEL*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ERA*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CONT*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "P*VIEW*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FILE*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "*ATTACH", Parent->commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "H*LP", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "READ*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNREAD*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "GET*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LIST*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "VIEW*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SEND*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FLUSH*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FORW*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "F*W*D", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "REP*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CAN*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ABOR*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "ERA*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "CONT*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "P*VIEW*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "FILE*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "*ATTACH", Magick::instance().commserv.REGD_Name());
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* NOEX*", Parent->commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* NOEX*", Magick::instance().commserv.REGD_Name());
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* #*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET* *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SET*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK #*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LOCK", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK #*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK *", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOCK", Parent->commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* #*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "SET*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK #*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "LOCK", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK #*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(),
+	    "UNLOCK", Magick::instance().commserv.REGD_Name());
 }
 
 void MemoServ::NickMemoConvert(const mstring &source, const mstring &target)
@@ -1299,7 +1304,7 @@ void MemoServ::execute(mstring& source, const mstring& msgtype, const mstring& p
     //okay this is the main memoserv command switcher
 
     // Nick/Server PRIVMSG/NOTICE mynick :message
-    mstring mynick(Parent->getLname(params.ExtractWord(1, ": ")));
+    mstring mynick(Magick::instance().getLname(params.ExtractWord(1, ": ")));
     mstring message(params.After(":"));
     mstring command(message.Before(" "));
 
@@ -1311,7 +1316,7 @@ void MemoServ::execute(mstring& source, const mstring& msgtype, const mstring& p
 	    DccEngine::decodeReply(mynick, source, message);
     }
     else if (msgtype == "PRIVMSG" &&
-	!Parent->commands.DoCommand(mynick, source, command, message))
+	!Magick::instance().commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -1328,19 +1333,19 @@ void MemoServ::do_Help(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
 	return;
     }}
 
-    mstring HelpTopic = Parent->memoserv.GetInternalName();
+    mstring HelpTopic = Magick::instance().memoserv.GetInternalName();
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
     HelpTopic.replace(" ", "/");
-    vector<mstring> help = Parent->getHelp(source, HelpTopic.UpperCase());
+    vector<mstring> help = Magick::instance().getHelp(source, HelpTopic.UpperCase());
 					
     unsigned int i;
     for (i=0; i<help.size(); i++)
@@ -1354,8 +1359,8 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1379,32 +1384,32 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
-	mstring whoami = Parent->nickserv.GetStored(source).Host().LowerCase();
+	mstring whoami = Magick::instance().nickserv.GetStored(source).Host().LowerCase();
 	if (whoami.empty())
 	    whoami = source.LowerCase();
 
-	if (!Parent->chanserv.IsStored(who))
+	if (!Magick::instance().chanserv.IsStored(who))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 				who));
 	    return;
 	}
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
+	if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
-	if (!Parent->memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
 				who.LowerCase()));
 	    return;
 	}
 
-	Parent->memoserv.stats.i_Read++;
+	Magick::instance().memoserv.stats.i_Read++;
 	if (what.IsSameAs("all", true) ||
 	    what.IsSameAs("new", true) || what.IsSameAs("unread", true))
 	{
@@ -1413,8 +1418,8 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 	    MemoServ::channel_news_t::iterator iter;
 	    int i = 0;
 	    RLOCK(("MemoServ", "channel", who.LowerCase()));
-	    for (iter = Parent->memoserv.ChannelNewsBegin(who);
-		    iter != Parent->memoserv.ChannelNewsEnd(who); iter++)
+	    for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
+		    iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
 	    {
 		i++;
 		if (unread && iter->IsRead(whoami))
@@ -1427,13 +1432,13 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		unsigned int sentsize;
 		mstring output;
 		for (sentsize = 0; sentsize < iter->Text().size();
-				sentsize+=Parent->server.proto.MaxLine())
+				sentsize+=Magick::instance().server.proto.MaxLine())
 		{
-		    if (sentsize + Parent->server.proto.MaxLine() < iter->Text().size())
+		    if (sentsize + Magick::instance().server.proto.MaxLine() < iter->Text().size())
 		    {
 			if (sentsize > 0)
 			    output << "...";
-			output << iter->Text().SubString(sentsize, sentsize+Parent->server.proto.MaxLine())
+			output << iter->Text().SubString(sentsize, sentsize+Magick::instance().server.proto.MaxLine())
 			       << "...";
 		    }
 		    else
@@ -1459,7 +1464,7 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 	    bool triedabove = false, nonnumeric = false;
 	    size_t amt = 0;
 	    RLOCK(("MemoServ", "channel", who.LowerCase()));
-	    MemoServ::channel_news_t &newslist = Parent->memoserv.GetChannel(who);
+	    MemoServ::channel_news_t &newslist = Magick::instance().memoserv.GetChannel(who);
 	    amt = newslist.size();
 	    MemoServ::channel_news_t::iterator iter = newslist.begin();
 	    for (i=0; i<numbers.size(); i++)
@@ -1490,13 +1495,13 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 				iter->Time().Ago()));
 			unsigned int sentsize;
 			for (sentsize = 0; sentsize < iter->Text().size();
-					sentsize+=Parent->server.proto.MaxLine())
+					sentsize+=Magick::instance().server.proto.MaxLine())
 			{
-			    if (sentsize + Parent->server.proto.MaxLine() < iter->Text().size())
+			    if (sentsize + Magick::instance().server.proto.MaxLine() < iter->Text().size())
 			    {
 				if (sentsize > 0)
 				    output << "...";
-				output << iter->Text().SubString(sentsize, sentsize+Parent->server.proto.MaxLine())
+				output << iter->Text().SubString(sentsize, sentsize+Magick::instance().server.proto.MaxLine())
 				    << "...";
 			    }
 			    else
@@ -1519,19 +1524,19 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
     }
     else
     {
-	mstring who = Parent->nickserv.GetStored(source).Host();
+	mstring who = Magick::instance().nickserv.GetStored(source).Host();
 	mstring what = params.After(" ", 1);
 
 	if (who.empty())
 	    who = source;
 
-	if (!Parent->memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
-	Parent->memoserv.stats.i_Read++;
+	Magick::instance().memoserv.stats.i_Read++;
 	if (what.IsSameAs("all", true) ||
 	    what.IsSameAs("new", true) || what.IsSameAs("unread", true))
 	{
@@ -1540,21 +1545,21 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 				what.IsSameAs("unread", true));
 	    int i = 0;
 	    RLOCK(("MemoServ", "nick", who.LowerCase()));
-	    for (iter = Parent->memoserv.NickMemoBegin(who);
-		    iter != Parent->memoserv.NickMemoEnd(who); iter++)
+	    for (iter = Magick::instance().memoserv.NickMemoBegin(who);
+		    iter != Magick::instance().memoserv.NickMemoEnd(who); iter++)
 	    {
 		i++;
 		if (unread && iter->IsRead())
 		    continue;
 
 		iter->Read();
-		if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
+		if (iter->File() && Magick::instance().filesys.Exists(FileMap::MemoAttach, iter->File()))
 		{
 		    SEND(mynick, source, "MS_COMMAND/MEMO_FILE", (
 			i, iter->Sender(),
 			iter->Time().Ago(),
-			Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
-			ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File()))));
+			Magick::instance().filesys.GetName(FileMap::MemoAttach, iter->File()),
+			ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::MemoAttach, iter->File()))));
 		}
 		else
 		{
@@ -1565,13 +1570,13 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		unsigned int sentsize;
 		mstring output;
 		for (sentsize = 0; sentsize < iter->Text().size();
-				sentsize+=Parent->server.proto.MaxLine())
+				sentsize+=Magick::instance().server.proto.MaxLine())
 		{
-		    if (sentsize + Parent->server.proto.MaxLine() < iter->Text().size())
+		    if (sentsize + Magick::instance().server.proto.MaxLine() < iter->Text().size())
 		    {
 			if (sentsize > 0)
 			    output << "...";
-			output << iter->Text().SubString(sentsize, sentsize+Parent->server.proto.MaxLine())
+			output << iter->Text().SubString(sentsize, sentsize+Magick::instance().server.proto.MaxLine())
 			       << "...";
 		    }
 		    else
@@ -1593,7 +1598,7 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 	    bool triedabove = false, nonnumeric = false;
 	    size_t amt = 0;
 	    RLOCK(("MemoServ", "nick", who.LowerCase()));
-	    MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(who);
+	    MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(who);
 	    amt = memolist.size();
 	    MemoServ::nick_memo_t::iterator iter = memolist.begin();
 	    mstring output;
@@ -1620,13 +1625,13 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 		    if (iter != memolist.end())
 		    {
 			iter->Read();
-			if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
+			if (iter->File() && Magick::instance().filesys.Exists(FileMap::MemoAttach, iter->File()))
 			{
 			    SEND(mynick, source, "MS_COMMAND/MEMO_FILE", (
 				j, iter->Sender(),
 				iter->Time().Ago(),
-				Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
-				ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File()))));
+				Magick::instance().filesys.GetName(FileMap::MemoAttach, iter->File()),
+				ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::MemoAttach, iter->File()))));
 			}
 			else
 			{
@@ -1636,13 +1641,13 @@ void MemoServ::do_Read(const mstring &mynick, const mstring &source, const mstri
 			}
 			unsigned int sentsize;
 			for (sentsize = 0; sentsize < iter->Text().size();
-					sentsize+=Parent->server.proto.MaxLine())
+					sentsize+=Magick::instance().server.proto.MaxLine())
 			{
-			    if (sentsize + Parent->server.proto.MaxLine() < iter->Text().size())
+			    if (sentsize + Magick::instance().server.proto.MaxLine() < iter->Text().size())
 			    {
 				if (sentsize > 0)
 				    output << "...";
-				output << iter->Text().SubString(sentsize, sentsize+Parent->server.proto.MaxLine())
+				output << iter->Text().SubString(sentsize, sentsize+Magick::instance().server.proto.MaxLine())
 				    << "...";
 			    }
 			    else
@@ -1673,8 +1678,8 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1698,39 +1703,39 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
-	mstring whoami = Parent->nickserv.GetStored(source).Host().LowerCase();
+	mstring whoami = Magick::instance().nickserv.GetStored(source).Host().LowerCase();
 	if (whoami.empty())
 	    whoami = source.LowerCase();
 
-	if (!Parent->chanserv.IsStored(who))
+	if (!Magick::instance().chanserv.IsStored(who))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		    who));
 	    return;
 	}
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
+	if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
-	if (!Parent->memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
 				who.LowerCase()));
 	    return;
 	}
 
-	Parent->memoserv.stats.i_Unread++;
+	Magick::instance().memoserv.stats.i_Unread++;
 	if (what.IsSameAs("all", true))
 	{
 	    MemoServ::channel_news_t::iterator iter;
 	    mstring output;
 	    RLOCK(("MemoServ", "channel", who.LowerCase()));
-	    for (iter = Parent->memoserv.ChannelNewsBegin(who);
-		    iter != Parent->memoserv.ChannelNewsEnd(who); iter++)
+	    for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
+		    iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
 	    {
 		iter->Unread(whoami);
 	    }
@@ -1745,7 +1750,7 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 	    bool triedabove = false, nonnumeric = false;
 	    size_t amt = 0;
 	    RLOCK(("MemoServ", "channel", who.LowerCase()));
-	    MemoServ::channel_news_t &newslist = Parent->memoserv.GetChannel(who);
+	    MemoServ::channel_news_t &newslist = Magick::instance().memoserv.GetChannel(who);
 	    amt = newslist.size();
 	    MemoServ::channel_news_t::iterator iter = newslist.begin();
 	    mstring output;
@@ -1792,26 +1797,26 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
     }
     else
     {
-	mstring who = Parent->nickserv.GetStored(source).Host();
+	mstring who = Magick::instance().nickserv.GetStored(source).Host();
 	mstring what = params.After(" ", 1);
 
 	if (who.empty())
 	    who = source;
 
-	if (!Parent->memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
-	Parent->memoserv.stats.i_Unread++;
+	Magick::instance().memoserv.stats.i_Unread++;
 	if (what.IsSameAs("all", true))
 	{
 	    MemoServ::nick_memo_t::iterator iter;
 	    mstring output;
 	    RLOCK(("MemoServ", "nick", who.LowerCase()));
-	    for (iter = Parent->memoserv.NickMemoBegin(who);
-		    iter != Parent->memoserv.NickMemoEnd(who); iter++)
+	    for (iter = Magick::instance().memoserv.NickMemoBegin(who);
+		    iter != Magick::instance().memoserv.NickMemoEnd(who); iter++)
 	    {
 		iter->Unread();
 	    }
@@ -1825,7 +1830,7 @@ void MemoServ::do_UnRead(const mstring &mynick, const mstring &source, const mst
 	    bool triedabove = false, nonnumeric = false;
 	    size_t amt = 0;
 	    RLOCK(("MemoServ", "nick", who.LowerCase()));
-	    MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(who);
+	    MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(who);
 	    amt = memolist.size();
 	    MemoServ::nick_memo_t::iterator iter = memolist.begin();
 	    mstring output;
@@ -1880,8 +1885,8 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -1895,13 +1900,13 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
 	return;
     }
 
-    mstring who = Parent->nickserv.GetStored(source).Host();
+    mstring who = Magick::instance().nickserv.GetStored(source).Host();
     mstring what = params.After(" ", 1);
 
     if (who.empty())
 	who = source;
 
-    if (!Parent->memoserv.IsNick(who))
+    if (!Magick::instance().memoserv.IsNick(who))
     {
 	NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	return;
@@ -1913,11 +1918,11 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
     bool triedabove = false, nonnumeric = false, nonfiles = false;
     size_t amt = 0;
     RLOCK(("MemoServ", "nick", who.LowerCase()));
-    MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(who);
+    MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(who);
     amt = memolist.size();
     MemoServ::nick_memo_t::iterator iter = memolist.begin();
     mstring output;
-    Parent->memoserv.stats.i_Get++;
+    Magick::instance().memoserv.stats.i_Get++;
     for (i=0; i<numbers.size(); i++)
     {
 	if (numbers[i] <= 0)
@@ -1942,36 +1947,36 @@ void MemoServ::do_Get(const mstring &mynick, const mstring &source, const mstrin
 	    {
 		unsigned long filenum = iter->File();
 		if (!(filenum &&
-		    Parent->filesys.Exists(FileMap::MemoAttach, filenum)))
+		    Magick::instance().filesys.Exists(FileMap::MemoAttach, filenum)))
 		{
 		    nonfiles = true;
 		    continue;
 		}
 
-		mstring filename = Parent->filesys.GetName(FileMap::MemoAttach, filenum);
-		size_t fsize = Parent->filesys.GetSize(FileMap::MemoAttach, filenum);
+		mstring filename = Magick::instance().filesys.GetName(FileMap::MemoAttach, filenum);
+		size_t fsize = Magick::instance().filesys.GetSize(FileMap::MemoAttach, filenum);
 		if (filename.empty() || fsize <= 0)
 		{
 		    nonfiles = true;
 		    continue;
 		}
 
-		if (!(Parent->files.TempDirSize() == 0 ||
-		    mFile::DirUsage(Parent->files.TempDir()) <=
-		    Parent->files.TempDirSize()))
+		if (!(Magick::instance().files.TempDirSize() == 0 ||
+		    mFile::DirUsage(Magick::instance().files.TempDir()) <=
+		    Magick::instance().files.TempDirSize()))
 		{
 		    NSEND(mynick, source, "DCC/NOSPACE2");
 		    return;
 		}
 
 		{ RLOCK2(("DCC"));
-		if (Parent->dcc != NULL)
+		if (Magick::instance().dcc != NULL)
 		{
 		    unsigned short port = mSocket::FindAvailPort();
 		    ::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
-			" " + mstring(Parent->LocalHost()) + " " +
+			" " + mstring(Magick::instance().LocalHost()) + " " +
 			mstring(port) + " " + mstring(fsize)));
-		    Parent->dcc->Accept(port, mynick, source, FileMap::MemoAttach, filenum);
+		    Magick::instance().dcc->Accept(port, mynick, source, FileMap::MemoAttach, filenum);
 		}}
 	    }
 	}
@@ -1992,8 +1997,8 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -2009,25 +2014,25 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	    return;
 	}
 	mstring who = params.ExtractWord(2, " ");
-	mstring whoami = Parent->nickserv.GetStored(source).Host().LowerCase();
+	mstring whoami = Magick::instance().nickserv.GetStored(source).Host().LowerCase();
 	if (whoami.empty())
 	    whoami = source.LowerCase();
 
-	if (!Parent->chanserv.IsStored(who))
+	if (!Magick::instance().chanserv.IsStored(who))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		    who));
 	    return;
 	}
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
+	if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
-	if (!Parent->memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
 				who.LowerCase()));
@@ -2038,8 +2043,8 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	int i = 1;
 	mstring output;
 	RLOCK(("MemoServ", "channel", who.LowerCase()));
-	for (iter = Parent->memoserv.ChannelNewsBegin(who);
-		iter != Parent->memoserv.ChannelNewsEnd(who); iter++)
+	for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
+		iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
 	{
 	    output.erase();
 	    if (iter->Text().size() > 20)
@@ -2055,11 +2060,11 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
     }
     else
     {
-	mstring who = Parent->nickserv.GetStored(source).Host();
+	mstring who = Magick::instance().nickserv.GetStored(source).Host();
 	if (who.empty())
 	    who = source;
 
-	if (!Parent->memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
@@ -2069,8 +2074,8 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	int i = 1;
 	mstring output;
 	RLOCK(("MemoServ", "nick", who.LowerCase()));
-	for (iter = Parent->memoserv.NickMemoBegin(who);
-		iter != Parent->memoserv.NickMemoEnd(who); iter++)
+	for (iter = Magick::instance().memoserv.NickMemoBegin(who);
+		iter != Magick::instance().memoserv.NickMemoEnd(who); iter++)
 	{
 	    output.erase();
 	    if (iter->Text().size() > 20)
@@ -2078,14 +2083,14 @@ void MemoServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	    else
 		output << iter->Text();
 
-	    if (iter->File() && Parent->filesys.Exists(FileMap::MemoAttach, iter->File()))
+	    if (iter->File() && Magick::instance().filesys.Exists(FileMap::MemoAttach, iter->File()))
 	    {
 		SEND(mynick, source, "MS_COMMAND/MEMO_LIST_FILE", (
 		    iter->IsRead() ? ' ' : '*',
 		    i++, iter->Sender(),
 		    iter->Time().Ago(), output,
-		    Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
-		    ToHumanSpace(Parent->filesys.GetSize(FileMap::MemoAttach, iter->File()))));
+		    Magick::instance().filesys.GetName(FileMap::MemoAttach, iter->File()),
+		    ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::MemoAttach, iter->File()))));
 	    }
 	    else
 	    {
@@ -2106,8 +2111,8 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -2126,15 +2131,15 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 
     if (IsChan(name))
     {
-	if (!Parent->chanserv.IsStored(name))
+	if (!Magick::instance().chanserv.IsStored(name))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 			name));
 	    return;
 	}
-	name = Parent->getSname(name);
+	name = Magick::instance().getSname(name);
 
-	if (!Parent->chanserv.GetStored(name).GetAccess(source, "WRITEMEMO"))
+	if (!Magick::instance().chanserv.GetStored(name).GetAccess(source, "WRITEMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
@@ -2142,23 +2147,23 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
     }
     else
     {
-	if (!Parent->nickserv.IsStored(name))
+	if (!Magick::instance().nickserv.IsStored(name))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 			name));
 	    return;
 	}
-	name = Parent->getSname(name);
-	if (Parent->nickserv.GetStored(name).Forbidden())
+	name = Magick::instance().getSname(name);
+	if (Magick::instance().nickserv.GetStored(name).Forbidden())
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 			name));
 	    return;
 	}
 
-	if (Parent->nickserv.GetStored(name).IsIgnore(source) ?
-		!Parent->nickserv.GetStored(name).NoMemo() :
-		Parent->nickserv.GetStored(name).NoMemo())
+	if (Magick::instance().nickserv.GetStored(name).IsIgnore(source) ?
+		!Magick::instance().nickserv.GetStored(name).NoMemo() :
+		Magick::instance().nickserv.GetStored(name).NoMemo())
 	{
 	    SEND(mynick, source, "MS_STATUS/IGNORE", (
 			    name));
@@ -2166,27 +2171,27 @@ void MemoServ::do_Send(const mstring &mynick, const mstring &source, const mstri
 	}
     }
 
-    if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-	Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
-    		Parent->memoserv.Delay())
+    if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+	Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince() <
+    		Magick::instance().memoserv.Delay())
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
+		message, ToHumanTime(Magick::instance().memoserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince(),
 		source)));
 	return;
     }
 
-    if (text.size() > Parent->server.proto.MaxLine())
+    if (text.size() > Magick::instance().server.proto.MaxLine())
     {
-	text.Truncate(Parent->server.proto.MaxLine());
+	text.Truncate(Magick::instance().server.proto.MaxLine());
 	SEND(mynick, source, "MS_STATUS/TRUNCATE", (
-			text.SubString(Parent->server.proto.MaxLine()-20,
-		    	Parent->server.proto.MaxLine()), mynick));
+			text.SubString(Magick::instance().server.proto.MaxLine()-20,
+		    	Magick::instance().server.proto.MaxLine()), mynick));
     }
 
-    Parent->memoserv.stats.i_Send++;
-    Parent->nickserv.GetLive(source).InFlight.Memo(
+    Magick::instance().memoserv.stats.i_Send++;
+    Magick::instance().nickserv.GetLive(source).InFlight.Memo(
 					    false, mynick, name, text);
 }
 
@@ -2197,15 +2202,15 @@ void MemoServ::do_Flush(const mstring &mynick, const mstring &source, const mstr
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->nickserv.GetLive(source).InFlight.Memo())
+    if (Magick::instance().nickserv.GetLive(source).InFlight.Memo())
     {
-	if (Parent->nickserv.GetLive(source).InFlight.File())
+	if (Magick::instance().nickserv.GetLive(source).InFlight.File())
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOFLUSH");
 	    return;
 	}
-	Parent->memoserv.stats.i_Flush++;
-	Parent->nickserv.GetLive(source).InFlight.End(0u);
+	Magick::instance().memoserv.stats.i_Flush++;
+	Magick::instance().nickserv.GetLive(source).InFlight.End(0u);
     }
     else
     {
@@ -2220,8 +2225,8 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -2246,25 +2251,25 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.ExtractWord(3, " ");
 	mstring dest = params.ExtractWord(4, " ");
-	mstring whoami = Parent->nickserv.GetStored(source).Host().LowerCase();
+	mstring whoami = Magick::instance().nickserv.GetStored(source).Host().LowerCase();
 	if (whoami.empty())
 	    whoami = source.LowerCase();
 
-	if (!Parent->chanserv.IsStored(who))
+	if (!Magick::instance().chanserv.IsStored(who))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		    who));
 	    return;
 	}
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READ"))
+	if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "READ"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
-	if (!Parent->memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
 				who.LowerCase()));
@@ -2278,20 +2283,20 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 	}
 
 	unsigned int num = atoi(what.c_str());
-	if (num <= 0 || num > Parent->memoserv.ChannelNewsSize(who))
+	if (num <= 0 || num > Magick::instance().memoserv.ChannelNewsSize(who))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-			1, Parent->memoserv.ChannelNewsSize(who)));
+			1, Magick::instance().memoserv.ChannelNewsSize(who)));
 	    return;
 	}
 
-	if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
-    		Parent->memoserv.Delay())
+	if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince() <
+    		Magick::instance().memoserv.Delay())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
+		message, ToHumanTime(Magick::instance().memoserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince(),
 		source)));
 	    return;
 	}
@@ -2299,10 +2304,10 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 	unsigned int i;
 	mstring output;
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
-	MemoServ::channel_news_t::iterator iter = Parent->memoserv.ChannelNewsEnd(who);
+	MemoServ::channel_news_t::iterator iter = Magick::instance().memoserv.ChannelNewsEnd(who);
 	for (i=1; i < num; iter++, i++) ;
-	output = parseMessage(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG"),
-		mVarArray(Parent->chanserv.GetStored(who).Name(),
+	output = parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD_ARG"),
+		mVarArray(Magick::instance().chanserv.GetStored(who).Name(),
 		iter->Sender(), iter->Text()));
 	}
 
@@ -2310,14 +2315,14 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
     }
     else
     {
-	mstring who = Parent->nickserv.GetStored(source).Host();
+	mstring who = Magick::instance().nickserv.GetStored(source).Host();
 	mstring what = params.ExtractWord(2, " ");
 	mstring dest = params.ExtractWord(3, " ");
 
 	if (who.empty())
 	    who = source;
 
-	if (!Parent->memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
@@ -2330,20 +2335,20 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 	}
 
 	unsigned int num = atoi(what.c_str());
-	if (num <= 0 || num > Parent->memoserv.NickMemoSize(who))
+	if (num <= 0 || num > Magick::instance().memoserv.NickMemoSize(who))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-			1, Parent->memoserv.NickMemoSize(who)));
+			1, Magick::instance().memoserv.NickMemoSize(who)));
 	    return;
 	}
 
-	if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
-    		Parent->memoserv.Delay())
+	if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince() <
+    		Magick::instance().memoserv.Delay())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
+		message, ToHumanTime(Magick::instance().memoserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince(),
 		source)));
 	    return;
 	}
@@ -2351,15 +2356,15 @@ void MemoServ::do_Forward(const mstring &mynick, const mstring &source, const ms
 	unsigned int i;
 	mstring output;
 	{ RLOCK(("MemoServ", "nick", who.LowerCase()));
-	MemoServ::nick_memo_t::iterator iter = Parent->memoserv.NickMemoBegin(who);
+	MemoServ::nick_memo_t::iterator iter = Magick::instance().memoserv.NickMemoBegin(who);
 	for (i=1; i < num; iter++, i++) ;
 
 	if (iter->File())
-	    output = parseMessage(Parent->getMessage(dest, "MS_STATUS/FORWARD_ARG"),
-		mVarArray(Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
+	    output = parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD_ARG"),
+		mVarArray(Magick::instance().filesys.GetName(FileMap::MemoAttach, iter->File()),
 		iter->Sender(), iter->Text()));
 	else
-	    output = parseMessage(Parent->getMessage(dest, "MS_STATUS/FORWARD"),
+	    output = parseMessage(Magick::instance().getMessage(dest, "MS_STATUS/FORWARD"),
 		mVarArray(iter->Sender(), iter->Text()));
 	}
 
@@ -2375,15 +2380,15 @@ void MemoServ::do_Forward2(const mstring &mynick, const mstring &source,
 
     if (IsChan(dest))
     {
-	if (!Parent->chanserv.IsStored(dest))
+	if (!Magick::instance().chanserv.IsStored(dest))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 			dest));
 	    return;
 	}
-	dest = Parent->getSname(dest);
+	dest = Magick::instance().getSname(dest);
 
-	if (!Parent->chanserv.GetStored(dest).GetAccess(source, "WRITEMEMO"))
+	if (!Magick::instance().chanserv.GetStored(dest).GetAccess(source, "WRITEMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
@@ -2391,23 +2396,23 @@ void MemoServ::do_Forward2(const mstring &mynick, const mstring &source,
     }
     else
     {
-	if (!Parent->nickserv.IsStored(dest))
+	if (!Magick::instance().nickserv.IsStored(dest))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 			dest));
 	    return;
 	}
-	dest = Parent->getSname(dest);
-	if (Parent->nickserv.GetStored(dest).Forbidden())
+	dest = Magick::instance().getSname(dest);
+	if (Magick::instance().nickserv.GetStored(dest).Forbidden())
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 			dest));
 	    return;
 	}
 
-	if (Parent->nickserv.GetStored(dest).IsIgnore(source) ?
-		!Parent->nickserv.GetStored(dest).NoMemo() :
-		Parent->nickserv.GetStored(dest).NoMemo())
+	if (Magick::instance().nickserv.GetStored(dest).IsIgnore(source) ?
+		!Magick::instance().nickserv.GetStored(dest).NoMemo() :
+		Magick::instance().nickserv.GetStored(dest).NoMemo())
 	{
 	    SEND(mynick, source, "MS_STATUS/IGNORE", (
 			    dest));
@@ -2415,10 +2420,10 @@ void MemoServ::do_Forward2(const mstring &mynick, const mstring &source,
 	}
     }
 
-    Parent->memoserv.stats.i_Forward++;
-    Parent->nickserv.GetLive(source).InFlight.Memo(
+    Magick::instance().memoserv.stats.i_Forward++;
+    Magick::instance().nickserv.GetLive(source).InFlight.Memo(
 					false, mynick, dest, text, true);
-    Parent->nickserv.GetLive(source).InFlight.End(0);
+    Magick::instance().nickserv.GetLive(source).InFlight.End(0);
 }
 
 
@@ -2429,8 +2434,8 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -2456,25 +2461,25 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.ExtractWord(3, " ");
 	mstring text = params.After(" ", 3);
-	mstring whoami = Parent->nickserv.GetStored(source).Host().LowerCase();
+	mstring whoami = Magick::instance().nickserv.GetStored(source).Host().LowerCase();
 	if (whoami.empty())
 	    whoami = source.LowerCase();
 
-	if (!Parent->chanserv.IsStored(who))
+	if (!Magick::instance().chanserv.IsStored(who))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		    who));
 	    return;
 	}
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
+	if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "READMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
-	if (!Parent->memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
 				who.LowerCase()));
@@ -2488,31 +2493,31 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	}
 
 	unsigned int num = atoi(what.c_str());
-	if (num <= 0 || num > Parent->memoserv.ChannelNewsSize(who))
+	if (num <= 0 || num > Magick::instance().memoserv.ChannelNewsSize(who))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-			1, Parent->memoserv.ChannelNewsSize(who)));
+			1, Magick::instance().memoserv.ChannelNewsSize(who)));
 	    return;
 	}
 
-	if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
-    		Parent->memoserv.Delay())
+	if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince() <
+    		Magick::instance().memoserv.Delay())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
+		message, ToHumanTime(Magick::instance().memoserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince(),
 		source)));
 	    return;
 	}
 
 	unsigned int i;
 	{ RLOCK(("MemoServ", "channel", who.LowerCase()));
-	MemoServ::channel_news_t::iterator iter = Parent->memoserv.ChannelNewsBegin(who);
+	MemoServ::channel_news_t::iterator iter = Magick::instance().memoserv.ChannelNewsBegin(who);
 	for (i=1; i < num; iter++, i++) ;
 
 	recipiant = iter->Sender();
-	output = parseMessage(Parent->getMessage("MS_STATUS/REPLY_ARG"),
+	output = parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY_ARG"),
 		mVarArray(who,
 		((iter->Text().size() > 20) ?
 			(iter->Text().SubString(0, 19) + "...") :
@@ -2522,19 +2527,19 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
     }
     else
     {
-	mstring who = Parent->nickserv.GetStored(source).Host();
+	mstring who = Magick::instance().nickserv.GetStored(source).Host();
 	mstring what = params.ExtractWord(2, " ");
 	mstring text = params.After(" ", 2);
 
 	if (who.empty())
 	    who = source;
 
-	if (!Parent->memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 
 	if (!what.IsNumber() || what.Contains("."))
 	{
@@ -2543,37 +2548,37 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	}
 
 	unsigned int num = atoi(what.c_str());
-	if (num <= 0 || num > Parent->memoserv.NickMemoSize(who))
+	if (num <= 0 || num > Magick::instance().memoserv.NickMemoSize(who))
 	{
 	    SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-			1, Parent->memoserv.NickMemoSize(who)));
+			1, Magick::instance().memoserv.NickMemoSize(who)));
 	    return;
 	}
 
-	if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
-    		Parent->memoserv.Delay())
+	if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince() <
+    		Magick::instance().memoserv.Delay())
 	{
 	    SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
+		message, ToHumanTime(Magick::instance().memoserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince(),
 		source)));
 	    return;
 	}
 
 	unsigned int i;
 	{ RLOCK(("MemoServ", "nick", who.LowerCase()));
-	MemoServ::nick_memo_t::iterator iter = Parent->memoserv.NickMemoBegin(who);
+	MemoServ::nick_memo_t::iterator iter = Magick::instance().memoserv.NickMemoBegin(who);
 	for (i=1; i < num; iter++, i++) ;
 	if (iter->File())
-	    output = parseMessage(Parent->getMessage("MS_STATUS/REPLY_ARG"),
-		mVarArray(Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
+	    output = parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY_ARG"),
+		mVarArray(Magick::instance().filesys.GetName(FileMap::MemoAttach, iter->File()),
 		((iter->Text().length() > 20) ?
 			(iter->Text().SubString(0, 19) + "...") :
 		    iter->Text()),
 		text));
 	else
-	    output = parseMessage(Parent->getMessage("MS_STATUS/REPLY"),
+	    output = parseMessage(Magick::instance().getMessage("MS_STATUS/REPLY"),
 		mVarArray(((iter->Text().length() > 20) ?
 			(iter->Text().SubString(0, 19) + "...") :
 		    iter->Text()),
@@ -2582,27 +2587,27 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	}
     }
 
-    if (!Parent->nickserv.IsStored(recipiant))
+    if (!Magick::instance().nickserv.IsStored(recipiant))
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
-		    Parent->getSname(recipiant)));
+		    Magick::instance().getSname(recipiant)));
 	return;
     }
-    if (Parent->nickserv.GetStored(recipiant).Forbidden())
+    if (Magick::instance().nickserv.GetStored(recipiant).Forbidden())
     {
 	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 			recipiant));
 	return;
     }
-    if (Parent->nickserv.GetStored(recipiant).IsIgnore(source) ?
-		!Parent->nickserv.GetStored(recipiant).NoMemo() :
-		Parent->nickserv.GetStored(recipiant).NoMemo())
+    if (Magick::instance().nickserv.GetStored(recipiant).IsIgnore(source) ?
+		!Magick::instance().nickserv.GetStored(recipiant).NoMemo() :
+		Magick::instance().nickserv.GetStored(recipiant).NoMemo())
     {
 	SEND(mynick, source, "MS_STATUS/IGNORE", (recipiant));
 	return;
     }
-    Parent->memoserv.stats.i_Reply++;
-    Parent->nickserv.GetLive(source).InFlight.Memo(
+    Magick::instance().memoserv.stats.i_Reply++;
+    Magick::instance().nickserv.GetLive(source).InFlight.Memo(
 				false, mynick, recipiant, output);
 
 }
@@ -2614,13 +2619,13 @@ void MemoServ::do_Cancel(const mstring &mynick, const mstring &source, const mst
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->nickserv.GetLive(source).InFlight.Memo())
+    if (Magick::instance().nickserv.GetLive(source).InFlight.Memo())
     {
-	Parent->memoserv.stats.i_Cancel++;
-	if (Parent->nickserv.GetLive(source).InFlight.File())
+	Magick::instance().memoserv.stats.i_Cancel++;
+	if (Magick::instance().nickserv.GetLive(source).InFlight.File())
 	    NSEND(mynick, source, "MS_COMMAND/CANCEL");
 	    
-	Parent->nickserv.GetLive(source).InFlight.Cancel();
+	Magick::instance().nickserv.GetLive(source).InFlight.Cancel();
     }
     else
     {
@@ -2636,8 +2641,8 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -2661,45 +2666,45 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	}
 	mstring who = params.ExtractWord(2, " ");
 	mstring what = params.After(" ", 2);
-	mstring whoami = Parent->nickserv.GetStored(source).Host().LowerCase();
+	mstring whoami = Magick::instance().nickserv.GetStored(source).Host().LowerCase();
 	if (whoami.empty())
 	    whoami = source.LowerCase();
 
-	if (!Parent->chanserv.IsStored(who))
+	if (!Magick::instance().chanserv.IsStored(who))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		    who));
 	    return;
 	}
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
+	if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
-	if (!Parent->memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
 				who.LowerCase()));
 	    return;
 	}
 
-	Parent->memoserv.stats.i_Del++;
+	Magick::instance().memoserv.stats.i_Del++;
 	if (what.IsSameAs("all", true))
 	{
-	    if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "DELMEMO"))
+	    if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "DELMEMO"))
 	    {
 		NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 		return;
 	    }
 
-	    Parent->memoserv.RemChannel(who);
+	    Magick::instance().memoserv.RemChannel(who);
 	    SEND(mynick, source, "MS_COMMAND/CS_DEL_ALL", (
 				    who));
 	    LOG(LM_DEBUG, "MEMOSERV/DEL_ALL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		who));
 	}
 	else
@@ -2724,7 +2729,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	    mstring output, denied;
 	    size_t amt = 0;
 	    { WLOCK(("MemoServ", "channel", who.LowerCase()));
-	    MemoServ::channel_news_t &newslist = Parent->memoserv.GetChannel(who);
+	    MemoServ::channel_news_t &newslist = Magick::instance().memoserv.GetChannel(who);
 	    amt = newslist.size();
 	    MemoServ::channel_news_t::iterator iter = newslist.begin();
 	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
@@ -2743,7 +2748,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 		    }
 		    if (iter != newslist.end())
 		    {
-			if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "DELMEMO") &&
+			if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "DELMEMO") &&
 			    iter->Sender().LowerCase() != who.LowerCase())
 			{
 			    if (!denied.empty())
@@ -2755,7 +2760,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 			    if (!output.empty())
 				output << ", ";
 			    output << *ni;
-			    Parent->memoserv.RemChannelNews(who, j - 1);
+			    Magick::instance().memoserv.RemChannelNews(who, j - 1);
 			    if (adjust + 2 == static_cast<int>(amt))
 			    {
 				if (numbers.size() > amt)
@@ -2781,7 +2786,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 			    output, who));
 		output.erase();
 		LOG(LM_DEBUG, "MEMOSERV/DEL", (
-			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+			Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 			adjust, who));
 	    }
 	    if (nonnumeric)
@@ -2792,30 +2797,30 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
     }
     else
     {
-	mstring who = Parent->nickserv.GetStored(source).Host();
+	mstring who = Magick::instance().nickserv.GetStored(source).Host();
 	mstring what = params.After(" ", 1);
 
 	if (who.empty())
 	    who = source;
 
-	if (!Parent->memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
 	}
 
-	Parent->memoserv.stats.i_Del++;
+	Magick::instance().memoserv.stats.i_Del++;
 	if (what.IsSameAs("all", true))
 	{
 	    MemoServ::nick_memo_t::iterator iter;
 	    { RLOCK(("MemoServ", "nick", who.LowerCase()));
-	    for (iter = Parent->memoserv.NickMemoBegin(who);
-		    iter != Parent->memoserv.NickMemoEnd(who);iter++)
+	    for (iter = Magick::instance().memoserv.NickMemoBegin(who);
+		    iter != Magick::instance().memoserv.NickMemoEnd(who);iter++)
 	    {
 		if (iter->File())
-		    Parent->filesys.EraseFile(FileMap::MemoAttach, iter->File());
+		    Magick::instance().filesys.EraseFile(FileMap::MemoAttach, iter->File());
 	    }}
-	    Parent->memoserv.RemNick(who);
+	    Magick::instance().memoserv.RemNick(who);
 	    NSEND(mynick, source, "MS_COMMAND/NS_DEL_ALL");
 	}
 	else
@@ -2839,7 +2844,7 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 	    mstring output;
 	    size_t amt = 0;
 	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
-	    MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(who);
+	    MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(who);
 	    amt = memolist.size();
 	    MemoServ::nick_memo_t::iterator iter = memolist.begin();
 	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
@@ -2862,8 +2867,8 @@ void MemoServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 			    output << ", ";
 			output << *ni;
 			if (iter->File())
-			    Parent->filesys.EraseFile(FileMap::MemoAttach, iter->File());
-			Parent->memoserv.RemNickMemo(who, j - 1);
+			    Magick::instance().filesys.EraseFile(FileMap::MemoAttach, iter->File());
+			Magick::instance().memoserv.RemNickMemo(who, j - 1);
 			if (adjust + 2 == static_cast<int>(amt))
 			{
 			    if (numbers.size() > amt)
@@ -2905,18 +2910,18 @@ void MemoServ::do_Continue(const mstring &mynick, const mstring &source, const m
 
     mstring text = params.After(" ", 1);
 
-    if (text.size() > Parent->server.proto.MaxLine())
+    if (text.size() > Magick::instance().server.proto.MaxLine())
     {
-	text.Truncate(Parent->server.proto.MaxLine());
+	text.Truncate(Magick::instance().server.proto.MaxLine());
 	SEND(mynick, source, "MS_STATUS/TRUNCATE", (
-			text.SubString(Parent->server.proto.MaxLine()-20,
-			Parent->server.proto.MaxLine()-1), mynick));
+			text.SubString(Magick::instance().server.proto.MaxLine()-20,
+			Magick::instance().server.proto.MaxLine()-1), mynick));
     }
 
-    if (Parent->nickserv.GetLive(source).InFlight.Memo())
+    if (Magick::instance().nickserv.GetLive(source).InFlight.Memo())
     {
-	Parent->memoserv.stats.i_Continue++;
-	Parent->nickserv.GetLive(source).InFlight.Continue(text);
+	Magick::instance().memoserv.stats.i_Continue++;
+	Magick::instance().nickserv.GetLive(source).InFlight.Continue(text);
     }
     else
     {
@@ -2931,21 +2936,21 @@ void MemoServ::do_Preview(const mstring &mynick, const mstring &source, const ms
 
     mstring message  = params.Before(" ").UpperCase();
 
-    if (Parent->nickserv.GetLive(source).InFlight.Memo())
+    if (Magick::instance().nickserv.GetLive(source).InFlight.Memo())
     {
-	mstring text(Parent->nickserv.GetLive(source).InFlight.Text());
+	mstring text(Magick::instance().nickserv.GetLive(source).InFlight.Text());
 	size_t shown = 0, length = text.length();
 
 	SEND(mynick, source, "MS_COMMAND/PREVIEW", (
-		Parent->nickserv.GetLive(source).InFlight.Recipiant()));
+		Magick::instance().nickserv.GetLive(source).InFlight.Recipiant()));
 	while (shown < length)
 	{
-	    if (length-shown > Parent->server.proto.MaxLine())
+	    if (length-shown > Magick::instance().server.proto.MaxLine())
 	    {
 		::send(mynick, source, (shown ? "    ..." : "    ") +
 			text.SubString(shown,
-			Parent->server.proto.MaxLine()-1) + "...");
-		shown += Parent->server.proto.MaxLine();
+			Magick::instance().server.proto.MaxLine()-1) + "...");
+		shown += Magick::instance().server.proto.MaxLine();
 	    }
 	    else
 	    {
@@ -2969,8 +2974,8 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -2996,38 +3001,38 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
     }
     else
     {
-	if (!Parent->nickserv.IsStored(name))
+	if (!Magick::instance().nickserv.IsStored(name))
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
 			name));
 	    return;
 	}
-	name = Parent->getSname(name);
-	if (Parent->nickserv.GetStored(name).Forbidden())
+	name = Magick::instance().getSname(name);
+	if (Magick::instance().nickserv.GetStored(name).Forbidden())
 	{
 	    SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
 			name));
 	    return;
 	}
-	mstring target = Parent->nickserv.GetStored(name).Host();
+	mstring target = Magick::instance().nickserv.GetStored(name).Host();
 	if (target.empty())
 	    target = name;
 
-	if (Parent->memoserv.Files() > 0)
+	if (Magick::instance().memoserv.Files() > 0)
 	{
-	    if (Parent->memoserv.IsNick(target))
+	    if (Magick::instance().memoserv.IsNick(target))
 	    {
 		unsigned int count = 0;
 		MemoServ::nick_memo_t::iterator iter;
 		{ RLOCK(("MemoServ", "nick", target.LowerCase()));
-		for (iter=Parent->memoserv.NickMemoBegin(target);
-			iter!=Parent->memoserv.NickMemoEnd(target);
+		for (iter=Magick::instance().memoserv.NickMemoBegin(target);
+			iter!=Magick::instance().memoserv.NickMemoEnd(target);
 			iter++)
 		{
 		    if (iter->File())
 			count++;
 		}}
-		if (count >= Parent->memoserv.Files())
+		if (count >= Magick::instance().memoserv.Files())
 		{
 		    SEND(mynick, source, "MS_STATUS/ATTACHLIMIT", (
 					name));
@@ -3041,9 +3046,9 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
 	    return;
 	}
 
-	if (Parent->nickserv.GetStored(name).IsIgnore(source) ?
-		!Parent->nickserv.GetStored(name).NoMemo() :
-		Parent->nickserv.GetStored(name).NoMemo())
+	if (Magick::instance().nickserv.GetStored(name).IsIgnore(source) ?
+		!Magick::instance().nickserv.GetStored(name).NoMemo() :
+		Magick::instance().nickserv.GetStored(name).NoMemo())
 	{
 	    SEND(mynick, source, "MS_STATUS/IGNORE", (
 			    name));
@@ -3051,27 +3056,27 @@ void MemoServ::do_File(const mstring &mynick, const mstring &source, const mstri
 	}
     }
 
-    if (!Parent->nickserv.GetLive(source).HasMode("o") &&
-	Parent->nickserv.GetLive(source).LastMemo().SecondsSince() <
-    		Parent->memoserv.Delay())
+    if (!Magick::instance().nickserv.GetLive(source).HasMode("o") &&
+	Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince() <
+    		Magick::instance().memoserv.Delay())
     {
 	SEND(mynick, source, "ERR_SITUATION/NOTYET", (
-		message, ToHumanTime(Parent->memoserv.Delay() -
-		Parent->nickserv.GetLive(source).LastMemo().SecondsSince(),
+		message, ToHumanTime(Magick::instance().memoserv.Delay() -
+		Magick::instance().nickserv.GetLive(source).LastMemo().SecondsSince(),
 		source)));
 	return;
     }
 
-    if (text.size() > Parent->server.proto.MaxLine())
+    if (text.size() > Magick::instance().server.proto.MaxLine())
     {
-	text.Truncate(Parent->server.proto.MaxLine());
+	text.Truncate(Magick::instance().server.proto.MaxLine());
 	SEND(mynick, source, "MS_STATUS/TRUNCATE", (
-			text.SubString(Parent->server.proto.MaxLine()-20,
-			Parent->server.proto.MaxLine()-1), mynick));
+			text.SubString(Magick::instance().server.proto.MaxLine()-20,
+			Magick::instance().server.proto.MaxLine()-1), mynick));
     }
 
-    Parent->memoserv.stats.i_File++;
-    Parent->nickserv.GetLive(source).InFlight.Memo(
+    Magick::instance().memoserv.stats.i_File++;
+    Magick::instance().nickserv.GetLive(source).InFlight.Memo(
 					    true, mynick, name, text);
 }
 
@@ -3083,8 +3088,8 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     mstring message  = params.Before(" ").UpperCase();
 
     { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL &&
-	Parent->ircsvchandler->HTM_Level() > 3)
+    if (Magick::instance().ircsvchandler != NULL &&
+	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
 	SEND(mynick, source, "MISC/HTM", (
 							message));
@@ -3110,25 +3115,25 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	mstring who = params.ExtractWord(2, " ");
 	mstring onoff = params.ExtractWord(4, " ");
 	mstring what = params.After(" ", 4);
-	mstring whoami = Parent->nickserv.GetStored(source).Host().LowerCase();
+	mstring whoami = Magick::instance().nickserv.GetStored(source).Host().LowerCase();
 	if (whoami.empty())
 	    whoami = source.LowerCase();
 
-	if (!Parent->chanserv.IsStored(who))
+	if (!Magick::instance().chanserv.IsStored(who))
 	{
 	    SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (
 		    who));
 	    return;
 	}
-	who = Parent->getSname(who);
+	who = Magick::instance().getSname(who);
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
+	if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "WRITEMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
-	if (!Parent->memoserv.IsChannel(who))
+	if (!Magick::instance().memoserv.IsChannel(who))
 	{
 	    SEND(mynick, source, "MS_STATUS/CS_EMPTY", (
 				who.LowerCase()));
@@ -3141,35 +3146,35 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    return;
 	}
 
-	if (!Parent->chanserv.GetStored(who).GetAccess(whoami, "DELMEMO"))
+	if (!Magick::instance().chanserv.GetStored(who).GetAccess(whoami, "DELMEMO"))
 	{
 	    NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
 	    return;
 	}
 
-	Parent->memoserv.stats.i_Set++;
+	Magick::instance().memoserv.stats.i_Set++;
 	if (what.IsSameAs("all", true))
 	{
 	    MemoServ::channel_news_t::iterator iter;
 	    mstring output;
 	    { WLOCK(("MemoServ", "channel", who.LowerCase()));
-	    for (iter = Parent->memoserv.ChannelNewsBegin(who);
-		    iter != Parent->memoserv.ChannelNewsEnd(who); iter++)
+	    for (iter = Magick::instance().memoserv.ChannelNewsBegin(who);
+		    iter != Magick::instance().memoserv.ChannelNewsEnd(who); iter++)
 	    {
 		iter->NoExpire(onoff.GetBool());
 	    }}
 	    SEND(mynick, source, "MS_COMMAND/CS_SET_ALL", (
-			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+			Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
 			who, (onoff.GetBool() ?
-				Parent->getMessage("VALS/ON") :
-				Parent->getMessage("VALS/OFF"))));
+				Magick::instance().getMessage("VALS/ON") :
+				Magick::instance().getMessage("VALS/OFF"))));
 
 	    LOG(LM_DEBUG, "MEMOSERV/SET_ALL", (
-		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
 		who, (onoff.GetBool() ?
-			Parent->getMessage("VALS/ON") :
-			Parent->getMessage("VALS/OFF"))));
+			Magick::instance().getMessage("VALS/ON") :
+			Magick::instance().getMessage("VALS/OFF"))));
 	}
 	else
 	{
@@ -3185,7 +3190,7 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    mstring output, denied;
 	    size_t amt = 0;
 	    { WLOCK(("MemoServ", "channel", who.LowerCase()));
-	    MemoServ::channel_news_t &newslist = Parent->memoserv.GetChannel(who);
+	    MemoServ::channel_news_t &newslist = Magick::instance().memoserv.GetChannel(who);
 	    amt = newslist.size();
 	    MemoServ::channel_news_t::iterator iter = newslist.begin();
 	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
@@ -3215,17 +3220,17 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    if (!output.empty())
 	    {
 		SEND(mynick, source, "MS_COMMAND/CS_SET", (
-			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+			Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
 			output, who, (onoff.GetBool() ?
-				Parent->getMessage("VALS/ON") :
-				Parent->getMessage("VALS/OFF"))));
+				Magick::instance().getMessage("VALS/ON") :
+				Magick::instance().getMessage("VALS/OFF"))));
 		output.erase();
 		LOG(LM_DEBUG, "MEMOSERV/SET", (
-			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
-			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+			Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+			Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
 			count, who, (onoff.GetBool() ?
-				Parent->getMessage("VALS/ON") :
-				Parent->getMessage("VALS/OFF"))));
+				Magick::instance().getMessage("VALS/ON") :
+				Magick::instance().getMessage("VALS/OFF"))));
 	    }
 	    if (nonnumeric)
 		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
@@ -3241,14 +3246,14 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 
 /* No NoExpire setting for nicknames.
 
-	mstring who = Parent->nickserv.GetStored(name).Host();
+	mstring who = Magick::instance().nickserv.GetStored(name).Host();
 	mstring onoff = params.ExtractWord(3, " ");
 	mstring what = params.After(" ", 3);
 
 	if (who.empty())
 	    who = source;
 
-	if (!Parent->memoserv.IsNick(who))
+	if (!Magick::instance().memoserv.IsNick(who))
 	{
 	    NSEND(mynick, source, "MS_STATUS/NS_EMPTY");
 	    return;
@@ -3260,22 +3265,22 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    return;
 	}
 
-	Parent->memoserv.stats.i_Set++;
+	Magick::instance().memoserv.stats.i_Set++;
 	if (what.IsSameAs("all", true))
 	{
 	    MemoServ::nick_memo_t::iterator iter;
 	    mstring output;
 	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
-	    for (iter = Parent->memoserv.NickMemoBegin(who);
-		    iter != Parent->memoserv.NickMemoEnd(who); iter++)
+	    for (iter = Magick::instance().memoserv.NickMemoBegin(who);
+		    iter != Magick::instance().memoserv.NickMemoEnd(who); iter++)
 	    {
 		iter->NoExpire(onoff.GetBool());
 	    }}
 	    SEND(mynick, source, "MS_COMMAND/NS_SET_ALL", (
-		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+		Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
 		(onoff.GetBool() ?
-			Parent->getMessage("VALS/ON") :
-			Parent->getMessage("VALS/OFF"))));
+			Magick::instance().getMessage("VALS/ON") :
+			Magick::instance().getMessage("VALS/OFF"))));
 	}
 	else
 	{
@@ -3290,7 +3295,7 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    mstring output;
 	    size_t amt = 0;
 	    { WLOCK(("MemoServ", "nick", who.LowerCase()));
-	    MemoServ::nick_memo_t &memolist = Parent->memoserv.GetNick(who);
+	    MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(who);
 	    amt = memolist.size();
 	    nick_memo_t::iterator iter = memolist.begin();
 	    for (ni = numbers.begin(); ni != numbers.end(); ni++)
@@ -3320,10 +3325,10 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    if (!output.empty())
 	    {
 		SEND(mynick, source, "MS_COMMAND/NS_SET", (
-			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
+			Magick::instance().getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
 			output, (onoff.GetBool() ?
-				Parent->getMessage("VALS/ON") :
-				Parent->getMessage("VALS/OFF"))));
+				Magick::instance().getMessage("VALS/ON") :
+				Magick::instance().getMessage("VALS/OFF"))));
 		output.erase();
 	    }
 	    if (nonnumeric)
