@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/03/25 04:26:48  prez
+** Added tracing into filesys for easier detection as to why it will not
+** receive data.  Also put version number to a2 now, ready for release soon.
+**
 ** Revision 1.9  2000/03/24 15:35:18  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -283,6 +287,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     i_Total = 0;
     i_XferTotal = 0;
     i_LastData = Now();
+    CP(("DCC %d initialized", i_DccId));
 }
 
 
@@ -336,6 +341,7 @@ DccXfer::DccXfer(unsigned long dccid, ACE_SOCK_Stream *socket,
     i_Total = 0;
     i_XferTotal = 0;
     i_LastData = Now();
+    CP(("DCC %d initialized", i_DccId));
 }
 
 DccXfer::~DccXfer()
@@ -352,6 +358,7 @@ DccXfer::~DccXfer()
     if (i_Socket.get() == NULL)
 	return;
 
+    CP(("DCC Xfer #%d Completed", i_DccId));
     // If we know the size, verify it, else we take
     // what we get!
     if (i_Type == Get &&
@@ -383,6 +390,7 @@ DccXfer::~DccXfer()
 		wxFileOutputStream fout(tmp.c_str());
 		fout << fin;
 		Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(filenum);
+		CP(("Added entry %d to FileMap", filenum));
 	    }
 	    else
 		Parent->nickserv.live[i_Source.LowerCase()].InFlight.File(0);
@@ -451,6 +459,7 @@ void DccXfer::Action()
 	XferAmt = i_Socket->recv_n((void *) &i_Transiant[i_XferTotal],
 			i_Blocksize - i_XferTotal, &onesec);
 	merrno = errno;
+	COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
 	if (XferAmt > 0)
 	{
 	    i_XferTotal += XferAmt;
@@ -463,8 +472,9 @@ void DccXfer::Action()
 		i_File.Write(i_Transiant, i_XferTotal);
 		i_XferTotal = 0;
 		memset(i_Transiant, 0, i_Blocksize);
-		i_Socket->send_n((void *) htonl(i_Total), 4, &onesec);
+		XferAmt = i_Socket->send_n((void *) htonl(i_Total), 4, &onesec);
 		merrno = errno;
+		COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
 		if (i_Filesize == i_Total)
 		{
 		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/COMPLETED"),
@@ -499,6 +509,7 @@ void DccXfer::Action()
 	    unsigned long verify;
 	    XferAmt = i_Socket->recv_n((void *) verify, 4, &onesec);
 	    merrno = errno;
+	    COM(("%d: Bytes Transferred - %d, RECV Response %d", i_DccId, XferAmt, merrno));
 	    if (XferAmt <= 0 || ntohl(verify) != i_Total)
 	    {
 		switch (merrno)
@@ -539,6 +550,7 @@ void DccXfer::Action()
 			strlen((char *) i_Transiant) - i_XferTotal,
 			&onesec);
 	merrno = errno;
+	COM(("%d: Bytes Transferred - %d, SEND Response %d", i_DccId, XferAmt, merrno));
 	if (XferAmt > 0)
 	{
 	    i_XferTotal += XferAmt;
@@ -609,6 +621,7 @@ int DccMap::svc(void)
 	    continue;
 	}
 
+	CP(("Executing ACTION for DCC #%d", WorkId));
 	xfers[WorkId].Action();
 	if (xfers[WorkId].LastData().SecondsSince() > Parent->files.Timeout())
 	{
@@ -644,6 +657,7 @@ unsigned long DccMap::Connect(ACE_INET_Addr address,
     ACE_SOCK_Stream *DCC_SOCK = new ACE_SOCK_Stream;
     ACE_Time_Value tv(Parent->files.Timeout());
     ACE_SOCK_Connector tmp((ACE_SOCK_Stream &) *DCC_SOCK, (ACE_Addr &) address, &tv);
+    CP(("Connect responded with %d", errno));
     if (errno != ETIME)
     {
 	unsigned long WorkId;
@@ -651,10 +665,10 @@ unsigned long DccMap::Connect(ACE_INET_Addr address,
 	{
 	    if (xfers.find(WorkId) == xfers.end())
 	    {
-		DccXfer xfer(WorkId, DCC_SOCK, mynick,
+		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, mynick,
 			source, filename, filesize, blocksize);
-		xfers[WorkId] = xfer;
 		active.push(WorkId);
+		CP(("Created DCC entry #%d", WorkId));
 		RET(WorkId);
 	    }
 	}
@@ -676,6 +690,7 @@ unsigned long DccMap::Accept(unsigned short port, mstring mynick,
     ACE_Time_Value tv(Parent->files.Timeout());
     ACE_SOCK_Acceptor tmp(local);
     tmp.accept((ACE_SOCK_Stream &) *DCC_SOCK, NULL, &tv);
+    CP(("Accept responded with %d", errno));
     if (errno != ETIME)
     {
 	unsigned long WorkId;
@@ -686,6 +701,7 @@ unsigned long DccMap::Accept(unsigned short port, mstring mynick,
 		xfers[WorkId] = DccXfer(WorkId, DCC_SOCK, mynick,
 			source, filetype, filenum);
 		active.push(WorkId);
+		CP(("Created DCC entry #%d", WorkId));
 		RET(WorkId);
 	    }
 	}

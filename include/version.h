@@ -24,6 +24,10 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2000/03/25 04:26:48  prez
+** Added tracing into filesys for easier detection as to why it will not
+** receive data.  Also put version number to a2 now, ready for release soon.
+**
 ** Revision 1.75  2000/03/24 15:35:17  prez
 ** Fixed establishment of DCC transfers, and some other misc stuff
 ** (eg. small bug in trace, etc).  Still will not send or receive
@@ -75,7 +79,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 247;
+const int BUILD_NUMBER = 249;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;
@@ -109,7 +113,7 @@ const mstring FULL_NAME		= "Magick IRC Services";
 const mstring FULL_EMAIL	= "magick@magick.tm";
 const mstring FULL_URL		= "http://www.magick.tm";
 const mstring PRODUCT		= "Magick";
-const mstring RELEASE		= "a1";
+const mstring RELEASE		= "a2";
 const mstring PATCH1		= "";
 const mstring PATCH2		= "";
 const mstring PATCH3		= "";

@@ -24,6 +24,10 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/03/25 04:26:48  prez
+** Added tracing into filesys for easier detection as to why it will not
+** receive data.  Also put version number to a2 now, ready for release soon.
+**
 ** Revision 1.10  2000/02/27 03:58:39  prez
 ** Fixed the WHAT program, also removed RegEx from Magick.
 **
@@ -83,7 +87,7 @@ const mstring FULL_NAME		= "Magick IRC Services";
 const mstring FULL_EMAIL	= "magick@magick.tm";
 const mstring FULL_URL		= "http://www.magick.tm";
 const mstring PRODUCT		= "Magick";
-const mstring RELEASE		= "a1";
+const mstring RELEASE		= "a2";
 const mstring PATCH1		= "";
 const mstring PATCH2		= "";
 const mstring PATCH3		= "";
