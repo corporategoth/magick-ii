@@ -973,6 +973,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 {
     FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
     static mDateTime LastSEGV;
+
     // todo: fill this sucker in
     switch(signum)
     {
@@ -980,6 +981,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
     case SIGINT:	// CTRL-C, Background.
 	Parent->shutdown(true);	// Temp, we just kill on CTRL-C
+	RET(-1);
 	break;
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
@@ -991,10 +993,9 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #endif
     case SIGSEGV:	// Segfault, validate all storage.
-	// on first read this code seems insensible. to keep in mind when reading
-	// unassigned mdatetime defaults to Jan 1 1970 therefor, first pass through
-	// will always be LastSEGV - Now() > 5
-	if((long) (LastSEGV - Now()) < 5)
+	// IF LastSEGV is defined, and time between now and
+	// LastSEGV is < 5 seconds ...
+	if(LastSEGV != 0.0 && ((time_t) (Now() - LastSEGV) < 5))
 	{
 	    CP(("Got second sigsegv call, giving magick the boot"));
 	    RET(-1);
