@@ -92,9 +92,19 @@ void *thread_handler(void *owner)
 	    }
 
 	    mstring tmp[2];
-	    tmp[0]=message.After(" ").Before(" ");		// 2nd arg
-	    tmp[1]=message.After(" ").After(" ").Before(" ");	// 3rd arg
-	    tmp[0].MakeUpper();
+	    //
+	    if(message[0u]==':')
+	    {
+		// with from prefix
+		tmp[0]=message.ExtractWord(2,": ").UpperCase();
+		tmp[1]=message.ExtractWord(3,": ");
+	    }
+	    else
+	    {
+		// no from prefix
+		tmp[0]=message.ExtractWord(1,": ").UpperCase();
+		tmp[1]=message.ExtractWord(2,": ");
+	    }
 	    
 	    // check if on ignore list and throw to the "ignore logging service" if log ignored user commands is on.
 	    // maybe we should have a hit count for logging? x ignores in x minutes = start logging that sucker. 
@@ -211,9 +221,32 @@ void NetworkServ::execute(const mstring & data)
     FT("NetworkServ::execute", (data));
     //okay this is the main networkserv command switcher
 
-    mstring source, msgtype, mynick, message;
-    source  = data.Before(" ");
-    msgtype = data.After(" ").Before(" ");
-    mynick  = data.After(" ").After(" ").Before(" ");
-    message = data.After(":");
+    mstring source, msgtype, msgdata;
+    if(data[0u]==':')
+    {
+	source=data.ExtractWord(1,": ");
+	msgtype=data.ExtractWord(2,": ").UpperCase();
+	msgdata=data.After(":",2);
+    }
+    else
+    {
+	source="";
+	msgtype=data.ExtractWord(1,": ").UpperCase();
+	msgdata=data.After(":");
+    }
+    if(msgtype=="PING")
+    {
+	if(msgdata!="")
+	{
+	    if(msgdata.WordCount(" ")>1)
+		; //MagickObject->send_cmd(server_name,"PONG %s %s",msgdata.ExtractWord(2," "),msgdata.ExtractWord(1," "));
+	    else
+		; //MagickObject->send_cmd(server_name,"PONG %s %s",server_name,msgdata.ExtractWord(1," "));
+	}
+	else
+	{
+	    // error out?
+	}
+    }
+	
 }
