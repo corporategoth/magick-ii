@@ -32,6 +32,7 @@ mDateTime StartTime, ResetTime;
 Magick::Magick(int inargc, char **inargv)
 {
     FT("Magick::Magick", (inargc, "(char **) inargv"));
+    i_shutdown = false;
     services_dir=".";
     config_file="magick.ini";
     for(int i=0;i<inargc;i++)
