@@ -323,6 +323,6 @@ extern const char* wxSysErrorMsg(unsigned long nErrCode = 0);
   //      to begin with...)
 #define   wxCHECK_RET(x, msg)       if (!(x)) {wxFAIL_MSG(msg); return; }
 
-#define _(str) str
+//#define _(str) str
 
 #endif

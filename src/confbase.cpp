@@ -102,8 +102,8 @@ mstring wxExpandEnvVars(const mstring& str)
           // check the closing bracket
           if ( bracket != Bracket_None ) {
             if ( m == str.length() || str[m] != (char)bracket ) {
-              wxLogWarning(_("Environment variables expansion failed: "
-                             "missing '%c' at position %d in '%s'."),
+              wxLogWarning("Environment variables expansion failed: "
+                             "missing '%c' at position %d in '%s'.",
                            (char)bracket, m + 1, str.c_str());
             }
             else {
@@ -152,7 +152,7 @@ void wxSplitPath(mArrayString& aParts, const mstring &sz)
       else if ( strCurrent == ".." ) {
         // go up one level
         if ( aParts.size()==0 )
-          wxLogWarning(_("'%s' has extra '..', ignored."), sz.c_str());
+          wxLogWarning("'%s' has extra '..', ignored.", sz.c_str());
         else
           aParts.erase(aParts.end() - 1);
 

@@ -163,20 +163,6 @@ void ThreadID::WriteOut(const mstring &message)
     assert(out.LastError()==wxStream_NOERROR);
 */
     mstring finalout = "";
-    //prez: the below line gpe's with i=0 called from Bob::InitBuiltins   WLock("Bob");
-    // following the code through, the ~T_Locking is an invalid object??? (go figure)
-    /* call stack trace below
-ThreadID::WriteOut(const mstring & {...}) line 167 + 21 bytes
-T_Locking::~T_Locking() line 366
-??_M@YGXPAXIHP6EX0@Z@Z + 94 bytes
-WLOCK::~WLOCK() line 197 + 28 bytes
-Bob::InitBuiltins() line 69
-Bob::StartBob(const mstring & {...}) line 45 + 11 bytes
-Magick::Start() line 45 + 44 bytes
-start_server(int 1, char * * 0x00d412f0) line 29 + 11 bytes
-ace_main_i(int 1, char * * 0x00d412f0) line 45 + 13 bytes
-main(int 1, char * * 0x00d412f0) line 32 + 69 bytes
-*/
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";
     finalout += message;

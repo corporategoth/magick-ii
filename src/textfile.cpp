@@ -104,7 +104,7 @@ wxTextFileType wxTextFile::GuessType() const
       case wxTextFileType_Unix: nUnix++; break;   \
       case wxTextFileType_Dos:  nDos++;  break;   \
       case wxTextFileType_Mac:  nMac++;  break;   \
-      default: wxFAIL_MSG(_("unknown line terminator")); \
+      default: wxFAIL_MSG("unknown line terminator"); \
     }
 
   size_t n;
@@ -121,7 +121,7 @@ wxTextFileType wxTextFile::GuessType() const
   if ( nDos + nUnix + nMac == 0 ) 
   {
     // no newlines at all
-    wxLogWarning(_("'%s' is probably a binary file."), m_strFile.c_str());
+    wxLogWarning("'%s' is probably a binary file.", m_strFile.c_str());
   }
   else 
   {
@@ -226,7 +226,7 @@ bool wxTextFile::Write(wxTextFileType typeNew)
   wxTempFile fileTmp(m_strFile);
 
   if ( !fileTmp.IsOpened() ) {
-    wxLogError(_("can't write file '%s' to disk."), m_strFile.c_str());
+    wxLogError("can't write file '%s' to disk.", m_strFile.c_str());
     RET(false);
   }
 

@@ -1337,7 +1337,7 @@ bool wxFile::Create(const char *szFileName, bool bOverwrite, int accessMode)
                 (bOverwrite ? O_TRUNC : O_EXCL), accessMode);
 
   if ( fd == -1 ) {
-    wxLogSysError(_("can't create file '%s'"), szFileName);
+    wxLogSysError("can't create file '%s'", szFileName);
     return false;
   }
   else {
@@ -1372,7 +1372,7 @@ bool wxFile::Open(const char *szFileName, OpenMode mode, int accessMode)
   int fd = open(szFileName, flags, accessMode);
 
   if ( fd == -1 ) {
-    wxLogSysError(_("can't open file '%s'"), szFileName);
+    wxLogSysError("can't open file '%s'", szFileName);
     return false;
   }
   else {
@@ -1386,7 +1386,7 @@ bool wxFile::Close()
 {
   if ( IsOpened() ) {
     if ( close(m_fd) == -1 ) {
-      wxLogSysError(_("can't close file descriptor %d"), m_fd);
+      wxLogSysError("can't close file descriptor %d", m_fd);
       m_fd = fd_invalid;
       return false;
     }
@@ -1408,7 +1408,7 @@ off_t wxFile::Read(void *pBuf, off_t nCount)
 
   int iRc = ::read(m_fd, pBuf, nCount);
   if ( iRc == -1 ) {
-    wxLogSysError(_("can't read from file descriptor %d"), m_fd);
+    wxLogSysError("can't read from file descriptor %d", m_fd);
     return -1;
   }
   else
@@ -1422,7 +1422,7 @@ size_t wxFile::Write(const void *pBuf, size_t nCount)
 
   int iRc = ::write(m_fd, pBuf, nCount);
   if ( iRc == -1 ) {
-    wxLogSysError(_("can't write to file descriptor %d"), m_fd);
+    wxLogSysError("can't write to file descriptor %d", m_fd);
     m_error = true;
     return 0;
   }
@@ -1435,11 +1435,11 @@ bool wxFile::Flush()
 {
   if ( IsOpened() ) {
     #if defined(_MSC_VER)
-/*        if ( fsync(m_fd) == -1 )
+        if ( _commit(m_fd) == -1 )
         {
-            wxLogSysError(_("can't flush file descriptor %d"), m_fd);
+            wxLogSysError("can't flush file descriptor %d", m_fd);
             return false;
-        }*/
+        }
     #else // no fsync
         // just do nothing
     #endif // fsync
@@ -1472,12 +1472,12 @@ off_t wxFile::Seek(off_t ofs, wxSeekMode mode)
       break;
 
     default:
-      wxFAIL_MSG(_("unknown seek origin"));
+      wxFAIL_MSG("unknown seek origin");
   }
 
   int iRc = lseek(m_fd, ofs, flag);
   if ( iRc == -1 ) {
-    wxLogSysError(_("can't seek on file descriptor %d"), m_fd);
+    wxLogSysError("can't seek on file descriptor %d", m_fd);
     return -1;
   }
   else
@@ -1491,7 +1491,7 @@ off_t wxFile::Tell() const
 
   int iRc = ACE_OS::lseek((ACE_HANDLE)m_fd, 0, SEEK_CUR);
   if ( iRc == -1 ) {
-    wxLogSysError(_("can't get seek position on file descriptor %d"), m_fd);
+    wxLogSysError("can't get seek position on file descriptor %d", m_fd);
     return -1;
   }
   else
@@ -1524,7 +1524,7 @@ off_t wxFile::Length() const
   #endif  //_MSC_VER
 
   if ( iRc == -1 ) {
-    wxLogSysError(_("can't find length of file on file descriptor %d"), m_fd);
+    wxLogSysError("can't find length of file on file descriptor %d", m_fd);
     return -1;
   }
   else
@@ -1558,11 +1558,11 @@ bool wxFile::Eof() const
       return false;
 
     case -1:
-      wxLogSysError(_("can't determine if the end of file is reached on descriptor %d"), m_fd);
+      wxLogSysError("can't determine if the end of file is reached on descriptor %d", m_fd);
       break;
 
     default:
-      wxFAIL_MSG(_("invalid eof() return value."));
+      wxFAIL_MSG("invalid eof() return value.");
   }
 
   return true;
@@ -1621,12 +1621,12 @@ bool wxTempFile::Commit()
   m_file.Close();
 
   if ( wxFile::Exists(m_strName) && remove(m_strName) != 0 ) {
-    wxLogSysError(_("can't remove file '%s'"), m_strName.c_str());
+    wxLogSysError("can't remove file '%s'", m_strName.c_str());
     return false;
   }
 
   if ( rename(m_strTemp, m_strName) != 0 ) {
-    wxLogSysError(_("can't commit changes to file '%s'"), m_strName.c_str());
+    wxLogSysError("can't commit changes to file '%s'", m_strName.c_str());
     return false;
   }
 
@@ -1637,7 +1637,7 @@ void wxTempFile::Discard()
 {
   m_file.Close();
   if ( remove(m_strTemp) != 0 )
-    wxLogSysError(_("can't remove temporary file '%s'"), m_strTemp.c_str());
+    wxLogSysError("can't remove temporary file '%s'", m_strTemp.c_str());
 }
 
 // ----------------------------------------------------------------------------

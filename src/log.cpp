@@ -167,7 +167,7 @@ IMPLEMENT_LOG_DEBUG_FUNCTION(Trace)
 void wxLogSysErrorHelper(long lErrCode)
 {
   char szErrMsg[LOG_BUFFER_SIZE / 2];
-  sprintf(szErrMsg, _(" (error %ld: %s)"), lErrCode, wxSysErrorMsg(lErrCode));
+  sprintf(szErrMsg, " (error %ld: %s)", lErrCode, wxSysErrorMsg(lErrCode));
   strncat(s_szBuf, szErrMsg, sizeof(s_szBuf) - strlen(s_szBuf));
 
   wxLog::OnLog(wxLOG_Error, s_szBuf);
@@ -266,18 +266,18 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
 
   switch ( level ) {
     case wxLOG_FatalError:
-      DoLogString(str << _("Fatal error: ") << szString);
-      DoLogString(_("Program aborted."));
+      DoLogString(str << "Fatal error: " << szString);
+      DoLogString("Program aborted.");
       Flush();
       abort();
       break;
 
     case wxLOG_Error:
-      DoLogString(str << _("Error: ") << szString);
+      DoLogString(str << "Error: " << szString);
       break;
 
     case wxLOG_Warning:
-      DoLogString(str << _("Warning: ") << szString);
+      DoLogString(str << "Warning: " << szString);
       break;
 
     case wxLOG_Info:
@@ -293,7 +293,7 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
     case wxLOG_Trace:
     case wxLOG_Debug:
       #ifdef DEBUG
-              DoLogString(str << (level == wxLOG_Trace ? _("Trace") : _("Debug"))
+              DoLogString(str << (level == wxLOG_Trace ? "Trace" : "Debug")
                               << ": " << szString);
       // JACS: we don't really want to prefix with 'Debug'. It's just extra
       // verbiage.
@@ -304,13 +304,13 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
       break;
 
     default:
-      wxFAIL_MSG(_("unknown log level in wxLog::DoLog"));
+      wxFAIL_MSG("unknown log level in wxLog::DoLog");
   }
 }
 
 void wxLog::DoLogString(const char *szString)
 {
-  wxFAIL_MSG(_("DoLogString must be overrided if it's called."));
+  wxFAIL_MSG("DoLogString must be overrided if it's called.");
 }
 
 void wxLog::Flush()
@@ -485,7 +485,7 @@ void wxOnAssert(const char *szFile, int nLine, const char *szMsg)
   s_bInAssert = true;
 
   char szBuf[LOG_BUFFER_SIZE];
-  sprintf(szBuf, _("Assert failed in file %s at line %d"), szFile, nLine);
+  sprintf(szBuf, "Assert failed in file %s at line %d", szFile, nLine);
   if ( szMsg != NULL ) {
     strcat(szBuf, ": ");
     strcat(szBuf, szMsg);

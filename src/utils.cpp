@@ -25,7 +25,7 @@ void wxSplitPath(const char *pszFileName,
                              mstring *pstrExt)
 {
   FT("wxSplitPath", (pszFileName, pstrPath, pstrName, pstrExt));
-  wxCHECK_RET( pszFileName, _("NULL file name in wxSplitPath") );
+  wxCHECK_RET( pszFileName, "NULL file name in wxSplitPath" );
 
   const char *pDot = strrchr(pszFileName, FILE_SEP_EXT);
   const char *pSepUnix = strrchr(pszFileName, FILE_SEP_PATH_UNIX);
@@ -64,7 +64,7 @@ mstring &wxGetHomeDir(mstring &pstr)
     const char *szHome = getenv("HOME");
     if ( szHome == NULL ) {
       // we're homeless...
-      wxLogWarning(_("can't find user's HOME, using current directory."));
+      wxLogWarning("can't find user's HOME, using current directory.");
       strDir = ".";
     }
     else
