@@ -292,7 +292,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 				break;
 			case 2:
 				if(Day<10)
-					Result<<"0";
+					Result=Result+"0";
 				Result<<Day;
 				break;
 			case 3:
@@ -325,7 +325,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 				break;
 			case 2:
 				if(Month<10)
-					Result<<"0";
+					Result=Result+"0";
 				Result<<Month;
 				break;
 			case 3:
@@ -364,26 +364,26 @@ mstring mDateTime::FormatString(const mstring& format)const
 				if(ampmtype>0)
 				{
 					if(Hour%12<10)
-						Result<<"0";
+						Result=Result+"0";
 				}
 				else
 				{
 					if(Hour<10)
-						Result<<"0";
+						Result=Result+"0";
 				}
 
 			}
 			if(ampmtype>0)
-				Result << Hour%12;
+				Result<<Hour%12;
 			else
-				Result << Hour;
+				Result<<Hour;
 			break;
 		case 'n':
 			if(i+1<format.size()&&tolower(format[i+1])=='n')
 			{
 				i++;
 				if(Min<10)
-					Result<<"0";
+					Result=Result+"0";
 			}
 			Result<<Min;
 			break;
@@ -392,7 +392,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 			{
 				i++;
 				if(Sec<10)
-					Result<<"0";
+					Result=Result+"0";
 			}
 			Result<<Sec;
 			break;
@@ -400,10 +400,10 @@ mstring mDateTime::FormatString(const mstring& format)const
 			if(i+1<format.size()&&tolower(format[i+1])=='t')
 			{
 				i++;
-				Result<<FormatString(LongTimeFormat);
+				Result=Result+FormatString(LongTimeFormat);
 			}
 			else
-				Result<<FormatString(ShortTimeFormat);
+				Result=Result+FormatString(ShortTimeFormat);
 			break;
 		case 'a':
 			if(i+2<format.size()&&format[i+1]=='/'&&tolower(format[i+2])=='p')
@@ -411,62 +411,62 @@ mstring mDateTime::FormatString(const mstring& format)const
 				//found a/p
 				i=i+2;
 				if(Hour<12)
-					Result<<"a";
+					Result=Result+"a";
 				else
-					Result<<"p";
+					Result=Result+"p";
 			}
 			else if(i+3<format.size()&&tolower(format[i+1])=='m'&&tolower(format[i+2])=='p'&&tolower(format[i+3])=='m')
 			{
 				//found ampm
 				i=i+3;
 				if(Hour<12)
-					Result<<TimeAMString;
+					Result=Result+TimeAMString;
 				else
-					Result<<TimePMString;
+					Result=Result+TimePMString;
 			}
 			else if(i+4<format.size()&&tolower(format[i+1])=='m'&&format[i+2]=='/'&&tolower(format[i+3])=='p'&&tolower(format[i+4])=='m')
 			{
 				//found am/pm
 				i=i+2;
 				if(Hour<12)
-					Result<<"am";
+					Result=Result+"am";
 				else
-					Result<<"pm";
+					Result=Result+"pm";
 			}
 			else
 			{
 				wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
-				Result<<"a";
+				Result=Result+"a";
 			}
 			break;
 		case '/':
-			Result<<DateSeparator;
+			Result=Result+DateSeparator;
 			break;
 		case ':':
-			Result<<TimeSeparator;
+			Result=Result+TimeSeparator;
 			break;
 		case '\'':
 			i++;
 			while(i<format.size()&&format[i]!='\'')
 			{
-				Result<<mstring(format[i]);
+				Result=Result+mstring(format[i]);
 				i++;
 			}
 			break;
 		case '"':
 			i++;
 			while(i<format.size()&&format[i]!='"')
-				Result<<mstring(format[i]);
+				Result=Result+mstring(format[i]);
 			break;
 		case ' ':
 		case '\t':
 		case '\n':
-			Result<<mstring(format[i]);
+			Result=Result+mstring(format[i]);
 			break;
 		default:
 			wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal",format[i]);
 			wxLogWarning("FormatString==%s",format.c_str());
-			Result<<mstring(format[i]);
+			Result=Result+mstring(format[i]);
 		};
 		i++;
 	}

@@ -166,6 +166,10 @@ SOURCE=.\docs\requirements
 
 SOURCE=.\docs\suggest
 # End Source File
+# Begin Source File
+
+SOURCE=.\docs\versionstamps.txt
+# End Source File
 # End Group
 # Begin Group "lang files"
 
