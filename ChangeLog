@@ -1,3 +1,58 @@
+* 2002-08-31 09:30  Preston A. Elder <prez@magick.tm>
+  include/pch.h (1.57):
+  
+  Added Log_Record include for ACE.
+
+* 2002-08-31 06:35  Preston A. Elder <prez@magick.tm>
+  src/nickdata.cpp (1.12):
+  
+  My bad ;P
+
+* 2002-08-30 13:25  Preston A. Elder <prez@magick.tm>
+  src/nickdata.cpp (1.11):
+  
+  Filtered out the '+' in modes when users come back from squit
+
+* 2002-08-29 12:10  Preston A. Elder <prez@magick.tm>
+  src/datetime.cpp (1.83):
+  
+  Fixed 12-hour time.
+
+* 2002-08-29 10:54  Preston A. Elder <prez@magick.tm>
+  src/ircsocket.cpp (1.231):
+  
+  Added flush before dieing on dead threads.
+
+* 2002-08-29 09:41  Preston A. Elder <prez@magick.tm>
+  src/server.cpp (1.242):
+  
+  Fixed superflusous SVSMODE calls.
+
+* 2002-08-29 09:25  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.13):
+  
+  Fixed RemoveMode again.
+
+* 2002-08-29 07:46  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.12):
+  
+  Some fixes with RemoveMode.
+
+* 2002-08-29 06:48  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.11), src/server.cpp (1.241):
+  
+  Mode changes (fixing both MODE and SJOIN)
+
+* 2002-08-29 06:15  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.10):
+  
+  Some fixes to chanserv modes.
+
+* 2002-08-26 03:00  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.46):
+  
+  Created version 2.0s20020826
+
 * 2002-08-23 17:17  Preston A. Elder <prez@magick.tm>
   ircd/Makefile.am (1.2):
   
