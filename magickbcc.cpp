@@ -32,9 +32,6 @@ USEUNIT("src\convert.cpp");
 USEUNIT("src\filesys.cpp");
 USELIB("src\antlr\antlr.lib");
 USELIB("src\des\crypto.lib");
-USELIB("src\expat\xmltok\xmltoklib.lib");
-USELIB("src\expat\xmlparse\xmlparselib.lib");
-USELIB("src\sxp\sxplib.lib");
 USEFILE("include\base.h");
 USEFILE("include\version.h-release");
 USEFILE("include\commserv.h");
@@ -65,6 +62,7 @@ USEFILE("include\utils.h");
 USEFILE("include\variant.h");
 USEFILE("include\version.h");
 USEFILE("include\chanserv.h");
+USELIB("src\xml\xml.lib");
 //---------------------------------------------------------------------------
 #endif // defined(__BORLANDC__)
 

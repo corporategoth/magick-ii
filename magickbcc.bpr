@@ -26,8 +26,7 @@ RESFILES =
 RESDEPEN = $(RESFILES)
 LIBFILES = ..\support\zlib\zlib.LIB \
   ..\support\ACE_wrappers\bin\Dynamic\Debug\Pascal\ace_bpd.lib \
-  src\antlr\antlr.lib src\des\crypto.lib src\expat\xmltok\xmltoklib.lib \
-  src\expat\xmlparse\xmlparselib.lib src\sxp\sxplib.lib
+  src\antlr\antlr.lib src\des\crypto.lib src\xml\xml.lib
 IDLGENFILES =
 IDLFILES =
 LIBRARIES = VCL40.lib
