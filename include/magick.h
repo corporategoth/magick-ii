@@ -63,16 +63,6 @@ private:
 	bool messages;		// Wether to process /MSG, /NOTICE.
 	bool automation;	// Wether to do automatic tasks.
 
-	// loading and saving internal stuff
-	wxInputStream *create_input_stream(wxMemoryStream &in);
-	void destroy_input_stream();
-	wxOutputStream *create_output_stream(wxMemoryStream &out);
-	void destroy_output_stream();
-        wxZlibInputStream *zstrm;
-        wxZlibOutputStream *ozstrm;
-	mDecryptStream *cstrm;
-	mEncryptStream *ocstrm;
-
 	mstring i_services_dir;
 	mstring i_config_file;
 	mstring i_programname;

@@ -19,10 +19,10 @@ extern "C"
 #include "des/des_locl.h"
 };
 
-class mDecryptStream : public wxFilterInputStream
+class wxCryptInputStream : public wxFilterInputStream
 {
 public:
-    mDecryptStream(wxInputStream& stream, const mstring& passphrase);
+    wxCryptInputStream(wxInputStream& stream, const mstring& passphrase);
     //virtual ~mDecryptStream();
 protected:
     size_t OnSysRead(void *buffer, size_t size);
@@ -33,10 +33,10 @@ private:
     des_cblock ivec;
 };
 
-class mEncryptStream : public wxFilterOutputStream
+class wxCryptOutputStream : public wxFilterOutputStream
 {
 public:
-    mEncryptStream(wxOutputStream& stream, const mstring& passphrase);
+    wxCryptOutputStream(wxOutputStream& stream, const mstring& passphrase);
     //virtual ~mEncryptStream();
 protected:
     size_t OnSysWrite(void *buffer, size_t size);

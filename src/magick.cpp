@@ -1740,41 +1740,57 @@ void Magick::load_databases()
 
     if (finput.Ok())
     {
-	finput >> tag >> ver >> compressed >> encrypted;
+	wxCryptInputStream *cinput;
+	wxZlibInputStream *zinput;
+	wxDataInputStream *dinput;
+	wxInputStream *input = &finput;
+
+	// We need this to make sure its not endian.
+	dinput = new wxDataInputStream(*input);
+	input = dinput;
+	*input >> tag >> ver >> compressed >> encrypted;
+	//input->Sync();
+	input = &finput;
+	delete dinput;
+
 	if (tag != FileIdentificationTag)
 	    wxLogFatal("Invalid data file (not Magick II)");
 	if (ver != FileVersionNumber)
 	    wxLogFatal("Version numbers do not match.");
 
-	if (compressed && encrypted)
+	// Thread pipes ... create them.
+/*	if (encrypted)
 	{
-	    //wxCryptInputStream cinput(finput);
-	    //wxZlibInputStream zinput(cinput);
-	    wxZlibInputStream zinput(finput);
-	    wxDataInputStream input(zinput);
-	}
-	else if (compressed)
+	    cinput = new wxCryptInputStream(*input);
+	    input = cinput;
+	} */
+	if (compressed)
 	{
-	    wxZlibInputStream zinput(finput);
-	    wxDataInputStream input(zinput);
+	    zinput = new wxZlibInputStream(*input);
+	    input = zinput;
 	}
-	else if (encrypted)
-	{
-	    //wxCryptInputStream cinput(finput);
-	    //wxDataInputStream input(cinput);
-	}
-	else
-	{	
-	    wxDataInputStream input(finput);
-	}
-	wxDataInputStream input(finput);
-	Parent->operserv.load_database(input);
-	Parent->nickserv.load_database(input);
-	Parent->chanserv.load_database(input);
-	Parent->memoserv.load_database(input);
-	Parent->commserv.load_database(input);
-	Parent->servmsg.load_database(input);
+	dinput = new wxDataInputStream(*input);
+	input = dinput;
+
+	Parent->operserv.load_database(*input);
+	Parent->nickserv.load_database(*input);
+	Parent->chanserv.load_database(*input);
+	Parent->memoserv.load_database(*input);
+	Parent->commserv.load_database(*input);
+	Parent->servmsg.load_database(*input);
 	// Scripted services?
+
+	// Clean up ..
+	delete dinput;
+/*	if (encrypted)
+	{
+	    delete cinput;
+	} */
+	if (compressed)
+	{
+	    delete zinput;
+	}
+	input = &finput;
     }
 }
 
@@ -1795,104 +1811,52 @@ void Magick::save_databases()
 	
     if (foutput.Ok())
     {
-	foutput << FileIdentificationTag << FileVersionNumber <<
-		(bool) files.Compression() << files.Encryption();
+	wxCryptOutputStream *cinput;
+	wxZlibOutputStream *zoutput;
+	wxDataOutputStream *doutput;
+	wxOutputStream *output = &foutput;
 
-	if (files.Compression() && files.Encryption())
+	doutput = new wxDataOutputStream(*output);
+	output = doutput;
+	*output << FileIdentificationTag << FileVersionNumber <<
+		(files.Compression() != 0) << files.Encryption();
+	output->Sync();
+	output = &foutput;
+	delete doutput;
+
+/*	if (files.Encryption())
 	{
-	    //wxCryptOutputStream coutput(foutput);
-	    //wxZlibOutputStream zoutput(coutput, files.Compression());
-	    wxZlibOutputStream zoutput(foutput, files.Compression());
-	    wxDataOutputStream output(zoutput);
-	}
-	else if (files.Compression())
+	    coutput = new wxCryptOutputStream(*output);
+	    output = coutput;
+	} */
+	if (files.Compression())
 	{
-	    wxZlibOutputStream zoutput(foutput, files.Compression());
-	    wxDataOutputStream output(zoutput);
+	    zoutput = new wxZlibOutputStream(*output, files.Compression());
+	    output = zoutput;
 	}
-	else if (files.Encryption())
-	{
-	    //wxCryptOutputStream coutput(foutput);
-	    //wxDataOutputStream output(coutput);
-	}
-	else
-	{	
-	    wxDataOutputStream output(foutput);
-	}
-	Parent->operserv.save_database(output);
-	Parent->nickserv.save_database(output);
-	Parent->chanserv.save_database(output);
-	Parent->memoserv.save_database(output);
-	Parent->commserv.save_database(output);
-	Parent->servmsg.save_database(output);
+	doutput = new wxDataOutputStream(*output);
+	output = doutput;
+
+	Parent->operserv.save_database(*output);
+	Parent->nickserv.save_database(*output);
+	Parent->chanserv.save_database(*output);
+	Parent->memoserv.save_database(*output);
+	Parent->commserv.save_database(*output);
+	Parent->servmsg.save_database(*output);
 	// Scripted services?
-    }
-}
 
-wxInputStream *Magick::create_input_stream(wxMemoryStream &in)
-{
-    wxInputStream *Result=&in;
-/*    if(files.Password())
-    {
-	cstrm=new mDecryptStream(*Result,files.Password());
-	Result=cstrm;
-    }
-    else
-	cstrm=NULL;
-*/
-    if(files.Compression())
-    {
-	zstrm=new wxZlibInputStream(*Result);
-	Result=zstrm;
-    }
-    else
-	zstrm=NULL;
-    return Result;
-}
-
-void Magick::destroy_input_stream()
-{
-    if(zstrm!=NULL)
-    {
-	delete zstrm;
-	zstrm=NULL;
-    }
-    if(cstrm!=NULL)
-    {
-	delete cstrm;
-	cstrm=NULL;
-    }
-}
-wxOutputStream *Magick::create_output_stream(wxMemoryStream &out)
-{
-    wxOutputStream *Result=&out;
-/*    if(files.Password()!="")
-    {
-	cstrm=new mEncryptStream(*Result,files.Password());
-	Result=cstrm;
-    }
-    else
-	cstrm=NULL;*/
-    if(files.Compression())
-    {
-	ozstrm=new wxZlibOutputStream(*Result);
-	Result=ozstrm;
-    }
-    else
-	ozstrm=NULL;
-    return Result;
-}
-void Magick::destroy_output_stream()
-{
-    if(zstrm!=NULL)
-    {
-	delete zstrm;
-	zstrm=NULL;
-    }
-    if(cstrm!=NULL)
-    {
-	delete cstrm;
-	cstrm=NULL;
+	// clean up ...
+	output->Sync();
+	delete doutput;
+/*	if (files.Encryption())
+	{
+	    delete coutput;
+	} */
+	if (files.Compression())
+	{
+	    delete zoutput;
+	}
+	output = &foutput;
     }
 }
 

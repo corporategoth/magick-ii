@@ -21,7 +21,7 @@ extern "C"
 #include "des/spr.h"
 };
 
-mEncryptStream::mEncryptStream(wxOutputStream& stream, const mstring& passphrase)
+wxCryptOutputStream::wxCryptOutputStream(wxOutputStream& stream, const mstring& passphrase)
 : wxFilterOutputStream(stream)
 {
     des_cblock ckey1, ckey2;
@@ -35,7 +35,7 @@ mEncryptStream::mEncryptStream(wxOutputStream& stream, const mstring& passphrase
     des_set_key(&ckey2,key2);
 }
 
-mDecryptStream::mDecryptStream(wxInputStream& stream, const mstring& passphrase)
+wxCryptInputStream::wxCryptInputStream(wxInputStream& stream, const mstring& passphrase)
 : wxFilterInputStream(stream)
 {
     des_cblock ckey1, ckey2;
@@ -49,7 +49,7 @@ mDecryptStream::mDecryptStream(wxInputStream& stream, const mstring& passphrase)
     des_set_key(&ckey2,key2);
 }
 
-size_t mEncryptStream::OnSysWrite(void *buffer, size_t size)
+size_t wxCryptOutputStream::OnSysWrite(void *buffer, size_t size)
 {
     wxASSERT(buffer!=NULL);
     if(ppgiven==false)
@@ -83,7 +83,7 @@ size_t mEncryptStream::OnSysWrite(void *buffer, size_t size)
     return size;
 }
 
-size_t mDecryptStream::OnSysRead(void *buffer, size_t size)
+size_t wxCryptInputStream::OnSysRead(void *buffer, size_t size)
 {
     wxASSERT(buffer!=NULL);
     if(ppgiven==false)
