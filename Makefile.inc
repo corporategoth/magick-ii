@@ -4,8 +4,9 @@ CC=gcc
 # What linker to use
 CXX=g++
 
-# Compilation flags to give the compiler
-CFLAGS=-DDEBUG -O2 -I/usr/local/include -I$(TOPDIR)/include -g
+# -fno-memoize-lookups
+
+CFLAGS=-DDEBUG -O -I/usr/local/include -I$(TOPDIR)/include -g
 
 # Linking flags to give the compiler
 LFLAGS=-L/usr/local/lib -lACE -lpthread -lz
