@@ -261,10 +261,10 @@ mstring mDateTime::FormatString(const mstring& format)
 	int i=0;
 	int count=0;
 	int ampmtype=0;
-	char buffer[20];
+	mstring buffer;
 	DecodeDate(Year,Month,Day);
 	DecodeTime(Hour,Min,Sec,MSec);
-	if(format.Find("am/pm")!=-1)
+	if(format.Find("a/p")!=-1)
 		ampmtype=1;
 	else if(format.Find("am/pm")!=-1)
 		ampmtype=2;
@@ -288,13 +288,13 @@ mstring mDateTime::FormatString(const mstring& format)
 			switch(count)
 			{
 			case 1:
-				itoa(Day,buffer,10);
+				buffer << Day;
 				Result+=buffer;
 				break;
 			case 2:
 				if(Day<10)
 					Result+="0";
-				itoa(Day,buffer,10);
+				buffer << Day;
 				Result+=buffer;
 				break;
 			case 3:
@@ -323,13 +323,13 @@ mstring mDateTime::FormatString(const mstring& format)
 			switch(count)
 			{
 			case 1:
-				itoa(Month,buffer,10);
+				buffer << Month;
 				Result+=buffer;
 				break;
 			case 2:
 				if(Month<10)
 					Result+="0";
-				itoa(Month,buffer,10);
+				buffer << Month;
 				Result+=buffer;
 				break;
 			case 3:
@@ -352,11 +352,11 @@ mstring mDateTime::FormatString(const mstring& format)
 			switch(count)
 			{
 			case 2:
-				itoa(Year%100,buffer,10);
+				buffer << Year%100;
 				Result+=buffer;
 				break;
 			case 4:
-				itoa(Year,buffer,10);
+				buffer << Year;
 				Result+=buffer;
 				break;
 			default:
@@ -380,9 +380,9 @@ mstring mDateTime::FormatString(const mstring& format)
 
 			}
 			if(ampmtype>0)
-				itoa(Hour%12,buffer,10);
+				buffer << Hour%12;
 			else
-				itoa(Hour,buffer,10);
+				buffer << Hour;
 			Result+=buffer;
 			break;
 		case 'n':
@@ -392,7 +392,7 @@ mstring mDateTime::FormatString(const mstring& format)
 				if(Min<10)
 					Result+="0";
 			}
-			itoa(Min,buffer,10);
+			buffer << Min;
 			Result+=buffer;
 			break;
 		case 's':
@@ -402,7 +402,7 @@ mstring mDateTime::FormatString(const mstring& format)
 				if(Sec<10)
 					Result+="0";
 			}
-			itoa(Sec,buffer,10);
+			buffer << Sec;
 			Result+=buffer;
 			break;
 		case 't':

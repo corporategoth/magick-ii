@@ -10,7 +10,7 @@
 
 # Adaptive Communication Environment (ACE)
 ACEDIR=../support/ACE_wrappers
-LIBACE=$(ACEDIR)/libace.a
+LIBACE= 
 
 # Cryptographic Library
 CRYPTDIR=../support/cryptlib21
@@ -28,6 +28,9 @@ ZDIR=../support/zlib-1.1.3
 # What compiler to use
 CC=gcc
 
+# What linker to use
+CXX=g++
+
 # What directories to enter and compile.
 #SUBDIRS=$(ACEDIR) $(CRYPTDIR)
 SUBDIRS=
@@ -36,10 +39,10 @@ SUBDIRS=
 CFLAGS=-O2 -I$${PWD}/./include -I$${PWD}/../support/bob -I$${PWD}/../support/ACE_wrappers/include
 
 # Linking flags to give the compiler
-LFLAGS=
+LFLAGS=-lACE -lpthread
 
 # What third-party libraries to include in link
-LIBS=$(LIBACE) $(LIBCRYPT) $(LIBZ) ./src/magick.a
+LIBS=./src/magick.a $(LIBACE) $(LIBCRYPT) $(LIBZ) ./src/bob/bob.a ./src/antlr/antlr.a
 
 # What are source and object files
 .SUFFIXES:	.o .obj .cpp .c
@@ -65,7 +68,7 @@ magick:
 		cd $${OLDPWD}; \
 		$(MAKE) $(PASSTHRU) -C $$x; \
 	done
-	$(CC) $(LFLAG) $(LIBS) -o magick
+	$(CC) $(LFLAGS) $(LIBS) -o magick
 
 clean:
 	@for x in $(SUBDIRS) ./src; \
