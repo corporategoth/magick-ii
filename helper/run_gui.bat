@@ -2,8 +2,8 @@
 REM Magick IRC Services
 REM
 REM $Id$
-REM (c) 1997-2002 Preston Elder <prez@magick.tm>
-REM (c) 1998-2002 William King <ungod@magick.tm>
+REM "(c) 1997-2002 Preston Elder <prez@magick.tm>"
+REM "(c) 1998-2002 William King <ungod@magick.tm>"
 REM
 REM The above copywright may not be removed under any circumstances,
 REM however it may be added to if any modifications are made to this
@@ -26,32 +26,23 @@ REM
 REM =======================================================================
 
 REM This is needed for win95/98/me
-if "%9" == "" GOTO args_8
-set ALL_ARGS=%ALL_ARGS% %9
-:args_8
-if "%8" == "" GOTO args_7
-set ALL_ARGS=%ALL_ARGS% %8
-:args_7
-if "%7" == "" GOTO args_6
-set ALL_ARGS=%ALL_ARGS% %7
-:args_6
-if "%6" == "" GOTO args_5
-set ALL_ARGS=%ALL_ARGS% %6
-:args_5
-if "%5" == "" GOTO args_4
-set ALL_ARGS=%ALL_ARGS% %5
-:args_4
-if "%4" == "" GOTO args_3
-set ALL_ARGS=%ALL_ARGS% %4
-:args_3
-if "%3" == "" GOTO args_2
-set ALL_ARGS=%ALL_ARGS% %3
-:args_2
-if "%2" == "" GOTO args_1
+set ALL_ARGS=%1
+if "%2" == "" GOTO start
 set ALL_ARGS=%ALL_ARGS% %2
-:args_1
-if "%1" == "" GOTO start
-set ALL_ARGS=%ALL_ARGS% %1
+if "%3" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %3
+if "%4" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %4
+if "%5" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %5
+if "%6" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %6
+if "%7" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %7
+if "%8" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %8
+if "%9" == "" GOTO start
+set ALL_ARGS=%ALL_ARGS% %9
 :start
 
 IF NOT "%OS%" == "Windows_NT" GOTO CommonStartup
