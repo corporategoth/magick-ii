@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.146  2000/12/22 08:55:41  prez
+** Made forbidden entries (chanserv or nickserv) show up as forbidden in
+** a list (rather than (nick!) or whatever)
+**
 ** Revision 1.145  2000/12/22 08:15:29  prez
 ** Fixed bug that created a blank entry in the stored nick list
 **
@@ -5910,8 +5914,16 @@ void NickServ::do_List(mstring mynick, mstring source, mstring params)
 			continue;
 		}
 
-		::send(mynick, source, iter->second.Name() + "  (" +
+		if (iter->second.Forbidden())
+		{
+		    ::send(mynick, source, iter->second.Name() + "  (" +
+			Parent->getMessage(source, "VALS/FORBIDDEN") + ")");
+		}
+		else
+		{
+		    ::send(mynick, source, iter->second.Name() + "  (" +
 					iter->second.LastAllMask() + ")");
+		}
 		i++;
 	    }
 	    count++;

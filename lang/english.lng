@@ -191,6 +191,7 @@ ON                 =ON
 OFF                =OFF
 ONLINE             =ONLINE
 SUSPENDED          =SUSPENDED
+FORBIDDEN          =FORBIDDEN
 SVC_AUTO           =Automatic
 SVC_MSG            =Message
 SVC_LOG            =Logging

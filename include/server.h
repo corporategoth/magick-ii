@@ -25,6 +25,10 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.54  2000/12/22 08:55:40  prez
+** Made forbidden entries (chanserv or nickserv) show up as forbidden in
+** a list (rather than (nick!) or whatever)
+**
 ** Revision 1.53  2000/12/19 14:26:55  prez
 ** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
 ** several SVS command text strings, if blank, support isnt there.
@@ -159,17 +163,17 @@ class Protocol
 
     /* AKILL types
      *
-     * 0 = none
-     * 1 = AKILL host user :reason
-     *     RAKILL host user
-     * 2 = GLINE * +time user@host :reason
-     *     UNGLINE * user@host
-     * 3 = GLINE * +user@host time :reason
-     *     GLINE * -user@host
-     * 4 = GLINE +user@host time :reason
-     *     GLINE -user@host
-     * 5 = AKILL host user time killer now :reason
-     *     RAKILL host user
+     * 0000 = KILL user :reason
+     * 1000 = AKILL host user :reason
+     *        RAKILL host user
+     * 1001 = AKILL host user time killer now :reason
+     *        RAKILL host user
+     * 2000 = GLINE * +time user@host :reason
+     *        UNGLINE * user@host
+     * 2001 = GLINE * +user@host time :reason
+     *        GLINE * -user@host
+     * 2002 = GLINE +user@host time :reason
+     *        GLINE -user@host
      */
     unsigned int i_Akill;
 

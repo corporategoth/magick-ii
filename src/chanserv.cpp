@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.216  2000/12/22 08:55:40  prez
+** Made forbidden entries (chanserv or nickserv) show up as forbidden in
+** a list (rather than (nick!) or whatever)
+**
 ** Revision 1.215  2000/12/21 14:18:17  prez
 ** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
 ** logon messages.  Also added ability to clear stats and showing of time
@@ -6298,8 +6302,16 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
 			continue;
 		}
 
-		::send(mynick, source, iter->second.Name() + "  " +
+		if (iter->second.Forbidden())
+		{
+		    ::send(mynick, source, iter->second.Name() + "  " +
+			Parent->getMessage(source, "VALS/FORBIDDEN"));
+		}
+		else
+		{
+		    ::send(mynick, source, iter->second.Name() + "  " +
 					    iter->second.Description());
+		}
 		i++;
 	    }
 	    count++;
