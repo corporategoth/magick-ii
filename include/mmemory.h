@@ -22,6 +22,10 @@ static const char *ident_mmemory_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2000/11/28 10:15:05  prez
+** Trying to figure out why the free list doesnt work in mmemory.
+** ALOT OF PRINTF'S - YOU'VE BEEN WARNED, OUTPUT STDOUT TO A FILE!
+**
 ** Revision 1.5  2000/11/09 10:58:19  prez
 ** THINK I have it working again ... with the free list.
 ** Will check, still thinking of sorting free list by size.
@@ -45,7 +49,7 @@ static const char *ident_mmemory_h = "@(#) $Id$";
 **
 ** ========================================================== */
 
-#define DEF_MEMSIZE 4096
+#define DEF_MEMSIZE 8192
 
 class MemoryNode
 {
@@ -121,42 +125,66 @@ class MemoryBlock
     MemoryNode *i_nodes, *i_end;
     MemoryNodeFree *i_free;
 
-    bool LinkNextNode(MemoryNode *node, MemoryNode *next)
+    bool LinkNextNode(MemoryNode *node, MemoryNode *nextnode)
     {
-	if (node == NULL || next == NULL)
+printf("LinkNextNode(%p, %p)\n", node, nextnode); fflush(stdout);
+	if (node == NULL || nextnode == NULL)
 	    return false;
-	next->prev = node;
-	next->next = node->next;
+printf("%p <- %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
+	nextnode->prev = node;
+	nextnode->next = node->next;
 	if (node->next != NULL)
-	    node->next->prev = next;
+	    node->next->prev = nextnode;
 	else
 	{
-	    i_end = next;
+	    i_end = nextnode;
 	    i_end->next = NULL;
 	}
-	node->next = next;
+	node->next = nextnode;
+printf("%p <- %p %p -> %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next,
+		((node->next->next != NULL) ? node->next->next->prev : NULL),
+		node->next->next); fflush(stdout);
+printf("i_nodes = %p, i_end = %p\n", i_nodes, i_end); fflush(stdout);
 	return true;
     }
-    bool LinkPrevNode(MemoryNode *node, MemoryNode *prev)
+    bool LinkPrevNode(MemoryNode *node, MemoryNode *prevnode)
     {
-	if (node == NULL || prev == NULL)
+printf("LinkPrevNode(%p, %p)\n", node, prevnode); fflush(stdout);
+	if (node == NULL || prevnode == NULL)
 	    return false;
-	prev->next = node;
-	prev->prev = node->prev;
+printf("%p <- %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
+	prevnode->next = node;
+	prevnode->prev = node->prev;
 	if (node->prev != NULL)
-	    node->prev->next = prev;
+	    node->prev->next = prevnode;
 	else
 	{
-	    i_nodes = prev;
+	    i_nodes = prevnode;
 	    i_nodes->prev = NULL;
 	}
-	node->prev = prev;
+	node->prev = prevnode;
+printf("%p <- %p %p <- %p %p -> %p\n",
+		node->prev->prev, ((node->prev->prev != NULL) ?
+			node->prev->prev->next : NULL),
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
+printf("i_nodes = %p, i_end = %p\n", i_nodes, i_end); fflush(stdout);
 	return true;
     }
     bool RemoveNode(MemoryNode *node)
     {
+printf("RemoveNode(%p)\n", node); fflush(stdout);
 	if (node == NULL)
 	    return false;
+printf("%p <- %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
 	if (node->prev != NULL)
 	    node->prev->next = node->next;
 	else
@@ -173,48 +201,75 @@ class MemoryBlock
 	    if (i_end != NULL)
 		i_end->next = NULL;
 	}
+printf("%p <- %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
+printf("i_nodes = %p, i_end = %p\n", i_nodes, i_end); fflush(stdout);
 	return true;
     }
 
-    bool LinkNextNodeFree(MemoryNodeFree *node, MemoryNodeFree *next)
+    bool LinkNextNodeFree(MemoryNodeFree *node, MemoryNodeFree *nextnode)
     {
-	if (node == NULL || next == NULL)
+printf("LinkNextNodeFree(%p, %p)\n", node, nextnode); fflush(stdout);
+	if (node == NULL || nextnode == NULL)
 	    return false;
-	next->prev = node;
-	next->next = node->next;
+printf("%p <- %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
+	nextnode->prev = node;
+	nextnode->next = node->next;
 	if (node->next != NULL)
-	    node->next->prev = next;
+	    node->next->prev = nextnode;
 	else
-	    next->next = NULL;
-	node->next = next;
+	    nextnode->next = NULL;
+	node->next = nextnode;
+printf("%p <- %p %p -> %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next,
+		((node->next->next != NULL) ? node->next->next->prev : NULL),
+		node->next->next); fflush(stdout);
+printf("i_free = %p\n", i_free); fflush(stdout);
 	return true;
     }
-    bool LinkPrevNodeFree(MemoryNodeFree *node, MemoryNodeFree *prev)
+    bool LinkPrevNodeFree(MemoryNodeFree *node, MemoryNodeFree *prevnode)
     {
-	if (node == NULL || prev == NULL)
+printf("LinkPrevNodeFree(%p, %p)\n", node, prevnode); fflush(stdout);
+	if (node == NULL || prevnode == NULL)
 	    return false;
-	prev->next = node;
-	prev->prev = node->prev;
+printf("%p <- %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
+	prevnode->next = node;
+	prevnode->prev = node->prev;
 	if (node->prev != NULL)
-	    node->prev->next = prev;
+	    node->prev->next = prevnode;
 	else
 	{
-	    i_free = prev;
+	    i_free = prevnode;
 	    i_free->prev = NULL;
 	}
-	node->prev = prev;
+	node->prev = prevnode;
+printf("%p <- %p %p <- %p %p -> %p\n",
+		node->prev->prev, ((node->prev->prev != NULL) ?
+			node->prev->prev->next : NULL),
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
+printf("i_free = %p\n", i_free); fflush(stdout);
 	return true;
     }
     bool RemoveNodeFree(MemoryNodeFree *node)
     {
+printf("RemoveNodeFree(%p)\n", node); fflush(stdout);
 	if (node == NULL)
 	    return false;
+printf("Test: %d <- %d -> %d\n", ((node->prev != NULL) ? (int) node->prev->size() : -1),
+		node->size(), ((node->next != NULL) ? (int) node->next->size() : -1));
+printf("%p <- %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
 	if (node->prev != NULL)
 	{
-	    if (node->next != NULL)
-		node->prev->next = node->next;
-	    else
-		node->prev->next = NULL;
+	    node->prev->next = node->next;
 	}
 	else
 	{
@@ -224,6 +279,12 @@ class MemoryBlock
 	}
 	if (node->next != NULL)
 	    node->next->prev = node->prev;
+printf("%p <- %p %p -> %p\n",
+		node->prev, ((node->prev != NULL) ? node->prev->next : NULL),
+		((node->next != NULL) ? node->next->prev : NULL), node->next); fflush(stdout);
+printf("Test: %d <- %d -> %d\n", ((node->prev != NULL) ? (int) node->prev->size() : -1),
+		node->size(), ((node->next != NULL) ? (int) node->next->size() : -1));
+printf("i_free = %p\n", i_free); fflush(stdout);
 	return true;
     }
 
@@ -268,44 +329,75 @@ public:
     void *alloc(size_t size)
     {
 	void *retval = NULL;
-	MemoryNodeFree *fiter = NULL, *fitertmp = NULL, *fuseiter = NULL;
+	MemoryNodeFree *fiter = NULL;
 	MemoryNode *iter = NULL, *useiter = NULL;
 	size_t diff = 0;
+printf("alloc(%d) : i_memory = %p, i_size = %d\n", size,
+	i_memory, i_size); fflush(stdout);
+
+	if (size == 0)
+	    return NULL;
 
 	for (fiter=i_free; fiter != NULL; fiter = fiter->next)
 	{
+printf("fiter = %p, fiter->node() = %p\n", fiter, fiter->node()); fflush(stdout);
+printf("fiter->node()->i_loc = %p, fiter->size() = %d, fiter->next = %p\n",
+	fiter->node()->i_loc, fiter->size(), fiter->next); fflush(stdout);
 	    // Find smallest segment we have that fits ...
-	    if ((fiter->size() >= size) &&
-	    	(diff == 0 || fiter->size() - size < diff))
+	    if (fiter->size() >= size)
 	    {
 		diff = fiter->size() - size;
-		fuseiter = fiter;
-		if (diff == 0)
-		    break;
+		break;
 	    }
 	}
-	if (fuseiter != NULL)
+	if (fiter != NULL)
 	{
-	    iter = useiter = fuseiter->node();
+	    iter = useiter = fiter->node();
 	}
 	if (diff != 0)
 	{
+printf("Size Difference - %d\n", diff); fflush(stdout);
 	    // Add a new memory block if the next is 
 	    iter = iter->next;
 	    if (iter != NULL)
 	    {
+printf("Creating intermitant record\n"); fflush(stdout);
+		MemoryNodeFree *ftmp = NULL, *fiternext = NULL;
 		MemoryNode *tmp = (MemoryNode *) i_cluster.malloc(sizeof(MemoryNode));
+
 		if (tmp == NULL)
 		    return NULL;
 		tmp->init((void *) (((char *) iter->i_loc) - diff), diff);
 		LinkPrevNode(iter, tmp);
-		fuseiter->set(tmp);
-		fuseiter = NULL;
+		RemoveNodeFree(fiter);
+		ftmp = fiter;
+		ftmp->set(tmp);
+		for (fiter=i_free; fiter != NULL; fiter = fiter->next)
+		{
+		    if (fiter->size() > tmp->size())
+		    {
+			LinkPrevNodeFree(fiter, ftmp);
+			break;
+		    }
+		    fiternext = fiter;
+		}
+		if (fiter == NULL && fiternext != NULL)
+		{
+		    LinkNextNodeFree(fiternext, ftmp);
+		}
+		else /* should never be the case ... */
+		{
+		    i_free = ftmp;
+		    ftmp->next = NULL;
+		    ftmp->prev = NULL;
+		}
+		fiter = NULL;
 	    }
 	    useiter->i_size = size;
 	}
 	else if (useiter == NULL && size <= i_avail)
 	{
+printf("Not found - appending\n"); fflush(stdout);
 	    MemoryNode *tmp = (MemoryNode *) i_cluster.malloc(sizeof(MemoryNode));
 	    if (tmp == NULL)
 		return NULL;
@@ -328,26 +420,33 @@ public:
 	}
 	if (useiter != NULL)
 	{
+printf("We have record (%p)!\n", useiter); fflush(stdout);
 	    retval = useiter->i_loc;
 	    useiter->i_avail = false;
 	}
-	if (fuseiter != NULL)
+	if (fiter != NULL)
 	{
-	    RemoveNodeFree(fuseiter);
-	    i_cluster.free(fuseiter);
+printf("We HAD a free node ...\n"); fflush(stdout);
+	    RemoveNodeFree(fiter);
+	    i_cluster.free(fiter);
 	}
+printf("~alloc(%p)\n", retval); fflush(stdout);
 	return retval;
     }
     void dealloc(void *loc)
     {
 	MemoryNode *iter = NULL, *iternext = NULL;
-	MemoryNodeFree *fiter = NULL, *fiternext = NULL;
+	MemoryNodeFree *fiter = NULL;
+printf("dealloc(%p) : i_memory = %p, i_size = %d\n", loc,
+	i_memory, i_size); fflush(stdout);
 
 	if (!(loc >= i_memory && loc < i_memory + i_size))
 	    return;
 
 	for (iter=i_nodes; iter!=NULL; iter = iter->next)
 	{
+printf("CHK: iter = %p\n", iter); fflush(stdout);
+printf("CHK: iter->i_loc = %p\n", iter->i_loc); fflush(stdout);
 	    if (iter->i_loc == loc)
 		break;
 	}
@@ -355,56 +454,66 @@ public:
 	// We found it in the for ...
 	if (iter != NULL)
 	{
+printf("Found specific element\n"); fflush(stdout);
+printf("iter = %p, iter->size = %d\n", iter, iter->i_size); fflush(stdout);
 	    // make it one bigger chunk, if we can!
 	    // We do this by seeing if we can combine
 	    // with the nodes before/after us.
-	    iternext = iter->next;
-	    if (iternext != NULL)
+	    if (iter->next != NULL && iter->next->avail())
 	    {
-		// We got a chunk next, is it free ...
-		if (iternext->avail())
+printf("Joining to next\n"); fflush(stdout);
+		iternext = iter->next;
+printf("iter = %p, iternext = %p, iter->size = %d, iternext->size = %d\n",
+	iter, iternext, iter->i_size, iternext->i_size); fflush(stdout);
+		iter->i_size += iternext->i_size;
+		RemoveNode(iternext);
+		for (fiter = i_free; fiter != NULL; fiter = fiter->next)
 		{
-		    iter->i_size += iternext->i_size;
-		    RemoveNode(iternext);
-		    for (fiter = i_free; fiter != NULL; fiter = fiter->next)
+		    if (fiter->node() == iternext)
 		    {
-			if (fiter->node() == iternext)
-			{
-			    RemoveNodeFree(fiter);
-			    i_cluster.free(fiter);
-			    break;
-			}
+			RemoveNodeFree(fiter);
+			i_cluster.free(fiter);
+			break;
 		    }
-		    i_cluster.free(iternext);
 		}
+printf("iter = %p, iternext = %p, iter->size = %d, iternext->size = %d\n",
+	iter, iternext, iter->i_size, iternext->i_size); fflush(stdout);
+		i_cluster.free(iternext);
 	    }
-	    if (iter->prev != NULL)
+	    if (iter->prev != NULL && iter->prev->avail())
 	    {
-		// We're not the first, see if we can do it again ...
-		if (iter->prev->avail())
+printf("Joining to prev\n"); fflush(stdout);
+		iternext = iter;
+		iter = iter->prev;
+printf("iter = %p, iternext = %p, iter->size = %d, iternext->size = %d\n",
+	iter, iternext, iter->i_size, iternext->i_size); fflush(stdout);
+		iter->i_size += iternext->i_size;
+		RemoveNode(iternext);
+		/*
+		 * Useless processing, we KNOW we're avail ...
+		for (fiter = i_free; fiter != NULL; fiter = fiter->next)
 		{
-		    iter->prev->i_size += iter->i_size;
-		    iternext = iter;
-		    iter = iter->prev;
-		    RemoveNode(iternext);
-		    for (fiter = i_free; fiter != NULL; fiter = fiter->next)
+		    if (fiter->node() == iternext)
 		    {
-			if (fiter->node() == iternext)
-			{
-			    RemoveNodeFree(fiter);
-			    i_cluster.free(fiter);
-			    break;
-			}
+			RemoveNodeFree(fiter);
+			i_cluster.free(fiter);
+			break;
 		    }
-		    i_cluster.free(iternext);
-		}
+		} */
+printf("iter = %p, iternext = %p, iter->size = %d, iternext->size = %d\n",
+	iter, iternext, iter->i_size, iternext->i_size); fflush(stdout);
+		i_cluster.free(iternext);
 	    }
 
 	    // If we are now the LAST node, we're free, so
 	    // just free up this node and return it to this
 	    // chunk's 'free' pool.
+printf("iter = %p, iter->size = %d\n", iter, iter->i_size); fflush(stdout);
 	    if (iter->next == NULL)
 	    {
+printf("Last node, freeing up space\n"); fflush(stdout);
+printf("iter = %p, iter->size = %d\n, i_avail = %d", iter,
+	iter->i_size, i_avail); fflush(stdout);
 		i_avail += iter->i_size;
 		RemoveNode(iter);
 		for (fiter = i_free; fiter != NULL; fiter = fiter->next)
@@ -416,24 +525,54 @@ public:
 			break;
 		    }
 		}
+printf("iter = %p, iter->size = %d\n, i_avail = %d", iter,
+	iter->i_size, i_avail); fflush(stdout);
 		i_cluster.free(iter);
 	    }
 	    else
 	    {
+printf("Creating free node\n"); fflush(stdout);
 		iter->i_avail = true;
-		MemoryNodeFree *tmp = (MemoryNodeFree *) i_cluster.malloc(sizeof(MemoryNodeFree));
-		tmp->init(iter);
-		if (i_free != NULL)
+		MemoryNodeFree *ftmp = NULL, *fiternext = NULL;
+		ftmp = (MemoryNodeFree *) i_cluster.malloc(sizeof(MemoryNodeFree));
+printf("Created ftmp = %p\n", ftmp); fflush(stdout);
+		ftmp->init(iter);
+printf("ftmp->node() = %p, ftmp->size() = %d\n", ftmp->node(),
+	ftmp->size()); fflush(stdout);
+		for (fiter=i_free; fiter != NULL; fiter = fiter->next)
 		{
-		    LinkPrevNodeFree(i_free, tmp);
+printf("Checking if %p (%d) > %d\n", fiter, fiter->size(), iter->size());
+	fflush(stdout);
+		    if (fiter->size() > iter->size())
+		    {
+printf("Linked next node\n"); fflush(stdout);
+			LinkPrevNodeFree(fiter, ftmp);
+			break;
+		    }
+		    fiternext = fiter;
+		}
+		if (fiter == NULL && fiternext != NULL)
+		{
+printf("fiter == NULL && fiternext = %p\n", fiternext); fflush(stdout);
+		    LinkNextNodeFree(fiternext, ftmp);
 		}
 		else
-		    tmp->next = NULL;
+		{
+printf("New node is free list\n"); fflush(stdout);
+		    i_free = ftmp;
+		    ftmp->next = NULL;
+		    ftmp->prev = NULL;
+		}
+printf("iter = %p, iter->size = %d\n", iter, iter->i_size); fflush(stdout);
+printf("ftmp = %p, ftmp->size = %d\n", ftmp, ftmp->size()); fflush(stdout);
 	    }
 	}
+printf("~dealloc()\n"); fflush(stdout);
     }
     bool have(size_t size)
     {
+printf("have(%d) : i_memory = %p, i_size = %d\n", size,
+	i_memory, i_size); fflush(stdout);
 	if (size <= i_avail)
 	    return true;
 
@@ -447,6 +586,8 @@ public:
     }
     bool ismine(void *loc)
     {
+printf("ismine(%p) : i_memory = %p, i_size = %d\n", loc,
+	i_memory, i_size); fflush(stdout);
 	return (loc >= i_memory && loc < i_memory + i_size);
     }
     size_t avail() { return i_avail; }
@@ -455,10 +596,93 @@ public:
 
 template <class ACE_LOCK> class MemoryManager
 {
-    MemoryBlock *i_blocks;
+    MemoryBlock *i_blocks, *i_end;
     size_t i_blocksize;
     char lockname[15];
     ACE_LOCK *lock;
+
+    bool LinkNextBlock(MemoryBlock *block, MemoryBlock *nextblock)
+    {
+printf("LinkNextBlock(%p, %p)\n", block, nextblock); fflush(stdout);
+	if (block == NULL || nextblock == NULL)
+	    return false;
+printf("%p <- %p %p -> %p\n",
+		block->prev, ((block->prev != NULL) ? block->prev->next : NULL),
+		((block->next != NULL) ? block->next->prev : NULL), block->next); fflush(stdout);
+	nextblock->prev = block;
+	nextblock->next = block->next;
+	if (block->next != NULL)
+	    block->next->prev = nextblock;
+	else
+	{
+	    i_end = nextblock;
+	    i_end->next = NULL;
+	}
+	block->next = nextblock;
+printf("%p <- %p %p -> %p %p -> %p\n",
+		block->prev, ((block->prev != NULL) ? block->prev->next : NULL),
+		((block->next != NULL) ? block->next->prev : NULL), block->next,
+		((block->next->next != NULL) ? block->next->next->prev : NULL),
+		block->next->next); fflush(stdout);
+printf("i_blocks = %p, i_end = %p\n", i_blocks, i_end); fflush(stdout);
+	return true;
+    }
+    bool LinkPrevBlock(MemoryBlock *block, MemoryBlock *prevblock)
+    {
+printf("LinkPrevBlock(%p, %p)\n", block, prevblock); fflush(stdout);
+	if (block == NULL || prevblock == NULL)
+	    return false;
+printf("%p <- %p %p -> %p\n",
+		block->prev, ((block->prev != NULL) ? block->prev->next : NULL),
+		((block->next != NULL) ? block->next->prev : NULL), block->next); fflush(stdout);
+	prevblock->next = block;
+	prevblock->prev = block->prev;
+	if (block->prev != NULL)
+	    block->prev->next = prevblock;
+	else
+	{
+	    i_blocks = prevblock;
+	    i_blocks->prev = NULL;
+	}
+	block->prev = prevblock;
+printf("%p <- %p %p <- %p %p -> %p\n",
+		block->prev->prev, ((block->prev->prev != NULL) ?
+			block->prev->prev->next : NULL),
+		block->prev, ((block->prev != NULL) ? block->prev->next : NULL),
+		((block->next != NULL) ? block->next->prev : NULL), block->next); fflush(stdout);
+printf("i_blocks = %p, i_end = %p\n", i_blocks, i_end); fflush(stdout);
+	return true;
+    }
+    bool RemoveBlock(MemoryBlock *block)
+    {
+printf("RemoveBlock(%p)\n", block); fflush(stdout);
+	if (block == NULL)
+	    return false;
+printf("%p <- %p %p -> %p\n",
+		block->prev, ((block->prev != NULL) ? block->prev->next : NULL),
+		((block->next != NULL) ? block->next->prev : NULL), block->next); fflush(stdout);
+	if (block->prev != NULL)
+	    block->prev->next = block->next;
+	else
+	{
+	    i_blocks = block->next;
+	    if (i_blocks != NULL)
+		i_blocks->prev = NULL;
+	}
+	if (block->next != NULL)
+	    block->next->prev = block->prev;
+	else
+	{
+	    i_end = block->prev;
+	    if (i_end != NULL)
+		i_end->next = NULL;
+	}
+printf("%p <- %p %p -> %p\n",
+		block->prev, ((block->prev != NULL) ? block->prev->next : NULL),
+		((block->next != NULL) ? block->next->prev : NULL), block->next); fflush(stdout);
+printf("i_blocks = %p, i_end = %p\n", i_blocks, i_end); fflush(stdout);
+	return true;
+    }
 
 public:
     MemoryManager()
@@ -495,6 +719,7 @@ public:
 	    
 	    ACE_NEW(i_blocks, MemoryBlock(i_blocksize));
 	    i_blocks->init();
+	    i_end = i_blocks;
 	}
     }
 
@@ -511,12 +736,8 @@ public:
 	ACE_GUARD_RETURN(ACE_LOCK, lock_mon, *lock, 0);
 	if (size > i_blocksize)
 	{
-	    MemoryBlock *tmp;
-	    ACE_NEW_RETURN(tmp, MemoryBlock(size), 0);
-	    for (iter=i_blocks; iter->next != NULL; iter = iter->next) ;
-	    iter->next = tmp;
-	    iter->next->prev = iter;
-	    iter = iter->next;
+	    ACE_NEW_RETURN(iter, MemoryBlock(size), 0);
+	    LinkNextBlock(i_end, iter);
 	    iter->init();
 	}
 	else
@@ -528,12 +749,8 @@ public:
 	    }
 	    if (iter == NULL)
 	    {
-		MemoryBlock *tmp;
-		ACE_NEW_RETURN(tmp, MemoryBlock(i_blocksize), 0);
-		for (iter=i_blocks; iter->next != NULL; iter = iter->next) ;
-		iter->next = tmp;
-		iter->next->prev = iter;
-		iter = iter->next;
+		ACE_NEW_RETURN(iter, MemoryBlock(i_blocksize), 0);
+		LinkNextBlock(i_end, iter);
 		iter->init();
 	    }
 	}
@@ -559,14 +776,9 @@ public:
 	    if (iter->avail() >= iter->size())
 	    {
 		// NOT the only entry ...
-		if (!(iter->prev == NULL && iter->next == NULL))
+		if (i_blocks != i_end)
 		{
-		    if (iter->prev != NULL)
-			iter->prev->next = iter->next;
-		    else
-			i_blocks = iter->next;
-		    if (iter->next != NULL)
-			iter->next->prev = iter->prev;
+		    RemoveBlock(iter);
 		    delete iter;
 		}
 	    }

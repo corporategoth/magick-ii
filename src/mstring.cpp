@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2000/11/28 10:15:05  prez
+** Trying to figure out why the free list doesnt work in mmemory.
+** ALOT OF PRINTF'S - YOU'VE BEEN WARNED, OUTPUT STDOUT TO A FILE!
+**
 ** Revision 1.78  2000/11/09 11:03:06  prez
 ** OOps, forgot some printf's :)
 **
@@ -168,6 +172,7 @@ void mstring::copy(const char *in, size_t length)
 	    NOMEM;
 	memset(i_str, 0, i_res);
 	memcpy(i_str, in, i_len);
+printf("(1) Created String: %s\n", i_str); fflush(stdout);
     }
     else
     {

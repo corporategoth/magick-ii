@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index28492.info.2.
+/tmp/sgmltmp.index1272.info.2.
 
    \input texinfo
 
@@ -156,7 +156,7 @@ Magick II
         * Database saves in XML and supports compression and
           encryption. Is also no longer endian specific.
 
-        * Works on *NIX and all Win32 platforms.
+        * Works on most *NIX and all Win32 platforms.
 
         * Fully multi-lingual (log files, help, etc).
 
@@ -194,6 +194,17 @@ Magick II
           cancellation of memos, or DCC of file attachments.
 
         * 'Read' and 'Unread' status on memos / news articles.
+
+        * Supports multiple connection entries (aka. C/N's).
+
+        * Can bind to a single IP address.
+
+        * Supports multiple nicknames for same service.
+
+        * Limits placed on time between registrations and amount of
+          channels a user may own.
+
+        * Clone prot will auto-akill for too many triggers.
 
         * MANY, MANY, MANY more enhancements.
 
@@ -1605,36 +1616,36 @@ Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 Tag Table:
-Node: Top110
-Node: Introduction472
-Node: Dedication1519
-Node: Authors2135
-Node: Changes4384
-Node: Magick II4547
-Node: Magick I6205
-Node: Services 3-09982
-Node: Pre-Services 3-014373
-Node: Installation14646
-Node: How to obtain Magick15060
-Node: Requirements15447
-Node: ACE Installation16293
-Node: Basic Installation19449
-Node: Compilers and Options21999
-Node: Compiling For Multiple Architectures22646
-Node: Installation Names23637
-Node: Optional Features24820
-Node: Specifying the System Type25590
-Node: Sharing Defaults26613
-Node: Operation Controls27259
-Node: Security Tips31828
-Node: Usage33841
-Node: Support files34013
-Node: General Usage38612
-Node: Functionality44380
-Node: Questions and Answers48187
-Node: My IRCD isn't supported what can I do?48429
-Node: I like these services and want to pay the author!49195
-Node: License49965
-Node: Copyright65457
+Node: Top109
+Node: Introduction471
+Node: Dedication1518
+Node: Authors2134
+Node: Changes4383
+Node: Magick II4546
+Node: Magick I6537
+Node: Services 3-010314
+Node: Pre-Services 3-014705
+Node: Installation14978
+Node: How to obtain Magick15392
+Node: Requirements15779
+Node: ACE Installation16625
+Node: Basic Installation19781
+Node: Compilers and Options22331
+Node: Compiling For Multiple Architectures22978
+Node: Installation Names23969
+Node: Optional Features25152
+Node: Specifying the System Type25922
+Node: Sharing Defaults26945
+Node: Operation Controls27591
+Node: Security Tips32160
+Node: Usage34173
+Node: Support files34345
+Node: General Usage38944
+Node: Functionality44712
+Node: Questions and Answers48519
+Node: My IRCD isn't supported what can I do?48761
+Node: I like these services and want to pay the author!49527
+Node: License50297
+Node: Copyright65789
 
 End Tag Table

@@ -124,7 +124,7 @@ Total re-write in C++, so version .0 is merely a 'new feature' list.
 		<item>Fully multi-threaded (can do >1 thing at once)
 		<item>Database saves in XML and supports compression and
 		    encryption. Is also no longer endian specific.
-		<item>Works on *NIX and all Win32 platforms.
+		<item>Works on most *NIX and all Win32 platforms.
 		<item>Fully multi-lingual (log files, help, etc).
 		<item>Supports DCC file transfers and a filesystem (memo
 		    attachments, nickserv pictures or public FS).
@@ -146,8 +146,13 @@ Total re-write in C++, so version .0 is merely a 'new feature' list.
 		<item>Time delay on memo sending to allow continuance or
 		    cancellation of memos, or DCC of file attachments.
 		<item>'Read' and 'Unread' status on memos / news articles.
+		<item>Supports multiple connection entries (aka. C/N's).
+		<item>Can bind to a single IP address.
+		<item>Supports multiple nicknames for same service.
+		<item>Limits placed on time between registrations and amount
+		    of channels a user may own.
+		<item>Clone prot will auto-akill for too many triggers.
 		<item>MANY, MANY, MANY more enhancements.
-
 		</itemize>
 </itemize>
 
