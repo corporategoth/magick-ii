@@ -447,6 +447,33 @@ void OperServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "TRACE", Parent->commserv.SADMIN_Name(), OperServ::do_Trace);
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*MODE*", Parent->commserv.OPER_Name(), OperServ::do_Mode);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "KICK*", Parent->commserv.OPER_Name(), OperServ::do_Kick);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "Q*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_Qline);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNQ*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_UnQline);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "NO*OP*", Parent->commserv.ADMIN_Name(), OperServ::do_NOOP);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "KILL*", Parent->commserv.SOP_Name(), OperServ::do_Kill);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*PING*", Parent->commserv.OPER_Name(), OperServ::do_Ping);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UPD*", Parent->commserv.SOP_Name(), OperServ::do_Update);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name(), OperServ::do_Shutdown);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "RELOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Reload);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "JUPE*", Parent->commserv.ADMIN_Name(), OperServ::do_Jupe);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ON", Parent->commserv.SADMIN_Name(), OperServ::do_On);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "OFF", Parent->commserv.SADMIN_Name(), OperServ::do_Off);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* CONF*", Parent->commserv.OPER_Name(), OperServ::do_settings_Config);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* NICK*", Parent->commserv.OPER_Name(), OperServ::do_settings_Nick);
@@ -765,6 +792,197 @@ void OperServ::do_Trace(mstring mynick, mstring source, mstring params)
     }
     ::send(mynick, source, line1);
     ::send(mynick, source, line2);
+}
+
+
+void OperServ::do_Mode(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Mode", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring target = params.ExtractWord(2, " ");
+    mstring mode = params.After(" ", 2);
+
+    if (IsChan(target))
+    {
+	if (Parent->chanserv.IsLive(target))
+	{
+	    Parent->server.MODE(mynick, target, mode);
+	    announce(mynick, "MODE performed on channel " +
+					    target + " (" + mode +
+					    ") requested by " + source);
+	}
+	else
+	{
+	    ::send(mynick, source, "Channel " + target + " is not in use.");
+	}
+    }
+    else
+    {
+	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	    Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source))
+	{
+	    if (Parent->nickserv.IsLive(target))
+	    {
+		Parent->server.SVSMODE(mynick, target, mode);
+		announce(mynick, "MODE performed on nickname " +
+					    target + " (" + mode +
+					    ") requested by " + source);
+		::send(mynick, source, "MODE sent for nickname " + target);
+	    }
+	    else
+	    {
+		::send(mynick, source, "Nickname " + target + " is not online.");
+	    }
+	}
+	else
+	{
+	    ::send(mynick, source, "Access denied.");
+	}
+    }
+}
+
+
+void OperServ::do_Kick(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Kick", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring target  = params.ExtractWord(2, " ");
+    mstring channel = params.ExtractWord(3, " ");
+    mstring reason  = "Requested by " + source;
+    if (params.WordCount(" ") > 3)
+    {
+	reason = params.After(" ", 3) + " (" + source + ")";
+    }
+
+    if (Parent->chanserv.IsLive(channel))
+    {
+	if (Parent->chanserv.live[channel.LowerCase()].IsIn(target))
+	{
+	    Parent->server.KICK(mynick, target, channel, reason);
+	    announce(mynick, "KICK performed on channel " +
+					    channel + " for " + target +
+					    " requested by " + source);
+	}
+	else
+	{
+	    ::send(mynick, source, "Nickname " + target +
+				" is not in channel " + channel + ".");
+	}
+    }
+    else
+    {
+	::send(mynick, source, "Channel " + channel + " is not in use.");
+    }
+}
+
+
+void OperServ::do_Qline(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Qline", (mynick, source, params));
+}
+
+
+void OperServ::do_UnQline(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_UnQline", (mynick, source, params));
+}
+
+
+void OperServ::do_NOOP(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_NOOP", (mynick, source, params));
+}
+
+
+void OperServ::do_Kill(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Kill", (mynick, source, params));
+
+    mstring message = params.Before(" ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+    mstring target = params.ExtractWord(2, " ");
+    mstring reason = params.After(" ", 2);
+
+    if (Parent->nickserv.IsLive(target))
+    {
+	Parent->server.SVSKILL(mynick, target, reason);
+	announce(mynick, "SILENT KILL performed on nickname " +
+					    target + " (" + reason +
+					    ") requested by " + source);
+    }
+    else
+    {
+	::send(mynick, source, "Nickname " + target + " is not online.");
+    }
+}
+
+
+void OperServ::do_Ping(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Ping", (mynick, source, params));
+    Parent->events.ForcePing();
+    ::send(mynick, source, "Server PING's have been sent out.");
+}
+
+
+void OperServ::do_Update(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Update", (mynick, source, params));
+    Parent->events.ForceSave();
+    ::send(mynick, source, "Updating Databases.");
+}
+
+
+void OperServ::do_Shutdown(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Shutdown", (mynick, source, params));
+    ::send(mynick, source, "Shutting down ...");
+    Parent->shutdown();
+}
+
+
+void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Reload", (mynick, source, params));
+    ::send(mynick, source, "Configuration reloaded.");
+    Parent->get_config_values();
+}
+
+
+void OperServ::do_Jupe(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Jupe", (mynick, source, params));
+}
+
+
+void OperServ::do_On(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_On", (mynick, source, params));
+}
+
+
+void OperServ::do_Off(mstring mynick, mstring source, mstring params)
+{
+    FT("OperServ::do_Off", (mynick, source, params));
 }
 
 

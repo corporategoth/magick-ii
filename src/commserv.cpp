@@ -547,7 +547,9 @@ void CommServ::do_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    Parent->commserv.list[committee].insert(member, source);
+    Committee *comm = &Parent->commserv.list[committee];
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
+    comm->insert(member, source);
     ::send(mynick, source, "Nickname " + member + " has been added to " +
 							    committee + ".");
 }
@@ -600,14 +602,17 @@ void CommServ::do_Del(mstring mynick, mstring source, mstring params)
     }
 
     Committee *comm = &Parent->commserv.list[committee];
-    for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
+    if (comm->find(member))
     {
-	if (comm->member->Entry().LowerCase() == member.LowerCase())
-	{
-	    Parent->commserv.list[committee].erase();
-	    ::send(mynick, source, "Nickname " + member +
+	::send(mynick, source, "Nickname " + comm->member->Entry() +
 			    " has been removed from " + committee + ".");
-	}
+	comm->erase();
+    }
+    else
+    {
+	::send(mynick, source, "Nickname " + member +
+				"not found on committee" + committee + ".");
     }
 }
 
@@ -698,6 +703,7 @@ void CommServ::do_Memo2(mstring source, mstring committee, mstring text)
 	}
     }
 
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
     for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
     {
 	if (Parent->nickserv.IsStored(comm->member->Entry()))
@@ -792,6 +798,7 @@ int CommServ::do_List2(mstring mynick, mstring source, mstring committee, bool f
 	::send(mynick, source, output);
     }
 
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "member"));
     for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
     {
 	output = "";
@@ -910,9 +917,11 @@ void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    Parent->commserv.list[committee].MSG_insert(msgnum, source);
+    Committee *comm = &Parent->commserv.list[committee];
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "message"));
+    comm->MSG_insert(msgnum, source);
     mstring output = "";
-    output << "Entry #" << Parent->commserv.list[committee].MSG_size() <<
+    output << "Entry #" << comm->MSG_size() <<
 	    " has been added to " << committee << " logon messages.";
     ::send(mynick, source, output);
 }
@@ -951,24 +960,18 @@ void CommServ::do_logon_Del(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (atoi(msgnum.c_str()) > Parent->commserv.list[committee].MSG_size())
-    {
-	::send(mynick, source, "There are not that many logon messages for "
-			+ committee + ".");
-	return;
-    }
-
-    int i;
     Committee *comm = &Parent->commserv.list[committee];
-    for (i=1, comm->message = comm->MSG_begin();
-	comm->message != comm->MSG_end(); comm->message++, i++)
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "message"));
+    if (comm->find(atoi(msgnum.c_str())))
     {
-	if (i==atoi(msgnum.c_str()))
-	{
-	    Parent->commserv.list[committee].MSG_erase();
-	    ::send(mynick, source, "Message #" + msgnum +
+	::send(mynick, source, "Message #" + msgnum +
 		" has been removed from " + committee + " logon messges.");
-	}
+	comm->MSG_erase();
+    }
+    else
+    {
+	::send(mynick, source, "Message #" + msgnum + " not found for " +
+							committee + ".");
     }
 }
 
@@ -1011,6 +1014,7 @@ void CommServ::do_logon_List(mstring mynick, mstring source, mstring params)
     mstring output;
     Committee *comm = &Parent->commserv.list[committee];
     ::send(mynick, source, "Messages for " + comm->Description() + ":");
+    MLOCK(("CommServ", "list", comm->Name().LowerCase(), "message"));
     for (i=1, comm->message = comm->MSG_begin();
 	comm->message != comm->MSG_end(); comm->message++, i++)
     {

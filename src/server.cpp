@@ -18,6 +18,18 @@
 #include "lockable.h"
 #include "magick.h"
 
+Server::Server(mstring name, mstring description)
+{
+    FT("Server::Server", (name, description));
+    i_Name = name.LowerCase();
+    i_Uplink = Parent->startup.Server_Name().LowerCase();
+    i_Hops = 0;
+    i_Description = description;
+    i_Ping = i_Lag = 0;
+    i_Jupe = true;
+    Parent->server.OurUplink(i_Name);
+}
+
 Server::Server(mstring name, int hops, mstring description)
 {
     FT("Server::Server", (name, hops, description));
@@ -26,6 +38,7 @@ Server::Server(mstring name, int hops, mstring description)
     i_Hops = hops;
     i_Description = description;
     i_Ping = i_Lag = 0;
+    i_Jupe = false;
     Parent->server.OurUplink(i_Name);
 }
 
@@ -37,6 +50,7 @@ Server::Server(mstring name, mstring uplink, int hops, mstring description)
     i_Hops = hops;
     i_Description = description;
     i_Ping = i_Lag = 0;
+    i_Jupe = false;
 }
 
 void Server::operator=(const Server &in)
@@ -48,6 +62,7 @@ void Server::operator=(const Server &in)
     i_Description = in.i_Description;
     i_Ping = in.i_Ping;
     i_Lag = in.i_Lag;
+    i_Jupe = in.i_Jupe;
 }
 
 void Server::Ping()
@@ -578,20 +593,44 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
 
     if (!Parent->nickserv.IsLive(mynick))
     {
-	wxLogWarning("MODE command requested by non-existant user %s", nick.c_str());
+	wxLogWarning("SVSMODE command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	wxLogWarning("MODE command requested by non-service %s", mynick.c_str());
+	wxLogWarning("SVSMODE command requested by non-service %s", mynick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("MODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	wxLogWarning("SVSMODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
     }
     else
     {
 	Parent->nickserv.live[nick.LowerCase()].Mode(mode);
 	raw(":" + mynick + " SVSMODE " + nick + " " + mode);
+    }
+}
+
+
+void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
+{
+    FT("NetworkServ::SVSKILL", (mynick, nick, reason));
+
+    if (!Parent->nickserv.IsLive(mynick))
+    {
+	wxLogWarning("SVSKILL command requested by non-existant user %s", nick.c_str());
+    }
+    else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
+    {
+	wxLogWarning("SVSKILL command requested by non-service %s", mynick.c_str());
+    }
+    else if (!Parent->nickserv.IsLive(nick))
+    {
+	wxLogWarning("SVSKILL command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+    }
+    else
+    {
+	Parent->nickserv.live[nick.LowerCase()].Quit(reason);
+	raw(":" + mynick + " SVSKILL " + nick + " :" + reason);
     }
 }
 
@@ -602,19 +641,19 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
 
     if (!Parent->nickserv.IsLive(mynick))
     {
-	wxLogWarning("MODE command requested by non-existant user %s", nick.c_str());
+	wxLogWarning("SVSNICK command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	wxLogWarning("MODE command requested by non-service %s", mynick.c_str());
+	wxLogWarning("SVSNICK command requested by non-service %s", mynick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("MODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	wxLogWarning("SVSNICK command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
     }
     else if (Parent->nickserv.IsLive(newnick))
     {
-	wxLogWarning("MODE command requested by %s to non-existant user %s", mynick.c_str(), newnick.c_str());
+	wxLogWarning("SVSNICK command requested by %s to non-existant user %s", mynick.c_str(), newnick.c_str());
     }
     else
     {

@@ -27,9 +27,11 @@ class Server
     mstring i_Description;
     long i_Ping;
     long i_Lag;
+    bool i_Jupe;
 public:
     Server() {}
     Server(const Server &in) { *this = in; }
+    Server(mstring name, mstring description);
     Server(mstring name, int hops, mstring description);
     Server(mstring name, mstring uplink, int hops, mstring description);
     void operator=(const Server &in);
@@ -47,6 +49,7 @@ public:
     void Ping();
     void Pong();
     float Lag()			{ return i_Lag / 1000.0; }
+    bool Jupe()			{ return i_Jupe; }
     unsigned int Users();
     unsigned int Opers();
 
@@ -101,6 +104,7 @@ public:
     void QUIT(mstring nick, mstring reason = "");
     void SVSMODE(mstring mynick, mstring nick, mstring mode);
     void SVSNICK(mstring mynick, mstring nick, mstring newnick);
+    void SVSKILL(mstring mynick, mstring nick, mstring reason);
     void TOPIC(mstring nick, mstring channel, mstring topic = "");
     void WALLOPS(mstring nick, mstring message);    
 

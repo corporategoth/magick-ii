@@ -109,7 +109,7 @@ void ServMsg::do_BreakDown(mstring mynick, mstring source, mstring params)
 	    ((float) users / (float) Parent->nickserv.live.size()) * 100.0);
     ::send(mynick, source, out);
 
-    do_BreakDown2(mynick, source, "", Parent->startup.Server_Name());
+    do_BreakDown2(mynick, source, "", "");
 }
 
 void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, mstring server)
@@ -120,10 +120,15 @@ void ServMsg::do_BreakDown2(mstring mynick, mstring source, mstring previndent, 
     unsigned int users, opers;
     float lag;
 
-    if (server.LowerCase() == Parent->startup.Server_Name().LowerCase())
+    if (server == "")
     {
-	if (Parent->server.OurUplink())
-	    downlinks.push_back(Parent->server.OurUplink());
+	map<mstring, Server>::iterator iter;
+	for (iter = Parent->server.ServerList.begin();
+		iter != Parent->server.ServerList.end(); iter++)
+	{
+	    if (iter->second.Uplink() == "" && iter->second.Name() != "")
+		downlinks.push_back(iter->first);
+	}
     }
     else
     {

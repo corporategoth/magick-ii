@@ -142,6 +142,19 @@ public:
 
     static void do_Help(mstring mynick, mstring source, mstring params);
     static void do_Trace(mstring mynick, mstring source, mstring params);
+    static void do_Mode(mstring mynick, mstring source, mstring params);
+    static void do_Kick(mstring mynick, mstring source, mstring params);
+    static void do_Qline(mstring mynick, mstring source, mstring params);
+    static void do_UnQline(mstring mynick, mstring source, mstring params);
+    static void do_NOOP(mstring mynick, mstring source, mstring params);
+    static void do_Kill(mstring mynick, mstring source, mstring params);
+    static void do_Ping(mstring mynick, mstring source, mstring params);
+    static void do_Update(mstring mynick, mstring source, mstring params);
+    static void do_Shutdown(mstring mynick, mstring source, mstring params);
+    static void do_Reload(mstring mynick, mstring source, mstring params);
+    static void do_Jupe(mstring mynick, mstring source, mstring params);
+    static void do_On(mstring mynick, mstring source, mstring params);
+    static void do_Off(mstring mynick, mstring source, mstring params);
     static void do_settings_Config(mstring mynick, mstring source, mstring params);
     static void do_settings_Nick(mstring mynick, mstring source, mstring params);
     static void do_settings_Channel(mstring mynick, mstring source, mstring params);

@@ -368,6 +368,13 @@ void send(const mstring& source, const mstring &dest, const mstring &message)
     }
 }
 
+void announce(const mstring& source, const mstring &message)
+{
+    FT("announce", (source, message));
+
+    // Put logic in here to choose GLOBOP or WALLOP
+    Parent->server.GLOBOPS(source, message);
+}
 
 void mBase::shutdown()
 {
