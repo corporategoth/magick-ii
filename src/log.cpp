@@ -120,42 +120,7 @@ void wxLogVerbose(const char *szFormat, ...)
   }
 }
 
-// debug functions
-#ifdef DEBUG
-#define IMPLEMENT_LOG_DEBUG_FUNCTION(level)                       \
-  void wxLog##level(const char *szFormat, ...)                    \
-  {                                                               \
-    if ( wxLog::GetActiveTarget() != NULL ) {                     \
-      va_list argptr;                                             \
-      va_start(argptr, szFormat);                                 \
-      vsprintf(s_szBuf, szFormat, argptr);                        \
-      va_end(argptr);                                             \
-                                                                  \
-      wxLog::OnLog(wxLOG_##level, s_szBuf);                       \
-    }                                                             \
-  }
-
-  void wxLogTrace(wxTraceMask mask, const char *szFormat, ...)
-  {
-    wxLog *pLog = wxLog::GetActiveTarget();
-
-    // we check that all of mask bits are set in the current mask, so
-    // that wxLogTrace(wxTraceRefCount | wxTraceOle) will only do something
-    // if both bits are set.
-    if ( pLog != NULL && ((pLog->GetTraceMask() & mask) == mask) ) 
-	{
-      va_list argptr;
-      va_start(argptr, szFormat);
-      vsprintf(s_szBuf, szFormat, argptr);
-      va_end(argptr);
-
-      wxLog::OnLog(wxLOG_Trace, s_szBuf);
-    }
-  }
-
-#else // release
   #define IMPLEMENT_LOG_DEBUG_FUNCTION(level)
-#endif
 
 IMPLEMENT_LOG_DEBUG_FUNCTION(Debug)
 IMPLEMENT_LOG_DEBUG_FUNCTION(Trace)
@@ -292,15 +257,6 @@ void wxLog::DoLog(wxLogLevel level, const char *szString)
 
     case wxLOG_Trace:
     case wxLOG_Debug:
-      #ifdef DEBUG
-              DoLogString(str << (level == wxLOG_Trace ? "Trace" : "Debug")
-                              << ": " << szString);
-      // JACS: we don't really want to prefix with 'Debug'. It's just extra
-      // verbiage.
-      // Ungod: yes we do, it's extra clarification
-      //        DoLogString(szString);
-      #endif
-
       break;
 
     default:
@@ -452,56 +408,3 @@ const char *wxSysErrorMsg(unsigned long nErrCode)
     return strerror(nErrCode);
   #endif  // Win/Unix
 }
-
-// ----------------------------------------------------------------------------
-// debug helper
-// ----------------------------------------------------------------------------
-
-#ifdef  DEBUG
-
-void Trap()
-{
-#ifdef WIN32
-    DebugBreak();
-#else // Unix
-    raise(SIGTRAP);
-#endif // Win/Unix
-}
-
-// this function is called when an assert fails
-void wxOnAssert(const char *szFile, int nLine, const char *szMsg)
-{
-  // this variable can be set to true to suppress "assert failure" messages
-  static bool s_bNoAsserts = false;
-  static bool s_bInAssert = false;
-
-  if ( s_bInAssert ) {
-    // He-e-e-e-elp!! we're trapped in endless loop
-    Trap();
-
-    return;
-  }
-
-  s_bInAssert = true;
-
-  char szBuf[LOG_BUFFER_SIZE];
-  sprintf(szBuf, "Assert failed in file %s at line %d", szFile, nLine);
-  if ( szMsg != NULL ) {
-    strcat(szBuf, ": ");
-    strcat(szBuf, szMsg);
-  }
-  else {
-    strcat(szBuf, ".");
-  }
-
-  if ( !s_bNoAsserts ) {
-    // send it to the normal log destination
-    wxLogDebug(szBuf);
-
-      Trap();
-  }
-
-  s_bInAssert = false;
-}
-
-#endif  //DEBUG

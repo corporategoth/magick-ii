@@ -233,21 +233,10 @@ DECLARE_LOG_FUNCTION(SysError);
 // that don't set the errno (like registry APIs in Win32))
 DECLARE_LOG_FUNCTION2(SysError, long lErrCode);
 
-// debug functions do nothing in release mode
-#ifdef  DEBUG
-  DECLARE_LOG_FUNCTION(Debug);
-
-  // first king of LogTrace is uncoditional: it doesn't check the level,
-  // while the second one does nothing if all of level bits are not set
-  // in wxLog::GetActive()->GetTraceMask().
-  DECLARE_LOG_FUNCTION(Trace);
-  DECLARE_LOG_FUNCTION2(Trace, wxTraceMask mask);
-#else   //!debug
   // these functions do nothing
   inline void wxLogDebug(const char *, ...) { }
   inline void wxLogTrace(const char *, ...) { }
   inline void wxLogTrace(wxTraceMask, const char *, ...) { }
-#endif
 
 // are we in 'verbose' mode?
 // (note that it's often handy to change this var manually from the
@@ -268,39 +257,13 @@ extern const char* wxSysErrorMsg(unsigned long nErrCode = 0);
 // debug only logging functions: use them with API name and error code
 // ----------------------------------------------------------------------------
 
-#ifdef  DEBUG
-  #define wxLogApiError(api, rc)                                              \
-                    wxLogDebug("At %s(%d) '%s' failed with error %lx (%s).",  \
-                               __FILE__, __LINE__, api,                       \
-                               rc, wxSysErrorMsg(rc))
-  #define wxLogLastError(api) wxLogApiError(api, wxSysErrorCode())
-#else   //!debug
   inline void wxLogApiError(const char *, long) { }
   inline void wxLogLastError(const char *) { }
-#endif  //debug/!debug
 
-#ifdef  DEBUG
-  /**
-  this function may be redefined to do something non trivial and is called
-  whenever one of debugging macros fails (i.e. condition is false in an
-  assertion)
-  @param   szFile and nLine - file name and line number of the ASSERT
-           szMsg            - optional message explaining the reason
-  */
-  void wxOnAssert(const char *szFile, int nLine, const char *szMsg = (const char *)NULL);
-
-  /// generic assert macro
-  #define   wxASSERT(cond)   if ( !(cond) ) wxOnAssert(__FILE__, __LINE__)
-
-  /// assert with additional message explaining it's cause
-  #define   wxASSERT_MSG(x, m)  if ( !(x) ) wxOnAssert(__FILE__, __LINE__, m)
-
-#else
   // nothing to do in release modes (hopefully at this moment there are
   // no more bugs ;-)
   #define   wxASSERT(cond)
   #define   wxASSERT_MSG(x, m)
-#endif  //__WXDEBUG__
 
   /// special form of assert: always triggers it (in debug mode)
 #define   wxFAIL                 wxASSERT(false)

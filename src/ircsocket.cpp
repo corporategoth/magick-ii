@@ -13,6 +13,7 @@
 
 #include "ircsocket.h"
 #include "trace.h"
+#include <ace/Auto_Ptr.h>
 
 int IrcSvcHandler::open(void *in)
 {
