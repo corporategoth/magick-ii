@@ -26,44 +26,14 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/05/20 01:20:59  ungod
+** more meaty goodness in the quest for a better config engine.
+**
 ** Revision 1.2  2000/05/20 00:08:02  ungod
 ** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
 **
 ** Revision 1.1  2000/05/19 13:11:34  ungod
 ** initial checkin of the new config engine, class structure is in, but no code in it.
-**
-** Revision 1.13  2000/04/30 03:48:29  prez
-** Replaced all system calls with ACE_OS equivilants,
-** also removed any dependancy on ACE from sxp (xml)
-**
-** Revision 1.12  2000/03/28 16:20:58  prez
-** LOTS of RET() fixes, they should now be safe and not do double
-** calculations.  Also a few bug fixes from testing.
-**
-** Revision 1.11  2000/03/19 08:50:54  prez
-** More Borlandization -- Added WHAT project, and fixed a bunch
-** of minor warnings that appear in borland.
-**
-** Revision 1.10  2000/03/08 23:38:36  prez
-** Added LIVE to nickserv/chanserv, added help funcitonality to all other
-** services, and a bunch of other small changes (token name changes, etc)
-**
-** Revision 1.9  2000/02/27 03:58:39  prez
-** Fixed the WHAT program, also removed RegEx from Magick.
-**
-** Revision 1.8  2000/02/23 12:21:03  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
-**
-** Revision 1.7  2000/02/15 13:27:03  prez
-** *** empty log message ***
-**
-** Revision 1.6  2000/02/15 10:37:49  prez
-** Added standardized headers to ALL Magick source files, including
-** a #pragma ident, and history log.  ALL revisions of files from
-** now on should include what changes were made to the files involved.
 **
 **
 ** ========================================================== */
@@ -125,6 +95,15 @@ mConfigEngine::mConfigEngine(const mstring& FileName)
 
 bool mConfigEngine::LoadFile()
 {
+    if(i_FileName=="")
+        return false;
+    if(mFile::Exists(i_FileName))
+    {
+        vector<mstring> initialload;
+        vector<mstring> decommented;
+        initialload=mFile::UnDump(i_FileName);
+        decommented=DeComment(initialload);
+    }
 }
 
 bool mConfigEngine::SaveFile()
@@ -219,6 +198,10 @@ bool mConfigEngine::LoadFromArray(vector<mstring> configarray)
 }
 
 bool mConfigEngine::NodeExists(const mstring &NodeName)
+{
+}
+
+vector<mstring> &mConfigEngine::DeComment(const vector<mstring> in)
 {
 }
 

@@ -24,17 +24,14 @@ static const char *ident_config_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.3  2000/05/20 01:20:59  ungod
+** more meaty goodness in the quest for a better config engine.
+**
 ** Revision 1.2  2000/05/20 00:08:01  ungod
 ** getting ConfigEngine compiling and cleaning up SXP to stop circular includes of "datetime.h"
 **
 ** Revision 1.1  2000/05/19 13:11:34  ungod
 ** initial checkin of the new config engine, class structure is in, but no code in it.
-**
-** Revision 1.3  2000/02/23 12:21:01  prez
-** Fixed the Magick Help System (needed to add to ExtractWord).
-** Also replaced #pragma ident's with static const char *ident's
-** that will be picked up by what or version, and we can now
-** dump from a binary what versions of each file were used.
 **
 **
 ** ========================================================== */
@@ -68,6 +65,7 @@ class mConfigEngine
 private:
     ceNode RootNode;
     mstring i_FileName;
+    vector<mstring> &DeComment(const vector<mstring> in);
 public:
     mConfigEngine();
     mConfigEngine(const mstring& FileName);
