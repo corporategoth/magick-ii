@@ -100,7 +100,7 @@ dnl POSSIBLES: -Wunreachable-code -Wdisabled-optimization
 CPPWARN="-W -Wall  -Wimport -Wmissing-prototypes \
 	-Wpointer-arith -Wsign-compare -Wtraditional \
 	-Wstrict-prototypes -Wwrite-strings \
-	-Wformat-security"
+	-Wformat-security -Wno-deprecated"
 CWARN="-Wbad-function-cast -Wmissing-declarations -Wnested-externs"
 CXXWARN="-Woverloaded-virtual -Wsynth"
 JWARN=""
