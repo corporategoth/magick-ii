@@ -51,7 +51,54 @@ however all versions before 3.4 with the threads patch applied, or
 <P>You must compile each of the above products before attempting to
 build Magick.  Magick will look for them in the configure phase.
 <P>
-<H2><A NAME="ss2.3">2.3 Basic Installation</A>
+<H2><A NAME="ss2.3">2.3 ACE Installation</A>
+</H2>
+
+<P>
+<P>I've included this section now because people seem to have troubles
+installing the ACE library obtained above.  One special note for
+people wanting to install ACE.  Do NOT use the `configure' utility.
+This utility is still in its infancy for ACE, and tends not to work.
+<P>Instead, you should follow the instructions that are outlined in the
+ACE-INSTALL file, which is simply (from the ACE_wrappers directory):
+<P>
+<UL>
+<LI>export ACE_ROOT=$PWD</LI>
+<LI>cd ace</LI>
+<LI>ls config*     (find the one for your system)</LI>
+<LI>ln -s config-your-system.h config.h</LI>
+<LI>cd ..</LI>
+<LI>cd include/makeinclude</LI>
+<LI>ls platform*     (find the one for your system)</LI>
+<LI>ln -s platform_your_system.GNU platform_macros.GNU</LI>
+<LI>cd ../..</LI>
+<LI>make</LI>
+</UL>
+<P>Note on the above.  The 'export ACE_ROOT=' command may not work on
+your shell.  csh and tcsh users will have to se 'set ACE_ROOT=',
+and on some other weird shells, just 'ACE_ROOT='.  Try them until
+you get one that doesnt error.  Once you have one that doesnt have
+an error, just type 'echo $ACE_ROOT' to ensure it gives you your
+current directory, if not, keep trying.  I love unix standards :)
+<P>After ACE has been made, you have two options:
+<P>
+<UL>
+<LI>As root, you can copy *.so in the ace directory to /usr/local/lib
+and then copy *.h, *.i and *.cpp in the ace directory to
+/usr/local/include/ace, which you will have to create.  On linux
+systems you will have to type 'ldconfig' after this.  Dont forget
+to make the libs chmod 755, and the includes chmod 644.</LI>
+<LI>When you dont have root, use the --with-acelib and --with-aceinc
+options to Magick's configure script to tell it where ACE is.
+Please note however, you will have to type the following line
+before you will be able to execute Magick:</LI>
+</UL>
+<P>export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/ACE_wrappers/ace
+<P>Obviously the /path/to should be replaced with the full path leading
+up to the ACE_wrappers directory (eg. /home/myuser).  The same note
+above about 'export ACE_ROOT=' applies to the above export.
+<P>
+<H2><A NAME="ss2.4">2.4 Basic Installation</A>
 </H2>
 
 <P>
@@ -102,7 +149,7 @@ all sorts of other programs in order to regenerate files that came
 with the distribution.</LI>
 </UL>
 <P>
-<H2><A NAME="ss2.4">2.4 Compilers and Options</A>
+<H2><A NAME="ss2.5">2.5 Compilers and Options</A>
 </H2>
 
 <P>
@@ -115,7 +162,7 @@ CC=c89 CFLAGS=-O2 LIBS=-lposix ./configure
 <P>Or on systems that have the `env' program, you can do it like this:
 env CPPFLAGS=-I/usr/local/include LDFLAGS=-s ./configure
 <P>
-<H2><A NAME="ss2.5">2.5 Compiling For Multiple Architectures</A>
+<H2><A NAME="ss2.6">2.6 Compiling For Multiple Architectures</A>
 </H2>
 
 <P>
@@ -132,7 +179,7 @@ in the source code directory.  After you have installed the package for
 one architecture, use `make distclean' before reconfiguring for another
 architecture.
 <P>
-<H2><A NAME="ss2.6">2.6 Installation Names</A>
+<H2><A NAME="ss2.7">2.7 Installation Names</A>
 </H2>
 
 <P>
@@ -153,7 +200,7 @@ you can set and what kinds of files go in them.
 with an extra prefix or suffix on their names by giving `configure' the
 option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
 <P>
-<H2><A NAME="ss2.7">2.7 Optional Features</A>
+<H2><A NAME="ss2.8">2.8 Optional Features</A>
 </H2>
 
 <P>
@@ -168,7 +215,7 @@ find the X include and library files automatically, but if it doesn't,
 you can use the `configure' options `--x-includes=DIR' and
 `--x-libraries=DIR' to specify their locations.
 <P>
-<H2><A NAME="ss2.8">2.8 Specifying the System Type</A>
+<H2><A NAME="ss2.9">2.9 Specifying the System Type</A>
 </H2>
 
 <P>
@@ -187,7 +234,7 @@ use the `--target=TYPE' option to select the type of system they will
 produce code for and the `--build=TYPE' option to select the type of
 system on which you are compiling the package.
 <P>
-<H2><A NAME="ss2.9">2.9 Sharing Defaults</A>
+<H2><A NAME="ss2.10">2.10 Sharing Defaults</A>
 </H2>
 
 <P>
@@ -199,7 +246,7 @@ default values for variables like `CC', `cache_file', and `prefix'.
 `CONFIG_SITE' environment variable to the location of the site script.
 A warning: not all `configure' scripts look for a site script.
 <P>
-<H2><A NAME="ss2.10">2.10 Operation Controls</A>
+<H2><A NAME="ss2.11">2.11 Operation Controls</A>
 </H2>
 
 <P>
@@ -319,7 +366,7 @@ This is the maximum size of the key file, and the input key that
 you may type in.  This defaults to 1024, and you should not need more.
 <P>`configure' also accepts some other, not widely useful, options.
 <P>
-<H2><A NAME="ss2.11">2.11 Security Tips</A>
+<H2><A NAME="ss2.12">2.12 Security Tips</A>
 </H2>
 
 <P>

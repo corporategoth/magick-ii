@@ -25,6 +25,11 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.45  2000/08/02 20:08:56  prez
+** Minor code cleanups, added ACE installation instructions, updated the
+** suggestions file and stopped people doing a whole bunch of stuff to
+** forbidden nicknames.
+**
 ** Revision 1.44  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -134,6 +139,8 @@ class Protocol
      *     GLINE * -user@host
      * 4 = GLINE +user@host time :reason
      *     GLINE -user@host
+     * 5 = AKILL host user time killer now :reason
+     *     RAKILL host user
      */
     unsigned int i_Akill;
 
@@ -271,7 +278,7 @@ public:
     bool IsSquit(mstring server);
     void Jupe(mstring server, mstring reason);
 
-    void AKILL(mstring host, mstring reason = "", unsigned long time = 0);
+    void AKILL(mstring host, mstring reason = "", unsigned long time = 0, mstring killer = "");
     void ANONKILL(mstring nick, mstring dest, mstring reason);
     void AWAY(mstring nick, mstring reason = "");
     void GLOBOPS(mstring nick, mstring message);

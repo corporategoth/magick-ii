@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.92  2000/08/02 20:08:58  prez
+** Minor code cleanups, added ACE installation instructions, updated the
+** suggestions file and stopped people doing a whole bunch of stuff to
+** forbidden nicknames.
+**
 ** Revision 1.91  2000/07/29 21:58:54  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -2733,7 +2738,7 @@ void OperServ::do_akill_Add(mstring mynick, mstring source, mstring params)
 		host.c_str(), ToHumanTime(time).c_str(), reason.c_str());
     }}
 
-    Parent->server.AKILL(host, reason, time);
+    Parent->server.AKILL(host, reason, time, source);
     map<mstring,Nick_Live_t>::iterator nlive;
     for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
     {

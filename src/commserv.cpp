@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.66  2000/08/02 20:08:57  prez
+** Minor code cleanups, added ACE installation instructions, updated the
+** suggestions file and stopped people doing a whole bunch of stuff to
+** forbidden nicknames.
+**
 ** Revision 1.65  2000/07/21 00:18:49  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -999,6 +1004,13 @@ void CommServ::do_Add(mstring mynick, mstring source, mstring params)
     }
 
     head = Parent->getSname(head);
+    if (Parent->nickserv.stored[head.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+				head.c_str());
+	return;
+    }
+
     if (committee == Parent->commserv.SADMIN_Name() ||
 	committee == Parent->commserv.SOP_Name() ||
 	committee == Parent->commserv.ADMIN_Name() ||
@@ -1463,6 +1475,13 @@ void CommServ::do_member_Add(mstring mynick, mstring source, mstring params)
     }
 
     member = Parent->getSname(member);
+    if (Parent->nickserv.stored[member.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+				member.c_str());
+	return;
+    }
+
     if (Parent->commserv.list[committee].IsIn(member))
     {
 	::send(mynick, source, Parent->getMessage(source, "LIST/EXISTS2"),
@@ -1887,6 +1906,13 @@ void CommServ::do_set_Head(mstring mynick, mstring source, mstring params)
     }
 
     newhead = Parent->getSname(newhead);
+    if (Parent->nickserv.stored[newhead.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+				newhead.c_str());
+	return;
+    }
+
     if (newhead.LowerCase() == Parent->commserv.list[committee].Head().LowerCase())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOTONYOURSELF"),

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.189  2000/08/02 20:08:56  prez
+** Minor code cleanups, added ACE installation instructions, updated the
+** suggestions file and stopped people doing a whole bunch of stuff to
+** forbidden nicknames.
+**
 ** Revision 1.188  2000/07/30 09:04:05  prez
 ** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
 ** on linux, as it seems to corrupt the databases.
@@ -7421,7 +7426,14 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 		who.c_str());
 	return;
     }
+
     who = Parent->getSname(who);
+    if (Parent->nickserv.stored[who.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+		who.c_str());
+	return;
+    }
 
     if (!level.IsNumber() || level.Contains("."))
     {
@@ -7757,6 +7769,12 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 		who.c_str());
 	return;
     }
+    else if (Parent->nickserv.stored[who.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+		Parent->getSname(who).c_str());
+	return;
+    }
     else
     {
 	who = Parent->getSname(who);
@@ -8054,6 +8072,12 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 	    {
 		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
 		    target.c_str());
+		return;
+	    }
+	    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+	    {
+		::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+			Parent->getSname(target).c_str());
 		return;
 	    }
 	}
@@ -8494,6 +8518,12 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
 		founder.c_str());
 	return;
     }
+    else if (Parent->nickserv.stored[founder.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+		Parent->getSname(founder).c_str());
+	return;
+    }
     else if (Parent->nickserv.stored[founder.LowerCase()].Host() != "" &&
 	Parent->nickserv.IsStored(Parent->nickserv.stored[founder.LowerCase()].Host()))
     {
@@ -8550,6 +8580,12 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
 		founder.c_str());
+	return;
+    }
+    else if (Parent->nickserv.stored[founder.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+		Parent->getSname(founder).c_str());
 	return;
     }
     else if (Parent->nickserv.stored[founder.LowerCase()].Host() != "" &&

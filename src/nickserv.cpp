@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.116  2000/08/02 20:08:57  prez
+** Minor code cleanups, added ACE installation instructions, updated the
+** suggestions file and stopped people doing a whole bunch of stuff to
+** forbidden nicknames.
+**
 ** Revision 1.115  2000/07/30 09:04:06  prez
 ** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
 ** on linux, as it seems to corrupt the databases.
@@ -401,6 +406,12 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 	{
 	    send(mynick, nick, Parent->getMessage(nick, "NS_OTH_STATUS/ISNOTSTORED"),
 			who.c_str());
+	    return;
+	}
+	if (Parent->nickserv.stored[who.LowerCase()].Forbidden())
+	{
+	    ::send(mynick, nick, Parent->getMessage(nick, "NS_OTH_STATUS/ISFORBIDDEN"),
+			Parent->getSname(who).c_str());
 	    return;
 	}
 
@@ -915,7 +926,8 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
 	Parent->server.AKILL(Parent->operserv.Akill->Entry(),
 			Parent->operserv.Akill->Value().second,
 			Parent->operserv.Akill->Value().first -
-				Parent->operserv.Akill->Last_Modify_Time().SecondsSince());
+				Parent->operserv.Akill->Last_Modify_Time().SecondsSince(),
+			Parent->operserv.Akill->Last_Modifier());
         ACE_Reactor::instance()->schedule_timer(&(Parent->nickserv.kosh),
 	    new mstring(i_Name + ":" + Parent->operserv.Akill->Value().second),
 	    ACE_Time_Value::zero);
@@ -4102,6 +4114,8 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		"SID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		"INF*", Parent->commserv.ALL_Name(), NickServ::do_Info);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"GHOST*", Parent->commserv.ALL_Name(), NickServ::do_Ghost);
@@ -4638,7 +4652,8 @@ void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
-	if (!Parent->nickserv.stored[target.LowerCase()].IsSibling(source))
+	if (!(Parent->nickserv.stored[target.LowerCase()].IsSibling(source) ||
+		Parent->nickserv.stored[target.LowerCase()].Host().CmpNoCase(source)==0))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTYOURS"),
 							target.c_str());
@@ -4714,7 +4729,8 @@ void NickServ::do_Host(mstring mynick, mstring source, mstring params)
 	}
 
 	if (!(source.LowerCase() == newhost.LowerCase() ||
-		   Parent->nickserv.stored[newhost.LowerCase()].IsSibling(source)))
+		Parent->nickserv.stored[newhost.LowerCase()].IsSibling(source) ||
+		Parent->nickserv.stored[newhost.LowerCase()].Host().CmpNoCase(source)==0))
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTLINKED"),
 						newhost.c_str());
@@ -4770,10 +4786,11 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 
+	target = Parent->getSname(target);
 	if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-					Parent->getSname(target).c_str());
+					target.c_str());
 	    return;
 	}
     }
@@ -4868,7 +4885,7 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     if (nick->Forbidden())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
-						target.c_str());
+						nick->Name().c_str());
 	return;
     }
 
@@ -5100,13 +5117,20 @@ void NickServ::do_Ghost(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    nick = Parent->getLname(nick);
+    if (Parent->nickserv.stored[nick.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nick.c_str());
+	return;
+    }
+
     if (pass != Parent->nickserv.stored[nick.LowerCase()].Password())
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NICK_WRONG_PASS"));
 	return;
     }
 
-    nick = Parent->getLname(nick);
     Parent->server.ANONKILL(mynick, nick, source + " (" +
 				Parent->getMessage(nick, "MISC/KILL_GHOST") + ")");
     if (Parent->nickserv.recovered.find(nick.LowerCase()) !=
@@ -5149,6 +5173,14 @@ void NickServ::do_Recover(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
 				nick.c_str());
+	return;
+    }
+
+    nick = Parent->getSname(nick);
+    if (Parent->nickserv.stored[nick.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nick.c_str());
 	return;
     }
 
@@ -5275,7 +5307,14 @@ void NickServ::do_Send(mstring mynick, mstring source, mstring params)
 							target.c_str());
 	return;
     }
+
     target = Parent->getSname(target);
+    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						target.c_str());
+	return;
+    }
 
     unsigned long picnum = Parent->nickserv.stored[target.LowerCase()].PicNum();
     if (!picnum)
@@ -5334,6 +5373,13 @@ void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)
     }
 
     target = Parent->getSname(target);
+    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						target.c_str());
+	return;
+    }
+
     if (Parent->nickserv.stored[target.LowerCase()].Suspended())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISSUSPENDED"),
@@ -5380,6 +5426,13 @@ void NickServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
     }
 
     target = Parent->getSname(target);
+    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						target.c_str());
+	return;
+    }
+
     if (!Parent->nickserv.stored[target.LowerCase()].Suspended())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSUSPENDED"),
@@ -5448,6 +5501,13 @@ void NickServ::do_Getpass(mstring mynick, mstring source, mstring params)
     }
 
     target = Parent->getSname(target);
+    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						target.c_str());
+	return;
+    }
+
     // If we are NOT a SADMIN, and target is a PRIV GROUP.
     if (Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
 	!Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(source) &&
@@ -5721,11 +5781,21 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
 	    target = params.ExtractWord(3, " ");
     }
 
-    if (source != target && !Parent->nickserv.IsStored(target))
+    if (source != target)
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+	if (!Parent->nickserv.IsStored(target))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
 					target.c_str());
-	return;
+	    return;
+	}
+
+	if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						Parent->getSname(target).c_str());
+	    return;
+	}
     }
 
     target = Parent->getSname(target);
@@ -5776,6 +5846,14 @@ void NickServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
     if (!Parent->nickserv.IsStored(target))
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+						target.c_str());
+	return;
+    }
+
+    target = Parent->getSname(target);
+    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
 						target.c_str());
 	return;
     }
@@ -5869,11 +5947,21 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
 	    target = params.ExtractWord(3, " ");
     }
 
-    if (source != target && !Parent->nickserv.IsStored(target))
+    if (source != target)
     {
-	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
+	if (!Parent->nickserv.IsStored(target))
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
 				target.c_str());
-	return;
+	    return;
+	}
+
+	if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						Parent->getSname(target).c_str());
+	    return;
+	}
     }
 
     target = Parent->getSname(target);
@@ -6123,6 +6211,14 @@ void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    target = Parent->getSname(target);
+    if (Parent->nickserv.stored[target.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						target.c_str());
+	return;
+    }
+
     if (comment.CmpNoCase("none") == 0)
 	comment = "";
 
@@ -6312,7 +6408,13 @@ void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_NoExpire())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -6580,6 +6682,13 @@ void NickServ::do_lock_Protect(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_Protect())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -6642,6 +6751,13 @@ void NickServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_Secure())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -6704,6 +6820,13 @@ void NickServ::do_lock_NoMemo(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_NoMemo())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -6766,6 +6889,13 @@ void NickServ::do_lock_Private(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_Private())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -6828,6 +6958,13 @@ void NickServ::do_lock_PRIVMSG(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_PRIVMSG())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -6898,6 +7035,13 @@ void NickServ::do_lock_Language(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_Language())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -6953,6 +7097,13 @@ void NickServ::do_unlock_Protect(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_Protect())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -6994,6 +7145,13 @@ void NickServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_Secure())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -7035,6 +7193,13 @@ void NickServ::do_unlock_NoMemo(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_NoMemo())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -7076,6 +7241,13 @@ void NickServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_Private())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -7117,6 +7289,13 @@ void NickServ::do_unlock_PRIVMSG(mstring mynick, mstring source, mstring params)
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_PRIVMSG())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),
@@ -7158,6 +7337,13 @@ void NickServ::do_unlock_Language(mstring mynick, mstring source, mstring params
     }
 
     nickname = Parent->getSname(nickname);
+    if (Parent->nickserv.stored[nickname.LowerCase()].Forbidden())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+						nickname.c_str());
+	return;
+    }
+
     if (Parent->nickserv.LCK_Language())
     {
 	::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISLOCKED"),

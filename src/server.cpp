@@ -27,6 +27,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2000/08/02 20:08:58  prez
+** Minor code cleanups, added ACE installation instructions, updated the
+** suggestions file and stopped people doing a whole bunch of stuff to
+** forbidden nicknames.
+**
 ** Revision 1.111  2000/07/29 21:58:54  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -342,7 +347,7 @@ void Protocol::Set(unsigned int in)
 	i_Signon = 1004;
 	i_Globops = true;
 	i_SVS = true;
-	i_Akill = 1;
+	i_Akill = 5;
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
@@ -921,9 +926,9 @@ void NetworkServ::Jupe(mstring server, mstring reason)
 		    Server(server.LowerCase(), "JUPED (" + reason + ")");
 }
 
-void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time)
+void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time, mstring killer)
 {
-    FT("NetworkServ::AKILL", (host, reason, time));
+    FT("NetworkServ::AKILL", (host, reason, time, killer));
 
     if (!host.Contains("@"))
 	return;
@@ -960,6 +965,15 @@ void NetworkServ::AKILL(mstring host, mstring reason, unsigned long time)
 	else
 	    line << "GLINE";
 	line << " +" << host << " " << time << " :" << reason;
+	break;
+    case 5:
+	if (proto.Tokens() && proto.GetNonToken("AKILL") != "")
+	    line << proto.GetNonToken("AKILL");
+	else
+	    line << "AKILL";
+	line << host.After("@") << " " << host.Before("@") <<
+		time << " " << (killer != "" ? killer :
+		Parent->operserv.FirstName()) << " :" << reason;
 	break;
     }
     if (line != "")
@@ -1643,6 +1657,13 @@ void NetworkServ::RAKILL(mstring host)
 	else
 	    line << "GLINE";
 	line << " -" << host;
+	break;
+    case 5:
+	if (proto.Tokens() && proto.GetNonToken("RAKILL") != "")
+	    line << proto.GetNonToken("RAKILL");
+	else
+	    line << "RAKILL";
+	line << " " << host.After("@") << " " << host.Before("@");
 	break;
     }
     if (line != "")

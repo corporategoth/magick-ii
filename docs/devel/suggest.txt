@@ -32,3 +32,13 @@ x Done
   like jupe active if the servers admin isnt around)
   > Personally, I think this is a bad idea, squit the server.
 * Add a function to helpserv to forward messages to helpops
+
+* Restart command in OperServ.
+* Bytes/Kb/etc transferred to/from server.
+* OperList (live) and NoExpire list (stored).
+* Log and announce new max users (optional).
+* Support specific ip (ie. our ip) selection (if system has it).
+* Limit memos per user/channel (user definable with system max).
+* Limit registered channels per user.
+* Enforce time delay between allowing memo send.
+* Enforce time delay between allowing nick/channel registrations.

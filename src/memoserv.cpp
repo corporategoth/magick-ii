@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.70  2000/08/02 20:08:57  prez
+** Minor code cleanups, added ACE installation instructions, updated the
+** suggestions file and stopped people doing a whole bunch of stuff to
+** forbidden nicknames.
+**
 ** Revision 1.69  2000/07/29 21:58:54  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -1329,6 +1334,12 @@ void MemoServ::do_Send(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 	name = Parent->getSname(name);
+	if (Parent->nickserv.stored[name.LowerCase()].Forbidden())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+			name.c_str());
+	    return;
+	}
 
 	if (Parent->nickserv.stored[name.LowerCase()].IsIgnore(source) ?
 		!Parent->nickserv.stored[name.LowerCase()].NoMemo() :
@@ -1545,6 +1556,12 @@ void MemoServ::do_Forward2(mstring mynick, mstring source, mstring dest,
 	    return;
 	}
 	dest = Parent->getSname(dest);
+	if (Parent->nickserv.stored[dest.LowerCase()].Forbidden())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+			dest.c_str());
+	    return;
+	}
 
 	if (Parent->nickserv.stored[dest.LowerCase()].IsIgnore(source) ?
 		!Parent->nickserv.stored[dest.LowerCase()].NoMemo() :
@@ -1697,6 +1714,12 @@ void MemoServ::do_Reply(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISNOTSTORED"),
 		    Parent->getSname(iter->Sender()).c_str());
+	    return;
+	}
+	if (Parent->nickserv.stored[iter->Sender().LowerCase()].Forbidden())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+			iter->Sender().c_str());
 	    return;
 	}
 
@@ -2094,6 +2117,12 @@ void MemoServ::do_File(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 	name = Parent->getSname(name);
+	if (Parent->nickserv.stored[name.LowerCase()].Forbidden())
+	{
+	    ::send(mynick, source, Parent->getMessage(source, "NS_OTH_STATUS/ISFORBIDDEN"),
+			name.c_str());
+	    return;
+	}
 	mstring target = name;
 	if (Parent->nickserv.stored[name.LowerCase()].Host() != "")
 	    target = Parent->getSname(Parent->nickserv.stored[name.LowerCase()].Host());
