@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.118  2000/05/21 04:49:39  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.117  2000/05/20 03:28:11  prez
 ** Implemented transaction based tracing (now tracing wont dump its output
 ** until logical 'transactions' are done, which are ended by the thread
@@ -655,7 +658,7 @@ int mBaseTask::message_i(const mstring& message)
 	    else if (Parent->operserv.Log_Ignore())
 	    {
 		// Check if we're to log ignore messages, and log them here.
-		wxLogInfo(Parent->getLogMessage("OPERSERV/IGNORED"),
+		Log(LM_INFO, Parent->getLogMessage("OPERSERV/IGNORED"),
 			source.c_str(), data.After(" ").c_str());
 	    }
 	}

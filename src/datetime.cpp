@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/05/21 04:49:40  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.50  2000/05/20 15:17:00  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -108,7 +111,7 @@ mDateTime::mDateTime(time_t src)
 }
 mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)
 {
-	wxLogError("Not Implemented");
+	Log(LM_ERROR, "Not Implemented");
 #if 0
 	if(flag==Date)
 		*this=StringToDate(src);
@@ -349,7 +352,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<FormatString(LongDateFormat);
 				break;
 			default:
-				wxLogError("mDateTime::FormatString Invalid date format string");
+				Log(LM_ERROR, "mDateTime::FormatString Invalid date format string");
 			};
 			break;
 		case 'm':
@@ -376,7 +379,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<LongMonthNames[Month-1];
 				break;
 			default:
-				wxLogError("mDateTime::FormatString Invalid month format string");
+				Log(LM_ERROR, "mDateTime::FormatString Invalid month format string");
 			}
 			break;
 		case 'y':
@@ -395,7 +398,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<Year;
 				break;
 			default:
-				wxLogError("mDateTime::FormatString Invalid year format string");
+				Log(LM_ERROR, "mDateTime::FormatString Invalid year format string");
 			}
 			break;
 		case 'h':
@@ -455,7 +458,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 					Result=Result+"0";
 				break;
 			default:
-				wxLogError("mDateTime::FormatString Invalid year format string");
+				Log(LM_ERROR, "mDateTime::FormatString Invalid year format string");
 			}
 			Result<<MSec;
 			break;
@@ -498,7 +501,7 @@ mstring mDateTime::FormatString(const mstring& format)const
 			}
 			else
 			{
-				wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
+				Log(LM_WARNING, "mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal");
 				Result=Result+"a";
 			}
 			break;
@@ -531,8 +534,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 			Result=Result+mstring(format[i]);
 			break;
 		default:
-			wxLogWarning("mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal",format[i]);
-			wxLogWarning("FormatString==%s",format.c_str());
+			Log(LM_WARNING, "mDateTime::FormatString, charachter '%c' should be inside quotes, taken as literal",format[i]);
+			Log(LM_WARNING, "FormatString==%s",format.c_str());
 			Result=Result+mstring(format[i]);
 		};
 		i++;

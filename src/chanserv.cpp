@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.169  2000/05/21 04:49:39  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.168  2000/05/17 07:47:58  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -157,7 +160,7 @@ bool Chan_Live_t::Join(mstring nick)
 
     if (users.find(nick.LowerCase())!=users.end())
     {
-	wxLogWarning(Parent->getLogMessage("ERROR/DUP_CHAN"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/DUP_CHAN"),
 		"JOIN", nick.c_str(), i_Name.c_str());
 	RET(false);
     }
@@ -190,7 +193,7 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
     else
-	wxLogDebug(Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
+	Log(LM_TRACE, Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
 	    "PART", nick.c_str(), i_Name.c_str());
 
     unsigned int retval = users.size() + squit.size();
@@ -217,7 +220,7 @@ void Chan_Live_t::UnSquit(mstring nick)
 
     if (squit.find(nick.LowerCase())==squit.end())
     {
-	wxLogWarning(Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
+	Log(LM_WARNING, Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
 		"UNSQUIT", nick.c_str(), i_Name.c_str());
     }
     else
@@ -228,7 +231,7 @@ unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
 {
     FT("Chan_Live_t::Kick", (nick, kicker));
     if (users.find(nick.LowerCase())==users.end())
-	wxLogWarning(Parent->getMessage("ERROR/REC_NOTINCHAN"),
+	Log(LM_WARNING, Parent->getMessage("ERROR/REC_NOTINCHAN"),
 		"KICK", kicker.c_str(), nick.c_str(), i_Name.c_str());
     else
     {
@@ -246,7 +249,7 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     FT("Chan_Live_t::ChgNick", (nick, newnick));
     if (users.find(nick.LowerCase())==users.end())
     {
-	wxLogWarning(Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
+	Log(LM_WARNING, Parent->getMessage("ERROR/REC_FORNOTINCHAN"),
 		"NICK", nick.c_str(), i_Name.c_str());
     }
     else
@@ -886,7 +889,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogWarning(Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+		Log(LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
 			'+', 'o', source.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
 	    }
 	    fwdargs++;
@@ -902,7 +905,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogWarning(Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+		Log(LM_WARNING, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
 			'+', 'v', source.c_str(), in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
 	    }
 	    fwdargs++;
@@ -931,7 +934,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogWarning(Parent->getLogMessage("ERROR/KEYMISMATCH"),
+		Log(LM_WARNING, Parent->getLogMessage("ERROR/KEYMISMATCH"),
 			i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
 			i_Name.c_str(), source.c_str());
 	    }
@@ -943,13 +946,13 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    {
 		if (fwdargs > in.WordCount(": "))
 		{
-		    wxLogWarning(Parent->getLogMessage("ERROR/NOLIMIT"),
+		    Log(LM_WARNING, Parent->getLogMessage("ERROR/NOLIMIT"),
 				i_Name.c_str(), source.c_str());
 		    i_Limit = 0;
 		}
 		else if (!in.ExtractWord(fwdargs, ": ").IsNumber())
 		{
-		    wxLogWarning(Parent->getLogMessage("ERROR/NOLIMIT"),
+		    Log(LM_WARNING, Parent->getLogMessage("ERROR/NOLIMIT"),
 				i_Name.c_str(), source.c_str());
 		    i_Limit = 0;
 		}
@@ -999,7 +1002,7 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		wxLogDebug(Parent->getLogMessage("ERROR/INEFFECT"),
+		Log(LM_TRACE, Parent->getLogMessage("ERROR/INEFFECT"),
 			add ? '+' : '-', change[i], source.c_str(), i_Name.c_str());
 	    }
 	    break;
@@ -1081,7 +1084,7 @@ void Chan_Stored_t::Join(mstring nick)
 	clive = &Parent->chanserv.live[i_Name.LowerCase()];
     else
     {
-	wxLogWarning(Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
 			"JOIN", nick.c_str(), i_Name.c_str());
 	return;
     }
@@ -1091,7 +1094,7 @@ void Chan_Stored_t::Join(mstring nick)
 	nlive = &Parent->nickserv.live[nick.LowerCase()];
     else
     {
-	wxLogWarning(Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
 			"JOIN", i_Name.c_str(), nick.c_str());
 	return;
     }
@@ -1126,7 +1129,7 @@ void Chan_Stored_t::Join(mstring nick)
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Akick->Value());
 
-	wxLogVerbose("KICKED user %s from channel %s for triggering AKICK",
+	Log(LM_DEBUG, "KICKED user %s from channel %s for triggering AKICK",
 			nick.c_str(), i_Name.c_str());
 	return;
     }}
@@ -1147,7 +1150,7 @@ void Chan_Stored_t::Join(mstring nick)
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
 		i_Name, Parent->getMessage(nick, "MISC/KICK_RESTRICTED"));
 
-	wxLogVerbose("KICKED user %s from channel %s as it is restricted",
+	Log(LM_DEBUG, "KICKED user %s from channel %s as it is restricted",
 			nick.c_str(), i_Name.c_str());
 	return;
     }
@@ -1748,7 +1751,7 @@ DoRevenge_Ban4:
 	    else if (type == "BAN4")
 		goto DoRevenge_Ban4;
 	}
-	wxLogInfo("Taking revenge on user %s in channel %s for %s on %s.",
+	Log(LM_INFO, "Taking revenge on user %s in channel %s for %s on %s.",
 			target.c_str(), i_Name.c_str(), type.c_str(), source.c_str());
 	RET(true);
     }
@@ -4831,7 +4834,7 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
     if (!Parent->nickserv.IsStored(chan->Founder()))
     {
-	wxLogWarning("Channel %s had a founder of %s who was not registered (channel dropped)",
+	Log(LM_WARNING, "Channel %s had a founder of %s who was not registered (channel dropped)",
 			chan->Name().c_str(), chan->Founder().c_str());
 	Parent->chanserv.stored.erase(channel.LowerCase());
 	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),

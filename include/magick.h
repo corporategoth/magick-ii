@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.127  2000/05/21 04:49:38  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.126  2000/05/20 17:00:18  prez
 ** Added in the VERBOSE mode, now we mimic old logging
 **
@@ -297,8 +300,6 @@ public:
 		unsigned int High_Water_Mark()	{ return high_water_mark; }
 	} config;
 
-	size_t Log(ACE_Log_Priority priority, const char *messages, ...);
-	size_t LogV(ACE_Log_Priority priority, const char *messages, va_list argptr);
 	mstring Services_Dir()	    { return i_services_dir; }
 	mstring Config_File()	    { return files.MakePath(i_config_file); }
 	mstring ProgramName()	    { return i_programname; }

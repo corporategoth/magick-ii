@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.235  2000/05/21 04:49:40  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.234  2000/05/20 17:00:18  prez
 ** Added in the VERBOSE mode, now we mimic old logging
 **
@@ -220,77 +223,9 @@ mstring Magick::files_t::MakePath(mstring in)
 #endif
 }
 
-void wxLogFatal(const char *message, ...)
+size_t Log(ACE_Log_Priority priority, const char *message, ...)
 {
-    va_list argptr;
-    va_start(argptr, message);
-    Parent->LogV(LM_EMERGENCY, message, argptr);
-    va_end(argptr);
-}
-
-void wxLogError(const char *message, ...)
-{
-    va_list argptr;
-    va_start(argptr, message);
-    Parent->LogV(LM_ERROR, message, argptr);
-    va_end(argptr);
-}
-
-void wxLogWarning(const char *message, ...)
-{
-    va_list argptr;
-    va_start(argptr, message);
-    Parent->LogV(LM_WARNING, message, argptr);
-    va_end(argptr);
-}
-
-void wxLogNotice(const char *message, ...)
-{
-    va_list argptr;
-    va_start(argptr, message);
-    Parent->LogV(LM_NOTICE, message, argptr);
-    va_end(argptr);
-}
-
-void wxLogInfo(const char *message, ...)
-{
-    va_list argptr;
-    va_start(argptr, message);
-    Parent->LogV(LM_INFO, message, argptr);
-    va_end(argptr);
-}
-
-void wxLogVerbose(const char *message, ...)
-{
-    va_list argptr;
-    va_start(argptr, message);
-    Parent->LogV(LM_DEBUG, message, argptr);
-    va_end(argptr);
-}
-
-void wxLogDebug(const char *message, ...)
-{
-#ifdef DEBUG
-    va_list argptr;
-    va_start(argptr, message);
-    Parent->LogV(LM_TRACE, message, argptr);
-    va_end(argptr);
-#endif
-}
-
-void wxLogSysError(const char *message, ...)
-{
-    va_list argptr;
-    va_start(argptr, message);
-    Parent->LogV(LM_ALERT, message, argptr);
-    va_end(argptr);
-}
-
-
-
-size_t Magick::Log(ACE_Log_Priority priority, const char *message, ...)
-{
-    FT("Magick::Log", ((unsigned long) priority, message));
+    FT("Log", ((unsigned long) priority, message));
 
     va_list argptr;
     va_start(argptr, message);
@@ -299,51 +234,51 @@ size_t Magick::Log(ACE_Log_Priority priority, const char *message, ...)
     RET(retval);
 }
 
-size_t Magick::LogV(ACE_Log_Priority priority, const char *message, va_list argptr)
+size_t LogV(ACE_Log_Priority priority, const char *message, va_list argptr)
 {
-    FT("Magick::LogV", ((unsigned long) priority, "(va_list) argptr"));
+    FT("LogV", ((unsigned long) priority, "(va_list) argptr"));
 
     mstring text_priority, text;
 
     switch (priority)
     {
     case LM_TRACE:
-	text_priority = "TRACE    ";
+	text_priority = "TRACE   ";
 #ifndef DEBUG
 	RET(0);
 #endif
 	break;
     case LM_DEBUG:
-	text_priority = "DEBUG    ";
-	if (!i_verbose)
+	text_priority = "DEBUG   ";
+	if (!Parent->verbose())
 	    RET(0);
 	break;
     case LM_INFO:
-	text_priority = "INFO     ";
+	text_priority = "INFO    ";
 	break;
     case LM_NOTICE:
-	text_priority = "NOTICE   ";
+	text_priority = "NOTICE  ";
 	break;
     case LM_WARNING:
-	text_priority = "WARNING  ";
+	text_priority = "WARNING ";
 	break;
     case LM_STARTUP:
-	text_priority = "STARTUP  ";
+	text_priority = "STARTUP ";
 	break;
     case LM_ERROR:
-	text_priority = "ERROR    ";
+	text_priority = "ERROR   ";
 	break;
     case LM_CRITICAL:
-	text_priority = "CRITICAL ";
+	text_priority = "CRITICAL";
 	break;
     case LM_ALERT:
-	text_priority = "ALERT    ";
+	text_priority = "ALERT   ";
 	break;
     case LM_EMERGENCY:
-	text_priority = "EMERGENCY";
+	text_priority = "FATAL   ";
 	break;
     default:
-	text_priority = "UNKNOWN  ";
+	text_priority = "UNKNOWN ";
 	break;
     }
 
@@ -356,6 +291,9 @@ size_t Magick::LogV(ACE_Log_Priority priority, const char *message, va_list argp
     size_t retval = ace___->log(priority, "%s | %s | %s\n",
 	Now().FormatString("dd mmm yyyy hh:nn:ss").c_str(),
 	text_priority.c_str(), text.c_str());
+
+    if (priority == LM_EMERGENCY)
+	exit(1);
     RET(retval);
 }
 
@@ -412,7 +350,7 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--dir");
+		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--dir");
 		}
 		i_services_dir=files.MakePath(argv[i]);
 	    }
@@ -421,7 +359,7 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--config");
+		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--config");
 		}
 		i_config_file=argv[i];
 	    }
@@ -430,16 +368,16 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),"--trace");
+		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--trace");
 		}
 		if(!argv[i].Contains(":"))
 		{
-		    wxLogFatal(getLogMessage("COMMANDLINE/TRACE_SYNTAX"));
+		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TRACE_SYNTAX"));
 		}
 		unsigned short level = makehex(argv[i].After(":"));
 		if (level==0)
 		{
-		    wxLogFatal(getLogMessage("COMMANDLINE/ZERO_LEVEL"));
+		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ZERO_LEVEL"));
 		}
 		else
 		{
@@ -471,18 +409,18 @@ int Magick::Start()
 
     if (!get_config_values())
     {
-	wxLogFatal(getLogMessage("COMMANDLINE/NO_CFG_FILE"), i_config_file.c_str());
+	Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NO_CFG_FILE"), i_config_file.c_str());
     }
 
     if(i_shutdown==true)
-	wxLogFatal(getLogMessage("COMMANDLINE/STOP"));
+	Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/STOP"));
 
     Result=doparamparse();
     if(Result!=MAGICK_RET_NORMAL)
 	RET(Result);
 
+    // Re-direct log output to this file (log output is to STDERR)
     stderr = ACE_OS::fopen((files.Logfile()).c_str(), "a");
-    Log(LM_NOTICE, "This is a test ...");
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
@@ -494,7 +432,7 @@ int Magick::Start()
     Result = ACE_OS::fork();
     if (Result < 0)
     {
-	wxLogFatal(getMessage("ERROR/FAILED_FORK"), Result);
+	Log(LM_EMERGENCY, getMessage("ERROR/FAILED_FORK"), Result);
 	RET(1);
     }
     else if (Result != 0)
@@ -504,7 +442,7 @@ int Magick::Start()
     Result = ACE_OS::setpgid (0, 0);
     if (Result < 0)
     {
-	wxLogFatal(getMessage("ERROR/FAILED_SETPGID"), Result);
+	Log(LM_EMERGENCY, getMessage("ERROR/FAILED_SETPGID"), Result);
 	RET(1);
     }
     // Can only open these after fork if we want then to live
@@ -774,7 +712,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages.find(lang.UpperCase()) == Messages.end())
     {
 	LoadExternalMessages(lang);
-	wxLogInfo(getLogMessage("OTHER/LOAD_LANGUAGE"),
+	Log(LM_INFO, getLogMessage("OTHER/LOAD_LANGUAGE"),
 		lang.c_str());
 	CP(("Language %s was loaded into memory.", lang.c_str()));
     }
@@ -796,7 +734,7 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 	Messages.end())
     {
 	LoadExternalMessages(nickserv.DEF_Language());
-	wxLogInfo(getLogMessage("OTHER/LOAD_LANGUAGE"),
+	Log(LM_INFO, getLogMessage("OTHER/LOAD_LANGUAGE"),
 		lang.c_str());
 	CP(("Language %s was loaded into memory.", nickserv.DEF_Language().c_str()));
     }
@@ -1103,7 +1041,7 @@ mstring Magick::parseEscapes(const mstring & in)
     catch(ParserException &E)
     {
 	//todo
-	wxLogWarning(getLogMessage("ERROR/EXCEPTION"),E.line,E.column,E.getMessage().c_str());
+	Log(LM_WARNING, getLogMessage("ERROR/EXCEPTION"),E.line,E.column,E.getMessage().c_str());
     }
     RET(lexer.retstring);
 }
@@ -1281,7 +1219,7 @@ int Magick::doparamparse()
 	}
 	else
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NONOPTION"));
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NONOPTION"));
 	}
     }
     RET(MAGICK_RET_NORMAL);
@@ -1300,7 +1238,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	startup.server_name=second;
 	RET(true);
@@ -1309,7 +1247,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	startup.server_name=second;
 	RET(true);
@@ -1318,7 +1256,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	startup.services_user=second;
 	RET(true);
@@ -1331,7 +1269,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	startup.services_host=second;
     }
@@ -1339,17 +1277,17 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(ACE_OS::atoi(second.c_str())<=0)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
 	if (ACE_OS::atoi(second.c_str()) != server.proto.Number())
 	{
 	    server.proto.Set(ACE_OS::atoi(second.c_str()));
 	    if (ACE_OS::atoi(second.c_str()) != server.proto.Number())
-		wxLogWarning(getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
+		Log(LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
 			    ACE_OS::atoi(second.c_str()), server.proto.Number());
 	}
 	RET(true);
@@ -1358,11 +1296,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(ACE_OS::atoi(second.c_str())<=0)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
 	startup.level=ACE_OS::atoi(second.c_str());
 	RET(true);
@@ -1371,11 +1309,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(!FromHumanTime(second))
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
 	}
 	startup.lagtime=FromHumanTime(second);
     }
@@ -1387,7 +1325,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	files.logfile=second;
 	RET(true);
@@ -1396,7 +1334,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	files.database=second;
 	RET(true);
@@ -1405,7 +1343,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	files.langdir=second;
 	RET(true);
@@ -1422,11 +1360,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(!mFile::Exists(second))
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NO_KEYFILE"), second.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NO_KEYFILE"), second.c_str());
 	}
 	files.keyfile=second;
 	RET(true);
@@ -1435,15 +1373,15 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(ACE_OS::atoi(second.c_str())<0)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
 	if (ACE_OS::atoi(second.c_str())>9)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
 	}
 	files.compression=ACE_OS::atoi(second.c_str());
 	RET(true);
@@ -1452,11 +1390,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(ACE_OS::atoi(second.c_str())<0)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
 	config.server_relink=FromHumanTime(second);
 	RET(true);
@@ -1469,11 +1407,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(!FromHumanTime(second))
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
 	}
 	config.cycletime=FromHumanTime(second);
 	RET(true);
@@ -1482,11 +1420,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(!FromHumanTime(second))
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
 	}
 	config.checktime=FromHumanTime(second);
 	RET(true);
@@ -1495,11 +1433,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(!FromHumanTime(second))
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
 	}
 	config.ping_frequency=FromHumanTime(second);
 	RET(true);
@@ -1508,11 +1446,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(ACE_OS::atoi(second.c_str())<0)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
 	config.low_water_mark=ACE_OS::atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
@@ -1523,11 +1461,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(ACE_OS::atoi(second.c_str())<0)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
 	config.high_water_mark=ACE_OS::atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
@@ -1546,11 +1484,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(!FromHumanTime(second))
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
 	}
 	nickserv.ident=FromHumanTime(second);
 	RET(true);
@@ -1559,7 +1497,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	nickserv.def_language=second;
 	RET(true);
@@ -1573,11 +1511,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(!FromHumanTime(second))
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
 	}
 	nickserv.ident=FromHumanTime(second);
 	RET(true);
@@ -1590,15 +1528,15 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if(ACE_OS::atoi(second.c_str())<0)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
 	}
 	if (ACE_OS::atoi(second.c_str())>9)
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
 	}
 	operserv.ignore_method=ACE_OS::atoi(second.c_str());
 	RET(true);
@@ -1607,7 +1545,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.IsEmpty() || second[0U]=='-')
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
 	}
 	if (second.CmpNoCase("magick")==0)
 	{
@@ -1622,13 +1560,13 @@ bool Magick::paramlong(mstring first, mstring second)
 	}
 	else
 	{
-	    wxLogFatal(getLogMessage("COMMANDLINE/CANNOT_CONVERT"), second.c_str());
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/CANNOT_CONVERT"), second.c_str());
 	}
 	RET(true);
     }
     else
     {
-	wxLogError(getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),first.c_str());
+	Log(LM_ERROR, getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),first.c_str());
     }
     RET(false);
 }
@@ -1645,28 +1583,28 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='n')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--name", second);
 	}
 	else if(first[i]=='d')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--desc", second);
 	}
 	else if(first[i]=='u')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--user", second);
 	}
 	else if(first[i]=='h')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--host", second);
 	}
@@ -1677,21 +1615,21 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='P')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--protocol", second);
 	}
 	else if(first[i]=='l')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--level", second);
 	}
 	else if(first[i]=='g')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--lagtime", second);
 	}
@@ -1702,21 +1640,21 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='L')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--log", second);
 	}
 	else if(first[i]=='D')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--dbase", second);
 	}
 	else if(first[i]=='S')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--langdir", second);
 	}
@@ -1731,7 +1669,7 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='K')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--keyfile", second);
 	}
@@ -1742,70 +1680,70 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='r')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--relink", second);
 	}
 	else if(first[i]=='t')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--cycle", second);
 	}
 	else if(first[i]=='T')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--check", second);
 	}
 	else if(first[i]=='p')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--ping", second);
 	}
 	else if(first[i]=='m')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--lwm", second);
 	}
 	else if(first[i]=='M')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--hwm", second);
 	}
 	else if(first[i]=='a')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--append", second);
 	}
 	else if(first[i]=='A')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--rename", second);
 	}
 	else if(first[i]=='R')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--ident", second);
 	}
 	else if(first[i]=='s')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--language", second);
 	}
@@ -1816,27 +1754,27 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='f')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--inflight", second);
 	}
 	else if(first[i]=='i')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--logignore", second);
 	}
 	else if(first[i]=='I')
 	{
 	    if (ArgUsed)
-		wxLogFatal(getLogMessage("COMMANDLINE/ONEOPTION"));
+		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
 	    else
 		ArgUsed = paramlong ("--ignore", second);
 	}
 	else
 	{
-	    wxLogError(getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),("-"+mstring(first[i])).c_str());
+	    Log(LM_ERROR, getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),("-"+mstring(first[i])).c_str());
 	}
     }
     RET(ArgUsed);
@@ -1933,7 +1871,7 @@ bool Magick::get_config_values()
 		if (ent.WordCount(":") == 4 && tmp[1].IsNumber() && tmp[3].IsNumber())
 		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(ACE_OS::atoi(tmp[1]),tmp[2],ACE_OS::atoi(tmp[3]));
 		else
-		    wxLogWarning(getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+rem).c_str());
+		    Log(LM_WARNING, getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+rem).c_str());
 	}
 	i++;
     } while (ent!="");
@@ -1947,7 +1885,7 @@ bool Magick::get_config_values()
 	if (value_uint == server.proto.Number())
 	    reconnect = true;
 	else
-	    wxLogWarning(getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
+	    Log(LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
 			    value_uint, server.proto.Number());
     }
 
@@ -2832,14 +2770,14 @@ void Magick::load_databases()
 	CP(("Data TAG: %s | %u.%u | %d | %d", tag.c_str(), ver_major, ver_minor, compressed, encrypted));
 
 	if (tag != FileIdentificationTag)
-	    wxLogFatal(getLogMessage("COMMANDLINE/DBASE_ID"));
+	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/DBASE_ID"));
 
 	// Thread pipes ... create them.
 	if (encrypted)
 	{
 	    if (GetKey() == "")
 	    {
-		wxLogError("Database is encrypted but no keyfile found, load aborted.");
+		Log(LM_ERROR, "Database is encrypted but no keyfile found, load aborted.");
 		return;
 	    }
 	    cinput = new wxCryptInputStream(*input, GetKey());
@@ -2873,7 +2811,7 @@ void Magick::load_databases()
 	    delete zinput;
 	}
 	input = &finput;
-	wxLogInfo(getLogMessage("EVENT/LOAD"), ver_major, ver_minor);
+	Log(LM_INFO, getLogMessage("EVENT/LOAD"), ver_major, ver_minor);
     }
 }
 
@@ -2969,13 +2907,13 @@ cleanup:
 	    {
 		out << in;
 		remove((files.Database() + ".new").c_str());
-		wxLogVerbose(getLogMessage("EVENT/SAVE"));
+		Log(LM_DEBUG, getLogMessage("EVENT/SAVE"));
 		return;
 	    }
 	}
     }
     remove((files.Database() + ".new").c_str());
-    wxLogError("Error saving databases, aborted ...");
+    Log(LM_ERROR, "Error saving databases, aborted ...");
     announce(operserv.FirstName(), "Warning, dbases not saved ..");
 }
 */

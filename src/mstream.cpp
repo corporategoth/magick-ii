@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2000/05/21 04:49:40  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.61  2000/05/20 15:17:00  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -1526,7 +1529,7 @@ bool wxFile::Create(const char *szFileName, bool bOverwrite)
 
 
   if ( fd == NULL ) {
-    wxLogSysError("can't create file '%s'", szFileName);
+    Log(LM_ALERT, "can't create file '%s'", szFileName);
     return false;
   }
   else {
@@ -1561,7 +1564,7 @@ bool wxFile::Open(const char *szFileName, OpenMode mode)
   FILE *fd = ACE_OS::fopen(szFileName, flags.c_str());
 
   if ( fd == NULL ) {
-    wxLogSysError("can't open file '%s'", szFileName);
+    Log(LM_ALERT, "can't open file '%s'", szFileName);
     return false;
   }
   else {
@@ -1575,7 +1578,7 @@ bool wxFile::Close()
 {
   if ( IsOpened() ) {
     if ( fclose(m_fd) != 0 ) {
-      wxLogSysError("can't close file: %p", m_fd);
+      Log(LM_ALERT, "can't close file: %p", m_fd);
       m_fd = fd_invalid;
       return false;
     }
@@ -1597,7 +1600,7 @@ off_t wxFile::Read(void *pBuf, off_t nCount)
 
   size_t iRc = ACE_OS::fread(pBuf, 1, nCount, m_fd);
   if ( ferror(m_fd) ) {
-    wxLogSysError("can't read from file: %p", m_fd);
+    Log(LM_ALERT, "can't read from file: %p", m_fd);
     return -1;
   }
   else
@@ -1612,7 +1615,7 @@ size_t wxFile::Write(const void *pBuf, size_t nCount)
   size_t iRc = ACE_OS::fwrite(pBuf, 1, nCount, m_fd);
   if ( ferror(m_fd) ) 
   {
-    wxLogSysError("can't write to file: %p", m_fd);
+    Log(LM_ALERT, "can't write to file: %p", m_fd);
     m_error = true;
     return 0;
   }
@@ -1627,7 +1630,7 @@ bool wxFile::Flush()
     {
 	if ( ACE_OS::fflush(m_fd) != 0 )
 	{
-	    wxLogSysError("can't flush file: %p", m_fd);
+	    Log(LM_ALERT, "can't flush file: %p", m_fd);
 	    return false;
 	}
     }
@@ -1646,7 +1649,7 @@ int wxFile::Seek(long ofs, wxSeekMode mode) const
   size_t iRc = fseek(m_fd, ofs, mode);
   if ( iRc != 0 ) 
   {
-    wxLogSysError("can't seek on file: %p", m_fd);
+    Log(LM_ALERT, "can't seek on file: %p", m_fd);
     return -1;
   }
   else
@@ -1660,7 +1663,7 @@ long wxFile::Tell() const
 
   long iRc = ACE_OS::fseek(m_fd,0,SEEK_CUR);
   if ( iRc == -1 ) {
-    wxLogSysError("can't get seek position on file: %p", m_fd);
+    Log(LM_ALERT, "can't get seek position on file: %p", m_fd);
     return -1;
   }
   else
@@ -1675,12 +1678,12 @@ long wxFile::Length() const
     long iRc = Tell();
     if(iRc==-1)
     {
-	wxLogSysError("can't find length of file: %p", m_fd);
+	Log(LM_ALERT, "can't find length of file: %p", m_fd);
 	return -1;
     }
     if(SeekEnd()==-1)
     {
-	wxLogSysError("can't find length of file: %p", m_fd);
+	Log(LM_ALERT, "can't find length of file: %p", m_fd);
 	return -1;
     }
     long iLen = Tell();
@@ -1688,7 +1691,7 @@ long wxFile::Length() const
 
     if ( iLen == -1 ) 
     {
-	wxLogSysError("can't find length of file on file descriptor %d", m_fd);
+	Log(LM_ALERT, "can't find length of file on file descriptor %d", m_fd);
 	return -1;
     }
     else
@@ -1736,7 +1739,7 @@ bool wxTempFile::Open(const mstring& strName)
     char cm_strTemp[MAX_PATH];
 
     if ( !GetTempFileName(strPath, "wx_",0, cm_strTemp))
-      wxLogLastError("GetTempFileName");
+      Log(LM_TRACE, "GetTempFileName");
     m_strTemp=cm_strTemp;
   #else
     static const char *szMktempSuffix = "XXXXXX";
@@ -1762,12 +1765,12 @@ bool wxTempFile::Commit()
   m_file.Close();
 
   if ( wxFile::Exists(m_strName) && remove(m_strName) != 0 ) {
-    wxLogSysError("can't remove file '%s'", m_strName.c_str());
+    Log(LM_ALERT, "can't remove file '%s'", m_strName.c_str());
     return false;
   }
 
   if ( rename(m_strTemp, m_strName) != 0 ) {
-    wxLogSysError("can't commit changes to file '%s'", m_strName.c_str());
+    Log(LM_ALERT, "can't commit changes to file '%s'", m_strName.c_str());
     return false;
   }
 
@@ -1778,7 +1781,7 @@ void wxTempFile::Discard()
 {
   m_file.Close();
   if ( remove(m_strTemp) != 0 )
-    wxLogSysError("can't remove temporary file '%s'", m_strTemp.c_str());
+    Log(LM_ALERT, "can't remove temporary file '%s'", m_strTemp.c_str());
 }
 
 // ----------------------------------------------------------------------------

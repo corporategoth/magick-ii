@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.28  2000/05/21 04:49:40  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.27  2000/05/20 03:28:11  prez
 ** Implemented transaction based tracing (now tracing wont dump its output
 ** until logical 'transactions' are done, which are ended by the thread
@@ -145,7 +148,7 @@ mFile::mFile(mstring name, mstring mode)
     
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
-	wxLogError("Could not open file %s (%s).",
+	Log(LM_ERROR, "Could not open file %s (%s).",
 				name.c_str(), mode.c_str());
     }
 }
@@ -156,7 +159,7 @@ bool mFile::Open(mstring name, mstring mode)
     FT("mFile::Open", (name, mode));
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
-	wxLogError("Could not open file %s (%s).",
+	Log(LM_ERROR, "Could not open file %s (%s).",
 				name.c_str(), mode.c_str());
     }
     RET(fd != NULL);

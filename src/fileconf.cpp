@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.42  2000/05/21 04:49:40  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.41  2000/05/20 16:05:07  prez
 ** Finished off the log conversion (still via. wrappers)
 **
@@ -220,7 +223,7 @@ void wxFileConfig::Init()
       SetRootPath();
     }
     else
-      wxLogWarning(Parent->getLogMessage("WX_ERRORS/GLOBAL_CFG"),
+      Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/GLOBAL_CFG"),
                    m_strGlobalFile.c_str());
   }
 
@@ -232,7 +235,7 @@ void wxFileConfig::Init()
       SetRootPath();
     }
     else
-      wxLogWarning(Parent->getLogMessage("WX_ERRORS/USER_CFG"),
+      Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/USER_CFG"),
                    m_strLocalFile.c_str());
   }
 }
@@ -342,7 +345,7 @@ void wxFileConfig::Parse(wxTextFile& file, bool bLocal)
       }
 
       if ( *pEnd != ']' ) {
-        wxLogError(Parent->getLogMessage("WX_ERRORS/UNEXPECTED_CHAR"),
+        Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/UNEXPECTED_CHAR"),
                    file.GetName(), *pEnd, n + 1);
         continue; // skip this line
       }
@@ -373,7 +376,7 @@ void wxFileConfig::Parse(wxTextFile& file, bool bLocal)
             break;
 
           default:
-            wxLogWarning(Parent->getLogMessage("WX_ERRORS/LINE_IGNORED"),
+            Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/LINE_IGNORED"),
                          file.GetName(), n + 1, pEnd);
             bCont = false;
         }
@@ -391,7 +394,7 @@ void wxFileConfig::Parse(wxTextFile& file, bool bLocal)
         pEnd++;
 
       if ( *pEnd++ != '=' ) {
-        wxLogError(Parent->getLogMessage("WX_ERRORS/EQUALS_EXPECTED"),
+        Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/EQUALS_EXPECTED"),
                    file.GetName(), n + 1);
       }
       else {
@@ -407,7 +410,7 @@ void wxFileConfig::Parse(wxTextFile& file, bool bLocal)
         else {
           if ( bLocal && pEntry->IsImmutable() ) {
             // immutable keys can't be changed by user
-            wxLogWarning(Parent->getLogMessage("WX_ERRORS/IMMUT_IGNORE"),
+            Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/IMMUT_IGNORE"),
                          file.GetName(), n + 1, strKey.c_str());
             continue;
           }
@@ -417,7 +420,7 @@ void wxFileConfig::Parse(wxTextFile& file, bool bLocal)
           //  (c) key from global file now found in local one
           // which is exactly what we want.
           else if ( !bLocal || pEntry->IsLocal() ) {
-            wxLogWarning(Parent->getLogMessage("WX_ERRORS/DUPLICATE_KEY"),
+            Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/DUPLICATE_KEY"),
                          file.GetName(), n + 1, strKey.c_str(), pEntry->Line());
 
             if ( bLocal )
@@ -756,14 +759,14 @@ bool wxFileConfig::Write(const mstring& key, const mstring& szValue)
 
     // check that the name is reasonable
     if ( strName[0u] == wxCONFIG_IMMUTABLE_PREFIX ) {
-      wxLogError(Parent->getLogMessage("WX_ERRORS/MAYNOTSTART"),
+      Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/MAYNOTSTART"),
                  wxCONFIG_IMMUTABLE_PREFIX);
       RET(false);
     }
 
     for ( const char *pc = strName; *pc != '\0'; pc++ ) {
       if ( !IsValid(*pc) ) {
-        wxLogError(Parent->getLogMessage("WX_ERRORS/MAYNOTCONTAIN"),
+        Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/MAYNOTCONTAIN"),
                    *pc);
         RET(false);
       }
@@ -788,7 +791,7 @@ bool wxFileConfig::Flush(bool bCurrentOnly)
   wxTempFile file(m_strLocalFile);
 
   if ( !file.IsOpened() ) {
-    wxLogError(Parent->getLogMessage("WX_ERRORS/USER_CFG"),
+    Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/USER_CFG"),
 	  m_strLocalFile.c_str());
     RET(false);
   }
@@ -796,7 +799,7 @@ bool wxFileConfig::Flush(bool bCurrentOnly)
   // write all strings to file
   for ( LineList *p = m_linesHead; p != NULL; p = p->Next() ) {
     if ( !file.Write(p->Text() + wxTextFile::GetEOL()) ) {
-      wxLogError(Parent->getLogMessage("WX_ERRORS/USER_CFG_WRITE"),
+      Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/USER_CFG_WRITE"),
 	  m_strLocalFile.c_str());
       RET(false);
     }
@@ -894,7 +897,7 @@ bool wxFileConfig::DeleteAll()
   const char *szFile = m_strLocalFile;
 
   if ( remove(szFile) == -1 )
-    wxLogSysError(Parent->getMessage("WX_ERRORS/USER_CFG_DEL"), szFile);
+    Log(LM_ALERT, Parent->getMessage("WX_ERRORS/USER_CFG_DEL"), szFile);
 
   m_strLocalFile = m_strGlobalFile = "";
   Init();
@@ -1437,7 +1440,7 @@ void ConfigEntry::SetLine(LineList *pLine)
 {
   FT("ConfigEntry::SetLine", (pLine));
   if ( m_pLine != NULL ) {
-    wxLogWarning(Parent->getLogMessage("WX_ERRORS/DUPLICATE_KEY2"),
+    Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/DUPLICATE_KEY2"),
                  Name().c_str(), m_pParent->GetFullName().c_str());
   }
 
@@ -1451,7 +1454,7 @@ void ConfigEntry::SetValue(const mstring& strValue, bool bUser)
 {
   FT("ConfigEntry::SetValue", (strValue, bUser));
   if ( bUser && IsImmutable() ) {
-    wxLogWarning(Parent->getLogMessage("WX_ERRORS/IMMUT_IGNORE2"),
+    Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/IMMUT_IGNORE2"),
                  Name().c_str());
     return;
   }
@@ -1558,7 +1561,7 @@ mstring FilterIn(const mstring& str)
       if ( str[n] != '"' || !bQuoted )
         strResult += str[n];
       else if ( n != str.size() - 1 ) {
-        wxLogWarning(Parent->getLogMessage("WX_ERRORS/UNEXPECTED_CHAR2"),
+        Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/UNEXPECTED_CHAR2"),
                      '\"',n, str.c_str());
       }
       //else: it's the last quote of a quoted string, ok
@@ -1683,7 +1686,7 @@ void wxOnAssert(const char *szFile, int nLine, const char *szMsg)
 
   if ( !s_bNoAsserts ) {
     // send it to the normal log destination
-    wxLogDebug(szBuf);
+    Log(LM_TRACE, szBuf);
 
       Trap();
   }

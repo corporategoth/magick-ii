@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2000/05/21 04:49:41  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.23  2000/05/20 15:17:00  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -169,7 +172,7 @@ wxTextFileType wxTextFile::GuessType() const
   if ( nDos + nUnix + nMac == 0 ) 
   {
     // no newlines at all
-    wxLogWarning(Parent->getLogMessage("WX_ERRORS/BINFILE"),
+    Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/BINFILE"),
 		m_strFile.c_str());
   }
   else 
@@ -279,7 +282,7 @@ bool wxTextFile::Write(wxTextFileType typeNew)
   wxTempFile fileTmp(m_strFile);
 
   if ( !fileTmp.IsOpened() ) {
-    wxLogError(Parent->getLogMessage("WX_ERRORS/CANTWRITE"),
+    Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/CANTWRITE"),
 		m_strFile.c_str());
     RET(false);
   }

@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.95  2000/05/21 04:49:40  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.94  2000/05/19 10:48:14  prez
 ** Finalized the DCC Sending (now uses the Action map properly)
 **
@@ -784,7 +787,7 @@ void Nick_Live_t::Part(mstring chan)
     }
     else
     {
-	wxLogDebug("User %s PART from non-existant channel %s", i_Name.c_str(), chan.c_str());
+	Log(LM_TRACE, "User %s PART from non-existant channel %s", i_Name.c_str(), chan.c_str());
     }
 
     joined_channels.erase(chan.LowerCase());
@@ -800,7 +803,7 @@ void Nick_Live_t::Kick(mstring kicker, mstring chan)
 	    Parent->chanserv.live.erase(chan.LowerCase());
     }
     else
-	wxLogWarning("User %s KICKED from non-existant channel %s by %s", i_Name.c_str(), chan.c_str(), kicker.c_str());
+	Log(LM_WARNING, "User %s KICKED from non-existant channel %s by %s", i_Name.c_str(), chan.c_str(), kicker.c_str());
 
     joined_channels.erase(chan.LowerCase());
 }
@@ -905,7 +908,7 @@ bool Nick_Live_t::FloodTrigger()
 			Parent->operserv.Flood_Msgs(), ToHumanTime(Parent->operserv.Flood_Time()).c_str());
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/PERM_IGNORE"),
 			Parent->operserv.Ignore_Limit());
-	    wxLogNotice(Parent->getLogMessage("OTHER/PERM_IGNORE"),
+	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/PERM_IGNORE"),
 			Mask(N_U_P_H).c_str());
 	    announce(Parent->servmsg.FirstName(), Parent->getMessage("MISC/FLOOD_PERM"),
 			i_Name.c_str());
@@ -918,7 +921,7 @@ bool Nick_Live_t::FloodTrigger()
 	    send(Parent->servmsg.FirstName(), i_Name, Parent->getMessage(i_Name, "ERR_SITUATION/TEMP_IGNORE"),
 			ToHumanNumber(flood_triggered_times).c_str(), Parent->operserv.Ignore_Limit(),
 			ToHumanTime(Parent->operserv.Ignore_Time()).c_str());
-	    wxLogNotice(Parent->getLogMessage("OTHER/TEMP_IGNORE"),
+	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/TEMP_IGNORE"),
 			Mask(N_U_P_H).c_str());
 	    announce(Parent->servmsg.FirstName(), Parent->getMessage("MISC/FLOOD_TEMP"),
 			i_Name.c_str());
@@ -963,7 +966,7 @@ void Nick_Live_t::Name(mstring in)
 	else
 	{
 	    chunked.push_back(*iter);
-	    wxLogWarning("USER %s changed nick, tried to rename in non-existant channel %s", i_Name.c_str(), iter->c_str());
+	    Log(LM_WARNING, "USER %s changed nick, tried to rename in non-existant channel %s", i_Name.c_str(), iter->c_str());
 	}
     }
 
@@ -1100,7 +1103,7 @@ void Nick_Live_t::Mode(mstring in)
 	    }
 	    else
 	    {
-		wxLogDebug("MODE change %c%c received for %s that is currently in effect",
+		Log(LM_TRACE, "MODE change %c%c received for %s that is currently in effect",
 			add ? '+' : '-', in[i], i_Name.c_str());
 	    }
 	    break;
@@ -1342,7 +1345,7 @@ mstring Nick_Live_t::ChanIdentify(mstring channel, mstring password)
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
-		wxLogNotice(Parent->getLogMessage("OTHER/KLLL_CHAN_PASS"),
+		Log(LM_NOTICE, Parent->getLogMessage("OTHER/KLLL_CHAN_PASS"),
 			Mask(N_U_P_H).c_str(), channel.c_str());
 		RET("");
 	    }
@@ -1425,7 +1428,7 @@ mstring Nick_Live_t::Identify(mstring password)
 	    {
 		Parent->server.KILL(Parent->nickserv.FirstName(), i_Name,
 			Parent->getMessage(i_Name, "MISC/KILL_PASS_FAIL"));
-		wxLogNotice(Parent->getLogMessage("OTHER/KLLL_NICK_PASS"),
+		Log(LM_NOTICE, Parent->getLogMessage("OTHER/KLLL_NICK_PASS"),
 			Mask(N_U_P_H).c_str(), i_Name.c_str());
 		RET("");
 	    }
@@ -1839,7 +1842,7 @@ mstring Nick_Stored_t::Host()
     NFT("Nick_Stored_t::Host");
     if (i_Host != "" && !Parent->nickserv.IsStored(i_Host))
     {
-	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+	Log(LM_WARNING, "Nick %s was listed as host of %s, but did not exist!!",
 		i_Host.c_str(), i_Name.c_str());
 	i_Host = "";
     }
@@ -2145,7 +2148,7 @@ bool Nick_Stored_t::MakeHost()
 		}
 		else
 		{
-		    wxLogWarning("Nick %s was listed as slave of %s, but does not exist!!",
+		    Log(LM_WARNING, "Nick %s was listed as slave of %s, but does not exist!!",
 			Parent->nickserv.stored[i_Host.LowerCase()].Sibling(i).c_str(), i_Name.c_str());
 		}
 	}
@@ -3178,7 +3181,7 @@ void Nick_Stored_t::Quit(mstring message)
     }
     else
     {
-	wxLogWarning("STORED QUIT received for user %s who is NOT ONLINE", i_Name.c_str());
+	Log(LM_WARNING, "STORED QUIT received for user %s who is NOT ONLINE", i_Name.c_str());
     }
 }
 
@@ -6203,7 +6206,7 @@ void NickServ::PostLoad()
 	}
 	else if (iter->second.i_Host != "")
 	{
-	    wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+	    Log(LM_WARNING, "Nick %s was listed as host of %s, but did not exist!!",
 		iter->second.i_Host.c_str(), iter->first.c_str());
 	    iter->second.i_Host = "";
 	}

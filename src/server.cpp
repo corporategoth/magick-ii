@@ -27,6 +27,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.97  2000/05/21 04:49:40  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.96  2000/05/20 03:28:12  prez
 ** Implemented transaction based tracing (now tracing wont dump its output
 ** until logical 'transactions' are done, which are ended by the thread
@@ -762,11 +765,11 @@ void NetworkServ::AWAY(mstring nick, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("AWAY command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, "AWAY command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("AWAY command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "AWAY command requested by non-service %s", nick.c_str());
     }
     else
     {
@@ -793,7 +796,7 @@ void NetworkServ::GLOBOPS(mstring nick, mstring message)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("GLOBOPS command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "GLOBOPS command requested by non-service %s", nick.c_str());
     }
     else
     {
@@ -820,15 +823,15 @@ void NetworkServ::INVITE(mstring nick, mstring dest, mstring channel)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("INVITE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "INVITE command requested by non-service %s", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	wxLogWarning("INVITE command requested for non-existant user %s", dest.c_str());
+	Log(LM_WARNING, "INVITE command requested for non-existant user %s", dest.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	wxLogWarning("INVITE command requested by %s for %s in non-existant channel %s",
+	Log(LM_WARNING, "INVITE command requested by %s for %s in non-existant channel %s",
 		nick.c_str(), dest.c_str(), channel.c_str());
     }
     else
@@ -844,11 +847,11 @@ void NetworkServ::JOIN(mstring nick, mstring channel)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("JOIN command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, "JOIN command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("JOIN command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "JOIN command requested by non-service %s", nick.c_str());
     }
     else
     {
@@ -873,20 +876,20 @@ void NetworkServ::KICK(mstring nick, mstring dest, mstring channel, mstring reas
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("KICK command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "KICK command requested by non-service %s", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	wxLogWarning("KICK command requested by %s for non-existant %s", dest.c_str(), nick.c_str());
+	Log(LM_WARNING, "KICK command requested by %s for non-existant %s", dest.c_str(), nick.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	wxLogWarning("KICK command requested by %s for %s in non-existant channel %s",
+	Log(LM_WARNING, "KICK command requested by %s for %s in non-existant channel %s",
 		nick.c_str(), dest.c_str(), channel.c_str());
     }
     else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(dest))
     {
-	wxLogWarning("KICK command requested by %s for %s who is not in channel %s",
+	Log(LM_WARNING, "KICK command requested by %s for %s who is not in channel %s",
 		nick.c_str(), dest.c_str(), channel.c_str());
     }
     else
@@ -911,11 +914,11 @@ void NetworkServ::KILL(mstring nick, mstring dest, mstring reason)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("KILL command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "KILL command requested by non-service %s", nick.c_str());
     }
     else if (!Parent->nickserv.IsLive(dest))
     {
-	wxLogWarning("KILL command requested for non-existant user %s", dest.c_str());
+	Log(LM_WARNING, "KILL command requested for non-existant user %s", dest.c_str());
     }
     else
     {
@@ -934,11 +937,11 @@ void NetworkServ::MODE(mstring nick, mstring mode)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("MODE command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, "MODE command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("MODE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "MODE command requested by non-service %s", nick.c_str());
     }
     else
     {
@@ -954,15 +957,15 @@ void NetworkServ::MODE(mstring nick, mstring channel, mstring mode)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("MODE command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, "MODE command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("MODE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "MODE command requested by non-service %s", nick.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	wxLogWarning("MODE command requested by %s for non-existant channel %s", nick.c_str(), channel.c_str());
+	Log(LM_WARNING, "MODE command requested by %s for non-existant channel %s", nick.c_str(), channel.c_str());
     }
     else
     {
@@ -980,7 +983,7 @@ void NetworkServ::NICK(mstring nick, mstring user, mstring host,
 
     if (Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("NICK command requested for already-existant user %s", nick.c_str());
+	Log(LM_WARNING, "NICK command requested for already-existant user %s", nick.c_str());
     }
     else
     {
@@ -1033,11 +1036,11 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 
     if (!Parent->nickserv.IsLive(oldnick))
     {
-	wxLogWarning("NICK command requested by non-existant user %s", oldnick.c_str());
+	Log(LM_WARNING, "NICK command requested by non-existant user %s", oldnick.c_str());
     }
     else if (!Parent->nickserv.live[oldnick.LowerCase()].IsServices())
     {
-	wxLogWarning("NICK command requested by non-service %s", oldnick.c_str());
+	Log(LM_WARNING, "NICK command requested by non-service %s", oldnick.c_str());
     }
     else
     {
@@ -1061,15 +1064,15 @@ void NetworkServ::NOOP(mstring nick, mstring server, bool onoff)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("NOOP command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, "NOOP command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("NOOP command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "NOOP command requested by non-service %s", nick.c_str());
     }
     else if (!IsServer(server))
     {
-	wxLogWarning("NOOP command requested for non-existant server %s", server.c_str());
+	Log(LM_WARNING, "NOOP command requested for non-existant server %s", server.c_str());
     }
     else
     {
@@ -1092,13 +1095,13 @@ void NetworkServ::NOTICE(mstring nick, mstring dest, mstring text)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("NOTICE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "NOTICE command requested by non-service %s", nick.c_str());
     }
     else if (!(dest[0u] == '$' || dest[0u] == '#' ||
 		Parent->nickserv.IsLive(dest) ||
 		Parent->chanserv.IsLive(dest)))
     {
-	wxLogWarning("NOTICE command requested for non-existant user/channel %s", dest.c_str());
+	Log(LM_WARNING, "NOTICE command requested for non-existant user/channel %s", dest.c_str());
     }
     else
     {
@@ -1114,20 +1117,20 @@ void NetworkServ::PART(mstring nick, mstring channel, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("PART command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, "PART command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("PART command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "PART command requested by non-service %s", nick.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	wxLogWarning("PART command requested by %s for non-existant channel %s",
+	Log(LM_WARNING, "PART command requested by %s for non-existant channel %s",
 		nick.c_str(), channel.c_str());
     }
     else if (!Parent->chanserv.live[channel.LowerCase()].IsIn(nick))
     {
-	wxLogWarning("PART command requested by %s who is not in channel %s",
+	Log(LM_WARNING, "PART command requested by %s who is not in channel %s",
 		nick.c_str(), channel.c_str());
     }
     else
@@ -1157,13 +1160,13 @@ void NetworkServ::PRIVMSG(mstring nick, mstring dest, mstring text)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("PRIVMSG command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "PRIVMSG command requested by non-service %s", nick.c_str());
     }
     else if (!(dest[0u] == '$' || dest[0u] == '#' ||
 		Parent->nickserv.IsLive(dest) ||
 		Parent->chanserv.IsLive(dest)))
     {
-	wxLogWarning("PRIVMSG command requested by %s for non-existant user/channel %s",
+	Log(LM_WARNING, "PRIVMSG command requested by %s for non-existant user/channel %s",
 		nick.c_str(), dest.c_str());
     }
     else
@@ -1191,7 +1194,7 @@ void NetworkServ::QLINE(mstring nick, mstring target, mstring reason)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("QLINE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "QLINE command requested by non-service %s", nick.c_str());
     }
     else
     {
@@ -1206,11 +1209,11 @@ void NetworkServ::QUIT(mstring nick, mstring reason)
 
     if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("QUIT command requested by non-existant user %s", nick.c_str());
+	Log(LM_WARNING, "QUIT command requested by non-existant user %s", nick.c_str());
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("QUIT command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "QUIT command requested by non-service %s", nick.c_str());
     }
     else
     {
@@ -1238,11 +1241,11 @@ void NetworkServ::SVSMODE(mstring mynick, mstring nick, mstring mode)
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	wxLogWarning("SVSMODE command requested by non-service %s", mynick.c_str());
+	Log(LM_WARNING, "SVSMODE command requested by non-service %s", mynick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("SVSMODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	Log(LM_WARNING, "SVSMODE command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
     }
     else
     {
@@ -1269,11 +1272,11 @@ void NetworkServ::SVSKILL(mstring mynick, mstring nick, mstring reason)
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	wxLogWarning("SVSKILL command requested by non-service %s", mynick.c_str());
+	Log(LM_WARNING, "SVSKILL command requested by non-service %s", mynick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("SVSKILL command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	Log(LM_WARNING, "SVSKILL command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
     }
     else
     {
@@ -1300,11 +1303,11 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	wxLogWarning("SVSHOST command requested by non-service %s", mynick.c_str());
+	Log(LM_WARNING, "SVSHOST command requested by non-service %s", mynick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("SVSHOST command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	Log(LM_WARNING, "SVSHOST command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
     }
     else
     {
@@ -1331,15 +1334,15 @@ void NetworkServ::SVSNICK(mstring mynick, mstring nick, mstring newnick)
     }
     else if (!Parent->nickserv.live[mynick.LowerCase()].IsServices())
     {
-	wxLogWarning("SVSNICK command requested by non-service %s", mynick.c_str());
+	Log(LM_WARNING, "SVSNICK command requested by non-service %s", mynick.c_str());
     }
     else if (!Parent->nickserv.IsLive(nick))
     {
-	wxLogWarning("SVSNICK command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
+	Log(LM_WARNING, "SVSNICK command requested by %s on non-existant user %s", mynick.c_str(), nick.c_str());
     }
     else if (Parent->nickserv.IsLive(newnick))
     {
-	wxLogWarning("SVSNICK command requested by %s to existing user %s", mynick.c_str(), newnick.c_str());
+	Log(LM_WARNING, "SVSNICK command requested by %s to existing user %s", mynick.c_str(), newnick.c_str());
     }
     else
     {
@@ -1365,11 +1368,11 @@ void NetworkServ::TOPIC(mstring nick, mstring setter, mstring channel, mstring t
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("TOPIC command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "TOPIC command requested by non-service %s", nick.c_str());
     }
     else if (!Parent->chanserv.IsLive(channel))
     {
-	wxLogWarning("TOPIC command requested by %s for non-existant channel %s",
+	Log(LM_WARNING, "TOPIC command requested by %s for non-existant channel %s",
 		nick.c_str(), channel.c_str());
     }
     else
@@ -1404,7 +1407,7 @@ void NetworkServ::UNQLINE(mstring nick, mstring target)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("UNQLINE command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "UNQLINE command requested by non-service %s", nick.c_str());
     }
     else
     {
@@ -1427,7 +1430,7 @@ void NetworkServ::WALLOPS(mstring nick, mstring message)
     }
     else if (!Parent->nickserv.live[nick.LowerCase()].IsServices())
     {
-	wxLogWarning("WALLOPS command requested by non-service %s", nick.c_str());
+	Log(LM_WARNING, "WALLOPS command requested by non-service %s", nick.c_str());
     }
     else
     {
@@ -1534,12 +1537,12 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
     case 'B':
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     case 'C':
@@ -1563,29 +1566,29 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
     case 'D':
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     case 'E':
 	if (msgtype=="ERROR")
 	{
 	    // ERROR :This is my error
-	    wxLogNotice(Parent->getLogMessage("OTHER/SERVER_MSG"),
+	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
 		    msgtype.c_str(), data.After(":").c_str());
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
     case 'F':
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     case 'G':
@@ -1602,7 +1605,7 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="GNOTICE")
 	{
 	    // :server GNOTICE :This message
-	    wxLogNotice(Parent->getLogMessage("OTHER/SERVER_MSG"),
+	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/SERVER_MSG"),
 		    msgtype.c_str(), data.After(":").c_str());
 	}
 	else if (msgtype=="GOPER")
@@ -1611,12 +1614,12 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
     case 'H':
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     case 'I':
@@ -1659,7 +1662,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -1675,7 +1678,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -1709,7 +1712,7 @@ void NetworkServ::execute(const mstring & data)
 		// sign on services again if they're killed.
 		if (Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].IsServices())
 		{
-		    wxLogWarning(Parent->getLogMessage("OTHER/KILLED"),
+		    Log(LM_WARNING, Parent->getLogMessage("OTHER/KILLED"),
 			    data.ExtractWord(3, ": ").c_str(),
 			    Parent->nickserv.live[sourceL].Mask(Nick_Live_t::N_U_P_H).c_str());
 		    WaitIsOn.insert(data.ExtractWord(3, ": "));
@@ -1722,14 +1725,14 @@ void NetworkServ::execute(const mstring & data)
 	    }
 	    else
 	    {
-		wxLogWarning("Received KILL message for user %s who does not exist, from %s",
+		Log(LM_WARNING, "Received KILL message for user %s who does not exist, from %s",
 			data.ExtractWord(3, ": ").c_str(), source.c_str());
 	    }
 
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -1767,7 +1770,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -1785,7 +1788,7 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    wxLogWarning("MODE from %s received for non-existant channel %s", source.c_str(),
+		    Log(LM_WARNING, "MODE from %s received for non-existant channel %s", source.c_str(),
 			data.ExtractWord(3, ": ").c_str());
 		}
 	    }
@@ -1797,7 +1800,7 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    wxLogWarning("MODE received for non-existant nickname %s",
+		    Log(LM_WARNING, "MODE received for non-existant nickname %s",
 			data.ExtractWord(3, ": ").c_str());
 		}
 	    }
@@ -1839,7 +1842,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2018,13 +2021,13 @@ void NetworkServ::execute(const mstring & data)
 	    // :source NOTICE target/#channel :message
 	    // NOTICE target :message
 	    if (!source && !IsChan(data.ExtractWord(2, ": ")))
-		wxLogNotice("Received NOTICE for unknown user " + data.ExtractWord(2, ": "));
+		Log(LM_NOTICE, "Received NOTICE for unknown user " + data.ExtractWord(2, ": "));
 	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
-		wxLogNotice("Received NOTICE for unknown user " + data.ExtractWord(3, ": "));
+		Log(LM_NOTICE, "Received NOTICE for unknown user " + data.ExtractWord(3, ": "));
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2034,7 +2037,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2052,7 +2055,7 @@ void NetworkServ::execute(const mstring & data)
 	    // PASS :password
 	    if (data.ExtractWord(2, ": ") != Parent->startup.Server(Parent->Server()).second)
 	    {
-		wxLogError(Parent->getLogMessage("OTHER/WRONGPASS"),
+		Log(LM_ERROR, Parent->getLogMessage("OTHER/WRONGPASS"),
 			Parent->Server().c_str());
 		CP(("Server password mismatch.  Closing socket."));
 		raw("ERROR :No Access (passwd mismatch) [" + Parent->Server() + "]");
@@ -2091,9 +2094,9 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source PRIVMSG target/#channel :message
 	    if (source && !IsChan(data.ExtractWord(2, ": ")))
-		wxLogNotice("Received PRIVMSG for unknown user " + data.ExtractWord(2, ": "));
+		Log(LM_NOTICE, "Received PRIVMSG for unknown user " + data.ExtractWord(2, ": "));
 	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
-		wxLogNotice("Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
+		Log(LM_NOTICE, "Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
 	}
 	else if (msgtype=="PROTOCTL")
 	{
@@ -2101,7 +2104,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2129,7 +2132,7 @@ void NetworkServ::execute(const mstring & data)
 		 */
 		Parent->nickserv.live[sourceL].SetSquit();
 		ToBeSquit[data.ExtractWord(4, ": ").LowerCase()].push_back(sourceL);
-		wxLogNotice(Parent->getLogMessage("OTHER/SQUIT_FIRST"),
+		Log(LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_FIRST"),
 			data.ExtractWord(4, ": ").c_str(),
 			data.ExtractWord(3, ": ").c_str());
 
@@ -2155,7 +2158,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2175,7 +2178,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2190,7 +2193,7 @@ void NetworkServ::execute(const mstring & data)
 			data.ExtractWord(2, ": ").LowerCase(),
 			ACE_OS::atoi(data.ExtractWord(3, ": ").LowerCase().c_str()),
 			data.After(":"));
-		wxLogInfo(Parent->getLogMessage("OTHER/LINK"),
+		Log(LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(2, ": ").c_str(),
 			Parent->startup.Server_Name().c_str());
 	    }
@@ -2203,7 +2206,7 @@ void NetworkServ::execute(const mstring & data)
 			sourceL,
 			ACE_OS::atoi(data.ExtractWord(4, ": ").LowerCase().c_str()),
 			data.After(":", 2));
-		    wxLogInfo(Parent->getLogMessage("OTHER/LINK"),
+		    Log(LM_INFO, Parent->getLogMessage("OTHER/LINK"),
 			data.ExtractWord(3, ": ").c_str(), sourceL.c_str());
 		}
 		else
@@ -2414,7 +2417,7 @@ void NetworkServ::execute(const mstring & data)
 	    else
 		target = data.ExtractWord(3, ": ").LowerCase();
 
-	    wxLogNotice(Parent->getLogMessage("OTHER/SQUIT_SECOND"),
+	    Log(LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_SECOND"),
 		    target.c_str(),
 		    ServerList[target.LowerCase()].Uplink().c_str());
 
@@ -2483,7 +2486,7 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    wxLogWarning("MODE from %s received for non-existant channel %s", source.c_str(),
+		    Log(LM_WARNING, "MODE from %s received for non-existant channel %s", source.c_str(),
 			data.ExtractWord(3, ": ").c_str());
 		}
 	    }
@@ -2495,7 +2498,7 @@ void NetworkServ::execute(const mstring & data)
 		}
 		else
 		{
-		    wxLogWarning("MODE from %s received for non-existant user %s", source.c_str(),
+		    Log(LM_WARNING, "MODE from %s received for non-existant user %s", source.c_str(),
 			data.ExtractWord(3, ": ").c_str());
 		}
 	    }
@@ -2510,7 +2513,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2577,7 +2580,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2734,7 +2737,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2800,7 +2803,7 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
@@ -2964,24 +2967,24 @@ void NetworkServ::execute(const mstring & data)
 	}
 	else
 	{
-	    wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	    Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	}
 	break;
     case 'X':
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     case 'Y':
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     case 'Z':
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     default:
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     }
@@ -3293,13 +3296,13 @@ void NetworkServ::numeric_execute(const mstring & data)
 	break;
     case 464:     // ERR_PASSWDMISMATCH
 	// MUST handle (Stop connecting).
-	wxLogError(Parent->getLogMessage("OTHER/WRONGPASS"),
+	Log(LM_ERROR, Parent->getLogMessage("OTHER/WRONGPASS"),
 		Parent->Server().c_str());
 	Parent->Disconnect();
 	break;
     case 465:     // ERR_YOUREBANNEDCREEP
 	// MUST handle (Stop connecting).
-	wxLogError(Parent->getLogMessage("OTHER/WEAREBANNED"),
+	Log(LM_ERROR, Parent->getLogMessage("OTHER/WEAREBANNED"),
 		Parent->Server().c_str());
 	Parent->Disconnect();
 	break;
@@ -3328,7 +3331,7 @@ void NetworkServ::numeric_execute(const mstring & data)
     case 502:     // ERR_USERSDONTMATCH
 	break;
     default:
-	wxLogWarning(Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
+	Log(LM_WARNING, Parent->getLogMessage("ERROR/UNKNOWN_MSG"),
 			data.c_str());
 	break;
     }

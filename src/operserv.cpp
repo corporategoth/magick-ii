@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2000/05/21 04:49:40  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.77  2000/05/17 07:47:59  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -1426,7 +1429,7 @@ void OperServ::do_Reload(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	wxLogError("Could not read magick config file %s.", Parent->Config_File().c_str());
+	Log(LM_ERROR, "Could not read magick config file %s.", Parent->Config_File().c_str());
 	::send(mynick, source, Parent->getMessage(source, "OS_COMMAND/RELOAD_FAIL"));
     }
 }

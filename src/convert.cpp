@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.14  2000/05/21 04:49:39  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.13  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -81,9 +84,9 @@ get_file_version (FILE * f, const char *filename)
 {
     int version = fgetc (f) << 24 | fgetc (f) << 16 | fgetc (f) << 8 | fgetc (f);
     if (ferror (f) || feof (f))
-	wxLogFatal ("Error reading version number on %s", filename);
+	Log(LM_EMERGENCY, "Error reading version number on %s", filename);
     else if (version > file_version || version < 1)
-	wxLogFatal ("Invalid version number (%d) on %s", version, filename);
+	Log(LM_EMERGENCY, "Invalid version number (%d) on %s", version, filename);
     return version;
 }
 
@@ -96,7 +99,7 @@ read_string (FILE * f, const char *filename)
     len = fgetc (f) * 256 + fgetc (f);
     s = (char *) ACE_OS::malloc (len);
     if (len != ACE_OS::fread (s, 1, len, f))
-	wxLogFatal ("Read error on %s", filename);
+	Log(LM_EMERGENCY, "Read error on %s", filename);
     return s;
 }
 
@@ -111,7 +114,7 @@ load_ns_dbase (void)
 
     if (!f)
     {
-	wxLogError ("Can't read NickServ database %s", nickserv_db);
+	Log(LM_ERROR, "Can't read NickServ database %s", nickserv_db);
 	return;
     }
     switch (i = get_file_version (f, nickserv_db))
@@ -123,7 +126,7 @@ load_ns_dbase (void)
 	{
 	    ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
 	    if (1 != ACE_OS::fread (ni, sizeof (NickInfo), 1, f))
-		wxLogFatal ("Read error on %s", nickserv_db);
+		Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 	    ni->flags &= ~(NI_IDENTIFIED | NI_RECOGNIZED);
 	    if (ni->email) {
 		ni->email = read_string (f, nickserv_db);
@@ -174,7 +177,7 @@ load_ns_dbase (void)
 		ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
 		old_ni = (NickInfo_V3 *) ACE_OS::malloc (sizeof (NickInfo_V3));
 		if (1 != ACE_OS::fread (old_ni, sizeof (NickInfo_V3), 1, f))
-		    wxLogFatal ("Read error on %s", nickserv_db);
+		    Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 		ACE_OS::strcpy(ni->nick, old_ni->nick);
 		ACE_OS::strcpy(ni->pass, old_ni->pass);
 		ni->time_registered = old_ni->time_registered;
@@ -236,7 +239,7 @@ load_ns_dbase (void)
 		ni = (NickInfo *) ACE_OS::malloc (sizeof (NickInfo));
 		old_ni = (NickInfo_V1 *) ACE_OS::malloc (sizeof (NickInfo_V1));
 		if (1 != ACE_OS::fread (ni, sizeof (NickInfo_V1), 1, f))
-		    wxLogFatal ("Read error on %s", nickserv_db);
+		    Log(LM_EMERGENCY, "Read error on %s", nickserv_db);
 		ACE_OS::strcpy(ni->nick, old_ni->nick);
 		ACE_OS::strcpy(ni->pass, old_ni->pass);
 		ni->time_registered = old_ni->time_registered;
@@ -267,7 +270,7 @@ load_ns_dbase (void)
 	break;
 	}
     default:
-	wxLogFatal ("Unsupported version number (%d) on %s", i, nickserv_db);
+	Log(LM_EMERGENCY, "Unsupported version number (%d) on %s", i, nickserv_db);
     }				/* switch (version) */
     fclose (f);
 }
@@ -403,7 +406,7 @@ load_cs_dbase (void)
 
     if (!f)
     {
-	wxLogError ("Can't read ChanServ database %s", chanserv_db);
+	Log(LM_ERROR, "Can't read ChanServ database %s", chanserv_db);
 	return;
     }
 
@@ -415,7 +418,7 @@ load_cs_dbase (void)
 	    {
 		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
 		if (1 != ACE_OS::fread (ci, sizeof (ChanInfo), 1, f))
-		    wxLogFatal ("Read error on %s", chanserv_db);
+		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		ci->desc = read_string (f, chanserv_db);
 		if (ci->url)
 		    ci->url = read_string (f, chanserv_db);
@@ -431,7 +434,7 @@ load_cs_dbase (void)
 		    ci->access = access;
 		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
 			access->name = read_string (f, chanserv_db);
 		    j = 0;
@@ -470,7 +473,7 @@ load_cs_dbase (void)
 		    ci->akick = akick;
 		    if (ci->akickcount !=
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
 		    {
 			akick->name = read_string (f, chanserv_db);
@@ -515,7 +518,7 @@ load_cs_dbase (void)
 		    ci->cmd_access = (short *) ACE_OS::malloc (sizeof (short) * CA_SIZE);
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    if (n_entries <= CA_SIZE)
 		    {
 			ACE_OS::fread (ci->cmd_access, sizeof (short), n_entries, f);
@@ -544,7 +547,7 @@ load_cs_dbase (void)
 		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
 		old_ci = (ChanInfo_V3 *) ACE_OS::malloc (sizeof (ChanInfo_V3));
 		if (1 != ACE_OS::fread (old_ci, sizeof (ChanInfo_V3), 1, f))
-		    wxLogFatal ("Read error on %s", chanserv_db);
+		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		/* Convert old dbase! */
 		ACE_OS::strcpy(ci->mlock_on, oldmodeconv(old_ci->mlock_on));
 		ACE_OS::strcpy(ci->mlock_off, oldmodeconv(old_ci->mlock_off));
@@ -600,7 +603,7 @@ load_cs_dbase (void)
 		    ci->access = access;
 		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
 			access->name = read_string (f, chanserv_db);
 		    j = 0;
@@ -639,7 +642,7 @@ load_cs_dbase (void)
 		    ci->akick = akick;
 		    if (ci->akickcount !=
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
 		    {
 			akick->name = read_string (f, chanserv_db);
@@ -684,7 +687,7 @@ load_cs_dbase (void)
 		    ci->cmd_access = (short *) ACE_OS::malloc (sizeof (short) * CA_SIZE);
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    if (n_entries <= CA_SIZE)
 		    {
 			ACE_OS::fread (ci->cmd_access, sizeof (short), n_entries, f);
@@ -714,7 +717,7 @@ load_cs_dbase (void)
 		ci = (ChanInfo *) ACE_OS::malloc (sizeof (ChanInfo));
 		old_ci = (ChanInfo_V1 *) ACE_OS::malloc (sizeof (ChanInfo_V1));
 		if (1 != ACE_OS::fread (old_ci, sizeof (ChanInfo_V1), 1, f))
-		    wxLogFatal ("Read error on %s", chanserv_db);
+		    Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		/* Convert old dbase! */
 		ACE_OS::strcpy(ci->mlock_on, oldmodeconv(old_ci->mlock_on));
 		ACE_OS::strcpy(ci->mlock_off, oldmodeconv(old_ci->mlock_off));
@@ -757,7 +760,7 @@ load_cs_dbase (void)
 		    ci->access = access;
 		    if (ci->accesscount != ACE_OS::fread (access, sizeof (ChanAccess),
 						  ci->accesscount, f))
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->accesscount; ++j, ++access)
 			access->name = read_string (f, chanserv_db);
 		    j = 0;
@@ -796,7 +799,7 @@ load_cs_dbase (void)
 		    ci->akick = akick;
 		    if (ci->akickcount !=
 			ACE_OS::fread (akick, sizeof (AutoKick), ci->akickcount, f))
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    for (j = 0; j < ci->akickcount; ++j, ++akick)
 		    {
 			akick->name = read_string (f, chanserv_db);
@@ -841,7 +844,7 @@ load_cs_dbase (void)
 		    ci->cmd_access = (short *) ACE_OS::malloc (sizeof (short) * CA_SIZE);
 		    n_entries = fgetc (f) << 8 | fgetc (f);
 		    if (n_entries < 0)
-			wxLogFatal ("Read error on %s", chanserv_db);
+			Log(LM_EMERGENCY, "Read error on %s", chanserv_db);
 		    if (n_entries <= CA_SIZE)
 		    {
 			ACE_OS::fread (ci->cmd_access, sizeof (short), n_entries, f);
@@ -862,7 +865,7 @@ load_cs_dbase (void)
 	break;			/* case 1, etc. */
 	}
     default:
-	wxLogFatal ("Unsupported version number (%d) on %s", i, chanserv_db);
+	Log(LM_EMERGENCY, "Unsupported version number (%d) on %s", i, chanserv_db);
     }				/* switch (version) */
     fclose (f);
 }
@@ -1155,7 +1158,7 @@ load_ms_dbase (void)
 
     if (!f)
     {
-	wxLogError ("Can't read MemoServ database %s", memoserv_db);
+	Log(LM_ERROR, "Can't read MemoServ database %s", memoserv_db);
 	return;
     }
     switch (i = get_file_version (f, memoserv_db))
@@ -1170,7 +1173,7 @@ load_ms_dbase (void)
 	    {
 		ml = (MemoList *) ACE_OS::malloc (sizeof (MemoList));
 		if (1 != ACE_OS::fread (ml, sizeof (MemoList), 1, f))
-		    wxLogFatal ("Read error on %s", memoserv_db);
+		    Log(LM_EMERGENCY, "Read error on %s", memoserv_db);
 		ml->memos = memos = (Memo *) ACE_OS::malloc (sizeof (Memo) * ml->n_memos);
 		ACE_OS::fread (memos, sizeof (Memo), ml->n_memos, f);
 		for (j = 0; j < ml->n_memos; ++j, ++memos)
@@ -1183,7 +1186,7 @@ load_ms_dbase (void)
 	    }
 	break;
     default:
-	wxLogFatal ("Unsupported version number (%d) on %s", i, memoserv_db);
+	Log(LM_EMERGENCY, "Unsupported version number (%d) on %s", i, memoserv_db);
     }				/* switch (version) */
     fclose (f);
 }
@@ -1201,7 +1204,7 @@ load_news_dbase (void)
 
     if (!f)
     {
-	wxLogError ("Can't read NewsServ database %s", newsserv_db);
+	Log(LM_ERROR, "Can't read NewsServ database %s", newsserv_db);
 	return;
     }
     switch (i = get_file_version (f, newsserv_db))
@@ -1217,7 +1220,7 @@ load_news_dbase (void)
 	    {
 		nl = (NewsList *) ACE_OS::malloc (sizeof (NewsList));
 		if (1 != ACE_OS::fread (nl, sizeof (NewsList), 1, f))
-		    wxLogFatal ("Read error on %s", newsserv_db);
+		    Log(LM_EMERGENCY, "Read error on %s", newsserv_db);
 		nl->newss = newss = (Memo *) ACE_OS::malloc (sizeof (Memo) * nl->n_newss);
 		ACE_OS::fread (newss, sizeof (Memo), nl->n_newss, f);
 		for (j = 0; j < nl->n_newss; ++j, ++newss)
@@ -1231,7 +1234,7 @@ load_news_dbase (void)
 	}
 	break;
     default:
-	wxLogFatal ("Unsupported version number (%d) on %s", i, newsserv_db);
+	Log(LM_EMERGENCY, "Unsupported version number (%d) on %s", i, newsserv_db);
     }				/* switch (version) */
     fclose (f);
 }
@@ -1349,7 +1352,7 @@ load_sop ()
 
     if (!f)
     {
-	wxLogError ("Can't read SOP database %s", sop_db);
+	Log(LM_ERROR, "Can't read SOP database %s", sop_db);
 	return;
     }
     switch (i = get_file_version (f, sop_db))
@@ -1371,7 +1374,7 @@ load_sop ()
 	    return;
 	}
 	if (nsop != ACE_OS::fread (sops, sizeof (Sop), nsop, f))
-	    wxLogFatal ("Read error on %s", sop_db);
+	    Log(LM_EMERGENCY, "Read error on %s", sop_db);
 
 	if (Parent->commserv.IsList(Parent->commserv.SOP_Name()))
 	{
@@ -1384,7 +1387,7 @@ load_sop ()
 	ACE_OS::free(sops);
 	break;
     default:
-	wxLogFatal ("Unsupported version (%d) on %s", i, sop_db);
+	Log(LM_EMERGENCY, "Unsupported version (%d) on %s", i, sop_db);
     }				/* switch (version) */
     fclose (f);
 }
@@ -1400,7 +1403,7 @@ load_message ()
 
     if (!f)
     {
-	wxLogError ("Can't read MESSAGE database %s", message_db);
+	Log(LM_ERROR, "Can't read MESSAGE database %s", message_db);
 	return;
     }
     switch (i = get_file_version (f, message_db))
@@ -1422,7 +1425,7 @@ load_message ()
 	    return;
 	}
 	if (nmessage != ACE_OS::fread (messages, sizeof (*messages), nmessage, f))
-	    wxLogFatal ("Read error on %s", message_db);
+	    Log(LM_EMERGENCY, "Read error on %s", message_db);
 	for (j = 0; j < nmessage; ++j)
 	    messages[j].text = read_string (f, message_db);
 
@@ -1448,7 +1451,7 @@ load_message ()
 	break;
 
     default:
-	wxLogFatal ("Unsupported version (%d) on %s", i, message_db);
+	Log(LM_EMERGENCY, "Unsupported version (%d) on %s", i, message_db);
     }				/* switch (version) */
     fclose (f);
 }
@@ -1464,7 +1467,7 @@ load_akill ()
 
     if (!f)
     {
-	wxLogError ("Can't read AKILL database %s", akill_db);
+	Log(LM_ERROR, "Can't read AKILL database %s", akill_db);
 	return;
     }
     switch (i = get_file_version (f, akill_db))
@@ -1485,7 +1488,7 @@ load_akill ()
 	    return;
 	}
 	if (nakill != ACE_OS::fread (akills, sizeof (*akills), nakill, f))
-	    wxLogFatal ("Read error on %s", akill_db);
+	    Log(LM_EMERGENCY, "Read error on %s", akill_db);
 	for (j = 0; j < nakill; ++j)
 	{
 	    akills[j].mask = read_string (f, akill_db);
@@ -1536,7 +1539,7 @@ load_akill ()
 	    for (j = 0; j < nakill; ++j)
 	    {
 		if (1 != ACE_OS::fread (&old_akill, sizeof (old_akill), 1, f))
-		    wxLogFatal ("Read error on %s", akill_db);
+		    Log(LM_EMERGENCY, "Read error on %s", akill_db);
 		akills[j].time = old_akill.time;
 		akills[j].who[0] = 0;
 	    }
@@ -1576,7 +1579,7 @@ load_akill ()
 	break;
 
     default:
-	wxLogFatal ("Unsupported version (%d) on %s", i, akill_db);
+	Log(LM_EMERGENCY, "Unsupported version (%d) on %s", i, akill_db);
     }				/* switch (version) */
     fclose (f);
 }
@@ -1592,7 +1595,7 @@ load_clone ()
 
     if (!f)
     {
-	wxLogError ("Can't read CLONE database %s", clone_db);
+	Log(LM_ERROR, "Can't read CLONE database %s", clone_db);
 	return;
     }
     switch (i = get_file_version (f, clone_db))
@@ -1614,7 +1617,7 @@ load_clone ()
 	    return;
 	}
 	if (nclone != ACE_OS::fread (clones, sizeof (*clones), nclone, f))
-	    wxLogFatal ("Read error on %s", clone_db);
+	    Log(LM_EMERGENCY, "Read error on %s", clone_db);
 	for (j = 0; j < nclone; ++j)
 	{
 	    clones[j].host = read_string (f, clone_db);
@@ -1638,7 +1641,7 @@ load_clone ()
 	ACE_OS::free(clones);
 	break;
     default:
-	wxLogFatal ("Unsupported version (%d) on %s", i, clone_db);
+	Log(LM_EMERGENCY, "Unsupported version (%d) on %s", i, clone_db);
     }				/* switch (version) */
     fclose (f);
 }

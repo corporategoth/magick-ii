@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.37  2000/05/21 04:49:41  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.36  2000/05/20 15:17:00  prez
 ** Changed LOG system to use ACE's log system, removed wxLog, and
 ** added wrappers into pch.h and magick.cpp.
@@ -158,7 +161,7 @@ mstring &wxGetHomeDir(mstring &pstr)
       struct passwd *pwent = ACE_OS::getpwnam(ACE_OS::cuserid(NULL));
       if (pwent == NULL || pwent->pw_dir == NULL)
       {
-	wxLogWarning(Parent->getLogMessage("WX_ERRORS/NOHOMEDIR"));
+	Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/NOHOMEDIR"));
 	strDir = ".";
       }
       else
@@ -229,7 +232,7 @@ unsigned long TxnIds::Create()
     }
     else
     {
-	wxLogError(Parent->getLogMessage("WX_ERRORS/OUTOFTXNIDS"));
+	Log(LM_ERROR, Parent->getLogMessage("WX_ERRORS/OUTOFTXNIDS"));
 	RET(0);
     }
 }

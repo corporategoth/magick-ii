@@ -21,6 +21,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/05/21 04:49:38  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.15  2000/05/20 16:05:07  prez
 ** Finished off the log conversion (still via. wrappers)
 **
@@ -106,14 +109,7 @@ using namespace std;
 
 #include <zlib.h>
 
-// THIS IS A TEMPORARY FIX!!
-extern void wxLogFatal(const char *szFormat, ...);
-extern void wxLogError(const char *szFormat, ...);
-extern void wxLogWarning(const char *szFormat, ...);
-extern void wxLogNotice(const char *szFormat, ...);
-extern void wxLogInfo(const char *szFormat, ...);
-extern void wxLogVerbose(const char *szFormat, ...);
-extern void wxLogDebug(const char *szFormat, ...);
-extern void wxLogSysError(const char *szFormat, ...);
+extern size_t Log(ACE_Log_Priority priority, const char *messages, ...);
+extern size_t LogV(ACE_Log_Priority priority, const char *messages, va_list argptr);
 
 #endif

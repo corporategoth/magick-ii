@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.31  2000/05/21 04:49:39  prez
+** Removed all wxLog tags, now totally using our own logging.
+**
 ** Revision 1.30  2000/04/30 03:48:29  prez
 ** Replaced all system calls with ACE_OS equivilants,
 ** also removed any dependancy on ACE from sxp (xml)
@@ -150,7 +153,7 @@ mstring wxExpandEnvVars(const mstring& str)
           // check the closing bracket
           if ( bracket != Bracket_None ) {
             if ( m == str.length() || str[m] != (char)bracket ) {
-              wxLogWarning(Parent->getLogMessage("WX_ERRORS/ENVIRONMENT"),
+              Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/ENVIRONMENT"),
                            (char)bracket, m + 1, str.c_str());
             }
             else {
@@ -199,7 +202,7 @@ void wxSplitPath(mArrayString& aParts, const mstring &sz)
       else if ( strCurrent == ".." ) {
         // go up one level
         if ( aParts.size()==0 )
-          wxLogWarning(Parent->getLogMessage("WX_ERRORS/EXTRA"), sz.c_str());
+          Log(LM_WARNING, Parent->getLogMessage("WX_ERRORS/EXTRA"), sz.c_str());
         else
           aParts.erase(aParts.end() - 1);
 
