@@ -258,10 +258,10 @@ void LOG2(ACE_Log_Priority type, const mstring & msg);
 // Exception catching ...
 #define BTCB() try {
 #define ETCB() } catch(exception &E) { \
-		T_Exception(__FILE__, __LINE__, E.what()); \
+		T_Exception __tcb(__FILE__, __LINE__, E.what()); \
                 throw; \
         } catch(...) { \
-		T_Exception(__FILE__, __LINE__, "NON-C++ EXCEPTION"); \
+		T_Exception __tcb(__FILE__, __LINE__, "NON-C++ EXCEPTION"); \
                 throw; \
         }
 
