@@ -1920,7 +1920,8 @@ void CommServ::do_logon_Add(const mstring & mynick, const mstring & source, cons
 	    if (Magick::instance().commserv.IsList(Magick::instance().commserv.Ovr_Logon().ExtractWord(i, " ")) &&
 		i<Magick::instance().commserv.GetList(Magick::instance().commserv.Ovr_Logon().ExtractWord(i, " "))->IsOn(source))
 		break;
-	if (i == Magick::instance().commserv.Ovr_Logon().WordCount(" "))
+	if (!Magick::instance().commserv.Ovr_Logon().size() ||
+	    i == Magick::instance().commserv.Ovr_Logon().WordCount(" "))
 	{
 	    SEND(mynick, source, "COMMSERV/MAX_MESSAGES", (committee));
 	    return;

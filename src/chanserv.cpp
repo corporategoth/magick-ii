@@ -875,7 +875,8 @@ void ChanServ::do_Register(const mstring & mynick, const mstring & source, const
 	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
 		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
 		break;
-	if (i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
+	if (!Magick::instance().chanserv.Ovr_Per_Nick().size() ||
+	    i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
 	{
 	    NSEND(mynick, source, "CS_STATUS/TOOMANY");
 	    return;
@@ -4841,7 +4842,8 @@ void ChanServ::do_message_Add(const mstring & mynick, const mstring & source, co
 	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Messages().ExtractWord(i, " ")) &&
 		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Messages().ExtractWord(i, " "))->IsOn(source))
 		break;
-	if (i == Magick::instance().chanserv.Ovr_Messages().WordCount(" "))
+	if (!Magick::instance().chanserv.Ovr_Messages().size() ||
+	    i == Magick::instance().chanserv.Ovr_Messages().WordCount(" "))
 	{
 	    SEND(mynick, source, "CS_STATUS/MAX_MESSAGES", (channel));
 	    return;
@@ -5049,7 +5051,8 @@ void ChanServ::do_set_Founder(const mstring & mynick, const mstring & source, co
 	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
 		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
 		break;
-	if (i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
+	if (!Magick::instance().chanserv.Ovr_Per_Nick().size() ||
+	    i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_TOOMANY", (founder));
 	    return;
@@ -5130,7 +5133,8 @@ void ChanServ::do_set_CoFounder(const mstring & mynick, const mstring & source, 
 	    if (Magick::instance().commserv.IsList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " ")) &&
 		i<Magick::instance().commserv.GetList(Magick::instance().chanserv.Ovr_Per_Nick().ExtractWord(i, " "))->IsOn(source))
 		break;
-	if (i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
+	if (!Magick::instance().chanserv.Ovr_Per_Nick().size() ||
+	    i == Magick::instance().chanserv.Ovr_Per_Nick().WordCount(" "))
 	{
 	    SEND(mynick, source, "CS_STATUS/OTH_TOOMANY", (founder));
 	    return;
