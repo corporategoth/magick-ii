@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.122  2000/08/07 22:38:50  prez
+** Stopped the 'expiring nickname  ()' messages.
+**
 ** Revision 1.121  2000/08/07 12:20:27  prez
 ** Fixed akill and news expiry (flaw in logic), added transferral of
 ** memo list when set new nick as host, and fixed problems with commserv
@@ -843,7 +846,8 @@ int EventTask::svc(void)
 		WLOCK(("NickServ", "stored"));
 		for (i=0; i<expired_nicks.size(); i++)
 		{
-		    Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
+		    if (Parent->nickserv.stored[expired_nicks[i]].Name() != "")
+			Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
 			    Parent->nickserv.stored[expired_nicks[i]].Name().c_str(),
 			    ((Parent->nickserv.stored[expired_nicks[i]].Host() != "") ?
 				Parent->nickserv.stored[expired_nicks[i]].Host().c_str() :
@@ -871,7 +875,8 @@ int EventTask::svc(void)
 		WLOCK(("ChanServ", "stored"));
 		for (i=0; i<expired_chans.size(); i++)
 		{
-		    Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
+		    if (Parent->chanserv.stored[expired_chans[i]].Name() != "")
+			Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
 			    Parent->chanserv.stored[expired_chans[i]].Name().c_str(),
 			    Parent->chanserv.stored[expired_chans[i]].Founder().c_str());
 		    Parent->chanserv.stored.erase(expired_chans[i]);
