@@ -2850,6 +2850,15 @@ void NickServ::AddCommands()
     NFT("NickServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
+    // These simply throw the command back onto the map
+    // with 2 paramaters (seperated by a space)
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET", "ALL", NickServ::do_2ndparam);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "ACC*", "ALL", NickServ::do_2ndparam);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "IGN*", "ALL", NickServ::do_2ndparam);
+
     Parent->commands.AddSystemCommand(GetInternalName(),
 		    "REG*", "ALL", NickServ::do_Register);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -2911,6 +2920,8 @@ void NickServ::execute(const mstring & data)
     mThread::ReAttach(tt_mBase);
 }
 
+void do_Help(mstring mynick, mstring source, mstring params)
+
 void NickServ::do_Register(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Register", (mynick, source, params));
@@ -2939,6 +2950,12 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
     }
 }
 
+void do_Drop(mstring mynick, mstring source, mstring params)
+void do_Link(mstring mynick, mstring source, mstring params)
+void do_UnLink(mstring mynick, mstring source, mstring params)
+void do_Host(mstring mynick, mstring source, mstring params)
+void do_Slaves(mstring mynick, mstring source, mstring params)
+
 void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
 {
     FT("OperServ::do_Identify", (mynick, source, params));
@@ -2953,6 +2970,43 @@ void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
     mstring password = params.ExtractWord(2, " ").UpperCase();
     ::send(mynick, source, Parent->nickserv.live[source.LowerCase()].Identify(password));
 }
+
+void do_Info(mstring mynick, mstring source, mstring params)
+void do_Suspend(mstring mynick, mstring source, mstring params)
+void do_Forbid(mstring mynick, mstring source, mstring params)
+
+void NickServ::do_2ndparam(mstring mynick, mstring source, mstring params)
+{
+    mstring command = params.Before(" ", 2);
+    if (!Parent->commands.DoCommand(mynick, source, command, params))
+    {
+	::send(mynick, source, "Invalid command.");
+    }
+
+}
+
+
+void do_access_Current(mstring mynick, mstring source, mstring params)
+void do_access_Add(mstring mynick, mstring source, mstring params)
+void do_access_Del(mstring mynick, mstring source, mstring params)
+void do_access_List(mstring mynick, mstring source, mstring params)
+void do_ignore_Add(mstring mynick, mstring source, mstring params)
+void do_ignore_Del(mstring mynick, mstring source, mstring params)
+void do_ignore_List(mstring mynick, mstring source, mstring params)
+void do_set_Password(mstring mynick, mstring source, mstring params)
+void do_set_Email(mstring mynick, mstring source, mstring params)
+void do_set_URL(mstring mynick, mstring source, mstring params)
+void do_set_ICQ(mstring mynick, mstring source, mstring params)
+void do_set_Description(mstring mynick, mstring source, mstring params)
+void do_set_Comment(mstring mynick, mstring source, mstring params)
+void do_set_Picture(mstring mynick, mstring source, mstring params)
+void do_set_Protect(mstring mynick, mstring source, mstring params)
+void do_set_Secure(mstring mynick, mstring source, mstring params)
+void do_set_NoExpire(mstring mynick, mstring source, mstring params)
+void do_set_NoMemo(mstring mynick, mstring source, mstring params)
+void do_set_Private(mstring mynick, mstring source, mstring params)
+void do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
+
     
 void NickServ::save_database(wxOutputStream& out)
 {

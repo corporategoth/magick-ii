@@ -374,7 +374,38 @@ public:
     virtual mstring GetInternalName() const { return "NickServ"; }
     virtual void execute(const mstring & message);
 
+    static void do_Help(mstring mynick, mstring source, mstring params);
     static void do_Register(mstring mynick, mstring source, mstring params);
+    static void do_Drop(mstring mynick, mstring source, mstring params);
+    static void do_Link(mstring mynick, mstring source, mstring params);
+    static void do_UnLink(mstring mynick, mstring source, mstring params);
+    static void do_Host(mstring mynick, mstring source, mstring params);
+    static void do_Slaves(mstring mynick, mstring source, mstring params);
     static void do_Identify(mstring mynick, mstring source, mstring params);
+    static void do_Info(mstring mynick, mstring source, mstring params);
+    static void do_Suspend(mstring mynick, mstring source, mstring params);
+    static void do_Forbid(mstring mynick, mstring source, mstring params);
+
+    static void do_2ndparam(mstring mynick, mstring source, mstring params);
+    static void do_access_Current(mstring mynick, mstring source, mstring params);
+    static void do_access_Add(mstring mynick, mstring source, mstring params);
+    static void do_access_Del(mstring mynick, mstring source, mstring params);
+    static void do_access_List(mstring mynick, mstring source, mstring params);
+    static void do_ignore_Add(mstring mynick, mstring source, mstring params);
+    static void do_ignore_Del(mstring mynick, mstring source, mstring params);
+    static void do_ignore_List(mstring mynick, mstring source, mstring params);
+    static void do_set_Password(mstring mynick, mstring source, mstring params)
+    static void do_set_Email(mstring mynick, mstring source, mstring params)
+    static void do_set_URL(mstring mynick, mstring source, mstring params)
+    static void do_set_ICQ(mstring mynick, mstring source, mstring params)
+    static void do_set_Description(mstring mynick, mstring source, mstring params)
+    static void do_set_Comment(mstring mynick, mstring source, mstring params)
+    static void do_set_Picture(mstring mynick, mstring source, mstring params)
+    static void do_set_Protect(mstring mynick, mstring source, mstring params)
+    static void do_set_Secure(mstring mynick, mstring source, mstring params)
+    static void do_set_NoExpire(mstring mynick, mstring source, mstring params)
+    static void do_set_NoMemo(mstring mynick, mstring source, mstring params)
+    static void do_set_Private(mstring mynick, mstring source, mstring params)
+    static void do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
 };
 #endif
