@@ -24,6 +24,9 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.80  2000/03/29 14:00:18  prez
+** Fixed the thread pool system, and the watermarks.
+**
 ** Revision 1.79  2000/03/28 16:20:57  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -64,7 +67,7 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 37;
+const int BUILD_NUMBER = 67;
 const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
 const mstring BUILD_SYS = "castle";
 const unsigned short Magick_Major_Ver=2;

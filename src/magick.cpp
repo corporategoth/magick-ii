@@ -28,6 +28,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.211  2000/03/29 14:00:18  prez
+** Fixed the thread pool system, and the watermarks.
+**
 ** Revision 1.210  2000/03/28 16:20:59  prez
 ** LOTS of RET() fixes, they should now be safe and not do double
 ** calculations.  Also a few bug fixes from testing.
@@ -281,6 +284,10 @@ int Magick::Start()
     // Can only open these after fork if we want then to live
     loggertask = new LoggerTask;
     loggertask->open();
+
+/*			Trace::TurnSet(tt_MAIN, 0xffff);
+		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
+			    Trace::TurnSet((threadtype_enum) i, 0xffff); */
 
     events = new EventTask;
     events->open();
