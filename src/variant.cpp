@@ -153,26 +153,172 @@ bool mVariant::operator==(const mVariant& in)const
 			return true;
 		else 
 			return false;
+	case VarUInt:
+		if(value.UIntValue==in.value.UIntValue)
+			return true;
+		else 
+			return false;
+	case VarUShort:
+		if(value.UShortValue==in.value.UShortValue)
+			return true;
+		else 
+			return false;
+	case VarEmpty:
+	case VarNull:
+		return true;
 	}
+	// fall through, if it get's here major fubar, so put in logging mechanism when it's done
 	return false;
 }
 bool mVariant::operator<(const mVariant& in)const
 {
 	if(in.valuetype!=valuetype)
 		return false;
-#if NotDoneSoDontCompile
 	switch(valuetype)
 	{
+	case VarBool:
+		if((int)value.BoolValue<(int)in.value.BoolValue)
+			return true;
+		else 
+			return false;
+	case VarChar:
+		if(value.CharValue<in.value.CharValue)
+			return true;
+		else 
+			return false;
+	case VarDouble:
+		if(value.DoubleValue<in.value.DoubleValue)
+			return true;
+		else 
+			return false;
+	case VarFloat:
+		if(value.FloatValue<in.value.FloatValue)
+			return true;
+		else 
+			return false;
+	case VarInt:
+		if(value.IntValue<in.value.IntValue)
+			return true;
+		else 
+			return false;
+	case VarPtr:
+		if(value.PtrValue<in.value.PtrValue)
+			return true;
+		else 
+			return false;
+	case VarShort:
+		if(value.ShortValue<in.value.ShortValue)
+			return true;
+		else 
+			return false;
+	case VarString:
+		if(mstring(value.StringValue)<mstring(in.value.StringValue))
+			return true;
+		else 
+			return false;
+	case VarUChar:
+		if(value.UCharValue<in.value.UCharValue)
+			return true;
+		else 
+			return false;
+	case VarUInt:
+		if(value.UIntValue<in.value.UIntValue)
+			return true;
+		else 
+			return false;
+	case VarUShort:
+		if(value.UShortValue<in.value.UShortValue)
+			return true;
+		else 
+			return false;
+	case VarEmpty:
+	case VarNull:
+		return true;
 	}
-#endif
+	// fall through, if it get's here major fubar, so put in logging mechanism when it's done
 	return false;
 }
-mstring& mVariant::AsString()const
+mstring mVariant::AsString()const
 {
-    return mstring("Not Done Yet");
+    mstring dummystring="Empty";
+    switch(valuetype)
+    {
+    case VarBool:
+	if(value.BoolValue==true)
+	    dummystring="true";
+	else
+	    dummystring="false";
+	break;
+    case VarChar:
+	dummystring.Format("%c",value.CharValue);
+	break;
+    case VarDouble:
+	dummystring.Format("%f",value.DoubleValue);
+	break;
+    case VarFloat:
+	dummystring.Format("%f",value.FloatValue);
+	break;
+    case VarInt:
+	dummystring.Format("%d",value.IntValue);
+	break;
+    case VarPtr:
+	dummystring.Format("%p",value.PtrValue);
+	break;
+    case VarShort:
+	dummystring.Format("%d",value.ShortValue);
+	break;
+    case VarString:
+	dummystring=mstring(value.StringValue);
+	break;
+    case VarUChar:
+	dummystring.Format("%u",value.UCharValue);
+	break;
+    case VarUInt:
+	dummystring.Format("%u",value.UIntValue);
+	break;
+    case VarUShort:
+	dummystring.Format("%u",value.UShortValue);
+	break;
+    case VarEmpty:
+	break;
+    case VarNull:
+	dummystring="NULL";
+	break;
+    }
+    return dummystring;
 }
 	
-mstring& mVariant::type()const
+mstring mVariant::type()const
 {
-    return mstring("Empty");
+    switch(valuetype)
+    {
+    case VarBool:
+	return "Bool";
+    case VarChar:
+	return "Char";
+    case VarDouble:
+	return "Double";
+    case VarFloat:
+	return "Float";
+    case VarInt:
+	return "Int";
+    case VarPtr:
+	return "Pointer";
+    case VarShort:
+	return "Short";
+    case VarString:
+	return "String";
+    case VarUChar:
+	return "Unsigned Char";
+    case VarUInt:
+	return "Unsigned Int";
+    case VarUShort:
+	return "Unsigned Short";
+    case VarEmpty:
+	return "Empty";
+    case VarNull:
+	return "Null Pointer";
+    }
+    // fall through, if it get's here major fubar, so put in logging mechanism when it's done
+    return mstring("Error");
 }

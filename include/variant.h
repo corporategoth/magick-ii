@@ -62,8 +62,8 @@ public:
 	 bool operator==(const mVariant& in)const;
 	 bool operator<(const mVariant& in)const;
 
-	 mstring &AsString()const;
-	 mstring &type()const;
+	 mstring AsString()const;
+	 mstring type()const;
 };
 
 class mVarArray
