@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+<head>
+
+<title>Magick Specification: Magick Client</title>
+
+<meta name="keywords" content="magick,magick.tm,magick irc services,irc,irc services,services,internet relay chat,network,irc network services,network services,chat,irc operater,ircop,oper,operserv,nickserv,chanserv,memoserv,akill,ban,download,magick 2.0,magick 1.4,version 2,documentation,gpl,open source,c++">
+<meta name="description" content="Magick IRC Services">
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="utils.js"></script>
+
+<link rel="stylesheet" type="text/css" href="magick.css">
+
+<link rel="shortcut icon" href="favicon.ico">
+
+</head>
+<body>
+
+<table class="center collapse" width="780" cellpadding="0" cellspacing="0" border="1">
+ <tr class="medium">
+  <td><div class="center"><img src="images/logo1.jpg" width="160" height="110" alt="Magick Logo"><img src="images/logo2.jpg" alt="Magick Logo" height="110" width="600"></div></td>
+ </tr>
+</table>
+
+<br />
+
+<table class="center collapse medium" width="780" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td>
+   <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+    <tr>
+     <td width="200" valign="top">
+      <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="1">
+       <tr>
+        <td>
+         <table class="collapse medium" width="200" cellpadding="0" cellspacing="0" border="0">
+          <tr class="dark">
+           <td><b class="light-margin">Contents</b></td></tr>
+          <tr>
+           <td><br /></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Home'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#0'" class="hand"><p class="menu-side"><a href="#0">Home:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Summary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#1'" class="hand"><p class="menu-side"><a href="#1">Summary:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Justification'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#2'" class="hand"><p class="menu-side"><a href="#2">Justification:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Pre-Requisites'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#3'" class="hand"><p class="menu-side"><a href="#3">Pre-Requisites:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Implementation'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#4'" class="hand"><p class="menu-side"><a href="#4">Implementation:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Potential Problems'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#5'" class="hand"><p class="menu-side"><a href="#5">Potential Problems:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Test Plan'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#6'" class="hand"><p class="menu-side"><a href="#6">Test Plan:</a></p></td></tr>
+          <tr>
+           <td onmouseover="this.style.background='#BEBEBE'; window.status='Glossary'; return true" onmouseout="this.style.background='#ADADAD'; window.status=''" onclick="window.location.href='#7'" class="hand"><p class="menu-side"><a href="#7">Glossary:</a></p></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/spacer.gif" alt="" height="750" width="1"></td></tr>
+          <tr>
+           <td valign="bottom"><img src="images/logo3.jpg" alt="Magick Logo" height="300" width="190"></td></tr>
+         </table>
+        </td>
+       </tr>
+      </table>
+     </td>
+     <td width="580" valign="top">&nbsp;
+      <table width="580" cellpadding="2" cellspacing="2" border="0">
+       <tr>
+        <td><div class="center">
+         <table width="490" cellpadding="2" cellspacing="2" border="0" class="center">
+          <tr>
+           <td><h1><a name="0">Magick Client</a></h1></td></tr>
+          <tr>
+	   <td><table border="0" class="medium">
+            <tr><td><p>Project Number	</td><td><p>	5				</p></td></tr>
+            <tr><td><p>Slated Release	</td><td><p>	2.1				</p></td></tr>
+            <tr><td><p>Author		</td><td><p>	<a href="mailto:prez@magick.tm">Preston A. Elder</a>	</p></td></tr>
+            <tr><td><p>Date		</td><td><p>	31st July, 2002			</p></td></tr>
+            <tr><td colspan="2"><p>Revision History</p></td></tr><tr><td colspan="2"><p><code>
+			<br />$Log$
+			<br />Revision 1.1  2002/08/01 00:38:36  prez
+			<br />Added magick client spec.
+			<br />
+            </code></p></td></tr>
+           </table></td></tr>
+          <tr>
+           <td><br />
+
+            <h2><a name="1">Summary</a></h2>
+            <p>
+			Magick will be able to be completely interacted with, monitored and configured without having to
+			log onto IRC or edit a configuration file, even remotely.  This will be done with two client
+			interfaces to Magick.  The first will be a DCC and telnet interface (which will work the same
+			way for both).  This interface will mostly allow viewing of data, and some special actions to
+			be performed.  The more powerful interface will be the Magick client, which will allow full
+			access to modifying the database, viewing the log file, and configuring Magick.
+            </p><br />
+
+            <h2><a name="2">Justification</a></h2>
+            <p>
+			User interfaces are one of the most important parts of any product.  Right now, Magick's existing
+			configuration GUI is very limited (it will only generate and load a configuration file graphically),
+			and does not really communicate with Magick at all.  Several services out there already have UI's
+			that interact with services doing things like viewing log files, viewing/editing data, running
+			reports, and triggering events (such as starting/stopping).  Magick loses ground against these
+			kinds of services because of this.
+            </p><br />
+
+            <h2><a name="3">Pre-Requisites</a></h2>
+            <p>
+			The Inter-Magick Protocol must be created.
+            </p><br />
+
+            <h2><a name="4">Implementation</a></h2>
+            <p>
+			The Magick client will actually be two clients.  First the telnet and DCC interface that will
+			allow certin control functions and extra viewing of data, etc than online MSG interfaces allow,
+			however will still be restricted.  Second the Magick client which will implement the
+			Inter-Magick Protocol, and be full featured allowing all kinds of log monitoring, file transfers,
+			database updates, etc.
+            </p><p>
+			The telnet and DCC interface should first require authentication, being a registered nickname and
+			password.  Depending on which committees the user is on (the telnet and DCC interface will only
+			be available to those who are on privileged committees) will alter the commands that they will
+			be able to execute.  These include anything from viewing data records, to performing various
+			services functions they would be able to perform online anyway, to some specialized features
+			such as log file or services activity monitoring.  Various periodic statistics will also be
+			available in the telnet and DCC interface.  This concept is modelled of the eggdrop telner and
+			DCC interface, and will have many similar concepts.
+            </p><p>
+			The Magick client will be a full GUI that will operate on both Windows and X-Windows, and will
+			implement the Inter-Magick protocol.  This means that protocol-based authentication will be
+			required, and encryption/compression will be supported.  The protocol-based authentication is
+			much more secure than just a nickserv registered nickname and password.  The Magick client will
+			have several screens, including:
+			<ul>
+			<li>	The server screen.  This will have multiple tabs, that either allow the user to perform
+				operations on the server (eg. force a database save, config reload, etc), or show various
+				statistics about the server (including those available with the STATS ServMsg command,
+				and other stats not available otherwise).  This will also show information about the
+				server we are currently connected to, such as its name, the protocol being spoken, the
+				software version string, and statistics like amount of messages sent/received, etc.
+			</li>
+			<li>	The configuration screen.  This will display the current configuration of Magick (and
+				feature an 'update' button to refresh the current config), and allow the user to modify
+				the configuration, and send it back and get the Magick server to reload that configuration.
+				This screen, like the current configuration GUI, will have various tabs.  It will also be
+				able to generate a configuration file without being connected for use with initial creation.
+			</li>
+			<li>	The log tail screen.  This will display the current log file, and allow the user to scroll
+				through and view it.  This display will keep growing, and the user will be able to always
+				scroll to the bottom and see the most recent log output.
+			</li>
+			<li>	The data edit screen.  This, like the configuration screen will have many tabs of its own,
+				representing each record type.  This will allow direct viewing and/or modification of the
+				Magick database.  It will (obviously) have to perform all consistency checks (such as
+				ensuring that if they change the founder of a channel, the nickname they choose is valid,
+				etc).  There will be a preferences item to disable editing of values.
+			</li>
+			<li>	The reports screen.  This will allow a user to run queries on the database, showing, for
+				example a display of all users who have the PRIVMSG setting on, or whatever.  This screen
+				should allow the user to first select the type of records to do queries on, second the
+				data values that should be in the query, and third the fields to shown in the results.
+				The resulting report should allow all columns to be resized at will, and should allow
+				hovering over a specific field to obtain the full text of the data within.
+			</li>
+			<li>	The magick interface screen.  This is equivalent to a telnet or DCC session, and will have
+				an input box for the user to type commands, and will scroll the output that would be seen
+				on a DCC or telnet session by.
+			</li>
+			</ul>
+            </p><p>
+			Connections will be established and disconnected by an option in a drop down menu.  The Magick
+			client should maintain a server list (including passwords, encrypted) that a user will be able
+			to select from, add to, and delete (and obviously connect to).  A preferences dialog should also
+			be created for all configuration items of the Magick client itself, things like whether or not
+			to enable editing of database values, etc.
+            </p><br />
+
+            <h2><a name="5">Potential Problems</a></h2>
+            <p>
+			This will be a VERY powerful tool, so all kinds of warnings should be added, to let the user
+			know that if they dont restrict, for example, in the server where it will allow clients to
+			connect from, or let their passwords get out, a network could be torn asunder with it.
+            </p><br />
+
+            <h2><a name="6">Test Plan</a></h2>
+            <p>
+			N/A
+            </p><br />
+
+            <h2><a name="7">Glossary</a></h2>
+            <p>
+			N/A
+            </p><br />
+
+           </td></tr>
+         </table></div>
+        </td>
+       </tr>
+       </div>
+      </table>  
+     </td>
+    </tr>
+   </table>
+  </td>
+ </tr>
+</table>
+<p class="center-sm">Copyright &copy;2001-2002 Magick.tm. All rights reserved.</p>
+&nbsp;
+</body>
+
+</html>
