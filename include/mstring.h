@@ -25,6 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/12/09 12:53:56  prez
+** Forgot to add the 'return' to all find_first_of, find_last_of,
+** find_first_not_of and find_last_not_of calls ...
+**
 ** Revision 1.55  2000/12/09 10:33:47  prez
 ** Added ACE style alloc as an option.
 **
@@ -494,48 +498,48 @@ public:
     int find_last_not_of(const char *str, size_t length) const;
 
     int find_first_of(const mstring &in) const
-	{ find_first_of(in.i_str, in.i_len); }
+	{ return find_first_of(in.i_str, in.i_len); }
     int find_first_of(const string &in) const
-	{ find_first_of(in.c_str(), in.length()); }
+	{ return find_first_of(in.c_str(), in.length()); }
     int find_first_of(const char *in) const
-	{ find_first_of(in, strlen(in)); }
+	{ return find_first_of(in, strlen(in)); }
     int find_first_of(const char in) const
-	{ find_first_of(&in, 1); }
+	{ return find_first_of(&in, 1); }
     int find_first_of(const unsigned char in) const
-	{ find_first_of((const char *) &in, 1); }
+	{ return find_first_of((const char *) &in, 1); }
 
     int find_last_of(const mstring &in) const
-	{ find_last_of(in.i_str, in.i_len); }
+	{ return find_last_of(in.i_str, in.i_len); }
     int find_last_of(const string &in) const
-	{ find_last_of(in.c_str(), in.length()); }
+	{ return find_last_of(in.c_str(), in.length()); }
     int find_last_of(const char *in) const
-	{ find_last_of(in, strlen(in)); }
+	{ return find_last_of(in, strlen(in)); }
     int find_last_of(const char in) const
-	{ find_last_of(&in, 1); }
+	{ return find_last_of(&in, 1); }
     int find_last_of(const unsigned char in) const
-	{ find_last_of((const char *) &in, 1); }
+	{ return find_last_of((const char *) &in, 1); }
 
     int find_first_not_of(const mstring &in) const
-	{ find_first_not_of(in.i_str, in.i_len); }
+	{ return find_first_not_of(in.i_str, in.i_len); }
     int find_first_not_of(const string &in) const
-	{ find_first_not_of(in.c_str(), in.length()); }
+	{ return find_first_not_of(in.c_str(), in.length()); }
     int find_first_not_of(const char *in) const
-	{ find_first_not_of(in, strlen(in)); }
+	{ return find_first_not_of(in, strlen(in)); }
     int find_first_not_of(const char in) const
-	{ find_first_not_of(&in, 1); }
+	{ return find_first_not_of(&in, 1); }
     int find_first_not_of(const unsigned char in) const
-	{ find_first_not_of((const char *) &in, 1); }
+	{ return find_first_not_of((const char *) &in, 1); }
 
     int find_last_not_of(const mstring &in) const
-	{ find_last_not_of(in.i_str, in.i_len); }
+	{ return find_last_not_of(in.i_str, in.i_len); }
     int find_last_not_of(const string &in) const
-	{ find_last_not_of(in.c_str(), in.length()); }
+	{ return find_last_not_of(in.c_str(), in.length()); }
     int find_last_not_of(const char *in) const
-	{ find_last_not_of(in, strlen(in)); }
+	{ return find_last_not_of(in, strlen(in)); }
     int find_last_not_of(const char in) const
-	{ find_last_not_of(&in, 1); }
+	{ return find_last_not_of(&in, 1); }
     int find_last_not_of(const unsigned char in) const
-	{ find_last_not_of((const char *) &in, 1); }
+	{ return find_last_not_of((const char *) &in, 1); }
 
 
     // str here is used completely

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.83  2000/12/09 12:53:56  prez
+** Forgot to add the 'return' to all find_first_of, find_last_of,
+** find_first_not_of and find_last_not_of calls ...
+**
 ** Revision 1.82  2000/12/09 10:34:14  prez
 ** Added ACE style alloc as an option -- COPY STILL HAS PRINTF's.
 **
@@ -171,37 +175,26 @@ mstring const IRC_Off((char) 15);	// ^O
 
 void mstring::copy(const char *in, size_t length)
 {
-printf("DEBUG 1 %p\n", i_str); fflush(stdout);
     if (i_str != NULL)
 	DEALLOC(i_str);
-printf("DEBUG 2 %p (%d)\n", in, length); fflush(stdout);
     if (length && in)
     {
-printf("DEBUG 3 %s\n", in); fflush(stdout);
 	i_len = length;
 	i_res = 2;
-printf("DEBUG 4\n"); fflush(stdout);
 	while (i_res <= i_len)
 	    i_res *= 2;
-printf("DEBUG 5 %d\n", i_res); fflush(stdout);
 	ALLOC(i_str, i_res);
-printf("DEBUG 6 %p\n", i_str); fflush(stdout);
 	if (i_str == NULL)
 	    NOMEM;
-printf("DEBUG 7\n"); fflush(stdout);
 	memset(i_str, 0, i_res);
-printf("DEBUG 8\n"); fflush(stdout);
 	memcpy(i_str, in, i_len);
-printf("(1) Created String: %s\n", i_str); fflush(stdout);
     }
     else
     {
-printf("DEBUG 9\n"); fflush(stdout);
 	i_len = 0;
 	i_res = 0;
 	i_str = NULL;
     }
-printf("DEBUG 10\n"); fflush(stdout);
 }
 
 void mstring::append(const char *in, size_t length)
