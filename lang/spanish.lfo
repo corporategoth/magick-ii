@@ -1,0 +1,383 @@
+; Magick IRC Services
+; (c) 1997-2002 Preston A. Elder <prez@magick.tm>
+; (c) 1998-2002 William King <ungod@magick.tm>
+;
+; Spanish Log Output Language File
+; Traducido por: Miguel Vazquez <chuskyx@hotmail.com>
+; Por favor, edita la palabra clave COMMANDLINE/TRANSLATED
+; para reflejar lo arriba indicado (se muestra al activar el idioma).
+;
+; --------------------------------------------------------------
+;
+; Este archivo esta dividido en secciones. Estan dispuestas de modo
+; que podamos agrupar las respuestas de Magick. Si cambias las secciones
+; o las palabras claves, Magick no podra responder. Si eres un
+; desarrollador y estas introduciendo una nueva seccion, ten en cuenta que
+; no deben contener '/' o un espacio en blanco en el nombre.
+;
+; Todas las lineas que comiencen por '#' (almohadilla) se consideran
+; comentarios. Todo el texto despues de ';' (punto y coma) tambien se
+; considera comentario, a no ser que este precedido por '\', en cuyo
+; caso se considerara un punto y coma literal.
+; Todas las entradas (texto que sigue a los '=') estan rellenas
+; de espacios y tabuladores antes y despues de ellas. Usando'\ '
+; (backslash con espacio) mantendra los espacios desde el texto hasta
+; ese punto (Si antes del texto, desde '\ ' hasta el texto, si despues,
+; desde el texto hasta el '\ ').
+; Un '\' (backslash) al final de una linea, continuara en la siguiente
+; linea y seran tratadas como una unica linea. Las lineas en blanco o
+; que solo contengan comentarios, seran ignoradas.
+; Puedes usar '\n' y '\r' para dividir una linea en dos, y '\t' para
+; insertar un tabulador en la salida.
+; 
+; A lo largo de este archivo hay varios codigos que son reemplazados
+; directamente por Magick. Busca mas abajo una tabla que indica estos
+; codigos y sus significados. Todas las lineas en este archivo que
+; comienzan con ';' son comentarios. Si la cadena de texto que
+; introduces contiene espacios en blanco al principio, DEBES poner
+; un '\' delante del primer espacio en blanco. De otro modo, estos
+; espacios seran ignorados.
+; 
+;
+; En cada cadena hay (o puede haber) codigos que comiencen por '$',
+; donde el numero despues del '$' es el parametro con el que se
+; reemplazara. Puedes reordenar o eliminar estos parametros para
+; adecuarlos a tu estructura de frase (util en traducciones).
+; Comenzando uno de estos codigos con '0' (cero), tratara a los
+; numeros que le sigan como literales (util para concatenar un
+; codigo con un numero). Por ejemplo $1$0123 mostrara lo que
+; corresponda al codigo $1 y seguidamente 123. El $0 es
+; ignorado. No puedes cambiar el formato de los codigos.
+;
+; --------------------------------------------------------------
+;
+
+;
+; Estas son respuestas a opciones de la linea de comandos, u opciones de configuracion.
+;
+[COMMANDLINE]
+TRANSLATED       =Miguel Vazquez <chuskyx@hotmail.com>
+UNKNOWN_OPTION   =Ignorado $1, Opcion no reconocida.
+UNKNOWN_PARAM    =Parametro desconocido $1 para la opcion $2.
+NEEDPARAM        =La opcion $1 requiere un parametro.
+MUSTBENUMBER     =El parametro para $1 debe ser un numero positivo.
+MUSTHAVEDIGITS   =El parametro para $1 debe ser $2 digitos entre $3 y $4 (ambos inclusive).
+INCORRECT_OS     =La opcion $1 solo esta disponible en plataformas $2.
+TIMEORZERO       =Valor temporal invalido o cero, para el valor $1.
+VALUETOOHIGH     =El valor especificado para $1 debe ser menor o igual a $2.
+NO_CFG_FILE      =No puedo leer el archivo de configuracion $1, abortando.
+STOP             =CONFIG: [Startup] STOP Codigo de parada recibido. Revise la configuracion.
+ACTIVE           =$1 esta todavia activo o existe fichero PID antiguo, por favor termina o elimina el proceso antes de reiniciar.
+RECONNECT        =Reconectando al servidor debido a cambios en la configuracion.
+CANNOT_CONVERT   =Base de datos tipo $1 invalida (abortando).
+NO_KEYFILE       =El archivo de clave $1 no existe.
+NONOPTION        =Argumentos sin opciones no permitidos.
+ONEOPTION        =Debes especificar solo un parametro despues de un grupo de opciones.
+TRACE_SYNTAX     =El parametro para --trace debe seguir el formato Tipo:Nivel
+ZERO_LEVEL       =Cero o error en nivel de traceo, ignorando.
+CFG_SYNTAX       =El codigo de configuracion "$1" contiene un error de sintaxis o datos invalidos.
+UNKNOWN_PROTO    =Error procesando el archivo de protocolo $1, usando protocolo por defecto.
+UNKNOWN_AKILL    =Tipo de AKILL especificado en el protocolo no existe.
+UNKNOWN_SIGNON   =Tipo de "Signon" especificado en el protocolo no existe.
+START_CONVERT    =Convirtiendo y cargando bases de datos externas ...
+START_LANG       =Cargando idioma por defecto ...
+START_FORK       =Procesando como tarea de fondo...
+START_NOFORK     =No se puede ejecutar como tarea de fondo, ejecutando en primer plano.\n\
+                  El cierre de esta ventana terminara la ejecucion.
+START_EVENTS     =Iniciando el proceso de eventos ...
+START_CALIBRATE  =Calibrando umbrales de procesos (thread thresholds) ...
+START_COMPLETE   =$1 $2 Procedimiento de inicio completo..
+STOP_EVENTS      =Deteniendo el proceso de eventos ...
+STOP_COMPLETE    =$1 $2 Procedimiento de cierre completo.
+
+;
+; Usados cuando un comando es ejecutado desde Nickserv.
+;
+[NICKSERV]
+REGISTER         =$1 ha registrado el nick $2.
+DROP             =$1 ha dropado el nick $2 ($3 nicks enlazados).
+LINK             =$1 ha enlazado el nick $2 a $3.
+UNLINK           =$1 ha desenlazado el nick $2 de $3.
+HOST             =$1 ha cambiado el nick HOST de $2 a $3.
+IDENTIFY         =$1 identificado para el nick $2.
+IDENTIFY_FAILED  =$1 ha fallado la identificacion para el nick $2.
+GHOST            =$1 ha desconectado el nick $2 con el comando GHOST.
+RECOVER          =$1 ha solicitado un RECOVER sobre el nick $2.
+SUSPEND          =$1 ha suspendido el nick $2 por $3.
+UNSUSPEND        =$1 ha levantado la suspension del nick $2.
+FORBID           =$1 ha prohibido el uso y el registro del nick $2.
+GETPASS          =$1 ha recuperado la clave para el nick $2 ($3).
+SETPASS          =$1 ha cambiado la clave (SETPASS) para el nick $2 ($3).
+ACCESS_ADD       =$1 ha incorporado la mascara $2 al nick $3.
+ACCESS_DEL       =$1 ha eliminado la mascara $2 del nick $3.
+IGNORE_ADD       =$1 ha incorporado el nick $2 a la lista IGNORE del nick $3.
+IGNORE_DEL       =$1 ha eliminado el nick $2 de la lista IGNORE del nick $3.
+PICTURE_ADD      =$1 ha incluido una imagen para el nick $2 ($3 - $4).
+PICTURE_DEL      =$1 ha eliminado la imagen del nick $2.
+SET_PASSWORD     =$1 ha cambiado la clave para el nick $2.
+SET              =$1 ha cambiado el valor de $2 del nick $3 a $4.
+UNSET            =$1 ha anulado el valor de $2 para el nick $3.
+LOCK             =$1 ha bloqueado el valor de $2 para el nick $3 a $4.
+UNLOCK           =$1 ha desbloqueado el valor de $2 para el nick $3.
+
+;
+; Usados cuando un comando es ejecutado desde Chanserv.
+;
+[CHANSERV]
+REGISTER         =$1 ha registrado el canal $2.
+DROP             =$1 ha dropado el canal $2 ($3).
+IDENTIFY         =$1 se ha identificado como fundador del canal $2.
+IDENTIFY_FAILED  =$1 ha fallado la identificacion para el canal $2.
+SUSPEND          =$1 ha suspendido el canal $2 por $3.
+UNSUSPEND        =$1 ha levantado la suspension del canal $2.
+FORBID           =$1 ha prohibido el uso y registro del canal $2.
+GETPASS          =$1 ha recuperado la clave del canal $2 ($3).
+SETPASS          =$1 ha cambiado la clave (SETPASS) del canal $2 ($3).
+MODE             =$1 cambia el modo "$2" en el canal $3 mediante comando MODE.
+OP               =$1 da op (+o) a $2 en el canal $3 mediante comando OP.
+DEOP             =$1 quita op (-o) a $2 en el canal $3 mediante el comando DEOP.
+HALFOP           =$1 da halfop (+h) a $2 en el canal $3 mediante el comando HALFOP.
+DEHALFOP         =$1 quita halfop (-h) a $2 in channel $3 mediante el comando DEHALFOP.
+VOICE            =$1 da voz (+v) a $2 en el canal $3 mediante el comando VOICE.
+DEVOICE          =$1 quita voz (-v) a $2 en el canal $3 mediante el comando DEVOICE.
+TOPIC            =$1 ajusta el topic del canal $2 mediante el comando TOPIC.
+KICK             =$1 expulsa a $2 del canal $3 mediante el comando KICK.
+ANONKICK         =$1 expulsa (anonimamente) a $2 del canal $3 mediante el comando REMOVE.
+INVITE           =$1 invita a $2 a entrar en el canal $3 mediante el comando INVITE.
+UNBAN            =$1 desbanea a $2 del canal $3 mediante el comando UNBAN.
+COMMAND          =$1 ejecuta el comando $2 en el canal $3.
+LEVEL            =$1 cambia el nivel de $2 a $3 en el canal $4.
+LEVEL_ALL        =$1 reajusta todos los niveles del canal $4 a sus valores por defecto.
+ACCESS_ADD       =$1 incluye a $2 en la lista de acceso del canal $3 con nivel $4.
+ACCESS_CHANGE    =$1 cambia el acceso de $2 en el canal $3 a nivel $4.
+ACCESS_DEL       =$1 elimina a $2 de la lista de acceso del canal $3.
+AKICK_ADD        =$1 incluye a $2 en la lista AKICK del canal $3.
+AKICK_DEL        =$1 elimina a $2 de la lista AKICK del canal $3.
+GREET_ADD        =$1 incluye un saludo para $2 en el canal $3.
+GREET_DEL        =$1 elimina un saludo para $2 del canal $3.
+MESSAGE_ADD      =$1 incluye un mensaje de entrada para el canal $2.
+MESSAGE_DEL      =$1 elimina un mensaje de entrada del canal $2.
+SET_PASSWORD     =$1 modifica la clave del canal $2.
+SET              =$1 cambia el valor de $2 en el canal $3 a $4.
+UNSET            =$1 anula el valor de $2 en el canal $3.
+LOCK             =$1 bloquea el valor de $2 para el canal $3 a $4.
+UNLOCK           =$1 desbloquea el valor de $2 para el canal $3.
+
+;
+; Usados cuando un comando se ejecuta desde Memoserv.
+;
+[MEMOSERV]
+SEND             =$1 envia un articulo a $2.
+DEL              =$1 elimina $2 articulo(s) de $3.
+DEL_ALL          =$1 elimina todos los articulos de $2.
+SET              =$1 cambia el valor de  $2 para $3 articulo(s) de $4 a $5.
+SET_ALL          =$1 cambia el valor de $2 para todos los articulos de $3 a $4.
+FILE             =$1 adjunta un fichero ($2 / $3 - $4) a $5.
+GET              =$1 recibe un fichero ($2 / $3 - $4) de $5.
+
+;
+; Usados cuando un comando se ejecuta desde CommServ.
+;
+[COMMSERV]
+ADD              =$1 crea un nuevo comite llamado $2 con $3 como su lider.
+DEL              =$1 elimina el comite $2 ($3 subcomites).
+MEMO             =$1 envia un memo a todos los miembros del comite $2.
+MEMBER_ADD       =$1 incorpora el nick $2 al comite $3.
+MEMBER_DEL       =$1 elimina el nick $2 del comite $3.
+LOGON_ADD        =$1 incluye un nuevo mensaje de entrada al comite $2.
+LOGON_DEL        =$1 elimina un mensaje de entrada del comite $2.
+SET              =$1 cambia el valor de $2 en el comite $3 a $4.
+UNSET            =$1 anula el valor de $2 para el comite $3.
+LOCK             =$1 bloquea el valor de $2 para el comite $3 a $4.
+UNLOCK           =$1 desbloquea el valor de $2 para el comite $3.
+
+;
+; Usados cuando un comando se ejecuta desde ServMsg.
+;
+[SERVMSG]
+GLOBAL           =$1 envia el mensaje "$2" a todos los usuarios conectados.
+FILE_ADD         =$1 incluye el archivo $2 ($3 - $4) con privilegios $5 al sistema de ficheros.
+FILE_DEL         =$1 ha eliminado el archivo $2 ($3) del sistema de ficheros.
+FILE_RENAME      =$1 ha cambiado el nombre del archivo $2 a $3 en el sistema de ficheros.
+FILE_PRIV        =$1 cambia privilegios del archivo $2 a $3 en el sistema de ficheros.
+FILE_SEND        =$1 ha descargado el archivo $2 del sistema de ficheros.
+FILE_LOOKUP      =$1 identifica el fichero $2 de tipo $3.
+
+;
+; Usados cuando un comando se ejecuta desde OperServ.
+;
+[OPERSERV]
+MODE             =$1 cambia el modo "$2" en el canal $3 con el comando MODE.
+QLINE            =$1 prohibe el nick $2.
+UNQLINE          =$1 levanta prohibicion del nick $2.
+NOOP             =$1 prohibe el status de IRCop en el servidor $2 $3.
+KILL             =$1 desconecta (discretamente) el nick $2 con "$3".
+HIDE             =$1 ha cambiado el host del nick $2 a $3.
+PING             =$1 lanza PING a todos los servidores de la red.
+UPDATE           =$1 fuerza actualizacion de la base de datos.
+SHUTDOWN         =$1 Solicita DESCONEXION y CIERRE de los Servicios de red ($2).
+RESTART          =$1 Solicita REINICIO de los Servicios de red ($2).
+RELOAD           =$1 recarga el fichero de configuracion.
+UNLOAD           =$1 descarga el idioma $2.
+JUPE             =$1 expulsa (JUPE) el servidor $2 ($3).
+ONOFF            =$1 HA $2 $3 SERVICES.
+ONOFF_ONE        =$1 HA $2 $3 SERVICES POR $4.
+CLONE_ADD        =$1 da permiso de clones al host $2, con $3 clones.
+CLONE_DEL        =$1 anula el permiso de clones del host $2.
+AKILL_ADD        =$1 incluye la mascara $2 a la lista AKILL ($3) por "$4".
+AKILL_DEL        =$1 elimina la mascara $2 de la lista AKILL.
+OPERDENY_ADD     =$1 deniega status de IRCop (OPERDENY) a la mascara $2 ($3).
+OPERDENY_DEL     =$1 levanta la restriccion de status de IRCop (OPERDENY) a la mascara $2.
+IGNORE_ADD       =$1 incluye la mascara $2 en la lista IGNORE de los servicios de red.
+IGNORE_DEL       =$1 elimina la mascara $2 de la lista IGNORE  de los servicios de red.
+IGNORED          =Ignorado mensaje de $1: $2
+HTM_FORCE        =$1 fuerza el modo HTM  $2.
+HTM_ON           =Modo HTM  $1 (retardo $2) activado ($3Kb/s > $4Kb/s).
+HTM_OFF          =Modo HTM desactivado.
+HTM_SET          =$1 ha ajustado  la sensibilidad del modo HTM a $2/s.
+HTM_IGNORE       =Ignorado mensaje de $1 (Modo HTM): $2
+
+;
+; Usados cuando se activan eventos.
+;
+[EVENT]
+EXPIRE_AKILL     =Expira akill para $1 ($2) ajustado por $3 por $4.
+EXPIRE_NICK      =Expira el nick $1 ($2).
+EXPIRE_CHAN      =Expira el canal $1 ($2).
+EXPIRE_NEWS      =Expira articulo en el canal $1.
+LOAD             =Cargando base de datos ...
+SAVE             =Base de datos salvada.
+UNBAN            =Expira el ban $1 del canal $2 ($3).
+KILLPROTECT      =Desconectado/renombrado el nick $1 por fallo en la identificacion.
+PING             =PING a todos los servidores.
+LEVEL_UP         =LIVE LEVEL incrementado en uno (media de lag $1).
+LEVEL_DOWN       =LIVE LEVEL decrementado en uno (media de lag $1).
+LEVEL_MAX        =LIVE LEVEL maximo de $1 alcanzado, desconectando del servidor.
+LEVEL_BAD        =Media de lag calculado en $1.
+AKICK            =Expulsado el usuario $1 del canal $2 por AKICK ($3).
+RESTRICTED       =Expulsado el usuario $1 del canal $2. Acceso restringido.
+NEW_THREAD       =Comenzando nuevo proceso, para controlar el exceso de carga.
+KILL_THREAD      =Eliminando proceso, no hay suficiente trabajo para mantenerlo.
+NEW_THREAD_FAIL  =Fallo al crear nuevo proceso.
+MAX_THREADS      =Numero maximo de procesos alcanzado, no se puede iniciar uno nuevo.
+NETSYNCED        =Red sincronizada en $1 segundos.
+
+;
+; Estos son errores de sistema operativo
+;
+[SYS_ERRORS]
+COULDNOTOPEN     =No se puede abrir el fichero $1 ($2) - #$3: $4.
+FILEOPERROR      =No se puede realizar $1 en el fichero $2 - #$3: $4.
+DIROPERROR       =No se puede realizar $1 en el directorio $2 - #$3: $4.
+OPERROR          =No se puede realizar $1 - #$2: $3.
+FILEMAPFULL      =No se pueden crear mas archivos de tipo $1!
+MISSING_FILE1    =Eliminado el archivo de tipo $1, #$2 del disco, por no tener entrada en el sistema de archivos.
+MISSING_FILE2    =Eliminada entrada del sistema de archivos de tipo $1, #$2 por no existir el fichero en disco..
+SIGNAL_IGNORE    =Detectado evento #$1, ignorando.
+SIGNAL_SAVE      =Detectado evento #$1, salvando base de datos.
+SIGNAL_LOAD      =Detectado evento #$1, cargando fichero de configuracion.
+SIGNAL_RETRY     =Detectado evento #$1, reintentar...
+SIGNAL_KILL      =Detectado evento #$1 - la ultima funcion fue $2, intentando cerrar..
+SIGNAL_SIGNON    =Detectado evento #$1, reconectando a todos los clientes.
+SIGNAL_SPAWN     =Detectado evento #$1, lanzando un nuevo proceso.
+NOT_IMPLEMENTED  =Se ha detectado $1, el cual no esta implementado.
+INVALID_FORMAT   =Caracter de formato de fecha no valido $1$2 en $3.
+NOT_LITERAL      =El caracter $1 deberia estar entrecomillado, interpretado como literal en $2.
+RUN_AS_ROOT      =Ejecutar como superusuario es un riesgo potencial!
+LOCK_OPEN        =Fallo al abrir el bloqueo $1 para $2.
+LOCK_ACQUIRE     =Fallo al adquirir el bloqueo $1 para $2.
+LOCK_RELEASE     =Fallo al liberar el bloqueo $1 para $2.
+LOCK_DUP         =Detectado duplicado en el bloqueo $1 $2 donde solo uno esta permitido!
+STAGE_FAIL       =No se puede crear/validar escenario en proceso de lectura/escritura, ignorando.
+STAGE_FAIL_ABORT =No se puede crear/validar escenario en proceso de lectura/escritura, abortando.
+IPADDR_SERVER    =No se puede determinar la direccion del servidor remoto (intentado [$1]:$2).
+IPADDR_BIND      =No se puede determinar la direccion local de escucha (BIND) (intentado [$1]:$2).
+THREAD_DEAD      =Proceso inactivo $1 detectado. Intentadndo detener!
+THREAD_DEAD_HALF =Mas de la mitad de procesos inactivos, cerrando sistema!
+THREAD_DEAD_MAIN =El proceso principal se ha detenido, cerrando sistema!
+LOCKED_BIN       =Los bloqueos del sistema no coinciden! Se necesita recompilacion!
+
+[EXCEPTIONS]
+MAGICK           =Excepcion - El proceso $1 no puede localizar una instancia de Magick.
+GENERIC          =Excepcion - $1:$2:$3:$4
+GENERIC1         =Excepcion - $1:$2:$3:$4 - $5
+GENERIC2         =Excepcion - $1:$2:$3:$4 - $5/$6
+UNHANDLED        =Excepcion no controlada: $1.
+UNKNOWN          =Excepcion no controlada: no hay informacion disponible.
+DCC_REMOVED      =DCC #$1 corrupto eliminado!
+NICK_S_REMOVED   =Nick $1 corrupto en la base de datos eliminado!
+NICK_L_REMOVED   =Nick $1 corrupto detectado eliminado!
+CHAN_S_REMOVED   =Canal $1 corrupto en la base de datos eliminado!
+CHAN_L_REMOVED   =Canal $1 corrupto eliminado!
+
+;
+; Esta es una seccion para ocurrencias y eventos variados
+;
+[OTHER]
+SQUIT_FIRST      =SQUIT sospechoso detectado. Los servidores $1 y $2, esperando confirmacion...
+SQUIT_CANCEL     =SQUIT de los servidores $1 y $2 falso. Ninguna accion realizada.
+SQUIT_SECOND     =SQUIT de los servidores $1 y $2 confirmado, tomando las medidas apropiadas.
+KILL_CLONE       =Proteccion de clones activada para $1, desconectando usuario.
+KILL_AKILL       =Desconectando usuario $1 por AKILL $2 ($3).
+KILL_UNKNOWN     =Desconectado usuario desconocido $1.
+NOVALIDSERVERS   =Magick aborta, no se han encontrado servidores para conectar!
+CONNECTING       =Conectando al servidor [$1]:$2 ...
+CONNECTED        =Conexion establecida y autentificada al servidor [$1]:$2.
+WRONGPASS        =Clave incorrecta conectando al servidor [$1]:$2, continuamos.
+WEAREBANNED      =Detectada KLINE en el servidor [$1]:$2, continuamos.
+REFUSED          =Conexion al servidor [$1]:$2 rechazada.
+CLOSED           =Conexion al servidor [$1]:$2 cerrada.
+SERVER_MSG       =Mensaje del Servidor ($1): $2
+LINK             =El servidor $1 se ha linkado a la red via. $2.
+INVALIDLINK      =El servidor $1 ha sido desconectado (SQUIT) de $2 por no permitirse su conexion!
+KILLED           =El servicio $1 ha sido desconectado por $2, intentando reiniciarlo.
+TEMP_IGNORE      =$1 sera temporalmente ignorado por los servicios de red.
+PERM_IGNORE      =$1 sera permanentemente ignorado por los servicios de red.
+KILL_NICK_PASS   =Desconectando usuario $1 por error de identificacion para el nick $2.
+KILL_CHAN_PASS   =Desconectando usuario $1 por error de identificacion para el canal $2.
+LOAD_LANGUAGE    =Cargado el idioma $1.
+LOAD_HELP        =Cargado el fichero de ayuda $1.
+REVENGE          =Venganza sobre el usuario $1 en el canal $2 por $3 sobre $4.
+DCC_INIT         =DCC ID $1 iniciado con $2 ($3).
+DCC_CLOSE        =DCC ID $1 completado satisfactoriamente.
+DCC_CANCEL       =DCC ID $1 no ha conseguido completarse.
+
+;
+; Estos son otros errores de gravedad variable, que tambien podemos encontrar.
+;
+[ERROR]
+SEQUENCE         =Secuencia de ejecucion no valida ($1 no puede seguir a $2).
+REQ_BYNONUSER    =Comando $1 solicitado por usuario inexistente: $2.
+REQ_BYNONSERVICE =Comando $1 solicitado por un servicio inexistente: $2.
+REQ_FORNONUSER   =Comando $1 solicitado por $2 para un usuario inexistente: $3.
+REQ_TOSERVICE    =Comando $1 solicitato por $2 para el servicio $3.
+REQ_TOUSER       =Comando $1 solicitado por $2 para el usuario $3.
+REQ_FORNONCHAN   =Comando $1 solicitado por $2 para un canal inexistente: $3.
+REQ_FORNONSERVER =Comando $1 solicitado por $2 para un servidor inexistente: $3.
+REQ_NOTINCHAN    =Comando $1 solicitado por $2 para $3 que no se encuentra en el canal $4.
+REQ_UNKNOWN      =Tipo de comando $1 por  $2 ($3/$4/$5) en espera desde $6, no manejable (tipo desconocido).
+UNKNOWN_MSG      =Mensaje desconocido del servidor: $1
+REC_FORNONUSER   =Recibido $1 de $2 para usuario inexistente: $3.
+REC_FORNONCHAN   =Recibido $1 de $2 para canal inexistente: $3.
+REC_NOTINCHAN    =Recibido $1 de $2 para $3 que no se encuentra en el canal $4.
+REC_FORNOTINCHAN =Recibido $1 de $2 que no se encuentra en el canal $3.
+REC_FORNONSERVER =Recibido $1 de $2 para servidor inexistente: $3.
+DUP_CHAN         =Recibido $1 duplicado de $2 para el canal $3.
+MODE_INEFFECT    =Cambio de modo $1$2 recibido de $3 por $4 que ya se encuentra vigente.
+MODE_NOTINCHAN   =Cambio de modo $1$2 recibido de $3 por $4 que no se encuentra en el canal $5.
+FOUNDER_NOTREGD  =El canal $1 tiene como fundador al nick $2 que no se encuentra registrado (canal dropado).
+HOST_NOTREGD     =El nick $1 figura como el host de $2, pero no esta registrado (rectificado)!
+SLAVE_NOTREGD    =El nick $1 figura como un esclavo de $2, pero no esta registrado (rectificado)!
+KEYMISMATCH      =Clave de canal incorrecta ($1 | $2) para el canal $3 de $4.
+NOLIMIT          =No se ha especificado limite cuando se requiere, para el canal $1 de $2.
+NOLANGTOKEN      =Codigo $1 invalido para el idioma $2 usado, se devuelve error.
+BADSET           =Se han intentado ajustar datos erroneos ($1) para $2 en $3.
+DB_NOPROCESS     =La base de datos a fallado los chequeos mas basicos, y no ha sido procesada.
+DB_NOKEY         =La base de datos esta encriptada, y no se encuentra archivo de clave valido.
+DB_NODECRYPT     =Ha fallado el desencriptado de la base de datos (a menudo porque la base de datos esta truncada).
+DB_NODECOMPRESS  =Ha fallado la descompresion de la base de datos (a menudo porque la clave usada no es valida).
+DB_NOSANITY      =La base de datos ha fallado el test de integridad (a menudo por usar una version incorrecta de la base de datos).
+DB_NOPARSE       =Fallo al interpretar la base de datos (estructura interna de datos incorrecta!).
+WRONG_PASS_TYPE  =Clave de tipo hash (no simetrica) detectada - esta version no soporta este tipo de claves!
+KEY_CORRUPT      =Fichero de clave $1 no validado (requiere regeneracion) - NO USADO!
+EXCEPTION_CAUGHTUNHANDLED = Detectada una excepcion no controlable en el archivo $1 linea $2. Deberia notificarse a los desarrolladores.

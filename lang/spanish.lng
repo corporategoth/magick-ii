@@ -1,0 +1,940 @@
+; Magick IRC Services
+; (c) 1997-2002 Preston A. Elder <prez@magick.tm>
+; (c) 1998-2002 William King <ungod@magick.tm>
+;
+; Spanish On-Line Language file
+; Translated By: Miguel Vazquez <chuskyx@hotmail.com>
+; Por favor, edita la palabra clave [ERR_SINTAX]/TRANSLATED
+; para reflejar lo arriba indicado (se muestra al activar el idioma).
+;
+; --------------------------------------------------------------
+;
+; Este archivo esta dividido en secciones. Estan dispuestas de modo
+; que podamos agrupar las respuestas de Magick. Si cambias las secciones
+; o las palabras claves, Magick no podra responder. Si eres un
+; desarrollador y estas introduciendo una nueva seccion, ten en cuenta que
+; no deben contener '/' o un espacio en blanco en el nombre.
+;
+; Todas las lineas que comiencen por '#' (almohadilla) se consideran
+; comentarios. Todo el texto despues de ';' (punto y coma) tambien se
+; considera comentario, a no ser que este precedido por '\', en cuyo
+; caso se considerara un punto y coma literal.
+; Todas las entradas (texto que sigue a los '=') estan rellenas
+; de espacios y tabuladores antes y despues de ellas. Usando'\ '
+; (backslash con espacio) mantendra los espacios desde el texto hasta
+; ese punto (Si antes del texto, desde '\ ' hasta el texto, si despues,
+; desde el texto hasta el '\ ').
+; Un '\' (backslash) al final de una linea, continuara en la siguiente
+; linea y seran tratadas como una unica linea. Las lineas en blanco o
+; que solo contengan comentarios, seran ignoradas.
+; Puedes usar '\n' y '\r' para dividir una linea en dos, y '\t' para
+; insertar un tabulador en la salida.
+; 
+; A lo largo de este archivo hay varios codigos que son reemplazados
+; directamente por Magick. Busca mas abajo una tabla que indica estos
+; codigos y sus significados. Todas las lineas en este archivo que
+; comienzan con ';' son comentarios. Si la cadena de texto que
+; introduces contiene espacios en blanco al principio, DEBES poner
+; un '\' delante del primer espacio en blanco. De otro modo, estos
+; espacios seran ignorados.
+;
+; En cada cadena hay (o puede haber) codigos que comiencen por '$',
+; donde el numero despues del '$' es el parametro con el que se
+; reemplazara. Puedes reordenar o eliminar estos parametros para
+; adecuarlos a tu estructura de frase (util en traducciones).
+; Comenzando uno de estos codigos con '0' (cero), tratara a los
+; numeros que le sigan como literales (util para concatenar un
+; codigo con un numero). Por ejemplo $1$0123 mostrara lo que
+; corresponda al codigo $1 y seguidamente 123. El $0 es
+; ignorado. No puedes cambiar el formato de los codigos.
+;
+; Los codigos de 'realce' del IRC son codigos generalmente
+; aceptados, que tienen ciertas funciones en todos los clientes de
+; IRC. Los codigos aqui listados son todos codigos de 'control', por
+; lo que debes pulsar control y seguidamente la tecla indicada para
+; insertar el codigo.
+;
+; Los codigos de color del mIRC estan aqui por conveniencia, pero
+; se desaconseja su uso, ya que existen una gran variedad de clientes
+; de IRC que no reconocen dichos codigos, y pueden hacer el texto
+; ilegible. Estos clientes proceden en su mayoria de entornos UNIX.
+; Cuando uses estos codigos, para cambiar el color del texto usa ^C#
+; donde # es el codigo del color. Para cambiar el color del texto y
+; del fondo, usa ^C#,#. Para desactivar el color, usa ^C.
+;
+; --------------------------------------------------------------
+;
+; Codigos de realce del IRC:
+;   ^B (\b) = NEGRITA    - Hace el texto mas nitido y resaltado
+;   ^_ (\_) = SUBRAYADO  - Subraya el texto
+;   ^V (\v) = INVERSO    - Intercambia color de texto y fondo
+;   ^O (\o) = CANCELA    - Desactiva codigos de realce
+;   ^C (\c) = COLOR      - Ver a continuacion
+;
+; mIRC colour codes:
+;   0 = Blanco          8  = Amarillo
+;   1 = Negro           9  = Verde claro
+;   2 = Azul            10 = Cian
+;   3 = Verde           11 = Cian claro
+;   4 = Rojo            12 = Azul claro
+;   5 = Naranja         13 = Magenta claro
+;   6 = Magenta         14 = Gris
+;   7 = Rojo claro      15 = Gris claro
+; 
+
+;
+; Esta seccion describe errores de sintaxis.
+;
+[ERR_SYNTAX]
+TRANSLATED         =Chuskyx <chuskyx@hotmail.com>
+UNKNOWN_COMMAND    =Comando \b$1\b no reconocido. Escribe \b/MSG $2 HELP\b para ayuda.
+UNKNOWN_OPTION     =Opcion \b$1\b no reconocida. Escribe \b/MSG $2 HELP $3\b para ayuda.
+ACCESS_COMMAND     =No tienes suficientes privilegios para el comando \b$1\b. Escribe \b/MSG $2 HELP\b para ayuda.
+ACCESS_OPTION      =No tienes suficientes privilegios para la opcion \b$1\b . Escribe \b/MSG $2 HELP $3\b para ayuda.
+NEED_PARAMS        =Parametros insuficientes para \b$1\b. Escribe \b/MSG $2 HELP $3\b para ayuda.
+MUSTCONTAIN        =El argumento especificado para $1 debe contener un caracter '$2'.
+MAYNOTCONTAIN      =El argumento especificado para $1 no debe contener un caracter '$2'.
+MUSTCONTAINONE     =El argumento especificado para $1 debe contener un unico caracter '$2'con texto a ambos lados.
+STARTHRESH         =El argumento especificado para $1 debe contener mas de $2 caracteres no comodines.
+MUSTBENUMBER       =Debes especificar un numero entre $1 y $2.
+WHOLENUMBER        =Se necesita un numero entero.
+MUSTBEONOFF        =Se necesita un valor "ON" u "OFF".
+NONNUMERIC         =Se han valores no numericos (ignorado).
+ABOVELIMIT         =Todos los argumentos por encima de $1 han sido ignorados.
+CHANFILEATTACH     =No se permite adjuntar ficheros a canales.
+ARG_MODE           =El modo $1$2 necesita argumentos (ignorado).
+MULTI_MODE         =Se necesitan varios modos +/-$1 (ignorado).
+NOKEY              =No se ha especificado la clave requerida (ignorado).
+NOLIMIT            =No se ha especificado el limite requerido (ignored).
+MUSTBEHEX          =Se debe indicar un numero hexadecimal  (0-f), de longitud $1.
+MUSTBESIZE         =Debes especificar una longitud $1 o superior.
+
+;
+; Esta seccion describe errores de situacion, errores en los que no se sigue un criterio correcto
+;
+[ERR_SITUATION]
+NOHELP             =Lo siento, no hay ayuda disponible para \b$1\b.
+NOSERVICE          =El servicio $1 no existe.
+ONYOURSELF         =Solo puedes ejecutar \b$1\b sobre ti mismo.
+NOTONYOURSELF      =No puedes ejecutar \b$1\b sobre ti mismo.
+ONSIBLING          =Solo puedes ejecutar \b$1\b sobre un hermano.
+NOTONSIBLING       =No puedes ejecutar \b$1\b sobre un hermano.
+ONANICK            =Solo puedes ejecutar \b$1\b sobre un nick.
+NOTONANICK         =No puedes ejecutar \b$1\b sobre un nick.
+ONACHAN            =Solo puedes ejecutar \b$1\b sobre un canal.
+NOTONACHAN         =No puedes ejecutar \b$1\b sobre un canal.
+ONCOMMITTEE        =Solo puedes ejecutar \b$1\b sobre un miembro del comite $2.
+NOTONCOMMITTEE     =No puedes ejecutar \b$1\b sobre un miembro del comite $2.
+ONPRIVCOMMITTEE    =Solo puedes ejecutar \b$1\b sobre un miembro de los comites privilegiados.
+NOTONPRIVCOMMITTEE =No puedes ejecutar \b$1\b sobre un miembro de los comites privilegiados.
+ONDYNAMIC          =Solo puedes ejecutar \b$1\b sobre un comite dinamico.
+NOTONDYNAMIC       =No puedes ejecutar \b$1\b sobre un comite dinamico.
+NEED_NICK_IDENT    =Debes identificarte para el comando \b$1\b. Escribe \b/MSG $2 IDENTIFY <password>\b e intentalo otra vez.
+NEED_CHAN_IDENT    =Debes identificarte para el comando \b$1\b.  Type \b/MSG $2 IDENTIFY $3 <password>\b e intentalo otra vez.
+COMPLEX_PASS       =Por favor, escoge una clave mas compleja.
+NOTYET             =No puedes utilizar \b$1\b durante $2.
+NICK_WRONG_PASS    =Identificacion con clave incorrecta. El intento ha sido registrado.
+CHAN_WRONG_PASS    =Identificacion incorrecta para el canal $1. Tu intento ha sido registrado.
+IGNORE_TRIGGER     =Ignorado por saturar los servicios de red ($1 mensaje(s) en $2).
+TEMP_IGNORE        =Estas siendo ignorado por $1 vez (de un maximo de $2).  Los servicios te ignoraran durante $3.
+PERM_IGNORE        =Has sido ignorado por $1 vez.  Todas tus peticiones seran ignoradas desde este momento.
+PROTECTED          =Este nick tiene habilitada la proteccion de KILL. Si no te identificas en $1, tu nick sera desconectado o cambiado por otro aleatorio.
+FORBIDDEN          =Este nick esta prohibido. Si no cambias tu nick en $1, tu nick sera desconectado o cambiado por otro aleatorio.
+DEFCOMMITTEE       =Los comites por defecto no pueden ser modificados.
+AKILLTOOHIGH       =Unicamente puedes especificar un maximo de $1 como duracion de un AKILL.
+AKILLTOOMANY       =Tu AKILL desconectara al $1% de los usuarios, superas el limite del $2%!
+NOFLUSH            =Los memos con ficheros adjuntos no pueden ser descargados.
+NOATTACH           =No puedes enviar ficheros adjuntos a canales.
+FILEINPROG         =No puedes empezar un nuevo memo o transferencia de archivo mientras haya otra en progreso.
+COFOUNDER          =El fundador y cofundador de un canal deben ser distintos.
+NOACCESS           =Acceso denegado.
+NOT_SUPPORTED      =Esta caracteristica no esta soportado por el servidor de IRC.
+ISLOCKED_NICK      =La opcion $1 esta bloqueada para TODOS los nicks. No es modificable.
+ISLOCKED_CHAN      =La opcion $1 esta bloqueada para TODOS los canales. No es modificable.
+
+;
+; Esta seccion trata sobre mensajes de DCC.
+;
+[DCC]
+COMPLETED          =DCC $1 completado ($2 bytes transferidos).
+NOACCESS           =DCC $1 rechazado (acceso denegado).
+NOREQUEST          =DCC $1 rechazado (ninguna solicitud activa).
+TOOBIG             =DCC $1 rechazado (tama±o de archivo excesivo).
+NOFILE             =DCC $1 fallido (no se encuentra el archivo).
+NOCONNECT          =DCC $1 fallido (no se ha establecido la conexion).
+FAILED             =DCC $1 fallido (error interno del servidor).
+TIMEOUT            =DCC $1 abortado (tiempo de espera agotado).
+SOCKERR            =DCC $1 abortado (error de socket $2 - $3).
+TOOSLOW            =DCC $1 abortado (transferencia demasiado lenta).
+
+LOOKUP_MEMOATTACH  =El fichero adjunto $1 se llama $2 y pertenece a $3, memo #$4 (enviado por $5, hace $6 ).
+LOOKUP_PICTURE     =El fichero de imagen $1 pertenece a $2.
+LOOKUP_PUBLIC      =El fichero del sistema de ficheros $1 se llama $2, y esta disponible para  $3.
+NLOOKUP_MEMOATTACH =El fichero adjunto $1 no existe.
+NLOOKUP_PICTURE    =El fichero de imagen $1 no existe.
+NLOOKUP_PUBLIC     =El fichero para ftp $1 no existe.
+NLOOKUP_OTHER      =Categoria $1 de ficheros no reconocida.
+NOSPACE            =No hay suficiente espacio para el archivo, ha sido eliminado.
+NOSPACE2           =No hay espacio para archivo temporal, por favor intentelo mas tarde.
+
+LIST_HEAD          =ID       D      Tam    Prog   Vel/s Usuario (Archivo)
+;                   >      < | >       < >    < >     < >
+NOACTIVE           =No hay transferencias de archivo activas.
+NODCCID            =No hay transferencias con ID $1 activas.
+CANCEL             =Transferencia con ID $1 cancelada.
+
+[VALS]
+TIME_SEC           =segundo
+TIME_SECS          =segundos
+TIME_MIN           =minuto
+TIME_MINS          =minutos
+TIME_HOUR          =hora
+TIME_HOURS         =horas
+TIME_DAY           =dia
+TIME_DAYS          =dias
+TIME_WEEK          =semana
+TIME_WEEKS         =semanas
+TIME_YEAR          =anno
+TIME_YEARS         =annos
+TIME_NOW           =ahora
+TIME_UNLIMITED     =ilimitado
+TIME_NONE          =ninguno
+ON                 =Activado
+OFF                =Desactivado
+ONLINE             =Conectado
+SUSPENDED          =SUSPENDIDO
+FORBIDDEN          =PROHIBIDO
+LVL_FOUNDER        =FOUNDER
+LVL_DISABLED       =Deshabilitado
+SVC_AUTO           =Automatico
+SVC_MSG            =Mensaje
+SVC_LOG            =Registrando
+
+;
+; Esta seccion contiene salidas varias de Magick.
+;
+[MISC]
+KILL_PASS_FAIL     =Demasiados intentos de identificacion con clave erronea
+KILL_GHOST         =Comando GHOST ejecutado
+KILL_RECOVER       =Comando RECOVER ejecutado
+KILL_OPERDENY      =Intento de usar comando /OPER cuando no esta permitido (OPERDENY)
+KICK_RESTRICTED    =Este canal es de acceso restringido.
+RENAMED_IDENT      =Tu nick ha sido cambiado por no identificarte correctamente.
+RENAMED_FORBID     =Tu nick ha sido cambiado por emplear un nick prohibido.
+MAYNOTLINK         =No puedes conectar un servidor a esta red de IRC.
+
+EXPIRE_AKILL       =Expira akill para $1 ($2) ajustado por $3 hace $4.
+NICK_GETPASS       =$1 ha ejecutado el comando GETPASS sobre el nick \b$2\b ($3).
+CHAN_GETPASS       =$1 ha ejecutado el comando GETPASS sobre el canal \b$2\b ($3).
+NICK_SETPASS       =$1 ha ejecutado el comando SETPASS sobre el nick \b$2\b ($3).
+CHAN_SETPASS       =$1 ha ejecutado el comando SETPASS sobre el canal \b$2\b ($3).
+GLOBAL_MSG         =$1 ha enviado un mensaje a TODOS los usuarios conectados.
+FLOOD_TEMP         =$1 esta saturando los servicios. Ignorado temporalmente.
+FLOOD_PERM         =$1 esta saturando los servicios. Ignorado de modo permanente.
+CHAN_MODE          =$1 ha realizado un cambio de modo ($2) en el canal $3.
+NICK_MODE          =$1 ha realizado un cambio de modo ($2) en el nick $3.
+AKILL_ADD          =$1 ha ejecutado AKILL sobre el host \b$2\b de duracion $3 ($4) - $5 usuario(s) desconectado(s) ($6%).
+AKILL_EXTEND       =$1 ha extendido AKILL sobre el host \b$2\b durante $3.
+OPERDENY_ADD       =$1 ha denegado el status de ircop al host \b$2\b.
+QLINE              =$1 ha $2 una QLINE sobre nicks que coincidan con la mascara \b$3\b.
+NOOP               =$1 ha $2 inhabilitado el status de IRCop en el servidor \b$3\b.
+KILL               =$1 ha desconectado (discretamente) al usuario $2.
+HIDE               =$1 ha cambiado el host de $2 a $3.
+SHUTDOWN           =Comando SHUTDOWN recibido de \b$1\b ($2).
+RESTART            =Comando RESTART recibido de \b$1\b ($2).
+RELOAD             =\b$1\b ha recargado la configuracion del servidor.
+JUPE               =$1 ha expulsado el servidor \b$2\b (jupitered).
+ONOFF              =El servicio de $1 ha sido $2 por \b$3\b.
+ONOFF_ONE          =El servicio de $1 para $2 ha sido$3 por \b$4\b.
+INVALIDLINK        =El servidor $1 ha sido desconectado (SQUIT) desde $2 por no estar permitido!
+HTM_ON             =Entrando en sobrecarga (ancho de banda saturado - HTM) - ($1Kb/s > $2Kb/s)
+HTM_STILL          =Todavia en sobrecarga (HTM) $1 (retardo $2): $3Kb/s
+HTM_TURBO          =Todavia en sobrecarga (HTM) $1 (TURBO) (retardo$2): $3Kb/s
+HTM_ON_FORCE       =Entrando en modo de sobrecarga (HTM), forzado por $1
+HTM_DIE            =No es posible la recuperacion de la sobrecarga (HTM), desconectando...
+HTM_OFF            =Recuperando modo operativo normal. Fin de la sobrecarga (HTM).
+HTM_OFF_FORCE      =Recuperando modo operativo normal, forzado por $1.
+HTM_SET            =Sensibilidad de sobrecarga (HTM) ajustado a $1/s por $2.
+HTM                =No se puede ejecutar el comando \b$1\b, por estar sobrecargados los servicios - Por favor intentelo mas tarde.
+SIGNAL_LOAD        =Evento #$1 recibida, archivo de configuracion del servidor recargado.
+SIGNAL_SAVE        =Evento #$1 recibida, base de datos salvada.
+SIGNAL_KILL        =FALLO! Evento #$1 recibida, la ultima funcion ha sido $2, cerrando servidor!
+THREAD_DEAD_HALF   =FALLO! Mas de la mitad de los procesos estan inactivos, cerrando servidor!
+
+ENTLIST_CLEAR      =El valor de $1 ha sido eliminado.
+ENTLIST_SET        =El valor de $1 ha sido ajustado a $2.
+REVENGE            =Venganza: No debes realizar $1 sobre $2
+SYNC               =La base de datos se sincronizara en $1.
+LANG_LIST          =Idiomas disponibles:
+LANG_NOLIST        =Error generando la lista de idiomas disponibles.
+BREAKDOWN_HEAD     =SERVIDOR                                 LAG  Usuarios (OPS)
+
+;
+; Esta seccion contiene la salida del comando STATS.
+;
+[STATS]
+GEN_UPTIME         =Servicios activos durante $1.
+GEN_RESET          =Ultimo reajuste de servicos hace $1.
+GEN_MAXUSERS       =Numero maximo de usuarios : $1
+GEN_USERS          =Usuarios actuales: $1 ($2 op(s))
+GEN_CLONES         =Clones actuales: $1 ($2 host(s))
+
+NICK_REGD          =Actualmente registrados: $1 ($2 enlazados)
+NICK_DENIED        =Actualmente suspendidos: $1 ($2 prohibidos)
+NICK_CMD           =Comando realizado con exito ($1):
+NICK_CMD1          =REGISTER      $1 / DROP          $2
+NICK_CMD2          =LINK          $1 / UNLINK        $2
+NICK_CMD3          =HOST          $1 / IDENTIFY      $2
+NICK_CMD4          =GHOST         $1 / RECOVER       $2
+NICK_CMD5          =SUSPEND       $1 / UNSUSPEND     $2
+NICK_CMD6A         =FORBID        $1 / GETPASS       $2
+NICK_CMD6B         =FORBID        $1 / SETPASS       $2
+NICK_CMD7          =ACCESS        $1 / IGNORE        $2
+NICK_CMD8          =SET           $1 / NOEXPIRE      $2
+NICK_CMD9          =LOCK          $1 / UNLOCK        $2
+NICK_CMD10         =SET PICTURE   $1 / SEND          $2
+
+CHAN_REGD          =Actualmente registrados: $1
+CHAN_DENIED        =Actualmente suspendidos: $1 ($2 prohibidos)
+CHAN_CMD           =Comando realizado con exito ($1):
+CHAN_CMD1          =REGISTER      $1 / DROP          $2
+CHAN_CMD2          =IDENTIFY      $1
+CHAN_CMD3          =SUSPEND       $1 / UNSUSPEND     $2
+CHAN_CMD4A         =FORBID        $1 / GETPASS       $2
+CHAN_CMD4B         =FORBID        $1 / SETPASS       $2
+CHAN_CMD5          =MODE          $1 / TOPIC         $2
+CHAN_CMD6          =OP            $1 / DEOP          $2
+CHAN_CMD7          =HALFOP        $1 / DEHALFOP      $2
+CHAN_CMD8          =VOICE         $1 / DEVOICE       $2
+CHAN_CMD9          =KICK          $1 / ANONKICK      $2
+CHAN_CMD10         =INVITE        $1 / UNBAN         $2
+CHAN_CMD11         =CLEAR         $1 / AKICK         $2
+CHAN_CMD12         =LEVEL         $1 / ACCESS        $2
+CHAN_CMD13         =GREET         $1 / MESSAGE       $2
+CHAN_CMD14         =SET           $1 / NOEXPIRE      $2
+CHAN_CMD15         =LOCK          $1 / UNLOCK        $2
+
+OPER_CLONE         =Permiso de clones          : $1
+OPER_AKILL         =Entradas   AKill           : $1
+OPER_OPERDENY      =Entradas OperDeny          : $1
+OPER_IGNORE        =Entradas Ignore            : $1
+OPER_CMD           =Comando realizado con exito  ($1):
+OPER_CMD1          =TRACE         $1 / MODE          $2
+OPER_CMD2          =QLINE         $1 / UNQLINE       $2
+OPER_CMD3          =NOOP          $1 / KILL          $2
+OPER_CMD4          =PING          $1 / UPDATE        $2
+OPER_CMD5          =RELOAD        $1 / UNLOAD        $2
+OPER_CMD6          =JUPE          $1 / ON/OFF        $2
+OPER_CMD7          =CLONE         $1 / AKILL         $2
+OPER_CMD8          =OPERDENY      $1 / IGNORE        $2
+OPER_CMD9          =HIDE          $1
+
+OTH_MEMO           =Usuarios con memos no leidos   : $1
+OTH_NEWS           =Canales con articulos          : $1
+OTH_COMM           =Comites activos                : $1
+
+OTH_CMD            =Comandos realizados con exito de $1 ($2):
+OTH_CMD1           =READ          $1 / UNREAD        $2
+OTH_CMD2           =SEND          $1 / FLUSH         $2
+OTH_CMD3           =REPLY         $1 / FORWARD       $2
+OTH_CMD4           =CANCEL        $1 / DEL           $2
+OTH_CMD5           =CONTINUE      $1 / SET           $2
+OTH_CMD6           =FILE          $1 / GET           $2
+
+OTH_CMD11          =ADD           $1 / DEL           $2
+OTH_CMD12          =MEMBER        $1 / LOGON         $2
+OTH_CMD13          =MEMO          $1 / SET           $2
+OTH_CMD14          =LOCK          $1 / UNLOCK        $2
+
+OTH_CMD21          =GLOBAL        $1 / CREDITS       $2
+OTH_CMD22          =ASK           $1 / STATS         $2
+OTH_CMD23          =FILE ADD      $1 / FILE DEL      $2
+OTH_CMD24          =FILE PRIV     $1 / FILE RENAME   $2
+OTH_CMD25          =FILE SEND     $1 / FILE CANCEL   $2
+
+USE_CPU            =Uso de CPU: $1 por sistema  y $2 por usuario.
+USE_TRAFFIC        =Enviados $1 ($2/s) y recibidos $3 ($4/s) en $5.
+USE_NS_LIVE        =Nicks activos       $1 ($2)
+USE_CS_LIVE        =Canales activos     $1 ($2)
+USE_NS_STORED      =Nicks almacenados   $1 ($2)
+USE_CS_STORED      =Canales almacenados $1 ($2)
+USE_MEMO           =Memos de usuario    $1 ($2)
+USE_NEWS           =Articulos           $1 ($2)
+USE_COMMITTEE      =Comites             $1 ($2)
+USE_OPERSERV       =Listas de OPeR      $1 ($2)
+USE_OTHER          =Otros               $1 ($2)
+USE_TOTAL          =TOTAL               $1 ($2)
+USE_LANGHEAD       =Idioma                   LNG      HLP
+
+
+;
+; Esta seccion contiene TODAS las salidas de los comandos de modificacion de listas.
+;
+[LIST]
+LASTMOD            =Ultima modificacion hace $1 por $2
+MAXLIST            =Solo puedes listar un maximo de $1 entradas de cada vez.
+NICK_LIST          =Mostrando los nicks que coinciden con \b$1\b:
+CHAN_LIST          =Mostrando los canales que coinciden con \b$1\b:
+COMM_LIST          =Mostrando comites que coinciden con \b$1\b:
+DISPLAYED          =$1 de $2 entradas mostradas.
+
+DISPLAY            =Mostrando todas las entradas de la lista $1:
+DISPLAY_MATCH      =Mostrando entradas que coinciden con \b$1\b en la lista $2:
+ADD                =Incluida entrada \b$1\b a la lista $2.
+ADD_NUMBER         =Incluida entrada \b#$1\b a la lista $2.
+ADD_LEVEL          =Incluida entrada \b$1\b a la lista $2 con el nivel $3.
+ADD_TIME           =Incluida entrada \b$1\b a la lista $2 durante $3.
+CHANGE_LEVEL       =Modificado el nivel para \b$1\b en la lista $2 al nivel $3.
+CHANGE_TIME        =Modificada la duracion de \b$1\b en la lista $2 a $3.
+CHANGE_ALL         =Modificadas TODAS las entradas en $1.
+DEL                =Eliminada entrada \b$1\b de la lista $2.
+DEL_MATCH          =Eliminadas $1 entradas coincidentes con \b$2\b de la lista $3.
+DEL_NUMBER         =Eliminada entrada \b#$1\b de la lista $2.
+EXISTS             =La entrada \b$1\b ya existe o esta incluida en la lista $2.
+NOTEXISTS          =No hay entradas coincidentes con \b$1\b en la lista $2.
+NOTEXISTS_NUMBER   =No existe la entrada \b#$1\b en la lista $2.
+EMPTY              =La lista $1 esta vacia.
+
+DISPLAY2           =Mostrando todas las entradas de la lista $2 de $1:
+DISPLAY2_MATCH     =Mostrando todas las entradas coincidentes con \b$1\b en la lista $3 de $2:
+ADD2               =Incluida entrada \b$1\b a la lista $3 de $2.
+ADD2_NUMBER        =Incluida entrada \b#$1\b a la lista $3 de $2.
+ADD2_LEVEL         =Incluida entrada \b$1\b a la lista $3 de $2 con nivel $4.
+ADD2_TIME          =Incluida entrada \b$1\b a la lista $3 de $2 durante $4.
+CHANGE2_LEVEL      =Modificado el nivel para \b$1\b en la lista $3 de $2 al nivel $4.
+CHANGE2_TIME       =Modificada la duracion de \b$1\b en la lista $3 de $2 a $4.
+CHANGE2_ALL        =Modificadas TODAS las entradas en la lista $2 de $1.
+DEL2               =Eliminada entrada \b$1\b de la lista $3 de $2.
+DEL2_MATCH         =Eliminadas $1 entradas coincidentes con \b$2\b de la lista $4 de $3.
+DEL2_NUMBER        =Eliminada entrada \b#$1\b de la lista $3 de $2.
+EXISTS2            =La entrada \b$1\b ya existe o esta incluida en la lista $3 de $2.
+NOTEXISTS2         =No hay entradas coincidentes con \b$1\b en la lista $3 de $2.
+NOTEXISTS2_NUMBER  =No existe la entrada \b#$1\b en la lista $3 de $2.
+EMPTY2             =La lista $2 de$1 esta vacia.
+
+ACCESS             =acceso
+IGNORE             =ignora memos
+LEVEL              =nivel de acceso
+AKICK              =auto kick
+GREET              =saludo de canal
+JOINMSG            =mensaje de entrada al canal
+MEMBER             =miembro
+MESSAGES           =mensaje de entrada
+CLONE              =sobrecarga de clones
+AKILL              =auto kill
+OPERDENY           =Ircop denegado
+SIGNORE            =ignorado por servicios
+CHANNEL            =canal
+NICKNAME           =nick
+FILES              =ficheros disponibles
+
+;
+; Esta seccion define respuestas de STATUS sobre OTROS nicks.
+;
+[NS_OTH_STATUS]
+ISSTORED           =El nick $1 esta actualmente registrado o enlazado.
+ISREGD             =El nick $1 esta registrado.
+ISLINKED           =El nick $1 esta enlazado a otro nick.
+ISNOTSTORED        =El nick $1 no se encuentra registrado ni enlazado.
+ISNOTREGD          =El nick $1 no esta registrado.
+ISNOTLINKED        =El nick $1 no esta enlazado a otro nick.
+ISFORBIDDEN        =El nick $1 esta prohibido.
+ISSUSPENDED        =El nick $1 esta suspendido.
+ISNOTSUSPENDED     =El nick $1 no esta suspendido.
+ISHOST             =El nick $1 es un host, tiene nicks enlazados.
+ISNOTHOST          =El nick $1 no es host. No tiene enlaces.
+IDENTIFIED         =Ya te encuentras identificado para el nick $1.
+ISLOCKED           =La opcion $1 para el nick $2 esta bloqueada.
+ISNOTLOCKED        =La opcion $1 para el nick $2 no esta bloqueada.
+
+NOPIC              =El nick $1 no tiene imagen asociada.
+ISNOTYOURS         =El nick $1 no se encuentra enlazado al tuyo.
+ISINUSE            =El nick $1 esta actualmente en uso.
+ISNOTINUSE         =El nick $1 no se encuentra en uso en este momento.
+
+;
+; Esta seccion define respuestas de STATUS sobre TUS nicks.
+;
+[NS_YOU_STATUS]
+ISSTORED           =Tu nick esta registrado o enlazado.
+ISREGD             =Tu nick esta actualmente registrado.
+ISLINKED           =Tu nick esta enlazado a otro nick.
+ISNOTSTORED        =Tu nick no esta registrado ni enlazado.
+ISNOTREGD          =Tu nick no esta registrado.
+ISNOTLINKED        =Tu nick no esta enlazado a ningun otro nick.
+ISFORBIDDEN        =Tu nick esta prohibido.
+ISSUSPENDED        =Tu nick esta suspendido.
+ISNOTSUSPENDED     =Tu nick no esta suspendido.
+ISHOST             =Tu nick es un host, tiene nicks enlazados.
+ISNOTHOST          =Tu nick no es host. No tiene enlaces.
+IDENTIFIED         =Tu nick esta identificado.
+ISLOCKED           =La opcion $1 esta bloqueada.
+ISNOTLOCKED        =La opcion $1 no esta bloqueada.
+
+PICDISABLED        =El almacenamiento de imagenes se encuentra deshabilitado.
+INVALIDEXT         =La extension de archivo que intentas enviar, no es un formato reconocido de imagen.
+
+;
+; Estas respuestas son UNICAMENTE para el comando INFO de Nickserv.
+;
+[NS_INFO]
+REALNAME           =$1 es $2
+HOST               =\   Host            : \b$1\b
+REGISTERED         =\   Registrado      : $1$2
+ONLINEAS           =\   Conectado como  : $1
+LASTALLMASK        =    Mascara         : $1
+LASTALLSEEN        =\   Ultima conexion : $1
+LASTMASK           =\   Ultima mascara  : $1
+LASTSEEN           =\   Conectado hace  : $1
+QUITMSG            =\   Ultimo Quit     : $1
+SUSPEND            =\   Suspendido      : Hace $1 por $2
+SUSPENDFOR         =\    Motivo         : $1
+EMAIL              =\   E-Mail          : $1
+URL                =\   Web             : http://$1
+ICQ                =\   ICQ UIN         : $1
+AIM                =\   AIM Name        : $1
+MSN                =\   MSN E-Mail      : $1
+YAHOO              =\   Yahoo! ID       : $1
+DESCRIPTION        =\   Descripcion     : $1
+COMMENT            =\   Comentario      : $1
+COMMITTEES         =\   Comites         : $1
+OPTIONS            =\   Opciones        : $1
+HASPIC             =Este usuario tiene imagen disponible ($1). Escribe \b/MSG $2 SEND $3\b para descargarla.
+ISONLINE           =Este usuario se encuentra conectado actualmente. Escribe \b/whois $1\b para mas informacion.
+NOEXPIRE           =No expira
+
+;
+; Nombres textuales para las opciones de SET disponibles en Nickserv.
+;
+[NS_SET]
+PASSWORD           =Clave
+EMAIL              =direccion de correo electronico
+URL                =Pagina web
+ICQ                =ICQ UIN
+AIM                =AIM Name
+MSN                =MSN Passport E-Mail
+YAHOO              =Yahoo! Messenger ID
+DESCRIPTION        =Descripcion del usuario
+COMMENT            =Comentarios
+PROTECT            =Proteccion de Kill
+SECURE             =Seguro
+NOEXPIRE           =No Expira
+NOMEMO             =Memos denegados
+PRIVATE            =Privado
+PRIVMSG            =Mensajes privados
+LANGUAGE           =Idioma
+
+;
+; Esta seccion contiene la salida indicada al ejecutar exitosamente un comando de Nickserv sobre OTROS nicks.
+;
+[NS_OTH_COMMAND]
+REGISTERED         =El nick $1 esta ahora registrado bajo el host \b$2\b.
+LINKED             =El nick $1 esta ahora enlazado a \b$2\b.
+DROPPED            =El nick $1 ha sido dropado.
+UNLINKED           =El nick $1 ha sido desenlazado.
+NEWHOST            =El nick $1 es ahora el host.
+IDENTIFIED         =Clave aceptada - Te encuentras identificado para el nick $1.
+SET_TO             =$1 para el nick $2 ha sido ajustado a \b$3\b.
+UNSET              =$1 para el nick $2 ha sido anulado.
+OPT_SET_TO         =La opcion $1 para el nick $2 ha sido ajustada a \b$3\b.
+
+RELEASED           =El usuario con el nick \b$1\b ha sido desconectado.
+HELD               =El nick $1 se encuentra protegido por los servicios de red.
+SUSPENDED          =El nick $1 ha sido suspendido.
+UNSUSPENDED        =El nick $1 ya no se encuentra suspendido.
+FORBIDDEN          =El nick $1 ha sido prohibido.
+GETPASS            =La Clave del nick $1 ($2) es \b$3\b.
+SETPASS            =La Clave del nick $1 ($2) ha sido ajustada a \b$3\b.
+LOCKED             =$1 para el nick $2 ha sido bloqueado a \b$3\b.
+UNLOCKED           =$1 para el nick $2 ha sido desbloqueado.
+OPT_LOCKED         =La opcion $1 para el nick $2 ha sido bloqueada a \b$3\b.
+OPT_UNLOCKED       =La opcion $1 para el nick $2 ha sido desbloqueada.
+
+;
+; Esta seccion contiene la salida indicada al ejecutar exitosamente un comando de Nickserv sobre TU nick.
+;
+[NS_YOU_COMMAND]
+REGISTERED         =Tu nick esta ahora registrado bajo el host \b$1\b.
+LINKED             =Tu nick esta ahora enlazado a \b$1\b.
+DROPPED            =Tu nick ha sido dropado.
+UNLINKED           =Tu nick ha sido desenlazado.
+NEWHOST            =Tu nick es ahora el host.
+IDENTIFIED         =Clave aceptada - Estas identificado.
+SET_TO             =Tu $1 ha sido ajustado a \b$2\b.
+UNSET              =Tu $1 ha sido anulado.
+OPT_SET_TO         =La opcion $1 ha sido ajustada a \b$2\b.
+
+PENDING            =Por favor, comienza ahora la transferencia de tu imagen.
+PUB_PENDING        =Por favor, comienza a enviar ahora el fichero.
+SAVED              =Tu imagen ha sido almacenada.
+REMOVED            =Tu imagen ha sido eliminada.
+TOOBIG             =Tu imagen es demasiado grande. Por favor, envia una de menores dimensiones.
+NOSPACE            =No hay suficiente espacio para almacenar tu imagen. Eliminada.
+
+
+;
+; Respuestas UNICAMENTE para el comando INFO de Chanserv.
+;
+[CS_INFO]
+IS                 =Informacion sobre $1:
+FOUNDER            =\ Fundador      : $1
+COFOUNDER          =\ Co-Fundador   : $1
+DESCRIPTION        =\ Descripcion   : $1
+REGISTERED         =\ Registrado    : $1 $2
+INUSEBY            =\  Usado por    : $1
+LASTUSED           =\ Ultimo uso    : $1
+EMAIL              =\     E-Mail    : $1
+URL                =\        Web    : http://$1
+SUSPEND            =\ Suspendido    : Hace $1 por $2
+SUSPENDFOR         =\     Motivo    : $1
+COMMENT            =\ Comentario    : $1
+TOPIC              =\Ult. topico    : $1
+TOPICBY            =\   Ajustado    : Hace $1 por $2
+MLOCK              =\    Candado    : $1
+REVENGE            =\   Venganza    : $1
+BANTIME            =\ Auto unban    : $1
+PARTTIME           =\Retardo saludo : $1
+OPTIONS            =\   Opciones    : $1
+
+NOEXPIRE           =no expira
+OPS                =op(s)
+HALFOPS            =half op(s)
+VOICES             =voice(s)
+USERS              =usuario(s)
+SPLIT_USERS        =usuario(s) en split
+
+
+;
+; Nombres textuales para las opciones de SET en Chanserv.
+;
+[CS_SET]
+FOUNDER            =Fundador
+COFOUNDER          =Co-Fundador
+PASSWORD           =Clave
+EMAIL              =E-mail del canal
+URL                =Web del canal
+DESCRIPTION        =Descripcion del canal
+COMMENT            =Comentarios
+TOPIC              =Topico
+MLOCK              =Candado de modo
+BANTIME            =Tiempo de ban
+PARTTIME           =Tiempo fuera de canal
+KEEPTOPIC          =Recordar topico
+TOPICLOCK          =Candado de topico
+PRIVATE            =Privado
+SECUREOPS          =Operadores seguros
+SECURE             =Seguro
+NOEXPIRE           =No Expira
+ANARCHY            =Anarquia
+KICKONBAN          =Kick On Ban
+RESTRICTED         =Restringido
+JOIN               =Servicios en el canal
+REVENGE            =Modo de venganza
+
+LVL_AUTODEOP       =Auto Deop/Devoice
+LVL_AUTOVOICE      =Auto Voice
+LVL_AUTOHALFOP     =Auto Half Op
+LVL_AUTOOP         =Autoc Op
+LVL_READMEMO       =Leer noticias
+LVL_WRITEMEMO      =Escribir articulos
+LVL_DELMEMO        =Borrar articulos
+LVL_GREET          =Ajustar saludo
+LVL_OVERGREET      =Ajustar y bloquear saludo
+LVL_MESSAGE        =Escribir mensaje de entrada al canal
+LVL_AKICK          =Modificar lista Auto Kick
+LVL_SUPER          =Super Op
+LVL_UNBAN          =Quitar bans de servidor
+LVL_ACCESS         =Modificar lista de acceso
+LVL_SET            =Acceso a comando SET
+LVL_VIEW           =Info adicional del canal
+LVL_CMDINVITE      =Comando INVITE
+LVL_CMDUNBAN       =Comando UNBAN
+LVL_CMDVOICE       =Comando VOICE
+LVL_CMDHALFOP      =Comando HALFOP
+LVL_CMDOP          =Comando OP
+LVL_CMDKICK        =Comando KICK
+LVL_CMDMODE        =Comando MODE
+LVL_CMDCLEAR       =Comando CLEAR
+
+REV_NONE           =Deshabilitado
+REV_REVERSE        =Invertir accion
+REV_DEOP           =Ejecutar deop
+REV_KICK           =Ejecutar kick
+REV_BAN1           =Ban a nick (nick!*@*)
+REV_BAN2           =Ban a mascara (*!*user@*.host)
+REV_BAN3           =Ban a dominio (*!*@port.host)
+REV_BAN4           =Ban a host (*!*@*.host)
+REV_MIRROR         =Repetir accion
+
+;
+; Esta seccion define respuestas de STATUS sobre canales
+;
+[CS_STATUS]
+ISSTORED           =El canal $1 esta registrado.
+ISNOTSTORED        =El canal $1 no esta registrado.
+IN                 =Te encuentras en el canal $1.
+NOTIN              =No te encuentras en el canal $1.
+OTH_IN             =El nick $1 esta en el canal $2.
+OTH_NOTIN          =El nick $1 no esta en el canal $2.
+OPPED              =Eres OP en el canal $1.
+NOTOPPED           =No eres OP en el canal $1.
+OTH_OPPED          =El nick $1 es OP en el canal $2.
+OTH_NOTOPPED       =El nick $1 no es OP en el canal $2.
+HALFOPPED          =Eres HALFOP en el canal $1.
+NOTHALFOPPED       =No eres HALFOP en el canal $1.
+OTH_HALFOPPED      =El nick $1 es HALFOP en el canal $2.
+OTH_NOTHALFOPPED   =El nick $1 no es HALFOP en el canal $2.
+VOICED             =Eres VOICE en el canal $1.
+NOTVOICED          =No eres VOICE en el canal $1.
+OTH_VOICED         =El nick $1 es VOICE en el canal $2.
+OTH_NOTVOICED      =El nick $1 no es VOICE en el canal $2.
+BANNED             =Estas baneado en el canal $1.
+NOTBANNED          =No estas baneado en el canal $1.
+OTH_BANNED         =El nick $1 esta baneado en el canal $2.
+OTH_NOTBANNED      =El nick $1 no esta baneado en el canal $2.
+TOOMANY            =Eres fundador o Co-fundador en demasiados canales.
+OTH_TOOMANY        =El nick $1 es fundador o Co-fundador en demasiados canales.
+MAX_MESSAGES       =Limite de mensajes de entrada para el canal $1 alcanzado.
+IDENTIFIED         =Estas identificado para el canal $1.
+ISFORBIDDEN        =El canal $1 esta prohibido.
+ISNOTFORBIDDEN     =El canal $1 no esta prohibido.
+ISSUSPENDED        =El canal $1 esta suspendido.
+ISNOTSUSPENDED     =El canal $1 no esta suspendido.
+ISINUSE            =El canal $1 esta en uso.
+ISNOTINUSE         =El canal $1 no esta en uso.
+HASNOACCESS        =El nick $1 no tiene acceso en ningun canal registrado.
+RESTRICT           =El canal $1 es de acceso restringido y tiene $2 ajustado. Restricciones de acceso aplicadas.
+HIGHERACCESS       =El nick $1 tiene mayor nivel de acceso que tu en el canal $2.
+NOTZERO            =No puedes incluir a nadie en la lista de acceso con nivel cero.
+ONLYBELOW          =Solo puedes incluir a alguien en la lista de acceso con nivel inferior al tuyo.
+LOCKGREET          =Tu saludo para el canal $1 esta bloqueado.
+NOTLOCKGREET       =Tu saludo para el canal $1 no esta bloqueado.
+ISLOCKED           =$1 para canal $2 esta bloqueado.
+ISNOTLOCKED        =$1 para canal $2 no esta bloqueado.
+NOREVENGE          =Modo de venganza $1 no valido.
+
+;
+; Esta seccion contiene la salida de la ejecucion exitosa de comandos de Chanserv
+;
+[CS_COMMAND]
+REGISTERED         =El canal $1 ha sido registrado con fundador \b$2\b.
+DROPPED            =El canal $1 ha sido dropado.
+IDENTIFIED         =Clave aceptada - Tienes nivel de fundador en $1.
+SET_TO             =La opcion $1 para el canal $2 ha sido ajustada a \b$3\b.
+UNSET              =$1 para el canal $2 ha sido anulado.
+LOCKED             =$1 para el canal $2 ha sido bloqueado a \b$3\b.
+UNLOCKED           =$1 para el canal $2 ha sido desbloqueado.
+MLOCK_REVERSED     =Candado de modo ha invertido \b$1\b.
+MLOCK_FORCED       =Candado de modo ha forzado \b$1\b.
+MLOCK_SET          =Candado de modo para el canal $1 ajustado a \b$2\b.
+MLOCK_UNSET        =Candado de modo para el canal $1 anulado.
+MLOCK_LOCK         =Candado de modo para el canal $1 bloqueado a \b$2\b.
+MLOCK_UNLOCK       =Candado de modo para el canal $1 desbloqueado.
+SUSPENDED          =El canal $1 ha sido suspendido.
+UNSUSPENDED        =El canal $1 ya no esta suspendido.
+FORBIDDEN          =El canal $1 ha sido prohibido.
+GETPASS            =La clave del canal $1 ($2) es \b$3\b.
+SETPASS            =La clave del canal $1 ($2) cambiada a \b$3\b.
+KICK               =Solicitado por $1 ($2)
+INVITE             =Has sido invitado al canal $1.
+OTH_INVITE         =Has sido invitado al canal $1 por $2.
+UNBANNED           =Has sido desbaneado del canal $1.
+OTH_UNBANNED       =El nick $1 ha sido desbaneado del canal $2.
+CLEAR              =El comando $1 ha sido usado en el canal $3 por $2.
+LEVEL_HEAD         =Nivel  TAG        Titulo ($1)
+LEVEL_HAVE         =Tienes acceso \b$1\b en el canal $2.
+
+;
+; Esta seccion contiene la salida de la ejecucion exitosa de comandos de CommServ,
+; asi como algunas respuestas de STATUS
+
+[COMMSERV]
+ISSTORED           =El comite $1 ya existe.
+ISNOTSTORED        =El comite $1 no existe.
+NOTMODIFY          =El comite $1 no puede ser modificado online.
+MULTI_HEAD         =El comite $1 tiene mas de un lider y no puede ser reasignado.
+MEMBER             =Perteneces al comite $1.
+NOTMEMBER          =No perteneces al comite $1.
+HEAD               =Eres lider del comite $1.
+NOTHEAD            =No eres lider del comite $1.
+MAX_MESSAGES       =Limite maximo de mensajes de entrada alcanzado para $1.
+OTH_MEMBER         =$1 pertenece al comite $2.
+OTH_NOTMEMBER      =$1 no pertenece al comite $2.
+OTH_HEAD           =$1 es lider del comite $2.
+OTH_NOTHEAD        =$1 no es lider del comite $2.
+ADD                =El comite $1 ha sido creado y su lider es \b$2\b.
+DEL                =El comite $1 ha sido eliminado.
+MEMO               =Memo enviado a todos los miembros del comite $1.
+ISLOCKED           =$1 para el comite $2 esta bloqueado.
+ISNOTLOCKED        =$1 para el comite $2 no esta bloqueado.
+SET_TO             =$1 para el comite $2 ha sido ajustado a \b$3\b.
+UNSET              =$1 para el comite $2 ha sido anulado.
+LOCKED             =$1 para el comite $2 ha sido bloqueado a \b$3\b.
+UNLOCKED           =$1 para el comite $2 ha sido desbloqueado.
+DEFUNCT            =VENCIDO
+
+;
+; Estas son salidas para el comando INFO de CommServ.
+;
+[COMMSERV_INFO]
+DESCRIPTION        =$1 es $2
+REGISTERED         =\     Registrado: $1
+HEADCOM            =\     Lider     : \b$1\b
+HEAD               =\     Lider     : $1
+EMAIL              =\     E-Mail    : $1
+URL                =\     Web       : http://$1
+STATS              =\     Stats     : $1
+OPTIONS            =\     Opciones  : $1
+
+MEMBERS            =miembros
+MESSAGES           =mensajes
+SET_HEAD           =Lider
+SET_DESCRIPTION    =Descripcion
+SET_EMAIL          =Direccion e-mail del comite
+SET_URL            =Web
+SET_SECURE         =Seguro
+SET_PRIVATE        =Privado
+SET_OPENMEMOS      =Memo libre
+
+;
+; Estas son salidas de STATUS para Operserv
+;
+[OS_STATUS]
+INVALID_THREAD     =El tipo de Proceso (thread) \b$1\b no es valido.
+INVALID_LEVEL      =El nivel de debug \b$1\b no es valido (ignorado).
+ISLINKED           =El servidor $1 esta enlazado.
+ISNOTLINKED        =El servidor $1 no esta enlazado.
+ISLANG             =El idioma $1 esta cargado.
+ISNOTLANG          =El idioma $1 no esta cargado.
+NOLANG             =El idioma $1 no existe.
+ISOPERDENY         =No puedes activar el modo +o, se te ha denegado el status de Ircop (OPERDENY).
+HTM                =Modo de sobrecarga (HTM) se activara a $1/s, media de trafico actual $2Kb/s.
+
+;
+; Estas son lineas de salida para el comando SETTINGS de Operserv
+;
+[OS_SETTINGS]
+CFG_LEVEL          =LIVE LEVEL es $1, el nivel actual es $2.
+CFG_LAG            =LIVE LEVEL es incrementado si el "lag" supera $1.
+CFG_LAGCHECK       =El "lag" del servidor es revisado cada $1.
+CFG_SERVERS        =Los servicios tienen $1 posible(s) servidore(s) para enlazarse.
+CFG_RELINK         =Los servicios re-enlazaran en $1 si SQUIT.
+CFG_SQUIT1         =Proteccion SQUIT ultimos $1.
+CFG_SQUIT2         =Los usuarios tienen $1 para reconectar antes de que se active la proteccion SQUIT.
+CFG_SYNC           =Las bases de datos se salvan cada $1, y se sincronizaran en $2.
+CFG_CYCLE          =El ciclo activo es $1, y el ciclo hiper-activo es $2.
+CFG_DCC1           =El bloque para DCC es $1 y desconectara por inactividad en $2.
+CFG_DCC2           =Velocidad minima para DCC $1 y la maxima $2 en intervalos de $3.
+
+NICK_EXPIRE        =Los nicks expiraran transcurridos $1.
+NICK_IDENT         =Los usuarios tienen $1 para identificarse.
+NICK_HOLD          =Los nicks son protegidos durante $1 al fallar la identificacion.
+NICK_PASS          =Los usuarios seran desconectados si fallan la identificacion $1 veces.
+NICK_OPTIONS       =Las opciones por defecto de nick son: $1
+NICK_LANG          =El idioma por defecto es $1.
+NICK_PICSIZE       =Las imagenes podran ser de hasta $1.
+NICK_PICEXT        =Extensiones validas para imagen: $1
+NICK_FILES         =Los usuarios podran almacenar hasta $1 fichero(s) de hasta $2 cada uno.
+
+CHAN_EXPIRE        =Los canales expiraran transcurridos $1.
+CHAN_IDENT         =Los usuarios seran desconectados si fallan la identificacion $1 veces.
+CHAN_KEEPTIME      =Los canales seran retenidos $1 despues de expulsar al ultimo usuario.
+CHAN_BANTIME       =La duracion por defecto de un ban es $1.
+CHAN_PARTTIME      =El retardo por defecto de un saludo es $1.
+CHAN_MLOCK         =El candado de modo por defecto es "$1", los modos "$2" estan obligados.
+CHAN_OPTIONS       =Las opciones por defecto de canales son: $1
+CHAN_REVENGE       =El nivel por defecto de venganza es $1.
+CHAN_ACCESS        =El nivel de acceso minimo es $1, y el maximo $2.
+CHAN_NEWS          =LOs articulos expiraran transcurridos $1.
+
+MISC_INFLIGHT      =Los memos estan pendientes durante $1.
+MISC_AKILL1        =La duracion por defecto de AKILL es $1 y sera rechazado si desconecta mas del $2% de la red.
+MISC_AKILL2        =Las duraciones maximas de AKILL (por comites) son:
+MISC_CLONES        =Los usuarios podran tener hasta $1 clone(s) por host, que podran ser incrementados hasta $2.
+MISC_FLOOD1        =Flood se detecta con $1 mensaje(s) en $2.
+MISC_FLOOD2        =Los servicios recuerdan flood de usuarios durante $1.
+MISC_IGNORE        =Los servicios ignoraran durante $1, y sera permanente si se detecta $2 veces.
+MISC_COMM_OPT      =Las opciones por defecto de comite son: $1
+
+
+;
+; Esta seccion contiene la salida de comandos exitosos de Operserv
+;
+[OS_COMMAND]
+CHAN_MODE          =Cambio de modo $1 enviado al canal $2.
+NICK_MODE          =Cambio de modo $1 enviado al nick $2.
+QLINE              =La prohibicion (QLINE) para nicks coincidentes con $1 ha sido \b$2\b.
+NOOP               =Restriccion de status de Ircop (noop) ha sido \b$1\b para el servidor $2.
+KILL               =El usuario $1 ha sido desconectado (discretamente).
+HIDE               =Se ha cambiado el host del nick $1 a $2.
+PING               =PING mensaje enviado a todos los servidores.
+UPDATE             =Salvando bases de datos.
+SHUTDOWN           =Cerrando..
+RESTART            =Reiniciando ...
+RELOAD             =Recargado el fichero de configuracion.
+RELOAD_FAIL        =AVISO: No se puede leer el fichero de configuracion.
+SIGNON             =Iniciando todos los clientes de servicios no activos.
+UNLOAD             =El idioma $1 ha sido descargado.
+JUPE               =El servidor $1 ha sido expulsado (jupitered).
+ONOFF              =$1 Los servicios han sido \b$2\b.
+ONOFF_ONE          =$1 Los servicios para $2 han sido \b$3\b.
+HTM                =El modo de sobrecarga de servicios (HTM) ha sido \b$1\b.
+HTM_SET            =La sensibilidad del modo de sobrecarga (HTM) ha sido reajustada a $1.
+
+;
+; Estas son respuestas de STATUS de Memoserv
+;
+
+[MS_STATUS]
+CS_EMPTY           =El canal $1 no tiene articulos.
+CS_UNREAD          =El canal $1 tiene $2 articulos(s) nuevo(s).  Escribe \b/MSG $3 LIST $4\b para listarlos.
+CS_NOUNREAD        =El canal $1 no tiene articulos nuevos.
+NS_EMPTY           =No tienes memos.
+NS_UNREAD          =Tienes $1 nuevo(s) memo(s). Escribe \b/MSG $2 LIST\b para listarlos.
+NS_NOUNREAD        =No tienes nuevos memos.
+IGNORE             =El nick $1 esta ignorando tus memos.
+TRUNCATE           =Mensaje truncado en "...$1". Escribe \b/MSG $2 CONTINUE <texto>\b para continuar con la lectura.
+PENDING            =Tienes memos pendientes de ser enviados.
+NOPENDING          =No tienes memos pendientes de ser enviados.
+FILEDISABLED       =La posibilidad de adjuntar ficheros a memos ha sido DESHABILITADA.
+ATTACHLIMIT        =El nick $1 ha alcanzado su limite de ficheros adjuntados a memo.
+FORWARD            =[\bREDIRECCION\b: $1] $2
+FORWARD_ARG        =[\bREDIRECCION\b($1): $2] $3
+REPLY              =[\bRESPUESTA\b: "$1"] $2
+REPLY_ARG          =[\bRESPUESTA\b($1): "$2"] $3
+
+SET_NOEXPIRE       =No Expira
+
+;
+; Esta seccion contiene las salidas de comandos exitosos de Memoserv
+;
+[MS_COMMAND]
+NEWS               =#$1 de $2 a $3 enviado hace $4.
+NEWS_LIST          =$1#$2 de $3 a $4 enviado hace $5 - "$6"
+MEMO               =#$1 de $2 enviado hace $3.
+MEMO_FILE          =#$1 de $2 enviado hace $3 tiene $4 ($5) adjuntado.
+MEMO_LIST          =$1#$2 de $3 enviado hace $4 - "$5"
+MEMO_LIST_FILE     =$1#$2 de $3 enviado hace $4 - "$5" [$6 ($7)]
+CS_UNREAD          =El(los) articulo(s) $1 del canal $2 no han sido leidos.
+CS_UNREAD_ALL      =Todos las articulos del canal $1 no han sido leidos.
+NS_UNREAD          =Tu(s) memo(s) $1 no han sido leidos.
+NS_UNREAD_ALL      =Todos tus memos estan sin leer.
+CS_NOTDEL          =El(los) articulo(s) $1 del canal $2 NO han sido eliminados.
+CS_DEL             =El(los) articulo(s) $1 del canal $2 han sido eliminados.
+CS_DEL_ALL         =Todos los articulos del canal $1 han sido eliminados.
+NS_DEL             =Tu(s) memo(s) $1 han sido eliminados.
+NS_DEL_ALL         =Todos tus memos han sido eliminados.
+CS_SET             =$1 para el(los) articulo(s) $2 del canal $3 ha sido ajustado a \b$4\b.
+CS_SET_ALL         =$1 para todos los articulos del canal $2 ha sido ajustado a \b$3\b.
+NS_SET             =$1 para tu(s) memo(s) $2 ha sido ajustado a \b$3\b
+NS_SET_ALL         =$1 para todos tus memos ha sido ajustado a \b$2\b
+CANCEL             =Memo pendiente ha sido cancelado.
+PREVIEW            =Memo pendiente para $1 esta actualmente:
+PENDING            =El Memo esta ahora pendiente. Tienes $1 para continuarlo o cancelarlo.
+PENDING_FILE       =El Memo esta ahora pendiente. Tienes $1 para comenzar la transferencia del archivo, continuar o cancelar.
+TOOBIG             =Tu fichero adjunto es demasiado grande, memo pendiente cancelado.
+NOSPACE            =No hay suficiente espacio para almacenar el fichero adjunto, memo pendiente cancelado.
+CONTINUE           =Contador de memo pendiente reajustado.  Tienes $1 para continuarlo o cancelarlo.
+SENT               =El memo ha sido enviado a $1 ($2).
+CS_NEW             =Hay un nuevo articulo (#$1) para el canal $2 de $3. Escribe \b/MSG $4 READ $5 $6\b para leerlo.
+NS_NEW             =Tienes un nuevo memo (#$1). Escribe \b/MSG $2 READ $3\b para leerlo.
