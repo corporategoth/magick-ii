@@ -1,5 +1,5 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
-STAMPED_PROGS = magick magick.debug magick_keygen
+STAMPED_PROGS = magick magick_keygen
 bin_PROGRAMS = $(STAMPED_PROGS) magick_stampkeys
 
 magick_stampkeys_SOURCES = magick_stampkeys.c
@@ -39,14 +39,11 @@ if INCREMENT
 	$(top_srcdir)/helper/build-ver $(top_srcdir)
 endif
 
-magick.debug$(EXEEXT): helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
-	@rm -f magick.debug
+magick$(EXEEXT): helper $(magick_OBJECTS) $(magick_DEPENDENCIES)
+	@rm -f $@
 	$(CXXLINK) $(magick_LDFLAGS) $(magick_OBJECTS) $(magick_LDADD) $(LIBS)
-
-magick$(EXEEXT): magick.debug
-	@rm -f magick
-	cp magick.debug magick
-	strip magick
+	cp $@ $@.debug
+	strip $@
 
 relink:
 	@rm -f $(STAMPED_PROGS)
