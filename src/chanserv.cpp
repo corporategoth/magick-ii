@@ -212,6 +212,37 @@ void Chan_Live_t::Mode(mstring source, mstring in)
     }
 }
 
+bool Chan_Live_t::HasMode(mstring in)
+{
+    FT("Chan_Live_t::HasMode", (in));
+    RET(modes.Contains(in));
+}
+
+bool Chan_Live_t::IsOp(mstring nick)
+{
+    FT("Chan_Live_t::IsOp", (nick));
+
+    if (IsIn(nick))
+	if (users[nick.LowerCase()].first == true)
+	{
+	    RET(true);
+	}
+    RET(false);
+}
+
+bool Chan_Live_t::IsVoice(mstring nick)
+{
+    FT("Chan_Live_t::IsVoice", (nick));
+
+    if (IsIn(nick))
+	if (users[nick.LowerCase()].second == true)
+	{
+	    RET(true);
+	}
+    RET(false);
+
+}
+
 void Chan_Live_t::operator=(const Chan_Live_t &in)
 {
     NFT("Chan_Live_t::operator=");

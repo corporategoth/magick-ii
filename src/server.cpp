@@ -549,9 +549,9 @@ void NetworkServ::execute(const mstring & data)
 	{
 	    // :source NOTICE target/#channel :message
 	    // NOTICE target :message
-	    if (!source && !IsChan(data.ExtractWord(2, ": ")) 
+	    if (!source && !IsChan(data.ExtractWord(2, ": ")))
 		wxLogNotice("Received NOTICE for unknown user " + data.ExtractWord(3, ": "));
-	    else if (source && !IsChan(data.ExtractWord(3, ": ")) 
+	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
 		wxLogNotice("Received NOTICE for unknown user " + data.ExtractWord(3, ": "));
 	}
 	else
@@ -611,9 +611,9 @@ void NetworkServ::execute(const mstring & data)
 	else if (msgtype=="PRIVMSG")
 	{
 	    // :source PRIVMSG target/#channel :message
-	    if (!source && !IsChan(data.ExtractWord(2, ": ")) 
+	    if (!source && !IsChan(data.ExtractWord(2, ": ")))
 		wxLogNotice("Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
-	    else if (source && !IsChan(data.ExtractWord(3, ": ")) 
+	    else if (source && !IsChan(data.ExtractWord(3, ": ")))
 		wxLogNotice("Received PRIVMSG for unknown user " + data.ExtractWord(3, ": "));
 	}
 	else
@@ -842,9 +842,9 @@ void NetworkServ::execute(const mstring & data)
 		SendSVR("302 " + source + " :" +
 			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Name() +
 			"*=-" +
-			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].UserName() +
+			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].User() +
 			"@" +
-			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].HostName());
+			Parent->nickserv.live[data.ExtractWord(3, ": ").LowerCase()].Host());
 
 	    }
 	    else
@@ -976,6 +976,73 @@ void NetworkServ::execute(const mstring & data)
 //:soul.darker.net 310 ChanServ PreZ :looks very helpful.
 //:soul.darker.net 317 ChanServ PreZ 557 932291863 :seconds idle, signon time
 //:soul.darker.net 318 ChanServ PreZ :End of /WHOIS list.
+	    if (Parent->nickserv.IsLive(data.ExtractWord(3, ": ")))
+	    {
+		mstring target = data.ExtractWord(3, ": ");
+		mstring targetL = target.LowerCase();
+
+		SendSVR("311 " + source + " " + target + " " + Parent->nickserv.live[targetL].User() +
+			" " + Parent->nickserv.live[targetL].Host() + " * :" +
+			Parent->nickserv.live[targetL].RealName());
+		if (Parent->nickserv.live[targetL].IsRecognized())
+		{
+		    SendSVR("307 " + source + " " + target + " : is a registered nick");
+		}
+
+		set<mstring> chans = Parent->nickserv.live[targetL].Channels();
+		set<mstring>::iterator iter;
+		mstring outline = "319 " + source + " " + target + " :";
+		for (iter=chans.begin(); iter!=chans.end(); iter++)
+		{
+		    if (outline.size() + iter->size() > 512)
+		    {
+			SendSVR(outline);
+			outline = "319 " + source + " " + target + " :";
+		    }
+
+		    // Channel doesnt exist
+		    if (!Parent->chanserv.IsLive(*iter))
+			continue;
+
+		    // Channel +p or +s, and source not in chan
+		    if ((Parent->chanserv.live[*iter].HasMode("s") ||
+				Parent->chanserv.live[*iter].HasMode("p")) &&
+				!Parent->chanserv.live[*iter].IsIn(source))
+			continue;
+
+		    if (Parent->chanserv.live[*iter].IsOp(target))
+			outline += "@" + *iter;
+		    else if (Parent->chanserv.live[*iter].IsVoice(target))
+			outline += "+" + *iter;
+		    else
+			outline += *iter;
+		}
+		if (outline.After(":").size() > 0)
+		    SendSVR(outline);
+
+		if (IsServer(Parent->nickserv.live[targetL].Server()))
+		    SendSVR("312 " + source + " " + target + Parent->nickserv.live[targetL].Server() +
+			" :" + ServerList[Parent->nickserv.live[targetL].Server()].Description());
+
+		if (Parent->nickserv.live[targetL].Away() != "")
+		    SendSVR("301 " + source + " " + target + " :" + Parent->nickserv.live[targetL].Away());
+
+		if (Parent->nickserv.live[targetL].HasMode("o"))
+		    SendSVR("313 " + source + " " + target + " :is an IRC Operator");
+
+		if (Parent->nickserv.live[targetL].HasMode("h"))
+		    SendSVR("310 " + source + " " + target + " :looks very helpful.");
+
+		if (Parent->nickserv.live[targetL].IsServices())
+		    SendSVR("317 " + source + " " + target + " " + Parent->nickserv.live[targetL].IdleTime() +
+			" " + (time_t) Parent->nickserv.live[targetL].SignonTime() + " :seconds idle, signon time");
+
+		SendSVR("313 " + source + " " + target + " :End of /WHOIS list.");
+
+	    }
+	    else
+	    {
+	    }
 
 	}
 	else if (msgtype=="WHOWAS")
