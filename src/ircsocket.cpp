@@ -79,9 +79,9 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
 	// (and if it is, which one?)  Pass the message to them if so.
 //	     if ((names=" "+OperServ::getnames()+" ").Find(" "+tmp[2]+" "))
 //	    MagickObject->operserv.push_message(tmp[2], pass);
-	     if ((names=" "+NickServ::getnames()+" ").Find(" "+tmp[2]+" "))
+	     if ((names=" "+MagickObject->nickserv.getnames()+" ").Find(" "+tmp[2]+" "))
 	    MagickObject->nickserv.push_message(tmp[2], pass);
-	else if ((names=" "+ChanServ::getnames()+" ").Find(" "+tmp[2]+" "))
+	else if ((names=" "+MagickObject->chanserv.getnames()+" ").Find(" "+tmp[2]+" "))
 	    MagickObject->chanserv.push_message(tmp[2], pass);
 //	else if ((names=" "+MemoServ::getnames()+" ").Find(" "+tmp[2]+" "))
 //	    MagickObject->memoserv.push_message(tmp[2], pass);

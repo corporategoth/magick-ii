@@ -59,7 +59,7 @@ void *thread_handler(void *owner)
     pair<mstring,mstring> data;
     bool gotdata;
 
-    while(Owner->IsOnMSG())
+    while(Owner->MSG())
     {
 
 	gotdata=false;

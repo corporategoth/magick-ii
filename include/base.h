@@ -28,12 +28,10 @@ public:
     void push_message(const mstring& servicename, const mstring& message);
     void init();
 
-    virtual bool IsOnMSG() =0;
-    virtual void TurnOnMSG() =0;
-    virtual void TurnOffMSG() =0;
-    virtual bool IsOnAUTO() =0;
-    virtual void TurnOnAUTO() =0;
-    virtual void TurnOffAUTO() =0;
+    virtual bool MSG() =0;
+    virtual void MSG(bool on) =0;
+    virtual bool AUTO() =0;
+    virtual void AUTO(bool on) =0;
 
     virtual void execute(const mstring& servicename, const mstring& message)=0;
     virtual threadtype_enum Get_TType() const=0;

@@ -242,9 +242,9 @@ int Magick::Start()
     ACE_UNUSED_ARG (sigttsp);
 #endif
 
-    if(!NickServ::getnames().IsEmpty())
+    if(!nickserv.getnames().IsEmpty())
 	nickserv.init();
-    if(!ChanServ::getnames().IsEmpty())
+    if(!chanserv.getnames().IsEmpty())
 	chanserv.init();
 
     // etc.
@@ -651,7 +651,7 @@ bool Magick::check_config()
 {
     NFT("Magick::check_config");
     // change these later when the appropriate classes are set up
-    if(!strlen(Services_OperServ))
+    if(!Services_OperServ.IsEmpty())
     {
 	Services_FLOOD=false;
 	Services_AKILL=false;
