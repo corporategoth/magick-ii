@@ -62,7 +62,7 @@ public:
     //virtual mBase *GetOwner()=0;
     virtual mstring GetInternalName() const=0;
     operator mVariant() const { mVariant locvar(GetInternalName()); locvar.truevaluetype=GetInternalName(); return locvar; };
-    void shutdown();
+    static void shutdown();
   
 };
 

@@ -268,6 +268,10 @@ int Magick::Start()
     // say 5 mins or so it breaks from the event loop to cleanup
     ACE_Reactor::instance()->run_event_loop();
 
+    mBase::shutdown();
+    ircsvchandler->shutdown();
+    //trace::shutdown();
+
     //todo work out some way to "ignore" signals
     ACE_Reactor::instance()->remove_handler(SIGINT);
 #if defined(SIGTERM) && (SIGTERM != 0)

@@ -83,6 +83,26 @@ LINK32=link.exe
 
 # Name "magick - Win32 Release"
 # Name "magick - Win32 Debug"
+# Begin Group "docs"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\docs\communication.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\dbase
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\develop
+# End Source File
+# Begin Source File
+
+SOURCE=.\docs\requirements
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\src\base.cpp
@@ -98,10 +118,6 @@ SOURCE=.\src\chanserv.cpp
 # Begin Source File
 
 SOURCE=.\include\chanserv.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\communication.txt
 # End Source File
 # Begin Source File
 
@@ -134,10 +150,6 @@ SOURCE=.\src\dccengine.cpp
 # Begin Source File
 
 SOURCE=.\include\dccengine.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\develop
 # End Source File
 # Begin Source File
 
@@ -224,10 +236,6 @@ SOURCE=.\include\nickserv.h
 # Begin Source File
 
 SOURCE=.\include\pch.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\docs\policy
 # End Source File
 # Begin Source File
 
