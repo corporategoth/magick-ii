@@ -225,7 +225,7 @@ public class Files extends TabbedPane
 	picture_size.setText(data.getValue("Files/PICTURE_SIZE"));
 	memoattach_size.setText(data.getValue("Files/MEMOATTACH_SIZE"));
 	public_size.setText(data.getValue("Files/PUBLIC_SIZE"));
-	tempdir_size.setText(data.getValue("Files/TMPDIR_SIZE"));
+	tempdir_size.setText(data.getValue("Files/TEMPDIR_SIZE"));
 	blocksize.setText(data.getValue("Files/BLOCKSIZE"));
 	timeout.setText(data.getValue("Files/TIMEOUT"));
 	min_speed.setText(data.getValue("Files/MIN_SPEED"));

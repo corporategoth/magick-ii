@@ -2457,7 +2457,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files + "MEMOATTACH", files.memoattach, "files/memo");
     MakeDirectory(files.memoattach.c_str());
 
-    in.Read(ts_Files + "MEMOATTACHSIZE", value_mstring, "0");
+    in.Read(ts_Files + "MEMOATTACH_SIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.memoattachsize = FromHumanSpace(value_mstring);
     else
@@ -2465,7 +2465,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files + "PICTURE", files.picture, "files/pic");
     MakeDirectory(files.picture.c_str());
 
-    in.Read(ts_Files + "PICTURESIZE", value_mstring, "0");
+    in.Read(ts_Files + "PICTURE_SIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.picturesize = FromHumanSpace(value_mstring);
     else
@@ -2473,7 +2473,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files + "PUBLIC", files.i_public, "files/public");
     MakeDirectory(files.i_public.c_str());
 
-    in.Read(ts_Files + "PUBLICSIZE", value_mstring, "0");
+    in.Read(ts_Files + "PUBLIC_SIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.publicsize = FromHumanSpace(value_mstring);
     else
@@ -2481,7 +2481,7 @@ bool Magick::get_config_values()
     in.Read(ts_Files + "TEMPDIR", files.tempdir, "files/temp");
     MakeDirectory(files.tempdir.c_str());
 
-    in.Read(ts_Files + "TEMPDIRSIZE", value_mstring, "0");
+    in.Read(ts_Files + "TEMPDIR_SIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.tempdirsize = FromHumanSpace(value_mstring);
     else
