@@ -46,7 +46,7 @@ int Magick::Start()
     // this is our main routine, when it leaves here, this sucker's done.
 
     CP(("Magick II has been started ..."));
-    FILE *logfile=fopen("mdebug.log","w+");
+    FILE *logfile=fopen((wxGetCwd()+"\\mdebug.log").c_str(),"w+");
     // the below defaults to stderr if logfile cannot be opened
     logger=new wxLogStderr(logfile);
 
@@ -107,7 +107,7 @@ int Magick::Start()
     }
 
     // need to transfer wxGetWorkingDirectory() and prepend it to config_file
-    MagickIni=new wxFileConfig("magick","",wxGetCwd()+config_file);
+    MagickIni=new wxFileConfig("magick","",wxGetCwd()+"\\"+config_file);
     if(MagickIni==NULL)
     {
 	wxLogError("Major fubar, couldn't allocate memory to read config file\nAborting");
@@ -133,9 +133,6 @@ int Magick::Start()
 
     if(!check_config())
 	RET(MAGICK_RET_TERMINATE);
-
-    if(logfile!=NULL)
-	fclose(logfile);
 
     //open_log();
 
@@ -302,6 +299,8 @@ int Magick::Start()
     delete signalhandler;
     if(logger!=NULL)
 	delete logger;
+    if(logfile!=NULL)
+	fclose(logfile);
 
     RET(MAGICK_RET_TERMINATE);
 }
@@ -368,17 +367,20 @@ void Magick::LoadInternalMessages()
     int i;
     remove("tmplang.lng");
 
-    wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+"tmplang.lng");
+    wxFileOutputStream *fostream=new wxFileOutputStream(wxGetCwd()+"\\tmplang.lng");
     for(i=0;i<def_langent;i++)
 	*fostream<<def_lang[i]<<"\n";
     fostream->Sync();
     delete fostream;
     // need to transfer wxGetWorkingDirectory() and prepend it to tmplang.lng
-    wxFileConfig fconf("magick","",wxGetCwd()+"tmplang.lng");
+    wxFileConfig fconf("magick","",wxGetCwd()+"\\tmplang.lng");
     bool bContGroup, bContEntries;
     long dummy1,dummy2;
     mstring groupname,entryname;
     bContGroup=fconf.GetFirstGroup(groupname,dummy1);
+    // this code is fucked up and won't work. debug to find why it's not
+    // finding the entries when it is actually loading them.
+    // *sigh* spent an hour so far with no luck.
     while(bContGroup)
     {
 	bContEntries=fconf.GetFirstEntry(entryname,dummy2);
@@ -424,8 +426,10 @@ void Magick::LoadExternalMessages()
     // use the previously created name array to get the names to load
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
-    wxFileConfig fconf("magick","",wxGetCwd()+"english.lng");
+    wxFileConfig fconf("magick","",wxGetCwd()+"\\english.lng");
     int i;
+    // change this to not just update the internal defaults but also to
+    // add new one's like loadinternal does.
     for(i=0;i<MessageNamesLong.size();i++)
     	Messages[MessageNamesShort[i]]=fconf.Read(MessageNamesLong[i],Messages[MessageNamesShort[i]]);
 }
