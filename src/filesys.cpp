@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2000/05/17 12:39:55  prez
+** Fixed DCC Sending and file lookups (bypassed the DccMap for now).
+** Still to fix DCC Receiving.  Looks like a wxFile::Length() issue.
+**
 ** Revision 1.19  2000/05/17 09:10:35  ungod
 ** changed most wxOutputStream to ofstream and wxInputStream
 ** to ifstream
@@ -113,6 +117,7 @@ unsigned short FindAvailPort()
     ACE_SOCK_Acceptor accept(ACE_Addr::sap_any);
     accept.get_local_addr(local);
     unsigned short retval = local.get_port_number();
+    accept.close();
     RET(retval);
 }
 
@@ -121,16 +126,13 @@ unsigned long FileMap::FindAvail(FileMap::FileType type)
     FT("FileMap::FindAvail", ((int) type));
 
     unsigned long filenum = 1;
-    if (i_FileMap.find(type) != i_FileMap.end())
+    while (filenum < 0xffffffff) // Guarentee 8 digits
     {
-	while (filenum < 0xffffffff) // Guarentee 8 digits
+	if (i_FileMap[type].find(filenum) == i_FileMap[type].end())
 	{
-	    if (i_FileMap[type].find(filenum) == i_FileMap[type].end())
-	    {
-		RET(filenum);
-	    }
-	    filenum++;
+	    RET(filenum);
 	}
+	filenum++;
     }
 
     RET(0);
@@ -243,7 +245,8 @@ size_t FileMap::GetSize(FileMap::FileType type, unsigned long num)
 	else if (type == Public)
 	    filename.Prepend(Parent->files.Public() + DirSlash);
 
-	wxFile tmp(filename);
+	CP(("Checking file size of %s", filename.c_str()));
+	wxFile tmp(filename, wxFile::read);
 	size_t retval = tmp.Length();
 	RET(retval);
     }
@@ -256,13 +259,10 @@ unsigned long FileMap::NewFile(FileMap::FileType type, mstring filename, mstring
     FT("FileMap::NewFile", ((int) type, filename, priv));
 
     unsigned long filenum = 0;
-    if (i_FileMap.find(type) != i_FileMap.end())
+    if (!GetNum(type, filename))
     {
-    	if (!GetNum(type, filename))
-    	{
-	    filenum = FindAvail(type);
-	    i_FileMap[type][filenum] = pair<mstring,mstring>(filename, priv);
-	}
+	filenum = FindAvail(type);
+	i_FileMap[type][filenum] = pair<mstring,mstring>(filename, priv);
     }
 
     RET(filenum);
@@ -662,6 +662,7 @@ void DccXfer::Action()
 
     if (i_Type == Get)
     {
+	COM(("Executing action for DCC %d GET", i_DccId));
 	XferAmt = i_Socket->recv_n((void *) &i_Transiant[i_XferTotal],
 			i_Blocksize - i_XferTotal, &onesec);
 	merrno = errno;
@@ -702,15 +703,16 @@ void DccXfer::Action()
 		break;
 	    default:
 		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-						"GET");
+						"GET", merrno);
 		i_File.Close();
 	    }
 	}
     }
     else if (i_Type == Send)
     {
-	if (i_Filesize == i_Total + i_XferTotal ||
-	    i_XferTotal == i_Blocksize)
+	COM(("Executing action for DCC %d SEND", i_DccId));
+	if (i_Total && (i_Filesize == i_Total + i_XferTotal ||
+	    i_XferTotal == i_Blocksize))
 	{
 	    unsigned long verify;
 	    XferAmt = i_Socket->recv_n((void *) verify, 4, &onesec);
@@ -729,7 +731,7 @@ void DccXfer::Action()
 		    break;
 		default:
 		    send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-						"SEND");
+						"SEND", merrno);
 		    i_File.Close();
 		}
 		return;
@@ -752,6 +754,7 @@ void DccXfer::Action()
 	    else
 		i_File.Read(i_Transiant, i_Blocksize);
 	}
+	CP(("Going to send %d bytes ...", ACE_OS::strlen((const char *) i_Transiant)));
 	XferAmt = i_Socket->send_n((void *) &i_Transiant[i_XferTotal],
 			ACE_OS::strlen((char *) i_Transiant) - i_XferTotal,
 			&onesec);
@@ -775,7 +778,7 @@ void DccXfer::Action()
 		break;
 	    default:
 		send(i_Mynick, i_Source, Parent->getMessage(i_Source, "DCC/SOCKERR"),
-						"SEND");
+						"SEND", merrno);
 		i_File.Close();
 	    }
 	}
@@ -866,7 +869,7 @@ void *DccMap::Connect2(void *in)
 
     if (errno != ETIME)
     {
-	unsigned long WorkId;
+/*	unsigned long WorkId;
 	bool found = false;
 	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
 	{
@@ -882,14 +885,29 @@ void *DccMap::Connect2(void *in)
 	if (!found)
 	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"GET");
-    }
+*/    }
     else
 	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
 						"GET");
+
+
+    DccXfer xfer(1, DCC_SOCK, val->mynick,
+	val->source, val->filename, val->filesize, val->blocksize);
+    while (xfer.Ready())
+    {
+	xfer.Action();
+	// No data in X seconds...
+	if (xfer.LastData().SecondsSince() > Parent->files.Timeout())
+	{
+	    xfer.Cancel();
+	    break;
+	}
+    }
+
     if (val != NULL)
 	delete val;
 
-    mThread::Detach(tt_MAIN);
+    //mThread::Detach(tt_MAIN);
     RET(0);
 }
 
@@ -908,7 +926,7 @@ void *DccMap::Accept2(void *in)
     CP(("Accept responded with %d", errno));
     if (errno != ETIME)
     {
-	unsigned long WorkId;
+/*	unsigned long WorkId;
 	bool found = false;
 	for (WorkId = 1; !found && WorkId < 0xffffffff; WorkId++)
 	{
@@ -924,14 +942,27 @@ void *DccMap::Accept2(void *in)
 	if (!found)
 	    send(val->mynick, val->source, Parent->getMessage("DCC/FAILED"),
 						"SEND");
-    }
+*/    }
     else
 	send(val->mynick, val->source, Parent->getMessage("DCC/NOCONNECT"),
 						"SEND");
+    DccXfer xfer(2, DCC_SOCK, val->mynick,
+	val->source, val->filetype, val->filenum);
+    while (xfer.Ready())
+    {
+	xfer.Action();
+	// No data in X seconds...
+	if (xfer.LastData().SecondsSince() > Parent->files.Timeout())
+	{
+	    xfer.Cancel();
+	    break;
+	}
+    }
+
     if (val != NULL)
 	delete val;
 
-    mThread::Detach(tt_MAIN);
+    //mThread::Detach(tt_MAIN);
     RET(0);
 }
 

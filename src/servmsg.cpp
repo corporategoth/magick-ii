@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/05/17 12:39:55  prez
+** Fixed DCC Sending and file lookups (bypassed the DccMap for now).
+** Still to fix DCC Receiving.  Looks like a wxFile::Length() issue.
+**
 ** Revision 1.45  2000/05/17 07:47:59  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -1007,20 +1011,29 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
     }
 
     mstring type   = params.ExtractWord(3, " ").UpperCase();
-    mstring hexstr = params.ExtractWord(4, " ");
+    mstring hexstr = params.ExtractWord(4, " ").LowerCase();
 
-    if (hexstr.Len() != 8 || hexstr.WordCount("1234567890abcdefABCDEF") > 1)
+    if (hexstr.Len() != 8)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
 	return;
     }
+    else
+    {
+	for (unsigned int i=0; i<hexstr.Len(); i++)
+	    if (!mstring("0123456789abcdef").Contains(hexstr[i]))
+	    {
+		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);
+		return;
+	    }
+    }
 
     unsigned long number;
     unsigned short high, low, k;
-    high = makehex("0x" + hexstr.SubString(1, 4));
-    low = makehex("0x" + hexstr.SubString(5, 8));
+    high = makehex("0x" + hexstr.SubString(0, 3));
+    low = makehex("0x" + hexstr.SubString(4, 7));
     number = (high * 0x00010000) + low;
-
+    
     if (number == 0)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBEHEX"), 8);

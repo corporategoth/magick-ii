@@ -148,12 +148,12 @@ TIMEOUT            =DCC %s aborted (timeout).
 SOCKERR            =DCC %s aborted (socket error %d).
 ABORTED            =DCC %s aborted (internal server error).
 
-LOOKUP_MEMOATTACH  =Memo Attachment %08e is %s and belongs to %s, memo #%d (sent by %s, %s ago).
-LOOKUP_PICTURE     =Picture %08e belongs to %s.
-LOOKUP_PUBLIC      =Public file %08e is %s, available for %s.
+LOOKUP_MEMOATTACH  =Memo Attachment %08x is %s and belongs to %s, memo #%d (sent by %s, %s ago).
+LOOKUP_PICTURE     =Picture %08x belongs to %s.
+LOOKUP_PUBLIC      =Public file %08x is %s, available for %s.
 NLOOKUP_MEMOATTACH =Memo Attachment %80e does not exist.
-NLOOKUP_PICTURE    =Picture %08e does not exist.
-NLOOKUP_PUBLIC     =Public file %08e does not exist.
+NLOOKUP_PICTURE    =Picture %08x does not exist.
+NLOOKUP_PUBLIC     =Public file %08x does not exist.
 NLOOKUP_OTHER      =Unknown file catagory %s.
 
 ;
@@ -480,6 +480,7 @@ PENDING            =Please begin sending your picture now.
 PUB_PENDING        =Please begin sending your file now.
 SAVED              =Your picture has been saved.
 REMOVED            =Your picture has been removed.
+TOOBIG             =Your picture is too big, please upload a smaller picture.
 
 
 ;

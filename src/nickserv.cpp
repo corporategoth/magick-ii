@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2000/05/17 12:39:55  prez
+** Fixed DCC Sending and file lookups (bypassed the DccMap for now).
+** Still to fix DCC Receiving.  Looks like a wxFile::Length() issue.
+**
 ** Revision 1.90  2000/05/17 07:47:59  prez
 ** Removed all save_databases calls from classes, and now using XML only.
 ** To be worked on: DCC Xfer pointer transferal and XML Loading
@@ -504,7 +508,9 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 	    }
 	    else if (Picture())
 	    {
-		if (Parent->nickserv.PicSize())
+		if (Parent->nickserv.PicSize() == 0 ||
+			Parent->filesys.GetSize(FileMap::Picture, filenum) <=
+			Parent->nickserv.PicSize())
 		{
 		    Parent->nickserv.stored[sender.LowerCase()].GotPic(filenum);
 		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/SAVED"));
@@ -512,6 +518,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
 		else
 		{
 		    Parent->filesys.EraseFile(FileMap::Picture, filenum);
+		    send(service, nick, Parent->getMessage(nick, "NS_YOU_COMMAND/TOOBIG"));
 		}
 	    }
 	    else if (Public())
