@@ -83,13 +83,13 @@ protected:
 public:
     bool Secure_Oper() { return secure_oper; }
 
-    map<mstring,Committee> stored;
-    bool IsStored(mstring in);
+    map<mstring,Committee> list;
+    bool IsList(mstring in);
 
     virtual void load_database(void);
     virtual void save_database(void);
 
-    CommServ();
+    CommServ() {}
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; };
     virtual mstring GetInternalName() const { return "CommServ"; };
     virtual void execute(const mstring & message);

@@ -212,7 +212,6 @@ pair<bool,bool> Chan_Live_t::User(mstring name)
 bool Chan_Live_t::IsIn(mstring nick)
 {
     FT("Chan_Live_t::IsIn", (nick));
-    if (users.empty()) RET(false);
     RET((users.find(nick.LowerCase()) != users.end()));
 }
 
@@ -451,12 +450,14 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 
 bool ChanServ::IsLive(mstring in)
 {
-    return (live.find(in.LowerCase())!=live.end());
+    FT("ChanServ::IsLive", (in));
+    RET(live.find(in.LowerCase())!=live.end());
 }
 
 bool ChanServ::IsStored(mstring in)
 {
-    return (stored.find(in.LowerCase())!=stored.end());
+    FT("ChanServ::IsStored", (in));
+    RET(stored.find(in.LowerCase())!=stored.end());
 }
 
 void ChanServ::execute(const mstring & data)

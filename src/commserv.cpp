@@ -178,17 +178,10 @@ bool Committee::MSG_erase()
 }
 
 
-CommServ::CommServ()
+bool CommServ::IsList(mstring in)
 {
-}
-
-
-
-
-
-bool CommServ::IsStored(mstring in)
-{
-    return (stored.find(in.LowerCase())!=stored.end());
+    FT("CommServ::IsList", (in));
+    RET(list.find(in.LowerCase())!=list.end());
 }
 
 void CommServ::execute(const mstring & data)

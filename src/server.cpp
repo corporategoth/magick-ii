@@ -144,7 +144,6 @@ NetworkServ::NetworkServ()
 bool NetworkServ::IsServer(mstring server)
 {
     FT("NetworkServ::IsServer", (server));
-    if (ServerList.empty()) RET(false);
     RET((ServerList.find(server.LowerCase()) != ServerList.end()));
 }
 
