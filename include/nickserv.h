@@ -396,7 +396,6 @@ public:
     static void do_UnSuspend(mstring mynick, mstring source, mstring params);
     static void do_Forbid(mstring mynick, mstring source, mstring params);
 
-    static void do_2ndparam(mstring mynick, mstring source, mstring params);
     static void do_access_Current(mstring mynick, mstring source, mstring params);
     static void do_access_Add(mstring mynick, mstring source, mstring params);
     static void do_access_Del(mstring mynick, mstring source, mstring params);

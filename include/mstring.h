@@ -149,5 +149,11 @@ public:
 bool makeboolF(mstring value);
 bool makeboolT(mstring value);
 extern const mstring DirSlash;
+extern const mstring Blank;
+extern const mstring IRC_Bold;
+extern const mstring IRC_Underline;
+extern const mstring IRC_Reverse;
+extern const mstring IRC_Colour;
+extern const mstring IRC_Off;
 
 #endif

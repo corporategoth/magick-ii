@@ -43,13 +43,6 @@ Magick::Magick(int inargc, char **inargv)
     reconnect=true;
     events.open();
     loggertask.open();
-
-    operserv.AddCommands();
-    nickserv.AddCommands();
-    chanserv.AddCommands();
-    memoserv.AddCommands();
-    commserv.AddCommands();
-    servmsg.AddCommands();
 }
 
 int Magick::Start()
@@ -723,6 +716,7 @@ bool Magick::paramshort(mstring first, mstring second)
 	}
 	else if(first[i]=='n')
 	{
+
 	    if (ArgUsed)
 		wxLogFatal("Paramater may only be used once");
 	    else
@@ -848,6 +842,7 @@ void Magick::get_config_values()
 {
     NFT("Magick::get_config_values");
     bool verbose;
+    unsigned int i;
     if(MagickIni==NULL)
     {
 	i_shutdown==true;
@@ -875,7 +870,7 @@ void Magick::get_config_values()
 
     // REMOTE entries
     mstring ent="";
-    int i=1;
+    i=1;
     do {
 	mstring rem = "REMOTE_";
 	rem << i;
@@ -1018,12 +1013,121 @@ void Magick::get_config_values()
     in.Read(ts_OperServ+"DEF_CLONE",&operserv.def_clone,"Maximum connections from one host exceeded");
     in.Read(ts_OperServ+"FLOOD_TIME",&operserv.flood_time,10);
     in.Read(ts_OperServ+"FLOOD_MSGS",&operserv.flood_msgs,5);
+
     in.Read(ts_OperServ+"IGNORE_TIME",&operserv.ignore_time,20);
     in.Read(ts_OperServ+"IGNORE_LIMIT",&operserv.ignore_limit,5);
     in.Read(ts_OperServ+"IGNORE_REMOVE",&operserv.ignore_remove,300);
     in.Read(ts_OperServ+"IGNORE_METHOD",&operserv.ignore_method,8);
+    
+    RemCommands();
+    in.Read(ts_CommServ+"DEF_OPENMEMOS",&commserv.def_openmemos,true);
+    in.Read(ts_CommServ+"DEF_SECURE",&commserv.def_secure,false);
+    in.Read(ts_CommServ+"DEF_PRIVATE",&commserv.def_private,false);
+    in.Read(ts_CommServ+"ALL_NAME",&commserv.all_name,"ALL");
+    in.Read(ts_CommServ+"REGD_NAME",&commserv.regd_name,"REGD");
+    in.Read(ts_CommServ+"SADMIN_NAME",&commserv.sadmin_name,"SADMIN");
+    in.Read(ts_CommServ+"SADMIN_SECURE",&commserv.sadmin_secure,true);
+    in.Read(ts_CommServ+"SADMIN_PRIVATE",&commserv.sadmin_private,false);
+    in.Read(ts_CommServ+"SADMIN_OPENMEMOS",&commserv.sadmin_openmemos,true);
+    in.Read(ts_CommServ+"SOP_NAME",&commserv.sop_name,"SOP");
+    in.Read(ts_CommServ+"SOP_SECURE",&commserv.sop_secure,true);
+    in.Read(ts_CommServ+"SOP_PRIVATE",&commserv.sop_private,false);
+    in.Read(ts_CommServ+"SOP_OPENMEMOS",&commserv.sop_openmemos,true);
+    in.Read(ts_CommServ+"ADMIN_NAME",&commserv.admin_name,"ADMIN");
+    in.Read(ts_CommServ+"ADMIN_SECURE",&commserv.admin_secure,true);
+    in.Read(ts_CommServ+"ADMIN_PRIVATE",&commserv.admin_private,false);
+    in.Read(ts_CommServ+"ADMIN_OPENMEMOS",&commserv.admin_openmemos,true);
+    in.Read(ts_CommServ+"OPER_NAME",&commserv.oper_name,"OPER");
+    in.Read(ts_CommServ+"OPER_SECURE",&commserv.oper_secure,true);
+    in.Read(ts_CommServ+"OPER_PRIVATE",&commserv.oper_private,false);
+    in.Read(ts_CommServ+"OPER_OPENMEMOS",&commserv.oper_openmemos,true);
+    commserv.all_name.MakeUpper();
+    commserv.regd_name.MakeUpper();
+    commserv.sadmin_name.MakeUpper();
+    commserv.sop_name.MakeUpper();
+    commserv.admin_name.MakeUpper();
+    commserv.oper_name.MakeUpper();
 
-    in.Read(ts_CommServ+"SECURE_OPER",&commserv.secure_oper,true);
+    if (Parent->commserv.IsList(commserv.all_name))
+	while (i<Parent->commserv.list[commserv.all_name].size())
+	{
+	    Parent->commserv.list[commserv.all_name].member =
+			Parent->commserv.list[commserv.all_name].begin();
+	    Parent->commserv.list[commserv.all_name].erase();
+	}
+    else
+    {
+	Parent->commserv.list[commserv.all_name] = Committee(commserv.all_name, 
+					    "All Users");
+	Parent->commserv.list[commserv.all_name].Secure(false);
+	Parent->commserv.list[commserv.all_name].Private(true);
+	Parent->commserv.list[commserv.all_name].OpenMemos(false);
+    }
+
+    if (Parent->commserv.IsList(commserv.regd_name))
+	while (i<Parent->commserv.list[commserv.regd_name].size())
+	{
+	    Parent->commserv.list[commserv.regd_name].member =
+			Parent->commserv.list[commserv.regd_name].begin();
+	    Parent->commserv.list[commserv.regd_name].erase();
+	}
+    else
+    {
+	Parent->commserv.list[commserv.regd_name] = Committee(commserv.regd_name, 
+					    "Registered Users");
+	Parent->commserv.list[commserv.regd_name].Secure(false);
+	Parent->commserv.list[commserv.regd_name].Private(true);
+	Parent->commserv.list[commserv.regd_name].OpenMemos(false);
+    }
+
+    if (Parent->commserv.IsList(commserv.sadmin_name))
+	while (i<Parent->commserv.list[commserv.sadmin_name].size())
+	{
+	    Parent->commserv.list[commserv.sadmin_name].member =
+			Parent->commserv.list[commserv.sadmin_name].begin();
+	    Parent->commserv.list[commserv.sadmin_name].erase();
+	}
+    else
+    {
+	Parent->commserv.list[commserv.sadmin_name] = Committee(commserv.sadmin_name, 
+					    "Services Administrators");
+	Parent->commserv.list[commserv.sadmin_name].Secure(commserv.sadmin_secure);
+	Parent->commserv.list[commserv.sadmin_name].Private(commserv.sadmin_private);
+	Parent->commserv.list[commserv.sadmin_name].OpenMemos(commserv.sadmin_openmemos);
+    }
+    for (i=1; i<=Parent->operserv.services_admin.WordCount(", "); i++)
+	Parent->commserv.list[commserv.sadmin_name].insert(
+	    Parent->operserv.services_admin.ExtractWord(i, ", "),
+	    Parent->operserv.FirstName());
+    if (!Parent->commserv.IsList(commserv.sop_name))
+    {
+	Parent->commserv.list[commserv.sop_name] = Committee(commserv.sop_name,
+				    &Parent->commserv.list[commserv.sadmin_name],
+				    "Services Operators");
+	Parent->commserv.list[commserv.sop_name].Secure(commserv.sop_secure);
+	Parent->commserv.list[commserv.sop_name].Private(commserv.sop_private);
+	Parent->commserv.list[commserv.sop_name].OpenMemos(commserv.sop_openmemos);
+    }
+    if (!Parent->commserv.IsList(commserv.admin_name))
+    {
+	Parent->commserv.list[commserv.admin_name] = Committee(commserv.admin_name, 
+				    &Parent->commserv.list[commserv.sadmin_name],
+				    "Server Administrators");
+	Parent->commserv.list[commserv.admin_name].Secure(commserv.admin_secure);
+	Parent->commserv.list[commserv.admin_name].Private(commserv.admin_private);
+	Parent->commserv.list[commserv.admin_name].OpenMemos(commserv.admin_openmemos);
+    }
+    if (!Parent->commserv.IsList(commserv.oper_name))
+    {
+	Parent->commserv.list[commserv.oper_name] = Committee(commserv.oper_name, 
+				    &Parent->commserv.list[commserv.admin_name],
+				    "Server Operators");
+	Parent->commserv.list[commserv.oper_name].Secure(commserv.oper_secure);
+	Parent->commserv.list[commserv.oper_name].Private(commserv.oper_private);
+	Parent->commserv.list[commserv.oper_name].OpenMemos(commserv.oper_openmemos);
+    }
+
+    AddCommands();
 
     CP(("%s read and loaded to live configuration.", config_file.c_str()));
 }

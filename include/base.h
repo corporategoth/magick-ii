@@ -298,5 +298,7 @@ public:
     bool DoSystemCommand(mstring mynick, mstring user, mstring command,
 	    mstring params);
 };
+void do_1_2param(mstring mynick, mstring source, mstring params);
+void do_1_3param(mstring mynick, mstring source, mstring params);
 
 #endif

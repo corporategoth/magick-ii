@@ -121,9 +121,9 @@ void ServMsg::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "BREAKD*", "ALL", ServMsg::do_BreakDown);
+		"BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "*MAP", "ALL", ServMsg::do_BreakDown);
+		"*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
 }
 
 void ServMsg::RemCommands()
@@ -132,9 +132,9 @@ void ServMsg::RemCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.RemSystemCommand(GetInternalName(),
-		    "BREAKD*", "ALL");
+		"BREAKD*", Parent->commserv.ALL_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
-		    "*MAP", "ALL");
+		"*MAP", Parent->commserv.ALL_Name());
 }
 
 void ServMsg::execute(const mstring & data)

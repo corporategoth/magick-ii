@@ -699,7 +699,28 @@ void NetworkServ::execute(const mstring & data)
 	    // :source AWAY
 	    // :source AWAY :This is my reason
 	    if (data.ExtractWord(3, ": ")=="")
+	    {
 		Parent->nickserv.live[sourceL].Away("");
+
+		// HAS to be AFTER the nickname is added to map.
+		map<mstring, Committee>::iterator iter;
+		for (iter = Parent->commserv.list.begin();
+				    iter != Parent->commserv.list.end();
+				    iter++)
+		{
+		    if (iter->second.IsOn(sourceL))
+		    {
+			for (iter->second.message = iter->second.MSG_begin();
+			    iter->second.message != iter->second.MSG_end();
+			    iter->second.message++)
+			{
+			    Parent->servmsg.send(sourceL, "[" + IRC_Bold +
+					    iter->first + IRC_Off + "] " +
+					    iter->second.message->Entry());
+			}
+		    }
+		}
+	    }
 	    else
 		Parent->nickserv.live[sourceL].Away(data.After(":", 2));
 	}
@@ -1000,6 +1021,24 @@ void NetworkServ::execute(const mstring & data)
 			data.After(":")
 		    );
 
+		// HAS to be AFTER the nickname is added to map.
+		map<mstring, Committee>::iterator iter;
+		for (iter = Parent->commserv.list.begin();
+				    iter != Parent->commserv.list.end();
+				    iter++)
+		{
+		    if (iter->second.IsOn(sourceL))
+		    {
+			for (iter->second.message = iter->second.MSG_begin();
+			    iter->second.message != iter->second.MSG_end();
+			    iter->second.message++)
+			{
+			    Parent->servmsg.send(sourceL, "[" + IRC_Bold +
+					    iter->first + IRC_Off + "] " +
+					    iter->second.message->Entry());
+			}
+		    }
+		}
 	    }
 	    else
 	    {

@@ -36,6 +36,12 @@ mstring const DirSlash="\\";
 #else
 mstring const DirSlash="/";
 #endif
+mstring const Blank("");
+mstring const IRC_Bold((char) 2);	// ^B
+mstring const IRC_Underline((char) 31);	// ^_
+mstring const IRC_Reverse((char) 21);	// ^V
+mstring const IRC_Color((char) 3);	// ^C
+mstring const IRC_Off((char) 15);	// ^O
 
 mstring::mstring(const mstring& in)
 :inherited(in)

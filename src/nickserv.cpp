@@ -501,6 +501,9 @@ void Nick_Live_t::Quit(mstring reason)
 	if (Parent->chanserv.IsStored(try_chan_ident[i]))
 	    Parent->chanserv.stored[try_chan_ident[i]].CheckPass(i_Name,
 		Parent->chanserv.stored[try_chan_ident[i]].Password());
+
+    if (Parent->nickserv.IsStored(i_Name))
+	Parent->nickserv.stored[i_Name.LowerCase()].Quit(reason);
 }
 
 
@@ -591,6 +594,14 @@ void Nick_Live_t::Name(mstring in)
     vector<mstring> chunked;
     int i;
 
+    // Store what committee's we WERE on ...
+    set<mstring> wason;
+    map<mstring, Committee>::iterator iter2;
+    for (iter2 = Parent->commserv.list.begin(); iter2 != Parent->commserv.list.end();
+								iter2++)
+	if (iter2->second.IsOn(i_Name))
+	    wason.insert(iter2->first);
+
     // Rename ourselves in all channels ...
     for (iter=joined_channels.begin(); iter!=joined_channels.end(); iter++)
     {
@@ -633,6 +644,21 @@ void Nick_Live_t::Name(mstring in)
     {
 	if (Parent->nickserv.stored[i_Name.LowerCase()].IsOnline())
 	    Parent->nickserv.stored[i_Name.LowerCase()].Signon(i_realname, Mask(U_P_H).After("!"));
+    }
+
+    // Send notices for committees we were NOT on
+    for (iter2 = Parent->commserv.list.begin(); iter2 != Parent->commserv.list.end();
+								iter2++)
+    {
+	if (iter2->second.IsOn(i_Name) && wason.find(iter2->first) == wason.end())
+	{
+	    for (iter2->second.message = iter2->second.MSG_begin();
+		iter2->second.message != iter2->second.MSG_end(); iter2->second.message++)
+	    {
+		Parent->servmsg.send(i_Name, "[" + IRC_Bold + iter2->first + IRC_Off +
+					    "] " + iter2->second.message->Entry());
+	    }
+	}
     }
 }
 
@@ -872,10 +898,32 @@ mstring Nick_Live_t::Identify(mstring password)
     {
 	if (Parent->nickserv.stored[i_Name.LowerCase()].Password() == password)
 	{
+	    set<mstring> wason;
+	    map<mstring, Committee>::iterator iter;
+	    for (iter = Parent->commserv.list.begin(); iter != Parent->commserv.list.end();
+									    iter++)
+		if (iter->second.IsOn(i_Name))
+		    wason.insert(iter->first);
+
 	    identified = true;
 	    failed_passwds = 0;
 	    if (Parent->nickserv.stored[i_Name.LowerCase()].Secure())
 		Parent->nickserv.stored[i_Name.LowerCase()].Signon(i_realname, Mask(U_P_H).After("!"));
+
+	    // Send notices for committees we were NOT on
+	    for (iter = Parent->commserv.list.begin(); iter != Parent->commserv.list.end();
+									    iter++)
+	    {
+		if (iter->second.IsOn(i_Name) && wason.find(iter->first) == wason.end())
+		{
+		    for (iter->second.message = iter->second.MSG_begin();
+			iter->second.message != iter->second.MSG_end(); iter->second.message++)
+		    {
+			Parent->servmsg.send(i_Name, "[" + IRC_Bold + iter->first +
+					IRC_Off + "] " + iter->second.message->Entry());
+		    }
+		}
+	    }
 	    RET("Password accepted - you are now identified.");
 	}
 	else
@@ -2929,113 +2977,113 @@ void NickServ::AddCommands()
     // with 2 paramaters (seperated by a space)  These
     // MUST be specified without '*' wildcards.
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET", "ALL", NickServ::do_2ndparam);
+		"SET", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK", "ALL", NickServ::do_2ndparam);
+		"LOCK", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACC", "ALL", NickServ::do_2ndparam);
+		"ACC", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACCESS", "ALL", NickServ::do_2ndparam);
+		"ACCESS", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "IGN", "ALL", NickServ::do_2ndparam);
+		"IGN", Parent->commserv.REGD_Name(), do_1_2param);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "IGNORE", "ALL", NickServ::do_2ndparam);
+		"IGNORE", Parent->commserv.REGD_Name(), do_1_2param);
 
     // Dual paramater options (seperated by a space) should
     // come before ALL single paramater wildcarded options.
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACC* CUR*", "ALL", NickServ::do_access_Current);
+		"ACC* CUR*", Parent->commserv.REGD_Name(), NickServ::do_access_Current);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACC* ADD", "ALL", NickServ::do_access_Add);
+		"ACC* ADD", Parent->commserv.REGD_Name(), NickServ::do_access_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACC* DEL*", "ALL", NickServ::do_access_Del);
+		"ACC* DEL*", Parent->commserv.REGD_Name(), NickServ::do_access_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACC* ERA*", "ALL", NickServ::do_access_Del);
+		"ACC* ERA*", Parent->commserv.REGD_Name(), NickServ::do_access_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACC* LIST", "ALL", NickServ::do_access_List);
+		"ACC* LIST", Parent->commserv.REGD_Name(), NickServ::do_access_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACC* VIEW", "ALL", NickServ::do_access_List);
+		"ACC* VIEW", Parent->commserv.REGD_Name(), NickServ::do_access_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "IGN* ADD", "ALL", NickServ::do_ignore_Add);
+		"IGN* ADD", Parent->commserv.REGD_Name(), NickServ::do_ignore_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "IGN* DEL*", "ALL", NickServ::do_ignore_Del);
+		"IGN* DEL*", Parent->commserv.REGD_Name(), NickServ::do_ignore_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "IGN* ERA*", "ALL", NickServ::do_ignore_Del);
+		"IGN* ERA*", Parent->commserv.REGD_Name(), NickServ::do_ignore_Del);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "IGN* LIST", "ALL", NickServ::do_ignore_List);
+		"IGN* LIST", Parent->commserv.REGD_Name(), NickServ::do_ignore_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "IGN* VIEW", "ALL", NickServ::do_ignore_List);
+		"IGN* VIEW", Parent->commserv.REGD_Name(), NickServ::do_ignore_List);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* PASS*", "ALL", NickServ::do_set_Password);
+		"SET* PASS*", Parent->commserv.REGD_Name(), NickServ::do_set_Password);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* EMAIL", "ALL", NickServ::do_set_Email);
+		"SET* EMAIL", Parent->commserv.REGD_Name(), NickServ::do_set_Email);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* URL", "ALL", NickServ::do_set_URL);
+		"SET* URL", Parent->commserv.REGD_Name(), NickServ::do_set_URL);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* ICQ", "ALL", NickServ::do_set_ICQ);
+		"SET* ICQ", Parent->commserv.REGD_Name(), NickServ::do_set_ICQ);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* DESC*", "ALL", NickServ::do_set_Description);
+		"SET* DESC*", Parent->commserv.REGD_Name(), NickServ::do_set_Description);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* COMM*", "ALL", NickServ::do_set_Comment);
+		"SET* COMM*", Parent->commserv.SOP_Name(), NickServ::do_set_Comment);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* PIC*", "ALL", NickServ::do_set_Picture);
+		"SET* PIC*", Parent->commserv.REGD_Name(), NickServ::do_set_Picture);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* PROT*", "ALL", NickServ::do_set_Protect);
+		"SET* PROT*", Parent->commserv.REGD_Name(), NickServ::do_set_Protect);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* SEC*", "ALL", NickServ::do_set_Secure);
+		"SET* SEC*", Parent->commserv.REGD_Name(), NickServ::do_set_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* NOEXP*", "ALL", NickServ::do_set_NoExpire);
+		"SET* NOEXP*", Parent->commserv.REGD_Name(), NickServ::do_set_NoExpire);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* NOMEMO", "ALL", NickServ::do_set_NoMemo);
+		"SET* NOMEMO", Parent->commserv.REGD_Name(), NickServ::do_set_NoMemo);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* PRIVM*", "ALL", NickServ::do_set_PRIVMSG);
+		"SET* PRIVM*", Parent->commserv.REGD_Name(), NickServ::do_set_PRIVMSG);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* *MSG", "ALL", NickServ::do_set_PRIVMSG);
+		"SET* *MSG", Parent->commserv.REGD_Name(), NickServ::do_set_PRIVMSG);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* PRIV*", "ALL", NickServ::do_set_Private);
+		"SET* PRIV*", Parent->commserv.REGD_Name(), NickServ::do_set_Private);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SET* LANG*", "ALL", NickServ::do_set_Language);
+		"SET* LANG*", Parent->commserv.REGD_Name(), NickServ::do_set_Language);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK PROT*", "SOP", NickServ::do_lock_Protect);
+		"LOCK PROT*", Parent->commserv.SOP_Name(), NickServ::do_lock_Protect);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK SEC*", "SOP", NickServ::do_lock_Secure);
+		"LOCK SEC*", Parent->commserv.SOP_Name(), NickServ::do_lock_Secure);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK NOEXP*", "SOP", NickServ::do_lock_NoExpire);
+		"LOCK NOEXP*", Parent->commserv.SOP_Name(), NickServ::do_lock_NoExpire);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK NOMEMO", "SOP", NickServ::do_lock_NoMemo);
+		"LOCK NOMEMO", Parent->commserv.SOP_Name(), NickServ::do_lock_NoMemo);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK PRIVM*", "SOP", NickServ::do_lock_PRIVMSG);
+		"LOCK PRIVM*", Parent->commserv.SOP_Name(), NickServ::do_lock_PRIVMSG);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK *MSG", "SOP", NickServ::do_lock_PRIVMSG);
+		"LOCK *MSG", Parent->commserv.SOP_Name(), NickServ::do_lock_PRIVMSG);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK PRIV*", "SOP", NickServ::do_lock_Private);
+		"LOCK PRIV*", Parent->commserv.SOP_Name(), NickServ::do_lock_Private);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LOCK LANG*", "SOP", NickServ::do_lock_Language);
+		"LOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_lock_Language);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "HELP", "ALL", NickServ::do_Help);
+		"HELP", Parent->commserv.ALL_Name(), NickServ::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "REG*", "ALL", NickServ::do_Register);
+		"REG*", Parent->commserv.ALL_Name(), NickServ::do_Register);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "DROP*", "ALL", NickServ::do_Drop);
+		"DROP*", Parent->commserv.REGD_Name(), NickServ::do_Drop);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "LIN*", "ALL", NickServ::do_Link);
+		"LIN*", Parent->commserv.ALL_Name(), NickServ::do_Link);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "U*LIN*", "ALL", NickServ::do_UnLink);
+		"U*LIN*", Parent->commserv.REGD_Name(), NickServ::do_UnLink);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "*HOST", "ALL", NickServ::do_Host);
+		"*HOST", Parent->commserv.REGD_Name(), NickServ::do_Host);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "*SLAV*", "ALL", NickServ::do_Slaves);
+		"*SLAV*", Parent->commserv.REGD_Name(), NickServ::do_Slaves);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ID*", "ALL", NickServ::do_Identify);
+		"ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "INF*", "ALL", NickServ::do_Info);
+		"INF*", Parent->commserv.ALL_Name(), NickServ::do_Info);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "SUSP*", "SOP", NickServ::do_Suspend);
+		"SUSP*", Parent->commserv.SOP_Name(), NickServ::do_Suspend);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "UNSUS*", "SOP", NickServ::do_UnSuspend);
+		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "FORB*", "SOP", NickServ::do_Forbid);
+		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
 }
 
 void NickServ::RemCommands()
@@ -3157,8 +3205,12 @@ void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
     }
     else if (Parent->nickserv.IsStored(params.ExtractWord(2, " ")))
     {
-	if (Parent->nickserv.stored[params.ExtractWord(2, " ").LowerCase()].IsSibling(source)
-	    || (Parent->commserv.IsList("sop") && Parent->commserv.list["sop"].IsIn(source)))
+	mstring target = params.ExtractWord(2, " ");
+	if (Parent->nickserv.stored[target.LowerCase()].IsSibling(source) ||
+	    (Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	     Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source) &&
+	     !(Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	     Parent->commserv.list[Parent->commserv.OPER_Name()].IsIn(target))))
 	{
 	    Parent->nickserv.stored.erase(params.ExtractWord(2, " ").LowerCase());
 	    ::send(mynick, source, "Nickname " + params.ExtractWord(2, " ") + " has been dropped.");
@@ -3307,8 +3359,8 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
     }
     else
     {
-	if (Parent->commserv.IsList("oper") &&
-		    Parent->commserv.list["oper"].IsIn(source))
+	if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
 	    targetnick = params.ExtractWord(2, " ");
 	else
 	    targetnick = source;
@@ -3331,7 +3383,7 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
 	Parent->nickserv.IsStored(Parent->nickserv.stored[targetnick.LowerCase()].Host()))
 	targetnick = Parent->nickserv.stored[targetnick.LowerCase()].Host();
 
-    output << (char) 2 << targetnick << (char) 2 << " (" <<
+    output << IRC_Bold << targetnick << IRC_Off << " (" <<
 	Parent->nickserv.stored[targetnick.LowerCase()].Siblings() << "):";
 
     for (int i=0; i<Parent->nickserv.stored[targetnick.LowerCase()].Siblings(); i++)
@@ -3341,7 +3393,7 @@ void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
 	{
 	    ::send(mynick, source, output);
 	    output = "";
-	    output << (char) 2 << targetnick << (char) 2 << " (" <<
+	    output << IRC_Bold << targetnick << IRC_Off << " (" <<
 		Parent->nickserv.stored[targetnick.LowerCase()].Siblings() << "):";
 	}
 	output << " " << Parent->nickserv.stored[targetnick.LowerCase()].Sibling(i);
@@ -3428,14 +3480,14 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	}
 	if (!isonline)
 	{
-	    if (!nick->Private() || (Parent->commserv.IsList("oper") &&
-		Parent->commserv.list["oper"].IsIn(source)))
+	    if (!nick->Private() || (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source)))
 		::send(mynick, source, "  Last Mask: " + nick->LastAllMask());
 	    ::send(mynick, source, "  Last Seen: " + nick->LastAllSeenTime().Ago());
 	    if (nick->LastAllMask().UpperCase() !=
 		mstring(nick->Name() + "!" + nick->LastMask()).UpperCase() &&
-		(!nick->Private() || (Parent->commserv.IsList("oper") &&
-		Parent->commserv.list["oper"].IsIn(source))))
+		(!nick->Private() || (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+		Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
 		::send(mynick, source, "  Last Mask: " + nick->LastMask());
 	    if (nick->LastAllSeenTime() != nick->LastSeenTime())
 		::send(mynick, source, "  Last Seen: " + nick->LastSeenTime().Ago());
@@ -3458,8 +3510,8 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, "        ICQ: " + nick->ICQ());
 	if (nick->Description() != "")
 	    ::send(mynick, source, "Description: " + nick->Description());
-	if (nick->Comment() != "" && Parent->commserv.IsList("oper") &&
-	    Parent->commserv.list["oper"].IsIn(source))
+	if (nick->Comment() != "" && Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	    Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
 	    ::send(mynick, source, "    Comment: " + nick->Comment());
     }
 
@@ -3468,9 +3520,10 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
     for (iter=Parent->commserv.list.begin();
 		iter!=Parent->commserv.list.end(); iter++)
     {
-	if (iter->second.IsIn(target) && (!iter->second.Private() ||
-	    (Parent->commserv.IsList("oper") &&
-	     Parent->commserv.list["oper"].IsIn(source))))
+	if (iter->second.HeadCom() == "" &&
+	    iter->second.IsIn(target) && (!iter->second.Private() ||
+	    (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	     Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))))
 	{
 	    if (output.Len() + iter->second.Name().Len() > 450)
 	    {
@@ -3479,9 +3532,11 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	    }
 	    if (output != "")
 		output << ", ";
+	    if (iter->second.IsHead(target) && iter->second.Head() != "")
+		output << IRC_Bold;
 	    output << iter->second.Name();
-	    if (iter->second.IsHead(target))
-		output << " (HEAD)";
+	    if (iter->second.IsHead(target) && iter->second.Head() != "")
+		output << IRC_Off;
 	}
     }
     if (output != "")
@@ -3496,10 +3551,10 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	else
 	    firstoption = false;
 	if (nick->L_Protect())
-	    output << (char) 2;
+	    output << IRC_Bold;
 	output << "Kill Protect";
 	if (nick->L_Protect())
-	    output << (char) 2;
+	    output << IRC_Off;
     }
 
     if (nick->Secure())
@@ -3509,10 +3564,10 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	else
 	    firstoption = false;
 	if (nick->L_Secure())
-	    output << (char) 2;
+	    output << IRC_Bold;
 	output << "Secure";
 	if (nick->L_Secure())
-	    output << (char) 2;
+	    output << IRC_Off;
     }
 
     if (nick->NoExpire())
@@ -3522,10 +3577,10 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	else
 	    firstoption = false;
 	if (nick->L_NoExpire())
-	    output << (char) 2;
+	    output << IRC_Bold;
 	output << "NoExpire";
 	if (nick->L_NoExpire())
-	    output << (char) 2;
+	    output << IRC_Off;
     }
 
     if (nick->NoMemo())
@@ -3535,10 +3590,10 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	else
 	    firstoption = false;
 	if (nick->L_NoMemo())
-	    output << (char) 2;
+	    output << IRC_Bold;
 	output << "Denying Memos";
 	if (nick->L_NoMemo())
-	    output << (char) 2;
+	    output << IRC_Off;
     }
 
     if (nick->Private())
@@ -3548,15 +3603,15 @@ void NickServ::do_Info(mstring mynick, mstring source, mstring params)
 	else
 	    firstoption = false;
 	if (nick->L_Private())
-	    output << (char) 2;
+	    output << IRC_Bold;
 	output << "Private";
 	if (nick->L_Private())
-	    output << (char) 2;
+	    output << IRC_Off;
     }
 
     if (output != "")
 	::send(mynick, source, "    Options: " + output);
-    if (Parent->nickserv.IsLive(target))
+    if (nick->IsOnline())
 	::send(mynick, source, "This user is online, type /WHOIS " +
 	    Parent->nickserv.live[target.LowerCase()].Name() +
 	    " for more information.");
@@ -3594,8 +3649,8 @@ void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (Parent->commserv.IsList("oper") &&
-	Parent->commserv.list["oper"].IsIn(target))
+    if (Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name()].IsIn(target))
     {
 	::send(mynick, source, "You cannot suspend an OPER.");
 	return;
@@ -3663,22 +3718,6 @@ void NickServ::do_Forbid(mstring mynick, mstring source, mstring params)
     }
 
     Parent->nickserv.stored[target.LowerCase()] = Nick_Stored_t(target);
-}
-
-
-void NickServ::do_2ndparam(mstring mynick, mstring source, mstring params)
-{
-    if (params.WordCount(" ") < 2)
-    {
-	::send(mynick, source, "Not enough paramaters");
-	return;
-    }
-    mstring command = params.Before(" ", 2);
-    if (!Parent->commands.DoCommand(mynick, source, command, params))
-    {
-	::send(mynick, source, "Invalid command.");
-    }
-
 }
 
 
@@ -3813,8 +3852,8 @@ void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
     mstring target = source;
 
     if (params.WordCount(" ") >= 3 &&
-	Parent->commserv.IsList("oper") &&
-	Parent->commserv.list["oper"].IsIn(source))
+	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
     {
 	    target = params.ExtractWord(3, " ");
     }
@@ -3946,8 +3985,8 @@ void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
     mstring target = source;
 
     if (params.WordCount(" ") >= 3 &&
-	Parent->commserv.IsList("oper") &&
-	Parent->commserv.list["oper"].IsIn(source))
+	Parent->commserv.IsList(Parent->commserv.OPER_Name()) &&
+	Parent->commserv.list[Parent->commserv.OPER_Name()].IsOn(source))
     {
 	    target = params.ExtractWord(3, " ");
     }
@@ -4173,37 +4212,17 @@ void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
     mstring target = params.ExtractWord(3, " ");
     mstring comment = params.After(" ", 3);
 
-    if (!Parent->nickserv.IsStored(source))
-    {
-	::send(mynick, source, "Your nickname is not registered.");
-	return;
-    }
-
     if (!Parent->nickserv.IsStored(target))
     {
 	::send(mynick, source, "Nickname " + target + " is not registered.");
 	return;
     }
 
-    if (!Parent->nickserv.live[source.LowerCase()].IsIdentified())
-    {
-	::send(mynick, source, "Please identify first.");
-	return;
-    }
+    if (!comment.CmpNoCase("none"))
+	comment = "";
 
-    if (Parent->commserv.IsList("sop") &&
-	Parent->commserv.list["sop"].IsIn(source))
-    {
-	if (!comment.CmpNoCase("none"))
-	    comment = "";
-
-	Parent->nickserv.stored[target.LowerCase()].Comment(comment);
-	::send(mynick, source, "Comment for " + target + " has been set to \"" + comment + "\".");
-    }
-    else
-    {
-	::send(mynick, source, "Access denied.");
-    }
+    Parent->nickserv.stored[target.LowerCase()].Comment(comment);
+    ::send(mynick, source, "Comment for " + target + " has been set to \"" + comment + "\".");
 }
 
 void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)

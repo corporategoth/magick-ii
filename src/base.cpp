@@ -596,10 +596,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
     int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
     clist_iter iter;
-    mstring type, nickname, list;
-    if (Parent->nickserv.IsStored(user) &&
-	Parent->nickserv.stored[user.LowerCase()].IsOnline())
-	    nickname = user;
+    mstring type, list;
 
     // IF i_system exists
     //   IF command (pattern) exists
@@ -637,13 +634,12 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
 	    {
 		for (i=1; i <= iter->second.WordCount(" "); i++)
 		{
-		    list = iter->second.ExtractWord(i, " ").LowerCase();
+		    list = iter->second.ExtractWord(i, " ").UpperCase();
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
-		    if (list == "all" ||
-			(nickname != "" && Parent->commserv.IsList(list)
-			 && Parent->commserv.list[list].IsIn(nickname)))
+		    if (Parent->commserv.IsList(list)
+			&& Parent->commserv.list[list].IsOn(user))
 		    {
 			retval.first = true;
 			retval.second = iter->third;
@@ -663,10 +659,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
     int i;
     pair<bool, functor> retval = pair<bool, functor>(false, NULL);
     clist_iter iter;
-    mstring type, nickname, list;
-    if (Parent->nickserv.IsStored(user) &&
-	Parent->nickserv.stored[user.LowerCase()].IsOnline())
-	    nickname = user;
+    mstring type, list;
 
     // IF i_system exists
     //   IF command (pattern) exists
@@ -704,13 +697,12 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
 	    {
 		for (i=1; i <= iter->second.WordCount(" "); i++)
 		{
-		    list = iter->second.ExtractWord(i, " ").LowerCase();
+		    list = iter->second.ExtractWord(i, " ").UpperCase();
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
-		    if (list == "all" ||
-			(nickname != "" && Parent->commserv.IsList(list)
-			 && Parent->commserv.list[list].IsIn(nickname)))
+		    if (Parent->commserv.IsList(list)
+			 && Parent->commserv.list[list].IsOn(user))
 		    {
 			retval.first = true;
 			retval.second = iter->third;
@@ -768,3 +760,35 @@ bool CommandMap::DoSystemCommand(mstring mynick, mstring user, mstring command,
     }
     RET(false);
 }
+
+
+void do_1_2param(mstring mynick, mstring source, mstring params)
+{
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+    mstring command = params.Before(" ", 2);
+    if (!Parent->commands.DoCommand(mynick, source, command, params))
+    {
+	::send(mynick, source, "Invalid command.");
+    }
+
+}
+
+void do_1_3param(mstring mynick, mstring source, mstring params)
+{
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+    mstring command = params.Before(" ") + " " + params.ExtractWord(3, " ");
+    if (!Parent->commands.DoCommand(mynick, source, command, params))
+    {
+	::send(mynick, source, "Invalid command.");
+    }
+
+}
+

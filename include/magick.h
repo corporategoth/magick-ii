@@ -227,6 +227,26 @@ public:
         IrcServer ACO_server;
 	EventTask events;
 
+	void AddCommands(void)
+	{
+	    operserv.AddCommands();
+	    nickserv.AddCommands();
+	    chanserv.AddCommands();
+	    memoserv.AddCommands();
+	    servmsg.AddCommands();
+	    commserv.AddCommands();
+	}
+
+	void RemCommands(void)
+	{
+	    operserv.RemCommands();
+	    nickserv.RemCommands();
+	    chanserv.RemCommands();
+	    memoserv.RemCommands();
+	    servmsg.RemCommands();
+	    commserv.RemCommands();
+	}
+
 //protected:
 	bool i_shutdown;
 
