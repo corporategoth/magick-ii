@@ -24,8 +24,10 @@ static const char *ident_language_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.23  2000/09/19 08:05:24  prez
-** Ran text files through spell checker.
+** Revision 1.24  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
 **
 **
 ** ========================================================== */
@@ -33,10 +35,10 @@ static const char *ident_language_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Tue Sep 19 20:34:31 EST 2000
+ * Created on Tue Dec 19 09:16:14 EST 2000
  */
 
-unsigned int def_langent =     884;
+unsigned int def_langent =     890;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -149,6 +151,7 @@ char *def_lang[] = {
 ";",
 "[ERR_SITUATION]",
 "NOHELP             =Sorry, there is no help available for %s.",
+"NOSERVICE          =Service %s does not exist.",
 "ONYOURSELF         =You may only perform %s on yourself.",
 "NOTONYOURSELF      =You may not perform %s on yourself.",
 "ONCOMMITTEE        =You may only perform %s on a member of the %s committee.",
@@ -166,10 +169,11 @@ char *def_lang[] = {
 "IGNORE_TRIGGER     =You have triggered services IGNORE (%d message(s) in %s).",
 "TEMP_IGNORE        =This is your %s ignore (of a maximum %d).  Services will not respond for %s.",
 "PERM_IGNORE        =You have been ignored the maximum %d times.  Services will no longer respond.",
-"PROTECTED          =This nickname has KILL protection enabled.  If you do not IDENTIFY in %s, you will be killed.",
-"FORBIDDEN          =This nickname is forbidden.  If you do not change your nick in %s, you will be killed.",
+"PROTECTED          =This nickname has KILL protection enabled.  If you do not IDENTIFY in %s, you will be killed/renamed.",
+"FORBIDDEN          =This nickname is forbidden.  If you do not change your nick in %s, you will be killed/renamed.",
 "DEFCOMMITTEE       =Default committees may NOT be modified.",
 "AKILLTOOHIGH       =You may only specify a maximum of %s for an AKILL time limit.",
+"AKILLTOOMANY       =Your akill would kill %.2f%% users, which is above the %.2f%% threshold!",
 "NOFLUSH            =Memos with file attachments may not be flushed.",
 "NOATTACH           =Cannot send file attachments to channels.",
 "FILEINPROG         =Cannot begin a new memo or file transfer while a file transfer is in progress.",
@@ -229,6 +233,9 @@ char *def_lang[] = {
 "OFF                =OFF",
 "ONLINE             =ONLINE",
 "SUSPENDED          =SUSPENDED",
+"SVC_AUTO           =Automatic",
+"SVC_MSG            =Message",
+"SVC_LOG            =Logging",
 "",
 ";",
 "; This section contains miscellaneous outputs from Magick.  eg.",
@@ -250,9 +257,9 @@ char *def_lang[] = {
 "FLOOD_PERM         =%s is FLOODING services.  Placed on permanent ignore.",
 "CHAN_MODE          =%s just performed a mode change (%s) on channel %s.",
 "NICK_MODE          =%s just performed a mode change (%s) on nickname %s.",
-"AKILL_ADD          =%s just added AKILL on host %s for %s (%s).",
+"AKILL_ADD          =%s just added AKILL on host %s for %s (%s) - %d clients killed (%.2f%%).",
 "AKILL_EXTEND       =%s just extended the AKILL on host %s by %s.",
-"OPERDENY_ADD       =%s just added OperDeny on host %s.",
+"OPERDENY_ADD       =%s just added Oper Deny on host %s.",
 "QLINE              =%s just turned %s a quarantine on nicknames matching %s.",
 "NOOP               =%s just turned %s IRC Operator quarantine on server %s.",
 "KILL               =%s just silently killed user %s.",
@@ -260,8 +267,8 @@ char *def_lang[] = {
 "SHUTDOWN           =SHUTDOWN command received from %s.",
 "RELOAD             =%s just reloaded the server configuration file.",
 "JUPE               =%s just JUPED server %s.",
-"ONOFF              =Services have been turned %s by %s.",
-"ONOFF_ONE          =Service %s has been turned %s by %s.",
+"ONOFF              =%s services have been turned %s by %s.",
+"ONOFF_ONE          =%s services for %s have been turned %s by %s.",
 "HTM_ON             =Entering high-traffic mode - (%.1fKb/s > %.1fKb/s)",
 "HTM_STILL          =Still high-traffic mode %d (%d delay): %.1fKb/s",
 "HTM_TURBO          =Still high-traffic mode %d (TURBO) (%d delay): %.1fKb/s",
@@ -327,7 +334,7 @@ char *def_lang[] = {
 "",
 "OPER_CLONE         =Clone Override entries     : %d",
 "OPER_AKILL         =Auto Kill entries          : %d",
-"OPER_OPERDENY      =OperDeny entries           : %d",
+"OPER_OPERDENY      =Oper Deny entries          : %d",
 "OPER_IGNORE        =Ignore entries             : %d",
 "OPER_CMD           =Successful Command Usage:",
 "OPER_CMD1          =TRACE         %10d / MODE          %10d",
@@ -532,7 +539,7 @@ char *def_lang[] = {
 "[NS_OTH_COMMAND]",
 "REGISTERED         =Nickname %s is now registered under host %s.",
 "LINKED             =Nickname %s is now linked to %s.",
-"DROPPED            =Nickname %s has been dropped.",
+"DROPPED            =Nickname %s has been droped.",
 "UNLINKED           =Nickname %s has been unlinked.",
 "NEWHOST            =Nickname %s is now the host.",
 "IDENTIFIED         =Password accepted - you are now identified for nickname %s.",
@@ -558,7 +565,7 @@ char *def_lang[] = {
 "[NS_YOU_COMMAND]",
 "REGISTERED         =Your nickname is now registered under host %s.",
 "LINKED             =Your nickname is now linked to %s.",
-"DROPPED            =Your nickname has been dropped.",
+"DROPPED            =Your nickname has been droped.",
 "UNLINKED           =Your nickname has been unlinked.",
 "NEWHOST            =Your nickname is now the host.",
 "IDENTIFIED         =Password accepted - you are now identified.",
@@ -632,7 +639,7 @@ char *def_lang[] = {
 "JOIN               =Services Join",
 "REVENGE            =Revenge Level",
 "",
-"LVL_AUTODEOP       =Automatic Deop/Voice",
+"LVL_AUTODEOP       =Automatic Deop/Devoice",
 "LVL_AUTOVOICE      =Automatic Voice",
 "LVL_AUTOOP         =Automatic Op",
 "LVL_READMEMO       =Read News",
@@ -710,7 +717,7 @@ char *def_lang[] = {
 ";",
 "[CS_COMMAND]",
 "REGISTERED         =Channel %s has been registered with founder %s.",
-"DROPPED            =Channel %s has been dropped.",
+"DROPPED            =Channel %s has been droped.",
 "IDENTIFIED         =Password accepted - you are now identified as founder of %s.",
 "SET_TO             =%s for channel %s has been set to %s.",
 "UNSET              =%s for channel %s has been unset.",
@@ -779,6 +786,7 @@ char *def_lang[] = {
 "MEMBERS            =members",
 "MESSAGES           =messages",
 "SET_HEAD           =Head",
+"SET_EMAIL          =Description",
 "SET_EMAIL          =E-Mail Address",
 "SET_URL            =WWW Page",
 "SET_SECURE         =Secure",
@@ -796,7 +804,7 @@ char *def_lang[] = {
 "ISLANG             =Language %s is already loaded.",
 "ISNOTLANG          =Language %s is not loaded.",
 "NOLANG             =Language %s does not exist.",
-"ISOPERDENY         =You may not set mode +o, you are on OperDeny.",
+"ISOPERDENY         =You may not set mode +o, you are on Oper Deny.",
 "HTM                =HTM will trigger at %s/s, Current average traffic is %.1fKb/s.",
 "",
 ";",
@@ -837,7 +845,7 @@ char *def_lang[] = {
 "CHAN_NEWS          =News articles expire after %s.",
 "",
 "MISC_INFLIGHT      =Memos are in-flight for %s.",
-"MISC_AKILL1        =Default Auto Kill time is %s.",
+"MISC_AKILL1        =Default Auto Kill time is %s and will reject if more than %.2f%% of the network.",
 "MISC_AKILL2        =Maximum Auto Kill times (by committee) are:",
 "MISC_AKILL3        =    %s: %s",
 "MISC_CLONES        =Users may have up to %d clone(s) per host, which may be overridden up to %d.",
@@ -866,8 +874,8 @@ char *def_lang[] = {
 "SIGNON             =Signed on all non-active services clients.",
 "UNLOAD             =Language %s has been unloaded.",
 "JUPE               =Server %s has been juped.",
-"ONOFF              =Services have been turned %s.",
-"ONOFF_ONE          =Service %s has been turned %s.",
+"ONOFF              =%s services have been turned %s.",
+"ONOFF_ONE          =%s services for %s have been turned %s.",
 "HTM                =High Traffic Mode has been turned %s.",
 "HTM_SET            =HTM Threshold has been reset to %s.",
 "",

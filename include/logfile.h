@@ -24,8 +24,10 @@ static const char *ident_logfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.13  2000/09/19 08:05:24  prez
-** Ran text files through spell checker.
+** Revision 1.14  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
 **
 **
 ** ========================================================== */
@@ -33,10 +35,10 @@ static const char *ident_logfile_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Tue Sep 19 20:34:42 EST 2000
+ * Created on Mon Dec 18 20:23:25 EST 2000
  */
 
-unsigned int def_logent =     321;
+unsigned int def_logent =     323;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -121,7 +123,7 @@ char *def_log[] = {
 ";",
 "[NICKSERV]",
 "REGISTER         =%s registered nickname %s.",
-"DROP             =%s dropped nickname %s (%d slaves).",
+"DROP             =%s droped nickname %s (%d slaves).",
 "LINK             =%s linked nickname %s to %s.",
 "UNLINK           =%s unlinked nickname %s from %s.",
 "HOST             =%s changed their host nickname from %s to %s.",
@@ -149,7 +151,7 @@ char *def_log[] = {
 ";",
 "[CHANSERV]",
 "REGISTER         =%s registered channel %s.",
-"DROP             =%s dropped channel %s (%s).",
+"DROP             =%s droped channel %s (%s).",
 "IDENTIFY         =%s identified as founder for channel %s.",
 "SUSPEND          =%s suspended channel %s for %s.",
 "UNSUSPEND        =%s unsuspended channel %s.",
@@ -236,8 +238,8 @@ char *def_log[] = {
 "RELOAD           =%s reloaded the services configuration file.",
 "UNLOAD           =%s unloaded language %s.",
 "JUPE             =%s juped server %s (%s).",
-"ONOFF            =%s TURNED SERVICES %s.",
-"ONOFF_SERVICE    =%s TURNED SERVICE %s %s.",
+"ONOFF            =%s TURNED %s %s SERVICES.",
+"ONOFF_ONE        =%s TURNED %s %s SERVICES FOR %s.",
 "CLONE_ADD        =%s added host %s to the clone override list with %d clones.",
 "CLONE_DEL        =%s removed host %s from the clone override list.",
 "AKILL_ADD        =%s added mask %s to the auto kill list (%s) for \"%s\".",
@@ -294,6 +296,8 @@ char *def_log[] = {
 "OUTOFTXNIDS      =Cannot create any more Transaction ID's",
 "FAILED_FORK      =Failed to fork new process with %d, terminating.",
 "FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.",
+"FAILED_SETSID    =Failed to become process session leader with %d, terminating.",
+"RUN_AS_ROOT      =Running as a super user is a potential security risk!",
 "LOCK_OPEN        =Failed to open %s lock for %s.",
 "LOCK_ACQUIRE     =Failed to acquire %s lock for %s.",
 "LOCK_RELEASE     =Failed to release %s lock for %s.",
@@ -350,7 +354,7 @@ char *def_log[] = {
 "DUP_CHAN         =Duplicate %s received from %s for channel %s.",
 "MODE_INEFFECT    =MODE change %c%c received from %s for %s that is already in effect.",
 "MODE_NOTINCHAN   =MODE change %c%c received from %s for %s who is not in channel %s.",
-"FOUNDER_NOTREGD  =Channel %s has a founder of %s who is not registered (channel dropped).",
+"FOUNDER_NOTREGD  =Channel %s has a founder of %s who is not registered (channel droped).",
 "HOST_NOTREGD     =Nickname %s was listed as the host of %s, but does not exist (rectified)!",
 "SLAVE_NOTREGD    =Nickname %s was listed as a slave of %s, but does not exist (rectified)!",
 "KEYMISMATCH      =Channel key mismatch (%s | %s) for channel %s from %s.",

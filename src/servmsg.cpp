@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.72  2000/12/19 07:24:54  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.71  2000/12/10 13:06:12  prez
 ** Ditched alot of the *toa's since mstring can do it internally now.
 **
@@ -1184,7 +1189,7 @@ void ServMsg::do_file_List(mstring mynick, mstring source, mstring params)
 
     for (j=0, i=0, count = 0; j < filelist.size(); j++)
     {
-	if (Parent->filesys.GetName(FileMap::Public, filelist[j]).LowerCase().Matches(mask))
+	if (Parent->filesys.GetName(FileMap::Public, filelist[j]).Matches(mask, true))
 	{
 	    if (i < listsize)
 	    {
@@ -1314,9 +1319,9 @@ void ServMsg::do_file_Rename(mstring mynick, mstring source, mstring params)
     		Parent->filesys.GetName(FileMap::Public, num).c_str(),
     		Parent->getMessage(source, "LIST/FILES").c_str(),
     		newfile.c_str());
-    Log(LM_INFO, Parent->getLogMessage("SERVMSG/FILE_RENAME"),
+    LOG((LM_INFO, Parent->getLogMessage("SERVMSG/FILE_RENAME"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	file.c_str(), newfile.c_str());
+	file.c_str(), newfile.c_str()));
     Parent->filesys.Rename(FileMap::Public, num, newfile);
 }
 
@@ -1352,9 +1357,9 @@ void ServMsg::do_file_Priv(mstring mynick, mstring source, mstring params)
     		Parent->getMessage(source, "LIST/FILES").c_str(),
     		Parent->getMessage(source, "LIST/ACCESS").c_str(),
     		priv.c_str());
-    Log(LM_INFO, Parent->getLogMessage("SERVMSG/FILE_PRIV"),
+    LOG((LM_INFO, Parent->getLogMessage("SERVMSG/FILE_PRIV"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	file.c_str(), ((priv == "") ? "ALL" : priv.c_str()));
+	file.c_str(), ((priv == "") ? "ALL" : priv.c_str())));
     Parent->filesys.SetPriv(FileMap::Public, num, priv);
 }
 
@@ -1587,7 +1592,7 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 	return;
     }
 
-    if (type.Matches("M*A*"))
+    if (type.Matches("M*A*", true))
     {
     	if (Parent->filesys.Exists(FileMap::MemoAttach, number))
     	{
@@ -1604,9 +1609,9 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 			::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_MEMOATTACH"),
 				number, Parent->filesys.GetName(FileMap::MemoAttach, number).c_str(),
 				j->Nick().c_str(), k, j->Sender().c_str(), j->Time().Ago().c_str());
-			Log(LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
+			LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
 				Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-				number, type.c_str());
+				number, type.c_str()));
 	  		return;
 	    	    }
 	    	}
@@ -1615,7 +1620,7 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_MEMOATTACH"),
 	    		number);
     }
-    else if (type.Matches("PIC*"))
+    else if (type.Matches("PIC*", true))
     {
     	if (Parent->filesys.Exists(FileMap::Picture, number))
     	{
@@ -1627,9 +1632,9 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 	    	{
 		    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PICTURE"),
 	  			number, i->second.Name().c_str());
-		    Log(LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
+		    LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
 			Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-			number, type.c_str());
+			number, type.c_str()));
 	  	    return;
 	    	}
 	    }
@@ -1637,16 +1642,16 @@ void ServMsg::do_file_Lookup(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_PICTURE"),
 	    		number);
     }
-    else if (type.Matches("PUB*"))
+    else if (type.Matches("PUB*", true))
     {
     	if (Parent->filesys.Exists(FileMap::Public, number))
     	{
 	    ::send(mynick, source, Parent->getMessage(source, "DCC/LOOKUP_PUBLIC"),
 	  		number, Parent->filesys.GetName(FileMap::Public, number).c_str(),
 	  		Parent->filesys.GetPriv(FileMap::Public, number).c_str());
-	    Log(LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
+	    LOG((LM_DEBUG, Parent->getLogMessage("SERVMSG/FILE_LOOKUP"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		number, type.c_str());
+		number, type.c_str()));
 	    return;
     	}
 	::send(mynick, source, Parent->getMessage(source, "DCC/NLOOKUP_PUBLIC"),
@@ -1684,8 +1689,8 @@ void ServMsg::do_Global(mstring mynick, mstring source, mstring params)
     Parent->servmsg.stats.i_Global++;
     announce(mynick, Parent->getMessage(source, "MISC/GLOBAL_MSG"),
 				source.c_str());
-    Log(LM_NOTICE, Parent->getLogMessage("SERVMSG/GLOBAL"),
+    LOG((LM_NOTICE, Parent->getLogMessage("SERVMSG/GLOBAL"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	text.c_str());
+	text.c_str()));
 }
 

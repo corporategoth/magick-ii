@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.81  2000/12/10 13:06:12  prez
 ** Ditched alot of the *toa's since mstring can do it internally now.
 **
@@ -2032,9 +2037,9 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 	    }
 	    ::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL_ALL"),
 				    who.c_str());
-	    Log(LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL_ALL"),
+	    LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL_ALL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		who.c_str());
+		who.c_str()));
 	}
 	else
 	{
@@ -2108,9 +2113,9 @@ void MemoServ::do_Del(mstring mynick, mstring source, mstring params)
 		::send(mynick, source, Parent->getMessage(source, "MS_COMMAND/CS_DEL"),
 			    output.c_str(), who.c_str());
 		output = "";
-		Log(LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL"),
+		LOG((LM_DEBUG, Parent->getLogMessage("MEMOSERV/DEL"),
 			Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-			adjust, who.c_str());
+			adjust, who.c_str()));
 	    }
 	    if (nonnumeric)
 		::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NONNUMERIC"));

@@ -344,6 +344,16 @@ This software is useful in the fact it looks for memory access errors
 memory, etc).  However it slows the program down dramatically.  Turning
 this on causes a new log file (mpatrol.log) to be created.
 
+`--enable-efence'
+`--disable-efence'
+     This turns on or off the usage of the memory error checking and
+profiling software Electric Fence (http://ftp://ftp.perens.com/pub/ElectricFence).
+This software is useful in the fact it looks for memory access errors
+(eg. accessing unitialised memory, exceeding memory bounds, not freeing
+memory, etc).  However it slows the program down dramatically.  Turning
+this on causes the program to stop at the first memory problem (so it
+is recommended you run this in a debugger).
+
 `--with-keylen=size'
      This is the maximum size of the key file, and the input key that
 you may type in.  This defaults to 1024, and you should not need more.

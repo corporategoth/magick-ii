@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.141  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.140  2000/12/09 11:24:25  prez
 ** Changed all privmsg/notice/send/announce calls to have pszFormat
 ** as a char *, to stop warnings from va_start.
@@ -242,7 +247,7 @@ mstring mUserDef::UserDef(mstring type)
 void mUserDef::UserDef(mstring type, mstring val)
 {
     FT("mUserDef::UserDef", (type, val));
-    if (val.UpperCase() == "NONE")
+    if (val.IsSameAs("NONE", true))
     {
 	i_UserDef.erase(type.LowerCase());
     }
@@ -314,10 +319,17 @@ int mBaseTask::open(void *in)
     RET(retval);
 }
 
+int mBaseTask::close(void *in)
+{
+    NFT("mBaseTask::close");
+    RET(0);
+}
+
 int mBaseTask::svc(void)
 {
     mThread::Attach(tt_mBase);
     NFT("mBaseTask::svc");
+    Parent->AddLogInstance(ACE_LOG_MSG);
     ACE_Message_Block *mblock;
     char *transit;
     int retval = 0;
@@ -325,7 +337,6 @@ int mBaseTask::svc(void)
     while(!Parent->Shutdown() && retval >= 0)
     {
 	mblock = NULL;
-	transit = NULL;
 	{
 	    MLOCK(("MessageQueue"));
 	    message_queue_.dequeue(mblock);
@@ -335,6 +346,7 @@ int mBaseTask::svc(void)
 	    switch (mblock->msg_type())
 	    {
 	    case ACE_Message_Block::MB_DATA:
+		transit = NULL;
 		transit = mblock->base();
 		if (transit != NULL)
 		{
@@ -346,12 +358,13 @@ int mBaseTask::svc(void)
 		retval = -1;
 		break;
 	    default:
-		Log(LM_ERROR, Parent->getLogMessage("ERROR/INVALID_TYPE"),
-							mblock->msg_type());
+		LOG((LM_ERROR, Parent->getLogMessage("ERROR/INVALID_TYPE"),
+							mblock->msg_type()));
 	    }
 	    delete mblock;
 	}
     }
+    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(retval);
 }
 
@@ -378,7 +391,8 @@ void mBaseTask::message(const mstring& message)
 	    message_queue_.high_water_mark(thread_count *
 		Parent->config.High_Water_Mark() * Parent->server.proto.MaxLine());
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
-	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD"));
+
+	    LOG((LM_NOTICE, Parent->getLogMessage("EVENT/NEW_THREAD")));
 	}
     }
     char *transit = new char[length+1];
@@ -454,8 +468,8 @@ int mBaseTask::message_i(const mstring& message)
 	else if (Parent->operserv.Log_Ignore())
 	{
 	    // Check if we're to log ignore messages, and log them here.
-	    Log(LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
-			source.c_str(), data.After(" ").c_str());
+	    LOG((LM_DEBUG, Parent->getLogMessage("OPERSERV/IGNORED"),
+			source.c_str(), data.After(" ").c_str()));
 	}
     }
     else
@@ -488,7 +502,7 @@ int mBaseTask::message_i(const mstring& message)
 	    message_queue_.high_water_mark(Parent->config.High_Water_Mark() *
 		thread_count * Parent->server.proto.MaxLine());
 	    message_queue_.low_water_mark(message_queue_.high_water_mark());
-	    Log(LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD"));
+	    LOG((LM_NOTICE, Parent->getLogMessage("EVENT/KILL_THREAD")));
 	    FLUSH();
 	    RET(-1);
     }}
@@ -579,9 +593,11 @@ void mBase::shutdown()
     { MLOCK(("MessageQueue"));
     while (!BaseTask.message_queue_.is_empty())
     {
+	mblock = NULL;
 	BaseTask.message_queue_.dequeue(mblock);
 	if (mblock != NULL)
 	{
+	    transit = NULL;
 	    transit = mblock->base();
 	    if (transit != NULL)
 		delete transit;
@@ -779,8 +795,10 @@ void privmsg(const mstring& source, const mstring &dest, const char *pszFormat, 
 
 	// scripted hosts ...
 	else
-	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"PRIVMSG", source.c_str());
+	{
+	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"PRIVMSG", source.c_str()));
+	}
     va_end(argptr);
 }
 
@@ -811,8 +829,10 @@ void notice(const mstring& source, const mstring &dest, const char *pszFormat, .
 
 	// scripted hosts ...
 	else
-	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"NOTICE", source.c_str());
+	{
+	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"NOTICE", source.c_str()));
+	}
     va_end(argptr);
 }
 
@@ -843,8 +863,10 @@ void send(const mstring& source, const mstring &dest, const char *pszFormat, ...
 
 	// scripted hosts ...
 	else
-	    Log(LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
-		"SEND", source.c_str());
+	{
+	    LOG((LM_WARNING, Parent->getLogMessage("ERROR/REQ_BYNONSERVICE"),
+		"SEND", source.c_str()));
+	}
 
     va_end(argptr);
 }
@@ -986,7 +1008,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(mstring service, mstr
 	for (iter=i_user[type].begin();
 		iter!=i_user[type].end(); iter++)
 	{
-	    if (command.UpperCase().Matches(iter->first))
+	    if (command.Matches(iter->first, true))
 	    {
 		for (i=1; i <= iter->second.WordCount(" "); i++)
 		{
@@ -1050,7 +1072,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(mstring service, ms
 	for (iter=i_system[type].begin();
 		iter!=i_system[type].end(); iter++)
 	{
-	    if (command.UpperCase().Matches(iter->first))
+	    if (command.Matches(iter->first, true))
 	    {
 		for (i=1; i <= iter->second.WordCount(" "); i++)
 		{

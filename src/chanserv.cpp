@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.214  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.213  2000/11/09 10:58:19  prez
 ** THINK I have it working again ... with the free list.
 ** Will check, still thinking of sorting free list by size.
@@ -341,8 +346,8 @@ bool Chan_Live_t::Join(mstring nick)
     WLOCK(("ChanServ", "live", i_Name.LowerCase(), "users"));
     if (users.find(nick.LowerCase())!=users.end())
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/DUP_CHAN"),
-		"JOIN", nick.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/DUP_CHAN"),
+		"JOIN", nick.c_str(), i_Name.c_str()));
 	RET(false);
     }
     else
@@ -396,8 +401,10 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
     else
-	Log(LM_TRACE, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
-	    "PART", nick.c_str(), i_Name.c_str());
+    {
+	LOG((LM_TRACE, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
+	    "PART", nick.c_str(), i_Name.c_str()));
+    }
 
     unsigned int retval = users.size() + squit.size();
     RET(retval);
@@ -435,8 +442,8 @@ void Chan_Live_t::UnSquit(mstring nick)
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     if (squit.find(nick.LowerCase())==squit.end())
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
-		"UNSQUIT", nick.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
+		"UNSQUIT", nick.c_str(), i_Name.c_str()));
     }
     else
 	Part(nick);
@@ -465,8 +472,8 @@ unsigned int Chan_Live_t::Kick(mstring nick, mstring kicker)
     }
     else
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_NOTINCHAN"),
-		"KICK", kicker.c_str(), nick.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_NOTINCHAN"),
+		"KICK", kicker.c_str(), nick.c_str(), i_Name.c_str()));
     }
 
     unsigned int retval = users.size() + squit.size();
@@ -496,8 +503,8 @@ void Chan_Live_t::ChgNick(mstring nick, mstring newnick)
     }
     else
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
-		"NICK", nick.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNOTINCHAN"),
+		"NICK", nick.c_str(), i_Name.c_str()));
     }
 }
 
@@ -868,7 +875,7 @@ bool Chan_Live_t::MatchBan(mstring mask)
     map<mstring, mDateTime>::iterator i;
     for (i=bans.begin(); i!=bans.end(); i++)
     {
-	if (mask.Matches(i->first))
+	if (mask.Matches(i->first, true))
 	{
 	    RET(true);
 	}
@@ -891,7 +898,7 @@ bool Chan_Live_t::MatchExempt(mstring mask)
     map<mstring, mDateTime>::iterator i;
     for (i=exempt.begin(); i!=exempt.end(); i++)
     {
-	if (mask.Matches(i->first))
+	if (mask.Matches(i->first, true))
 	{
 	    RET(true);
 	}
@@ -1332,9 +1339,9 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		case 'v':
 		    if (fwdargs <= wc)
 		    {
-		    Log(LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
-			add ? '+' : '-', change[i], source.c_str(),
-			in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str());
+			LOG((LM_ERROR, Parent->getLogMessage("ERROR/MODE_NOTINCHAN"),
+				add ? '+' : '-', change[i], source.c_str(),
+				in.ExtractWord(fwdargs, ": ").c_str(), i_Name.c_str()));
 		    }
 		default:
 		    fwdargs++;
@@ -1494,9 +1501,11 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		else
 		{
 		    if (i_Key != in.ExtractWord(fwdargs, ": "))
-			Log(LM_ERROR, Parent->getLogMessage("ERROR/KEYMISMATCH"),
+		    {
+			LOG((LM_ERROR, Parent->getLogMessage("ERROR/KEYMISMATCH"),
 				i_Key.c_str(), in.ExtractWord(fwdargs, ": ").c_str(),
-				i_Name.c_str(), source.c_str());
+				i_Name.c_str(), source.c_str()));
+		    }
 		    i_Key = "";
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
 			RemoveMode(p_modes_off, p_modes_off_params, false, 'k');
@@ -1517,14 +1526,14 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 		    CB(5, i_Limit);
 		    if (fwdargs > in.WordCount(": "))
 		    {
-			Log(LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
-				i_Name.c_str(), source.c_str());
+			LOG((LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
+				i_Name.c_str(), source.c_str()));
 			i_Limit = 0;
 		    }
 		    else if (!in.ExtractWord(fwdargs, ": ").IsNumber())
 		    {
-			Log(LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
-				i_Name.c_str(), source.c_str());
+			LOG((LM_ERROR, Parent->getLogMessage("ERROR/NOLIMIT"),
+				i_Name.c_str(), source.c_str()));
 			i_Limit = 0;
 		    }
 		    else
@@ -1575,8 +1584,8 @@ void Chan_Live_t::Mode(mstring source, mstring in)
 	    }
 	    else
 	    {
-		Log(LM_TRACE, Parent->getLogMessage("ERROR/INEFFECT"),
-			add ? '+' : '-', change[i], source.c_str(), i_Name.c_str());
+		LOG((LM_TRACE, Parent->getLogMessage("ERROR/INEFFECT"),
+			add ? '+' : '-', change[i], source.c_str(), i_Name.c_str()));
 	    }
 	    newmode += change[i];
 	}
@@ -1771,8 +1780,8 @@ bool Chan_Stored_t::Join(mstring nick)
 	clive = &Parent->chanserv.live[i_Name.LowerCase()];
     else
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"JOIN", nick.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"JOIN", nick.c_str(), i_Name.c_str()));
 	RET(false);
     }
     size_t users = clive->Users();
@@ -1781,8 +1790,8 @@ bool Chan_Stored_t::Join(mstring nick)
 	nlive = &Parent->nickserv.live[nick.LowerCase()];
     else
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"JOIN", i_Name.c_str(), nick.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"JOIN", i_Name.c_str(), nick.c_str()));
 	RET(false);
     }
 
@@ -1839,8 +1848,8 @@ bool Chan_Stored_t::Join(mstring nick)
 	else
 	    clive->SendMode("+b " + Akick->Entry());
 
-	Log(LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
-			nick.c_str(), i_Name.c_str(), Akick->Value().c_str());
+	LOG((LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
+			nick.c_str(), i_Name.c_str(), Akick->Value().c_str()));
 
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
@@ -1861,8 +1870,8 @@ bool Chan_Stored_t::Join(mstring nick)
 	else
 	    clive->SendMode("+b " + nick + "!*@*");
 
-	Log(LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
-			nick.c_str(), i_Name.c_str());
+	LOG((LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
+			nick.c_str(), i_Name.c_str()));
 
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), nick,
@@ -1893,7 +1902,7 @@ bool Chan_Stored_t::Join(mstring nick)
 	if (modes != "")
 	{
 	    clive->SendMode("+" + modes + " " + i_Mlock_Key + " " +
-			mstring(i_Mlock_Limit ? itoa(i_Mlock_Limit) : ""));
+			(i_Mlock_Limit ? mstring(i_Mlock_Limit) : mstring("")));
 	}}
 
 	{ RLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_Topic"));
@@ -2062,8 +2071,8 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
 	clive = &Parent->chanserv.live[i_Name.LowerCase()];
     else
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"NICK", nick.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"NICK", nick.c_str(), i_Name.c_str()));
 	return;
     }
     size_t users = clive->Users();
@@ -2072,8 +2081,8 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
 	nlive = &Parent->nickserv.live[newnick.LowerCase()];
     else
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
-			"NICK", i_Name.c_str(), newnick.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONUSER"),
+			"NICK", i_Name.c_str(), newnick.c_str()));
 	return;
     }
 
@@ -2091,8 +2100,8 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
 	else
 	    clive->SendMode("+b " + Akick->Entry());
 
-	Log(LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
-			newnick.c_str(), i_Name.c_str(), Akick->Value().c_str());
+	LOG((LM_DEBUG, Parent->getLogMessage("EVENT/AKICK"),
+			newnick.c_str(), i_Name.c_str(), Akick->Value().c_str()));
 
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), newnick,
@@ -2114,8 +2123,8 @@ void Chan_Stored_t::ChgNick(mstring nick, mstring newnick)
 	else
 	    clive->SendMode("+b " + newnick + "!*@*");
 
-	Log(LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
-			newnick.c_str(), i_Name.c_str());
+	LOG((LM_DEBUG, Parent->getLogMessage("EVENT/RESTRICTED"),
+			newnick.c_str(), i_Name.c_str()));
 
 	// Can only insert with reason or default, so its safe.
 	Parent->server.KICK(Parent->chanserv.FirstName(), newnick,
@@ -2143,8 +2152,8 @@ void Chan_Stored_t::Topic(mstring source, mstring topic, mstring setter, mDateTi
 
     if (!Parent->chanserv.IsLive(i_Name))
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"TOPIC", source.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"TOPIC", source.c_str(), i_Name.c_str()));
 	return;
     }
 
@@ -2196,8 +2205,8 @@ void Chan_Stored_t::SetTopic(mstring source, mstring setter, mstring topic)
 
     if (!Parent->chanserv.IsLive(i_Name))
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"TOPIC", source.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"TOPIC", source.c_str(), i_Name.c_str()));
 	return;
     }
 
@@ -2229,8 +2238,8 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 
     if (!Parent->chanserv.IsLive(i_Name))
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
-			"MODE", setter.c_str(), i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/REC_FORNONCHAN"),
+			"MODE", setter.c_str(), i_Name.c_str()));
 	return;
     }
 
@@ -2346,15 +2355,15 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		    for (j=0; !DidRevenge && j<clive->Users(); j++)
 		    {
 			if (Parent->nickserv.IsLive(clive->User(j)) &&
-			    (Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": ")) ||
-			    Parent->nickserv.live[clive->User(j).LowerCase()].AltMask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "))))
+			    (Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "), true) ||
+			    Parent->nickserv.live[clive->User(j).LowerCase()].AltMask(Nick_Live_t::N_U_P_H).Matches(mode.ExtractWord(fwdargs, ": "), true)))
 			{
 			    // Only do revenge or kickonban if user
 			    // is not exempt from bans (+e).
 			    if (!(clive->MatchExempt(Parent->nickserv.live[clive->User(j).LowerCase()].Mask(Nick_Live_t::N_U_P_H)) ||
 				clive->MatchExempt(Parent->nickserv.live[clive->User(j).LowerCase()].AltMask(Nick_Live_t::N_U_P_H))))
 			    {
-                    DidRevenge = DoRevenge(bantype, setter, clive->User(j));
+				DidRevenge = DoRevenge(bantype, setter, clive->User(j));
 				if (DidRevenge)
 				    clive->SendMode("-b " + mode.ExtractWord(fwdargs, ": "));
 				else
@@ -2403,7 +2412,7 @@ void Chan_Stored_t::Mode(mstring setter, mstring mode)
 		    }
 		    else
 		    {
-			clive->SendMode("+l " + mstring(itoa(i_Mlock_Limit)));
+			clive->SendMode("+l " + mstring(i_Mlock_Limit));
 		    }
 		}}
 
@@ -2652,8 +2661,8 @@ DoRevenge_Ban4:
 	    // Revenge is OFF or UNKNOWN...
 	    RET(false);
 	}
-	Log(LM_INFO, Parent->getLogMessage("OTHER/REVENGE"),
-			target.c_str(), i_Name.c_str(), type.c_str(), source.c_str());
+	LOG((LM_INFO, Parent->getLogMessage("OTHER/REVENGE"),
+			target.c_str(), i_Name.c_str(), type.c_str(), source.c_str()));
 	RET(true);
     }
 
@@ -2801,8 +2810,8 @@ void Chan_Stored_t::Founder(mstring in)
 
     if (!Parent->nickserv.IsStored(in))
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/BADSET"),
-		in.c_str(), "FOUNDER", i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/BADSET"),
+		in.c_str(), "FOUNDER", i_Name.c_str()));
 	return;
     }
 
@@ -2827,8 +2836,8 @@ void Chan_Stored_t::CoFounder(mstring in)
 
     if (!Parent->nickserv.IsStored(in))
     {
-	Log(LM_WARNING, Parent->getLogMessage("ERROR/BADSET"),
-		in.c_str(), "COFOUNDER", i_Name.c_str());
+	LOG((LM_WARNING, Parent->getLogMessage("ERROR/BADSET"),
+		in.c_str(), "COFOUNDER", i_Name.c_str()));
 	return;
     }
 
@@ -3257,9 +3266,9 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 	if (i_Mlock_Off != "")
 	    modes << "-" << i_Mlock_Off;
 
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str(), modes.c_str());
+		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str(), modes.c_str()));
 
 	if (i_Mlock_Key != "")
 	    modes << " " << i_Mlock_Key;
@@ -3279,9 +3288,9 @@ vector<mstring> Chan_Stored_t::Mlock(mstring source, mstring mode)
 	    i_Name.c_str());
 	retval.push_back(output);
 
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNSET"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNSET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str());
+		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str()));
     }
     CE(1, i_Mlock_Off);
     CE(2, i_Mlock_Key);
@@ -3501,11 +3510,11 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	    Parent->chanserv.live[i_Name.LowerCase()].SendMode(
 		"+" + i_Mlock_On + "-" + i_Mlock_Off);
 
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str(),
 		((l_Mlock_On  != "" ? ("+" + l_Mlock_On )  : mstring("")) +
-		(l_Mlock_Off != "" ? ("-" + l_Mlock_Off)  : mstring(""))).c_str());
+		(l_Mlock_Off != "" ? ("-" + l_Mlock_Off)  : mstring(""))).c_str()));
     }
     else
     {
@@ -3513,9 +3522,9 @@ vector<mstring> Chan_Stored_t::L_Mlock(mstring source, mstring mode)
 	output.Format(Parent->getMessage(source, "CS_COMMAND/MLOCK_UNLOCK").c_str(),
 	    i_Name.c_str());
 	retval.push_back(output);
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str());
+		Parent->getMessage("CS_SET/MLOCK").c_str(), i_Name.c_str()));
     }
     CE(1, l_Mlock_On);
     MCE(l_Mlock_Off);
@@ -4403,7 +4412,7 @@ bool Chan_Stored_t::Access_find(mstring entry, bool livelook)
 	    if (entry.Contains("@"))
 	    {
 		for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
-		    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+		    if (entry.Matches(iter->Entry(), true))
 			break;
 	    }
 	    else
@@ -4413,7 +4422,7 @@ bool Chan_Stored_t::Access_find(mstring entry, bool livelook)
 		    mstring mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
 
 		    for (iter=i_Access.begin(); iter!=i_Access.end(); iter++)
-			if (mask.LowerCase().Matches(iter->Entry().LowerCase()))
+			if (mask.Matches(iter->Entry(), true))
 			    break;
 		}
 	    }
@@ -4633,7 +4642,7 @@ bool Chan_Stored_t::Akick_find(mstring entry, bool livelook)
 	    if (entry.Contains("@"))
 	    {
 		for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
-		    if (entry.LowerCase().Matches(iter->Entry().LowerCase()))
+		    if (entry.Matches(iter->Entry(), true))
 			break;
 	    }
 	    else
@@ -4643,7 +4652,7 @@ bool Chan_Stored_t::Akick_find(mstring entry, bool livelook)
 		    mstring mask = Parent->nickserv.live[entry.LowerCase()].Mask(Nick_Live_t::N_U_P_H);
 
 		    for (iter=i_Akick.begin(); iter!=i_Akick.end(); iter++)
-			if (mask.LowerCase().Matches(iter->Entry().LowerCase()))
+			if (mask.Matches(iter->Entry(), true))
 			    break;
 		}
 	    }
@@ -5897,9 +5906,9 @@ void ChanServ::do_Register(mstring mynick, mstring source, mstring params)
     Parent->chanserv.stats.i_Register++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/REGISTERED"),
 		channel.c_str(), founder.c_str());
-    Log(LM_INFO, Parent->getLogMessage("CHANSERV/REGISTER"),
+    LOG((LM_INFO, Parent->getLogMessage("CHANSERV/REGISTER"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
@@ -5941,9 +5950,9 @@ void ChanServ::do_Drop(mstring mynick, mstring source, mstring params)
     Parent->chanserv.stats.i_Drop++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/DROPPED"),
 	    channel.c_str());
-    Log(LM_INFO, Parent->getLogMessage("CHANSERV/DROP"),
+    LOG((LM_INFO, Parent->getLogMessage("CHANSERV/DROP"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	channel.c_str(), founder.c_str());
+	channel.c_str(), founder.c_str()));
 }
 
 void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
@@ -5975,9 +5984,9 @@ void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
 	Parent->nickserv.live[source.LowerCase()].IsChanIdentified(channel))
     {
 	Parent->chanserv.stats.i_Identify++;
-	Log(LM_INFO, Parent->getLogMessage("CHANSERV/IDENTIFY"),
+	LOG((LM_INFO, Parent->getLogMessage("CHANSERV/IDENTIFY"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		channel.c_str());
+		channel.c_str()));
     }
     if (output != "")
 	::send(mynick, source, output, channel.c_str());
@@ -6259,7 +6268,7 @@ void ChanServ::do_List(mstring mynick, mstring source, mstring params)
     for (iter = Parent->chanserv.stored.begin(), i=0, count = 0;
 			iter != Parent->chanserv.stored.end(); iter++)
     {
-	if (iter->second.Name().LowerCase().Matches(mask))
+	if (iter->second.Name().Matches(mask, true))
 	{
 	    if (i < listsize && (!iter->second.Private() || isoper))
 	    {
@@ -6311,9 +6320,9 @@ void ChanServ::do_Suspend(mstring mynick, mstring source, mstring params)
     Parent->chanserv.stats.i_Suspend++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SUSPENDED"),
 	    channel.c_str());
-    Log(LM_NOTICE, Parent->getLogMessage("CHANSERV/SUSPEND"),
+    LOG((LM_NOTICE, Parent->getLogMessage("CHANSERV/SUSPEND"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	channel.c_str(), reason.c_str());
+	channel.c_str(), reason.c_str()));
     if (Parent->chanserv.IsLive(channel))
     {
 	Parent->server.TOPIC(mynick, mynick, channel, "[" + IRC_Bold +
@@ -6375,9 +6384,9 @@ void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
     Parent->chanserv.stats.i_Unsuspend++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSUSPENDED"),
 	    channel.c_str());
-    Log(LM_NOTICE, Parent->getLogMessage("CHANSERV/UNSUSPEND"),
+    LOG((LM_NOTICE, Parent->getLogMessage("CHANSERV/UNSUSPEND"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
@@ -6405,9 +6414,9 @@ void ChanServ::do_Forbid(mstring mynick, mstring source, mstring params)
     Parent->chanserv.stats.i_Forbid++;
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/FORBIDDEN"),
 	    channel.c_str());
-    Log(LM_NOTICE, Parent->getLogMessage("CHANSERV/FORBID"),
+    LOG((LM_NOTICE, Parent->getLogMessage("CHANSERV/FORBID"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	channel.c_str());
+	channel.c_str()));
 
     if (Parent->chanserv.IsLive(channel))
     {
@@ -6454,8 +6463,8 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
     Chan_Stored_t *chan = &Parent->chanserv.stored[channel.LowerCase()];
     if (!Parent->nickserv.IsStored(chan->Founder()))
     {
-	Log(LM_CRITICAL, Parent->getLogMessage("ERROR/FOUNDER_NOTREGD"),
-			chan->Name().c_str(), chan->Founder().c_str());
+	LOG((LM_CRITICAL, Parent->getLogMessage("ERROR/FOUNDER_NOTREGD"),
+			chan->Name().c_str(), chan->Founder().c_str()));
 	Parent->chanserv.stored.erase(channel.LowerCase());
 	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISNOTSTORED"),
 		channel.c_str());
@@ -6470,9 +6479,9 @@ void ChanServ::do_Getpass(mstring mynick, mstring source, mstring params)
     announce(mynick, Parent->getMessage("MISC/CHAN_GETPASS"),
 			source.c_str(), chan->Name().c_str(),
 			Parent->getSname(chan->Founder()).c_str());
-    Log(LM_NOTICE, Parent->getLogMessage("CHANSERV/GETPASS"),
+    LOG((LM_NOTICE, Parent->getLogMessage("CHANSERV/GETPASS"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	chan->Name().c_str(), Parent->getSname(chan->Founder()).c_str());
+	chan->Name().c_str(), Parent->getSname(chan->Founder()).c_str()));
 }
 
 void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
@@ -6516,9 +6525,9 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
 	mstring modes = params.After(" ", 2);
 	clive->SendMode(modes);
 	Parent->chanserv.stats.i_Mode++;
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/MODE"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/MODE"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		modes.c_str(), channel.c_str());
+		modes.c_str(), channel.c_str()));
 	return;
     }
     else if (cstored->GetAccess(source, "VIEW") ||
@@ -6633,9 +6642,9 @@ void ChanServ::do_Op(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stats.i_Op++;
     Parent->chanserv.live[channel.LowerCase()].SendMode("+o " + target);
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/OP"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/OP"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	target.c_str(), channel.c_str());
+	target.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
@@ -6714,9 +6723,9 @@ void ChanServ::do_DeOp(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stats.i_Deop++;
     Parent->chanserv.live[channel.LowerCase()].SendMode("-o " + target);
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/DEOP"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/DEOP"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	target.c_str(), channel.c_str());
+	target.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
@@ -6808,9 +6817,9 @@ void ChanServ::do_Voice(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stats.i_Voice++;
     Parent->chanserv.live[channel.LowerCase()].SendMode("+v " + target);
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/VOICE"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/VOICE"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	target.c_str(), channel.c_str());
+	target.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
@@ -6889,9 +6898,9 @@ void ChanServ::do_DeVoice(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stats.i_Devoice++;
     Parent->chanserv.live[channel.LowerCase()].SendMode("-v " + target);
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/DEVOICE"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/DEVOICE"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	target.c_str(), channel.c_str());
+	target.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
@@ -6934,9 +6943,9 @@ void ChanServ::do_Topic(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stats.i_Topic++;
     chan->SetTopic(mynick, source, topic);
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/TOPIC"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/TOPIC"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
@@ -7008,9 +7017,9 @@ void ChanServ::do_Kick(mstring mynick, mstring source, mstring params)
 	    source.c_str(), reason.c_str());
     Parent->chanserv.stats.i_Kick++;
     Parent->server.KICK(mynick, target, channel, output);
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/KICK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/KICK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	target.c_str(), channel.c_str());
+	target.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_AnonKick(mstring mynick, mstring source, mstring params)
@@ -7075,9 +7084,9 @@ void ChanServ::do_AnonKick(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stats.i_Anonkick++;
     Parent->server.KICK(mynick, target, channel, reason);
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ANONKICK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/ANONKICK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	target.c_str(), channel.c_str());
+	target.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_Users(mstring mynick, mstring source, mstring params)
@@ -7239,9 +7248,9 @@ void ChanServ::do_Invite(mstring mynick, mstring source, mstring params)
 
     Parent->chanserv.stats.i_Invite++;
     Parent->server.INVITE(mynick, target, channel);
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/INVITE"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/INVITE"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	target.c_str(), channel.c_str());
+	target.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
@@ -7305,8 +7314,8 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
     bool found = false;
     for (i=0; i < clive->Bans(); i++)
     {
-	if (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i).LowerCase()) ||
-	    nlive->AltMask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i).LowerCase()))
+	if (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i), true) ||
+	    nlive->AltMask(Nick_Live_t::N_U_P_H).Matches(clive->Ban(i), true))
 	{
 	    clive->SendMode("-b " + clive->Ban(i));
 	    i--;
@@ -7322,9 +7331,9 @@ void ChanServ::do_Unban(mstring mynick, mstring source, mstring params)
 	else
 	    ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/OTH_UNBANNED"),
 		    target.c_str(), channel.c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNBAN"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNBAN"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		target.c_str(), channel.c_str());
+		target.c_str(), channel.c_str()));
     }
     else
     {
@@ -7385,7 +7394,7 @@ void ChanServ::do_Live(mstring mynick, mstring source, mstring params)
     for (iter = Parent->chanserv.live.begin(), i=0, count = 0;
 			iter != Parent->chanserv.live.end(); iter++)
     {
-	if (iter->second.Name().LowerCase().Matches(mask))
+	if (iter->second.Name().Matches(mask, true))
 	{
 	    if (i < listsize)
 	    {
@@ -7478,9 +7487,9 @@ void ChanServ::do_clear_Users(mstring mynick, mstring source, mstring params)
 	Parent->server.KICK(mynick, kickees[i], channel, output);
     }
     Parent->chanserv.stats.i_Clear++;
-    Log(LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
+    LOG((LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	message.c_str(), channel.c_str());
+	message.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
@@ -7538,17 +7547,17 @@ void ChanServ::do_clear_Ops(mstring mynick, mstring source, mstring params)
     unsigned int i;
     for (i=0; i<clive->Ops(); i++)
     {
-	if (!message.After(" ").Matches("*ALL*"))
+	if (!message.After(" ").Matches("*ALL*", true))
 	    ::send(mynick, clive->Op(i), Parent->getMessage(clive->Op(i), "CS_COMMAND/CLEAR"),
 		    message.c_str(), source.c_str(), channel.c_str());
 	clive->SendMode("-o " + clive->Op(i));
     }
-    if (!message.After(" ").Matches("*ALL*"))
+    if (!message.After(" ").Matches("*ALL*", true))
     {
 	Parent->chanserv.stats.i_Clear++;
-	Log(LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
+	LOG((LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		message.c_str(), channel.c_str());
+		message.c_str(), channel.c_str()));
     }
 }
 
@@ -7608,12 +7617,12 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 
     for (i=0; i<clive->Voices(); i++)
     {
-	if (!message.After(" ").Matches("*ALL*"))
+	if (!message.After(" ").Matches("*ALL*", true))
 	    ::send(mynick, clive->Voice(i), Parent->getMessage(clive->Voice(i), "CS_COMMAND/CLEAR"),
 		    message.c_str(), source.c_str(), channel.c_str());
 	clive->SendMode("-v " + clive->Voice(i));
     }
-    if (!message.After(" ").Matches("*ALL*"))
+    if (!message.After(" ").Matches("*ALL*", true))
     {
 	for (i=0; i<clive->Ops(); i++)
 	{
@@ -7621,9 +7630,9 @@ void ChanServ::do_clear_Voices(mstring mynick, mstring source, mstring params)
 		    message.c_str(), source.c_str(), channel.c_str());
 	}
 	Parent->chanserv.stats.i_Clear++;
-	Log(LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
+	LOG((LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		message.c_str(), channel.c_str());
+		message.c_str(), channel.c_str()));
     }
 }
 
@@ -7702,7 +7711,7 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
 	
 	clive->SendMode(mode);
     }
-    if (!message.After(" ").Matches("*ALL*"))
+    if (!message.After(" ").Matches("*ALL*", true))
     {
 	for (i=0; i<clive->Ops(); i++)
 	{
@@ -7710,9 +7719,9 @@ void ChanServ::do_clear_Modes(mstring mynick, mstring source, mstring params)
 		    message.c_str(), source.c_str(), channel.c_str());
 	}
 	Parent->chanserv.stats.i_Clear++;
-	Log(LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
+	LOG((LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		message.c_str(), channel.c_str());
+		message.c_str(), channel.c_str()));
     }
 }
 
@@ -7774,7 +7783,7 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
     {
 	clive->SendMode("-b " + clive->Ban(i));
     }
-    if (!message.After(" ").Matches("*ALL*"))
+    if (!message.After(" ").Matches("*ALL*", true))
     {
 	for (i=0; i<clive->Ops(); i++)
 	{
@@ -7782,9 +7791,9 @@ void ChanServ::do_clear_Bans(mstring mynick, mstring source, mstring params)
 		    message.c_str(), source.c_str(), channel.c_str());
 	}
 	Parent->chanserv.stats.i_Clear++;
-	Log(LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
+	LOG((LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		message.c_str(), channel.c_str());
+		message.c_str(), channel.c_str()));
     }
 }
 
@@ -7847,9 +7856,9 @@ void ChanServ::do_clear_All(mstring mynick, mstring source, mstring params)
     Parent->chanserv.stats.i_Clear++;
     ::notice(mynick, channel, Parent->getMessage("CS_COMMAND/CLEAR"),
 		message.c_str(), source.c_str(), channel.c_str());
-    Log(LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
+    LOG((LM_INFO, Parent->getLogMessage("CHANSERV/COMMAND"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	message.c_str(), channel.c_str());
+	message.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
@@ -7912,10 +7921,10 @@ void ChanServ::do_level_Set(mstring mynick, mstring source, mstring params)
 		    cstored->Level->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/LEVEL").c_str(),
 		    cstored->Level->Value());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LEVEL"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LEVEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		cstored->Level->Entry().c_str(), cstored->Level->Value(),
-		channel.c_str());
+		channel.c_str()));
     }
     else
     {
@@ -7970,10 +7979,10 @@ void ChanServ::do_level_Reset(mstring mynick, mstring source, mstring params)
 		    cstored->Level->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/LEVEL").c_str(),
 		    cstored->Level->Value());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LEVEL"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LEVEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		cstored->Level->Entry().c_str(), cstored->Level->Value(),
-		channel.c_str());
+		channel.c_str()));
     }
     else
     {
@@ -8150,9 +8159,9 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 		    cstored->Access->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str(),
 		    num);
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_CHANGE"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_CHANGE"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Access->Entry().c_str(), channel.c_str(), num);
+		cstored->Access->Entry().c_str(), channel.c_str(), num));
     }
     else
     {
@@ -8162,9 +8171,9 @@ void ChanServ::do_access_Add(mstring mynick, mstring source, mstring params)
 		    cstored->Access->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str(),
 		    num);
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_ADD"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_ADD"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Access->Entry().c_str(), channel.c_str(), num);
+		cstored->Access->Entry().c_str(), channel.c_str(), num));
     }
 }
 
@@ -8234,9 +8243,9 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Access->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str());
-	    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_DEL"),
+	    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_DEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Access->Entry().c_str(), channel.c_str());
+		cstored->Access->Entry().c_str(), channel.c_str()));
 	    cstored->Access_erase();
 	}
 	else
@@ -8262,9 +8271,9 @@ void ChanServ::do_access_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Access->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/ACCESS").c_str());
-	    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_DEL"),
+	    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/ACCESS_DEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Access->Entry().c_str(), channel.c_str());
+		cstored->Access->Entry().c_str(), channel.c_str()));
 	    cstored->Access_erase();
 	}
 	else
@@ -8481,9 +8490,9 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
 		who.c_str(), channel.c_str(),
 		Parent->getMessage(source, "LIST/AKICK").c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/AKICK_ADD"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/AKICK_ADD"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		who.c_str(), channel.c_str());
+		who.c_str(), channel.c_str()));
 
 	if (Parent->chanserv.IsLive(channel.c_str()))
 	{
@@ -8496,7 +8505,7 @@ void ChanServ::do_akick_Add(mstring mynick, mstring source, mstring params)
 		{
 		    // MAN these commands can get REAL long .. ;)
 		    if (Parent->nickserv.IsLive(Parent->chanserv.live[channel.LowerCase()].User(i)) &&
-			Parent->nickserv.live[Parent->chanserv.live[channel.LowerCase()].User(i).LowerCase()].Mask(Nick_Live_t::N_U_P_H).LowerCase().Matches(who.LowerCase()))
+			Parent->nickserv.live[Parent->chanserv.live[channel.LowerCase()].User(i).LowerCase()].Mask(Nick_Live_t::N_U_P_H).Matches(who, true))
 		    {
 			kickees.push_back(Parent->chanserv.live[channel.LowerCase()].User(i));
 		    }
@@ -8591,9 +8600,9 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Akick->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/AKICK").c_str());
-	    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/AKICK_DEL"),
+	    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/AKICK_DEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Akick->Entry().c_str(), channel.c_str());
+		cstored->Akick->Entry().c_str(), channel.c_str()));
 	    cstored->Akick_erase();
 	}
 	else
@@ -8623,9 +8632,9 @@ void ChanServ::do_akick_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 		    cstored->Akick->Entry().c_str(), channel.c_str(),
 		    Parent->getMessage(source, "LIST/AKICK").c_str());
-	    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/AKICK_DEL"),
+	    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/AKICK_DEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		cstored->Akick->Entry().c_str(), channel.c_str());
+		cstored->Akick->Entry().c_str(), channel.c_str()));
 	    cstored->Akick_erase();
 	}
 	else
@@ -8780,6 +8789,7 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
     }
     target = Parent->getSname(target);
 
+    { MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
     if (cstored->Greet_find(target))
     {
 	if (cstored->Greet->Entry()[0U] == '!' && source == target &&
@@ -8790,15 +8800,15 @@ void ChanServ::do_greet_Add(mstring mynick, mstring source, mstring params)
 	    return;
 	}
 	cstored->Greet_erase();
-    }
+    }}
     cstored->Greet_insert(option, target);
     Parent->chanserv.stats.i_Greet++;
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2"),
 		target.c_str(), channel.c_str(),
 		Parent->getMessage(source, "LIST/GREET").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/GREET_ADD"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/GREET_ADD"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	target.c_str(), channel.c_str());
+	target.c_str(), channel.c_str()));
 }
 
 void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
@@ -8832,7 +8842,8 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
     if (params.WordCount(" ") > 3 &&
 	cstored->GetAccess(source, "OVERGREET"))
     {
-	target = params.ExtractWord(3, " ").After("!");
+	target = params.ExtractWord(4, " ").After("@");
+	{ MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
 	if (!cstored->Greet_find(target))
 	{
 	    if (Parent->nickserv.IsStored(target) &&
@@ -8850,7 +8861,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 			Parent->getMessage(source, "LIST/GREET").c_str());
 		return;
 	    }
-	}
+	}}
     }
     else if (!cstored->GetAccess(source, "GREET"))
     {
@@ -8875,6 +8886,7 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 	}
 	target = Parent->getSname(target);
 
+	{ MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
 	if (cstored->Greet_find(target))
 	{
 	    if (cstored->Greet->Entry()[0U] == '!' &&
@@ -8889,16 +8901,16 @@ void ChanServ::do_greet_Del(mstring mynick, mstring source, mstring params)
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/DEL2"),
 			target.c_str(), channel.c_str(),
 			Parent->getMessage(source, "LIST/GREET").c_str());
-	    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/GREET_DEL"),
+	    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/GREET_DEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		target.c_str(), channel.c_str());
+		target.c_str(), channel.c_str()));
 	}
 	else
 	{
 	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
 			target.c_str(), channel.c_str(),
 			Parent->getMessage(source, "LIST/GREET").c_str());
-	}
+	}}
     }
 }
 
@@ -8926,7 +8938,7 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
     }
 
     mstring channel = params.ExtractWord(2, " ");
-    mstring target = source;
+    mstring target;
     bool all = false;
 
     if (!Parent->chanserv.IsStored(channel))
@@ -8945,38 +8957,52 @@ void ChanServ::do_greet_List(mstring mynick, mstring source, mstring params)
 	(Parent->commserv.IsList(Parent->commserv.OVR_View()) &&
 	Parent->commserv.list[Parent->commserv.OVR_View()].IsOn(source))))
     {
-	if (params.ExtractWord(3, " ").IsSameAs("all", true))
+	if (params.ExtractWord(4, " ").IsSameAs("all", true))
 	    all = true;
+	else
+	    target = params.ExtractWord(4, " ").After("@");
     }
     else if (!cstored->GetAccess(source, "GREET"))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
 	return;
     }
-
-    if (Parent->nickserv.stored[target.LowerCase()].Host() != "" &&
-	Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
+    else
     {
-	target = Parent->nickserv.stored[target.LowerCase()].Host();
+	target = source;
     }
-    target = Parent->getSname(target);
+
+    if (target != "" && Parent->nickserv.IsStored(target))
+    {
+	if (Parent->nickserv.stored[target.LowerCase()].Host() != "" &&
+	    Parent->nickserv.IsStored(Parent->nickserv.stored[target.LowerCase()].Host()))
+	{
+	    target = Parent->nickserv.stored[target.LowerCase()].Host();
+	}
+	target = Parent->getSname(target);
+    }
 
     bool found = false;
+    { MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Greet"));
     for (cstored->Greet = cstored->Greet_begin();
 		    cstored->Greet != cstored->Greet_end(); cstored->Greet++)
     {
-	if (cstored->Greet->Last_Modifier().LowerCase() == target.LowerCase()
-	    || all)
+	if (all || cstored->Greet->Last_Modifier().IsSameAs(target, true))
 	{
 	    ::send(mynick, source, "[%s] %s",
 				cstored->Greet->Last_Modifier().c_str(),
 				cstored->Greet->Entry().c_str());
 	    found = true;
 	}
-    }
+    }}
     if (!found)
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
+	if (all)
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/EMPTY2"),
+			channel.c_str(),
+			Parent->getMessage(source, "LIST/GREET").c_str());
+	else
+	    ::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2"),
 			target.c_str(), channel.c_str(),
 			Parent->getMessage(source, "LIST/GREET").c_str());
     }
@@ -9021,9 +9047,9 @@ void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "LIST/ADD2_NUMBER"),
 		cstored->Message_size(), channel.c_str(),
 		Parent->getMessage(source, "LIST/JOINMSG").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/MESSAGE_ADD"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/MESSAGE_ADD"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
@@ -9062,7 +9088,7 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 
     if (!target.IsNumber() || target.Contains("."))
     {
-	::send(mynick, source, Parent->getMessage(source, "LIST/WHOLENUMBER"));
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
 	return;
     }
     int num = atoi(target);
@@ -9082,6 +9108,7 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 	return;
     }
 
+    { MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Message"));
     if (cstored->Message_find(num))
     {
         cstored->Message_erase();
@@ -9089,16 +9116,16 @@ void ChanServ::do_message_Del(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "LIST/DEL2_NUMBER"),
 		num, channel.c_str(),
 		Parent->getMessage(source, "LIST/JOINMSG").c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/MESSAGE_DEL"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/MESSAGE_DEL"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-		channel.c_str());
+		channel.c_str()));
     }
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "LIST/NOTEXISTS2_NUMBER"),
 		num, channel.c_str(),
 		Parent->getMessage(source, "LIST/JOINMSG").c_str());
-    }
+    }}
 }
 
 void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
@@ -9155,13 +9182,15 @@ void ChanServ::do_message_List(mstring mynick, mstring source, mstring params)
 
     ::send(mynick, source, Parent->getMessage(source, "LIST/DISPLAY2"),
 	    channel.c_str(), Parent->getMessage(source, "LIST/JOINMSG").c_str());
+
+    { MLOCK(("ChanServ", "stored", cstored->Name().LowerCase(), "Message"));
     int i;
     for (i=1, cstored->Message = cstored->Message_begin();
 				cstored->Message != cstored->Message_end();
 				cstored->Message++, i++)
     {
         ::send(mynick, source, "%d. %s", i, cstored->Message->Entry().c_str());
-    }
+    }}
 }
 
 void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
@@ -9232,10 +9261,10 @@ void ChanServ::do_set_Founder(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/FOUNDER").c_str(),
 	    channel.c_str(), founder.c_str());
-    Log(LM_INFO, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_INFO, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/FOUNDER").c_str(),
-	channel.c_str(), founder.c_str());
+	channel.c_str(), founder.c_str()));
 }
 
 void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
@@ -9314,20 +9343,20 @@ void ChanServ::do_set_CoFounder(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/COFOUNDER").c_str(),
 	    channel.c_str());
-	Log(LM_INFO, Parent->getLogMessage("CHANSERV/UNSET"),
+	LOG((LM_INFO, Parent->getLogMessage("CHANSERV/UNSET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/COFOUNDER").c_str(),
-		channel.c_str());
+		channel.c_str()));
     }
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/COFOUNDER").c_str(),
 	    channel.c_str(), founder.c_str());
-	Log(LM_INFO, Parent->getLogMessage("CHANSERV/SET"),
+	LOG((LM_INFO, Parent->getLogMessage("CHANSERV/SET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/COFOUNDER").c_str(),
-		channel.c_str(), founder.c_str());
+		channel.c_str(), founder.c_str()));
     }
 }
 
@@ -9370,10 +9399,10 @@ void ChanServ::do_set_Description(mstring mynick, mstring source, mstring params
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/DESCRIPTION").c_str(),
 	    channel.c_str(), option.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/DESCRIPTION").c_str(),
-	channel.c_str(), option.c_str());
+	channel.c_str(), option.c_str()));
 }
 
 void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
@@ -9422,9 +9451,9 @@ void ChanServ::do_set_Password(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/PASSWORD").c_str(),
 	    channel.c_str(), password.c_str());
-    Log(LM_INFO, Parent->getLogMessage("CHANSERV/SET_PASSWORD"),
+    LOG((LM_INFO, Parent->getLogMessage("CHANSERV/SET_PASSWORD"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
@@ -9483,20 +9512,20 @@ void ChanServ::do_set_Email(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/EMAIL").c_str(),
 	    channel.c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNSET"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNSET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/EMAIL").c_str(),
-		channel.c_str());
+		channel.c_str()));
     }
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/EMAIL").c_str(),
 	    channel.c_str(), option.c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/EMAIL").c_str(),
-		channel.c_str(), option.c_str());
+		channel.c_str(), option.c_str()));
     }
 }
 
@@ -9543,20 +9572,20 @@ void ChanServ::do_set_URL(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/URL").c_str(),
 	    channel.c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNSET"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNSET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/URL").c_str(),
-		channel.c_str());
+		channel.c_str()));
     }
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/URL").c_str(),
 	    channel.c_str(), ("http://" + option).c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/URL").c_str(),
-		channel.c_str(), ("http://" + option).c_str());
+		channel.c_str(), ("http://" + option).c_str()));
     }
 }
 
@@ -9596,20 +9625,20 @@ void ChanServ::do_set_Comment(mstring mynick, mstring source, mstring params)
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNSET"),
 	    Parent->getMessage(source, "CS_SET/COMMENT").c_str(),
 	    channel.c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNSET"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNSET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/COMMENT").c_str(),
-		channel.c_str());
+		channel.c_str()));
     }
     else
     {
 	::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/COMMENT").c_str(),
 	    channel.c_str(), option.c_str());
-	Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+	LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 		Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 		Parent->getMessage("CS_SET/COMMENT").c_str(),
-		channel.c_str(), option.c_str());
+		channel.c_str(), option.c_str()));
     }
 }
 
@@ -9706,10 +9735,10 @@ void ChanServ::do_set_BanTime(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
 	    channel.c_str(), ToHumanTime(num, source).c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/BANTIME").c_str(),
-	channel.c_str(), ToHumanTime(num, source).c_str());
+	channel.c_str(), ToHumanTime(num, source).c_str()));
 }
 
 void ChanServ::do_set_PartTime(mstring mynick, mstring source, mstring params)
@@ -9760,10 +9789,10 @@ void ChanServ::do_set_PartTime(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/SET_TO"),
 	    Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
 	    channel.c_str(), ToHumanTime(num, source).c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/PARTTIME").c_str(),
-	channel.c_str(), ToHumanTime(num, source).c_str());
+	channel.c_str(), ToHumanTime(num, source).c_str()));
 }
 
 void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
@@ -9829,12 +9858,12 @@ void ChanServ::do_set_KeepTopic(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/KEEPTOPIC").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
@@ -9900,12 +9929,12 @@ void ChanServ::do_set_TopicLock(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/KEEPTOPIC").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
@@ -9971,12 +10000,12 @@ void ChanServ::do_set_Private(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/PRIVATE").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
@@ -10042,12 +10071,12 @@ void ChanServ::do_set_SecureOps(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/SECUREOPS").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
@@ -10113,12 +10142,12 @@ void ChanServ::do_set_Secure(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/SECURE").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
@@ -10177,12 +10206,12 @@ void ChanServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/NOEXPIRE").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
@@ -10248,12 +10277,12 @@ void ChanServ::do_set_Anarchy(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/ANARCHY").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_KickOnBan(mstring mynick, mstring source, mstring params)
@@ -10319,12 +10348,12 @@ void ChanServ::do_set_KickOnBan(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/KICKONBAN").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
@@ -10390,12 +10419,12 @@ void ChanServ::do_set_Restricted(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/RESTRICTED").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
@@ -10470,12 +10499,12 @@ void ChanServ::do_set_Join(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/JOIN").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
     if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
 	!Parent->chanserv.live[channel.LowerCase()].IsIn(
 		Parent->chanserv.FirstName()))
@@ -10548,11 +10577,11 @@ void ChanServ::do_set_Revenge(mstring mynick, mstring source, mstring params)
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
 	    channel.c_str(),
 	    Parent->getMessage(source, "CS_SET/REV_" + option.UpperCase()).c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/SET"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/REVENGE").c_str(),
 	channel.c_str(),
-	Parent->getMessage("CS_SET/REV_" + option.UpperCase()).c_str());
+	Parent->getMessage("CS_SET/REV_" + option.UpperCase()).c_str()));
 }
 
 void ChanServ::do_lock_Mlock(mstring mynick, mstring source, mstring params)
@@ -10636,10 +10665,10 @@ void ChanServ::do_lock_BanTime(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
 	    channel.c_str(), ToHumanTime(num).c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/BANTIME").c_str(),
-	channel.c_str(), ToHumanTime(num).c_str());
+	channel.c_str(), ToHumanTime(num).c_str()));
 }
 
 void ChanServ::do_lock_PartTime(mstring mynick, mstring source, mstring params)
@@ -10685,10 +10714,10 @@ void ChanServ::do_lock_PartTime(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/LOCKED"),
 	    Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
 	    channel.c_str(), ToHumanTime(num, source).c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/PARTTIME").c_str(),
-	channel.c_str(), ToHumanTime(num, source).c_str());
+	channel.c_str(), ToHumanTime(num, source).c_str()));
 }
 
 void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
@@ -10749,12 +10778,12 @@ void ChanServ::do_lock_KeepTopic(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/KEEPTOPIC").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
@@ -10815,12 +10844,12 @@ void ChanServ::do_lock_TopicLock(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/TOPICLOCK").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
@@ -10881,12 +10910,12 @@ void ChanServ::do_lock_Private(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/PRIVATE").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
@@ -10947,12 +10976,12 @@ void ChanServ::do_lock_SecureOps(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/SECUREOPS").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
@@ -11013,12 +11042,12 @@ void ChanServ::do_lock_Secure(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/SECURE").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
@@ -11079,12 +11108,12 @@ void ChanServ::do_lock_Anarchy(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/ANARCHY").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_lock_KickOnBan(mstring mynick, mstring source, mstring params)
@@ -11145,12 +11174,12 @@ void ChanServ::do_lock_KickOnBan(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/KICKONBAN").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params)
@@ -11211,12 +11240,12 @@ void ChanServ::do_lock_Restricted(mstring mynick, mstring source, mstring params
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/RESTRICTED").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
 }
 
 void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
@@ -11286,12 +11315,12 @@ void ChanServ::do_lock_Join(mstring mynick, mstring source, mstring params)
 	    channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
 		Parent->getMessage(source, "VALS/OFF").c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/JOIN").c_str(),
 	channel.c_str(), onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON").c_str() :
-		Parent->getMessage(source, "VALS/OFF").c_str());
+		Parent->getMessage(source, "VALS/OFF").c_str()));
     if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
 	!Parent->chanserv.live[channel.LowerCase()].IsIn(
 		Parent->chanserv.FirstName()))
@@ -11360,11 +11389,11 @@ void ChanServ::do_lock_Revenge(mstring mynick, mstring source, mstring params)
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
 	    channel.c_str(),
 	    Parent->getMessage(source, "CS_SET/REV_" + option.UpperCase()).c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/LOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/REVENGE").c_str(),
 	channel.c_str(),
-	Parent->getMessage("CS_SET/REV_" + option.UpperCase()).c_str());
+	Parent->getMessage("CS_SET/REV_" + option.UpperCase()).c_str()));
 }
 
 void ChanServ::do_unlock_Mlock(mstring mynick, mstring source, mstring params)
@@ -11438,10 +11467,10 @@ void ChanServ::do_unlock_BanTime(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/BANTIME").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/BANTIME").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_PartTime(mstring mynick, mstring source, mstring params)
@@ -11483,10 +11512,10 @@ void ChanServ::do_unlock_PartTime(mstring mynick, mstring source, mstring params
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/PARTTIME").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/PARTTIME").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring params)
@@ -11528,10 +11557,10 @@ void ChanServ::do_unlock_KeepTopic(mstring mynick, mstring source, mstring param
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/KEEPTOPIC").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/KEEPTOPIC").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring params)
@@ -11574,10 +11603,10 @@ void ChanServ::do_unlock_TopicLock(mstring mynick, mstring source, mstring param
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/TOPICLOCK").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/TOPICLOCK").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
@@ -11619,10 +11648,10 @@ void ChanServ::do_unlock_Private(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/PRIVATE").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/PRIVATE").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring params)
@@ -11664,10 +11693,10 @@ void ChanServ::do_unlock_SecureOps(mstring mynick, mstring source, mstring param
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/SECUREOPS").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/SECUREOPS").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
@@ -11709,10 +11738,10 @@ void ChanServ::do_unlock_Secure(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/SECURE").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/SECURE").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
@@ -11754,10 +11783,10 @@ void ChanServ::do_unlock_Anarchy(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/ANARCHY").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/ANARCHY").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_KickOnBan(mstring mynick, mstring source, mstring params)
@@ -11799,10 +11828,10 @@ void ChanServ::do_unlock_KickOnBan(mstring mynick, mstring source, mstring param
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/KICKONBAN").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/KICKONBAN").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring params)
@@ -11844,10 +11873,10 @@ void ChanServ::do_unlock_Restricted(mstring mynick, mstring source, mstring para
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/RESTRICTED").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/RESTRICTED").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
@@ -11889,10 +11918,10 @@ void ChanServ::do_unlock_Join(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/JOIN").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/JOIN").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
@@ -11934,10 +11963,10 @@ void ChanServ::do_unlock_Revenge(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "CS_COMMAND/UNLOCKED"),
 	    Parent->getMessage(source, "CS_SET/REVENGE").c_str(),
 	    channel.c_str());
-    Log(LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
+    LOG((LM_DEBUG, Parent->getLogMessage("CHANSERV/UNLOCK"),
 	Parent->nickserv.live[source.LowerCase()].Mask(Nick_Live_t::N_U_P_H).c_str(),
 	Parent->getMessage("CS_SET/REVENGE").c_str(),
-	channel.c_str());
+	channel.c_str()));
 }
 
 

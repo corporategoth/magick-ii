@@ -25,6 +25,11 @@ static const char *ident_server_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.52  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.51  2000/09/27 11:21:37  prez
 ** Added a BURST mode ...
 **
@@ -178,6 +183,7 @@ class Protocol
      *
      * 2000 = NICK nick hops signon-time mode user host server :realname
      * 2001 = NICK nick hops signon-time mode user host server service :realname
+     * 2002 = NICK nick hops signon-time mode user host althost server helper :realname
      */
     unsigned int i_Signon;
     unsigned int i_Modes; /* Modes per line */

@@ -25,6 +25,11 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.47  2000/10/18 18:46:33  prez
 ** Well, mstring still coredumps, but it gets past the initial loading of
 ** all the STATIC (or const) strings, etc -- now its coring on loading a
@@ -146,6 +151,14 @@ public:
     static size_t AllLocks();
 };
 
+/* We need to ditch these for the below operator new */
+#if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
+#undef new
+#undef delete
+#endif
+#undef malloc
+#undef free
+
 class mLock_Read : public ACE_RW_Thread_Mutex
 {
 	typedef ACE_RW_Thread_Mutex base;
@@ -191,6 +204,17 @@ public:
 		{ mLOCK::memory_area.free(ptr); }
 };
 
+/* I hate having to do this ... but *shrug*
+#if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
+#define new ::new(MP_FUNCNAME, __FILE__, __LINE__)
+#define delete __mp_pushdelstack(MP_FUNCNAME, __FILE__, __LINE__), ::delete
+#define malloc(l) __mp_alloc((l), 0, MP_AT_MALLOC, MP_FUNCNAME, __FILE__, \
+				__LINE__, 0)
+#define free(p) __mp_free((p), MP_AT_FREE, MP_FUNCNAME, __FILE__, __LINE__, 0)
+#else
+#    define malloc	ACE_OS::malloc
+#    define free	ACE_OS::free
+#endif
 
 #define RLOCK(y)   mVarArray __lockR1_VarArray y; mLOCK __lockR1(L_Read,  __lockR1_VarArray)
 #define RLOCK2(y)  mVarArray __lockR2_VarArray y; mLOCK __lockR2(L_Read,  __lockR2_VarArray)

@@ -1144,21 +1144,22 @@
 13 =REGD::itself with a '!' character.
 
 [CHANSERV/GREET/DEL]
-01 =REGD::GREET <channel> DEL [nickname]
+01 =REGD::GREET <channel> DEL [[@]nickname]
 02 =REGD::
 03 =REGD::This will remove your channel greeting, and services
 04 =REGD::will no longer announce your greeting on joining a
 05 =REGD::channel.  If you have OVERGREET access, you may delete
 06 =REGD::another user's greeting by specifying their nickname
-07 =REGD::after the DEL keyword.
+07 =REGD::after the DEL keyword.  The '@' character is ignored.
 
 [CHANSERV/GREET/LIST]
-01 =REGD::GREET <channel> LIST [ALL]
+01 =REGD::GREET <channel> LIST [ALL|[@]nickname]
 02 =REGD::
 03 =REGD::This will show you what your greeting is currently set
-04 =REGD::to, or if you specify ALL after the LIST keyword, and
-05 =REGD::have OVERGREET access, it will show you the greetings
-06 =REGD::of all users in the channel.
+04 =REGD::to, or if you specify ALL or a nickname after the LIST
+05 =REGD::keyword and have OVERGREET access, it will show you the
+06 =REGD::greetings of all users or the user specified respectively.
+07 =REGD::The '@' character is ignored.
 
 [CHANSERV/MESSAGE]
 01 =REGD::Often, channels will want to send a notice to users as
@@ -2545,18 +2546,28 @@
 07 =ADMIN::get rid of this phantom server by SQUITing it.
 
 [OPERSERV/ON]
-01 =SADMIN::ON [service]
+01 =SADMIN::ON <AUTO|LOG|MSG> [service]
 02 =SADMIN::
-03 =SADMIN::This turns message processing back on again.  If
-04 =SADMIN::a service is specified, it will only turn that
-05 =SADMIN::service back on.
+03 =SADMIN::This turns processing back on again for the type
+04 =SADMIN::specified.  AUTO will turn on events processing,
+05 =SADMIN::LOG will re-activate the output log, and MSG will
+06 =SADMIN::turn allow services to once again take messages
+07 =SADMIN::from clients.  If a service is specified, it will
+08 =SADMIN::turn on messages for that service (assuming it
+09 =SADMIN::was turned OFF individually).  The service is
+10 =SADMIN::ignored for anything but MSG.
 
 [OPERSERV/OFF]
-01 =SADMIN::OFF [service] <reason>
+01 =SADMIN::OFF <AUTO|LOG|MSG> [service]
 02 =SADMIN::
-03 =SADMIN::This will turn off all message processing except
-04 =SADMIN::for the IDENTIFY and ON commands.  If a service
-05 =SADMIN::is specified, it will only turn that service off.
+03 =SADMIN::This will turn off processing for the type specified.
+04 =SADMIN::AUTO will turn off the events processing, LOG will
+05 =SADMIN::stop the output log, and MSG will stop clients from
+06 =SADMIN::being able to message servics.  If a service is
+07 =SADMIN::specified, it will turn off messages for that service
+08 =SADMIN::only.  The service is ignored for anythinb but MSG.
+09 =SADMIN::Under any circumstance, IDENTIFY and ON will be
+10 =SADMIN::available through this service.
 
 [OPERSERV/HTM]
 01 =SOP::HTM [ON|OFF|SET <value>]

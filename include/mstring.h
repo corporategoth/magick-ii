@@ -25,8 +25,10 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.60  2000/12/12 02:52:14  prez
-** Moved the do_nothing function
+** Revision 1.61  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
 **
 ** Revision 1.59  2000/12/09 20:16:41  prez
 ** Fixed SubString and Left to have correct count/end possitions.  Also
@@ -122,12 +124,29 @@ static const char *ident_mstring_h = "@(#) $Id$";
  */
 #define ALLOCTYPE	3
 
+
+#ifdef MAGICK_LOCKS_WORK
+
+/* Commented out to stop mstring locks for now */
+/* #define MSTRING_LOCKS_WORK */
+
+/* MUST have an acquire_read and acquire_write! */
+#define LOCK_TYPE	ACE_RW_Thread_Mutex
+
+/* MUST have an acquire that defaults to WRITE */
+#define UNIQ_LOCK_TYPE	ACE_Thread_Mutex
+
+#endif
+
+/* --------------- End of hard-config section --------------- */
+
+
 #if ALLOCTYPE == 4
 
 /* Use our own Memory Map for clustered alloc */
 #include "mmemory.h"
 #define ALLOC(X, Y)	X = (char *) memory_area.alloc(Y)
-#define DEALLOC(X)	memory_area.dealloc(X)
+#define DEALLOC(X)	memory_area.dealloc(X); X = NULL
 
 #elif ALLOCTYPE == 3
 
@@ -139,19 +158,19 @@ static const char *ident_mstring_h = "@(#) $Id$";
 #define ALLOC(X, Y)	X = new char[Y]; \
 			if (X == NULL) { errno = ENOMEM; }
 #endif
-#define DEALLOC(X)	delete [] X
+#define DEALLOC(X)	delete [] X; X = NULL
 
 #elif ALLOCTYPE == 2
 
 /* Standard C++ Allocation */
 #define ALLOC(X, Y)	X = new char[Y]
-#define DEALLOC(X)	delete [] X
+#define DEALLOC(X)	delete [] X; X = NULL
 
 #else
 
 /* Standard C Allocation */
 #define ALLOC(X, Y)	X = (char *) malloc(Y)
-#define DEALLOC(X)	free(X)
+#define DEALLOC(X)	free(X); X = NULL
 
 #endif
 
@@ -196,7 +215,7 @@ extern const mstring IRC_Reverse;
 extern const mstring IRC_Colour;
 extern const mstring IRC_Off;
 
-bool match_wild (const char *pattern, const char *str, bool docase);
+bool match_wild (const char *pattern, const char *str, bool nocase);
 bool operator== (const mstring &lhs, const mstring &rhs);
 bool operator== (const mstring &lhs, const string &rhs);
 bool operator== (const mstring &lhs, const char *rhs);
@@ -286,36 +305,41 @@ class mstring
 #if ALLOCTYPE == 4
     static MemoryManager<ACE_Thread_Mutex> memory_area;
 #endif
+#ifdef MSTRING_LOCKS_WORK
+    unsigned long lock_id;
+    LOCK_TYPE *i_lock;
+#endif
+    void init();
+    int occurances(const char *str) const;
 
 public:
     mstring()
-	{ i_str = NULL; i_len = 0, i_res = 0; }
+	{ init(); }
     mstring(const mstring &in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const string &in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const char *in, size_t length)
-	{ i_str = NULL; copy(in, length); }
+	{ init(); copy(in, length); }
     mstring(const char *in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const char in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const unsigned char in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const int in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const unsigned int in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const long in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const unsigned long in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const float in)
-	{ i_str = NULL; copy(in); }
+	{ init(); copy(in); }
     mstring(const double in)
-	{ i_str = NULL; copy(in); }
-    ~mstring()
-	{ if (i_str != NULL) DEALLOC(i_str); }
+	{ init(); copy(in); }
+    ~mstring();
 
     void copy(const char *in, size_t length);
     void append(const char *in, size_t length);
@@ -324,17 +348,12 @@ public:
     int compare(const char *in, size_t length) const;
     void swap(mstring &in);
     const char *c_str() const;
-    char first() const;
-    char last() const;
-
-    size_t length() const
-	{ return i_len; }
-    size_t size() const
-	{ return i_len; }
-    size_t capacity() const
-	{ return i_res; }
-    bool empty() const
-	{ return (i_str == NULL); }
+    const char first() const;
+    const char last() const;
+    size_t length() const;
+    size_t size() const;
+    size_t capacity() const;
+    bool empty() const;
 
     // Aliases for the above ...
     void copy(const mstring &in)
@@ -352,9 +371,9 @@ public:
     void copy(const unsigned int in)
 	{ mstring out; out.Format("%u", in); copy(out); }
     void copy(const long in)
-	{ mstring out; out.Format("%d", in); copy(out); }
+	{ mstring out; out.Format("%ld", in); copy(out); }
     void copy(const unsigned long in)
-	{ mstring out; out.Format("%u", in); copy(out); }
+	{ mstring out; out.Format("%lu", in); copy(out); }
     void copy(const float in)
 	{ mstring out; out.Format("%f", in); copy(out); }
     void copy(const double in)
@@ -429,7 +448,7 @@ public:
     int compare(const double in) const
 	{ mstring out(in); return compare(in); }
 
-    char operator[] (size_t off) const;
+    const char operator[] (size_t off) const;
     operator const char *() const
 	{ return c_str(); }
     operator const string () const
@@ -559,7 +578,6 @@ public:
 
 
     // str here is used completely
-    int occurances(const char *str) const;
     int find(const char *str, int occurance = 1) const;
     int rfind(const char *str, int occurance = 1) const;
     void replace(const char *find, const char *replace, bool all = true);

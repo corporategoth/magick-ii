@@ -21,6 +21,11 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.27  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.26  2000/12/09 11:15:11  prez
 ** Changed string.h -> strings.h for sunos compliance.
 **
@@ -252,17 +257,25 @@
 
 #define atoi(x)		ACE_OS::strtol(x, NULL, 10)
 #define atol(x)		ACE_OS::strtol(x, NULL, 10)
-#define atoui(x)	ACE_OS::strtoul(x, NULL, 10)
-#define atoul(x)	ACE_OS::strtoul(x, NULL, 10)
 #define atof(x)		ACE_OS::strtod(x, NULL)
 #define atod(x)		ACE_OS::strtod(x, NULL)
+
+/* ACE's linux exclusion is too large, so use the
+ * underlying OS strtoul for this, else you'll get
+ * a standard long that doesnt convert to an unsigned!
+ *
+#define atoui(x)	ACE_OS::strtoul(x, NULL, 10)
+#define atoul(x)	ACE_OS::strtoul(x, NULL, 10)
+*/
+#define atoui(x)	strtoul(x, NULL, 10)
+#define atoul(x)	strtoul(x, NULL, 10)
 
 /* Debugging software -- if we dont use it, use ACE equivs */
 #if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
 #  include <mpatrol.h>
 #else
-// #    define malloc	ACE_OS::malloc
-// #    define calloc	ACE_OS::calloc
+#    define malloc	ACE_OS::malloc
+#    define calloc	ACE_OS::calloc
 // # define memalign	ACE_OS::memalign
 // # define valloc	ACE_OS::valloc
 // # define pvalloc	ACE_OS::pvalloc
@@ -270,10 +283,10 @@
 // # define strndup	ACE_OS::strndup
 // # define strsave	ACE_OS::strsave
 // # define strnsave	ACE_OS::strnsave
-// #    define realloc	ACE_OS::realloc
+#    define realloc	ACE_OS::realloc
 // # define recalloc	ACE_OS::recalloc
 // # define expand	ACE_OS::expand
-// #    define free	ACE_OS::free
+#    define free	ACE_OS::free
 // # define cfree	ACE_OS::cfree
 // # define new		ACE_OS::new
 // # define new[]	ACE_OS::new[]
@@ -292,9 +305,6 @@
 #endif
 
 using namespace std;
-
-extern size_t Log(ACE_Log_Priority priority, const char *messages, ...);
-extern size_t LogV(ACE_Log_Priority priority, const char *messages, va_list argptr);
 
 #else /* __cplusplus */
 

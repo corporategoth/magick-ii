@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.54  2000/10/10 11:47:51  prez
 ** mstring is re-written totally ... find or occurances
 ** or something has a problem, but we can debug that :)
@@ -263,8 +268,8 @@ mFile::mFile(mstring name, mstring mode)
     MLOCK(("mFile", name));
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
-	Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
-				name.c_str(), mode.c_str());
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
+				name.c_str(), mode.c_str()));
     }
     else
 	i_name = name;
@@ -283,8 +288,8 @@ bool mFile::Open(mstring name, mstring mode)
     MLOCK(("mFile", name));
     if ((fd = ACE_OS::fopen(name.c_str(), mode.c_str())) == NULL)
     {
-	Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
-				name.c_str(), mode.c_str());
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/COULDNOTOPEN"),
+				name.c_str(), mode.c_str()));
     }
     else
 	i_name = name;
@@ -672,8 +677,8 @@ unsigned long FileMap::FindAvail(FileMap::FileType type)
 	filenum++;
     }
 
-    Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEMAPFULL"),
-		(int) type);
+    LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/FILEMAPFULL"),
+		(int) type));
     RET(0);
 }
 
@@ -703,8 +708,8 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 	    }
 	}
 	mFile::Erase(filename);
-	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE1"),
-		(int) type, num);
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE1"),
+		(int) type, num));
     }
     else
     {
@@ -714,8 +719,8 @@ bool FileMap::Exists(FileMap::FileType type, unsigned long num)
 	    if (i_FileMap[type].find(num) != i_FileMap[type].end())
 	    {
 	    	i_FileMap[type].erase(num);
-		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE2"),
-			(int) type, num);
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/MISSING_FILE2"),
+			(int) type, num));
 	    }
 	}
     }
@@ -1064,8 +1069,8 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
     i_XferTotal = 0;
     i_LastData = Now();
     DumpE();
-    Log(LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
-		i_DccId, i_Source.c_str(), "SEND");
+    LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
+		i_DccId, i_Source.c_str(), "SEND"));
     CP(("DCC %d initialized", i_DccId));
 }
 
@@ -1122,8 +1127,8 @@ DccXfer::DccXfer(unsigned long dccid, mSocket socket,
     i_XferTotal = 0;
     i_LastData = Now();
     DumpE();
-    Log(LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
-		i_DccId, i_Source.c_str(), "GET");
+    LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_INIT"),
+		i_DccId, i_Source.c_str(), "GET"));
     CP(("DCC %d initialized", i_DccId));
 }
 
@@ -1141,9 +1146,13 @@ DccXfer::~DccXfer()
 
     if ((i_Filesize > 0) ? i_Total == i_Filesize
 			  : i_Total > 0)
-	Log(LM_DEBUG, Parent->getLogMessage("OTHER/DCC_CLOSE"), i_DccId);
+    {
+	LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_CLOSE"), i_DccId));
+    }
     else
-	Log(LM_DEBUG, Parent->getLogMessage("OTHER/DCC_CANCEL"), i_DccId);
+    {
+	LOG((LM_DEBUG, Parent->getLogMessage("OTHER/DCC_CANCEL"), i_DccId));
+    }
 
     if (!i_Socket.IsConnected())
     {
@@ -1621,7 +1630,9 @@ int DccMap::svc(void)
     mThread::Attach(tt_MAIN);
     NFT("DccMap::svc");
 
+    Parent->AddLogInstance(ACE_LOG_MSG);
     unsigned long WorkId;
+    FLUSH();
     while (!Parent->Shutdown())
     {
 	/*COM(("Active Size is %d", active.size()));*/
@@ -1675,8 +1686,8 @@ int DccMap::svc(void)
 	}
 	FLUSH(); // Force TRACE output dump
     }
-    mThread::Detach();
-    return 0;
+    Parent->DelLogInstance(ACE_LOG_MSG);
+    DRET(0);
 }
 
 vector<unsigned long> DccMap::GetList(mstring in)

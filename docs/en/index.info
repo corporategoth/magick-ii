@@ -1,5 +1,5 @@
 This is index.info, produced by makeinfo version 4.0 from
-/tmp/sgmltmp.index5740.info.2.
+/tmp/sgmltmp.index7908.info.2.
 
    \input texinfo
 
@@ -881,6 +881,16 @@ operates.
      memory, etc).  However it slows the program down dramatically.
      Turning this on causes a new log file (mpatrol.log) to be created.
 
+`--enable-efence'
+     -disable-efence This turns on or off the usage of the memory error
+     checking and profiling software Electric Fence
+     (http://ftp://ftp.perens.com/pub/ElectricFence).  This software is
+     useful in the fact it looks for memory access errors (eg.
+     accessing unitialised memory, exceeding memory bounds, not freeing
+     memory, etc).  However it slows the program down dramatically.
+     Turning this on causes the program to stop at the first memory
+     problem (so it is recommended you run this in a debugger).
+
 `--with-keylen=size'
      This is the maximum size of the key file, and the input key that
      you may type in.  This defaults to 1024, and you should not need
@@ -1637,15 +1647,15 @@ Node: Optional Features25152
 Node: Specifying the System Type25922
 Node: Sharing Defaults26945
 Node: Operation Controls27591
-Node: Security Tips32160
-Node: Usage34173
-Node: Support files34345
-Node: General Usage38944
-Node: Functionality44712
-Node: Questions and Answers48519
-Node: My IRCD isn't supported what can I do?48761
-Node: I like these services and want to pay the author!49527
-Node: License50297
-Node: Copyright65789
+Node: Security Tips32710
+Node: Usage34723
+Node: Support files34895
+Node: General Usage39494
+Node: Functionality45262
+Node: Questions and Answers49069
+Node: My IRCD isn't supported what can I do?49311
+Node: I like these services and want to pay the author!50077
+Node: License50847
+Node: Copyright66339
 
 End Tag Table

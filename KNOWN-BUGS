@@ -20,19 +20,9 @@ UNVERSAL
   are already on (eg. adding to ADMIN when they're already
   on OPER) it will not remove them from the subcommittee,
   and they will appear twice.
+- Might later want to enable the mstring locking (tho now
+  it doesnt seem to be causing a problem).
 
 SYSTEM SPECIFIC
 ---------------
 
-FreeBSD (3.x, 4.x):
-
-- The log file is not appended to properly, it is overwritten
-  from the start - requiring a remove of the log file each
-  restart (which is annoying!).
-
-Linux glibc 2.1.3
-
-- This version of glibc is known to coredump when trying to
-  allocate memory -- It is unknown if other versions of glibc
-  do also (its only been tested on this version of glibc).
-  TODO: Test on glibc 2.2, and previous versions.

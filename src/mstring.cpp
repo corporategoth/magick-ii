@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.89  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.88  2000/12/10 07:34:51  prez
 ** Added a flush to the no memory error output.
 **
@@ -170,6 +175,9 @@ static const char *ident = "@(#)$Id$";
 MemoryManager<ACE_Thread_Mutex> mstring::memory_area;
 #endif
 
+static unsigned long next_lock_id = 0;
+/* static set<unsigned long> lock_id_array; */
+
 #ifdef WIN32
 mstring const DirSlash="\\";
 #else
@@ -185,15 +193,90 @@ mstring const IRC_Off((char) 15);	// ^O
 #define NOMEM { \
 	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
 	ACE_OS::fflush(stderr); \
+	LOCK_REL; \
 	return; }
+
 #define NOMEMR(X) { \
 	ACE_OS::fprintf(stderr, "Out of memory on line %d of %s\n", __LINE__, __FILE__); \
 	ACE_OS::fflush(stderr); \
+	LOCK_REL; \
 	return X; }
-	
+
+#ifdef MSTRING_LOCKS_WORK
+
+#define LOCK_READ \
+	if (i_lock != NULL && i_lock->acquire_read() < 0) { \
+		ACE_OS::fprintf(stderr, "WARNING: Failed to acquire read lock on line %d of %s\n", __LINE__, __FILE__); \
+		ACE_OS::fflush(stderr); }
+
+#define LOCK_WRITE \
+	if (i_lock != NULL && i_lock->acquire_write() < 0) { \
+		ACE_OS::fprintf(stderr, "WARNING: Failed to acquire write lock on line %d of %s\n", __LINE__, __FILE__); \
+		ACE_OS::fflush(stderr); }
+
+#define LOCK_REL \
+	if (i_lock != NULL && i_lock->release() < 0) { \
+		ACE_OS::fprintf(stderr, "WARNING: Failed to release lock on line %d of %s\n", __LINE__, __FILE__); \
+		ACE_OS::fflush(stderr); }
+
+#else
+
+#define LOCK_READ  do_nothing()
+#define LOCK_WRITE do_nothing()
+#define LOCK_REL   do_nothing()
+
+#endif
+
+void mstring::init()
+{
+#ifdef MSTRING_LOCKS_WORK
+    UNIQ_LOCK_TYPE uniq_lock("mstring_lock_id");
+    uniq_lock.acquire();
+/*    while (lock_id_array.find(next_lock_id) != lock_id_array.end())
+	next_lock_id++;
+    lock_id_array.insert(next_lock_id); */
+    lock_id = next_lock_id;
+    next_lock_id++;
+    uniq_lock.release();
+
+    char lockname[30];
+    sprintf(lockname, "mstring_%08x%08x", time(NULL), next_lock_id);
+    i_lock = new LOCK_TYPE(lockname);
+#endif
+
+    LOCK_WRITE;
+    i_len = 0;
+    i_res = 0;
+    i_str = NULL;
+    LOCK_REL;
+}
+
+mstring::~mstring()
+{
+    LOCK_WRITE;
+
+    if (i_str != NULL)
+	DEALLOC(i_str);
+    i_len = 0;
+    i_res = 0;
+
+    LOCK_REL;
+
+#ifdef MSTRING_LOCKS_WORK
+    if (i_lock != NULL)
+	delete i_lock;
+
+/*    UNIQ_LOCK_TYPE uniq_lock("mstring_lock_id");
+    uniq_lock.acquire();
+    lock_id_array.erase(lock_id);
+    uniq_lock.release(); */
+#endif
+}
 
 void mstring::copy(const char *in, size_t length)
 {
+    LOCK_WRITE;
+
     if (i_str != NULL)
 	DEALLOC(i_str);
     if (length && in)
@@ -212,16 +295,21 @@ void mstring::copy(const char *in, size_t length)
     {
 	i_len = 0;
 	i_res = 0;
-	i_str = NULL;
     }
+
+    LOCK_REL;
 }
 
 void mstring::append(const char *in, size_t length)
 {
-    if (length == 0)
+    if (length == 0 || in == NULL)
 	return;
+
+    LOCK_WRITE;
+
     if (i_str == NULL)
     {
+	LOCK_REL;
 	copy(in, length);
 	return;
     }
@@ -254,34 +342,45 @@ void mstring::append(const char *in, size_t length)
     }
 
     i_len += length;
+
+    LOCK_REL;
 }
 
 void mstring::erase(int begin, int end)
 {
+    LOCK_WRITE;
+
     size_t i, oldres = i_res;
     char *tmp = NULL;
     if (i_str == NULL)
+    {
+	LOCK_REL;
 	return;
+    }
 
+    if (end < 0 || end >= i_len)
+	if (begin >= i_len)
+	{
+	    LOCK_REL;
+	    return;
+	}
+	else
+	    end = i_len-1;
     if (begin < 0)
 	begin = 0;
-    if (end < 0 || end > i_len)
-	end = i_len;
     if (begin > end)
     {
 	i = begin;
 	begin = end;
 	end = i;
     }
-    if (begin > i_len)
-	return;
 
     if (begin > 0 || end+1 < i_len)
     {
 	i=0;
 	if (i_res==0)
 	    i_res = 2;
-	while (i_res / 2 > i_len - (end-begin))
+	while (i_res / 2 > i_len - ((end+1)-begin))
 	    i_res /= 2;
 	if (i_res != oldres)
 	{
@@ -303,12 +402,10 @@ void mstring::erase(int begin, int end)
 
 	if (end+1 < i_len)
 	{
-	    memcpy(&tmp[i], &i_str[end+1], i_len-end+1);
-	    i_len -= (end-begin);
-	    memset(&tmp[i_len], 0, i_res-i_len);
+	    memcpy(&tmp[i], &i_str[end+1], i_len-(end+1));
 	}
-	else
-	    i_len -= end-begin;
+	i_len -= (end+1)-begin;
+	memset(&tmp[i_len], 0, i_res-i_len);
     }
     if (tmp != i_str)
     {
@@ -322,6 +419,8 @@ void mstring::erase(int begin, int end)
 	i_len = 0;
 	i_res = 0;
     }
+
+    LOCK_REL;
 }
 
 void mstring::insert(size_t pos, const char *in, size_t length)
@@ -332,8 +431,11 @@ void mstring::insert(size_t pos, const char *in, size_t length)
     if (length == 0)
 	return;
 
+    LOCK_WRITE;
+
     if (pos >= i_len)
     {
+	LOCK_REL;
 	append(in, length);
 	return;
     }
@@ -361,6 +463,8 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 	DEALLOC(i_str);
     i_str = tmp;
     i_len += length;
+
+    LOCK_REL;
 }
 
 // We compare up to a length they both have.  If its
@@ -369,9 +473,11 @@ void mstring::insert(size_t pos, const char *in, size_t length)
 // same length and have the same text.
 int mstring::compare (const char *in, size_t length) const
 {
-/*    int retval = 0;
+    LOCK_READ;
 
-    if (length && i_len)
+    int retval = 0;
+
+/*  if (length && i_len)
     {
 	retval = memcmp(i_str, in, ((length < i_len) ? length : i_len));
 	if (retval == 0)
@@ -387,13 +493,28 @@ int mstring::compare (const char *in, size_t length) const
     else if (length)
 	retval = length * 256;
 
+    return retval; */
+
+    retval = strcmp((i_str ? i_str : ""), (length ? in : ""));
+
+    LOCK_REL;
+
     return retval;
-*/
-    return strcmp((i_str ? i_str : ""), (length ? in : ""));
 }
 
 void mstring::swap(mstring &in)
 {
+    LOCK_WRITE;
+
+#ifdef MSTRING_LOCKS_WORK
+    if (in.i_lock != NULL)
+	if (in.i_lock->acquire_write() < 0)
+	{
+	    ACE_OS::fprintf(stderr, "WARNING: Failed to acquire write lock on line %d of %s\n", __LINE__, __FILE__);
+	    ACE_OS::fflush(stderr);
+	}
+#endif
+
     char *str = i_str;
     size_t len = i_len;
 
@@ -402,49 +523,113 @@ void mstring::swap(mstring &in)
 
     in.i_str = str;
     in.i_len = len;
+
+#ifdef MSTRING_LOCKS_WORK
+    if (in.i_lock != NULL)
+	if (in.i_lock->release() < 0)
+	{
+	    ACE_OS::fprintf(stderr, "WARNING: Failed to acquire write lock on line %d of %s\n", __LINE__, __FILE__);
+	    ACE_OS::fflush(stderr);
+	}
+#endif
+
+    LOCK_REL;
 }
 
 const char *mstring::c_str() const
 {
-    if (i_str == NULL)
-	return "";
-    else
-	return (const char *) i_str;
+    char *retval = "";
+
+    LOCK_READ;
+    if (i_str != NULL)
+	retval = i_str;
+    LOCK_REL;
+
+    return (const char *) retval;    
 }
 
-char mstring::operator[] (size_t offs) const
+const char mstring::operator[] (size_t offs) const
 {
-    if (i_str == NULL || offs > i_len)
-	return 0;
-    else
-	return i_str[offs];
+    char retval = 0;
+
+    LOCK_READ;
+    if (i_str != NULL && offs < i_len)
+	retval = i_str[offs];
+    LOCK_REL;
+
+    return (const char) retval;
 }
 
-char mstring::first() const
+const char mstring::first() const
 {
-    if (i_str == NULL)
-	return 0;
-    else
-	return i_str[0];
+    char retval = 0;
+
+    LOCK_READ;
+    if (i_str != NULL)
+	retval = i_str[0];
+    LOCK_REL;
+
+    return (const char) retval;
 }
 
-char mstring::last() const
+const char mstring::last() const
 {
-    if (i_str == NULL)
-	return 0;
-    else
-	return i_str[i_len-1];
+    char retval = 0;
+
+    LOCK_READ;
+    if (i_str != NULL)
+	retval = i_str[i_len-1];
+    LOCK_REL;
+
+    return (const char) retval;
+}
+
+size_t mstring::length() const
+{
+    LOCK_READ;
+    size_t retval = i_len;
+    LOCK_REL;
+    return retval;
+}
+
+size_t mstring::size() const
+{
+    LOCK_READ;
+    size_t retval = i_len;
+    LOCK_REL;
+    return retval;
+}
+
+size_t mstring::capacity() const
+{
+    LOCK_READ;
+    size_t retval = i_res;
+    LOCK_REL;
+    return retval;
+}
+
+bool mstring::empty() const
+{
+    LOCK_READ;
+    bool retval = (i_str == NULL);
+    LOCK_REL;
+    return retval;
 }
 
 
 // Index value of any of these chars
 int mstring::find_first_of(const char *str, size_t length) const
 {
+    LOCK_READ;
+
     int i, retval = i_len + 1;
     char *ptr;
 
-    if (i_str == NULL || str == NULL)
+    if (i_str == NULL || str == NULL || length == 0)
+    {
+	LOCK_REL;
 	return -1;
+    }
 
     for (i=0; i<length; i++)
     {
@@ -454,6 +639,8 @@ int mstring::find_first_of(const char *str, size_t length) const
     }
     if (retval > i_len)
 	retval = -1;
+
+    LOCK_REL;
     return retval;
 }
 
@@ -463,8 +650,12 @@ int mstring::find_last_of(const char *str, size_t length) const
     int i, retval = -1;
     char *ptr;
 
-    if (i_str == NULL || str == NULL)
+    LOCK_READ;
+    if (i_str == NULL || str == NULL || length == 0)
+    {
+	LOCK_REL;
 	return -1;
+    }
 
     for (i=0; i<length; i++)
     {
@@ -472,16 +663,22 @@ int mstring::find_last_of(const char *str, size_t length) const
 	if (ptr != NULL && ptr - i_str > retval)
 	    retval = ptr - i_str;
     }
+
+    LOCK_REL;
     return retval;
 }
 
 // Opposite to index for any of these chars
 int mstring::find_first_not_of(const char *str, size_t length) const
 {
-    int i;
+    int i, retval = -1;
 
-    if (i_str == NULL || str == NULL)
+    LOCK_READ;
+    if (i_str == NULL || str == NULL || length == 0)
+    {
+	LOCK_REL;
 	return -1;
+    }
 
     char *tmp;
     ALLOC(tmp, length+1);
@@ -493,19 +690,28 @@ int mstring::find_first_not_of(const char *str, size_t length) const
     for (i=0; i<i_len; i++)
     {
 	if (index(tmp, i_str[i])==NULL)
-	    return i;
+	{
+	    retval = i;
+	    break;
+	}
     }
     DEALLOC(tmp);
-    return -1;
+
+    LOCK_REL;
+    return retval;
 }
 
 // Opposite to rindex for any of these chars
 int mstring::find_last_not_of(const char *str, size_t length) const
 {
-    int i;
+    int i, retval = -1;
 
-    if (i_str == NULL || str == NULL)
+    LOCK_READ;
+    if (i_str == NULL || str == NULL || length == 0)
+    {
+	LOCK_REL;
 	return -1;
+    }
 
     char *tmp;
     ALLOC(tmp, length+1);
@@ -514,16 +720,22 @@ int mstring::find_last_not_of(const char *str, size_t length) const
     memcpy(tmp, str, length);
     tmp[length] = 0;
 
-    for (i=i_len; i>0; i--)
+    for (i=i_len-1; i>=0; i--)
     {
-	if (index(tmp, i_str[i-1])==NULL)
-	    return i-1;
+	if (index(tmp, i_str[i])==NULL)
+	{
+	    retval = i;
+	    break;
+	}
     }
     DEALLOC(tmp);
-    return -1;
+
+    LOCK_REL;
+    return retval;
 }
 
 
+/* PRIVATE METHOD - NO LOCKING! */
 int mstring::occurances(const char *str) const
 {
     int count = 0, length;
@@ -550,12 +762,19 @@ int mstring::find(const char *str, int occurance) const
     int i, retval = -1, length;
     char *ptr;
 
-    if (i_str == NULL || str == NULL)
+    if (str == NULL)
 	return -1;
 
     length = strlen(str);
     if (length < 1)
 	return -1;
+
+    LOCK_READ;
+    if (i_str == NULL)
+    {
+	LOCK_REL;
+	return -1;
+    }
 
     if (occurance < 1)
 	occurance = 1;
@@ -573,6 +792,7 @@ int mstring::find(const char *str, int occurance) const
     if (ptr != NULL)
 	retval = ptr - i_str;
 
+    LOCK_REL;
     return retval;
 }
 
@@ -585,7 +805,9 @@ int mstring::rfind(const char *str, int occurance) const
     if (occurance < 1)
 	occurance = 1;
 
+    LOCK_READ;
     occ = occurances(str);
+    LOCK_REL;
     if (occurance <= occ)
 	retval = find(str, occ - occurance + 1);
 
@@ -601,13 +823,19 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     vector<pair<char *, int> > ptrs;
     vector<pair<char *, int> >::iterator iter;
 
-    if (i_str == NULL || i_find == NULL)
+    if (i_find == NULL)
 	return;
-
-    old_len = i_len;
     find_len = strlen(i_find);
     if (find_len < 1)
 	return;
+
+    LOCK_WRITE;
+    if (i_str == NULL)
+    {
+	LOCK_REL;
+	return;
+    }
+    old_len = i_len;
 
     if (i_replace == NULL)
 	replace_len = 0;
@@ -631,7 +859,9 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     i_len += (amt_replace * (replace_len - find_len));
     if (i_len == 0)
     {
+	i_res = 0;
 	DEALLOC(i_str);
+	LOCK_REL;
 	return;
     }
 
@@ -667,6 +897,7 @@ void mstring::replace(const char *i_find, const char *i_replace, bool all)
     }
     DEALLOC(i_str);
     i_str = tmp;
+    LOCK_REL;
 }
 
 void mstring::replace(int begin, int end, char *replace, size_t length)
@@ -678,6 +909,7 @@ void mstring::replace(int begin, int end, char *replace, size_t length)
 mstring mstring::substr(int nFirst, int nCount) const
 {
     mstring retval;
+    LOCK_READ;
     if (i_str != NULL)
     {
 	if (nFirst < 0)
@@ -686,9 +918,15 @@ mstring mstring::substr(int nFirst, int nCount) const
 	    nCount = i_len - nFirst;
 	if ((nCount + nFirst) > i_len)
 	    nCount = i_len - nFirst;
+	LOCK_REL;
 	if (nCount > 0)
 	    retval.copy(&i_str[nFirst], nCount);
     }
+    else
+    {
+	LOCK_REL;
+    }
+
     return retval;
 }
 
@@ -698,35 +936,49 @@ mstring mstring::substr(int nFirst, int nCount) const
 
 bool mstring::IsWord() const
 {
+    bool retval = true;
+    LOCK_READ;
+
     if (i_str == NULL)
-	return false;
+	retval = false;
 
     for (size_t i=0; i<i_len; i++)
 	if (!isalpha(i_str[i]))
-	    return false;
-    return true;
+	    retval = false;
+    
+    LOCK_REL;
+    return retval;
 }
 
 bool mstring::IsNumber() const
 {
+    bool retval = true;
+    LOCK_READ;
     if (i_str == NULL)
-	return false;
+	retval = false;
 
     for (size_t i=0; i<i_len; i++)
 	if (!isdigit(i_str[i]))
-	    return false;
-    return true;
+	    retval = false;
+
+    LOCK_REL;
+    return retval;
 }
 
 bool mstring::IsAscii() const
 {
+    bool retval = true;
+    LOCK_READ;
+
     if (i_str == NULL)
-	return false;
+	retval = false;
 
     for (size_t i=0; i<i_len; i++)
 	if (!isascii(i_str[i]))
-	    return false;
-    return true;
+	    retval = false;
+
+    LOCK_REL;
+    return retval;
 }
 
 bool mstring::IsBool() const
@@ -744,7 +996,6 @@ bool mstring::IsBool() const
 
 bool mstring::GetBool() const
 {
-  mstring tmp(*this);
   if (IsSameAs("true", true) || IsSameAs("on", true) ||
       IsSameAs("yes", true) || IsSameAs("y", true) ||
       IsSameAs("t", true) || IsSameAs("1"))
@@ -756,46 +1007,70 @@ bool mstring::GetBool() const
 
 mstring mstring::UpperCase() const
 {
+    LOCK_READ;
     mstring tmp(*this);
+    LOCK_REL;
     tmp.MakeUpper();
     return tmp;
 }
 
 mstring mstring::LowerCase() const
 {
+    LOCK_READ;
     mstring tmp(*this);
+    LOCK_REL;
     tmp.MakeLower();
     return tmp;
 }
 
 void mstring::MakeUpper()
 {
+    LOCK_WRITE;
     if (i_str == NULL)
+    {
+	LOCK_REL;
 	return;
+    }
 
     for (size_t i=0; i<i_len; i++)
 	i_str[i] = toupper(i_str[i]);
+    LOCK_REL;
 }
 
 void mstring::MakeLower()
 {
+    LOCK_WRITE;
     if (i_str == NULL)
+    {
+	LOCK_REL;
 	return;
+    }
 
     for (size_t i=0; i<i_len; i++)
 	i_str[i] = tolower(i_str[i]);
+    LOCK_REL;
 }
 
 
 int mstring::Occurances(const mstring &in, bool NoCase) const
 {
+    int retval = 0;
     if (NoCase)
     {
+	/* Not worried here, even though we call occurances,
+	 * its through an UpperCase, so using a temp string
+	 * created by the system (and out of our control).
+	 */
 	mstring tmp(in);
-	return UpperCase().occurances(tmp.UpperCase().i_str);
+	retval = UpperCase().occurances(tmp.UpperCase().c_str());
     }
     else
-	return occurances(in.i_str);
+    {
+	LOCK_READ;
+	retval = occurances(in.c_str());
+	LOCK_REL;
+    }
+    return retval;
 }
 
 int mstring::Find(const mstring &in, bool NoCase, int occurance) const
@@ -803,10 +1078,10 @@ int mstring::Find(const mstring &in, bool NoCase, int occurance) const
     if (NoCase)
     {
 	mstring tmp(in);
-	return UpperCase().find(tmp.UpperCase().i_str, occurance);
+	return UpperCase().find(tmp.UpperCase().c_str(), occurance);
     }
     else
-	return find(in.i_str, occurance);
+	return find(in.c_str(), occurance);
 }
 
 int mstring::RevFind(const mstring &in, bool NoCase, int occurance) const
@@ -814,10 +1089,10 @@ int mstring::RevFind(const mstring &in, bool NoCase, int occurance) const
     if (NoCase)
     {
 	mstring tmp(in);
-	return UpperCase().rfind(tmp.UpperCase().i_str, occurance);
+	return UpperCase().rfind(tmp.UpperCase().c_str(), occurance);
     }
     else
-	return rfind(in.i_str, occurance);
+	return rfind(in.c_str(), occurance);
 }
 
 int mstring::Cmp(const mstring &in, bool NoCase) const
@@ -835,7 +1110,7 @@ int mstring::Cmp(const mstring &in, bool NoCase) const
 
 bool mstring::Matches(const mstring &in, bool NoCase) const
 {
-    return match_wild(in.i_str, i_str, NoCase);
+    return match_wild(in.c_str(), c_str(), NoCase);
 }
 
 void mstring::Trim(bool right, const mstring &delims)
@@ -843,13 +1118,13 @@ void mstring::Trim(bool right, const mstring &delims)
     int pos = 0;
     if (right)
     {
-	pos = find_last_not_of(delims.i_str);
+	pos = find_last_not_of(delims.c_str());
 	if (pos > 0)
 	    erase(pos+1);
     }
     else
     {
-	pos = find_first_not_of(delims.i_str);
+	pos = find_first_not_of(delims.c_str());
 	if (pos > 0)
 	    erase(0, pos-1);
     }
@@ -894,7 +1169,6 @@ int mstring::FormatV(const char *fmt, va_list argptr)
     if (buffer && length < 1)
     {
 	DEALLOC(buffer);
-	buffer = NULL;
     }
     if (buffer)
     {
@@ -909,48 +1183,73 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 
 mstring mstring::Before(const mstring &in, int occurance) const
 {
-	int m_pos = Find(in,false,occurance);
-	if (m_pos >= 0)
-		return Left(m_pos);
-	else
-		return *this;
+    int m_pos = Find(in,false,occurance);
+    if (m_pos >= 0)
+	return Left(m_pos);
+    else
+    {
+	LOCK_READ;
+	mstring retval(*this);
+	LOCK_REL;
+	return retval;
+    }
 }
 
 mstring mstring::After(const mstring &in, int occurance) const
 {
-	int m_pos = Find(in,false,occurance);
-	if (m_pos >= 0)
-		return Right(m_pos+in.i_len);
-	else
-		return *this;
+    int m_pos = Find(in,false,occurance);
+    if (m_pos >= 0)
+	return Right(m_pos+in.i_len);
+    else
+    {
+	LOCK_READ;
+	mstring retval(*this);
+	LOCK_REL;
+	return retval;
+    }
 }
 
 mstring mstring::RevBefore(const mstring &in, int occurance) const
 {
-	int m_pos = RevFind(in,false,occurance);
-	if (m_pos >= 0)
-		return Left(m_pos);
-	else
-		return *this;
+    int m_pos = RevFind(in,false,occurance);
+    if (m_pos >= 0)
+	return Left(m_pos);
+    else
+    {
+	LOCK_READ;
+	mstring retval(*this);
+	LOCK_REL;
+	return retval;
+    }
 }
 
 mstring mstring::RevAfter(const mstring &in, int occurance) const
 {
-	int m_pos = RevFind(in,false,occurance);
-	if (m_pos >= 0)
-		return Right(m_pos+in.i_len);
-	else
-		return *this;
+    int m_pos = RevFind(in,false,occurance);
+    if (m_pos >= 0)
+	return Right(m_pos+in.i_len);
+    else
+    {
+	LOCK_READ;
+	mstring retval(*this);
+	LOCK_REL;
+	return retval;
+    }
 }
 
 mstring mstring::SubString(int from, int to) const
 {
     if (to < 0)
     {
+	LOCK_READ;
 	if (from < i_len)
 	    to = i_len-1;
 	else
+	{
+	    LOCK_REL;
 	    return "";
+	}
+	LOCK_REL;
     }
     if (to < from)
     {
@@ -966,6 +1265,7 @@ unsigned int mstring::WordCount(const mstring &delim, bool assemble) const
 {
     int Result=0;
     size_t i=0;
+    LOCK_READ;
     while(i<i_len)
     {
 	while(i<i_len && assemble && delim.Contains(i_str[i]))
@@ -975,6 +1275,7 @@ unsigned int mstring::WordCount(const mstring &delim, bool assemble) const
 	while(i<i_len && !delim.Contains(i_str[i]))
 	    i++;
     }
+    LOCK_REL;
     return Result;
 }
 
@@ -986,10 +1287,15 @@ mstring mstring::ExtractWord(unsigned int count, const mstring &delim,
     if(begin!=-1)
     {
 	i=begin;
+	LOCK_READ;
 	while(i < (int) i_len && !delim.Contains(i_str[(unsigned int) i]))
 	    i++;
 	if (i!=begin)
+	{
+	    LOCK_REL;
 	    return SubString(begin, i-1);
+	}
+	LOCK_REL;
     }
     return "";
 }
@@ -999,6 +1305,7 @@ int mstring::WordPosition(unsigned int count, const mstring &delim,
 {
     unsigned int i=0,cnt=0;
     int Result=-1;
+    LOCK_READ;
     while(i<i_len && cnt!=count)
     {
 	// Skip past multi-seperators IF we assemble them.
@@ -1015,6 +1322,7 @@ int mstring::WordPosition(unsigned int count, const mstring &delim,
 	else
 	    Result=i;
     }
+    LOCK_REL;
     return Result;
 }
 
@@ -1098,7 +1406,7 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
  *              pattern, 0 if not.
  */
 
-bool match_wild (const char *pattern, const char *str, bool docase)
+bool match_wild (const char *pattern, const char *str, bool nocase)
 {
     char c;
     const char *s;
@@ -1125,14 +1433,14 @@ bool match_wild (const char *pattern, const char *str, bool docase)
 	    s = str;
 	    while (*s)
 	    {
-		if ((docase ? *s == *pattern : (tolower (*s) == tolower (*pattern)))
-		    && match_wild (pattern, s, docase))
+		if ((nocase ? (tolower (*s) == tolower (*pattern)) : *s == *pattern)
+		    && match_wild (pattern, s, nocase))
 		    return true;
 		++s;
 	    }
 	    break;
 	default:
-	    if ((docase ? (*str++ != c) : (tolower (*str++) != tolower (c))))
+	    if ((nocase ? (tolower (*str++) != tolower (c)) : (*str++ != c)))
 		return false;
 	    break;
 	}			/* switch */

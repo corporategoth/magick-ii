@@ -305,7 +305,7 @@ fi
 
 
 AC_ARG_ENABLE(mpatrol, [  --enable-mpatrol        Enable mpatrol (memory debug)
-  --disable-locks         Disable mpatrol (default)],
+  --disable-mpatrol       Disable mpatrol (default)],
 	[case "${enableval}" in
 		yes) mpatrol=true;;
 		no) mpatrol=false;;
@@ -314,6 +314,19 @@ AC_ARG_ENABLE(mpatrol, [  --enable-mpatrol        Enable mpatrol (memory debug)
 if test "$mpatrol" = "true"; then
 	AC_DEFINE(MAGICK_USE_MPATROL)
 	LIBS="$LIBS -lmpatrolmt -lbfd -liberty"
+fi
+
+
+AC_ARG_ENABLE(efence, [  --enable-efence         Enable Electric Fence (memory debug)
+  --disable-efence        Disable Electric Fence (default)],
+	[case "${enableval}" in
+		yes) efence=true;;
+		no) efence=false;;
+		*) AC_MSG_ERROR(bad value ${enableval} for EFENCE option);;
+	 esac], [efence=false])
+if test "$efence" = "true"; then
+	AC_DEFINE(MAGICK_USE_EFENCE)
+	LIBS="$LIBS -lefence"
 fi
 
 

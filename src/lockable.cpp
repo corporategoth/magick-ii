@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.55  2000/10/18 18:46:33  prez
 ** Well, mstring still coredumps, but it gets past the initial loading of
 ** all the STATIC (or const) strings, etc -- now its coring on loading a
@@ -170,8 +175,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
     mLock_Mutex maplock("LockMap");
     if (maplock.acquire() < 0)
     {
-	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "LockMap");
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "LockMap"));
 	return;
     }
 
@@ -180,8 +185,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
     {
 	if (maplock.release() < 0)
 	{
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap");
+	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap"));
 	}
 	return;
     }
@@ -202,8 +207,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	    {
 		if (rlock->acquire() < 0)
 		{
-		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-			"READ", lockname.c_str());
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			"READ", lockname.c_str()));
 		    delete rlock;
 		    rlock = NULL;
 		}
@@ -217,8 +222,10 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 		}
 	    }
 	    else
-		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "READ", lockname.c_str());
+	    {
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "READ", lockname.c_str()));
+	    }
 	}
     }
 
@@ -240,8 +247,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	    {
 		if (rlock->acquire() < 0)
 		{
-		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-			"READ", lockname.c_str());
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			"READ", lockname.c_str()));
 		    delete rlock;
 		    rlock = NULL;
 		}
@@ -255,8 +262,10 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 		}
 	    }
 	    else
-		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "READ", lockname.c_str());
+	    {
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "READ", lockname.c_str()));
+	    }
 	}
     }
     else if (type == L_Write)
@@ -270,8 +279,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	    {
 		if (rlock->release() < 0)
 		{
-		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"READ", lockname.c_str());
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"READ", lockname.c_str()));
 		}
 		delete rlock;
 		rlock = NULL;
@@ -287,10 +296,9 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	    {
 		if (wlock->acquire() < 0)
 		{
-		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-			"WRITE", lockname.c_str());
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			"WRITE", lockname.c_str()));
 		    delete wlock;
-		    (*lockroot)[lockname].second;
 		    wlock = NULL;
 		}
 		else
@@ -303,8 +311,10 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 		}
 	    }
 	    else
-		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "WRITE", lockname.c_str());
+	    {
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "WRITE", lockname.c_str()));
+	    }
 	}
     }
     else if (type == L_Mutex)
@@ -318,8 +328,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	    {
 		if (rlock->release() < 0)
 		{
-		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"READ", lockname.c_str());
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"READ", lockname.c_str()));
 		}
 		delete rlock;
 		rlock = NULL;
@@ -335,8 +345,8 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 	    {
 		if (mlock->acquire() < 0)
 		{
-		    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-			"MUTEX", lockname.c_str());
+		    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+			"MUTEX", lockname.c_str()));
 		    delete mlock;
 		    mlock = NULL;
 		}
@@ -350,15 +360,17 @@ mLOCK::mLOCK(locktype_enum type, const mVarArray &args)
 		}
 	    }
 	    else
-		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
-		    "MUTEX", lockname.c_str());
+	    {
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_OPEN"),
+		    "MUTEX", lockname.c_str()));
+	    }
 	}
     }
 
     if (maplock.release() < 0)
     {
-	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap");
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap"));
     }
     memset(hash, 0, sizeof(hash));
 }
@@ -374,8 +386,8 @@ mLOCK::~mLOCK()
     mLock_Mutex maplock("LockMap");
     if (maplock.acquire() < 0)
     {
-	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "LockMap");
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "LockMap"));
 	return;
     }
 
@@ -384,8 +396,8 @@ mLOCK::~mLOCK()
     {
 	if (maplock.release() < 0)
 	{
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap");
+	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap"));
 	}
 	return;
     }
@@ -403,8 +415,8 @@ mLOCK::~mLOCK()
 		{
 		    if (rlock->release() < 0)
 		    {
-			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-				"READ", locks[i].c_str());
+			LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+				"READ", locks[i].c_str()));
 		    }
 		    delete rlock;
 		    rlock = NULL;
@@ -418,8 +430,8 @@ mLOCK::~mLOCK()
 		{
 		    if (wlock->release() < 0)
 		    {
-			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-				"WRITE", locks[i].c_str());
+			LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+				"WRITE", locks[i].c_str()));
 		    }
 		    delete wlock;
 		    wlock = NULL;
@@ -433,8 +445,8 @@ mLOCK::~mLOCK()
 		{
 		    if (mlock->release() < 0)
 		    {
-			Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-				"MUTEX", locks[i].c_str());
+			LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+				"MUTEX", locks[i].c_str()));
 		    }
 		    delete mlock;
 		    mlock = NULL;
@@ -446,8 +458,8 @@ mLOCK::~mLOCK()
 
     if (maplock.release() < 0)
     {
-	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap");
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap"));
     }
 }
 
@@ -461,8 +473,8 @@ bool mLOCK::Locked()
 	mLock_Mutex maplock("LockMap");
 	if (maplock.acquire() < 0)
 	{
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-		"MUTEX", "LockMap");
+	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+		"MUTEX", "LockMap"));
 	    return false;
 	}
 
@@ -471,8 +483,8 @@ bool mLOCK::Locked()
 	{
 	    if (maplock.release() < 0)
 	    {
-		Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-			"MUTEX", "LockMap");
+		LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+			"MUTEX", "LockMap"));
 	    }
 	    return false;
 	}
@@ -483,8 +495,8 @@ bool mLOCK::Locked()
 	    retval = true;
 	if (maplock.release() < 0)
 	{
-	    Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap");
+	    LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap"));
 	}
     }
     return retval;
@@ -498,8 +510,8 @@ size_t mLOCK::AllLocks()
     mLock_Mutex maplock("LockMap");
     if (maplock.acquire() < 0)
     {
-	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
-	    "MUTEX", "LockMap");
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_ACQUIRE"),
+	    "MUTEX", "LockMap"));
 	return false;
     }
 
@@ -510,8 +522,8 @@ size_t mLOCK::AllLocks()
 
     if (maplock.release() < 0)
     {
-	Log(LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
-		"MUTEX", "LockMap");
+	LOG((LM_CRITICAL, Parent->getLogMessage("SYS_ERRORS/LOCK_RELEASE"),
+		"MUTEX", "LockMap"));
     }
     return count;
 }

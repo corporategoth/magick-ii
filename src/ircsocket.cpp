@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.140  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.139  2000/12/10 13:06:12  prez
 ** Ditched alot of the *toa's since mstring can do it internally now.
 **
@@ -278,6 +283,9 @@ int IrcSvcHandler::open(void *in)
     i_burst = true;
     i_synctime = mDateTime(0.0);
 
+    // Dont do the below (coz we dont call any svc())
+    // int retval = activate();
+    //Parent->AddLogInstance(ACE_LOG_MSG);
     // Only activate the threads when we're ready.
     mBase::init();
     DumpB();
@@ -359,10 +367,10 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 			(float) total / (float) htm_gap / 1024.0);
 		htm_level++;
 		htm_gap += 2;
-		Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_ON"),
+		LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_ON"),
 			htm_level, htm_gap,
 			(float) total / (float) htm_gap / 1024.0,
-			(float) htm_threshold / 1024.0);
+			(float) htm_threshold / 1024.0));
 	    }
 	}
 	else if (htm_level)
@@ -371,7 +379,7 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
 		Parent->getMessage("MISC/HTM_OFF"));
 	    htm_level = 0;
 	    htm_gap = Parent->operserv.Init_HTM_Gap();
-	    Log(LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_OFF"));
+	    LOG((LM_NOTICE, Parent->getLogMessage("OPERSERV/HTM_OFF")));
 	}
     }}
 
@@ -437,6 +445,9 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
     Parent->chanserv.live.clear();
     }
 
+    WLOCK(("IrcSvcHandler"));
+    Parent->ircsvchandler = NULL;
+
     if(!(Parent->config.Server_Relink()<1 || !Parent->Reconnect() ||
 	    Parent->Shutdown()) && Parent->Connected())
     {
@@ -445,6 +456,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
     }
 
+    //Parent->DelLogInstance(ACE_LOG_MSG);
     //sock.Unbind();
     destroy(); // Destroy us from ACE...
     DRET(0);
@@ -623,6 +635,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    Parent->Shutdown())
 	DRET(0);
 
+    Parent->AddLogInstance(ACE_LOG_MSG);
+
     mstring server;
     triplet<unsigned int,mstring,unsigned int> details;
     if (Parent->GotConnect()) {
@@ -648,13 +662,11 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if (Parent->ircsvchandler != NULL)
     {
 	Parent->ircsvchandler->close();
-	delete Parent->ircsvchandler;
 	Parent->ircsvchandler = NULL;
     }
     Parent->Connected(false);
-    Parent->ircsvchandler=new IrcSvcHandler;
-    Log(LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
-		server.c_str(), details.first);
+    LOG((LM_INFO, Parent->getLogMessage("OTHER/CONNECTING"),
+		server.c_str(), details.first));
 
     IrcConnector C_server(ACE_Reactor::instance(),ACE_NONBLOCK);
 
@@ -676,14 +688,9 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     if(C_server.connect(Parent->ircsvchandler,addr,
     		ACE_Synch_Options::defaults, laddr)==-1)
     {
-	if (Parent->ircsvchandler != NULL)
-	{
-	    Parent->ircsvchandler->close();
-	    delete Parent->ircsvchandler;
-	    Parent->ircsvchandler = NULL;
-	}
-	Log(LM_ERROR, Parent->getLogMessage("OTHER/REFUSED"),
-		server.c_str(), details.first);
+	Parent->ircsvchandler = NULL;
+	LOG((LM_ERROR, Parent->getLogMessage("OTHER/REFUSED"),
+		server.c_str(), details.first));
 	//okay we got a connection problem here. log it and try again
 	CP(("Refused connection, rescheduling and trying again ..."));
 	ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
@@ -714,6 +721,8 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }
     CE(1, Parent->i_server);
     Parent->DumpE();
+
+    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -725,6 +734,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
+    Parent->AddLogInstance(ACE_LOG_MSG);
     { WLOCK(("Server", "ServerSquit"));
     Parent->server.DumpB();
     CB(1, Parent->server.ServerSquit.size());
@@ -733,12 +743,16 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     }
 
     if (Parent->server.IsServer(*tmp))
-	Log(LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
+    {
+	LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
 		tmp->c_str(),
-		Parent->server.ServerList[tmp->LowerCase()].Uplink().c_str());
+		Parent->server.ServerList[tmp->LowerCase()].Uplink().c_str()));
+    }
     else
-	Log(LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
-		tmp->c_str(), "?");
+    {
+	LOG((LM_NOTICE, Parent->getLogMessage("OTHER/SQUIT_CANCEL"),
+		tmp->c_str(), "?"));
+    }
 
     // QUIT all user's who faked it ...
     WLOCK2(("Server", "ToBeSquit"));
@@ -761,6 +775,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     Parent->server.DumpE();
 
     delete tmp;
+    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -772,6 +787,7 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
+    Parent->AddLogInstance(ACE_LOG_MSG);
     { WLOCK(("Server", "ServerSquit"));
     WLOCK2(("Server", "ToBeSquit"));
     Parent->server.DumpB();
@@ -807,6 +823,7 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     }
 
     delete tmp;
+    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -819,6 +836,7 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
     Nick_Live_t *entry;
+    Parent->AddLogInstance(ACE_LOG_MSG);
 
     if (Parent->nickserv.IsLiveAll(*tmp))
     {
@@ -840,6 +858,7 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	}
     }
     delete tmp;
+    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -850,6 +869,7 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
+    Parent->AddLogInstance(ACE_LOG_MSG);
     // This is to part channels I'm not supposed to be
     // in (ie. dont have JOIN on, and I'm the only user
     // in them).  ie. after AKICK, etc.
@@ -866,6 +886,7 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	Parent->chanserv.live[tmp->LowerCase()].DumpE();
     }
     delete tmp;
+    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -920,10 +941,11 @@ int EventTask::close(unsigned long in)
 
 int EventTask::svc(void)
 {
-    // The biggie, so big, it has its own zip code ... uhh .. thread.
     mThread::Attach(tt_MAIN);
+    // The biggie, so big, it has its own zip code ... uhh .. thread.
     NFT("EventTask::svc");
 
+    Parent->AddLogInstance(ACE_LOG_MSG);
     { WLOCK(("Events", "last_expire"));
     WLOCK2(("Events", "last_save"));
     WLOCK3(("Events", "last_check"));
@@ -992,11 +1014,11 @@ int EventTask::svc(void)
 			if (Parent->operserv.Akill == Parent->operserv.Akill_begin())
 			{
 			    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
-			    Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
+			    LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
 				    Parent->operserv.Akill->Entry().c_str(),
 				    Parent->operserv.Akill->Value().second.c_str(),
 				    Parent->operserv.Akill->Last_Modifier().c_str(),
-				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
+				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str()));
 			    announce(Parent->operserv.FirstName(),
 				    Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
 				    Parent->operserv.Akill->Entry().c_str(),
@@ -1011,11 +1033,11 @@ int EventTask::svc(void)
 			    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator LastEnt = Parent->operserv.Akill;
 			    LastEnt--;
 			    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
-			    Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
+			    LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
 				    Parent->operserv.Akill->Entry().c_str(),
 				    Parent->operserv.Akill->Value().second.c_str(),
 				    Parent->operserv.Akill->Last_Modifier().c_str(),
-				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
+				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str()));
 			    announce(Parent->operserv.FirstName(),
 				    Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
 				    Parent->operserv.Akill->Entry().c_str(),
@@ -1061,11 +1083,13 @@ int EventTask::svc(void)
 		for (i=0; i<expired_nicks.size(); i++)
 		{
 		    if (Parent->nickserv.stored[expired_nicks[i]].Name() != "")
-			Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
+		    {
+			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_NICK"),
 			    Parent->nickserv.stored[expired_nicks[i]].Name().c_str(),
 			    ((Parent->nickserv.stored[expired_nicks[i]].Host() != "") ?
 				Parent->nickserv.stored[expired_nicks[i]].Host().c_str() :
-				Parent->nickserv.stored[expired_nicks[i]].Name().c_str()));
+				Parent->nickserv.stored[expired_nicks[i]].Name().c_str())));
+		    }
 		    Parent->nickserv.stored[expired_nicks[i]].Drop();
 		    Parent->nickserv.stored.erase(expired_nicks[i]);
 		}
@@ -1090,9 +1114,11 @@ int EventTask::svc(void)
 		for (i=0; i<expired_chans.size(); i++)
 		{
 		    if (Parent->chanserv.stored[expired_chans[i]].Name() != "")
-			Log(LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
+		    {
+			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_CHAN"),
 			    Parent->chanserv.stored[expired_chans[i]].Name().c_str(),
-			    Parent->chanserv.stored[expired_chans[i]].Founder().c_str());
+			    Parent->chanserv.stored[expired_chans[i]].Founder().c_str()));
+		    }
 		    Parent->chanserv.stored.erase(expired_chans[i]);
 		}
 	    }
@@ -1120,8 +1146,8 @@ int EventTask::svc(void)
 			{
 			    if (lni == ni->second.begin())
 			    {
-				Log(LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
-					lni->Text().c_str());
+				LOG((LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
+					lni->Channel().c_str()));
 				ni->second.erase(lni);
 				firstgone = true;
 				lni = ni->second.end();
@@ -1129,8 +1155,8 @@ int EventTask::svc(void)
 			    else
 			    {
 				list<News_t>::iterator lastnews = lni;
-				Log(LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
-					lni->Text().c_str());
+				LOG((LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
+					lni->Channel().c_str()));
 				lastnews--;
 				ni->second.erase(lni);
 				lni = lastnews;
@@ -1232,10 +1258,10 @@ int EventTask::svc(void)
 		// Send pending ChanServ modes ...
 		// Make sure we got someone to send them first.
 		{
-		    RLOCK(("ChanServ", "live", cli->first, "p_modes_on"));
-		    RLOCK2(("ChanServ", "live", cli->first, "p_modes_off"));
-		    RLOCK3(("ChanServ", "live", cli->first, "p_modes_on_params"));
-		    RLOCK4(("ChanServ", "live", cli->first, "p_modes_on_params"));
+		    RLOCK3(("ChanServ", "live", cli->first, "p_modes_on"));
+		    RLOCK4(("ChanServ", "live", cli->first, "p_modes_off"));
+		    RLOCK5(("ChanServ", "live", cli->first, "p_modes_on_params"));
+		    RLOCK6(("ChanServ", "live", cli->first, "p_modes_on_params"));
 		    if (cli->second.p_modes_on != "" || cli->second.p_modes_off != "")
 		    {
 			unsigned int j, k;
@@ -1316,9 +1342,9 @@ int EventTask::svc(void)
 			    nli != Parent->nickserv.live.end(); nli++)
 	    {
 		nsi = Parent->nickserv.stored.find(nli->first);
-		if (!nli->second.IsServices() && nli->second.Squit() == "" &&
-		    nsi != Parent->nickserv.stored.end() &&
-		    nsi->second.Protect() && !nsi->second.IsOnline() &&
+		if (nsi != Parent->nickserv.stored.end() &&
+		    !nsi->second.IsOnline() && nsi->second.Protect() &&
+		    !nli->second.IsServices() && nli->second.Squit() == "" &&
 		    nli->second.MySignonTime().SecondsSince() >=
 					    Parent->nickserv.Ident())
 		{
@@ -1331,8 +1357,8 @@ int EventTask::svc(void)
 		nsi = Parent->nickserv.stored.find(chunked[i]);
 		mstring newnick = Parent->nickserv.findnextnick(nli->second.Name());
 		mstring oldnick = nli->second.Name();
-		Log(LM_INFO, Parent->getLogMessage("EVENT/KILLPROTECT"),
-			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str());
+		LOG((LM_INFO, Parent->getLogMessage("EVENT/KILLPROTECT"),
+			nli->second.Mask(Nick_Live_t::N_U_P_H).c_str()));
 		if (newnick != "" && Parent->server.proto.SVS())
 		{
 		    if (nsi->second.Forbidden())
@@ -1417,13 +1443,13 @@ int EventTask::svc(void)
 	    if (avg > (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level() + 1)))
 	    {
 		Parent->LevelUp();
-		Log(LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_UP"), avg);
+		LOG((LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_UP"), avg));
 	    }
 	    else if (Parent->Level() > Parent->startup.Level() &&
 		avg <= (double)(Parent->startup.Lagtime() * (Parent->Level() - Parent->startup.Level())))
 	    {
 		Parent->LevelDown();
-		Log(LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_DOWN"), avg);
+		LOG((LM_WARNING, Parent->getLogMessage("EVENT/LEVEL_DOWN"), avg));
 	    }
 
 	    { RLOCK(("IrcSvcHandler"));
@@ -1434,7 +1460,7 @@ int EventTask::svc(void)
 		    for (si=Parent->server.ServerList.begin();
 				si!=Parent->server.ServerList.end();si++)
 			si->second.Ping();
-		    Log(LM_TRACE, Parent->getLogMessage("EVENT/PING"));
+		    LOG((LM_TRACE, Parent->getLogMessage("EVENT/PING")));
 		}
 	    }
 	    WLOCK(("Events", "last_ping"));
@@ -1446,6 +1472,7 @@ int EventTask::svc(void)
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);
     }
+    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 

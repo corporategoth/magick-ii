@@ -25,6 +25,11 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.43  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.42  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -107,6 +112,7 @@ private:
     unsigned long expire_admin;
     unsigned long expire_sop;
     unsigned long expire_sadmin;
+    float akill_reject;
     unsigned int max_clone;
     unsigned int clone_limit;
     mstring def_clone;
@@ -204,9 +210,10 @@ public:
     bool SecureOper()		    { return secureoper; }
     unsigned long Def_Expire()	    { return def_expire; }
     unsigned long Expire_Oper()	    { return expire_oper; }
-    unsigned long Expire_Admin()	    { return expire_admin; }
+    unsigned long Expire_Admin()    { return expire_admin; }
     unsigned long Expire_Sop()	    { return expire_sop; }
-    unsigned long Expire_SAdmin()	    { return expire_sadmin; }
+    unsigned long Expire_SAdmin()   { return expire_sadmin; }
+    float Akill_Reject()	    { return akill_reject; }
     unsigned int Max_Clone()	    { return max_clone; }
     unsigned int Clone_Limit()	    { return clone_limit; }
     mstring Def_Clone()		    { return def_clone; }

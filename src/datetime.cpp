@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.58  2000/09/30 10:48:07  prez
 ** Some general code cleanups ... got rid of warnings, etc.
 **
@@ -140,8 +145,8 @@ mDateTime::mDateTime(time_t src)
 }
 mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)
 {
-	Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
-		"mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)");
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/NOT_IMPLEMENTED"),
+		"mDateTime::mDateTime(const mstring& src, mDateTimeFlag flag)"));
 #if 0
 	if(flag==Date)
 		*this=StringToDate(src);
@@ -382,8 +387,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<FormatString(LongDateFormat);
 				break;
 			default:
-				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					count, format[i], format.c_str());
+				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					count, format[i], format.c_str()));
 			};
 			break;
 		case 'm':
@@ -410,8 +415,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<LongMonthNames[Month-1];
 				break;
 			default:
-				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					count, format[i], format.c_str());
+				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					count, format[i], format.c_str()));
 			}
 			break;
 		case 'y':
@@ -430,8 +435,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 				Result<<Year;
 				break;
 			default:
-				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					count, format[i], format.c_str());
+				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					count, format[i], format.c_str()));
 			}
 			break;
 		case 'h':
@@ -491,8 +496,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 					Result=Result+"0";
 				break;
 			default:
-				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					count, format[i], format.c_str());
+				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					count, format[i], format.c_str()));
 			}
 			Result<<MSec;
 			break;
@@ -535,8 +540,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 			}
 			else
 			{
-				Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
-					1, format[i], format.c_str());
+				LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/INVALID_FORMAT"),
+					1, format[i], format.c_str()));
 				Result=Result+"a";
 			}
 			break;
@@ -569,8 +574,8 @@ mstring mDateTime::FormatString(const mstring& format)const
 			Result=Result+mstring(format[i]);
 			break;
 		default:
-			Log(LM_TRACE, Parent->getLogMessage("SYS_ERRORS/NOT_LITERAL"),
-				format[i], format.c_str());
+			LOG((LM_TRACE, Parent->getLogMessage("SYS_ERRORS/NOT_LITERAL"),
+				format[i], format.c_str()));
 			Result=Result+mstring(format[i]);
 		};
 		i++;

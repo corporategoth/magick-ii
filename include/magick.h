@@ -25,6 +25,11 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.140  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.139  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -200,6 +205,27 @@ public:
     int handle_signal(int signum, siginfo_t *siginfo, ucontext_t *ucontext);
 };
 
+
+#define LOG(X)	\
+	if (!Parent->IsLogInstance(ACE_LOG_MSG)) \
+	    Parent->AddLogInstance(ACE_LOG_MSG); \
+	ACE_DEBUG(X);
+
+class Logger : public ACE_Log_Msg_Callback
+{
+    FILE *fout;
+
+public:
+    Logger();
+    ~Logger();
+
+    void log(ACE_Log_Record &log_record);
+    void close();
+    void open();
+    bool opened();
+};
+
+
 class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
@@ -215,7 +241,10 @@ private:
 	SignalHandler *signalhandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
 
+	Logger *logger;
+	set<ACE_Log_Msg *> LogInstances;
 	bool i_verbose;
+
 	mstring i_services_dir;
 	mstring i_config_file;
 	mstring i_programname;
@@ -370,6 +399,12 @@ public:
 		unsigned int MSG_Seen_Act()	{ return msg_seen_act; }
 	} config;
 
+	void ActivateLogger();
+	void DeactivateLogger();
+	bool IsLogInstance(ACE_Log_Msg *instance);
+	void AddLogInstance(ACE_Log_Msg *instance);
+	void DelLogInstance(ACE_Log_Msg *instance);
+	bool Verbose()		    { return i_verbose; }
 	mstring Services_Dir()	    { return i_services_dir; }
 	mstring Config_File()	    { return files.MakePath(i_config_file); }
 	mstring ProgramName()	    { return i_programname; }
@@ -423,7 +458,6 @@ public:
 
 	// Commandline, config, language PARSING.
 	void dump_help();
-	bool verbose() { return i_verbose; }
 	bool paramlong(mstring first, mstring second);
 	bool paramshort(mstring first, mstring second);
 	bool get_config_values();

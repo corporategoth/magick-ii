@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.22  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.21  2000/12/09 20:16:41  prez
 ** Fixed SubString and Left to have correct count/end possitions.  Also
 ** adjusted rest of source to follow suit.
@@ -552,7 +557,10 @@ void mConfigEngine::Empty()
     map<mstring, ceNode *>::iterator i;
     for(i=RootNode.i_children.begin();i!=RootNode.i_children.end();i++)
         if(i->second!=NULL)
+	{
             delete i->second;
+	    i->second = NULL;
+	}
     RootNode.i_children.clear();
     RootNode.i_keys.clear();
 }
@@ -595,7 +603,7 @@ bool mConfigEngine::Read(const mstring &key, int &outvar, int Default)
     FT("mConfigEngine::Read", (key, "(int &) outvar", Default));
     mstring tmpvar;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,itoa(Default));
+    tmpvar=RootNode.GetKey(key,Default);
     if(tmpvar.IsNumber())
         outvar=atoi(tmpvar.c_str());
     else
@@ -611,7 +619,7 @@ bool mConfigEngine::Read(const mstring &key, unsigned int &outvar, unsigned int 
     FT("mConfigEngine::Read", (key, "(unsigned int &) outvar", Default));
     mstring tmpvar;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,itoa(Default));
+    tmpvar=RootNode.GetKey(key,Default);
     if(tmpvar.IsNumber())
         outvar=atoi(tmpvar.c_str());
     else
@@ -627,7 +635,7 @@ bool mConfigEngine::Read(const mstring &key, long &outvar, long Default)
     FT("mConfigEngine::Read", (key, "(long &) outvar", Default));
     mstring tmpvar;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,ltoa(Default));
+    tmpvar=RootNode.GetKey(key,Default);
     if(tmpvar.IsNumber())
         outvar=atol(tmpvar.c_str());
     else
@@ -643,7 +651,7 @@ bool mConfigEngine::Read(const mstring &key, unsigned long &outvar, unsigned lon
     FT("mConfigEngine::Read", (key, "(unsigned long &) outvar", Default));
     mstring tmpvar;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,ultoa(Default));
+    tmpvar=RootNode.GetKey(key,Default);
     if(tmpvar.IsNumber())
     {
         outvar=atoul(tmpvar.c_str());
@@ -661,7 +669,23 @@ bool mConfigEngine::Read(const mstring &key, double &outvar, double Default)
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
     mstring tmpvar;
     bool Result=true;
-    tmpvar=RootNode.GetKey(key,ftoa(Default));
+    tmpvar=RootNode.GetKey(key,Default);
+    if(tmpvar.IsNumber())
+        outvar=atod(tmpvar.c_str());
+    else
+    {
+        outvar=Default;
+        Result=false;
+    }
+    RET(Result);
+}
+
+bool mConfigEngine::Read(const mstring &key, float &outvar, float Default)
+{
+    FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
+    mstring tmpvar;
+    bool Result=true;
+    tmpvar=RootNode.GetKey(key,Default);
     if(tmpvar.IsNumber())
         outvar=atof(tmpvar.c_str());
     else

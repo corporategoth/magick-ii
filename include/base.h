@@ -25,6 +25,11 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.75  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.74  2000/12/09 11:24:25  prez
 ** Changed all privmsg/notice/send/announce calls to have pszFormat
 ** as a char *, to stop warnings from va_start.
@@ -156,6 +161,7 @@ protected:
 public:
     mBaseTask() {}
     virtual int open(void *in=0);
+    virtual int close(void *in=0);
     virtual int svc(void);
     void message(const mstring& message);
     void i_shutdown();

@@ -37,14 +37,19 @@
 #undef MAGICK_LOCKS_WORK
 #endif
 
-/* Define if your system's locking works */
+/* Define if trace works on your system */
 #ifndef MAGICK_TRACE_WORKS
 #undef MAGICK_TRACE_WORKS
 #endif
 
-/* Define if your system's locking works */
+/* Define if you want to use mpatrol */
 #ifndef MAGICK_USE_MPATROL
 #undef MAGICK_USE_MPATROL
+#endif
+
+/* Define if you want to use Electric Fence */
+#ifndef MAGICK_USE_EFENCE
+#undef MAGICK_USE_EFENCE
 #endif
 
 /* Define if we are on a windows system */

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.34  2000/12/11 11:19:46  prez
 ** Use Occurance not occurance (because occurance could later be private)
 **
@@ -562,5 +567,6 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     }
 
     // Spawn this in a new thread, and we're done, it takes over.
+
     Parent->dcc->Connect(addr, mynick, source, filename, size);
 }

@@ -25,6 +25,11 @@ static const char *ident_mconfig_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.12  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.11  2000/07/28 14:49:34  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -119,6 +124,7 @@ public:
     bool Read(const mstring &key, unsigned int &outvar, unsigned int Default=0);
     bool Read(const mstring &key, long &outvar, long Default=0);
     bool Read(const mstring &key, unsigned long &outvar, unsigned long Default=0);
+    bool Read(const mstring &key, float &outvar, float Default=0.0);
     bool Read(const mstring &key, double &outvar, double Default=0.0);
 
     mstring Write(const mstring &key,const mstring &value);

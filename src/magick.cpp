@@ -29,6 +29,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.277  2000/12/19 07:24:53  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.276  2000/11/09 10:58:19  prez
 ** THINK I have it working again ... with the free list.
 ** Will check, still thinking of sorting free list by size.
@@ -371,7 +376,7 @@ static const char *ident = "@(#)$Id$";
 #include "utils.h"
 #include "convert.h"
 
-//#define ACE_DEBUGGING
+//#define LOGGING
 
 mDateTime StartTime;
 Magick *Parent;
@@ -391,105 +396,6 @@ mstring Magick::files_t::MakePath(mstring in)
 #endif
 }
 
-size_t Log(ACE_Log_Priority priority, const char *message, ...)
-{
-    FT("Log", ((unsigned long) priority, message));
-
-    va_list argptr;
-    va_start(argptr, message);
-    size_t retval = LogV(priority, message, argptr);
-    va_end(argptr);
-    RET(retval);
-}
-
-size_t LogV(ACE_Log_Priority priority, const char *message, va_list argptr)
-{
-    FT("LogV", ((unsigned long) priority, "(va_list) argptr"));
-
-    mstring text_priority, text;
-
-    switch (priority)
-    {
-
-    // Stuff normal users dont wanna see
-    case LM_TRACE:
-	text_priority = "TRACE   ";
-#ifndef DEBUG
-	RET(0);
-#endif
-	break;
-
-    // Stuff you have to turn VERBOSE on to see
-    case LM_DEBUG:
-	text_priority = "DEBUG   ";
-	if (!Parent->verbose())
-	    RET(0);
-	break;
-
-    // Normal information that most users want
-    case LM_INFO:
-	text_priority = "INFO    ";
-	break;
-
-    // Still normal, but notable (eg. SOP commands)
-    case LM_NOTICE:
-	text_priority = "NOTICE  ";
-	break;
-
-    // An attempt at data corruption (denied) or recoverable error
-    case LM_WARNING:
-	text_priority = "WARNING ";
-	break;
-
-    // Startup messages only (ie. boot)
-    case LM_STARTUP:
-	text_priority = "STARTUP ";
-	break;
-
-    // A data corruption that we repaird
-    case LM_ERROR:
-	text_priority = "ERROR   ";
-	break;
-
-    // A data corruption we could not repair (left in system or
-    // more drastic action taken, eg. the record being removed)
-    case LM_CRITICAL:
-	text_priority = "CRITICAL";
-	break;
-
-    // A situation that caused us to hard abort, but did not kill
-    // us but may have caused a thread to die, etc.
-    case LM_ALERT:
-	text_priority = "ALERT   ";
-	break;
-
-    // A situation we could not reover from, we're outtahere.
-    case LM_EMERGENCY:
-	text_priority = "FATAL   ";
-	break;
-
-    // Should NEVER get this, but its there for completeness.
-    default:
-	text_priority = "UNKNOWN ";
-	break;
-    }
-
-    // Blatently copied from ACE_DEBUG code...
-    int __ace_error = ACE_OS::last_error ();
-    ACE_Log_Msg *ace___ = ACE_Log_Msg::instance ();
-    ace___->set (ASYS_TEXT (__FILE__), __LINE__, 0, __ace_error,
-	ace___->restart (), ace___->msg_ostream (), ace___->msg_callback ());
-
-    text.FormatV(message, argptr);
-    size_t retval = ace___->log(priority, "%s | %s | %s\n",
-	Now().FormatString("dd mmm yyyy hh:nn:ss").c_str(),
-	text_priority.c_str(), text.c_str());
-
-    if (priority == LM_EMERGENCY)
-	exit(-1);
-    RET(retval);
-}
-
 Magick::Magick(int inargc, char **inargv)
 {
     Parent=this;
@@ -504,20 +410,24 @@ Magick::Magick(int inargc, char **inargv)
     i_programname=argv[0].RevAfter("/");
 
     ircsvchandler = NULL;
+    logger = NULL;
+    signalhandler = NULL;
     i_level=0;
+    i_verbose = false;
     i_reconnect = true;
     i_gotconnect = false;
     i_connected = false;
     i_saving = false;
     i_auto = false;
-    i_verbose = false;
+
+    AddLogInstance(ACE_LOG_MSG);
 
     DumpB();
-    ACE_LOG_MSG->open(i_programname.c_str());
 }
 
 Magick::~Magick()
 {
+    DelLogInstance(ACE_LOG_MSG);
 }
 
 int Magick::Start()
@@ -525,10 +435,6 @@ int Magick::Start()
     unsigned int i;
     int Result;
     // this is our main routine, when it leaves here, this sucker's done.
-#ifdef ACE_DEBUGGING
-    ACE_Log_Msg::instance()->open(PACKAGE);
-    ACE_Log_Msg::enable_debug_messages();
-#endif
 
     // We log to STDERR until we find our logfile...
     LoadLogMessages("DEFAULT");
@@ -546,7 +452,7 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--dir");
+		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--dir"));
 		}
 		i_services_dir=files.MakePath(argv[i]);
 	    }
@@ -555,7 +461,7 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--config");
+		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--config"));
 		}
 		i_config_file=argv[i];
 	    }
@@ -565,16 +471,16 @@ int Magick::Start()
 		i++;
 		if(i==argc||argv[i][0U]=='-')
 		{
-		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--trace");
+		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),"--trace"));
 		}
 		if(!argv[i].Contains(":"))
 		{
-		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TRACE_SYNTAX"));
+		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TRACE_SYNTAX")));
 		}
 		unsigned short level = makehex(argv[i].After(":"));
 		if (level==0)
 		{
-		    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ZERO_LEVEL"));
+		    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ZERO_LEVEL")));
 		}
 		else
 		{
@@ -607,11 +513,13 @@ int Magick::Start()
 
     if (!get_config_values())
     {
-	Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NO_CFG_FILE"), i_config_file.c_str());
+	LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NO_CFG_FILE"), i_config_file.c_str()));
     }
 
     if(i_shutdown==true)
-	Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/STOP"));
+    {
+	LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/STOP")));
+    }
 
     Result=doparamparse();
     if(Result!=MAGICK_RET_NORMAL)
@@ -627,8 +535,8 @@ int Magick::Start()
 	    pid_t pid = atoi(dummystring.c_str());
 	    if (ACE::process_active(pid) > 0)
 	    {
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ACTIVE"),
-			i_programname.c_str());
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ACTIVE"),
+			i_programname.c_str()));
 	    }
 	    pidfile.Close();
 	    mFile::Erase(files.Pidfile());
@@ -636,38 +544,39 @@ int Magick::Start()
     }
 
     // Re-direct log output to this file (log output is to STDERR)
-    freopen(files.Logfile().c_str(), "a", stderr);
-
+    ActivateLogger();
     FLUSH();
+
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
-    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK"));
+    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK")));
     Result = ACE_OS::setsid();
 /*    if (Result < 0)
     {
-	Log(LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETSID"), Result);
+	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETSID"), Result));
 	RET(1);
     } */
     Result = ACE::fork(i_programname);
     if (Result < 0)
     {
-	Log(LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_FORK"), Result);
+	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_FORK"), Result));
 	RET(1);
     }
     else if (Result != 0)
     {
 	RET(0);
     }
+    ACE_LOG_MSG->sync(i_programname.c_str());
     Result = ACE_OS::setpgid (0, 0);
 /*    if (Result < 0)
     {
-	Log(LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETPGID"), Result);
+	LOG((LM_EMERGENCY, getLogMessage("SYS_ERRORS/FAILED_SETPGID"), Result));
 	RET(1);
     } */
     Result = ACE_OS::getuid();
     if (Result == 0)
     {
-	Log(LM_ALERT, getLogMessage("SYS_ERRORS/RUN_AS_ROOT"));
+	LOG((LM_ALERT, getLogMessage("SYS_ERRORS/RUN_AS_ROOT")));
     }
 
     pidfile.Open(files.Pidfile(),"w");
@@ -681,13 +590,13 @@ int Magick::Start()
 
     // load the local messages database and internal "default messages"
     // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
-    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_LANG"));
+    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_LANG")));
     LoadInternalMessages();
 
     load_databases();
 
     // Can only open these after fork if we want then to live
-    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS"));
+    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS")));
     { WLOCK(("Events"));
     events = new EventTask;
     events->open();
@@ -765,7 +674,7 @@ int Magick::Start()
 */
     // etc.
 
-    //Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_CALIBRATE"));
+    //LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_CALIBRATE")));
     // calibrate the threshholds.
     //
     // register 250 nicks and 1000 channels (to random nicknames in the nick pool).
@@ -791,8 +700,8 @@ int Magick::Start()
     // This is the main loop.  When we get a Shutdown(),
     // we wait for everything to shutdown cleanly.
     // All that will be left is US and the LOGGER.
-    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_COMPLETE"),
-		PACKAGE, VERSION);
+    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/START_COMPLETE"),
+		PACKAGE, VERSION));
     while(!Shutdown())
     {
 	DumpB();
@@ -801,16 +710,15 @@ int Magick::Start()
 	FLUSH();
     }
 
-    Log(LM_STARTUP, getLogMessage("COMMANDLINE/STOP_EVENTS"));
+    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/STOP_EVENTS")));
     // We're going down .. execute relivant shutdowns.
     { WLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
     {
   	ircsvchandler->close();
-	delete ircsvchandler;
 	ircsvchandler = NULL;
     }}
-    while (mThread::size() > 3)
+    while (mThread::size() > 4)
     {
 	ACE_OS::sleep(1);
     }
@@ -875,6 +783,7 @@ int Magick::Start()
     {
 	events->close(0);
 	delete events;
+	events = NULL;
     }}
 
     { WLOCK(("DccMap"));
@@ -882,14 +791,22 @@ int Magick::Start()
     {
 	dcc->close(0);
 	delete dcc;
+	dcc = NULL;
     }}
 
-    delete signalhandler;
+    if (signalhandler != NULL)
+    {
+	delete signalhandler;
+	signalhandler = NULL;
+    }
 
     mFile::Erase(files.Pidfile());
 
-    Log(LM_STARTUP, getLogMessage("COMMANDLINE/STOP_COMPLETE"),
-		PACKAGE, VERSION);
+    LOG((LM_STARTUP, getLogMessage("COMMANDLINE/STOP_COMPLETE"),
+		PACKAGE, VERSION));
+
+    DeactivateLogger();
+
     RET(MAGICK_RET_TERMINATE);
 }
 
@@ -1036,8 +953,8 @@ StartGetLang:
 	MCE(Help.size());
 	if (tmp.size())
 	{
-	    Log(LM_INFO, getLogMessage("OTHER/LOAD_HELP"),
-		language.UpperCase().c_str());
+	    LOG((LM_INFO, getLogMessage("OTHER/LOAD_HELP"),
+		language.UpperCase().c_str()));
 	    CP(("Help %s was loaded into memory.", language.c_str()));
 	}
     }
@@ -1295,7 +1212,7 @@ int Magick::doparamparse()
 	}
 	else
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NONOPTION"));
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NONOPTION")));
 	}
     }
     RET(MAGICK_RET_NORMAL);
@@ -1314,7 +1231,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	startup.server_name=second;
 	RET(true);
@@ -1323,7 +1240,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	startup.server_name=second;
 	RET(true);
@@ -1332,7 +1249,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	startup.services_user=second;
 	RET(true);
@@ -1345,7 +1262,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	startup.services_host=second;
     }
@@ -1353,18 +1270,20 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(atoi(second.c_str())<=0)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
 	if (atoi(second.c_str()) != (int) server.proto.Number())
 	{
 	    server.proto.Set(atoi(second.c_str()));
 	    if (atoi(second.c_str()) != (int) server.proto.Number())
-		Log(LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
-			    atoi(second.c_str()), server.proto.Number());
+	    {
+		LOG((LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
+			    atoi(second.c_str()), server.proto.Number()));
+	    }
 	}
 	RET(true);
     }
@@ -1372,11 +1291,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(atoi(second.c_str())<=0)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
 	startup.level=atoi(second.c_str());
 	RET(true);
@@ -1385,11 +1304,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(!FromHumanTime(second))
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str()));
 	}
 	startup.lagtime=FromHumanTime(second);
     }
@@ -1401,7 +1320,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	files.logfile=second;
 	RET(true);
@@ -1410,7 +1329,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	files.database=second;
 	RET(true);
@@ -1419,7 +1338,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	files.langdir=second;
 	RET(true);
@@ -1436,11 +1355,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(!mFile::Exists(second))
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NO_KEYFILE"), second.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NO_KEYFILE"), second.c_str()));
 	}
 	files.keyfile=second;
 	RET(true);
@@ -1449,15 +1368,15 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(atoi(second.c_str())<0)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
 	if (atoi(second.c_str())>9)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9));
 	}
 	files.compression=atoi(second.c_str());
 	RET(true);
@@ -1466,11 +1385,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(atoi(second.c_str())<0)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
 	config.server_relink=FromHumanTime(second);
 	RET(true);
@@ -1483,11 +1402,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(!FromHumanTime(second))
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str()));
 	}
 	config.cycletime=FromHumanTime(second);
 	RET(true);
@@ -1496,11 +1415,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(!FromHumanTime(second))
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str()));
 	}
 	config.savetime=FromHumanTime(second);
 	RET(true);
@@ -1509,11 +1428,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(!FromHumanTime(second))
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str()));
 	}
 	config.checktime=FromHumanTime(second);
 	RET(true);
@@ -1522,11 +1441,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(!FromHumanTime(second))
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str()));
 	}
 	config.ping_frequency=FromHumanTime(second);
 	RET(true);
@@ -1535,11 +1454,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(atoi(second.c_str())<0)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
 	config.min_threads=atoi(second.c_str());
 	if (config.min_threads < 1)
@@ -1550,11 +1469,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(atoi(second.c_str())<0)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
 	config.low_water_mark=atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
@@ -1565,11 +1484,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(atoi(second.c_str())<0)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
 	config.high_water_mark=atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
@@ -1588,11 +1507,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(!FromHumanTime(second))
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str()));
 	}
 	nickserv.ident=FromHumanTime(second);
 	RET(true);
@@ -1601,7 +1520,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	nickserv.def_language=second;
 	RET(true);
@@ -1615,11 +1534,11 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(!FromHumanTime(second))
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/TIMEORZERO"),first.c_str()));
 	}
 	nickserv.ident=FromHumanTime(second);
 	RET(true);
@@ -1632,15 +1551,15 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if(atoi(second.c_str())<0)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/MUSTBENUMBER"),first.c_str()));
 	}
 	if (atoi(second.c_str())>9)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9);
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/VALUETOOHIGH"),first.c_str(), 9));
 	}
 	operserv.ignore_method=atoi(second.c_str());
 	RET(true);
@@ -1649,7 +1568,7 @@ bool Magick::paramlong(mstring first, mstring second)
     {
 	if(second.empty() || second[0U]=='-')
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/NEEDPARAM"),first.c_str()));
 	}
 	if (second.IsSameAs("magick", true))
 	{
@@ -1664,13 +1583,13 @@ bool Magick::paramlong(mstring first, mstring second)
 	}
 	else
 	{
-	    Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/CANNOT_CONVERT"), second.c_str());
+	    LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/CANNOT_CONVERT"), second.c_str()));
 	}
 	RET(true);
     }
     else
     {
-	Log(LM_ERROR, getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),first.c_str());
+	LOG((LM_ERROR, getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),first.c_str()));
     }
     RET(false);
 }
@@ -1687,28 +1606,36 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='n')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--name", second);
 	}
 	else if(first[i]=='d')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--desc", second);
 	}
 	else if(first[i]=='u')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--user", second);
 	}
 	else if(first[i]=='h')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--host", second);
 	}
@@ -1719,21 +1646,27 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='P')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--protocol", second);
 	}
 	else if(first[i]=='l')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--level", second);
 	}
 	else if(first[i]=='g')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--lagtime", second);
 	}
@@ -1744,21 +1677,27 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='L')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--log", second);
 	}
 	else if(first[i]=='D')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--dbase", second);
 	}
 	else if(first[i]=='S')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--langdir", second);
 	}
@@ -1773,7 +1712,9 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='K')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--keyfile", second);
 	}
@@ -1784,84 +1725,108 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='r')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--relink", second);
 	}
 	else if(first[i]=='t')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--cycle", second);
 	}
 	else if(first[i]=='w')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--save", second);
 	}
 	else if(first[i]=='T')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--check", second);
 	}
 	else if(first[i]=='p')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--ping", second);
 	}
 	else if(first[i]=='X')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--threads", second);
 	}
 	else if(first[i]=='m')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--lwm", second);
 	}
 	else if(first[i]=='M')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--hwm", second);
 	}
 	else if(first[i]=='a')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--append", second);
 	}
 	else if(first[i]=='A')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--rename", second);
 	}
 	else if(first[i]=='R')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--ident", second);
 	}
 	else if(first[i]=='s')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--language", second);
 	}
@@ -1872,27 +1837,33 @@ bool Magick::paramshort(mstring first, mstring second)
 	else if(first[i]=='f')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--inflight", second);
 	}
 	else if(first[i]=='i')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--logignore", second);
 	}
 	else if(first[i]=='I')
 	{
 	    if (ArgUsed)
-		Log(LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION"));
+	    {
+		LOG((LM_EMERGENCY, getLogMessage("COMMANDLINE/ONEOPTION")));
+	    }
 	    else
 		ArgUsed = paramlong ("--ignore", second);
 	}
 	else
 	{
-	    Log(LM_ERROR, getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),("-"+mstring(first[i])).c_str());
+	    LOG((LM_ERROR, getLogMessage("COMMANDLINE/UNKNOWN_OPTION"),("-"+mstring(first[i])).c_str()));
 	}
     }
     RET(ArgUsed);
@@ -1989,7 +1960,9 @@ bool Magick::get_config_values()
 		if (ent.WordCount(":") == 4 && tmp[1].IsNumber() && tmp[3].IsNumber())
 		    startup.servers[tmp[0].LowerCase()] = triplet<unsigned int,mstring,unsigned int>(atoi(tmp[1]),tmp[2],atoi(tmp[3]));
 		else
-		    Log(LM_WARNING, getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+rem).c_str());
+		{
+		    LOG((LM_WARNING, getLogMessage("COMMANDLINE/CFG_SYNTAX"), (ts_Startup+rem).c_str()));
+		}
 		ent = "";
 	}
 	i++;
@@ -2005,8 +1978,10 @@ bool Magick::get_config_values()
 	if (value_uint == server.proto.Number())
 	    reconnect = true;
 	else
-	    Log(LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
-			    value_uint, server.proto.Number());
+	{
+	    LOG((LM_WARNING, getLogMessage("COMMANDLINE/UNKNOWN_PROTO"),
+			    value_uint, server.proto.Number()));
+	}
     }
 
     in.Read(ts_Startup+"LEVEL",value_uint,1U);
@@ -2614,6 +2589,12 @@ bool Magick::get_config_values()
     else
 	operserv.expire_sadmin = FromHumanTime("1y");
 
+    in.Read(ts_OperServ+"AKILL_REJECT",operserv.akill_reject,10.0);
+    if (operserv.akill_reject < 0.0)
+	operserv.akill_reject = 0.0;
+    if (operserv.akill_reject > 100.0)
+	operserv.akill_reject = 100.0;
+
     in.Read(ts_OperServ+"MAX_CLONE",operserv.max_clone,50U);
     in.Read(ts_OperServ+"CLONE_LIMIT",operserv.clone_limit,2U);
     in.Read(ts_OperServ+"DEF_CLONE",operserv.def_clone,"Maximum connections from one host exceeded");
@@ -2841,7 +2822,6 @@ bool Magick::get_config_values()
 	if (ircsvchandler != NULL)
 	{
 	    ircsvchandler->close();
-	    delete ircsvchandler;
 	    ircsvchandler = NULL;
 	}}
     }
@@ -2855,21 +2835,19 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 {
     // No trace, screws with LastFunc...
     //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) siginfo", "(ucontext_t *) ucontext"));
-    static mDateTime LastSEGV;
-    static mstring LastFunc;
     ThreadID *tid;
 
     // todo: fill this sucker in
     switch(signum)
     {
     case SIGINT:	// Re-signon all clients
-	Log(LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SIGNON"), signum);
+	LOG((LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SIGNON"), signum));
 	Parent->server.SignOnAll();
 	break;
 
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
-	Log(LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SAVE"), signum);
+	LOG((LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_SAVE"), signum));
 	announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_SAVE"), signum);
 	Parent->events->ForceSave();
 	break;
@@ -2878,11 +2856,11 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 
 #if defined(SIGHUP) && (SIGHUP != 0)
     case SIGHUP:	// Reload CFG/DB's
-	Log(LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_LOAD"), signum);
+	LOG((LM_NOTICE, Parent->getLogMessage("SYS_ERRORS/SIGNAL_LOAD"), signum));
 	if (!Parent->get_config_values())
 	{
-	    Log(LM_EMERGENCY, Parent->getLogMessage("COMMANDLINE/NO_CFG_FILE"),
-	    					Parent->Config_File().c_str());
+	    LOG((LM_EMERGENCY, Parent->getLogMessage("COMMANDLINE/NO_CFG_FILE"),
+	    					Parent->Config_File().c_str()));
 	}
 	else
 	{
@@ -2899,52 +2877,237 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 #ifdef SIGBUS
     case SIGBUS:	// BUS error (fatal)
 #endif
+    case SIGSEGV:	// Segmentation Fault
 	tid = mThread::find();
-	if (tid != NULL)
-	    LastFunc = tid->LastFunc();
 	FLUSH();
-	Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum, LastFunc.c_str());
-	announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_KILL"), signum, LastFunc.c_str());
-	LastFunc = "";
+	LOG((LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum, tid->LastFunc().c_str()));
+	announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_KILL"), signum, tid->LastFunc().c_str());
 	Parent->Shutdown(true);
 	Parent->Die();
 	return -1;
 	break;
 
-
-    case SIGSEGV:	// Segfault, validate all storage.
-	// IF LastSEGV is defined, and time between now and
-	// LastSEGV is < 5 seconds ...
-	if(LastSEGV.SecondsSince() < 5)
-	{
-	    FLUSH();
-	    Log(LM_ALERT, Parent->getLogMessage("SYS_ERRORS/SIGNAL_KILL"), signum, LastFunc.c_str());
-	    CP(("Got second sigsegv call, giving magick the boot"));
-	    announce(Parent->operserv.FirstName(), Parent->getMessage("MISC/SIGNAL_KILL"), signum, LastFunc.c_str());
-	    LastFunc = "";
-	    Parent->Shutdown(true);
-	    Parent->Die();
-	    return -1;
-	}
-	else
-	{
-	    LastSEGV = Now();
-	    tid = mThread::find();
-	    if (tid != NULL)
-		LastFunc = tid->LastFunc();
-	    FLUSH();
-	    Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/SIGNAL_RETRY"), signum);
-	    CP(("Got first sigsegv call, giving it another chance"));
-	}
-	break;
-
-
     default:		// Everything else.
-	Log(LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum);
+	LOG((LM_WARNING, Parent->getLogMessage("SYS_ERRORS/SIGNAL_IGNORE"), signum));
 	break;//ignore (todo log that we got it and we're ignoring it)
     }
     return 0;
 }
+
+bool Magick::IsLogInstance(ACE_Log_Msg *instance)
+{
+    FT("IsLogInstance", ("(ACE_Log_Msg *) instance"));
+    MLOCK(("LogInstances"));
+    bool retval = (LogInstances.find(instance) != LogInstances.end());
+    RET(retval);
+}
+
+void Magick::AddLogInstance(ACE_Log_Msg *instance)
+{
+    FT("AddLogInstance", ("(ACE_Log_Msg *) instance"));
+
+    { MLOCK(("LogInstances"));
+    LogInstances.insert(instance);
+    }
+
+    instance->open(i_programname.c_str());
+    if (logger != NULL)
+    {
+	instance->clr_flags (ACE_Log_Msg::STDERR);
+	instance->set_flags (ACE_Log_Msg::MSG_CALLBACK);
+	instance->msg_callback (logger);
+    }
+}
+
+void Magick::DelLogInstance(ACE_Log_Msg *instance)
+{
+    FT("DelLogInstance", ("(ACE_Log_Msg *) instance"));
+
+    { MLOCK(("LogInstances"));
+    LogInstances.erase(instance);
+    }
+
+    instance->msg_callback (NULL);
+    instance->clr_flags (ACE_Log_Msg::MSG_CALLBACK);
+    instance->set_flags (ACE_Log_Msg::STDERR);
+}
+
+void Magick::ActivateLogger()
+{
+    if (logger != NULL)
+	delete logger;
+    logger = new Logger;
+
+    { MLOCK(("LogInstances"));
+    set<ACE_Log_Msg *>::iterator i;
+    for (i=LogInstances.begin(); i!=LogInstances.end(); i++)
+    {
+	(*i)->clr_flags (ACE_Log_Msg::STDERR);
+	(*i)->set_flags (ACE_Log_Msg::MSG_CALLBACK);
+	(*i)->msg_callback (logger);
+    }}
+}
+
+void Magick::DeactivateLogger()
+{
+    { MLOCK(("LogInstances"));
+    set<ACE_Log_Msg *>::iterator i;
+    for (i=LogInstances.begin(); i!=LogInstances.end(); i++)
+    {
+	(*i)->msg_callback (NULL);
+	(*i)->clr_flags (ACE_Log_Msg::MSG_CALLBACK);
+	(*i)->set_flags (ACE_Log_Msg::STDERR);
+    }}
+
+    if (logger != NULL)
+	delete logger;
+    logger = NULL;
+}
+
+Logger::Logger()
+{
+    NFT("Logger::Logger");
+    ACE_Log_Msg::enable_debug_messages();
+
+    MLOCK(("LogFile"));
+    if ((fout = fopen(Parent->files.Logfile().c_str(), "a")) == NULL)
+	return;
+}
+
+Logger::~Logger()
+{
+    NFT("Logger::~Logger");
+
+    if (fout != NULL)
+	fclose(fout);
+}
+
+void Logger::log(ACE_Log_Record &log_record)
+{
+    FT("Logger::log", ("(ACE_Log_Record &) log_record"));
+
+    if (fout == NULL)
+	return;
+
+    mstring text_priority;
+    switch (log_record.type())
+    {
+
+    // Stuff normal users dont wanna see
+    case LM_TRACE:
+#ifndef DEBUG
+	return;
+#endif
+	text_priority = "TRACE";
+	break;
+
+    // Stuff you have to turn VERBOSE on to see
+    case LM_DEBUG:
+	if (!Parent->Verbose())
+	    return;
+	text_priority = "DEBUG";
+	break;
+
+    // Normal information that most users want
+    case LM_INFO:
+	text_priority = "INFO";
+	break;
+
+    // Still normal, but notable (eg. SOP commands)
+    case LM_NOTICE:
+	text_priority = "NOTICE";
+	break;
+
+    // An attempt at data corruption (denied) or recoverable error
+    case LM_WARNING:
+	text_priority = "WARNING";
+	break;
+
+    // Startup messages only (ie. boot)
+    case LM_STARTUP:
+	text_priority = "STARTUP";
+	break;
+
+    // A data corruption that we repaird
+    case LM_ERROR:
+	text_priority = "ERROR";
+	break;
+
+    // A data corruption we could not repair (left in system or
+    // more drastic action taken, eg. the record being removed)
+    case LM_CRITICAL:
+	text_priority = "CRITICAL";
+	break;
+
+    // A situation that caused us to hard abort, but did not kill
+    // us but may have caused a thread to die, etc.
+    case LM_ALERT:
+	text_priority = "ALERT";
+	break;
+
+    // A situation we could not reover from, we're outtahere.
+    case LM_EMERGENCY:
+	text_priority = "FATAL";
+	break;
+
+    // Should NEVER get this, but its there for completeness.
+    default:
+	text_priority = "UNKNOWN";
+	break;
+    }
+
+    /* Pulled directly from ACE ... */
+    time_t sec = log_record.time_stamp().sec();
+    struct tm *tmval = localtime(&sec);
+    ASYS_TCHAR ctp[21]; // 21 is a magic number...
+    if (ACE_OS::strftime (ctp, sizeof(ctp), "%d %b %Y %H:%M:%S", tmval) == 0)
+	return;
+
+    /* 01234567890123456789012345 */
+    /* 18 Oct 2000 14:25:36  */
+    /*            ^        ^ */
+    ctp[11] = '\0'; // NUL-terminate after the date.
+
+    MLOCK(("LogFile"));
+    ACE_OS::fprintf (fout, "%s %s.%03ld | %-8s | %s\n",
+	ctp, ctp + 12, log_record.time_stamp().usec() / 1000,
+	text_priority.c_str(), log_record.msg_data ());
+    ACE_OS::fflush(fout);
+
+    if (log_record.type() == LM_EMERGENCY)
+	exit(-1);
+}
+
+void Logger::close()
+{
+    NFT("Logger::close");
+
+    MLOCK(("LogFile"));
+    if (fout != NULL)
+    {
+	fclose(fout);
+	fout = NULL;
+    }
+}
+
+void Logger::open()
+{
+    NFT("Logger::open");
+
+    MLOCK(("LogFile"));
+    if (fout == NULL)
+    {
+	fout = fopen(Parent->files.Logfile().c_str(), "a");
+    }
+}
+
+bool Logger::opened()
+{
+    NFT("Logger::opened");
+    MLOCK(("LogFile"));
+    RET(fout != NULL);
+}
+
 
 /*
 void Magick::handle(const mstring & server, const mstring & command, const mstring & functionname)
@@ -3065,7 +3228,6 @@ void Magick::Disconnect()
     if (ircsvchandler != NULL)
     {
 	ircsvchandler->close();
-	delete ircsvchandler;
 	ircsvchandler = NULL;
     }}
 }
@@ -3179,11 +3341,11 @@ void Magick::load_databases()
     NFT("Magick::load_databases");
     if (mFile::Exists(files.Database()))
     {
-	Log(LM_STARTUP, getLogMessage("EVENT/LOAD"));
+	LOG((LM_STARTUP, getLogMessage("EVENT/LOAD")));
    	SXP::CParser p( this ); // let the parser know which is the object
 	if (p.FeedFile(files.Database(), GetKey()) < 1)
 	{
-	    Log(LM_EMERGENCY, getLogMessage("ERROR/CORRUPT_DB"));
+	    LOG((LM_EMERGENCY, getLogMessage("ERROR/CORRUPT_DB")));
 	}
     }
 }
@@ -3280,18 +3442,18 @@ size_t Magick::LFO_Usage()
 void Magick::DumpB()
 {
     MB(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
-	handlermap.size(), i_verbose, i_services_dir, i_config_file,
-	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
-	i_localhost, i_gotconnect));
-    MB(16, (i_server, i_connected, i_saving));
+	handlermap.size(), i_services_dir, i_config_file, i_programname,
+	i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect, i_localhost,
+	i_gotconnect, i_server));
+    MB(16, (i_connected, i_saving));
 }
 
 void Magick::DumpE()
 {
     ME(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
-	handlermap.size(), i_verbose, i_services_dir, i_config_file,
-	i_programname, i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect,
-	i_localhost, i_gotconnect));
-    ME(16, (i_server, i_connected, i_saving));
+	handlermap.size(), i_services_dir, i_config_file, i_programname,
+	i_ResetTime, i_level, i_auto, i_shutdown, i_reconnect, i_localhost,
+	i_gotconnect, i_server));
+    ME(16, (i_connected, i_saving));
 }
 

@@ -26,6 +26,11 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/12/19 07:24:54  prez
+** Massive updates.  Linux works again, added akill reject threshold, and
+** lots of other stuff -- almost ready for b6 -- first beta after the
+** re-written strings class.  Also now using log adapter!
+**
 ** Revision 1.54  2000/12/10 13:06:13  prez
 ** Ditched alot of the *toa's since mstring can do it internally now.
 **
@@ -191,7 +196,7 @@ unsigned long TxnIds::Create()
     }
     else
     {
-	Log(LM_ERROR, Parent->getLogMessage("SYS_ERRORS/OUTOFTXNIDS"));
+	LOG((LM_ERROR, Parent->getLogMessage("SYS_ERRORS/OUTOFTXNIDS")));
 	RET(0);
     }
 }
