@@ -65,8 +65,8 @@ public:
     bool Akill()		{ return akill; }
     bool OperDeny()		{ return operdeny; }
 
-    virtual void load_database(void);
-    virtual void save_database(void);
+    virtual void load_database(wxInputStream& in);
+    virtual void save_database(wxOutputStream& in);
     OperServ();
     virtual threadtype_enum Get_TType() const { return tt_OperServ; }
     virtual mstring GetInternalName() const { return "OperServ"; }

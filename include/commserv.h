@@ -86,8 +86,8 @@ public:
     map<mstring,Committee> list;
     bool IsList(mstring in);
 
-    virtual void load_database(void);
-    virtual void save_database(void);
+    virtual void load_database(wxInputStream& in);
+    virtual void save_database(wxOutputStream& in);
 
     CommServ() {}
     virtual threadtype_enum Get_TType() const { return tt_OtherServ; };

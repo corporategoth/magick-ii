@@ -62,8 +62,8 @@ public:
     map<mstring,Server> ServerList;
     bool IsServer(mstring server);
 
-    virtual void load_database(void);
-    virtual void save_database(void);
+    virtual void load_database(wxInputStream& in);
+    virtual void save_database(wxOutputStream& in);
     NetworkServ();
     virtual threadtype_enum Get_TType() const { return tt_ServNet; }
     virtual mstring GetInternalName() const { return "NetworkServ"; }

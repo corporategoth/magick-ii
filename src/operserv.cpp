@@ -42,9 +42,10 @@ void OperServ::execute(const mstring & data)
 
 }
 
-void OperServ::load_database(void)
+void OperServ::load_database(wxInputStream& in)
 {
 }
-void OperServ::save_database(void)
+
+void OperServ::save_database(wxOutputStream& out)
 {
 }

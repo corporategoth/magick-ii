@@ -203,9 +203,10 @@ void CommServ::execute(const mstring & data)
 
 }
 
-void CommServ::load_database(void)
+void CommServ::load_database(wxInputStream& in)
 {
 }
-void CommServ::save_database(void)
+
+void CommServ::save_database(wxOutputStream& out)
 {
 }

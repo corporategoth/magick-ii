@@ -128,8 +128,8 @@ public:
     mBase();
     static void init();
 
-    virtual void load_database(void) =0;
-    virtual void save_database(void) =0;
+    virtual void load_database(wxInputStream& in) =0;
+    virtual void save_database(wxOutputStream& out) =0;
 
     static void push_message(const mstring& message);
     virtual void execute(const mstring& message) =0;

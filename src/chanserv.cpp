@@ -558,80 +558,32 @@ wxInputStream &operator>>(wxInputStream& in, Chan_Stored_t& out)
     return in;
 }
 
-void ChanServ::load_database(void)
+void ChanServ::load_database(wxInputStream& in)
 {
 }
 
-void ChanServ::save_database(void)
+void cppexcepttest()
 {
-    mstring savename=Parent->files.Chan_DB()+".save";
-    if(wxFile::Exists(savename.c_str()))
-	remove(savename.c_str());
-    try
+    //test of __try..__finally
+    // gcc might need just try..finally
+    __try
     {
-        wxFileOutputStream outf(savename);
-	wxDataOutputStream *outd;
-	mEncryptStream *outc;
-	wxZlibOutputStream *outz;
-	wxDataOutputStream flagout(outf);
-	 
-	flagout<<FileVersionNumber;
+	throw "test";
+    }
+    __finally
+    {
+	wxLogDebug("this worked too");
+    }
+}
 
-	if(Parent->Password!="" && Parent->files.Compression()==true)
-	{
-	    outc=new mEncryptStream(outf,Parent->Password);
-	    outz=new wxZlibOutputStream(*outc);
-	    outd=new wxDataOutputStream(*outz);
-	    flagout<<(char)3;
-	}
-	else if(Parent->files.Compression()==true)
-	{
-	    outz=new wxZlibOutputStream(outf);
-	    outd=new wxDataOutputStream(*outz);
-	    flagout<<(char)2;
-	}
-	else if(Parent->Password!="")
-	{
-	    outc=new mEncryptStream(outf,Parent->Password);
-	    outd=new wxDataOutputStream(*outc);
-	    flagout<<(char)1;
-	}
-	else
-	{
-	    outd=new wxDataOutputStream(outf);
-	    flagout<<(char)0;
-	}
-	
-	//
+void ChanServ::save_database(wxOutputStream& out)
+{
 	map<mstring,Chan_Stored_t>::iterator i;
-	(*outd)<<stored.size();
+	out<<stored.size();
         // todo call script saving hooks.
 	for(i=stored.begin();i!=stored.end();i++)
 	{
-	    (*outd)<<i->second;
+	    out<<i->second;
 	    // todo call script saving hooks.
 	}
-	 
-	if(Parent->Password!="" && outz != NULL)
-		delete outc;
-
-	if(Parent->files.Compression()==true && outz != NULL)
-		delete outz;
-
-	if(outd != NULL)
-		delete outd;
-
-    }
-    catch(...)
-    {
-        if(wxFile::Exists(savename.c_str()))
-	    remove(savename.c_str());
-	return;
-    }
-    if(wxFile::Exists(savename.c_str()))
-    {
-        if(wxFile::Exists(Parent->files.Chan_DB().c_str()))
-	    remove(Parent->files.Chan_DB().c_str());
-	rename(savename.c_str(),Parent->files.Chan_DB().c_str());
-    }
 }

@@ -1288,9 +1288,10 @@ void NetworkServ::numeric_execute(const mstring & data)
     }
 }
 
-void NetworkServ::load_database(void)
+void NetworkServ::load_database(wxInputStream& in)
 {
 }
-void NetworkServ::save_database(void)
+
+void NetworkServ::save_database(wxOutputStream& out)
 {
 }

@@ -43,15 +43,15 @@ public:
     bool operator<(const Memo_t &in) const
     	{ return (i_Time < in.i_Time); }
 
-    mstring Nick()	{ return i_Nick; }
-    mstring Sender()	{ return i_Sender; }
-    mDateTime Time()	{ return i_Time; }
-    mstring Text()	{ return i_Text; }
-    long File()		{ return i_File; }
+    mstring Nick()const	    { return i_Nick; }
+    mstring Sender()const   { return i_Sender; }
+    mDateTime Time()const   { return i_Time; }
+    mstring Text()const	    { return i_Text; }
+    long File()const	    { return i_File; }
 
-    bool IsRead()	{ return i_Read; }
-    void Read()		{ i_Read = true; }
-    void Unread()	{ i_Read = false; }
+    bool IsRead()const	    { return i_Read; }
+    void Read()		    { i_Read = true; }
+    void Unread()	    { i_Read = false; }
 };
 
 
@@ -75,10 +75,10 @@ public:
     bool operator<(const News_t &in) const
     	{ return (i_Time < in.i_Time); }
 
-    mstring Channel()	{ return i_Channel; }
-    mstring Sender()	{ return i_Sender; }
-    mDateTime Time()	{ return i_Time; }
-    mstring Text()	{ return i_Text; }
+    mstring Channel()const	{ return i_Channel; }
+    mstring Sender()const	{ return i_Sender; }
+    mDateTime Time()const	{ return i_Time; }
+    mstring Text()const		{ return i_Text; }
 
     bool IsRead(mstring name);
     void Read(mstring name);
@@ -108,8 +108,8 @@ public:
     bool Memo() { return memo; }
     bool News() { return news; }
 
-    virtual void load_database(void);
-    virtual void save_database(void);
+    virtual void load_database(wxInputStream& in);
+    virtual void save_database(wxOutputStream& in);
     MemoServ() {}
     virtual threadtype_enum Get_TType() const { return tt_MemoServ; }
     virtual mstring GetInternalName() const { return "MemoServ"; }
