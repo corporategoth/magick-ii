@@ -20,10 +20,28 @@
 #include "magick.h"
 #include "cryptstream.h"
 
+void Nick_Live_t::InFlight_t::ChgNick(mstring newnick)
+{
+    FT("Nick_Live_t::InFlight_t::ChgNick", (newnick));
+    nick = newnick;
+    if (timer)
+    {
+	mstring *arg;
+	if (ACE_Reactor::instance()->cancel_timer(timer,
+					    (const void **) arg))
+	{
+	    delete arg;
+	}
+	timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
+			new mstring(nick.LowerCase()),
+			ACE_Time_Value(Parent->memoserv.InFlight()));
+    }
+}
 
 void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
 {
-    NFT("Nick_Live_t::operator=");
+    NFT("Nick_Live_t::InFlight_t::operator=");
+    nick        = in.nick;
     memo	= in.memo;
     fileattach	= in.fileattach;
     fileinprog	= in.fileinprog;
@@ -31,16 +49,6 @@ void Nick_Live_t::InFlight_t::operator=(const InFlight_t &in)
     sender	= in.sender;
     recipiant	= in.recipiant;
     text	= in.text;
-    mstring *arg;
-    if (in.timer)
-	if (ACE_Reactor::instance()->cancel_timer(in.timer,
-					    (const void **) arg))
-	{
-	    delete arg;
-	}
-    timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
-			new mstring(me->Name().LowerCase()),
-			ACE_Time_Value(Parent->memoserv.InFlight()));
 }
 
     
@@ -68,7 +76,7 @@ void Nick_Live_t::InFlight_t::init()
 {
     NFT("Nick_Live_t::InFlight_t::init");
     memo = false;
-    timer = 0;
+    timer = 0u;
     fileattach = false;
     fileinprog = false;
     service = "";
@@ -117,14 +125,14 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     {
 	if (InProg())
 	{
-	    Parent->server.NOTICE(service, me->Name(),
+	    Parent->server.NOTICE(service, nick,
 		"Cannot begin a new memo while a file is in progress.");
 	    return;
 	}
 	else
 	{
 	    Cancel();
-	    Parent->server.NOTICE(service, me->Name(),
+	    Parent->server.NOTICE(service, nick,
 		"Previous pending file transfer ABORTED.");
 	}
     }
@@ -133,21 +141,21 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
 	End(0);
     }
 
-    if (!Parent->nickserv.IsStored(me->Name()))
+    if (!Parent->nickserv.IsStored(nick))
     {
-	Parent->server.NOTICE(mynick, me->Name(),
+	Parent->server.NOTICE(mynick, nick,
 	    "You must register your nickname before you can send a memo.");
 	return;
     }
     else if (Parent->nickserv.IsStored(user))
     {
-	Parent->server.NOTICE(mynick, me->Name(),
+	Parent->server.NOTICE(mynick, nick,
 	    "Nickname " + user + " is not registered, cannot send memo.");
 	return;
     }
     else if (file && !Parent->memoserv.Files())
     {
-	Parent->server.NOTICE(mynick, me->Name(),
+	Parent->server.NOTICE(mynick, nick,
 	    "File attachments in MEMOs have been disabled.");
 	return;
     }
@@ -155,7 +163,7 @@ void Nick_Live_t::InFlight_t::Memo (bool file, mstring mynick,
     memo = true;
     fileattach = file;
     service = mynick;
-    sender = me->Name();
+    sender = nick;
     recipiant = user;
     text = message;
 
@@ -179,7 +187,7 @@ void Nick_Live_t::InFlight_t::Continue(mstring message)
 	    delete arg;
 	}
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
-			new mstring(me->Name().LowerCase()),
+			new mstring(nick.LowerCase()),
 			ACE_Time_Value(Parent->memoserv.InFlight()));
 }
 
@@ -212,7 +220,7 @@ void Nick_Live_t::InFlight_t::End(unsigned long filenum)
     {
 	// We do nothing ...
     }
-    else if (File() && filenum == 0)
+    else if (File() && filenum == 0u)
     {
 	Cancel();
     }
@@ -274,14 +282,14 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
     {
 	if (InProg())
 	{
-	    Parent->server.NOTICE(service, me->Name(),
+	    Parent->server.NOTICE(service, nick,
 		"Cannot begin picture transfer while a file is in progress.");
 	    return;
 	}
 	else
 	{
 	    Cancel();
-	    Parent->server.NOTICE(service, me->Name(),
+	    Parent->server.NOTICE(service, nick,
 		"Previous pending file transfer ABORTED.");
 	}
     }
@@ -290,21 +298,21 @@ void Nick_Live_t::InFlight_t::Picture(mstring mynick)
 	End(0);
     }
 
-    if (Parent->nickserv.IsStored(me->Name()))
+    if (Parent->nickserv.IsStored(nick))
     {
-	Parent->server.NOTICE(service, me->Name(),
+	Parent->server.NOTICE(service, nick,
 	    "Your nickname is not registered.");
 	return;
     }
     else if (!Parent->nickserv.PicSize())
     {
-	Parent->server.NOTICE(service, me->Name(),
+	Parent->server.NOTICE(service, nick,
 	    "Setting pictures has been disabled.");
     }
 
     memo = false;
     fileattach = true;
-    sender = me->Name();
+    sender = nick;
     service = mynick;
     timer = ACE_Reactor::instance()->schedule_timer(&Parent->nickserv.ifh,
 			new mstring(sender.LowerCase()),
@@ -317,7 +325,7 @@ Nick_Live_t::Nick_Live_t()
 {
     NFT("Nick_Live_t::Nick_Live_t");
     identified = false;
-    InFlight.Assign(this);
+    InFlight.init();
 }
 
 
@@ -334,7 +342,8 @@ Nick_Live_t::Nick_Live_t(mstring name, mDateTime signon, mstring server,
     i_host = hostname;
     i_realname = realname;
     identified = false;
-    InFlight.Assign(this);
+    InFlight.nick=i_Name;
+    InFlight.init();
 
     if (Parent->operserv.AddHost(i_host))
     {
@@ -364,7 +373,8 @@ Nick_Live_t::Nick_Live_t(mstring name, mstring username, mstring hostname,
     i_host = hostname;
     i_realname = realname;
     identified = true;
-    InFlight.Assign(this);
+    InFlight.nick = i_Name;
+    InFlight.init();
 }
 
 
@@ -401,7 +411,10 @@ void Nick_Live_t::operator=(const Nick_Live_t &in)
     i_UserDef.clear();
     for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
 	i_UserDef.insert(*j);
+    InFlight.nick = i_Name;
+    InFlight.init();
     InFlight=in.InFlight;
+    InFlight.ChgNick(i_Name);
 }
 
 void Nick_Live_t::Join(mstring chan)

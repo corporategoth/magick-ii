@@ -49,7 +49,7 @@ public:
 	friend class DccEngine;
 	friend class InFlight_Handler;
 
-	Nick_Live_t *me;
+	mstring nick;
 	bool memo;
 	long timer;
 	bool fileattach;
@@ -61,8 +61,8 @@ public:
 
 	InFlight_t() {}
 	~InFlight_t();
-	void Assign(Nick_Live_t *self) { me = self; }
 
+	void ChgNick(mstring newnick);
 	void operator=(const InFlight_t &in);
 	void init();
 	// Called upon completion
@@ -85,7 +85,7 @@ public:
 
     Nick_Live_t();
     Nick_Live_t(const Nick_Live_t &in)
-	{ *this = in; InFlight.Assign(this); }
+	{ *this = in; }
     Nick_Live_t(mstring name, mDateTime signon, mstring server,
 	    mstring username, mstring hostname, mstring realname);
     Nick_Live_t(mstring name, mstring username, mstring hostname,
