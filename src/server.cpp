@@ -28,6 +28,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.168  2001/05/04 04:47:15  prez
+** Added SGLINE
+**
 ** Revision 1.167  2001/05/03 22:34:36  prez
 ** Fixed SQUIT protection ...
 **
@@ -4328,6 +4331,10 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			Parent->getMessage("MISC/MAYNOTLINK"));
 		}
 	    }
+	}
+	else if (msgtype=="SGLINE")
+	{
+	    // like we care ...
 	}
 	else if (msgtype=="SILENCE")
 	{
