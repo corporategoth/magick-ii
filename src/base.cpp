@@ -522,7 +522,7 @@ void CommandMap::AddSystemCommand(mstring service, mstring command,
 
     i_system[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
 		    (command.UpperCase(),
-		    (committees != "") ? committees.LowerCase() : "all",
+		    (committees != "") ? committees.LowerCase() : mstring("all"),
 		    function));
 }
 
@@ -559,7 +559,7 @@ void CommandMap::AddCommand(mstring service, mstring command,
 
     i_user[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
 		    (command.UpperCase(),
-		    (committees != "") ? committees.LowerCase() : "all",
+		    (committees != "") ? committees.LowerCase() : mstring("all"),
 		    function));
 }
 

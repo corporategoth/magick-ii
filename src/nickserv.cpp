@@ -954,6 +954,8 @@ Nick_Stored_t::Nick_Stored_t(mstring nick, mstring password)
     l_Private = false;
     i_PRIVMSG = Parent->nickserv.DEF_PRIVMSG();
     l_PRIVMSG = false;
+    i_Language = Parent->nickserv.DEF_Language();
+    l_Language = false;
     i_Forbidden = false;
     i_Picture = 0;
 
@@ -1071,6 +1073,8 @@ void Nick_Stored_t::operator=(const Nick_Stored_t &in)
     l_Private=in.l_Private;
     i_PRIVMSG=in.i_PRIVMSG;
     l_PRIVMSG=in.l_PRIVMSG;
+    i_Language=in.i_Language;
+    l_Language=in.l_Language;
     i_Forbidden=in.i_Forbidden;
     i_Picture=in.i_Picture;
     i_Suspend_By=in.i_Suspend_By;
@@ -1529,6 +1533,8 @@ bool Nick_Stored_t::MakeHost()
 	l_Private = Parent->nickserv.stored[i_Host.LowerCase()].l_Private;
 	i_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].i_PRIVMSG;
 	l_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].l_PRIVMSG;
+	i_Language = Parent->nickserv.stored[i_Host.LowerCase()].i_Language;
+	l_Language = Parent->nickserv.stored[i_Host.LowerCase()].l_Language;
 	i_Picture = Parent->nickserv.stored[i_Host.LowerCase()].i_Picture;
 	i_Suspend_By = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_By;
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
@@ -1614,6 +1620,8 @@ bool Nick_Stored_t::Unlink()
 	l_Private = Parent->nickserv.stored[i_Host.LowerCase()].l_Private;
 	i_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].i_PRIVMSG;
 	l_PRIVMSG = Parent->nickserv.stored[i_Host.LowerCase()].l_PRIVMSG;
+	i_Language = Parent->nickserv.stored[i_Host.LowerCase()].i_Language;
+	l_Language = Parent->nickserv.stored[i_Host.LowerCase()].l_Language;
 	i_Picture = Parent->nickserv.stored[i_Host.LowerCase()].i_Picture;
 	i_Suspend_By = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_By;
 	i_Suspend_Time = Parent->nickserv.stored[i_Host.LowerCase()].i_Suspend_Time;
@@ -2489,6 +2497,100 @@ void Nick_Stored_t::L_PRIVMSG(bool in)
 }
 
 
+mstring Nick_Stored_t::Language()
+{
+    NFT("Nick_Stored_t::Language");
+    if (Parent->nickserv.LCK_Language())
+    {
+	RET(Parent->nickserv.DEF_Language());
+    }
+    if (i_Host == "")
+    {
+	RET(i_Language);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].Language());
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(Language());
+    }
+}
+
+
+void Nick_Stored_t::Language(mstring in)
+{
+    FT("Nick_Stored_t::Language", (in));
+    if (i_Host == "")
+    {
+	if (!L_Language())
+	i_Language = in;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].Language(in);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	Language(in);
+    }
+}
+
+
+bool Nick_Stored_t::L_Language()
+{
+    NFT("Nick_Stored_t::L_Language");
+    if (Parent->nickserv.LCK_Language())
+    {
+	RET(true);
+    }
+    if (i_Host == "")
+    {
+	RET(l_Language);
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	RET(Parent->nickserv.stored[i_Host.LowerCase()].L_Language());
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	RET(L_Language());
+    }
+}
+
+
+void Nick_Stored_t::L_Language(bool in)
+{
+    FT("Nick_Stored_t::L_Language", (in));
+    if (i_Host == "")
+    {
+	if (!Parent->nickserv.LCK_Language())
+	l_Language = in;
+    }
+    else if (Parent->nickserv.IsStored(i_Host))
+    {
+	Parent->nickserv.stored[i_Host.LowerCase()].L_Language(in);
+    }
+    else
+    {
+	wxLogWarning("Nick %s was listed as host of %s, but did not exist!!",
+		i_Host.c_str(), i_Name.c_str());
+	i_Host = "";
+	L_Language(in);
+    }
+}
+
+
 bool Nick_Stored_t::Suspended()
 {
     NFT("Nick_Stored_t::Suspended");
@@ -2788,8 +2890,8 @@ wxOutputStream &operator<<(wxOutputStream& out,Nick_Stored_t& in)
     {
 	out<<(mstring)*i;
     }
-    out<<in.i_Protect<<in.i_Secure<<in.i_NoExpire<<in.i_NoMemo<<in.i_Private<<in.i_PRIVMSG<<in.i_Forbidden;
-    out<<in.l_Protect<<in.l_Secure<<in.l_NoExpire<<in.l_NoMemo<<in.l_Private<<in.l_PRIVMSG<<in.i_Picture;
+    out<<in.i_Protect<<in.i_Secure<<in.i_NoExpire<<in.i_NoMemo<<in.i_Private<<in.i_PRIVMSG<<in.i_Language<<in.i_Forbidden;
+    out<<in.l_Protect<<in.l_Secure<<in.l_NoExpire<<in.l_NoMemo<<in.l_Private<<in.l_PRIVMSG<<in.l_Language<<in.i_Picture;
     out<<in.i_Suspend_By<<in.i_Suspend_Time;
     out<<in.i_LastSeenTime<<in.i_LastRealName<<in.i_LastMask<<in.i_LastQuit;
     out<<in.i_UserDef.size();
@@ -2820,8 +2922,8 @@ wxInputStream &operator>>(wxInputStream& in, Nick_Stored_t& out)
 	in>>dummy;
 	out.i_ignore.insert(dummy);
     }
-    in>>out.i_Protect>>out.i_Secure>>out.i_NoExpire>>out.i_NoMemo>>out.i_Private>>out.i_PRIVMSG>>out.i_Forbidden;
-    in>>out.l_Protect>>out.l_Secure>>out.l_NoExpire>>out.l_NoMemo>>out.l_Private>>out.l_PRIVMSG>>out.i_Picture;
+    in>>out.i_Protect>>out.i_Secure>>out.i_NoExpire>>out.i_NoMemo>>out.i_Private>>out.i_PRIVMSG>>out.i_Language>>out.i_Forbidden;
+    in>>out.l_Protect>>out.l_Secure>>out.l_NoExpire>>out.l_NoMemo>>out.l_Private>>out.l_PRIVMSG>>out.l_Language>>out.i_Picture;
     in>>out.i_Suspend_By>>out.i_Suspend_Time;
     in>>out.i_LastSeenTime>>out.i_LastRealName>>out.i_LastMask>>out.i_LastQuit;
     out.i_UserDef.clear();
@@ -2851,18 +2953,98 @@ void NickServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     // These simply throw the command back onto the map
-    // with 2 paramaters (seperated by a space)
+    // with 2 paramaters (seperated by a space)  These
+    // MUST be specified without '*' wildcards.
     Parent->commands.AddSystemCommand(GetInternalName(),
 		    "SET", "ALL", NickServ::do_2ndparam);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "ACC*", "ALL", NickServ::do_2ndparam);
+		    "ACC", "ALL", NickServ::do_2ndparam);
     Parent->commands.AddSystemCommand(GetInternalName(),
-		    "IGN*", "ALL", NickServ::do_2ndparam);
+		    "ACCESS", "ALL", NickServ::do_2ndparam);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "IGN", "ALL", NickServ::do_2ndparam);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "IGNORE", "ALL", NickServ::do_2ndparam);
 
+    // Dual paramater options (seperated by a space) should
+    // come before ALL single paramater wildcarded options.
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "ACC* CUR*", "ALL", NickServ::do_access_Current);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "ACC* ADD", "ALL", NickServ::do_access_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "ACC* DEL*", "ALL", NickServ::do_access_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "ACC* ERA*", "ALL", NickServ::do_access_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "ACC* LIST", "ALL", NickServ::do_access_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "ACC* VIEW", "ALL", NickServ::do_access_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "IGN* ADD", "ALL", NickServ::do_ignore_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "IGN* DEL*", "ALL", NickServ::do_ignore_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "IGN* ERA*", "ALL", NickServ::do_ignore_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "IGN* LIST", "ALL", NickServ::do_ignore_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "IGN* VIEW", "ALL", NickServ::do_ignore_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* PASS*", "ALL", NickServ::do_set_Password);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* EMAIL", "ALL", NickServ::do_set_Email);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* URL", "ALL", NickServ::do_set_URL);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* ICQ", "ALL", NickServ::do_set_ICQ);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* DESC*", "ALL", NickServ::do_set_Description);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* COMM*", "ALL", NickServ::do_set_Comment);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* PIC*", "ALL", NickServ::do_set_Picture);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* PROT*", "ALL", NickServ::do_set_Protect);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* SEC*", "ALL", NickServ::do_set_Secure);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* NOEXP*", "ALL", NickServ::do_set_NoExpire);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* NOMEMO", "ALL", NickServ::do_set_NoMemo);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* PRIVM*", "ALL", NickServ::do_set_PRIVMSG);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* *MSG", "ALL", NickServ::do_set_PRIVMSG);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* PRIV*", "ALL", NickServ::do_set_Private);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SET* LANG*", "ALL", NickServ::do_set_Language);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "HELP", "ALL", NickServ::do_Help);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		    "REG*", "ALL", NickServ::do_Register);
     Parent->commands.AddSystemCommand(GetInternalName(),
+		    "DROP*", "ALL", NickServ::do_Drop);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "LIN*", "ALL", NickServ::do_Link);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "U*LIN*", "ALL", NickServ::do_UnLink);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "*HOST", "ALL", NickServ::do_Host);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "*SLAV*", "ALL", NickServ::do_Slaves);
+    Parent->commands.AddSystemCommand(GetInternalName(),
 		    "ID*", "ALL", NickServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "INF*", "ALL", NickServ::do_Info);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "SUSP*", "ALL", NickServ::do_Suspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "UNSUS*", "ALL", NickServ::do_UnSuspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		    "FORB*", "ALL", NickServ::do_Forbid);
 }
 
 void NickServ::RemCommands()
@@ -2870,10 +3052,6 @@ void NickServ::RemCommands()
     NFT("NickServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		    "REG*", "ALL");
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		    "ID*", "ALL");
 }
 
 
@@ -2920,11 +3098,22 @@ void NickServ::execute(const mstring & data)
     mThread::ReAttach(tt_mBase);
 }
 
-void do_Help(mstring mynick, mstring source, mstring params)
+void NickServ::do_Help(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Help", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
 
 void NickServ::do_Register(mstring mynick, mstring source, mstring params)
 {
-    FT("OperServ::do_Register", (mynick, source, params));
+    FT("NickServ::do_Register", (mynick, source, params));
 
     mstring message  = params.ExtractWord(1, " ").UpperCase();
     if (params.WordCount(" ") < 2)
@@ -2950,15 +3139,75 @@ void NickServ::do_Register(mstring mynick, mstring source, mstring params)
     }
 }
 
-void do_Drop(mstring mynick, mstring source, mstring params)
-void do_Link(mstring mynick, mstring source, mstring params)
-void do_UnLink(mstring mynick, mstring source, mstring params)
-void do_Host(mstring mynick, mstring source, mstring params)
-void do_Slaves(mstring mynick, mstring source, mstring params)
+void NickServ::do_Drop(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Drop", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_Link(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Link", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_UnLink(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_UnLink", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_Host(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Host", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_Slaves(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Slaves", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
 
 void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
 {
-    FT("OperServ::do_Identify", (mynick, source, params));
+    FT("NickServ::do_Identify", (mynick, source, params));
 
     mstring message  = params.ExtractWord(1, " ").UpperCase();
     if (params.WordCount(" ") < 2)
@@ -2971,12 +3220,66 @@ void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->nickserv.live[source.LowerCase()].Identify(password));
 }
 
-void do_Info(mstring mynick, mstring source, mstring params)
-void do_Suspend(mstring mynick, mstring source, mstring params)
-void do_Forbid(mstring mynick, mstring source, mstring params)
+void NickServ::do_Info(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Info", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_Suspend(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Suspend", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_UnSuspend", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_Forbid(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_Forbid", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 2)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
 
 void NickServ::do_2ndparam(mstring mynick, mstring source, mstring params)
 {
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
     mstring command = params.Before(" ", 2);
     if (!Parent->commands.DoCommand(mynick, source, command, params))
     {
@@ -2986,28 +3289,279 @@ void NickServ::do_2ndparam(mstring mynick, mstring source, mstring params)
 }
 
 
-void do_access_Current(mstring mynick, mstring source, mstring params)
-void do_access_Add(mstring mynick, mstring source, mstring params)
-void do_access_Del(mstring mynick, mstring source, mstring params)
-void do_access_List(mstring mynick, mstring source, mstring params)
-void do_ignore_Add(mstring mynick, mstring source, mstring params)
-void do_ignore_Del(mstring mynick, mstring source, mstring params)
-void do_ignore_List(mstring mynick, mstring source, mstring params)
-void do_set_Password(mstring mynick, mstring source, mstring params)
-void do_set_Email(mstring mynick, mstring source, mstring params)
-void do_set_URL(mstring mynick, mstring source, mstring params)
-void do_set_ICQ(mstring mynick, mstring source, mstring params)
-void do_set_Description(mstring mynick, mstring source, mstring params)
-void do_set_Comment(mstring mynick, mstring source, mstring params)
-void do_set_Picture(mstring mynick, mstring source, mstring params)
-void do_set_Protect(mstring mynick, mstring source, mstring params)
-void do_set_Secure(mstring mynick, mstring source, mstring params)
-void do_set_NoExpire(mstring mynick, mstring source, mstring params)
-void do_set_NoMemo(mstring mynick, mstring source, mstring params)
-void do_set_Private(mstring mynick, mstring source, mstring params)
-void do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
+void NickServ::do_access_Current(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_access_Current", (mynick, source, params));
 
-    
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_access_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_access_Add", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_access_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_access_Del", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_access_List(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_access_List", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_ignore_Add(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_ignore_Add", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_ignore_Del(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_ignore_Del", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_ignore_List(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_ignore_List", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Password(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Password", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Email(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Email", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_URL(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_URL", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_ICQ(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_ICQ", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Description(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Description", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Comment(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Comment", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Picture(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Picture", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Protect(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Protect", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Secure(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Secure", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_NoExpire(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_NoExpire", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_NoMemo(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_NoMemo", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Private(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Private", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_PRIVMSG", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
+void NickServ::do_set_Language(mstring mynick, mstring source, mstring params)
+{
+    FT("NickServ::do_set_Language", (mynick, source, params));
+
+    mstring message  = params.ExtractWord(1, " ").UpperCase();
+    if (params.WordCount(" ") < 3)
+    {
+	::send(mynick, source, "Not enough paramaters");
+	return;
+    }
+
+}
+
 void NickServ::save_database(wxOutputStream& out)
 {
 	//

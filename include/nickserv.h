@@ -187,6 +187,8 @@ class Nick_Stored_t : public mUserDef
     bool l_Private;
     bool i_PRIVMSG;
     bool l_PRIVMSG;
+    mstring i_Language;
+    bool l_Language;
     bool i_Forbidden;
     unsigned long i_Picture;
 
@@ -287,6 +289,10 @@ public:
     void PRIVMSG(bool in);
     bool L_PRIVMSG();
     void L_PRIVMSG(bool in);
+    mstring Language();
+    void Language(mstring in);
+    bool L_Language();
+    void L_Language(bool in);
     bool Suspended();
     mstring Suspend_By();
     mDateTime Suspend_Time();
@@ -335,30 +341,34 @@ private:
     bool lck_private;		// PRIVATE is locked?
     bool def_privmsg;		// Default val of PRIVMSG
     bool lck_privmsg;		// PRIVMSG is locked?
+    mstring def_language;	// Default val of Language
+    bool lck_language;		// Language is locked?
     int picsize;		// MAX size of a personal pic
     mstring picext;		// Valid PIC extensions
 
     void AddCommands();
     void RemCommands();
 public:
-    int Expire()	{ return expire; }
-    int Ident()		{ return ident; }
-    int Release()	{ return release; }
-    int Passfail()	{ return passfail; }
-    bool DEF_Protect()	{ return def_protect; }
-    bool LCK_Protect()	{ return lck_protect; }
-    bool DEF_Secure()	{ return def_secure; }
-    bool LCK_Secure()	{ return lck_secure; }
-    bool DEF_NoExpire()	{ return def_noexpire; }
-    bool LCK_NoExpire()	{ return lck_noexpire; }
-    bool DEF_NoMemo()	{ return def_nomemo; }
-    bool LCK_NoMemo()	{ return lck_nomemo; }
-    bool DEF_Private()	{ return def_private; }
-    bool LCK_Private()	{ return lck_private; }
-    bool DEF_PRIVMSG()	{ return def_privmsg; }
-    bool LCK_PRIVMSG()	{ return lck_privmsg; }
-    int PicSize()	{ return picsize; }
-    mstring PicExt()	{ return picext; }
+    int Expire()		{ return expire; }
+    int Ident()			{ return ident; }
+    int Release()		{ return release; }
+    int Passfail()		{ return passfail; }
+    bool DEF_Protect()		{ return def_protect; }
+    bool LCK_Protect()		{ return lck_protect; }
+    bool DEF_Secure()		{ return def_secure; }
+    bool LCK_Secure()		{ return lck_secure; }
+    bool DEF_NoExpire()		{ return def_noexpire; }
+    bool LCK_NoExpire()		{ return lck_noexpire; }
+    bool DEF_NoMemo()		{ return def_nomemo; }
+    bool LCK_NoMemo()		{ return lck_nomemo; }
+    bool DEF_Private()		{ return def_private; }
+    bool LCK_Private()		{ return lck_private; }
+    bool DEF_PRIVMSG()		{ return def_privmsg; }
+    bool LCK_PRIVMSG()		{ return lck_privmsg; }
+    mstring DEF_Language()	{ return def_privmsg; }
+    bool LCK_Language()		{ return lck_privmsg; }
+    int PicSize()		{ return picsize; }
+    mstring PicExt()		{ return picext; }
 
     virtual void load_database(wxInputStream& in);
     virtual void save_database(wxOutputStream& in);
@@ -384,6 +394,7 @@ public:
     static void do_Identify(mstring mynick, mstring source, mstring params);
     static void do_Info(mstring mynick, mstring source, mstring params);
     static void do_Suspend(mstring mynick, mstring source, mstring params);
+    static void do_UnSuspend(mstring mynick, mstring source, mstring params);
     static void do_Forbid(mstring mynick, mstring source, mstring params);
 
     static void do_2ndparam(mstring mynick, mstring source, mstring params);
@@ -394,18 +405,19 @@ public:
     static void do_ignore_Add(mstring mynick, mstring source, mstring params);
     static void do_ignore_Del(mstring mynick, mstring source, mstring params);
     static void do_ignore_List(mstring mynick, mstring source, mstring params);
-    static void do_set_Password(mstring mynick, mstring source, mstring params)
-    static void do_set_Email(mstring mynick, mstring source, mstring params)
-    static void do_set_URL(mstring mynick, mstring source, mstring params)
-    static void do_set_ICQ(mstring mynick, mstring source, mstring params)
-    static void do_set_Description(mstring mynick, mstring source, mstring params)
-    static void do_set_Comment(mstring mynick, mstring source, mstring params)
-    static void do_set_Picture(mstring mynick, mstring source, mstring params)
-    static void do_set_Protect(mstring mynick, mstring source, mstring params)
-    static void do_set_Secure(mstring mynick, mstring source, mstring params)
-    static void do_set_NoExpire(mstring mynick, mstring source, mstring params)
-    static void do_set_NoMemo(mstring mynick, mstring source, mstring params)
-    static void do_set_Private(mstring mynick, mstring source, mstring params)
-    static void do_set_PRIVMSG(mstring mynick, mstring source, mstring params)
+    static void do_set_Password(mstring mynick, mstring source, mstring params);
+    static void do_set_Email(mstring mynick, mstring source, mstring params);
+    static void do_set_URL(mstring mynick, mstring source, mstring params);
+    static void do_set_ICQ(mstring mynick, mstring source, mstring params);
+    static void do_set_Description(mstring mynick, mstring source, mstring params);
+    static void do_set_Comment(mstring mynick, mstring source, mstring params);
+    static void do_set_Picture(mstring mynick, mstring source, mstring params);
+    static void do_set_Protect(mstring mynick, mstring source, mstring params);
+    static void do_set_Secure(mstring mynick, mstring source, mstring params);
+    static void do_set_NoExpire(mstring mynick, mstring source, mstring params);
+    static void do_set_NoMemo(mstring mynick, mstring source, mstring params);
+    static void do_set_Private(mstring mynick, mstring source, mstring params);
+    static void do_set_PRIVMSG(mstring mynick, mstring source, mstring params);
+    static void do_set_Language(mstring mynick, mstring source, mstring params);
 };
 #endif

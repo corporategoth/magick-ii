@@ -442,7 +442,7 @@ void Magick::LoadInternalMessages()
 {
     NFT("Magick::LoadInternalMessages");
     /* This is to be replaced with language files.
-       blah.lng (and magick.ini has LANGUAGE=blah
+       blah.lng (and magick.ini has DEF_LANGUAGE=blah
        Another file should be created for LOGMSG=blahlog
        for log messages (user display and log messages
        should be seperated */
@@ -521,7 +521,7 @@ void Magick::LoadExternalMessages()
     // use the previously created name array to get the names to load
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
-    wxFileConfig fconf("magick","",services_dir+DirSlash+"lang"+DirSlash+files.Language()+".lng");
+    wxFileConfig fconf("magick","",services_dir+DirSlash+"lang"+DirSlash+nickserv.DEF_Language()+".lng");
     int i;
     // change this to not just update the internal defaults but also to
     // add new one's like loadinternal does.
@@ -923,7 +923,6 @@ void Magick::get_config_values()
     in.Read(ts_Files+"VERBOSE", &verbose, false);
     logger->SetVerbose(verbose);
     in.Read(ts_Files+"MOTDFILE",&files.motdfile,"magick.motd");
-    in.Read(ts_Files+"LANGUAGE",&files.language,"english");
     in.Read(ts_Files+"DATABASE",&files.database,"magick.mnd");
     in.Read(ts_Files+"COMPRESSION",&files.compression,6);
     in.Read(ts_Files+"KEYFILE",&files.keyfile,"");
