@@ -142,8 +142,9 @@ void Magick::LoadLocalMessages()
 	}
 }
 
-mstring Magick::parseEscapes(mstring & in)
+mstring Magick::parseEscapes(const mstring & in)
 {
+	ACE_Thread_Mutex_Guard guard(mutex);
 	mstring Result;
 	strstream inputstream;
 	inputstream<<in.c_str();

@@ -26,8 +26,6 @@
 
 class EscParser : public LLkParser
  {
-
-	mstring retstring;
 public:
 protected:
 	EscParser(TokenBuffer& tokenBuf, int k);

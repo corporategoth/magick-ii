@@ -87,9 +87,6 @@ protected
 OCTALDIGIT: ('0'..'7') | ('0'..'7')('0'..'7') | ('0'..'7')('0'..'7')('0'..'7');
 
 class EscParser extends Parser;
-{
-	mstring retstring;
-}
 
 expr: ( slashexpr | IGNORE | NewLine)*;
 

@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 using namespace std;
+#include "ace/Synch.h"
 
 #include "bob.hpp"
 #include "mstring.h"
@@ -25,8 +26,9 @@ class Magick
 	vector<mstring> argv;
 	//wxFileConfig* MagickIni;
 	mapstringstring Messages;
+	ACE_Thread_Mutex mutex;
 public:
-	mstring parseEscapes(mstring& in);
+	mstring parseEscapes(const mstring& in);
 	void LoadLocalMessages();
 	void dump_help(mstring& progname);
 	mstring getMessage(const mstring& name);
