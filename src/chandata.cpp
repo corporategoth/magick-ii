@@ -856,7 +856,16 @@ void Chan_Live_t::LockDown()
     {
 	delete arg;
     }
-    ph_timer = Magick::instance().reactor().schedule_timer(&(Magick::instance().chanserv.ph), new mstring(i_Name),
+
+    ph_timer = 0;
+
+    bool set_timer = true;
+    if (Magick::instance().chanserv.IsStored(i_Name) && 
+	!Magick::instance().chanserv.GetStored(i_Name)->Mlock_On().Contains("i") &&
+	Magick::instance().chanserv.GetStored(i_Name)->Mlock_Key().empty())
+	set_timer = false;
+    if (set_timer)
+	ph_timer = Magick::instance().reactor().schedule_timer(&(Magick::instance().chanserv.ph), new mstring(i_Name),
 						    ACE_Time_Value(Magick::instance().chanserv.ChanKeep()));
     MCE(ph_timer);
     ETCB();
