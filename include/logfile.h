@@ -24,9 +24,9 @@ static const char *ident_logfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.10  2000/08/06 05:27:46  prez
-** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
-** and infact disabled by default due to it interfering everywhere.
+** Revision 1.11  2000/08/08 03:46:20  prez
+** Fixed problem with dcc not connecting (eg. connection refused) crashing
+** services.
 **
 **
 ** ========================================================== */
@@ -34,7 +34,7 @@ static const char *ident_logfile_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Fri Aug  4 10:31:55 EST 2000
+ * Created on Tue Aug  8 09:04:30 EST 2000
  */
 
 unsigned int def_logent =     319;

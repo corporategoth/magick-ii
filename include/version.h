@@ -14,7 +14,7 @@
 ** ========================================================== */
 #ifndef _VERSION_H
 #define _VERSION_H
-static const char *ident = "@(#) $Id$";
+static const char *ident_version_h = "@(#) $Id$";
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -24,6 +24,10 @@ static const char *ident = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2000/08/08 03:46:20  prez
+** Fixed problem with dcc not connecting (eg. connection refused) crashing
+** services.
+**
 ** Revision 1.104  2000/08/07 22:41:32  prez
 ** *** empty log message ***
 **

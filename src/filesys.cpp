@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/08/08 03:46:21  prez
+** Fixed problem with dcc not connecting (eg. connection refused) crashing
+** services.
+**
 ** Revision 1.43  2000/08/07 12:20:27  prez
 ** Fixed akill and news expiry (flaw in logic), added transferral of
 ** memo list when set new nick as host, and fixed problems with commserv
@@ -1600,10 +1604,11 @@ void *DccMap::Connect2(void *in)
 
     auto_ptr<ACE_SOCK_Stream> DCC_SOCK(new ACE_SOCK_Stream);
     ACE_Time_Value tv(Parent->files.Timeout());
-    ACE_SOCK_Connector tmp(*DCC_SOCK, (ACE_Addr &) val->address, &tv);
+    ACE_SOCK_Connector tmp;
+    int result = tmp.connect(*DCC_SOCK, (ACE_Addr &) val->address, &tv);
     CP(("Connect responded with %d", errno));
 
-    if (errno != ETIME)
+    if (result >= 0)
     {
 	unsigned long WorkId;
 	bool found = false;
@@ -1646,9 +1651,9 @@ void *DccMap::Accept2(void *in)
     auto_ptr<ACE_SOCK_Stream> DCC_SOCK(new ACE_SOCK_Stream);
     ACE_Time_Value tv(Parent->files.Timeout());
     ACE_SOCK_Acceptor tmp(local);
-    tmp.accept(*DCC_SOCK, NULL, &tv);
+    int result = tmp.accept(*DCC_SOCK, NULL, &tv);
     CP(("Accept responded with %d", errno));
-    if (errno != ETIME)
+    if (result != -1)
     {
 	unsigned long WorkId;
 	bool found = false;

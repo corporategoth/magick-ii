@@ -24,9 +24,9 @@ static const char *ident_language_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.20  2000/08/06 05:27:46  prez
-** Fixed akill, and a few other minor bugs.  Also made trace TOTALLY optional,
-** and infact disabled by default due to it interfering everywhere.
+** Revision 1.21  2000/08/08 03:46:20  prez
+** Fixed problem with dcc not connecting (eg. connection refused) crashing
+** services.
 **
 **
 ** ========================================================== */
@@ -34,10 +34,10 @@ static const char *ident_language_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Fri Aug  4 10:31:52 EST 2000
+ * Created on Tue Aug  8 09:04:28 EST 2000
  */
 
-unsigned int def_langent =     863;
+unsigned int def_langent =     865;
 char *def_lang[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -130,6 +130,7 @@ char *def_lang[] = {
 "NEED_PARAMS        =Insufficient parameters specified for %s.  Type /MSG %s HELP %s for help.",
 "MUSTCONTAIN        =Specified %s entry must contain a '%c' character.",
 "MAYNOTCONTAIN      =Specified %s entry may not contain a '%c' character.",
+"MUSTCONTAINONE     =Specified %s entry must only contain one '%c' character with text each side.",
 "STARTHRESH         =Specified %s entry must have more than %d non-wildcard characters.",
 "MUSTBENUMBER       =You must specify a number between %d and %d.",
 "WHOLENUMBER        =You may only specify a whole number.",
@@ -480,7 +481,7 @@ char *def_lang[] = {
 "SUSPEND            =\\     Suspended: %s ago by %s",
 "SUSPENDFOR         =\\           For: %s",
 "EMAIL              =\\        E-Mail: %s",
-"URL                =\\      WWW Page: %s",
+"URL                =\\      WWW Page: http://%s",
 "ICQ                =\\         ICQ #: %s",
 "DESCRIPTION        =\\   Description: %s",
 "COMMENT            =\\       Comment: %s",
@@ -569,7 +570,7 @@ char *def_lang[] = {
 "INUSEBY            =\\  In Use By: %s",
 "LASTUSED           =\\  Last Used: %s",
 "EMAIL              =\\     E-Mail: %s",
-"URL                =\\   WWW Page: %s",
+"URL                =\\   WWW Page: http://%s",
 "SUSPEND            =\\  Suspended: %s ago by %s",
 "SUSPENDFOR         =\\        For: %s",
 "COMMENT            =\\    Comment: %s",
@@ -754,7 +755,7 @@ char *def_lang[] = {
 "HEADCOM            =\\      Head: %s",
 "HEAD               =\\      Head: %s",
 "EMAIL              =\\    E-Mail: %s",
-"URL                =\\  WWW Page: %s",
+"URL                =\\  WWW Page: http://%s",
 "STATS              =\\     Stats: %s",
 "OPTIONS            =\\   Options: %s",
 "MEMBERS            =members",
@@ -844,6 +845,7 @@ char *def_lang[] = {
 "SHUTDOWN           =Shutting down ...",
 "RELOAD             =Configuration file reloaded.",
 "RELOAD_FAIL        =WARNING: Could not read configuration file.",
+"SIGNON             =Signed on all non-active services clients.",
 "UNLOAD             =Language %s has been unloaded.",
 "JUPE               =Server %s has been juped.",
 "ONOFF              =Services have been turned %s.",
@@ -883,14 +885,14 @@ char *def_lang[] = {
 "MEMO_FILE          =#%d from %s sent %s ago has %s (%s) attached.",
 "MEMO_LIST          =%c#%d from %s sent %s ago - \"%s\"",
 "MEMO_LIST_FILE     =%c#%d from %s sent %s ago - \"%s\" [%s (%s)]",
-"CS_UNREAD          =News articles %s for channel %s have been unread.",
+"CS_UNREAD          =News article(s) %s for channel %s have been unread.",
 "CS_UNREAD_ALL      =All news articles for channel %s have been unread.",
-"NS_UNREAD          =Your memos %s have been unread.",
+"NS_UNREAD          =Your memo(s) %s have been unread.",
 "NS_UNREAD_ALL      =All your memos have been unread.",
-"CS_NOTDEL          =News articles %s for channel %s have NOT been deleted.",
-"CS_DEL             =News articles %s for channel %s have been deleted.",
+"CS_NOTDEL          =News article(s) %s for channel %s have NOT been deleted.",
+"CS_DEL             =News article(s) %s for channel %s have been deleted.",
 "CS_DEL_ALL         =All news articles for channel %s have been deleted.",
-"NS_DEL             =Your memos %s have been deleted.",
+"NS_DEL             =Your memo(s) %s have been deleted.",
 "NS_DEL_ALL         =All your memos have been deleted.",
 "CANCEL             =Pending memo has been cancelled.",
 "PENDING            =Memo is now pending.  You have %s to continue or cancel it.",
