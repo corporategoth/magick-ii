@@ -40,6 +40,7 @@ RCSID(mconfig_cpp, "@(#)$Id$");
 
 ceNode::~ceNode()
 {
+    BTCB();
     NFT("ceNode::~ceNode");
     // probably not needed, but for safety's sake anyway
     for (map < mstring, ceNode * >::iterator i = i_children.begin(); i != i_children.end(); i++)
@@ -51,10 +52,12 @@ ceNode::~ceNode()
 	}
     i_children.clear();
     i_keys.clear();
+    ETCB();
 }
 
 ceNode &ceNode::operator=(const ceNode & in)
 {
+    BTCB();
     FT("ceNode::operator=", ("(const ceNode &) in"));
     i_Name = in.i_Name;
     i_keys.clear();
@@ -74,10 +77,12 @@ ceNode &ceNode::operator=(const ceNode & in)
 	*(i_children[j->first]) = * (j->second);
     }
     return *this;
+    ETCB();
 }
 
 bool ceNode::operator==(const ceNode & in) const
 {
+    BTCB();
     FT("ceNode::operator==", ("(const ceNode &) in"));
     bool Result = false;
 
@@ -95,10 +100,12 @@ bool ceNode::operator==(const ceNode & in) const
 	Result = true;
     }
     RET(Result);
+    ETCB();
 }
 
 bool ceNode::SetKey(const mstring & KeyName, const mstring & Value)
 {
+    BTCB();
     FT("ceNode::SetKey", (KeyName, Value));
 
     mstring temppath;
@@ -130,10 +137,12 @@ bool ceNode::SetKey(const mstring & KeyName, const mstring & Value)
 	i_children[next]->SetKey(rest, Value);
     }
     RET(Result);
+    ETCB();
 }
 
 bool ceNode::DeleteKey(const mstring & KeyName)
 {
+    BTCB();
     FT("ceNode::DeleteKey", (KeyName));
     mstring temppath;
     bool Result = false;
@@ -166,10 +175,12 @@ bool ceNode::DeleteKey(const mstring & KeyName)
 	    Result = iter->second->DeleteKey(rest);
     }
     RET(Result);
+    ETCB();
 }
 
 bool ceNode::CreateNode(const mstring & NodeName)
 {
+    BTCB();
     // strip off the first bit of the path, if not exists, create the node, and pass
     // the rest of the path to it, so it can do the same itself.
     // ie NodeName="blah/test/test2", pull out blah, and pass "test/test2" to the node
@@ -208,10 +219,12 @@ bool ceNode::CreateNode(const mstring & NodeName)
 	i_children[next]->CreateNode(rest);
     }
     RET(Result);
+    ETCB();
 }
 
 bool ceNode::DeleteNode(const mstring & NodeName)
 {
+    BTCB();
     FT("ceNode::DeleteNode", (NodeName));
     mstring temppath;
     bool Result = false;
@@ -247,10 +260,12 @@ bool ceNode::DeleteNode(const mstring & NodeName)
 	}
     }
     RET(Result);
+    ETCB();
 }
 
 bool ceNode::NodeExists(const mstring & NodeName) const
 {
+    BTCB();
     // strip off the first bit of the path, if not exists, return false, otherwise pass
     // the rest of the path to it, so it can do the same itself.
     // ie NodeName="blah/test/test2", pull out blah, and pass "test/test2" to the node
@@ -283,10 +298,12 @@ bool ceNode::NodeExists(const mstring & NodeName) const
 	}
     }
     RET(Result);
+    ETCB();
 }
 
 bool ceNode::KeyExists(const mstring & KeyName) const
 {
+    BTCB();
     FT("ceNode::KeyExists", (KeyName));
     mstring temppath;
     bool Result = false;
@@ -316,10 +333,12 @@ bool ceNode::KeyExists(const mstring & KeyName) const
 	}
     }
     RET(Result);
+    ETCB();
 }
 
 mstring ceNode::GetKey(const mstring & KeyName, const mstring & DefValue) const
 {
+    BTCB();
     FT("ceNode::GetKey", (KeyName, DefValue));
     mstring temppath;
     mstring Result = DefValue;
@@ -349,10 +368,12 @@ mstring ceNode::GetKey(const mstring & KeyName, const mstring & DefValue) const
 	}
     }
     RET(Result);
+    ETCB();
 }
 
 ceNode *ceNode::GetNode(const mstring & NodeName)
 {
+    BTCB();
     FT("ceNode::GetNode", (NodeName));
     mstring temppath;
     ceNode *Result = NULL;
@@ -390,10 +411,12 @@ ceNode *ceNode::GetNode(const mstring & NodeName)
 	Result = i_children[next]->GetNode(rest);
     }
     NRET(ceNode *, Result);
+    ETCB();
 }
 
 mstring ceNode::Write(const mstring & KeyName, const mstring & Value)
 {
+    BTCB();
     FT("ceNode::Write", (KeyName, Value));
     mstring temppath;
     mstring Result = "";
@@ -426,10 +449,12 @@ mstring ceNode::Write(const mstring & KeyName, const mstring & Value)
 	Result = i_children[next]->Write(rest, Value);
     }
     RET(Result);
+    ETCB();
 }
 
 map < mstring, mstring > ceNode::GetMap() const
 {
+    BTCB();
     NFT("ceNode::GetMap");
     map < mstring, mstring > submap, Result;
 
@@ -460,10 +485,12 @@ map < mstring, mstring > ceNode::GetMap() const
 	    Result[j->first] = j->second;
     }
     NRET(map < mstring_mstring >, Result);
+    ETCB();
 }
 
 bool mConfigEngine::LoadFile()
 {
+    BTCB();
     NFT("mConfigEngine::LoadFile");
 
     bool Result = false;
@@ -475,17 +502,21 @@ bool mConfigEngine::LoadFile()
 	Result = LoadFromArray(initialload);
     }
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::SaveFile()
 {
+    BTCB();
     NFT("mConfigEngine::SaveFile");
     // bah i'll write this one later
     RET(false);
+    ETCB();
 }
 
 void mConfigEngine::Empty()
 {
+    BTCB();
     NFT("mConfigEngine::Empty");
     map < mstring, ceNode * >::iterator i;
     for (i = RootNode.i_children.begin(); i != RootNode.i_children.end(); i++)
@@ -497,28 +528,34 @@ void mConfigEngine::Empty()
 	}
     RootNode.i_children.clear();
     RootNode.i_keys.clear();
+    ETCB();
 }
 
 mstring mConfigEngine::Read(const mstring & key, const mstring & Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, Default));
     mstring Result;
 
     Result = RootNode.GetKey(key, Default);
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Read(const mstring & key, mstring & outvar, const mstring & Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, "(mstring &) outvar", Default));
     bool Result = true;
 
     outvar = RootNode.GetKey(key, Default);
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Read(const mstring & key, bool &outvar, const bool Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, "(bool &) outvar", Default));
     mstring tmp;
     bool Result = true;
@@ -533,10 +570,12 @@ bool mConfigEngine::Read(const mstring & key, bool &outvar, const bool Default) 
 	Result = false;
     }
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Read(const mstring & key, int &outvar, const int Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, "(int &) outvar", Default));
     mstring tmpvar;
     bool Result = true;
@@ -550,10 +589,12 @@ bool mConfigEngine::Read(const mstring & key, int &outvar, const int Default) co
 	Result = false;
     }
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Read(const mstring & key, unsigned int &outvar, const unsigned int Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, "(unsigned int &) outvar", Default));
     mstring tmpvar;
     bool Result = true;
@@ -567,10 +608,12 @@ bool mConfigEngine::Read(const mstring & key, unsigned int &outvar, const unsign
 	Result = false;
     }
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Read(const mstring & key, long &outvar, const long Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, "(long &) outvar", Default));
     mstring tmpvar;
     bool Result = true;
@@ -584,10 +627,12 @@ bool mConfigEngine::Read(const mstring & key, long &outvar, const long Default) 
 	Result = false;
     }
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Read(const mstring & key, unsigned long &outvar, const unsigned long Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, "(unsigned long &) outvar", Default));
     mstring tmpvar;
     bool Result = true;
@@ -603,10 +648,12 @@ bool mConfigEngine::Read(const mstring & key, unsigned long &outvar, const unsig
 	Result = false;
     }
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Read(const mstring & key, double &outvar, const double Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
     mstring tmpvar;
     bool Result = true;
@@ -620,10 +667,12 @@ bool mConfigEngine::Read(const mstring & key, double &outvar, const double Defau
 	Result = false;
     }
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Read(const mstring & key, float &outvar, const float Default) const
 {
+    BTCB();
     FT("mConfigEngine::Read", (key, "(double &) outvar", Default));
     mstring tmpvar;
     bool Result = true;
@@ -637,18 +686,22 @@ bool mConfigEngine::Read(const mstring & key, float &outvar, const float Default
 	Result = false;
     }
     RET(Result);
+    ETCB();
 }
 
 mstring mConfigEngine::Write(const mstring & key, const mstring & value)
 {
+    BTCB();
     FT("mConfigEngine::Write", (key, value));
     mstring Result = RootNode.Write(key, value);
 
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::Write(const mstring & key, const bool value)
 {
+    BTCB();
     FT("mConfigEngine::Write", (key, value));
     bool Result;
 
@@ -658,10 +711,12 @@ bool mConfigEngine::Write(const mstring & key, const bool value)
     else
 	Write(key, mstring("FALSE"));
     RET(Result);
+    ETCB();
 }
 
 int mConfigEngine::Write(const mstring & key, const int value)
 {
+    BTCB();
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
 
@@ -671,10 +726,12 @@ int mConfigEngine::Write(const mstring & key, const int value)
     Read(key, Result, 0);
     Write(key, tmp);
     RET(Result);
+    ETCB();
 }
 
 unsigned int mConfigEngine::Write(const mstring & key, const unsigned int value)
 {
+    BTCB();
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
 
@@ -684,10 +741,12 @@ unsigned int mConfigEngine::Write(const mstring & key, const unsigned int value)
     Read(key, Result, 0U);
     Write(key, tmp);
     RET(Result);
+    ETCB();
 }
 
 long mConfigEngine::Write(const mstring & key, const long value)
 {
+    BTCB();
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
 
@@ -697,10 +756,12 @@ long mConfigEngine::Write(const mstring & key, const long value)
     Read(key, Result, 0L);
     Write(key, tmp);
     RET(Result);
+    ETCB();
 }
 
 unsigned long mConfigEngine::Write(const mstring & key, const unsigned long value)
 {
+    BTCB();
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
 
@@ -710,10 +771,12 @@ unsigned long mConfigEngine::Write(const mstring & key, const unsigned long valu
     Read(key, Result, 0UL);
     Write(key, tmp);
     RET(Result);
+    ETCB();
 }
 
 double mConfigEngine::Write(const mstring & key, const double value)
 {
+    BTCB();
     FT("mConfigEngine::Write", (key, value));
     mstring tmp;
 
@@ -723,10 +786,12 @@ double mConfigEngine::Write(const mstring & key, const double value)
     Read(key, Result, 0.0);
     Write(key, tmp);
     RET(Result);
+    ETCB();
 }
 
 ceNode *mConfigEngine::GetNode(const mstring & NodeName)
 {
+    BTCB();
     // warning *HIGHLY DANGEROUS, as i can't get auto_ptr's working this pointer
     //  could be freed at any time, trust it only as long as you have to
     // but at the moment, i'm just too damn brainfried to redesign this
@@ -734,26 +799,32 @@ ceNode *mConfigEngine::GetNode(const mstring & NodeName)
     ceNode *Result = RootNode.GetNode(NodeName);
 
     NRET(ceNode *, Result);
+    ETCB();
 }
 
 bool mConfigEngine::DeleteNode(const mstring & NodeName)
 {
+    BTCB();
     FT("mConfigEngine::DeleteNode", (NodeName));
     bool Result = RootNode.DeleteNode(NodeName);
 
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::DeleteKey(const mstring & KeyName)
 {
+    BTCB();
     FT("mConfigEngine::DeleteKey", (KeyName));
     bool Result = RootNode.DeleteKey(KeyName);
 
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::LoadFromString(const mstring & configstring)
 {
+    BTCB();
     FT("mConfigEngine::LoadFromString", (configstring));
     vector < mstring > tempstore;
     for (unsigned int i = 1; i <= configstring.WordCount("\n"); i++)
@@ -761,10 +832,12 @@ bool mConfigEngine::LoadFromString(const mstring & configstring)
     bool Result = LoadFromArray(tempstore);
 
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::LoadFromArray(const vector < mstring > & configarray)
 {
+    BTCB();
     FT("mConfigEngine::LoadFromArray", ("(vector<mstring>) configarray"));
     bool Result = false;
 
@@ -805,18 +878,22 @@ bool mConfigEngine::LoadFromArray(const vector < mstring > & configarray)
 	}
     }
     RET(Result);
+    ETCB();
 }
 
 bool mConfigEngine::NodeExists(const mstring & NodeName) const
 {
+    BTCB();
     FT("mConfigEngine::NodeExists", (NodeName));
     bool Result = RootNode.NodeExists(NodeName);
 
     RET(Result);
+    ETCB();
 }
 
 vector < mstring > mConfigEngine::PreParse(const vector < mstring > & in)
 {
+    BTCB();
     FT("mConfigEngine::PreParse", ("(const vector<mstrign>) in"));
     vector < mstring > Result;
     mstring line;
@@ -941,4 +1018,5 @@ vector < mstring > mConfigEngine::PreParse(const vector < mstring > & in)
 	}
     }
     NRET(vector < mstring >, Result);
+    ETCB();
 }

@@ -110,6 +110,7 @@ void Magick::register_instance(Magick * ins, ACE_thread_t id) throw (E_Magick)
 void Magick::register_instance(Magick * ins, ACE_thread_t id)
 #endif
 {
+    BTCB();
     if (ins == NULL)
     {
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -119,17 +120,22 @@ void Magick::register_instance(Magick * ins, ACE_thread_t id)
     }
 
     InstanceMap[id] = ins;
+    ETCB();
 }
 
 void Magick::deregister_instance(ACE_thread_t id)
 {
+    BTCB();
     InstanceMap.erase(id);
+    ETCB();
 }
 
 bool Magick::instance_exists(ACE_thread_t id)
 {
+    BTCB();
     map < ACE_thread_t, Magick * >::iterator iter = InstanceMap.find(id);
     return (iter != InstanceMap.end());
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -138,6 +144,7 @@ Magick &Magick::instance(ACE_thread_t id) throw (E_Magick)
 Magick &Magick::instance(ACE_thread_t id)
 #endif
 {
+    BTCB();
     map < ACE_thread_t, Magick * >::iterator iter = InstanceMap.find(id);
     if (iter != InstanceMap.end() && iter->second != NULL)
 	return *(iter->second);
@@ -148,23 +155,29 @@ Magick &Magick::instance(ACE_thread_t id)
     LOG(LM_CRITICAL, "EXCEPTIONS/MAGICK", (id));
     return GLOB_Magick;
 #endif
+    ETCB();
 }
 
 Magick::Magick(int inargc, char **inargv)
 {
+    BTCB();
     for (int i = 0; i < inargc; i++)
 	argv.push_back(inargv[i]);
     init();
+    ETCB();
 }
 
 Magick::Magick(const vector < mstring > & inargv)
 {
+    BTCB();
     argv = inargv;
     init();
+    ETCB();
 }
 
 void Magick::init()
 {
+    BTCB();
     i_verbose = false;
     i_level = 0;
     i_pause = false;
@@ -207,10 +220,12 @@ void Magick::init()
 	i_services_dir = buf;
     }
     CurrentState = Constructed;
+    ETCB();
 }
 
 Magick::~Magick()
 {
+    BTCB();
     // Remove all entries from the instance map pointing to us ...
     vector < ACE_thread_t > chunked;
     map < ACE_thread_t, Magick * >::iterator iter;
@@ -221,12 +236,14 @@ Magick::~Magick()
     }
     for (unsigned int i = 0; i < chunked.size(); i++)
 	InstanceMap.erase(chunked[i]);
+    ETCB();
 }
 
 static bool firstrun;
 
 int Magick::Init()
 {
+    BTCB();
     if (CurrentState != Constructed)
     {
 	LOG(LM_ERROR, "ERROR/SEQUENCE", (Initialized, CurrentState));
@@ -378,10 +395,12 @@ int Magick::Init()
     firstrun = true;
     CurrentState = Initialized;
     RET(MAGICK_RET_NORMAL);
+    ETCB();
 }
 
 int Magick::Start()
 {
+    BTCB();
     NFT("Magick::Start");
     if (CurrentState != Initialized && CurrentState != Stopped)
     {
@@ -586,10 +605,12 @@ int Magick::Start()
 
     CurrentState = Started;
     RET(MAGICK_RET_NORMAL);
+    ETCB();
 }
 
 int Magick::Run()
 {
+    BTCB();
     NFT("Magick::Run");
     if (CurrentState != Started)
     {
@@ -639,10 +660,12 @@ int Magick::Run()
 
     CurrentState = RunCompleted;
     RET(MAGICK_RET_NORMAL);
+    ETCB();
 }
 
 int Magick::Stop()
 {
+    BTCB();
     NFT("Magick::Stop");
     if (CurrentState != Started && CurrentState != Running && CurrentState != RunCompleted)
     {
@@ -769,10 +792,12 @@ int Magick::Stop()
 
     CurrentState = Stopped;
     RET(Result);
+    ETCB();
 }
 
 int Magick::Finish()
 {
+    BTCB();
     NFT("Magick::Finish");
 
     // Special case, we never completed Init, so we shouldnt
@@ -788,10 +813,12 @@ int Magick::Finish()
 
     CurrentState = Finished;
     RET(MAGICK_RET_NORMAL);
+    ETCB();
 }
 
 mstring Magick::getMessage(const mstring & nick, const mstring & name)
 {
+    BTCB();
     FT("Magick::getMessage", (nick, name));
 
     if (!nick.empty() && nickserv.IsStored(nick) && nickserv.GetStored(nick)->IsOnline())
@@ -808,10 +835,12 @@ mstring Magick::getMessage(const mstring & nick, const mstring & name)
 
 	RET(retval);
     }
+    ETCB();
 }
 
 mstring Magick::getMessageL(const mstring & lang, const mstring & name)
 {
+    BTCB();
     FT("Magick::getMessageL", (lang, name));
 
     mstring retval = "Could not find message token \"" + name.UpperCase() + "\", please report this to your Services Admins.";
@@ -871,10 +900,12 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     }
     LOG(LM_ERROR, "ERROR/NOLANGTOKEN", (name.UpperCase(), lang.UpperCase()));
     RET(retval);
+    ETCB();
 }
 
 mstring Magick::getLogMessage(const mstring & name)
 {
+    BTCB();
     FT("Magick::getLogMessage", (name));
 
     // Load nickserv default language if its NOT loaded.
@@ -893,10 +924,12 @@ mstring Magick::getLogMessage(const mstring & name)
 	}
     }
     RET(retval);
+    ETCB();
 }
 
 vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 {
+    BTCB();
     FT("Magick::getHelp", (nick, name));
 
     vector < mstring > helptext;
@@ -994,10 +1027,12 @@ StartGetLang:
 	helptext.push_back(tmpstr);
     }
     NRET(vector < mstring >, helptext);
+    ETCB();
 }
 
 void Magick::dump_help() const
 {
+    BTCB();
     // This needs to be re-written.
     cout << "\n" << FULLNAME + " - " + HOMEPAGE +
 	"\n" << "    (c) 1997-2002 Preston A. Elder <prez@magick.tm>\n" << "    (c) 1998-2002 William King <ungod@magick.tm>\n"
@@ -1065,10 +1100,12 @@ void Magick::dump_help() const
 	", please browse the docs directory.\n" << "This released under the Artistic License v2.0 or better.  Please see the\n"
 	<< "\"COPYING\" file for more details.\n\n";
 
+    ETCB();
 }
 
 void Magick::LoadInternalMessages()
 {
+    BTCB();
     NFT("Magick::LoadInternalMessages");
 
     WLOCK(("Messages", "DEFAULT"));
@@ -1091,10 +1128,12 @@ void Magick::LoadInternalMessages()
 	    Messages["DEFAULT"] [iter->first.UpperCase()] = iter->second;
 	MCE(Messages.size());
     }
+    ETCB();
 }
 
 bool Magick::LoadExternalMessages(const mstring & language)
 {
+    BTCB();
     FT("Magick::LoadExternalMessages", (language));
     // use the previously created name array to get the names to load
 
@@ -1121,10 +1160,12 @@ bool Magick::LoadExternalMessages(const mstring & language)
 	}
     }
     RET(false);
+    ETCB();
 }
 
 bool Magick::LoadLogMessages(const mstring & language)
 {
+    BTCB();
     FT("Magick::LoadLogMessages", (language));
     // use the previously created name array to get the names to load
 
@@ -1163,10 +1204,12 @@ bool Magick::LoadLogMessages(const mstring & language)
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 bool Magick::UnloadExternalMessages(const mstring & language)
 {
+    BTCB();
     FT("Magick::UnloadExternalMessages", (language));
 
     if (!language.empty() && Messages.find(language.UpperCase()) != Messages.end())
@@ -1178,10 +1221,12 @@ bool Magick::UnloadExternalMessages(const mstring & language)
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 bool Magick::UnloadHelp(const mstring & language)
 {
+    BTCB();
     FT("Magick::UnloadHelp", (language));
 
     if (!language.empty() && Help.find(language.UpperCase()) != Help.end())
@@ -1193,10 +1238,12 @@ bool Magick::UnloadHelp(const mstring & language)
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 int Magick::doparamparse()
 {
+    BTCB();
     NFT("Magick::doparamparse");
     mstring temp;
     int argc = argv.size(), i;
@@ -1221,10 +1268,12 @@ int Magick::doparamparse()
 	}
     }
     RET(MAGICK_RET_NORMAL);
+    ETCB();
 }
 
 bool Magick::paramlong(const mstring & first, const mstring & second)
 {
+    BTCB();
     FT("Magick::paramlong", (first, second));
     if (first == "--dir" || first == "--config" || first == "--trace" || first == "--service")
     {
@@ -1676,10 +1725,12 @@ bool Magick::paramlong(const mstring & first, const mstring & second)
 	LOG(LM_ERROR, "COMMANDLINE/UNKNOWN_OPTION", (first));
     }
     RET(false);
+    ETCB();
 }
 
 bool Magick::paramshort(const mstring & first, const mstring & second)
 {
+    BTCB();
     FT("Magick::paramshort", (first, second));
     bool ArgUsed = false;
 
@@ -1980,10 +2031,12 @@ bool Magick::paramshort(const mstring & first, const mstring & second)
 	}
     }
     RET(ArgUsed);
+    ETCB();
 }
 
 bool Magick::get_config_values()
 {
+    BTCB();
     NFT("Magick::get_config_values");
     bool reconnect = false;
     bool reconnect_clients = false;
@@ -3125,10 +3178,12 @@ bool Magick::get_config_values()
     DumpE();
     CP(("%s read and loaded to live configuration.", i_config_file.c_str()));
     RET(true);
+    ETCB();
 }
 
 int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 {
+    BTCB();
     static_cast < void > (si);
     static_cast < void > (uctx);
 
@@ -3300,10 +3355,12 @@ int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 	break;			//ignore (todo log that we got it and we're ignoring it)
     }
     return 0;
+    ETCB();
 }
 
 bool Magick::ValidateLogger(ACE_Log_Msg * inst) const
 {
+    BTCB();
     // Removed so it stops appearing as LastFunction
     // FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
 
@@ -3333,10 +3390,12 @@ bool Magick::ValidateLogger(ACE_Log_Msg * inst) const
 	}
     }
     return true;
+    ETCB();
 }
 
 bool Magick::ActivateLogger()
 {
+    BTCB();
     NFT("Magick::ActivateLogger");
     if (logger != NULL)
 	delete logger;
@@ -3349,33 +3408,41 @@ bool Magick::ActivateLogger()
 	logger = NULL;
     }
     RET(logger != NULL);
+    ETCB();
 }
 
 void Magick::DeactivateLogger()
 {
+    BTCB();
     NFT("Magick::DeactivateLogger");
     if (logger != NULL)
 	delete logger;
 
     logger = NULL;
+    ETCB();
 }
 
 /*
 void Magick::handle(const mstring & server, const mstring & command, const mstring & functionname)
 {
+    BTCB();
    pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
    handlermap[data].insert(handlermap[data].begin(),functionname);
+    ETCB();
 }
 
 void Magick::stophandling(const mstring & server, const mstring & command, const mstring & functionname)
 {
+    BTCB();
    pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
    if(checkifhandled(server,command)&&find(handlermap[data].begin(),handlermap[data].end(),functionname)!=handlermap[data].end())
        handlermap[data].erase(find(handlermap[data].begin(),handlermap[data].end(),functionname));
+    ETCB();
 }
 
 bool Magick::checkifhandled(const mstring & server, const mstring & command)
 {
+    BTCB();
    pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
    if(handlermap.find(data)!=handlermap.end())
    {
@@ -3383,19 +3450,23 @@ bool Magick::checkifhandled(const mstring & server, const mstring & command)
    }
    else
        return false;
+    ETCB();
 }
 
 void Magick::doscripthandle(const mstring& server, const mstring& command, const mstring& data)
 {
+    BTCB();
     if(checkifhandled(server,command)==true)
     {
 	//todo
     }
+    ETCB();
 }
 */
 
 bool Magick::startup_t::IsServer(const mstring & svr) const
 {
+    BTCB();
     FT("Magick::startup_t::IsServer", (svr));
 
     RLOCK(("Startup", "Servers"));
@@ -3404,10 +3475,12 @@ bool Magick::startup_t::IsServer(const mstring & svr) const
 	RET(true);
     }
     RET(false);
+    ETCB();
 }
 
 pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > Magick::startup_t::Server(const mstring & svr) const
 {
+    BTCB();
     FT("Magick::startup_t::Server", (svr));
     pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > value(0, triplet < unsigned int, mstring,
 										  unsigned long > (0, "", 0));
@@ -3418,10 +3491,13 @@ pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > Magick::
 	value = servers.find(svr.LowerCase())->second;
     }
     NRET(pair < unsigned int.triplet < unsigned int.mstring.unsigned long > >, value);
+
+    ETCB();
 }
 
 vector < mstring > Magick::startup_t::PriorityList(const unsigned int pri) const
 {
+    BTCB();
     FT("Magick::startup_t::PriorityList", (pri));
     vector < mstring > list;
 
@@ -3434,10 +3510,12 @@ vector < mstring > Magick::startup_t::PriorityList(const unsigned int pri) const
 	    list.push_back(iter->first);
     }
     NRET(vector < mstring >, list);
+    ETCB();
 }
 
 bool Magick::startup_t::IsAllowed(const mstring & svr, const mstring & uplink) const
 {
+    BTCB();
     FT("Magick::startup_t::IsAllowed", (svr, uplink));
 
     map < mstring, vector < mstring > >::const_iterator i;
@@ -3472,10 +3550,12 @@ bool Magick::startup_t::IsAllowed(const mstring & svr, const mstring & uplink) c
     }
 
     RET(false);
+    ETCB();
 }
 
 vector < mstring > Magick::startup_t::Allow(const mstring & svr) const
 {
+    BTCB();
     FT("Magick::startup_t::Allow", (svr));
 
     map < mstring, vector < mstring > >::const_iterator i;
@@ -3490,10 +3570,12 @@ vector < mstring > Magick::startup_t::Allow(const mstring & svr) const
 
     vector < mstring > blank;
     NRET(vector < mstring >, blank);
+    ETCB();
 }
 
 vector < mstring > Magick::startup_t::AllowList() const
 {
+    BTCB();
     NFT("Magick::startup_t::AllowList");
     vector < mstring > list;
 
@@ -3505,10 +3587,12 @@ vector < mstring > Magick::startup_t::AllowList() const
     }
 
     NRET(vector < mstring >, list);
+    ETCB();
 }
 
 pair < mstring, mstring > Magick::GetKeys() const
 {
+    BTCB();
     NFT("Magick::GetKeys");
     pair < mstring, mstring > retval;
 #ifdef HASCRYPT
@@ -3548,10 +3632,12 @@ pair < mstring, mstring > Magick::GetKeys() const
     }
 #endif
     NRET(pair < mstring_mstring >, retval);
+    ETCB();
 }
 
 void Magick::Disconnect(const bool reconnect)
 {
+    BTCB();
     FT("Magick::Disconnect", (reconnect));
     Magick::instance().server.SignOffAll(startup.Services_Quitmsg());
     MCB(i_reconnect);
@@ -3588,19 +3674,23 @@ void Magick::Disconnect(const bool reconnect)
 	    }
 	}
     }
+    ETCB();
 }
 
 void Magick::send(const mstring & in) const
 {
+    BTCB();
     RLOCK((lck_IrcSvcHandler));
     if (ircsvchandler != NULL)
 	ircsvchandler->send(in);
+    ETCB();
 }
 
 SXP::Tag Magick::tag_Magick("Magick");
 
 void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     FT("Magick::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     if (pElement->IsA(operserv.GetClassTag()))
     {
@@ -3630,10 +3720,12 @@ void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	// Scripted ...
     }
+    ETCB();
 }
 
 void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -3648,10 +3740,12 @@ void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	filesys.PostLoad();
 	// Scripted ...
     }
+    ETCB();
 }
 
 void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("Magick::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -3671,10 +3765,12 @@ void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteSubElement(&filesys);
 
     pOut->EndObject(tag_Magick);
+    ETCB();
 }
 
 void Magick::save_databases()
 {
+    BTCB();
     NFT("Magick::save_databases");
     if (i_saving)
 	return;
@@ -3757,10 +3853,12 @@ void Magick::save_databases()
     if (mFile::Exists(files.Database() + ".old"))
 	mFile::Erase(files.Database() + ".old");
     i_saving = false;
+    ETCB();
 }
 
 void Magick::load_databases()
 {
+    BTCB();
     NFT("Magick::load_databases");
     if (mFile::Exists(files.Database()))
     {
@@ -3866,10 +3964,12 @@ void Magick::load_databases()
 	if (fs != NULL)
 	    delete fs;
     }
+    ETCB();
 }
 
 set < mstring > Magick::LNG_Loaded() const
 {
+    BTCB();
     set < mstring > retval;
     map < mstring, map < mstring, mstring > >::const_iterator i;
     RLOCK(("Messages"));
@@ -3878,10 +3978,12 @@ set < mstring > Magick::LNG_Loaded() const
 	retval.insert(i->first);
     }
     return retval;
+    ETCB();
 }
 
 size_t Magick::LNG_Usage(const mstring & lang) const
 {
+    BTCB();
     size_t retval = 0;
 
     map < mstring, map < mstring, mstring > >::const_iterator i;
@@ -3900,10 +4002,12 @@ size_t Magick::LNG_Usage(const mstring & lang) const
     }
 
     return retval;
+    ETCB();
 }
 
 set < mstring > Magick::HLP_Loaded() const
 {
+    BTCB();
     set < mstring > retval;
     map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >::const_iterator i;
     RLOCK(("Help"));
@@ -3912,10 +4016,12 @@ set < mstring > Magick::HLP_Loaded() const
 	retval.insert(i->first);
     }
     return retval;
+    ETCB();
 }
 
 size_t Magick::HLP_Usage(const mstring & lang) const
 {
+    BTCB();
     size_t retval = 0;
 
     map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >::const_iterator i;
@@ -3941,10 +4047,12 @@ size_t Magick::HLP_Usage(const mstring & lang) const
     }
 
     return retval;
+    ETCB();
 }
 
 size_t Magick::LFO_Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     map < mstring, mstring >::const_iterator i;
@@ -3956,20 +4064,25 @@ size_t Magick::LFO_Usage() const
     }
 
     return retval;
+    ETCB();
 }
 
 void Magick::DumpB() const
 {
+    BTCB();
     MB(0,
        (argv.size(), Messages.size(), Help.size(), LogMessages.size(), handlermap.size(), i_verbose, i_services_dir,
 	i_config_file, i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown, i_reconnect, i_localhost));
     MB(16, (i_gotconnect, i_currentserver, i_connected, i_saving));
+    ETCB();
 }
 
 void Magick::DumpE() const
 {
+    BTCB();
     ME(0,
        (argv.size(), Messages.size(), Help.size(), LogMessages.size(), handlermap.size(), i_verbose, i_services_dir,
 	i_config_file, i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown, i_reconnect, i_localhost));
     ME(16, (i_gotconnect, i_currentserver, i_connected, i_saving));
+    ETCB();
 }

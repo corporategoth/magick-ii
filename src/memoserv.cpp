@@ -47,12 +47,15 @@ static News_t GLOB_News_t;
 Memo_t::Memo_t(const mstring & nick, const mstring & sender, const mstring & text, const unsigned long file) : i_Nick(nick),
 i_Sender(sender), i_Time(mDateTime::CurrentDateTime()), i_Text(text), i_Read(false), i_File(file)
 {
+    BTCB();
     FT("Memo_t::Memo_t", (nick, sender, text, file));
     DumpE();
+    ETCB();
 }
 
 Memo_t &Memo_t::operator=(const Memo_t & in)
 {
+    BTCB();
     FT("Memo_t::operator=", ("(const Memo_t &) in"));
     i_Nick = in.i_Nick;
     i_Time = in.i_Time;
@@ -61,72 +64,90 @@ Memo_t &Memo_t::operator=(const Memo_t & in)
     i_File = in.i_File;
     i_Read = in.i_Read;
     NRET(Memo_t &, *this);
+    ETCB();
 }
 
 void Memo_t::ChgNick(const mstring & in)
 {
+    BTCB();
     FT("Memo_t::ChgNick", (in));
     WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Nick"));
     MCB(i_Nick);
     i_Nick = in;
     MCE(i_Nick);
+    ETCB();
 }
 
 mstring Memo_t::Sender() const
 {
+    BTCB();
     NFT(("Memo_t::Sender"));
     RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Sender"));
     RET(i_Sender);
+    ETCB();
 }
 
 mDateTime Memo_t::Time() const
 {
+    BTCB();
     NFT(("Memo_t::Time"));
     RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Time"));
     RET(i_Time);
+    ETCB();
 }
 
 mstring Memo_t::Text() const
 {
+    BTCB();
     NFT(("Memo_t::Text"));
     RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Text"));
     RET(i_Text);
+    ETCB();
 }
 
 unsigned long Memo_t::File() const
 {
+    BTCB();
     NFT(("Memo_t::File"));
     RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_File"));
     RET(i_File);
+    ETCB();
 }
 
 bool Memo_t::IsRead() const
 {
+    BTCB();
     NFT(("Memo_t::IsRead"));
     RLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Read"));
     RET(i_Read);
+    ETCB();
 }
 
 void Memo_t::Read()
 {
+    BTCB();
     NFT(("Memo_t::Read"));
     WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Read"));
     MCB(i_Read);
     i_Read = true;
     MCE(i_Read);
+    ETCB();
 }
 
 void Memo_t::Unread()
 {
+    BTCB();
     NFT(("Memo_t::Unread"));
     WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase(), "i_Read"));
     MCB(i_Read);
     i_Read = false;
     MCE(i_Read);
+    ETCB();
 }
 
 size_t Memo_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     WLOCK((lck_MemoServ, lck_nick, i_Nick.LowerCase()));
@@ -143,28 +164,36 @@ size_t Memo_t::Usage() const
 	retval += j->second.capacity();
     }
     return retval;
+    ETCB();
 }
 
 void Memo_t::DumpB() const
 {
+    BTCB();
     MB(0, (i_Nick, i_Sender, i_Text, i_Time, i_Read, i_File, i_UserDef.size()));
+    ETCB();
 }
 
 void Memo_t::DumpE() const
 {
+    BTCB();
     ME(0, (i_Nick, i_Sender, i_Text, i_Time, i_Read, i_File, i_UserDef.size()));
+    ETCB();
 }
 
 News_t::News_t(const mstring & channel, const mstring & sender, const mstring & text,
 	       const bool noexpire) : i_Channel(channel), i_Sender(sender), i_Time(mDateTime::CurrentDateTime()), i_Text(text),
 i_NoExpire(noexpire)
 {
+    BTCB();
     FT("News_t::News_t", (channel, sender, text));
     DumpE();
+    ETCB();
 }
 
 News_t &News_t::operator=(const News_t & in)
 {
+    BTCB();
     FT("News_t::operator=", ("(const News_t &) in"));
     i_Channel = in.i_Channel;
     i_Time = in.i_Time;
@@ -173,47 +202,59 @@ News_t &News_t::operator=(const News_t & in)
     i_Read = in.i_Read;
     i_NoExpire = in.i_NoExpire;
     NRET(News_t &, *this);
+    ETCB();
 }
 
 mstring News_t::Sender() const
 {
+    BTCB();
     NFT("News_t::Sender");
     RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Sender"));
     RET(i_Sender);
+    ETCB();
 }
 
 mDateTime News_t::Time() const
 {
+    BTCB();
     NFT("News_t::Time");
     RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Time"));
     RET(i_Time);
+    ETCB();
 }
 
 mstring News_t::Text() const
 {
+    BTCB();
     NFT("News_t::Text");
     RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_Text"));
     RET(i_Text);
+    ETCB();
 }
 
 bool News_t::NoExpire() const
 {
+    BTCB();
     NFT("News_t::NoExpire");
     RLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_NoExpire"));
     RET(i_NoExpire);
+    ETCB();
 }
 
 void News_t::NoExpire(const bool in)
 {
+    BTCB();
     NFT("News_t::NoExpire");
     WLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase(), "i_NoExpire"));
     MCB(i_NoExpire);
     i_NoExpire = in;
     MCE(i_NoExpire);
+    ETCB();
 }
 
 bool News_t::IsRead(const mstring & name)
 {
+    BTCB();
     FT("News_t::IsRead", (name));
     mstring target(name);
 
@@ -228,10 +269,12 @@ bool News_t::IsRead(const mstring & name)
     bool retval(i_Read.find(target.LowerCase()) != i_Read.end());
 
     RET(retval);
+    ETCB();
 }
 
 void News_t::Read(const mstring & name)
 {
+    BTCB();
     FT("News_t::Read", (name));
     mstring target = name;
 
@@ -246,10 +289,12 @@ void News_t::Read(const mstring & name)
     MCB(i_Read.size());
     i_Read.insert(target.LowerCase());
     MCE(i_Read.size());
+    ETCB();
 }
 
 void News_t::Unread(const mstring & name)
 {
+    BTCB();
     FT("News_t::Unread", (name));
     mstring target = name;
 
@@ -265,10 +310,12 @@ void News_t::Unread(const mstring & name)
     i_Read.erase(name.LowerCase());
     i_Read.erase(target.LowerCase());
     MCE(i_Read.size());
+    ETCB();
 }
 
 size_t News_t::Usage() const
 {
+    BTCB();
     size_t retval = 0;
 
     WLOCK((lck_MemoServ, lck_channel, i_Channel.LowerCase()));
@@ -287,26 +334,34 @@ size_t News_t::Usage() const
 	retval += j->second.capacity();
     }
     return retval;
+    ETCB();
 }
 
 void News_t::DumpB() const
 {
+    BTCB();
     MB(0, (i_Channel, i_Sender, i_Text, i_Time, i_NoExpire, i_Read.size(), i_UserDef.size()));
+    ETCB();
 }
 
 void News_t::DumpE() const
 {
+    BTCB();
     ME(0, (i_Channel, i_Sender, i_Text, i_Time, i_NoExpire, i_Read.size(), i_UserDef.size()));
+    ETCB();
 }
 
 MemoServ::MemoServ()
 {
+    BTCB();
     NFT("MemoServ::MemoServ");
     messages = true;
+    ETCB();
 }
 
 void MemoServ::AddCommands()
 {
+    BTCB();
     NFT("MemoServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -367,10 +422,12 @@ void MemoServ::AddCommands()
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK *", Magick::instance().commserv.REGD_Name(), NULL);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK", Magick::instance().commserv.REGD_Name(),
 						 do_1_2param);
+    ETCB();
 }
 
 void MemoServ::RemCommands()
 {
+    BTCB();
     NFT("MemoServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
@@ -405,10 +462,12 @@ void MemoServ::RemCommands()
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK #*", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK *", Magick::instance().commserv.REGD_Name());
     Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK", Magick::instance().commserv.REGD_Name());
+    ETCB();
 }
 
 void MemoServ::NickMemoConvert(const mstring & source, const mstring & target)
 {
+    BTCB();
     FT("MemoServ::NickMemoConvert", (source, target));
 
     WLOCK((lck_MemoServ, lck_nick, source));
@@ -429,6 +488,7 @@ void MemoServ::NickMemoConvert(const mstring & source, const mstring & target)
 	WLOCK2((lck_MemoServ, lck_nick));
 	nick.erase(source.LowerCase());
     }
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -437,6 +497,7 @@ void MemoServ::AddNick(nick_memo_t in) throw (E_MemoServ_Nick)
 void MemoServ::AddNick(nick_memo_t in)
 #endif
 {
+    BTCB();
     FT("MemoServ::AddNick", ("(nick_memo_t) in"));
 
     if (!in.size())
@@ -473,6 +534,7 @@ void MemoServ::AddNick(nick_memo_t in)
 
     WLOCK((lck_MemoServ, lck_nick));
     nick[in.begin()->Nick().LowerCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -481,6 +543,7 @@ void MemoServ::AddNickMemo(Memo_t * in) throw (E_MemoServ_Nick)
 void MemoServ::AddNickMemo(Memo_t * in)
 #endif
 {
+    BTCB();
     FT("MemoServ::AddNickMemo", ("(Memo_t *) in"));
 
     if (in == NULL)
@@ -507,6 +570,7 @@ void MemoServ::AddNickMemo(Memo_t * in)
     WLOCK2((lck_MemoServ, lck_nick, in->Nick().LowerCase()));
     /* nick[in->Nick().LowerCase()].push_back(in); */
     nick[in->Nick().LowerCase()].push_back(*in);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -515,6 +579,7 @@ MemoServ::nick_memo_t & MemoServ::GetNick(const mstring & in) const throw (E_Mem
 MemoServ::nick_memo_t & MemoServ::GetNick(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("MemoServ::GetNick", (in));
 
     RLOCK((lck_MemoServ, lck_nick, in.LowerCase()));
@@ -539,6 +604,7 @@ MemoServ::nick_memo_t & MemoServ::GetNick(const mstring & in) const
     }
 
     NRET(MemoServ::nick_memo_t &, const_cast < MemoServ::nick_memo_t & > (iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -547,6 +613,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const throw 
 Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const
 #endif
 {
+    BTCB();
     FT("MemoServ::GetNickMemo", (in, num));
 
     RLOCK((lck_MemoServ, lck_nick, in.LowerCase()));
@@ -588,6 +655,7 @@ Memo_t &MemoServ::GetNickMemo(const mstring & in, const size_t num) const
 
     /* NRET(Memo_t &, const_cast<Memo_t &>(**iter)); */
     NRET(Memo_t &, const_cast < Memo_t & > (*iter));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -596,6 +664,7 @@ void MemoServ::RemNick(const mstring & in) throw (E_MemoServ_Nick)
 void MemoServ::RemNick(const mstring & in)
 #endif
 {
+    BTCB();
     FT("MemoServ::RemNick", (in));
 
     WLOCK((lck_MemoServ, lck_nick));
@@ -616,6 +685,7 @@ void MemoServ::RemNick(const mstring & in)
      * delete *iter2;
      */
     nick.erase(iter);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -624,6 +694,7 @@ void MemoServ::RemNickMemo(const mstring & in, const size_t num) throw (E_MemoSe
 void MemoServ::RemNickMemo(const mstring & in, const size_t num)
 #endif
 {
+    BTCB();
     FT("MemoServ::RemNickMemo", (in, num));
 
     WLOCK((lck_MemoServ, lck_nick));
@@ -659,19 +730,23 @@ void MemoServ::RemNickMemo(const mstring & in, const size_t num)
 
     if (!iter->second.size())
 	nick.erase(iter);
+    ETCB();
 }
 
 bool MemoServ::IsNick(const mstring & in) const
 {
+    BTCB();
     FT("MemoServ::IsNick", (in));
     RLOCK((lck_MemoServ, lck_nick));
     bool retval = (nick.find(in.LowerCase()) != nick.end());
 
     RET(retval);
+    ETCB();
 }
 
 bool MemoServ::IsNickMemo(const mstring & in, const size_t num) const
 {
+    BTCB();
     FT("MemoServ::IsNickMemo", (in, num));
 
     RLOCK((lck_MemoServ, lck_nick));
@@ -689,10 +764,12 @@ bool MemoServ::IsNickMemo(const mstring & in, const size_t num) const
 	}
     }
     RET(false);
+    ETCB();
 }
 
 size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
 {
+    BTCB();
     FT("MemoServ::NickMemoCount", (in, isread));
 
     size_t retval = 0;
@@ -709,6 +786,7 @@ size_t MemoServ::NickMemoCount(const mstring & in, const bool isread) const
 	}
     }
     RET(retval);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -717,6 +795,7 @@ void MemoServ::AddChannel(channel_news_t in) throw (E_MemoServ_Channel)
 void MemoServ::AddChannel(channel_news_t in)
 #endif
 {
+    BTCB();
     FT("MemoServ::AddChannel", ("(channel_news_t) in"));
 
     if (!in.size())
@@ -753,6 +832,7 @@ void MemoServ::AddChannel(channel_news_t in)
 
     WLOCK((lck_MemoServ, lck_channel));
     channel[in.begin()->Channel().LowerCase()] = in;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -761,6 +841,7 @@ void MemoServ::AddChannelNews(News_t * in) throw (E_MemoServ_Channel)
 void MemoServ::AddChannelNews(News_t * in)
 #endif
 {
+    BTCB();
     FT("MemoServ::AddChannelNews", ("(News_t *) in"));
 
     if (in == NULL)
@@ -787,6 +868,7 @@ void MemoServ::AddChannelNews(News_t * in)
     WLOCK2((lck_MemoServ, lck_channel, in->Channel().LowerCase()));
     /* channel[in->Channel().LowerCase()].push_back(in); */
     channel[in->Channel().LowerCase()].push_back(*in);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -795,6 +877,7 @@ MemoServ::channel_news_t & MemoServ::GetChannel(const mstring & in) const throw 
 MemoServ::channel_news_t & MemoServ::GetChannel(const mstring & in) const
 #endif
 {
+    BTCB();
     FT("MemoServ::GetChannel", (in));
 
     RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
@@ -819,6 +902,7 @@ MemoServ::channel_news_t & MemoServ::GetChannel(const mstring & in) const
     }
 
     NRET(MemoServ::channel_news_t &, const_cast < MemoServ::channel_news_t & > (iter->second));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -827,6 +911,7 @@ News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const thr
 News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const
 #endif
 {
+    BTCB();
     FT("MemoServ::GetChannelNews", (in, num));
 
     RLOCK((lck_MemoServ, lck_channel, in.LowerCase()));
@@ -868,6 +953,7 @@ News_t &MemoServ::GetChannelNews(const mstring & in, const size_t num) const
 
     /* NRET(News_t &, const_cast<News_t &>(**iter)); */
     NRET(News_t &, const_cast < News_t & > (*iter));
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -876,6 +962,7 @@ void MemoServ::RemChannel(const mstring & in) throw (E_MemoServ_Channel)
 void MemoServ::RemChannel(const mstring & in)
 #endif
 {
+    BTCB();
     FT("MemoServ::RemChannel", (in));
 
     WLOCK((lck_MemoServ, lck_channel));
@@ -896,6 +983,7 @@ void MemoServ::RemChannel(const mstring & in)
      * delete *iter2;
      */
     channel.erase(iter);
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -904,6 +992,7 @@ void MemoServ::RemChannelNews(const mstring & in, const size_t num) throw (E_Mem
 void MemoServ::RemChannelNews(const mstring & in, const size_t num)
 #endif
 {
+    BTCB();
     FT("MemoServ::RemChannelNews", (in, num));
 
     WLOCK((lck_MemoServ, lck_channel));
@@ -939,19 +1028,23 @@ void MemoServ::RemChannelNews(const mstring & in, const size_t num)
 
     if (!iter->second.size())
 	channel.erase(iter);
+    ETCB();
 }
 
 bool MemoServ::IsChannel(const mstring & in) const
 {
+    BTCB();
     FT("MemoServ::IsChannel", (in));
     RLOCK((lck_MemoServ, lck_channel));
     bool retval = (channel.find(in.LowerCase()) != channel.end());
 
     RET(retval);
+    ETCB();
 }
 
 bool MemoServ::IsChannelNews(const mstring & in, const size_t num) const
 {
+    BTCB();
     FT("MemoServ::IsChannelNews", (in, num));
 
     RLOCK((lck_MemoServ, lck_channel));
@@ -969,10 +1062,12 @@ bool MemoServ::IsChannelNews(const mstring & in, const size_t num) const
 	}
     }
     RET(false);
+    ETCB();
 }
 
 size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, const bool isread)
 {
+    BTCB();
     FT("MemoServ::ChannelNewsCount", (in, user, isread));
 
     size_t retval = 0;
@@ -989,10 +1084,12 @@ size_t MemoServ::ChannelNewsCount(const mstring & in, const mstring & user, cons
 	}
     }
     RET(retval);
+    ETCB();
 }
 
 void MemoServ::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
+    BTCB();
     mThread::ReAttach(tt_MemoServ);
     FT("MemoServ::execute", (source, msgtype, params));
     //okay this is the main memoserv command switcher
@@ -1016,10 +1113,12 @@ void MemoServ::execute(mstring & source, const mstring & msgtype, const mstring 
 
     mThread::ReAttach(tt_mBase);
 
+    ETCB();
 }
 
 void MemoServ::do_Help(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Help", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1044,10 +1143,12 @@ void MemoServ::do_Help(const mstring & mynick, const mstring & source, const mst
 
     for (i = 0; i < help.size(); i++)
 	::send(mynick, source, help[i]);
+    ETCB();
 }
 
 void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Read", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1350,10 +1451,12 @@ void MemoServ::do_Read(const mstring & mynick, const mstring & source, const mst
 		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", (amt));
 	}
     }
+    ETCB();
 }
 
 void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_UnRead", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1552,10 +1655,12 @@ void MemoServ::do_UnRead(const mstring & mynick, const mstring & source, const m
 		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", (amt));
 	}
     }
+    ETCB();
 }
 
 void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Get", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1667,10 +1772,12 @@ void MemoServ::do_Get(const mstring & mynick, const mstring & source, const mstr
 	SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", (amt));
     if (nonfiles)
 	NSEND(mynick, source, "ERR_SYNTAX/NONFILES");
+    ETCB();
 }
 
 void MemoServ::do_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_List", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1775,10 +1882,12 @@ void MemoServ::do_List(const mstring & mynick, const mstring & source, const mst
 	    }
 	}
     }
+    ETCB();
 }
 
 void MemoServ::do_Send(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Send", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1857,10 +1966,12 @@ void MemoServ::do_Send(const mstring & mynick, const mstring & source, const mst
 
     Magick::instance().memoserv.stats.i_Send++;
     nlive->InFlight.Memo(false, mynick, name, text);
+    ETCB();
 }
 
 void MemoServ::do_Flush(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Flush", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -1880,10 +1991,12 @@ void MemoServ::do_Flush(const mstring & mynick, const mstring & source, const ms
     {
 	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
+    ETCB();
 }
 
 void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Forward", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -2031,10 +2144,12 @@ void MemoServ::do_Forward(const mstring & mynick, const mstring & source, const 
 
 	do_Forward2(mynick, source, dest, output);
     }
+    ETCB();
 }
 
 void MemoServ::do_Forward2(const mstring & mynick, const mstring & source, mstring dest, const mstring & text)
 {
+    BTCB();
     FT("MemoServ::do_Forward2", (mynick, source, dest, text));
 
     if (IsChan(dest))
@@ -2079,10 +2194,12 @@ void MemoServ::do_Forward2(const mstring & mynick, const mstring & source, mstri
     Magick::instance().memoserv.stats.i_Forward++;
     nlive->InFlight.Memo(false, mynick, dest, text, true);
     nlive->InFlight.End(0);
+    ETCB();
 }
 
 void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Reply", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -2253,10 +2370,12 @@ void MemoServ::do_Reply(const mstring & mynick, const mstring & source, const ms
     Magick::instance().memoserv.stats.i_Reply++;
     nlive->InFlight.Memo(false, mynick, recipiant, output);
 
+    ETCB();
 }
 
 void MemoServ::do_Cancel(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Cancel", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -2274,10 +2393,12 @@ void MemoServ::do_Cancel(const mstring & mynick, const mstring & source, const m
     {
 	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
+    ETCB();
 }
 
 void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Del", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -2535,10 +2656,12 @@ void MemoServ::do_Del(const mstring & mynick, const mstring & source, const mstr
 		SEND(mynick, source, "ERR_SYNTAX/ABOVELIMIT", (amt));
 	}
     }
+    ETCB();
 }
 
 void MemoServ::do_Continue(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Continue", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -2569,10 +2692,12 @@ void MemoServ::do_Continue(const mstring & mynick, const mstring & source, const
     {
 	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
+    ETCB();
 }
 
 void MemoServ::do_Preview(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_Continue", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -2604,10 +2729,12 @@ void MemoServ::do_Preview(const mstring & mynick, const mstring & source, const 
     {
 	NSEND(mynick, source, "MS_STATUS/NOPENDING");
     }
+    ETCB();
 }
 
 void MemoServ::do_File(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_File", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -2711,10 +2838,12 @@ void MemoServ::do_File(const mstring & mynick, const mstring & source, const mst
 
     Magick::instance().memoserv.stats.i_File++;
     nlive->InFlight.Memo(true, mynick, name, text);
+    ETCB();
 }
 
 void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, const mstring & params)
 {
+    BTCB();
     FT("MemoServ::do_set_NoExpire", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
@@ -2966,6 +3095,7 @@ void MemoServ::do_set_NoExpire(const mstring & mynick, const mstring & source, c
 	}
 */
     }
+    ETCB();
 }
 
 SXP::Tag Memo_t::tag_Memo_t("Memo_t");
@@ -2987,6 +3117,7 @@ SXP::Tag News_t::tag_UserDef("UserDef");
 
 void Memo_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("Memo_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -2998,10 +3129,12 @@ void Memo_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	ud_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
+    ETCB();
 }
 
 void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("Memo_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -3018,10 +3151,12 @@ void Memo_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	pElement->Retrieve(i_Read);
     if (pElement->IsA(tag_File))
 	pElement->Retrieve(i_File);
+    ETCB();
 }
 
 void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("Memo_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -3042,10 +3177,12 @@ void Memo_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
     }
     pOut->EndObject(tag_Memo_t);
+    ETCB();
 }
 
 void News_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("News_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -3057,10 +3194,12 @@ void News_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	ud_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
+    ETCB();
 }
 
 void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
 
     FT("News_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
@@ -3083,10 +3222,12 @@ void News_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	pElement->Retrieve(tmp);
 	i_Read.insert(tmp);
     }
+    ETCB();
 }
 
 void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("News_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -3112,12 +3253,14 @@ void News_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
     }
     pOut->EndObject(tag_News_t);
+    ETCB();
 }
 
 SXP::Tag MemoServ::tag_MemoServ("MemoServ");
 
 void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     FT("MemoServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Memo_t *m = new Memo_t;
 
@@ -3142,19 +3285,23 @@ void MemoServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
 	delete n;
     }
+    ETCB();
 }
 
 void MemoServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
+    BTCB();
     static_cast < void > (pIn);
     static_cast < void > (pElement);
 
     FT("MemoServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
+    ETCB();
 }
 
 void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
+    BTCB();
     static_cast < void > (attribs);
 
     FT("MemoServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
@@ -3191,10 +3338,12 @@ void MemoServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     }
 
     pOut->EndObject(tag_MemoServ);
+    ETCB();
 }
 
 void MemoServ::PostLoad()
 {
+    BTCB();
     NFT("MemoServ::PostLoad");
     // Linkage, etc
 
@@ -3242,4 +3391,5 @@ void MemoServ::PostLoad()
     }
     n_array.clear();
 
+    ETCB();
 }

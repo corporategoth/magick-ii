@@ -60,6 +60,7 @@ bool Lock_Tokenizer::AcquireMapLock() throw (E_Lock)
 bool Lock_Tokenizer::AcquireMapLock()
 #endif
 {
+    BTCB();
     if (maplock == NULL)
 	maplock = new ACE_Thread_Mutex("LockMap");
     if (maplock == NULL)
@@ -79,6 +80,7 @@ bool Lock_Tokenizer::AcquireMapLock()
 	return false;
     }
     return true;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -87,6 +89,7 @@ bool Lock_Tokenizer::ReleaseMapLock() throw (E_Lock)
 bool Lock_Tokenizer::ReleaseMapLock()
 #endif
 {
+    BTCB();
     if (maplock == NULL)
 	return true;
     if (maplock->release() < 0)
@@ -98,6 +101,7 @@ bool Lock_Tokenizer::ReleaseMapLock()
 	return false;
     }
     return true;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -106,6 +110,7 @@ mLock_Read *Lock_Tokenizer::getReadLock(const mstring & lockname, bool recursive
 mLock_Read *Lock_Tokenizer::getReadLock(const mstring & lockname, bool recursive)
 #endif
 {
+    BTCB();
     map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
     mLock_Read *read_lock = NULL;
     char hash[33];
@@ -156,6 +161,7 @@ mLock_Read *Lock_Tokenizer::getReadLock(const mstring & lockname, bool recursive
     ReleaseMapLock();
 
     return read_lock;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -164,6 +170,7 @@ mLock_Write *Lock_Tokenizer::getWriteLock(const mstring & lockname, bool recursi
 mLock_Write *Lock_Tokenizer::getWriteLock(const mstring & lockname, bool recursive)
 #endif
 {
+    BTCB();
     map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
     mLock_Write *write_lock = NULL;
     char hash[33];
@@ -219,6 +226,7 @@ mLock_Write *Lock_Tokenizer::getWriteLock(const mstring & lockname, bool recursi
     ReleaseMapLock();
 
     return write_lock;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -227,6 +235,7 @@ mLock_Mutex *Lock_Tokenizer::getMutexLock(const mstring & lockname, bool recursi
 mLock_Mutex *Lock_Tokenizer::getMutexLock(const mstring & lockname, bool recursive)
 #endif
 {
+    BTCB();
     map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
     mLock_Mutex *mutex_lock = NULL;
     char hash[33];
@@ -277,10 +286,12 @@ mLock_Mutex *Lock_Tokenizer::getMutexLock(const mstring & lockname, bool recursi
     ReleaseMapLock();
 
     return mutex_lock;
+    ETCB();
 }
 
 void Lock_Tokenizer::releaseLock(const mstring & lockname)
 {
+    BTCB();
     map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
 
     map < ACE_thread_t, locktype_enum >::iterator typeiter;
@@ -336,10 +347,12 @@ void Lock_Tokenizer::releaseLock(const mstring & lockname)
 	}
     }
     ReleaseMapLock();
+    ETCB();
 }
 
 locktype_enum Lock_Tokenizer::getType(const mstring & lockname)
 {
+    BTCB();
     map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
     locktype_enum retval = L_Invalid;
 
@@ -354,10 +367,12 @@ locktype_enum Lock_Tokenizer::getType(const mstring & lockname)
     ReleaseMapLock();
 
     return retval;
+    ETCB();
 }
 
 list < pair < void *, locktype_enum > > Lock_Tokenizer::GetLocks(ACE_thread_t thr)
 {
+    BTCB();
     list < pair < void *, locktype_enum > > retval;
     map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator i;
 
@@ -375,6 +390,7 @@ list < pair < void *, locktype_enum > > Lock_Tokenizer::GetLocks(ACE_thread_t th
     }
     ReleaseMapLock();
     return retval;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -383,6 +399,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args) throw (E_Lock)
 mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 #endif
 {
+    BTCB();
     islocked = false;
     if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
 	Magick::instance().ResetTime() == mDateTime(0.0))
@@ -517,6 +534,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 	    }
 	}
     }
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -525,6 +543,7 @@ mLOCK::~mLOCK() throw (E_Lock)
 mLOCK::~mLOCK()
 #endif
 {
+    BTCB();
     if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
 	Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
@@ -612,12 +631,14 @@ mLOCK::~mLOCK()
 		Lock_Tokenizer::releaseLock(locks[i]);
 	}
     }
+    ETCB();
 }
 
 #endif /* MAGICK_LOCKS_WORK */
 
 unsigned short mSocket::FindAvailPort()
 {
+    BTCB();
     NFT("mSocket::FindAvailPort");
 
     ACE_INET_Addr la;
@@ -628,10 +649,12 @@ unsigned short mSocket::FindAvailPort()
 
     acc.close();
     RET(retval);
+    ETCB();
 }
 
 void mSocket::init()
 {
+    BTCB();
     NFT("mSocket::init");
 
     sock = NULL;
@@ -653,19 +676,23 @@ void mSocket::init()
 	    sockid = i;
 	    break;
 	}
+    ETCB();
 }
 
 mSocket::~mSocket()
 {
+    BTCB();
     NFT("mSocket::mSocket");
     if (sock != NULL)
 	close();
     MLOCK(("SockMap"));
     SockMap.erase(sockid);
+    ETCB();
 }
 
 mSocket &mSocket::operator=(const mSocket & in)
 {
+    BTCB();
     FT("mSocket::operator=", ("(const mSocket &) in"));
 
     sockid = in.sockid;
@@ -684,10 +711,12 @@ mSocket &mSocket::operator=(const mSocket & in)
 	SockMap[sockid] = this;
     }
     NRET(mSocket &, *this);
+    ETCB();
 }
 
 bool mSocket::Connect(const ACE_INET_Addr & addr, const unsigned long timeout)
 {
+    BTCB();
     FT("mSocket::Connect", ("(ACE_INET_Addr) addr", timeout));
 
     WLOCK((lck_mSocket, sockid));
@@ -724,28 +753,34 @@ bool mSocket::Connect(const ACE_INET_Addr & addr, const unsigned long timeout)
 
 #endif
     RET(true);
+    ETCB();
 }
 
 bool mSocket::Connect(const unsigned long host, const unsigned short port, const unsigned long timeout)
 {
+    BTCB();
     FT("mSocket::Connect", (host, port, timeout));
     ACE_INET_Addr tmp(port, host);
     bool retval = Connect(tmp, timeout);
 
     RET(retval);
+    ETCB();
 }
 
 bool mSocket::Connect(const mstring & host, const unsigned short port, const unsigned long timeout)
 {
+    BTCB();
     FT("mSocket::Connect", (host, port, timeout));
     ACE_INET_Addr tmp(port, host);
     bool retval = Connect(tmp, timeout);
 
     RET(retval);
+    ETCB();
 }
 
 bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
 {
+    BTCB();
     FT("mSocket::Accept", (port, timeout));
     ACE_INET_Addr addr(port, Magick::instance().LocalHost());
 
@@ -782,10 +817,12 @@ bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
     trace.Begin(sockid, local.get_port_number(), remote.get_port_number(), mstring(remote.get_host_addr()), D_To);
 #endif
     RET(true);
+    ETCB();
 }
 
 bool mSocket::Bind(ACE_SOCK_Stream * in, const dir_enum direction, const bool alloc)
 {
+    BTCB();
     FT("mSocket::Bind", ("(ACE_SOCK_Stream *) in"));
     if (in == NULL)
 	RET(false);
@@ -808,10 +845,12 @@ bool mSocket::Bind(ACE_SOCK_Stream * in, const dir_enum direction, const bool al
 #endif
 
     RET(true);
+    ETCB();
 }
 
 ACE_SOCK_Stream *mSocket::Unbind()
 {
+    BTCB();
     NFT("mSocket::Unbind");
     WLOCK((lck_mSocket, sockid));
 #ifdef MAGICK_TRACE_WORKS
@@ -822,71 +861,87 @@ ACE_SOCK_Stream *mSocket::Unbind()
     sock = NULL;
     last_error = 0;
     NRET(ACE_SOCK_Stream *, retval);
+    ETCB();
 }
 
 mstring mSocket::Local_Host() const
 {
+    BTCB();
     NFT("mSocket::Local_Host");
     RLOCK((lck_mSocket, sockid));
     mstring retval(local.get_host_addr());
 
     RET(retval);
+    ETCB();
 }
 
 unsigned long mSocket::Local_IP() const
 {
+    BTCB();
     NFT("mSocket::Local_IP");
     RLOCK((lck_mSocket, sockid));
     unsigned long retval = local.get_ip_address();
 
     RET(retval);
+    ETCB();
 }
 
 unsigned short mSocket::Local_Port() const
 {
+    BTCB();
     NFT("mSocket::Local_Port");
     RLOCK((lck_mSocket, sockid));
     unsigned short retval = local.get_port_number();
 
     RET(retval);
+    ETCB();
 }
 
 mstring mSocket::Remote_Host() const
 {
+    BTCB();
     NFT("mSocket::Remote_Host");
     RLOCK((lck_mSocket, sockid));
     mstring retval = remote.get_host_addr();
 
     RET(retval);
+    ETCB();
 }
 
 unsigned long mSocket::Remote_IP() const
 {
+    BTCB();
     NFT("mSocket::Remote_IP");
     RLOCK((lck_mSocket, sockid));
     unsigned long retval = remote.get_ip_address();
 
     RET(retval);
+    ETCB();
 }
 
 unsigned short mSocket::Remote_Port() const
 {
+    BTCB();
     NFT("mSocket::Remote_Port");
     RLOCK((lck_mSocket, sockid));
     unsigned short retval = remote.get_port_number();
 
     RET(retval);
+    ETCB();
 }
 
 bool mSocket::IsConnected() const
 {
+    BTCB();
     NFT("mSocket::IsConnected");
     RLOCK((lck_mSocket, sockid));
     RET(sock != NULL);
+    ETCB();
 }
 
 void mSocket::Resolve(const socktype_enum type, const mstring & info)
 {
+    BTCB();
     FT("mSocket::Resolve", (static_cast < int > (type), info));
 #ifdef MAGICK_TRACE_WORKS
     WLOCK((lck_mSocket, sockid));
@@ -895,26 +950,32 @@ void mSocket::Resolve(const socktype_enum type, const mstring & info)
     static_cast < void > (type);
     static_cast < void > (info);
 #endif
+    ETCB();
 }
 
 int mSocket::Last_Error() const
 {
+    BTCB();
     NFT("mSocket::Last_Error");
     RLOCK((lck_mSocket, sockid));
     RET(last_error);
+    ETCB();
 }
 
 mstring mSocket::Last_Error_String() const
 {
+    BTCB();
     NFT("mSocket::Last_Error_String");
     RLOCK((lck_mSocket, sockid));
     mstring retval = strerror(last_error);
 
     RET(retval);
+    ETCB();
 }
 
 ssize_t mSocket::send(void *buf, const size_t len, const unsigned long timeout)
 {
+    BTCB();
     FT("mSocket::send", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
 
@@ -930,10 +991,12 @@ ssize_t mSocket::send(void *buf, const size_t len, const unsigned long timeout)
 	last_error = 0;
 
     RET(retval);
+    ETCB();
 }
 
 ssize_t mSocket::recv(void *buf, const size_t len, const unsigned long timeout)
 {
+    BTCB();
     FT("mSocket::recv", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
 
@@ -949,10 +1012,12 @@ ssize_t mSocket::recv(void *buf, const size_t len, const unsigned long timeout)
 	last_error = 0;
 
     RET(retval);
+    ETCB();
 }
 
 int mSocket::close()
 {
+    BTCB();
     NFT("mSocket::close");
     int retval = 0;
 
@@ -973,6 +1038,7 @@ int mSocket::close()
 	sock = NULL;
     }
     RET(retval);
+    ETCB();
 }
 
 mThread::selftothreadidmap_t mThread::selftothreadidmap;
@@ -983,6 +1049,7 @@ bool mThread::AcquireMapLock() throw (E_Lock)
 bool mThread::AcquireMapLock()
 #endif
 {
+    BTCB();
     if (maplock == NULL)
 	maplock = new mLock_Mutex("SelfToThreadIdMap");
     if (maplock == NULL)
@@ -1002,6 +1069,7 @@ bool mThread::AcquireMapLock()
 	return false;
     }
     return true;
+    ETCB();
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -1010,6 +1078,7 @@ bool mThread::ReleaseMapLock() throw (E_Lock)
 bool mThread::ReleaseMapLock()
 #endif
 {
+    BTCB();
     if (maplock == NULL)
 	return true;
     if (maplock->release() < 0)
@@ -1021,10 +1090,12 @@ bool mThread::ReleaseMapLock()
 	return false;
     }
     return true;
+    ETCB();
 }
 
 ThreadID *mThread::find(const ACE_thread_t thread)
 {
+    BTCB();
     if (Magick::StartTime() == mDateTime(0.0))
 	return NULL;
 
@@ -1038,10 +1109,12 @@ ThreadID *mThread::find(const ACE_thread_t thread)
 
     ReleaseMapLock();
     return tid;
+    ETCB();
 }
 
 vector < ThreadID * > mThread::findall()
 {
+    BTCB();
     vector < ThreadID * > threadlist;
     selftothreadidmap_t::const_iterator iter;
 
@@ -1053,10 +1126,12 @@ vector < ThreadID * > mThread::findall()
 
     ReleaseMapLock();
     return threadlist;
+    ETCB();
 }
 
 void mThread::Attach(const threadtype_enum ttype)
 {
+    BTCB();
     FT("mThread::Attach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid = new ThreadID(ttype);
 
@@ -1065,10 +1140,12 @@ void mThread::Attach(const threadtype_enum ttype)
     selftothreadidmap[ACE_Thread::self()] = tmpid;
     ReleaseMapLock();
     COM(("Thread ID has been attached."));
+    ETCB();
 }
 
 void mThread::Detach()
 {
+    BTCB();
     NFT("mThread::Detach");
     ThreadID *tmpid = find();
 
@@ -1085,10 +1162,12 @@ void mThread::Detach()
     delete tmpid;
 
     COM(("Thread ID has been detached."));
+    ETCB();
 }
 
 void mThread::ReAttach(const threadtype_enum ttype)
 {
+    BTCB();
     FT("mThread::ReAttach", ("(threadtype_enum) ttype"));
     ThreadID *tmpid = find();
 
@@ -1108,4 +1187,5 @@ void mThread::ReAttach(const threadtype_enum ttype)
     COM(("Thread ID has been re-attached to %s.", threadname[ttype].c_str()));
     tmpid->assign(ttype);
     COM(("Thread ID has been re-attached from %s.", threadname[oldtype].c_str()));
+    ETCB();
 }
