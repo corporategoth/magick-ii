@@ -44,14 +44,43 @@ if "%8" == "" GOTO start
 set ALL_ARGS=%ALL_ARGS% %8
 if "%9" == "" GOTO start
 set ALL_ARGS=%ALL_ARGS% %9
-
 :start
-copy /Y "%ALL_ARGS%\uninstall2.bat" "%ALL_ARGS%\..\magick_uninstall.bat"
-cls
-"%ALL_ARGS%\..\magick_uninstall.bat" %ALL_ARGS%
-goto End
+
+IF NOT "%OS%" == "Windows_NT" GOTO CommonStartup
+TITLE Magick IRC Services - Uninstall
+set ALL_ARGS=%*
+
+:CommonStartup
+REM
+REM If its NT, remove it as a service
+REM
+IF NOT "%OS%" == "Windows_NT" GOTO NotService
+
+REM
+REM Runing as NT Service
+REM
+ECHO Removing service ...
+ECHO.
+"%ALL_ARGS%\magick.exe" --config "%ALL_ARGS%\magick.ini" --service stop
+IF NOT %ERRORLEVEL% == 0 GOTO Error
+"%ALL_ARGS%\magick.exe" --config "%ALL_ARGS%\magick.ini" --service remove
+IF NOT %ERRORLEVEL% == 0 GOTO Error
+
+:NotService
+uninst.exe -f"%ALL_ARGS%\Uninst.isu"
+IF NOT EXIST "%ALL_ARGS%" goto End
+ECHO You are about to remove all residual files in
+rd /S "%ALL_ARGS%"
+GOTO End
 
 :NeedParam
 ECHO You MUST specify the path where Magick is installed.
 
+:Error
+ECHO.
+echo Magick has NOT been uninstalled.
+pause
+
 :End
+REM Delete ourselves!
+del /Q /F "%ALL_ARGS%\..\magick_uninstall.bat"
