@@ -150,7 +150,8 @@ public:
 	if (map_key.empty())
 	    return;
 
-	map < mstring, T * >::const_iterator iter = map_ptr.find(map_key);
+	typename map < mstring, T * >::const_iterator iter = map_ptr.find(map_key);
+
 	if (iter == map_ptr.end())
 	    return;
 

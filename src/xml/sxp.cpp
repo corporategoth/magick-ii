@@ -54,10 +54,6 @@ namespace SXP
 	TagHashtable::TagHT().Add(*this);
     }
 
-//      void CFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs) {
-//              pObj->WriteElement(this, attribs);
-//      }
-
     const char *IElement::Name()
     {
 	return "";

@@ -81,7 +81,10 @@ dnl Optimisation and Debugging flags
 dnl -g3   Increased output to gdb (for macros, etc)
 dnl -pg   Profiling output for gprof
 dnl -dm   Output memory stats when compile is done
-OPTFLAGS=""
+CPPOPT=""
+COPT=""
+CXXOPT=""
+JOPT="-O -g"
 
 dnl What warnings we will give off
 dnl -Wall == -Wno-import -Wchar-subscripts -Wcomment -Wformat
@@ -93,15 +96,19 @@ dnl          -Wreorder -Wunknown-pragmas
 dnl REMOVED: -Wshadow -Wcast-qual -Wconversion -Wcast-align
 dnl          -Wold-style-cast -Wundef -Wredundant-decls
 dnl          -Winline -Wtemplate-debugging -Wpacked
-WARNFLAGS="-W -Wall -Wbad-function-cast -Wimport \
-	-Wmissing-declarations -Wmissing-prototypes \
-	-Woverloaded-virtual -Wpointer-arith -Wsynth \
-	-Wsign-compare -Wtraditional -Wstrict-prototypes \
-	-Wwrite-strings -Wformat-security -Wnested-externs"
+dnl POSSIBLES: -Wunreachable-code -Wdisabled-optimization
+CPPWARN="-W -Wall  -Wimport -Wmissing-prototypes \
+	-Wpointer-arith -Wsign-compare -Wtraditional \
+	-Wstrict-prototypes -Wwrite-strings \
+	-Wformat-security"
+CWARN="-Wbad-function-cast -Wmissing-declarations -Wnested-externs"
+CXXWARN="-Woverloaded-virtual -Wsynth"
+JWARN=""
 
-CPPFLAGS="$CPPFLAGS $OPTFLAGS $WARNFLAGS"
-
-JFLAGS="-g -O"
+CPPFLAGS="$CPPFLAGS $CPPOPT $CPPWARN"
+CFLAGS="$CFLAGS $COPT $CWARN"
+CXXFLAGS="$CXXFLAGS $CXXOPT $CXXWARN"
+JFLAGS="$JFLAGS $JOPT $JWARN"
 
 dnl Just incase ace is there, which it often is ...
 LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"

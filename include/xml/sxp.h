@@ -108,7 +108,10 @@ namespace SXP
     template < class T > class IFilePrint
     {
     public:
-	inline void Print(const char *format, ...)
+	virtual ~ IFilePrint()
+	{
+	}
+	virtual void Print(const char *format, ...)
 	{
 	    va_list argptr;
 
@@ -116,11 +119,11 @@ namespace SXP
 	    static_cast < T * > (this)->PrintV(format, argptr);
 	    va_end(argptr);
 	}
-	inline void PrintV(const char *format, va_list argptr)
+	virtual void PrintV(const char *format, va_list argptr)
 	{
 	    static_cast < T * > (this)->PrintV(format, argptr);
 	}
-	inline void Indent()
+	virtual void Indent()
 	{
 	    static_cast < T * > (this)->Indent();
 	}
@@ -147,22 +150,26 @@ namespace SXP
     // and simple data elements
     template < class T > interface IOutStreamT : public IDataOutput < T >
     {
-	inline void BeginXML(void)
+	virtual ~ IOutStreamT()
+	{
+	}
+
+	virtual void BeginXML(void)
 	{
 	    ((T *) this)->BeginXML();
 	}
 
-	inline void BeginObject(Tag & t, dict & attribs = blank_dict)
+	virtual void BeginObject(Tag & t, dict & attribs = blank_dict)
 	{
 	    ((T *) this)->BeginObject(t, attribs);
 	}
-	inline void EndObject(Tag & t)
+	virtual void EndObject(Tag & t)
 	{
 	    ((T *) this)->EndObject(t);
 	}
 
 	// recursively write other objects
-	inline void WriteSubElement(IPersistObj * pObj, dict & attribs = blank_dict)
+	virtual void WriteSubElement(IPersistObj * pObj, dict & attribs = blank_dict)
 	{
 	    ((T *) this)->WriteSubElement(pObj, attribs);
 	}
@@ -319,7 +326,7 @@ namespace SXP
 	    return m_fp;
 	}
 
-	inline void Indent()
+	virtual void Indent()
 	{
 	    for (int i = 0; i < m_nIndent; i++)
 		fputc('\t', m_fp);
@@ -338,12 +345,12 @@ namespace SXP
 	    m_nIndent = 0;
 	}
 
-	~CFileOutStream()
+	virtual ~ CFileOutStream()
 	{
 	    fclose(m_fp);
 	}
 
-	inline void BeginXML(void)
+	virtual void BeginXML(void)
 	{
 	    // UTF-8 encoding is used because it allows relatively painless
 	    // support for storing widechars as character data, via
@@ -352,7 +359,7 @@ namespace SXP
 	    fprintf(m_fp, "%s\n", XML_STRING);
 	}
 
-	inline void BeginObject(Tag & t, dict & attribs = blank_dict)
+	virtual void BeginObject(Tag & t, dict & attribs = blank_dict)
 	{
 	    Indent();
 	    m_nIndent++;
@@ -364,14 +371,17 @@ namespace SXP
 	    fprintf(m_fp, ">\n");
 	}
 
-	inline void EndObject(Tag & t)
+	virtual void EndObject(Tag & t)
 	{
 	    m_nIndent--;
 	    Indent();
 	    fprintf(m_fp, "</%s>\n", t.ch);
 	}
 
-	void WriteSubElement(IPersistObj * pObj, dict & attribs = blank_dict);
+//      virtual void WriteSubElement(IPersistObj * pObj, dict & attribs = blank_dict)
+//      {
+//          pObj->WriteElement(this, attribs);
+//      }
     };
 
     class MOutStream : public IOutStreamT < MOutStream >
@@ -405,6 +415,37 @@ namespace SXP
     };
 
     typedef IOutStreamT < MOutStream > IOutStream;
+
+    // IPersistObj is implemented by the user classes;
+    // it contains both reading and writing functionality
+    interface IPersistObj
+    {
+	// this should return the identifier used for the elements
+	// describing objects of the user class; this should be a
+	// function used also by the IPersistObj::WriteElement implementation
+	virtual Tag &GetClassTag() const = 0;
+
+	// the user class should write itself out, using the IOutStream
+	// members for its "simple" members and calling WriteElement
+	// recursively for any contained objects
+	// some of its attributes might be supplied from its container
+	// (which is supposed to call WriteElement in the first place)
+	virtual void WriteElement(IOutStream * pOut, dict & attribs) = 0;
+
+	// this is called for each element within the "this" element,
+	// for which the "this" element is immediate parent
+	// it is called when the open element tag is encountered,
+	// and only the Name() and Attrib() of pElement values are valid
+	virtual void BeginElement(IParser * pIn, IElement * pElement) = 0;
+
+	// this is called when the corresponding close element
+	// tag is encountered, and the Data() member of pElement is
+	// also valid
+	// NOTE: each object receives both its own BeginElement so it can
+	// process its own element tag attributes, and its own EndElement
+	// so it can process its own character data
+	virtual void EndElement(IParser * pIn, IElement * pElement) = 0;
+    };
 
     // IElement implemented with STL strings
 
@@ -473,37 +514,6 @@ namespace SXP
 	{
 	    return (m_strName.compare(pchName) == 0);
 	}
-    };
-
-    // IPersistObj is implemented by the user classes;
-    // it contains both reading and writing functionality
-    interface IPersistObj
-    {
-	// this should return the identifier used for the elements
-	// describing objects of the user class; this should be a
-	// function used also by the IPersistObj::WriteElement implementation
-	virtual Tag &GetClassTag() const = 0;
-
-	// the user class should write itself out, using the IOutStream
-	// members for its "simple" members and calling WriteElement
-	// recursively for any contained objects
-	// some of its attributes might be supplied from its container
-	// (which is supposed to call WriteElement in the first place)
-	virtual void WriteElement(IOutStream * pOut, dict & attribs) = 0;
-
-	// this is called for each element within the "this" element,
-	// for which the "this" element is immediate parent
-	// it is called when the open element tag is encountered,
-	// and only the Name() and Attrib() of pElement values are valid
-	virtual void BeginElement(IParser * pIn, IElement * pElement) = 0;
-
-	// this is called when the corresponding close element
-	// tag is encountered, and the Data() member of pElement is
-	// also valid
-	// NOTE: each object receives both its own BeginElement so it can
-	// process its own element tag attributes, and its own EndElement
-	// so it can process its own character data
-	virtual void EndElement(IParser * pIn, IElement * pElement) = 0;
     };
 
     // the mighty parser itself
