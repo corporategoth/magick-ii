@@ -1092,6 +1092,7 @@ PARAMETER	SHORT	GROUP		OPTION
 --host X	-H	STARTUP		SERVICES_HOST
 --ownuser	-o	STARTUP		OWNUSER=true
 --level X	-l	STARTUP		LEVEL
+--maxlevel X	-G	STARTUP		MAX_LEVEL
 --lagtime X	-g	STARTUP		LAGTIME
 --umask X	-u	FILES		UMASK
 --verbose	-V	FILES		VERBOSE=true
