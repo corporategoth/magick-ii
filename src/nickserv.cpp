@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.143  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.142  2000/12/19 14:26:55  prez
 ** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
 ** several SVS command text strings, if blank, support isnt there.
@@ -4185,8 +4192,10 @@ bool Nick_Stored_t::IsOnline()
 
     if (Parent->nickserv.IsLive(i_Name))
     {
-	if (Parent->nickserv.live[i_Name.LowerCase()].IsIdentified() ||
-		(!Secure() && Parent->nickserv.live[i_Name.LowerCase()].IsRecognized()))
+	// Not secure and recognized
+	// or not suspended and identified
+	if ((!Secure() && Parent->nickserv.live[i_Name.LowerCase()].IsRecognized()) ||
+	    (!Suspended() && Parent->nickserv.live[i_Name.LowerCase()].IsIdentified()))
 	{
 	    RET(true);
 	}
@@ -4654,45 +4663,6 @@ void NickServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"H*LP", Parent->commserv.ALL_Name(), NickServ::do_Help);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"REG*", Parent->commserv.ALL_Name(), NickServ::do_Register);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"DROP*", Parent->commserv.REGD_Name(), NickServ::do_Drop);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LINK*", Parent->commserv.ALL_Name(), NickServ::do_Link);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"U*LIN*", Parent->commserv.REGD_Name(), NickServ::do_UnLink);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"HOST", Parent->commserv.REGD_Name(), NickServ::do_Host);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"*SLAV*", Parent->commserv.REGD_Name(), NickServ::do_Slaves);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"INF*", Parent->commserv.ALL_Name(), NickServ::do_Info);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"GHOST*", Parent->commserv.ALL_Name(), NickServ::do_Ghost);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"REC*", Parent->commserv.ALL_Name(), NickServ::do_Recover);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LIST*", Parent->commserv.ALL_Name(), NickServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SEND*", Parent->commserv.ALL_Name(), NickServ::do_Send);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"SUSP*", Parent->commserv.SOP_Name(), NickServ::do_Suspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"GET*PASS*", Parent->commserv.SOP_Name(), NickServ::do_Getpass);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LIVE*", Parent->commserv.SOP_Name(), NickServ::do_Live);
-
-    Parent->commands.AddSystemCommand(GetInternalName(),
 		"ACC* CUR*", Parent->commserv.REGD_Name(), NickServ::do_access_Current);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"ACC* ADD", Parent->commserv.REGD_Name(), NickServ::do_access_Add);
@@ -4773,6 +4743,45 @@ void NickServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK LANG*", Parent->commserv.SOP_Name(), NickServ::do_unlock_Language);
 
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"H*LP", Parent->commserv.ALL_Name(), NickServ::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"REG*", Parent->commserv.ALL_Name(), NickServ::do_Register);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"DROP*", Parent->commserv.REGD_Name(), NickServ::do_Drop);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LINK*", Parent->commserv.ALL_Name(), NickServ::do_Link);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"U*LIN*", Parent->commserv.REGD_Name(), NickServ::do_UnLink);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"HOST", Parent->commserv.REGD_Name(), NickServ::do_Host);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"*SLAV*", Parent->commserv.REGD_Name(), NickServ::do_Slaves);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"ID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SID*", Parent->commserv.ALL_Name(), NickServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"INF*", Parent->commserv.ALL_Name(), NickServ::do_Info);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"GHOST*", Parent->commserv.ALL_Name(), NickServ::do_Ghost);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"REC*", Parent->commserv.ALL_Name(), NickServ::do_Recover);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LIST*", Parent->commserv.ALL_Name(), NickServ::do_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SEND*", Parent->commserv.ALL_Name(), NickServ::do_Send);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"SUSP*", Parent->commserv.SOP_Name(), NickServ::do_Suspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"UNSUS*", Parent->commserv.SOP_Name(), NickServ::do_UnSuspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"FORB*", Parent->commserv.SOP_Name(), NickServ::do_Forbid);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"GET*PASS*", Parent->commserv.SOP_Name(), NickServ::do_Getpass);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LIVE*", Parent->commserv.SOP_Name(), NickServ::do_Live);
+
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
     // it, you must add a terminator command (ie. "CMD* *"
@@ -4794,50 +4803,12 @@ void NickServ::AddCommands()
 		"IGN* *", Parent->commserv.REGD_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"IGN*", Parent->commserv.REGD_Name(), do_1_2param);
-
 }
 
 void NickServ::RemCommands()
 {
     NFT("NickServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
-
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"H*LP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"REG*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"DROP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LINK*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"U*LIN*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"HOST", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"*SLAV*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ID*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"INF*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"GHOST*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"REC*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LIST*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SEND*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"SUSP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"UNSUS*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"FORB*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"GET*PASS*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LIVE*", Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"ACC* CUR*", Parent->commserv.REGD_Name());
@@ -4919,6 +4890,43 @@ void NickServ::RemCommands()
 		"UNLOCK PRIV*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK LANG*", Parent->commserv.SOP_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"H*LP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"REG*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"DROP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LINK*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"U*LIN*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"HOST", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"*SLAV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ID*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"INF*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"GHOST*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"REC*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LIST*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SEND*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"SUSP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"UNSUS*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"FORB*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"GET*PASS*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LIVE*", Parent->commserv.SOP_Name());
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -5422,6 +5430,12 @@ void NickServ::do_Identify(mstring mynick, mstring source, mstring params)
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/NEED_PARAMS"),
 				message.c_str(), mynick.c_str(), message.c_str());
+	return;
+    }
+
+    if (Parent->nickserv.stored[source.LowerCase()].Suspended())
+    {
+	::send(mynick, source, Parent->getMessage(source, "NS_YOU_STATUS/ISSUSPENDED"));
 	return;
     }
 
@@ -6772,6 +6786,18 @@ void NickServ::do_set_ICQ(mstring mynick, mstring source, mstring params)
 
     if (newvalue.IsSameAs("none", true))
 	newvalue = "";
+    else if (!newvalue.IsNumber() || newvalue.Contains("."))
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/WHOLENUMBER"));
+	return;
+    }
+    else if (newvalue.length() < 6 || newvalue.length() > 9)
+    {
+	::send(mynick, source, Parent->getMessage(source, "ERR_SYNTAX/MUSTBENUMBER"),
+				100000, 999999999);
+	return;
+    }
+
 
     Parent->nickserv.stored[source.LowerCase()].ICQ(newvalue);
     Parent->nickserv.stats.i_Set++;

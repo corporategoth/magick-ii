@@ -36,6 +36,10 @@ x Done
   like jupe active if the servers admin isnt around)
   > Personally, I think this is a bad idea, squit the server.
 * Add a function to helpserv to forward messages to helpops
+* Commands that have subcommands should be able to have 'help' as the
+  subcommand and it will swap it around and re-execute it as 'help command'.
+  (so essentially 'help command' or 'command help' will work).
+* 'Insufficiant Paramaters' should also have syntax :)
 
 * Restart command in OperServ.
 * Log and announce new max users (optional).

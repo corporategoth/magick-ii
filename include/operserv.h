@@ -25,6 +25,13 @@ static const char *ident_operserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.44  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.43  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -132,18 +139,26 @@ private:
     unsigned long max_htm_gap;
     unsigned long htm_on_gap;
 
+public:
+    typedef entlist_val_t<pair<unsigned int, mstring> > Clone_Type;
+    typedef entlist_val_t<pair<unsigned long, mstring> > Akill_Type;
+    typedef entlist_val_t<mstring> OperDeny_Type;
+    typedef entlist_val_t<bool> Ignore_Type;
+
+private:
+
     // Mask (H), Limit (int), Reason (mstring)
-    set<entlist_val_t<pair<unsigned int, mstring> > > i_Clone;
+    set<Clone_Type> i_Clone;
     map<mstring, pair<unsigned int, list<mDateTime> > > CloneList;
 
     // Mask (U_H), Expire (long), Reason (mstring)
-    set<entlist_val_t<pair<unsigned long, mstring> > > i_Akill;
+    set<Akill_Type> i_Akill;
 
     // Mask (N_U_H), Reason (mstring)
-    set<entlist_val_t<mstring> > i_OperDeny;
+    set<OperDeny_Type> i_OperDeny;
 
     // Mask (N_U_H), Permanent (bool)
-    set<entlist_val_t<bool> > i_Ignore;
+    set<Ignore_Type> i_Ignore;
 
     vector<entlist_val_t<pair<unsigned int, mstring> > *> c_array;
     vector<entlist_val_t<pair<unsigned long, mstring> > *> a_array;
@@ -163,6 +178,7 @@ public:
     {
 	friend class OperServ;
 
+	mDateTime i_ClearTime;
 	unsigned long i_Trace;
 	unsigned long i_Mode;
 	unsigned long i_Qline;
@@ -181,11 +197,14 @@ public:
 	unsigned long i_OperDeny;
 	unsigned long i_Ignore;
     public:
-	stats_t() {
+	stats_t() { clear(); }
+	void clear() {
+	    i_ClearTime = Now();
 	    i_Trace = i_Mode = i_Qline = i_Unqline = i_Noop =
 		i_Kill = i_Hide = i_Ping = i_Update = i_Reload =
 		i_Unload = i_Jupe = i_OnOff = i_Clone =
 		i_Akill = i_OperDeny = i_Ignore = 0; }
+	mDateTime ClearTime()	    { return i_ClearTime; }
 	unsigned long Trace()	    { return i_Trace; }
 	unsigned long Mode()	    { return i_Mode; }
 	unsigned long Qline()	    { return i_Qline; }
@@ -241,51 +260,51 @@ public:
 
     bool Clone_insert(mstring entry, unsigned int value, mstring reason, mstring nick, mDateTime added = Now());
     bool Clone_erase();
-    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator Clone_begin()
+    set<Clone_Type>::iterator Clone_begin()
 	{ return i_Clone.begin(); }
-    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator Clone_end()
+    set<Clone_Type>::iterator Clone_end()
 	{ return i_Clone.end(); }
     size_t Clone_size()				{ return i_Clone.size(); }
     size_t Clone_Usage();
     bool Clone_find(mstring entry);
     pair<unsigned int, mstring> Clone_value(mstring entry);
-    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator Clone;
+    set<Clone_Type>::iterator Clone;
 
     bool Akill_insert(mstring entry, unsigned long value, mstring reason, mstring nick, mDateTime added = Now());
     bool Akill_erase();
-    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator Akill_begin()
+    set<Akill_Type>::iterator Akill_begin()
 	{ return i_Akill.begin(); }
-    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator Akill_end()
+    set<Akill_Type>::iterator Akill_end()
 	{ return i_Akill.end(); }
     size_t Akill_size()				{ return i_Akill.size(); }
     size_t Akill_Usage();
     bool Akill_find(mstring entry);
     pair<unsigned long, mstring> Akill_value(mstring entry);
-    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator Akill;
+    set<Akill_Type>::iterator Akill;
 
     bool OperDeny_insert(mstring entry, mstring value, mstring nick);
     bool OperDeny_erase();
-    set<entlist_val_t<mstring> >::iterator OperDeny_begin()
+    set<OperDeny_Type>::iterator OperDeny_begin()
 	{ return i_OperDeny.begin(); }
-    set<entlist_val_t<mstring> >::iterator OperDeny_end()
+    set<OperDeny_Type>::iterator OperDeny_end()
 	{ return i_OperDeny.end(); }
     size_t OperDeny_size()			{ return i_OperDeny.size(); }
     size_t OperDeny_Usage();
     bool OperDeny_find(mstring entry);
     mstring OperDeny_value(mstring entry);
-    set<entlist_val_t<mstring > >::iterator OperDeny;
+    set<OperDeny_Type>::iterator OperDeny;
 
     bool Ignore_insert(mstring entry, bool perm, mstring nick);
     bool Ignore_erase();
-    set<entlist_val_t<bool> >::iterator Ignore_begin()
+    set<Ignore_Type>::iterator Ignore_begin()
 	{ return i_Ignore.begin(); }
-    set<entlist_val_t<bool> >::iterator Ignore_end()
+    set<Ignore_Type>::iterator Ignore_end()
 	{ return i_Ignore.end(); }
     size_t Ignore_size()				{ return i_Ignore.size(); }
     size_t Ignore_Usage();
     bool Ignore_find(mstring entry);
     bool Ignore_value(mstring entry);
-    set<entlist_val_t<bool> >::iterator Ignore;
+    set<Ignore_Type>::iterator Ignore;
 
 
     OperServ();

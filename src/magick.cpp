@@ -29,6 +29,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.278  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.277  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -420,14 +427,11 @@ Magick::Magick(int inargc, char **inargv)
     i_saving = false;
     i_auto = false;
 
-    AddLogInstance(ACE_LOG_MSG);
-
     DumpB();
 }
 
 Magick::~Magick()
 {
-    DelLogInstance(ACE_LOG_MSG);
 }
 
 int Magick::Start()
@@ -2455,6 +2459,7 @@ bool Magick::get_config_values()
 	chanserv.delay = FromHumanTime("30s");
 
     in.Read(ts_ChanServ+"MAX_PER_NICK",chanserv.max_per_nick,15U);
+    in.Read(ts_ChanServ+"MAX_MESSAGES",chanserv.max_messages,15U);
     in.Read(ts_ChanServ+"DEF_AKICK",chanserv.def_akick_reason,"You have been banned from channel");
     in.Read(ts_ChanServ+"PASSFAIL",chanserv.passfail,5U);
     in.Read(ts_ChanServ+"CHANKEEP",value_mstring,"15s");
@@ -2655,6 +2660,7 @@ bool Magick::get_config_values()
     else
 	operserv.htm_on_gap = FromHumanTime("30s");
 
+    in.Read(ts_CommServ+"MAX_LOGON",commserv.max_logon,5U);
     RemCommands();
     in.Read(ts_CommServ+"DEF_OPENMEMOS",commserv.def_openmemos,true);
     in.Read(ts_CommServ+"LCK_OPENMEMOS",commserv.lck_openmemos,false);
@@ -2894,71 +2900,45 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
     return 0;
 }
 
-bool Magick::IsLogInstance(ACE_Log_Msg *instance)
+void Magick::ValidateLogger(ACE_Log_Msg *instance)
 {
-    FT("IsLogInstance", ("(ACE_Log_Msg *) instance"));
-    MLOCK(("LogInstances"));
-    bool retval = (LogInstances.find(instance) != LogInstances.end());
-    RET(retval);
-}
+    FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
 
-void Magick::AddLogInstance(ACE_Log_Msg *instance)
-{
-    FT("AddLogInstance", ("(ACE_Log_Msg *) instance"));
-
-    { MLOCK(("LogInstances"));
-    LogInstances.insert(instance);
+    if (instance->msg_callback() != logger)
+    {
+	instance->open(i_programname.c_str());
+	instance->msg_callback(logger);
     }
 
-    instance->open(i_programname.c_str());
     if (logger != NULL)
     {
-	instance->clr_flags (ACE_Log_Msg::STDERR);
-	instance->set_flags (ACE_Log_Msg::MSG_CALLBACK);
-	instance->msg_callback (logger);
+	if (!(instance->flags() & ACE_Log_Msg::MSG_CALLBACK))
+	{
+	    instance->set_flags(ACE_Log_Msg::MSG_CALLBACK);
+	    instance->clr_flags(ACE_Log_Msg::STDERR);
+	}
     }
-}
-
-void Magick::DelLogInstance(ACE_Log_Msg *instance)
-{
-    FT("DelLogInstance", ("(ACE_Log_Msg *) instance"));
-
-    { MLOCK(("LogInstances"));
-    LogInstances.erase(instance);
+    else
+    {
+	if (!(instance->flags() & ACE_Log_Msg::STDERR))
+	{
+	    instance->set_flags(ACE_Log_Msg::STDERR);
+	    instance->clr_flags(ACE_Log_Msg::MSG_CALLBACK);
+	}
     }
-
-    instance->msg_callback (NULL);
-    instance->clr_flags (ACE_Log_Msg::MSG_CALLBACK);
-    instance->set_flags (ACE_Log_Msg::STDERR);
 }
 
 void Magick::ActivateLogger()
 {
+    NFT("Magick::ActivateLogger");
     if (logger != NULL)
 	delete logger;
     logger = new Logger;
-
-    { MLOCK(("LogInstances"));
-    set<ACE_Log_Msg *>::iterator i;
-    for (i=LogInstances.begin(); i!=LogInstances.end(); i++)
-    {
-	(*i)->clr_flags (ACE_Log_Msg::STDERR);
-	(*i)->set_flags (ACE_Log_Msg::MSG_CALLBACK);
-	(*i)->msg_callback (logger);
-    }}
 }
 
 void Magick::DeactivateLogger()
 {
-    { MLOCK(("LogInstances"));
-    set<ACE_Log_Msg *>::iterator i;
-    for (i=LogInstances.begin(); i!=LogInstances.end(); i++)
-    {
-	(*i)->msg_callback (NULL);
-	(*i)->clr_flags (ACE_Log_Msg::MSG_CALLBACK);
-	(*i)->set_flags (ACE_Log_Msg::STDERR);
-    }}
-
+    NFT("Magick::DeactivateLogger");
     if (logger != NULL)
 	delete logger;
     logger = NULL;

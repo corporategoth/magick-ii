@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.74  2000/12/21 14:18:18  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.73  2000/12/19 14:26:55  prez
 ** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
 ** several SVS command text strings, if blank, support isnt there.
@@ -231,20 +238,6 @@ void ServMsg::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.ALL_Name(), ServMsg::do_Help);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CRED*", Parent->commserv.ALL_Name(), ServMsg::do_Credits);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "CONTRIB*", Parent->commserv.ALL_Name(), ServMsg::do_Contrib);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LANG*", Parent->commserv.REGD_Name(), ServMsg::do_Languages);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GLOB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Global);
-    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* NICK*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), ServMsg::do_stats_Nick);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -292,6 +285,21 @@ void ServMsg::AddCommands()
 	    "FILE* RES*", Parent->commserv.SADMIN_Name(), ServMsg::do_file_Lookup);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "H*LP", Parent->commserv.ALL_Name(), ServMsg::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CRED*", Parent->commserv.ALL_Name(), ServMsg::do_Credits);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "CONTRIB*", Parent->commserv.ALL_Name(), ServMsg::do_Contrib);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LANG*", Parent->commserv.REGD_Name(), ServMsg::do_Languages);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "BREAKD*", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*MAP", Parent->commserv.ALL_Name(), ServMsg::do_BreakDown);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GLOB*", Parent->commserv.ADMIN_Name(), ServMsg::do_Global);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "STAT* *", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -306,20 +314,6 @@ void ServMsg::RemCommands()
 {
     NFT("ServMsg::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CRED*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "CONTRIB*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LANG*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "BREAKD*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "*MAP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GLOB*", Parent->commserv.ADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "STAT* NICK*", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name());
@@ -360,6 +354,21 @@ void ServMsg::RemCommands()
 	    "FILE* LOOK*", Parent->commserv.SADMIN_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "FILE* RES*", Parent->commserv.SADMIN_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "HELP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CRED*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "CONTRIB*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LANG*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "BREAKD*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "*MAP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GLOB*", Parent->commserv.ADMIN_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "STAT* *", Parent->commserv.OPER_Name() + " " +
@@ -635,6 +644,15 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 	return;
     }}
 
+    if (params.WordCount(" ") > 2 &&
+	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
+	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))
+    {
+	Parent->nickserv.stats.clear();
+	return;
+    }
+
     unsigned long linked = 0, suspended = 0, forbidden = 0;
     map<mstring,Nick_Stored_t>::iterator i;
     { RLOCK(("NickServ", "stored"));
@@ -656,7 +674,8 @@ void ServMsg::do_stats_Nick(mstring mynick, mstring source, mstring params)
 		Parent->nickserv.stored.size(), linked);
     ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_DENIED"),
 		suspended, forbidden);
-    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD"));
+    ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD"),
+		ToHumanTime(Parent->nickserv.stats.ClearTime().SecondsSince()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/NICK_CMD1"),
 		Parent->nickserv.stats.Register(),
 		Parent->nickserv.stats.Drop());
@@ -701,6 +720,15 @@ void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
 	return;
     }}
 
+    if (params.WordCount(" ") > 2 &&
+	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
+	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))
+    {
+	Parent->chanserv.stats.clear();
+	return;
+    }
+
     unsigned long suspended = 0, forbidden = 0;
     map<mstring,Chan_Stored_t>::iterator i;
     { RLOCK(("ChanServ", "stored"));
@@ -720,7 +748,8 @@ void ServMsg::do_stats_Channel(mstring mynick, mstring source, mstring params)
 		Parent->chanserv.stored.size());
     ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_DENIED"),
 		suspended, forbidden);
-    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD"));
+    ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD"),
+		ToHumanTime(Parent->chanserv.stats.ClearTime().SecondsSince()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/CHAN_CMD1"),
 		Parent->chanserv.stats.Register(),
 		Parent->chanserv.stats.Drop());
@@ -779,6 +808,19 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 	return;
     }}
 
+    if (params.WordCount(" ") > 2 &&
+	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
+	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))
+    {
+	Parent->memoserv.stats.clear();
+	Parent->commserv.stats.clear();
+	Parent->servmsg.stats.clear();
+	return;
+    }
+
+
+
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_MEMO"),
 		Parent->memoserv.nick.size());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_NEWS"),
@@ -787,7 +829,8 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 		Parent->commserv.list.size());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
-		Parent->memoserv.GetInternalName().c_str());
+		Parent->memoserv.GetInternalName().c_str(),
+		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD1"),
 		Parent->memoserv.stats.Read(),
 		Parent->memoserv.stats.Unread());
@@ -805,7 +848,8 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 		Parent->memoserv.stats.File());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
-		Parent->commserv.GetInternalName().c_str());
+		Parent->commserv.GetInternalName().c_str(),
+		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD6"),
 		Parent->commserv.stats.New(),
 		Parent->commserv.stats.Kill());
@@ -820,7 +864,8 @@ void ServMsg::do_stats_Other(mstring mynick, mstring source, mstring params)
 		Parent->commserv.stats.Unlock());
 
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD"),
-		Parent->servmsg.GetInternalName().c_str());
+		Parent->servmsg.GetInternalName().c_str(),
+		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OTH_CMD10"),
 		Parent->servmsg.stats.Global(),
 		Parent->servmsg.stats.Credits());
@@ -847,6 +892,16 @@ void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
 	return;
     }}
 
+    if (params.WordCount(" ") > 2 &&
+	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
+	Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+	Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsOn(source))
+    {
+	Parent->operserv.stats.clear();
+	return;
+    }
+
+
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CLONE"),
 		Parent->operserv.Clone_size());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_AKILL"),
@@ -856,7 +911,8 @@ void ServMsg::do_stats_Oper(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_IGNORE"),
 		Parent->operserv.Ignore_size());
 
-    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD"));
+    ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD"),
+		ToHumanTime(Parent->operserv.stats.ClearTime().SecondsSince()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "STATS/OPER_CMD1"),
 		Parent->operserv.stats.Trace(),
 		Parent->operserv.stats.Mode());

@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.81  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.80  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -892,21 +899,6 @@ void CommServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-		"H*LP", Parent->commserv.ALL_Name(), CommServ::do_Help);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ADD*", Parent->commserv.SOP_Name(), CommServ::do_Add);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"DEL*", Parent->commserv.SOP_Name(), CommServ::do_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"ERA*", Parent->commserv.SOP_Name(), CommServ::do_Del);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"LIST", Parent->commserv.ALL_Name(), CommServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"*MEMO*", Parent->commserv.REGD_Name(), CommServ::do_Memo);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-		"INFO", Parent->commserv.ALL_Name(), CommServ::do_Info);
-
-    Parent->commands.AddSystemCommand(GetInternalName(),
 		"MEMB* ADD", Parent->commserv.REGD_Name(), CommServ::do_member_Add);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"MEMB* DEL*", Parent->commserv.REGD_Name(), CommServ::do_member_Del);
@@ -953,6 +945,21 @@ void CommServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK *MEMO*", Parent->commserv.SOP_Name(), CommServ::do_unlock_OpenMemos);
 
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"H*LP", Parent->commserv.ALL_Name(), CommServ::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"ADD*", Parent->commserv.SOP_Name(), CommServ::do_Add);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"DEL*", Parent->commserv.SOP_Name(), CommServ::do_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"ERA*", Parent->commserv.SOP_Name(), CommServ::do_Del);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"LIST", Parent->commserv.ALL_Name(), CommServ::do_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"*MEMO*", Parent->commserv.REGD_Name(), CommServ::do_Memo);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+		"INFO", Parent->commserv.ALL_Name(), CommServ::do_Info);
+
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
     // it, you must add a terminator command (ie. "CMD* *"
@@ -978,28 +985,12 @@ void CommServ::AddCommands()
 		"UNLOCK *", Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
 		"UNLOCK", Parent->commserv.SOP_Name(), do_1_3param);
-
 }
 
 void CommServ::RemCommands()
 {
     NFT("CommServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
-
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"H*LP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ADD*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"DEL*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"ERA*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"LIST", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"*MEMO*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-		"INFO", Parent->commserv.ALL_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"MEMB* ADD", Parent->commserv.REGD_Name());
@@ -1048,6 +1039,21 @@ void CommServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK *MEMO*", Parent->commserv.SOP_Name());
 
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"H*LP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ADD*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"DEL*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"ERA*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"LIST", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"*MEMO*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+		"INFO", Parent->commserv.ALL_Name());
+
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
     // it, you must add a terminator command (ie. "CMD* *"
@@ -1073,7 +1079,6 @@ void CommServ::RemCommands()
 		"UNLOCK *", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 		"UNLOCK", Parent->commserv.SOP_Name());
-
 }
 
 
@@ -1873,15 +1878,22 @@ void CommServ::do_logon_Add(mstring mynick, mstring source, mstring params)
 				committee.c_str());
 	return;
     }
+    Committee *comm = &Parent->commserv.list[committee];
 
-    if (!Parent->commserv.list[committee].IsHead(source))
+    if (!comm->IsHead(source))
     {
 	::send(mynick, source, Parent->getMessage(source, "COMMSERV/NOTHEAD"),
 				committee.c_str());
 	return;
     }
 
-    Committee *comm = &Parent->commserv.list[committee];
+    if (comm->MSG_size() >= Parent->commserv.Max_Logon())
+    {
+	::send(mynick, source, Parent->getMessage(source, "COMMSERV/MAX_MESSAGES"),
+		committee.c_str());
+	return;
+    }
+
     MLOCK(("CommServ", "list", comm->Name().UpperCase(), "message"));
     Parent->commserv.stats.i_Logon++;
     comm->MSG_insert(msgnum, source);

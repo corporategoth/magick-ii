@@ -25,6 +25,13 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.141  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.140  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -207,8 +214,7 @@ public:
 
 
 #define LOG(X)	\
-	if (!Parent->IsLogInstance(ACE_LOG_MSG)) \
-	    Parent->AddLogInstance(ACE_LOG_MSG); \
+	Parent->ValidateLogger(ACE_LOG_MSG); \
 	ACE_DEBUG(X);
 
 class Logger : public ACE_Log_Msg_Callback
@@ -401,9 +407,7 @@ public:
 
 	void ActivateLogger();
 	void DeactivateLogger();
-	bool IsLogInstance(ACE_Log_Msg *instance);
-	void AddLogInstance(ACE_Log_Msg *instance);
-	void DelLogInstance(ACE_Log_Msg *instance);
+	void ValidateLogger(ACE_Log_Msg *instance);
 	bool Verbose()		    { return i_verbose; }
 	mstring Services_Dir()	    { return i_services_dir; }
 	mstring Config_File()	    { return files.MakePath(i_config_file); }

@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.107  2000/12/21 14:18:18  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.106  2000/12/19 14:26:55  prez
 ** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
 ** several SVS command text strings, if blank, support isnt there.
@@ -275,42 +282,43 @@ bool OperServ::AddHost(mstring host)
 	{
 	    CP(("Reached MAX clone kills, adding AKILL ..."));
 
-	    map<mstring,Nick_Live_t>::iterator nlive;
-	    vector<mstring> killusers;
-	    { RLOCK(("NickServ", "live"));
-	    for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
+	    MLOCK(("OperServ", "Akill"));
+	    if (!Akill_find("*@" + host))
 	    {
-		if (nlive->second.Host().IsSameAs(host, true) &&
-		    !nlive->second.HasMode("o"))
-		    killusers.push_back(nlive->first);
-	    }}
+		map<mstring,Nick_Live_t>::iterator nlive;
+		vector<mstring> killusers;
+		{ RLOCK(("NickServ", "live"));
+		for (nlive = Parent->nickserv.live.begin(); nlive != Parent->nickserv.live.end(); nlive++)
+		{
+		    if (nlive->second.Host().IsSameAs(host, true) &&
+			!nlive->second.HasMode("o"))
+			killusers.push_back(nlive->first);
+		}}
 
-	    float percent = 100.0 * (float) killusers.size() /
+		float percent = 100.0 * (float) killusers.size() /
 				(float) Parent->nickserv.live.size();
 
-	    Parent->server.AKILL("*@" + host,
-		Parent->operserv.Clone_Akill(),
-		Parent->operserv.Clone_AkillTime(),
-		Parent->nickserv.FirstName());
-	    unsigned int j;
-	    for (j=0; j<killusers.size(); j++)
-		Parent->server.KILL(Parent->nickserv.FirstName(),
-		    killusers[j], Parent->operserv.Clone_Akill());
+		Parent->server.AKILL("*@" + host,
+			Parent->operserv.Clone_Akill(),
+			Parent->operserv.Clone_AkillTime(),
+			Parent->nickserv.FirstName());
+		unsigned int j;
+		for (j=0; j<killusers.size(); j++)
+		    Parent->server.KILL(Parent->nickserv.FirstName(),
+			killusers[j], Parent->operserv.Clone_Akill());
 
-	    MLOCK(("OperServ", "Akill"));
-	    if (Akill_find("*@" + host))
-		Akill_erase();
-	    Akill_insert("*@" + host, Parent->operserv.Clone_AkillTime(),
-		Parent->operserv.Clone_Akill(), FirstName());
-	    announce(FirstName(), Parent->getMessage("MISC/AKILL_ADD"),
-		FirstName().c_str(), host.c_str(),
-		ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
-		Parent->operserv.Clone_Akill().c_str(),
-		killusers.size(), percent);
-	    LOG((LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
-		FirstName().c_str(), host.c_str(),
-		ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
-		Parent->operserv.Clone_Akill().c_str()));
+		Akill_insert("*@" + host, Parent->operserv.Clone_AkillTime(),
+			Parent->operserv.Clone_Akill(), FirstName());
+	 	announce(FirstName(), Parent->getMessage("MISC/AKILL_ADD"),
+			FirstName().c_str(), host.c_str(),
+			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
+			Parent->operserv.Clone_Akill().c_str(),
+			killusers.size(), percent);
+		LOG((LM_INFO, Parent->getLogMessage("OPERSERV/AKILL_ADD"),
+			FirstName().c_str(), host.c_str(),
+			ToHumanTime(Parent->operserv.Clone_AkillTime()).c_str(),
+			Parent->operserv.Clone_Akill().c_str()));
+	    }
 	}
 	retval = true;
     }}
@@ -396,10 +404,10 @@ bool OperServ::Clone_insert(mstring entry, unsigned int value, mstring reason, m
     MLOCK(("OperServ", "Clone"));
     if (!Clone_find(entry))
     {
-	pair<set<entlist_val_t<pair<unsigned int, mstring> > >::iterator,bool> tmp;
+	pair<set<Clone_Type>::iterator,bool> tmp;
 	MCB(i_Clone.size());
-	tmp = i_Clone.insert(entlist_val_t<pair<unsigned int, mstring> >(
-			entry, pair<unsigned int, mstring>(value, reason), nick, added));
+	tmp = i_Clone.insert(Clone_Type(entry,
+		pair<unsigned int, mstring>(value, reason), nick, added));
 	MCE(i_Clone.size());
 	if (tmp.second)
 	    Clone = tmp.first;
@@ -437,12 +445,12 @@ bool OperServ::Clone_erase()
 size_t OperServ::Clone_Usage()
 {
     size_t retval = 0;
-    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator i;
+    set<Clone_Type>::iterator i;
     MLOCK(("OperServ", "Clone"));
-    entlist_val_t<pair<unsigned int, mstring> > *tmp;
+    Clone_Type *tmp;
     for (i=i_Clone.begin(); i!=i_Clone.end(); i++)
     {
-	tmp = (entlist_val_t<pair<unsigned int, mstring> > *) &(*i);
+	tmp = (Clone_Type *) &(*i);
 	retval += tmp->Usage();
     }
     return retval;
@@ -455,7 +463,7 @@ bool OperServ::Clone_find(mstring entry)
 
 //  entlist_val_ui<pair<int, mstring> > iter = i_Clone.end();
     MLOCK(("OperServ", "Clone"));
-    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator iter = i_Clone.end();
+    set<Clone_Type>::iterator iter = i_Clone.end();
     if (!i_Clone.empty())
 	for (iter=i_Clone.begin(); iter!=i_Clone.end(); iter++)
 	    if (entry.Matches(iter->Entry(), true))
@@ -481,7 +489,7 @@ pair<unsigned int,mstring> OperServ::Clone_value(mstring entry)
     pair<unsigned int,mstring> retval = pair<unsigned int,mstring>(0,"");
     MLOCK(("OperServ", "Clone"));
 //  entlist_val_ui<pair<int, mstring> > iter = Clone;
-    set<entlist_val_t<pair<unsigned int, mstring> > >::iterator iter = Clone;
+    set<Clone_Type>::iterator iter = Clone;
 
     if (Clone_find(entry))
 	retval=Clone->Value();
@@ -503,10 +511,10 @@ bool OperServ::Akill_insert(mstring entry, unsigned long value, mstring reason, 
     MLOCK(("OperServ", "Akill"));
     if (!Akill_find(entry))
     {
-	pair<set<entlist_val_t<pair<unsigned long, mstring> > >::iterator, bool> tmp;
+	pair<set<Akill_Type>::iterator, bool> tmp;
 	MCB(i_Akill.size());
-	tmp = i_Akill.insert(entlist_val_t<pair<unsigned long, mstring> >(
-			entry, pair<unsigned long, mstring>(value, reason), nick, added));
+	tmp = i_Akill.insert(Akill_Type(entry,
+		pair<unsigned long, mstring>(value, reason), nick, added));
 	MCE(i_Akill.size());
 	if (tmp.second)
 	    Akill = tmp.first;
@@ -546,12 +554,12 @@ bool OperServ::Akill_erase()
 size_t OperServ::Akill_Usage()
 {
     size_t retval = 0;
-    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator i;
+    set<Akill_Type>::iterator i;
     MLOCK(("OperServ", "Akill"));
-    entlist_val_t<pair<unsigned long, mstring> > *tmp;
+    Akill_Type *tmp;
     for (i=i_Akill.begin(); i!=i_Akill.end(); i++)
     {
-	tmp = (entlist_val_t<pair<unsigned long, mstring> > *) &(*i);
+	tmp = (Akill_Type *) &(*i);
 	retval += tmp->Usage();
     }
     return retval;
@@ -570,7 +578,7 @@ bool OperServ::Akill_find(mstring entry)
 
 //  entlist_val_ui<pair<long, mstring> > iter = i_Akill.end();
     MLOCK(("OperServ", "Akill"));
-    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator iter = i_Akill.end();
+    set<Akill_Type>::iterator iter = i_Akill.end();
     if (!i_Akill.empty())
 	for (iter=i_Akill.begin(); iter!=i_Akill.end(); iter++)
 	{
@@ -600,7 +608,7 @@ pair<unsigned long,mstring> OperServ::Akill_value(mstring entry)
     pair<unsigned long,mstring> retval = pair<unsigned long,mstring>(0,"");
     MLOCK(("OperServ", "Akill"));
 //  entlist_val_ui<pair<long, mstring> > iter = Akill;
-    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator iter = Akill;
+    set<Akill_Type>::iterator iter = Akill;
 
     if (Akill_find(entry))
 	retval=Akill->Value();
@@ -626,9 +634,9 @@ bool OperServ::OperDeny_insert(mstring entry, mstring value, mstring nick)
     MLOCK(("OperServ", "OperDeny"));
     if (!OperDeny_find(entry))
     {
-	pair<set<entlist_val_t<mstring > >::iterator, bool> tmp;
+	pair<set<OperDeny_Type>::iterator, bool> tmp;
 	MCB(i_OperDeny.size());
-	tmp = i_OperDeny.insert(entlist_val_t<mstring>(entry, value, nick));
+	tmp = i_OperDeny.insert(OperDeny_Type(entry, value, nick));
 	MCE(i_OperDeny.size());
 	if (tmp.second)
 	    OperDeny = tmp.first;
@@ -668,12 +676,12 @@ bool OperServ::OperDeny_erase()
 size_t OperServ::OperDeny_Usage()
 {
     size_t retval = 0;
-    set<entlist_val_t<mstring> >::iterator i;
+    set<OperDeny_Type>::iterator i;
     MLOCK(("OperServ", "OperDeny"));
-    entlist_val_t<mstring> *tmp;
+    OperDeny_Type *tmp;
     for (i=i_OperDeny.begin(); i!=i_OperDeny.end(); i++)
     {
-	tmp = (entlist_val_t<mstring> *) &(*i);
+	tmp = (OperDeny_Type *) &(*i);
 	retval += tmp->Usage();
     }
     return retval;
@@ -696,7 +704,7 @@ bool OperServ::OperDeny_find(mstring entry)
 
     MLOCK(("OperServ", "OperDeny"));
 //  entlist_val_ui<mstring> iter = i_OperDeny.end();
-    set<entlist_val_t<mstring> >::iterator iter = i_OperDeny.end();
+    set<OperDeny_Type>::iterator iter = i_OperDeny.end();
     if (!i_OperDeny.empty())
 	for (iter=i_OperDeny.begin(); iter!=i_OperDeny.end(); iter++)
 	    if (entry.Matches(iter->Entry(), true))
@@ -722,7 +730,7 @@ mstring OperServ::OperDeny_value(mstring entry)
     mstring retval;
     MLOCK(("OperServ", "OperDeny"));
 //  entlist_val_ui<mstring> iter = OperDeny;
-    set<entlist_val_t<mstring> >::iterator iter = OperDeny;
+    set<OperDeny_Type>::iterator iter = OperDeny;
 
     if (OperDeny_find(entry))
 	retval=OperDeny->Value();
@@ -749,9 +757,9 @@ bool OperServ::Ignore_insert(mstring entry, bool perm, mstring nick)
     MLOCK(("OperServ", "Ignore"));
     if (!Ignore_find(entry))
     {
-	pair<set<entlist_val_t<bool> >::iterator, bool> tmp;
+	pair<set<Ignore_Type>::iterator, bool> tmp;
 	MCB(i_Ignore.size());
-	tmp = i_Ignore.insert(entlist_val_t<bool>(entry, perm, nick));
+	tmp = i_Ignore.insert(Ignore_Type(entry, perm, nick));
 	MCE(i_Ignore.size());
 	if (tmp.second)
 	    Ignore = tmp.first;
@@ -791,7 +799,7 @@ bool OperServ::Ignore_erase()
 size_t OperServ::Ignore_Usage()
 {
     size_t retval = 0;
-    set<entlist_val_t<bool> >::iterator i;
+    set<Ignore_Type>::iterator i;
     MLOCK(("OperServ", "Ignore"));
     entlist_val_t<bool> *tmp;
     for (i=i_Ignore.begin(); i!=i_Ignore.end(); i++)
@@ -819,7 +827,7 @@ bool OperServ::Ignore_find(mstring entry)
 
     MLOCK(("OperServ", "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = i_Ignore.end();
-    set<entlist_val_t<bool> >::iterator iter = i_Ignore.end();
+    set<Ignore_Type>::iterator iter = i_Ignore.end();
 
     if (!i_Ignore.empty())
 	for (iter=i_Ignore.begin(); iter!=i_Ignore.end(); iter++)
@@ -848,7 +856,7 @@ bool OperServ::Ignore_value(mstring entry)
     bool retval = false;
     MLOCK(("OperServ", "Ignore"));
 //  entlist_val_ui<pair<mDateTime, bool> > iter = Ignore;
-    set<entlist_val_t<bool> >::iterator iter = Ignore;
+    set<Ignore_Type>::iterator iter = Ignore;
 
     if (Ignore_find(entry))
 	retval=Ignore->Value();
@@ -866,49 +874,6 @@ void OperServ::AddCommands()
 {
     NFT("OperServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
-
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.ALL_Name(), OperServ::do_Help);
-#ifdef MAGICK_TRACE_WORKS
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "TRACE", Parent->commserv.SADMIN_Name(), OperServ::do_Trace);
-#endif
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*MODE*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), OperServ::do_Mode);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "Q*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_Qline);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNQ*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_UnQline);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "NO*OP*", Parent->commserv.ADMIN_Name(), OperServ::do_NOOP);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "KILL*", Parent->commserv.SOP_Name(), OperServ::do_Kill);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "HIDE*", Parent->commserv.ADMIN_Name(), OperServ::do_Hide);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "*PING*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name(), OperServ::do_Ping);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UPD*", Parent->commserv.SADMIN_Name(), OperServ::do_Update);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name(), OperServ::do_Shutdown);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "RELOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Reload);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SIGNON*", Parent->commserv.SADMIN_Name(), OperServ::do_Signon);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNLOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Unload);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "JUPE*", Parent->commserv.ADMIN_Name(), OperServ::do_Jupe);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ID*", Parent->commserv.SADMIN_Name(), NickServ::do_Identify);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ON", Parent->commserv.SADMIN_Name(), OperServ::do_On);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "OFF", Parent->commserv.SADMIN_Name(), OperServ::do_Off);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "HTM", Parent->commserv.SOP_Name(), OperServ::do_HTM);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* CONF*", Parent->commserv.OPER_Name() + " " +
@@ -976,6 +941,49 @@ void OperServ::AddCommands()
 	    Parent->commserv.SOP_Name(), OperServ::do_ignore_List);
 
     Parent->commands.AddSystemCommand(GetInternalName(),
+	    "H*LP", Parent->commserv.ALL_Name(), OperServ::do_Help);
+#ifdef MAGICK_TRACE_WORKS
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "TRACE", Parent->commserv.SADMIN_Name(), OperServ::do_Trace);
+#endif
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*MODE*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_Mode);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "Q*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_Qline);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNQ*LINE*", Parent->commserv.ADMIN_Name(), OperServ::do_UnQline);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "NO*OP*", Parent->commserv.ADMIN_Name(), OperServ::do_NOOP);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "KILL*", Parent->commserv.SOP_Name(), OperServ::do_Kill);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "HIDE*", Parent->commserv.ADMIN_Name(), OperServ::do_Hide);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "*PING*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name(), OperServ::do_Ping);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UPD*", Parent->commserv.SADMIN_Name(), OperServ::do_Update);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name(), OperServ::do_Shutdown);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "RELOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Reload);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SIGNON*", Parent->commserv.SADMIN_Name(), OperServ::do_Signon);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNLOAD*", Parent->commserv.SADMIN_Name(), OperServ::do_Unload);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "JUPE*", Parent->commserv.ADMIN_Name(), OperServ::do_Jupe);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ID*", Parent->commserv.SADMIN_Name(), NickServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ON", Parent->commserv.SADMIN_Name(), OperServ::do_On);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "OFF", Parent->commserv.SADMIN_Name(), OperServ::do_Off);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "HTM", Parent->commserv.SOP_Name(), OperServ::do_HTM);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "SET* *", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name(), NULL);
     Parent->commands.AddSystemCommand(GetInternalName(),
@@ -1011,45 +1019,6 @@ void OperServ::RemCommands()
 {
     NFT("OperServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
-
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "HELP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "TRACE", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "*MODE*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "Q*LINE*", Parent->commserv.ADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNQ*LINE*", Parent->commserv.ADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "NO*OP*", Parent->commserv.ADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "KILL*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "HIDE*", Parent->commserv.ADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "*PING*", Parent->commserv.OPER_Name() + " " +
-	    Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UPD*", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "RELOAD*", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNLOAD*", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "JUPE*", Parent->commserv.ADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ID*", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ON", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "OFF", Parent->commserv.SADMIN_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "HTM", Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SET* CONF*", Parent->commserv.OPER_Name() + " " +
@@ -1115,6 +1084,45 @@ void OperServ::RemCommands()
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "IGN* VIEW", Parent->commserv.OPER_Name() + " " +
 	    Parent->commserv.SOP_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "HELP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "TRACE", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "*MODE*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "Q*LINE*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNQ*LINE*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "NO*OP*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "KILL*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "HIDE*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "*PING*", Parent->commserv.OPER_Name() + " " +
+	    Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UPD*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SHUT*DOWN*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "RELOAD*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNLOAD*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "JUPE*", Parent->commserv.ADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ID*", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ON", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "OFF", Parent->commserv.SADMIN_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "HTM", Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "SET* *", Parent->commserv.OPER_Name() + " " +
@@ -1963,17 +1971,17 @@ void OperServ::do_On(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    service = params.ExtractWord(3, " ");
-	    if (Parent->operserv.IsName(service))
+	    if (Parent->operserv.GetInternalName().IsSameAs(service, true))
 		Parent->operserv.MSG(true);
-	    else if (Parent->nickserv.IsName(service))
+	    else if (Parent->nickserv.GetInternalName().IsSameAs(service, true))
 		Parent->nickserv.MSG(true);
-	    else if (Parent->chanserv.IsName(service))
+	    else if (Parent->chanserv.GetInternalName().IsSameAs(service, true))
 		Parent->chanserv.MSG(true);
-	    else if (Parent->memoserv.IsName(service))
+	    else if (Parent->memoserv.GetInternalName().IsSameAs(service, true))
 		Parent->memoserv.MSG(true);
-	    else if (Parent->commserv.IsName(service))
+	    else if (Parent->commserv.GetInternalName().IsSameAs(service, true))
 		Parent->commserv.MSG(true);
-	    else if (Parent->servmsg.IsName(service))
+	    else if (Parent->servmsg.GetInternalName().IsSameAs(service, true))
 		Parent->servmsg.MSG(true);
 	    //else
 	    //  scripted stuff ...
@@ -2073,17 +2081,17 @@ void OperServ::do_Off(mstring mynick, mstring source, mstring params)
 	else
 	{
 	    service = params.ExtractWord(3, " ");
-	    if (Parent->operserv.IsName(service))
+	    if (Parent->operserv.GetInternalName().IsSameAs(service, true))
 		Parent->operserv.MSG(false);
-	    else if (Parent->nickserv.IsName(service))
+	    else if (Parent->nickserv.GetInternalName().IsSameAs(service, true))
 		Parent->nickserv.MSG(false);
-	    else if (Parent->chanserv.IsName(service))
+	    else if (Parent->chanserv.GetInternalName().IsSameAs(service, true))
 		Parent->chanserv.MSG(false);
-	    else if (Parent->memoserv.IsName(service))
+	    else if (Parent->memoserv.GetInternalName().IsSameAs(service, true))
 		Parent->memoserv.MSG(false);
-	    else if (Parent->commserv.IsName(service))
+	    else if (Parent->commserv.GetInternalName().IsSameAs(service, true))
 		Parent->commserv.MSG(false);
-	    else if (Parent->servmsg.IsName(service))
+	    else if (Parent->servmsg.GetInternalName().IsSameAs(service, true))
 		Parent->servmsg.MSG(false);
 	    //else
 	    //  scripted stuff ...

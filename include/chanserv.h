@@ -25,6 +25,13 @@ static const char *ident_chanserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.47  2000/09/11 10:58:18  prez
 ** Now saves in in GMT
 **
@@ -512,6 +519,7 @@ private:
     unsigned long expire;	// How long to keep channels
     unsigned long delay;	// How long between registrations
     unsigned int max_per_nick;	// Max channels per nickname
+    unsigned int max_messages;	// Max messages per channel
     mstring def_akick_reason;	// Default AKICK reason
     unsigned int passfail;	// How many times they can fail ident
     unsigned long chankeep;	// Time to keep channel after AKICK
@@ -559,6 +567,7 @@ public:
     {
 	friend class ChanServ;
 
+	mDateTime i_ClearTime;
 	unsigned long i_Register;
 	unsigned long i_Drop;
 	unsigned long i_Identify; //
@@ -588,7 +597,9 @@ public:
 	unsigned long i_Unlock;
 	    
     public:
-	stats_t() {
+	stats_t() { clear(); }
+	void clear() {
+	    i_ClearTime = Now();
 	    i_Register = i_Drop = i_Identify = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Mode =
 		i_Topic = i_Op = i_Deop = i_Voice = i_Devoice =
@@ -596,6 +607,7 @@ public:
 		i_Clear = i_Akick = i_Level = i_Access =
 		i_Greet = i_Message = i_Set = i_NoExpire =
 		i_Lock = i_Unlock = 0; }
+	mDateTime ClearTime()	    { return i_ClearTime; }
 	unsigned long Register()    { return i_Register; }
 	unsigned long Drop()	    { return i_Drop; }
 	unsigned long Identify()    { return i_Identify; }
@@ -632,6 +644,7 @@ public:
     unsigned long Expire()	{ return expire; }
     unsigned long Delay()	{ return delay; }
     unsigned int Max_Per_Nick()	{ return max_per_nick; }
+    unsigned int Max_Messages()	{ return max_messages; }
     mstring DEF_Akick_Reason()	{ return def_akick_reason; }
     unsigned int Passfail()	{ return passfail; }
     unsigned long ChanKeep()	{ return chankeep; }

@@ -25,6 +25,13 @@ static const char *ident_nickserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.50  2000/09/12 21:17:01  prez
 ** Added IsLiveAll (IsLive now checks to see if user is SQUIT).
 **
@@ -525,6 +532,7 @@ public:
     {
 	friend class NickServ;
 
+	mDateTime i_ClearTime;
 	unsigned long i_Register;
 	unsigned long i_Drop;
 	unsigned long i_Link;
@@ -544,12 +552,15 @@ public:
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
     public:
-	stats_t() {
+	stats_t() { clear(); }
+	void clear() {
+	    i_ClearTime = Now();
 	    i_Register = i_Drop = i_Link = i_Unlink = i_Host =
 		i_Identify = i_Ghost = i_Recover = i_Suspend =
 		i_Unsuspend = i_Forbid = i_Getpass = i_Access =
 		i_Ignore = i_Set = i_NoExpire = i_Lock =
 		i_Unlock = 0; }
+	mDateTime ClearTime()	    { return i_ClearTime; }
 	unsigned long Register()    { return i_Register; }
 	unsigned long Drop()	    { return i_Drop; }
 	unsigned long Link()	    { return i_Link; }

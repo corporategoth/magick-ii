@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.215  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.214  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -2710,6 +2717,7 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
     i_Description=in.i_Description;
     i_Password=in.i_Password;
     i_URL=in.i_URL;
+    i_Comment=in.i_Comment;
 
     i_Mlock_On=in.i_Mlock_On;
     l_Mlock_On=in.l_Mlock_On;
@@ -5250,52 +5258,6 @@ void ChanServ::AddCommands()
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
     Parent->commands.AddSystemCommand(GetInternalName(),
-	    "H*LP", Parent->commserv.ALL_Name(), ChanServ::do_Help);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "REG*", Parent->commserv.REGD_Name(), ChanServ::do_Register);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "DROP", Parent->commserv.REGD_Name(), ChanServ::do_Drop);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "ID*", Parent->commserv.REGD_Name(), ChanServ::do_Identify);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "INFO*", Parent->commserv.ALL_Name(), ChanServ::do_Info);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LIST", Parent->commserv.ALL_Name(), ChanServ::do_List);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "SUSP*", Parent->commserv.SOP_Name(), ChanServ::do_Suspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNSUSP*", Parent->commserv.SOP_Name(), ChanServ::do_UnSuspend);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "FORB*", Parent->commserv.SOP_Name(), ChanServ::do_Forbid);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "GET*PASS*", Parent->commserv.SOP_Name(), ChanServ::do_Getpass);
-
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "MODE*", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "OP*", Parent->commserv.REGD_Name(), ChanServ::do_Op);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "D*OP*", Parent->commserv.REGD_Name(), ChanServ::do_DeOp);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_Voice);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "D*VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_DeVoice);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_Topic);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "KICK*", Parent->commserv.REGD_Name(), ChanServ::do_Kick);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "REM*", Parent->commserv.REGD_Name(), ChanServ::do_AnonKick);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "USER*", Parent->commserv.REGD_Name(), ChanServ::do_Users);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "INV*", Parent->commserv.REGD_Name(), ChanServ::do_Invite);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "UNBAN*", Parent->commserv.REGD_Name(), ChanServ::do_Unban);
-    Parent->commands.AddSystemCommand(GetInternalName(),
-	    "LIVE*", Parent->commserv.SOP_Name(), ChanServ::do_Live);
-
-    Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLEAR* *USER*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Users);
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "CLEAR* *OP*", Parent->commserv.REGD_Name(), ChanServ::do_clear_Ops);
@@ -5454,6 +5416,52 @@ void ChanServ::AddCommands()
     Parent->commands.AddSystemCommand(GetInternalName(),
 	    "UNLOCK REV*", Parent->commserv.SOP_Name(), ChanServ::do_unlock_Revenge);
 
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "H*LP", Parent->commserv.ALL_Name(), ChanServ::do_Help);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "REG*", Parent->commserv.REGD_Name(), ChanServ::do_Register);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "DROP", Parent->commserv.REGD_Name(), ChanServ::do_Drop);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "ID*", Parent->commserv.REGD_Name(), ChanServ::do_Identify);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "INFO*", Parent->commserv.ALL_Name(), ChanServ::do_Info);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LIST", Parent->commserv.ALL_Name(), ChanServ::do_List);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "SUSP*", Parent->commserv.SOP_Name(), ChanServ::do_Suspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNSUSP*", Parent->commserv.SOP_Name(), ChanServ::do_UnSuspend);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "FORB*", Parent->commserv.SOP_Name(), ChanServ::do_Forbid);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "GET*PASS*", Parent->commserv.SOP_Name(), ChanServ::do_Getpass);
+
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "MODE*", Parent->commserv.REGD_Name(), ChanServ::do_Mode);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "OP*", Parent->commserv.REGD_Name(), ChanServ::do_Op);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "D*OP*", Parent->commserv.REGD_Name(), ChanServ::do_DeOp);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_Voice);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "D*VOIC*", Parent->commserv.REGD_Name(), ChanServ::do_DeVoice);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "TOPIC*", Parent->commserv.REGD_Name(), ChanServ::do_Topic);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "KICK*", Parent->commserv.REGD_Name(), ChanServ::do_Kick);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "REM*", Parent->commserv.REGD_Name(), ChanServ::do_AnonKick);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "USER*", Parent->commserv.REGD_Name(), ChanServ::do_Users);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "INV*", Parent->commserv.REGD_Name(), ChanServ::do_Invite);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "UNBAN*", Parent->commserv.REGD_Name(), ChanServ::do_Unban);
+    Parent->commands.AddSystemCommand(GetInternalName(),
+	    "LIVE*", Parent->commserv.SOP_Name(), ChanServ::do_Live);
+
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
     // it, you must add a terminator command (ie. "CMD* *"
@@ -5503,51 +5511,6 @@ void ChanServ::RemCommands()
     NFT("ChanServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "H*LP", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "REG*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "DROP", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "ID*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "INFO*", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LIST", Parent->commserv.ALL_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "SUSP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNSUSP*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "FORB*", Parent->commserv.SOP_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "GET*PASS*", Parent->commserv.SOP_Name());
-
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "MODE", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "D*OP*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "VOIC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "D*VOIC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "TOPIC*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "KICK*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "REM*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "USER*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "INV*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "UNBAN*", Parent->commserv.REGD_Name());
-    Parent->commands.RemSystemCommand(GetInternalName(),
-	    "LIVE*", Parent->commserv.SOP_Name());
 
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "CLEAR* *USER*", Parent->commserv.REGD_Name());
@@ -5707,6 +5670,52 @@ void ChanServ::RemCommands()
 	    "UNLOCK *JOIN*", Parent->commserv.SOP_Name());
     Parent->commands.RemSystemCommand(GetInternalName(),
 	    "UNLOCK REV*", Parent->commserv.SOP_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "H*LP", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "REG*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "DROP", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "ID*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "INFO*", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LIST", Parent->commserv.ALL_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "SUSP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNSUSP*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "FORB*", Parent->commserv.SOP_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "GET*PASS*", Parent->commserv.SOP_Name());
+
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "MODE", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "OP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "D*OP*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "VOIC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "D*VOIC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "TOPIC*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "KICK*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "REM*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "USER*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "INV*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "UNBAN*", Parent->commserv.REGD_Name());
+    Parent->commands.RemSystemCommand(GetInternalName(),
+	    "LIVE*", Parent->commserv.SOP_Name());
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
@@ -5977,6 +5986,13 @@ void ChanServ::do_Identify(mstring mynick, mstring source, mstring params)
 	return;
     }
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.stored[channel.LowerCase()].Suspended())
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/ISSUSPENDED"),
+		channel.c_str());
+	return;
+    }
 
     bool wasident = Parent->nickserv.live[source.LowerCase()].IsChanIdentified(channel);
     mstring output = Parent->nickserv.live[source.LowerCase()].ChanIdentify(channel, pass);
@@ -6379,6 +6395,11 @@ void ChanServ::do_UnSuspend(mstring mynick, mstring source, mstring params)
 	return;
     }
     channel = Parent->getSname(channel);
+
+    if (Parent->chanserv.IsLive(channel))
+	Parent->server.TOPIC(mynick, mynick, channel, "",
+			Parent->chanserv.live[channel.LowerCase()].Topic_Set_Time() -
+				(double) (1.0 / (60.0 * 60.0 * 24.0)));
 
     Parent->chanserv.stored[channel.LowerCase()].UnSuspend();
     Parent->chanserv.stats.i_Unsuspend++;
@@ -9039,6 +9060,13 @@ void ChanServ::do_message_Add(mstring mynick, mstring source, mstring params)
     if (!cstored->GetAccess(source, "MESSAGE"))
     {
 	::send(mynick, source, Parent->getMessage(source, "ERR_SITUATION/NOACCESS"));
+	return;
+    }
+
+    if (cstored->Message_size() >= Parent->chanserv.Max_Messages())
+    {
+	::send(mynick, source, Parent->getMessage(source, "CS_STATUS/MAX_MESSAGES"),
+		channel.c_str());
 	return;
     }
 

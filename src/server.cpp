@@ -27,9 +27,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.143  2000/12/19 14:26:55  prez
-** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
-** several SVS command text strings, if blank, support isnt there.
+** Revision 1.144  2000/12/21 14:18:18  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
 **
 ** Revision 1.142  2000/12/19 08:29:06  prez
 ** Added EOB
@@ -675,7 +678,7 @@ void Protocol::Set(unsigned int in)
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
-	i_Akill = 5;
+	i_Akill = 4;
 	i_Modes = 6;
 	i_TSora = true;
 	i_Protoctl = "CAPAB NOQUIT TS3 SSJOIN BURST UNCONNECT";
@@ -1984,7 +1987,7 @@ void NetworkServ::NICK(mstring oldnick, mstring newnick)
 		((proto.Tokens() && proto.GetNonToken("NICK") != "") ?
 			proto.GetNonToken("NICK") : mstring("NICK")) +
 		" " + newnick + (proto.TSora() ?
-			" :" + mstring(time(NULL)) :
+			" :" + Now().timetstring() :
 			mstring("")));
     }
 }
@@ -2275,7 +2278,7 @@ void NetworkServ::SVSHOST(mstring mynick, mstring nick, mstring newhost)
 	    output << proto.GetNonToken(proto.SVSHOST());
 	else
 	    output << proto.SVSHOST();
-	output << " " << nick << " " << newhost << " :" << time(NULL);
+	output << " " << nick << " " << newhost << " :" << Now().timetstring();
 	raw(output);
     }
 }

@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.55  2000/12/19 07:24:53  prez
 ** Massive updates.  Linux works again, added akill reject threshold, and
 ** lots of other stuff -- almost ready for b6 -- first beta after the
@@ -1630,7 +1637,6 @@ int DccMap::svc(void)
     mThread::Attach(tt_MAIN);
     NFT("DccMap::svc");
 
-    Parent->AddLogInstance(ACE_LOG_MSG);
     unsigned long WorkId;
     FLUSH();
     while (!Parent->Shutdown())
@@ -1686,7 +1692,6 @@ int DccMap::svc(void)
 	}
 	FLUSH(); // Force TRACE output dump
     }
-    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 

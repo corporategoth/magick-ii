@@ -25,6 +25,13 @@ static const char *ident_commserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.40  2000/12/10 02:56:06  prez
 ** Added ability to change DESCRIPTION field in committees.
 **
@@ -206,6 +213,7 @@ class CommServ : public mBase, public SXP::IPersistObj
 {
     friend class Magick;
 private:
+    unsigned int max_logon;
     bool    def_openmemos;
     bool    lck_openmemos;
     bool    def_private;
@@ -259,6 +267,7 @@ public:
     {
 	friend class CommServ;
 
+	mDateTime i_ClearTime;
 	unsigned long i_New;
 	unsigned long i_Kill;
 	unsigned long i_AddDel;
@@ -268,9 +277,12 @@ public:
 	unsigned long i_Lock;
 	unsigned long i_Unlock;
     public:
-	stats_t() {
+	stats_t() { clear(); }
+	void clear() {
+	    i_ClearTime = Now();
 	    i_New = i_Kill = i_AddDel = i_Memo =
 		i_Logon = i_Set = i_Lock = i_Unlock = 0; }
+	mDateTime ClearTime()	{ return i_ClearTime; }
 	unsigned long New()	{ return i_New; }
 	unsigned long Kill()	{ return i_Kill; }
 	unsigned long AddDel()	{ return i_AddDel; }
@@ -281,6 +293,7 @@ public:
 	unsigned long Unlock()	{ return i_Unlock; }
     } stats;
 
+    unsigned int Max_Logon()	{ return max_logon; }
     bool    DEF_OpenMemos()	{ return def_openmemos; }
     bool    LCK_OpenMemos()	{ return lck_openmemos; }
     bool    DEF_Private()	{ return def_private; }

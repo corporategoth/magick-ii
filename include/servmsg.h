@@ -25,6 +25,13 @@ static const char *ident_servmsg_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.20  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.19  2000/06/25 07:58:48  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -94,6 +101,7 @@ public:
     {
 	friend class ServMsg;
 
+	mDateTime i_ClearTime;
 	unsigned long i_Global;
 	unsigned long i_Credits;
 	unsigned long i_file_AddDel;
@@ -101,9 +109,12 @@ public:
 	unsigned long i_file_Change;
 	unsigned long i_file_Cancel;
     public:
-	stats_t() {
+	stats_t() { clear(); }
+	void clear() {
+	    i_ClearTime = Now();
 	    i_Global = i_Credits = i_file_AddDel = i_file_Send =
 	    i_file_Change = i_file_Cancel = 0; }
+	mDateTime ClearTime()		{ return i_ClearTime; }
 	unsigned long Global()		{ return i_Global; }
 	unsigned long Credits()		{ return i_Credits; }
 	unsigned long File_AddDel()	{ return i_file_AddDel; }

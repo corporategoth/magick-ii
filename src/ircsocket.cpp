@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.142  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.141  2000/12/19 14:26:55  prez
 ** Bahamut has changed SVSNICK -> MODNICK, so i_SVS has been changed into
 ** several SVS command text strings, if blank, support isnt there.
@@ -289,7 +296,6 @@ int IrcSvcHandler::open(void *in)
 
     // Dont do the below (coz we dont call any svc())
     // int retval = activate();
-    //Parent->AddLogInstance(ACE_LOG_MSG);
     // Only activate the threads when we're ready.
     mBase::init();
     DumpB();
@@ -460,7 +466,6 @@ int IrcSvcHandler::handle_close(ACE_HANDLE hin, ACE_Reactor_Mask mask)
 	    ACE_Reactor::instance()->schedule_timer(&(Parent->rh),0,ACE_Time_Value(Parent->config.Server_Relink()));
     }
 
-    //Parent->DelLogInstance(ACE_LOG_MSG);
     //sock.Unbind();
     destroy(); // Destroy us from ACE...
     DRET(0);
@@ -639,8 +644,6 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	    Parent->Shutdown())
 	DRET(0);
 
-    Parent->AddLogInstance(ACE_LOG_MSG);
-
     mstring server;
     triplet<unsigned int,mstring,unsigned int> details;
     if (Parent->GotConnect()) {
@@ -720,13 +723,12 @@ int Reconnect_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	Parent->server.raw(tmp);
 	if (Parent->server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
-	    Parent->server.raw("SVINFO 3 1 0 :" + mstring(time(NULL)));
+	    Parent->server.raw("SVINFO 3 1 0 :" + Now().timetstring());
 	Parent->Connected(true);
     }
     CE(1, Parent->i_server);
     Parent->DumpE();
 
-    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -738,7 +740,6 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     FT("ToBeSquit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
-    Parent->AddLogInstance(ACE_LOG_MSG);
     { WLOCK(("Server", "ServerSquit"));
     Parent->server.DumpB();
     CB(1, Parent->server.ServerSquit.size());
@@ -779,7 +780,6 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
     Parent->server.DumpE();
 
     delete tmp;
-    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -791,7 +791,6 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     FT("Squit_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
-    Parent->AddLogInstance(ACE_LOG_MSG);
     { WLOCK(("Server", "ServerSquit"));
     WLOCK2(("Server", "ToBeSquit"));
     Parent->server.DumpB();
@@ -827,7 +826,6 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     }
 
     delete tmp;
-    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -840,7 +838,6 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     FT("InFlight_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
     Nick_Live_t *entry;
-    Parent->AddLogInstance(ACE_LOG_MSG);
 
     if (Parent->nickserv.IsLiveAll(*tmp))
     {
@@ -862,7 +859,6 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	}
     }
     delete tmp;
-    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -873,7 +869,6 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     FT("Part_Handler::handle_timeout", ("(const ACE_Time_Value &) tv", "(const void *) arg"));
     mstring *tmp = (mstring *) arg;
 
-    Parent->AddLogInstance(ACE_LOG_MSG);
     // This is to part channels I'm not supposed to be
     // in (ie. dont have JOIN on, and I'm the only user
     // in them).  ie. after AKICK, etc.
@@ -890,7 +885,6 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	Parent->chanserv.live[tmp->LowerCase()].DumpE();
     }
     delete tmp;
-    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 
@@ -949,7 +943,6 @@ int EventTask::svc(void)
     // The biggie, so big, it has its own zip code ... uhh .. thread.
     NFT("EventTask::svc");
 
-    Parent->AddLogInstance(ACE_LOG_MSG);
     { WLOCK(("Events", "last_expire"));
     WLOCK2(("Events", "last_save"));
     WLOCK3(("Events", "last_check"));
@@ -1001,56 +994,32 @@ int EventTask::svc(void)
 	    // akills
 	    {
 		MLOCK(("OperServ","Akill"));
-		bool firstgone = false;
 		for (Parent->operserv.Akill = Parent->operserv.Akill_begin();
-			(Parent->operserv.Akill_size()) &&
-			(firstgone || Parent->operserv.Akill != Parent->operserv.Akill_end());
-			Parent->operserv.Akill++)
+		    Parent->operserv.Akill != Parent->operserv.Akill_end();)
 		{
-		    if (firstgone)
-		    {
-			firstgone = false;
-			Parent->operserv.Akill = Parent->operserv.Akill_begin();
-		    }
 		    if (Parent->operserv.Akill->Last_Modify_Time().SecondsSince() >
 			    Parent->operserv.Akill->Value().first)
 		    {
-			if (Parent->operserv.Akill == Parent->operserv.Akill_begin())
-			{
-			    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
-			    LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
-				    Parent->operserv.Akill->Entry().c_str(),
-				    Parent->operserv.Akill->Value().second.c_str(),
-				    Parent->operserv.Akill->Last_Modifier().c_str(),
-				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str()));
-			    announce(Parent->operserv.FirstName(),
-				    Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
-				    Parent->operserv.Akill->Entry().c_str(),
-				    Parent->operserv.Akill->Value().second.c_str(),
-				    Parent->operserv.Akill->Last_Modifier().c_str(),
-				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
-			    Parent->operserv.Akill_erase();
-			    firstgone = true;
-			}
-			else
-			{
-			    set<entlist_val_t<pair<unsigned long, mstring> > >::iterator LastEnt = Parent->operserv.Akill;
-			    LastEnt--;
-			    Parent->server.RAKILL(Parent->operserv.Akill->Entry());
-			    LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
-				    Parent->operserv.Akill->Entry().c_str(),
-				    Parent->operserv.Akill->Value().second.c_str(),
-				    Parent->operserv.Akill->Last_Modifier().c_str(),
-				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str()));
-			    announce(Parent->operserv.FirstName(),
-				    Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
-				    Parent->operserv.Akill->Entry().c_str(),
-				    Parent->operserv.Akill->Value().second.c_str(),
-				    Parent->operserv.Akill->Last_Modifier().c_str(),
-				    ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
-			    Parent->operserv.Akill_erase();
-			    Parent->operserv.Akill = LastEnt;
-			}
+			set<OperServ::Akill_Type>::iterator Akill2 = Parent->operserv.Akill;
+			Akill2++;
+			Parent->server.RAKILL(Parent->operserv.Akill->Entry());
+			LOG((LM_INFO, Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
+				Parent->operserv.Akill->Entry().c_str(),
+				Parent->operserv.Akill->Value().second.c_str(),
+				Parent->operserv.Akill->Last_Modifier().c_str(),
+				ToHumanTime(Parent->operserv.Akill->Value().first).c_str()));
+			announce(Parent->operserv.FirstName(),
+				Parent->getLogMessage("EVENT/EXPIRE_AKILL"),
+				Parent->operserv.Akill->Entry().c_str(),
+				Parent->operserv.Akill->Value().second.c_str(),
+				Parent->operserv.Akill->Last_Modifier().c_str(),
+				ToHumanTime(Parent->operserv.Akill->Value().first).c_str());
+			Parent->operserv.Akill_erase();
+			Parent->operserv.Akill = Akill2;
+		    }
+		    else
+		    {
+			Parent->operserv.Akill++;
 		    }
 		}
 	    }
@@ -1134,37 +1103,22 @@ int EventTask::svc(void)
 		for (ni=Parent->memoserv.channel.begin();
 			ni!=Parent->memoserv.channel.end(); ni++)
 		{
-		    bool firstgone = false;
 		    WLOCK(("MemoServ", "channel", ni->first));
-		    for (lni=ni->second.begin();
-			(ni->second.size()) &&
-			(firstgone || lni != ni->second.end()); lni++)
+		    for (lni=ni->second.begin(); lni != ni->second.end();)
 		    {
-			if (firstgone)
-			{
-			    firstgone = false;
-			    lni = ni->second.begin();
-			}
 			if (lni->Time().SecondsSince() >
 			    Parent->memoserv.News_Expire())
 			{
-			    if (lni == ni->second.begin())
-			    {
-				LOG((LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
+			    list<News_t>::iterator lni2 = lni;
+			    lni2++;
+			    LOG((LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
 					lni->Channel().c_str()));
-				ni->second.erase(lni);
-				firstgone = true;
-				lni = ni->second.end();
-			    }
-			    else
-			    {
-				list<News_t>::iterator lastnews = lni;
-				LOG((LM_DEBUG, Parent->getLogMessage("EVENT/EXPIRE_NEWS"),
-					lni->Channel().c_str()));
-				lastnews--;
-				ni->second.erase(lni);
-				lni = lastnews;
-			    }
+			    ni->second.erase(lni);
+			    lni = lni2;
+			}
+			else
+			{
+			    lni++;
 			}
 		    }
 		    if (!ni->second.size())
@@ -1476,7 +1430,6 @@ int EventTask::svc(void)
 	FLUSH(); // Force TRACE output dump
 	ACE_OS::sleep(1);
     }
-    Parent->DelLogInstance(ACE_LOG_MSG);
     DRET(0);
 }
 

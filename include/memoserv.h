@@ -25,6 +25,13 @@ static const char *ident_memoserv_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/12/21 14:18:17  prez
+** Fixed AKILL expiry, added limit for chanserv on-join messages and commserv
+** logon messages.  Also added ability to clear stats and showing of time
+** stats are effective for (ie. time since clear).  Also fixed ordering of
+** commands, anything with 2 commands (ie. a space in it) should go before
+** anything with 1.
+**
 ** Revision 1.34  2000/09/02 07:20:44  prez
 ** Added the DumpB/DumpE functions to all major objects, and put in
 ** some example T_Modify/T_Changing code in NickServ (set email).
@@ -216,6 +223,7 @@ public:
     {
 	friend class MemoServ;
 
+	mDateTime i_ClearTime;
 	unsigned long i_Read;
 	unsigned long i_Unread;
 	unsigned long i_Send;
@@ -227,10 +235,13 @@ public:
 	unsigned long i_Continue;
 	unsigned long i_File;
     public:
-	stats_t() {
+	stats_t() { clear(); }
+	void clear() {
+	    i_ClearTime = Now();
 	    i_Read = i_Unread = i_Send = i_Flush = i_Reply =
 		i_Forward = i_Cancel = i_Del = i_Continue =
 		i_File = 0; }
+	mDateTime ClearTime()	    { return i_ClearTime; }
 	unsigned long Read()	    { return i_Read; }
 	unsigned long Unread()	    { return i_Unread; }
 	unsigned long Send()	    { return i_Send; }
