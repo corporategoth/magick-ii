@@ -2,6 +2,8 @@
 #include "ace/OS.h"
 #include <ctype.h>
 #include <stdarg.h>
+#include <algorithm>
+using namespace std;
 
 mstring::mstring(const mstring& in)
 :inherited(in)
@@ -312,16 +314,23 @@ void mstring::Empty()
 
 int mstring::Find(char ch, bool bFromEnd) const
 {
-	const char *psz=bFromEnd?ACE_OS::strrchr(c_str(),ch) : ACE_OS::strchr(c_str(),ch);
+	int i;
+	if(bFromEnd==true)
+		i=rfind(ch);
+	else
+		i=find(ch);
 
-	return (psz==NULL)?-1:psz-c_str();
+	return i;
 }
 
 int mstring::Find(const mstring & in) const
 {
-	const char *psz=ACE_OS::strstr(c_str(),in);
-
-	return (psz==NULL)?-1:psz-c_str();
+	//const char *psz=ACE_OS::strstr(c_str(),in);
+	iterator i=search(begin(),end(),in.begin(),in.end());
+	if(i==end())
+		return -1;
+	else
+		return i-begin();
 }
 
 size_t mstring::First(char c) const
