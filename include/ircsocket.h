@@ -60,11 +60,50 @@ public:
     size_t count(heartbeat_enum type);
 };
 
+class Connection_t
+{
+    mstring i_Name;
+    unsigned short i_Port;
+    mstring i_Password;
+    unsigned int i_Priority;
+    unsigned long i_Numeric;
+public:
+    Connection_t() : i_Port(0), i_Priority(0), i_Numeric(0) {}
+    Connection_t(const mstring &name, unsigned short port, const mstring &password,
+		 unsigned int priority = 1, unsigned long numeric = 0)
+    : i_Name(name), i_Port(port), i_Password(password), i_Priority(priority), i_Numeric(numeric) {}
+    Connection_t(const Connection_t &in) { *this = in; }
+    Connection_t &operator=(const Connection_t &in)
+    {
+	i_Name = in.i_Name;
+	i_Port = in.i_Port;
+	i_Password = in.i_Password;
+	i_Priority = in.i_Priority;
+	i_Numeric = in.i_Numeric;
+	return *this;
+    }
+
+    mstring Name() const { return i_Name; }
+    unsigned short Port() const { return i_Port; }
+    mstring Password() const { return i_Password; }
+    unsigned int Priority() const { return i_Priority; }
+    void Priority(unsigned int in) { i_Priority = in; }
+    unsigned long Numeric() const { return i_Numeric; }
+    class PrioritySort
+    {
+    public:
+	bool operator()(const Connection_t &lhs, const Connection_t &rhs) const
+	{
+	    return lhs.Priority() < rhs.Priority();
+	}
+    };
+};
+
 class Reconnect_Handler : public ACE_Event_Handler
 {
 public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
-    mstring Reconnect_Handler::FindNext(const mstring & i_server);
+    Connection_t Reconnect_Handler::FindNext(const mstring &server, unsigned short port);
 };
 
 class Disconnect_Handler : public ACE_Event_Handler

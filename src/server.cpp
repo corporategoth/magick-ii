@@ -752,7 +752,7 @@ unsigned long Protocol::Numeric_t::FindServerNumeric() const
     BTCB();
     NFT("Protocol::Numeric_t::FindServerNumeric");
 
-    unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
+    Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
 
     unsigned long max = 1;
 
@@ -761,7 +761,7 @@ unsigned long Protocol::Numeric_t::FindServerNumeric() const
 
     for (unsigned long i = 1; i < max; i++)
     {
-	if (i == ournumeric)
+	if (i == svr.Numeric())
 	    continue;
 	if (FindServerNumeric(i).empty())
 	    RET(i);
@@ -776,17 +776,17 @@ unsigned long Protocol::Numeric_t::FindUserNumeric() const
     BTCB();
     NFT("Protocol::Numeric_t::FindUserNumeric");
 
-    unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
+    Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
     unsigned long i, max;
     int j;
 
     if (Combine())
     {
-	i = ournumeric;
+	i = svr.Numeric();
 	for (j = 0; j < User(); j++)
 	    i *= 64;
 
-	max = ournumeric + 1;
+	max = svr.Numeric() + 1;
 	for (j = 0; j < User(); j++)
 	    max *= 64;
     }
@@ -899,9 +899,8 @@ void Server::sraw(const mstring & text) const
 	out << ":" << Magick::instance().startup.Server_Name() << " ";
     else if (proto.Numeric.Server() && proto.Numeric.Prefix())
     {
-	unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
-
-	out << proto.Numeric.ServerNumeric(ournumeric) + " ";
+	Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
+	out << proto.Numeric.ServerNumeric(svr.Numeric()) + " ";
     }
     out << text;
     raw(out);
@@ -2003,9 +2002,8 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    }
 	    else
 	    {
-		unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
-
-		server = proto.Numeric.ServerNumeric(ournumeric);
+		Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
+		server = proto.Numeric.ServerNumeric(svr.Numeric());
 	    }
 	}
 	mstring out, token;
@@ -2150,10 +2148,10 @@ void Server::NICK(const mstring & nick, const mstring & user, const mstring & ho
 	    }
 	    sendmode = false;
 
-	    unsigned long ournumeric = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
+	    Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
 
 	    // B]AAAB == 127.0.0.1 for ipaddress.
-	    out << "B]AAAB " << proto.Numeric.ServerNumeric(ournumeric) << " " <<
+	    out << "B]AAAB " << proto.Numeric.ServerNumeric(svr.Numeric()) << " " <<
 		   proto.Numeric.UserNumeric(tmp->Numeric()) << " :" << name;
 	    break;
 	}
@@ -2883,7 +2881,7 @@ void Server::KillUnknownUser(const mstring & user) const
     FT("Server::KillUnknownUser", (user));
     sraw(((proto.Tokens() &&
 	   !proto.GetNonToken("KILL").empty()) ? proto.GetNonToken("KILL") : mstring("KILL")) + " " + user + " :" +
-	 Magick::instance().startup.Server_Name() + " (" + user + "(?) <- " + Magick::instance().CurrentServer() + ")");
+	 Magick::instance().startup.Server_Name() + " (" + user + "(?) <- " + Magick::instance().CurrentServer().first + ")");
     LOG(LM_ERROR, "OTHER/KILL_UNKNOWN", (user));
     ETCB();
 }
@@ -4252,17 +4250,18 @@ void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & 
 	 */
 
 	// PASS :password
-	if (IrcParam(params, 1) != Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.second)
+	Connection_t svr = Magick::instance().startup.Server(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
+	if (IrcParam(params, 1) != svr.Password())
 	{
-	    LOG(LM_ERROR, "OTHER/WRONGPASS", (Magick::instance().CurrentServer()));
+	    LOG(LM_ERROR, "OTHER/WRONGPASS", (Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second));
 	    CP(("Server password mismatch.  Closing socket."));
 	    raw(((proto.Tokens() &&
 		  !proto.GetNonToken("ERROR").empty()) ? proto.GetNonToken("ERROR") : mstring("ERROR")) +
-		" :No Access (passwd mismatch) [" + Magick::instance().CurrentServer() + "]");
+		" :No Access (passwd mismatch) [" + Magick::instance().CurrentServer().first + "]");
 	    raw(((proto.Tokens() &&
 		  !proto.GetNonToken("ERROR").empty()) ? proto.GetNonToken("ERROR") : mstring("ERROR")) + " :Closing Link: [" +
-		Magick::instance().CurrentServer() + "] (Bad Password)");
-	    sraw("464 " + Magick::instance().CurrentServer() + " :" + "Password Incorrect");
+		Magick::instance().CurrentServer().first + "] (Bad Password)");
+	    sraw("464 " + Magick::instance().CurrentServer().first + " :" + "Password Incorrect");
 	    Magick::instance().Disconnect();
 	}
     }
@@ -5939,12 +5938,12 @@ void Server::numeric_execute(mstring & source, const mstring & msgtype, const ms
 	break;
     case 464:			// ERR_PASSWDMISMATCH
 	// MUST handle (Stop connecting).
-	LOG(LM_ERROR, "OTHER/WRONGPASS", (Magick::instance().CurrentServer()));
+	LOG(LM_ERROR, "OTHER/WRONGPASS", (Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second));
 	Magick::instance().Disconnect();
 	break;
     case 465:			// ERR_YOUREBANNEDCREEP
 	// MUST handle (Stop connecting).
-	LOG(LM_ERROR, "OTHER/WEAREBANNED", (Magick::instance().CurrentServer()));
+	LOG(LM_ERROR, "OTHER/WEAREBANNED", (Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second));
 	Magick::instance().Disconnect();
 	break;
     default:

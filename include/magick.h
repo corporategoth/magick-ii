@@ -123,9 +123,13 @@ private:
     bool i_reconnect;
     mstring i_localhost;
     bool i_gotconnect;
-    mstring i_currentserver;
     bool i_connected;
     bool i_saving;
+    pair<mstring, unsigned short> i_currentserver;
+    void CurrentServer(const mstring &server, unsigned short port)
+    {
+	i_currentserver = pair<mstring, unsigned short>(server, port);
+    }
 
     static SXP::Tag tag_Magick;
 
@@ -178,9 +182,9 @@ public:
     {
 	friend class Magick;
 
-	// map<server name, pair<priority, triplet<port, password, numeric> > >
-	map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > > servers;
-
+    public:
+    private:
+	vector<Connection_t> servers;
 	// map<server name, vector<allowed uplinks> >
 	map < mstring, vector < mstring > > allows;
 	mstring server_name;
@@ -195,9 +199,10 @@ public:
 	unsigned long lagtime;
 
     public:
-	bool IsServer(const mstring & server) const;
-	pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > Server(const mstring & server) const;
-	vector < mstring > PriorityList(const unsigned int pri) const;
+	bool IsServer(const mstring & server, unsigned short port) const;
+	Connection_t Server(const mstring & server, unsigned short port) const;
+	vector <Connection_t> ServerList(const mstring & server) const;
+	vector <Connection_t> PriorityList(unsigned int pri) const;
 	size_t Server_size() const
 	{
 	    return servers.size();
@@ -607,7 +612,7 @@ public:
     {
 	return i_localhost;
     }
-    mstring CurrentServer() const
+    pair<mstring, unsigned short> CurrentServer() const
     {
 	return i_currentserver;
     }

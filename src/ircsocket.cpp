@@ -196,7 +196,7 @@ int IrcSvcHandler::open(void *in)
     Magick::instance().hh.AddThread(Heartbeat_Handler::H_IrcServer);
 
     sock.Bind(&Magick::instance().ircsvchandler->peer(), D_From, false);
-    sock.Resolve(S_IrcServer, Magick::instance().CurrentServer());
+    sock.Resolve(S_IrcServer, Magick::instance().CurrentServer().first);
 
     in_traffic = out_traffic = 0;
     connect_time = mDateTime::CurrentDateTime();
@@ -376,7 +376,7 @@ int IrcSvcHandler::handle_close(ACE_HANDLE h, ACE_Reactor_Mask mask)
     FT("IrcSvcHandler::handle_close", ("(ACE_HANDLE hin)", "(ACE_Reactor_Mask) mask"));
     CP(("IrcSvcHandler closed"));
 
-    LOG(LM_ERROR, "OTHER/CLOSED", (Magick::instance().CurrentServer()));
+    LOG(LM_ERROR, "OTHER/CLOSED", (Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second));
 
     unsigned int i;
 
@@ -1346,47 +1346,6 @@ size_t Heartbeat_Handler::count(heartbeat_enum type)
     ETCB();
 }
 
-mstring Reconnect_Handler::FindNext(const mstring & i_server)
-{
-    BTCB();
-    FT("Reconnect_Handler::FindNext", (i_server));
-    mstring result, server(i_server.LowerCase());
-
-    // IF current server is found
-    //     IF last server of this priority
-    //         IF size of serverlist of next priority > 0 size
-    //             return first element of serverlist of next priority
-    //         ELSE return NULL
-    //     ELSE return next server of this priority
-    // ELSE return NULL
-
-    if (Magick::instance().startup.IsServer(server))
-    {
-	vector < mstring > serverlist =
-	    Magick::instance().startup.PriorityList(Magick::instance().startup.Server(server).first);
-	vector < mstring >::iterator iter = find(serverlist.begin(), serverlist.end(), server);
-
-	if (iter != serverlist.end())
-	    iter++;
-
-	if (iter == serverlist.end())
-	{
-	    serverlist = Magick::instance().startup.PriorityList(Magick::instance().startup.Server(server).first + 1);
-
-	    if (serverlist.size())
-	    {
-		RET(*serverlist.begin());
-	    }
-	}
-	else
-	{
-	    RET(*iter);
-	}
-    }
-    RET("");
-    ETCB();
-}
-
 int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
     BTCB();
@@ -1426,6 +1385,42 @@ int Disconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *ar
     ETCB();
 }
 
+Connection_t Reconnect_Handler::FindNext(const mstring &server, unsigned short port)
+{
+    BTCB();
+    FT("Reconnect_Handler::FindNext", (server, port));
+
+    // This will be 0 if the server is not found/
+    Connection_t svr = Magick::instance().startup.Server(server, port);
+
+    // If it was found, get the next one of the same priority ...
+    if (svr.Priority() != 0)
+    {
+	vector<Connection_t> conn = Magick::instance().startup.PriorityList(svr.Priority());
+	vector<Connection_t>::iterator iter;
+	for (iter=conn.begin(); iter!=conn.end(); iter++)
+	    if (iter->Name().IsSameAs(server, true) && iter->Port() == port)
+	    {
+		if (++iter != conn.end())
+		{
+		    NRET(Connection_t, *iter);
+		}
+		break;
+	    }
+    }
+
+    // If we couldnt find the 'next' one (ie. the server passed wasnt found, or we were at the end of
+    // that priority).  Get the first connection from the next priority.
+    vector<Connection_t> conn = Magick::instance().startup.PriorityList(svr.Priority() + 1);
+    if (conn.size())
+	NRET(Connection_t, *conn.begin());
+
+    // Should not get here.
+    Connection_t tmp;
+    NRET(Connection_t, tmp);
+    ETCB();
+}
+
 int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg)
 {
     BTCB();
@@ -1438,55 +1433,43 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     if (Magick::instance().config.Server_Relink() < 1 || !Magick::instance().Reconnect() || Magick::instance().Shutdown())
 	DRET(0);
 
-    mstring server;
+    Connection_t server;
 
     if (Magick::instance().startup.Server_size())
     {
 	if (Magick::instance().GotConnect())
 	{
-	    server = Magick::instance().startup.PriorityList(1) [0];
+	    server = FindNext("", 0);
 	}
 	else
 	{
-	    server = Magick::instance().CurrentServer();
-	    if (!server.empty())
-	    {
-		server = FindNext(server);
-	    }
-	    if (server.empty())
-	    {
-		server = Magick::instance().startup.PriorityList(1) [0];
-	    }
+	    server = FindNext(Magick::instance().CurrentServer().first, Magick::instance().CurrentServer().second);
 	}
     }
-    if (server.empty())
+    if (server.Name().empty() || server.Port() == 0)
     {
 	NLOG(LM_EMERGENCY, "OTHER/NOVALIDSERVERS");
     }
 
-    pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > details =
-	Magick::instance().startup.Server(server);
-
     ACE_INET_Addr addr;
-    if (addr.set(details.second.first, server) < 0)
+    if (addr.set(server.Port(), server.Name()) < 0)
     {
-	LOG(LM_EMERGENCY, "SYS_ERRORS/IPADDR_SERVER", (server, details.second.first));
+	LOG(LM_EMERGENCY, "SYS_ERRORS/IPADDR_SERVER", (server.Name(), server.Port()));
     }
 
     Magick::instance().DumpB();
-    CB(1, Magick::instance().i_currentserver);
     Magick::instance().GotConnect(false);
-    Magick::instance().i_currentserver = server;
+    Magick::instance().CurrentServer(server.Name(), server.Port());
     Magick::instance().server.proto.Tokens(false);
 
     if (Magick::instance().Connected())
 	Magick::instance().Disconnect();
 
-    LOG(LM_INFO, "OTHER/CONNECTING", (server, details.second.first));
+    LOG(LM_INFO, "OTHER/CONNECTING", (server.Name(), server.Port()));
 
 #ifdef TEST_MODE
-	Magick::instance().ircsvchandler = new IrcSvcHandler();
-	Magick::instance().ircsvchandler->open(NULL);
+    Magick::instance().ircsvchandler = new IrcSvcHandler();
+    Magick::instance().ircsvchandler->open(NULL);
 #else
     IrcConnector C_server(&Magick::instance().reactor(), ACE_NONBLOCK);
 
@@ -1511,7 +1494,7 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
     }
     if (res == -1)
     {
-	LOG(LM_ERROR, "OTHER/REFUSED", (server, details.second.first));
+	LOG(LM_ERROR, "OTHER/REFUSED", (server.Name(), server.Port()));
 	//okay we got a connection problem here. log it and try again
 	CP(("Refused connection, rescheduling and trying again ..."));
 
@@ -1536,7 +1519,7 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 	if (!Magick::instance().server.proto.Protoctl().empty())
 	    Magick::instance().server.raw(Magick::instance().server.proto.Protoctl());
 
-	mstring tmp = "PASS " + details.second.second;
+	mstring tmp = "PASS " + server.Password();
 
 	if (Magick::instance().server.proto.TSora())
 	    tmp += " :TS";
@@ -1546,20 +1529,19 @@ int Reconnect_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg
 
 	Magick::instance().server.raw(parseMessage(Magick::instance().server.proto.Server(),
 			mVarArray(Magick::instance().startup.Server_Name(), 1, Magick::instance().startup.Server_Desc(),
-				  Magick::instance().server.proto.Numeric.ServerLineNumeric(details.second.third),
+				  Magick::instance().server.proto.Numeric.ServerLineNumeric(server.Numeric()),
 				  time(NULL), Magick::instance().StartTime().timetstring())));
 
 	if (Magick::instance().server.proto.TSora())
 	    // SVINFO <TS_CURRENT> <TS_MIN> <STANDALONE> :<UTC-TIME>
 	    Magick::instance().server.raw("SVINFO 3 1 0 :" + mDateTime::CurrentDateTime().timetstring());
 	Magick::instance().Connected(true);
+	LOG(LM_INFO, "OTHER/CONNECTED", (server.Name(), server.Port()));
 #ifndef TEST_MODE
     }
 #endif
 
-    CE(1, Magick::instance().i_currentserver);
     Magick::instance().DumpE();
-
     DRET(0);
     ETCB();
 }

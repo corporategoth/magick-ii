@@ -2117,7 +2117,6 @@ bool Magick::get_config_values()
 	WLOCK(("Startup", "Servers"));
 
 	startup.servers.clear();
-	set<unsigned int> priorities;
 	do
 	{
 	    mstring lookfor = "REMOTE_";
@@ -2136,11 +2135,9 @@ bool Magick::get_config_values()
 		if (value_mstring.WordCount("|") == 5 && tmp[1].IsNumber() && tmp[3].IsNumber() && tmp[4].IsNumber() &&
 		    atoi(tmp[1]) > 0 && atoi(tmp[3]) > 0 && atol(tmp[4]) > 0)
 		{
-		    // startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
-		    startup.servers[tmp[0].LowerCase()] =
-			pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > (atol(tmp[3]),
-				triplet < unsigned int, mstring, unsigned long > (atoui(tmp[1]), tmp[2], atoul(tmp[4])));
-		    priorities.insert(atoui(tmp[3]));
+		    Connection_t svr(tmp[0].LowerCase(), static_cast<unsigned short>(atoui(tmp[1])),
+				tmp[2], atoui(tmp[3]), atoul(tmp[4]));
+		    startup.servers.push_back(svr);
 		}
 		else
 		{
@@ -2151,20 +2148,21 @@ bool Magick::get_config_values()
 	    i++;
 	} while (!value_mstring.empty());
 
-	// Make the priorities sequencial ...
-	set<unsigned int>::iterator iter;
-	for (i=1, iter=priorities.begin(); iter!=priorities.end(); iter++, i++)
+	// Sort the entries by priority, and then re-write the priorities to be sequencial.
+//	stable_sort(startup.servers.begin(), startup.servers.end(), Connection_t::PrioritySort());
+	sort(startup.servers.begin(), startup.servers.end(), Connection_t::PrioritySort());
+	unsigned int lastPrio = 0;
+	vector<Connection_t>::iterator iter;
+	for (i=0, iter=startup.servers.begin(); iter!=startup.servers.end(); iter++)
 	{
-	    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >::iterator iter2;
-
-	    for (iter2 = startup.servers.begin(); iter2 != startup.servers.end(); iter2++)
-	    {
-		if (iter2->second.first == *iter)
-		    iter2->second.first = i;
-	    }
+	    if (iter->Priority() != lastPrio)
+		i++;
+	    lastPrio = iter->Priority();
+	    iter->Priority(i);
 	}
+	
     }
-    if (CurrentServer().empty() || !startup.IsServer(CurrentServer()))
+    if (CurrentServer().first.empty() || !startup.IsServer(CurrentServer().first, CurrentServer().second))
 	reconnect = true;
 
     // REMOTE entries
@@ -2208,7 +2206,7 @@ bool Magick::get_config_values()
 	    i++;
 	} while (!value_mstring.empty());
     }
-    if (CurrentServer().empty() || !startup.IsAllowed(server.OurUplink(), startup.Server_Name()))
+    if (CurrentServer().first.empty() || !startup.IsAllowed(server.OurUplink(), startup.Server_Name()))
 	reconnect = true;
 
     in.Read(ts_Startup + "LEVEL", value_uint, 1U);
@@ -3451,52 +3449,78 @@ void Magick::doscripthandle(const mstring& server, const mstring& command, const
 }
 */
 
-bool Magick::startup_t::IsServer(const mstring & svr) const
+bool Magick::startup_t::IsServer(const mstring & svr, unsigned short port) const
 {
     BTCB();
-    FT("Magick::startup_t::IsServer", (svr));
+    FT("Magick::startup_t::IsServer", (svr, port));
 
+    vector<Connection_t>::const_iterator iter;
     RLOCK(("Startup", "Servers"));
-    if (servers.find(svr.LowerCase()) != servers.end())
+    for (iter=servers.begin(); iter!=servers.end(); iter++)
     {
-	RET(true);
+	if (iter->Name().IsSameAs(svr, true) && iter->Port() == port)
+	    RET(true);
     }
+
     RET(false);
     ETCB();
 }
 
-pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > Magick::startup_t::Server(const mstring & svr) const
+Connection_t Magick::startup_t::Server(const mstring & svr, unsigned short port) const
 {
     BTCB();
-    FT("Magick::startup_t::Server", (svr));
-    pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > value(0, triplet < unsigned int, mstring,
-										  unsigned long > (0, "", 0));
+    FT("Magick::startup_t::Server", (svr, port));
 
+    vector<Connection_t>::const_iterator iter;
     RLOCK(("Startup", "Servers"));
-    if (IsServer(svr))
+    for (iter=servers.begin(); iter!=servers.end(); iter++)
     {
-	value = servers.find(svr.LowerCase())->second;
+	if (iter->Name().IsSameAs(svr, true) && iter->Port() == port)
+	    NRET(Connection_t, *iter);
     }
-    NRET(pair < unsigned int.triplet < unsigned int.mstring.unsigned long > >, value);
 
+    Connection_t tmp;
+    NRET(Connection_t, tmp);
     ETCB();
 }
 
-vector < mstring > Magick::startup_t::PriorityList(const unsigned int pri) const
+vector<Connection_t> Magick::startup_t::ServerList(const mstring & svr) const
+{
+    BTCB();
+    FT("Magick::startup_t::ServerList", (svr));
+
+    vector<Connection_t> retval;
+    vector<Connection_t>::const_iterator iter;
+
+    RLOCK(("Startup", "Servers"));
+    for (iter=servers.begin(); iter!=servers.end(); iter++)
+    {
+	if (iter->Name().IsSameAs(svr, true))
+	    retval.push_back(*iter);
+    }
+
+    NRET(vector< Connection_t >, retval);
+    ETCB();
+}
+
+vector <Connection_t> Magick::startup_t::PriorityList(unsigned int pri) const
 {
     BTCB();
     FT("Magick::startup_t::PriorityList", (pri));
-    vector < mstring > list;
 
-    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >::const_iterator iter;
+    vector<Connection_t> retval;
+    vector<Connection_t>::const_iterator iter;
 
     RLOCK(("Startup", "Servers"));
-    for (iter = servers.begin(); iter != servers.end(); iter++)
+    for (iter=servers.begin(); iter!=servers.end(); iter++)
     {
-	if (iter->second.first == pri)
-	    list.push_back(iter->first);
+	if (iter->Priority() == pri)
+	    retval.push_back(*iter);
+	else if (iter->Priority() > pri)
+	    break;
     }
-    NRET(vector < mstring >, list);
+
+    NRET(vector< Connection_t >, retval);
     ETCB();
 }
 
@@ -4059,7 +4083,7 @@ void Magick::DumpB() const
     MB(0,
        (argv.size(), Messages.size(), Help.size(), LogMessages.size(), handlermap.size(), i_verbose, i_services_dir,
 	i_config_file, i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown, i_reconnect, i_localhost));
-    MB(16, (i_gotconnect, i_currentserver, i_connected, i_saving));
+    MB(16, (i_gotconnect, i_currentserver.first, i_currentserver.second, i_connected, i_saving));
     ETCB();
 }
 
@@ -4069,6 +4093,6 @@ void Magick::DumpE() const
     ME(0,
        (argv.size(), Messages.size(), Help.size(), LogMessages.size(), handlermap.size(), i_verbose, i_services_dir,
 	i_config_file, i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown, i_reconnect, i_localhost));
-    ME(16, (i_gotconnect, i_currentserver, i_connected, i_saving));
+    ME(16, (i_gotconnect, i_currentserver.first, i_currentserver.second, i_connected, i_saving));
     ETCB();
 }
