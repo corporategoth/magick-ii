@@ -2177,6 +2177,12 @@ void NickServ::do_access_Add(const mstring & mynick, const mstring & source, con
 
     mstring hostmask = params.ExtractWord(3, " ");
 
+    if (hostmask.IsSameAs("CURRENT", true))
+    {
+	do_access_Current(mynick, source, params);
+	return;
+    }
+
     if (hostmask.Contains("!"))
     {
 	SEND(mynick, source, "ERR_SYNTAX/MAYNOTCONTAIN", (Magick::instance().getMessage(source, "LIST/ACCESS"), '!'));
