@@ -14,7 +14,7 @@ BCB = $(MAKEDIR)\..
 VERSION = BCB.05.03
 # ---------------------------------------------------------------------------
 PROJECT = crypto.lib
-OBJFILES = bf_enc.obj bf_skey.obj md5_dgst.obj
+OBJFILES = crypto.obj bf_enc.obj bf_skey.obj md5_dgst.obj
 RESFILES = 
 MAINSOURCE = crypto.cpp
 RESDEPEN = $(RESFILES)
@@ -31,29 +31,27 @@ PATHASM = .;
 PATHPAS = .;
 PATHRC = .;
 LINKER = TLib
-DEBUGLIBPATH = 
-RELEASELIBPATH = 
-USERDEFINES = _DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT;STDC_HEADERS
-SYSDEFINES = NO_STRICT;_VIS_NOLIB
-INCLUDEPATH = ..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib
+DEBUGLIBPATH = $(BCB)\lib\debug
+RELEASELIBPATH = $(BCB)\lib\release
+USERDEFINES = WIN32;_DEBUG;_WINDOWS
+SYSDEFINES = _NO_VCL;_ASSERTE;NO_STRICT;_VIS_NOLIB;_RTLDLL
+INCLUDEPATH = $(BCB)\include;$(BCB)\include\ATL;..\..\include;..\..\..\support\zlib
 LIBPATH = 
-WARNINGS = -w-rvl -w-par -w-8027 -w-8026
+WARNINGS = 
 LISTFILE = 
 # ---------------------------------------------------------------------------
-CFLAG1 = -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Hc -Q -Vx -Ve -X- -r- \
-    -a8 -5 -b -d -k -y -v -vi- -c -tWM
-IDLCFLAGS = -I..\..\include -I..\..\..\support\ace_wrappers -I$(BCB)\include \
-    -I$(BCB)\include\vcl -I..\..\..\support\zlib -src_suffix cpp -D_DEBUG \
-    -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DACE_NTRACE=1 -DACE_USE_RCSID=0 \
-    -DHASCRYPT -DSTDC_HEADERS -boa
-PFLAGS = -$YD -$W -$O- -v -JPHN -M
-RFLAGS = 
-AFLAGS = /mx /w2 /zd
-LFLAGS = 
+CFLAG1 = -Od -H=vcl50.csm -w -Tkh30000 -X- -r- -a8 -5 -b -d -k -y -v -vi- -q -tWR \
+    -tWM -c
+IDLCFLAGS = -I$(BCB)\include -I$(BCB)\include\ATL -I..\..\include \
+    -I..\..\..\support\zlib -src_suffix cpp -DWIN32 -D_DEBUG -D_WINDOWS -boa
+PFLAGS = -$YD -$W -$O-
+RFLAGS = /i$(BCB)\include;$(BCB)\include\mfc
+AFLAGS = /mx /w2 /zi
+LFLAGS = /E
 # ---------------------------------------------------------------------------
 ALLOBJ = $(OBJFILES)
-ALLRES = 
-ALLLIB = cg32.lib
+ALLRES = $(RESFILES)
+ALLLIB = $(LIBFILES) $(LIBRARIES)
 # ---------------------------------------------------------------------------
 !ifdef IDEOPTIONS
 
