@@ -26,6 +26,9 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.113  2000/05/01 03:11:40  ungod
+** xmlisation of entlist_t done
+**
 ** Revision 1.112  2000/04/15 11:11:44  ungod
 ** starting xmlage of magick
 **
@@ -1048,6 +1051,7 @@ SXP::Tag entlist_t::tag_Entry("Entry");
 SXP::Tag entlist_t::tag_Last_Modify_Time("Last Modify Time");
 SXP::Tag entlist_t::tag_Last_Modifier("Last Modifier");
 SXP::Tag entlist_t::tag_entlist_t("entlist_t");
+SXP::Tag entlist_t::tag_UserDef("UserDef");
 
 void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
@@ -1055,6 +1059,12 @@ void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	if( pElement->IsA(tag_Entry) )   pElement->Retrieve(i_Entry);
 	if( pElement->IsA(tag_Last_Modify_Time) )   pElement->Retrieve(i_Last_Modify_Time);
 	if( pElement->IsA(tag_Last_Modifier) )   pElement->Retrieve(i_Last_Modifier);
+    if( pElement->IsA(tag_UserDef) )
+    {
+        mstring tmpUserDef;
+        pElement->Retrieve(tmpUserDef);
+        i_UserDef[tmpUserDef.Before("\n"))=tmpUserDef.After("\n");
+    }
 }
 
 void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
@@ -1065,6 +1075,13 @@ void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 		pOut->WriteElement(tag_Entry, i_Entry);
 		pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
 		pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
+
+        int i;
+        map<mstring,mstring>::const_iterator iter;
+        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++,i++)
+        {
+            pOut->WriteElement(tag_UserDef,i->first+"\n"+i->second);
+        }
 
 		pOut->EndObject(tag_entlist_t);
 }

@@ -24,6 +24,9 @@ static const char *ident_base_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.59  2000/05/01 03:11:39  ungod
+** xmlisation of entlist_t done
+**
 ** Revision 1.58  2000/04/15 11:11:44  ungod
 ** starting xmlage of magick
 **
@@ -118,6 +121,7 @@ public:
     mstring Last_Modifier()const	{ return i_Last_Modifier; }
     // XML handling section
 	static SXP::Tag tag_Entry, tag_Last_Modify_Time, tag_Last_Modifier;
+	static SXP::Tag tag_UserDef;
 	static SXP::Tag tag_entlist_t;
 	SXP::Tag& GetClassTag() const { return tag_entlist_t; }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement) { };
