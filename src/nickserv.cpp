@@ -1668,7 +1668,7 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
     case N_U_H:		// nick!*user@*.host
 	if (user[0u] == '~')
 	    user = user.After("~");
-	if (i_host.IsNumber())
+	if (i_host.IsIpAddress())
 	    retval = i_Name + "!*" + user + "@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = i_Name + "!*" + user + "@*." + i_host.After(".");
@@ -1681,7 +1681,7 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
 	break;
 
     case N_H:			// nick!*@*.host
-	if (i_host.IsNumber())
+	if (i_host.IsIpAddress())
 	    retval = i_Name + "!*@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = i_Name + "!*@*." + i_host.After(".");
@@ -1696,7 +1696,7 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
     case U_H:			// *!*user@*.host
 	if (user[0u] == '~')
 	    user = user.After("~");
-	if (i_host.IsNumber())
+	if (i_host.IsIpAddress())
 	    retval = "*!*" + user + "@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = "*!*" + user + "@*." + i_host.After(".");
@@ -1709,7 +1709,7 @@ mstring Nick_Live_t::Mask(const Nick_Live_t::styles type) const
 	break;
 
     case H:			// *!*@*.host
-	if (i_host.IsNumber())
+	if (i_host.IsIpAddress())
 	    retval = "*!*@" + i_host.Before(".", 3) + ".*";
 	else if (i_host.Contains(".") && i_host.WordCount(".") > 2)
 	    retval = "*!*@*." + i_host.After(".");
@@ -1747,7 +1747,7 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
     case N_U_H:		// nick!*user@*.host
 	if (user[0u] == '~')
 	    user = user.After("~");
-	if (i_alt_host.IsNumber())
+	if (i_alt_host.IsIpAddress())
 	    retval = i_Name + "!*" + user + "@" + i_alt_host.Before(".", 3) + ".*";
 	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
 	    retval = i_Name + "!*" + user + "@*." + i_alt_host.After(".");
@@ -1760,7 +1760,7 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
 	break;
 
     case N_H:			// nick!*@*.host
-	if (i_alt_host.IsNumber())
+	if (i_alt_host.IsIpAddress())
 	    retval = i_Name + "!*@" + i_alt_host.Before(".", 3) + ".*";
 	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
 	    retval = i_Name + "!*@*." + i_alt_host.After(".");
@@ -1775,7 +1775,7 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
     case U_H:			// *!*user@*.host
 	if (user[0u] == '~')
 	    user = user.After("~");
-	if (i_alt_host.IsNumber())
+	if (i_alt_host.IsIpAddress())
 	    retval = "*!*" + user + "@" + i_alt_host.Before(".", 3) + ".*";
 	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
 	    retval = "*!*" + user + "@*." + i_alt_host.After(".");
@@ -1788,7 +1788,7 @@ mstring Nick_Live_t::AltMask(const Nick_Live_t::styles type) const
 	break;
 
     case H:			// *!*@*.host
-	if (i_alt_host.IsNumber())
+	if (i_alt_host.IsIpAddress())
 	    retval = "*!*@" + i_alt_host.Before(".", 3) + ".*";
 	else if (i_alt_host.Contains(".") && i_alt_host.WordCount(".") > 2)
 	    retval = "*!*@*." + i_alt_host.After(".");

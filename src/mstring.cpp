@@ -963,8 +963,6 @@ bool mstring::IsNumber() const
     }
 
     // Accepts: [-|+]###.###  Must have at least one #
-    // Accepts multipal decimal places, so an IP address
-    // shows up as a number (easy way to say 'IsIp').
 
     /* Required this way else will coredump on a blank
      * string (ie. accessing i_str[i] of NULL) */
@@ -993,6 +991,58 @@ bool mstring::IsNumber() const
     }
 
     lock_rel();
+    return retval;
+}
+
+bool mstring::IsIpAddress() const
+{
+    bool retval = true;
+
+    lock_read();
+
+    if (i_str == NULL)
+    {
+	lock_rel();
+	return false;
+    }
+
+    /* Required this way else will coredump on a blank
+     * string (ie. accessing i_str[i] of NULL) */
+    size_t i, num = 0, deccount = 0;
+    bool gotnum = false;
+
+    for (i = 0; i < i_len; i++)
+    {
+	if (i_str[i] == '.')
+	{
+	    if (deccount >= 3 || !gotnum || num > 255)
+	    {
+		retval = false;
+		break;
+	    }
+
+	    deccount++;
+	    num = 0;
+	    gotnum = false;
+	}
+	else if (isdigit(i_str[i]))
+	{
+	    num *= 10;
+	    num += i_str[i] - '0';
+	    gotnum = true;
+	}
+	else
+	{
+	    retval = false;
+	    break;
+	}
+    }
+
+    lock_rel();
+
+    if (deccount != 3 || !gotnum || num > 255)
+	retval = false;
+
     return retval;
 }
 

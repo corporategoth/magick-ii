@@ -654,7 +654,7 @@ public:
      *    char *s = mystring;
      *  @see c_str()
      */
-    operator             const char *() const
+    operator              const char *() const
     {
 	return c_str();
     }
@@ -665,7 +665,7 @@ public:
      *  @return An STL string representation of current contents.
 		This will be "" if there is none.
      */
-    operator             const string() const
+    operator              const string() const
     {
 	return string(c_str());
     }
@@ -885,6 +885,10 @@ public:
     /** @return true if the current contents only contains numbers, with an
 	optional leading '+' or '-', and an optionaldecimal point. */
     bool IsNumber() const;
+
+    /** @return true if the current contents contains a value that would,
+	be consistant with an IP address. */
+    bool IsIpAddress() const;
 
     /** @return true if all characters are standard ASCII characters */
     bool IsAscii() const;
