@@ -43,7 +43,7 @@ public:
 	void send_cmd(const mstring& source, const mstring& fmt, ...);
     mBase();
     static void push_message(const mstring& message);
-    static void init(Magick *in);
+    static void init();
 
     virtual bool MSG() =0;
     virtual void MSG(bool on) =0;

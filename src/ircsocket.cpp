@@ -107,8 +107,8 @@ int IrcSvcHandler::handle_input(ACE_HANDLE hin)
     int i;
     mstring data2(data);
     for(i=0;i<data2.WordCount("\n");i++)
-        if(data2.ExtractWord(i,"\n")!="")
-	    CH(T_Chatter::From,mstring("IrcServer :")+data2.ExtractWord(i,"\n"));
+        if(data2.ExtractWord(i+1,"\n")!="")
+	    CH(T_Chatter::From,mstring("IrcServer :")+data2.ExtractWord(i+1,"\n"));
     // if(recvResult==-1) major problem.
     // if(recvResult==0) socket has close down    
 
@@ -137,8 +137,8 @@ int IrcSvcHandler::handle_input_i(const mstring& data)
     {
 	int i;
 	for(i=0;i<data.WordCount("\n");i++)
-	    if(data.ExtractWord(i,"\n")!="")
-		mBase::push_message(data.ExtractWord(i,"\n"));
+	    if(data.ExtractWord(i+1,"\n")!="")
+		mBase::push_message(data.ExtractWord(i+1,"\n"));
     }
     else
         mBase::push_message (data);
@@ -151,7 +151,10 @@ int IrcSvcHandler::send(const mstring & data)
     FT("IrcSvcHandler::send",(data));
     //activation_queue_.enqueue(new send_MO(this,mstring(data)));
     int recvResult;
-    recvResult=peer().send(data.c_str(),data.Len());
+    if(data.Last()!='\n')
+	recvResult=peer().send((data+"\n").c_str(),data.Len()+1);
+    else
+	recvResult=peer().send(data.c_str(),data.Len());
     CH(T_Chatter::To,data);
     RET(recvResult);
 }

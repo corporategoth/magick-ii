@@ -35,7 +35,7 @@ class mstring:public string
 {
 	typedef string inherited;
 public:
-	char& Last();
+	char Last() const;
 	size_t Len() const;
 	// below are fast convert_to_string+append functions
 	mstring& operator <<(double d);

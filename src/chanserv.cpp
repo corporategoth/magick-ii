@@ -46,11 +46,13 @@ void ChanServ::execute(const mstring & data)
 
 Chan_Live_t::Chan_Live_t(const Chan_Live_t& in)
 {
+    NFT("Chan_Live_t::Chan_Live_t");
     *this=in;
 }
 
 void Chan_Live_t::operator=(const Chan_Live_t &in)
 {
+    NFT("Chan_Live_t::operator=");
     bans.clear();
     set<mstring>::iterator i;
     for(i=in.bans.begin();i!=in.bans.end();i++)
@@ -75,47 +77,63 @@ void Chan_Live_t::operator=(const Chan_Live_t &in)
 
 bool Chan_Live_t::operator==(const Chan_Live_t &in) const
 {
-    return i_Name==in.i_Name;
+    NFT("Chan_Live_t::operator==");
+    RET(i_Name==in.i_Name);
 }
 
 bool Chan_Live_t::operator<(const Chan_Live_t &in) const
 {
-    return i_Name<in.i_Name;
+    NFT("Chan_Live_t::operator<");
+    RET(i_Name<in.i_Name);
 }
 
 bool checkops(pair<mstring, pair<bool,bool> > &in)
 {
+    FT("checkops",(in.first,in.second.first,in.second.second));
     if(in.second.first==true)
-	return true;
+    {
+	RET(true);
+    }
     else
-	return false;
+    {
+	RET(false);
+    }
 }
 
 int Chan_Live_t::Ops()
 {
-    return count_if(users.begin(),users.end(),checkops);
+    NFT("Chan_Live_t::Ops");
+    RET(count_if(users.begin(),users.end(),checkops));
 }
 
 bool checkvoices(pair<mstring, pair<bool,bool> > &in)
 {
+    FT("checkvoices",(in.first,in.second.first,in.second.second));
     if(in.second.second==true)
-	return true;
+    {
+	RET(true);
+    }
     else
-	return false;
+    {
+	RET(false);
+    }
 }
 
 int Chan_Live_t::Voices()
 {
-    return count_if(users.begin(),users.end(),checkvoices);    
+    NFT("Chan_Live_t::Voices");
+    RET(count_if(users.begin(),users.end(),checkvoices));
 }
 
 Chan_Stored_t::Chan_Stored_t(const Chan_Stored_t& in)
 {
+    NFT("Chan_Stored_t::Chan_Stored_t");
     *this=in;
 }
 
 void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 {
+    NFT("Chan_Stored_t::operator=");
     i_Name=in.i_Name;
     i_RegTime=in.i_RegTime;
     i_Description=in.i_Description;
@@ -150,21 +168,25 @@ void Chan_Stored_t::operator=(const Chan_Stored_t &in)
 
 bool Chan_Stored_t::operator==(const Chan_Stored_t &in) const
 {
-    return i_Name==in.i_Name;
+    NFT("Chan_Stored_t::operator==");
+    RET(i_Name==in.i_Name);
 }
 
 bool Chan_Stored_t::operator<(const Chan_Stored_t &in) const
 {
-    return i_Name<in.i_Name;
+    NFT("Chan_Stored_t::operator<");
+    RET(i_Name<in.i_Name);
 }
 
 userlist_t::userlist_t(const userlist_t& in)
 {
+    NFT("userlist_t::userlist_t");
     *this=in;
 }
 
 void userlist_t::operator=(const userlist_t &in)
 {
+    NFT("userlist_t::operator=");
     i_Entry=in.i_Entry;
     i_Last_Modify_Time=in.i_Last_Modify_Time;
     i_Last_Modifier=in.i_Last_Modifier;
@@ -176,6 +198,7 @@ void userlist_t::operator=(const userlist_t &in)
 
 bool userlist_t::operator==(const userlist_t &in) const
 {
-    return (i_Entry==in.i_Entry&&i_Last_Modify_Time==in.i_Last_Modify_Time&&
+    NFT("userlist_t::operator==");
+    RET(i_Entry==in.i_Entry&&i_Last_Modify_Time==in.i_Last_Modify_Time&&
 	i_Last_Modifier==in.i_Last_Modifier&&i_UserDef==in.i_UserDef);
 }

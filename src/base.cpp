@@ -34,7 +34,7 @@ void mBase::push_message(const mstring& message)
     FT("mBase::push_message", (message));
     if(TaskOpened==false)
     {
-	if(Parent!=NULL&&BaseTask.open(Parent)!=0)
+	if(BaseTask.open()!=0)
 	{
 	    CP(("Failed to create initial thread"));
 	    return;
@@ -43,13 +43,13 @@ void mBase::push_message(const mstring& message)
     BaseTask.message(message);
 }
 
-void mBase::init(Magick *in)
+void mBase::init()
 {
     NFT("mBase::init");
 
     if(TaskOpened==false)
     {
-	if(BaseTask.open((void *)in)!=0)
+	if(BaseTask.open()!=0)
 	{
 	    CP(("Failed to create initial thread"));
 	    return;
@@ -80,6 +80,7 @@ void mBase::send_cmd(const mstring & source, const mstring & fmt, ...)
 
 void mBase::shutdown()
 {
+    NFT("mBase::shutdown");
     int j=BaseTask.thr_count();
     for(int i=0;i<j;i++)
 	BaseTask.shutdown();
@@ -87,11 +88,13 @@ void mBase::shutdown()
 
 int mBaseTask::open(void *in)
 {
-    return activate(/* todo enter the number of initial threads here*/);
+    NFT("mBaseTask::open");
+    RET(activate(1));
 }
 
 int mBaseTask::svc(void)
 {
+    NFT("mBaseTask::svc");
     mThread::Attach(tt_mBase);
     while(Parent->shutdown()==false)
     {
@@ -100,7 +103,7 @@ int mBaseTask::svc(void)
 	    break;
     }
     mThread::Detach(tt_mBase);
-    return 0;
+    RET(0);
 }
 
 class mBaseTaskmessage_MO : public ACE_Method_Object
@@ -108,13 +111,15 @@ class mBaseTaskmessage_MO : public ACE_Method_Object
 public:
     mBaseTaskmessage_MO(mBaseTask *parent, const mstring& data)
     {
+	FT("mBaseTaskmessage_MO::mBaseTaskmessage_MO",((void *)parent,data));
 	i_parent=parent;
 	i_data=data;
     }
     virtual int call()
     {
+	NFT("mBaseTaskmessage_MO::call");
 	i_parent->message_i(i_data);
-	return 0;
+	RET(0);
     }
 private:
     mBaseTask *i_parent;
@@ -123,6 +128,7 @@ private:
 
 void mBaseTask::message(const mstring& message)
 {
+    FT("mBaseTask::message",(message));
     if(message_queue_.is_full())
     {
 	message_queue_.high_water_mark(Parent->high_water_mark*(thr_count()+1)*sizeof(ACE_Method_Object *));
@@ -135,6 +141,7 @@ void mBaseTask::message(const mstring& message)
 
 void mBaseTask::message_i(const mstring& message)
 {
+    FT("mBaseTask::message_i",(message));
     // NOTE: No need to handle 'non-user messages' here, because
     // anything that is not a user PRIVMSG/NOTICE goes directly
     // to the server routine anyway.
@@ -198,6 +205,7 @@ void mBaseTask::message_i(const mstring& message)
 
 void mBaseTask::shutdown()
 {
+    NFT("mBaseTask::message_i");
     activation_queue_.enqueue(new shutdown_MO);
 }
 NetworkServ::NetworkServ()

@@ -265,7 +265,7 @@ int Magick::Start()
     ACE_UNUSED_ARG (sigttsp);
 #endif
 
-    mBase::init(this);
+    mBase::init();
 
     // etc.
 

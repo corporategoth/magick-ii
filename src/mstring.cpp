@@ -572,7 +572,7 @@ size_t mstring::Len() const
 	return length();
 }
 
-char& mstring::Last()
+char mstring::Last()const
 {
 	mstring Result=*this;
 	return Result[Result.Len()-1];
