@@ -6,3 +6,4 @@ Makefile.in
 *.rtf
 *.dvi
 *.lyx
+*.tex
