@@ -401,7 +401,7 @@ void wxFileConfig::SetPath(const mstring& strPath)
     return;
   }
 
-  if ( strPath[0] == wxCONFIG_PATH_SEPARATOR ) {
+  if ( strPath[0U] == wxCONFIG_PATH_SEPARATOR ) {
     // absolute path
     wxSplitPath(aParts, strPath);
   }
@@ -1257,7 +1257,7 @@ ConfigEntry::ConfigEntry(ConfigGroup *pParent,
 
   m_bDirty  = false;
 
-  m_bImmutable = strName[0] == wxCONFIG_IMMUTABLE_PREFIX;
+  m_bImmutable = strName[0U] == wxCONFIG_IMMUTABLE_PREFIX;
   if ( m_bImmutable )
     m_strName.erase(0, 1);  // remove first character
 }
@@ -1357,7 +1357,7 @@ mstring FilterIn(const mstring& str)
   mstring strResult;
   strResult.resize(str.size(),' ');
 
-  bool bQuoted = !str.IsEmpty() && str[0] == '"';
+  bool bQuoted = !str.IsEmpty() && str[0U] == '"';
 
   for ( size_t n = bQuoted ? 1 : 0; n < str.size(); n++ ) {
     if ( str[n] == '\\' ) {
@@ -1408,7 +1408,7 @@ mstring FilterOut(const mstring& str)
   strResult.resize(str.size(),' ');
 
   // quoting is necessary to preserve spaces in the beginning of the string
-  bool bQuote = isspace(str[0]) || str[0] == '"';
+  bool bQuote = isspace(str[0U]) || str[0U] == '"';
 
   if ( bQuote )
     strResult += '"';

@@ -40,10 +40,12 @@ class mstring:public string
 public:
 	char& Last();
 	size_t Len();
+#if 0
 	const char &operator[](int pos)const;
 	char &operator[](int pos);
 	const char &operator[](unsigned int pos)const;
 	char &operator[](unsigned int pos);
+#endif
 	mstring& operator <<(double d);
 	mstring& operator <<(float f);
 	mstring& operator<<(int i);

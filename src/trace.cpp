@@ -15,6 +15,7 @@
 // receiving all trace information.
 
 #include "trace.h"
+#include "lockable.h"
 
 long Trace::TraceLevel=0;
 mstring threadname[tt_MAX] = { "", "NS", "CS", "MS", "OS", "XS", "NET", "BOB" };
@@ -170,9 +171,6 @@ void ThreadID::WriteOut(const mstring &message)
     cout << finalout << endl;
 }
 
-// Temporary!!
-ThreadID *mainthread;
-
 // ===================================================
 
 //      \\ function()
@@ -180,7 +178,7 @@ T_Functions::T_Functions(const mstring &name)
 {
     ShortLevel(Functions);
     m_name+=name;
-    tid = mainthread;
+    tid = mThread::find();
     if (IsOn(tid)) {
 	mstring message = "\\  " + m_name + "()";
 	tid->WriteOut(message);
@@ -193,7 +191,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     ShortLevel(Functions);
     m_name=name;
-    tid = mainthread;
+    tid = mThread::find();
     if (IsOn(tid)) {
 	mstring message = "\\  " + m_name + "(";
 	for (int i=0; i<args.count(); i++) {
@@ -211,7 +209,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 T_Functions::~T_Functions()
 { 
     ShortLevel(Functions);
-    tid = mainthread;
+    tid = mThread::find();
     tid->indentdown(); 
     if (IsOn(tid)) {
 	mstring message;
@@ -244,7 +242,7 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 void T_CheckPoint::common(const char *input)
 {
     ShortLevel(CheckPoint);
-    tid = mainthread;
+    tid = mThread::find();
     if (IsOn(tid)) {
 	mstring message;
 	message << "** " << input;
@@ -260,7 +258,7 @@ void T_CheckPoint::common(const char *input)
 T_Modify::T_Modify(const mVarArray &args)
 {
     ShortLevel(Modify);
-    tid = mainthread;
+    tid = mThread::find();
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -276,7 +274,7 @@ T_Modify::T_Modify(const mVarArray &args)
 void T_Modify::End(const mVarArray &args)
 {
     ShortLevel(Modify);
-    tid = mainthread;
+    tid = mThread::find();
     if (IsOn(tid)) {
 	for (int i=0; i<args.count(); i++) {
 	    mstring message;
@@ -294,7 +292,7 @@ void T_Modify::End(const mVarArray &args)
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
     ShortLevel(Chatter);
-    tid = mainthread;
+    tid = mThread::find();
     if (IsOn(tid)) {
 	mstring message;
 	if (direction == From)
@@ -327,7 +325,7 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {
     ShortLevel(Locking);
-    tid = mainthread;
+    tid = mThread::find();
     if (IsOn(tid)) 
     {
 	locktype = ltype;
@@ -349,7 +347,7 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 
 T_Locking::~T_Locking() {
     ShortLevel(Locking);
-    tid = mainthread;
+    tid = mThread::find();
     if (IsOn(tid)) {
 	if (strlen(name)) {
     	    mstring message;

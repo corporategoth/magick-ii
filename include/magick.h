@@ -31,6 +31,7 @@ using namespace std;
 #include "fileconf.h"
 #include "datetime.h"	// Added by ClassView
 #include "trace.h"
+#include "nickserv.h"
 #include "chanserv.h"
 #include "ircsocket.h"
 #include "variant.h"
@@ -66,14 +67,23 @@ class Magick
 {
 private:
 	vector<mstring> argv;
-	wxFileConfig* MagickIni;
 	mapstringstring Messages;
 	vector<mstring> MessageNamesLong;
 	vector<mstring> MessageNamesShort;
 	int doparamparse();
 	SignalHandler *signalhandler;
 	IrcSvcHandler *ircsvchandler;
+	map<pair<mstring,mstring>,vector<mstring> > handlermap;
 public:
+	// get bob to handle it.
+	void dobobhandle(const mstring& server, const mstring& command, const mstring& data);
+	// is there a bob handler there?
+	bool checkifhandled(const mstring& server, const mstring& command);
+	// remove a bob function to handle commands
+	void stophandling(const mstring& server, const mstring& command, const mstring& functionname);
+	// add a bob function to handle commands
+	void handle(const mstring& server, const mstring& command, const mstring& functionname);
+	wxFileConfig* MagickIni;
 	int runflags;
 	int high_water_mark;
 	int low_water_mark;
@@ -93,8 +103,8 @@ public:
 	int Start();
 
 	ChanServ chanserv;
-	map<ACE_thread_t,threadtype_enum> ThreadtoTypeMap;
 	Bob bob;
+	NickServ nickserv;
 
 	mDateTime StartTime;
 	// move these to the appropriate classes later

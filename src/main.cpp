@@ -15,6 +15,7 @@
 using namespace std;
 #include "magick.h"
 #include "datetime.h"
+#include "lockable.h"
 
 mDateTime Start_Time, Reset_Time;
 
@@ -31,21 +32,27 @@ int start_server(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    Trace internaltrace;
-    TraceObject = &internaltrace;
-    TraceObject->TurnSet(0xffffffff); // Full tracing.
-    mainthread = new ThreadID(tt_MAIN, 1);
-    Start_Time=Now();
 #ifdef MAGICK_HAS_EXCEPTIONS
     try
     {
 #endif
+        Trace internaltrace;
+	TraceObject = &internaltrace;
+#ifdef DEBUG
+	TraceObject->TurnSet(0xffffffff); // Full tracing.
+#else
+	TraceObject->TurnSet(0xffffffff&(~ALL_Functions)); // Full tracing - functions.
+#endif
+	// todo make it insert itself into the ThreadID data structures.
+	mThread::Attach(tt_MAIN, 1);
+
+	Start_Time=Now();
 	int Result;
 restart:
 	Result=start_server(argc,argv);
 	if(Result==MAGICK_RET_RESTART)
 	    goto restart;
-	delete mainthread;
+	mThread::Detach(tt_MAIN,1);
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }

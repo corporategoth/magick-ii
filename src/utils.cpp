@@ -117,13 +117,13 @@ wxIsAbsolutePath (const mstring& filename)
   FT("wxIsAbsolutePath", (filename));
   if (filename != "")
     {
-      if (filename[0] == '/'
+      if (filename[0U] == '/'
 #ifdef __VMS__
-      || (filename[0] == '[' && filename[1] != '.')
+      || (filename[0U] == '[' && filename[1U] != '.')
 #endif
 #ifdef WIN32
       /* MSDOS */
-      || filename[0] == '\\' || (isalpha (filename[0]) && filename[1] == ':')
+      || filename[0U] == '\\' || (isalpha (filename[0U]) && filename[1U] == ':')
 #endif
         )
         RET(true);

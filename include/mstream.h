@@ -30,6 +30,7 @@
 #endif
 
 #include <ace/OS.h>
+#include <stdio.h>
 #include "mstring.h"
 
 class wxStreamBase;
@@ -41,9 +42,9 @@ typedef wxOutputStream& (*__wxOutputManip)(wxOutputStream&);
 
 typedef enum 
 {
-  wxFromStart,
-  wxFromCurrent,
-  wxFromEnd
+  wxFromStart=SEEK_SET,
+  wxFromCurrent=SEEK_CUR,
+  wxFromEnd=SEEK_END
 } wxSeekMode;
 
 typedef enum 
@@ -364,6 +365,7 @@ class wxZlibOutputStream: public wxFilterOutputStream {
 // NB: for space efficiency this class has no virtual functions, including
 //     dtor which is _not_ virtual, so it shouldn't be used as a base class.
 // ----------------------------------------------------------------------------
+extern FILE *fd_invalid;
 class wxFile
 {
 public:
@@ -372,7 +374,6 @@ public:
     // opening mode
   enum OpenMode { read, write, read_write, write_append };
     // standard values for file descriptor
-  enum { fd_invalid = -1, fd_stdin, fd_stdout, fd_stderr };
 
   // static functions
   // ----------------
@@ -389,21 +390,19 @@ public:
     // open specified file (may fail, use IsOpened())
   wxFile(const char *szFileName, OpenMode mode = read);
     // attach to (already opened) file
-  wxFile(int fd) { m_fd = fd; }
+  wxFile(FILE *fd) { m_fd = fd; }
 
   // open/close
     // create a new file (with the default value of bOverwrite, it will fail if
     // the file already exists, otherwise it will overwrite it and succeed)
-  bool Create(const char *szFileName, bool bOverwrite = false,
-              int access = wxS_DEFAULT);
-  bool Open(const char *szFileName, OpenMode mode = read,
-            int access = wxS_DEFAULT);
+  bool Create(const char *szFileName, bool bOverwrite = false);
+  bool Open(const char *szFileName, OpenMode mode = read);
   bool Close();  // Close is a NOP if not opened
 
   // assign an existing file descriptor and get it back from wxFile object
-  void Attach(int fd) { Close(); m_fd = fd; }
+  void Attach(FILE *fd) { Close(); m_fd = fd; }
   void Detach()       { m_fd = fd_invalid;  }
-  int  fd() const { return m_fd; }
+  FILE *fd() const { return m_fd; }
 
   // read/write (unbuffered)
     // returns number of bytes read or ofsInvalid on error
@@ -417,13 +416,13 @@ public:
 
   // file pointer operations (return ofsInvalid on failure)
     // move ptr ofs bytes related to start/current off_t/end of file
-  off_t Seek(off_t ofs, wxSeekMode mode = wxFromStart);
+  int Seek(long ofs, wxSeekMode mode = wxFromStart) const;
     // move ptr to ofs bytes before the end
-  off_t SeekEnd(off_t ofs = 0) { return Seek(ofs, wxFromEnd); }
+  int SeekEnd(long ofs = 0) const { return Seek(ofs, wxFromEnd); }
     // get current off_t
-  off_t Tell() const;
+  long Tell() const;
     // get current file length
-  off_t Length() const;
+  long Length() const;
 
   // simple accessors
     // is file opened?
@@ -443,7 +442,7 @@ private:
   wxFile(const wxFile&);
   wxFile& operator=(const wxFile&);
 
-  int m_fd; // file descriptor or INVALID_FD if not opened
+  FILE *m_fd; // file descriptor or INVALID_FD if not opened
   bool m_error; // error memory
 };
 

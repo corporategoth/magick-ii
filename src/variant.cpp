@@ -171,7 +171,10 @@ mVariant::mVariant(ConfigEntry *in)
     {
     	truevaluetype="ConfigEntry";
 	valuetype="char *";
-	value.StringValue=(in->Name() + "=" + in->Value()).c_str();
+	if(in->GetLine()!=NULL)
+	    value.StringValue=in->GetLine()->Text();
+	else
+	    value.StringValue=in->Name().c_str();
     }
     else
     {
@@ -186,7 +189,7 @@ mVariant::mVariant(ConfigGroup *in)
     {
 	truevaluetype="ConfigGroup";
 	valuetype="char *";
-	value.StringValue=(in->Name()).c_str();
+	value.StringValue=in->Name().c_str();
     }
     else
     {

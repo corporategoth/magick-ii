@@ -20,6 +20,9 @@
 #include "EscParser.hpp"
 #include "lockable.h"
 
+#include <algorithm>
+using namespace std;
+
 Magick::Magick(int inargc, char **inargv)
 {
     FT("Magick::Magick", (inargc, "(char **) inargv"));
@@ -59,13 +62,13 @@ int Magick::Start()
 	courtesy of gnu we now have a common switch format -- for long, and - for short*/
     	/*if(argv[i][0]=='/')
 	    argv[i][0]='-';*/
-	if(argv[i][0]=='-')
+	if(argv[i][0U]=='-')
 	{
 	    argv[i].LowerCase();
 	    if(argv[i]=="-dir")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
 		    cerr<< argv[i-1] <<" requires a paramter."<<endl;
@@ -76,7 +79,7 @@ int Magick::Start()
 	    else if(argv[i]=="-config")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    // use static errors here because conf directory is not known yet
 		    cerr<< argv[i-1] <<" requires a paramter."<<endl;
@@ -116,14 +119,7 @@ int Magick::Start()
     LoadInternalMessages();
     LoadExternalMessages();
     StartTime=Now();
-    ThreadtoTypeMap[ACE_Thread::self()]=tt_MAIN;
 
-    // We should take out this functionality,
-    // This kind of thing is more for the CLIENT
-/*  if(ProgramName=="listnicks")
-	RET(nickserv.listnicks(argv));
-    if(ProgramName=="listchans")
-	RET(chanserv.listchans(argv)); */
 
     //todo here if !win32, freopen stdout,stdin, and stderr and spawn off.
 
@@ -234,6 +230,10 @@ int Magick::Start()
     ACE_Reactor::instance()->register_handler(SIGUSR1,signalhandler);
 #endif
 
+    if(nickserv.on==true)
+	nickserv.init();
+    if(chanserv.on==true)
+	chanserv.init();
 
     // etc.
 
@@ -447,13 +447,13 @@ int Magick::doparamparse()
 	courtesy of gnu we now have a common switch format -- for long, and - for short*/
     	/*if(argv[i][0]=='/')
 	    argv[i][0]='-';*/
-	if(argv[i][0]=='-')
+	if(argv[i][0U]=='-')
 	{
 	    argv[i].LowerCase();
 	    if(argv[i]=="-remote")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    cerr<<"-remote"<<" requires hostname[:port]"<<endl;
 		    RET(MAGICK_RET_ERROR);
@@ -473,7 +473,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-name")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-name");
 		    cerr<<temp<<endl;
@@ -484,7 +484,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-desc")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-desc");
 		    cerr<<temp<<endl;
@@ -495,7 +495,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-user")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-user");
 		    cerr<<temp<<endl;
@@ -506,7 +506,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-host")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-host");
 		    cerr<<temp<<endl;
@@ -517,7 +517,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-prefix")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-prefix");
 		    cerr<<temp<<endl;
@@ -528,7 +528,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-dir")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-dir");
 		    cerr<<temp<<endl;
@@ -539,7 +539,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-config")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-config");
 		    cerr<<temp<<endl;
@@ -550,7 +550,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-log")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-log");
 		    cerr<<temp<<endl;
@@ -565,7 +565,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-relink")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-relink");
 		    cerr<<temp<<endl;
@@ -581,7 +581,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-level")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-level");
 		    cerr<<temp<<endl;
@@ -597,7 +597,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-offset")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-offset");
 		    cerr<<temp<<endl;
@@ -615,7 +615,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-update")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-update");
 		    cerr<<temp<<endl;
@@ -631,7 +631,7 @@ int Magick::doparamparse()
 	    else if(argv[i]=="-ping")
 	    {
 		i++;
-		if(i==argc||argv[i][0]=='-')
+		if(i==argc||argv[i][0U]=='-')
 		{
 		    temp.Format(getMessage("ERR_REQ_PARAM"),"-ping");
 		    cerr<<temp<<endl;
@@ -724,19 +724,19 @@ void Magick::get_config_values()
 	return;
     }
     wxFileConfig& in=*MagickIni;
-    mstring ts_Startup=mstring("Startup\\");
-    mstring ts_Services=mstring("Services\\");
-    mstring ts_Files=mstring("Files\\");
-    mstring ts_Config=mstring("Config\\");
-    mstring ts_Chanserv=mstring("Chanserv\\");
-    mstring ts_Nickserv=mstring("Nickserv\\");
-    mstring ts_Memoserv=mstring("Memoserv\\");
-    mstring ts_Operserv=mstring("Operserv\\");
-    mstring ts_DevNull=mstring("DevNull\\");
+    mstring ts_Startup=mstring("Startup/");
+    mstring ts_Services=mstring("Services/");
+    mstring ts_Files=mstring("Files/");
+    mstring ts_Config=mstring("Config/");
+    mstring ts_Chanserv=mstring("Chanserv/");
+    mstring ts_Nickserv=mstring("Nickserv/");
+    mstring ts_Memoserv=mstring("Memoserv/");
+    mstring ts_Operserv=mstring("Operserv/");
+    mstring ts_DevNull=mstring("DevNull/");
 
-    //in.Read(ts_Startup+"Remote_Server",&remote_server,"127.0.0.1");
-    //in.Read(ts_Startup+"Remote_Port",&remote_port,9666);
-    //in.Read(ts_Startup+"Password",&password,"");
+    in.Read(ts_Startup+"Remote_Server",&remote_server,"127.0.0.1");
+    in.Read(ts_Startup+"Remote_Port",&remote_port,9666);
+    in.Read(ts_Startup+"Password",&password,"");
     in.Read(ts_Startup+"Server_Name",&server_name,"hell.darker.net");
     in.Read(ts_Startup+"Server_Desc",&server_desc,"DarkerNet's IRC Services");
     in.Read(ts_Startup+"Services_User",&services_user,"reaper");
@@ -745,7 +745,7 @@ void Magick::get_config_values()
     in.Read(ts_Startup+"TZ_Offset",&tz_offset,0);
     in.Read(ts_Startup+"Stop",&shutdown);
 
-    //in.Read(ts_Services+"Nickserv",&nickserv.on,true);
+    in.Read(ts_Services+"Nickserv",&nickserv.on,true);
     in.Read(ts_Services+"Chanserv",&chanserv.on,true);
     //in.Read(ts_Services+"Helpserv",&helpserv.on,true);
     //in.Read(ts_Services+"IrcIIHelp",&helpserv.irciihelp_on,true);
@@ -755,11 +755,11 @@ void Magick::get_config_values()
     //in.Read(ts_Services+"DevNull",&devnull.on,true);
     //in.Read(ts_Services+"Operserv",&operserv.on,true);
     //in.Read(ts_Services+"Outlet",&devnull.outlet_on,true);
-    //in.Read(ts_Services+"AKill",&nickserv.akill_on,true);
-    //in.Read(ts_Services+"Clones",&nickserv.clones_on,true);
+    in.Read(ts_Services+"AKill",&nickserv.akill_on,true);
+    in.Read(ts_Services+"Clones",&nickserv.clones_on,true);
     //in.Read(ts_Services+"GlobalNoticer",&operserv.global_noticer_on,true);
     in.Read(ts_Services+"Show_Sync",&show_sync,false);
-    //in.Read(ts_Services+"Nickserv_Name",&nickserv.name,"NickServ");
+    in.Read(ts_Services+"Nickserv_Name",&nickserv.name,"NickServ");
     in.Read(ts_Services+"Chanserv_Name",&chanserv.name,"ChanServ");
     //in.Read(ts_Services+"Operserv_Name",&operserv.name,"OperServ");
     //in.Read(ts_Services+"Memoserv_Name",&memoserv.name,"MemoServ");
@@ -771,7 +771,7 @@ void Magick::get_config_values()
 
     in.Read(ts_Files+"Log_Filename",&log_filename,"magick.log");
     in.Read(ts_Files+"MOTD_Filename",&motd_filename,"magick.motd");
-    //in.Read(ts_Files+"Nickserv_DB",&nickserv.db_filename,"nick.db");
+    in.Read(ts_Files+"Nickserv_DB",&nickserv.db_filename,"nick.db");
     in.Read(ts_Files+"Chanserv_DB",&chanserv.db_filename,"chan.db");
     //in.Read(ts_Files+"Memoserv_DB",&memoserv.memodb_filename,"memo.db");
     //in.Read(ts_Files+"Newsserv_DB",&memoserv.newsdb_filename,"news.db");
@@ -794,10 +794,10 @@ void Magick::get_config_values()
     in.Read(ts_Chanserv+"AKick_Max",&chanserv.akick_max,32);
     in.Read(ts_Chanserv+"Def_AKick_Reason",&chanserv.def_akick_reason,"You have been banned from the channel");
 
-    //in.Read(ts_Nickserv+"Nick_Expire",&nickserv.nick_expire,28);
-    //in.Read(ts_Nickserv+"Release_Timeout",&nickserv.release_timeout,60);
-    //in.Read(ts_Nickserv+"Wait_Collide",&nickserv.wait_collide,0);
-    //in.Read(ts_Nickserv+"Passfail_Max",&nickserv.passfail_max,5);
+    in.Read(ts_Nickserv+"Nick_Expire",&nickserv.nick_expire,28);
+    in.Read(ts_Nickserv+"Release_Timeout",&nickserv.release_timeout,60);
+    in.Read(ts_Nickserv+"Wait_Collide",&nickserv.wait_collide,0);
+    in.Read(ts_Nickserv+"Passfail_Max",&nickserv.passfail_max,5);
 
     //in.Read(ts_Memoserv+"News_Expire",&memoserv.news_expire,21);
 
@@ -861,4 +861,36 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	;//ignore (todo log that we got it and we're ignoring it)
     }
     RET(0);
+}
+
+void Magick::handle(const mstring & server, const mstring & command, const mstring & functionname)
+{
+   pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
+   handlermap[data].insert(handlermap[data].begin(),functionname);
+}
+
+void Magick::stophandling(const mstring & server, const mstring & command, const mstring & functionname)
+{
+   pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
+   if(checkifhandled(server,command)&&find(handlermap[data].begin(),handlermap[data].end(),functionname)!=handlermap[data].end())
+       handlermap[data].erase(find(handlermap[data].begin(),handlermap[data].end(),functionname));
+}
+
+bool Magick::checkifhandled(const mstring & server, const mstring & command)
+{
+   pair<mstring,mstring> data=pair<mstring,mstring>(server, command);
+   if(handlermap.find(data)!=handlermap.end())
+   {
+       return !(handlermap[data].empty());
+   }
+   else
+       return false;
+}
+
+void Magick::dobobhandle(const mstring& server, const mstring& command, const mstring& data)
+{
+    if(checkifhandled(server,command)==true)
+    {
+	bob.Call((handlermap[pair<mstring,mstring>(server,command)])[0],1,data.c_str());
+    }
 }

@@ -127,12 +127,12 @@ mstring mstring::Right(size_t nCount)const
 
 mstring mstring::Before(const mstring & in) const
 {
-	return Mid(0,First(in)-1);
+	return Mid(0,First(in));
 }
 
 mstring mstring::After(const mstring & in) const
 {
-	return Mid(First(in)+1);
+	return Mid(First(in)+2);
 }
 
 mstring mstring::RevBefore(const mstring & in) const
@@ -522,27 +522,31 @@ mstring& mstring::operator <<(double d)
 	s.Format("%g",d);
 	return *this<<s;
 }
-
+#if 0
 char &mstring::operator [ ](unsigned int pos)
 {
-	return ((string)*this)[pos];
+    string tmpstring(*this);
+    return tmpstring[pos];
 }
 
 const char &mstring::operator[](unsigned int pos)const
 {
-	return ((string)*this)[pos];
+    string tmpstring(*this);
+    return tmpstring[pos];
 }
 
 char &mstring::operator [ ](int pos)
 {
-	return ((string)*this)[pos];
+    string tmpstring(*this);
+    return tmpstring[pos];
 }
 
 const char &mstring::operator[](int pos)const
 {
-	return ((string)*this)[pos];
+    string tmpstring(*this);
+    return tmpstring[pos];
 }
-
+#endif
 size_t mstring::Len()
 {
 	return length();

@@ -362,7 +362,7 @@ wxConfigPathChanger::wxConfigPathChanger(const wxConfigBase *pContainer,
   mstring strPath = strEntry.Before(wxCONFIG_PATH_SEPARATOR);
 
   // special case of "/keyname" when there is nothing before "/"
-  if ( strPath.IsEmpty() && ((!strEntry.IsEmpty()) && strEntry[0] == wxCONFIG_PATH_SEPARATOR ))
+  if ( strPath.IsEmpty() && ((!strEntry.IsEmpty()) && strEntry[0U] == wxCONFIG_PATH_SEPARATOR ))
     strPath = wxCONFIG_PATH_SEPARATOR;
 
   if ( !strPath.IsEmpty() ) {
@@ -480,7 +480,7 @@ long wxConfigBase::GetStyle() const
 bool wxConfigBase::IsImmutable(const mstring& key) 
 {
     FT("wxConfigBase::IsImmutable", (key));
-    RET(!key.IsEmpty() && key[0] == wxCONFIG_IMMUTABLE_PREFIX); 
+    RET(!key.IsEmpty() && key[0U] == wxCONFIG_IMMUTABLE_PREFIX); 
 }
 
 const mstring& wxConfigPathChanger::Name() const 

@@ -257,6 +257,14 @@ SOURCE=.\include\mstring.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\nickserv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\nickserv.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\antlr\NoViableAltException.cpp
 # End Source File
 # Begin Source File

@@ -24,17 +24,12 @@ ChanServ::ChanServ()
 // NOTE:this function has to be re-entrant
 // ***************************************
 
-static int highestlevel=0;
-
 void *chanserv_thread_handler(void *level)
 {
     FT("chanserv_thread_handler", (level));
     int ilevel=(int)level;
     pair<mstring,mstring> data;
 
-    if(highestlevel<ilevel)
-	highestlevel=ilevel;
-    MagickObject->ThreadtoTypeMap[ACE_Thread::self()]=tt_ChanServ;
     while(MagickObject->chanserv.on==true)
     {
 
@@ -48,26 +43,21 @@ void *chanserv_thread_handler(void *level)
 		MagickObject->chanserv.inputbuffer.pop_front();
 	    }
 
-	    // less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
-	    if(highestlevel!=1 && ilevel==highestlevel && MagickObject->chanserv.inputbuffer.size() <
-			(highestlevel - 1) * MagickObject->high_water_mark + MagickObject->low_water_mark)
-	    {
-		CP(("chanserv has reached lowtide mark, dropping a thread"));
-		highestlevel--;
-	    }
 	}
 	MagickObject->chanserv.execute(data.first,data.second);
-	if (highestlevel < ilevel) // Godda execute before terminating thread
+	// less then the 1/2 the threshhold below it so that we dont shutdown the thread after reading the first message
+        if(mThread::typecount(tt_ChanServ)!=1 && ilevel==mThread::typecount(tt_ChanServ) && MagickObject->chanserv.inputbuffer.size() <
+		(mThread::typecount(tt_ChanServ) - 1) * MagickObject->high_water_mark + MagickObject->low_water_mark)
+        {
+    	    CP(("chanserv has reached lowtide mark, dropping a thread"));
 	    return NULL;
+	}
 
 	// if theres leftover time in the timeslice, yield it up to the processor.
-	//ACE_Thread::yield();
-        if(highestlevel == 1 && MagickObject->chanserv.inputbuffer.size() == 0)
+        if(mThread::typecount(tt_ChanServ) == 1 && MagickObject->chanserv.inputbuffer.size() == 0)
         {
             CP(("chanserv has no more messages left going to suspended state..."));
-	    ACE_hthread_t temp;
-	    ACE_Thread::self(temp);
-	    ACE_Thread::suspend(temp);
+	    mThread::suspend();
 	}
     }
     return NULL;
@@ -76,7 +66,7 @@ void *chanserv_thread_handler(void *level)
 void ChanServ::init()
 {
     NFT("ChanServ::init()");
-    ACE_Thread::spawn(chanserv_thread_handler,(void *)1);
+    mThread::spawn(tt_ChanServ,chanserv_thread_handler,(void *)(mThread::typecount(tt_ChanServ)+1));
 }
 
 void ChanServ::push_message(const mstring& servicename, const mstring& message)
@@ -90,17 +80,15 @@ void ChanServ::push_message(const mstring& servicename, const mstring& message)
     }
     // put this here in case the processing loop get's hung up, it just *shrugs* and 
     // starts up another when the threshhold gets hit
-    if(inputbuffer.size()>highestlevel*MagickObject->high_water_mark)
+    if(inputbuffer.size()>mThread::typecount(tt_ChanServ)*MagickObject->high_water_mark)
     {
         CP(("chanserv has reached hightide mark, starting a new thread"));
-        ACE_Thread::spawn(chanserv_thread_handler,(void *)(highestlevel+1));
+        mThread::spawn(tt_ChanServ,chanserv_thread_handler,(void *)(mThread::typecount(tt_ChanServ)+1));
     }
-    if(highestlevel==1&&MagickObject->chanserv.inputbuffer.size()==1)
+    if(mThread::typecount(tt_ChanServ)==1&&MagickObject->chanserv.inputbuffer.size()==1)
     {
         CP(("chanserv has new messages resuming thread..."));
-	ACE_hthread_t temp;
-	ACE_Thread::self(temp);
-	ACE_Thread::resume(temp);
+	mThread::resume(mThread::findbytype(tt_ChanServ));
     }
 
 }

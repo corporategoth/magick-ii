@@ -267,7 +267,7 @@ mstring mDateTime::FormatString(const mstring& format)
 {
 	mstring Result;
 	int Year, Month, Day, Hour, Min, Sec, MSec;
-	int i=0;
+	unsigned int i=0;
 	int count=0;
 	int ampmtype=0;
 	mstring buffer;

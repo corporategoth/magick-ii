@@ -148,23 +148,6 @@ public:
     void WriteOut (const mstring &message);
 };
 
-extern ThreadID *mainthread;
-
-/* typedef map <ACE_thread_t, int> ThreadMap;
-ThreadMap threadmap;
-
-threadmap[ACE_Thread::self()] = number;
-
-int FindTID(ACE_Thread *in = current) {
-    if (in == NULL)
-	return 1;
-    for (ThreadMap::iterator TM = threadmap.begin(); TM != threadmap.end(); TM++)
-	if (TM.first == in.self())
-	    return TM.second;
-    return 0;
-}
-*/
-
 class Trace
 {
     static long TraceLevel;
@@ -201,7 +184,8 @@ class Trace
 	BOB_Chatter	= 0x10000000,	// BOB messages
 	BOB_Bind	= 0x20000000,	// BOB Hooks, Binds & Registers
 	BOB_Functions	= 0x40000000,	// BOB functions
-	BOB_External	= 0x80000000	// BOB external input/output
+	BOB_External	= 0x80000000,	// BOB external input/output
+	ALL_Functions   = G_Functions | NS_Functions | CS_Functions | MS_Functions | OS_Functions | XS_Functions | NET_Functions | BOB_Functions
     };
 
 public:
