@@ -64,7 +64,7 @@ USEFILE("include\version.h");
 USEFILE("include\chanserv.h");
 USELIB("src\xml\xml.lib");
 USEUNIT("src\mconfig.cpp");
-USEFILE("include\config.h");
+USEFILE("include\mconfig.h");
 //---------------------------------------------------------------------------
 #endif // defined(__BORLANDC__)
 
