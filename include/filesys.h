@@ -25,6 +25,10 @@ RCSID(filesys_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.51  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.50  2002/01/02 08:30:09  prez
 ** Fixed the shutdown code.  Also added a thread manager as a magick member.
 **
@@ -219,7 +223,7 @@ public:
     mFile(const mstring& name, FILE *in, const mstring& mode = "r");
     mFile(const mstring& name, const mstring& mode = "r");
     ~mFile() { Close(); }
-    void operator=(const mFile &in);
+    mFile &operator=(const mFile &in);
     mstring Name() const	{ return i_name; }
     mstring Mode() const	{ return i_mode; }
     bool Open(const mstring& name, const mstring& mode = "r");
@@ -331,7 +335,7 @@ public:
 	const size_t filesize, const size_t blocksize);
     DccXfer(const DccXfer &in)
 	{ *this = in; }
-    void operator=(const DccXfer &in);
+    DccXfer &operator=(const DccXfer &in);
 
     ~DccXfer();
 

@@ -25,6 +25,10 @@ RCSID(convert_magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.3  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -425,11 +429,11 @@ class News_t;
 int get_file_version (FILE * f, const char *filename);
 void load_ns_dbase (void);
 void delnick (NickInfo * ni);
-Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
+Nick_Stored_t *CreateNickEntry(NickInfo_CUR *ni);
 void load_cs_dbase (void);
 char *oldmodeconv (short inmode);
 void delchan (ChanInfo *ci);
-Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
+Chan_Stored_t *CreateChanEntry(ChanInfo_CUR *ci);
 void load_ms_dbase (void);
 void load_news_dbase (void);
 void del_memolist (MemoList * ml);

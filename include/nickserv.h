@@ -25,6 +25,10 @@ RCSID(nickserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.77  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -221,7 +225,7 @@ RCSID(nickserv_h, "@(#) $Id$");
 #include "ircsocket.h"
 
 
-class Nick_Live_t : public mUserDef
+class Nick_Live_t : public mUserDef, public ref_class
 {
     mstring i_Name;
     mDateTime i_Signon_Time;
@@ -267,7 +271,7 @@ public:
 	~InFlight_t();
 
 	void ChgNick(const mstring& newnick);
-	void operator=(const InFlight_t &in);
+	InFlight_t &operator=(const InFlight_t &in);
 	void init();
 	// Called upon completion
 	// 0 means it failed
@@ -297,7 +301,7 @@ public:
     } InFlight;
 
     Nick_Live_t();
-    Nick_Live_t(const Nick_Live_t &in) : mUserDef(in)
+    Nick_Live_t(const Nick_Live_t &in) : mUserDef(in), ref_class()
 	{ *this = in; }
     Nick_Live_t(const mstring& name, const mDateTime& signon,
 	const mstring& server, const mstring& username,
@@ -305,7 +309,7 @@ public:
     Nick_Live_t(const mstring& name, const mstring& username,
 	const mstring& hostname, const mstring& realname); // Services ONLY
     ~Nick_Live_t() {}
-    void operator=(const Nick_Live_t &in);
+    Nick_Live_t &operator=(const Nick_Live_t &in);
     bool operator==(const Nick_Live_t &in) const
     	{ return (i_Name == in.i_Name); }
     bool operator!=(const Nick_Live_t &in) const
@@ -393,13 +397,13 @@ struct ESP_NickInfo;
 struct EPO_NickAlias;
 struct EPO_NickCore;
 
-class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
+class Nick_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 {
     friend class Nick_Live_t;
     friend class NickServ;
-    friend Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
-    friend Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
-    friend Nick_Stored_t EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc);
+    friend Nick_Stored_t *CreateNickEntry(NickInfo_CUR *ni);
+    friend Nick_Stored_t *ESP_CreateNickEntry(ESP_NickInfo *ni);
+    friend Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc);
 
     mstring i_Name;
     mDateTime i_RegTime;
@@ -417,9 +421,9 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 
     class setting_t {
 	friend class Nick_Stored_t;
-	friend Nick_Stored_t CreateNickEntry(NickInfo_CUR *ni);
-	friend Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
-	friend Nick_Stored_t EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc);
+	friend Nick_Stored_t *CreateNickEntry(NickInfo_CUR *ni);
+	friend Nick_Stored_t *ESP_CreateNickEntry(ESP_NickInfo *ni);
+	friend Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc);
 
 	mstring Language;
 	bool Protect:1;
@@ -470,12 +474,12 @@ class Nick_Stored_t : public mUserDef, public SXP::IPersistObj
 	tag_LastMask, tag_LastQuit, tag_Access, tag_Ignore, tag_UserDef;
 public:
     Nick_Stored_t();
-    Nick_Stored_t(const Nick_Stored_t &in) : mUserDef(in), SXP::IPersistObj(in)
+    Nick_Stored_t(const Nick_Stored_t &in) : mUserDef(in), SXP::IPersistObj(in), ref_class()
 	{ *this = in; }
     Nick_Stored_t(const mstring& nick, const mstring& password);
     Nick_Stored_t(const mstring& nick); // Services Only (forbidden)
     ~Nick_Stored_t() {}
-    void operator=(const Nick_Stored_t &in);
+    Nick_Stored_t &operator=(const Nick_Stored_t &in);
     bool operator==(const Nick_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
     bool operator!=(const Nick_Stored_t &in) const
@@ -641,8 +645,8 @@ private:
 
     vector<Nick_Stored_t *> ns_array;
 public:
-    typedef map<mstring,Nick_Stored_t> stored_t;
-    typedef map<mstring,Nick_Live_t> live_t;
+    typedef map<mstring,Nick_Stored_t *> stored_t;
+    typedef map<mstring,Nick_Live_t *> live_t;
     typedef map<mstring,mDateTime> recovered_t;
 
 private:
@@ -742,11 +746,19 @@ public:
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     void AddStored(Nick_Stored_t *in) throw(E_NickServ_Stored);
-    Nick_Stored_t &GetStored(const mstring &in) const throw(E_NickServ_Stored);
+    void AddStored(const Nick_Stored_t &in) throw(E_NickServ_Stored)
+	{ AddStored(new Nick_Stored_t(in)); }
+    void AddStored(const map_entry<Nick_Stored_t> &in) throw(E_NickServ_Stored)
+	{ AddStored(in.entry()); }
+    map_entry<Nick_Stored_t> GetStored(const mstring &in) const throw(E_NickServ_Stored);
     void RemStored(const mstring &in) throw(E_NickServ_Stored);
 #else
     void AddStored(Nick_Stored_t *in);
-    Nick_Stored_t &GetStored(const mstring &in);
+    void AddStored(const Nick_Stored_t &in)
+	{ AddStored(new Nick_Stored_t(in)); }
+    void AddStored(const map_entry<Nick_Stored_t> &in)
+	{ AddStored(in.entry()); }
+    map_entry<Nick_Stored_t> GetStored(const mstring &in);
     void RemStored(const mstring &in);
 #endif
     stored_t::iterator StoredBegin() { return stored.begin(); }
@@ -758,11 +770,19 @@ public:
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     void AddLive(Nick_Live_t *in) throw(E_NickServ_Live);
-    Nick_Live_t &GetLive(const mstring &in) const throw(E_NickServ_Live);
+    void AddLive(const Nick_Live_t &in) throw(E_NickServ_Live)
+	{ AddLive(new Nick_Live_t(in)); }
+    void AddLive(const map_entry<Nick_Live_t> &in) throw(E_NickServ_Live)
+	{ AddLive(in.entry()); }
+    map_entry<Nick_Live_t> GetLive(const mstring &in) const throw(E_NickServ_Live);
     void RemLive(const mstring &in) throw(E_NickServ_Live);
 #else
     void AddLive(Nick_Live_t *in);
-    Nick_Live_t &GetLive(const mstring &in) const;
+    void AddLive(const Nick_Live_t &in)
+	{ AddLive(new Nick_Live_t(in)); }
+    void AddLive(const map_entry<Nick_Live_t> &in)
+	{ AddLive(in.entry()); }
+    map_entry<Nick_Live_t> GetLive(const mstring &in) const;
     void RemLive(const mstring &in);
 #endif
     live_t::iterator LiveBegin() { return live.begin(); }

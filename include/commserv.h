@@ -25,6 +25,10 @@ RCSID(commserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.62  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.61  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -171,7 +175,7 @@ RCSID(commserv_h, "@(#) $Id$");
 
 #include "base.h"
 
-class Committee_t : public mUserDef, public SXP::IPersistObj
+class Committee_t : public mUserDef, public SXP::IPersistObj, public ref_class
 {
     friend class CommServ;
 
@@ -204,14 +208,14 @@ class Committee_t : public mUserDef, public SXP::IPersistObj
 	tag_lock_OpenMemos, tag_lock_Secure, tag_Members,
 	tag_Messages, tag_UserDef, tag_RegTime;
 public:
-    Committee_t() {}
-    Committee_t(const Committee_t &in) : mUserDef(in), SXP::IPersistObj(in)
+    Committee_t();
+    Committee_t(const Committee_t &in) : mUserDef(in), SXP::IPersistObj(in), ref_class()
 	{ *this = in; }
     Committee_t(const mstring& name, const mstring& head, const mstring& description);
     Committee_t(const mstring& name, const Committee_t& head, const mstring& description);
     Committee_t(const mstring& name, const mstring& description);
     ~Committee_t() {}
-    void operator=(const Committee_t &in);
+    Committee_t &operator=(const Committee_t &in);
     bool operator==(const Committee_t &in) const
     	{ return (i_Name == in.i_Name); }
     bool operator!=(const Committee_t &in) const
@@ -315,7 +319,7 @@ private:
     static SXP::Tag tag_CommServ;
 
 public:
-    typedef map<mstring,Committee_t> list_t;
+    typedef map<mstring,Committee_t *> list_t;
 
 private:
 
@@ -404,11 +408,19 @@ public:
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     void AddList(Committee_t *in) throw(E_CommServ_List);
-    Committee_t &GetList(const mstring &in) const throw(E_CommServ_List);
+    void AddList(const Committee_t &in) throw(E_CommServ_List)
+	{ AddList(new Committee_t(in)); }
+    void AddList(const map_entry<Committee_t> &in) throw(E_CommServ_List)
+	{ AddList(in.entry()); }
+    map_entry<Committee_t> GetList(const mstring &in) const throw(E_CommServ_List);
     void RemList(const mstring &in) throw(E_CommServ_List);
 #else
     void AddList(Committee_t *in);
-    Committee_t &GetList(const mstring &in);
+    void AddList(const Committee_t &in)
+	{ AddList(new Committee_t(in)); }
+    void AddList(const map_entry<Committee_t> &in)
+	{ AddList(in.entry()); }
+    map_entry<Committee_t> GetList(const mstring &in);
     void RemList(const mstring &in);
 #endif
     list_t::iterator ListBegin() { return i_list.begin(); }

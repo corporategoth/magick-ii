@@ -27,6 +27,10 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2002/01/10 19:30:38  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.90  2002/01/02 04:44:57  prez
 ** Made the main loop wait for events to close instead of trying to close
 ** them manually ...
@@ -416,12 +420,14 @@ mFile::mFile(const mstring& name, const mstring& mode)
     }
 }
 
-void mFile::operator=(const mFile &in)
+mFile &mFile::operator=(const mFile &in)
 {
+    FT("mFile::operator=", ("(const mFile &) in"));
     i_name = in.i_name;
     i_mode = in.i_mode;
     fd = in.fd;
     in.fd = NULL;
+    NRET(mFile &, *this);
 }
 
 bool mFile::Open(const mstring& name, const mstring& mode)
@@ -1193,7 +1199,7 @@ vector<unsigned long> FileMap::GetList(const FileMap::FileType type, const mstri
 		    for (i=1; i<=iter->second.second.WordCount(" "); i++)
 		    {
 			if (Magick::instance().commserv.IsList(iter->second.second.ExtractWord(i, " ")) &&
-			    Magick::instance().commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase()).IsOn(source))
+			    Magick::instance().commserv.GetList(iter->second.second.ExtractWord(i, " ").UpperCase())->IsOn(source))
 			{
 			    retval.push_back(iter->first);
 			    break;
@@ -1417,10 +1423,10 @@ DccXfer::DccXfer(const unsigned long dccid, const mSocket& sock,
     if (!Magick::instance().nickserv.IsLive(i_Source))
 	return;
 
-    if (Magick::instance().nickserv.GetLive(i_Source).InFlight.File() &&
-	!Magick::instance().nickserv.GetLive(i_Source).InFlight.InProg())
+    map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(i_Source);
+    if (nlive->InFlight.File() && !nlive->InFlight.InProg())
     {
-	Magick::instance().nickserv.GetLive(i_Source).InFlight.SetInProg();
+	nlive->InFlight.SetInProg();
     }
     else
     {
@@ -1478,21 +1484,24 @@ DccXfer::~DccXfer()
     CP(("DCC Xfer #%d Completed", i_DccId));
     // If we know the size, verify it, else we take
     // what we get!
-    if (i_Type == Get &&
-	Magick::instance().nickserv.IsLiveAll(i_Source) &&
-	Magick::instance().nickserv.GetLive(i_Source).InFlight.File() &&
-	Magick::instance().nickserv.GetLive(i_Source).InFlight.InProg())
+
+    map_entry<Nick_Live_t> nlive;
+    if (Magick::instance().nickserv.IsLiveAll(i_Source))
+	nlive = Magick::instance().nickserv.GetLive(i_Source);
+
+    if (i_Type == Get && nlive.entry() != NULL &&
+	nlive->InFlight.File() && nlive->InFlight.InProg())
     {
 	if ((i_Filesize > 0) ? i_Total == i_Filesize
 			  : i_Total > 0)
 	{
 	    mstring tmp;
 	    FileMap::FileType filetype = FileMap::Unknown;
-	    if (Magick::instance().nickserv.GetLive(i_Source).InFlight.Memo())
+	    if (nlive->InFlight.Memo())
 		filetype = FileMap::MemoAttach;
-	    else if (Magick::instance().nickserv.GetLive(i_Source).InFlight.Picture())
+	    else if (nlive->InFlight.Picture())
 		filetype = FileMap::Picture;
-	    else if (Magick::instance().nickserv.GetLive(i_Source).InFlight.Public())
+	    else if (nlive->InFlight.Public())
 		filetype = FileMap::Public;
 	    unsigned long filenum = Magick::instance().filesys.NewFile(filetype, i_Filename);
 	    if (filenum)
@@ -1510,24 +1519,24 @@ DccXfer::~DccXfer()
 		if (mFile::Exists(i_Tempfile))
 		{
 		    mFile::Copy(i_Tempfile, tmp);
-		    Magick::instance().nickserv.GetLive(i_Source).InFlight.File(filenum);
+		    nlive->InFlight.File(filenum);
 		    CP(("Added entry %d to FileMap", filenum));
 		}
 		else
-		    Magick::instance().nickserv.GetLive(i_Source).InFlight.File(0);
+		    nlive->InFlight.File(0);
 	    }
 	    else
-		Magick::instance().nickserv.GetLive(i_Source).InFlight.File(0);
+		nlive->InFlight.File(0);
 	}
 	else
-	    Magick::instance().nickserv.GetLive(i_Source).InFlight.File(0);
+	    nlive->InFlight.File(0);
     }
 
     if (mFile::Exists(i_Tempfile))
 	mFile::Erase(i_Tempfile);
 }
 
-void DccXfer::operator=(const DccXfer &in)
+DccXfer &DccXfer::operator=(const DccXfer &in)
 {
     FT("DccXfer::operator=", ("(const DccXfer &) in"));
 
@@ -1568,6 +1577,7 @@ void DccXfer::operator=(const DccXfer &in)
 	memcpy(i_Transiant, in.i_Transiant, i_XferTotal);
     }
     i_LastData=in.i_LastData;
+    NRET(DccXfer &, *this);
 }
 
 bool DccXfer::Ready() const
@@ -1643,7 +1653,7 @@ void DccXfer::Cancel()
     WLOCK(("DccMap", "xfers", i_DccId, "i_Total"));
     WLOCK2(("DccMap", "xfers", i_DccId, "i_File"));
     if (Magick::instance().nickserv.IsLiveAll(i_Source))
-	Magick::instance().nickserv.GetLive(i_Source).InFlight.Cancel();
+	Magick::instance().nickserv.GetLive(i_Source)->InFlight.Cancel();
     MCB(i_Total);
     CB(1, i_File.Length());
     i_Total = 0;

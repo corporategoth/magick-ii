@@ -25,6 +25,10 @@ RCSID(convert_esper_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.6  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.5  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -432,8 +436,8 @@ class Memo_t;
 class News_t;
 
 /* OK -- now for the magick conversions ... */
-Nick_Stored_t ESP_CreateNickEntry(ESP_NickInfo *ni);
-Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci);
+Nick_Stored_t *ESP_CreateNickEntry(ESP_NickInfo *ni);
+Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo *ci);
 list<Memo_t> ESP_CreateMemoEntry(ESP_MemoInfo *ml, char *nick);
 list<News_t> ESP_CreateNewsEntry(ESP_MemoInfo *nl, char *chan);
 

@@ -25,6 +25,10 @@ RCSID(chanserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.73  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.72  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -197,7 +201,7 @@ RCSID(chanserv_h, "@(#) $Id$");
 #include "base.h"
 #include "ircsocket.h"
 
-class Chan_Live_t : public mUserDef
+class Chan_Live_t : public mUserDef, public ref_class
 {
     friend class Nick_Live_t;
     friend void EventTask::do_check(mDateTime &synctime);
@@ -235,13 +239,14 @@ class Chan_Live_t : public mUserDef
     void UnSquitUser(const mstring& nick); // Called by Nick_Live_t
     unsigned int Kick(const mstring& nick, const mstring& kicker); // Called by Nick_Live_t
     void ChgNick(const mstring& nick, const mstring& newnick); // Called by Nick_Live_t
+
 public:
-    Chan_Live_t() {}
-    Chan_Live_t(const Chan_Live_t& in) : mUserDef(in)
+    Chan_Live_t();
+    Chan_Live_t(const Chan_Live_t& in) : mUserDef(in), ref_class()
 	{ *this = in; }
     Chan_Live_t(const mstring& name, const mstring& first_user);
     ~Chan_Live_t() {}
-    void operator=(const Chan_Live_t &in);
+    Chan_Live_t &operator=(const Chan_Live_t &in);
     bool operator==(const Chan_Live_t &in) const
 	{ return (i_Name == in.i_Name); }
     bool operator!=(const Chan_Live_t &in) const
@@ -303,16 +308,16 @@ struct ChanInfo_CUR;
 struct ESP_ChannelInfo;
 struct EPO_ChannelInfo;
 
-class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
+class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 {
     friend void Nick_Live_t::Join(const mstring& chan);
     friend set<mstring> Nick_Live_t::Name(const mstring& chan);
     friend void Nick_Live_t::Quit(const mstring& reason);
     friend class Chan_Live_t;
     friend class ChanServ;
-    friend Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
-    friend Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci);
-    friend Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci);
+    friend Chan_Stored_t *CreateChanEntry(ChanInfo_CUR *ci);
+    friend Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo *ci);
+    friend Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo *ci);
 
     mstring i_Name;
     mDateTime i_RegTime;
@@ -333,9 +338,9 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     class setting_t {
 	friend class Chan_Stored_t;
 	friend class ChanServ;
-	friend Chan_Stored_t CreateChanEntry(ChanInfo_CUR *ci);
-	friend Chan_Stored_t ESP_CreateChanEntry(ESP_ChannelInfo *ci);
-	friend Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci);
+	friend Chan_Stored_t *CreateChanEntry(ChanInfo_CUR *ci);
+	friend Chan_Stored_t *ESP_CreateChanEntry(ESP_ChannelInfo *ci);
+	friend Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo *ci);
 
 	bool Keeptopic:1;
 	bool Topiclock:1;
@@ -413,17 +418,17 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj
     void Topic(const mstring& source, const mstring& topic, const mstring& setter,
 	const mDateTime& time = mDateTime::CurrentDateTime());
     void Mode(const mstring& setter, const mstring& mode);
-    void defaults();
     bool DoRevenge(const mstring& type, const mstring& target, const mstring& source);
+    void defaults();
 public:
-    Chan_Stored_t() {}
-    Chan_Stored_t(const Chan_Stored_t& in) : mUserDef(in), SXP::IPersistObj(in)
+    Chan_Stored_t();
+    Chan_Stored_t(const Chan_Stored_t& in) : mUserDef(in), SXP::IPersistObj(in), ref_class()
 	{ *this = in; }
     Chan_Stored_t(const mstring& name, const mstring& founder,
 	const mstring& password, const mstring& desc);
     Chan_Stored_t(const mstring& name); // Forbidden
     ~Chan_Stored_t() {}
-    void operator=(const Chan_Stored_t &in);
+    Chan_Stored_t &operator=(const Chan_Stored_t &in);
     bool operator==(const Chan_Stored_t &in) const
 	{ return (i_Name == in.i_Name); }
     bool operator!=(const Chan_Stored_t &in) const
@@ -679,8 +684,8 @@ private:
     static SXP::Tag tag_ChanServ;
 
 public:
-    typedef map<mstring,Chan_Stored_t> stored_t;
-    typedef map<mstring,Chan_Live_t> live_t;
+    typedef map<mstring,Chan_Stored_t *> stored_t;
+    typedef map<mstring,Chan_Live_t *> live_t;
 
 private:
 
@@ -821,11 +826,19 @@ public:
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     void AddStored(Chan_Stored_t *in) throw(E_ChanServ_Stored);
-    Chan_Stored_t &GetStored(const mstring &in) const throw(E_ChanServ_Stored);
+    void AddStored(const Chan_Stored_t &in) throw(E_ChanServ_Stored)
+	{ AddStored(new Chan_Stored_t(in)); }
+    void AddStored(const map_entry<Chan_Stored_t> &in) throw(E_ChanServ_Stored)
+	{ AddStored(in.entry()); }
+    map_entry<Chan_Stored_t> GetStored(const mstring &in) const throw(E_ChanServ_Stored);
     void RemStored(const mstring &in) throw(E_ChanServ_Stored);
 #else
     void AddStored(Chan_Stored_t *in);
-    Chan_Stored_t &GetStored(const mstring &in);
+    void AddStored(const Chan_Stored_t &in)
+	{ AddStored(new Chan_Stored_t(in)); }
+    void AddStored(const map_entry<Chan_Stored_t> &in)
+	{ AddStored(in.entry()); }
+    map_entry<Chan_Stored_t> GetStored(const mstring &in);
     void RemStored(const mstring &in);
 #endif
     stored_t::iterator StoredBegin() { return stored.begin(); }
@@ -837,11 +850,19 @@ public:
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     void AddLive(Chan_Live_t *in) throw(E_ChanServ_Live);
-    Chan_Live_t &GetLive(const mstring &in) const throw(E_ChanServ_Live);
+    void AddLive(const Chan_Live_t &in) throw(E_ChanServ_Live)
+	{ AddLive(new Chan_Live_t(in)); }
+    void AddLive(const map_entry<Chan_Live_t> &in) throw(E_ChanServ_Live)
+	{ AddLive(in.entry()); }
+    map_entry<Chan_Live_t> GetLive(const mstring &in) const throw(E_ChanServ_Live);
     void RemLive(const mstring &in) throw(E_ChanServ_Live);
 #else
     void AddLive(Chan_Live_t *in);
-    Chan_Live_t &GetLive(const mstring &in) const;
+    void AddLive(const Chan_Live_t &in)
+	{ AddLive(new Chan_Live_t(in)); }
+    void AddLive(const map_entry<Chan_Live_t> &in)
+	{ AddLive(in.entry()); }
+    map_entry<Chan_Live_t> GetLive(const mstring &in) const;
     void RemLive(const mstring &in);
 #endif
     live_t::iterator LiveBegin() { return live.begin(); }

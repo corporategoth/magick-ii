@@ -27,6 +27,10 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.196  2002/01/10 19:30:38  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.195  2002/01/03 15:49:11  prez
 ** Removed the MessageQueue locks (its done by ACE), and created ChangeLog.2001
 **
@@ -789,14 +793,14 @@ int IrcSvcHandler::handle_close (ACE_HANDLE h, ACE_Reactor_Mask mask)
 	vector<mstring> chunked;
 	for (iter=Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 	{
-	    RLOCK2(("NickServ", "live", iter->first));
-	    if (iter->second.IsServices())
+	    map_entry<Nick_Live_t> nlive(iter->second);
+	    if (nlive->IsServices())
 	    {
 		chunked.push_back(iter->first);
 	    }
-	    else if (Magick::instance().server.IsList(iter->second.Server()))
+	    else if (Magick::instance().server.IsList(nlive->Server()))
 	    {
-		iter->second.SetSquit();
+		nlive->SetSquit();
 	    }
 	}
 	// Sign off services if we have NO uplink
@@ -1644,7 +1648,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 
     if (Magick::instance().server.IsList(*tmp))
     {
-	LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, Magick::instance().server.GetList(tmp->LowerCase()).Uplink()));
+	LOG(LM_NOTICE, "OTHER/SQUIT_CANCEL", (tmp, Magick::instance().server.GetList(*tmp)->Uplink()));
     }
     else
     {
@@ -1672,7 +1676,7 @@ int ToBeSquit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg
 	{
 	    if (Magick::instance().nickserv.IsLiveAll(*k))
 	    {
-		Magick::instance().nickserv.GetLive(*k).Quit("FAKE SQUIT - " + *tmp);
+		Magick::instance().nickserv.GetLive(*k)->Quit("FAKE SQUIT - " + *tmp);
 		Magick::instance().nickserv.RemLive(*k);
 		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
 	    }
@@ -1741,8 +1745,8 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     { RLOCK(("NickServ", "live"));
     for (i=Magick::instance().nickserv.LiveBegin(); i != Magick::instance().nickserv.LiveEnd(); i++)
     {
-	RLOCK2(("NickServ", "live", i->first));
-	if (i->second.Squit() == *tmp)
+	map_entry<Nick_Live_t> nlive(i->second);
+	if (nlive->Squit() == *tmp)
 	    SquitMe.push_back(i->first);
     }}
     vector<mstring>::iterator k;
@@ -1752,7 +1756,7 @@ int Squit_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
 	{
 	    if (Magick::instance().nickserv.IsLiveAll(*k))
 	    {
-		Magick::instance().nickserv.GetLive(*k).Quit("SQUIT - " + *tmp);
+		Magick::instance().nickserv.GetLive(*k)->Quit("SQUIT - " + *tmp);
 		Magick::instance().nickserv.RemLive(*k);
 		mMessage::CheckDependancies(mMessage::NickNoExists, *k);
 	    }
@@ -1806,20 +1810,20 @@ int InFlight_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     if (Magick::instance().nickserv.IsLiveAll(*tmp))
     {
 	RLOCK(("NickServ", "live", tmp->LowerCase()));
-	Nick_Live_t &entry = Magick::instance().nickserv.GetLive(tmp->LowerCase());
-	if (entry.InFlight.File())
+	map_entry<Nick_Live_t> entry = Magick::instance().nickserv.GetLive(*tmp);
+	if (entry->InFlight.File())
 	{
-	    if (!entry.InFlight.InProg())
+	    if (!entry->InFlight.InProg())
 	    {
 		/* Already handled by DccXfer::DccXfer
-		SEND(entry.InFlight.service, "DCC/NOCONNECT", ( "GET"));
+		SEND(entry->InFlight.service, "DCC/NOCONNECT", ( "GET"));
 		*/
-		entry.InFlight.Cancel();
+		entry->InFlight.Cancel();
 	    }
 	}
 	else
 	{
-	    entry.InFlight.End(0u);
+	    entry->InFlight.End(0u);
 	}
     }
     delete tmp;
@@ -1840,21 +1844,20 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     try
     {
 	if (Magick::instance().chanserv.IsLive(*tmp) &&
-		Magick::instance().chanserv.GetLive(*tmp).IsIn(
-			Magick::instance().chanserv.FirstName()))
+	    Magick::instance().chanserv.GetLive(*tmp)->IsIn(
+	    Magick::instance().chanserv.FirstName()))
 	{
 	    Magick::instance().server.PART(Magick::instance().chanserv.FirstName(), *tmp);
 	    if (Magick::instance().chanserv.IsLive(*tmp))
 	    {
-		RLOCK(("ChanServ", "live", tmp->LowerCase()));
-		Chan_Live_t &clive = Magick::instance().chanserv.GetLive(tmp->LowerCase());
-		clive.DumpB();
+		map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(*tmp);
+		clive->DumpB();
 		{ MLOCK(("ChanServ", "live", tmp->LowerCase(), "ph_timer"));
-		CB(1, clive.ph_timer);
-		clive.ph_timer = 0;
-		CE(1, clive.ph_timer);
+		CB(1, clive->ph_timer);
+		clive->ph_timer = 0;
+		CE(1, clive->ph_timer);
 		}
-		clive.DumpE();
+		clive->DumpE();
 	    }
 	}
     }
@@ -2052,7 +2055,7 @@ int EventTask::svc(void)
         {
 	    // This is mainly used for 'only do this if users have had
 	    // enough time to rectify the situation since sync' ...
-	    RLOCK_IF(("Events", "last_expire"),
+	    if_RLOCK(("Events", "last_expire"),
 		last_expire.SecondsSince() >= Magick::instance().config.Cycletime())
 	    {
 		do_expire(synctime);
@@ -2069,7 +2072,7 @@ int EventTask::svc(void)
 		last_save = mDateTime::CurrentDateTime();
 		MCE(last_save);
 	    }
-	    RLOCK2_IF(("Events", "last_save"),
+	    if_RLOCK2(("Events", "last_save"),
 		last_save.SecondsSince() >= Magick::instance().config.Savetime())
 	    {
 		CP(("Starting DATABASE SAVE ..."));
@@ -2090,7 +2093,7 @@ int EventTask::svc(void)
 		}
 	    }
 
-	    RLOCK2_IF(("Events", "last_check"),
+	    if_RLOCK2(("Events", "last_check"),
 		last_check.SecondsSince() >= Magick::instance().config.Checktime())
 	    {
 		do_check(synctime);
@@ -2104,7 +2107,7 @@ int EventTask::svc(void)
 		do_modes(synctime);
 
 
-	    RLOCK2_IF(("Events", "last_msgcheck"),
+	    if_RLOCK2(("Events", "last_msgcheck"),
 		last_msgcheck.SecondsSince() > Magick::instance().config.MSG_Check_Time())
 	    {
 		do_msgcheck(synctime);
@@ -2114,7 +2117,7 @@ int EventTask::svc(void)
 		MCE(last_msgcheck);
 	    }
 
-	    RLOCK2_IF(("Events", "last_ping"),
+	    if_RLOCK2(("Events", "last_ping"),
 		last_ping.SecondsSince() >= Magick::instance().config.Ping_Frequency())
 	    {
 		do_ping(synctime);
@@ -2391,24 +2394,24 @@ void EventTask::do_expire(mDateTime &synctime)
 	for (nsi = Magick::instance().nickserv.StoredBegin();
 		nsi != Magick::instance().nickserv.StoredEnd(); nsi++)
 	{
-	    RLOCK3(("NickServ", "stored", nsi->first));
-	    if (!(nsi->second.NoExpire() || nsi->second.Forbidden() ||
-		nsi->second.Suspended()))
+	    map_entry<Nick_Stored_t> nstored(nsi->second);
+	    if (!(nstored->NoExpire() || nstored->Forbidden() ||
+		nstored->Suspended()))
 	    {
-		if (nsi->second.Host().empty())
+		if (nstored->Host().empty())
 		{
-		    if (nsi->second.LastAllSeenTime().SecondsSince() >
+		    if (nstored->LastAllSeenTime().SecondsSince() >
 			Magick::instance().nickserv.Expire())
 		    {
-			expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Name()));
+			expired_nicks.push_back(pair<mstring,mstring>(nstored->Name(), nstored->Name()));
 		    }
 		}
 		else
 		{
-		    if (nsi->second.LastSeenTime().SecondsSince() >
+		    if (nstored->LastSeenTime().SecondsSince() >
 			Magick::instance().nickserv.Expire())
 		    {
-			expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Host()));
+			expired_nicks.push_back(pair<mstring,mstring>(nstored->Name(), nstored->Host()));
 		    }
 		}
 	    }
@@ -2417,7 +2420,7 @@ void EventTask::do_expire(mDateTime &synctime)
 	{
 	    if (Magick::instance().nickserv.IsStored(expired_nicks[i].first))
 	    {
-		Magick::instance().nickserv.GetStored(expired_nicks[i].first).Drop();
+		Magick::instance().nickserv.GetStored(expired_nicks[i].first)->Drop();
 		Magick::instance().nickserv.RemStored(expired_nicks[i].first);
 		LOG(LM_INFO, "EVENT/EXPIRE_NICK", (expired_nicks[i].first,
 			    expired_nicks[i].second));
@@ -2455,13 +2458,13 @@ void EventTask::do_expire(mDateTime &synctime)
 	for (csi = Magick::instance().chanserv.StoredBegin();
 		csi != Magick::instance().chanserv.StoredEnd(); csi++)
 	{
-	    RLOCK3(("ChanServ", "stored", csi->first));
-	    if (!(csi->second.NoExpire() || csi->second.Forbidden() ||
-		csi->second.Suspended()))
+	    map_entry<Chan_Stored_t> cstored(csi->second);
+	    if (!(cstored->NoExpire() || cstored->Forbidden() ||
+		cstored->Suspended()))
 	    {
-		if (csi->second.LastUsed().SecondsSince() >
+		if (cstored->LastUsed().SecondsSince() >
 		    Magick::instance().chanserv.Expire())
-		    expired_chans.push_back(pair<mstring,mstring>(csi->second.Name(), csi->second.Founder()));
+		    expired_chans.push_back(pair<mstring,mstring>(cstored->Name(), cstored->Founder()));
 	    }
 	}}
 	for (i=0; i<expired_chans.size(); i++)
@@ -2560,14 +2563,15 @@ void EventTask::do_check(mDateTime &synctime)
     for (cli=Magick::instance().chanserv.LiveBegin();
 	    cli!=Magick::instance().chanserv.LiveEnd(); cli++)
     {
-	RLOCK3(("ChanServ", "live", cli->first));
+	map_entry<Chan_Live_t> clive(cli->second);
 	bool found = false;
 	unsigned long bantime = 0, parttime = 0;
 
 	if (Magick::instance().chanserv.IsStored(cli->first))
 	{
-	    bantime = Magick::instance().chanserv.GetStored(cli->first).Bantime();
-	    parttime = Magick::instance().chanserv.GetStored(cli->first).Parttime();
+	    map_entry<Chan_Stored_t> cstored = Magick::instance().chanserv.GetStored(cli->first);
+	    bantime = cstored->Bantime();
+	    parttime = cstored->Parttime();
 	    found = true;
 	}
 	// Removing bans ...
@@ -2581,8 +2585,8 @@ void EventTask::do_check(mDateTime &synctime)
 		vector<mstring> rem;
 		vector<mstring>::iterator ri;
 		{ RLOCK4(("ChanServ", "live", cli->first, "bans"));
-		for (di=cli->second.bans.begin();
-			di!=cli->second.bans.end(); di++)
+		for (di=clive->bans.begin();
+			di!=clive->bans.end(); di++)
 		{
 		    if (di->second.SecondsSince() > bantime)
 		    {
@@ -2592,9 +2596,9 @@ void EventTask::do_check(mDateTime &synctime)
 		for (ri=rem.begin(); ri!=rem.end(); ri++)
 		{
 		    LOG(LM_DEBUG, "EVENT/UNBAN", (*ri,
-			cli->second.Name(),
+			clive->Name(),
 			ToHumanTime(bantime)));
-		    cli->second.SendMode("-b " + *ri);
+		    clive->SendMode("-b " + *ri);
 		}
 	    }
 	}
@@ -2603,19 +2607,19 @@ void EventTask::do_check(mDateTime &synctime)
 	if (found)
 	{
 	    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
-	    for (di=cli->second.recent_parts.begin();
-			di!=cli->second.recent_parts.end(); di++)
+	    for (di=clive->recent_parts.begin();
+			di!=clive->recent_parts.end(); di++)
 	    {
 		if (di->second.SecondsSince() > parttime)
 		    chunked.push_back(di->first);
 	    }
 	    for (i=0; i<chunked.size(); i++)
-		cli->second.recent_parts.erase(chunked[i]);
+		clive->recent_parts.erase(chunked[i]);
 	}
-	else if (cli->second.recent_parts.size())
+	else if (clive->recent_parts.size())
 	{
 	    WLOCK(("ChanServ", "live", cli->first, "recent_parts"));
-	    cli->second.recent_parts.clear();
+	    clive->recent_parts.clear();
 	}
     }}
 
@@ -2630,16 +2634,16 @@ void EventTask::do_check(mDateTime &synctime)
 	for (nli = Magick::instance().nickserv.LiveBegin();
 		    nli != Magick::instance().nickserv.LiveEnd(); nli++)
 	{
-	    RLOCK2(("NickServ", "live", nli->first));
+	    map_entry<Nick_Live_t> nlive(nli->second);
 	    if (Magick::instance().nickserv.IsStored(nli->first))
 	    {
-		if (!Magick::instance().nickserv.GetStored(nli->first).IsOnline() &&
-			Magick::instance().nickserv.GetStored(nli->first).Protect() &&
-			!nli->second.IsServices() && nli->second.Squit().empty() &&
-			nli->second.MySignonTime().SecondsSince() >=
-				    Magick::instance().nickserv.Ident())
+		map_entry<Nick_Stored_t> nstored = Magick::instance().nickserv.GetStored(nli->first);
+		if (!nstored->IsOnline() && nstored->Protect() &&
+		    !nlive->IsServices() && nlive->Squit().empty() &&
+		    nlive->MySignonTime().SecondsSince() >=
+				Magick::instance().nickserv.Ident())
 		{
-		    chunked.push_back(nli->second.Name());
+		    chunked.push_back(nstored->Name());
 		}
 	    }
 	}}
@@ -2649,11 +2653,14 @@ void EventTask::do_check(mDateTime &synctime)
 		!Magick::instance().nickserv.IsStored(chunked[i]))
 		continue;
 
+	    map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(chunked[i]);
+	    map_entry<Nick_Stored_t> nstored = Magick::instance().nickserv.GetStored(chunked[i]);
+
 	    mstring newnick = Magick::instance().nickserv.findnextnick(chunked[i]);
-	    LOG(LM_INFO, "EVENT/KILLPROTECT", (Magick::instance().nickserv.GetLive(chunked[i]).Mask(Nick_Live_t::N_U_P_H)));
+	    LOG(LM_INFO, "EVENT/KILLPROTECT", (nlive->Mask(Nick_Live_t::N_U_P_H)));
 	    if (!newnick.empty() && !Magick::instance().server.proto.SVSNICK().empty())
 	    {
-		if (Magick::instance().nickserv.GetStored(chunked[i]).Forbidden())
+		if (nstored->Forbidden())
 		    NSEND(Magick::instance().nickserv.FirstName(), chunked[i], "MISC/RENAMED_FORBID");
 		else
 		    NSEND(Magick::instance().nickserv.FirstName(), chunked[i], "MISC/RENAMED_IDENT");
@@ -2662,7 +2669,7 @@ void EventTask::do_check(mDateTime &synctime)
 	    }
 	    else
 	    {
-		if (Magick::instance().nickserv.GetStored(chunked[i]).Forbidden())
+		if (nstored->Forbidden())
 		    Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(),
 			chunked[i], Magick::instance().getMessage("NS_YOU_STATUS/ISFORBIDDEN"));
 		else
@@ -2687,7 +2694,7 @@ void EventTask::do_check(mDateTime &synctime)
 	    if (di->second.SecondsSince() >= Magick::instance().nickserv.Release())
 	    {
 		if (Magick::instance().nickserv.IsLive(di->first) &&
-			Magick::instance().nickserv.GetLive(di->first).IsServices())
+		    Magick::instance().nickserv.GetLive(di->first)->IsServices())
 		{
 		    chunked.push_back(di->first);
 		}
@@ -2722,10 +2729,9 @@ void EventTask::do_modes(mDateTime &synctime)
     {
 	if (Magick::instance().chanserv.IsLive(*iter))
 	{
-	    COM(("Looking at channel %s", iter->c_str()));
-	    RLOCK(("ChanServ", "live", *iter));
-	    Chan_Live_t &chan = Magick::instance().chanserv.GetLive(*iter);
-	    if (!chan.p_modes_on.empty() || !chan.p_modes_off.empty())
+	    map_entry<Chan_Live_t> chan = Magick::instance().chanserv.GetLive(*iter);
+	    COM(("Looking at channel %s", chan->Name().c_str()));
+	    if (!chan->p_modes_on.empty() || !chan->p_modes_off.empty())
 	    {
 		unsigned int j, k;
 		mstring mode;
@@ -2733,10 +2739,10 @@ void EventTask::do_modes(mDateTime &synctime)
 
 		{ RLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
 		RLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
-		CP(("p_modes_off_size %d (%s)", chan.p_modes_off.size(), chan.p_modes_off.c_str()));
-		for (i=0, j=0, k=0; i<chan.p_modes_off.size(); i++)
+		CP(("p_modes_off_size %d (%s)", chan->p_modes_off.size(), chan->p_modes_off.c_str()));
+		for (i=0, j=0, k=0; i<chan->p_modes_off.size(); i++)
 		{
-		    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_off[i], j, k));
+		    COM(("i = %d (%c), j = %d, k = %d", i, chan->p_modes_off[i], j, k));
 		    if (j>=Magick::instance().server.proto.Modes())
 		    {
 			modelines[*iter].push_back(mode + " " + modeparam);
@@ -2746,29 +2752,29 @@ void EventTask::do_modes(mDateTime &synctime)
 		    }
 		    if (mode.empty())
 			mode += "-";
-		    mode += chan.p_modes_off[i];
-		    if (chan.p_modes_off[i] != 'l' &&
-			Magick::instance().server.proto.ChanModeArg().Contains(chan.p_modes_off[i]))
+		    mode += chan->p_modes_off[i];
+		    if (chan->p_modes_off[i] != 'l' &&
+			Magick::instance().server.proto.ChanModeArg().Contains(chan->p_modes_off[i]))
 		    {
 			if (!modeparam.empty())
 			    modeparam += " ";
-			modeparam +=  chan.p_modes_off_params[k];
+			modeparam +=  chan->p_modes_off_params[k];
 			j++; k++;
 		    }
 		}
 		WLOCK2(("ChanServ", "live", *iter, "p_modes_off"));
 		WLOCK3(("ChanServ", "live", *iter, "p_modes_off_params"));
-		chan.p_modes_off.erase();
-		chan.p_modes_off_params.clear();
+		chan->p_modes_off.erase();
+		chan->p_modes_off_params.clear();
 		}
 		{ RLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
 		RLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
-		if (mode.size() && chan.p_modes_on.size())
+		if (mode.size() && chan->p_modes_on.size())
 		    mode += "+";
-		CP(("p_modes_on_size %d (%s)", chan.p_modes_on.size(), chan.p_modes_on.c_str()));
-		for (i=0, k=0; i<chan.p_modes_on.size(); i++)
+		CP(("p_modes_on_size %d (%s)", chan->p_modes_on.size(), chan->p_modes_on.c_str()));
+		for (i=0, k=0; i<chan->p_modes_on.size(); i++)
 		{
-		    COM(("i = %d (%c), j = %d, k = %d", i, chan.p_modes_on[i], j, k));
+		    COM(("i = %d (%c), j = %d, k = %d", i, chan->p_modes_on[i], j, k));
 		    if (j>=Magick::instance().server.proto.Modes())
 		    {
 			modelines[*iter].push_back(mode + " " + modeparam);
@@ -2778,19 +2784,19 @@ void EventTask::do_modes(mDateTime &synctime)
 		    }
 		    if (mode.empty())
 			mode += "+";
-		    mode += chan.p_modes_on[i];
-		    if (Magick::instance().server.proto.ChanModeArg().Contains(chan.p_modes_on[i]))
+		    mode += chan->p_modes_on[i];
+		    if (Magick::instance().server.proto.ChanModeArg().Contains(chan->p_modes_on[i]))
 		    {
 			if (!modeparam.empty())
 			    modeparam += " ";
-			modeparam += chan.p_modes_on_params[k];
+			modeparam += chan->p_modes_on_params[k];
 			j++; k++;
 		    }
 		}
 		WLOCK2(("ChanServ", "live", *iter, "p_modes_on"));
 		WLOCK3(("ChanServ", "live", *iter, "p_modes_on_params"));
-		chan.p_modes_on.erase();
-		chan.p_modes_on_params.clear();
+		chan->p_modes_on.erase();
+		chan->p_modes_on_params.clear();
 		}
 		if (mode.size())
 		    modelines[*iter].push_back(mode + " " + modeparam);
@@ -2878,12 +2884,12 @@ void EventTask::do_ping(mDateTime &synctime)
     for (si=Magick::instance().server.ListBegin();
 	    si!=Magick::instance().server.ListEnd(); si++)
     {
-	RLOCK3(("Server", "list", si->first));
-	if (min == -1 || si->second.Lag() < min)
-	    min = si->second.Lag();
-	if (si->second.Lag() > max)
-	    max = si->second.Lag();
-	sum += si->second.Lag();
+	map_entry<Server_t> server(si->second);
+	if (min == -1 || server->Lag() < min)
+	    min = server->Lag();
+	if (server->Lag() > max)
+	    max = server->Lag();
+	sum += server->Lag();
 	count++;
     }}
     if (count >= 3)
@@ -2911,8 +2917,8 @@ void EventTask::do_ping(mDateTime &synctime)
 	for (si = Magick::instance().server.ListBegin();
 		si != Magick::instance().server.ListEnd(); si++)
 	{
-	    RLOCK3(("Server", "list", si->first));
-	    si->second.Ping();
+	    map_entry<Server_t> server(si->second);
+	    server->Ping();
 	}
 	NLOG(LM_TRACE, "EVENT/PING");
     }}

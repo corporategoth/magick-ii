@@ -29,6 +29,10 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.342  2002/01/10 19:30:38  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.341  2002/01/02 08:30:09  prez
 ** Fixed the shutdown code.  Also added a thread manager as a magick member.
 **
@@ -1207,10 +1211,10 @@ mstring Magick::getMessage(const mstring & nick, const mstring & name)
     FT("Magick::getMessage", (nick, name));
 
     if (!nick.empty() && nickserv.IsStored(nick) &&
-	nickserv.GetStored(nick.LowerCase()).IsOnline())
+	nickserv.GetStored(nick)->IsOnline())
     {
 	CP(("Using USER-DEIFNED language."));
-	mstring retval = getMessageL(nickserv.GetStored(nick.LowerCase()).Language(), name);
+	mstring retval = getMessageL(nickserv.GetStored(nick)->Language(), name);
 	RET(retval);
     }
     else
@@ -1312,9 +1316,9 @@ vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
     // Load requested language if its NOT loaded.
     // and then look for the Help of THAT type.
     if (!nick.empty() && nickserv.IsStored(nick) &&
-	nickserv.GetStored(nick.LowerCase()).IsOnline())
+	nickserv.GetStored(nick)->IsOnline())
     {
-	language = nickserv.GetStored(nick.LowerCase()).Language().UpperCase();
+	language = nickserv.GetStored(nick)->Language().UpperCase();
     }
 
 StartGetLang:
@@ -1368,7 +1372,7 @@ StartGetLang:
 		for (i=1; !sendline && i<=Help[language][Uname][j].first.WordCount(" "); i++)
 		{
 		    if (commserv.IsList(Help[language][Uname][j].first.ExtractWord(i, " ")) &&
-			commserv.GetList(Help[language][Uname][j].first.ExtractWord(i, " ")).IsOn(nick))
+			commserv.GetList(Help[language][Uname][j].first.ExtractWord(i, " "))->IsOn(nick))
 			sendline = true;
 		}
 	    }
@@ -1378,7 +1382,7 @@ StartGetLang:
 		for (i=1; sendline && i<=Help[language][Uname][j].second.WordCount(" "); i++)
 		{
 		    if (commserv.IsList(Help[language][Uname][j].second.ExtractWord(i, " ")) &&
-			commserv.GetList(Help[language][Uname][j].second.ExtractWord(i, " ")).IsOn(nick))
+			commserv.GetList(Help[language][Uname][j].second.ExtractWord(i, " "))->IsOn(nick))
 			sendline = false;
 		}
 	    if (sendline)
@@ -3388,100 +3392,112 @@ bool Magick::get_config_values()
     commserv.ovr_cs_clear.MakeUpper();
     AddCommands();
 
+    map_entry<Committee_t> comm;
     if (commserv.IsList(commserv.sadmin.Name))
     {
+	comm = commserv.GetList(commserv.sadmin.Name);
 	MLOCK(("CommServ", "list", commserv.sadmin.Name, "member"));
-	while (commserv.GetList(commserv.sadmin.Name).size())
+	while (comm->size())
 	{
-	    commserv.GetList(commserv.sadmin.Name).member =
-			commserv.GetList(commserv.sadmin.Name).begin();
-	    commserv.GetList(commserv.sadmin.Name).erase();
+	    comm->member = comm->begin();
+	    comm->erase();
 	}
     }
     else
     {
-	Committee_t tmp(commserv.sadmin.Name, "Services Administrators");
-	commserv.AddList(&tmp);
+	comm = map_entry<Committee_t>(new Committee_t(commserv.sadmin.Name,
+				"Services Administrators"));
+	commserv.AddList(comm);
     }
-    commserv.GetList(commserv.sadmin.Name).Secure(commserv.sadmin.Secure);
-    commserv.GetList(commserv.sadmin.Name).Private(commserv.sadmin.Private);
-    commserv.GetList(commserv.sadmin.Name).OpenMemos(commserv.sadmin.OpenMemos);
+    comm->Secure(commserv.sadmin.Secure);
+    comm->Private(commserv.sadmin.Private);
+    comm->OpenMemos(commserv.sadmin.OpenMemos);
     { MLOCK(("CommServ", "list", commserv.sadmin.Name, "member"));
     for (i=1; i<=operserv.services_admin.WordCount(", "); i++)
-	commserv.GetList(commserv.sadmin.Name).insert(
-	    operserv.services_admin.ExtractWord(i, ", "),
-	    operserv.FirstName());
+	comm->insert(operserv.services_admin.ExtractWord(i, ", "),
+			operserv.FirstName());
     }
 
-    if (!commserv.IsList(commserv.sop.Name))
+    if (commserv.IsList(commserv.sop.Name))
+	comm = commserv.GetList(commserv.sop.Name);
+    else
     {
-	Committee_t tmp(commserv.sop.Name, commserv.GetList(commserv.sadmin.Name),
-				    "Services Operators");
-	commserv.AddList(&tmp);
+	comm = map_entry<Committee_t>(new Committee_t(commserv.sop.Name,
+			*(commserv.GetList(commserv.sadmin.Name).entry()),
+			"Services Operators"));
+	commserv.AddList(comm);
     }
-    commserv.GetList(commserv.sop.Name).Secure(commserv.sop.Secure);
-    commserv.GetList(commserv.sop.Name).Private(commserv.sop.Private);
-    commserv.GetList(commserv.sop.Name).OpenMemos(commserv.sop.OpenMemos);
+    comm->Secure(commserv.sop.Secure);
+    comm->Private(commserv.sop.Private);
+    comm->OpenMemos(commserv.sop.OpenMemos);
 
-    if (!commserv.IsList(commserv.admin.Name))
+    if (commserv.IsList(commserv.admin.Name))
+	comm = commserv.GetList(commserv.admin.Name);
+    else
     {
-	Committee_t tmp(commserv.admin.Name, commserv.GetList(commserv.sadmin.Name),
-				    "Server Administrators");
-	commserv.AddList(&tmp);
+	comm = map_entry<Committee_t>(new Committee_t(commserv.admin.Name,
+			*(commserv.GetList(commserv.sadmin.Name).entry()),
+			"Server Administrators"));
+	commserv.AddList(comm);
     }
-    commserv.GetList(commserv.admin.Name).Secure(commserv.admin.Secure);
-    commserv.GetList(commserv.admin.Name).Private(commserv.admin.Private);
-    commserv.GetList(commserv.admin.Name).OpenMemos(commserv.admin.OpenMemos);
+    comm->Secure(commserv.admin.Secure);
+    comm->Private(commserv.admin.Private);
+    comm->OpenMemos(commserv.admin.OpenMemos);
 
-    if (!commserv.IsList(commserv.oper.Name))
+    if (commserv.IsList(commserv.oper.Name))
+	comm = commserv.GetList(commserv.oper.Name);
+    else
     {
-	Committee_t tmp(commserv.oper.Name, commserv.GetList(commserv.admin.Name),
-				    "Server Operators");
-	commserv.AddList(&tmp);
+	comm = map_entry<Committee_t>(new Committee_t(commserv.oper.Name,
+			*(commserv.GetList(commserv.admin.Name).entry()),
+			"Server Operators"));
+	commserv.AddList(comm);
     }
-    commserv.GetList(commserv.oper.Name).Secure(commserv.oper.Secure);
-    commserv.GetList(commserv.oper.Name).Private(commserv.oper.Private);
-    commserv.GetList(commserv.oper.Name).OpenMemos(commserv.oper.OpenMemos);
+    comm->Secure(commserv.oper.Secure);
+    comm->Private(commserv.oper.Private);
+    comm->OpenMemos(commserv.oper.OpenMemos);
 
     if (commserv.IsList(commserv.all.Name))
     {
+	comm = commserv.GetList(commserv.all.Name);
 	MLOCK(("CommServ", "list", commserv.all.Name, "member"));
-	while (commserv.GetList(commserv.all.Name).size())
+	while (comm->size())
 	{
-	    commserv.GetList(commserv.all.Name).member =
-			commserv.GetList(commserv.all.Name).begin();
-	    commserv.GetList(commserv.all.Name).erase();
+	    comm->member = comm->begin();
+	    comm->erase();
 	}
     }
     else
     {
-	Committee_t tmp(commserv.all.Name, commserv.GetList(commserv.admin.Name),
-				    "All Users");
-	commserv.AddList(&tmp);
+	comm = map_entry<Committee_t>(new Committee_t(commserv.all.Name,
+			*(commserv.GetList(commserv.admin.Name).entry()),
+			"All Users"));
+	commserv.AddList(comm);
     }
-    commserv.GetList(commserv.all.Name).Secure(false);
-    commserv.GetList(commserv.all.Name).Private(true);
-    commserv.GetList(commserv.all.Name).OpenMemos(false);
+    comm->Secure(false);
+    comm->Private(true);
+    comm->OpenMemos(false);
 
     if (commserv.IsList(commserv.regd.Name))
     {
+	comm = commserv.GetList(commserv.regd.Name);
 	MLOCK(("CommServ", "list", commserv.regd.Name, "member"));
-	while (commserv.GetList(commserv.regd.Name).size())
+	while (comm->size())
 	{
-	    commserv.GetList(commserv.regd.Name).member =
-			commserv.GetList(commserv.regd.Name).begin();
-	    commserv.GetList(commserv.regd.Name).erase();
+	    comm->member = comm->begin();
+	    comm->erase();
 	}
     }
     else
     {
-	Committee_t tmp(commserv.regd.Name, commserv.GetList(commserv.sop.Name),
-				    "Registered Users");
-	commserv.AddList(&tmp);
+	comm = map_entry<Committee_t>(new Committee_t(commserv.regd.Name,
+			*(commserv.GetList(commserv.sop.Name).entry()),
+			"Registered Users"));
+	commserv.AddList(comm);
     }
-    commserv.GetList(commserv.regd.Name).Secure(false);
-    commserv.GetList(commserv.regd.Name).Private(true);
-    commserv.GetList(commserv.regd.Name).OpenMemos(false);
+    comm->Secure(false);
+    comm->Private(true);
+    comm->OpenMemos(false);
 
     if (reconnect && Connected())
     {

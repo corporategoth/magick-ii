@@ -27,6 +27,10 @@ RCSID(dccengine_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.49  2002/01/10 19:30:38  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.48  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -577,8 +581,8 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     if (!Magick::instance().nickserv.IsLive(source))
 	return;
 
-    if (!(Magick::instance().nickserv.GetLive(source).InFlight.File() &&
-	!Magick::instance().nickserv.GetLive(source).InFlight.InProg()))
+    map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(source);
+    if (!(nlive->InFlight.File() && !nlive->InFlight.InProg()))
     {
 	SEND(mynick, source, "DCC/NOREQUEST", (
 						"GET"));
@@ -586,7 +590,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
     }
 
 
-    if (Magick::instance().nickserv.GetLive(source).InFlight.Picture())
+    if (nlive->InFlight.Picture())
     {
 	if (size && Magick::instance().nickserv.PicSize() && size > Magick::instance().nickserv.PicSize())
 	{
@@ -599,7 +603,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	    (" " + Magick::instance().nickserv.PicExt().LowerCase() + " ").Contains(" " + extension + " ")))
 	{
 	    NSEND(mynick, source, "NS_YOU_STATUS/INVALIDEXT");
-	    Magick::instance().nickserv.GetLive(source).InFlight.Cancel();
+	    nlive->InFlight.Cancel();
 	    return;
 	}
 	else
@@ -608,7 +612,7 @@ void DccEngine::DoDccSend(const mstring& mynick, const mstring& source,
 	}
     }
 
-    if (Magick::instance().nickserv.GetLive(source).InFlight.Memo())
+    if (nlive->InFlight.Memo())
     {
 	if (size && Magick::instance().memoserv.FileSize() && size > Magick::instance().memoserv.FileSize())
 	{

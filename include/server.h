@@ -25,6 +25,10 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.77  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.76  2001/12/24 21:16:42  prez
 ** Fixed up aesthetic ACCESS/AKICK ADD/DEL outputs and updated for UNREAL support
 **
@@ -359,7 +363,7 @@ public:
     void DumpE() const;
 };
 
-class Server_t
+class Server_t : public mUserDef, public ref_class
 {
     mstring i_Name;
     mstring i_AltName;
@@ -370,9 +374,11 @@ class Server_t
     long i_Ping;
     long i_Lag;
     bool i_Jupe;
+
+    void defaults();
 public:
-    Server_t() {}
-    Server_t(const Server_t &in) { *this = in; }
+    Server_t();
+    Server_t(const Server_t &in) : mUserDef(in), ref_class() { *this = in; }
     Server_t(const mstring& name, const mstring& description,
     				const unsigned long numeric = 0);
     Server_t(const mstring& name, const int hops, const mstring& description,
@@ -381,7 +387,7 @@ public:
 		const mstring& description, const unsigned long numeric = 0);
     ~Server_t() {}
 
-    void operator=(const Server_t &in);
+    Server_t &operator=(const Server_t &in);
     bool operator==(const Server_t &in) const
 	{ return (i_Name == in.i_Name); }
     bool operator!=(const Server_t &in) const
@@ -441,7 +447,7 @@ class Server : public mBase
     void FlushMsgs(const mstring& nick);
 
 public:
-    typedef map<mstring,Server_t> list_t;
+    typedef map<mstring,Server_t *> list_t;
 
 private:
 
@@ -458,11 +464,19 @@ public:
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     void AddList(Server_t *in) throw(E_Server_List);
-    Server_t &GetList(const mstring &in) const throw(E_Server_List);
+    void AddList(const Server_t &in) throw(E_Server_List)
+	{ AddList(new Server_t(in)); }
+    void AddList(const map_entry<Server_t> &in) throw(E_Server_List)
+	{ AddList(in.entry()); }
+    map_entry<Server_t> GetList(const mstring &in) const throw(E_Server_List);
     void RemList(const mstring &in, bool downlinks = true) throw(E_Server_List);
 #else
     void AddList(Server_t *in);
-    Server_t &GetList(const mstring &in);
+    void AddList(const Server_t &in)
+	{ AddList(new Server_t(in)); }
+    void AddList(const map_entry<Server_t> &in)
+	{ AddList(in.entry()); }
+    map_entry<Server_t> GetList(const mstring &in);
     void RemList(const mstring &in, bool downlinks = true);
 #endif
     list_t::iterator ListBegin() { return i_list.begin(); }

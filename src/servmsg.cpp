@@ -27,6 +27,10 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2002/01/10 19:30:39  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.95  2001/12/20 08:02:33  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -652,17 +656,17 @@ void ServMsg::do_BreakDown(const mstring &mynick, const mstring &source, const m
     { RLOCK(("NickServ", "live"));
     for (k=Magick::instance().nickserv.LiveBegin(); k!=Magick::instance().nickserv.LiveEnd(); k++)
     {
-	RLOCK2(("NickServ", "live", k->first));
-	if (ServCounts.find(k->second.Server().LowerCase()) == ServCounts.end())
+	map_entry<Nick_Live_t> nlive(k->second);
+	if (ServCounts.find(nlive->Server().LowerCase()) == ServCounts.end())
 	{
-	    ServCounts[k->second.Server()] =
+	    ServCounts[nlive->Server()] =
 	    				pair<unsigned int,unsigned int>(0,0);
 	}
-	if (!k->second.Name().empty())
+	if (!nlive->Name().empty())
 	{
-	    ServCounts[k->second.Server()].first++;
-	    if (k->second.HasMode("o"))
-		ServCounts[k->second.Server()].second++;
+	    ServCounts[nlive->Server()].first++;
+	    if (nlive->HasMode("o"))
+		ServCounts[nlive->Server()].second++;
 	}
     }}
     ::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
@@ -690,16 +694,16 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	for (iter = Magick::instance().server.ListBegin();
 		iter != Magick::instance().server.ListEnd(); iter++)
 	{
-	    RLOCK2(("Server", "list", iter->first));
-	    if (!iter->second.Name().empty() &&
-		iter->second.Uplink() == Magick::instance().startup.Server_Name().LowerCase())
+	    map_entry<Server_t> server(iter->second);
+	    if (!server->Name().empty() &&
+		server->Uplink().IsSameAs(Magick::instance().startup.Server_Name(), true))
 		downlinks.push_back(iter->first);
 	}
     }
     else
     {
 	if (Magick::instance().server.IsList(server))
-	    downlinks = Magick::instance().server.GetList(server).Downlinks();
+	    downlinks = Magick::instance().server.GetList(server)->Downlinks();
     }
 
     for (unsigned int i=0; i<downlinks.size(); i++)
@@ -708,8 +712,11 @@ void ServMsg::do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCo
 	{
 	    users = ServCounts[downlinks[i]].first;
 	    opers = ServCounts[downlinks[i]].second;
-	    lag = Magick::instance().server.GetList(downlinks[i]).Lag();
-	    servername = Magick::instance().server.GetList(downlinks[i]).AltName();
+	    {
+		map_entry<Server_t> server = Magick::instance().server.GetList(downlinks[i]);
+		lag = server->Lag();
+		servername = server->AltName();
+	    }
 	    if (i<downlinks.size()-1)
 	    {
 		::sendV(mynick, source, "%-35s  % 3.3fs  %5d (%3d)  %3.2f%%",
@@ -748,7 +755,7 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
 	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	Magick::instance().nickserv.stats.clear();
 	return;
@@ -760,14 +767,14 @@ void ServMsg::do_stats_Nick(const mstring &mynick, const mstring &source, const 
     for (i=Magick::instance().nickserv.StoredBegin();
 		i!=Magick::instance().nickserv.StoredEnd(); i++)
     {
-	RLOCK2(("NickServ", "stored", i->first));
-	if (i->second.Forbidden())
+	map_entry<Nick_Stored_t> nstored(i->second);
+	if (nstored->Forbidden())
 	    forbidden++;
 	else
 	{
-	    if (!i->second.Host().empty())
+	    if (!nstored->Host().empty())
 		linked++;
-	    if (i->second.Suspended())
+	    if (nstored->Suspended())
 		suspended++;
 	}
     }}
@@ -835,7 +842,7 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
 	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	Magick::instance().chanserv.stats.clear();
 	return;
@@ -847,12 +854,12 @@ void ServMsg::do_stats_Channel(const mstring &mynick, const mstring &source, con
     for (i=Magick::instance().chanserv.StoredBegin();
 		i!=Magick::instance().chanserv.StoredEnd(); i++)
     {
-	RLOCK2(("ChanServ", "stored", i->first));
-	if (i->second.Forbidden())
+	map_entry<Chan_Stored_t> cstored(i->second);
+	if (cstored->Forbidden())
 	    forbidden++;
 	else
 	{
-	    if (i->second.Suspended())
+	    if (cstored->Suspended())
 		suspended++;
 	}
     }}
@@ -934,7 +941,7 @@ void ServMsg::do_stats_Other(const mstring &mynick, const mstring &source, const
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
 	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	Magick::instance().memoserv.stats.clear();
 	Magick::instance().commserv.stats.clear();
@@ -1028,7 +1035,7 @@ void ServMsg::do_stats_Oper(const mstring &mynick, const mstring &source, const 
     if (params.WordCount(" ") > 2 &&
 	params.ExtractWord(3, " ").IsSameAs("CLEAR", true) &&
 	Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	Magick::instance().operserv.stats.clear();
 	return;
@@ -1101,24 +1108,22 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	return;
     }}
 
-    {
-	rusage tmp;
-	ACE_OS::getrusage(RUSAGE_SELF, &tmp);
-	ACE_Time_Value user, sys;
-	user = tmp.ru_utime;
-	sys  = tmp.ru_stime;
-	SEND(mynick, source, "STATS/USE_CPU", (
+    rusage tmp;
+    ACE_OS::getrusage(RUSAGE_SELF, &tmp);
+    ACE_Time_Value user, sys;
+    user = tmp.ru_utime;
+    sys  = tmp.ru_stime;
+    SEND(mynick, source, "STATS/USE_CPU", (
 		((sys.sec() == 0) ?
 			Magick::instance().getMessage(source, "VALS/TIME_NONE") :
 			ToHumanTime(sys.sec(), source)),
 		((user.sec() == 0) ?
 			Magick::instance().getMessage(source, "VALS/TIME_NONE") :
 			ToHumanTime(user.sec(), source))));
-	}
 
-	{ RLOCK(("IrcSvcHandler"));
-	if (Magick::instance().ircsvchandler != NULL)
-	{
+    { RLOCK(("IrcSvcHandler"));
+    if (Magick::instance().ircsvchandler != NULL)
+    {
 	SEND(mynick, source, "STATS/USE_TRAFFIC", (
 		ToHumanSpace(Magick::instance().ircsvchandler->In_Traffic()),
 		ToHumanSpace(Magick::instance().ircsvchandler->In_Traffic() /
@@ -1127,49 +1132,56 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 		ToHumanSpace(Magick::instance().ircsvchandler->Out_Traffic() /
 		Magick::instance().ircsvchandler->Connect_Time().SecondsSince()),
 		ToHumanTime(Magick::instance().ircsvchandler->Connect_Time().SecondsSince(), source)));
-	}}
+    }}
 
-	size = 0;
-	NickServ::live_t::iterator i;
-	{ RLOCK(("NickServ", "live"));
-	for (i=Magick::instance().nickserv.LiveBegin(); i!=Magick::instance().nickserv.LiveEnd(); i++)
-	{
-	RLOCK2(("NickServ", "live", i->first));
+    size = 0;
+    NickServ::live_t::iterator i;
+    { RLOCK(("NickServ", "live"));
+    for (i=Magick::instance().nickserv.LiveBegin(); i!=Magick::instance().nickserv.LiveEnd(); i++)
+    {
+	map_entry<Nick_Live_t> nlive(i->second);
 	size += i->first.capacity();
-	size += i->second.Usage();
+	size += sizeof(i->second);
+	size += nlive->Usage();
     }}
     SEND(mynick, source, "STATS/USE_NS_LIVE", (
 	fmstring("%5d", Magick::instance().nickserv.LiveSize()),ToHumanSpace(size)));
+
     size = 0;
     ChanServ::live_t::iterator j;
     { RLOCK(("ChanServ", "live"));
     for (j=Magick::instance().chanserv.LiveBegin(); j!=Magick::instance().chanserv.LiveEnd(); j++)
     {
-	RLOCK2(("ChanServ", "live", j->first));
+	map_entry<Chan_Live_t> clive(j->second);
 	size += j->first.capacity();
-	size += j->second.Usage();
+	size += sizeof(j->second);
+	size += clive->Usage();
     }}
     SEND(mynick, source, "STATS/USE_CS_LIVE", (
 	fmstring("%5d", Magick::instance().chanserv.LiveSize()), ToHumanSpace(size)));
+
     size = 0;
     NickServ::stored_t::iterator k;
     { RLOCK(("NickServ", "stored"));
     for (k=Magick::instance().nickserv.StoredBegin(); k!=Magick::instance().nickserv.StoredEnd(); k++)
     {
-	RLOCK2(("NickServ", "stored", i->first));
+	map_entry<Nick_Stored_t> nstored(k->second);
 	size += k->first.capacity();
-	size += k->second.Usage();
+	size += sizeof(k->second);
+	size += nstored->Usage();
     }}
     SEND(mynick, source, "STATS/USE_NS_STORED", (
 	fmstring("%5d", Magick::instance().nickserv.StoredSize()), ToHumanSpace(size)));
+
     size = 0;
     ChanServ::stored_t::iterator l;
     { RLOCK(("ChanServ", "stored"));
     for (l=Magick::instance().chanserv.StoredBegin(); l!=Magick::instance().chanserv.StoredEnd(); l++)
     {
-	RLOCK2(("chanServ", "stored", i->first));
+	map_entry<Chan_Stored_t> cstored(l->second);
 	size += l->first.capacity();
-	size += l->second.Usage();
+	size += sizeof(l->second);
+	size += cstored->Usage();
     }}
     SEND(mynick, source, "STATS/USE_CS_STORED", (
 	fmstring("%5d", Magick::instance().chanserv.StoredSize()), ToHumanSpace(size)));
@@ -1215,9 +1227,10 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("CommServ", "list"));
     for (o=Magick::instance().commserv.ListBegin(); o!=Magick::instance().commserv.ListEnd(); o++)
     {
-	RLOCK2(("CommServ", "list", o->first));
+	map_entry<Committee_t> comm(o->second);
 	size += o->first.capacity();
-	size += o->second.Usage();
+	size += sizeof(o->second);
+	size += comm->Usage();
     }}
     SEND(mynick, source, "STATS/USE_COMMITTEE", (
 	fmstring("%5d", Magick::instance().commserv.ListSize()), ToHumanSpace(size)));
@@ -1238,22 +1251,23 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
     { RLOCK(("Server", "list"));
     for (p=Magick::instance().server.ListBegin(); p!=Magick::instance().server.ListEnd(); p++)
     {
-	RLOCK2(("Server", "list", p->first));
+	map_entry<Server_t> server(p->second);
 	size += p->first.capacity();
-	size += p->second.Usage();
+	size += sizeof(p->second);
+	size += server->Usage();
     }}
     SEND(mynick, source, "STATS/USE_OTHER", (
 	fmstring("%5d", Magick::instance().server.ListSize()), ToHumanSpace(size)));
 
     NSEND(mynick, source, "STATS/USE_LANGHEAD");
 
-    set<mstring> tmp, lang;
+    set<mstring> tmpset, lang;
     set<mstring>::iterator iter;
-    tmp.clear(); tmp = Magick::instance().LNG_Loaded();
-    for (iter=tmp.begin(); iter!=tmp.end(); iter++)
+    tmpset.clear(); tmpset = Magick::instance().LNG_Loaded();
+    for (iter=tmpset.begin(); iter!=tmpset.end(); iter++)
 	lang.insert(*iter);
-    tmp.clear(); tmp = Magick::instance().HLP_Loaded();
-    for (iter=tmp.begin(); iter!=tmp.end(); iter++)
+    tmpset.clear(); tmpset = Magick::instance().HLP_Loaded();
+    for (iter=tmpset.begin(); iter!=tmpset.end(); iter++)
 	lang.insert(*iter);
 
     set<mstring>::iterator q;
@@ -1296,9 +1310,9 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
 
     if (params.WordCount(" ") > 1 &&
 	((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source)) ||
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source)) ||
 	 (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source))))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source))))
     {
 	do_1_2param(mynick, source, params);
 	return;
@@ -1326,8 +1340,8 @@ void ServMsg::do_Stats(const mstring &mynick, const mstring &source, const mstri
     { RLOCK(("NickServ", "live"));
     for (k=Magick::instance().nickserv.LiveBegin(); k!=Magick::instance().nickserv.LiveEnd(); k++)
     {
-	RLOCK2(("NickServ", "live", k->first));
-	if (k->second.HasMode("o"))
+	map_entry<Nick_Live_t> nlive(k->second);
+	if (nlive->HasMode("o"))
 		opers++;
     }}
     SEND(mynick, source, "STATS/GEN_USERS", (
@@ -1396,7 +1410,7 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
     		mask, Magick::instance().getMessage(source, "LIST/FILES")));
 
     bool issop = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
-		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source));
+		Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
 
     for (j=0, i=0, count = 0; j < filelist.size(); j++)
     {
@@ -1419,7 +1433,7 @@ void ServMsg::do_file_List(const mstring &mynick, const mstring &source, const m
 		    {
 			for (unsigned int k=1; k<=priv.WordCount(" "); k++)
 			    if (Magick::instance().commserv.IsList(priv.ExtractWord(k, " ")) &&
-				Magick::instance().commserv.GetList(priv.ExtractWord(k, " ")).IsOn(source))
+				Magick::instance().commserv.GetList(priv.ExtractWord(k, " "))->IsOn(source))
 			    {
 				display = true;
 				break;
@@ -1468,7 +1482,7 @@ void ServMsg::do_file_Add(const mstring &mynick, const mstring &source, const ms
 	priv = params.After(" ", 2).UpperCase();
 
     Magick::instance().servmsg.stats.i_file_Add++;
-    Magick::instance().nickserv.GetLive(source).InFlight.Public(mynick, priv);
+    Magick::instance().nickserv.GetLive(source)->InFlight.Public(mynick, priv);
 }
 
 
@@ -1531,7 +1545,7 @@ void ServMsg::do_file_Rename(const mstring &mynick, const mstring &source, const
     		Magick::instance().getMessage(source, "LIST/FILES"),
     		newfile));
     LOG(LM_INFO, "SERVMSG/FILE_RENAME", (
-	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	file, newfile));
     Magick::instance().filesys.Rename(FileMap::Public, num, newfile);
 }
@@ -1569,7 +1583,7 @@ void ServMsg::do_file_Priv(const mstring &mynick, const mstring &source, const m
     		Magick::instance().getMessage(source, "LIST/ACCESS"),
     		priv));
     LOG(LM_INFO, "SERVMSG/FILE_PRIV", (
-	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	file, ((priv.empty()) ? "ALL" : priv.c_str())));
     Magick::instance().filesys.SetPriv(FileMap::Public, num, priv);
 }
@@ -1608,7 +1622,7 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     {
 	for (unsigned int k=1; k<=priv.WordCount(" "); k++)
 	    if (Magick::instance().commserv.IsList(priv.ExtractWord(k, " ")) &&
-		Magick::instance().commserv.GetList(priv.ExtractWord(k, " ")).IsOn(source))
+		Magick::instance().commserv.GetList(priv.ExtractWord(k, " "))->IsOn(source))
 	    {
 		display = true;
 		break;
@@ -1644,7 +1658,7 @@ void ServMsg::do_file_Send(const mstring &mynick, const mstring &source, const m
     {
 	Magick::instance().servmsg.stats.i_file_Send++;
 	LOG(LM_INFO, "SERVMSG/FILE_SEND", (
-		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		filename));
 	unsigned short port = mSocket::FindAvailPort();
 	::privmsg(mynick, source, DccEngine::encode("DCC SEND", filename +
@@ -1838,7 +1852,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 				Magick::instance().filesys.GetName(FileMap::MemoAttach, number),
 				j->Nick(), k, j->Sender(), j->Time().Ago()));
 			LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
-				Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+				Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 				fmstring("%08x", number), type));
 	  		return;
 	    	    }
@@ -1853,17 +1867,17 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 	type = "Picture";
     	if (Magick::instance().filesys.Exists(FileMap::Picture, number))
     	{
-    	    map<mstring, Nick_Stored_t >::iterator i;
+    	    NickServ::stored_t::iterator i;
 	    RLOCK(("NickServ", "stored"));
 	    for (i=Magick::instance().nickserv.StoredBegin(); i!=Magick::instance().nickserv.StoredEnd(); i++)
 	    {
-		RLOCK2(("NickServ", "stored", i->first));
-	    	if (i->second.PicNum() == number)
+		map_entry<Nick_Stored_t> nstored(i->second);
+	    	if (nstored->PicNum() == number)
 	    	{
 		    SEND(mynick, source, "DCC/LOOKUP_PICTURE", (
-	  		fmstring("%08x", number), i->second.Name()));
+	  		fmstring("%08x", number), nstored->Name()));
 		    LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
-			Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+			Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 			fmstring("%08x", number), type));
 	  	    return;
 	    	}
@@ -1882,7 +1896,7 @@ void ServMsg::do_file_Lookup(const mstring &mynick, const mstring &source, const
 			Magick::instance().filesys.GetName(FileMap::Public, number),
 	  		Magick::instance().filesys.GetPriv(FileMap::Public, number)));
 	    LOG(LM_DEBUG, "SERVMSG/FILE_LOOKUP", (
-		Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		fmstring("%08x", number), type));
 	    return;
     	}
@@ -1915,7 +1929,6 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
     for (iter=Magick::instance().server.ListBegin();
 			iter != Magick::instance().server.ListEnd(); iter++)
     {
-	RLOCK2(("Server", "list", iter->first));
 	Magick::instance().server.NOTICE(Magick::instance().servmsg.FirstName(), "$" +
 						    iter->first, text);
     }
@@ -1923,7 +1936,7 @@ void ServMsg::do_Global(const mstring &mynick, const mstring &source, const mstr
     ANNOUNCE(mynick, "MISC/GLOBAL_MSG", (
 				source));
     LOG(LM_NOTICE, "SERVMSG/GLOBAL", (
-	Magick::instance().nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H), text));
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), text));
 }
 
 void ServMsg::do_Ask(const mstring &mynick, const mstring &source, const mstring &params)

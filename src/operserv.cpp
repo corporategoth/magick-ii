@@ -27,6 +27,10 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.140  2002/01/10 19:30:39  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.139  2001/12/25 08:43:13  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -408,14 +412,15 @@ bool OperServ::AddHost(const mstring& host)
 	    MLOCK3(("OperServ", "Akill"));
 	    if (!Akill_find("*@" + host))
 	    {
-		NickServ::live_t::iterator nlive;
+		NickServ::live_t::iterator iter;
 		vector<mstring> killusers;
 		{ RLOCK(("NickServ", "live"));
-		for (nlive = Magick::instance().nickserv.LiveBegin(); nlive != Magick::instance().nickserv.LiveEnd(); nlive++)
+		for (iter = Magick::instance().nickserv.LiveBegin();
+		     iter != Magick::instance().nickserv.LiveEnd(); iter++)
 		{
-		    RLOCK2(("NickServ", "live", nlive->first));
-		    if (nlive->second.Host().IsSameAs(host, true))
-			killusers.push_back(nlive->first);
+		    map_entry<Nick_Live_t> nlive(iter->second);
+		    if (nlive->Host().IsSameAs(host, true))
+			killusers.push_back(iter->first);
 		}}
 
 		float percent = 100.0 * static_cast<float>(killusers.size()) /
@@ -524,14 +529,15 @@ void OperServ::CloneList_check()
 	    MLOCK2(("OperServ", "Akill"));
 	    if (!Akill_find("*@" + iter->first))
 	    {
-		NickServ::live_t::iterator nlive;
+		NickServ::live_t::iterator iter2;
 		vector<mstring> killusers;
 		{ RLOCK(("NickServ", "live"));
-		for (nlive = Magick::instance().nickserv.LiveBegin(); nlive != Magick::instance().nickserv.LiveEnd(); nlive++)
+		for (iter2 = Magick::instance().nickserv.LiveBegin();
+		     iter2 != Magick::instance().nickserv.LiveEnd(); iter2++)
 		{
-		    RLOCK2(("NickServ", "live", nlive->first));
-		    if (nlive->second.Host().IsSameAs(iter->first, true))
-			killusers.push_back(nlive->first);
+		    map_entry<Nick_Live_t> nlive(iter2->second);
+		    if (nlive->Host().IsSameAs(iter->first, true))
+			killusers.push_back(iter2->first);
 		}}
 
 		float percent = 100.0 * static_cast<float>(killusers.size()) /
@@ -1387,7 +1393,7 @@ void OperServ::execute(mstring& source, const mstring& msgtype, const mstring& p
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (Secure() && !Magick::instance().nickserv.GetLive(source.LowerCase()).HasMode("o"))
+    else if (Secure() && !Magick::instance().nickserv.GetLive(source)->HasMode("o"))
     {
 	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
     }
@@ -1677,7 +1683,7 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 			mode, target));
 
 	    LOG(LM_INFO, "OPERSERV/MODE", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		mode, target));
 	}
 	else
@@ -1689,7 +1695,7 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
     else
     {
 	if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
-	    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source))
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source))
 	{
 	    if (Magick::instance().nickserv.IsLive(target))
 	    {
@@ -1702,7 +1708,7 @@ void OperServ::do_Mode(const mstring &mynick, const mstring &source, const mstri
 		    SEND(mynick, source, "OS_COMMAND/NICK_MODE", (
 			mode, target));
 		    LOG(LM_INFO, "OPERSERV/MODE", (
-			Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+			Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 			mode, target));
 		}
 		else
@@ -1754,7 +1760,7 @@ void OperServ::do_Qline(const mstring &mynick, const mstring &source, const mstr
 		source, Magick::instance().getMessage("VALS/ON"),
 		target));
     LOG(LM_INFO, "OPERSERV/QLINE", (
-	Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	target));
 }
 
@@ -1786,7 +1792,7 @@ void OperServ::do_UnQline(const mstring &mynick, const mstring &source, const ms
 		source, Magick::instance().getMessage("VALS/OFF"),
 		target));
     LOG(LM_INFO, "OPERSERV/UNQLINE", (
-	Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	target));
 }
 
@@ -1838,7 +1844,7 @@ void OperServ::do_NOOP(const mstring &mynick, const mstring &source, const mstri
 		Magick::instance().getMessage("VALS/OFF")),
 	    target));
     LOG(LM_INFO, "OPERSERV/NOOP", (
-	Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	target, (onoff.GetBool() ?
 		Magick::instance().getMessage("VALS/ON") :
 		Magick::instance().getMessage("VALS/OFF"))));
@@ -1875,7 +1881,7 @@ void OperServ::do_Kill(const mstring &mynick, const mstring &source, const mstri
 	ANNOUNCE(mynick, "MISC/KILL", (
 		    source, target));
 	LOG(LM_INFO, "OPERSERV/KILL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		target, reason));
     }
     else
@@ -1916,7 +1922,7 @@ void OperServ::do_Hide(const mstring &mynick, const mstring &source, const mstri
 	ANNOUNCE(mynick, "MISC/HIDE", (
 		    source, target, newhost));
 	LOG(LM_INFO, "OPERSERV/HIDE", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		target, newhost));
     }
     else
@@ -1948,7 +1954,7 @@ void OperServ::do_Ping(const mstring &mynick, const mstring &source, const mstri
 	Magick::instance().operserv.stats.i_Ping++;
 	NSEND(mynick, source, "OS_COMMAND/PING");
 	LOG(LM_DEBUG, "OPERSERV/PING", (
-	    Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H)));
+	    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H)));
     }}
 }
 
@@ -1965,7 +1971,7 @@ void OperServ::do_Update(const mstring &mynick, const mstring &source, const mst
 	Magick::instance().operserv.stats.i_Update++;
 	NSEND(mynick, source, "OS_COMMAND/UPDATE");
 	LOG(LM_DEBUG, "OPERSERV/UPDATE", (
-	    Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H)));
+	    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H)));
     }}
 }
 
@@ -1986,7 +1992,7 @@ void OperServ::do_Shutdown(const mstring &mynick, const mstring &source, const m
     NSEND(mynick, source, "OS_COMMAND/SHUTDOWN");
     ANNOUNCE(mynick, "MISC/SHUTDOWN", (source, reason));
     LOG(LM_CRITICAL, "OPERSERV/SHUTDOWN", (
-	Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	reason));
     Magick::instance().Shutdown(true);
     Magick::instance().Die();
@@ -2009,7 +2015,7 @@ void OperServ::do_Restart(const mstring &mynick, const mstring &source, const ms
     NSEND(mynick, source, "OS_COMMAND/RESTART");
     ANNOUNCE(mynick, "MISC/RESTART", (source, reason));
     LOG(LM_CRITICAL, "OPERSERV/RESTART", (
-	Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	reason));
     Magick::instance().Die();
 }
@@ -2035,7 +2041,7 @@ void OperServ::do_Reload(const mstring &mynick, const mstring &source, const mst
 	NSEND(mynick, source, "OS_COMMAND/RELOAD");
 	ANNOUNCE(mynick, "MISC/RELOAD", ( source));
 	LOG(LM_NOTICE, "OPERSERV/RELOAD", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H)));
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H)));
     }
     else
     {
@@ -2097,7 +2103,7 @@ void OperServ::do_Unload(const mstring &mynick, const mstring &source, const mst
 	SEND(mynick, source, "OS_COMMAND/UNLOAD", (
 			language));
 	LOG(LM_DEBUG, "OPERSERV/UNLOAD", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		language));
     }
     else
@@ -2137,7 +2143,7 @@ void OperServ::do_Jupe(const mstring &mynick, const mstring &source, const mstri
     ANNOUNCE(mynick, "MISC/JUPE", (
 		source, target));
     LOG(LM_NOTICE, "OPERSERV/JUPE", (
-	Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	target, reason));
 }
 
@@ -2171,7 +2177,7 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 	    Magick::instance().getMessage("VALS/SVC_AUTO"),
 	    Magick::instance().getMessage("VALS/ON"), source));
 	LOG(LM_NOTICE, "OPERSERV/ONOFF", (
-	    Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	    Magick::instance().getMessage("VALS/ON"),
 	    Magick::instance().getMessage("VALS/SVC_AUTO")));
     }
@@ -2186,7 +2192,7 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 	    Magick::instance().getMessage("VALS/SVC_LOG"),
 	    Magick::instance().getMessage("VALS/ON"), source));
 	LOG(LM_NOTICE, "OPERSERV/ONOFF", (
-	    Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	    Magick::instance().getMessage("VALS/ON"),
 	    Magick::instance().getMessage("VALS/SVC_LOG")));
     }
@@ -2203,7 +2209,7 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 		Magick::instance().getMessage("VALS/SVC_MSG"),
 		Magick::instance().getMessage("VALS/ON"), source));
 	    LOG(LM_NOTICE, "OPERSERV/ONOFF", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().getMessage("VALS/ON"),
 		Magick::instance().getMessage("VALS/SVC_MSG")));
 	}
@@ -2242,7 +2248,7 @@ void OperServ::do_On(const mstring &mynick, const mstring &source, const mstring
 		    service,
 		    Magick::instance().getMessage("VALS/ON"), source));
 		LOG(LM_NOTICE, "OPERSERV/ONOFF_ONE", (
-		    Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		    Magick::instance().getMessage("VALS/ON"),
 		    Magick::instance().getMessage("VALS/SVC_MSG"),
 		    service));
@@ -2281,7 +2287,7 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 	    Magick::instance().getMessage("VALS/SVC_AUTO"),
 	    Magick::instance().getMessage("VALS/OFF"), source));
 	LOG(LM_NOTICE, "OPERSERV/ONOFF", (
-	    Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	    Magick::instance().getMessage("VALS/OFF"),
 	    Magick::instance().getMessage("VALS/SVC_AUTO")));
     }
@@ -2295,7 +2301,7 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 	    Magick::instance().getMessage("VALS/SVC_LOG"),
 	    Magick::instance().getMessage("VALS/OFF"), source));
 	LOG(LM_NOTICE, "OPERSERV/ONOFF", (
-	    Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	    Magick::instance().getMessage("VALS/OFF"),
 	    Magick::instance().getMessage("VALS/SVC_LOG")));
 	Magick::instance().DeactivateLogger();
@@ -2313,7 +2319,7 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 		Magick::instance().getMessage("VALS/SVC_MSG"),
 		Magick::instance().getMessage("VALS/OFF"), source));
 	    LOG(LM_NOTICE, "OPERSERV/ONOFF", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().getMessage("VALS/OFF"),
 		Magick::instance().getMessage("VALS/SVC_MSG")));
 	}
@@ -2352,7 +2358,7 @@ void OperServ::do_Off(const mstring &mynick, const mstring &source, const mstrin
 		    service,
 		    Magick::instance().getMessage("VALS/OFF"), source));
 		LOG(LM_NOTICE, "OPERSERV/ONOFF_ONE", (
-		    Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		    Magick::instance().getMessage("VALS/OFF"),
 		    Magick::instance().getMessage("VALS/SVC_MSG"),
 		    service));
@@ -2390,7 +2396,7 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	    ANNOUNCE(mynick, "MISC/HTM_ON_FORCE", (
 		source));
 	    LOG(LM_NOTICE, "OPERSERV/HTM_FORCE", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().getMessage("VALS/ON")));
 	}
 	else if (command.IsSameAs("OFF", true))
@@ -2401,7 +2407,7 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	    ANNOUNCE(mynick, "MISC/HTM_OFF_FORCE", (
 		source));
 	    LOG(LM_NOTICE, "OPERSERV/HTM_FORCE", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().getMessage("VALS/OFF")));
 	}
 	else if (command.IsSameAs("SET", true))
@@ -2426,7 +2432,7 @@ void OperServ::do_HTM(const mstring &mynick, const mstring &source, const mstrin
 	    ANNOUNCE(mynick, "MISC/HTM_SET", (
 		ToHumanSpace(newsize), source));
 	    LOG(LM_NOTICE, "OPERSERV/HTM_SET", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		ToHumanSpace(newsize)));
 	}
 	else
@@ -2918,7 +2924,7 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
 
     unsigned int i, num;
     bool super = (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source));
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source));
     // i+1 below because unsigned i will always be >= 0
     for (i=host.size()-1, num=0; i+1>0; i--)
     {
@@ -2972,7 +2978,7 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
 		    Magick::instance().getMessage(source, "LIST/CLONE"),
 		    num));
 	LOG(LM_DEBUG, "OPERSERV/CLONE_ADD", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		entry, num));
     }
     else
@@ -2984,7 +2990,7 @@ void OperServ::do_clone_Add(const mstring &mynick, const mstring &source, const 
 		    Magick::instance().getMessage(source, "LIST/CLONE"),
 		    num));
 	LOG(LM_DEBUG, "OPERSERV/CLONE_ADD", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		host, num));
     }
 }
@@ -3037,7 +3043,7 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 			Magick::instance().operserv.Clone->Entry(),
 			Magick::instance().getMessage(source, "LIST/CLONE")));
 	    LOG(LM_DEBUG, "OPERSERV/CLONE_DEL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().operserv.Clone->Entry()));
 	    Magick::instance().operserv.Clone_erase();
 	}
@@ -3053,7 +3059,7 @@ void OperServ::do_clone_Del(const mstring &mynick, const mstring &source, const 
 	while (Magick::instance().operserv.Clone_find(host))
 	{
 	    LOG(LM_DEBUG, "OPERSERV/CLONE_DEL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().operserv.Clone->Entry()));
 	    Magick::instance().operserv.Clone_erase();
 	    count++;
@@ -3179,7 +3185,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	expire = Magick::instance().operserv.Def_Expire();
 
     if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source))
     {
 	if (expire > Magick::instance().operserv.Expire_SAdmin())
 	{
@@ -3189,7 +3195,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	}
     }
     else if (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source))
     {
 	if (expire > Magick::instance().operserv.Expire_Sop())
 	{
@@ -3199,7 +3205,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	}
     }
     else if (Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name()).IsOn(source))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->IsOn(source))
     {
 	if (expire > Magick::instance().operserv.Expire_Admin())
 	{
@@ -3209,7 +3215,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 	}
     }
     else if (Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).IsOn(source))
+	Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(source))
     {
 	if (expire > Magick::instance().operserv.Expire_Oper())
 	{
@@ -3234,7 +3240,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
     unsigned int num;
     int i;
     bool super = (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).IsOn(source));
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(source));
     for (i=host.size()-1, num=0; i>=0; i--)
     {
 	switch (host[static_cast<size_t>(i)])
@@ -3283,26 +3289,27 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 		    source, entry,
 		    ToHumanTime(expire, source)));
 	LOG(LM_INFO, "OPERSERV/AKILL_ADD", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		entry, ToHumanTime(expire, source), reason));
     }
     else
     {
-	NickServ::live_t::iterator nlive;
+	NickServ::live_t::iterator iter;
 	vector<mstring> killusers;
 	{ RLOCK(("NickServ", "live"));
-	for (nlive = Magick::instance().nickserv.LiveBegin(); nlive != Magick::instance().nickserv.LiveEnd(); nlive++)
+	for (iter = Magick::instance().nickserv.LiveBegin();
+	     iter != Magick::instance().nickserv.LiveEnd(); iter++)
 	{
-	    RLOCK2(("NickServ", "live", nlive->first));
-	    if (nlive->second.Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host, true))
-		killusers.push_back(nlive->first);
+	    map_entry<Nick_Live_t> nlive(iter->second);
+	    if (nlive->Mask(Nick_Live_t::N_U_P_H).After("!").Matches(host, true))
+		killusers.push_back(iter->first);
 	}}
 
 	float percent = 100.0 * static_cast<float>(killusers.size()) /
 			static_cast<float>(Magick::instance().nickserv.LiveSize());
 	if (percent > Magick::instance().operserv.Akill_Reject() &&
 	    !(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-	    Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source)))
+	    Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source)))
 	{
 	    SEND(mynick, source, "ERR_SITUATION/AKILLTOOMANY", (
 		fmstring("%.2f", percent),
@@ -3322,7 +3329,7 @@ void OperServ::do_akill_Add(const mstring &mynick, const mstring &source, const 
 		    ToHumanTime(expire, source), reason,
 		    killusers.size(), fmstring("%.2f", percent)));
 	    LOG(LM_INFO, "OPERSERV/AKILL_ADD", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		host, ToHumanTime(expire, source), reason));
 	}
     }}
@@ -3371,7 +3378,7 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 			Magick::instance().operserv.Akill->Entry(),
 			Magick::instance().getMessage(source, "LIST/AKILL")));
 	    LOG(LM_INFO, "OPERSERV/AKILL_DEL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().operserv.Akill->Entry()));
 	    Magick::instance().operserv.Akill_erase();
 	}
@@ -3388,7 +3395,7 @@ void OperServ::do_akill_Del(const mstring &mynick, const mstring &source, const 
 	{
 	    Magick::instance().server.RAKILL(Magick::instance().operserv.Akill->Entry());
 	    LOG(LM_INFO, "OPERSERV/AKILL_DEL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().operserv.Akill->Entry()));
 	    Magick::instance().operserv.Akill_erase();
 	    count++;
@@ -3500,7 +3507,7 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
 			    host));
 	    return;
 	}
-	host = Magick::instance().nickserv.GetLive(host.LowerCase()).Mask(Magick::instance().operserv.Ignore_Method());
+	host = Magick::instance().nickserv.GetLive(host)->Mask(Magick::instance().operserv.Ignore_Method());
     }
     else if (!host.Contains("!"))
     {
@@ -3546,30 +3553,34 @@ void OperServ::do_operdeny_Add(const mstring &mynick, const mstring &source, con
     ANNOUNCE(mynick, "MISC/OPERDENY_ADD", (
 		source, host));
     LOG(LM_NOTICE, "OPERSERV/OPERDENY_ADD", (
-	Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	host, reason));
 
-    NickServ::live_t::iterator nlive;
+    NickServ::live_t::iterator iter;
     vector<mstring> killusers;
-    { RLOCK(("NickServ", "live"));
-    for (nlive = Magick::instance().nickserv.LiveBegin(); nlive != Magick::instance().nickserv.LiveEnd(); nlive++)
+    { 
+    map_entry<Committee_t> sadmin;
+    if (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()))
+	sadmin = Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name());
+    RLOCK(("NickServ", "live"));
+    for (iter = Magick::instance().nickserv.LiveBegin();
+	 iter != Magick::instance().nickserv.LiveEnd(); iter++)
     {
-	RLOCK2(("NickServ", "live", nlive->first));
-	if (nlive->second.Mask(Nick_Live_t::N_U_P_H).Matches(host, true))
+	map_entry<Nick_Live_t> nlive(iter->second);
+	if (nlive->Mask(Nick_Live_t::N_U_P_H).Matches(host, true))
 	{
 	    // IF user is recognized and on sadmin, ignore.
-	    if (Magick::instance().nickserv.IsStored(nlive->first) &&
-		Magick::instance().nickserv.GetStored(nlive->first).IsOnline() &&
-		Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-		Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsIn(nlive->first))
+	    if (Magick::instance().nickserv.IsStored(iter->first) &&
+		Magick::instance().nickserv.GetStored(iter->first)->IsOnline() &&
+		sadmin.entry() != NULL && sadmin->IsIn(iter->first))
 		continue;
 	    if (!Magick::instance().server.proto.SVSMODE().empty())
 	    {
-		nlive->second.SendMode("-oAa");
+		nlive->SendMode("-oAa");
 	    }
 	    else
 	    {
-		killusers.push_back(nlive->first);
+		killusers.push_back(iter->first);
 	    }
 	}
     }}
@@ -3614,7 +3625,7 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 			Magick::instance().operserv.OperDeny->Entry(),
 			Magick::instance().getMessage(source, "LIST/OPERDENY")));
 	    LOG(LM_NOTICE, "OPERSERV/OPERDENY_DEL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().operserv.OperDeny->Entry()));
 	    Magick::instance().operserv.OperDeny_erase();
 	}
@@ -3634,7 +3645,7 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 			    host));
 		return;
 	    }
-	    host = Magick::instance().nickserv.GetLive(host.LowerCase()).Mask(Magick::instance().operserv.Ignore_Method());
+	    host = Magick::instance().nickserv.GetLive(host)->Mask(Magick::instance().operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
         {
@@ -3645,7 +3656,7 @@ void OperServ::do_operdeny_Del(const mstring &mynick, const mstring &source, con
 	while (Magick::instance().operserv.OperDeny_find(host))
 	{
 	    LOG(LM_NOTICE, "OPERSERV/OPERDENY_DEL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().operserv.OperDeny->Entry()));
 	    Magick::instance().operserv.OperDeny_erase();
 	    count++;
@@ -3702,7 +3713,7 @@ void OperServ::do_operdeny_List(const mstring &mynick, const mstring &source, co
 			    host));
 		return;
 	    }
-	    host = Magick::instance().nickserv.GetLive(host.LowerCase()).Mask(Magick::instance().operserv.Ignore_Method());
+	    host = Magick::instance().nickserv.GetLive(host)->Mask(Magick::instance().operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
 	{
@@ -3763,7 +3774,7 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
 			    host));
 	    return;
 	}
-	host = Magick::instance().nickserv.GetLive(host.LowerCase()).Mask(Magick::instance().operserv.Ignore_Method());
+	host = Magick::instance().nickserv.GetLive(host)->Mask(Magick::instance().operserv.Ignore_Method());
     }
     else if (!host.Contains("!"))
     {
@@ -3772,7 +3783,7 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
 
     unsigned int i, num;
     bool super = (Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).IsOn(source));
+	Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->IsOn(source));
     // i+1 below because unsigned i will always be >= 0
     for (i=host.size()-1, num=0; i+1>0; i--)
     {
@@ -3813,7 +3824,7 @@ void OperServ::do_ignore_Add(const mstring &mynick, const mstring &source, const
     SEND(mynick, source, "LIST/ADD", (
 	    host, Magick::instance().getMessage(source, "LIST/SIGNORE")));
     LOG(LM_DEBUG, "OPERSERV/IGNORE_ADD", (
-	Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	host));
 }
 
@@ -3852,7 +3863,7 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 			Magick::instance().operserv.Ignore->Entry(),
 			Magick::instance().getMessage(source, "LIST/SIGNORE")));
 	    LOG(LM_DEBUG, "OPERSERV/IGNORE_DEL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().operserv.Ignore->Entry()));
 	    Magick::instance().operserv.Ignore_erase();
 	}
@@ -3872,7 +3883,7 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 			    host));
 		return;
 	    }
-	    host = Magick::instance().nickserv.GetLive(host.LowerCase()).Mask(Magick::instance().operserv.Ignore_Method());
+	    host = Magick::instance().nickserv.GetLive(host)->Mask(Magick::instance().operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
         {
@@ -3883,7 +3894,7 @@ void OperServ::do_ignore_Del(const mstring &mynick, const mstring &source, const
 	while (Magick::instance().operserv.Ignore_find(host))
 	{
 	    LOG(LM_DEBUG, "OPERSERV/IGNORE_DEL", (
-		Magick::instance().nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
+		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 		Magick::instance().operserv.Ignore->Entry()));
 	    Magick::instance().operserv.Ignore_erase();
 	    count++;
@@ -3940,7 +3951,7 @@ void OperServ::do_ignore_List(const mstring &mynick, const mstring &source, cons
 			    host));
 		return;
 	    }
-	    host = Magick::instance().nickserv.GetLive(host.LowerCase()).Mask(Magick::instance().operserv.Ignore_Method());
+	    host = Magick::instance().nickserv.GetLive(host)->Mask(Magick::instance().operserv.Ignore_Method());
 	}
 	else if (!host.Contains("!"))
 	{

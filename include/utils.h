@@ -25,6 +25,10 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.47  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.46  2001/11/17 03:16:10  prez
 ** Added MakeDirectory
 **
@@ -159,8 +163,104 @@ mstring sysinfo_node();
 mstring sysinfo_type();
 mstring sysinfo_rel();
 
-// extrapolated from the ms's pair<T1,T2> template code
+// Something required to basically facilitate locking on
+// a reference to a class extracted from a map.
+class ref_class {
+    size_t i_references;
+    bool i_doDelete;
+    mVarArray i_lockData;
 
+public:
+    ref_class() : i_references(0), i_doDelete(false) {}
+    ref_class(const mVarArray &l)
+	: i_references(0), i_doDelete(false), i_lockData(l) {}
+    virtual ~ref_class() {}
+
+    virtual void addRef()			{ i_references++; }
+    virtual void remRef()			{ if (i_references > 0) i_references--; }
+    virtual size_t references() const		{ return i_references; }
+    virtual void setDelete(bool in = true)	{ i_doDelete = in; }
+    virtual bool doDelete() const		{ return i_doDelete; }
+    virtual void lockData(const mVarArray &in)	{ i_lockData = in; }
+    virtual const mVarArray &lockData() const	{ return i_lockData; }
+};
+
+class mLOCK;
+template<class T> class map_entry {
+    T *entry_ptr;
+    mLOCK *lock;
+
+    void Start()
+    {
+	if (entry_ptr != NULL)
+	{
+	    lock = new mLOCK(L_Read, entry_ptr->lockData());
+	    entry_ptr->addRef();
+	}
+    }
+
+    void End()
+    {
+	if (entry_ptr != NULL)
+	{
+	    entry_ptr->remRef();
+	    if (entry_ptr->doDelete() && entry_ptr->references() == 0)
+		delete entry_ptr;
+	    entry_ptr = NULL;
+	}
+	if (lock != NULL)
+	{
+	    delete lock;
+	    lock = NULL;
+	}
+    }
+
+public:
+    map_entry() : entry_ptr(NULL), lock(NULL) {}
+    map_entry(const map<mstring, T *> &map_ptr, const mstring &map_key)
+	: entry_ptr(NULL), lock(NULL)
+    {
+	if (map_key.empty())
+	    return;
+
+	map<mstring, T *>::const_iterator iter = map_ptr.find(map_key);
+	if (iter == map_ptr.end())
+	    return;
+
+	if (iter->second == NULL)
+	    return;
+
+	entry_ptr = iter->second;
+	Start();
+    }
+
+    map_entry(T *e)
+	: entry_ptr(NULL), lock(NULL)
+    {
+	if (e == NULL)
+	    return;
+
+	entry_ptr = e;
+	Start();
+    }
+
+    map_entry(const map_entry<T> &in)
+	: entry_ptr(NULL), lock(NULL) { *this = in; }
+
+    map_entry<T> &operator=(const map_entry<T> &in)
+    {
+	End();
+	entry_ptr = in.entry_ptr;
+	Start();
+    }
+
+    ~map_entry()		{ End(); }
+    T *entry() const		{ return entry_ptr; }
+    T *operator->() const	{ return entry_ptr; }
+};
+
+
+// extrapolated from the ms's pair<T1,T2> template code
 template<class T1, class T2, class T3> class triplet 
 {
 public:
@@ -171,6 +271,14 @@ public:
 	: first(T1()), second(T2()), third(T3()) {}
     triplet(const T1& _V1, const T2& _V2, const T3& _V3)
 	: first(_V1), second(_V2), third(_V3) {}
+    triplet(const triplet<T1,T2,T3> &in) { *this = in; }
+    triplet<T1,T2,T3> &operator=(const triplet<T1,T2,T3> &in)
+    {
+	first = in.first;
+	second = in.second;
+	third = in.third;
+	return *this;
+    }
     T1 first;
     T2 second;
     T3 third;

@@ -25,6 +25,10 @@ RCSID(memoserv_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.56  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.55  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -193,7 +197,7 @@ public:
     Memo_t(const mstring& nick, const mstring& sender, const mstring& text,
 		const unsigned long file = 0);
     ~Memo_t() {}
-    void operator=(const Memo_t &in);
+    Memo_t &operator=(const Memo_t &in);
     bool operator==(const Memo_t &in) const
     	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
     bool operator!=(const Memo_t &in) const
@@ -246,7 +250,7 @@ public:
     News_t(const mstring& channel, const mstring& sender, const mstring& text,
 	const bool noexpire = false);
     ~News_t() {}
-    void operator=(const News_t &in);
+    News_t &operator=(const News_t &in);
     bool operator==(const News_t &in) const
     	{ return (i_Sender == in.i_Sender && i_Time == in.i_Time); }
     bool operator!=(const News_t &in) const

@@ -27,6 +27,10 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.180  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.179  2001/12/26 23:30:35  prez
 ** More fixes to see if I can fix the memory leak ...
 **
@@ -373,7 +377,7 @@ map<unsigned long, mMessage *> mMessage::MsgIdMap;
 unsigned long mMessage::LastMsgId = 0;
 
 
-void entlist_t::operator=(const entlist_t &in)
+entlist_t &entlist_t::operator=(const entlist_t &in)
 {
     FT("entlist_t::operator=", ("(const entlist_t &) in"));
     i_Entry=in.i_Entry;
@@ -383,6 +387,7 @@ void entlist_t::operator=(const entlist_t &in)
     i_UserDef.clear();
     for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
 	i_UserDef[i->first]=i->second;
+    NRET(entlist_t &, *this);
 }
 
 
@@ -791,7 +796,7 @@ void mMessage::AddDependancies()
 	case UserInChan:
 	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":")))
 	    {
-		if (!Magick::instance().chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+		if (!Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
 		{
 		    added++;
 		    MLOCK2(("AllDependancies"));
@@ -821,7 +826,7 @@ void mMessage::AddDependancies()
 	    break;
 	case UserNoInChan:
 	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
-		Magick::instance().chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+		Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -958,7 +963,7 @@ bool mMessage::RecheckDependancies()
 	    break;
 	case UserInChan:
 	    if (!iter->third && Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
-		Magick::instance().chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":")))
+		Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
 	    {
 		resolved = true;
 		iter->third = true;
@@ -975,7 +980,7 @@ bool mMessage::RecheckDependancies()
 	    break;
 	case UserNoInChan:
 	    if (!iter->third && (!Magick::instance().chanserv.IsLive(iter->second.Before(":")) ||
-		!Magick::instance().chanserv.GetLive(iter->second.Before(":")).IsIn(iter->second.After(":"))))
+		!Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":"))))
 	    {
 		resolved = true;
 		iter->third = true;
@@ -1142,7 +1147,7 @@ int mMessage::call()
 	    CP(("Target changed, new params: %s", params_.c_str()));
 	}
 
-	if (!Magick::instance().nickserv.GetLive(source_).FloodTrigger())
+	if (!Magick::instance().nickserv.GetLive(source_)->FloodTrigger())
 	{
 	    // Find out if the target nick is one of the services 'clones'
 	    // Pass the message to them if so.
@@ -1520,10 +1525,11 @@ void mBase::send(const mstring &source, const mstring &dest, const mstring &mess
 
     if (IsName(source) && Magick::instance().nickserv.IsLive(dest))
     {
-	if (!Magick::instance().nickserv.LCK_PRIVMSG() && Magick::instance().nickserv.IsStored(dest) &&
-		Magick::instance().nickserv.GetStored(dest).IsOnline())
+	if (!Magick::instance().nickserv.LCK_PRIVMSG() &&
+		Magick::instance().nickserv.IsStored(dest) &&
+		Magick::instance().nickserv.GetStored(dest)->IsOnline())
 	{
-	    if (Magick::instance().nickserv.GetStored(dest).PRIVMSG()) {
+	    if (Magick::instance().nickserv.GetStored(dest)->PRIVMSG()) {
 		privmsg(source, dest, message);
 	    }
 	    else
@@ -1822,7 +1828,7 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &servic
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
 		    if (Magick::instance().commserv.IsList(list)
-			&& Magick::instance().commserv.GetList(list).IsOn(user))
+			&& Magick::instance().commserv.GetList(list)->IsOn(user))
 		    {
 			retval.first = true;
 			NRET(pair<bool_functor>,retval);
@@ -1886,7 +1892,7 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &serv
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
 		    if (Magick::instance().commserv.IsList(list)
-			 && Magick::instance().commserv.GetList(list).IsOn(user))
+			 && Magick::instance().commserv.GetList(list)->IsOn(user))
 		    {
 			retval.first = true;
 			NRET(pair<bool_functor>,retval);

@@ -25,6 +25,10 @@ RCSID(convert_epona_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.4  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.3  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -628,8 +632,8 @@ class Memo_t;
 class News_t;
 
 /* OK -- now for the magick conversions ... */
-Nick_Stored_t EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc);
-Chan_Stored_t EPO_CreateChanEntry(EPO_ChannelInfo *ci);
+Nick_Stored_t *EPO_CreateNickEntry(EPO_NickAlias *na, EPO_NickCore *nc);
+Chan_Stored_t *EPO_CreateChanEntry(EPO_ChannelInfo *ci);
 list<Memo_t> EPO_CreateMemoEntry(EPO_MemoInfo *ml, char *nick);
 list<News_t> EPO_CreateNewsEntry(EPO_MemoInfo *nl, char *chan);
 

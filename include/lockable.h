@@ -25,6 +25,10 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.67  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.66  2001/11/28 13:40:47  prez
 ** Added UMASK option to config.  Also made the 'dead thread' protection
 ** send a SIGIOT signal to try and get the thread to die gracefully, else
@@ -309,27 +313,27 @@ public:
 #define MLOCK7(y)  mVarArray __lockM7_VarArray y; mLOCK __lockM7(L_Mutex, __lockM7_VarArray)
 #define MLOCK8(y)  mVarArray __lockM8_VarArray y; mLOCK __lockM8(L_Mutex, __lockM8_VarArray)
 
-#define RLOCK_IF(x, y) \
+#define if_RLOCK(x, y) \
 	bool __if_res = false; \
 	{ RLOCK(x); __if_res = y; } \
 	if (__if_res)
-#define RLOCK2_IF(x, y) \
+#define if_RLOCK2(x, y) \
 	__if_res = false; \
 	{ RLOCK(x); __if_res = y; } \
 	if (__if_res)
-#define WLOCK_IF(x, y) \
+#define if_WLOCK(x, y) \
 	bool __if_res = false; \
 	{ WLOCK(x); __if_res = y; } \
 	if (__if_res)
-#define WLOCK2_IF(x, y) \
+#define if_WLOCK2(x, y) \
 	__if_res = false; \
 	{ WLOCK(x); __if_res = y; } \
 	if (__if_res)
-#define MLOCK_IF(x, y) \
+#define if_MLOCK(x, y) \
 	bool __if_res = false; \
 	{ MLOCK(x); __if_res = y; } \
 	if (__if_res)
-#define MLOCK2_IF(x, y) \
+#define if_MLOCK2(x, y) \
 	__if_res = false; \
 	{ MLOCK(x); __if_res = y; } \
 	if (__if_res)
@@ -361,12 +365,12 @@ public:
 #define MLOCK7(y)
 #define MLOCK8(y)
 
-#define RLOCK_IF(x, y) if (y)
-#define RLOCK2_IF(x, y) if (y)
-#define WLOCK_IF(x, y) if (y)
-#define WLOCK2_IF(x, y) if (y)
-#define MLOCK_IF(x, y) if (y)
-#define MLOCK2_IF(x, y) if (y)
+#define if_RLOCK(x, y) if (y)
+#define if_RLOCK2(x, y) if (y)
+#define if_WLOCK(x, y) if (y)
+#define if_WLOCK2(x, y) if (y)
+#define if_MLOCK(x, y) if (y)
+#define if_MLOCK2(x, y) if (y)
 
 #endif /* MAGICK_LOCKS_WORK */
 
@@ -412,7 +416,7 @@ public:
 
     mSocket(const mSocket &in) { *this = in; }
     ~mSocket();
-    void operator=(const mSocket &in);
+    mSocket &operator=(const mSocket &in);
 
     bool Connect(const ACE_INET_Addr &addr, const unsigned long timeout = 0);
     bool Connect(const unsigned long host, const unsigned short port, const unsigned long timeout = 0);

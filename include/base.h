@@ -25,6 +25,10 @@ RCSID(base_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.104  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.103  2001/12/25 08:43:12  prez
 ** Fixed XML support properly ... it now works again with new version of
 ** expat (1.95.2) and sxp (1.1).  Also removed some of my const hacks.
@@ -401,12 +405,12 @@ public:
     }
 
     virtual ~entlist_t () {}
-    void operator=(const entlist_t &in);
-    bool operator==(const entlist_t &in) const
+    entlist_t &operator=(const entlist_t &in);
+    virtual bool operator==(const entlist_t &in) const
 	{ return (i_Entry == in.i_Entry); }
-    bool operator!=(const entlist_t &in) const
+    virtual bool operator!=(const entlist_t &in) const
 	{ return (i_Entry != in.i_Entry); }
-    bool operator<(const entlist_t &in) const
+    virtual bool operator<(const entlist_t &in) const
 	{ return (i_Entry < in.i_Entry); }
 
     virtual mstring Entry()const		{ return i_Entry; }
@@ -438,7 +442,7 @@ protected:
 
 public:
     entlist_val_t () {}
-    entlist_val_t (const entlist_val_t& in) : entlist_t(in)
+    entlist_val_t (const entlist_val_t<T> &in) : entlist_t(in)
 	{ *this = in; }
     entlist_val_t (const mstring &entry, const T &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
@@ -447,18 +451,13 @@ public:
 							modtime, stupid));
     }
     virtual ~entlist_val_t () {}
-    void operator=(const entlist_val_t &in)
+    virtual entlist_val_t<T> &operator=(const entlist_val_t<T> &in)
     {
 	FT("entlist_val_t<T>::operator=", ("(const entlist_val_t<T> &) in"));
-	i_Entry=in.i_Entry;
+	entlist_t::operator=(in);
 	i_Value=in.i_Value;
-	i_Last_Modify_Time=in.i_Last_Modify_Time;
-	i_Last_Modifier=in.i_Last_Modifier;
 	i_Stupid = in.i_Stupid;
-	map<mstring,mstring>::const_iterator i;
-	i_UserDef.clear();
-	for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-	    i_UserDef[i->first]=i->second;
+	NRET(entlist_val_t<T> &, *this);
     }
 
     virtual bool Value(const T &value, const mstring& nick)
@@ -543,7 +542,7 @@ protected:
 
 public:
     entlist_val_pair_t () {}
-    entlist_val_pair_t (const entlist_val_pair_t& in) : entlist_t(in)
+    entlist_val_pair_t (const entlist_val_pair_t<X,Y> &in) : entlist_t(in)
 	{ *this = in; }
     entlist_val_pair_t (const mstring &entry, const pair<X,Y> &value, const mstring &nick, const mDateTime &modtime = mDateTime::CurrentDateTime(), const bool stupid = false)
 	: entlist_t(entry,nick,modtime), i_Value(value), i_Stupid(stupid)
@@ -552,18 +551,13 @@ public:
 							modtime, stupid));
     }
     virtual ~entlist_val_pair_t () {}
-    virtual void operator=(const entlist_val_pair_t &in)
+    virtual entlist_val_pair_t<X,Y> &operator=(const entlist_val_pair_t<X,Y> &in)
     {
 	FT("entlist_val_pair_t< pair<X, X> >::operator=", ("(const entlist_val_pair_t< pair<X,Y> > &) in"));
-	i_Entry=in.i_Entry;
+	entlist_t::operator=(in);
 	i_Value=in.i_Value;
-	i_Last_Modify_Time=in.i_Last_Modify_Time;
-	i_Last_Modifier=in.i_Last_Modifier;
 	i_Stupid = in.i_Stupid;
-	map<mstring,mstring>::const_iterator i;
-	i_UserDef.clear();
-	for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-	    i_UserDef[i->first]=i->second;
+	NRET(entlist_val_pair_t<X_Y> &, *this);
     }
 
     virtual bool Value(pair<X,Y> &value, const mstring &nick)

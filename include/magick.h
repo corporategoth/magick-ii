@@ -25,6 +25,10 @@ RCSID(magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.176  2002/01/10 19:30:37  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.175  2002/01/02 08:30:09  prez
 ** Fixed the shutdown code.  Also added a thread manager as a magick member.
 **
@@ -704,12 +708,12 @@ public:
 	if (IsChan(in))
 	{
 	    if (chanserv.IsLive(in))
-		return chanserv.GetLive(in).Name();
+		return chanserv.GetLive(in)->Name();
 	}
 	else
 	{
 	    if (nickserv.IsLiveAll(in))
-		return nickserv.GetLive(in).Name();
+		return nickserv.GetLive(in)->Name();
 	}
 	return "";
     }
@@ -719,12 +723,12 @@ public:
 	if (IsChan(in))
 	{
 	    if (chanserv.IsStored(in))
-		return chanserv.GetStored(in).Name();
+		return chanserv.GetStored(in)->Name();
 	}
 	else
 	{
 	    if (nickserv.IsStored(in))
-		return nickserv.GetStored(in).Name();
+		return nickserv.GetStored(in)->Name();
 	}
 	return "";
     }

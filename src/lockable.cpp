@@ -27,6 +27,10 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2002/01/10 19:30:38  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.77  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -816,7 +820,7 @@ mSocket::~mSocket()
     SockMap.erase(sockid);
 }
 
-void mSocket::operator=(const mSocket &in)
+mSocket &mSocket::operator=(const mSocket &in)
 {
     FT("mSocket::operator=", ("(const mSocket &) in"));
 
@@ -831,8 +835,10 @@ void mSocket::operator=(const mSocket &in)
     sock = in.sock;
     in.sock = NULL;
 
-    MLOCK2(("SockMap"));
+    { MLOCK2(("SockMap"));
     SockMap[sockid] = this;
+    }
+    NRET(mSocket &, *this);
 }
 
 

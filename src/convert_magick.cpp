@@ -27,6 +27,10 @@ RCSID(convert_magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.9  2002/01/10 19:30:38  prez
+** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
+** ensures that data being used cannot be deleted while still being used.
+**
 ** Revision 1.8  2001/12/20 08:02:32  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -186,7 +190,7 @@ load_ns_dbase (void)
     FILE *f = ACE_OS::fopen (nickserv_db, "r");
     int i, j;
     NickInfo *ni;
-    Nick_Stored_t nick;
+    Nick_Stored_t *nick;
 
     if (!f)
     {
@@ -243,8 +247,8 @@ load_ns_dbase (void)
 	    }
 
 	    nick = CreateNickEntry(ni);
-	    if (!nick.Name().empty())
-		Magick::instance().nickserv.AddStored(&nick);
+	    if (nick != NULL)
+		Magick::instance().nickserv.AddStored(nick);
 	    delnick(ni);
 	}
 	break;
@@ -308,8 +312,8 @@ load_ns_dbase (void)
 		}
 
 		nick = CreateNickEntry(ni);
-		if (!nick.Name().empty())
-		    Magick::instance().nickserv.AddStored(&nick);
+		if (nick != NULL)
+		    Magick::instance().nickserv.AddStored(nick);
 		delnick(ni);
 	    }
 	break;
@@ -353,8 +357,8 @@ load_ns_dbase (void)
 		}
 
 		nick = CreateNickEntry(ni);
-		if (!nick.Name().empty())
-		    Magick::instance().nickserv.AddStored(&nick);
+		if (nick != NULL)
+		    Magick::instance().nickserv.AddStored(nick);
 		delnick(ni);
 	    }
 	break;
@@ -397,80 +401,88 @@ delnick (NickInfo * ni)
     ni = NULL;
 }
 
-Nick_Stored_t
-CreateNickEntry(NickInfo_CUR *ni)
+Nick_Stored_t *CreateNickEntry(NickInfo_CUR *ni)
 {
     int i;
     char **string;
 
+    if (ni == NULL || ni->nick == NULL || !strlen(ni->nick))
+	return NULL;
+
     if (ni->flags & NI_VERBOTEN)
     {
-	Nick_Stored_t out(ni->nick);
+	Nick_Stored_t *out = new Nick_Stored_t(ni->nick);
 	return out;
     }
     else if (ni->flags & NI_SLAVE && ni->last_usermask != NULL)
     {
 	Nick_Stored_t tmp(mstring(ni->last_usermask));
-	Nick_Stored_t out(mstring(ni->nick),
+	Nick_Stored_t *out = new Nick_Stored_t(mstring(ni->nick),
 			mDateTime(ni->time_registered), tmp);
-	out.i_LastSeenTime = mDateTime(ni->last_seen);
+	if (out == NULL)
+	    return NULL;
+	out->i_LastSeenTime = mDateTime(ni->last_seen);
 	return out;
     }
     else
     {
-	Nick_Stored_t out(mstring(ni->nick), mstring(ni->pass));
+	Nick_Stored_t *out = new Nick_Stored_t(mstring(ni->nick), mstring(ni->pass));
+	if (out == NULL)
+	    return NULL;
 	if (ni->email != NULL && strlen(ni->email))
-	    out.i_Email = mstring(ni->email);
+	    out->i_Email = mstring(ni->email);
 	if (ni->url != NULL && strlen(ni->url))
-	    out.i_URL = mstring(ni->url);
-	if (out.i_URL.Contains("http://"))
-	    out.i_URL.Remove("http://", false);
-	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.Remove("HTTP://", false);
+	    out->i_URL = mstring(ni->url);
+	if (out->i_URL.Contains("http://"))
+	    out->i_URL.Remove("http://", false);
+	if (out->i_URL.Contains("HTTP://"))
+	    out->i_URL.Remove("HTTP://", false);
 	if (ni->last_realname != NULL && strlen(ni->last_realname))
-	    out.i_LastRealName = mstring(ni->last_realname);
-	out.i_RegTime = mDateTime(ni->time_registered);
-	out.i_LastSeenTime = mDateTime(ni->last_seen);
+	    out->i_LastRealName = mstring(ni->last_realname);
+	out->i_RegTime = mDateTime(ni->time_registered);
+	out->i_LastSeenTime = mDateTime(ni->last_seen);
 	for (i=0, string = ni->access; i<ni->accesscount; ++i, ++string)
 	{
-	    out.i_access.insert(mstring(*string));
+	    out->i_access.insert(mstring(*string));
 	}
 	for (i=0, string = ni->ignore; i<ni->ignorecount; ++i, ++string)
 	{
-	    out.i_ignore.insert(mstring(*string));
+	    out->i_ignore.insert(mstring(*string));
 	}
 
-	if (ni->flags & NI_KILLPROTECT && !out.L_Protect())
-	    out.setting.Protect = true;
-	if (ni->flags & NI_SECURE && !out.L_Secure())
-	    out.setting.Secure = true;
-	if (ni->flags & NI_PRIVATE && !out.L_Private())
-	    out.setting.Private = true;
-	if (ni->flags & NI_PRIVMSG && !out.L_PRIVMSG())
-	    out.setting.PRIVMSG = true;
+	if (ni->flags & NI_KILLPROTECT && !out->L_Protect())
+	    out->setting.Protect = true;
+	if (ni->flags & NI_SECURE && !out->L_Secure())
+	    out->setting.Secure = true;
+	if (ni->flags & NI_PRIVATE && !out->L_Private())
+	    out->setting.Private = true;
+	if (ni->flags & NI_PRIVMSG && !out->L_PRIVMSG())
+	    out->setting.PRIVMSG = true;
 
 	if (ni->flags & NI_SUSPENDED)
 	{
-	    out.i_Suspend_By = Magick::instance().nickserv.FirstName();
-	    out.i_Suspend_Time = mDateTime::CurrentDateTime();
+	    out->i_Suspend_By = Magick::instance().nickserv.FirstName();
+	    out->i_Suspend_Time = mDateTime::CurrentDateTime();
 	    if (ni->last_usermask != NULL && strlen(ni->last_usermask))
-		out.i_Comment = mstring(ni->last_usermask);
+		out->i_Comment = mstring(ni->last_usermask);
 	}
 	else
 	{
 	    if (ni->last_usermask != NULL && strlen(ni->last_usermask))
-		out.i_LastMask = mstring(ni->last_usermask);
+		out->i_LastMask = mstring(ni->last_usermask);
 	}
 
 	if (ni->flags & NI_IRCOP)
 	{
-	    out.setting.NoExpire = true;
+	    out->setting.NoExpire = true;
 	    // NOT a SADMIN, and OPER does exist.
 	    if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-		  Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(out.i_Name)) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(out->i_Name)) &&
+		!(Magick::instance().commserv.IsList(Magick::instance().commserv.ADMIN_Name()) &&
+		  Magick::instance().commserv.GetList(Magick::instance().commserv.ADMIN_Name())->find(out->i_Name)) &&
 		Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
-		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).insert(
-		    mstring(out.i_Name), Magick::instance().commserv.FirstName());
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->insert(
+		    mstring(out->i_Name), Magick::instance().commserv.FirstName());
 	}
 
 	return out;
@@ -483,7 +495,7 @@ load_cs_dbase (void)
     FILE *f = ACE_OS::fopen (chanserv_db, "r");
     int i, j;
     ChanInfo *ci;
-    Chan_Stored_t chan;
+    Chan_Stored_t *chan;
 
     if (!f)
     {
@@ -622,8 +634,8 @@ load_cs_dbase (void)
 		}
 
 		chan = CreateChanEntry(ci);
-		if (!chan.Name().empty())
-		    Magick::instance().chanserv.AddStored(&chan);
+		if (chan != NULL)
+		    Magick::instance().chanserv.AddStored(chan);
 		delchan(ci);
 	    }			/* while (fgetc(f) == 1) */
 	break;			/* case 5, etc. */
@@ -803,8 +815,8 @@ load_cs_dbase (void)
 		free (old_ci);
 
 		chan = CreateChanEntry(ci);
-		if (!chan.Name().empty())
-		    Magick::instance().chanserv.AddStored(&chan);
+		if (chan != NULL)
+		    Magick::instance().chanserv.AddStored(chan);
 		delchan(ci);
 	    }			/* while (fgetc(f) == 1) */
 	break;			/* case 3, etc. */
@@ -971,8 +983,8 @@ load_cs_dbase (void)
 		free (old_ci);
 
 		chan = CreateChanEntry(ci);
-		if (!chan.Name().empty())
-		    Magick::instance().chanserv.AddStored(&chan);
+		if (chan != NULL) 
+		    Magick::instance().chanserv.AddStored(chan);
 		delchan(ci);
 	    }
 	break;			/* case 1, etc. */
@@ -1032,12 +1044,14 @@ delchan (ChanInfo * ci)
     ci = NULL;
 }	
 
-Chan_Stored_t
-CreateChanEntry(ChanInfo_CUR *ci)
+Chan_Stored_t *CreateChanEntry(ChanInfo_CUR *ci)
 {
+    if (ci == NULL || ci->name == NULL || !strlen(ci->name))
+	return NULL;
+
     if (ci->flags & CI_VERBOTEN)
     {
-	Chan_Stored_t out(mstring(ci->name));
+	Chan_Stored_t *out = new Chan_Stored_t(mstring(ci->name));
 	return out;
     }
     else
@@ -1046,23 +1060,27 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	AutoKick *akick;
 	int i;
 
-	if (ci->desc == NULL)
+	if (ci->founder == NULL || !strlen(ci->founder) ||
+	    ci->desc == NULL || !strlen(ci->desc) ||
+	    ci->founderpass == NULL || !strlen(ci->founderpass))
 	{
-	    Chan_Stored_t out;
-	    return out;
+	    return NULL;
 	}
 
-	Chan_Stored_t out(mstring(ci->name), mstring(ci->founder),
-		    mstring(ci->founderpass), mstring(ci->desc));
+	Chan_Stored_t *out = new Chan_Stored_t(mstring(ci->name),
+		mstring(ci->founder), mstring(ci->founderpass),
+		mstring(ci->desc));
+	if (out == NULL)
+	    return NULL;
 
 	if (ci->url != NULL && strlen(ci->url))
-	    out.i_URL = mstring(ci->url);
-	if (out.i_URL.Contains("http://"))
-	    out.i_URL.Remove("http://", false);
-	if (out.i_URL.Contains("HTTP://"))
-	    out.i_URL.Remove("HTTP://", false);
-	out.i_RegTime = mDateTime(ci->time_registered);
-	out.i_LastUsed = mDateTime(ci->last_used);
+	    out->i_URL = mstring(ci->url);
+	if (out->i_URL.Contains("http://"))
+	    out->i_URL.Remove("http://", false);
+	if (out->i_URL.Contains("HTTP://"))
+	    out->i_URL.Remove("HTTP://", false);
+	out->i_RegTime = mDateTime(ci->time_registered);
+	out->i_LastUsed = mDateTime(ci->last_used);
 	mstring modelock;
 	if (ACE_OS::strlen(ci->mlock_on) || ci->mlock_key != NULL || ci->mlock_limit)
 	{
@@ -1083,14 +1101,14 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	    modelock << " " << ci->mlock_limit;
 	}
 	if (modelock.length())
-	    out.Mlock(Magick::instance().chanserv.FirstName(), modelock);
+	    out->Mlock(Magick::instance().chanserv.FirstName(), modelock);
 	for (i=0, i_access = ci->access; i<ci->accesscount; ++i, ++i_access)
 	{
 	    if (i_access->name == NULL)
 		continue;
 	    if (i_access->is_nick > 0)
 	    {
-		out.Access_insert(i_access->name, i_access->level,
+		out->Access_insert(i_access->name, i_access->level,
 			Magick::instance().chanserv.FirstName());
 	    }
 	}
@@ -1099,30 +1117,30 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	    if (akick->name == NULL)
 		continue;
 	    if (akick->reason != NULL)
-		out.Akick_insert(akick->name, akick->reason,
+		out->Akick_insert(akick->name, akick->reason,
 			Magick::instance().chanserv.FirstName());
 	    else
-		out.Akick_insert(akick->name,
+		out->Akick_insert(akick->name,
 			Magick::instance().chanserv.FirstName());
 	}
 
-	if (ci->flags & CI_KEEPTOPIC && !out.L_Keeptopic())
-	    out.setting.Keeptopic = true;
-	if (ci->flags & CI_SECUREOPS && !out.L_Secureops())
-	    out.setting.Secureops = true;
-	if (ci->flags & CI_PRIVATE && !out.L_Private())
-	    out.setting.Private = true;
-	if (ci->flags & CI_TOPICLOCK && !out.L_Topiclock())
-	    out.setting.Topiclock = true;
-	if (ci->flags & CI_RESTRICTED && !out.L_Restricted())
-	    out.setting.Restricted = true;
-	if (ci->flags & CI_LEAVEOPS && !out.L_Anarchy())
-	    out.setting.Anarchy = true;
-	if (ci->flags & CI_SECURE && !out.L_Secure())
-	    out.setting.Secure = true;
-	if (ci->flags & CI_JOIN && !out.L_Join())
-	    out.setting.Join = true;
-	if (!out.L_Revenge())
+	if (ci->flags & CI_KEEPTOPIC && !out->L_Keeptopic())
+	    out->setting.Keeptopic = true;
+	if (ci->flags & CI_SECUREOPS && !out->L_Secureops())
+	    out->setting.Secureops = true;
+	if (ci->flags & CI_PRIVATE && !out->L_Private())
+	    out->setting.Private = true;
+	if (ci->flags & CI_TOPICLOCK && !out->L_Topiclock())
+	    out->setting.Topiclock = true;
+	if (ci->flags & CI_RESTRICTED && !out->L_Restricted())
+	    out->setting.Restricted = true;
+	if (ci->flags & CI_LEAVEOPS && !out->L_Anarchy())
+	    out->setting.Anarchy = true;
+	if (ci->flags & CI_SECURE && !out->L_Secure())
+	    out->setting.Secure = true;
+	if (ci->flags & CI_JOIN && !out->L_Join())
+	    out->setting.Join = true;
+	if (!out->L_Revenge())
 	{
 	    char revlevel = ((ci->flags & CI_REV3) << 2) |
 			((ci->flags & CI_REV2) << 1) |
@@ -1130,46 +1148,46 @@ CreateChanEntry(ChanInfo_CUR *ci)
 	    switch (revlevel)
 	    {
 	    case CR_REVERSE:
-		out.setting.Revenge = "REVERSE";
+		out->setting.Revenge = "REVERSE";
 		break;
 	    case CR_DEOP:
-		out.setting.Revenge = "DEOP";
+		out->setting.Revenge = "DEOP";
 		break;
 	    case CR_KICK:
-		out.setting.Revenge = "KICK";
+		out->setting.Revenge = "KICK";
 		break;
 	    case CR_NICKBAN:
-		out.setting.Revenge = "BAN1";
+		out->setting.Revenge = "BAN1";
 		break;
 	    case CR_USERBAN:
-		out.setting.Revenge = "BAN2";
+		out->setting.Revenge = "BAN2";
 		break;
 	    case CR_HOSTBAN:
-		out.setting.Revenge = "BAN3";
+		out->setting.Revenge = "BAN3";
 		break;
 	    case CR_MIRROR:
-		out.setting.Revenge = "MIRROR";
+		out->setting.Revenge = "MIRROR";
 		break;
 	    default:
-		out.setting.Revenge = "NONE";
+		out->setting.Revenge = "NONE";
 	    }
 	}
 
 	if (ci->flags & CI_SUSPENDED)
 	{
 	    if (ci->last_topic != NULL && strlen(ci->last_topic))
-		out.i_Comment = mstring(ci->last_topic);
+		out->i_Comment = mstring(ci->last_topic);
 	    if (ci->last_topic_setter != NULL && strlen(ci->last_topic_setter))
-		out.i_Suspend_By = mstring(ci->last_topic_setter);
-	    out.i_Suspend_Time = mDateTime(ci->last_topic_time);
+		out->i_Suspend_By = mstring(ci->last_topic_setter);
+	    out->i_Suspend_Time = mDateTime(ci->last_topic_time);
 	}
 	else
 	{
 	    if (ci->last_topic != NULL && strlen(ci->last_topic))
-		out.i_Topic = mstring(ci->last_topic);
+		out->i_Topic = mstring(ci->last_topic);
 	    if (ci->last_topic_setter != NULL && strlen(ci->last_topic_setter))
-		out.i_Topic_Setter = mstring(ci->last_topic_setter);
-	    out.i_Topic_Set_Time = mDateTime(ci->last_topic_time);
+		out->i_Topic_Setter = mstring(ci->last_topic_setter);
+	    out->i_Topic_Set_Time = mDateTime(ci->last_topic_time);
 	}
 
 	if (ci->cmd_access != NULL)
@@ -1179,69 +1197,69 @@ CreateChanEntry(ChanInfo_CUR *ci)
 		switch (i)
 		{
 		case CA_AUTODEOP:
-		    out.Level_change("AUTODEOP", ci->cmd_access[i],
+		    out->Level_change("AUTODEOP", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_AUTOVOICE:
-		    out.Level_change("AUTOVOICE", ci->cmd_access[i],
+		    out->Level_change("AUTOVOICE", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_AUTOOP:
-		    out.Level_change("AUTOOP", ci->cmd_access[i],
+		    out->Level_change("AUTOOP", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_READMEMO:
-		    out.Level_change("READMEMO", ci->cmd_access[i],
+		    out->Level_change("READMEMO", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_WRITEMEMO:
-		    out.Level_change("WRITEMEMO", ci->cmd_access[i],
+		    out->Level_change("WRITEMEMO", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_DELMEMO:
-		    out.Level_change("DELMEMO", ci->cmd_access[i],
+		    out->Level_change("DELMEMO", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_AKICK:
-		    out.Level_change("AKICK", ci->cmd_access[i],
+		    out->Level_change("AKICK", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_STARAKICK:
-		    out.Level_change("SUPER", ci->cmd_access[i],
+		    out->Level_change("SUPER", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
-		    out.Level_change("OVERGREET", ci->cmd_access[i],
+		    out->Level_change("OVERGREET", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_UNBAN:
-		    out.Level_change("UNBAN", ci->cmd_access[i],
+		    out->Level_change("UNBAN", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_ACCESS:
-		    out.Level_change("ACCESS", ci->cmd_access[i],
+		    out->Level_change("ACCESS", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_SET:
-		    out.Level_change("SET", ci->cmd_access[i],
+		    out->Level_change("SET", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDINVITE:
-		    out.Level_change("CMDINVITE", ci->cmd_access[i],
+		    out->Level_change("CMDINVITE", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDUNBAN:
-		    out.Level_change("CMDUNBAN", ci->cmd_access[i],
+		    out->Level_change("CMDUNBAN", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDVOICE:
-		    out.Level_change("CMDVOICE", ci->cmd_access[i],
+		    out->Level_change("CMDVOICE", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDOP:
-		    out.Level_change("CMDOP", ci->cmd_access[i],
+		    out->Level_change("CMDOP", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		case CA_CMDCLEAR:
-		    out.Level_change("CMDCLEAR", ci->cmd_access[i],
+		    out->Level_change("CMDCLEAR", ci->cmd_access[i],
 			Magick::instance().chanserv.FirstName());
 		    break;
 		}
@@ -1475,8 +1493,8 @@ load_sop ()
 	    for (j=0; j<nsop; ++j)
 	    {
  		if (!(Magick::instance().commserv.IsList(Magick::instance().commserv.SADMIN_Name()) &&
-		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name()).find(sops[j].nick)))
-		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name()).insert(
+		     Magick::instance().commserv.GetList(Magick::instance().commserv.SADMIN_Name())->find(sops[j].nick)))
+		    Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->insert(
 		    mstring(sops[j].nick), Magick::instance().commserv.FirstName());
 	    }
 	}
@@ -1534,13 +1552,13 @@ load_message ()
 	    if (messages[j].type == M_LOGON &&
 		Magick::instance().commserv.IsList(Magick::instance().commserv.ALL_Name()))
 	    {
-		Magick::instance().commserv.GetList(Magick::instance().commserv.ALL_Name()).MSG_insert(
+		Magick::instance().commserv.GetList(Magick::instance().commserv.ALL_Name())->MSG_insert(
 			mstring(messages[j].text), mstring(messages[j].who));
 	    }
 	    else if (messages[j].type == M_OPER &&
 		Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()))
 	    {
-		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name()).MSG_insert(
+		Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->MSG_insert(
 			mstring(messages[j].text), mstring(messages[j].who));
 	    }
 	}
