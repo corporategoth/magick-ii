@@ -27,6 +27,9 @@ RCSID(ircsocket_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.174  2001/07/06 09:15:37  prez
+** Fixed nickserv drop
+**
 ** Revision 1.173  2001/07/05 15:23:54  prez
 ** Fixed the channel topic carryover
 **
@@ -1683,7 +1686,7 @@ int EventTask::svc(void)
 	    // nicknames
 	    try
 	    {
-		vector<mstring> expired_nicks;
+		vector<pair<mstring,mstring> > expired_nicks;
 		{ RLOCK2(("NickServ", "stored"));
 		for (nsi = Parent->nickserv.StoredBegin();
 			nsi != Parent->nickserv.StoredEnd(); nsi++)
@@ -1697,7 +1700,7 @@ int EventTask::svc(void)
 			    if (nsi->second.LastAllSeenTime().SecondsSince() >
 				Parent->nickserv.Expire())
 			    {
-				expired_nicks.push_back(nsi->first);
+				expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Name()));
 			    }
 			}
 			else
@@ -1705,25 +1708,19 @@ int EventTask::svc(void)
 			    if (nsi->second.LastSeenTime().SecondsSince() >
 				Parent->nickserv.Expire())
 			    {
-				expired_nicks.push_back(nsi->first);
+				expired_nicks.push_back(pair<mstring,mstring>(nsi->second.Name(), nsi->second.Host()));
 			    }
 			}
 		    }
 		}}
 		for (i=0; i<expired_nicks.size(); i++)
 		{
-		    if (Parent->nickserv.IsStored(expired_nicks[i]))
+		    if (Parent->nickserv.IsStored(expired_nicks[i].first))
 		    {
-			{ RLOCK2(("NickServ", "stored", expired_nicks[i]));
-			Nick_Stored_t &exp = Parent->nickserv.GetStored(expired_nicks[i]);
-			if (!exp.Name().empty())
-			{
-			    LOG(LM_INFO, "EVENT/EXPIRE_NICK", (exp.Name(), ((!exp.Host().empty()) ?
-				    exp.Host() : exp.Name())));
-			}
-			exp.Drop();
-			}
-			Parent->nickserv.RemStored(expired_nicks[i]);
+			Parent->nickserv.GetStored(expired_nicks[i].first).Drop();
+			Parent->nickserv.RemStored(expired_nicks[i].first);
+			LOG(LM_INFO, "EVENT/EXPIRE_NICK", (expired_nicks[i].first,
+				    expired_nicks[i].second));
 		    }
 		}
 	    }
@@ -1753,7 +1750,7 @@ int EventTask::svc(void)
 	    // channels
 	    try
 	    {
-		vector<mstring> expired_chans;
+		vector<pair<mstring, mstring> > expired_chans;
 		{ RLOCK2(("ChanServ", "stored"));
 		for (csi = Parent->chanserv.StoredBegin();
 			csi != Parent->chanserv.StoredEnd(); csi++)
@@ -1764,20 +1761,15 @@ int EventTask::svc(void)
 		    {
 			if (csi->second.LastUsed().SecondsSince() >
 			    Parent->chanserv.Expire())
-			    expired_chans.push_back(csi->first);
+			    expired_chans.push_back(pair<mstring,mstring>(csi->second.Name(), csi->second.Founder()));
 		    }
 		}}
 		for (i=0; i<expired_chans.size(); i++)
 		{
-		    if (Parent->chanserv.IsStored(expired_chans[i]))
+		    if (Parent->chanserv.IsStored(expired_chans[i].first))
 		    {
-			{ RLOCK2(("ChanServ", "stored", expired_chans[i]));
-			Chan_Stored_t exp = Parent->chanserv.GetStored(expired_chans[i]);
-			if (!exp.Name().empty())
-			{
-			    LOG(LM_INFO, "EVENT/EXPIRE_CHAN", (    exp.Name(), exp.Founder()));
-			}}
-			Parent->chanserv.RemStored(expired_chans[i]);
+			Parent->chanserv.RemStored(expired_chans[i].first);
+			LOG(LM_INFO, "EVENT/EXPIRE_CHAN", (expired_chans[i].first, expired_chans[i].second));
 		    }
 		}
 	    }

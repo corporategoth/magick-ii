@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.184  2001/07/06 09:15:37  prez
+** Fixed nickserv drop
+**
 ** Revision 1.183  2001/07/05 05:59:12  prez
 ** More enhansements to try and avoid Signal #6's, coredumps, and deadlocks.
 **
@@ -2673,7 +2676,7 @@ unsigned long Nick_Stored_t::Drop()
 
     // When we go, we take all our slaves with us!
     unsigned long i, dropped = 1;
-    if (Host().empty())
+    if (i_Host.empty())
     {
 	while(Siblings())
 	{
@@ -2685,11 +2688,14 @@ unsigned long Nick_Stored_t::Drop()
 	    }
 	}
     }
-    else
+    else if (Parent->nickserv.IsStored(i_Host))
     {
 	WLOCK2(("NickServ", "stored", i_Name.LowerCase(), "i_slaves"));
 	Parent->nickserv.GetStored(i_Host).i_slaves.erase(i_Name.LowerCase());
     }
+
+    if (Parent->memoserv.IsNick(i_Name))
+	Parent->memoserv.RemNick(i_Name);
 
     // Now we go for our channels ...
     vector<mstring> killchans;
@@ -8808,6 +8814,7 @@ void NickServ::PostLoad()
 		}
 	    }
 	    ns_array[i]->ud_array.clear();
+	    
 	    if (!ns_array[i]->Name().empty())
 		AddStored(ns_array[i]);
 	    delete ns_array[i];
