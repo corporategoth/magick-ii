@@ -89,21 +89,6 @@ public:
     bool opened() const;
 };
 
-#define LOG2(X)	\
-	if (Magick::instance_exists() && \
-	    Magick::instance().ValidateLogger(ACE_LOG_MSG)) { \
-		ACE_DEBUG(X); \
-		Magick::instance().EndLogMessage(ACE_LOG_MSG); } \
-
-#define LOG(X, Y, Z) \
-	{ LOG2((X, parseMessage(Magick::instance().getLogMessage(Y), mVarArray Z))); }
-#define NLOG(X, Y) \
-	{ LOG2((X, parseMessage(Magick::instance().getLogMessage(Y)))); }
-#define SLOG(X, Y, Z) \
-	{ LOG2((X, parseMessage(Y, mVarArray Z))); }
-#define NSLOG(X, Y) \
-	{ LOG2((X, parseMessage(Y))); }
-
 class Magick : public SXP::IPersistObj
 {
     friend class Reconnect_Handler;
@@ -664,7 +649,7 @@ public:
     Disconnect_Handler dh;
     long dh_timer;
 
-    operator         mVariant() const
+    operator          mVariant() const
     {
 	mVariant locvar("Magick");
 

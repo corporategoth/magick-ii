@@ -102,6 +102,39 @@ public:
     void Flush();
 };
 
+void LOG2(ACE_Log_Priority type, const mstring & msg);
+
+/*#define LOG2(X)	\
+	if (Magick::instance_exists() && \
+	    Magick::instance().ValidateLogger(ACE_LOG_MSG)) { \
+		ACE_DEBUG(X); \
+		Magick::instance().EndLogMessage(ACE_LOG_MSG); }
+*/
+
+#define LOG(X, Y, Z) \
+	{ LOG2(X, parseMessage(Magick::instance().getLogMessage(Y), mVarArray Z)); }
+#define NLOG(X, Y) \
+	{ LOG2(X, parseMessage(Magick::instance().getLogMessage(Y))); }
+#define SLOG(X, Y, Z) \
+	{ LOG2(X, parseMessage(Y, mVarArray Z)); }
+#define NSLOG(X, Y) \
+	{ LOG2(X, parseMessage(Y)); }
+const char *ERR_DOTDOTDOTCAUGHT =
+    "Caught an unhandled exception in file $1:$2, this should be reported to the developers ASAP.";
+const char *ERR_EXCEPTIONCAUGHT =
+    "Caught an unhandled exception in file $1:$2, details: $3, this should be reported to the developers ASAP.";
+#define BTCB() try {
+#define ETCB() } catch(Exception &E) \
+        { \
+                SLOG(LM_ERROR, ERR_EXCEPTIONCAUGHT, (__FILE__,__LINE__,E.what())); \
+                throw; \
+        } \
+        catch(...) \
+        { \
+                SLOG(LM_ERROR, ERR_DOTDOTDOTCAUGHT, (__FILE__,__LINE__)); \
+                throw; \
+        }
+
 #ifndef MAGICK_TRACE_WORKS
 
 #define FT(x,y) do { \

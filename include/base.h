@@ -49,6 +49,7 @@ public:
     }
     mstring UserDef(const mstring & type) const
     {
+	BTCB();
 	FT("mUserDef::UserDef", (type));
 	map < mstring, mstring >::const_iterator iter = i_UserDef.find(type.LowerCase());
 	if (iter != i_UserDef.end())
@@ -56,9 +57,11 @@ public:
 	    RET(iter->second);
 	}
 	RET("");
+	ETCB();
     }
     void UserDef(const mstring & type, const mstring & val)
     {
+	BTCB();
 	FT("mUserDef::UserDef", (type, val));
 	if (val.IsSameAs("NONE", true))
 	{
@@ -68,6 +71,7 @@ public:
 	{
 	    i_UserDef[type.LowerCase()] = val;
 	}
+	ETCB();
     }
 };
 
@@ -206,7 +210,7 @@ public:
     virtual void send(const mstring & dest, const mstring & message) const;
     virtual void send(const mstring & source, const mstring & dest, const mstring & message) const;
 
-    virtual operator         mVariant() const
+    virtual operator          mVariant() const
     {
 	mVariant locvar(GetInternalName());
 
@@ -333,15 +337,18 @@ public:
     }
     virtual entlist_val_t < T > & operator=(const entlist_val_t < T > & in)
     {
+	BTCB();
 	FT("entlist_val_t<T>::operator=", ("(const entlist_val_t<T> &) in"));
 	entlist_t::operator=(in);
 	i_Value = in.i_Value;
 	i_Stupid = in.i_Stupid;
 	NRET(entlist_val_t < T > &, *this);
+	ETCB();
     }
 
     virtual bool Value(const T & value, const mstring & nick)
     {
+	BTCB();
 	FT("entlist_val_t<T>::Change", ("(T) value", nick));
 	if (i_Stupid)
 	{
@@ -354,6 +361,7 @@ public:
 	    i_Last_Modifier = nick;
 	    RET(true);
 	}
+	ETCB();
     }
     virtual T Value() const
     {
@@ -366,20 +374,25 @@ public:
     };
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
+	BTCB();
 	FT("entlist_val_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::BeginElement(pIn, pElement);
+	ETCB();
     }
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
+	BTCB();
 	FT("entlist_val_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::EndElement(pIn, pElement);
 	if (pElement->IsA(tag_Value))
 	    pElement->Retrieve(i_Value);
 	if (pElement->IsA(tag_Stupid))
 	    pElement->Retrieve(i_Stupid);
+	ETCB();
     }
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs = SXP::blank_dict)
     {
+	BTCB();
 	FT("entlist_val_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
 	pOut->BeginObject(tag_entlist_val_t);
 	entlist_t::WriteElement(pOut, attribs);
@@ -388,15 +401,18 @@ public:
 	pOut->WriteElement(tag_Stupid, i_Stupid);
 
 	pOut->EndObject(tag_entlist_val_t);
+	ETCB();
     }
 
     virtual size_t Usage() const
     {
+	BTCB();
 	size_t retval = entlist_t::Usage();
 
 	retval += sizeof(i_Value);
 	retval += sizeof(i_Stupid);
 	return retval;
+	ETCB();
     }
 
     virtual void DumpB() const
@@ -447,15 +463,18 @@ public:
     }
     virtual entlist_val_pair_t < X, Y > & operator=(const entlist_val_pair_t < X, Y > & in)
     {
+	BTCB();
 	FT("entlist_val_pair_t< pair<X, X> >::operator=", ("(const entlist_val_pair_t< pair<X,Y> > &) in"));
 	entlist_t::operator=(in);
 	i_Value = in.i_Value;
 	i_Stupid = in.i_Stupid;
 	NRET(entlist_val_pair_t < X_Y > &, *this);
+	ETCB();
     }
 
     virtual bool Value(pair < X, Y > & value, const mstring & nick)
     {
+	BTCB();
 	FT("entlist_val_pair_t< pair<X,Y> >::Change", ("(pair<X,Y>) value", nick));
 	if (i_Stupid)
 	{
@@ -468,6 +487,7 @@ public:
 	    i_Last_Modifier = nick;
 	    RET(true);
 	}
+	ETCB();
     }
     pair < X, Y > Value() const
     {
@@ -480,11 +500,14 @@ public:
     }
     virtual void BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
+	BTCB();
 	FT("entlist_val_pair_t< pair<X,Y> >::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::BeginElement(pIn, pElement);
+	ETCB();
     }
     virtual void EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     {
+	BTCB();
 	FT("entlist_val_pair_t< pair<X,Y> >::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 	entlist_t::EndElement(pIn, pElement);
 	if (pElement->IsA(tag_ValueFirst))
@@ -493,9 +516,11 @@ public:
 	    pElement->Retrieve(i_Value.second);
 	if (pElement->IsA(tag_Stupid))
 	    pElement->Retrieve(i_Stupid);
+	ETCB();
     }
     virtual void WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs = SXP::blank_dict)
     {
+	BTCB();
 	FT("entlist_val_pairt< pair<X,Y> >::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::Dict &) attribs"));
 	pOut->BeginObject(tag_entlist_val_t);
 	entlist_t::WriteElement(pOut, attribs);
@@ -505,16 +530,19 @@ public:
 	pOut->WriteElement(tag_Stupid, i_Stupid);
 
 	pOut->EndObject(tag_entlist_val_t);
+	ETCB();
     }
 
     virtual size_t Usage() const
     {
+	BTCB();
 	size_t retval = entlist_t::Usage();
 
 	retval += sizeof(i_Value.first);
 	retval += sizeof(i_Value.second);
 	retval += sizeof(i_Stupid);
 	return retval;
+	ETCB();
     }
 
     virtual void DumpB() const
