@@ -604,7 +604,7 @@ public:
     {
 	return GetAnyCommand("System", i_system, service, command, user);
     }
-    bool DoSystemCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params)
+    bool DoSystemCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
     {
 	pair < bool, functor > cmd = GetSystemCommand(mynick, command, user);
 	return DoAnyCommand(cmd, mynick, user, command, params);
@@ -621,7 +621,7 @@ public:
     {
 	return GetAnyCommand("User", i_user, service, command, user);
     }
-    bool DoUserCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params)
+    bool DoUserCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
     {
 	pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
 	return DoAnyCommand(cmd, mynick, user, command, params);
