@@ -4503,12 +4503,13 @@ bool Nick_Stored_t::IsOnline()
 
     if (Magick::instance().nickserv.IsLive(i_Name))
     {
+	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(i_Name);
+
 	if (nlive->IsService())
 	{
 	    RET(false);
 	}
 
-	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(i_Name);
 	// Not secure and recognized
 	// or not suspended and identified
 	if ((!Suspended() && nlive->IsIdentified()) || (!Secure() && nlive->IsRecognized()))
