@@ -27,10 +27,8 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.141  2000/12/19 07:24:54  prez
-** Massive updates.  Linux works again, added akill reject threshold, and
-** lots of other stuff -- almost ready for b6 -- first beta after the
-** re-written strings class.  Also now using log adapter!
+** Revision 1.142  2000/12/19 08:29:06  prez
+** Added EOB
 **
 ** Revision 1.140  2000/12/12 06:01:59  prez
 ** Typos
@@ -2695,7 +2693,7 @@ void NetworkServ::execute(const mstring & data)
 			data.c_str()));
 	break;
     case 'E':
-	if (msgtype=="END_OF_BURST")
+	if (msgtype=="END_OF_BURST" || msgtype=="EOB")
 	{
 	    // Tis only nice, afterall ...
 	    Parent->server.sraw(((Parent->server.proto.Tokens() &&
