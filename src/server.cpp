@@ -112,8 +112,8 @@ void Server::Pong()
     NFT("Server::Pong");
     if (i_Ping)
     {
-	gettimeofday(tmp, NULL);
 	timeval *tmp;
+	gettimeofday(tmp, NULL);
 	i_Lag = (tmp->tv_sec + (tmp->tv_usec / 1000)) - i_Ping;
 	i_Ping = 0;
     }
