@@ -1310,6 +1310,7 @@ void OperServ::do_Mode(const mstring & mynick, const mstring & source, const mst
     {
 	if (Magick::instance().chanserv.IsLive(target))
 	{
+	    target = Magick::instance().getLname(target);
 	    Magick::instance().server.MODE(mynick, target, mode);
 	    Magick::instance().operserv.stats.i_Mode++;
 	    ANNOUNCE(mynick, "MISC/CHAN_MODE", (source, mode, target));
@@ -1332,6 +1333,7 @@ void OperServ::do_Mode(const mstring & mynick, const mstring & source, const mst
 	    {
 		if (!Magick::instance().server.proto.SVSMODE().empty())
 		{
+		    target = Magick::instance().getLname(target);
 		    Magick::instance().server.SVSMODE(mynick, target, mode);
 		    Magick::instance().operserv.stats.i_Mode++;
 		    ANNOUNCE(mynick, "MISC/NICK_MODE", (source, mode, target));
@@ -1482,6 +1484,7 @@ void OperServ::do_Kill(const mstring & mynick, const mstring & source, const mst
 
     if (Magick::instance().nickserv.IsLive(target))
     {
+	target = Magick::instance().getLname(target);
 	Magick::instance().server.SVSKILL(mynick, target, reason);
 	Magick::instance().operserv.stats.i_Kill++;
 	SEND(mynick, source, "OS_COMMAND/KILL", (target));
@@ -1518,6 +1521,7 @@ void OperServ::do_Hide(const mstring & mynick, const mstring & source, const mst
 
     if (Magick::instance().nickserv.IsLive(target))
     {
+	target = Magick::instance().getLname(target);
 	Magick::instance().server.SVSHOST(mynick, target, newhost);
 	Magick::instance().operserv.stats.i_Hide++;
 	SEND(mynick, source, "OS_COMMAND/HIDE", (target, newhost));
