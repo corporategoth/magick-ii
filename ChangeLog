@@ -1,3 +1,35 @@
+* 2002-12-27 19:09  Preston A. Elder <prez@magick.tm>
+  src/chandata.cpp (1.20):
+  
+  Fixed removal of the last on-join message.
+
+* 2002-12-23 23:48  Preston A. Elder <prez@magick.tm>
+  include/mstring.h (1.104):
+  
+  Forgot default arg for assemble constructor
+
+* 2002-12-23 23:28  Preston A. Elder <prez@magick.tm>
+  magick.kdevprj (1.31):
+  
+  Added java files to project.
+
+* 2002-12-23 23:14  Preston A. Elder <prez@magick.tm>
+  gui/TabbedPane.java (1.9), gui/mct.java (1.15):
+  
+  Fixed a brace indentation.
+
+* 2002-12-23 23:12  Preston A. Elder <prez@magick.tm>
+  gui/ChanServ.java (1.9), gui/CommServ.java (1.11), gui/Config.java (1.9),
+  gui/Files.java (1.14), gui/MemoServ.java (1.8), gui/NickServ.java (1.8),
+  gui/OperServ.java (1.9), gui/ServMsg.java (1.7), gui/Startup.java (1.11):
+  
+  Fixed exception handling.
+
+* 2002-12-23 04:11  Preston A. Elder <prez@magick.tm>
+  ChangeLog (1.63):
+  
+  Created version 2.0s20021223
+
 * 2002-12-21 20:57  Preston A. Elder <prez@magick.tm>
   src/memoserv.cpp (1.132):
   
