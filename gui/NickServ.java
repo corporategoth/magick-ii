@@ -161,7 +161,7 @@ public class NickServ extends TabbedPane
     {
 	super(t);
 
-	suffixes_label = new JLabel("");
+	suffixes_label = new JLabel(" ");
 	suffixes = createTextField("SUFFIXES", 10, "+=^`", suffixes_label.getText().length() != 0);
 
 	append_rename = createComboBox("APPEND_RENAME", false, true);
@@ -224,13 +224,10 @@ public class NickServ extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBag(gb, gc, "Registration delay", delay);
 	addToGridBag(gb, gc, "Time to identify", ident);
 	addGridBagLine(gb, gc);
@@ -251,7 +248,7 @@ public class NickServ extends TabbedPane
 	addToGridBagTable(gb, gc, "Default Options", options);
 	addToGridBag(gb, gc, "Default Language", def_language);
 	addToGridBag(gb, gc, "Locked", lck_language);
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());

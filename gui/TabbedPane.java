@@ -221,10 +221,22 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
 	return rv;
     }
 
+    public GridBagConstraints createStandardConstraints()
+    {
+	GridBagConstraints gc = new GridBagConstraints();
+	gc.gridx=0;
+	gc.gridy=0;
+	gc.weightx=1;
+	gc.insets = new Insets(0, 5, 0, 5);
+	gc.anchor = gc.EAST;
+	return gc;
+    }
+
     protected void addToGridBagTable(JPanel p, GridBagConstraints gc, String name, JTable t)
     {
 	int oldalign = gc.anchor;
 	addToGridBagLabel(p, gc, name);
+
 	gc.gridwidth = gc.REMAINDER;
 	gc.fill = gc.HORIZONTAL;
 	t.setSize(t.getPreferredSize());
@@ -240,8 +252,6 @@ abstract public class TabbedPane implements DocumentListener, ActionListener
     protected void addToGridBagField(JPanel p, GridBagConstraints gc, JComponent c)
     {
 	p.add(c, gc);
-	gc.gridx++;
-	p.add(new JLabel("   "), gc);
 	gc.gridx++;
     }
 

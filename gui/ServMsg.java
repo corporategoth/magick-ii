@@ -54,15 +54,12 @@ public class ServMsg extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-	addToGridBagLine(gb, gc, "", new JLabel(""));
-	addToGridBagLine(gb, gc, "nothing to configure", new JLabel(""));
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
+	addToGridBagLine(gb, gc, "nothing to configure", new JLabel(" "));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());

@@ -379,13 +379,10 @@ public class ChanServ extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBag(gb, gc, "Registration delay", delay);
 	addToGridBag(gb, gc, "Hide", hide);
 	addGridBagLine(gb, gc);
@@ -416,7 +413,7 @@ public class ChanServ extends TabbedPane
 	addToGridBag(gb, gc, "Maximum level", level_max);
 	addGridBagLine(gb, gc);
 	addToGridBagTable(gb, gc, "Access Levels", levels);
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());

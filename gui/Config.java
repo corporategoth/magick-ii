@@ -95,13 +95,10 @@ public class Config extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBag(gb, gc, "Relink time", server_relink);
 	addToGridBag(gb, gc, "SQUIT Protect time", squit_protect);
 	addGridBagLine(gb, gc);
@@ -127,7 +124,7 @@ public class Config extends TabbedPane
 	addToGridBag(gb, gc, "Wildcard Threshold", starthresh);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "MSG Expire Check time", msg_check_time);
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());

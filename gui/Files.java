@@ -106,13 +106,10 @@ public class Files extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBagLine(gb, gc, "File UMASK", umask);
 	addToGridBagLine(gb, gc, "Log File", logfile);
 	addToGridBag(gb, gc, "Log Channel", logchan);
@@ -146,7 +143,7 @@ public class Files extends TabbedPane
 	addToGridBag(gb, gc, "Max Speed", max_speed);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Sample Time", sampletime);
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());

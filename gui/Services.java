@@ -108,13 +108,10 @@ public class Services extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBagLine(gb, gc, "NickServ nicknames", nickserv);
 	addToGridBagLine(gb, gc, "NickServ real name", nickserv_name);
 	addToGridBagLine(gb, gc, "ChanServ nicknames", chanserv);
@@ -130,7 +127,7 @@ public class Services extends TabbedPane
 	addToGridBagLine(gb, gc, "Enforcer real name", enforcer_name);
 	addToGridBagLine(gb, gc, "Quit message", quit_message);
 	addToGridBagLine(gb, gc, "Show DB Sync time", showsync);
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());

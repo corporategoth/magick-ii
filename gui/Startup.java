@@ -387,13 +387,10 @@ public class Startup extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBagLine(gb, gc, "Server Name", server_name);
 	addToGridBagLine(gb, gc, "Server Description", server_desc);
 	addToGridBag(gb, gc, "Bind", bind);
@@ -410,7 +407,7 @@ public class Startup extends TabbedPane
 	addToGridBagTable(gb, gc, "Remote Connections", remotes);
 	addToGridBagTable(gb, gc, "Allowed Connections", allows);
 	addToGridBagLine(gb, gc, "Protocol", protocol);
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());

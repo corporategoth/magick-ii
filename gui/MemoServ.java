@@ -78,13 +78,10 @@ public class MemoServ extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBag(gb, gc, "In Flight time", inflight);
 	addToGridBag(gb, gc, "Send delay", delay);
 	addGridBagLine(gb, gc);
@@ -92,7 +89,7 @@ public class MemoServ extends TabbedPane
 	addToGridBag(gb, gc, "File Size", filesize);
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Expiration time", news_expire);
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());

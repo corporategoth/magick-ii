@@ -104,22 +104,18 @@ public class OperServ extends TabbedPane
     public JComponent createPane()
     {
 	JPanel gb = new JPanel();
-	GridBagConstraints gc = new GridBagConstraints();
 	gb.setLayout(new GridBagLayout());
-	gc.gridx=0;
-	gc.gridy=0;
-	gc.anchor = gc.EAST;
+	GridBagConstraints gc = createStandardConstraints();
 
-
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 	addToGridBagLine(gb, gc, "Services Admins", services_admin);
 
 	addToGridBag(gb, gc, "Secure", secure);
 	addToGridBag(gb, gc, "Secure Operators", secureoper);
 	addGridBagLine(gb, gc);
 
-	addToGridBag(gb, gc, "AutoKills", new JLabel(""));
-	addToGridBag(gb, gc, "Clone Protection", new JLabel(""));
+	addToGridBag(gb, gc, "AutoKills", new JLabel(" "));
+	addToGridBag(gb, gc, "Clone Protection", new JLabel(" "));
 	addGridBagLine(gb, gc);
 	addToGridBag(gb, gc, "Default Expiry", def_expire);
 	addToGridBag(gb, gc, "Clone Limit", clone_limit);
@@ -164,7 +160,7 @@ public class OperServ extends TabbedPane
 	addToGridBag(gb, gc, "Maximum HTP gap", max_htm_gap);
 	addToGridBag(gb, gc, "HTM ON gap", htm_on_gap);
 	addGridBagLine(gb, gc);
-	addToGridBagLine(gb, gc, "", new JLabel(""));
+	addToGridBagLine(gb, gc, "", new JLabel(" "));
 
 	JPanel p = new JPanel();
 	p.setLayout(new BorderLayout());
