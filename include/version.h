@@ -24,38 +24,10 @@ static const char *ident_version_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.86  2000/04/18 14:34:23  prez
-** Fixed the HELP system, it now loads into memory, and can be unloaded
-** with the OS unload command.  The stats however are inaccurate.
+** Revision 1.87  2000/04/26 10:31:07  prez
+** Added KDE Development Studio project (and associated stuff)
 **
-** Revision 1.85  2000/04/16 14:29:43  prez
-** Added stats for usage, and standardized grabbing paths, etc.
-**
-** Revision 1.84  2000/04/06 12:44:09  prez
-** Removed SXP and EXPAT directories
-**
-** Revision 1.83  2000/04/04 03:13:50  prez
-** Added support for masking hostnames.
-**
-** Revision 1.82  2000/04/02 13:06:03  prez
-** Fixed the channel TOPIC and MODE LOCK stuff ...
-**
-** Also fixed the setting of both on join...
-**
-** Revision 1.81  2000/04/02 07:25:05  prez
-** Fixed low watermarks with threads, it all works now!
-**
-** Revision 1.80  2000/03/29 14:00:18  prez
-** Fixed the thread pool system, and the watermarks.
-**
-** Revision 1.79  2000/03/28 16:20:57  prez
-** LOTS of RET() fixes, they should now be safe and not do double
-** calculations.  Also a few bug fixes from testing.
-**
-** Revision 1.78  2000/03/27 21:26:11  prez
-** More bug fixes due to testing, also implemented revenge.
-**
-** Revision 1.77  2000/03/26 14:59:36  prez
+** Revision 1.12  2000/03/26 14:59:36  prez
 ** LOADS of bugfixes due to testing in the real-time environment
 ** Also enabled the SECURE OperServ option in the CFG file.
 **
@@ -88,9 +60,9 @@ static const char *ident_version_h = "@(#) $Id$";
 #include "mstring.h"
 
 const mstring BUILD_TIME = __DATE__ " " __TIME__;
-const int BUILD_NUMBER = 125;
-const mstring BUILD_TYPE = "SunOS 5.7 sun4u sparc";
-const mstring BUILD_SYS = "castle";
+const int BUILD_NUMBER = 3;
+const mstring BUILD_TYPE = "Linux 2.2.14 i686 unknown";
+const mstring BUILD_SYS = "haven";
 const unsigned short Magick_Major_Ver=2;
 const unsigned short Magick_Minor_Ver=0;
 const unsigned long FileVersionNumber=(Magick_Major_Ver*0x10000)+Magick_Minor_Ver;

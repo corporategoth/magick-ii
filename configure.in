@@ -146,5 +146,4 @@ fi
 
 AC_CHECK_FILE(helper/build-ver, [helper/build-ver])
 
-AC_OUTPUT([Makefile src/antlr/Makefile src/des/Makefile src/xml/Makefile src/Makefile \
-		docs/Makefile])
+AC_OUTPUT(Makefile src/Makefile docs/Makefile docs/en/Makefile src/antlr/Makefile src/des/Makefile src/xml/Makefile include/Makefile include/antlr/Makefile include/des/Makefile include/xml/Makefile )

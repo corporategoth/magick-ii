@@ -11,6 +11,8 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+####### kdevelop will overwrite this part!!! (begin)##########
+
 
 SHELL = /bin/sh
 
@@ -26,7 +28,7 @@ datadir = ${prefix}/share
 sysconfdir = ${prefix}/etc
 sharedstatedir = ${prefix}/com
 localstatedir = ${prefix}/var
-libdir = ${exec_prefix}/lib
+libdir = /home/prez/projects/Magick/support/ACE_wrappers/ace
 infodir = ${prefix}/info
 mandir = ${prefix}/man
 includedir = ${prefix}/include
@@ -45,7 +47,7 @@ AUTOCONF = @AUTOCONF@
 AUTOMAKE = @AUTOMAKE@
 AUTOHEADER = @AUTOHEADER@
 
-INSTALL = .././install-sh -c
+INSTALL = /usr/bin/ginstall -c
 INSTALL_PROGRAM = ${INSTALL} $(AM_INSTALL_PROGRAM_FLAGS)
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_SCRIPT = ${INSTALL_PROGRAM}
@@ -59,44 +61,48 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 CC = gcc
 CXX = c++
+MAKEINFO = @MAKEINFO@
+PACKAGE = @PACKAGE@
 RANLIB = ranlib
-
-SUBDIRS = antlr des xml
-LDADD = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a
-INCLUDES = -I$(top_srcdir)/include
+VERSION = @VERSION@
 bin_PROGRAMS = magick
 magick_SOURCES =  base.cpp         chanserv.cpp     commserv.cpp     confbase.cpp convert.cpp      cryptstream.cpp  datetime.cpp     dccengine.cpp EscLexer.cpp     EscParser.cpp    fileconf.cpp     filesys.cpp ircsocket.cpp    lockable.cpp     log.cpp          magick.cpp main.cpp         memoserv.cpp     mstream.cpp      mstring.cpp nickserv.cpp     operserv.cpp     server.cpp       servmsg.cpp textfile.cpp     trace.cpp        utils.cpp        variant.cpp
 
+magick_LDADD = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a ACE z pthread
+
+####### kdevelop will overwrite this part!!! (end)############
+SUBDIRS = antlr des xml
+
+EXTRA_DIST = EscLexer.cpp EscLexer.hpp EscLexerTokenTypes.hpp EscParser.cpp EscParser.hpp base.cpp chanserv.cpp commserv.cpp confbase.cpp convert.cpp cryptstream.cpp datetime.cpp dccengine.cpp fileconf.cpp filesys.cpp ircsocket.cpp lockable.cpp log.cpp magick.cpp main.cpp memoserv.cpp mstream.cpp mstring.cpp nickserv.cpp operserv.cpp server.cpp servmsg.cpp textfile.cpp trace.cpp utils.cpp variant.cpp 
+LDADD = ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a
+INCLUDES = -I$(top_srcdir)/include
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 PROGRAMS =  $(bin_PROGRAMS)
 
 
 DEFS =  -DMAGICK_HAS_EXCEPTIONS=1 -DHASCRYPT=1  -I. -I$(srcdir) 
-CPPFLAGS =  -fno-default-inline
-LDFLAGS = 
-LIBS =  -lACE -lpthread -lz
+CPPFLAGS =  -fno-default-inline -I/home/prez/projects/Magick/support/ACE_wrappers
+LDFLAGS =   
+LIBS =  -L/home/prez/projects/Magick/support/ACE_wrappers/ace -lACE -lpthread -lpth -lz -lgz
 magick_OBJECTS =  base.o chanserv.o commserv.o confbase.o convert.o \
 cryptstream.o datetime.o dccengine.o EscLexer.o EscParser.o fileconf.o \
 filesys.o ircsocket.o lockable.o log.o magick.o main.o memoserv.o \
 mstream.o mstring.o nickserv.o operserv.o server.o servmsg.o textfile.o \
 trace.o utils.o variant.o
-magick_LDADD = $(LDADD)
-magick_DEPENDENCIES =  ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a
+magick_DEPENDENCIES =  ./antlr/libantlr.a ./des/libdes.a ./xml/libxml.a \
+ACE z pthread
 magick_LDFLAGS = 
-CXXFLAGS = -g -O2
+CXXFLAGS =  -O3 -g3 -Wall   
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 DIST_COMMON =  Makefile.am Makefile.in
 
 
-PACKAGE = @PACKAGE@
-VERSION = @VERSION@
-
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gnutar
+TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/EscLexer.P .deps/EscParser.P .deps/base.P \
 .deps/chanserv.P .deps/commserv.P .deps/confbase.P .deps/convert.P \
