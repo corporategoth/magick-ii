@@ -29,6 +29,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.257  2000/07/30 09:04:05  prez
+** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
+** on linux, as it seems to corrupt the databases.
+**
 ** Revision 1.256  2000/07/29 21:58:53  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -424,6 +428,7 @@ Magick::Magick(int inargc, char **inargv)
     i_reconnect = true;
     i_gotconnect = false;
     i_connected = false;
+    i_saving = false;
     i_auto = false;
     i_verbose = false;
 
@@ -2970,6 +2975,7 @@ void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
 void Magick::save_databases()
 {
     NFT("Magick::save_databases");
+    i_saving = true;
     if (mFile::Exists(files.Database()+".new"))
 	mFile::Erase(files.Database()+".new");
     {
@@ -2989,6 +2995,7 @@ void Magick::save_databases()
 	if (mFile::Exists(files.Database()+".old"))
 	    mFile::Erase(files.Database()+".old");
     }
+    i_saving = false;
 }
 
 void Magick::load_databases()

@@ -38,6 +38,11 @@
 #define MAGICK_LOCKS_WORK 1
 #endif
 
+/* Define if your system's locking works */
+#ifndef MAGICK_TRACE_WORKS
+#define MAGICK_TRACE_WORKS 1
+#endif
+
 /* Define if we are on a windows system */
 #ifndef WIN32
 #define WIN32 1

@@ -239,6 +239,17 @@ dnl thread locking mechanism works, right now I assume.
 dnl AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_LOCKS_WORK)])
 AC_DEFINE(MAGICK_LOCKS_WORK)
 
+dnl Right now, I think linux trace is broken (symptom is
+dnl trace text ends up in unfortunate places, like the DB).
+case "`uname -s`" in
+	Linux|linux)
+		AC_CHECK_HEADER(never_find, [AC_DEFINE(MAGICK_TRACE_WORKS)])
+	;;
+	*)
+		AC_DEFINE(MAGICK_TRACE_WORKS)
+	;;
+esac
+
 dnl ====================================================
 
 dnl Now we check to see if they want encryption.

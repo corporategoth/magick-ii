@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.115  2000/07/30 09:04:06  prez
+** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
+** on linux, as it seems to corrupt the databases.
+**
 ** Revision 1.114  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -2739,7 +2743,7 @@ bool Nick_Stored_t::Unlink()
     NFT("Nick_Stored_t::Unlink");
     if (Host() == "")
     {
-	RET(false)
+	RET(false);
     }
     else
     {

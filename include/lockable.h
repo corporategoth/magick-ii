@@ -25,6 +25,10 @@ static const char *ident_lockable_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.35  2000/07/30 09:04:04  prez
+** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
+** on linux, as it seems to corrupt the databases.
+**
 ** Revision 1.34  2000/06/13 14:11:53  prez
 ** Locking system has been re-written, it doent core anymore.
 ** So I have set 'MAGICK_LOCKS_WORK' define active :)
@@ -96,8 +100,6 @@ public:
 #define MLOCK5(y)  mVarArray __lockM5_VarArray y; mLOCK __lockM5(T_Locking::Mutex, __lockM5_VarArray)
 
 #else /* MAGICK_LOCKS_WORK */
-inline void do_nothing() {}
-
 #define RLOCK(y)   do_nothing()
 #define RLOCK2(y)  do_nothing()
 #define RLOCK3(y)  do_nothing()

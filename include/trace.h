@@ -25,6 +25,10 @@ static const char *ident_trace_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.60  2000/07/30 09:04:04  prez
+** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
+** on linux, as it seems to corrupt the databases.
+**
 ** Revision 1.59  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -63,6 +67,8 @@ static const char *ident_trace_h = "@(#) $Id$";
 // mVariant and mVarArray (AOC)
 // mDateTime
 
+inline void do_nothing() {}
+
 // FunctionTrace -- FT("...", ());
 #define FT(x,y)  mVarArray __ft_VarArray y; T_Functions __ft(x, __ft_VarArray)
 #define NFT(x) T_Functions __ft(x)
@@ -78,11 +84,17 @@ static const char *ident_trace_h = "@(#) $Id$";
     __ft.return_value=("(" + mstring(#x) + ") " + y).c_str(); return z;}
 #endif
 
+#ifdef MAGICK_TRACE_WORKS
 // CheckPoint definition -- CP(());
 #define CP(x) { T_CheckPoint __cp x; }
 
 // Comments definition -- COM(());
 #define COM(x) { T_Comments __com x; }
+
+#else
+#define CP(x) do_nothing()
+#define COM(x) do_nothing()
+#endif
 
 // Modify begin -- MB(AOC());
 #define MB(x) mVarArray __mb_VarArray x; T_Modify __mod(__mb_VarArray)

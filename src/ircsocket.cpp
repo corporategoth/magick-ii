@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.117  2000/07/30 09:04:05  prez
+** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
+** on linux, as it seems to corrupt the databases.
+**
 ** Revision 1.116  2000/07/29 21:58:53  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -826,12 +830,6 @@ int EventTask::svc(void)
 				Parent->nickserv.Expire())
 			    {
 				expired_nicks.push_back(nsi->first);
-Log(LM_INFO, "Nick %s was last all seen %s (%d) ago (Expiry is %s (%d))",
-	nsi->second.Name().c_str(),
-	ToHumanTime(nsi->second.LastAllSeenTime().SecondsSince()).c_str(),
-	nsi->second.LastAllSeenTime().SecondsSince(),
-	ToHumanTime(Parent->nickserv.Expire()).c_str(),
-	Parent->nickserv.Expire());
 			    }
 			}
 			else
@@ -840,12 +838,6 @@ Log(LM_INFO, "Nick %s was last all seen %s (%d) ago (Expiry is %s (%d))",
 				Parent->nickserv.Expire())
 			    {
 				expired_nicks.push_back(nsi->first);
-Log(LM_INFO, "Nick %s was last seen %s (%d) ago (Expiry is %s (%d))",
-	nsi->second.Name().c_str(),
-	ToHumanTime(nsi->second.LastSeenTime().SecondsSince()).c_str(),
-	nsi->second.LastSeenTime().SecondsSince(),
-	ToHumanTime(Parent->nickserv.Expire()).c_str(),
-	Parent->nickserv.Expire());
 			    }
 			}
 		    }

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.41  2000/07/30 09:04:05  prez
+** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
+** on linux, as it seems to corrupt the databases.
+**
 ** Revision 1.40  2000/07/29 21:58:53  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -1162,7 +1166,7 @@ bool DccXfer::Ready()
     NFT("DccXfer::Ready");
     RLOCK(("DccMap", "xfers", i_DccId, "i_File"));
     bool retval = i_File.IsOpened();
-    RET(retval)
+    RET(retval);
 }
 
 DccXfer::XF_Type DccXfer::Type()

@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.16  2000/07/30 09:04:05  prez
+** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
+** on linux, as it seems to corrupt the databases.
+**
 ** Revision 1.15  2000/07/29 21:58:53  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -346,6 +350,7 @@ CreateNickEntry(NickInfo *ni)
 	Nick_Stored_t tmp(mstring(ni->last_usermask));
 	Nick_Stored_t out(mstring(ni->nick),
 			mDateTime(ni->time_registered), tmp);
+	out.i_LastSeenTime = mDateTime(ni->last_seen);
 	return out;
     }
     else

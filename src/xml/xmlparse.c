@@ -762,6 +762,7 @@ int XML_Parse(XML_Parser parser, const char *s, int len, int isFinal)
       return 1;
     positionPtr = bufferPtr;
     errorCode = processor(parser, bufferPtr, parseEndPtr = bufferEnd, 0);
+//printf("1. ERROR %d: %s\n", errorCode, XML_ErrorString(errorCode)); fflush(stdout);
     if (errorCode == XML_ERROR_NONE)
       return 1;
     eventEndPtr = eventPtr;
@@ -774,12 +775,14 @@ int XML_Parse(XML_Parser parser, const char *s, int len, int isFinal)
     positionPtr = s;
     if (isFinal) {
       errorCode = processor(parser, s, parseEndPtr = s + len, 0);
+//printf("2. ERROR %d: %s\n", errorCode, XML_ErrorString(errorCode)); fflush(stdout);
       if (errorCode == XML_ERROR_NONE)
 	return 1;
       eventEndPtr = eventPtr;
       return 0;
     }
     errorCode = processor(parser, s, parseEndPtr = s + len, &end);
+//printf("3. ERROR %d: %s\n", errorCode, XML_ErrorString(errorCode)); fflush(stdout);
     if (errorCode != XML_ERROR_NONE) {
       eventEndPtr = eventPtr;
       return 0;
@@ -792,6 +795,7 @@ int XML_Parse(XML_Parser parser, const char *s, int len, int isFinal)
 	buffer = buffer == 0 ? malloc(len * 2) : realloc(buffer, len * 2);
 	if (!buffer) {
 	  errorCode = XML_ERROR_NO_MEMORY;
+//printf("4. ERROR %d: %s\n", errorCode, XML_ErrorString(errorCode)); fflush(stdout);
 	  eventPtr = eventEndPtr = 0;
 	  return 0;
 	}
@@ -801,9 +805,11 @@ int XML_Parse(XML_Parser parser, const char *s, int len, int isFinal)
       bufferPtr = buffer;
       bufferEnd = buffer + nLeftOver;
     }
+//printf("DEBUG 1\n"); fflush(stdout);
     return 1;
   }
   else {
+//printf("DEBUG 2\n"); fflush(stdout);
     memcpy(XML_GetBuffer(parser, len), s, len);
     return XML_ParseBuffer(parser, len, isFinal);
   }

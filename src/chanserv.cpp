@@ -26,6 +26,10 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.188  2000/07/30 09:04:05  prez
+** All bugs fixed, however I've disabled COM(()) and CP(()) tracing
+** on linux, as it seems to corrupt the databases.
+**
 ** Revision 1.187  2000/07/29 21:58:52  prez
 ** Fixed XML loading of weird characters ...
 ** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
@@ -259,6 +263,12 @@ unsigned int Chan_Live_t::Part(mstring nick)
 	    target = Parent->nickserv.stored[nick.LowerCase()].Host().LowerCase();
 	recent_parts[target] = Now();
 	users.erase(nick.LowerCase());
+	if (!users.size())
+	{
+	    modes = "";
+	    i_Limit = 0;
+	    i_Key = "";
+	}
 	if (Parent->chanserv.IsStored(i_Name))
 	    Parent->chanserv.stored[i_Name.LowerCase()].Part(nick);
     }
@@ -603,7 +613,7 @@ bool Chan_Live_t::IsSquit(mstring nick)
     FT("Chan_Live_t::IsSquit", (nick));
     RLOCK(("ChanServ", "live", i_Name.LowerCase(), "squit"));
     bool retval = (squit.find(nick.LowerCase()) != squit.end());
-    RET(retval)
+    RET(retval);
 }
 
 
