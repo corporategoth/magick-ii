@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _TRACE_H
 #include "pch.h"
 RCSID(trace_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(trace_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.82  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.81  2002/01/01 22:16:55  prez
 ** Fixed memory leak properly in db saving ...
 **
@@ -143,37 +148,67 @@ RCSID(trace_h, "@(#) $Id$");
 
 #include "variant.h"
 
-enum threadtype_enum { tt_LOST = 0, tt_MAIN, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_MAX };
+enum threadtype_enum
+{ tt_LOST =
+	0, tt_MAIN, tt_NickServ, tt_ChanServ, tt_MemoServ, tt_OperServ, tt_OtherServ, tt_ServNet, tt_Script, tt_mBase, tt_MAX };
 extern mstring threadname[tt_MAX];
-unsigned short makehex(const mstring &SLevel);
-enum locktype_enum { L_Invalid = 0, L_Read, L_Write, L_WriteUpgrade, L_Mutex };
-enum socktype_enum { S_Unknown = 0, S_IrcServer, S_DCC, S_DCCFile,
-			S_Client, S_Services, S_Telnet };
-enum dir_enum { D_Unknown = 0, D_From, D_To };
-enum priority_enum { P_Lowest = 0, P_Delay, P_Normal, P_DepFilled, P_System, P_Highest };
+unsigned short makehex(const mstring & SLevel);
+enum locktype_enum
+{ L_Invalid = 0, L_Read, L_Write, L_WriteUpgrade, L_Mutex };
+enum socktype_enum
+{ S_Unknown = 0, S_IrcServer, S_DCC, S_DCCFile,
+    S_Client, S_Services, S_Telnet
+};
+enum dir_enum
+{ D_Unknown = 0, D_From, D_To };
+enum priority_enum
+{ P_Lowest = 0, P_Delay, P_Normal, P_DepFilled, P_System, P_Highest };
 
-class ThreadID {
-private:
+class ThreadID
+{
+  private:
     threadtype_enum t_internaltype;
     short t_indent;
     bool t_intrace;
     mstring t_lastfunc;
-    list<mstring> messages;
-    
-public:
-    ThreadID();
-    ThreadID(const threadtype_enum Type);
-    ~ThreadID();
-    bool InTrace() const { return t_intrace; }
-    mstring LastFunc() const { return t_lastfunc; }
-    void LastFunc(const mstring &in) { t_lastfunc = in; }
+      list < mstring > messages;
+
+  public:
+      ThreadID();
+      ThreadID(const threadtype_enum Type);
+     ~ThreadID();
+    bool InTrace() const
+    {
+	return t_intrace;
+    }
+    mstring LastFunc() const
+    {
+	return t_lastfunc;
+    }
+    void LastFunc(const mstring & in)
+    {
+	t_lastfunc = in;
+    }
     void assign(const threadtype_enum Type);
-    threadtype_enum type() const { return t_internaltype; }
-    void indentup() { t_indent++; }
-    void indentdown() { if (t_indent>0) t_indent--; }
-    short indent() const { return t_indent; }
+    threadtype_enum type() const
+    {
+	return t_internaltype;
+    }
+    void indentup()
+    {
+	t_indent++;
+    }
+    void indentdown()
+    {
+	if (t_indent > 0)
+	    t_indent--;
+    }
+    short indent() const
+    {
+	return t_indent;
+    }
     mstring logname() const;
-    void WriteOut (const mstring &message);
+    void WriteOut(const mstring & message);
     void Flush();
 };
 
@@ -301,20 +336,20 @@ public:
 
 // OperServ TRACE Syntax:
 //
-// TRACE SET NS 0x00B0		Just 3 flags (0 works)
-// TRACE SET NS Func*		Just 1 flag
-// TRACE SET NS Func* Chat*	Just 2 flags
-// TRACE SET ALL 0x00B0		Just 3 flags (0 works)
-// TRACE SET ALL Func*		Just 1 flag
-// TRACE SET ALL Func* Chat*	Just 2 flags
-// TRACE UP NS Func*		4 (1 flag)
-// TRACE UP NS Func* Chat*	4 + 1 (2 flags)
-// TRACE UP ALL Func*		4 (1 flag)
-// TRACE UP ALL Func* Chat*	4 + 1 (2 flags)
-// TRACE DOWN NS Func*		4 (1 flag)
-// TRACE DOWN NS Func* Chat*	4 + 1 (2 flags)
-// TRACE DOWN ALL Func*		4 (1 flag)
-// TRACE DOWN ALL Func* Chat*	4 + 1 (2 flags)
+// TRACE SET NS 0x00B0          Just 3 flags (0 works)
+// TRACE SET NS Func*           Just 1 flag
+// TRACE SET NS Func* Chat*     Just 2 flags
+// TRACE SET ALL 0x00B0         Just 3 flags (0 works)
+// TRACE SET ALL Func*          Just 1 flag
+// TRACE SET ALL Func* Chat*    Just 2 flags
+// TRACE UP NS Func*            4 (1 flag)
+// TRACE UP NS Func* Chat*      4 + 1 (2 flags)
+// TRACE UP ALL Func*           4 (1 flag)
+// TRACE UP ALL Func* Chat*     4 + 1 (2 flags)
+// TRACE DOWN NS Func*          4 (1 flag)
+// TRACE DOWN NS Func* Chat*    4 + 1 (2 flags)
+// TRACE DOWN ALL Func*         4 (1 flag)
+// TRACE DOWN ALL Func* Chat*   4 + 1 (2 flags)
 //
 // Above uses threadname and Trace::levelname for translation
 // threadname follows threadtype_enum
@@ -324,7 +359,7 @@ public:
 // then against MAIN's thread levels (Locking, Functions, SourceFiles, Stata)
 // then it gives a syntax error.
 
-extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
+extern list < pair < threadtype_enum, mstring > >ThreadMessageQueue;
 
 // Trace Codes
 //   \   Down Function (T_Functions)
@@ -353,172 +388,233 @@ extern list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
 
 class Trace
 {
-public:
+  public:
     // For expansion -- 0x4C08
-    enum level_enum {
-	Off		= 0x0000,
+    enum level_enum
+    {
+	Off = 0x0000,
 
 	// Config/Stats
-	Stats		= 0x0001,	// Cycle Statistics
-	Source		= 0x0002,	// Config Files
-	Bind		= 0x0004,	// Binding/Registering
+	Stats = 0x0001,		// Cycle Statistics
+	Source = 0x0002,	// Config Files
+	Bind = 0x0004,		// Binding/Registering
 
 	// Code Tracing
-	CheckPoint	= 0x0010,	// CP(()) entries
-	Comments	= 0x0020,	// More verbose checkpoints
-	Locking		= 0x0040,	// READ/WRITE/MUTEX
-	Functions	= 0x0080,	// Function Tracing
+	CheckPoint = 0x0010,	// CP(()) entries
+	Comments = 0x0020,	// More verbose checkpoints
+	Locking = 0x0040,	// READ/WRITE/MUTEX
+	Functions = 0x0080,	// Function Tracing
 
 	// Data Tracing
-	Changing	= 0x0100,	// WHATS being changed
-	Modify		= 0x0200,	// IN / OUT difference
+	Changing = 0x0100,	// WHATS being changed
+	Modify = 0x0200,	// IN / OUT difference
 
 	// Live Tracing
-	Sockets		= 0x1000,	// Inbound Connections
-	Chatter 	= 0x2000,	// All text IN/OUT
-	External	= 0x8000,	// External command/output
+	Sockets = 0x1000,	// Inbound Connections
+	Chatter = 0x2000,	// All text IN/OUT
+	External = 0x8000,	// External command/output
 
-	Full		= 0xffff
-	};
+	Full = 0xffff
+    };
 
-private:
+  private:
     static unsigned short traces[tt_MAX];
 
-public:
-    struct levelname_struct {
+  public:
+    struct levelname_struct
+    {
 	mstring name;
 	level_enum level;
-	levelname_struct() {name=""; level=Off;};
-	levelname_struct(const mstring& in, level_enum lin) {name=in; level=lin;};
-	levelname_struct& operator=(const levelname_struct& in) {name=in.name; level=in.level; return *this;};
+	  levelname_struct()
+	{
+	    name = "";
+	    level = Off;
+	};
+	  levelname_struct(const mstring & in, level_enum lin)
+	{
+	    name = in;
+	    level = lin;
+	};
+	levelname_struct & operator=(const levelname_struct & in)
+	{
+	    name = in.name;
+	    level = in.level;
+	    return *this;
+	};
     };
     // This is initialised in main.cpp
-    static vector<levelname_struct> levelname;
+    static vector < levelname_struct > levelname;
 
-    Trace() {};
-    ~Trace() {};
-    
+    Trace()
+    {
+    };
+    ~Trace()
+    {
+    };
+
     static unsigned short TraceLevel(const threadtype_enum type)
-	{ return traces[type]; }
+    {
+	return traces[type];
+    }
     static bool IsOn(const threadtype_enum type, const level_enum level)
-	{ return (traces[type] & level) ? true : false; }
+    {
+	return (traces[type] & level) ? true : false;
+    }
     static void TurnUp(const threadtype_enum type, const level_enum param)
-	{ traces[type] |= param; }
+    {
+	traces[type] |= param;
+    }
     static void TurnDown(const threadtype_enum type, const level_enum param)
-	{ traces[type] &= ~param; }
+    {
+	traces[type] &= ~param;
+    }
     static void TurnSet(const threadtype_enum type, const unsigned short param)
-	{ traces[type] = param; }
+    {
+	traces[type] = param;
+    }
 
-    static bool IsOn(ThreadID *tid, const level_enum level)
-	{ return IsOn(tid->type(), level); }
-    static void TurnUp(ThreadID *tid, const level_enum level)
-	{ TurnUp(tid->type(), level); }
-    static void TurnDown(ThreadID *tid, const level_enum level)
-	{ TurnDown(tid->type(), level); }
+    static bool IsOn(ThreadID * tid, const level_enum level)
+    {
+	return IsOn(tid->type(), level);
+    }
+    static void TurnUp(ThreadID * tid, const level_enum level)
+    {
+	TurnUp(tid->type(), level);
+    }
+    static void TurnDown(ThreadID * tid, const level_enum level)
+    {
+	TurnDown(tid->type(), level);
+    }
 };
 
 extern Trace *TraceObject;
 
 // ===================================================
 
-class T_Functions : public Trace
+class T_Functions:public Trace
 {
     mstring m_name;
     mstring i_prevfunc;
 
-    T_Functions() {}
+      T_Functions()
+    {
+    }
 
-public:
-    mVariant return_value;
-    T_Functions(const mstring &name);
-    T_Functions(const mstring &name, const mVarArray &args);
+  public:
+      mVariant return_value;
+    T_Functions(const mstring & name);
+    T_Functions(const mstring & name, const mVarArray & args);
+
     ~T_Functions();
 };
 
 // ===================================================
 
-class T_CheckPoint : public Trace
+class T_CheckPoint:public Trace
 {
-    void common(const mstring &input);
+    void common(const mstring & input);
 
-public:
-    T_CheckPoint();
-    T_CheckPoint(const char *fmt, ...);
-    ~T_CheckPoint() {}
+  public:
+      T_CheckPoint();
+      T_CheckPoint(const char *fmt, ...);
+     ~T_CheckPoint()
+    {
+    }
 };
 
 // ===================================================
 
-class T_Comments : public Trace
+class T_Comments:public Trace
 {
-    void common(const mstring &input);
-    T_Comments();
+    void common(const mstring & input);
+      T_Comments();
 
-public:
-    T_Comments(const char *fmt, ...);
-    ~T_Comments() {}
+  public:
+      T_Comments(const char *fmt, ...);
+     ~T_Comments()
+    {
+    }
 };
 
 // ===================================================
 
-class T_Modify : public Trace
+class T_Modify:public Trace
 {
     mVarArray i_args;
     unsigned int i_offset;
-    T_Modify() {}
-public:
+      T_Modify()
+    {
+    }
+  public:
 
-    T_Modify(const mVarArray &args, unsigned int offset = 0);
+      T_Modify(const mVarArray & args, unsigned int offset = 0);
     void Begin();
     void End();
-    ~T_Modify() {}
+
+    ~T_Modify()
+    {
+    }
 };
 
 // ===================================================
 
-class T_Changing : public Trace
+class T_Changing:public Trace
 {
     mstring i_name;
     mVariant i_arg;
-    T_Changing() {}
+      T_Changing()
+    {
+    }
 
-public:
-    T_Changing(const mstring &name, const mVariant &arg);
-    void End(const mVariant &arg);
-    ~T_Changing() {}
+  public:
+      T_Changing(const mstring & name, const mVariant & arg);
+    void End(const mVariant & arg);
+
+    ~T_Changing()
+    {
+    }
 };
 
 // ===================================================
 
-class T_Chatter : public Trace
+class T_Chatter:public Trace
 {
-    T_Chatter() {} 
+    T_Chatter()
+    {
+    }
 
-public:
-    T_Chatter(const dir_enum direction, const mstring &input);
-    ~T_Chatter() {}
+  public:
+      T_Chatter(const dir_enum direction, const mstring & input);
+
+    ~T_Chatter()
+    {
+    }
 };
 
 // ===================================================
 
-class T_Locking : public Trace {
+class T_Locking:public Trace
+{
     locktype_enum locktype;
     mstring name;
 
-public:
-    T_Locking() {}
-    void open(const locktype_enum ltype, const mstring &lockname);
+  public:
+      T_Locking()
+    {
+    }
+    void open(const locktype_enum ltype, const mstring & lockname);
+
     ~T_Locking();
 
 };
 
 // ===================================================
 
-class T_Source : public Trace
+class T_Source:public Trace
 {
-public:
-    T_Source(const mstring &text);
-    T_Source(const mstring &section, const mstring &key, const mstring &value);
+  public:
+    T_Source(const mstring & text);
+      T_Source(const mstring & section, const mstring & key, const mstring & value);
 };
 
 // ===================================================
@@ -527,19 +623,17 @@ public:
 
 // ===================================================
 
-class T_Sockets : public Trace
+class T_Sockets:public Trace
 {
     unsigned long s_id;
 
-public:
-    void Begin(const unsigned long id, const unsigned short local,
-	const unsigned short remote, const mstring &host,
-	const dir_enum direction = D_Unknown);
-    void Failed(const unsigned long id, const unsigned short local,
-	const unsigned short remote, const mstring &host,
-	const mstring &reason, const dir_enum direction = D_Unknown);
-    void Resolve(const socktype_enum type, const mstring &info);
-    void End(const mstring &reason);
+  public:
+    void Begin(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
+	       const dir_enum direction = D_Unknown);
+    void Failed(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
+		const mstring & reason, const dir_enum direction = D_Unknown);
+    void Resolve(const socktype_enum type, const mstring & info);
+    void End(const mstring & reason);
 };
 
 // ===================================================

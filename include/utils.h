@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _UTILS_H
 #include "pch.h"
 RCSID(utils_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(utils_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.47  2002/01/10 19:30:37  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -145,19 +150,18 @@ RCSID(utils_h, "@(#) $Id$");
 #endif
 #include "crypt/md5_locl.h"
 
-vector<int> ParseNumbers(const mstring &what);
-bool MakeDirectory(const mstring &in);
-unsigned long FromHumanTime(const mstring &in);
-mstring ToHumanTime(const unsigned long in, const mstring &source = "");
+vector < int >ParseNumbers(const mstring & what);
+bool MakeDirectory(const mstring & in);
+unsigned long FromHumanTime(const mstring & in);
+mstring ToHumanTime(const unsigned long in, const mstring & source = "");
 mstring ToHumanNumber(const unsigned long in);
-unsigned long FromHumanSpace(const mstring &in);
+unsigned long FromHumanSpace(const mstring & in);
 mstring ToHumanSpace(const unsigned long in);
-mstring parseMessage(const mstring & message, const mVarArray& va = mVarArray::EmptyArray());
-size_t mCRYPT(const char *in, char *out, const size_t size,
-	const char *key1, const char *key2, const bool enc);
+mstring parseMessage(const mstring & message, const mVarArray & va = mVarArray::EmptyArray());
+size_t mCRYPT(const char *in, char *out, const size_t size, const char *key1, const char *key2, const bool enc);
 void mHASH16(const char *in, const size_t size, char *out);
 void mHASH(const char *in, const size_t size, char *out);
-unsigned long str_to_base64(const mstring &in);
+unsigned long str_to_base64(const mstring & in);
 mstring base64_to_str(unsigned long in);
 mstring sysinfo_node();
 mstring sysinfo_type();
@@ -165,28 +169,58 @@ mstring sysinfo_rel();
 
 // Something required to basically facilitate locking on
 // a reference to a class extracted from a map.
-class ref_class {
+class ref_class
+{
     size_t i_references;
     bool i_doDelete;
     mVarArray i_lockData;
 
-public:
-    ref_class() : i_references(0), i_doDelete(false) {}
-    ref_class(const mVarArray &l)
-	: i_references(0), i_doDelete(false), i_lockData(l) {}
-    virtual ~ref_class() {}
+  public:
+      ref_class():i_references(0), i_doDelete(false)
+    {
+    }
+    ref_class(const mVarArray & l):i_references(0), i_doDelete(false), i_lockData(l)
+    {
+    }
+    virtual ~ ref_class()
+    {
+    }
 
-    virtual void addRef()			{ i_references++; }
-    virtual void remRef()			{ if (i_references > 0) i_references--; }
-    virtual size_t references() const		{ return i_references; }
-    virtual void setDelete(bool in = true)	{ i_doDelete = in; }
-    virtual bool doDelete() const		{ return i_doDelete; }
-    virtual void lockData(const mVarArray &in)	{ i_lockData = in; }
-    virtual const mVarArray &lockData() const	{ return i_lockData; }
+    virtual void addRef()
+    {
+	i_references++;
+    }
+    virtual void remRef()
+    {
+	if (i_references > 0)
+	    i_references--;
+    }
+    virtual size_t references() const
+    {
+	return i_references;
+    }
+    virtual void setDelete(bool in = true)
+    {
+	i_doDelete = in;
+    }
+    virtual bool doDelete() const
+    {
+	return i_doDelete;
+    }
+    virtual void lockData(const mVarArray & in)
+    {
+	i_lockData = in;
+    }
+    virtual const mVarArray & lockData() const
+    {
+	return i_lockData;
+    }
 };
 
 class mLOCK;
-template<class T> class map_entry {
+
+template < class T > class map_entry
+{
     T *entry_ptr;
     mLOCK *lock;
 
@@ -206,24 +240,27 @@ template<class T> class map_entry {
 	    entry_ptr->remRef();
 	    if (entry_ptr->doDelete() && entry_ptr->references() == 0)
 		delete entry_ptr;
+
 	    entry_ptr = NULL;
 	}
 	if (lock != NULL)
 	{
 	    delete lock;
+
 	    lock = NULL;
 	}
     }
 
-public:
-    map_entry() : entry_ptr(NULL), lock(NULL) {}
-    map_entry(const map<mstring, T *> &map_ptr, const mstring &map_key)
-	: entry_ptr(NULL), lock(NULL)
+  public:
+  map_entry():entry_ptr(NULL), lock(NULL)
+    {
+    }
+    map_entry(const map < mstring, T * >&map_ptr, const mstring & map_key):entry_ptr(NULL), lock(NULL)
     {
 	if (map_key.empty())
 	    return;
 
-	map<mstring, T *>::const_iterator iter = map_ptr.find(map_key);
+	map < mstring, T * >::const_iterator iter = map_ptr.find(map_key);
 	if (iter == map_ptr.end())
 	    return;
 
@@ -234,8 +271,7 @@ public:
 	Start();
     }
 
-    map_entry(T *e)
-	: entry_ptr(NULL), lock(NULL)
+  map_entry(T * e):entry_ptr(NULL), lock(NULL)
     {
 	if (e == NULL)
 	    return;
@@ -244,35 +280,52 @@ public:
 	Start();
     }
 
-    map_entry(const map_entry<T> &in)
-	: entry_ptr(NULL), lock(NULL) { *this = in; }
+  map_entry(const map_entry < T > &in):entry_ptr(NULL), lock(NULL)
+    {
+	*this = in;
+    }
 
-    map_entry<T> &operator=(const map_entry<T> &in)
+    map_entry < T > &operator=(const map_entry < T > &in)
     {
 	End();
 	entry_ptr = in.entry_ptr;
 	Start();
     }
 
-    ~map_entry()		{ End(); }
-    T *entry() const		{ return entry_ptr; }
-    T *operator->() const	{ return entry_ptr; }
+    ~map_entry()
+    {
+	End();
+    }
+    T *entry() const
+    {
+	return entry_ptr;
+    }
+    T *operator->() const
+    {
+	return entry_ptr;
+    }
 };
 
 
 // extrapolated from the ms's pair<T1,T2> template code
-template<class T1, class T2, class T3> class triplet 
+template < class T1, class T2, class T3 > class triplet
 {
-public:
+  public:
     typedef T1 first_type;
     typedef T2 second_type;
     typedef T3 third_type;
-    triplet() 
-	: first(T1()), second(T2()), third(T3()) {}
-    triplet(const T1& _V1, const T2& _V2, const T3& _V3)
-	: first(_V1), second(_V2), third(_V3) {}
-    triplet(const triplet<T1,T2,T3> &in) { *this = in; }
-    triplet<T1,T2,T3> &operator=(const triplet<T1,T2,T3> &in)
+
+  triplet():first(T1()), second(T2()), third(T3())
+    {
+    }
+    triplet(const T1 & _V1, const T2 & _V2, const T3 & _V3):first(_V1), second(_V2), third(_V3)
+    {
+    }
+    triplet(const triplet < T1, T2, T3 > &in)
+    {
+	*this = in;
+    }
+    triplet < T1, T2, T3 > &operator=(const triplet < T1, T2, T3 > &in)
     {
 	first = in.first;
 	second = in.second;
@@ -284,48 +337,46 @@ public:
     T3 third;
 };
 
-template<class T1, class T2, class T3> inline
-bool operator==(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
+template < class T1, class T2, class T3 > inline bool operator==(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
+								 T3 > &Y)
 {
-    return (X.first==Y.first && X.second==Y.second && X.third==Y.third);
-}
-    
-template<class T1, class T2, class T3> inline
-bool operator!=(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
-{
-    return (!(X==Y));
+    return (X.first == Y.first && X.second == Y.second && X.third == Y.third);
 }
 
-template<class T1, class T2, class T3> inline
-bool operator<(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
+template < class T1, class T2, class T3 > inline bool operator!=(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
+								 T3 > &Y)
 {
-    return (((X.first<Y.first)) || 
-	((X.first==Y.first) && (X.second<Y.second)) || 
-	((X.first==Y.first) && (X.second==Y.second) && (X.third<Y.third)));
+    return (!(X == Y));
 }
 
-template<class T1, class T2, class T3> inline
-bool operator<=(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
+template < class T1, class T2, class T3 > inline bool operator<(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
+								T3 > &Y)
+{
+    return (((X.first < Y.first)) || ((X.first == Y.first) && (X.second < Y.second))
+	    || ((X.first == Y.first) && (X.second == Y.second) && (X.third < Y.third)));
+}
+
+template < class T1, class T2, class T3 > inline bool operator<=(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
+								 T3 > &Y)
 {
     return !(Y < X);
 }
 
-template<class T1, class T2, class T3> inline
-bool operator>=(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
+template < class T1, class T2, class T3 > inline bool operator>=(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
+								 T3 > &Y)
 {
     return !(X < Y);
 }
 
-template<class T1, class T2, class T3> inline
-bool operator>(const triplet<T1, T2, T3>& X, const triplet<T1, T2, T3>& Y)
+template < class T1, class T2, class T3 > inline bool operator>(const triplet < T1, T2, T3 > &X, const triplet < T1, T2,
+								T3 > &Y)
 {
     return !(X <= Y);
 }
 
-template<class T1, class T2, class T3> inline
-triplet<T1,T2,T3> make_triplet(const T1& X, const T2& Y, const T3& Z)
+template < class T1, class T2, class T3 > inline triplet < T1, T2, T3 > make_triplet(const T1 & X, const T2 & Y, const T3 & Z)
 {
-    return (triplet<T1,T2,T3>(X,Y,Z));
+    return (triplet < T1, T2, T3 > (X, Y, Z));
 }
 
 #endif

@@ -1,4 +1,6 @@
+
 /* crypto/md5/md5.h */
+
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -60,7 +62,8 @@
 #define HEADER_MD5_H
 
 #ifdef  __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #define MD5_CBLOCK	64
@@ -70,26 +73,27 @@ extern "C" {
 #define MD5_LENGTH_BLOCK 8
 #define MD5_DIGEST_LENGTH 16
 
-typedef struct MD5state_st
-	{
-	unsigned long A,B,C,D;
-	unsigned long Nl,Nh;
+    typedef struct MD5state_st
+    {
+	unsigned long A, B, C, D;
+	unsigned long Nl, Nh;
 	unsigned long data[MD5_LBLOCK];
 	int num;
-	} MD5_CTX;
+    }
+    MD5_CTX;
 
 #ifndef NOPROTO
-void MD5_Init(MD5_CTX *c);
-void MD5_Update(MD5_CTX *c, unsigned char *data, unsigned long len);
-void MD5_Final(unsigned char *md, MD5_CTX *c);
-unsigned char *MD5(unsigned char *d, unsigned long n, unsigned char *md);
-void MD5_Transform(MD5_CTX *c, unsigned char *b);
+    void MD5_Init(MD5_CTX * c);
+    void MD5_Update(MD5_CTX * c, unsigned char *data, unsigned long len);
+    void MD5_Final(unsigned char *md, MD5_CTX * c);
+    unsigned char *MD5(unsigned char *d, unsigned long n, unsigned char *md);
+    void MD5_Transform(MD5_CTX * c, unsigned char *b);
 #else
-void MD5_Init();
-void MD5_Update();
-void MD5_Final();
-unsigned char *MD5();
-void MD5_Transform();
+    void MD5_Init();
+    void MD5_Update();
+    void MD5_Final();
+    unsigned char *MD5();
+    void MD5_Transform();
 #endif
 
 #ifdef  __cplusplus

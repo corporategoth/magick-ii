@@ -1,3 +1,4 @@
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -12,6 +13,7 @@
 #ifndef _PCH_H
 #define _PCH_H
 // RCSID(pch_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -21,6 +23,9 @@
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.48  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.47  2001/12/31 07:49:46  prez
 ** Found out stl_config.h didnt get included by default .. fixed that.
 **
@@ -167,7 +172,7 @@
 
 
 #ifdef _MSC_VER
-  #pragma warning(disable:4786)
+#pragma warning(disable:4786)
 #endif
 
 #ifdef HAVE_CONFIG_H
@@ -242,13 +247,15 @@
 #endif
 
 /* Standard C++ Extensions ... */
+
 /* These all have IFDEF's because
  * some unix machines dont have the
  * standard ones, only a .h
  */
 #ifdef __cplusplus
 #ifndef HAVE_BOOL
-enum bool { false, true };
+enum bool
+{ false, true };
 #endif
 #ifdef ACE_HAS_EXCEPTIONS
 #  define MAGICK_HAS_EXCEPTIONS
@@ -306,6 +313,7 @@ enum bool { false, true };
 #include <ace/SOCK_Acceptor.h>
 #include <ace/SOCK_Connector.h>
 #include <ace/Activation_Queue.h>
+
 /* Added in 5.1.11, so accomodate it ... */
 #if ACE_MAJOR_VERSION > 5 || (ACE_MAJOR_VERSION == 5 && \
 	(ACE_MINOR_VERSION > 1 || (ACE_MINOR_VERSION == 1 && \
@@ -346,32 +354,32 @@ typedef struct utsname ACE_utsname;
 #else
 #    define malloc	ACE_OS::malloc
 #    define calloc	ACE_OS::calloc
-// # define memalign	ACE_OS::memalign
-// # define valloc	ACE_OS::valloc
-// # define pvalloc	ACE_OS::pvalloc
+// # define memalign    ACE_OS::memalign
+// # define valloc      ACE_OS::valloc
+// # define pvalloc     ACE_OS::pvalloc
 #    define strdup	ACE_OS::strdup
-// # define strndup	ACE_OS::strndup
-// # define strsave	ACE_OS::strsave
-// # define strnsave	ACE_OS::strnsave
+// # define strndup     ACE_OS::strndup
+// # define strsave     ACE_OS::strsave
+// # define strnsave    ACE_OS::strnsave
 #    define realloc	ACE_OS::realloc
-// # define recalloc	ACE_OS::recalloc
-// # define expand	ACE_OS::expand
+// # define recalloc    ACE_OS::recalloc
+// # define expand      ACE_OS::expand
 #    define free	ACE_OS::free
-// # define cfree	ACE_OS::cfree
-// # define new		ACE_OS::new
-// # define new[]	ACE_OS::new[]
-// # define delete	ACE_OS::delete
-// # define delete[]	ACE_OS::delete[]
+// # define cfree       ACE_OS::cfree
+// # define new         ACE_OS::new
+// # define new[]       ACE_OS::new[]
+// # define delete      ACE_OS::delete
+// # define delete[]    ACE_OS::delete[]
 #    define memset	ACE_OS::memset
-// # define bzero	ACE_OS::bzero
-// # define memccpy	ACE_OS::memccpy
+// # define bzero       ACE_OS::bzero
+// # define memccpy     ACE_OS::memccpy
 #    define memcpy	ACE_OS::memcpy
 #    define memmove	ACE_OS::memmove
-// # define bcopy	ACE_OS::bcopy
+// # define bcopy       ACE_OS::bcopy
 #    define memchr	ACE_OS::memchr
-// # define memmem	ACE_OS::memmem
+// # define memmem      ACE_OS::memmem
 #    define memcmp	ACE_OS::memcmp
-// # define bcmp	ACE_OS::bcmp
+// # define bcmp        ACE_OS::bcmp
 #endif
 
 using namespace std;

@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-  #pragma hdrstop
+#pragma hdrstop
 #else
-  #pragma implementation
+#pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -18,6 +18,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_base_cpp_ ## x () { return y; }
 RCSID(base_cpp, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -27,6 +28,9 @@ RCSID(base_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.181  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.180  2002/01/10 19:30:37  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -372,21 +376,21 @@ RCSID(base_cpp, "@(#)$Id$");
 #include "magick.h"
 
 bool mBase::TaskOpened;
-map<mMessage::type_t, map<mstring, set<unsigned long> > > mMessage::AllDependancies;
-map<unsigned long, mMessage *> mMessage::MsgIdMap;
+map < mMessage::type_t, map < mstring, set < unsigned long > > >mMessage::AllDependancies;
+map < unsigned long, mMessage * >mMessage::MsgIdMap;
 unsigned long mMessage::LastMsgId = 0;
 
 
-entlist_t &entlist_t::operator=(const entlist_t &in)
+entlist_t & entlist_t::operator=(const entlist_t & in)
 {
     FT("entlist_t::operator=", ("(const entlist_t &) in"));
-    i_Entry=in.i_Entry;
-    i_Last_Modify_Time=in.i_Last_Modify_Time;
-    i_Last_Modifier=in.i_Last_Modifier;
-    map<mstring,mstring>::const_iterator i;
+    i_Entry = in.i_Entry;
+    i_Last_Modify_Time = in.i_Last_Modify_Time;
+    i_Last_Modifier = in.i_Last_Modifier;
+    map < mstring, mstring >::const_iterator i;
     i_UserDef.clear();
-    for(i=in.i_UserDef.begin();i!=in.i_UserDef.end();i++)
-	i_UserDef[i->first]=i->second;
+    for (i = in.i_UserDef.begin(); i != in.i_UserDef.end(); i++)
+	i_UserDef[i->first] = i->second;
     NRET(entlist_t &, *this);
 }
 
@@ -404,13 +408,14 @@ SXP::Tag tag_Stupid("Stupid");
 
 void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast<void>(pIn);
+    static_cast < void >(pIn);
 
     FT("entlist_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
 
-    if( pElement->IsA(tag_UserDef) )
+    if (pElement->IsA(tag_UserDef))
     {
 	mstring *tmp = new mstring;
+
 	ud_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
@@ -418,34 +423,37 @@ void entlist_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void entlist_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast<void>(pIn);
+    static_cast < void >(pIn);
 
     FT("entlist_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
-	if( pElement->IsA(tag_Entry) )   pElement->Retrieve(i_Entry);
-	if( pElement->IsA(tag_Last_Modify_Time) )   pElement->Retrieve(i_Last_Modify_Time);
-	if( pElement->IsA(tag_Last_Modifier) )   pElement->Retrieve(i_Last_Modifier);
+    if (pElement->IsA(tag_Entry))
+	pElement->Retrieve(i_Entry);
+    if (pElement->IsA(tag_Last_Modify_Time))
+	pElement->Retrieve(i_Last_Modify_Time);
+    if (pElement->IsA(tag_Last_Modifier))
+	pElement->Retrieve(i_Last_Modifier);
 }
 
-void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+void entlist_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast<void>(attribs);
+    static_cast < void >(attribs);
 
     FT("entlist_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
-	pOut->BeginObject(tag_entlist_t);
+    pOut->BeginObject(tag_entlist_t);
 
-	pOut->WriteElement(tag_Entry, i_Entry);
-	pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
-	pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
+    pOut->WriteElement(tag_Entry, i_Entry);
+    pOut->WriteElement(tag_Last_Modify_Time, i_Last_Modify_Time);
+    pOut->WriteElement(tag_Last_Modifier, i_Last_Modifier);
 
-    map<mstring,mstring>::const_iterator iter;
-    for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
+    map < mstring, mstring >::const_iterator iter;
+    for (iter = i_UserDef.begin(); iter != i_UserDef.end(); iter++)
     {
-        pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
+	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
     }
 
-	pOut->EndObject(tag_entlist_t);
+    pOut->EndObject(tag_entlist_t);
 }
 
 void entlist_t::PostLoad() const
@@ -453,13 +461,13 @@ void entlist_t::PostLoad() const
     NFT("entlist_t::PostLoad");
 
     unsigned int j;
-    for (j=0; j<ud_array.size(); j++)
+
+    for (j = 0; j < ud_array.size(); j++)
     {
 	if (ud_array[j] != NULL)
 	{
 	    if (ud_array[j]->Contains("\n"))
-		i_UserDef[ud_array[j]->Before("\n")] =
-			ud_array[j]->After("\n");
+		i_UserDef[ud_array[j]->Before("\n")] = ud_array[j]->After("\n");
 	    delete ud_array[j];
 	}
     }
@@ -469,11 +477,12 @@ void entlist_t::PostLoad() const
 size_t entlist_t::Usage() const
 {
     size_t retval = 0;
+
     retval += i_Entry.capacity();
     retval += i_Last_Modifier.capacity();
     retval += sizeof(i_Last_Modify_Time.Internal());
-    map<mstring,mstring>::const_iterator i;
-    for (i=i_UserDef.begin(); i!=i_UserDef.end(); i++)
+    map < mstring, mstring >::const_iterator i;
+    for (i = i_UserDef.begin(); i != i_UserDef.end(); i++)
     {
 	retval += i->first.capacity();
 	retval += i->second.capacity();
@@ -494,15 +503,15 @@ void entlist_t::DumpE() const
 
 // --------- end of entlist_t -----------------------------------
 
-mMessage::mMessage(const mstring& p_source, const mstring& p_msgtype,
-	const mstring& p_params, const unsigned long p_priority)
-	: ACE_Method_Request(p_priority), msgid_(0), source_(p_source),
-	  params_(p_params), creation_(mDateTime::CurrentDateTime())
+mMessage::mMessage(const mstring & p_source, const mstring & p_msgtype, const mstring & p_params,
+		   const unsigned long p_priority):ACE_Method_Request(p_priority), msgid_(0), source_(p_source),
+params_(p_params), creation_(mDateTime::CurrentDateTime())
 {
     FT("mMessage::mMessage", (p_source, p_msgtype, p_params, p_priority));
     if (source_ != " " && Magick::instance().server.proto.Tokens())
     {
 	mstring tmp(Magick::instance().server.proto.GetToken(p_msgtype));
+
 	if (!tmp.empty())
 	    msgtype_ = tmp;
     }
@@ -522,6 +531,7 @@ void mMessage::AddDependancies()
 	if (source_[0u] == '@')
 	{
 	    mstring svr(str_to_base64(source_.After("@")));
+
 	    AddDepend(ServerExists, svr);
 	}
 	else if (source_.Contains("."))
@@ -537,7 +547,7 @@ void mMessage::AddDependancies()
     if (msgtype_ == "JOIN")
     {
 	// User is NOT in channel
-	for (unsigned int i=1; i<=params_.WordCount(":, "); i++)
+	for (unsigned int i = 1; i <= params_.WordCount(":, "); i++)
 	    AddDepend(UserNoInChan, params_.ExtractWord(i, ":, ").LowerCase() + ":" + source_.LowerCase());
     }
     else if (msgtype_ == "KICK")
@@ -611,17 +621,19 @@ void mMessage::AddDependancies()
 	// ALL nick's mentioned
 	if (source_[0u] == '@' || source_.Contains(".") || source_.empty())
 	{
-	    for (unsigned int i=1; i <= params_.After(":").WordCount(" "); i++)
+	    for (unsigned int i = 1; i <= params_.After(":").WordCount(" "); i++)
 	    {
 		mstring nick(params_.After(":").ExtractWord(i, " ").LowerCase());
+
 		if (!nick.empty())
 		{
 		    char c = 0;
 		    bool IsNotNick = false;
+
 		    while (c != nick[0u])
 		    {
 			c = nick[0u];
-			switch(nick[0u])
+			switch (nick[0u])
 			{
 			case '@':
 			case '%':
@@ -629,7 +641,7 @@ void mMessage::AddDependancies()
 			case '*':
 			case '~':
 			    nick.erase(0, 0);
-		            break;
+			    break;
 			case '&':
 			case '"':
 			    IsNotNick = true;
@@ -646,14 +658,15 @@ void mMessage::AddDependancies()
 	}
 	else
 	{
-	    for (unsigned int i=2; i<=params_.WordCount(": "); i++)
+	    for (unsigned int i = 2; i <= params_.WordCount(": "); i++)
 	    {
 		char c = 0;
 		mstring chan = params_.ExtractWord(i, ": ").LowerCase();
+
 		while (c != chan[0u])
 		{
 		    c = chan[0u];
-		    switch(chan[0u])
+		    switch (chan[0u])
 		    {
 		    case '@':
 		    case '%':
@@ -679,16 +692,18 @@ void mMessage::AddDependancies()
 	AddDepend(ChanExists, params_.ExtractWord(1, ": ").LowerCase());
     }
 
-    { MLOCK(("MsgIdMap"));
-    msgid_ = LastMsgId++;
-    while (MsgIdMap.find(msgid_) != MsgIdMap.end())
+    {
+	MLOCK(("MsgIdMap"));
 	msgid_ = LastMsgId++;
+	while (MsgIdMap.find(msgid_) != MsgIdMap.end())
+	    msgid_ = LastMsgId++;
     }
 
-    list<triplet<type_t, mstring, bool> >::iterator iter;
-    for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
+    list < triplet < type_t, mstring, bool > >::iterator iter;
+    for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
     {
 	int oldadded = added;
+
 	switch (iter->first)
 	{
 	case ServerExists:
@@ -825,8 +840,8 @@ void mMessage::AddDependancies()
 	    }
 	    break;
 	case UserNoInChan:
-	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
-		Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
+	    if (Magick::instance().chanserv.IsLive(iter->second.Before(":"))
+		&& Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
 	    {
 		added++;
 		MLOCK2(("AllDependancies"));
@@ -845,8 +860,7 @@ void mMessage::AddDependancies()
 	}
 	if (oldadded != added)
 	{
-	    CP(("(%d) Added dependancy on %d %s.", msgid_,
-			static_cast<int>(iter->first), iter->second.c_str()));
+	    CP(("(%d) Added dependancy on %d %s.", msgid_, static_cast < int >(iter->first), iter->second.c_str()));
 	}
     }
 }
@@ -854,161 +868,158 @@ void mMessage::AddDependancies()
 bool mMessage::RecheckDependancies()
 {
     NFT("mMessage::RecheckDependancies");
-    { WLOCK(("Dependancies", this));
-    bool resolved;
-
-    list<triplet<type_t, mstring, bool> >::iterator iter;
-    map<mstring, set<unsigned long> >::iterator i;
-    set<unsigned long>::iterator j;
-    for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
     {
-	resolved = false;
-	switch (iter->first)
+	WLOCK(("Dependancies", this));
+	bool resolved;
+
+	list < triplet < type_t, mstring, bool > >::iterator iter;
+	map < mstring, set < unsigned long > >::iterator i;
+	set < unsigned long >::iterator j;
+
+	for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
 	{
-	case ServerExists:
-	    if (!iter->third && !Magick::instance().server.GetServer(iter->second).empty())
+	    resolved = false;
+	    switch (iter->first)
 	    {
-		resolved = true;
-		iter->third = true;
-		MLOCK2(("AllDependancies"));
-		if ((i = AllDependancies[iter->first].find(iter->second)) !=
-					AllDependancies[iter->first].end())
+	    case ServerExists:
+		if (!iter->third && !Magick::instance().server.GetServer(iter->second).empty())
 		{
-		    if ((j = i->second.find(msgid_)) != i->second.end())
-			i->second.erase(j);
-		    if (!i->second.size())
-			AllDependancies[iter->first].erase(i);
+		    resolved = true;
+		    iter->third = true;
+		    MLOCK2(("AllDependancies"));
+		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
+		    {
+			if ((j = i->second.find(msgid_)) != i->second.end())
+			    i->second.erase(j);
+			if (!i->second.size())
+			    AllDependancies[iter->first].erase(i);
+		    }
 		}
+		break;
+	    case ServerNoExists:
+		if (!iter->third && Magick::instance().server.GetServer(iter->second).empty())
+		{
+		    resolved = true;
+		    iter->third = true;
+		    MLOCK2(("AllDependancies"));
+		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
+		    {
+			if ((j = i->second.find(msgid_)) != i->second.end())
+			    i->second.erase(j);
+			if (!i->second.size())
+			    AllDependancies[iter->first].erase(i);
+		    }
+		}
+		break;
+	    case NickExists:
+		if (!iter->third && Magick::instance().nickserv.IsLive(iter->second))
+		{
+		    resolved = true;
+		    iter->third = true;
+		    MLOCK2(("AllDependancies"));
+		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
+		    {
+			if ((j = i->second.find(msgid_)) != i->second.end())
+			    i->second.erase(j);
+			if (!i->second.size())
+			    AllDependancies[iter->first].erase(i);
+		    }
+		}
+		break;
+	    case NickNoExists:
+		if (!iter->third && !Magick::instance().nickserv.IsLive(iter->second))
+		{
+		    resolved = true;
+		    iter->third = true;
+		    MLOCK2(("AllDependancies"));
+		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
+		    {
+			if ((j = i->second.find(msgid_)) != i->second.end())
+			    i->second.erase(j);
+			if (!i->second.size())
+			    AllDependancies[iter->first].erase(i);
+		    }
+		}
+		break;
+	    case ChanExists:
+		if (!iter->third && Magick::instance().chanserv.IsLive(iter->second))
+		{
+		    resolved = true;
+		    iter->third = true;
+		    MLOCK2(("AllDependancies"));
+		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
+		    {
+			if ((j = i->second.find(msgid_)) != i->second.end())
+			    i->second.erase(j);
+			if (!i->second.size())
+			    AllDependancies[iter->first].erase(i);
+		    }
+		}
+		break;
+	    case ChanNoExists:
+		if (!iter->third && !Magick::instance().chanserv.IsLive(iter->second))
+		{
+		    resolved = true;
+		    iter->third = true;
+		    MLOCK2(("AllDependancies"));
+		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
+		    {
+			if ((j = i->second.find(msgid_)) != i->second.end())
+			    i->second.erase(j);
+			if (!i->second.size())
+			    AllDependancies[iter->first].erase(i);
+		    }
+		}
+		break;
+	    case UserInChan:
+		if (!iter->third && Magick::instance().chanserv.IsLive(iter->second.Before(":"))
+		    && Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
+		{
+		    resolved = true;
+		    iter->third = true;
+		    MLOCK2(("AllDependancies"));
+		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
+		    {
+			if ((j = i->second.find(msgid_)) != i->second.end())
+			    i->second.erase(j);
+			if (!i->second.size())
+			    AllDependancies[iter->first].erase(i);
+		    }
+		}
+		break;
+	    case UserNoInChan:
+		if (!iter->third
+		    && (!Magick::instance().chanserv.IsLive(iter->second.Before(":"))
+			|| !Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":"))))
+		{
+		    resolved = true;
+		    iter->third = true;
+		    MLOCK2(("AllDependancies"));
+		    if ((i = AllDependancies[iter->first].find(iter->second)) != AllDependancies[iter->first].end())
+		    {
+			if ((j = i->second.find(msgid_)) != i->second.end())
+			    i->second.erase(j);
+			if (!i->second.size())
+			    AllDependancies[iter->first].erase(i);
+		    }
+		}
+		break;
 	    }
-	    break;
-	case ServerNoExists:
-	    if (!iter->third && Magick::instance().server.GetServer(iter->second).empty())
+	    if (resolved)
 	    {
-		resolved = true;
-		iter->third = true;
-		MLOCK2(("AllDependancies"));
-		if ((i = AllDependancies[iter->first].find(iter->second)) !=
-					AllDependancies[iter->first].end())
-		{
-		    if ((j = i->second.find(msgid_)) != i->second.end())
-			i->second.erase(j);
-		    if (!i->second.size())
-			AllDependancies[iter->first].erase(i);
-		}
+		CP(("(%d) Resolved dependancy on %d %s.", msgid_, static_cast < int >(iter->first), iter->second.c_str()));
 	    }
-	    break;
-	case NickExists:
-	    if (!iter->third && Magick::instance().nickserv.IsLive(iter->second))
-	    {
-		resolved = true;
-		iter->third = true;
-		MLOCK2(("AllDependancies"));
-		if ((i = AllDependancies[iter->first].find(iter->second)) !=
-					AllDependancies[iter->first].end())
-		{
-		    if ((j = i->second.find(msgid_)) != i->second.end())
-			i->second.erase(j);
-		    if (!i->second.size())
-			AllDependancies[iter->first].erase(i);
-		}
-	    }
-	    break;
-	case NickNoExists:
-	    if (!iter->third && !Magick::instance().nickserv.IsLive(iter->second))
-	    {
-		resolved = true;
-		iter->third = true;
-		MLOCK2(("AllDependancies"));
-		if ((i = AllDependancies[iter->first].find(iter->second)) !=
-					AllDependancies[iter->first].end())
-		{
-		    if ((j = i->second.find(msgid_)) != i->second.end())
-			i->second.erase(j);
-		    if (!i->second.size())
-			AllDependancies[iter->first].erase(i);
-		}
-	    }
-	    break;
-	case ChanExists:
-	    if (!iter->third && Magick::instance().chanserv.IsLive(iter->second))
-	    {
-		resolved = true;
-		iter->third = true;
-		MLOCK2(("AllDependancies"));
-		if ((i = AllDependancies[iter->first].find(iter->second)) !=
-					AllDependancies[iter->first].end())
-		{
-		    if ((j = i->second.find(msgid_)) != i->second.end())
-			i->second.erase(j);
-		    if (!i->second.size())
-			AllDependancies[iter->first].erase(i);
-		}
-	    }
-	    break;
-	case ChanNoExists:
-	    if (!iter->third && !Magick::instance().chanserv.IsLive(iter->second))
-	    {
-		resolved = true;
-		iter->third = true;
-		MLOCK2(("AllDependancies"));
-		if ((i = AllDependancies[iter->first].find(iter->second)) !=
-					AllDependancies[iter->first].end())
-		{
-		    if ((j = i->second.find(msgid_)) != i->second.end())
-			i->second.erase(j);
-		    if (!i->second.size())
-			AllDependancies[iter->first].erase(i);
-		}
-	    }
-	    break;
-	case UserInChan:
-	    if (!iter->third && Magick::instance().chanserv.IsLive(iter->second.Before(":")) &&
-		Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":")))
-	    {
-		resolved = true;
-		iter->third = true;
-		MLOCK2(("AllDependancies"));
-		if ((i = AllDependancies[iter->first].find(iter->second)) !=
-					AllDependancies[iter->first].end())
-		{
-		    if ((j = i->second.find(msgid_)) != i->second.end())
-			i->second.erase(j);
-		    if (!i->second.size())
-			AllDependancies[iter->first].erase(i);
-		}
-	    }
-	    break;
-	case UserNoInChan:
-	    if (!iter->third && (!Magick::instance().chanserv.IsLive(iter->second.Before(":")) ||
-		!Magick::instance().chanserv.GetLive(iter->second.Before(":"))->IsIn(iter->second.After(":"))))
-	    {
-		resolved = true;
-		iter->third = true;
-		MLOCK2(("AllDependancies"));
-		if ((i = AllDependancies[iter->first].find(iter->second)) !=
-					AllDependancies[iter->first].end())
-		{
-		    if ((j = i->second.find(msgid_)) != i->second.end())
-			i->second.erase(j);
-		    if (!i->second.size())
-			AllDependancies[iter->first].erase(i);
-		}
-	    }
-	    break;
 	}
-	if (resolved)
-	{
-	    CP(("(%d) Resolved dependancy on %d %s.", msgid_,
-			static_cast<int>(iter->first), iter->second.c_str()));
-	}
-    }}
+    }
     if (!OutstandingDependancies())
     {
 	CP(("No more dependancies for %d.", msgid_));
-	{ MLOCK(("MsgIdMap"));
-	map<unsigned long, mMessage *>::iterator k = MsgIdMap.find(msgid_);
-	if (k != MsgIdMap.end())
-	    MsgIdMap.erase(k);
+	{
+	    MLOCK(("MsgIdMap"));
+	    map < unsigned long, mMessage * >::iterator k = MsgIdMap.find(msgid_);
+
+	    if (k != MsgIdMap.end())
+		MsgIdMap.erase(k);
 	}
 	RET(false);
     }
@@ -1021,10 +1032,10 @@ bool mMessage::OutstandingDependancies()
 
     if (!dependancies.size())
 	AddDependancies();
-    
+
     RLOCK(("Dependancies", this));
-    list<triplet<type_t, mstring, bool> >::iterator iter;
-    for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
+    list < triplet < type_t, mstring, bool > >::iterator iter;
+    for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
     {
 	if (!iter->third)
 	{
@@ -1035,9 +1046,9 @@ bool mMessage::OutstandingDependancies()
     RET(false);
 }
 
-void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, const mstring& param2)
+void mMessage::CheckDependancies(mMessage::type_t type, const mstring & param1, const mstring & param2)
 {
-    FT("mMessage::CheckDependancies", (static_cast<int>(type), param1, param2));
+    FT("mMessage::CheckDependancies", (static_cast < int >(type), param1, param2));
 
     if (param1.empty())
 	return;
@@ -1048,43 +1059,54 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
     // as this has been satisfied.
 
     mstring target;
+
     if (!param2.empty())
 	target = param1.LowerCase() + ":" + param2.LowerCase();
     else
 	target = param1.LowerCase();
-    set<unsigned long> mydep;
+    set < unsigned long >mydep;
 
-    { MLOCK(("AllDependancies"));
-    map<type_t, map<mstring, set<unsigned long> > >::iterator i = AllDependancies.find(type);
-    if (i != AllDependancies.end())
     {
-	map<mstring, set<unsigned long> >::iterator j = i->second.find(target);
-	if (j != i->second.end())
-	{
-	    mydep = j->second;
-	    i->second.erase(j);
-	}
-    }}
+	MLOCK(("AllDependancies"));
+	map < type_t, map < mstring, set < unsigned long > > >::iterator i = AllDependancies.find(type);
 
-    set<unsigned long>::iterator k;
-    for (k=mydep.begin(); k!=mydep.end(); k++)
+	if (i != AllDependancies.end())
+	{
+	    map < mstring, set < unsigned long > >::iterator j = i->second.find(target);
+
+	    if (j != i->second.end())
+	    {
+		mydep = j->second;
+		i->second.erase(j);
+	    }
+	}
+    }
+
+    set < unsigned long >::iterator k;
+
+    for (k = mydep.begin(); k != mydep.end(); k++)
     {
 	mMessage *msg = NULL;
-	{ MLOCK(("MsgIdMap"));
-	map<unsigned long, mMessage *>::iterator iter = MsgIdMap.find(*k);
-	if (iter != MsgIdMap.end())
+
 	{
-	    msg = iter->second;
-	    msg->DependancySatisfied(type, target);
-	    if (!msg->OutstandingDependancies())
-		MsgIdMap.erase(iter);
-	    else
-		msg = NULL;
-	}}
+	    MLOCK(("MsgIdMap"));
+	    map < unsigned long, mMessage * >::iterator iter = MsgIdMap.find(*k);
+
+	    if (iter != MsgIdMap.end())
+	    {
+		msg = iter->second;
+		msg->DependancySatisfied(type, target);
+		if (!msg->OutstandingDependancies())
+		    MsgIdMap.erase(iter);
+		else
+		    msg = NULL;
+	    }
+	}
 	if (msg != NULL)
 	{
 	    CP(("No more dependancies for %d.", msg->msgid()));
-	    msg->priority(static_cast<unsigned long>(P_DepFilled));
+	    msg->priority(static_cast < unsigned long >(P_DepFilled));
+
 	    RLOCK(("IrcSvcHandler"));
 	    if (Magick::instance().ircsvchandler != NULL)
 		Magick::instance().ircsvchandler->enqueue(msg);
@@ -1092,18 +1114,17 @@ void mMessage::CheckDependancies(mMessage::type_t type, const mstring& param1, c
     }
 }
 
-void mMessage::DependancySatisfied(mMessage::type_t type, const mstring& param)
+void mMessage::DependancySatisfied(mMessage::type_t type, const mstring & param)
 {
-    FT("mMessage::DependancySatisfied", (static_cast<int>(type), param));
+    FT("mMessage::DependancySatisfied", (static_cast < int >(type), param));
 
     WLOCK(("Dependancies", this));
-    list<triplet<type_t, mstring, bool> >::iterator iter;
-    for (iter=dependancies.begin(); iter != dependancies.end(); iter++)
+    list < triplet < type_t, mstring, bool > >::iterator iter;
+    for (iter = dependancies.begin(); iter != dependancies.end(); iter++)
     {
 	if (iter->first == type && iter->second == param)
 	{
-	    CP(("(%d) Resolved dependancy on %d %s.", msgid_,
-			static_cast<int>(iter->first), iter->second.c_str()));
+	    CP(("(%d) Resolved dependancy on %d %s.", msgid_, static_cast < int >(iter->first), iter->second.c_str()));
 	    iter->third = true;
 	    break;
 	}
@@ -1134,252 +1155,253 @@ int mMessage::call()
 
     CP(("Processing message (%s) %s %s", source_.c_str(), msgtype_.c_str(), params_.c_str()));
 
-    try {
-
-    if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(source_) &&
-	!IsChan(params_.ExtractWord(1, ": ")))
+    try
     {
-	mstring target(params_.ExtractWord(1, ": "));
-	if (target.Contains("@"))
+
+	if ((msgtype_ == "PRIVMSG" || msgtype_ == "NOTICE") && Magick::instance().nickserv.IsLive(source_)
+	    && !IsChan(params_.ExtractWord(1, ": ")))
 	{
-	    target.Truncate(target.Find("@"));
-	    params_.replace(0, params_.find(" ")-1, target);
-	    CP(("Target changed, new params: %s", params_.c_str()));
+	    mstring target(params_.ExtractWord(1, ": "));
+
+	    if (target.Contains("@"))
+	    {
+		target.Truncate(target.Find("@"));
+		params_.replace(0, params_.find(" ") - 1, target);
+		CP(("Target changed, new params: %s", params_.c_str()));
+	    }
+
+	    if (!Magick::instance().nickserv.GetLive(source_)->FloodTrigger())
+	    {
+		// Find out if the target nick is one of the services 'clones'
+		// Pass the message to them if so.
+		// before even that, check if it's script overriden via
+		//     Magick::instance().checkifhandled(servername,command)
+		// if so, Magick::instance().doscripthandle(server,command,data);
+
+		if (Magick::instance().operserv.IsName(target))
+		    Magick::instance().operserv.execute(source_, msgtype_, params_);
+
+		else if (Magick::instance().nickserv.IsName(target) && Magick::instance().nickserv.MSG())
+		    Magick::instance().nickserv.execute(source_, msgtype_, params_);
+
+		else if (Magick::instance().chanserv.IsName(target) && Magick::instance().chanserv.MSG())
+		    Magick::instance().chanserv.execute(source_, msgtype_, params_);
+
+		else if (Magick::instance().memoserv.IsName(target) && Magick::instance().memoserv.MSG())
+		    Magick::instance().memoserv.execute(source_, msgtype_, params_);
+
+		else if (Magick::instance().commserv.IsName(target) && Magick::instance().commserv.MSG())
+		    Magick::instance().commserv.execute(source_, msgtype_, params_);
+
+		else if (Magick::instance().servmsg.IsName(target) && Magick::instance().servmsg.MSG())
+		    Magick::instance().servmsg.execute(source_, msgtype_, params_);
+
+		// else check if it's script handled, might do up a list of script servers
+		// in the magick object to check against, else trash it.
+
+		else		// PRIVMSG or NOTICE to non-service
+		    Magick::instance().server.execute(source_, msgtype_, params_);
+
+	    }
+	    else if (Magick::instance().operserv.Log_Ignore())
+	    {
+		// Check if we're to log ignore messages, and log them here.
+		LOG(LM_DEBUG, "OPERSERV/IGNORED", (source_, msgtype_ + " " + params_));
+	    }
 	}
+	else
+	    Magick::instance().server.execute(source_, msgtype_, params_);
 
-	if (!Magick::instance().nickserv.GetLive(source_)->FloodTrigger())
-	{
-	    // Find out if the target nick is one of the services 'clones'
-	    // Pass the message to them if so.
-	    // before even that, check if it's script overriden via
-	    //     Magick::instance().checkifhandled(servername,command)
-	    // if so, Magick::instance().doscripthandle(server,command,data);
-
-	    if (Magick::instance().operserv.IsName(target))
-		Magick::instance().operserv.execute(source_, msgtype_, params_);
-
-	    else if (Magick::instance().nickserv.IsName(target) && Magick::instance().nickserv.MSG())
-		Magick::instance().nickserv.execute(source_, msgtype_, params_);
-
-	    else if (Magick::instance().chanserv.IsName(target) && Magick::instance().chanserv.MSG())
-		Magick::instance().chanserv.execute(source_, msgtype_, params_);
-
-	    else if (Magick::instance().memoserv.IsName(target) && Magick::instance().memoserv.MSG())
-		Magick::instance().memoserv.execute(source_, msgtype_, params_);
-
-	    else if (Magick::instance().commserv.IsName(target) && Magick::instance().commserv.MSG())
-		Magick::instance().commserv.execute(source_, msgtype_, params_);
-
-	    else if (Magick::instance().servmsg.IsName(target) && Magick::instance().servmsg.MSG())
-		Magick::instance().servmsg.execute(source_, msgtype_, params_);
-
-	    // else check if it's script handled, might do up a list of script servers
-	    // in the magick object to check against, else trash it.
-
-	    else	// PRIVMSG or NOTICE to non-service
-		Magick::instance().server.execute(source_, msgtype_, params_);
-
-	}
-	else if (Magick::instance().operserv.Log_Ignore())
-	{
-	    // Check if we're to log ignore messages, and log them here.
-	    LOG(LM_DEBUG, "OPERSERV/IGNORED", (
-			source_, msgtype_ + " " + params_));
-	}
     }
-    else
-	Magick::instance().server.execute(source_, msgtype_, params_);
-
-    }
-    catch (E_NickServ_Stored &e)
+    catch(E_NickServ_Stored & e)
     {
-	switch(e.where())
+	switch (e.where())
 	{
-	    case E_NickServ_Stored::W_Get:
-		switch (e.type())
+	case E_NickServ_Stored::W_Get:
+	    switch (e.type())
+	    {
+	    case E_NickServ_Stored::T_Invalid:
+	    case E_NickServ_Stored::T_Blank:
+		if (strlen(e.what()) && Magick::instance().nickserv.IsStored(e.what()))
 		{
-		case E_NickServ_Stored::T_Invalid:
-		case E_NickServ_Stored::T_Blank:
-		    if (strlen(e.what()) && Magick::instance().nickserv.IsStored(e.what()))
-		    {
-			Magick::instance().nickserv.RemStored(e.what());
-		    }
-		    break;
-		default:
-		    break;
+		    Magick::instance().nickserv.RemStored(e.what());
 		}
 		break;
 	    default:
 		break;
+	    }
+	    break;
+	default:
+	    break;
 	}
     }
-    catch (E_NickServ_Live &e)
+    catch(E_NickServ_Live & e)
     {
-	switch(e.where())
+	switch (e.where())
 	{
-	    case E_NickServ_Live::W_Get:
-		switch (e.type())
+	case E_NickServ_Live::W_Get:
+	    switch (e.type())
+	    {
+	    case E_NickServ_Live::T_Invalid:
+	    case E_NickServ_Live::T_Blank:
+		if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
 		{
-		case E_NickServ_Live::T_Invalid:
-		case E_NickServ_Live::T_Blank:
-		    if (strlen(e.what()) && Magick::instance().nickserv.IsLiveAll(e.what()))
-		    {
-			Magick::instance().nickserv.RemLive(e.what());
-		    }
-		    break;
-		default:
-		    break;
+		    Magick::instance().nickserv.RemLive(e.what());
 		}
 		break;
 	    default:
 		break;
+	    }
+	    break;
+	default:
+	    break;
 	}
     }
-    catch (E_NickServ_Recovered &e)
+    catch(E_NickServ_Recovered & e)
     {
-	switch(e.where())
+	switch (e.where())
 	{
-	    case E_NickServ_Recovered::W_Get:
-		switch (e.type())
+	case E_NickServ_Recovered::W_Get:
+	    switch (e.type())
+	    {
+	    case E_NickServ_Recovered::T_Invalid:
+	    case E_NickServ_Recovered::T_Blank:
+		if (strlen(e.what()) && Magick::instance().nickserv.IsRecovered(e.what()))
 		{
-		case E_NickServ_Recovered::T_Invalid:
-		case E_NickServ_Recovered::T_Blank:
-		    if (strlen(e.what()) && Magick::instance().nickserv.IsRecovered(e.what()))
-		    {
-			Magick::instance().nickserv.RemRecovered(e.what());
-		    }
-		    break;
-		default:
-		    break;
+		    Magick::instance().nickserv.RemRecovered(e.what());
 		}
 		break;
 	    default:
 		break;
+	    }
+	    break;
+	default:
+	    break;
 	}
     }
-    catch (E_ChanServ_Stored &e)
+    catch(E_ChanServ_Stored & e)
     {
-	switch(e.where())
+	switch (e.where())
 	{
-	    case E_ChanServ_Stored::W_Get:
-		switch (e.type())
+	case E_ChanServ_Stored::W_Get:
+	    switch (e.type())
+	    {
+	    case E_ChanServ_Stored::T_Invalid:
+	    case E_ChanServ_Stored::T_Blank:
+		if (strlen(e.what()) && Magick::instance().chanserv.IsStored(e.what()))
 		{
-		case E_ChanServ_Stored::T_Invalid:
-		case E_ChanServ_Stored::T_Blank:
-		    if (strlen(e.what()) && Magick::instance().chanserv.IsStored(e.what()))
-		    {
-			Magick::instance().chanserv.RemStored(e.what());
-		    }
-		    break;
-		default:
-		    break;
+		    Magick::instance().chanserv.RemStored(e.what());
 		}
 		break;
 	    default:
 		break;
+	    }
+	    break;
+	default:
+	    break;
 	}
     }
-    catch (E_ChanServ_Live &e)
+    catch(E_ChanServ_Live & e)
     {
-	switch(e.where())
+	switch (e.where())
 	{
-	    case E_ChanServ_Live::W_Get:
-		switch (e.type())
+	case E_ChanServ_Live::W_Get:
+	    switch (e.type())
+	    {
+	    case E_ChanServ_Live::T_Invalid:
+	    case E_ChanServ_Live::T_Blank:
+		if (strlen(e.what()) && Magick::instance().chanserv.IsLive(e.what()))
 		{
-		case E_ChanServ_Live::T_Invalid:
-		case E_ChanServ_Live::T_Blank:
-		    if (strlen(e.what()) && Magick::instance().chanserv.IsLive(e.what()))
-		    {
-			Magick::instance().chanserv.RemLive(e.what());
-		    }
-		    break;
-		default:
-		    break;
+		    Magick::instance().chanserv.RemLive(e.what());
 		}
 		break;
 	    default:
 		break;
+	    }
+	    break;
+	default:
+	    break;
 	}
     }
-    catch (E_CommServ_List &e)
+    catch(E_CommServ_List & e)
     {
-	switch(e.where())
+	switch (e.where())
 	{
-	    case E_CommServ_List::W_Get:
-		switch (e.type())
+	case E_CommServ_List::W_Get:
+	    switch (e.type())
+	    {
+	    case E_CommServ_List::T_Invalid:
+	    case E_CommServ_List::T_Blank:
+		if (strlen(e.what()) && Magick::instance().commserv.IsList(e.what()))
 		{
-		case E_CommServ_List::T_Invalid:
-		case E_CommServ_List::T_Blank:
-		    if (strlen(e.what()) && Magick::instance().commserv.IsList(e.what()))
-		    {
-			Magick::instance().commserv.RemList(e.what());
-		    }
-		    break;
-		default:
-		    break;
+		    Magick::instance().commserv.RemList(e.what());
 		}
 		break;
 	    default:
 		break;
+	    }
+	    break;
+	default:
+	    break;
 	}
     }
-    catch (E_Server_List &e)
+    catch(E_Server_List & e)
     {
-	switch(e.where())
+	switch (e.where())
 	{
-	    case E_Server_List::W_Get:
-		switch (e.type())
+	case E_Server_List::W_Get:
+	    switch (e.type())
+	    {
+	    case E_Server_List::T_Invalid:
+	    case E_Server_List::T_Blank:
+		if (strlen(e.what()) && Magick::instance().server.IsList(e.what()))
 		{
-		case E_Server_List::T_Invalid:
-		case E_Server_List::T_Blank:
-		    if (strlen(e.what()) && Magick::instance().server.IsList(e.what()))
-		    {
-			Magick::instance().server.RemList(e.what());
-		    }
-		    break;
-		default:
-		    break;
+		    Magick::instance().server.RemList(e.what());
 		}
 		break;
 	    default:
 		break;
+	    }
+	    break;
+	default:
+	    break;
 	}
     }
-    catch (E_MemoServ_Nick &e)
+    catch(E_MemoServ_Nick & e)
     {
-        e.what();
+	e.what();
     }
-    catch (E_MemoServ_Channel &e)
+    catch(E_MemoServ_Channel & e)
     {
-        e.what();
+	e.what();
     }
-    catch (E_DccMap_Xfers &e)
+    catch(E_DccMap_Xfers & e)
     {
-	switch(e.where())
+	switch (e.where())
 	{
-	    case E_DccMap_Xfers::W_Get:
-		switch (e.type())
+	case E_DccMap_Xfers::W_Get:
+	    switch (e.type())
+	    {
+	    case E_DccMap_Xfers::T_Invalid:
+	    case E_DccMap_Xfers::T_Blank:
+		if (strlen(e.what()) && DccMap::IsXfers(atoi(e.what())))
 		{
-		case E_DccMap_Xfers::T_Invalid:
-		case E_DccMap_Xfers::T_Blank:
-		    if (strlen(e.what()) && DccMap::IsXfers(atoi(e.what())))
-		    {
-			DccMap::RemXfers(atoi(e.what()));
-		    }
-		    break;
-		default:
-		    break;
+		    DccMap::RemXfers(atoi(e.what()));
 		}
 		break;
 	    default:
 		break;
+	    }
+	    break;
+	default:
+	    break;
 	}
     }
 
     RET(0);
 }
 
-bool mBase::signon(const mstring &nickname) const
+bool mBase::signon(const mstring & nickname) const
 {
     FT("mBase::signon", (nickname));
 
@@ -1390,13 +1412,14 @@ bool mBase::signon(const mstring &nickname) const
     else
     {
 	Magick::instance().server.NICK(nickname,
-		(Magick::instance().startup.Ownuser() ? nickname.LowerCase() : Magick::instance().startup.Services_User()),
-		Magick::instance().startup.Services_Host(), Magick::instance().startup.Server_Name(), realname);
+				       (Magick::instance().startup.Ownuser()? nickname.LowerCase() : Magick::instance().startup.
+					Services_User()), Magick::instance().startup.Services_Host(),
+				       Magick::instance().startup.Server_Name(), realname);
 	RET(true);
     }
 }
 
-bool mBase::signoff(const mstring &nickname, const mstring &msg) const
+bool mBase::signoff(const mstring & nickname, const mstring & msg) const
 {
     FT("mBase::signoff", (nickname));
 
@@ -1412,37 +1435,41 @@ bool mBase::signoff(const mstring &nickname, const mstring &msg) const
 }
 
 
-void mBase::privmsgV(const mstring &dest, const char *pszFormat, ...) const
+void mBase::privmsgV(const mstring & dest, const char *pszFormat, ...) const
 {
     FT("mBase::privmsgV", (dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     privmsg(FirstName(), dest, message);
 }
 
-void mBase::privmsgV(const mstring &source, const mstring &dest, const char *pszFormat, ...) const
+void mBase::privmsgV(const mstring & source, const mstring & dest, const char *pszFormat, ...) const
 {
     FT("mBase::privmsgV", (source, dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     privmsg(source, dest, message);
 }
 
-void mBase::privmsg(const mstring &dest, const mstring &message) const
+void mBase::privmsg(const mstring & dest, const mstring & message) const
 {
     FT("mBase::privmsg", (dest, message));
     privmsg(FirstName(), dest, message);
 }
 
-void mBase::privmsg(const mstring &source, const mstring &dest, const mstring &message) const
+void mBase::privmsg(const mstring & source, const mstring & dest, const mstring & message) const
 {
     FT("mBase::privmsg", (source, dest, message));
 
@@ -1451,37 +1478,41 @@ void mBase::privmsg(const mstring &source, const mstring &dest, const mstring &m
 }
 
 
-void mBase::noticeV(const mstring &dest, const char *pszFormat, ...) const
+void mBase::noticeV(const mstring & dest, const char *pszFormat, ...) const
 {
     FT("mBase::noticeV", (dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     notice(FirstName(), dest, message);
 }
 
-void mBase::noticeV(const mstring &source, const mstring &dest, const char *pszFormat, ...) const
+void mBase::noticeV(const mstring & source, const mstring & dest, const char *pszFormat, ...) const
 {
     FT("mBase::noticeV", (source, dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     notice(source, dest, message);
 }
 
-void mBase::notice(const mstring &dest, const mstring &message) const
+void mBase::notice(const mstring & dest, const mstring & message) const
 {
     FT("mBase::notice", (dest, message));
     notice(FirstName(), dest, message);
 }
 
-void mBase::notice(const mstring &source, const mstring &dest, const mstring &message) const
+void mBase::notice(const mstring & source, const mstring & dest, const mstring & message) const
 {
     FT("mBase::notice", (source, dest, message));
 
@@ -1489,47 +1520,51 @@ void mBase::notice(const mstring &source, const mstring &dest, const mstring &me
 	Magick::instance().server.NOTICE(source, dest, message);
 }
 
-void mBase::sendV(const mstring &dest, const char *pszFormat, ...) const
+void mBase::sendV(const mstring & dest, const char *pszFormat, ...) const
 {
     FT("mBase::sendV", (dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     send(FirstName(), dest, message);
 }
 
-void mBase::sendV(const mstring &source, const mstring &dest, const char *pszFormat, ...) const
+void mBase::sendV(const mstring & source, const mstring & dest, const char *pszFormat, ...) const
 {
     FT("mBase::sendV", (source, dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     send(source, dest, message);
 }
 
-void mBase::send(const mstring &dest, const mstring &message) const
+void mBase::send(const mstring & dest, const mstring & message) const
 {
     FT("mBase::send", (dest, message));
     send(FirstName(), dest, message);
 }
 
-void mBase::send(const mstring &source, const mstring &dest, const mstring &message) const
+void mBase::send(const mstring & source, const mstring & dest, const mstring & message) const
 {
     FT("mBase::send", (source, dest, message));
 
     if (IsName(source) && Magick::instance().nickserv.IsLive(dest))
     {
-	if (!Magick::instance().nickserv.LCK_PRIVMSG() &&
-		Magick::instance().nickserv.IsStored(dest) &&
-		Magick::instance().nickserv.GetStored(dest)->IsOnline())
+	if (!Magick::instance().nickserv.LCK_PRIVMSG() && Magick::instance().nickserv.IsStored(dest)
+	    && Magick::instance().nickserv.GetStored(dest)->IsOnline())
 	{
-	    if (Magick::instance().nickserv.GetStored(dest)->PRIVMSG()) {
+	    if (Magick::instance().nickserv.GetStored(dest)->PRIVMSG())
+	    {
 		privmsg(source, dest, message);
 	    }
 	    else
@@ -1552,19 +1587,21 @@ void mBase::send(const mstring &source, const mstring &dest, const mstring &mess
 }
 
 
-void privmsgV(const mstring& source, const mstring &dest, const char *pszFormat, ...)
+void privmsgV(const mstring & source, const mstring & dest, const char *pszFormat, ...)
 {
     FT("privmsgV", (source, dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     privmsg(source, dest, message);
 }
 
-void privmsg(const mstring& source, const mstring &dest, const mstring &message)
+void privmsg(const mstring & source, const mstring & dest, const mstring & message)
 {
     FT("privmsg", (source, dest, message));
 
@@ -1589,24 +1626,25 @@ void privmsg(const mstring& source, const mstring &dest, const mstring &message)
     // scripted hosts ...
     else
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"PRIVMSG", source));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("PRIVMSG", source));
     }
 }
 
-void noticeV(const mstring& source, const mstring &dest, const char *pszFormat, ...)
+void noticeV(const mstring & source, const mstring & dest, const char *pszFormat, ...)
 {
     FT("noticeV", (source, dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     notice(source, dest, message);
 }
 
-void notice(const mstring& source, const mstring &dest, const mstring &message)
+void notice(const mstring & source, const mstring & dest, const mstring & message)
 {
     FT("notice", (source, dest, message));
 
@@ -1631,24 +1669,25 @@ void notice(const mstring& source, const mstring &dest, const mstring &message)
     // scripted hosts ...
     else
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"NOTICE", source));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("NOTICE", source));
     }
 }
 
-void sendV(const mstring& source, const mstring &dest, const char *pszFormat, ...)
+void sendV(const mstring & source, const mstring & dest, const char *pszFormat, ...)
 {
     FT("sendV", (source, dest, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     send(source, dest, message);
 }
 
-void send(const mstring& source, const mstring &dest, const mstring &message)
+void send(const mstring & source, const mstring & dest, const mstring & message)
 {
     FT("send", (source, dest, message));
 
@@ -1673,24 +1712,25 @@ void send(const mstring& source, const mstring &dest, const mstring &message)
     // scripted hosts ...
     else
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"SEND", source));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("SEND", source));
     }
 }
 
-void announceV(const mstring& source, const char *pszFormat, ...)
+void announceV(const mstring & source, const char *pszFormat, ...)
 {
     FT("announceV", (source, pszFormat));
 
     va_list argptr;
+
     va_start(argptr, pszFormat);
     mstring message;
+
     message.FormatV(pszFormat, argptr);
     va_end(argptr);
     announce(source, message);
 }
 
-void announce(const mstring& source, const mstring& message)
+void announce(const mstring & source, const mstring & message)
 {
     FT("announce", (source, message));
     Magick::instance().server.GLOBOPS(source, message);
@@ -1698,21 +1738,20 @@ void announce(const mstring& source, const mstring& message)
 
 // Command Map stuff ...
 
-void CommandMap::AddSystemCommand(const mstring &service, const mstring &command,
-	    const mstring &committees, functor function)
+void CommandMap::AddSystemCommand(const mstring & service, const mstring & command, const mstring & committees,
+				  functor function)
 {
     FT("CommandMap::AddSystemCommand", (service, command, committees));
 
     WLOCK(("CommandMap", "i_system"));
-    i_system[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
-		    (command.UpperCase(),
-		    ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
-		    function));
+    i_system[service.LowerCase()].push_back(triplet < mstring, mstring,
+					    functor > (command.UpperCase(),
+						       ((!committees.empty())? committees.LowerCase() : mstring("all")),
+						       function));
 }
 
 
-void CommandMap::RemSystemCommand(const mstring &service, const mstring &command,
-	    const mstring &committees)
+void CommandMap::RemSystemCommand(const mstring & service, const mstring & command, const mstring & committees)
 {
     FT("CommandMap::RemSystemCommand", (service, command, committees));
 
@@ -1720,12 +1759,10 @@ void CommandMap::RemSystemCommand(const mstring &service, const mstring &command
     if (i_system.find(service.LowerCase()) != i_system.end())
     {
 	cmdtype::iterator iter;
-	for (iter = i_system[service.LowerCase()].begin();
-		iter != i_system[service.LowerCase()].end(); iter++)
+	for (iter = i_system[service.LowerCase()].begin(); iter != i_system[service.LowerCase()].end(); iter++)
 	{
-	    if (iter->first == command.UpperCase() &&
-		    mstring(" " + iter->second + " ").Contains(
-		    mstring(" " + committees.LowerCase() + " ")))
+	    if (iter->first == command.UpperCase()
+		&& mstring(" " + iter->second + " ").Contains(mstring(" " + committees.LowerCase() + " ")))
 	    {
 		i_system[service.LowerCase()].erase(iter);
 		if (!i_system[service.LowerCase()].size())
@@ -1737,21 +1774,19 @@ void CommandMap::RemSystemCommand(const mstring &service, const mstring &command
 }
 
 
-void CommandMap::AddCommand(const mstring &service, const mstring &command,
-	    const mstring &committees, functor function)
+void CommandMap::AddCommand(const mstring & service, const mstring & command, const mstring & committees, functor function)
 {
     FT("CommandMap::AddCommand", (service, command, committees));
 
     WLOCK(("CommandMap", "i_user"));
-    i_user[service.LowerCase()].push_back(triplet<mstring, mstring, functor>
-		    (command.UpperCase(),
-		    ((!committees.empty()) ? committees.LowerCase() : mstring("all")),
-		    function));
+    i_user[service.LowerCase()].push_back(triplet < mstring, mstring,
+					  functor > (command.UpperCase(),
+						     ((!committees.empty())? committees.LowerCase() : mstring("all")),
+						     function));
 }
 
 
-void CommandMap::RemCommand(const mstring &service, const mstring &command,
-	    const mstring &committees)
+void CommandMap::RemCommand(const mstring & service, const mstring & command, const mstring & committees)
 {
     FT("CommandMap::RemCommand", (service, command, committees));
 
@@ -1759,12 +1794,10 @@ void CommandMap::RemCommand(const mstring &service, const mstring &command,
     if (i_user.find(service.LowerCase()) != i_user.end())
     {
 	cmdtype::iterator iter;
-	for (iter = i_user[service.LowerCase()].begin();
-		iter != i_user[service.LowerCase()].end(); iter++)
+	for (iter = i_user[service.LowerCase()].begin(); iter != i_user[service.LowerCase()].end(); iter++)
 	{
-	    if (iter->first == command.UpperCase() &&
-		    mstring(" " + iter->second + " ").Contains(
-		    mstring(" " + committees.LowerCase() + " ")))
+	    if (iter->first == command.UpperCase()
+		&& mstring(" " + iter->second + " ").Contains(mstring(" " + committees.LowerCase() + " ")))
 	    {
 		i_user[service.LowerCase()].erase(iter);
 		if (!i_user[service.LowerCase()].size())
@@ -1776,13 +1809,14 @@ void CommandMap::RemCommand(const mstring &service, const mstring &command,
 }
 
 
-pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &service,
-	    const mstring &command, const mstring &user) const
+pair < bool, CommandMap::functor > CommandMap::GetUserCommand(const mstring & service, const mstring & command,
+							      const mstring & user) const
 {
     FT("CommandMap::GetUserCommand", (service, command, user));
     unsigned int i;
-    pair<bool, functor> retval = pair<bool, functor>(false, NULL);
-	cmdtype::const_iterator iter;
+
+    pair < bool, functor > retval = pair < bool, functor > (false, NULL);
+    cmdtype::const_iterator iter;
     mstring type, list;
 
     // IF i_system exists
@@ -1810,43 +1844,43 @@ pair<bool, CommandMap::functor> CommandMap::GetUserCommand(const mstring &servic
     //  scripted stuff ...
 
     if (type.empty())
-	NRET(pair<bool_functor>,retval);
+	NRET(pair < bool_functor >, retval);
 
     RLOCK(("CommandMap", "i_user"));
     cmdmap::const_iterator mi = i_user.find(type);
     if (mi != i_user.end())
     {
-	for (iter=mi->second.begin(); iter!=mi->second.end(); iter++)
+	for (iter = mi->second.begin(); iter != mi->second.end(); iter++)
 	{
 	    if (command.Matches(iter->first, true))
 	    {
-		for (i=1; i <= iter->second.WordCount(" "); i++)
+		for (i = 1; i <= iter->second.WordCount(" "); i++)
 		{
 		    list = iter->second.ExtractWord(i, " ").UpperCase();
 		    retval.second = iter->third;
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
-		    if (Magick::instance().commserv.IsList(list)
-			&& Magick::instance().commserv.GetList(list)->IsOn(user))
+		    if (Magick::instance().commserv.IsList(list) && Magick::instance().commserv.GetList(list)->IsOn(user))
 		    {
 			retval.first = true;
-			NRET(pair<bool_functor>,retval);
+			NRET(pair < bool_functor >, retval);
 		    }
 		}
 	    }
 	}
     }
-    NRET(pair<bool_functor>,retval);
+    NRET(pair < bool_functor >, retval);
 }
 
-pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &service,
-	    const mstring &command, const mstring &user) const
+pair < bool, CommandMap::functor > CommandMap::GetSystemCommand(const mstring & service, const mstring & command,
+								const mstring & user) const
 {
     FT("CommandMap::GetSystemCommand", (service, command, user));
     unsigned int i;
-    pair<bool, functor> retval = pair<bool, functor>(false, NULL);
-	cmdtype::const_iterator iter;
+
+    pair < bool, functor > retval = pair < bool, functor > (false, NULL);
+    cmdtype::const_iterator iter;
     mstring type, list;
 
     // IF i_system exists
@@ -1874,48 +1908,47 @@ pair<bool, CommandMap::functor> CommandMap::GetSystemCommand(const mstring &serv
     //  scripted stuff ...
 
     if (type.empty())
-	NRET(pair<bool_functor>,retval);
+	NRET(pair < bool_functor >, retval);
 
     RLOCK(("CommandMap", "i_system"));
     cmdmap::const_iterator mi = i_system.find(type);
     if (mi != i_system.end())
     {
-	for (iter=mi->second.begin(); iter!=mi->second.end(); iter++)
+	for (iter = mi->second.begin(); iter != mi->second.end(); iter++)
 	{
 	    if (command.Matches(iter->first, true))
 	    {
-		for (i=1; i <= iter->second.WordCount(" "); i++)
+		for (i = 1; i <= iter->second.WordCount(" "); i++)
 		{
 		    list = iter->second.ExtractWord(i, " ").UpperCase();
 		    retval.second = iter->third;
 		    // If its a command for "ALL" users, OR
 		    // its a valid committee AND a valid (reg'd + online) user
 		    //       AND that user is on the committee
-		    if (Magick::instance().commserv.IsList(list)
-			 && Magick::instance().commserv.GetList(list)->IsOn(user))
+		    if (Magick::instance().commserv.IsList(list) && Magick::instance().commserv.GetList(list)->IsOn(user))
 		    {
 			retval.first = true;
-			NRET(pair<bool_functor>,retval);
+			NRET(pair < bool_functor >, retval);
 		    }
 		}
 	    }
 	}
     }
-    NRET(pair<bool_functor>,retval);
+    NRET(pair < bool_functor >, retval);
 }
 
-bool CommandMap::DoCommand(const mstring &mynick, const mstring &user,
-	    const mstring &command, const mstring &params) const
+bool CommandMap::DoCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
 {
     FT("CommandMap::DoCommand", (mynick, user, command, params));
 
     bool cmdfound = false;
-    pair<bool,functor> cmd = GetUserCommand(mynick, command, user);
+
+    pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
     if (cmd.second != NULL)
     {
 	if (cmd.first)
 	{
-	    (*cmd.second)(mynick, user, params);
+	    (*cmd.second) (mynick, user, params);
 	    RET(true);
 	}
 	cmdfound = true;
@@ -1923,352 +1956,328 @@ bool CommandMap::DoCommand(const mstring &mynick, const mstring &user,
     else if (cmd.first)
     {
 	if (command.WordCount(" ") < 2)
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
-		command.UpperCase(), mynick));
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (command.UpperCase(), mynick));
 	else
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
-		command.UpperCase(), mynick,
-		command.Before(" ").UpperCase()));
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
 	RET(false);
     }
-    
+
     cmd = GetSystemCommand(mynick, command, user);
     if (cmd.second != NULL || cmdfound)
     {
 	if (cmd.first)
 	{
-	    (*cmd.second)(mynick, user, params);
+	    (*cmd.second) (mynick, user, params);
 	    RET(true);
 	}
 	else
 	{
 	    if (command.WordCount(" ") < 2)
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (
-			command.UpperCase(), mynick));
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (command.UpperCase(), mynick));
 	    else
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (
-			command.UpperCase(), mynick,
-			command.Before(" ").UpperCase()));
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
 	}
     }
     else
     {
 	if (command.WordCount(" ") < 2)
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
-		command.UpperCase(), mynick));
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (command.UpperCase(), mynick));
 	else
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
-		command.UpperCase(), mynick,
-		command.Before(" ").UpperCase()));
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
     }
     RET(false);
 }
 
 
-bool CommandMap::DoUserCommand(const mstring &mynick, const mstring &user,
-	    const mstring &command, const mstring &params) const
+bool CommandMap::DoUserCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
 {
     FT("CommandMap::DoUserCommand", (mynick, user, command, params));
 
-    pair<bool,functor> cmd = GetUserCommand(mynick, command, user);
+    pair < bool, functor > cmd = GetUserCommand(mynick, command, user);
     if (cmd.second != NULL)
     {
 	if (cmd.first)
 	{
-	    (*cmd.second)(mynick, user, params);
+	    (*cmd.second) (mynick, user, params);
 	    RET(true);
 	}
 	else
 	{
 	    if (command.WordCount(" ") < 2)
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (
-			command.UpperCase(), mynick));
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (command.UpperCase(), mynick));
 	    else
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (
-			command.UpperCase(), mynick,
-			command.Before(" ").UpperCase()));
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
 	}
     }
     else
     {
 	if (command.WordCount(" ") < 2)
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
-		command.UpperCase(), mynick));
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (command.UpperCase(), mynick));
 	else
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
-		command.UpperCase(), mynick,
-		command.Before(" ").UpperCase()));
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
     }
     RET(false);
 }
 
 
-bool CommandMap::DoSystemCommand(const mstring &mynick, const mstring &user,
-	    const mstring &command, const mstring &params) const
+bool CommandMap::DoSystemCommand(const mstring & mynick, const mstring & user, const mstring & command, const mstring & params) const
 {
     FT("CommandMap::DoSystemCommand", (mynick, user, command, params));
 
-    pair<bool,functor> cmd = GetSystemCommand(mynick, command, user);
+    pair < bool, functor > cmd = GetSystemCommand(mynick, command, user);
     if (cmd.second != NULL)
     {
 	if (cmd.first)
 	{
-	    (*cmd.second)(mynick, user, params);
+	    (*cmd.second) (mynick, user, params);
 	    RET(true);
 	}
 	else
 	{
 	    if (command.WordCount(" ") < 2)
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (
-			command.UpperCase(), mynick));
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_COMMAND", (command.UpperCase(), mynick));
 	    else
-		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (
-			command.UpperCase(), mynick,
-			command.Before(" ").UpperCase()));
+		SEND(mynick, user, "ERR_SYNTAX/ACCESS_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
 	}
     }
     else
     {
 	if (command.WordCount(" ") < 2)
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (
-		command.UpperCase(), mynick));
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_COMMAND", (command.UpperCase(), mynick));
 	else
-	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (
-		command.UpperCase(), mynick,
-		command.Before(" ").UpperCase()));
+	    SEND(mynick, user, "ERR_SYNTAX/UNKNOWN_OPTION", (command.UpperCase(), mynick, command.Before(" ").UpperCase()));
     }
     RET(false);
 }
 
 
-void do_1_2param(const mstring &mynick, const mstring &source, const mstring &params)
+void do_1_2param(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_1_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.Before(" ", 2));
+
     command.MakeUpper();
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 
 }
 
-void do_1_3param(const mstring &mynick, const mstring &source, const mstring &params)
+void do_1_3param(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_1_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.Before(" ") + " " + params.ExtractWord(3, " "));
+
     command.MakeUpper();
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 }
 
-void do_1_4param(const mstring &mynick, const mstring &source, const mstring &params)
+void do_1_4param(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_1_4param", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.Before(" ") + " " + params.ExtractWord(4, " "));
+
     command.MakeUpper();
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, params))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 }
 
-void do_1_2paramswap(const mstring &mynick, const mstring &source, const mstring &params)
+void do_1_2paramswap(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_1_2paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(2, " ") + " " + params.Before(" "));
+
     command.MakeUpper();
 
     mstring data(command);
+
     if (params.WordCount(" ") > 2)
 	data += " " + params.After(" ", 2);
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 
 }
 
-void do_1_3paramswap(const mstring &mynick, const mstring &source, const mstring &params)
+void do_1_3paramswap(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_1_3paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(3, " ") + " " + params.Before(" "));
+
     command.MakeUpper();
 
-    mstring data(params.ExtractWord(3, " ") + " " +
-	params.ExtractWord(2, " ") + " " + params.Before(" "));
+    mstring data(params.ExtractWord(3, " ") + " " + params.ExtractWord(2, " ") + " " + params.Before(" "));
+
     if (params.WordCount(" ") > 3)
 	data += " " + params.After(" ", 3);
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 }
 
-void do_1_4paramswap(const mstring &mynick, const mstring &source, const mstring &params)
+void do_1_4paramswap(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_1_3paramswap", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(4, " ") + " " + params.Before(" "));
+
     command.MakeUpper();
 
-    mstring data(params.ExtractWord(4, " ") + " " +
-	params.ExtractWord(2, " ") + params.ExtractWord(3, " ") +
-	" " + params.Before(" "));
+    mstring data(params.ExtractWord(4, " ") + " " + params.ExtractWord(2, " ") + params.ExtractWord(3, " ") + " " +
+		 params.Before(" "));
     if (params.WordCount(" ") > 4)
 	data += " " + params.After(" ", 4);
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 }
 
-void do_2param(const mstring &mynick, const mstring &source, const mstring &params)
+void do_2param(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_2param", (mynick, source, params));
     if (params.WordCount(" ") < 2)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(2, " "));
+
     command.MakeUpper();
 
     mstring data(command + " " + params.Before(" "));
+
     if (params.WordCount(" ") > 2)
 	data += " " + params.After(" ", 2);
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 
 }
 
-void do_3param(const mstring &mynick, const mstring &source, const mstring &params)
+void do_3param(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_3param", (mynick, source, params));
     if (params.WordCount(" ") < 3)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(3, " "));
+
     command.MakeUpper();
 
-    mstring data(params.ExtractWord(3, " ") + " " +
-	params.ExtractWord(2, " ") + " " + params.Before(" "));
+    mstring data(params.ExtractWord(3, " ") + " " + params.ExtractWord(2, " ") + " " + params.Before(" "));
+
     if (params.WordCount(" ") > 3)
 	data += " " + params.After(" ", 3);
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 }
 
-void do_4param(const mstring &mynick, const mstring &source, const mstring &params)
+void do_4param(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("do_3param", (mynick, source, params));
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-			params.Before(" ").UpperCase(), mynick,
-			params.Before(" ").UpperCase()));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS",
+	     (params.Before(" ").UpperCase(), mynick, params.Before(" ").UpperCase()));
 	return;
     }
     mstring command(params.ExtractWord(4, " "));
+
     command.MakeUpper();
 
-    mstring data(params.ExtractWord(4, " ") + " " +
-	params.ExtractWord(2, " ") + " " + params.ExtractWord(3, " ") +
-	" " + params.Before(" "));
+    mstring data(params.ExtractWord(4, " ") + " " + params.ExtractWord(2, " ") + " " + params.ExtractWord(3, " ") + " " +
+		 params.Before(" "));
     if (params.WordCount(" ") > 4)
 	data += " " + params.After(" ", 4);
 
     if (!Magick::instance().commands.DoCommand(mynick, source, command, data))
     {
 	// we're not worthy...
-//	SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
-//			command, mynick,
-//			command.Before(" ")));
+//      SEND(mynick, source, "ERR_SYNTAX/UNKNOWN_OPTION", (
+//                      command, mynick,
+//                      command.Before(" ")));
     }
 }
-

@@ -1,3 +1,4 @@
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -11,6 +12,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_what_c_ ## x () { return y; }
 RCSID(what_c, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -20,6 +22,9 @@ RCSID(what_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2002/01/12 14:42:07  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.7  2001/11/03 21:02:21  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -47,7 +52,7 @@ int main(int argc, char **argv)
     int i, sequence;
     FILE *in;
 
-    for (i=1; i<argc; i++)
+    for (i = 1; i < argc; i++)
     {
 	if ((in = fopen(argv[i], "r")) == NULL)
 	{
@@ -57,15 +62,13 @@ int main(int argc, char **argv)
 	{
 	    printf("%s:\n", argv[i]);
 	    sequence = 0;
-	    for (c=fgetc(in); !feof(in); c=fgetc(in))
+	    for (c = fgetc(in); !feof(in); c = fgetc(in))
 	    {
 		if (c >= 32 && c <= 126 && sequence == 4)
 		{
 		    printf("%c", c);
 		}
-		else if ((c == '@' && sequence == 0) ||
-		    (c == '(' && sequence == 1) ||
-		    (c == '#' && sequence == 2))
+		else if ((c == '@' && sequence == 0) || (c == '(' && sequence == 1) || (c == '#' && sequence == 2))
 		{
 		    sequence++;
 		}

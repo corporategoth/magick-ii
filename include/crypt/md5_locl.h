@@ -1,4 +1,6 @@
+
 /* crypto/md5/md5_locl.h */
+
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -136,6 +138,7 @@
 
 /* A nice byte order reversal from Wei Dai <weidai@eskimo.com> */
 #if defined(WIN32)
+
 /* 5 instructions with rotate instruction, else 9 */
 #define Endian_Reverse32(a) \
 	{ \
@@ -143,6 +146,7 @@
 	(a)=((ROTATE(l,8)&0x00FF00FF)|(ROTATE(l,24)&0xFF00FF00)); \
 	}
 #else
+
 /* 6 instructions with rotate instruction, else 8 */
 #define Endian_Reverse32(a) \
 	{ \
@@ -151,6 +155,7 @@
 	(a)=ROTATE(l,16L); \
 	}
 #endif
+
 /*
 #define	F(x,y,z)	(((x) & (y))  |  ((~(x)) & (z)))
 #define	G(x,y,z)	(((x) & (z))  |  ((y) & (~(z))))

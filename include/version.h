@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _VERSION_H
 #include "pch.h"
 RCSID(version_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(version_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.130  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.129  2001/12/16 00:07:42  prez
 ** Updated configure.in to be more solaris friendly.
 **
@@ -134,7 +139,7 @@ RCSID(version_h, "@(#) $Id$");
 
 
 #ifdef _MSC_VER
-  #pragma warning(disable:4786)
+#pragma warning(disable:4786)
 #endif
 
 #include "mstring.h"
@@ -166,73 +171,73 @@ const int BUILD_NUMBER = 1;
  * for various reasons, but if you need more than nine
  * patches on the original source, you should re-think.
  */
-const mstring FULLNAME			= "Magick IRC Services";
-const mstring SLOGAN			= "Power to the PEOPLE!";
-const mstring EMAIL			= "general@magick.tm";
-const mstring HOMEPAGE			= "http://www.magick.tm";
-const mstring DOWNLOAD			= "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/beta";
-const mstring RELEASE			= "b12";
-const mstring PATCH1			= "";
-const mstring PATCH2			= "";
-const mstring PATCH3			= "";
-const mstring PATCH4			= "";
-const mstring PATCH5			= "";
-const mstring PATCH6			= "";
-const mstring PATCH7			= "";
-const mstring PATCH8			= "";
-const mstring PATCH9			= "";
+const mstring FULLNAME = "Magick IRC Services";
+const mstring SLOGAN = "Power to the PEOPLE!";
+const mstring EMAIL = "general@magick.tm";
+const mstring HOMEPAGE = "http://www.magick.tm";
+const mstring DOWNLOAD = "ftp://ftp.magick.tm/pub/magick.tm/Magick-II/beta";
+const mstring RELEASE = "b12";
+const mstring PATCH1 = "";
+const mstring PATCH2 = "";
+const mstring PATCH3 = "";
+const mstring PATCH4 = "";
+const mstring PATCH5 = "";
+const mstring PATCH6 = "";
+const mstring PATCH7 = "";
+const mstring PATCH8 = "";
+const mstring PATCH9 = "";
 
 // This gets sent with /msg HelpServ CREDITS
 const mstring credits[] = {
-FULLNAME+" - "+SLOGAN,
-"  (c) 1997-2001 Preston Elder <prez@magick.tm>",
-"  (c) 1998-2001 William King <ungod@magick.tm>",
-"",
-mstring(PACKAGE)+" is dedicated to the memory of PreZ's beloved",
-"sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",
-"Ungod's brother Edward Kevin King (Aug 1982 - Nov 1997).",
-"",
-"The "+mstring(PACKAGE)+" home page can be found at:",
-"    "+HOMEPAGE+"",
-"",
-mstring(PACKAGE)+" is freely downloadable from:",
-"    "+DOWNLOAD+"",
-"",
-"The "+mstring(PACKAGE)+" public mailing list is "+EMAIL+".",
-"To subscribe, email majordomo@magick.tm with 'subscribe",
-mstring(PACKAGE)+"' (no quotes) in the text of the message.",
-"",
-"Please type /MSG %s CONTRIB for full credits (flood).",
-"---EOM---"
+    FULLNAME + " - " + SLOGAN,
+    "  (c) 1997-2001 Preston Elder <prez@magick.tm>",
+    "  (c) 1998-2001 William King <ungod@magick.tm>",
+    "",
+    mstring(PACKAGE) + " is dedicated to the memory of PreZ's beloved",
+    "sister, Stacey Louise Elder (Jan 1975 - Feb 1998) and",
+    "Ungod's brother Edward Kevin King (Aug 1982 - Nov 1997).",
+    "",
+    "The " + mstring(PACKAGE) + " home page can be found at:",
+    "    " + HOMEPAGE + "",
+    "",
+    mstring(PACKAGE) + " is freely downloadable from:",
+    "    " + DOWNLOAD + "",
+    "",
+    "The " + mstring(PACKAGE) + " public mailing list is " + EMAIL + ".",
+    "To subscribe, email majordomo@magick.tm with 'subscribe",
+    mstring(PACKAGE) + "' (no quotes) in the text of the message.",
+    "",
+    "Please type /MSG %s CONTRIB for full credits (flood).",
+    "---EOM---"
 };
 
 // This gets sent with /msg HelpServ CONTRIB
 // or a /INFO request on the magick server.
 const mstring contrib[] = {
-FULLNAME+" - "+SLOGAN,
-"",
-"Programmers: ",
-"    PreZ           Preston A. Elder        prez@magick.tm",
-"    Ungod          William King            ungod@magick.tm",
-"",
-"Design Team: ",
-"    Lord_Striker   Patrick Prins           striker@magick.tm",
-"",
-"Special Thanks To:",
-"    Coca Cola Amatil     Life support ... *bleep, bleep*",
-"    Nescafe Blend 43     See above (really, any kind of caffeine!)",
-"    Tschaicovski         If you don't understand ... you never will.",
-"",
-"Also Thanks To:",
-"    Kelly Hill, Emma Ellison, Marieke Bermon, Matt Heckaman",
-"",
-"Library Credits: ",
-"    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
-"    cint           http://root.cern.ch/root/Cint.html",
-"    openssl        http://www.openssl.org (blowfish + md5)",
-"    expat          http://www.jclark.com/xml/expat.html",
-"    sxp            http://www.sourceforge.net/project/?group_id=2280",
-"---EOM---"
+    FULLNAME + " - " + SLOGAN,
+    "",
+    "Programmers: ",
+    "    PreZ           Preston A. Elder        prez@magick.tm",
+    "    Ungod          William King            ungod@magick.tm",
+    "",
+    "Design Team: ",
+    "    Lord_Striker   Patrick Prins           striker@magick.tm",
+    "",
+    "Special Thanks To:",
+    "    Coca Cola Amatil     Life support ... *bleep, bleep*",
+    "    Nescafe Blend 43     See above (really, any kind of caffeine!)",
+    "    Tschaicovski         If you don't understand ... you never will.",
+    "",
+    "Also Thanks To:",
+    "    Kelly Hill, Emma Ellison, Marieke Bermon, Matt Heckaman",
+    "",
+    "Library Credits: ",
+    "    ACE            http://www.cs.wustl.edu/~schmidt/ACE.html",
+    "    cint           http://root.cern.ch/root/Cint.html",
+    "    openssl        http://www.openssl.org (blowfish + md5)",
+    "    expat          http://www.jclark.com/xml/expat.html",
+    "    sxp            http://www.sourceforge.net/project/?group_id=2280",
+    "---EOM---"
 };
 
 #endif

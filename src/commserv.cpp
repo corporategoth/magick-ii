@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-  #pragma hdrstop
+#pragma hdrstop
 #else
-  #pragma implementation
+#pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -18,6 +18,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_commserv_cpp_ ## x () { return y; }
 RCSID(commserv_cpp, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -27,6 +28,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.112  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.111  2002/01/10 19:30:38  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -350,17 +354,15 @@ void Committee_t::defaults()
     lock.Secure = false;
 }
 
-Committee_t::Committee_t()
-	: i_RegTime(mDateTime::CurrentDateTime())
+Committee_t::Committee_t():i_RegTime(mDateTime::CurrentDateTime())
 {
     NFT("Committee_t::Committee_t");
     defaults();
     DumpE();
 }
 
-Committee_t::Committee_t(const mstring& name, const mstring& head, const mstring& description)
-	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
-	  i_Head(head.LowerCase()), i_Description(description)
+Committee_t::Committee_t(const mstring & name, const mstring & head, const mstring & description):i_Name(name.UpperCase()),
+i_RegTime(mDateTime::CurrentDateTime()), i_Head(head.LowerCase()), i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, head, description));
     defaults();
@@ -368,9 +370,8 @@ Committee_t::Committee_t(const mstring& name, const mstring& head, const mstring
 }
 
 
-Committee_t::Committee_t(const mstring& name, const Committee_t& head, const mstring& description)
-	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
-	  i_HeadCom(head.Name()), i_Description(description)
+Committee_t::Committee_t(const mstring & name, const Committee_t & head, const mstring & description):i_Name(name.UpperCase()),
+i_RegTime(mDateTime::CurrentDateTime()), i_HeadCom(head.Name()), i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, "(Committee_t *) head", description));
     defaults();
@@ -378,9 +379,8 @@ Committee_t::Committee_t(const mstring& name, const Committee_t& head, const mst
 }
 
 
-Committee_t::Committee_t(const mstring& name, const mstring& description)
-	: i_Name(name.UpperCase()), i_RegTime(mDateTime::CurrentDateTime()),
-	  i_Description(description)
+Committee_t::Committee_t(const mstring & name, const mstring & description):i_Name(name.UpperCase()),
+i_RegTime(mDateTime::CurrentDateTime()), i_Description(description)
 {
     FT("Committee_t::Committee_t", (name, description));
     defaults();
@@ -388,7 +388,7 @@ Committee_t::Committee_t(const mstring& name, const mstring& description)
 }
 
 
-Committee_t &Committee_t::operator=(const Committee_t &in)
+Committee_t & Committee_t::operator=(const Committee_t & in)
 {
     FT("Committee_t::operator=", ("(const Committee_t &) in"));
 
@@ -409,9 +409,9 @@ Committee_t &Committee_t::operator=(const Committee_t &in)
     i_Members = in.i_Members;
     i_Messages = in.i_Messages;
 
-    map<mstring, mstring>::const_iterator j;
+    map < mstring, mstring >::const_iterator j;
     i_UserDef.clear();
-    for(j=in.i_UserDef.begin();j!=in.i_UserDef.end();j++)
+    for (j = in.i_UserDef.begin(); j != in.i_UserDef.end(); j++)
 	i_UserDef.insert(*j);
     NRET(Committee_t &, *this);
 }
@@ -428,15 +428,17 @@ void Committee_t::Drop()
     // Now we go for our channels ...
     ChanServ::stored_t::iterator iter;
     mstring entry = "@" + i_Name;
-    { RLOCK(("ChanServ", "stored"));
-    for (iter = Magick::instance().chanserv.StoredBegin();
-	    iter != Magick::instance().chanserv.StoredEnd(); iter++)
+
     {
-	map_entry<Chan_Stored_t> cstored(iter->second);
-	MLOCK(("ChanServ", "stored", iter->first, "Access"));
-	if (cstored->Access_find(entry))
-	    cstored->Access_erase();
-    }}
+	RLOCK(("ChanServ", "stored"));
+	for (iter = Magick::instance().chanserv.StoredBegin(); iter != Magick::instance().chanserv.StoredEnd(); iter++)
+	{
+	    map_entry < Chan_Stored_t > cstored(iter->second);
+	    MLOCK(("ChanServ", "stored", iter->first, "Access"));
+	    if (cstored->Access_find(entry))
+		cstored->Access_erase();
+	}
+    }
 }
 
 mstring Committee_t::HeadCom() const
@@ -453,38 +455,40 @@ mstring Committee_t::Head() const
     RET(i_Head);
 }
 
-void Committee_t::Head(const mstring& newhead)
+void Committee_t::Head(const mstring & newhead)
 {
     FT("Committee_t::Head", (newhead));
 
     WLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
     MCB(i_Head);
-    { WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
-    if (!i_HeadCom.empty())
     {
-	CB(1, i_HeadCom);
-	i_HeadCom.erase();
-	CE(1, i_HeadCom);
-    }}
+	WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+	if (!i_HeadCom.empty())
+	{
+	    CB(1, i_HeadCom);
+	    i_HeadCom.erase();
+	    CE(1, i_HeadCom);
+	}
+    }
 
     i_Head = newhead.LowerCase();
     MCE(i_Head);
 }
 
-bool Committee_t::insert(const mstring& entry, const mstring& nick,
-	const mDateTime& modtime)
+bool Committee_t::insert(const mstring & entry, const mstring & nick, const mDateTime & modtime)
 {
     FT("Committee_t::insert", (entry, nick, modtime));
 
     entlist_ui iter;
+
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     if (!i_Members.empty())
-	for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
+	for (iter = i_Members.begin(); iter != i_Members.end(); iter++)
 	    if (iter->Entry().IsSameAs(entry, true))
 		break;
     if (i_Members.empty() || iter == i_Members.end())
     {
-	pair<entlist_ui, bool> tmp;
+	pair < entlist_ui, bool > tmp;
 	MCB(i_Members.size());
 	tmp = i_Members.insert(entlist_t(entry, nick, modtime));
 	MCE(i_Members.size());
@@ -520,16 +524,17 @@ bool Committee_t::erase()
     }
 }
 
-bool Committee_t::find(const mstring& entry)
+bool Committee_t::find(const mstring & entry)
 {
     FT("Committee_t::find", (entry));
 
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
     entlist_ui iter = i_Members.end();
+
     if (!i_Members.empty())
     {
 	// FIND exact nickname
-	for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
+	for (iter = i_Members.begin(); iter != i_Members.end(); iter++)
 	    if (iter->Entry().IsSameAs(entry, true))
 		break;
     }
@@ -547,12 +552,11 @@ bool Committee_t::find(const mstring& entry)
 }
 
 
-bool Committee_t::IsIn(const mstring& nick) const
+bool Committee_t::IsIn(const mstring & nick) const
 {
     FT("Committee_t::IsIn", (nick));
 
-    if (i_Name == Magick::instance().commserv.ALL_Name() &&
-	Magick::instance().nickserv.IsLive(nick))
+    if (i_Name == Magick::instance().commserv.ALL_Name() && Magick::instance().nickserv.IsLive(nick))
     {
 	RET(true);
     }
@@ -568,32 +572,41 @@ bool Committee_t::IsIn(const mstring& nick) const
     }
 
     mstring target = Magick::instance().nickserv.GetStored(nick)->Host();
+
     if (target.empty())
 	target = nick.LowerCase();
 
     // We're a HEAD, in by DEFAULT
-    { RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
-    if (!i_HeadCom.empty() && Magick::instance().commserv.IsList(i_HeadCom) &&
-	Magick::instance().commserv.GetList(i_HeadCom)->IsIn(target))
     {
-	RET(true);
-    }}
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"));
+	if (!i_HeadCom.empty() && Magick::instance().commserv.IsList(i_HeadCom)
+	    && Magick::instance().commserv.GetList(i_HeadCom)->IsIn(target))
+	{
+	    RET(true);
+	}
+    }
 
-    { RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
-    if (!i_Head.empty() && target.IsSameAs(i_Head, true))
     {
-	RET(true);
-    }}
+	RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"));
+	if (!i_Head.empty() && target.IsSameAs(i_Head, true))
+	{
+	    RET(true);
+	}
+    }
 
-    vector<mstring> members;
+    vector < mstring > members;
     unsigned int i;
-    { MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
-    entlist_cui iter;
-    for (iter=i_Members.begin(); iter!=i_Members.end(); iter++)
+
     {
-	members.push_back(iter->Entry().LowerCase());
-    }}
-    for (i=0; i<members.size(); i++)
+	MLOCK(("CommServ", "list", i_Name.UpperCase(), "member"));
+	entlist_cui iter;
+
+	for (iter = i_Members.begin(); iter != i_Members.end(); iter++)
+	{
+	    members.push_back(iter->Entry().LowerCase());
+	}
+    }
+    for (i = 0; i < members.size(); i++)
     {
 	if (target.IsSameAs(members[i], true))
 	{
@@ -606,10 +619,11 @@ bool Committee_t::IsIn(const mstring& nick) const
     if (i_Name == Magick::instance().commserv.SADMIN_Name())
     {
 	unsigned int j;
-	map_entry<Nick_Stored_t> nstored = Magick::instance().nickserv.GetStored(target);
-	for (i=0; i<nstored->Siblings(); i++)
+
+	map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(target);
+	for (i = 0; i < nstored->Siblings(); i++)
 	{
-	    for (j=0; j<members.size(); j++)
+	    for (j = 0; j < members.size(); j++)
 	    {
 		if (nstored->Sibling(i).IsSameAs(members[j], true))
 		{
@@ -623,7 +637,7 @@ bool Committee_t::IsIn(const mstring& nick) const
 }
 
 
-bool Committee_t::IsOn(const mstring& nick) const
+bool Committee_t::IsOn(const mstring & nick) const
 {
     FT("Committee_t::IsOn", (nick));
 
@@ -640,15 +654,11 @@ bool Committee_t::IsOn(const mstring& nick) const
 
     // The committee we're looking at has ModeO set,
     // but user doesnt have umode +o.
-    if (((i_Name.IsSameAs(Magick::instance().commserv.SADMIN_Name(), true) &&
-	Magick::instance().commserv.SADMIN_ModeO()) ||
-	(i_Name.IsSameAs(Magick::instance().commserv.SOP_Name(), true) &&
-	Magick::instance().commserv.SOP_ModeO()) ||
-	(i_Name.IsSameAs(Magick::instance().commserv.ADMIN_Name(), true) &&
-	Magick::instance().commserv.ADMIN_ModeO()) ||
-	(i_Name.IsSameAs(Magick::instance().commserv.OPER_Name(), true) &&
-	Magick::instance().commserv.OPER_ModeO())) &&
-	!Magick::instance().nickserv.GetLive(nick)->HasMode("o"))
+    if (((i_Name.IsSameAs(Magick::instance().commserv.SADMIN_Name(), true) && Magick::instance().commserv.SADMIN_ModeO())
+	 || (i_Name.IsSameAs(Magick::instance().commserv.SOP_Name(), true) && Magick::instance().commserv.SOP_ModeO())
+	 || (i_Name.IsSameAs(Magick::instance().commserv.ADMIN_Name(), true) && Magick::instance().commserv.ADMIN_ModeO())
+	 || (i_Name.IsSameAs(Magick::instance().commserv.OPER_Name(), true) && Magick::instance().commserv.OPER_ModeO()))
+	&& !Magick::instance().nickserv.GetLive(nick)->HasMode("o"))
     {
 	RET(false);
     }
@@ -656,11 +666,10 @@ bool Committee_t::IsOn(const mstring& nick) const
     // This returns wether we're CURRENTLY recognized
     // as 'in' the committee (secure, and nick secure
     // taken into account).
-    if (IsIn(nick) && Magick::instance().nickserv.IsStored(nick) &&
-	Magick::instance().nickserv.GetStored(nick)->IsOnline())
+    if (IsIn(nick) && Magick::instance().nickserv.IsStored(nick) && Magick::instance().nickserv.GetStored(nick)->IsOnline())
     {
-	if_RLOCK(("CommServ", "list", i_Name.UpperCase(), "setting.Secure"),
-		!setting.Secure || Magick::instance().nickserv.GetLive(nick)->IsIdentified())
+	if_RLOCK (("CommServ", "list", i_Name.UpperCase(), "setting.Secure"), !setting.Secure
+		  || Magick::instance().nickserv.GetLive(nick)->IsIdentified())
 	{
 	    RET(true);
 	}
@@ -669,19 +678,18 @@ bool Committee_t::IsOn(const mstring& nick) const
 }
 
 
-bool Committee_t::IsHead(const mstring& nick) const
+bool Committee_t::IsHead(const mstring & nick) const
 {
     FT("Committee_t::IsHead", (nick));
 
-    if_RLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Head"),
-	!i_Head.empty() && i_Head.IsSameAs(nick, true))
+    if_RLOCK (("CommServ", "list", i_Name.UpperCase(), "i_Head"), !i_Head.empty() && i_Head.IsSameAs(nick, true))
     {
 	RET(true);
     }
     else
     {
-	if_RLOCK2(("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"),
-	    !i_HeadCom.empty() && Magick::instance().commserv.IsList(i_HeadCom))
+	if_RLOCK2 (("CommServ", "list", i_Name.UpperCase(), "i_HeadCom"), !i_HeadCom.empty()
+		   && Magick::instance().commserv.IsList(i_HeadCom))
 	{
 	    if (Magick::instance().commserv.GetList(i_HeadCom)->IsIn(nick))
 	    {
@@ -691,13 +699,14 @@ bool Committee_t::IsHead(const mstring& nick) const
 	else if (i_Head.empty() && i_HeadCom.empty())
 	{
 	    bool retval = IsIn(nick);
+
 	    RET(retval);
 	}
     }
     RET(false);
 }
 
-void Committee_t::Description(const mstring& in)
+void Committee_t::Description(const mstring & in)
 {
     FT("Committee_t::Description", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Description"));
@@ -713,7 +722,7 @@ mstring Committee_t::Description() const
     RET(i_Description);
 }
 
-void Committee_t::Email(const mstring& in)
+void Committee_t::Email(const mstring & in)
 {
     FT("Committee_t::Email", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_Email"));
@@ -729,7 +738,7 @@ mstring Committee_t::Email() const
     RET(i_Email);
 }
 
-void Committee_t::URL(const mstring& in)
+void Committee_t::URL(const mstring & in)
 {
     FT("Committee_t::URL", (in));
     WLOCK(("CommServ", "list", i_Name.UpperCase(), "i_URL"));
@@ -894,8 +903,7 @@ bool Committee_t::L_OpenMemos() const
 }
 
 
-bool Committee_t::MSG_insert(const mstring& entry, const mstring& nick,
-	const mDateTime& addtime)
+bool Committee_t::MSG_insert(const mstring & entry, const mstring & nick, const mDateTime & addtime)
 {
     FT("Committee_t::MSG_insert", (entry, nick, addtime));
 
@@ -905,7 +913,8 @@ bool Committee_t::MSG_insert(const mstring& entry, const mstring& nick,
 	MCB(i_Messages.size());
 	i_Messages.push_back(entlist_t(entry, nick, addtime));
 	MCE(i_Messages.size());
-	message = i_Messages.end(); message--;
+	message = i_Messages.end();
+	message--;
 	RET(true);
     }
     else
@@ -943,11 +952,11 @@ bool Committee_t::MSG_find(const int number)
     MLOCK(("CommServ", "list", i_Name.UpperCase(), "message"));
     entlist_i iter = i_Messages.end();
     int i;
+
     if (!i_Messages.empty())
     {
 	// FIND exact nickname
-	for (iter=i_Messages.begin(), i=1; iter!=i_Messages.end() &&
-						i != number; iter++, i++);
+	for (iter = i_Messages.begin(), i = 1; iter != i_Messages.end() && i != number; iter++, i++);
     }
 
     if (iter != i_Messages.end())
@@ -974,9 +983,10 @@ size_t Committee_t::Usage() const
     retval += i_Description.capacity();
     retval += i_Email.capacity();
     retval += i_URL.capacity();
-    
+
     entlist_cui i;
-    for (i=i_Members.begin(); i!=i_Members.end(); i++)
+
+    for (i = i_Members.begin(); i != i_Members.end(); i++)
     {
 	retval += i->Usage();
     }
@@ -985,33 +995,34 @@ size_t Committee_t::Usage() const
     retval += sizeof(lock);
 
     entlist_ci j;
-    for (j=i_Messages.begin(); j!=i_Messages.end(); j++)
+
+    for (j = i_Messages.begin(); j != i_Messages.end(); j++)
     {
 	retval += j->Usage();
     }
 
-    map<mstring,mstring>::const_iterator l;
-    for (l=i_UserDef.begin(); l!=i_UserDef.end(); l++)
+    map < mstring, mstring >::const_iterator l;
+    for (l = i_UserDef.begin(); l != i_UserDef.end(); l++)
     {
 	retval += l->first.capacity();
 	retval += l->second.capacity();
     }
 
-    return retval;    
+    return retval;
 }
 
 void Committee_t::DumpB() const
 {
-    MB(0, (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email,
-	i_URL, i_Members.size(), setting.Private, lock.Private, setting.OpenMemos,
-	lock.OpenMemos, setting.Secure, lock.Secure, i_Messages.size(), i_UserDef.size()));
+    MB(0,
+       (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email, i_URL, i_Members.size(), setting.Private, lock.Private,
+	setting.OpenMemos, lock.OpenMemos, setting.Secure, lock.Secure, i_Messages.size(), i_UserDef.size()));
 }
 
 void Committee_t::DumpE() const
 {
-    ME(0, (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email,
-	i_URL, i_Members.size(), setting.Private, lock.Private, setting.OpenMemos,
-	lock.OpenMemos, setting.Secure, lock.Secure, i_Messages.size(), i_UserDef.size()));
+    ME(0,
+       (i_Name, i_RegTime, i_HeadCom, i_Head, i_Description, i_Email, i_URL, i_Members.size(), setting.Private, lock.Private,
+	setting.OpenMemos, lock.OpenMemos, setting.Secure, lock.Secure, i_Messages.size(), i_UserDef.size()));
 }
 
 CommServ::CommServ()
@@ -1021,9 +1032,9 @@ CommServ::CommServ()
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void CommServ::AddList(Committee_t *in) throw(E_CommServ_List)
+void CommServ::AddList(Committee_t * in) throw(E_CommServ_List)
 #else
-void CommServ::AddList(Committee_t *in)
+void CommServ::AddList(Committee_t * in)
 #endif
 {
     FT("CommServ::AddList", ("(Committee_t *) in"));
@@ -1060,7 +1071,7 @@ void CommServ::AddList(Committee_t *in)
     }
 
     RLOCK(("CommServ", "list"));
-    map_entry<Committee_t> old_entry(i_list, in->Name().LowerCase());
+    map_entry < Committee_t > old_entry(i_list, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
@@ -1072,9 +1083,9 @@ void CommServ::AddList(Committee_t *in)
 
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-map_entry<Committee_t> CommServ::GetList(const mstring &in) const throw(E_CommServ_List)
+map_entry < Committee_t > CommServ::GetList(const mstring & in) const throw(E_CommServ_List)
 #else
-map_entry<Committee_t> CommServ::GetList(const mstring &in) const
+map_entry < Committee_t > CommServ::GetList(const mstring & in) const
 #endif
 {
     FT("CommServ::GetList", (in));
@@ -1109,14 +1120,14 @@ map_entry<Committee_t> CommServ::GetList(const mstring &in) const
 #endif
     }
 
-    NRET(map_entry<Committee_t>, map_entry<Committee_t>(iter->second));
+    NRET(map_entry < Committee_t >, map_entry < Committee_t > (iter->second));
 }
 
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void CommServ::RemList(const mstring &in) throw(E_CommServ_List)
+void CommServ::RemList(const mstring & in) throw(E_CommServ_List)
 #else
-void CommServ::RemList(const mstring &in)
+void CommServ::RemList(const mstring & in)
 #endif
 {
     FT("CommServ::RemList", (in));
@@ -1135,7 +1146,7 @@ void CommServ::RemList(const mstring &in)
 
     if (iter->second != NULL)
     {
-	map_entry<Committee_t> entry(iter->second);
+	map_entry < Committee_t > entry(iter->second);
 	entry->setDelete();
     }
     WLOCK(("CommServ", "list"));
@@ -1143,11 +1154,12 @@ void CommServ::RemList(const mstring &in)
 }
 
 
-bool CommServ::IsList(const mstring& in)const
+bool CommServ::IsList(const mstring & in) const
 {
     FT("CommServ::IsList", (in));
     RLOCK(("CommServ", "list"));
-    bool retval = (i_list.find(in.UpperCase())!=i_list.end());
+    bool retval = (i_list.find(in.UpperCase()) != i_list.end());
+
     RET(retval);
 }
 
@@ -1156,107 +1168,102 @@ void CommServ::AddCommands()
     NFT("CommServ::AddCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"MEMB* ADD", Magick::instance().commserv.REGD_Name(), CommServ::do_member_Add);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"MEMB* DEL*", Magick::instance().commserv.REGD_Name(), CommServ::do_member_Del);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"MEMB* ERA*", Magick::instance().commserv.REGD_Name(), CommServ::do_member_Del);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"MEMB* LIST", Magick::instance().commserv.REGD_Name(), CommServ::do_member_List);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"MEMB* VIEW", Magick::instance().commserv.REGD_Name(), CommServ::do_member_List);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"MEMB* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOG* ADD", Magick::instance().commserv.REGD_Name(), CommServ::do_logon_Add);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOG* DEL*", Magick::instance().commserv.REGD_Name(), CommServ::do_logon_Del);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOG* ERA*", Magick::instance().commserv.REGD_Name(), CommServ::do_logon_Del);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOG* LIST", Magick::instance().commserv.REGD_Name(), CommServ::do_logon_List);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOG* VIEW", Magick::instance().commserv.REGD_Name(), CommServ::do_logon_List);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOG* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* HEAD*", Magick::instance().commserv.REGD_Name(), CommServ::do_set_Head);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* DESC*", Magick::instance().commserv.REGD_Name(), CommServ::do_set_Description);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* E*MAIL*", Magick::instance().commserv.REGD_Name(), CommServ::do_set_Email);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* URL", Magick::instance().commserv.REGD_Name(), CommServ::do_set_URL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* WWW*", Magick::instance().commserv.REGD_Name(), CommServ::do_set_URL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* WEB*", Magick::instance().commserv.REGD_Name(), CommServ::do_set_URL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* SEC*", Magick::instance().commserv.REGD_Name(), CommServ::do_set_Secure);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* PRIV*", Magick::instance().commserv.REGD_Name(), CommServ::do_set_Private);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* *MEMO*", Magick::instance().commserv.REGD_Name(), CommServ::do_set_OpenMemos);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* H*LP", Magick::instance().commserv.REGD_Name(), do_3param);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOCK SEC*", Magick::instance().commserv.SOP_Name(), CommServ::do_lock_Secure);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOCK PRIV*", Magick::instance().commserv.SOP_Name(), CommServ::do_lock_Private);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOCK *MEMO*", Magick::instance().commserv.SOP_Name(), CommServ::do_lock_OpenMemos);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOCK H*LP", Magick::instance().commserv.SOP_Name(), do_3param);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK SEC*", Magick::instance().commserv.SOP_Name(), CommServ::do_unlock_Secure);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK PRIV*", Magick::instance().commserv.SOP_Name(), CommServ::do_unlock_Private);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK *MEMO*", Magick::instance().commserv.SOP_Name(), CommServ::do_unlock_OpenMemos);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK H*LP", Magick::instance().commserv.SOP_Name(), do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "MEMB* ADD", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_member_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "MEMB* DEL*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_member_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "MEMB* ERA*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_member_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "MEMB* LIST", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_member_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "MEMB* VIEW", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_member_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "MEMB* H*LP", Magick::instance().commserv.REGD_Name(),
+						 do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOG* ADD", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_logon_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOG* DEL*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_logon_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOG* ERA*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_logon_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOG* LIST", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_logon_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOG* VIEW", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_logon_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOG* H*LP", Magick::instance().commserv.REGD_Name(),
+						 do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* HEAD*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_Head);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* DESC*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_Description);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* E*MAIL*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_Email);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* URL", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* WWW*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* WEB*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_URL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* SEC*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* PRIV*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* *MEMO*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_set_OpenMemos);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* H*LP", Magick::instance().commserv.REGD_Name(),
+						 do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK SEC*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_lock_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK PRIV*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_lock_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK *MEMO*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_lock_OpenMemos);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK H*LP", Magick::instance().commserv.SOP_Name(),
+						 do_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK SEC*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_unlock_Secure);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK PRIV*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_unlock_Private);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK *MEMO*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_unlock_OpenMemos);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK H*LP", Magick::instance().commserv.SOP_Name(),
+						 do_3param);
 
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"H*LP", Magick::instance().commserv.ALL_Name(), CommServ::do_Help);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"ADD*", Magick::instance().commserv.SOP_Name(), CommServ::do_Add);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"DEL*", Magick::instance().commserv.SOP_Name(), CommServ::do_Del);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"ERA*", Magick::instance().commserv.SOP_Name(), CommServ::do_Del);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LIST", Magick::instance().commserv.ALL_Name(), CommServ::do_List);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"*MEMO*", Magick::instance().commserv.REGD_Name(), CommServ::do_Memo);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"INFO", Magick::instance().commserv.ALL_Name(), CommServ::do_Info);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "H*LP", Magick::instance().commserv.ALL_Name(),
+						 CommServ::do_Help);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "ADD*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_Add);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "DEL*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "ERA*", Magick::instance().commserv.SOP_Name(),
+						 CommServ::do_Del);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LIST", Magick::instance().commserv.ALL_Name(),
+						 CommServ::do_List);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "*MEMO*", Magick::instance().commserv.REGD_Name(),
+						 CommServ::do_Memo);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "INFO", Magick::instance().commserv.ALL_Name(),
+						 CommServ::do_Info);
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
     // it, you must add a terminator command (ie. "CMD* *"
     // in the command map, and NULL as the function).
     // This must be BEFORE the wildcarded map ("CMD*")
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"MEMB* *", Magick::instance().commserv.REGD_Name(), NULL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"MEMB*", Magick::instance().commserv.REGD_Name(), do_1_3param);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOG* *", Magick::instance().commserv.REGD_Name(), NULL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOG*", Magick::instance().commserv.REGD_Name(), do_1_3param);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET* *", Magick::instance().commserv.REGD_Name(), NULL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"SET*", Magick::instance().commserv.REGD_Name(), do_1_3param);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOCK *", Magick::instance().commserv.SOP_Name(), NULL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"LOCK", Magick::instance().commserv.SOP_Name(), do_1_3param);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK *", Magick::instance().commserv.SOP_Name(), NULL);
-    Magick::instance().commands.AddSystemCommand(GetInternalName(),
-		"UNLOCK", Magick::instance().commserv.SOP_Name(), do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "MEMB* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "MEMB*", Magick::instance().commserv.REGD_Name(),
+						 do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOG* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOG*", Magick::instance().commserv.REGD_Name(),
+						 do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* *", Magick::instance().commserv.REGD_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET*", Magick::instance().commserv.REGD_Name(),
+						 do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK *", Magick::instance().commserv.SOP_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK", Magick::instance().commserv.SOP_Name(),
+						 do_1_3param);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK *", Magick::instance().commserv.SOP_Name(), NULL);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK", Magick::instance().commserv.SOP_Name(),
+						 do_1_3param);
 }
 
 void CommServ::RemCommands()
@@ -1264,111 +1271,64 @@ void CommServ::RemCommands()
     NFT("CommServ::RemCommands");
     // Put in ORDER OF RUN.  ie. most specific to least specific.
 
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"MEMB* ADD", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"MEMB* DEL*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"MEMB* ERA*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"MEMB* LIST", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"MEMB* VIEW", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"MEMB* H*LP", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOG* ADD", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOG* DEL*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOG* ERA*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOG* LIST", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOG* VIEW", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOG* H*LP", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* HEAD*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* DESC*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* E*MAIL*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* URL", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* WWW*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* WEB*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* SEC*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* PRIV*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* *MEMO*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* H*LP", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOCK SEC*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOCK PRIV*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOCK *MEMO*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOCK H*LP", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK SEC*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK PRIV*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK *MEMO*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK H*LP", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "MEMB* ADD", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "MEMB* DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "MEMB* ERA*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "MEMB* LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "MEMB* VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "MEMB* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOG* ADD", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOG* DEL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOG* ERA*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOG* LIST", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOG* VIEW", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOG* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* HEAD*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* DESC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* E*MAIL*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* URL", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* WWW*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* WEB*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* SEC*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* PRIV*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* *MEMO*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* H*LP", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK SEC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK PRIV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK *MEMO*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK H*LP", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK SEC*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK PRIV*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK *MEMO*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK H*LP", Magick::instance().commserv.SOP_Name());
 
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"H*LP", Magick::instance().commserv.ALL_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"ADD*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"DEL*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"ERA*", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LIST", Magick::instance().commserv.ALL_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"*MEMO*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"INFO", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "H*LP", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "ADD*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "DEL*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "ERA*", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LIST", Magick::instance().commserv.ALL_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "*MEMO*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "INFO", Magick::instance().commserv.ALL_Name());
 
     // These 'throw' the command back onto the map with
     // more paramaters.  IF you want to put wildcards in
     // it, you must add a terminator command (ie. "CMD* *"
     // in the command map, and NULL as the function).
     // This must be BEFORE the wildcarded map ("CMD*")
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"MEMB* *", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"MEMB*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOG* *", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOG*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET* *", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"SET*", Magick::instance().commserv.REGD_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOCK *", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"LOCK", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK *", Magick::instance().commserv.SOP_Name());
-    Magick::instance().commands.RemSystemCommand(GetInternalName(),
-		"UNLOCK", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "MEMB* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "MEMB*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOG* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOG*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET* *", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "SET*", Magick::instance().commserv.REGD_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK *", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "LOCK", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK *", Magick::instance().commserv.SOP_Name());
+    Magick::instance().commands.RemSystemCommand(GetInternalName(), "UNLOCK", Magick::instance().commserv.SOP_Name());
 }
 
 
-void CommServ::execute(mstring& source, const mstring& msgtype, const mstring& params)
+void CommServ::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
     mThread::ReAttach(tt_OtherServ);
     FT("CommServ::execute", (source, msgtype, params));
@@ -1386,8 +1346,7 @@ void CommServ::execute(mstring& source, const mstring& msgtype, const mstring& p
 	else
 	    DccEngine::decodeReply(mynick, source, message);
     }
-    else if (msgtype == "PRIVMSG" &&
-	!Magick::instance().commands.DoCommand(mynick, source, command, message))
+    else if (msgtype == "PRIVMSG" && !Magick::instance().commands.DoCommand(mynick, source, command, message))
     {
 	// Invalid command or not enough privs.
     }
@@ -1396,102 +1355,94 @@ void CommServ::execute(mstring& source, const mstring& msgtype, const mstring& p
 
 }
 
-void CommServ::do_Help(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_Help(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_Help", (mynick, source, params));
 
-    mstring message  = params.Before(" ").UpperCase();
+    mstring message = params.Before(" ").UpperCase();
 
-    { RLOCK(("IrcSvcHandler"));
-    if (Magick::instance().ircsvchandler != NULL &&
-	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
-	SEND(mynick, source, "MISC/HTM", (
-							message));
-	return;
-    }}
+	RLOCK(("IrcSvcHandler"));
+	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    SEND(mynick, source, "MISC/HTM", (message));
+	    return;
+	}
+    }
 
     mstring HelpTopic = Magick::instance().commserv.GetInternalName();
+
     if (params.WordCount(" ") > 1)
 	HelpTopic += " " + params.After(" ");
     HelpTopic.replace(" ", "/");
-    vector<mstring> help = Magick::instance().getHelp(source, HelpTopic.UpperCase());
-					
+    vector < mstring > help = Magick::instance().getHelp(source, HelpTopic.UpperCase());
+
     unsigned int i;
-    for (i=0; i<help.size(); i++)
+
+    for (i = 0; i < help.size(); i++)
 	::send(mynick, source, help[i]);
 }
 
-void CommServ::do_Add(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_Add", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring head      = params.ExtractWord(3, " ");
-    mstring desc      = params.After(" ", 3);
+    mstring head = params.ExtractWord(3, " ");
+    mstring desc = params.After(" ", 3);
 
     if (Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISSTORED", (committee));
 	return;
     }
 
     if (!Magick::instance().nickserv.IsStored(head))
     {
-	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
-				head));
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (head));
 	return;
     }
 
     head = Magick::instance().getSname(head);
     if (Magick::instance().nickserv.GetStored(head)->Forbidden())
     {
-	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
-				head));
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (head));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> tmp(new Committee_t(committee, head, desc));
+    map_entry < Committee_t > tmp(new Committee_t(committee, head, desc));
     Magick::instance().commserv.AddList(tmp);
     Magick::instance().commserv.stats.i_Add++;
-    SEND(mynick, source, "COMMSERV/ADD", (
-				committee, head));
-    LOG(LM_NOTICE, "COMMSERV/ADD",
-	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	committee, head));
+    SEND(mynick, source, "COMMSERV/ADD", (committee, head));
+    LOG(LM_NOTICE, "COMMSERV/ADD", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee, head));
 }
 
 
-void CommServ::do_Del(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_Del", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
+
     if (params.WordCount(" ") < 2)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
@@ -1499,50 +1450,43 @@ void CommServ::do_Del(const mstring &mynick, const mstring &source, const mstrin
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
     Magick::instance().commserv.GetList(committee)->Drop();
     Magick::instance().commserv.RemList(committee);
     Magick::instance().commserv.stats.i_Del++;
-    SEND(mynick, source, "COMMSERV/DEL", ( committee));
-    LOG(LM_NOTICE, "COMMSERV/DEL", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	committee));
+    SEND(mynick, source, "COMMSERV/DEL", (committee));
+    LOG(LM_NOTICE, "COMMSERV/DEL", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee));
 }
 
 
-void CommServ::do_List(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_List", (mynick, source, params));
 
     unsigned int listsize, i, count;
     mstring mask;
 
-    mstring message  = params.Before(" ").UpperCase();
+    mstring message = params.Before(" ").UpperCase();
 
-    { RLOCK(("IrcSvcHandler"));
-    if (Magick::instance().ircsvchandler != NULL &&
-	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
-	SEND(mynick, source, "MISC/HTM", (
-							message));
-	return;
-    }}
+	RLOCK(("IrcSvcHandler"));
+	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    SEND(mynick, source, "MISC/HTM", (message));
+	    return;
+	}
+    }
 
     if (params.WordCount(" ") < 2)
     {
@@ -1561,115 +1505,107 @@ void CommServ::do_List(const mstring &mynick, const mstring &source, const mstri
 	if (listsize > Magick::instance().config.Maxlist())
 	{
 	    mstring output;
-	    SEND(mynick, source, "LIST/MAXLIST", (
-					Magick::instance().config.Maxlist()));
+
+	    SEND(mynick, source, "LIST/MAXLIST", (Magick::instance().config.Maxlist()));
 	    return;
 	}
     }
 
-    SEND(mynick, source, "LIST/COMM_LIST", (
-					mask));
+    SEND(mynick, source, "LIST/COMM_LIST", (mask));
     CommServ::list_t::iterator iter;
 
-    { RLOCK(("CommServ", "list"));
-    for (iter = Magick::instance().commserv.ListBegin(), i=0, count = 0;
-			iter != Magick::instance().commserv.ListEnd(); iter++)
     {
-	map_entry<Committee_t> comm(iter->second);
-	if (comm->Name().Matches(mask, true))
+	RLOCK(("CommServ", "list"));
+	for (iter = Magick::instance().commserv.ListBegin(), i = 0, count = 0; iter != Magick::instance().commserv.ListEnd();
+	     iter++)
 	{
-	    if (i < listsize && (!comm->Private() ||
-		(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
-		Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))))
+	    map_entry < Committee_t > comm(iter->second);
+	    if (comm->Name().Matches(mask, true))
 	    {
-		::send(mynick, source, comm->Name() + " (" +
-			comm->size() + "): " + comm->Description());
-		i++;
+		if (i < listsize
+		    && (!comm->Private()
+			|| (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
+			    && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))))
+		{
+		    ::send(mynick, source, comm->Name() + " (" + comm->size() + "): " + comm->Description());
+		    i++;
+		}
+		count++;
 	    }
-	    count++;
 	}
-    }}
-    SEND(mynick, source, "LIST/DISPLAYED", (
-							i, count));
+    }
+    SEND(mynick, source, "LIST/DISPLAYED", (i, count));
 }
 
-void CommServ::do_Memo(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_Memo(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_Memo", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
 
-    { RLOCK(("IrcSvcHandler"));
-    if (Magick::instance().ircsvchandler != NULL &&
-	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
-	SEND(mynick, source, "MISC/HTM", (
-							message));
-	return;
-    }}
+	RLOCK(("IrcSvcHandler"));
+	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    SEND(mynick, source, "MISC/HTM", (message));
+	    return;
+	}
+    }
 
     if (params.WordCount(" ") < 3)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring text      = params.After(" ", 2);
+    mstring text = params.After(" ", 2);
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "ERR_SITUATION/NOTONDYNAMIC", (
-				message));
+	SEND(mynick, source, "ERR_SITUATION/NOTONDYNAMIC", (message));
 	return;
     }
 
     {
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
-    if (!comm->IsOn(source))
-    {
-	SEND(mynick, source, "COMMSERV/NOTMEMBER", (
-				committee));
-	return;
-    }
+	map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
+	if (!comm->IsOn(source))
+	{
+	    SEND(mynick, source, "COMMSERV/NOTMEMBER", (committee));
+	    return;
+	}
 
-    if (!comm->OpenMemos() && !comm->IsHead(source))
-    {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
-	return;
-    } }
+	if (!comm->OpenMemos() && !comm->IsHead(source))
+	{
+	    SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
+	    return;
+	}
+    }
 
     text.prepend("[" + IRC_Bold + committee + IRC_Off + "] ");
     CommServ::do_Memo2(source, committee, text);
     Magick::instance().commserv.stats.i_Memo++;
-    SEND(mynick, source, "COMMSERV/MEMO", (
-				committee));
-    LOG(LM_INFO, "COMMSERV/MEMO", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	committee));
+    SEND(mynick, source, "COMMSERV/MEMO", (committee));
+    LOG(LM_INFO, "COMMSERV/MEMO", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee));
 }
 
 
-void CommServ::do_Memo2(const mstring &source, const mstring &committee,
-	const mstring &text)
+void CommServ::do_Memo2(const mstring & source, const mstring & committee, const mstring & text)
 {
     FT("CommServ::do_Memo2", (source, committee, text));
 
     if (!Magick::instance().commserv.IsList(committee))
 	return;
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     mstring realme;
+
     if (Magick::instance().nickserv.IsStored(source))
 	realme = Magick::instance().nickserv.GetStored(source)->Host();
     else
@@ -1689,29 +1625,30 @@ void CommServ::do_Memo2(const mstring &source, const mstring &committee,
 	if (Magick::instance().nickserv.IsStored(comm->Head()))
 	{
 	    mstring realrecipiant = Magick::instance().nickserv.GetStored(comm->Head())->Host();
+
 	    if (realrecipiant.empty())
 		realrecipiant = comm->Head();
 	    if (!realme.IsSameAs(realrecipiant, true))
 	    {
 		Memo_t tmp(realrecipiant, source, text);
+
 		Magick::instance().memoserv.AddNickMemo(&tmp);
 
 		RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
-		MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(realrecipiant);
-		map_entry<Nick_Stored_t> nick = Magick::instance().nickserv.GetStored(realrecipiant);
+		MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(realrecipiant);
+		map_entry < Nick_Stored_t > nick = Magick::instance().nickserv.GetStored(realrecipiant);
 		if (nick->IsOnline())
-		    SEND(Magick::instance().memoserv.FirstName(), nick->Name(), "MS_COMMAND/NS_NEW", (
-			memolist.size(), Magick::instance().memoserv.FirstName(),
-			memolist.size()));
+		    SEND(Magick::instance().memoserv.FirstName(), nick->Name(), "MS_COMMAND/NS_NEW",
+			 (memolist.size(), Magick::instance().memoserv.FirstName(), memolist.size()));
 		unsigned int i;
-		for (i=0; i < nick->Siblings(); i++)
+
+		for (i = 0; i < nick->Siblings(); i++)
 		{
-		    if (Magick::instance().nickserv.IsStored(nick->Sibling(i)) &&
-			Magick::instance().nickserv.GetStored(nick->Sibling(i))->IsOnline())
+		    if (Magick::instance().nickserv.IsStored(nick->Sibling(i))
+			&& Magick::instance().nickserv.GetStored(nick->Sibling(i))->IsOnline())
 		    {
-			SEND(Magick::instance().memoserv.FirstName(), nick->Sibling(i), "MS_COMMAND/NS_NEW", (
-				memolist.size(), Magick::instance().memoserv.FirstName(),
-				memolist.size()));
+			SEND(Magick::instance().memoserv.FirstName(), nick->Sibling(i), "MS_COMMAND/NS_NEW",
+			     (memolist.size(), Magick::instance().memoserv.FirstName(), memolist.size()));
 		    }
 		}
 	    }
@@ -1724,29 +1661,30 @@ void CommServ::do_Memo2(const mstring &source, const mstring &committee,
 	if (Magick::instance().nickserv.IsStored(comm->member->Entry()))
 	{
 	    mstring realrecipiant = Magick::instance().nickserv.GetStored(comm->member->Entry())->Host();
+
 	    if (realrecipiant.empty())
 		realrecipiant = comm->member->Entry();
 	    if (!realme.IsSameAs(realrecipiant, true))
 	    {
 		Memo_t tmp(realrecipiant, source, text);
+
 		Magick::instance().memoserv.AddNickMemo(&tmp);
 
 		RLOCK2(("MemoServ", "nick", realrecipiant.LowerCase()));
-		MemoServ::nick_memo_t &memolist = Magick::instance().memoserv.GetNick(realrecipiant);
-		map_entry<Nick_Stored_t> nick = Magick::instance().nickserv.GetStored(realrecipiant);
+		MemoServ::nick_memo_t & memolist = Magick::instance().memoserv.GetNick(realrecipiant);
+		map_entry < Nick_Stored_t > nick = Magick::instance().nickserv.GetStored(realrecipiant);
 		if (nick->IsOnline())
-		    SEND(Magick::instance().memoserv.FirstName(), nick->Name(), "MS_COMMAND/NS_NEW", (
-			memolist.size(), Magick::instance().memoserv.FirstName(),
-			memolist.size()));
+		    SEND(Magick::instance().memoserv.FirstName(), nick->Name(), "MS_COMMAND/NS_NEW",
+			 (memolist.size(), Magick::instance().memoserv.FirstName(), memolist.size()));
 		unsigned int i;
-		for (i=0; i < nick->Siblings(); i++)
+
+		for (i = 0; i < nick->Siblings(); i++)
 		{
-		    if (Magick::instance().nickserv.IsStored(nick->Sibling(i)) &&
-			Magick::instance().nickserv.GetStored(nick->Sibling(i))->IsOnline())
+		    if (Magick::instance().nickserv.IsStored(nick->Sibling(i))
+			&& Magick::instance().nickserv.GetStored(nick->Sibling(i))->IsOnline())
 		    {
-			SEND(Magick::instance().memoserv.FirstName(), nick->Sibling(i), "MS_COMMAND/NS_NEW", (
-				memolist.size(), Magick::instance().memoserv.FirstName(),
-				memolist.size()));
+			SEND(Magick::instance().memoserv.FirstName(), nick->Sibling(i), "MS_COMMAND/NS_NEW",
+			     (memolist.size(), Magick::instance().memoserv.FirstName(), memolist.size()));
 		    }
 		}
 	    }
@@ -1754,25 +1692,24 @@ void CommServ::do_Memo2(const mstring &source, const mstring &committee,
     }
 }
 
-void CommServ::do_Info(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_Info(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_Info", (mynick, source, params));
 
     mstring message = params.Before(" ").UpperCase();
 
-    { RLOCK(("IrcSvcHandler"));
-    if (Magick::instance().ircsvchandler != NULL &&
-	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
-	SEND(mynick, source, "MISC/HTM", (
-							message));
-	return;
-    }}
+	RLOCK(("IrcSvcHandler"));
+	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    SEND(mynick, source, "MISC/HTM", (message));
+	    return;
+	}
+    }
 
     if (params.WordCount(" ") < 2)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
@@ -1780,46 +1717,38 @@ void CommServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "ERR_SITUATION/NOTONDYNAMIC", (
-				message));
+	SEND(mynick, source, "ERR_SITUATION/NOTONDYNAMIC", (message));
 	return;
     }
 
     mstring output;
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
-    SEND(mynick, source, "COMMSERV_INFO/DESCRIPTION", (
-		committee, comm->Description()));
-    SEND(mynick, source, "COMMSERV_INFO/REGISTERED", (
-    			comm->RegTime().Ago()));
+
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
+    SEND(mynick, source, "COMMSERV_INFO/DESCRIPTION", (committee, comm->Description()));
+    SEND(mynick, source, "COMMSERV_INFO/REGISTERED", (comm->RegTime().Ago()));
     if (!comm->HeadCom().empty())
     {
-	SEND(mynick, source, "COMMSERV_INFO/HEADCOM", (
-			comm->HeadCom().UpperCase()));
+	SEND(mynick, source, "COMMSERV_INFO/HEADCOM", (comm->HeadCom().UpperCase()));
     }
     else if (!comm->Head().empty())
     {
-	SEND(mynick, source, "COMMSERV_INFO/HEAD", (
-			Magick::instance().getSname(comm->Head())));
+	SEND(mynick, source, "COMMSERV_INFO/HEAD", (Magick::instance().getSname(comm->Head())));
     }
 
     if (!comm->Email().empty())
     {
-	SEND(mynick, source, "COMMSERV_INFO/EMAIL", (
-			comm->Email()));
+	SEND(mynick, source, "COMMSERV_INFO/EMAIL", (comm->Email()));
     }
 
     if (!comm->URL().empty())
     {
-	SEND(mynick, source, "COMMSERV_INFO/URL", (
-			comm->URL()));
+	SEND(mynick, source, "COMMSERV_INFO/URL", (comm->URL()));
     }
 
     output.erase();
@@ -1836,8 +1765,7 @@ void CommServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	output << comm->MSG_size() << " " << Magick::instance().getMessage(source, "COMMSERV_INFO/MESSAGES");
     }
     if (output.size())
-	SEND(mynick, source, "COMMSERV_INFO/STATS", (
-			output));
+	SEND(mynick, source, "COMMSERV_INFO/STATS", (output));
 
     output.erase();
     if (comm->Secure())
@@ -1871,143 +1799,125 @@ void CommServ::do_Info(const mstring &mynick, const mstring &source, const mstri
 	    output << IRC_Off;
     }
     if (output.size())
-	SEND(mynick, source, "COMMSERV_INFO/OPTIONS", (
-			output));
-    { RLOCK2(("Events"));
-    if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
-	SEND(mynick, source, "MISC/SYNC", (
-			Magick::instance().events->SyncTime(source)));
+	SEND(mynick, source, "COMMSERV_INFO/OPTIONS", (output));
+    {
+	RLOCK2(("Events"));
+	if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)
+	    SEND(mynick, source, "MISC/SYNC", (Magick::instance().events->SyncTime(source)));
     }
 }
 
-void CommServ::do_member_Add(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_member_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_member_Add", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring member    = params.ExtractWord(4, " ");
+    mstring member = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.ALL_Name()
+	|| committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
     if (!Magick::instance().nickserv.IsStored(member))
     {
-	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
-				member));
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (member));
 	return;
     }
 
     member = Magick::instance().getSname(member);
     if (Magick::instance().nickserv.GetStored(member)->Forbidden())
     {
-	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
-				member));
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (member));
 	return;
     }
 
-    { RLOCK(("CommServ", "list", committee.UpperCase()));
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
-    committee = comm->Name();
-
-    if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
-	return;
-    }
+	RLOCK(("CommServ", "list", committee.UpperCase()));
+	map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
+	committee = comm->Name();
 
-    if (comm->IsIn(member))
-    {
-	SEND(mynick, source, "LIST/EXISTS2", (
-				member, committee,
-				Magick::instance().getMessage(source, "LIST/MEMBER")));
-	return;
-    }
+	if (!comm->IsHead(source))
+	{
+	    SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
+	    return;
+	}
 
-    comm->insert(member, source);
+	if (comm->IsIn(member))
+	{
+	    SEND(mynick, source, "LIST/EXISTS2", (member, committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
+	    return;
+	}
+
+	comm->insert(member, source);
     }
     Magick::instance().commserv.stats.i_Member++;
-    SEND(mynick, source, "LIST/ADD2", (
-				member, committee,
-				Magick::instance().getMessage(source, "LIST/MEMBER")));
-    LOG(LM_DEBUG, "COMMSERV/MEMBER_ADD", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	member, committee));
+    SEND(mynick, source, "LIST/ADD2", (member, committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
+    LOG(LM_DEBUG, "COMMSERV/MEMBER_ADD",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), member, committee));
 }
 
 
-void CommServ::do_member_Del(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_member_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_member_Del", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring member    = params.ExtractWord(4, " ");
+    mstring member = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-					committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee.IsSameAs(Magick::instance().commserv.SADMIN_Name(), true) ||
-	committee.IsSameAs(Magick::instance().commserv.ALL_Name(), true) ||
-	committee.IsSameAs(Magick::instance().commserv.REGD_Name(), true))
+    if (committee.IsSameAs(Magick::instance().commserv.SADMIN_Name(), true)
+	|| committee.IsSameAs(Magick::instance().commserv.ALL_Name(), true)
+	|| committee.IsSameAs(Magick::instance().commserv.REGD_Name(), true))
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-					committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
     committee = comm->Name();
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-					committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
     if (comm->IsHead(member))
     {
 	if (comm->HeadCom().empty())
-	    SEND(mynick, source, "COMMSERV/OTH_HEAD", (
-				member,  committee));
+	    SEND(mynick, source, "COMMSERV/OTH_HEAD", (member, committee));
 	else
-	    SEND(mynick, source, "COMMSERV/OTH_MEMBER", (
-				member,  comm->HeadCom()));
+	    SEND(mynick, source, "COMMSERV/OTH_MEMBER", (member, comm->HeadCom()));
 	return;
     }
 
@@ -2015,42 +1925,36 @@ void CommServ::do_member_Del(const mstring &mynick, const mstring &source, const
     if (comm->find(member))
     {
 	Magick::instance().commserv.stats.i_Member++;
-	SEND(mynick, source, "LIST/DEL2", (
-			comm->member->Entry(), committee,
-			Magick::instance().getMessage(source, "LIST/MEMBER")));
-	LOG(LM_DEBUG, "COMMSERV/MEMBER_DEL", (
-		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-		comm->member->Entry(), committee));
+	SEND(mynick, source, "LIST/DEL2",
+	     (comm->member->Entry(), committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
+	LOG(LM_DEBUG, "COMMSERV/MEMBER_DEL",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), comm->member->Entry(), committee));
 	comm->erase();
     }
     else
     {
-	SEND(mynick, source, "LIST/NOTEXISTS2", (
-				member, committee,
-				Magick::instance().getMessage(source, "LIST/MEMBER")));
+	SEND(mynick, source, "LIST/NOTEXISTS2", (member, committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
     }
 }
 
-void CommServ::do_member_List(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_member_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_member_List", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
-    { RLOCK(("IrcSvcHandler"));
-    if (Magick::instance().ircsvchandler != NULL &&
-	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
-	SEND(mynick, source, "MISC/HTM", (
-							message));
-	return;
-    }}
+	RLOCK(("IrcSvcHandler"));
+	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    SEND(mynick, source, "MISC/HTM", (message));
+	    return;
+	}
+    }
 
     if (params.WordCount(" ") < 2)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
@@ -2058,38 +1962,36 @@ void CommServ::do_member_List(const mstring &mynick, const mstring &source, cons
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee.IsSameAs(Magick::instance().commserv.ALL_Name(), true) ||
-	committee.IsSameAs(Magick::instance().commserv.REGD_Name(), true))
+    if (committee.IsSameAs(Magick::instance().commserv.ALL_Name(), true)
+	|| committee.IsSameAs(Magick::instance().commserv.REGD_Name(), true))
     {
-	SEND(mynick, source, "ERR_SITUATION/NOTONDYNAMIC", (
-				message));
+	SEND(mynick, source, "ERR_SITUATION/NOTONDYNAMIC", (message));
 	return;
     }
 
-    { 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
-    if (comm->Private() && !(comm->IsOn(source) ||
-	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))))
     {
-	SEND(mynick, source, "COMMSERV/NOTMEMBER", (
-				committee));
-	return;
-    }}
+	map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
+	if (comm->Private()
+	    && !(comm->IsOn(source)
+		 || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
+		     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source))))
+	{
+	    SEND(mynick, source, "COMMSERV/NOTMEMBER", (committee));
+	    return;
+	}
+    }
 
-    SEND(mynick, source, "LIST/DISPLAY2", (
-		committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
+    SEND(mynick, source, "LIST/DISPLAY2", (committee, Magick::instance().getMessage(source, "LIST/MEMBER")));
     CommServ::do_member_List2(mynick, source, committee, true, 1);
 }
 
 
-int CommServ::do_member_List2(const mstring &mynick, const mstring &source,
-	const mstring &committee, const bool first, const int number)
+int CommServ::do_member_List2(const mstring & mynick, const mstring & source, const mstring & committee, const bool first,
+			      const int number)
 {
     FT("CommServ::do_member_List2", (mynick, source, committee, first, number));
 
@@ -2101,7 +2003,7 @@ int CommServ::do_member_List2(const mstring &mynick, const mstring &source,
 	RET(0);
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     if (!comm->HeadCom().empty())
     {
@@ -2117,11 +2019,11 @@ int CommServ::do_member_List2(const mstring &mynick, const mstring &source,
 	if (Magick::instance().nickserv.IsStored(comm->Head()))
 	    output << Magick::instance().getSname(comm->Head());
 	else
-	    output << Magick::instance().getMessage(source, "COMMSERV/DEFUNCT") <<
-	    	" " << Magick::instance().getMessage(source, "COMMSERV_INFO/SET_HEAD");
+	    output << Magick::instance().getMessage(source, "COMMSERV/DEFUNCT") << " " << Magick::instance().getMessage(source,
+															"COMMSERV_INFO/SET_HEAD");
 	output << IRC_Off;
 	if (!Magick::instance().nickserv.IsStored(comm->Head()))
-		output << " [" << Magick::instance().getMessage(source, "COMMSERV/DEFUNCT") << "]";
+	    output << " [" << Magick::instance().getMessage(source, "COMMSERV/DEFUNCT") << "]";
 	::send(mynick, source, output);
     }
 
@@ -2129,89 +2031,79 @@ int CommServ::do_member_List2(const mstring &mynick, const mstring &source,
     for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
     {
 	output.erase();
-	output << nextnum++ << ". " << (first ? Blank : IRC_Bold) <<
-		comm->member->Entry() << (first ? Blank : IRC_Off);
+	output << nextnum++ << ". " << (first ? Blank : IRC_Bold) << comm->member->Entry() << (first ? Blank : IRC_Off);
 	if (!Magick::instance().nickserv.IsStored(comm->member->Entry()))
 	    output << " [" << Magick::instance().getMessage(source, "COMMSERV/DEFUNCT") << "]";
 	::send(mynick, source, output);
-	::send(mynick, source, "    " +
-		parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
-		mVarArray(ToHumanTime(comm->member->Last_Modify_Time().SecondsSince(),
-		source), comm->member->Last_Modifier())));
+	::send(mynick, source,
+	       "    " + parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
+				     mVarArray(ToHumanTime(comm->member->Last_Modify_Time().SecondsSince(), source),
+					       comm->member->Last_Modifier())));
     }
-    RET(nextnum-number);
+    RET(nextnum - number);
 }
 
-void CommServ::do_logon_Add(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_logon_Add(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_logon_Add", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring msgnum    = params.After(" ", 3);
+    mstring msgnum = params.After(" ", 3);
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
     if (comm->MSG_size() >= Magick::instance().commserv.Max_Logon())
     {
-	SEND(mynick, source, "COMMSERV/MAX_MESSAGES", (
-		committee));
+	SEND(mynick, source, "COMMSERV/MAX_MESSAGES", (committee));
 	return;
     }
 
     comm->MSG_insert(msgnum, source);
     Magick::instance().commserv.stats.i_Logon++;
-    SEND(mynick, source, "LIST/ADD2_NUMBER", (
-		comm->MSG_size(), committee,
-		Magick::instance().getMessage(source, "LIST/MESSAGES")));
-    LOG(LM_INFO, "COMMSERV/LOGON_ADD", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	committee));
+    SEND(mynick, source, "LIST/ADD2_NUMBER",
+	 (comm->MSG_size(), committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
+    LOG(LM_INFO, "COMMSERV/LOGON_ADD", (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee));
 }
 
 
-void CommServ::do_logon_Del(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_logon_Del(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_logon_Del", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring msgnum    = params.ExtractWord(4, " ");
+    mstring msgnum = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -2220,21 +2112,20 @@ void CommServ::do_logon_Del(const mstring &mynick, const mstring &source, const 
 	NSEND(mynick, source, "ERR_SYNTAX/WHOLENUMBER");
 	return;
     }
-    
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     unsigned int num = atoi(msgnum.c_str());
+
     if (num <= 0 || num > comm->MSG_size())
     {
-	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (
-			1, comm->MSG_size()));
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, comm->MSG_size()));
     }
 
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
@@ -2242,43 +2133,37 @@ void CommServ::do_logon_Del(const mstring &mynick, const mstring &source, const 
     if (comm->MSG_find(num))
     {
 	Magick::instance().commserv.stats.i_Logon++;
-	SEND(mynick, source, "LIST/DEL2_NUMBER", (
-		num, committee,
-		Magick::instance().getMessage(source, "LIST/MESSAGES")));
-	LOG(LM_INFO, "COMMSERV/LOGON_DEL", (
-		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-		committee));
+	SEND(mynick, source, "LIST/DEL2_NUMBER", (num, committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
+	LOG(LM_INFO, "COMMSERV/LOGON_DEL",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H), committee));
 	comm->MSG_erase();
     }
     else
     {
-	SEND(mynick, source, "LIST/NOTEXISTS2_NUMBER", (
-			num, committee,
-			Magick::instance().getMessage(source, "LIST/MESSAGES")));
+	SEND(mynick, source, "LIST/NOTEXISTS2_NUMBER",
+	     (num, committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
     }
 }
 
 
-void CommServ::do_logon_List(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_logon_List(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_logon_List", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
 
-    { RLOCK(("IrcSvcHandler"));
-    if (Magick::instance().ircsvchandler != NULL &&
-	Magick::instance().ircsvchandler->HTM_Level() > 3)
     {
-	SEND(mynick, source, "MISC/HTM", (
-							message));
-	return;
-    }}
+	RLOCK(("IrcSvcHandler"));
+	if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    SEND(mynick, source, "MISC/HTM", (message));
+	    return;
+	}
+    }
 
     if (params.WordCount(" ") < 3)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
@@ -2286,211 +2171,184 @@ void CommServ::do_logon_List(const mstring &mynick, const mstring &source, const
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
-    if (!comm->IsHead(source) &&
-	!(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View()) &&
-	Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source)))
+    if (!comm->IsHead(source)
+	&& !(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_View())
+	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_View())->IsOn(source)))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
     if (!comm->MSG_size())
     {
-	SEND(mynick, source, "LIST/EMPTY2", (
-		committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
+	SEND(mynick, source, "LIST/EMPTY2", (committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
 	return;
     }
 
     int i;
     mstring output;
-    SEND(mynick, source, "LIST/DISPLAY2", (
-		committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
+
+    SEND(mynick, source, "LIST/DISPLAY2", (committee, Magick::instance().getMessage(source, "LIST/MESSAGES")));
     MLOCK(("CommServ", "list", committee.UpperCase(), "message"));
-    for (i=1, comm->message = comm->MSG_begin();
-	comm->message != comm->MSG_end(); comm->message++, i++)
+    for (i = 1, comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++, i++)
     {
 	output.erase();
 	output << i << ". " << comm->message->Entry();
 	::send(mynick, source, output);
-	::send(mynick, source, "    " +
-		parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
-		mVarArray(ToHumanTime(comm->message->Last_Modify_Time().SecondsSince(),
-		source), comm->message->Last_Modifier())));
+	::send(mynick, source,
+	       "    " + parseMessage(Magick::instance().getMessage(source, "LIST/LASTMOD"),
+				     mVarArray(ToHumanTime(comm->message->Last_Modify_Time().SecondsSince(), source),
+					       comm->message->Last_Modifier())));
     }
 }
 
 
-void CommServ::do_set_Head(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_set_Head(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_set_Head", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring newhead   = params.ExtractWord(4, " ");
+    mstring newhead = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
     if (!Magick::instance().nickserv.IsStored(newhead))
     {
-	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (
-				newhead));
+	SEND(mynick, source, "NS_OTH_STATUS/ISNOTSTORED", (newhead));
 	return;
     }
 
     newhead = Magick::instance().getSname(newhead);
     if (Magick::instance().nickserv.GetStored(newhead)->Forbidden())
     {
-	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (
-				newhead));
+	SEND(mynick, source, "NS_OTH_STATUS/ISFORBIDDEN", (newhead));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
-    if (!(comm->IsHead(source) ||
-	(Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner()) &&
-	 Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner())->IsOn(source))))
+    if (!
+	(comm->IsHead(source)
+	 || (Magick::instance().commserv.IsList(Magick::instance().commserv.OVR_Owner())
+	     && Magick::instance().commserv.GetList(Magick::instance().commserv.OVR_Owner())->IsOn(source))))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
     if (comm->Head().empty())
     {
-	SEND(mynick, source, "COMMSERV/MULTI_HEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/MULTI_HEAD", (committee));
 	return;
     }
 
     if (newhead.IsSameAs(comm->Head(), true))
     {
-	SEND(mynick, source, "ERR_SITUATION/NOTONYOURSELF", (
-				message));
+	SEND(mynick, source, "ERR_SITUATION/NOTONYOURSELF", (message));
 	return;
     }
 
     comm->Head(newhead);
     Magick::instance().commserv.stats.i_Set++;
-    SEND(mynick, source, "COMMSERV/SET_TO", (
-	Magick::instance().getMessage(source, "COMMSERV_INFO/SET_HEAD"),
-	committee, newhead));
-    LOG(LM_INFO, "COMMSERV/SET", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_HEAD"),
-	committee, newhead));
+    SEND(mynick, source, "COMMSERV/SET_TO",
+	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_HEAD"), committee, newhead));
+    LOG(LM_INFO, "COMMSERV/SET",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_HEAD"), committee, newhead));
 }
 
 
-void CommServ::do_set_Description(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_set_Description(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_set_Description", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring desc      = params.After(" ", 3);
+    mstring desc = params.After(" ", 3);
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
     comm->Description(desc);
     Magick::instance().commserv.stats.i_Set++;
-    SEND(mynick, source, "COMMSERV/SET_TO", (
-	Magick::instance().getMessage(source, "COMMSERV_INFO/SET_DESCRIPTION"),
-	committee, desc));
-    LOG(LM_INFO, "COMMSERV/SET", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_DESCRIPTION"),
-	committee, desc));
+    SEND(mynick, source, "COMMSERV/SET_TO",
+	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_DESCRIPTION"), committee, desc));
+    LOG(LM_INFO, "COMMSERV/SET",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_DESCRIPTION"), committee, desc));
 }
 
 
-void CommServ::do_set_Email(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_set_Email(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_set_Email", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring email     = params.ExtractWord(4, " ");
+    mstring email = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -2498,35 +2356,29 @@ void CommServ::do_set_Email(const mstring &mynick, const mstring &source, const 
 	email.erase();
     else if (!email.Contains("@"))
     {
-	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"), '@'));
+	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAIN", (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"), '@'));
 	return;
     }
     else if (email.WordCount("@") != 2)
     {
-	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAINONE", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"), '@'));
+	SEND(mynick, source, "ERR_SYNTAX/MUSTCONTAINONE",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"), '@'));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
@@ -2534,47 +2386,40 @@ void CommServ::do_set_Email(const mstring &mynick, const mstring &source, const 
     Magick::instance().commserv.stats.i_Set++;
     if (email.empty())
     {
-	SEND(mynick, source, "COMMSERV/UNSET", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"),
-		committee));
-	LOG(LM_INFO, "COMMSERV/UNSET", (
-		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"),
-		committee));
+	SEND(mynick, source, "COMMSERV/UNSET", (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"), committee));
+	LOG(LM_INFO, "COMMSERV/UNSET",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	     Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"), committee));
     }
     else
     {
-	SEND(mynick, source, "COMMSERV/SET_TO", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"),
-		committee, email));
-	LOG(LM_INFO, "COMMSERV/SET", (
-		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-		Magick::instance().getMessage("COMMSERV_INFO/SET_EMAIL"),
-		committee, email));
+	SEND(mynick, source, "COMMSERV/SET_TO",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_EMAIL"), committee, email));
+	LOG(LM_INFO, "COMMSERV/SET",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	     Magick::instance().getMessage("COMMSERV_INFO/SET_EMAIL"), committee, email));
     }
 }
 
 
-void CommServ::do_set_URL(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_set_URL(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_set_URL", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring url       = params.ExtractWord(4, " ");
+    mstring url = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -2586,24 +2431,19 @@ void CommServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
 	url.erase(0, 6);
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
@@ -2611,47 +2451,40 @@ void CommServ::do_set_URL(const mstring &mynick, const mstring &source, const ms
     Magick::instance().commserv.stats.i_Set++;
     if (url.empty())
     {
-	SEND(mynick, source, "COMMSERV/UNSET", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_URL"),
-		committee));
-	LOG(LM_INFO, "COMMSERV/UNSET", (
-		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_URL"),
-		committee));
+	SEND(mynick, source, "COMMSERV/UNSET", (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_URL"), committee));
+	LOG(LM_INFO, "COMMSERV/UNSET",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	     Magick::instance().getMessage(source, "COMMSERV_INFO/SET_URL"), committee));
     }
     else
     {
-	SEND(mynick, source, "COMMSERV/SET_TO", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_URL"),
-		committee, "http://" + url));
-	LOG(LM_INFO, "COMMSERV/SET", (
-		Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-		Magick::instance().getMessage("COMMSERV_INFO/SET_URL"),
-		committee, "http://" + url));
+	SEND(mynick, source, "COMMSERV/SET_TO",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_URL"), committee, "http://" + url));
+	LOG(LM_INFO, "COMMSERV/SET",
+	    (Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	     Magick::instance().getMessage("COMMSERV_INFO/SET_URL"), committee, "http://" + url));
     }
 }
 
 
-void CommServ::do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_set_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_set_Secure", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring onoff     = params.ExtractWord(4, " ");
+    mstring onoff = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -2669,71 +2502,61 @@ void CommServ::do_set_Secure(const mstring &mynick, const mstring &source, const
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
     if (comm->L_Secure())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee));
 	return;
     }
 
     comm->Secure(onoff.GetBool());
     Magick::instance().commserv.stats.i_Set++;
-    SEND(mynick, source, "COMMSERV/SET_TO", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"),
-		committee, (onoff.GetBool() ?
-			Magick::instance().getMessage(source, "VALS/ON") :
-			Magick::instance().getMessage(source, "VALS/OFF"))));
-    LOG(LM_INFO, "COMMSERV/SET", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"),
-	committee, (onoff.GetBool() ?
-		Magick::instance().getMessage(source, "VALS/ON") :
-		Magick::instance().getMessage(source, "VALS/OFF"))));
+    SEND(mynick, source, "COMMSERV/SET_TO",
+	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee,
+	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	   getMessage(source, "VALS/OFF"))));
+    LOG(LM_INFO, "COMMSERV/SET",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee,
+	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  getMessage(source, "VALS/OFF"))));
 }
 
 
-void CommServ::do_set_Private(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_set_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_set_Private", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring onoff     = params.ExtractWord(4, " ");
+    mstring onoff = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -2751,71 +2574,61 @@ void CommServ::do_set_Private(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
     if (comm->L_Private())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee));
 	return;
     }
 
     comm->Private(onoff.GetBool());
     Magick::instance().commserv.stats.i_Set++;
-    SEND(mynick, source, "COMMSERV/SET_TO", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
-		committee, (onoff.GetBool() ?
-			Magick::instance().getMessage(source, "VALS/ON") :
-			Magick::instance().getMessage(source, "VALS/OFF"))));
-    LOG(LM_INFO, "COMMSERV/SET", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"),
-	committee, (onoff.GetBool() ?
-		Magick::instance().getMessage(source, "VALS/ON") :
-		Magick::instance().getMessage(source, "VALS/OFF"))));
+    SEND(mynick, source, "COMMSERV/SET_TO",
+	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee,
+	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	   getMessage(source, "VALS/OFF"))));
+    LOG(LM_INFO, "COMMSERV/SET",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee,
+	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  getMessage(source, "VALS/OFF"))));
 }
 
 
-void CommServ::do_set_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_set_OpenMemos(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_set_OpenMemos", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring onoff     = params.ExtractWord(4, " ");
+    mstring onoff = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -2833,71 +2646,61 @@ void CommServ::do_set_OpenMemos(const mstring &mynick, const mstring &source, co
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     if (!comm->IsHead(source))
     {
-	SEND(mynick, source, "COMMSERV/NOTHEAD", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTHEAD", (committee));
 	return;
     }
 
     if (comm->L_OpenMemos())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee));
 	return;
     }
 
     comm->OpenMemos(onoff.GetBool());
     Magick::instance().commserv.stats.i_Set++;
-    SEND(mynick, source, "COMMSERV/SET_TO", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
-		committee, (onoff.GetBool() ?
-			Magick::instance().getMessage(source, "VALS/ON") :
-			Magick::instance().getMessage(source, "VALS/OFF"))));
-    LOG(LM_INFO, "COMMSERV/SET", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"),
-	committee, (onoff.GetBool() ?
-		Magick::instance().getMessage(source, "VALS/ON") :
-		Magick::instance().getMessage(source, "VALS/OFF"))));
+    SEND(mynick, source, "COMMSERV/SET_TO",
+	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee,
+	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	   getMessage(source, "VALS/OFF"))));
+    LOG(LM_INFO, "COMMSERV/SET",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee,
+	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  getMessage(source, "VALS/OFF"))));
 }
 
 
-void CommServ::do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_lock_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_lock_Secure", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring onoff     = params.ExtractWord(4, " ");
+    mstring onoff = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -2915,66 +2718,57 @@ void CommServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
     if (Magick::instance().commserv.LCK_Secure())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     comm->L_Secure(false);
     comm->Secure(onoff.GetBool());
     comm->L_Secure(true);
     Magick::instance().commserv.stats.i_Lock++;
-    SEND(mynick, source, "COMMSERV/LOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"),
-		committee, (onoff.GetBool() ?
-			Magick::instance().getMessage(source, "VALS/ON") :
-			Magick::instance().getMessage(source, "VALS/OFF"))));
-    LOG(LM_INFO, "COMMSERV/LOCKED", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"),
-	committee, (onoff.GetBool() ?
-		Magick::instance().getMessage(source, "VALS/ON") :
-		Magick::instance().getMessage(source, "VALS/OFF"))));
+    SEND(mynick, source, "COMMSERV/LOCKED",
+	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee,
+	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	   getMessage(source, "VALS/OFF"))));
+    LOG(LM_INFO, "COMMSERV/LOCKED",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee,
+	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  getMessage(source, "VALS/OFF"))));
 }
 
 
-void CommServ::do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_lock_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_lock_Private", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring onoff     = params.ExtractWord(4, " ");
+    mstring onoff = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -2992,66 +2786,57 @@ void CommServ::do_lock_Private(const mstring &mynick, const mstring &source, con
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
     if (Magick::instance().commserv.LCK_Private())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     comm->L_Private(false);
     comm->Private(onoff.GetBool());
     comm->L_Private(true);
     Magick::instance().commserv.stats.i_Lock++;
-    SEND(mynick, source, "COMMSERV/LOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
-		committee, (onoff.GetBool() ?
-			Magick::instance().getMessage(source, "VALS/ON") :
-			Magick::instance().getMessage(source, "VALS/OFF"))));
-    LOG(LM_INFO, "COMMSERV/LOCKED", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"),
-	committee, (onoff.GetBool() ?
-		Magick::instance().getMessage(source, "VALS/ON") :
-		Magick::instance().getMessage(source, "VALS/OFF"))));
+    SEND(mynick, source, "COMMSERV/LOCKED",
+	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee,
+	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	   getMessage(source, "VALS/OFF"))));
+    LOG(LM_INFO, "COMMSERV/LOCKED",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee,
+	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  getMessage(source, "VALS/OFF"))));
 }
 
 
-void CommServ::do_lock_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_lock_OpenMemos(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_lock_OpenMemos", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 4)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
     mstring committee = params.ExtractWord(2, " ").UpperCase();
-    mstring onoff     = params.ExtractWord(4, " ");
+    mstring onoff = params.ExtractWord(4, " ");
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
@@ -3069,56 +2854,48 @@ void CommServ::do_lock_OpenMemos(const mstring &mynick, const mstring &source, c
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
     if (Magick::instance().commserv.LCK_OpenMemos())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee));
 	return;
     }
 
-    map_entry<Committee_t> comm = Magick::instance().commserv.GetList(committee);
+    map_entry < Committee_t > comm = Magick::instance().commserv.GetList(committee);
 
     comm->L_OpenMemos(false);
     comm->OpenMemos(onoff.GetBool());
     comm->L_OpenMemos(true);
     Magick::instance().commserv.stats.i_Lock++;
-    SEND(mynick, source, "COMMSERV/LOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
-		committee, (onoff.GetBool() ?
-			Magick::instance().getMessage(source, "VALS/ON") :
-			Magick::instance().getMessage(source, "VALS/OFF"))));
-    LOG(LM_INFO, "COMMSERV/LOCKED", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"),
-	committee, (onoff.GetBool() ?
-		Magick::instance().getMessage(source, "VALS/ON") :
-		Magick::instance().getMessage(source, "VALS/OFF"))));
+    SEND(mynick, source, "COMMSERV/LOCKED",
+	 (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee,
+	  (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	   getMessage(source, "VALS/OFF"))));
+    LOG(LM_INFO, "COMMSERV/LOCKED",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee,
+	 (onoff.GetBool()? Magick::instance().getMessage(source, "VALS/ON") : Magick::instance().
+	  getMessage(source, "VALS/OFF"))));
 }
 
 
-void CommServ::do_unlock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_unlock_Secure(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_unlock_Secure", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 3)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
@@ -3126,52 +2903,43 @@ void CommServ::do_unlock_Secure(const mstring &mynick, const mstring &source, co
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
     if (Magick::instance().commserv.LCK_Secure())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE"), committee));
 	return;
     }
 
     Magick::instance().commserv.GetList(committee)->L_Secure(false);
     Magick::instance().commserv.stats.i_Unlock++;
-    SEND(mynick, source, "COMMSERV/UNLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE")));
-    LOG(LM_INFO, "COMMSERV/UNLOCKED", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"),
-	committee));
+    SEND(mynick, source, "COMMSERV/UNLOCKED", (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_SECURE")));
+    LOG(LM_INFO, "COMMSERV/UNLOCKED",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_SECURE"), committee));
 }
 
 
-void CommServ::do_unlock_Private(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_unlock_Private(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_unlock_Private", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 3)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
@@ -3179,52 +2947,43 @@ void CommServ::do_unlock_Private(const mstring &mynick, const mstring &source, c
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
     if (Magick::instance().commserv.LCK_Private())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE"), committee));
 	return;
     }
 
     Magick::instance().commserv.GetList(committee)->L_Private(false);
     Magick::instance().commserv.stats.i_Unlock++;
-    SEND(mynick, source, "COMMSERV/UNLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE")));
-    LOG(LM_INFO, "COMMSERV/UNLOCKED", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"),
-	committee));
+    SEND(mynick, source, "COMMSERV/UNLOCKED", (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_PRIVATE")));
+    LOG(LM_INFO, "COMMSERV/UNLOCKED",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_PRIVATE"), committee));
 }
 
 
-void CommServ::do_unlock_OpenMemos(const mstring &mynick, const mstring &source, const mstring &params)
+void CommServ::do_unlock_OpenMemos(const mstring & mynick, const mstring & source, const mstring & params)
 {
     FT("CommServ::do_unlock_OpenMemos", (mynick, source, params));
 
-    mstring message = mstring(params.Before(" ") + " " +
-		params.ExtractWord(3, " ")).UpperCase();
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
     if (params.WordCount(" ") < 3)
     {
-	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (
-				message, mynick, message));
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
 	return;
     }
 
@@ -3232,39 +2991,31 @@ void CommServ::do_unlock_OpenMemos(const mstring &mynick, const mstring &source,
 
     if (!Magick::instance().commserv.IsList(committee))
     {
-	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (
-				committee));
+	SEND(mynick, source, "COMMSERV/ISNOTSTORED", (committee));
 	return;
     }
 
-    if (committee == Magick::instance().commserv.SADMIN_Name() ||
-	committee == Magick::instance().commserv.SOP_Name() ||
-	committee == Magick::instance().commserv.ADMIN_Name() ||
-	committee == Magick::instance().commserv.OPER_Name() ||
-	committee == Magick::instance().commserv.ALL_Name() ||
-	committee == Magick::instance().commserv.REGD_Name())
+    if (committee == Magick::instance().commserv.SADMIN_Name() || committee == Magick::instance().commserv.SOP_Name()
+	|| committee == Magick::instance().commserv.ADMIN_Name() || committee == Magick::instance().commserv.OPER_Name()
+	|| committee == Magick::instance().commserv.ALL_Name() || committee == Magick::instance().commserv.REGD_Name())
     {
-	SEND(mynick, source, "COMMSERV/NOTMODIFY", (
-				committee));
+	SEND(mynick, source, "COMMSERV/NOTMODIFY", (committee));
 	return;
     }
 
     if (Magick::instance().commserv.LCK_OpenMemos())
     {
-	SEND(mynick, source, "COMMSERV/ISLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
-		committee));
+	SEND(mynick, source, "COMMSERV/ISLOCKED",
+	     (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"), committee));
 	return;
     }
 
     Magick::instance().commserv.GetList(committee)->L_OpenMemos(false);
     Magick::instance().commserv.stats.i_Unlock++;
-    SEND(mynick, source, "COMMSERV/UNLOCKED", (
-		Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS")));
-    LOG(LM_INFO, "COMMSERV/UNLOCKED", (
-	Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
-	Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"),
-	committee));
+    SEND(mynick, source, "COMMSERV/UNLOCKED", (Magick::instance().getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS")));
+    LOG(LM_INFO, "COMMSERV/UNLOCKED",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("COMMSERV_INFO/SET_OPENMEMOS"), committee));
 }
 
 
@@ -3289,28 +3040,31 @@ SXP::Tag Committee_t::tag_UserDef("UserDef");
 void Committee_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Committee_t::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    if (!(i_Name == Magick::instance().commserv.SADMIN_Name() ||
-		i_Name == Magick::instance().commserv.ALL_Name() ||
-		i_Name == Magick::instance().commserv.REGD_Name()))
+    if (!
+	(i_Name == Magick::instance().commserv.SADMIN_Name() || i_Name == Magick::instance().commserv.ALL_Name()
+	 || i_Name == Magick::instance().commserv.REGD_Name()))
     {
-	if( pElement->IsA(tag_Members) )
+	if (pElement->IsA(tag_Members))
 	{
 	    entlist_t *tmp = new entlist_t;
+
 	    members_array.push_back(tmp);
 	    pIn->ReadTo(tmp);
 	}
     }
 
-    if( pElement->IsA(tag_Messages) )
+    if (pElement->IsA(tag_Messages))
     {
 	entlist_t *tmp = new entlist_t;
+
 	messages_array.push_back(tmp);
 	pIn->ReadTo(tmp);
     }
 
-    if( pElement->IsA(tag_UserDef) )
+    if (pElement->IsA(tag_UserDef))
     {
 	mstring *tmp = new mstring;
+
 	ud_array.push_back(tmp);
 	pElement->Retrieve(*tmp);
     }
@@ -3318,110 +3072,124 @@ void Committee_t::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Committee_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast<void>(pIn);
+    static_cast < void >(pIn);
 
     FT("Committee_t::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     //TODO: Add your source code here
-	if( pElement->IsA(tag_Name) )
-	{
-	    pElement->Retrieve(i_Name);
-	    ref_class::lockData(mVarArray("CommnServ", "list", i_Name.UpperCase()));
-	}
-	if( pElement->IsA(tag_RegTime) )	pElement->Retrieve(i_RegTime);
-	if( pElement->IsA(tag_HeadCom) )	pElement->Retrieve(i_HeadCom);
-	if( pElement->IsA(tag_Head) )		pElement->Retrieve(i_Head);
-	if( pElement->IsA(tag_Description) )	pElement->Retrieve(i_Description);
-	if( pElement->IsA(tag_Email) )		pElement->Retrieve(i_Email);
-	if( pElement->IsA(tag_URL) )		pElement->Retrieve(i_URL);
-	if( pElement->IsA(tag_set_OpenMemos) )
-	{
-	    bool tmp;
-	    pElement->Retrieve(tmp);
-	    setting.OpenMemos = tmp;
-	}
-	if( pElement->IsA(tag_set_Private) )
-	{
-	    bool tmp;
-	    pElement->Retrieve(tmp);
-	    setting.Private = tmp;
-	}
-	if( pElement->IsA(tag_set_Secure) )
-	{
-	    bool tmp;
-	    pElement->Retrieve(tmp);
-	    setting.Secure = tmp;
-	}
-	if( pElement->IsA(tag_lock_OpenMemos) )
-	{
-	    bool tmp;
-	    pElement->Retrieve(tmp);
-	    lock.OpenMemos = tmp;
-	}
- 	if( pElement->IsA(tag_lock_Private) )
-	{
-	    bool tmp;
-	    pElement->Retrieve(tmp);
-	    lock.Private = tmp;
-	}
-	if( pElement->IsA(tag_lock_Secure) )
-	{
-	    bool tmp;
-	    pElement->Retrieve(tmp);
-	    lock.Secure = tmp;
-	}
+    if (pElement->IsA(tag_Name))
+    {
+	pElement->Retrieve(i_Name);
+	ref_class::lockData(mVarArray("CommnServ", "list", i_Name.UpperCase()));
+    }
+    if (pElement->IsA(tag_RegTime))
+	pElement->Retrieve(i_RegTime);
+    if (pElement->IsA(tag_HeadCom))
+	pElement->Retrieve(i_HeadCom);
+    if (pElement->IsA(tag_Head))
+	pElement->Retrieve(i_Head);
+    if (pElement->IsA(tag_Description))
+	pElement->Retrieve(i_Description);
+    if (pElement->IsA(tag_Email))
+	pElement->Retrieve(i_Email);
+    if (pElement->IsA(tag_URL))
+	pElement->Retrieve(i_URL);
+    if (pElement->IsA(tag_set_OpenMemos))
+    {
+	bool tmp;
+
+	pElement->Retrieve(tmp);
+	setting.OpenMemos = tmp;
+    }
+    if (pElement->IsA(tag_set_Private))
+    {
+	bool tmp;
+
+	pElement->Retrieve(tmp);
+	setting.Private = tmp;
+    }
+    if (pElement->IsA(tag_set_Secure))
+    {
+	bool tmp;
+
+	pElement->Retrieve(tmp);
+	setting.Secure = tmp;
+    }
+    if (pElement->IsA(tag_lock_OpenMemos))
+    {
+	bool tmp;
+
+	pElement->Retrieve(tmp);
+	lock.OpenMemos = tmp;
+    }
+    if (pElement->IsA(tag_lock_Private))
+    {
+	bool tmp;
+
+	pElement->Retrieve(tmp);
+	lock.Private = tmp;
+    }
+    if (pElement->IsA(tag_lock_Secure))
+    {
+	bool tmp;
+
+	pElement->Retrieve(tmp);
+	lock.Secure = tmp;
+    }
 }
 
-void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+void Committee_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast<void>(attribs);
+    static_cast < void >(attribs);
 
     FT("Committee_t::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     //TODO: Add your source code here
-	pOut->BeginObject(tag_Committee_t);
+    pOut->BeginObject(tag_Committee_t);
 
-	WLOCK(("CommServ", "list", i_Name.UpperCase()));
-	pOut->WriteElement(tag_Name, i_Name);
-	pOut->WriteElement(tag_RegTime, i_RegTime);
-	pOut->WriteElement(tag_HeadCom, i_HeadCom);
-	pOut->WriteElement(tag_Head, i_Head);
-	pOut->WriteElement(tag_Description, i_Description);
-	pOut->WriteElement(tag_Email, i_Email);
-	pOut->WriteElement(tag_URL, i_URL);
-	pOut->WriteElement(tag_set_OpenMemos, setting.OpenMemos);
-	pOut->WriteElement(tag_set_Private, setting.Private);
-	pOut->WriteElement(tag_set_Secure, setting.Secure);
-	pOut->WriteElement(tag_lock_OpenMemos, lock.OpenMemos);
-	pOut->WriteElement(tag_lock_Private, lock.Private);
-	pOut->WriteElement(tag_lock_Secure, lock.Secure);
+    WLOCK(("CommServ", "list", i_Name.UpperCase()));
+    pOut->WriteElement(tag_Name, i_Name);
+    pOut->WriteElement(tag_RegTime, i_RegTime);
+    pOut->WriteElement(tag_HeadCom, i_HeadCom);
+    pOut->WriteElement(tag_Head, i_Head);
+    pOut->WriteElement(tag_Description, i_Description);
+    pOut->WriteElement(tag_Email, i_Email);
+    pOut->WriteElement(tag_URL, i_URL);
+    pOut->WriteElement(tag_set_OpenMemos, setting.OpenMemos);
+    pOut->WriteElement(tag_set_Private, setting.Private);
+    pOut->WriteElement(tag_set_Secure, setting.Secure);
+    pOut->WriteElement(tag_lock_OpenMemos, lock.OpenMemos);
+    pOut->WriteElement(tag_lock_Private, lock.Private);
+    pOut->WriteElement(tag_lock_Secure, lock.Secure);
 
-	if (!(i_Name == Magick::instance().commserv.ALL_Name() ||
-	      i_Name == Magick::instance().commserv.REGD_Name() ||
-	      i_Name == Magick::instance().commserv.SADMIN_Name()))
+    if (!
+	(i_Name == Magick::instance().commserv.ALL_Name() || i_Name == Magick::instance().commserv.REGD_Name()
+	 || i_Name == Magick::instance().commserv.SADMIN_Name()))
+    {
+	entlist_ui l;
+
+	for (l = i_Members.begin(); l != i_Members.end(); l++)
 	{
-	    entlist_ui l;
-	    for(l=i_Members.begin(); l!=i_Members.end(); l++)
-	    {
-		pOut->BeginObject(tag_Members);
-		pOut->WriteSubElement(const_cast<entlist_t *>(&(*l)));
-		pOut->EndObject(tag_Members);
-	    }
+	    pOut->BeginObject(tag_Members);
+	    pOut->WriteSubElement(const_cast < entlist_t * >(&(*l)));
+	    pOut->EndObject(tag_Members);
 	}
+    }
 
-	entlist_i k;
-	for(k=i_Messages.begin(); k!=i_Messages.end(); k++)
-	{
-	    pOut->BeginObject(tag_Messages);
-	    pOut->WriteSubElement(&(*k));
-	    pOut->EndObject(tag_Messages);
-	}
+    entlist_i k;
 
-        map<mstring,mstring>::const_iterator iter;
-        for(iter=i_UserDef.begin();iter!=i_UserDef.end();iter++)
-        {
-            pOut->WriteElement(tag_UserDef,iter->first+"\n"+iter->second);
-        }
+    for (k = i_Messages.begin(); k != i_Messages.end(); k++)
+    {
+	pOut->BeginObject(tag_Messages);
+	pOut->WriteSubElement(&(*k));
+	pOut->EndObject(tag_Messages);
+    }
 
-	pOut->EndObject(tag_Committee_t);
+    map < mstring, mstring >::const_iterator iter;
+    for (iter = i_UserDef.begin(); iter != i_UserDef.end(); iter++)
+    {
+	pOut->WriteElement(tag_UserDef, iter->first + "\n" + iter->second);
+    }
+
+    pOut->EndObject(tag_Committee_t);
 }
 
 SXP::Tag CommServ::tag_CommServ("CommServ");
@@ -3431,7 +3199,7 @@ void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
     FT("CommServ::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     Committee_t *c = new Committee_t;
 
-    if( pElement->IsA( c->GetClassTag() ) )
+    if (pElement->IsA(c->GetClassTag()))
     {
 	c_array.push_back(c);
 	pIn->ReadTo(c);
@@ -3444,28 +3212,30 @@ void CommServ::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void CommServ::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast<void>(pIn);
-    static_cast<void>(pElement);
+    static_cast < void >(pIn);
+    static_cast < void >(pElement);
 
     FT("CommServ::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
 }
 
-void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+void CommServ::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast<void>(attribs);
+    static_cast < void >(attribs);
 
     FT("CommServ::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
     // not sure if this is the right place to do this
     pOut->BeginObject(tag_CommServ);
 
     CommServ::list_t::iterator iter;
-    { RLOCK(("CommServ", "list"));
-    for (iter = ListBegin(); iter != ListEnd(); iter++)
     {
-	map_entry<Committee_t> comm(iter->second);
-	pOut->WriteSubElement(comm.entry());
-    }}
+	RLOCK(("CommServ", "list"));
+	for (iter = ListBegin(); iter != ListEnd(); iter++)
+	{
+	    map_entry < Committee_t > comm(iter->second);
+	    pOut->WriteSubElement(comm.entry());
+	}
+    }
 
     pOut->EndObject(tag_CommServ);
 }
@@ -3476,29 +3246,29 @@ void CommServ::PostLoad()
     NFT("CommServ::PostLoad");
     // Linkage, etc
     unsigned int i, j;
-    for (i=0; i<c_array.size(); i++)
+
+    for (i = 0; i < c_array.size(); i++)
     {
 	if (c_array[i] != NULL)
 	{
-	    for (j=0; j<c_array[i]->members_array.size(); j++)
+	    for (j = 0; j < c_array[i]->members_array.size(); j++)
 	    {
 		c_array[i]->i_Members.insert(*c_array[i]->members_array[j]);
 		delete c_array[i]->members_array[j];
 	    }
 	    c_array[i]->members_array.clear();
-	    for (j=0; j<c_array[i]->messages_array.size(); j++)
+	    for (j = 0; j < c_array[i]->messages_array.size(); j++)
 	    {
 		c_array[i]->i_Messages.push_back(*c_array[i]->messages_array[j]);
 		delete c_array[i]->messages_array[j];
 	    }
 	    c_array[i]->messages_array.clear();
-	    for (j=0; j<c_array[i]->ud_array.size(); j++)
+	    for (j = 0; j < c_array[i]->ud_array.size(); j++)
 	    {
 		if (c_array[i]->ud_array[j] != NULL)
 		{
 		    if (c_array[i]->ud_array[j]->Contains("\n"))
-			c_array[i]->i_UserDef[c_array[i]->ud_array[j]->Before("\n")] =
-				c_array[i]->ud_array[j]->After("\n");
+			c_array[i]->i_UserDef[c_array[i]->ud_array[j]->Before("\n")] = c_array[i]->ud_array[j]->After("\n");
 		    delete c_array[i]->ud_array[j];
 		}
 	    }
@@ -3512,23 +3282,23 @@ void CommServ::PostLoad()
 
     CommServ::list_t::iterator iter;
     RLOCK(("CommServ", "list"));
-    for (iter=i_list.begin(); iter!=i_list.end(); iter++)
+    for (iter = i_list.begin(); iter != i_list.end(); iter++)
     {
-	map_entry<Committee_t> comm(iter->second);
-	{ MLOCK(("CommServ", "list", iter->first, "member"));
-	for (comm->member = comm->begin();
-		comm->member != comm->end();
-		comm->member++)
+	map_entry < Committee_t > comm(iter->second);
 	{
-	    comm->member->PostLoad();
-	}}
-	{ MLOCK(("CommServ", "list", iter->first, "message"));
-	for (comm->message = comm->MSG_begin();
-		comm->message != comm->MSG_end();
-		comm->message++)
+	    MLOCK(("CommServ", "list", iter->first, "member"));
+	    for (comm->member = comm->begin(); comm->member != comm->end(); comm->member++)
+	    {
+		comm->member->PostLoad();
+	    }
+	}
 	{
-	    comm->message->PostLoad();
-	}}
+	    MLOCK(("CommServ", "list", iter->first, "message"));
+	    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
+	    {
+		comm->message->PostLoad();
+	    }
+	}
 
 	// We must ensure certain settings in pre-defined committees ...
 	// So check what committee this is, and if its one of them, then
@@ -3541,11 +3311,13 @@ void CommServ::PostLoad()
 	    comm->i_Head.erase();
 	    comm->i_HeadCom.erase();
 	    comm->i_Members.clear();
-	    { MLOCK(("CommServ", "list", iter->first, "member"));
-	    for (j=1; j<=Magick::instance().operserv.Services_Admin().WordCount(", "); j++)
-		comm->i_Members.insert(entlist_t(
-			Magick::instance().operserv.Services_Admin().ExtractWord(j, ", "),
-			Magick::instance().operserv.FirstName()));
+	    {
+		MLOCK(("CommServ", "list", iter->first, "member"));
+		for (j = 1; j <= Magick::instance().operserv.Services_Admin().WordCount(", "); j++)
+		    comm->i_Members.
+			insert(entlist_t
+			       (Magick::instance().operserv.Services_Admin().ExtractWord(j, ", "),
+				Magick::instance().operserv.FirstName()));
 	    }
 	    comm->Secure(SADMIN_Secure());
 	    comm->Private(SADMIN_Private());

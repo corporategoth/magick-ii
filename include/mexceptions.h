@@ -1,3 +1,4 @@
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -13,6 +14,7 @@
 #define _MEXCEPTIONS_H
 #include "pch.h"
 RCSID(mexceptions_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -22,6 +24,9 @@ RCSID(mexceptions_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.7  2001/12/20 08:02:31  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -50,366 +55,446 @@ RCSID(mexceptions_h, "@(#) $Id$");
 **
 ** ========================================================== */
 
- #ifdef MAGICK_HAS_EXCEPTIONS
+#ifdef MAGICK_HAS_EXCEPTIONS
 
-class E_NickServ_Stored : public exception
+class E_NickServ_Stored:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
-public:
-    E_NickServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_where(p_where), i_type(p_type)
+  public:
+      E_NickServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+			"") throw():i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_NickServ_Stored(const char *p_reason) throw()
-	: i_where(W_Other), i_type(T_Other)
+    E_NickServ_Stored(const char *p_reason) throw():i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_NickServ_Live : public exception
+class E_NickServ_Live:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
-public:
-    E_NickServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_where(p_where), i_type(p_type)
+  public:
+      E_NickServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		      "") throw():i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_NickServ_Live(const char *p_reason) throw()
-	: i_where(W_Other), i_type(T_Other)
+    E_NickServ_Live(const char *p_reason) throw():i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_NickServ_Recovered : public exception
+class E_NickServ_Recovered:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
-public:
-    E_NickServ_Recovered(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_where(p_where), i_type(p_type)
+  public:
+      E_NickServ_Recovered(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+			   "") throw():i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_NickServ_Recovered(const char *p_reason) throw()
-	: i_where(W_Other), i_type(T_Other)
+    E_NickServ_Recovered(const char *p_reason) throw():i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_ChanServ_Stored : public exception
+class E_ChanServ_Stored:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
-public:
-    E_ChanServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_where(p_where), i_type(p_type)
+  public:
+      E_ChanServ_Stored(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+			"") throw():i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_ChanServ_Stored(const char *p_reason) throw()
-	: i_where(W_Other), i_type(T_Other)
+    E_ChanServ_Stored(const char *p_reason) throw():i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_ChanServ_Live : public exception
+class E_ChanServ_Live:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
-public:
-    E_ChanServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_where(p_where), i_type(p_type)
+  public:
+      E_ChanServ_Live(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		      "") throw():i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_ChanServ_Live(const char *p_reason) throw()
-	: i_where(W_Other), i_type(T_Other)
+    E_ChanServ_Live(const char *p_reason) throw():i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_CommServ_List : public exception
+class E_CommServ_List:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
-public:
-    E_CommServ_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_where(p_where), i_type(p_type)
+  public:
+      E_CommServ_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		      "") throw():i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_CommServ_List(const char *p_reason) throw()
-	: i_where(W_Other), i_type(T_Other)
+    E_CommServ_List(const char *p_reason) throw():i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_Server_List : public exception
+class E_Server_List:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
-public:
-    E_Server_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_where(p_where), i_type(p_type)
+  public:
+      E_Server_List(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		    "") throw():i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_Server_List(const char *p_reason) throw()
-	: i_where(W_Other), i_type(T_Other)
+    E_Server_List(const char *p_reason) throw():i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_MemoServ_Nick : public exception
+class E_MemoServ_Nick:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
     size_t i_memo;
 
-public:
-    E_MemoServ_Nick(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "", size_t p_memo = 0) throw()
-	: i_where(p_where), i_type(p_type), i_memo(p_memo)
+  public:
+      E_MemoServ_Nick(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "", size_t p_memo =
+		      0) throw():i_where(p_where), i_type(p_type), i_memo(p_memo)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_MemoServ_Nick(const char *p_reason, size_t p_memo = 0) throw()
-	: i_where(W_Other), i_type(T_Other), i_memo(p_memo)
+    E_MemoServ_Nick(const char *p_reason, size_t p_memo = 0) throw():i_where(W_Other), i_type(T_Other), i_memo(p_memo)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
     const size_t memo() const throw()
-	{ return i_memo; }
+    {
+	return i_memo;
+    }
 };
 
-class E_MemoServ_Channel : public exception
+class E_MemoServ_Channel:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
     size_t i_news;
 
-public:
-    E_MemoServ_Channel(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "", size_t p_news = 0) throw()
-	: i_where(p_where), i_type(p_type), i_news(p_news)
+  public:
+      E_MemoServ_Channel(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+			 "", size_t p_news = 0) throw():i_where(p_where), i_type(p_type), i_news(p_news)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_MemoServ_Channel(const char *p_reason, size_t p_news = 0) throw()
-	: i_where(W_Other), i_type(T_Other), i_news(p_news)
+    E_MemoServ_Channel(const char *p_reason, size_t p_news = 0) throw():i_where(W_Other), i_type(T_Other), i_news(p_news)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
     const size_t news() const throw()
-	{ return i_news; }
+    {
+	return i_news;
+    }
 };
 
-class E_DccMap_Xfers : public exception
+class E_DccMap_Xfers:public exception
 {
-public:
-    enum E_where { W_Add, W_Get, W_Rem, W_Use, W_Other };
-    enum E_type { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
+  public:
+    enum E_where
+    { W_Add, W_Get, W_Rem, W_Use, W_Other };
+    enum E_type
+    { T_NotFound, T_Found, T_Invalid, T_Blank, T_Other };
 
-private:
-    E_where i_where;
+  private:
+      E_where i_where;
     E_type i_type;
     char i_reason[1024];
 
-public:
-    E_DccMap_Xfers(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_where(p_where), i_type(p_type)
+  public:
+      E_DccMap_Xfers(const E_where p_where = W_Other, const E_type p_type = T_Other, const char *p_reason =
+		     "") throw():i_where(p_where), i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_DccMap_Xfers(const char *p_reason) throw()
-	: i_where(W_Other), i_type(T_Other)
+    E_DccMap_Xfers(const char *p_reason) throw():i_where(W_Other), i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
     const E_where where() const throw()
-	{ return i_where; }
+    {
+	return i_where;
+    }
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_Thread : public exception
+class E_Thread:public exception
 {
-public:
-    enum E_type { T_NotProcessing, T_Other };
+  public:
+    enum E_type
+    { T_NotProcessing, T_Other };
 
-private:
-    E_type i_type;
+  private:
+      E_type i_type;
     char i_reason[1024];
 
-public:
-    E_Thread(const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_type(p_type)
+  public:
+      E_Thread(const E_type p_type = T_Other, const char *p_reason = "") throw():i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_Thread(const char *p_reason) throw()
-	: i_type(T_Other)
+    E_Thread(const char *p_reason) throw():i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
 
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
-class E_Magick : public exception
+class E_Magick:public exception
 {
-public:
-    enum E_type { T_NotFound, T_Invalid, T_Other };
+  public:
+    enum E_type
+    { T_NotFound, T_Invalid, T_Other };
 
-private:
-    E_type i_type;
+  private:
+      E_type i_type;
     char i_reason[1024];
 
-public:
-    E_Magick(const E_type p_type = T_Other, const char *p_reason = "") throw()
-	: i_type(p_type)
+  public:
+      E_Magick(const E_type p_type = T_Other, const char *p_reason = "") throw():i_type(p_type)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
-    E_Magick(const char *p_reason) throw()
-	: i_type(T_Other)
+    E_Magick(const char *p_reason) throw():i_type(T_Other)
     {
 	ACE_OS::strncpy(i_reason, p_reason, 1024);
     }
 
     const E_type type() const throw()
-	{ return i_type; }
+    {
+	return i_type;
+    }
     const char *what() const throw()
-	{ return i_reason; };
+    {
+	return i_reason;
+    };
 };
 
 #endif

@@ -1,4 +1,6 @@
+
 /* crypto/bf/bf_locl.h */
+
 /* Copyright (C) 1995-1997 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -174,13 +176,13 @@
 #  if defined(BF_PTR)
 
 #  ifndef BF_LONG_LOG2
-#    define BF_LONG_LOG2  2       /* default to BF_LONG being 32 bits */
+#    define BF_LONG_LOG2  2	/* default to BF_LONG being 32 bits */
 #  endif
 #  define BF_M  (0xFF<<BF_LONG_LOG2)
 #  define BF_0  (24-BF_LONG_LOG2)
 #  define BF_1  (16-BF_LONG_LOG2)
 #  define BF_2  ( 8-BF_LONG_LOG2)
-#  define BF_3  BF_LONG_LOG2 /* left shift */
+#  define BF_3  BF_LONG_LOG2	/* left shift */
 
 /*
  * This is normally very good on RISC platforms where normally you

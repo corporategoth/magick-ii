@@ -1,3 +1,4 @@
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -11,6 +12,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_magick_stampkeys_c_ ## x () { return y; }
 RCSID(magick_stampkeys_c, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -20,6 +22,9 @@ RCSID(magick_stampkeys_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2002/01/12 14:42:09  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.7  2001/12/16 01:48:08  prez
 ** Fixed RCSID
 **
@@ -94,11 +99,11 @@ int main(int argc, char **argv)
     }
 
 #ifdef WIN32
-    srand(time(NULL) * (long)GetCurrentProcess());
+    srand(time(NULL) * (long) GetCurrentProcess());
 #else
     srand(time(NULL) * getpid());
 #endif
-    for (i=0; i<MAX_KEYLEN; i++)
+    for (i = 0; i < MAX_KEYLEN; i++)
     {
 	k1[i] = mrandom(256) * 100;
 	if (k1[i] == 0)
@@ -106,18 +111,18 @@ int main(int argc, char **argv)
     }
 
 #ifdef WIN32
-    srand(time(NULL) * (long)GetCurrentProcess());
+    srand(time(NULL) * (long) GetCurrentProcess());
 #else
     srand(time(NULL) * getpid());
 #endif
-    for (i=0; i<MAX_KEYLEN; i++)
+    for (i = 0; i < MAX_KEYLEN; i++)
     {
 	k2[i] = mrandom(256) * 100;
 	if (k2[i] == 0)
 	    i--;
     }
 
-    for (i=1; i<argc; i++)
+    for (i = 1; i < argc; i++)
     {
 	char c;
 
@@ -135,11 +140,12 @@ int main(int argc, char **argv)
 	    if (c == '|')
 	    {
 		int rc;
-		char buf[MAX_KEYLEN+1];
-		memset(buf, 0, MAX_KEYLEN+1);
+		char buf[MAX_KEYLEN + 1];
+
+		memset(buf, 0, MAX_KEYLEN + 1);
 		buf[0] = '|';
-		rc = fread(&buf[1], 1, MAX_KEYLEN-1, fout);
-		if (rc < MAX_KEYLEN-1)
+		rc = fread(&buf[1], 1, MAX_KEYLEN - 1, fout);
+		if (rc < MAX_KEYLEN - 1)
 		{
 		    fprintf(stderr, "%s: fread failed trying to get buffer ...\n", argv[i]);
 		    break;
@@ -191,7 +197,7 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-		    rc = fseek(fout, -1 * (MAX_KEYLEN-1), SEEK_CUR);
+		    rc = fseek(fout, -1 * (MAX_KEYLEN - 1), SEEK_CUR);
 		    if (rc < 0)
 		    {
 			fprintf(stderr, "%s: fseek failed trying to skip non-substitution ...\n", argv[i]);
@@ -212,12 +218,12 @@ int main(int argc, char **argv)
 int mrandom(int upper)
 {
 #ifdef __BORLANDC__
-	return random(upper);
+    return random(upper);
 #else
 #  ifdef _MSC_VER
-	return rand() % upper;
+    return rand() % upper;
 #  else
-	return random() % upper;
+    return random() % upper;
 #  endif
 #endif
 }

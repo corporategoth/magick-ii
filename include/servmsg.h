@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _SERVMSG_H
 #include "pch.h"
 RCSID(servmsg_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(servmsg_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.34  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.33  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -120,17 +125,19 @@ RCSID(servmsg_h, "@(#) $Id$");
 // todo: move this over to a ACE_TASK style architecture
 // maybe even use an ACE  message queue for passing data too
 // but then again, maybe not.
-class ServMsg : public mBase
+class ServMsg:public mBase
 {
     friend class Magick;
-private:
-    bool showsync;
+  private:
+      bool showsync;
 
     void AddCommands();
     void RemCommands();
-public:
-    ServMsg();
-    ~ServMsg() {}
+  public:
+      ServMsg();
+     ~ServMsg()
+    {
+    }
     class stats_t
     {
 	friend class ServMsg;
@@ -146,57 +153,104 @@ public:
 	unsigned long i_file_Priv;
 	unsigned long i_file_Rename;
 	unsigned long i_file_Cancel;
-    public:
-	stats_t() { clear(); }
-	void clear() {
+      public:
+	  stats_t()
+	{
+	    clear();
+	}
+	void clear()
+	{
 	    i_ClearTime = mDateTime::CurrentDateTime();
-	    i_Global = i_Ask = i_Stats = i_Credits = i_file_Add =
-	    i_file_Del = i_file_Send = i_file_Priv = i_file_Rename =
-	    i_file_Cancel = 0; }
-	mDateTime ClearTime()const		{ return i_ClearTime; }
-	unsigned long Global()const		{ return i_Global; }
-	unsigned long Ask()const		{ return i_Ask; }
-	unsigned long Stats()const		{ return i_Stats; }
-	unsigned long Credits()const		{ return i_Credits; }
-	unsigned long File_Add()const		{ return i_file_Add; }
-	unsigned long File_Del()const		{ return i_file_Del; }
-	unsigned long File_Send()const		{ return i_file_Send; }
-	unsigned long File_Priv()const		{ return i_file_Priv; }
-	unsigned long File_Rename()const	{ return i_file_Rename; }
-	unsigned long File_Cancel()const	{ return i_file_Cancel; }
-    } stats;
+	    i_Global = i_Ask = i_Stats = i_Credits = i_file_Add = i_file_Del = i_file_Send = i_file_Priv = i_file_Rename =
+		i_file_Cancel = 0;
+	}
+	mDateTime ClearTime() const
+	{
+	    return i_ClearTime;
+	}
+	unsigned long Global() const
+	{
+	    return i_Global;
+	}
+	unsigned long Ask() const
+	{
+	    return i_Ask;
+	}
+	unsigned long Stats() const
+	{
+	    return i_Stats;
+	}
+	unsigned long Credits() const
+	{
+	    return i_Credits;
+	}
+	unsigned long File_Add() const
+	{
+	    return i_file_Add;
+	}
+	unsigned long File_Del() const
+	{
+	    return i_file_Del;
+	}
+	unsigned long File_Send() const
+	{
+	    return i_file_Send;
+	}
+	unsigned long File_Priv() const
+	{
+	    return i_file_Priv;
+	}
+	unsigned long File_Rename() const
+	{
+	    return i_file_Rename;
+	}
+	unsigned long File_Cancel() const
+	{
+	    return i_file_Cancel;
+	}
+    }
+    stats;
 
-    bool ShowSync()const { return showsync; }
+    bool ShowSync() const
+    {
+	return showsync;
+    }
 
-    threadtype_enum Get_TType() const { return tt_OtherServ; }
-    mstring GetInternalName() const { return "ServMsg"; }
-    void execute(mstring& source, const mstring& msgtype, const mstring& params);
+    threadtype_enum Get_TType() const
+    {
+	return tt_OtherServ;
+    }
+    mstring GetInternalName() const
+    {
+	return "ServMsg";
+    }
+    void execute(mstring & source, const mstring & msgtype, const mstring & params);
 
-    static void do_Help(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_Credits(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_Contrib(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_Languages(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_BreakDown(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_BreakDown2(map<mstring,pair<unsigned int,unsigned int> > ServCounts,
-	const mstring &mynick, const mstring &source, const mstring &previndent, const mstring &server);
-    static void do_Global(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_Ask(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_stats_Nick(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_stats_Channel(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_stats_Oper(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_stats_Other(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_stats_Usage(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_stats_All(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_Stats(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_List(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_Add(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_Del(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_Rename(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_Priv(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_Send(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_Dcc(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_Cancel(const mstring &mynick, const mstring &source, const mstring &params);
-    static void do_file_Lookup(const mstring &mynick, const mstring &source, const mstring &params);
+    static void do_Help(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_Credits(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_Contrib(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_Languages(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_BreakDown(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_BreakDown2(map < mstring, pair < unsigned int, unsigned int > >ServCounts, const mstring & mynick,
+			      const mstring & source, const mstring & previndent, const mstring & server);
+    static void do_Global(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_Ask(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_stats_Nick(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_stats_Channel(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_stats_Oper(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_stats_Other(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_stats_Usage(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_stats_All(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_Stats(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_List(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_Add(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_Del(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_Rename(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_Priv(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_Send(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_Dcc(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_Cancel(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_file_Lookup(const mstring & mynick, const mstring & source, const mstring & params);
 };
 
 #endif

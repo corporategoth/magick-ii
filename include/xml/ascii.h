@@ -1,3 +1,4 @@
+
 /*
 Copyright (c) 1998, 1999 Thai Open Source Software Center Ltd
 See the file COPYING for copying permission.
@@ -69,7 +70,7 @@ See the file COPYING for copying permission.
 #define ASCII_9 0x39
 
 #define ASCII_TAB 0x09
-#define ASCII_SPACE 0x20 
+#define ASCII_SPACE 0x20
 #define ASCII_EXCL 0x21
 #define ASCII_QUOT 0x22
 #define ASCII_AMP 0x26

@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _MSTRING_H
 #include "pch.h"
 RCSID(mstring_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(mstring_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.90  2001/12/27 04:54:46  prez
 ** Converted SXP to not use STL strings, use mstring instead.
 **
@@ -277,28 +282,41 @@ RCSID(mstring_h, "@(#) $Id$");
 
 
 #ifdef MAGICK_HAS_EXCEPTIONS
+
 /** Exception thrown when allocation of memory fails inside mstring */
-class mstring_noalloc : public exception
+class mstring_noalloc:public exception
 {
     char i_reason[1024];
-public:
-    mstring_noalloc(const char *reason = "") throw()
-	{ ACE_OS::strncpy(i_reason, reason, 1024); }
-    ~mstring_noalloc() throw() {}
+  public:
+      mstring_noalloc(const char *reason = "") throw()
+    {
+	ACE_OS::strncpy(i_reason, reason, 1024);
+    }
+     ~mstring_noalloc() throw()
+    {
+    }
     const char *what() const throw()
-	{ return i_reason; }
+    {
+	return i_reason;
+    }
 };
 
 /** Exception thrown when deallocation of memory fails inside mstring */
-class mstring_nodealloc : public exception
+class mstring_nodealloc:public exception
 {
     char i_reason[1024];
-public:
-    mstring_nodealloc(const char *reason = "") throw() 
-	{ ACE_OS::strncpy(i_reason, reason, 1024); }
-    ~mstring_nodealloc() throw() {}
+  public:
+      mstring_nodealloc(const char *reason = "") throw()
+    {
+	ACE_OS::strncpy(i_reason, reason, 1024);
+    }
+     ~mstring_nodealloc() throw()
+    {
+    }
     const char *what() const throw()
-	{ return i_reason; }
+    {
+	return i_reason;
+    }
 };
 #endif
 
@@ -308,13 +326,21 @@ public:
 class mstring;
 
 extern const mstring DirSlash;		/**< The correct directory separator for
+
 					     whatever platform you are on */
+
 extern const mstring Blank;		/**< Equivalent to mstring("") */
+
 extern const mstring IRC_CTCP;		/**< The IRC CTCP code, usually ^A */
+
 extern const mstring IRC_Bold;		/**< The IRC bold code, usually ^B */
+
 extern const mstring IRC_Underline;	/**< The IRC underline code, usually ^_ */
+
 extern const mstring IRC_Reverse;	/**< The IRC reverse code, usually ^V */
+
 extern const mstring IRC_Color;		/**< The IRC color code, usually ^C */
+
 extern const mstring IRC_Off;		/**< The IRC off code, usually ^O */
 
 /** Wildcard match of a pattern to a string
@@ -326,7 +352,7 @@ extern const mstring IRC_Off;		/**< The IRC off code, usually ^O */
  *  @param nocase Setting this to true makes the search case insensative.
  *  @return true if the pattern matched, otherwise false.
  */
-bool match_wild (const char *pattern, const char *str, bool nocase);
+bool match_wild(const char *pattern, const char *str, bool nocase);
 
 /** Formats a string using printf formatting codes
  *  The formatting string may not be NULL, and you must supply as many
@@ -334,12 +360,13 @@ bool match_wild (const char *pattern, const char *str, bool nocase);
  *  man page for more information on printf-style formatting.
  *  @param fmt The formatting string to apply using all other parameters.
  *  @return The fmt string with all formatting applied, as an mstring. */
-mstring fmstring (const char *fmt, ...);
+mstring fmstring(const char *fmt, ...);
 
 #ifndef HAVE_VSNPRINTF
 #ifdef HAVE__VSNPRINTF
 #define vsnprintf _vsnprintf
 #else
+
 /** For systems that dont have vsnprintf
  *  A simple wrapper to ACE_OS::vsprintf
  */
@@ -350,15 +377,16 @@ inline int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
 
     int iLen = 0;
     char *nbuf = new char[sz];
+
     if (nbuf != NULL)
     {
-        iLen = ACE_OS::vsprintf(nbuf, fmt, ap);
-        strncpy(buf, nbuf, sz);
-        delete [] nbuf;
+	iLen = ACE_OS::vsprintf(nbuf, fmt, ap);
+	strncpy(buf, nbuf, sz);
+	delete[]nbuf;
     }
     else
     {
-        iLen = ACE_OS::vsprintf(buf, fmt, ap);
+	iLen = ACE_OS::vsprintf(buf, fmt, ap);
     }
     return iLen;
 }
@@ -369,6 +397,7 @@ inline int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
 #ifdef HAVE__SNPRINTF
 #define snprintf _snprintf
 #else
+
 /** For systems that dont have snprintf
  *  A simple wrapper to vsnprintf.
  *  @see vsnprintf
@@ -376,8 +405,10 @@ inline int vsnprintf(char *buf, const size_t sz, const char *fmt, va_list ap)
 inline int snprintf(char *buf, const size_t sz, const char *fmt, ...)
 {
     va_list argptr;
+
     va_start(argptr, fmt);
     int iLen = vsnprintf(buf, sz, fmt, argptr);
+
     va_end(argptr);
     return iLen;
 }
@@ -385,67 +416,79 @@ inline int snprintf(char *buf, const size_t sz, const char *fmt, ...)
 #endif /* snprintf */
 
 #ifndef HAVE_ITOA
+
 /** Reverse of atoi */
 inline const char *itoa(int i)
 {
     static char sv[16];
+
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv)-1, "%d", i);
+    snprintf(sv, sizeof(sv) - 1, "%d", i);
     return sv;
 }
 #endif
 
 #ifndef HAVE_LTOA
+
 /** Reverse of strtol */
 inline const char *ltoa(long l)
 {
     static char sv[16];
+
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv)-1, "%ld", l);
+    snprintf(sv, sizeof(sv) - 1, "%ld", l);
     return sv;
 }
 #endif
 
 #ifndef HAVE_FTOA
+
 /** Reverse of atof */
 inline const char *ftoa(float f)
 {
     static char sv[64];
+
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv)-1, "%f", f);
+    snprintf(sv, sizeof(sv) - 1, "%f", f);
     return sv;
 }
 #endif
 
 #ifndef HAVE_DTOA
+
 /** Reverse of strtod */
 inline const char *dtoa(double d)
 {
     static char sv[512];
+
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv)-1, "%g", d);
+    snprintf(sv, sizeof(sv) - 1, "%g", d);
     return sv;
 }
 #endif
 
 #ifndef HAVE_ULTOA
+
 /** Reverse of strtoul */
 inline const char *ultoa(unsigned long ul)
 {
     static char sv[16];
+
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv)-1, "%lu", ul);
+    snprintf(sv, sizeof(sv) - 1, "%lu", ul);
     return sv;
 }
 #endif
 
 #ifndef HAVE_UITOA
+
 /** Reverse of strtoul, but for int */
 inline const char *uitoa(unsigned int ui)
 {
     static char sv[16];
+
     memset(sv, 0, sizeof(sv));
-    snprintf(sv, sizeof(sv)-1, "%u", ui);
+    snprintf(sv, sizeof(sv) - 1, "%u", ui);
     return sv;
 }
 #endif
@@ -477,10 +520,10 @@ class mstring
 
 #ifdef MAGICK_HAS_EXCEPTIONS
     static inline char *alloc(const size_t sz) throw(mstring_noalloc);
-    static inline void dealloc(char * & in) throw(mstring_nodealloc);
+    static inline void dealloc(char *&in) throw(mstring_nodealloc);
 #else
     static inline char *alloc(const size_t sz);
-    static inline void dealloc(char * & in);
+    static inline void dealloc(char *&in);
 #endif
     inline void lock_read() const;
     inline void lock_write() const;
@@ -490,56 +533,101 @@ class mstring
 #ifdef MSTRING_LOCKS_WORK
 	char lockname[32];
 	UNIQ_LOCK_TYPE uniq_lock("mstring_lock_id");
-	uniq_lock.acquire();
-	next_lock_id++;
-	snprintf(lockname, 32, "mstring_%08x%08x", time(NULL), next_lock_id);
-	uniq_lock.release();
-	i_lock = new LOCK_TYPE(lockname);
+	  uniq_lock.acquire();
+	  next_lock_id++;
+	  snprintf(lockname, 32, "mstring_%08x%08x", time(NULL), next_lock_id);
+	  uniq_lock.release();
+	  i_lock = new LOCK_TYPE(lockname);
 #endif
 
-	i_len = 0;
-	i_res = 0;
-	i_str = NULL;
+	  i_len = 0;
+	  i_res = 0;
+	  i_str = NULL;
     }
 
     int occurances(const char *str, const size_t len) const;
 
-public:
+  public:
     //@{
+
     /** 
      *  Constructors used to create a new mstring.  Everything will be
      *  converted to a string one way or another.
      */
     mstring()
-	{ init(); }
-    mstring(const mstring &in)
-	{ init(); copy(in); }
-    mstring(const string &in)
-	{ init(); copy(in); }
+    {
+	init();
+    }
+    mstring(const mstring & in)
+    {
+	init();
+	copy(in);
+    }
+    mstring(const string & in)
+    {
+	init();
+	copy(in);
+    }
     mstring(const char *in, const size_t len)
-	{ init(); copy(in, len); }
+    {
+	init();
+	copy(in, len);
+    }
     mstring(const char *in)
-	{ init(); copy(in); }
+    {
+	init();
+	copy(in);
+    }
     mstring(const char in)
-	{ init(); copy(in); }
+    {
+	init();
+	copy(in);
+    }
     mstring(const unsigned char in)
-	{ init(); copy(in); }
+    {
+	init();
+	copy(in);
+    }
     mstring(const int in)
-	{ init(); copy(in); }
+    {
+	init();
+	copy(in);
+    }
     mstring(const unsigned int in)
-	{ init(); copy(in); }
+    {
+	init();
+	copy(in);
+    }
     mstring(const long in)
-	{ init(); copy(in); }
+    {
+	init();
+	copy(in);
+    }
     mstring(const unsigned long in)
-	{ init(); copy(in); }
+    {
+	init();
+	copy(in);
+    }
     mstring(const float in)
-	{ init(); copy(in); }
+    {
+	init();
+	copy(in);
+    }
     mstring(const double in)
-	{ init(); copy(in); }
-    mstring(const vector<mstring> &in)
-	{ init(); Assemble(in); }
-    mstring(const list<mstring> &in)
-	{ init(); Assemble(in); }
+    {
+	init();
+	copy(in);
+    }
+    mstring(const vector < mstring > &in)
+    {
+	init();
+	Assemble(in);
+    }
+    mstring(const list < mstring > &in)
+    {
+	init();
+	Assemble(in);
+    }
     //@}
 
     /** Destructor */
@@ -587,7 +675,7 @@ public:
     /** Swap the contents of this mstring with another
      *  @param in The mstring to swap contents with.
      */
-    void swap(mstring &in);
+    void swap(mstring & in);
 
     /** Represent the current contents as a C-style string
      *  @return A C-style string (char *) representation of current
@@ -632,32 +720,55 @@ public:
     bool empty() const;
 
     //@{
+
     /** Alias for the copy() function.
      *  This is required to satisfy the constructors.
      *  @see copy()
      */
-    void copy(const mstring &in)
-	{ copy(in.i_str, in.i_len); }
-    void copy(const string &in)
-	{ copy(in.c_str(), in.length()); }
+    void copy(const mstring & in)
+    {
+	copy(in.i_str, in.i_len);
+    }
+    void copy(const string & in)
+    {
+	copy(in.c_str(), in.length());
+    }
     void copy(const char *in)
-	{ copy(in, strlen(in)); }
+    {
+	copy(in, strlen(in));
+    }
     void copy(const char in)
-	{ copy(&in, 1); }
+    {
+	copy(&in, 1);
+    }
     void copy(const unsigned char in)
-	{ copy(reinterpret_cast<const char *>(&in), 1); }
+    {
+	copy(reinterpret_cast < const char *>(&in), 1);
+    }
     void copy(const int in)
-	{ copy(itoa(in)); }
+    {
+	copy(itoa(in));
+    }
     void copy(const unsigned int in)
-	{ copy(uitoa(in)); }
+    {
+	copy(uitoa(in));
+    }
     void copy(const long in)
-	{ copy(ltoa(in)); }
+    {
+	copy(ltoa(in));
+    }
     void copy(const unsigned long in)
-	{ copy(ultoa(in)); }
+    {
+	copy(ultoa(in));
+    }
     void copy(const float in)
-	{ copy(ftoa(in)); }
+    {
+	copy(ftoa(in));
+    }
     void copy(const double in)
-	{ copy(dtoa(in)); }
+    {
+	copy(dtoa(in));
+    }
     //@}
 
     /** Insert a string at the beginning of the current contents
@@ -666,8 +777,10 @@ public:
      *  @param in The string to insert
      *  @see insert()
      */
-    void prepend(const mstring &in)
-	{ insert(0, in.i_str, in.i_len); }
+    void prepend(const mstring & in)
+    {
+	insert(0, in.i_str, in.i_len);
+    }
 
     /** Alias for the append function
      *  This function handles not only mstring, but all data types
@@ -675,8 +788,10 @@ public:
      *  @param in The string to append.
      *  @see append()
      */
-    void append(const mstring &in)
-	{ append(in.i_str, in.i_len); }
+    void append(const mstring & in)
+    {
+	append(in.i_str, in.i_len);
+    }
 
     /** Alias for the insert function
      *  This function handles not only mstring, but all data types
@@ -684,8 +799,10 @@ public:
      *  @param in The string to inserted.
      *  @see insert()
      */
-    void insert(const size_t pos, const mstring &in)
-	{ insert(pos, in.i_str, in.i_len); }
+    void insert(const size_t pos, const mstring & in)
+    {
+	insert(pos, in.i_str, in.i_len);
+    }
 
     /** Alias for the compare function
      *  This function handles not only mstring, but all data types
@@ -693,8 +810,10 @@ public:
      *  @param in The string to compared.
      *  @see compare()
      */
-    int compare(const mstring &in) const
-	{ return compare(in.i_str, in.i_len); }
+    int compare(const mstring & in) const
+    {
+	return compare(in.i_str, in.i_len);
+    }
 
     /** Operator alias for the first() function
      *  This operator allows you to use syntax like:
@@ -704,15 +823,19 @@ public:
      *  @see first();
      */
     const char operator[] (const size_t off) const
-	{ return first(off+1); }
+    {
+	return first(off + 1);
+    }
 
     /** Operator alias for the c_str() function
      *  This operator allows you to use syntax like:
      *    char *s = mystring;
      *  @see c_str()
      */
-    operator const char *() const
-	{ return c_str(); }
+    operator  const char *() const
+    {
+	return c_str();
+    }
 
     /** Represent the current contents as a STL string
      *  This operator allows you to use syntax like:
@@ -720,32 +843,43 @@ public:
      *  @return An STL string representation of current contents.
 		This will be "" if there is none.
      */
-    operator const string () const
-	{ return string(c_str()); }
+    operator  const string() const
+    {
+	return string(c_str());
+    }
 
     /** Operator alias for the copy() function
      *  This operator allows you to use syntax like:
      *    mstring s = mystring;
      *  @see copy()
      */
-    mstring &operator= (const mstring &rhs)
-	{ copy(rhs); return *this; }
+    mstring & operator=(const mstring & rhs)
+    {
+	copy(rhs);
+	return *this;
+    }
 
     /** Operator alias for the append() function
      *  This operator allows you to use syntax like:
      *    mystring += "hello world";
      *  @see append()
      */
-    mstring &operator+= (const mstring &rhs)
-	{ append(rhs); return *this; }
+    mstring & operator+=(const mstring & rhs)
+    {
+	append(rhs);
+	return *this;
+    }
 
     /** Operator alias for the append() function
      *  This operator allows you to use syntax like:
      *    mystring << "hello world";
      *  @see append()
      */
-    mstring &operator<< (const mstring &rhs)
-	{ append(rhs); return *this; }
+    mstring & operator<<(const mstring & rhs)
+    {
+	append(rhs);
+	return *this;
+    }
 
     // ALL return -1 if not found, or the offset
     // of the requested char/string.
@@ -788,8 +922,10 @@ public:
      *  @param in The sequence of characters to search for.
      *  @see find_first_of()
      */
-    int find_first_of(const mstring &in) const
-	{ return find_first_of(in.i_str, in.i_len); }
+    int find_first_of(const mstring & in) const
+    {
+	return find_first_of(in.i_str, in.i_len);
+    }
 
     /** Alias for the find_last_of function
      *  This function handles not only mstring, but all data types
@@ -797,8 +933,10 @@ public:
      *  @param in The sequence of characters to search for.
      *  @see find_last_of()
      */
-    int find_last_of(const mstring &in) const
-	{ return find_last_of(in.i_str, in.i_len); }
+    int find_last_of(const mstring & in) const
+    {
+	return find_last_of(in.i_str, in.i_len);
+    }
 
     /** Alias for the find_first_not_of function
      *  This function handles not only mstring, but all data types
@@ -806,8 +944,10 @@ public:
      *  @param in The sequence of characters to ignore.
      *  @see find_first_not_of()
      */
-    int find_first_not_of(const mstring &in) const
-	{ return find_first_not_of(in.i_str, in.i_len); }
+    int find_first_not_of(const mstring & in) const
+    {
+	return find_first_not_of(in.i_str, in.i_len);
+    }
 
     /** Alias for the find_last_not_of function
      *  This function handles not only mstring, but all data types
@@ -815,8 +955,10 @@ public:
      *  @param in The sequence of characters to ignore.
      *  @see find_last_not_of()
      */
-    int find_last_not_of(const mstring &in) const
-	{ return find_last_not_of(in.i_str, in.i_len); }
+    int find_last_not_of(const mstring & in) const
+    {
+	return find_last_not_of(in.i_str, in.i_len);
+    }
 
     /** Find an instance of the specified string from the beginning
      *  This does not quite work the same as STL string's find,
@@ -827,7 +969,7 @@ public:
      *  @return Offset (from 0) of the starting location of the
 		found string, or -1 if not found.
      */
-    int find(const mstring &str, int occurance = 1) const;
+    int find(const mstring & str, int occurance = 1) const;
 
     /** Find an instance of the specified string from the end
      *  This does not quite work the same as STL string's find,
@@ -838,7 +980,7 @@ public:
      *  @return Offset (from 0) of the starting location of the
 		found string, or -1 if not found.
      */
-    int rfind(const mstring &str, int occurance = 1) const;
+    int rfind(const mstring & str, int occurance = 1) const;
 
     /** Replace instances of the specified string with another string
      *  @param i_find String to search for.
@@ -846,7 +988,7 @@ public:
      *  @param all If true, replace ALL instances, otherwise only
 		replace the first instance, default is true.
      */
-    void replace(const mstring &i_find, const mstring &i_replace, const bool all = true);
+    void replace(const mstring & i_find, const mstring & i_replace, const bool all = true);
 
     /** Replace a specific segment of current contents with a string
      *  @param begin Offset (from 0) of the first character to replace.
@@ -855,10 +997,10 @@ public:
      *  @param len Length of replacement string.
      */
     void replace(const int begin, const int end, const char *i_replace, const size_t len)
-	{
-	    erase(begin, end);
-	    insert(begin, i_replace, len);
-	}
+    {
+	erase(begin, end);
+	insert(begin, i_replace, len);
+    }
 
     /** Alias for the replace function
      *  This function handles not only mstring, but all data types
@@ -868,8 +1010,10 @@ public:
      *  @param i_replace String to put in place of the specified characters.
      *  @see replace()
      */
-    void replace(const int begin, const int end, const mstring &i_replace)
-	{ replace(begin, end, i_replace.i_str, i_replace.i_len); }
+    void replace(const int begin, const int end, const mstring & i_replace)
+    {
+	replace(begin, end, i_replace.i_str, i_replace.i_len);
+    }
 
     /** Replace a single character in the current contents
      *  @param offset Offset (from 0) of the character to replace.
@@ -890,8 +1034,10 @@ public:
      *  @return true if the string was found, false otherwise.
      *  @see find()
      */
-    bool Contains(const mstring &in) const
-	{ return (find(in) >= 0); }
+    bool Contains(const mstring & in) const
+    {
+	return (find(in) >= 0);
+    }
 
     /** Use printf style format codes to build the current contents
      *  The formatting string may not be NULL, and you must supply as many
@@ -947,7 +1093,7 @@ public:
      *  @return The amount of times the specified string appears
 		in the current contents.
      */
-    int Occurances(const mstring &in, const bool NoCase = false) const;
+    int Occurances(const mstring & in, const bool NoCase = false) const;
 
     /** An alias to the find() command.
      *  This function handles not only mstring, but all data types
@@ -959,7 +1105,7 @@ public:
 		found string, or -1 if not found.
      *  @see find()
      */
-    int Find(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
+    int Find(const mstring & in, const bool NoCase = false, const int occurance = 1) const;
 
     /** An alias to the find() command, reversed
      *  This function handles not only mstring, but all data types
@@ -973,7 +1119,7 @@ public:
 		found string, or -1 if not found.
      *  @see find()
      */
-    int RevFind(const mstring &in, const bool NoCase = false, const int occurance = 1) const;
+    int RevFind(const mstring & in, const bool NoCase = false, const int occurance = 1) const;
 
     /** An alias of the compare() function
      *  This function handles not only mstring, but all data types
@@ -985,7 +1131,7 @@ public:
 		above 0, when it is alphabetically 'lower'.
      *  @see compare()
      */
-    int Cmp(const mstring &in, const bool NoCase = false) const;
+    int Cmp(const mstring & in, const bool NoCase = false) const;
 
     /** An alias of the compare() function
      *  This function handles not only mstring, but all data types
@@ -995,8 +1141,10 @@ public:
      *  @return true if the current contents and string are the same.
      *  @see compare()
      */
-    bool IsSameAs(const mstring &in, const bool NoCase = false) const
-	{ return (Cmp(in, NoCase)==0); }
+    bool IsSameAs(const mstring & in, const bool NoCase = false) const
+    {
+	return (Cmp(in, NoCase) == 0);
+    }
 
     /** An alias of the match_wild() function
      *  This function handles not only mstring, but all data types
@@ -1008,8 +1156,10 @@ public:
      *  @return true if the pattern matched, otherwise false.
      *  @see match_wild()
      */
-    bool Matches(const mstring &in, const bool NoCase = false) const
-	{ return match_wild(in.c_str(), c_str(), NoCase); }
+    bool Matches(const mstring & in, const bool NoCase = false) const
+    {
+	return match_wild(in.c_str(), c_str(), NoCase);
+    }
 
     /** An alias of the replace() function
      *  This function handles not only mstring, but all data types
@@ -1019,8 +1169,10 @@ public:
 		only the first instance should be, defaults to true.
      *  @see replace()
      */
-    void Remove(const mstring &in, const bool All = true)
-	{ replace(in, "", All); }
+    void Remove(const mstring & in, const bool All = true)
+    {
+	replace(in, "", All);
+    }
 
     /** An alias of the erase() function
      *  This function handles not only mstring, but all data types
@@ -1034,12 +1186,12 @@ public:
      *  @see erase()
      */
     void Truncate(const size_t pos, const bool right = true)
-	{
-	    if (right)
-		erase(pos);
-	    else
-		erase(0, pos);
-	}
+    {
+	if (right)
+	    erase(pos);
+	else
+	    erase(0, pos);
+    }
 
     /** Remove all excess delimiters from the current contents
      *  @param right true if we should remove all excess characters
@@ -1048,7 +1200,7 @@ public:
      *  @param delims Characters we consider delimiters, and therefore
 		trimworthy.
      */
-    void Trim(const bool right=true, const mstring &delims = " \n\r\t");
+    void Trim(const bool right = true, const mstring & delims = " \n\r\t");
 
     /** Get a trimmed copy of the current contents, without modifying them.
      *  @param right true if we should remove all excess characters
@@ -1059,35 +1211,35 @@ public:
      *  @return an mstring of the current contents, after Trim().
      *  @see Trim()
      */
-    mstring Strip(const bool right=true, const mstring &delims = " \n\r\t") const;
+    mstring Strip(const bool right = true, const mstring & delims = " \n\r\t") const;
 
     /** Get all contents before an instance of a string
      *  @param in String to search for
      *  @param occurance Instance of string we are looking for
      *  @return All contents before the specified instance of the string
      */
-    mstring Before(const mstring &in, const int occurance = 1) const;
+    mstring Before(const mstring & in, const int occurance = 1) const;
 
     /** Get all contents after an instance of a string
      *  @param in String to search for
      *  @param occurance Instance of string we are looking for
      *  @return All contents after the specified instance of the string
      */
-    mstring After(const mstring &in, const int occurance = 1) const;
+    mstring After(const mstring & in, const int occurance = 1) const;
 
     /** Get all contents before an instance of a string from the end
      *  @param in String to search for
      *  @param occurance Instance (from the end) of string we are looking for
      *  @return All contents before the specified instance of the string
      */
-    mstring RevBefore(const mstring &in, const int occurance = 1) const;
+    mstring RevBefore(const mstring & in, const int occurance = 1) const;
 
     /** Get all contents after an instance of a string from the end
      *  @param in String to search for
      *  @param occurance Instance (from the end) of string we are looking for
      *  @return All contents after the specified instance of the string
      */
-    mstring RevAfter(const mstring &in, const int occurance = 1) const;
+    mstring RevAfter(const mstring & in, const int occurance = 1) const;
 
     /** An alias for the substr() command
      *  If from or to are beyond the limits of the current contents, the
@@ -1106,7 +1258,9 @@ public:
 		contents.
      */
     mstring Left(const int pos) const
-	{ return SubString(0, pos-1); }
+    {
+	return SubString(0, pos - 1);
+    }
 
     /** An alias for the SubString() command
      *  @param pos How many characters to obtain.
@@ -1114,7 +1268,9 @@ public:
 		contents.
      */
     mstring Right(const int pos) const
-	{ return SubString(pos); }
+    {
+	return SubString(pos);
+    }
 
     /** Count how many 'words' given a delimiter
      *  @param delim The delimiters to use (may have multipal delimiters)
@@ -1123,7 +1279,7 @@ public:
 		counts.  Defaults to true.
      *  @return Amount of 'words' given the specified delimiter.
      */
-    unsigned int WordCount(const mstring &delim, const bool assemble = true) const;
+    unsigned int WordCount(const mstring & delim, const bool assemble = true) const;
 
     /** Get a specific 'word' given a delimiter
      *  @param count The word number you want (starting at 1).
@@ -1134,8 +1290,7 @@ public:
      *  @return A new mstring with the 'word' specified, or "" if that
 		word number does not exist.
      */
-    mstring ExtractWord(const unsigned int count, const mstring &delim,
-					const bool assemble = true) const;
+    mstring ExtractWord(const unsigned int count, const mstring & delim, const bool assemble = true) const;
 
     /** Get the possition of a specific 'word' given a delimiter
      *  @param count The word number you want (starting at 1).
@@ -1146,8 +1301,7 @@ public:
      *  @return An offset (from 0) of the start possition of the specified
 		'word', or -1 if that word number does not exist.
      */
-    int WordPosition(const unsigned int count, const mstring &delim,
-					const bool assemble = true) const;
+    int WordPosition(const unsigned int count, const mstring & delim, const bool assemble = true) const;
 
     /** Create a vector from the current contents given a delimiter
      *  @param delim The delimiters to use (may have multipal delimiters)
@@ -1157,7 +1311,7 @@ public:
      *  @return A vector of mstrings, which is the current contents broken
 		up by delimiter.
      */
-    vector<mstring> Vector(const mstring &delim, const bool assemble = true) const;
+    vector < mstring > Vector(const mstring & delim, const bool assemble = true) const;
 
     /** Create a list from the current contents given a delimiter
      *  @param delim The delimiters to use (may have multipal delimiters)
@@ -1167,42 +1321,56 @@ public:
      *  @return A list of mstrings, which is the current contents broken
 		up by delimiter.
      */
-    list<mstring> List(const mstring &delim, const bool assemble = true) const;
+    list < mstring > List(const mstring & delim, const bool assemble = true) const;
 
     /** Replace current contents with the contents of a vector
      *  @param text The vector you wish to replace the current contets with.
      *  @param deilm The delimiter to put in between each entry of the vector.
      */
-    void Assemble(const vector<mstring> &text, const mstring &delim = " ");
+    void Assemble(const vector < mstring > &text, const mstring & delim = " ");
 
     /** Replace current contents with the contents of a list
      *  @param text The list you wish to replace the current contets with.
      *  @param deilm The delimiter to put in between each entry of the list.
      */
-    void Assemble(const list<mstring> &text, const mstring &delim = " ");
+    void Assemble(const list < mstring > &text, const mstring & delim = " ");
 };
 
 /** @defgroup overloads Operator Overloads
  * @{
  */
-inline bool operator== (const mstring &lhs, const mstring &rhs)
-	{ return (lhs.compare(rhs) == 0); }
-inline bool operator!= (const mstring &lhs, const mstring &rhs)
-	{ return (lhs.compare(rhs) != 0); }
-inline bool operator< (const mstring &lhs, const mstring &rhs)
-	{ return (lhs.compare(rhs) < 0); }
-inline bool operator> (const mstring &lhs, const mstring &rhs)
-	{ return (lhs.compare(rhs) > 0); }
-inline bool operator<= (const mstring &lhs, const mstring &rhs)
-	{ return (lhs.compare(rhs) <= 0); }
-inline bool operator>= (const mstring &lhs, const mstring &rhs)
-	{ return (lhs.compare(rhs) >= 0); }
-inline mstring operator+ (const mstring &lhs, const mstring &rhs)
+inline bool operator==(const mstring & lhs, const mstring & rhs)
+{
+    return (lhs.compare(rhs) == 0);
+}
+inline bool operator!=(const mstring & lhs, const mstring & rhs)
+{
+    return (lhs.compare(rhs) != 0);
+}
+inline bool operator<(const mstring & lhs, const mstring & rhs)
+{
+    return (lhs.compare(rhs) < 0);
+}
+inline bool operator>(const mstring & lhs, const mstring & rhs)
+{
+    return (lhs.compare(rhs) > 0);
+}
+inline bool operator<=(const mstring & lhs, const mstring & rhs)
+{
+    return (lhs.compare(rhs) <= 0);
+}
+inline bool operator>=(const mstring & lhs, const mstring & rhs)
+{
+    return (lhs.compare(rhs) >= 0);
+}
+inline mstring operator+(const mstring & lhs, const mstring & rhs)
 {
     mstring str(lhs);
+
     str.append(rhs.c_str(), rhs.length());
     return str;
 }
+
 /** @} */
 
 #define OPERATOR_SET(TYPE)						\
@@ -1235,17 +1403,7 @@ inline mstring operator+ (const mstring &lhs, const mstring &rhs)
 	inline mstring operator+ (const mstring &lhs, const TYPE rhs)	\
 		{ return (lhs + mstring(rhs)); }			\
 
-OPERATOR_SET(string &)
-OPERATOR_SET(char *)
-OPERATOR_SET(char)
-OPERATOR_SET(unsigned char)
-OPERATOR_SET(int)
-OPERATOR_SET(unsigned int)
-OPERATOR_SET(long)
-OPERATOR_SET(unsigned long)
-OPERATOR_SET(float)
-OPERATOR_SET(double)
-OPERATOR_SET(vector<mstring> &)
-OPERATOR_SET(list<mstring> &)
-
+OPERATOR_SET(string &) OPERATOR_SET(char *) OPERATOR_SET(char) OPERATOR_SET(unsigned char) OPERATOR_SET(int)
+OPERATOR_SET(unsigned int) OPERATOR_SET(long) OPERATOR_SET(unsigned long) OPERATOR_SET(float) OPERATOR_SET(double)
+OPERATOR_SET(vector < mstring > &) OPERATOR_SET(list < mstring > &)
 #endif

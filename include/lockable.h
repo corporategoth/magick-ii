@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _LOCKABLE_H
 #include "pch.h"
 RCSID(lockable_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(lockable_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.68  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.67  2002/01/10 19:30:37  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -187,8 +192,8 @@ RCSID(lockable_h, "@(#) $Id$");
 
 #ifdef MAGICK_LOCKS_WORK
 
-#define MAX_LOCKS 16 /* Max variants */
-#define LOCK_SEGMENT 8 /* Amount of lock memory to alloc */
+#define MAX_LOCKS 16		/* Max variants */
+#define LOCK_SEGMENT 8		/* Amount of lock memory to alloc */
 class mLOCK
 {
     friend class mLock_Read;
@@ -196,11 +201,11 @@ class mLOCK
     friend class mLock_Mutex;
 
     static mLock_Mutex *maplock;
-    static map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > > LockMap;
-    static ACE_Expandable_Cached_Fixed_Allocator<ACE_Thread_Mutex> memory_area;
+    static map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >LockMap;
+    static ACE_Expandable_Cached_Fixed_Allocator < ACE_Thread_Mutex > memory_area;
 
     bool islocked;
-    vector<mstring> locks;
+      vector < mstring > locks;
 #ifdef MAGICK_TRACE_WORKS
     T_Locking tlock[MAX_LOCKS];
 #endif
@@ -208,14 +213,26 @@ class mLOCK
     static bool AcquireMapLock();
     static bool ReleaseMapLock();
 
-public:
-    mLOCK() {}
-    mLOCK(const locktype_enum type, const mVarArray &args);
+  public:
+      mLOCK()
+    {
+    }
+    mLOCK(const locktype_enum type, const mVarArray & args);
+
     ~mLOCK();
-    bool Locked() const { return islocked; }
-    size_t Locks() const { return locks.size(); }
-    static size_t AllLocks() { return LockMap.size(); }
-    static list<pair<void *, locktype_enum> > mLOCK::GetLocks(ACE_thread_t thr = ACE_Thread::self());
+    bool Locked() const
+    {
+	return islocked;
+    }
+    size_t Locks() const
+    {
+	return locks.size();
+    }
+    static size_t AllLocks()
+    {
+	return LockMap.size();
+    }
+    static list < pair < void *, locktype_enum > >mLOCK::GetLocks(ACE_thread_t thr = ACE_Thread::self());
 };
 
 /* We need to ditch these for the below operator new */
@@ -226,52 +243,82 @@ public:
 #undef malloc
 #undef free
 
-class mLock_Read : public ACE_RW_Thread_Mutex
+class mLock_Read:public ACE_RW_Thread_Mutex
 {
-	typedef ACE_RW_Thread_Mutex base;
-public:
-	mLock_Read (const char *name = 0)
-		: base(name) {}
+    typedef ACE_RW_Thread_Mutex base;
+  public:
+      mLock_Read(const char *name = 0):base(name)
+    {
+    }
 
-	int acquire()		{ return acquire_read(); }
-	int tryacquire()		{ return tryacquire_read(); }
+    int acquire()
+    {
+	return acquire_read();
+    }
+    int tryacquire()
+    {
+	return tryacquire_read();
+    }
 
-	void *operator new (size_t size)
-		{ static_cast<void>(size);
-		return mLOCK::memory_area.malloc(sizeof(mLock_Read)); }
-	void operator delete (void *ptr)
-		{ mLOCK::memory_area.free(ptr); }
+    void *operator  new(size_t size)
+    {
+	static_cast < void >(size);
+
+	return mLOCK::memory_area.malloc(sizeof(mLock_Read));
+    }
+    void operator  delete(void *ptr)
+    {
+	mLOCK::memory_area.free(ptr);
+    }
 };
 
-class mLock_Write : public ACE_RW_Thread_Mutex
+class mLock_Write:public ACE_RW_Thread_Mutex
 {
-	typedef ACE_RW_Thread_Mutex base;
-public:
-	mLock_Write (const char *name = 0)
-		: base(name) {}
+    typedef ACE_RW_Thread_Mutex base;
+  public:
+      mLock_Write(const char *name = 0):base(name)
+    {
+    }
 
-	int acquire()		{ return acquire_write(); }
-	int tryacquire()		{ return tryacquire_write(); }
+    int acquire()
+    {
+	return acquire_write();
+    }
+    int tryacquire()
+    {
+	return tryacquire_write();
+    }
 
-	void *operator new (size_t size)
-		{ static_cast<void>(size);
-		return mLOCK::memory_area.malloc(sizeof(mLock_Write)); }
-	void operator delete (void *ptr)
-		{ mLOCK::memory_area.free(ptr); }
+    void *operator  new(size_t size)
+    {
+	static_cast < void >(size);
+
+	return mLOCK::memory_area.malloc(sizeof(mLock_Write));
+    }
+    void operator  delete(void *ptr)
+    {
+	mLOCK::memory_area.free(ptr);
+    }
 };
 
-class mLock_Mutex : public ACE_Recursive_Thread_Mutex
+class mLock_Mutex:public ACE_Recursive_Thread_Mutex
 {
-	typedef ACE_Recursive_Thread_Mutex base;
-public:
-	mLock_Mutex (const char *name = 0)
-		: base(name) {}
+    typedef ACE_Recursive_Thread_Mutex base;
+  public:
+      mLock_Mutex(const char *name = 0):base(name)
+    {
+    }
 
-	void *operator new (size_t size)
-		{ static_cast<void>(size);
-		return mLOCK::memory_area.malloc(sizeof(mLock_Mutex)); }
-	void operator delete (void *ptr)
-		{ mLOCK::memory_area.free(ptr); }
+    void *operator  new(size_t size)
+    {
+	static_cast < void >(size);
+
+	return mLOCK::memory_area.malloc(sizeof(mLock_Mutex));
+    }
+    void operator  delete(void *ptr)
+    {
+	mLOCK::memory_area.free(ptr);
+    }
 };
 
 /* I hate having to do this ... but *shrug* */
@@ -387,18 +434,20 @@ class mSocket
 #endif
 
     void init();
-public:
-    static map<unsigned long, mSocket *> SockMap;
+  public:
+    static map < unsigned long, mSocket * >SockMap;
     static unsigned short FindAvailPort();
 
-    mSocket()
-    { init(); }
-    mSocket(const ACE_INET_Addr &addr, const unsigned long timeout)
+      mSocket()
+    {
+	init();
+    }
+    mSocket(const ACE_INET_Addr & addr, const unsigned long timeout)
     {
 	init();
 	Connect(addr, timeout);
     }
-    mSocket(const mstring& host, const unsigned short port, const unsigned long timeout)
+    mSocket(const mstring & host, const unsigned short port, const unsigned long timeout)
     {
 	init();
 	Connect(host, port, timeout);
@@ -408,21 +457,24 @@ public:
 	init();
 	Accept(port, timeout);
     }
-    mSocket(ACE_SOCK_Stream *in, const dir_enum direction, const bool alloc)
+    mSocket(ACE_SOCK_Stream * in, const dir_enum direction, const bool alloc)
     {
 	init();
 	Bind(in, direction, alloc);
     }
 
-    mSocket(const mSocket &in) { *this = in; }
+    mSocket(const mSocket & in)
+    {
+	*this = in;
+    }
     ~mSocket();
-    mSocket &operator=(const mSocket &in);
+    mSocket & operator=(const mSocket & in);
 
-    bool Connect(const ACE_INET_Addr &addr, const unsigned long timeout = 0);
+    bool Connect(const ACE_INET_Addr & addr, const unsigned long timeout = 0);
     bool Connect(const unsigned long host, const unsigned short port, const unsigned long timeout = 0);
-    bool Connect(const mstring &host, const unsigned short port, const unsigned long timeout = 0);
+    bool Connect(const mstring & host, const unsigned short port, const unsigned long timeout = 0);
     bool Accept(const unsigned short port, const unsigned long timeout = 0);
-    bool Bind(ACE_SOCK_Stream *in, const dir_enum direction = D_Unknown, const bool alloc = true);
+    bool Bind(ACE_SOCK_Stream * in, const dir_enum direction = D_Unknown, const bool alloc = true);
     ACE_SOCK_Stream *Unbind();
 
     mstring Local_Host() const;
@@ -433,7 +485,7 @@ public:
     unsigned short Remote_Port() const;
 
     bool IsConnected() const;
-    void Resolve(const socktype_enum type, const mstring &info);
+    void Resolve(const socktype_enum type, const mstring & info);
     int Last_Error() const;
     mstring Last_Error_String() const;
 
@@ -444,7 +496,8 @@ public:
 
 class mThread
 {
-private:
+  private:
+
 /** Custom thread class (inherited ACE_Thread) that is constructed as
 	new thread(function, veriable, ThreadID::type_enum);
 	It should incorporate ThreadID association in the threads class, so it can
@@ -456,17 +509,20 @@ private:
 	to know 1) if tracing is turned on for that type, and 2) do the write out.
 */
     // really should be using auto_ptr's here, *shrug* maybe later
-    typedef map<ACE_thread_t,ThreadID*> selftothreadidmap_t;
+    typedef map < ACE_thread_t, ThreadID * >selftothreadidmap_t;
     static selftothreadidmap_t selftothreadidmap;
     static mLock_Mutex *maplock;
 
     static bool AcquireMapLock();
     static bool ReleaseMapLock();
 
-public:
-    static ThreadID* find(const ACE_thread_t thread=ACE_Thread::self());
-    static vector<ThreadID*> findall();
-    static size_t size() { return selftothreadidmap.size(); }
+  public:
+    static ThreadID *find(const ACE_thread_t thread = ACE_Thread::self());
+    static vector < ThreadID * >findall();
+    static size_t size()
+    {
+	return selftothreadidmap.size();
+    }
     static void Attach(const threadtype_enum ttype);
     static void Detach();
     static void ReAttach(const threadtype_enum ttype);

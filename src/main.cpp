@@ -1,6 +1,6 @@
 #include "pch.h"
 #ifdef WIN32
-  #pragma hdrstop
+#pragma hdrstop
 #endif
 
 /*  Magick IRC Services
@@ -16,6 +16,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_main_cpp_ ## x () { return y; }
 RCSID(main_cpp, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +26,9 @@ RCSID(main_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2002/01/12 14:42:09  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.54  2001/12/21 05:02:29  prez
 ** Changed over from using a global ACE_Reactor to using an instance inside
 ** of the Magick instance.
@@ -118,6 +122,7 @@ bool isWinNT()
     return (Win32Platform == VER_PLATFORM_WIN32_NT)
 #elif _MSC_VER
     OSVERSIONINFO osvi;
+
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
     if (GetVersionEx(&osvi))
 	return (osvi.dwPlatformId == VER_PLATFORM_WIN32_NT);
@@ -132,26 +137,26 @@ bool isWinNT()
 int main(int argc, char **argv)
 {
 #ifdef MAGICK_TRACE_WORKS
-    Trace::levelname.push_back(Trace::levelname_struct( "OFF", Trace::Off ));
-    Trace::levelname.push_back(Trace::levelname_struct( "NONE", Trace::Off ));
-    Trace::levelname.push_back(Trace::levelname_struct( "FULL", Trace::Full ));
-    Trace::levelname.push_back(Trace::levelname_struct( "ALL", Trace::Full ));
-    Trace::levelname.push_back(Trace::levelname_struct( "STAT*", Trace::Stats ));
-    Trace::levelname.push_back(Trace::levelname_struct( "SOUR*", Trace::Source ));
-    Trace::levelname.push_back(Trace::levelname_struct( "SRC*", Trace::Source ));
-    Trace::levelname.push_back(Trace::levelname_struct( "L*CK*", Trace::Locking ));
-    Trace::levelname.push_back(Trace::levelname_struct( "S*CK*", Trace::Sockets ));
-    Trace::levelname.push_back(Trace::levelname_struct( "BIND*", Trace::Bind ));
-    Trace::levelname.push_back(Trace::levelname_struct( "REG*", Trace::Bind ));
-    Trace::levelname.push_back(Trace::levelname_struct( "HOOK*", Trace::Bind ));
-    Trace::levelname.push_back(Trace::levelname_struct( "EXT*", Trace::External ));
-    Trace::levelname.push_back(Trace::levelname_struct( "CHAT*", Trace::Chatter ));
-    Trace::levelname.push_back(Trace::levelname_struct( "CHE*", Trace::CheckPoint ));
-    Trace::levelname.push_back(Trace::levelname_struct( "C*P*", Trace::CheckPoint ));
-    Trace::levelname.push_back(Trace::levelname_struct( "COM*", Trace::Comments ));
-    Trace::levelname.push_back(Trace::levelname_struct( "F*NC*", Trace::Functions ));
-    Trace::levelname.push_back(Trace::levelname_struct( "MOD*", Trace::Modify ));
-    Trace::levelname.push_back(Trace::levelname_struct( "CH*G*", Trace::Changing ));
+    Trace::levelname.push_back(Trace::levelname_struct("OFF", Trace::Off));
+    Trace::levelname.push_back(Trace::levelname_struct("NONE", Trace::Off));
+    Trace::levelname.push_back(Trace::levelname_struct("FULL", Trace::Full));
+    Trace::levelname.push_back(Trace::levelname_struct("ALL", Trace::Full));
+    Trace::levelname.push_back(Trace::levelname_struct("STAT*", Trace::Stats));
+    Trace::levelname.push_back(Trace::levelname_struct("SOUR*", Trace::Source));
+    Trace::levelname.push_back(Trace::levelname_struct("SRC*", Trace::Source));
+    Trace::levelname.push_back(Trace::levelname_struct("L*CK*", Trace::Locking));
+    Trace::levelname.push_back(Trace::levelname_struct("S*CK*", Trace::Sockets));
+    Trace::levelname.push_back(Trace::levelname_struct("BIND*", Trace::Bind));
+    Trace::levelname.push_back(Trace::levelname_struct("REG*", Trace::Bind));
+    Trace::levelname.push_back(Trace::levelname_struct("HOOK*", Trace::Bind));
+    Trace::levelname.push_back(Trace::levelname_struct("EXT*", Trace::External));
+    Trace::levelname.push_back(Trace::levelname_struct("CHAT*", Trace::Chatter));
+    Trace::levelname.push_back(Trace::levelname_struct("CHE*", Trace::CheckPoint));
+    Trace::levelname.push_back(Trace::levelname_struct("C*P*", Trace::CheckPoint));
+    Trace::levelname.push_back(Trace::levelname_struct("COM*", Trace::Comments));
+    Trace::levelname.push_back(Trace::levelname_struct("F*NC*", Trace::Functions));
+    Trace::levelname.push_back(Trace::levelname_struct("MOD*", Trace::Modify));
+    Trace::levelname.push_back(Trace::levelname_struct("CH*G*", Trace::Changing));
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
@@ -162,10 +167,12 @@ int main(int argc, char **argv)
 	Magick::StartTime(mDateTime::CurrentDateTime());
 
 	int Result = MAGICK_RET_RESTART;
+
 	mThread::Attach(tt_MAIN);
 	while (Result == MAGICK_RET_RESTART)
 	{
 	    Magick instance(argc, argv);
+
 	    Magick::register_instance(&instance);
 
 	    Result = instance.Init();
@@ -185,7 +192,7 @@ int main(int argc, char **argv)
 		instance.Finish();
 		continue;
 	    }
-	
+
 	    Result = instance.Stop();
 	    if (Result != MAGICK_RET_NORMAL)
 	    {
@@ -201,38 +208,38 @@ int main(int argc, char **argv)
 	if (Result == MAGICK_RET_LOCKED)
 	    mFile::Erase(argv[0]);
 #ifdef WIN32
-        WSACleanup ();
+	WSACleanup();
 #endif
 	return Result;
 #ifdef MAGICK_HAS_EXCEPTIONS
     }
-    catch(exception &e)
+    catch(exception & e)
     {
 	// new style STL exceptions
-	ACE_OS::fprintf(stderr,"(EXC) Unhandled exception: %s\n",e.what());
+	ACE_OS::fprintf(stderr, "(EXC) Unhandled exception: %s\n", e.what());
 	ACE_OS::fflush(stderr);
     }
     catch(char *str)
     {
 	// exceptions from memory management
-	ACE_OS::fprintf(stderr,"(STR) Unhandled exception: %s\n",str);
+	ACE_OS::fprintf(stderr, "(STR) Unhandled exception: %s\n", str);
 	ACE_OS::fflush(stderr);
     }
     catch(int i)
     {
 	// old style c exceptions
-	ACE_OS::fprintf(stderr,"(INT) Unhandled exception: %d\n",i);
+	ACE_OS::fprintf(stderr, "(INT) Unhandled exception: %d\n", i);
 	ACE_OS::fflush(stderr);
     }
     catch(...)
     {
 	// even older style exceptions like SIGSEGV
-	ACE_OS::fprintf(stderr,"(OTH) Unhandled exception.\n");
+	ACE_OS::fprintf(stderr, "(OTH) Unhandled exception.\n");
 	ACE_OS::fflush(stderr);
     }
 #endif
 #ifdef WIN32
-    WSACleanup ();
+    WSACleanup();
 #endif
     return MAGICK_RET_ERROR;
 }

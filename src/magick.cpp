@@ -1,10 +1,10 @@
 #include "pch.h"
 #ifdef WIN32
-  #pragma hdrstop
+#pragma hdrstop
 #else
-  #pragma implementation
-  #pragma implementation "language.h"
-  #pragma implementation "logfile.h"
+#pragma implementation
+#pragma implementation "language.h"
+#pragma implementation "logfile.h"
 #endif
 
 /*  Magick IRC Services
@@ -20,6 +20,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_magick_cpp_ ## x () { return y; }
 RCSID(magick_cpp, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -29,6 +30,9 @@ RCSID(magick_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.343  2002/01/12 14:42:09  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.342  2002/01/10 19:30:38  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -625,15 +629,16 @@ static bool nofork = false;
 #endif
 
 mDateTime Magick::i_StartTime;
-map<ACE_thread_t, Magick *> Magick::InstanceMap;
+
+map < ACE_thread_t, Magick * >Magick::InstanceMap;
 #ifndef MAGICK_HAS_EXCEPTIONS
 static Magick GLOB_Magick;
 #endif
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void Magick::register_instance(Magick *ins, ACE_thread_t id) throw(E_Magick)
+void Magick::register_instance(Magick * ins, ACE_thread_t id) throw(E_Magick)
 #else
-void Magick::register_instance(Magick *ins, ACE_thread_t id)
+void Magick::register_instance(Magick * ins, ACE_thread_t id)
 #endif
 {
     if (ins == NULL)
@@ -654,17 +659,17 @@ void Magick::deregister_instance(ACE_thread_t id)
 
 bool Magick::instance_exists(ACE_thread_t id)
 {
-    map<ACE_thread_t, Magick *>::iterator iter = InstanceMap.find(id);
+    map < ACE_thread_t, Magick * >::iterator iter = InstanceMap.find(id);
     return (iter != InstanceMap.end());
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-Magick &Magick::instance(ACE_thread_t id) throw(E_Magick)
+Magick & Magick::instance(ACE_thread_t id) throw(E_Magick)
 #else
-Magick &Magick::instance(ACE_thread_t id)
+Magick & Magick::instance(ACE_thread_t id)
 #endif
 {
-    map<ACE_thread_t, Magick *>::iterator iter = InstanceMap.find(id);
+    map < ACE_thread_t, Magick * >::iterator iter = InstanceMap.find(id);
     if (iter != InstanceMap.end() && iter->second != NULL)
 	return *(iter->second);
 
@@ -676,17 +681,16 @@ Magick &Magick::instance(ACE_thread_t id)
 #endif
 }
 
-Magick::Magick(int inargc, char **inargv)
-    : i_verbose(false), i_level(0), i_pause(false), i_auto(false),
-      i_shutdown(false), i_reconnect(true), i_localhost(0),
-      i_gotconnect(false), i_connected(false), i_saving(false), dh_timer(0)
+Magick::Magick(int inargc, char **inargv):i_verbose(false), i_level(0), i_pause(false), i_auto(false), i_shutdown(false), i_reconnect(true), i_localhost(0),
+i_gotconnect(false), i_connected(false), i_saving(false), dh_timer(0)
 {
     char buf[1024], *c;
-    i_config_file="magick.ini";
-    for(int i=0;i<inargc;i++)
+
+    i_config_file = "magick.ini";
+    for (int i = 0; i < inargc; i++)
 	argv.push_back(inargv[i]);
-    i_programname=argv[0].RevAfter("/");
-    i_ResetTime=mDateTime::CurrentDateTime();
+    i_programname = argv[0].RevAfter("/");
+    i_ResetTime = mDateTime::CurrentDateTime();
 
     ircsvchandler = NULL;
     logger = NULL;
@@ -698,26 +702,25 @@ Magick::Magick(int inargc, char **inargv)
     c = ACE_OS::getcwd(buf, 1024);
     if (c == NULL && errno)
     {
-	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR",
-		("getcwd", ".", errno, strerror(errno)));
+	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", ("getcwd", ".", errno, strerror(errno)));
 	return;
     }
     else
-	i_services_dir=buf;
+	i_services_dir = buf;
     CurrentState = Constructed;
 }
 
 Magick::~Magick()
 {
     // Remove all entries from the instance map pointing to us ...
-    vector<ACE_thread_t> chunked;
-    map<ACE_thread_t, Magick *>::iterator iter;
-    for (iter=InstanceMap.begin(); iter!=InstanceMap.end(); iter++)
+    vector < ACE_thread_t > chunked;
+    map < ACE_thread_t, Magick * >::iterator iter;
+    for (iter = InstanceMap.begin(); iter != InstanceMap.end(); iter++)
     {
 	if (iter->second == this)
 	    chunked.push_back(iter->first);
     }
-    for (unsigned int i=0; i<chunked.size(); i++)
+    for (unsigned int i = 0; i < chunked.size(); i++)
 	InstanceMap.erase(chunked[i]);
 }
 
@@ -733,11 +736,11 @@ int Magick::Init()
     unsigned int i = 0;
     int j = 0;
     int Result;
+
     // this is our main routine, when it leaves here, this sucker's done.
 
 #if defined(BUILD_NODE) && defined(BUILD_TYPE)
-    if (!sysinfo_node().IsSameAs(BUILD_NODE) ||
-	!sysinfo_type().IsSameAs(BUILD_TYPE))
+    if (!sysinfo_node().IsSameAs(BUILD_NODE) || !sysinfo_type().IsSameAs(BUILD_TYPE))
     {
 	NLOG(LM_EMERGENCY, "SYS_ERRORS/LOCKED_BIN");
 	return MAGICK_RET_LOCKED;
@@ -745,65 +748,67 @@ int Magick::Init()
 #endif
 
     // more stuff to do
-    unsigned int argc=argv.size();
+    unsigned int argc = argv.size();
     mstring errstring;
-    for(i=1;i<argc;i++)
+
+    for (i = 1; i < argc; i++)
     {
-	if(argv[i][0U]=='-')
+	if (argv[i][0U] == '-')
 	{
 	    argv[i].MakeLower();
-	    if(argv[i]=="--dir")
+	    if (argv[i] == "--dir")
 	    {
 		i++;
-		if(i==argc||argv[i][0U]=='-')
+		if (i == argc || argv[i][0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--dir"));
 		    return MAGICK_RET_ERROR;
 		}
-		i_services_dir=files.MakePath(argv[i]);
+		i_services_dir = files.MakePath(argv[i]);
 	    }
-	    else if(argv[i]=="--config")
+	    else if (argv[i] == "--config")
 	    {
 		i++;
-		if(i==argc||argv[i][0U]=='-')
+		if (i == argc || argv[i][0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--config"));
 		    return MAGICK_RET_ERROR;
 		}
-		i_config_file=argv[i];
+		i_config_file = argv[i];
 	    }
 #ifdef MAGICK_TRACE_WORKS
-	    else if(argv[i]=="--trace")
+	    else if (argv[i] == "--trace")
 	    {
 		i++;
-		if(i==argc||argv[i][0U]=='-')
+		if (i == argc || argv[i][0U] == '-')
 		{
 		    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", ("--trace"));
 		    return MAGICK_RET_ERROR;
 		}
-		if(!argv[i].Contains(":"))
+		if (!argv[i].Contains(":"))
 		{
 		    NLOG(LM_EMERGENCY, "COMMANDLINE/TRACE_SYNTAX");
 		    return MAGICK_RET_ERROR;
 		}
 		unsigned short level = makehex(argv[i].After(":"));
-		if (level==0)
+
+		if (level == 0)
 		{
 		    NLOG(LM_EMERGENCY, "COMMANDLINE/ZERO_LEVEL");
 		    return MAGICK_RET_ERROR;
 		}
 		else
 		{
-		    mstring type=argv[i].Before(":").UpperCase();
-		    for (j=0; j<tt_MAX; j++)
-			if (type==threadname[j] || type=="ALL")
-			    Trace::TurnSet(static_cast<threadtype_enum>(j), level);
+		    mstring type = argv[i].Before(":").UpperCase();
+
+		    for (j = 0; j < tt_MAX; j++)
+			if (type == threadname[j] || type == "ALL")
+			    Trace::TurnSet(static_cast < threadtype_enum > (j), level);
 		}
 	    }
 #endif
-	    else if(argv[i]=="--help" ||
-		(argv[i][1U]!='-' && argv[i].Contains("?")))
-    	    {
+	    else if (argv[i] == "--help" || (argv[i][1U] != '-' && argv[i].Contains("?")))
+	    {
 		dump_help();
 		return MAGICK_RET_NORMAL;
 	    }
@@ -813,9 +818,8 @@ int Magick::Init()
     j = ACE_OS::chdir(Services_Dir());
     if (j < 0 && errno)
     {
-	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR",
-		("chdir", Services_Dir(), errno, strerror(errno)));
-        RET(MAGICK_RET_ERROR);
+	LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", ("chdir", Services_Dir(), errno, strerror(errno)));
+	RET(MAGICK_RET_ERROR);
     }
 
     if (!get_config_values())
@@ -824,14 +828,14 @@ int Magick::Init()
 	RET(MAGICK_RET_ERROR);
     }
 
-    if(i_shutdown==true)
+    if (i_shutdown == true)
     {
 	NLOG(LM_EMERGENCY, "COMMANDLINE/STOP");
 	RET(MAGICK_RET_NORMAL);
     }
 
-    Result=doparamparse();
-    if(Result!=MAGICK_RET_NORMAL)
+    Result = doparamparse();
+    if (Result != MAGICK_RET_NORMAL)
 	RET(Result);
 
     firstrun = true;
@@ -854,13 +858,15 @@ int Magick::Start()
 
 #ifndef WIN32
     mFile pidfile;
+
     if (firstrun && mFile::Exists(files.Pidfile()))
     {
-	pidfile.Open(files.Pidfile(),"r");
+	pidfile.Open(files.Pidfile(), "r");
 	if (pidfile.IsOpened())
 	{
 	    mstring dummystring = pidfile.ReadLine();
 	    pid_t pid = atoi(dummystring.c_str());
+
 	    if (ACE::process_active(pid) > 0)
 	    {
 		LOG(LM_EMERGENCY, "COMMANDLINE/ACTIVE", (i_programname));
@@ -898,8 +904,7 @@ int Magick::Start()
 	Result = ACE::daemonize(Services_Dir(), 0, i_programname);
 	if (Result < 0 && errno)
 	{
-	    LOG(LM_EMERGENCY, "SYS_ERRORS/OPERROR",
-		("fork", errno, strerror(errno)));
+	    LOG(LM_EMERGENCY, "SYS_ERRORS/OPERROR", ("fork", errno, strerror(errno)));
 	}
 	else if (Result != 0)
 	{
@@ -909,19 +914,19 @@ int Magick::Start()
 	firstrun = false;
 	ACE_LOG_MSG->sync(ProgramName().c_str());
 	errno = 0;
-	Result = ACE_OS::setpgid (0, 0);
+	Result = ACE_OS::setpgid(0, 0);
 	if (Result < 0 && errno)
 	{
-	    LOG(LM_WARNING, "SYS_ERRORS/OPERROR",
-		("setpgid", errno, strerror(errno)));
+	    LOG(LM_WARNING, "SYS_ERRORS/OPERROR", ("setpgid", errno, strerror(errno)));
 	}
 	ACE_OS::umask(files.umask);
 
-	pidfile.Open(files.Pidfile(),"w");
-	if(pidfile.IsOpened())
+	pidfile.Open(files.Pidfile(), "w");
+	if (pidfile.IsOpened())
 	{
 	    mstring dummystring;
-	    dummystring<<getpid();
+
+	    dummystring << getpid();
 	    pidfile.Write(dummystring);
 	    pidfile.Close();
 	}
@@ -929,63 +934,63 @@ int Magick::Start()
 #endif
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
-    signalhandler=new SignalHandler;
-    reactor().register_handler(SIGINT,signalhandler);
+    signalhandler = new SignalHandler;
+    reactor().register_handler(SIGINT, signalhandler);
 #if defined(SIGTERM) && (SIGTERM != 0)
-    reactor().register_handler(SIGTERM,signalhandler);
+    reactor().register_handler(SIGTERM, signalhandler);
 #endif
 #if defined(SIGPIPE) && (SIGPIPE != 0)
-    reactor().register_handler(SIGPIPE,signalhandler);
+    reactor().register_handler(SIGPIPE, signalhandler);
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
-    reactor().register_handler(SIGQUIT,signalhandler);
+    reactor().register_handler(SIGQUIT, signalhandler);
 #endif
-    reactor().register_handler(SIGSEGV,signalhandler);
+    reactor().register_handler(SIGSEGV, signalhandler);
 #ifdef SIGBUS
-    reactor().register_handler(SIGBUS,signalhandler);
+    reactor().register_handler(SIGBUS, signalhandler);
 #endif
 #ifdef SIGHUP
-    reactor().register_handler(SIGHUP,signalhandler);
+    reactor().register_handler(SIGHUP, signalhandler);
 #endif
-    reactor().register_handler(SIGILL,signalhandler);
+    reactor().register_handler(SIGILL, signalhandler);
 #ifdef SIGTRAP
-    reactor().register_handler(SIGTRAP,signalhandler);
+    reactor().register_handler(SIGTRAP, signalhandler);
 #endif
 #ifdef SIGIOT
-    reactor().register_handler(SIGIOT,signalhandler);
+    reactor().register_handler(SIGIOT, signalhandler);
 #endif
 #ifdef SIGFPE
-    reactor().register_handler(SIGFPE,signalhandler);
+    reactor().register_handler(SIGFPE, signalhandler);
 #endif
 #ifdef SIGWINCH
-    reactor().register_handler(SIGWINCH,signalhandler);
+    reactor().register_handler(SIGWINCH, signalhandler);
 #endif
 #ifdef SIGTTIN
-    reactor().register_handler(SIGTTIN,signalhandler);
+    reactor().register_handler(SIGTTIN, signalhandler);
 #endif
 #ifdef SIGTTOU
-    reactor().register_handler(SIGTTOU,signalhandler);
+    reactor().register_handler(SIGTTOU, signalhandler);
 #endif
 #ifdef SIGTSTP
-    reactor().register_handler(SIGTSTP,signalhandler);
+    reactor().register_handler(SIGTSTP, signalhandler);
 #endif
 
 #if 0
 
 // Linux POSIX threads (pre-lxpthreads) use these ...
 #if defined(SIGUSR1) && (SIGUSR1 != 0)
-    reactor().register_handler(SIGUSR1,signalhandler);
+    reactor().register_handler(SIGUSR1, signalhandler);
 #endif
 #if defined(SIGUSR2) && (SIGUSR2 != 0)
-    reactor().register_handler(SIGUSR2,signalhandler);
+    reactor().register_handler(SIGUSR2, signalhandler);
 #endif
 
 // AIX uses this for zombie protection ...
 #if defined(SIGALRM) && (SIGALRM != 0)
-    reactor().register_handler(SIGALRM,signalhandler);
+    reactor().register_handler(SIGALRM, signalhandler);
 #endif
 #ifdef SIGCHLD
-    reactor().register_handler(SIGCHLD,signalhandler);
+    reactor().register_handler(SIGCHLD, signalhandler);
 #endif
 
 #endif /* 0 */
@@ -1010,21 +1015,24 @@ int Magick::Start()
     // number of iterations/500 is low_water_mark, number of itereations/200 = high_water_mark
     // TODO: how to work out max_thread_pool for all of magick?
 
-    LOG(LM_STARTUP, "COMMANDLINE/START_COMPLETE", (
-		PACKAGE, VERSION));
+    LOG(LM_STARTUP, "COMMANDLINE/START_COMPLETE", (PACKAGE, VERSION));
     // Can only open these after fork if we want then to live
-    { WLOCK(("Events"));
-    events = new EventTask(&thr_mgr());
-    if (events == NULL)
     {
-	RET(MAGICK_RET_ERROR);
-    }}
-    { WLOCK(("DCC"));
-    dcc = new DccMap(&thr_mgr());
-    if (dcc == NULL)
+	WLOCK(("Events"));
+	events = new EventTask(&thr_mgr());
+	if (events == NULL)
+	{
+	    RET(MAGICK_RET_ERROR);
+	}
+    }
     {
-	RET(MAGICK_RET_ERROR);
-    }}
+	WLOCK(("DCC"));
+	dcc = new DccMap(&thr_mgr());
+	if (dcc == NULL)
+	{
+	    RET(MAGICK_RET_ERROR);
+	}
+    }
 
     CurrentState = Started;
     RET(MAGICK_RET_NORMAL);
@@ -1041,19 +1049,20 @@ int Magick::Run()
     // Use the reconnect handler to get a connection
 
     NLOG(LM_STARTUP, "COMMANDLINE/START_EVENTS");
-    { WLOCK(("Events"));
-    if (events != NULL)
-	events->open((void *) this);
+    {
+	WLOCK(("Events"));
+	if (events != NULL)
+	    events->open((void *) this);
     }
-    { WLOCK(("DCC"));
-    if (dcc != NULL)
-	dcc->open((void *) this);
+    {
+	WLOCK(("DCC"));
+	if (dcc != NULL)
+	    dcc->open((void *) this);
     }
 
-    reactor().schedule_timer(&Magick::instance().hh, 0,
-		ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
-    reactor().schedule_timer(&(Magick::instance().rh),0,ACE_Time_Value::zero);
-    AUTO(true); // Activate events from here.
+    reactor().schedule_timer(&Magick::instance().hh, 0, ACE_Time_Value(Magick::instance().config.Heartbeat_Time()));
+    reactor().schedule_timer(&(Magick::instance().rh), 0, ACE_Time_Value::zero);
+    AUTO(true);			// Activate events from here.
 
     // next thing to be done here is set up the acceptor mechanism to listen
     // for incoming "magickgui" connections and handle them.
@@ -1075,8 +1084,7 @@ int Magick::Run()
 int Magick::Stop()
 {
     NFT("Magick::Stop");
-    if (CurrentState != Started && CurrentState != Running &&
-	CurrentState != RunCompleted)
+    if (CurrentState != Started && CurrentState != Running && CurrentState != RunCompleted)
     {
 	RET(MAGICK_RET_STATE);
     }
@@ -1093,7 +1101,7 @@ int Magick::Stop()
 	Result = MAGICK_RET_NORMAL;
     else
 	Result = MAGICK_RET_RESTART;
-	
+
     Shutdown(true);
     Disconnect(false);
 
@@ -1163,6 +1171,7 @@ int Magick::Stop()
     if (signalhandler != NULL)
     {
 	delete signalhandler;
+
 	signalhandler = NULL;
     }
 
@@ -1171,6 +1180,7 @@ int Magick::Stop()
 	events->wait();
 	WLOCK(("Events"));
 	delete events;
+
 	events = NULL;
     }
 
@@ -1179,6 +1189,7 @@ int Magick::Stop()
 	dcc->wait();
 	WLOCK(("DCC"));
 	delete dcc;
+
 	dcc = NULL;
     }
 
@@ -1187,8 +1198,7 @@ int Magick::Stop()
 	mFile::Erase(files.Pidfile());
 #endif
 
-    LOG(LM_STARTUP, "COMMANDLINE/STOP_COMPLETE", (
-		PACKAGE, VERSION));
+    LOG(LM_STARTUP, "COMMANDLINE/STOP_COMPLETE", (PACKAGE, VERSION));
 
     DeactivateLogger();
 
@@ -1210,17 +1220,18 @@ mstring Magick::getMessage(const mstring & nick, const mstring & name)
 {
     FT("Magick::getMessage", (nick, name));
 
-    if (!nick.empty() && nickserv.IsStored(nick) &&
-	nickserv.GetStored(nick)->IsOnline())
+    if (!nick.empty() && nickserv.IsStored(nick) && nickserv.GetStored(nick)->IsOnline())
     {
 	CP(("Using USER-DEIFNED language."));
 	mstring retval = getMessageL(nickserv.GetStored(nick)->Language(), name);
+
 	RET(retval);
     }
     else
     {
 	CP(("Using DEFAULT language."));
 	mstring retval = getMessageL(nickserv.DEF_Language(), name);
+
 	RET(retval);
     }
 }
@@ -1230,57 +1241,60 @@ mstring Magick::getMessageL(const mstring & lang, const mstring & name)
     FT("Magick::getMessageL", (lang, name));
 
     mstring retval = "Could not find message token \"" + name.UpperCase() + "\", please report this to your Services Admins.";
+
     // Load requested language if its NOT loaded.
     // and then look for the message of THAT type.
     CP(("Trying SPECIFIED language ..."));
-    { WLOCK(("Messages", lang.UpperCase()));
-    if (!lang.empty() &&
-	Messages.find(lang.UpperCase()) == Messages.end())
     {
-	LoadExternalMessages(lang);
-    }}
-    { RLOCK(("Messages", lang.UpperCase(), name.UpperCase()));
-    if (!lang.empty() &&
-	Messages.find(lang.UpperCase()) != Messages.end() &&
-	Messages[lang.UpperCase()].find(name.UpperCase()) !=
-		Messages[lang.UpperCase()].end())
+	WLOCK(("Messages", lang.UpperCase()));
+	if (!lang.empty() && Messages.find(lang.UpperCase()) == Messages.end())
+	{
+	    LoadExternalMessages(lang);
+	}
+    }
     {
-	retval = Messages[lang.UpperCase()][name.UpperCase()];
-	RET(retval);
-    }}
+	RLOCK(("Messages", lang.UpperCase(), name.UpperCase()));
+	if (!lang.empty() && Messages.find(lang.UpperCase()) != Messages.end()
+	    && Messages[lang.UpperCase()].find(name.UpperCase()) != Messages[lang.UpperCase()].end())
+	{
+	    retval = Messages[lang.UpperCase()][name.UpperCase()];
+	    RET(retval);
+	}
+    }
 
     // Load nickserv default language if its NOT loaded.
     // and then look for the message of THAT type.
     CP(("Trying DEFAULT language ..."));
-    { WLOCK(("Messages", nickserv.DEF_Language().UpperCase()));
-    if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
-	!nickserv.DEF_Language().empty() &&
-	Messages.find(nickserv.DEF_Language().UpperCase()) ==
-	Messages.end())
     {
-	LoadExternalMessages(nickserv.DEF_Language());
-    }}
-    { RLOCK(("Messages", nickserv.DEF_Language().UpperCase(), name.UpperCase()));
-    if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() &&
-	!nickserv.DEF_Language().empty() &&
-	Messages.find(nickserv.DEF_Language().UpperCase()) !=
-	Messages.end() &&
-	Messages[nickserv.DEF_Language().UpperCase()].find(name.UpperCase()) !=
-	Messages[nickserv.DEF_Language().UpperCase()].end())
+	WLOCK(("Messages", nickserv.DEF_Language().UpperCase()));
+	if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() && !nickserv.DEF_Language().empty()
+	    && Messages.find(nickserv.DEF_Language().UpperCase()) == Messages.end())
+	{
+	    LoadExternalMessages(nickserv.DEF_Language());
+	}
+    }
     {
-	retval = Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()];
-	RET(retval);
-    }}
+	RLOCK(("Messages", nickserv.DEF_Language().UpperCase(), name.UpperCase()));
+	if (lang.UpperCase() != nickserv.DEF_Language().UpperCase() && !nickserv.DEF_Language().empty()
+	    && Messages.find(nickserv.DEF_Language().UpperCase()) != Messages.end()
+	    && Messages[nickserv.DEF_Language().UpperCase()].find(name.UpperCase()) !=
+	    Messages[nickserv.DEF_Language().UpperCase()].end())
+	{
+	    retval = Messages[nickserv.DEF_Language().UpperCase()][name.UpperCase()];
+	    RET(retval);
+	}
+    }
 
     // Otherwise just try and find it in the DEFAULTs.
     CP(("Trying HARD-CODED language ..."));
-    { RLOCK(("Messages", "DEFAULT", name.UpperCase()));
-    if (Messages["DEFAULT"].find(name.UpperCase()) !=
-		Messages["DEFAULT"].end())
     {
-	retval = Messages["DEFAULT"][name.UpperCase()];
-	RET(retval);
-    }}
+	RLOCK(("Messages", "DEFAULT", name.UpperCase()));
+	if (Messages["DEFAULT"].find(name.UpperCase()) != Messages["DEFAULT"].end())
+	{
+	    retval = Messages["DEFAULT"][name.UpperCase()];
+	    RET(retval);
+	}
+    }
     LOG(LM_ERROR, "ERROR/NOLANGTOKEN", (name.UpperCase(), lang.UpperCase()));
     RET(retval);
 }
@@ -1294,54 +1308,54 @@ mstring Magick::getLogMessage(const mstring & name)
     // Otherwise just try and find it in the DEFAULTs.
     // NEVER implement locking here, we log the locks.
 
-    mstring retval = "Could not find log message token \"" + name.UpperCase() +
-			    "\", please check your language file.";
+    mstring retval = "Could not find log message token \"" + name.UpperCase() + "\", please check your language file.";
+
     CP(("Trying to get log entry ..."));
-    { RLOCK(("LogMessages", name.UpperCase()));
-    if (LogMessages.find(name.UpperCase()) !=
-		LogMessages.end())
     {
-	retval = LogMessages[name.UpperCase()];
-    }}
+	RLOCK(("LogMessages", name.UpperCase()));
+	if (LogMessages.find(name.UpperCase()) != LogMessages.end())
+	{
+	    retval = LogMessages[name.UpperCase()];
+	}
+    }
     RET(retval);
 }
 
-vector<mstring> Magick::getHelp(const mstring & nick, const mstring & name)
+vector < mstring > Magick::getHelp(const mstring & nick, const mstring & name)
 {
     FT("Magick::getHelp", (nick, name));
 
-    vector<mstring> helptext;
+    vector < mstring > helptext;
     mstring language = nickserv.DEF_Language().UpperCase();
 
     // Load requested language if its NOT loaded.
     // and then look for the Help of THAT type.
-    if (!nick.empty() && nickserv.IsStored(nick) &&
-	nickserv.GetStored(nick)->IsOnline())
+    if (!nick.empty() && nickserv.IsStored(nick) && nickserv.GetStored(nick)->IsOnline())
     {
 	language = nickserv.GetStored(nick)->Language().UpperCase();
     }
 
-StartGetLang:
-    if (Help.find(language) == Help.end() &&
-	mFile::Exists(files.Langdir()+DirSlash+language.LowerCase()+".hlp"))
+  StartGetLang:
+    if (Help.find(language) == Help.end() && mFile::Exists(files.Langdir() + DirSlash + language.LowerCase() + ".hlp"))
     {
 	WLOCK(("Help", language));
 
-	mConfigEngine fconf(files.Langdir()+DirSlash+language.LowerCase()+".hlp");
-	map<mstring,mstring> tmp = fconf.GetMap();
-	map<mstring,mstring>::iterator i;
+	mConfigEngine fconf(files.Langdir() + DirSlash + language.LowerCase() + ".hlp");
+
+	map < mstring, mstring > tmp = fconf.GetMap();
+	map < mstring, mstring >::iterator i;
 
 	MCB(Help.size());
 	mstring section;
-	triplet<mstring,mstring,mstring> entry;
-	for (i=tmp.begin(); i!=tmp.end(); i++)
+
+	triplet < mstring, mstring, mstring > entry;
+	for (i = tmp.begin(); i != tmp.end(); i++)
 	{
 	    section = i->first.RevBefore("/").UpperCase();
-	    entry = triplet<mstring, mstring, mstring>(
-			i->second.ExtractWord(1, ":", false),
-			i->second.ExtractWord(2, ":", false),
-			i->second.After(":", 2));
-	    
+	    entry =
+		triplet < mstring, mstring, mstring > (i->second.ExtractWord(1, ":", false),
+						       i->second.ExtractWord(2, ":", false), i->second.After(":", 2));
+
 	    if (entry.third.empty())
 		entry.third = " ";
 
@@ -1350,45 +1364,46 @@ StartGetLang:
 	MCE(Help.size());
 	if (tmp.size())
 	{
-	    LOG(LM_INFO, "OTHER/LOAD_HELP", (
-		language.UpperCase().c_str()));
+	    LOG(LM_INFO, "OTHER/LOAD_HELP", (language.UpperCase().c_str()));
 	    CP(("Help %s was loaded into memory.", language.c_str()));
 	}
     }
 
     mstring Uname(name.UpperCase());
     unsigned int i, j;
-    { RLOCK(("Help", language, Uname));
-    if (Help.find(language) != Help.end() &&
-	Help[language].find(Uname) != Help[language].end())
-    {
-	bool sendline;
 
-	for (j=0; j<Help[language][Uname].size(); j++)
+    {
+	RLOCK(("Help", language, Uname));
+	if (Help.find(language) != Help.end() && Help[language].find(Uname) != Help[language].end())
 	{
-	    sendline = false;
-	    if (!Help[language][Uname][j].first.empty())
+	    bool sendline;
+
+	    for (j = 0; j < Help[language][Uname].size(); j++)
 	    {
-		for (i=1; !sendline && i<=Help[language][Uname][j].first.WordCount(" "); i++)
+		sendline = false;
+		if (!Help[language][Uname][j].first.empty())
 		{
-		    if (commserv.IsList(Help[language][Uname][j].first.ExtractWord(i, " ")) &&
-			commserv.GetList(Help[language][Uname][j].first.ExtractWord(i, " "))->IsOn(nick))
-			sendline = true;
+		    for (i = 1; !sendline && i <= Help[language][Uname][j].first.WordCount(" "); i++)
+		    {
+			if (commserv.IsList(Help[language][Uname][j].first.ExtractWord(i, " "))
+			    && commserv.GetList(Help[language][Uname][j].first.ExtractWord(i, " "))->IsOn(nick))
+			    sendline = true;
+		    }
 		}
+		else
+		    sendline = true;
+		if (!Help[language][Uname][j].second.empty())
+		    for (i = 1; sendline && i <= Help[language][Uname][j].second.WordCount(" "); i++)
+		    {
+			if (commserv.IsList(Help[language][Uname][j].second.ExtractWord(i, " "))
+			    && commserv.GetList(Help[language][Uname][j].second.ExtractWord(i, " "))->IsOn(nick))
+			    sendline = false;
+		    }
+		if (sendline)
+		    helptext.push_back(Help[language][Uname][j].third);
 	    }
-	    else
-		sendline = true;
-	    if (!Help[language][Uname][j].second.empty())
-		for (i=1; sendline && i<=Help[language][Uname][j].second.WordCount(" "); i++)
-		{
-		    if (commserv.IsList(Help[language][Uname][j].second.ExtractWord(i, " ")) &&
-			commserv.GetList(Help[language][Uname][j].second.ExtractWord(i, " "))->IsOn(nick))
-			sendline = false;
-		}
-	    if (sendline)
-		helptext.push_back(Help[language][Uname][j].third);
 	}
-    }}
+    }
 
     if (!helptext.size())
     {
@@ -1398,85 +1413,80 @@ StartGetLang:
 	    goto StartGetLang;
 	}
 	mstring tmpstr, tmpstr2;
+
 	tmpstr2 = name;
 	tmpstr2.replace("/", " ");
-	tmpstr = parseMessage(getMessage(nick, "ERR_SITUATION/NOHELP"),
-	    			mVarArray(tmpstr2.After(" ")));
+	tmpstr = parseMessage(getMessage(nick, "ERR_SITUATION/NOHELP"), mVarArray(tmpstr2.After(" ")));
 	helptext.push_back(tmpstr);
     }
-    NRET(vector<mstring>, helptext);
+    NRET(vector < mstring >, helptext);
 }
 
 void Magick::dump_help() const
 {
     // This needs to be re-written.
-    cout << "\n"
-	 << FULLNAME + " - " + HOMEPAGE + "\n"
-	 << "    (c) 1997-2001 Preston A. Elder <prez@magick.tm>\n"
-	 << "    (c) 1998-2001 William King <ungod@magick.tm>\n"
-	 << "\n"
-	 << "Syntax: " << i_programname << " [options]\n"
-	 << "\n"
-	 << "--help             -?      Help output (summary of the below).\n"
-	 << "--dir X                    Set the initial services directory.\n"
-	 << "--config X                 Set the name of the config file.\n"
+    cout << "\n" << FULLNAME + " - " + HOMEPAGE +
+	"\n" << "    (c) 1997-2001 Preston A. Elder <prez@magick.tm>\n" << "    (c) 1998-2001 William King <ungod@magick.tm>\n"
+	<< "\n" << "Syntax: " << i_programname << " [options]\n" << "\n" <<
+	"--help             -?      Help output (summary of the below).\n" <<
+	"--dir X                    Set the initial services directory.\n" <<
+	"--config X                 Set the name of the config file.\n"
 #ifndef WIN32
 	 << "--nofork                   Do not become a daemon process.\n"
 #endif
 #ifdef CONVERT
-	 << "--convert X                Convert another version of services databases\n"
-	 << "                           to Magick II format, where X is the type of\n"
-	 << "                           database to convert.  Currently recognized:\n"
-	 << "                               magick (1.4), esper (4.4.8), epona (1.4.7)\n"
-	 << "                               sirv (N/A)\n"
+	 << "--convert X                Convert another version of services databases\n" <<
+	"                           to Magick II format, where X is the type of\n" <<
+	"                           database to convert.  Currently recognized:\n" <<
+	"                               magick (1.4), esper (4.4.8), epona (1.4.7)\n" <<
+	"                               sirv (N/A)\n"
 #endif
 #ifdef MAGICK_TRACE_WORKS
-	 << "--trace X:Y                Set the trace level on startup, equivilant of\n"
-	 << "                           using the OperServ TRACE SET command while\n"
-	 << "                           running, where X is the trace type (or ALL),\n"
-	 << "                           and Y is the trace level in hex.\n"
+	 << "--trace X:Y                Set the trace level on startup, equivilant of\n" <<
+	"                           using the OperServ TRACE SET command while\n" <<
+	"                           running, where X is the trace type (or ALL),\n" <<
+	"                           and Y is the trace level in hex.\n"
 #endif
-	 << "--name X           -n      Override [STARTUP/SERVER_NAME] to X.\n"
-	 << "--desc X           -d      Override [STARTUP/SERVER_DESC] to X.\n"
-	 << "--user X           -u      Override [STARTUP/SERVICES_USER] to X.\n"
-	 << "--host X           -h      Override [STARTUP/SERVICES_HOST] to X.\n"
-	 << "--ownuser          -o      Override [STARTUP/OWNUSER] to true.\n"
-	 << "--protocol X       -P      Override [STARTUP/PROTOCOL] to X.\n"
-	 << "--level X          -l      Override [STARTUP/LEVEL] to X.\n"
-	 << "--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n"
-	 << "--umask            -U      Override [FILES/UMASK] to X.\n"
-	 << "--verbose          -v      Override [FILES/VERBOSE] to true.\n"
-	 << "--log X            -L      Override [FILES/LOGFILE] to X.\n"
-	 << "--logchan X        -C      Override [FILES/LOGCHAN] to X.\n"
-	 << "--dbase X          -D      Override [FILES/DATABASE] to X.\n"
-	 << "--langdir X        -S      Override [FILES/LANGDIR] to X.\n"
-	 << "--encrypt          -E      Override [FILES/ENCRYPTION] to true.\n"
-	 << "--decrypt          -e      Override [FILES/ENCRYPTION] to false.\n"
-	 << "--keyfile X        -K      Override [FILES/KEYFILE] to X.\n"
-	 << "--compress X       -c      Override [FILES/COMPRESSION] to X.\n"
-	 << "--relink X         -r      Override [CONFIG/SERVER_RELINK] to X.\n"
-	 << "--norelink                 Override [CONFIG/SERVER_RELINK] to 0.\n"
-	 << "--cycle X          -t      Override [CONFIG/CYCLETIME] to X.\n"
-	 << "--save X           -w      Override [CONFIG/SAVETIME] to X.\n"
-	 << "--check X          -T      Override [CONFIG/CHECKTIME] to X.\n"
-	 << "--ping X           -p      Override [CONFIG/PING_FREQUENCY] to X.\n"
-	 << "--minthreads X     -q      Override [CONFIG/MIN_THREADS] to X.\n"
-	 << "--maxthreads X     -Q      Override [CONFIG/MAX_THREADS] to X.\n"
-	 << "--lwm X            -m      Override [CONFIG/LOW_WATER_MARK] to X.\n"
-	 << "--hwm X            -M      Override [CONFIG/HIGH_WATER_MARK] to X.\n"
-	 << "--append           -a      Override [NICKSERV/APPEND_RENAME] to true.\n"
-	 << "--rename           -A      Override [NICKSERV/APPEND_RENAME] to false.\n"
-	 << "--ident X          -R      Override [NICKSERV/IDENT] to X.\n"
-	 << "--language X       -s      Override [NICKSERV/DEF_LANGUAGE] to X.\n"
-	 << "--nodcc            -x      Override [NICKSERV/PICEXT] to \"\" and\n"
-	 << "                           Override [MEMOSERV/FILES] to 0.\n"
-	 << "--inflight X       -f      Override [MEMOSERV/INFLIGHT] to X.\n"
-	 << "--logignore        -i      Override [OPERSERV/LOG_IGNORE] to true.\n"
-	 << "--ignore X         -I      Override [OPERSERV/IGNORE_METHOD] to X.\n"
-	 << "\n"
-	 << "For more help on the usage of " + mstring(PACKAGE) + ", please browse the docs directory.\n"
-	 << "This released under the GNU General Public License.  Please see the\n"
-	 << "\"COPYING\" file for more details.\n\n";
+	 << "--name X           -n      Override [STARTUP/SERVER_NAME] to X.\n" <<
+	"--desc X           -d      Override [STARTUP/SERVER_DESC] to X.\n" <<
+	"--user X           -u      Override [STARTUP/SERVICES_USER] to X.\n" <<
+	"--host X           -h      Override [STARTUP/SERVICES_HOST] to X.\n" <<
+	"--ownuser          -o      Override [STARTUP/OWNUSER] to true.\n" <<
+	"--protocol X       -P      Override [STARTUP/PROTOCOL] to X.\n" <<
+	"--level X          -l      Override [STARTUP/LEVEL] to X.\n" <<
+	"--lagtime X        -g      Override [STARTUP/LAGTIME] to X.\n" <<
+	"--umask            -U      Override [FILES/UMASK] to X.\n" <<
+	"--verbose          -v      Override [FILES/VERBOSE] to true.\n" <<
+	"--log X            -L      Override [FILES/LOGFILE] to X.\n" <<
+	"--logchan X        -C      Override [FILES/LOGCHAN] to X.\n" <<
+	"--dbase X          -D      Override [FILES/DATABASE] to X.\n" <<
+	"--langdir X        -S      Override [FILES/LANGDIR] to X.\n" <<
+	"--encrypt          -E      Override [FILES/ENCRYPTION] to true.\n" <<
+	"--decrypt          -e      Override [FILES/ENCRYPTION] to false.\n" <<
+	"--keyfile X        -K      Override [FILES/KEYFILE] to X.\n" <<
+	"--compress X       -c      Override [FILES/COMPRESSION] to X.\n" <<
+	"--relink X         -r      Override [CONFIG/SERVER_RELINK] to X.\n" <<
+	"--norelink                 Override [CONFIG/SERVER_RELINK] to 0.\n" <<
+	"--cycle X          -t      Override [CONFIG/CYCLETIME] to X.\n" <<
+	"--save X           -w      Override [CONFIG/SAVETIME] to X.\n" <<
+	"--check X          -T      Override [CONFIG/CHECKTIME] to X.\n" <<
+	"--ping X           -p      Override [CONFIG/PING_FREQUENCY] to X.\n" <<
+	"--minthreads X     -q      Override [CONFIG/MIN_THREADS] to X.\n" <<
+	"--maxthreads X     -Q      Override [CONFIG/MAX_THREADS] to X.\n" <<
+	"--lwm X            -m      Override [CONFIG/LOW_WATER_MARK] to X.\n" <<
+	"--hwm X            -M      Override [CONFIG/HIGH_WATER_MARK] to X.\n" <<
+	"--append           -a      Override [NICKSERV/APPEND_RENAME] to true.\n" <<
+	"--rename           -A      Override [NICKSERV/APPEND_RENAME] to false.\n" <<
+	"--ident X          -R      Override [NICKSERV/IDENT] to X.\n" <<
+	"--language X       -s      Override [NICKSERV/DEF_LANGUAGE] to X.\n" <<
+	"--nodcc            -x      Override [NICKSERV/PICEXT] to \"\" and\n" <<
+	"                           Override [MEMOSERV/FILES] to 0.\n" <<
+	"--inflight X       -f      Override [MEMOSERV/INFLIGHT] to X.\n" <<
+	"--logignore        -i      Override [OPERSERV/LOG_IGNORE] to true.\n" <<
+	"--ignore X         -I      Override [OPERSERV/IGNORE_METHOD] to X.\n" << "\n" << "For more help on the usage of " +
+	mstring(PACKAGE) +
+	", please browse the docs directory.\n" << "This released under the GNU General Public License.  Please see the\n" <<
+	"\"COPYING\" file for more details.\n\n";
 
 }
 
@@ -1485,14 +1495,16 @@ void Magick::LoadInternalMessages()
     NFT("Magick::LoadInternalMessages");
 
     WLOCK(("Messages", "DEFAULT"));
-    vector<mstring> lang;
+    vector < mstring > lang;
     unsigned int i;
-    for (i=0; i<def_langent; i++)
+
+    for (i = 0; i < def_langent; i++)
 	lang.push_back(def_lang[i]);
 
     mConfigEngine fconf;
+
     fconf.LoadFromArray(lang);
-    map<mstring,mstring> tmp = fconf.GetMap(); 
+    map < mstring, mstring > tmp = fconf.GetMap();
     if (tmp.size())
     {
 	MCB(Messages.size());
@@ -1502,7 +1514,7 @@ void Magick::LoadInternalMessages()
     }
 }
 
-bool Magick::LoadExternalMessages(const mstring& language)
+bool Magick::LoadExternalMessages(const mstring & language)
 {
     FT("Magick::LoadExternalMessages", (language));
     // use the previously created name array to get the names to load
@@ -1512,12 +1524,12 @@ bool Magick::LoadExternalMessages(const mstring& language)
 	LoadInternalMessages();
 	RET(true);
     }
-    else if (mFile::Exists(files.Langdir()+DirSlash+language.LowerCase()+".lng"))
+    else if (mFile::Exists(files.Langdir() + DirSlash + language.LowerCase() + ".lng"))
     {
 	WLOCK(("Messages", language.UpperCase()));
-	mConfigEngine fconf(files.Langdir()+DirSlash+language.LowerCase()+".lng");
+	mConfigEngine fconf(files.Langdir() + DirSlash + language.LowerCase() + ".lng");
 
-	map<mstring,mstring> tmp = fconf.GetMap();
+	map < mstring, mstring > tmp = fconf.GetMap();
 	if (tmp.size())
 	{
 	    MCB(Messages.size());
@@ -1530,7 +1542,7 @@ bool Magick::LoadExternalMessages(const mstring& language)
     RET(false);
 }
 
-bool Magick::LoadLogMessages(const mstring& language)
+bool Magick::LoadLogMessages(const mstring & language)
 {
     FT("Magick::LoadLogMessages", (language));
     // use the previously created name array to get the names to load
@@ -1538,27 +1550,29 @@ bool Magick::LoadLogMessages(const mstring& language)
     WLOCK(("LogMessages"));
     LogMessages.clear();
     MCB(LogMessages.size());
-    map<mstring,mstring>::iterator iter;
+    map < mstring, mstring >::iterator iter;
     {
-	vector<mstring> lfo;
+	vector < mstring > lfo;
 	unsigned int i;
-	for (i=0; i<def_logent; i++)
-	lfo.push_back(def_log[i]);
+
+	for (i = 0; i < def_logent; i++)
+	    lfo.push_back(def_log[i]);
 
 	mConfigEngine fconf;
+
 	fconf.LoadFromArray(lfo);
 
-	map<mstring,mstring> tmp = fconf.GetMap();
-	for (iter=tmp.begin(); iter!=tmp.end(); iter++)
+	map < mstring, mstring > tmp = fconf.GetMap();
+	for (iter = tmp.begin(); iter != tmp.end(); iter++)
 	    LogMessages[iter->first] = iter->second;
 	CP(("After DEFAULT - LogMessages = %d", LogMessages.size()));
     }
-    if (language != "DEFAULT" &&
-	mFile::Exists(files.Langdir()+DirSlash+language.LowerCase()+".lfo"))
+    if (language != "DEFAULT" && mFile::Exists(files.Langdir() + DirSlash + language.LowerCase() + ".lfo"))
     {
-	mConfigEngine fconf(files.Langdir()+DirSlash+language.LowerCase()+".lfo");
-	map<mstring,mstring> tmp = fconf.GetMap();
-	for (iter=tmp.begin(); iter!=tmp.end(); iter++)
+	mConfigEngine fconf(files.Langdir() + DirSlash + language.LowerCase() + ".lfo");
+
+	map < mstring, mstring > tmp = fconf.GetMap();
+	for (iter = tmp.begin(); iter != tmp.end(); iter++)
 	    LogMessages[iter->first] = iter->second;
     }
     MCE(LogMessages.size());
@@ -1570,12 +1584,11 @@ bool Magick::LoadLogMessages(const mstring& language)
     RET(false);
 }
 
-bool Magick::UnloadExternalMessages(const mstring& language)
+bool Magick::UnloadExternalMessages(const mstring & language)
 {
     FT("Magick::UnloadExternalMessages", (language));
 
-    if (!language.empty() &&
-	Messages.find(language.UpperCase()) != Messages.end())
+    if (!language.empty() && Messages.find(language.UpperCase()) != Messages.end())
     {
 	WLOCK(("Messages"));
 	MCB(Messages.size());
@@ -1586,12 +1599,11 @@ bool Magick::UnloadExternalMessages(const mstring& language)
     RET(false);
 }
 
-bool Magick::UnloadHelp(const mstring& language)
+bool Magick::UnloadHelp(const mstring & language)
 {
     FT("Magick::UnloadHelp", (language));
 
-    if (!language.empty() &&
-	Help.find(language.UpperCase()) != Help.end())
+    if (!language.empty() && Help.find(language.UpperCase()) != Help.end())
     {
 	WLOCK(("Help"));
 	MCB(Help.size());
@@ -1606,17 +1618,19 @@ int Magick::doparamparse()
 {
     NFT("Magick::doparamparse");
     mstring temp;
-    int argc=argv.size(),i;
-    for(i=1;i<argc;i++)
+    int argc = argv.size(), i;
+
+    for (i = 1; i < argc; i++)
     {
-	if(argv[i][0U]=='-')
+	if (argv[i][0U] == '-')
 	{
-	    bool ArgUsed=false;
-	    if (argv[i][1U]=='-')
-		ArgUsed=paramlong(argv[i], (i+1 < argc) ? argv[i+1].c_str() : "");
+	    bool ArgUsed = false;
+
+	    if (argv[i][1U] == '-')
+		ArgUsed = paramlong(argv[i], (i + 1 < argc) ? argv[i + 1].c_str() : "");
 	    else
-		ArgUsed=paramshort(argv[i], (i+1 < argc) ? argv[i+1].c_str() : "");
-	    
+		ArgUsed = paramshort(argv[i], (i + 1 < argc) ? argv[i + 1].c_str() : "");
+
 	    if (ArgUsed)
 		i++;
 	}
@@ -1629,112 +1643,112 @@ int Magick::doparamparse()
 }
 
 
-bool Magick::paramlong(const mstring& first, const mstring& second)
+bool Magick::paramlong(const mstring & first, const mstring & second)
 {
     FT("Magick::paramlong", (first, second));
-    if(first=="--dir" || first=="--config" || first=="--trace")
+    if (first == "--dir" || first == "--config" || first == "--trace")
     {
 	// already handled, but we needed to i++
 	RET(true);
     }
-    else if(first=="--name")
+    else if (first == "--name")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	startup.server_name=second;
+	startup.server_name = second;
 	RET(true);
     }
-    else if(first=="--desc")
+    else if (first == "--desc")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	startup.server_name=second;
+	startup.server_name = second;
 	RET(true);
     }
-    else if(first=="--user")
+    else if (first == "--user")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	startup.services_user=second;
+	startup.services_user = second;
 	RET(true);
     }
-    else if(first=="--ownuser")
+    else if (first == "--ownuser")
     {
-	startup.ownuser=true;
+	startup.ownuser = true;
     }
-    else if(first=="--host")
+    else if (first == "--host")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	startup.services_host=second;
+	startup.services_host = second;
     }
-    else if(first=="--protocol")
+    else if (first == "--protocol")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<=0)
+	if (atoi(second.c_str()) <= 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	if (atoi(second.c_str()) != static_cast<int>(server.proto.Number()))
+	if (atoi(second.c_str()) != static_cast < int >(server.proto.Number()))
 	{
 	    server.proto.Set(atoi(second.c_str()));
-	    if (atoi(second.c_str()) != static_cast<int>(server.proto.Number()))
+	    if (atoi(second.c_str()) != static_cast < int >(server.proto.Number()))
 	    {
-		LOG(LM_WARNING, "COMMANDLINE/UNKNOWN_PROTO", (
-			    second, server.proto.Number()));
+		LOG(LM_WARNING, "COMMANDLINE/UNKNOWN_PROTO", (second, server.proto.Number()));
 	    }
 	}
 	RET(true);
     }
-    else if(first=="--level")
+    else if (first == "--level")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<=0)
+	if (atoi(second.c_str()) <= 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	startup.level=atoi(second.c_str());
+	startup.level = atoi(second.c_str());
 	RET(true);
     }
-    else if(first=="--lagtime")
+    else if (first == "--lagtime")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(!FromHumanTime(second))
+	if (!FromHumanTime(second))
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
-	startup.lagtime=FromHumanTime(second);
+	startup.lagtime = FromHumanTime(second);
     }
-    else if(first=="--verbose" || first=="--debug")
+    else if (first == "--verbose" || first == "--debug")
     {
 	i_verbose = true;
     }
-    else if(first=="--umask")
+    else if (first == "--umask")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
 	unsigned int i;
 	mode_t umask = 0;
-	for (i=0; i<second.length(); i++)
+
+	for (i = 0; i < second.length(); i++)
 	{
 	    if (!isdigit(second[i]))
 	    {
@@ -1754,290 +1768,290 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
 	files.umask = umask;
 	RET(true);
     }
-    else if(first=="--log")
+    else if (first == "--log")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	files.logfile=second;
+	files.logfile = second;
 	RET(true);
     }
-    else if(first=="--logchan")
+    else if (first == "--logchan")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	files.logchan=second;
+	files.logchan = second;
 	RET(true);
     }
-    else if(first=="--dbase" || first=="--database")
+    else if (first == "--dbase" || first == "--database")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	files.database=second;
+	files.database = second;
 	RET(true);
     }
-    else if(first=="--langdir")
+    else if (first == "--langdir")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	files.langdir=second;
+	files.langdir = second;
 	RET(true);
     }
-    else if(first=="--encrypt")
+    else if (first == "--encrypt")
     {
-	files.encryption=true;
+	files.encryption = true;
     }
-    else if(first=="--decrypt")
+    else if (first == "--decrypt")
     {
-	files.encryption=false;
+	files.encryption = false;
     }
-    else if(first=="--keyfile")
+    else if (first == "--keyfile")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(!mFile::Exists(second))
+	if (!mFile::Exists(second))
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NO_KEYFILE", (second));
 	}
-	files.keyfile=second;
+	files.keyfile = second;
 	RET(true);
     }
-    else if(first=="--compress" || first=="--compression")
+    else if (first == "--compress" || first == "--compression")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<0)
+	if (atoi(second.c_str()) < 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	if (atoi(second.c_str())>9)
+	if (atoi(second.c_str()) > 9)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/VALUETOOHIGH", (first, 9));
 	}
-	files.compression=atoi(second.c_str());
+	files.compression = atoi(second.c_str());
 	RET(true);
     }
-    else if(first=="--relink")
+    else if (first == "--relink")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<0)
+	if (atoi(second.c_str()) < 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	config.server_relink=FromHumanTime(second);
+	config.server_relink = FromHumanTime(second);
 	RET(true);
     }
-    else if(first=="--norelink")
+    else if (first == "--norelink")
     {
-	config.server_relink=0;
+	config.server_relink = 0;
     }
 #ifndef WIN32
-    else if(first=="--nofork")
+    else if (first == "--nofork")
     {
-	nofork=true;
+	nofork = true;
     }
 #endif
-    else if(first=="--cycle" || first=="--expire")
+    else if (first == "--cycle" || first == "--expire")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(!FromHumanTime(second))
+	if (!FromHumanTime(second))
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
-	config.cycletime=FromHumanTime(second);
+	config.cycletime = FromHumanTime(second);
 	RET(true);
     }
-    else if(first=="--save" || first=="--update")
+    else if (first == "--save" || first == "--update")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(!FromHumanTime(second))
+	if (!FromHumanTime(second))
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
-	config.savetime=FromHumanTime(second);
+	config.savetime = FromHumanTime(second);
 	RET(true);
     }
-    else if(first=="--check" || first=="--hyperactive")
+    else if (first == "--check" || first == "--hyperactive")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(!FromHumanTime(second))
+	if (!FromHumanTime(second))
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
-	config.checktime=FromHumanTime(second);
+	config.checktime = FromHumanTime(second);
 	RET(true);
     }
-    else if(first=="--ping")
+    else if (first == "--ping")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(!FromHumanTime(second))
+	if (!FromHumanTime(second))
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
-	config.ping_frequency=FromHumanTime(second);
+	config.ping_frequency = FromHumanTime(second);
 	RET(true);
     }
-    else if(first=="--minthreads")
+    else if (first == "--minthreads")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<0)
+	if (atoi(second.c_str()) < 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	config.min_threads=atoi(second.c_str());
+	config.min_threads = atoi(second.c_str());
 	if (config.min_threads < 1)
 	    config.min_threads = 1;
 	if (config.max_threads < config.min_threads)
 	    config.max_threads = config.min_threads;
 	RET(true);
     }
-    else if(first=="--maxthreads")
+    else if (first == "--maxthreads")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<0)
+	if (atoi(second.c_str()) < 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	config.max_threads=atoi(second.c_str());
+	config.max_threads = atoi(second.c_str());
 	if (config.max_threads < config.min_threads)
 	    config.max_threads = config.min_threads;
 	RET(true);
     }
-    else if(first=="--lwm" || first=="--low_water_mark")
+    else if (first == "--lwm" || first == "--low_water_mark")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<0)
+	if (atoi(second.c_str()) < 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	config.low_water_mark=atoi(second.c_str());
+	config.low_water_mark = atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
 	    config.high_water_mark = config.low_water_mark;
 	RET(true);
     }
-    else if(first=="--hwm" || first=="--high_water_mark")
+    else if (first == "--hwm" || first == "--high_water_mark")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<0)
+	if (atoi(second.c_str()) < 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	config.high_water_mark=atoi(second.c_str());
+	config.high_water_mark = atoi(second.c_str());
 	if (config.high_water_mark < config.low_water_mark)
 	    config.high_water_mark = config.low_water_mark;
 	RET(true);
     }
-    else if(first=="--append")
+    else if (first == "--append")
     {
-	nickserv.append_rename=true;
+	nickserv.append_rename = true;
     }
-    else if(first=="--rename")
+    else if (first == "--rename")
     {
-	nickserv.append_rename=false;
+	nickserv.append_rename = false;
     }
-    else if(first=="--ident")
+    else if (first == "--ident")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(!FromHumanTime(second))
+	if (!FromHumanTime(second))
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
-	nickserv.ident=FromHumanTime(second);
+	nickserv.ident = FromHumanTime(second);
 	RET(true);
     }
-    else if(first=="--language")
+    else if (first == "--language")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	nickserv.def.Language=second;
+	nickserv.def.Language = second;
 	RET(true);
     }
-    else if(first=="--nodcc")
+    else if (first == "--nodcc")
     {
-	nickserv.picext="";
-	memoserv.files=0;
+	nickserv.picext = "";
+	memoserv.files = 0;
     }
-    else if(first=="--inflight")
+    else if (first == "--inflight")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(!FromHumanTime(second))
+	if (!FromHumanTime(second))
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/TIMEORZERO", (first));
 	}
-	nickserv.ident=FromHumanTime(second);
+	nickserv.ident = FromHumanTime(second);
 	RET(true);
     }
-    else if(first=="--logignore")
+    else if (first == "--logignore")
     {
-	operserv.log_ignore=true;
+	operserv.log_ignore = true;
     }
-    else if(first=="--ignore")
+    else if (first == "--ignore")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
-	if(atoi(second.c_str())<0)
+	if (atoi(second.c_str()) < 0)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/MUSTBENUMBER", (first));
 	}
-	if (atoi(second.c_str())>9)
+	if (atoi(second.c_str()) > 9)
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/VALUETOOHIGH", (first, 9));
 	}
-	operserv.ignore_method=atoi(second.c_str());
+	operserv.ignore_method = atoi(second.c_str());
 	RET(true);
     }
 #ifdef CONVERT
-    else if(first=="--convert")
+    else if (first == "--convert")
     {
-	if(second.empty() || second[0U]=='-')
+	if (second.empty() || second[0U] == '-')
 	{
 	    LOG(LM_EMERGENCY, "COMMANDLINE/NEEDPARAM", (first));
 	}
@@ -2090,303 +2104,305 @@ bool Magick::paramlong(const mstring& first, const mstring& second)
     RET(false);
 }
 
-bool Magick::paramshort(const mstring& first, const mstring& second)
+bool Magick::paramshort(const mstring & first, const mstring & second)
 {
     FT("Magick::paramshort", (first, second));
     bool ArgUsed = false;
-    for (unsigned int i=1; i<first.length(); i++) {
-	if (first[i]=='?')
+
+    for (unsigned int i = 1; i < first.length(); i++)
+    {
+	if (first[i] == '?')
 	{
 	    // Already handled
 	}
-	else if(first[i]=='n')
+	else if (first[i] == 'n')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--name", second);
+		ArgUsed = paramlong("--name", second);
 	}
-	else if(first[i]=='d')
+	else if (first[i] == 'd')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--desc", second);
+		ArgUsed = paramlong("--desc", second);
 	}
-	else if(first[i]=='u')
+	else if (first[i] == 'u')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--user", second);
+		ArgUsed = paramlong("--user", second);
 	}
-	else if(first[i]=='h')
+	else if (first[i] == 'h')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--host", second);
+		ArgUsed = paramlong("--host", second);
 	}
-	else if(first[i]=='o')
+	else if (first[i] == 'o')
 	{
-	    ArgUsed = paramlong ("--ownuser", second);
+	    ArgUsed = paramlong("--ownuser", second);
 	}
-	else if(first[i]=='P')
-	{
-	    if (ArgUsed)
-	    {
-		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
-	    }
-	    else
-		ArgUsed = paramlong ("--protocol", second);
-	}
-	else if(first[i]=='l')
+	else if (first[i] == 'P')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--level", second);
+		ArgUsed = paramlong("--protocol", second);
 	}
-	else if(first[i]=='g')
+	else if (first[i] == 'l')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--lagtime", second);
+		ArgUsed = paramlong("--level", second);
 	}
-	else if(first[i]=='v')
-	{
-	    ArgUsed = paramlong ("--verbose", second);
-	}
-	else if(first[i]=='U')
+	else if (first[i] == 'g')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--umask", second);
+		ArgUsed = paramlong("--lagtime", second);
 	}
-	else if(first[i]=='L')
+	else if (first[i] == 'v')
+	{
+	    ArgUsed = paramlong("--verbose", second);
+	}
+	else if (first[i] == 'U')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--log", second);
+		ArgUsed = paramlong("--umask", second);
 	}
-	else if(first[i]=='C')
+	else if (first[i] == 'L')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--logchan", second);
+		ArgUsed = paramlong("--log", second);
 	}
-	else if(first[i]=='D')
+	else if (first[i] == 'C')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--dbase", second);
+		ArgUsed = paramlong("--logchan", second);
 	}
-	else if(first[i]=='S')
+	else if (first[i] == 'D')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--langdir", second);
+		ArgUsed = paramlong("--dbase", second);
 	}
-	else if(first[i]=='E')
-	{
-	    ArgUsed = paramlong ("--encrypt", second);
-	}
-	else if(first[i]=='e')
-	{
-	    ArgUsed = paramlong ("--decrypt", second);
-	}
-	else if(first[i]=='K')
+	else if (first[i] == 'S')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--keyfile", second);
+		ArgUsed = paramlong("--langdir", second);
 	}
-	else if(first[i]=='c')
+	else if (first[i] == 'E')
 	{
-	    ArgUsed = paramlong ("--compress", second);
+	    ArgUsed = paramlong("--encrypt", second);
 	}
-	else if(first[i]=='r')
+	else if (first[i] == 'e')
 	{
-	    if (ArgUsed)
-	    {
-		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
-	    }
-	    else
-		ArgUsed = paramlong ("--relink", second);
+	    ArgUsed = paramlong("--decrypt", second);
 	}
-	else if(first[i]=='t')
+	else if (first[i] == 'K')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--cycle", second);
+		ArgUsed = paramlong("--keyfile", second);
 	}
-	else if(first[i]=='w')
+	else if (first[i] == 'c')
+	{
+	    ArgUsed = paramlong("--compress", second);
+	}
+	else if (first[i] == 'r')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--save", second);
+		ArgUsed = paramlong("--relink", second);
 	}
-	else if(first[i]=='T')
+	else if (first[i] == 't')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--check", second);
+		ArgUsed = paramlong("--cycle", second);
 	}
-	else if(first[i]=='p')
+	else if (first[i] == 'w')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--ping", second);
+		ArgUsed = paramlong("--save", second);
 	}
-	else if(first[i]=='q')
+	else if (first[i] == 'T')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--minthreads", second);
+		ArgUsed = paramlong("--check", second);
 	}
-	else if(first[i]=='Q')
+	else if (first[i] == 'p')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--maxthreads", second);
+		ArgUsed = paramlong("--ping", second);
 	}
-	else if(first[i]=='m')
+	else if (first[i] == 'q')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--lwm", second);
+		ArgUsed = paramlong("--minthreads", second);
 	}
-	else if(first[i]=='M')
+	else if (first[i] == 'Q')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--hwm", second);
+		ArgUsed = paramlong("--maxthreads", second);
 	}
-	else if(first[i]=='a')
+	else if (first[i] == 'm')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--append", second);
+		ArgUsed = paramlong("--lwm", second);
 	}
-	else if(first[i]=='A')
+	else if (first[i] == 'M')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--rename", second);
+		ArgUsed = paramlong("--hwm", second);
 	}
-	else if(first[i]=='R')
+	else if (first[i] == 'a')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--ident", second);
+		ArgUsed = paramlong("--append", second);
 	}
-	else if(first[i]=='s')
+	else if (first[i] == 'A')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--language", second);
+		ArgUsed = paramlong("--rename", second);
 	}
-	else if(first[i]=='x')
-	{
-	    ArgUsed = paramlong ("--nodcc", second);
-	}
-	else if(first[i]=='f')
+	else if (first[i] == 'R')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--inflight", second);
+		ArgUsed = paramlong("--ident", second);
 	}
-	else if(first[i]=='i')
+	else if (first[i] == 's')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--logignore", second);
+		ArgUsed = paramlong("--language", second);
 	}
-	else if(first[i]=='I')
+	else if (first[i] == 'x')
+	{
+	    ArgUsed = paramlong("--nodcc", second);
+	}
+	else if (first[i] == 'f')
 	{
 	    if (ArgUsed)
 	    {
 		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
 	    }
 	    else
-		ArgUsed = paramlong ("--ignore", second);
+		ArgUsed = paramlong("--inflight", second);
+	}
+	else if (first[i] == 'i')
+	{
+	    if (ArgUsed)
+	    {
+		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
+	    }
+	    else
+		ArgUsed = paramlong("--logignore", second);
+	}
+	else if (first[i] == 'I')
+	{
+	    if (ArgUsed)
+	    {
+		NLOG(LM_EMERGENCY, "COMMANDLINE/ONEOPTION");
+	    }
+	    else
+		ArgUsed = paramlong("--ignore", second);
 	}
 	else
 	{
-	    LOG(LM_ERROR, "COMMANDLINE/UNKNOWN_OPTION", ("-"+mstring(first[i])));
+	    LOG(LM_ERROR, "COMMANDLINE/UNKNOWN_OPTION", ("-" + mstring(first[i])));
 	}
     }
     RET(ArgUsed);
@@ -2409,150 +2425,167 @@ bool Magick::get_config_values()
 
     mstring value_mstring;
     bool value_bool;
+
 //    int value_int;
     unsigned int value_uint;
+
 //    long value_long;
 //    unsigned long value_ulong;
 //    short value_float;
 
     // Groups ...
-    mstring ts_Startup=mstring("Startup/");
-    mstring ts_Services=mstring("Services/");
-    mstring ts_Files=mstring("Files/");
-    mstring ts_Config=mstring("Config/");
-    mstring ts_ChanServ=mstring("ChanServ/");
-    mstring ts_NickServ=mstring("NickServ/");
-    mstring ts_MemoServ=mstring("MemoServ/");
-    mstring ts_OperServ=mstring("OperServ/");
-    mstring ts_CommServ=mstring("CommServ/");
-    mstring ts_ServMsg=mstring("ServMsg/");
+    mstring ts_Startup = mstring("Startup/");
+    mstring ts_Services = mstring("Services/");
+    mstring ts_Files = mstring("Files/");
+    mstring ts_Config = mstring("Config/");
+    mstring ts_ChanServ = mstring("ChanServ/");
+    mstring ts_NickServ = mstring("NickServ/");
+    mstring ts_MemoServ = mstring("MemoServ/");
+    mstring ts_OperServ = mstring("OperServ/");
+    mstring ts_CommServ = mstring("CommServ/");
+    mstring ts_ServMsg = mstring("ServMsg/");
+
     DumpB();
 
-    in.Read(ts_Startup+"SERVER_NAME",value_mstring,"");
+    in.Read(ts_Startup + "SERVER_NAME", value_mstring, "");
     if (value_mstring != startup.server_name)
 	reconnect = true;
     startup.server_name = value_mstring;
 
-    in.Read(ts_Startup+"SERVER_DESC",value_mstring,FULLNAME);
+    in.Read(ts_Startup + "SERVER_DESC", value_mstring, FULLNAME);
     if (value_mstring != startup.server_desc)
 	reconnect = true;
     startup.server_desc = value_mstring;
 
-    in.Read(ts_Startup+"SERVICES_USER",value_mstring,"services");
-    in.Read(ts_Startup+"OWNUSER",value_bool,false);
+    in.Read(ts_Startup + "SERVICES_USER", value_mstring, "services");
+    in.Read(ts_Startup + "OWNUSER", value_bool, false);
     if (value_bool != startup.ownuser)
 	reconnect_clients = true;
-    else if (value_mstring != startup.services_user &&
-	     !startup.ownuser)
+    else if (value_mstring != startup.services_user && !startup.ownuser)
 	reconnect_clients = true;
     startup.services_user = value_mstring;
     startup.ownuser = value_bool;
 
-    in.Read(ts_Startup+"BIND", value_mstring, "*");
+    in.Read(ts_Startup + "BIND", value_mstring, "*");
     if (value_mstring != startup.bind)
 	reconnect = true;
     startup.bind = value_mstring;
 
-    in.Read(ts_Startup+"SETMODE",value_mstring, "");
+    in.Read(ts_Startup + "SETMODE", value_mstring, "");
     value_mstring.Remove("+");
     value_mstring.Remove(" ");
     if (value_mstring != startup.setmode)
 	reconnect_clients = true;
     startup.setmode = value_mstring;
 
-    in.Read(ts_Startup+"SERVICES_HOST",value_mstring,"magick.tm");
+    in.Read(ts_Startup + "SERVICES_HOST", value_mstring, "magick.tm");
     if (value_mstring != startup.services_host)
 	reconnect_clients = true;
     startup.services_host = value_mstring;
 
     // REMOTE entries
     value_mstring.erase();
-    i=1;
-    { WLOCK(("Startup", "Servers"));
-    int min_level = 0;
-    startup.servers.clear();
-    do {
-	mstring lookfor = "REMOTE_";
-	lookfor << i;
-	in.Read(ts_Startup+lookfor,value_mstring,"");
-	if (!value_mstring.empty()) {
-	    mstring tmp[5];
-	    tmp[0]=value_mstring.ExtractWord(1, ":");
-	    tmp[1]=value_mstring.ExtractWord(2, ":");
-	    tmp[2]=value_mstring.ExtractWord(3, ":");
-	    tmp[3]=value_mstring.ExtractWord(4, ":");
-	    tmp[4]=value_mstring.ExtractWord(5, ":");
-	    if (value_mstring.WordCount(":") == 5 && tmp[1].IsNumber() &&
-		tmp[3].IsNumber() && tmp[4].IsNumber() && atoi(tmp[1]) > 0 &&
-		atoi(tmp[3]) > 0 && atol(tmp[4]) > 0)
-	    {
-		// startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
-		startup.servers[tmp[0].LowerCase()] = pair<unsigned int,
-			triplet<unsigned int,mstring,unsigned long> >(atol(tmp[3]),
-			triplet<unsigned int,mstring,unsigned long>(atoi(tmp[1]),tmp[2],atol(tmp[4])));
-		if (min_level < 1 || atoi(tmp[3]) < min_level)
-		    min_level = atoi(tmp[3]);
-	    }
-	    else
-	    {
-		LOG(LM_WARNING, "COMMANDLINE/CFG_SYNTAX", (ts_Startup+lookfor));
-		RET(false);
-	    }
-	}
-	i++;
-    } while (!value_mstring.empty());
-    if (min_level > 1)
+    i = 1;
     {
-	// We NEED the lowest priority to be 1
-	map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > >::iterator iter;
-	for (iter=startup.servers.begin(); iter!=startup.servers.end(); iter++)
+	WLOCK(("Startup", "Servers"));
+	int min_level = 0;
+
+	startup.servers.clear();
+	do
 	{
-	    iter->second.first -= (min_level-1);
+	    mstring lookfor = "REMOTE_";
+
+	    lookfor << i;
+	    in.Read(ts_Startup + lookfor, value_mstring, "");
+	    if (!value_mstring.empty())
+	    {
+		mstring tmp[5];
+
+		tmp[0] = value_mstring.ExtractWord(1, ":");
+		tmp[1] = value_mstring.ExtractWord(2, ":");
+		tmp[2] = value_mstring.ExtractWord(3, ":");
+		tmp[3] = value_mstring.ExtractWord(4, ":");
+		tmp[4] = value_mstring.ExtractWord(5, ":");
+		if (value_mstring.WordCount(":") == 5 && tmp[1].IsNumber() && tmp[3].IsNumber() && tmp[4].IsNumber()
+		    && atoi(tmp[1]) > 0 && atoi(tmp[3]) > 0 && atol(tmp[4]) > 0)
+		{
+		    // startup.servers[servername] = pair<priority, triplet<port, pass, numeric> >
+		    startup.servers[tmp[0].LowerCase()] =
+			pair < unsigned int, triplet < unsigned int, mstring, unsigned long > >(atol(tmp[3]),
+												triplet < unsigned int, mstring,
+												unsigned long >(atoi(tmp[1]),
+														tmp[2],
+														atol(tmp[4])));
+		    if (min_level < 1 || atoi(tmp[3]) < min_level)
+			min_level = atoi(tmp[3]);
+		}
+		else
+		{
+		    LOG(LM_WARNING, "COMMANDLINE/CFG_SYNTAX", (ts_Startup + lookfor));
+		    RET(false);
+		}
+	    }
+	    i++;
+	} while (!value_mstring.empty());
+	if (min_level > 1)
+	{
+	    // We NEED the lowest priority to be 1
+	    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >::iterator iter;
+
+	    for (iter = startup.servers.begin(); iter != startup.servers.end(); iter++)
+	    {
+		iter->second.first -= (min_level - 1);
+	    }
 	}
-    }}
+    }
     if (CurrentServer().empty() || !startup.IsServer(CurrentServer()))
 	reconnect = true;
 
     // REMOTE entries
     value_mstring.erase();
-    i=1;
-    { WLOCK(("Startup", "Allows"));
-    startup.allows.clear();
-    do {
-	mstring lookfor = "ALLOW_";
-	lookfor << i;
-	in.Read(ts_Startup+lookfor,value_mstring,"");
-	if (!value_mstring.empty()) {
-	    if (value_mstring.Contains(":"))
+    i = 1;
+    {
+	WLOCK(("Startup", "Allows"));
+	startup.allows.clear();
+	do
+	{
+	    mstring lookfor = "ALLOW_";
+
+	    lookfor << i;
+	    in.Read(ts_Startup + lookfor, value_mstring, "");
+	    if (!value_mstring.empty())
 	    {
-		mstring tmp[2];
-		tmp[0] = value_mstring.ExtractWord(1, ":");
-		tmp[1] = value_mstring.ExtractWord(2, ":");
-		if (tmp[1].length() && tmp[1] != "*")
+		if (value_mstring.Contains(":"))
 		{
-		    for (unsigned int k=1; k<=tmp[1].WordCount(", "); k++)
+		    mstring tmp[2];
+
+		    tmp[0] = value_mstring.ExtractWord(1, ":");
+		    tmp[1] = value_mstring.ExtractWord(2, ":");
+		    if (tmp[1].length() && tmp[1] != "*")
 		    {
-			startup.allows[tmp[0]].push_back(tmp[1].ExtractWord(k, ", "));
+			for (unsigned int k = 1; k <= tmp[1].WordCount(", "); k++)
+			{
+			    startup.allows[tmp[0]].push_back(tmp[1].ExtractWord(k, ", "));
+			}
+		    }
+		    else
+		    {
+			startup.allows[tmp[0]];
 		    }
 		}
 		else
 		{
-		    startup.allows[tmp[0]];
+		    LOG(LM_WARNING, "COMMANDLINE/CFG_SYNTAX", (ts_Startup + lookfor));
+		    RET(false);
 		}
 	    }
-	    else
-	    {
-		LOG(LM_WARNING, "COMMANDLINE/CFG_SYNTAX", (ts_Startup+lookfor));
-		RET(false);
-	    }
-	}
-	i++;
-    } while (!value_mstring.empty());
+	    i++;
+	} while (!value_mstring.empty());
     }
     if (CurrentServer().empty() || !startup.IsAllowed(CurrentServer(), startup.Server_Name()))
 	reconnect = true;
 
-    in.Read(ts_Startup+"PROTOCOL",value_uint,0U);
+    in.Read(ts_Startup + "PROTOCOL", value_uint, 0U);
     if (value_uint != server.proto.Number())
     {
 	server.proto.Set(value_uint);
@@ -2560,278 +2593,285 @@ bool Magick::get_config_values()
 	    reconnect = true;
 	else
 	{
-	    LOG(LM_WARNING, "COMMANDLINE/UNKNOWN_PROTO", (
-			    value_uint, server.proto.Number()));
+	    LOG(LM_WARNING, "COMMANDLINE/UNKNOWN_PROTO", (value_uint, server.proto.Number()));
 	    RET(false);
 	}
     }
 
-    in.Read(ts_Startup+"LEVEL",value_uint,1U);
+    in.Read(ts_Startup + "LEVEL", value_uint, 1U);
     if (value_uint > i_level)
 	i_level = value_uint;
     startup.level = value_uint;
 
-    in.Read(ts_Startup+"LAGTIME",value_mstring,"10s");
+    in.Read(ts_Startup + "LAGTIME", value_mstring, "10s");
     if (FromHumanTime(value_mstring))
 	startup.lagtime = FromHumanTime(value_mstring);
     else
 	startup.lagtime = FromHumanTime("10s");
 
-    in.Read(ts_Startup+"STOP",value_bool,true);
+    in.Read(ts_Startup + "STOP", value_bool, true);
     i_shutdown = value_bool;
 
-    in.Read(ts_Services+"NickServ",value_mstring,"NickServ");
-    for (i=0; i<nickserv.names.WordCount(" "); i++)
+    in.Read(ts_Services + "NickServ", value_mstring, "NickServ");
+    for (i = 0; i < nickserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
-	    (" " + nickserv.names.ExtractWord(i+1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + nickserv.names.ExtractWord(i + 1, " ") + " ")))
 	{
-	    nickserv.signoff(nickserv.names.ExtractWord(i+1, " "));
+	    nickserv.signoff(nickserv.names.ExtractWord(i + 1, " "));
 	}
     }
     nickserv.names = value_mstring;
 
-    in.Read(ts_Services+"NickServ_Name",value_mstring,"Nickname Service");
+    in.Read(ts_Services + "NickServ_Name", value_mstring, "Nickname Service");
     if (value_mstring != nickserv.realname)
     {
 	nickserv.realname = value_mstring;
-	for (i=0; i<nickserv.names.WordCount(" "); i++)
+	for (i = 0; i < nickserv.names.WordCount(" "); i++)
 	{
-	    nickserv.signoff(nickserv.names.ExtractWord(i+1, " "));
+	    nickserv.signoff(nickserv.names.ExtractWord(i + 1, " "));
 	}
     }
 
     if (!reconnect && Connected())
     {
-	for (i=0; i<nickserv.names.WordCount(" "); i++)
+	for (i = 0; i < nickserv.names.WordCount(" "); i++)
 	{
-	    if (!nickserv.IsLive(nickserv.names.ExtractWord(i+1, " ")))
+	    if (!nickserv.IsLive(nickserv.names.ExtractWord(i + 1, " ")))
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.
+			sraw(((server.proto.Tokens()
+			       && !server.proto.GetNonToken("ISON").empty())? server.proto.
+			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
-		server.WaitIsOn.insert(nickserv.names.ExtractWord(i+1, " "));
-		isonstr += nickserv.names.ExtractWord(i+1, " ") + " ";
+		server.WaitIsOn.insert(nickserv.names.ExtractWord(i + 1, " "));
+		isonstr += nickserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
 	}
     }
 
-    in.Read(ts_Services+"Enforcer_Name",nickserv.enforcer_name,"Nickname Enforcer");
+    in.Read(ts_Services + "Enforcer_Name", nickserv.enforcer_name, "Nickname Enforcer");
 
-    in.Read(ts_Services+"ChanServ",value_mstring,"ChanServ");
-    for (i=0; i<chanserv.names.WordCount(" "); i++)
+    in.Read(ts_Services + "ChanServ", value_mstring, "ChanServ");
+    for (i = 0; i < chanserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
-	    (" " + chanserv.names.ExtractWord(i+1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + chanserv.names.ExtractWord(i + 1, " ") + " ")))
 	{
-	    chanserv.signoff(chanserv.names.ExtractWord(i+1, " "));
+	    chanserv.signoff(chanserv.names.ExtractWord(i + 1, " "));
 	}
     }
     chanserv.names = value_mstring;
 
-    in.Read(ts_Services+"ChanServ_Name",value_mstring,"Channel Service");
+    in.Read(ts_Services + "ChanServ_Name", value_mstring, "Channel Service");
     if (value_mstring != chanserv.realname)
     {
 	chanserv.realname = value_mstring;
-	for (i=0; i<chanserv.names.WordCount(" "); i++)
+	for (i = 0; i < chanserv.names.WordCount(" "); i++)
 	{
-	    chanserv.signoff(chanserv.names.ExtractWord(i+1, " "));
+	    chanserv.signoff(chanserv.names.ExtractWord(i + 1, " "));
 	}
     }
 
     if (!reconnect && Connected())
     {
-	for (i=0; i<chanserv.names.WordCount(" "); i++)
+	for (i = 0; i < chanserv.names.WordCount(" "); i++)
 	{
-	    if (!nickserv.IsLive(chanserv.names.ExtractWord(i+1, " ")))
+	    if (!nickserv.IsLive(chanserv.names.ExtractWord(i + 1, " ")))
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.
+			sraw(((server.proto.Tokens()
+			       && !server.proto.GetNonToken("ISON").empty())? server.proto.
+			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
-		server.WaitIsOn.insert(chanserv.names.ExtractWord(i+1, " "));
-		isonstr += chanserv.names.ExtractWord(i+1, " ") + " ";
+		server.WaitIsOn.insert(chanserv.names.ExtractWord(i + 1, " "));
+		isonstr += chanserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
 	}
     }
 
-    in.Read(ts_Services+"MemoServ",value_mstring,"MemoServ");
-    for (i=0; i<memoserv.names.WordCount(" "); i++)
+    in.Read(ts_Services + "MemoServ", value_mstring, "MemoServ");
+    for (i = 0; i < memoserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
-	    (" " + memoserv.names.ExtractWord(i+1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + memoserv.names.ExtractWord(i + 1, " ") + " ")))
 	{
-	     memoserv.signoff(memoserv.names.ExtractWord(i+1, " "));
+	    memoserv.signoff(memoserv.names.ExtractWord(i + 1, " "));
 	}
     }
     memoserv.names = value_mstring;
 
-    in.Read(ts_Services+"MemoServ_Name",value_mstring,"Memo/News Service");
+    in.Read(ts_Services + "MemoServ_Name", value_mstring, "Memo/News Service");
     if (value_mstring != memoserv.realname)
     {
 	memoserv.realname = value_mstring;
-	for (i=0; i<memoserv.names.WordCount(" "); i++)
+	for (i = 0; i < memoserv.names.WordCount(" "); i++)
 	{
-	    memoserv.signoff(memoserv.names.ExtractWord(i+1, " "));
+	    memoserv.signoff(memoserv.names.ExtractWord(i + 1, " "));
 	}
     }
 
     if (!reconnect && Connected())
     {
-	for (i=0; i<memoserv.names.WordCount(" "); i++)
+	for (i = 0; i < memoserv.names.WordCount(" "); i++)
 	{
-	    if (!nickserv.IsLive(memoserv.names.ExtractWord(i+1, " ")))
+	    if (!nickserv.IsLive(memoserv.names.ExtractWord(i + 1, " ")))
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.
+			sraw(((server.proto.Tokens()
+			       && !server.proto.GetNonToken("ISON").empty())? server.proto.
+			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
-		server.WaitIsOn.insert(memoserv.names.ExtractWord(i+1, " "));
-		isonstr += memoserv.names.ExtractWord(i+1, " ") + " ";
+		server.WaitIsOn.insert(memoserv.names.ExtractWord(i + 1, " "));
+		isonstr += memoserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
 	}
     }
 
-    in.Read(ts_Services+"OperServ",value_mstring,"OperServ");
-    for (i=0; i<operserv.names.WordCount(" "); i++)
+    in.Read(ts_Services + "OperServ", value_mstring, "OperServ");
+    for (i = 0; i < operserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
-	    (" " + operserv.names.ExtractWord(i+1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + operserv.names.ExtractWord(i + 1, " ") + " ")))
 	{
-	    operserv.signoff(operserv.names.ExtractWord(i+1, " "));
+	    operserv.signoff(operserv.names.ExtractWord(i + 1, " "));
 	}
     }
     operserv.names = value_mstring;
 
-    in.Read(ts_Services+"OperServ_Name",value_mstring,"Operator Service");
+    in.Read(ts_Services + "OperServ_Name", value_mstring, "Operator Service");
     if (value_mstring != operserv.realname)
     {
 	operserv.realname = value_mstring;
-	for (i=0; i<operserv.names.WordCount(" "); i++)
+	for (i = 0; i < operserv.names.WordCount(" "); i++)
 	{
-	    operserv.signoff(operserv.names.ExtractWord(i+1, " "));
+	    operserv.signoff(operserv.names.ExtractWord(i + 1, " "));
 	}
     }
 
     if (!reconnect && Connected())
     {
-	for (i=0; i<operserv.names.WordCount(" "); i++)
+	for (i = 0; i < operserv.names.WordCount(" "); i++)
 	{
-	    if (!nickserv.IsLive(operserv.names.ExtractWord(i+1, " ")))
+	    if (!nickserv.IsLive(operserv.names.ExtractWord(i + 1, " ")))
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.
+			sraw(((server.proto.Tokens()
+			       && !server.proto.GetNonToken("ISON").empty())? server.proto.
+			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
-		server.WaitIsOn.insert(operserv.names.ExtractWord(i+1, " "));
-		isonstr += operserv.names.ExtractWord(i+1, " ") + " ";
+		server.WaitIsOn.insert(operserv.names.ExtractWord(i + 1, " "));
+		isonstr += operserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
 	}
     }
 
-    in.Read(ts_Services+"CommServ",value_mstring,"CommServ");
-    for (i=0; i<commserv.names.WordCount(" "); i++)
+    in.Read(ts_Services + "CommServ", value_mstring, "CommServ");
+    for (i = 0; i < commserv.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
-	    (" " + commserv.names.ExtractWord(i+1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + commserv.names.ExtractWord(i + 1, " ") + " ")))
 	{
-	    commserv.signoff(commserv.names.ExtractWord(i+1, " "));
+	    commserv.signoff(commserv.names.ExtractWord(i + 1, " "));
 	}
     }
     commserv.names = value_mstring;
 
-    in.Read(ts_Services+"CommServ_Name",value_mstring,"Committee Service");
+    in.Read(ts_Services + "CommServ_Name", value_mstring, "Committee Service");
     if (value_mstring != commserv.realname)
     {
 	commserv.realname = value_mstring;
-	for (i=0; i<commserv.names.WordCount(" "); i++)
+	for (i = 0; i < commserv.names.WordCount(" "); i++)
 	{
-	    commserv.signoff(commserv.names.ExtractWord(i+1, " "));
+	    commserv.signoff(commserv.names.ExtractWord(i + 1, " "));
 	}
     }
 
     if (!reconnect && Connected())
     {
-	for (i=0; i<commserv.names.WordCount(" "); i++)
+	for (i = 0; i < commserv.names.WordCount(" "); i++)
 	{
-	    if (!nickserv.IsLive(commserv.names.ExtractWord(i+1, " ")))
+	    if (!nickserv.IsLive(commserv.names.ExtractWord(i + 1, " ")))
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.
+			sraw(((server.proto.Tokens()
+			       && !server.proto.GetNonToken("ISON").empty())? server.proto.
+			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
-		server.WaitIsOn.insert(commserv.names.ExtractWord(i+1, " "));
-		isonstr += commserv.names.ExtractWord(i+1, " ") + " ";
+		server.WaitIsOn.insert(commserv.names.ExtractWord(i + 1, " "));
+		isonstr += commserv.names.ExtractWord(i + 1, " ") + " ";
 	    }
 	}
     }
 
-    in.Read(ts_Services+"ServMsg",value_mstring,"HelpServ DevNull");
-    for (i=0; i<servmsg.names.WordCount(" "); i++)
+    in.Read(ts_Services + "ServMsg", value_mstring, "HelpServ DevNull");
+    for (i = 0; i < servmsg.names.WordCount(" "); i++)
     {
-	if (reconnect_clients || !(" " + value_mstring + " ").Contains(
-	    (" " + servmsg.names.ExtractWord(i+1, " ") + " ")))
+	if (reconnect_clients || !(" " + value_mstring + " ").Contains((" " + servmsg.names.ExtractWord(i + 1, " ") + " ")))
 	{
-	    servmsg.signoff(servmsg.names.ExtractWord(i+1, " "));
+	    servmsg.signoff(servmsg.names.ExtractWord(i + 1, " "));
 	}
     }
     servmsg.names = value_mstring;
 
-    in.Read(ts_Services+"ServMsg_Name",value_mstring,mstring(PACKAGE) + " <--> User");
+    in.Read(ts_Services + "ServMsg_Name", value_mstring, mstring(PACKAGE) + " <--> User");
     if (value_mstring != servmsg.realname)
     {
 	servmsg.realname = value_mstring;
-	for (i=0; i<servmsg.names.WordCount(" "); i++)
+	for (i = 0; i < servmsg.names.WordCount(" "); i++)
 	{
-	    servmsg.signoff(servmsg.names.ExtractWord(i+1, " "));
+	    servmsg.signoff(servmsg.names.ExtractWord(i + 1, " "));
 	}
     }
 
     if (!reconnect && Connected())
     {
-	for (i=0; i<servmsg.names.WordCount(" "); i++)
+	for (i = 0; i < servmsg.names.WordCount(" "); i++)
 	{
-	    if (!nickserv.IsLive(servmsg.names.ExtractWord(i+1, " ")))
+	    if (!nickserv.IsLive(servmsg.names.ExtractWord(i + 1, " ")))
 	    {
 		if (isonstr.length() > server.proto.MaxLine())
 		{
-		    server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-			server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+		    server.
+			sraw(((server.proto.Tokens()
+			       && !server.proto.GetNonToken("ISON").empty())? server.proto.
+			      GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
 		    isonstr.erase();
 		}
 		WLOCK(("Server", "WaitIsOn"));
-		server.WaitIsOn.insert(servmsg.names.ExtractWord(i+1, " "));
-		isonstr += servmsg.names.ExtractWord(i+1, " ") + " ";
+		server.WaitIsOn.insert(servmsg.names.ExtractWord(i + 1, " "));
+		isonstr += servmsg.names.ExtractWord(i + 1, " ") + " ";
 	    }
 	}
     }
 
-    in.Read(ts_Services+"SHOWSYNC",servmsg.showsync,true);
-    in.Read(ts_Services+"QUIT_MESSAGE",startup.services_quitmsg,"");
+    in.Read(ts_Services + "SHOWSYNC", servmsg.showsync, true);
+    in.Read(ts_Services + "QUIT_MESSAGE", startup.services_quitmsg, "");
 
     if (!isonstr.empty())
-	server.sraw(((server.proto.Tokens() && !server.proto.GetNonToken("ISON").empty()) ?
-		server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" + isonstr);
+	server.
+	    sraw(((server.proto.Tokens()
+		   && !server.proto.GetNonToken("ISON").empty())? server.proto.GetNonToken("ISON") : mstring("ISON")) + " :" +
+		 isonstr);
 
-    in.Read(ts_Files+"UMASK",value_mstring,"027");
+    in.Read(ts_Files + "UMASK", value_mstring, "027");
     files.umask = 0;
-    for (i=0; i<value_mstring.length(); i++)
+    for (i = 0; i < value_mstring.length(); i++)
     {
 	if (!isdigit(value_mstring[i]))
 	    break;
@@ -2845,203 +2885,203 @@ bool Magick::get_config_values()
 	files.umask = 027;
 
 
-    in.Read(ts_Files+"PIDFILE",files.pidfile,"magick.pid");
-    in.Read(ts_Files+"LOGFILE",files.logfile,"magick.log");
-    in.Read(ts_Files+"LOGCHAN",files.logchan,"");
-    in.Read(ts_Files+"VERBOSE", i_verbose, false);
-    in.Read(ts_Files+"MOTDFILE",files.motdfile,"magick.motd");
-    in.Read(ts_Files+"LANGDIR",files.langdir,"lang");
-    in.Read(ts_Files+"DATABASE",files.database,"magick.mnd");
-    in.Read(ts_Files+"COMPRESSION",files.compression,6U);
+    in.Read(ts_Files + "PIDFILE", files.pidfile, "magick.pid");
+    in.Read(ts_Files + "LOGFILE", files.logfile, "magick.log");
+    in.Read(ts_Files + "LOGCHAN", files.logchan, "");
+    in.Read(ts_Files + "VERBOSE", i_verbose, false);
+    in.Read(ts_Files + "MOTDFILE", files.motdfile, "magick.motd");
+    in.Read(ts_Files + "LANGDIR", files.langdir, "lang");
+    in.Read(ts_Files + "DATABASE", files.database, "magick.mnd");
+    in.Read(ts_Files + "COMPRESSION", files.compression, 6U);
     if (files.compression > 9)
 	files.compression = 9;
-    in.Read(ts_Files+"KEYFILE",files.keyfile,"magick.key");
-    in.Read(ts_Files+"ENCRYPTION",files.encryption,false);
-    in.Read(ts_Files+"MEMOATTACH",files.memoattach,"files/memo");
+    in.Read(ts_Files + "KEYFILE", files.keyfile, "magick.key");
+    in.Read(ts_Files + "ENCRYPTION", files.encryption, false);
+    in.Read(ts_Files + "MEMOATTACH", files.memoattach, "files/memo");
     MakeDirectory(files.memoattach.c_str());
 
-    in.Read(ts_Files+"MEMOATTACHSIZE",value_mstring,"0");
+    in.Read(ts_Files + "MEMOATTACHSIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.memoattachsize = FromHumanSpace(value_mstring);
     else
 	files.memoattachsize = FromHumanSpace("0");
-    in.Read(ts_Files+"PICTURE",files.picture,"files/pic");
+    in.Read(ts_Files + "PICTURE", files.picture, "files/pic");
     MakeDirectory(files.picture.c_str());
 
-    in.Read(ts_Files+"PICTURESIZE",value_mstring,"0");
+    in.Read(ts_Files + "PICTURESIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.picturesize = FromHumanSpace(value_mstring);
     else
 	files.picturesize = FromHumanSpace("0");
-    in.Read(ts_Files+"PUBLIC",files.i_public,"files/public");
+    in.Read(ts_Files + "PUBLIC", files.i_public, "files/public");
     MakeDirectory(files.i_public.c_str());
 
-    in.Read(ts_Files+"PUBLICSIZE",value_mstring,"0");
+    in.Read(ts_Files + "PUBLICSIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.publicsize = FromHumanSpace(value_mstring);
     else
 	files.publicsize = FromHumanSpace("0");
-    in.Read(ts_Files+"TEMPDIR",files.tempdir,"files/temp");
+    in.Read(ts_Files + "TEMPDIR", files.tempdir, "files/temp");
     MakeDirectory(files.tempdir.c_str());
 
-    in.Read(ts_Files+"TEMPDIRSIZE",value_mstring,"0");
+    in.Read(ts_Files + "TEMPDIRSIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.tempdirsize = FromHumanSpace(value_mstring);
     else
 	files.tempdirsize = FromHumanSpace("0");
-    in.Read(ts_Files+"BLOCKSIZE",value_mstring,"1k");
+    in.Read(ts_Files + "BLOCKSIZE", value_mstring, "1k");
     if (FromHumanSpace(value_mstring))
 	files.blocksize = FromHumanSpace(value_mstring);
     else
 	files.blocksize = FromHumanSpace("1k");
-    in.Read(ts_Files+"TIMEOUT",value_mstring,"2m");
+    in.Read(ts_Files + "TIMEOUT", value_mstring, "2m");
     if (FromHumanTime(value_mstring))
 	files.timeout = FromHumanTime(value_mstring);
     else
 	files.timeout = FromHumanTime("2m");
-    in.Read(ts_Files+"MIN_SPEED",value_mstring,"0");
+    in.Read(ts_Files + "MIN_SPEED", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.min_speed = FromHumanSpace(value_mstring);
     else
 	files.min_speed = FromHumanSpace("0");
-    in.Read(ts_Files+"MAX_SPEED",value_mstring,"0");
+    in.Read(ts_Files + "MAX_SPEED", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	files.max_speed = FromHumanSpace(value_mstring);
     else
 	files.max_speed = FromHumanSpace("0");
-    in.Read(ts_Files+"SAMPLETIME",value_mstring,"30s");
+    in.Read(ts_Files + "SAMPLETIME", value_mstring, "30s");
     if (FromHumanTime(value_mstring))
 	files.sampletime = FromHumanTime(value_mstring);
     else
 	files.sampletime = FromHumanTime("30s");
 
-    in.Read(ts_Config+"SERVER_RELINK",value_mstring,"5s");
+    in.Read(ts_Config + "SERVER_RELINK", value_mstring, "5s");
     if (FromHumanTime(value_mstring))
 	config.server_relink = FromHumanTime(value_mstring);
     else
 	config.server_relink = FromHumanTime("5s");
 
-    in.Read(ts_Config+"SQUIT_PROTECT",value_mstring,"2m");
+    in.Read(ts_Config + "SQUIT_PROTECT", value_mstring, "2m");
     if (FromHumanTime(value_mstring))
 	config.squit_protect = FromHumanTime(value_mstring);
     else
 	config.squit_protect = FromHumanTime("2m");
 
-    in.Read(ts_Config+"SQUIT_CANCEL",value_mstring,"10s");
+    in.Read(ts_Config + "SQUIT_CANCEL", value_mstring, "10s");
     if (FromHumanTime(value_mstring))
 	config.squit_cancel = FromHumanTime(value_mstring);
     else
 	config.squit_cancel = FromHumanTime("10s");
 
-    in.Read(ts_Config+"CYCLETIME",value_mstring,"5m");
+    in.Read(ts_Config + "CYCLETIME", value_mstring, "5m");
     if (FromHumanTime(value_mstring))
 	config.cycletime = FromHumanTime(value_mstring);
     else
 	config.cycletime = FromHumanTime("5m");
 
-    in.Read(ts_Config+"SAVETIME",value_mstring,"5m");
+    in.Read(ts_Config + "SAVETIME", value_mstring, "5m");
     if (FromHumanTime(value_mstring))
 	config.savetime = FromHumanTime(value_mstring);
     else
 	config.savetime = FromHumanTime("5m");
 
-    in.Read(ts_Config+"CHECKTIME",value_mstring,"5s");
+    in.Read(ts_Config + "CHECKTIME", value_mstring, "5s");
     if (FromHumanTime(value_mstring))
 	config.checktime = FromHumanTime(value_mstring);
     else
 	config.checktime = FromHumanTime("5s");
 
-    in.Read(ts_Config+"PING_FREQUENCY",value_mstring,"30s");
+    in.Read(ts_Config + "PING_FREQUENCY", value_mstring, "30s");
     if (FromHumanTime(value_mstring))
 	config.ping_frequency = FromHumanTime(value_mstring);
     else
 	config.ping_frequency = FromHumanTime("30s");
 
-    in.Read(ts_Config+"STARTHRESH",config.starthresh, 4U);
-    in.Read(ts_Config+"LISTSIZE",config.listsize, 50U);
-    in.Read(ts_Config+"MAXLIST",value_uint, 250U);
+    in.Read(ts_Config + "STARTHRESH", config.starthresh, 4U);
+    in.Read(ts_Config + "LISTSIZE", config.listsize, 50U);
+    in.Read(ts_Config + "MAXLIST", value_uint, 250U);
     if (value_uint < config.listsize)
 	value_uint = config.listsize;
     config.maxlist = value_uint;
 
-    in.Read(ts_Config+"MIN_THREADS",config.min_threads, 3U);
+    in.Read(ts_Config + "MIN_THREADS", config.min_threads, 3U);
     if (config.min_threads < 1)
 	config.min_threads = 1;
-    in.Read(ts_Config+"MAX_THREADS",config.max_threads, 25U);
+    in.Read(ts_Config + "MAX_THREADS", config.max_threads, 25U);
     if (config.max_threads < config.min_threads)
 	config.max_threads = config.min_threads;
-    in.Read(ts_Config+"LOW_WATER_MARK",config.low_water_mark, 10U);
-    in.Read(ts_Config+"HIGH_WATER_MARK",config.high_water_mark, 15U);
+    in.Read(ts_Config + "LOW_WATER_MARK", config.low_water_mark, 10U);
+    in.Read(ts_Config + "HIGH_WATER_MARK", config.high_water_mark, 15U);
     if (config.high_water_mark < config.low_water_mark)
 	config.high_water_mark = config.low_water_mark;
-    in.Read(ts_Config+"HEARTBEAT_TIME",value_mstring,"15m");
+    in.Read(ts_Config + "HEARTBEAT_TIME", value_mstring, "15m");
     if (FromHumanTime(value_mstring))
 	config.heartbeat_time = FromHumanTime(value_mstring);
     else
 	config.heartbeat_time = FromHumanTime("15m");
-    in.Read(ts_Config+"MSG_SEEN_TIME",value_mstring,"30s");
+    in.Read(ts_Config + "MSG_SEEN_TIME", value_mstring, "30s");
     if (FromHumanTime(value_mstring))
 	config.msg_seen_time = FromHumanTime(value_mstring);
     else
 	config.msg_seen_time = FromHumanTime("30s");
-    in.Read(ts_Config+"MSG_CHECK_TIME",value_mstring, "1m");
+    in.Read(ts_Config + "MSG_CHECK_TIME", value_mstring, "1m");
     if (FromHumanTime(value_mstring))
 	config.msg_check_time = FromHumanTime(value_mstring);
     else
 	config.msg_check_time = FromHumanTime("1m");
 
-    in.Read(ts_NickServ+"APPEND_RENAME",nickserv.append_rename, true);
-    in.Read(ts_NickServ+"SUFFIXES",nickserv.suffixes,"_-^`");
-    in.Read(ts_NickServ+"EXPIRE",value_mstring,"4w");
+    in.Read(ts_NickServ + "APPEND_RENAME", nickserv.append_rename, true);
+    in.Read(ts_NickServ + "SUFFIXES", nickserv.suffixes, "_-^`");
+    in.Read(ts_NickServ + "EXPIRE", value_mstring, "4w");
     if (FromHumanTime(value_mstring))
 	nickserv.expire = FromHumanTime(value_mstring);
     else
 	nickserv.expire = FromHumanTime("4w");
 
-    in.Read(ts_NickServ+"DELAY",value_mstring,"30s");
+    in.Read(ts_NickServ + "DELAY", value_mstring, "30s");
     if (FromHumanTime(value_mstring))
 	nickserv.delay = FromHumanTime(value_mstring);
     else
 	nickserv.delay = FromHumanTime("30s");
 
-    in.Read(ts_NickServ+"IDENT",value_mstring,"1m");
+    in.Read(ts_NickServ + "IDENT", value_mstring, "1m");
     if (FromHumanTime(value_mstring))
 	nickserv.ident = FromHumanTime(value_mstring);
     else
 	nickserv.ident = FromHumanTime("1m");
 
-    in.Read(ts_NickServ+"RELEASE",value_mstring,"1m");
+    in.Read(ts_NickServ + "RELEASE", value_mstring, "1m");
     if (FromHumanTime(value_mstring))
 	nickserv.release = FromHumanTime(value_mstring);
     else
 	nickserv.release = FromHumanTime("1m");
 
-    in.Read(ts_NickServ+"PASSFAIL",nickserv.passfail,5U);
-    in.Read(ts_NickServ+"DEF_PROTECT",value_bool,true);
+    in.Read(ts_NickServ + "PASSFAIL", nickserv.passfail, 5U);
+    in.Read(ts_NickServ + "DEF_PROTECT", value_bool, true);
     nickserv.def.Protect = value_bool;
-    in.Read(ts_NickServ+"LCK_PROTECT",value_bool,false);
+    in.Read(ts_NickServ + "LCK_PROTECT", value_bool, false);
     nickserv.lock.Protect = value_bool;
-    in.Read(ts_NickServ+"DEF_SECURE",value_bool,false);
+    in.Read(ts_NickServ + "DEF_SECURE", value_bool, false);
     nickserv.def.Secure = value_bool;
-    in.Read(ts_NickServ+"LCK_SECURE",value_bool,false);
+    in.Read(ts_NickServ + "LCK_SECURE", value_bool, false);
     nickserv.lock.Secure = value_bool;
-    in.Read(ts_NickServ+"DEF_NOEXPIRE",value_bool,false);
+    in.Read(ts_NickServ + "DEF_NOEXPIRE", value_bool, false);
     nickserv.def.NoExpire = value_bool;
-    in.Read(ts_NickServ+"LCK_NOEXPIRE",value_bool,false);
+    in.Read(ts_NickServ + "LCK_NOEXPIRE", value_bool, false);
     nickserv.lock.NoExpire = value_bool;
-    in.Read(ts_NickServ+"DEF_NOMEMO",value_bool,false);
+    in.Read(ts_NickServ + "DEF_NOMEMO", value_bool, false);
     nickserv.def.NoMemo = value_bool;
-    in.Read(ts_NickServ+"LCK_NOMEMO",value_bool,false);
+    in.Read(ts_NickServ + "LCK_NOMEMO", value_bool, false);
     nickserv.lock.NoMemo = value_bool;
-    in.Read(ts_NickServ+"DEF_PRIVATE",value_bool,false);
+    in.Read(ts_NickServ + "DEF_PRIVATE", value_bool, false);
     nickserv.def.Private = value_bool;
-    in.Read(ts_NickServ+"LCK_PRIVATE",value_bool,false);
+    in.Read(ts_NickServ + "LCK_PRIVATE", value_bool, false);
     nickserv.lock.Private = value_bool;
-    in.Read(ts_NickServ+"DEF_PRIVMSG",value_bool,false);
+    in.Read(ts_NickServ + "DEF_PRIVMSG", value_bool, false);
     nickserv.def.PRIVMSG = value_bool;
-    in.Read(ts_NickServ+"LCK_PRIVMSG",value_bool,false);
+    in.Read(ts_NickServ + "LCK_PRIVMSG", value_bool, false);
     nickserv.lock.PRIVMSG = value_bool;
-    in.Read(ts_NickServ+"DEF_LANGUAGE",value_mstring,"ENGLISH");
+    in.Read(ts_NickServ + "DEF_LANGUAGE", value_mstring, "ENGLISH");
     if (value_mstring != nickserv.def.Language)
     {
 	nickserv.def.Language = value_mstring.UpperCase();
@@ -3049,16 +3089,16 @@ bool Magick::get_config_values()
 	LogMessages.clear();
 	LoadLogMessages(nickserv.def.Language);
     }
-    in.Read(ts_NickServ+"LCK_LANGUAGE",value_bool,false);
+    in.Read(ts_NickServ + "LCK_LANGUAGE", value_bool, false);
     nickserv.lock.Language = value_bool;
-    in.Read(ts_NickServ+"PICSIZE",value_mstring,"0");
+    in.Read(ts_NickServ + "PICSIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	nickserv.picsize = FromHumanSpace(value_mstring);
     else
 	nickserv.picsize = FromHumanSpace("0");
-    in.Read(ts_NickServ+"PICEXT",nickserv.picext,"");
+    in.Read(ts_NickServ + "PICEXT", nickserv.picext, "");
 
-    in.Read(ts_ChanServ+"HIDE",value_bool,false);
+    in.Read(ts_ChanServ + "HIDE", value_bool, false);
     if (!reconnect && Connected() && value_bool != chanserv.hide)
     {
 	chanserv.hide = value_bool;
@@ -3071,311 +3111,311 @@ bool Magick::get_config_values()
 	}
     }
 
-    in.Read(ts_ChanServ+"EXPIRE",value_mstring,"2w");
+    in.Read(ts_ChanServ + "EXPIRE", value_mstring, "2w");
     if (FromHumanTime(value_mstring))
 	chanserv.expire = FromHumanTime(value_mstring);
     else
 	chanserv.expire = FromHumanTime("2w");
 
-    in.Read(ts_ChanServ+"DELAY",value_mstring,"30s");
+    in.Read(ts_ChanServ + "DELAY", value_mstring, "30s");
     if (FromHumanTime(value_mstring))
 	chanserv.delay = FromHumanTime(value_mstring);
     else
 	chanserv.delay = FromHumanTime("30s");
 
-    in.Read(ts_ChanServ+"MAX_PER_NICK",chanserv.max_per_nick,15U);
-    in.Read(ts_ChanServ+"MAX_MESSAGES",chanserv.max_messages,15U);
-    in.Read(ts_ChanServ+"DEF_AKICK",chanserv.def_akick_reason,"You have been banned from channel");
-    in.Read(ts_ChanServ+"PASSFAIL",chanserv.passfail,5U);
-    in.Read(ts_ChanServ+"CHANKEEP",value_mstring,"15s");
+    in.Read(ts_ChanServ + "MAX_PER_NICK", chanserv.max_per_nick, 15U);
+    in.Read(ts_ChanServ + "MAX_MESSAGES", chanserv.max_messages, 15U);
+    in.Read(ts_ChanServ + "DEF_AKICK", chanserv.def_akick_reason, "You have been banned from channel");
+    in.Read(ts_ChanServ + "PASSFAIL", chanserv.passfail, 5U);
+    in.Read(ts_ChanServ + "CHANKEEP", value_mstring, "15s");
     if (FromHumanTime(value_mstring))
 	chanserv.chankeep = FromHumanTime(value_mstring);
     else
 	chanserv.chankeep = FromHumanTime("15s");
 
-    in.Read(ts_ChanServ+"DEF_MLOCK",chanserv.def.Mlock,"");
-    in.Read(ts_ChanServ+"LCK_MLOCK",chanserv.lock.Mlock,"");
-    in.Read(ts_ChanServ+"DEF_BANTIME",value_mstring, "0");
+    in.Read(ts_ChanServ + "DEF_MLOCK", chanserv.def.Mlock, "");
+    in.Read(ts_ChanServ + "LCK_MLOCK", chanserv.lock.Mlock, "");
+    in.Read(ts_ChanServ + "DEF_BANTIME", value_mstring, "0");
     if (FromHumanTime(value_mstring))
 	chanserv.def.Bantime = FromHumanTime(value_mstring);
     else
 	chanserv.def.Bantime = FromHumanTime("0");
 
-    in.Read(ts_ChanServ+"LCK_BANTIME",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_BANTIME", value_bool, false);
     chanserv.lock.Bantime = value_bool;
-    in.Read(ts_ChanServ+"DEF_PARTTIME",value_mstring, "0");
+    in.Read(ts_ChanServ + "DEF_PARTTIME", value_mstring, "0");
     if (FromHumanTime(value_mstring))
 	chanserv.def.Parttime = FromHumanTime(value_mstring);
     else
 	chanserv.def.Parttime = FromHumanTime("0");
 
-    in.Read(ts_ChanServ+"LCK_PARTTIME",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_PARTTIME", value_bool, false);
     chanserv.lock.Parttime = value_bool;
-    in.Read(ts_ChanServ+"DEF_KEEPTOPIC",value_bool,true);
+    in.Read(ts_ChanServ + "DEF_KEEPTOPIC", value_bool, true);
     chanserv.def.Keeptopic = value_bool;
-    in.Read(ts_ChanServ+"LCK_KEEPTOPIC",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_KEEPTOPIC", value_bool, false);
     chanserv.lock.Keeptopic = value_bool;
-    in.Read(ts_ChanServ+"DEF_TOPICLOCK",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_TOPICLOCK", value_bool, false);
     chanserv.def.Topiclock = value_bool;
-    in.Read(ts_ChanServ+"LCK_TOPICLOCK",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_TOPICLOCK", value_bool, false);
     chanserv.lock.Topiclock = value_bool;
-    in.Read(ts_ChanServ+"DEF_PRIVATE",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_PRIVATE", value_bool, false);
     chanserv.def.Private = value_bool;
-    in.Read(ts_ChanServ+"LCK_PRIVATE",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_PRIVATE", value_bool, false);
     chanserv.lock.Private = value_bool;
-    in.Read(ts_ChanServ+"DEF_SECUREOPS",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_SECUREOPS", value_bool, false);
     chanserv.def.Secureops = value_bool;
-    in.Read(ts_ChanServ+"LCK_SECUREOPS",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_SECUREOPS", value_bool, false);
     chanserv.lock.Secureops = value_bool;
-    in.Read(ts_ChanServ+"DEF_SECURE",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_SECURE", value_bool, false);
     chanserv.def.Secure = value_bool;
-    in.Read(ts_ChanServ+"LCK_SECURE",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_SECURE", value_bool, false);
     chanserv.lock.Secure = value_bool;
-    in.Read(ts_ChanServ+"DEF_NOEXPIRE",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_NOEXPIRE", value_bool, false);
     chanserv.def.NoExpire = value_bool;
-    in.Read(ts_ChanServ+"LCK_NOEXPIRE",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_NOEXPIRE", value_bool, false);
     chanserv.lock.NoExpire = value_bool;
-    in.Read(ts_ChanServ+"DEF_ANARCHY",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_ANARCHY", value_bool, false);
     chanserv.def.Anarchy = value_bool;
-    in.Read(ts_ChanServ+"LCK_ANARCHY",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_ANARCHY", value_bool, false);
     chanserv.lock.Anarchy = value_bool;
-    in.Read(ts_ChanServ+"DEF_KICKONBAN",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_KICKONBAN", value_bool, false);
     chanserv.def.KickOnBan = value_bool;
-    in.Read(ts_ChanServ+"LCK_KICKONBAN",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_KICKONBAN", value_bool, false);
     chanserv.lock.KickOnBan = value_bool;
-    in.Read(ts_ChanServ+"DEF_RESTRICTED",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_RESTRICTED", value_bool, false);
     chanserv.def.Restricted = value_bool;
-    in.Read(ts_ChanServ+"LCK_RESTRICTED",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_RESTRICTED", value_bool, false);
     chanserv.lock.Restricted = value_bool;
-    in.Read(ts_ChanServ+"DEF_JOIN",value_bool,false);
+    in.Read(ts_ChanServ + "DEF_JOIN", value_bool, false);
     chanserv.def.Join = value_bool;
-    in.Read(ts_ChanServ+"LCK_JOIN",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_JOIN", value_bool, false);
     chanserv.lock.Join = value_bool;
-    in.Read(ts_ChanServ+"DEF_REVENGE",value_mstring,"NONE");
+    in.Read(ts_ChanServ + "DEF_REVENGE", value_mstring, "NONE");
     if (chanserv.IsRevengeLevel(value_mstring))
 	chanserv.def.Revenge = value_mstring.UpperCase();
     else
 	chanserv.def.Revenge = "NONE";
 
-    in.Read(ts_ChanServ+"LCK_REVENGE",value_bool,false);
+    in.Read(ts_ChanServ + "LCK_REVENGE", value_bool, false);
     chanserv.lock.Revenge = value_bool;
-    in.Read(ts_ChanServ+"LEVEL_MIN",chanserv.level_min,-1L);
-    in.Read(ts_ChanServ+"LEVEL_MAX",chanserv.level_max,30L);
-    in.Read(ts_ChanServ+"LVL_AUTODEOP",chanserv.lvl["AUTODEOP"],-1L);
-    in.Read(ts_ChanServ+"LVL_AUTOVOICE",chanserv.lvl["AUTOVOICE"],5L);
-    in.Read(ts_ChanServ+"LVL_AUTOHALFOP",chanserv.lvl["AUTOHALFOP"],10L);
-    in.Read(ts_ChanServ+"LVL_AUTOOP",chanserv.lvl["AUTOOP"],10L);
-    in.Read(ts_ChanServ+"LVL_READMEMO",chanserv.lvl["READMEMO"],0L);
-    in.Read(ts_ChanServ+"LVL_WRITEMEMO",chanserv.lvl["WRITEMEMO"],15L);
-    in.Read(ts_ChanServ+"LVL_DELMEMO",chanserv.lvl["DELMEMO"],25L);
-    in.Read(ts_ChanServ+"LVL_GREET",chanserv.lvl["GREET"],1L);
-    in.Read(ts_ChanServ+"LVL_OVERGREET",chanserv.lvl["OVERGREET"],25L);
-    in.Read(ts_ChanServ+"LVL_MESSAGE",chanserv.lvl["MESSAGE"],20L);
-    in.Read(ts_ChanServ+"LVL_AKICK",chanserv.lvl["AKICK"],20L);
-    in.Read(ts_ChanServ+"LVL_SUPER",chanserv.lvl["SUPER"],25L);
-    in.Read(ts_ChanServ+"LVL_UNBAN",chanserv.lvl["UNBAN"],10L);
-    in.Read(ts_ChanServ+"LVL_ACCESS",chanserv.lvl["ACCESS"],5L);
-    in.Read(ts_ChanServ+"LVL_SET",chanserv.lvl["SET"],25L);
-    in.Read(ts_ChanServ+"LVL_VIEW",chanserv.lvl["VIEW"],1L);
-    in.Read(ts_ChanServ+"LVL_CMDINVITE",chanserv.lvl["CMDINVITE"],5L);
-    in.Read(ts_ChanServ+"LVL_CMDUNBAN",chanserv.lvl["CMDUNBAN"],10L);
-    in.Read(ts_ChanServ+"LVL_CMDVOICE",chanserv.lvl["CMDVOICE"],5L);
-    in.Read(ts_ChanServ+"LVL_CMDHALFOP",chanserv.lvl["CMDHALFOP"],10L);
-    in.Read(ts_ChanServ+"LVL_CMDOP",chanserv.lvl["CMDOP"],10L);
-    in.Read(ts_ChanServ+"LVL_CMDKICK",chanserv.lvl["CMDKICK"],15L);
-    in.Read(ts_ChanServ+"LVL_CMDMODE",chanserv.lvl["CMDMODE"],15L);
-    in.Read(ts_ChanServ+"LVL_CMDCLEAR",chanserv.lvl["CMDCLEAR"],20L);
+    in.Read(ts_ChanServ + "LEVEL_MIN", chanserv.level_min, -1L);
+    in.Read(ts_ChanServ + "LEVEL_MAX", chanserv.level_max, 30L);
+    in.Read(ts_ChanServ + "LVL_AUTODEOP", chanserv.lvl["AUTODEOP"], -1L);
+    in.Read(ts_ChanServ + "LVL_AUTOVOICE", chanserv.lvl["AUTOVOICE"], 5L);
+    in.Read(ts_ChanServ + "LVL_AUTOHALFOP", chanserv.lvl["AUTOHALFOP"], 10L);
+    in.Read(ts_ChanServ + "LVL_AUTOOP", chanserv.lvl["AUTOOP"], 10L);
+    in.Read(ts_ChanServ + "LVL_READMEMO", chanserv.lvl["READMEMO"], 0L);
+    in.Read(ts_ChanServ + "LVL_WRITEMEMO", chanserv.lvl["WRITEMEMO"], 15L);
+    in.Read(ts_ChanServ + "LVL_DELMEMO", chanserv.lvl["DELMEMO"], 25L);
+    in.Read(ts_ChanServ + "LVL_GREET", chanserv.lvl["GREET"], 1L);
+    in.Read(ts_ChanServ + "LVL_OVERGREET", chanserv.lvl["OVERGREET"], 25L);
+    in.Read(ts_ChanServ + "LVL_MESSAGE", chanserv.lvl["MESSAGE"], 20L);
+    in.Read(ts_ChanServ + "LVL_AKICK", chanserv.lvl["AKICK"], 20L);
+    in.Read(ts_ChanServ + "LVL_SUPER", chanserv.lvl["SUPER"], 25L);
+    in.Read(ts_ChanServ + "LVL_UNBAN", chanserv.lvl["UNBAN"], 10L);
+    in.Read(ts_ChanServ + "LVL_ACCESS", chanserv.lvl["ACCESS"], 5L);
+    in.Read(ts_ChanServ + "LVL_SET", chanserv.lvl["SET"], 25L);
+    in.Read(ts_ChanServ + "LVL_VIEW", chanserv.lvl["VIEW"], 1L);
+    in.Read(ts_ChanServ + "LVL_CMDINVITE", chanserv.lvl["CMDINVITE"], 5L);
+    in.Read(ts_ChanServ + "LVL_CMDUNBAN", chanserv.lvl["CMDUNBAN"], 10L);
+    in.Read(ts_ChanServ + "LVL_CMDVOICE", chanserv.lvl["CMDVOICE"], 5L);
+    in.Read(ts_ChanServ + "LVL_CMDHALFOP", chanserv.lvl["CMDHALFOP"], 10L);
+    in.Read(ts_ChanServ + "LVL_CMDOP", chanserv.lvl["CMDOP"], 10L);
+    in.Read(ts_ChanServ + "LVL_CMDKICK", chanserv.lvl["CMDKICK"], 15L);
+    in.Read(ts_ChanServ + "LVL_CMDMODE", chanserv.lvl["CMDMODE"], 15L);
+    in.Read(ts_ChanServ + "LVL_CMDCLEAR", chanserv.lvl["CMDCLEAR"], 20L);
 
-    in.Read(ts_MemoServ+"NEWS_EXPIRE",value_mstring,"3w");
+    in.Read(ts_MemoServ + "NEWS_EXPIRE", value_mstring, "3w");
     if (FromHumanTime(value_mstring))
 	memoserv.news_expire = FromHumanTime(value_mstring);
     else
 	memoserv.news_expire = FromHumanTime("3w");
 
-    in.Read(ts_MemoServ+"INFLIGHT",value_mstring,"3m");
+    in.Read(ts_MemoServ + "INFLIGHT", value_mstring, "3m");
     if (FromHumanTime(value_mstring))
 	memoserv.inflight = FromHumanTime(value_mstring);
     else
 	memoserv.inflight = FromHumanTime("3m");
 
-    in.Read(ts_MemoServ+"DELAY",value_mstring,"10s");
+    in.Read(ts_MemoServ + "DELAY", value_mstring, "10s");
     if (FromHumanTime(value_mstring))
 	memoserv.delay = FromHumanTime(value_mstring);
     else
 	memoserv.delay = FromHumanTime("10s");
 
-    in.Read(ts_MemoServ+"FILES",memoserv.files,0U);
-    in.Read(ts_MemoServ+"FILESIZE",value_mstring,"0");
+    in.Read(ts_MemoServ + "FILES", memoserv.files, 0U);
+    in.Read(ts_MemoServ + "FILESIZE", value_mstring, "0");
     if (FromHumanSpace(value_mstring))
 	memoserv.filesize = FromHumanSpace(value_mstring);
     else
 	memoserv.filesize = FromHumanSpace("0");
 
-    in.Read(ts_OperServ+"SERVICES_ADMIN",operserv.services_admin,"");
-    in.Read(ts_OperServ+"SECURE",operserv.secure,false);
-    in.Read(ts_OperServ+"SECUREOPER",operserv.secureoper,false);
-    in.Read(ts_OperServ+"DEF_EXPIRE",value_mstring,"3h");
+    in.Read(ts_OperServ + "SERVICES_ADMIN", operserv.services_admin, "");
+    in.Read(ts_OperServ + "SECURE", operserv.secure, false);
+    in.Read(ts_OperServ + "SECUREOPER", operserv.secureoper, false);
+    in.Read(ts_OperServ + "DEF_EXPIRE", value_mstring, "3h");
     if (FromHumanTime(value_mstring))
 	operserv.def_expire = FromHumanTime(value_mstring);
     else
 	operserv.def_expire = FromHumanTime("3h");
 
-    in.Read(ts_OperServ+"EXPIRE_OPER",value_mstring,"1d");
+    in.Read(ts_OperServ + "EXPIRE_OPER", value_mstring, "1d");
     if (FromHumanTime(value_mstring))
 	operserv.expire_oper = FromHumanTime(value_mstring);
     else
 	operserv.expire_oper = FromHumanTime("1d");
 
-    in.Read(ts_OperServ+"EXPIRE_ADMIN",value_mstring,"1w");
+    in.Read(ts_OperServ + "EXPIRE_ADMIN", value_mstring, "1w");
     if (FromHumanTime(value_mstring))
 	operserv.expire_admin = FromHumanTime(value_mstring);
     else
 	operserv.expire_admin = FromHumanTime("1w");
 
-    in.Read(ts_OperServ+"EXPIRE_SOP",value_mstring,"8w");
+    in.Read(ts_OperServ + "EXPIRE_SOP", value_mstring, "8w");
     if (FromHumanTime(value_mstring))
 	operserv.expire_sop = FromHumanTime(value_mstring);
     else
 	operserv.expire_sop = FromHumanTime("8w");
 
-    in.Read(ts_OperServ+"EXPIRE_SADMIN",value_mstring,"1y");
+    in.Read(ts_OperServ + "EXPIRE_SADMIN", value_mstring, "1y");
     if (FromHumanTime(value_mstring))
 	operserv.expire_sadmin = FromHumanTime(value_mstring);
     else
 	operserv.expire_sadmin = FromHumanTime("1y");
 
-    in.Read(ts_OperServ+"AKILL_REJECT",operserv.akill_reject,10.0f);
+    in.Read(ts_OperServ + "AKILL_REJECT", operserv.akill_reject, 10.0f);
     if (operserv.akill_reject < 0.0)
 	operserv.akill_reject = 0.0;
     if (operserv.akill_reject > 100.0)
 	operserv.akill_reject = 100.0;
 
-    in.Read(ts_OperServ+"MAX_CLONE",operserv.max_clone,50U);
-    in.Read(ts_OperServ+"CLONE_LIMIT",operserv.clone_limit,2U);
-    in.Read(ts_OperServ+"DEF_CLONE",operserv.def_clone,"Maximum connections from one host exceeded");
-    in.Read(ts_OperServ+"CLONE_TRIGGER",operserv.clone_trigger,10U);
-    in.Read(ts_OperServ+"CLONE_TIME",value_mstring,"3h");
+    in.Read(ts_OperServ + "MAX_CLONE", operserv.max_clone, 50U);
+    in.Read(ts_OperServ + "CLONE_LIMIT", operserv.clone_limit, 2U);
+    in.Read(ts_OperServ + "DEF_CLONE", operserv.def_clone, "Maximum connections from one host exceeded");
+    in.Read(ts_OperServ + "CLONE_TRIGGER", operserv.clone_trigger, 10U);
+    in.Read(ts_OperServ + "CLONE_TIME", value_mstring, "3h");
     if (FromHumanTime(value_mstring))
 	operserv.clone_time = FromHumanTime(value_mstring);
     else
 	operserv.clone_time = FromHumanTime("3h");
-    in.Read(ts_OperServ+"CLONE_AKILL",operserv.clone_akill,"Clone trigger exceeded, Automatic AKILL");
-    in.Read(ts_OperServ+"CLONE_AKILLTIME",value_mstring,"30m");
+    in.Read(ts_OperServ + "CLONE_AKILL", operserv.clone_akill, "Clone trigger exceeded, Automatic AKILL");
+    in.Read(ts_OperServ + "CLONE_AKILLTIME", value_mstring, "30m");
     if (FromHumanTime(value_mstring))
 	operserv.clone_akilltime = FromHumanTime(value_mstring);
     else
 	operserv.clone_akilltime = FromHumanTime("30m");
 
-    in.Read(ts_OperServ+"FLOOD_TIME",value_mstring,"10s");
+    in.Read(ts_OperServ + "FLOOD_TIME", value_mstring, "10s");
     if (FromHumanTime(value_mstring))
 	operserv.flood_time = FromHumanTime(value_mstring);
     else
 	operserv.flood_time = FromHumanTime("10s");
 
-    in.Read(ts_OperServ+"FLOOD_MSGS",operserv.flood_msgs,5U);
+    in.Read(ts_OperServ + "FLOOD_MSGS", operserv.flood_msgs, 5U);
 
-    in.Read(ts_OperServ+"IGNORE_TIME",value_mstring,"20s");
+    in.Read(ts_OperServ + "IGNORE_TIME", value_mstring, "20s");
     if (FromHumanTime(value_mstring))
 	operserv.ignore_time = FromHumanTime(value_mstring);
     else
 	operserv.ignore_time = FromHumanTime("20s");
 
-    in.Read(ts_OperServ+"IGNORE_LIMIT",operserv.ignore_limit,5U);
-    in.Read(ts_OperServ+"IGNORE_REMOVE",value_mstring,"5m");
+    in.Read(ts_OperServ + "IGNORE_LIMIT", operserv.ignore_limit, 5U);
+    in.Read(ts_OperServ + "IGNORE_REMOVE", value_mstring, "5m");
     if (FromHumanTime(value_mstring))
 	operserv.ignore_remove = FromHumanTime(value_mstring);
     else
 	operserv.ignore_remove = FromHumanTime("5m");
 
-    in.Read(ts_OperServ+"IGNORE_METHOD",operserv.ignore_method,8U);
-    in.Read(ts_OperServ+"LOG_IGNORE",operserv.log_ignore,false);
-    in.Read(ts_OperServ+"INIT_HTM_GAP",value_mstring,"5s");
+    in.Read(ts_OperServ + "IGNORE_METHOD", operserv.ignore_method, 8U);
+    in.Read(ts_OperServ + "LOG_IGNORE", operserv.log_ignore, false);
+    in.Read(ts_OperServ + "INIT_HTM_GAP", value_mstring, "5s");
     if (FromHumanTime(value_mstring))
 	operserv.init_htm_gap = FromHumanTime(value_mstring);
     else
 	operserv.init_htm_gap = FromHumanTime("5s");
-    in.Read(ts_OperServ+"INIT_HTM_THRESH",value_mstring,"16k");
+    in.Read(ts_OperServ + "INIT_HTM_THRESH", value_mstring, "16k");
     if (FromHumanSpace(value_mstring))
 	operserv.init_htm_thresh = FromHumanSpace(value_mstring);
     else
 	operserv.init_htm_thresh = FromHumanSpace("16k");
-    in.Read(ts_OperServ+"MAX_HTM_GAP",value_mstring,"1m");
+    in.Read(ts_OperServ + "MAX_HTM_GAP", value_mstring, "1m");
     if (FromHumanTime(value_mstring))
 	operserv.max_htm_gap = FromHumanTime(value_mstring);
     else
 	operserv.max_htm_gap = FromHumanTime("1m");
-    in.Read(ts_OperServ+"HTM_ON_GAP",value_mstring,"30s");
+    in.Read(ts_OperServ + "HTM_ON_GAP", value_mstring, "30s");
     if (FromHumanTime(value_mstring))
 	operserv.htm_on_gap = FromHumanTime(value_mstring);
     else
 	operserv.htm_on_gap = FromHumanTime("30s");
 
-    in.Read(ts_CommServ+"MAX_LOGON",commserv.max_logon,5U);
+    in.Read(ts_CommServ + "MAX_LOGON", commserv.max_logon, 5U);
     RemCommands();
-    in.Read(ts_CommServ+"DEF_OPENMEMOS",value_bool,true);
+    in.Read(ts_CommServ + "DEF_OPENMEMOS", value_bool, true);
     commserv.def.OpenMemos = value_bool;
-    in.Read(ts_CommServ+"LCK_OPENMEMOS",value_bool,false);
+    in.Read(ts_CommServ + "LCK_OPENMEMOS", value_bool, false);
     commserv.lock.OpenMemos = value_bool;
-    in.Read(ts_CommServ+"DEF_SECURE",value_bool,false);
+    in.Read(ts_CommServ + "DEF_SECURE", value_bool, false);
     commserv.def.Secure = value_bool;
-    in.Read(ts_CommServ+"LCK_SECURE",value_bool,false);
+    in.Read(ts_CommServ + "LCK_SECURE", value_bool, false);
     commserv.lock.Secure = value_bool;
-    in.Read(ts_CommServ+"DEF_PRIVATE",value_bool,false);
+    in.Read(ts_CommServ + "DEF_PRIVATE", value_bool, false);
     commserv.def.Private = value_bool;
-    in.Read(ts_CommServ+"LCK_PRIVATE",value_bool,false);
+    in.Read(ts_CommServ + "LCK_PRIVATE", value_bool, false);
     commserv.lock.Private = value_bool;
-    in.Read(ts_CommServ+"ALL_NAME",commserv.all.Name,"ALL");
-    in.Read(ts_CommServ+"ALL_SETMODE",commserv.all.SetMode,"");
-    in.Read(ts_CommServ+"REGD_NAME",commserv.regd.Name,"REGD");
-    in.Read(ts_CommServ+"REGD_SETMODE",commserv.regd.SetMode,"");
-    in.Read(ts_CommServ+"SADMIN_NAME",commserv.sadmin.Name,"SADMIN");
-    in.Read(ts_CommServ+"SADMIN_SECURE",value_bool,true);
+    in.Read(ts_CommServ + "ALL_NAME", commserv.all.Name, "ALL");
+    in.Read(ts_CommServ + "ALL_SETMODE", commserv.all.SetMode, "");
+    in.Read(ts_CommServ + "REGD_NAME", commserv.regd.Name, "REGD");
+    in.Read(ts_CommServ + "REGD_SETMODE", commserv.regd.SetMode, "");
+    in.Read(ts_CommServ + "SADMIN_NAME", commserv.sadmin.Name, "SADMIN");
+    in.Read(ts_CommServ + "SADMIN_SECURE", value_bool, true);
     commserv.sadmin.Secure = value_bool;
-    in.Read(ts_CommServ+"SADMIN_PRIVATE",value_bool,false);
+    in.Read(ts_CommServ + "SADMIN_PRIVATE", value_bool, false);
     commserv.sadmin.Private = value_bool;
-    in.Read(ts_CommServ+"SADMIN_OPENMEMOS",value_bool,true);
+    in.Read(ts_CommServ + "SADMIN_OPENMEMOS", value_bool, true);
     commserv.sadmin.OpenMemos = value_bool;
-    in.Read(ts_CommServ+"SADMIN_MODEO",value_bool,true);
+    in.Read(ts_CommServ + "SADMIN_MODEO", value_bool, true);
     commserv.sadmin.ModeO = value_bool;
-    in.Read(ts_CommServ+"SADMIN_SETMODE",commserv.sadmin.SetMode,"");
-    in.Read(ts_CommServ+"SOP_NAME",commserv.sop.Name,"SOP");
-    in.Read(ts_CommServ+"SOP_SECURE",value_bool,true);
+    in.Read(ts_CommServ + "SADMIN_SETMODE", commserv.sadmin.SetMode, "");
+    in.Read(ts_CommServ + "SOP_NAME", commserv.sop.Name, "SOP");
+    in.Read(ts_CommServ + "SOP_SECURE", value_bool, true);
     commserv.sop.Secure = value_bool;
-    in.Read(ts_CommServ+"SOP_PRIVATE",value_bool,false);
+    in.Read(ts_CommServ + "SOP_PRIVATE", value_bool, false);
     commserv.sop.Private = value_bool;
-    in.Read(ts_CommServ+"SOP_OPENMEMOS",value_bool,true);
+    in.Read(ts_CommServ + "SOP_OPENMEMOS", value_bool, true);
     commserv.sop.OpenMemos = value_bool;
-    in.Read(ts_CommServ+"SOP_MODEO",value_bool,true);
+    in.Read(ts_CommServ + "SOP_MODEO", value_bool, true);
     commserv.sop.ModeO = value_bool;
-    in.Read(ts_CommServ+"SOP_SETMODE",commserv.sop.SetMode,"");
-    in.Read(ts_CommServ+"ADMIN_NAME",commserv.admin.Name,"ADMIN");
-    in.Read(ts_CommServ+"ADMIN_SECURE",value_bool,true);
+    in.Read(ts_CommServ + "SOP_SETMODE", commserv.sop.SetMode, "");
+    in.Read(ts_CommServ + "ADMIN_NAME", commserv.admin.Name, "ADMIN");
+    in.Read(ts_CommServ + "ADMIN_SECURE", value_bool, true);
     commserv.admin.Secure = value_bool;
-    in.Read(ts_CommServ+"ADMIN_PRIVATE",value_bool,false);
+    in.Read(ts_CommServ + "ADMIN_PRIVATE", value_bool, false);
     commserv.admin.Private = value_bool;
-    in.Read(ts_CommServ+"ADMIN_OPENMEMOS",value_bool,true);
+    in.Read(ts_CommServ + "ADMIN_OPENMEMOS", value_bool, true);
     commserv.admin.OpenMemos = value_bool;
-    in.Read(ts_CommServ+"ADMIN_MODEO",value_bool,true);
+    in.Read(ts_CommServ + "ADMIN_MODEO", value_bool, true);
     commserv.admin.ModeO = value_bool;
-    in.Read(ts_CommServ+"ADMIN_SETMODE",commserv.admin.SetMode,"");
-    in.Read(ts_CommServ+"OPER_NAME",commserv.oper.Name,"OPER");
-    in.Read(ts_CommServ+"OPER_SECURE",value_bool,true);
+    in.Read(ts_CommServ + "ADMIN_SETMODE", commserv.admin.SetMode, "");
+    in.Read(ts_CommServ + "OPER_NAME", commserv.oper.Name, "OPER");
+    in.Read(ts_CommServ + "OPER_SECURE", value_bool, true);
     commserv.oper.Secure = value_bool;
-    in.Read(ts_CommServ+"OPER_PRIVATE",value_bool,false);
+    in.Read(ts_CommServ + "OPER_PRIVATE", value_bool, false);
     commserv.oper.Private = value_bool;
-    in.Read(ts_CommServ+"OPER_OPENMEMOS",value_bool,true);
+    in.Read(ts_CommServ + "OPER_OPENMEMOS", value_bool, true);
     commserv.oper.OpenMemos = value_bool;
-    in.Read(ts_CommServ+"OPER_MODEO",value_bool,true);
+    in.Read(ts_CommServ + "OPER_MODEO", value_bool, true);
     commserv.oper.ModeO = value_bool;
-    in.Read(ts_CommServ+"OPER_SETMODE",commserv.oper.SetMode,"");
-    in.Read(ts_CommServ+"OVR_VIEW",commserv.ovr_view,"OPER");
-    in.Read(ts_CommServ+"OVR_OWNER",commserv.ovr_owner,"SADMIN");
-    in.Read(ts_CommServ+"OVR_CS_MODE",commserv.ovr_cs_mode,"SOP");
-    in.Read(ts_CommServ+"OVR_CS_OP",commserv.ovr_cs_op,"SOP");
-    in.Read(ts_CommServ+"OVR_CS_VOICE",commserv.ovr_cs_voice,"SOP");
-    in.Read(ts_CommServ+"OVR_CS_INVITE",commserv.ovr_cs_invite,"SOP");
-    in.Read(ts_CommServ+"OVR_CS_UNBAN",commserv.ovr_cs_unban,"SOP");
-    in.Read(ts_CommServ+"OVR_CS_CLEAR",commserv.ovr_cs_clear,"SADMIN");
+    in.Read(ts_CommServ + "OPER_SETMODE", commserv.oper.SetMode, "");
+    in.Read(ts_CommServ + "OVR_VIEW", commserv.ovr_view, "OPER");
+    in.Read(ts_CommServ + "OVR_OWNER", commserv.ovr_owner, "SADMIN");
+    in.Read(ts_CommServ + "OVR_CS_MODE", commserv.ovr_cs_mode, "SOP");
+    in.Read(ts_CommServ + "OVR_CS_OP", commserv.ovr_cs_op, "SOP");
+    in.Read(ts_CommServ + "OVR_CS_VOICE", commserv.ovr_cs_voice, "SOP");
+    in.Read(ts_CommServ + "OVR_CS_INVITE", commserv.ovr_cs_invite, "SOP");
+    in.Read(ts_CommServ + "OVR_CS_UNBAN", commserv.ovr_cs_unban, "SOP");
+    in.Read(ts_CommServ + "OVR_CS_CLEAR", commserv.ovr_cs_clear, "SADMIN");
     commserv.all.Name.MakeUpper();
     commserv.regd.Name.MakeUpper();
     commserv.sadmin.Name.MakeUpper();
@@ -3392,7 +3432,7 @@ bool Magick::get_config_values()
     commserv.ovr_cs_clear.MakeUpper();
     AddCommands();
 
-    map_entry<Committee_t> comm;
+    map_entry < Committee_t > comm;
     if (commserv.IsList(commserv.sadmin.Name))
     {
 	comm = commserv.GetList(commserv.sadmin.Name);
@@ -3405,26 +3445,25 @@ bool Magick::get_config_values()
     }
     else
     {
-	comm = map_entry<Committee_t>(new Committee_t(commserv.sadmin.Name,
-				"Services Administrators"));
+	comm = map_entry < Committee_t > (new Committee_t(commserv.sadmin.Name, "Services Administrators"));
 	commserv.AddList(comm);
     }
     comm->Secure(commserv.sadmin.Secure);
     comm->Private(commserv.sadmin.Private);
     comm->OpenMemos(commserv.sadmin.OpenMemos);
-    { MLOCK(("CommServ", "list", commserv.sadmin.Name, "member"));
-    for (i=1; i<=operserv.services_admin.WordCount(", "); i++)
-	comm->insert(operserv.services_admin.ExtractWord(i, ", "),
-			operserv.FirstName());
+    {
+	MLOCK(("CommServ", "list", commserv.sadmin.Name, "member"));
+	for (i = 1; i <= operserv.services_admin.WordCount(", "); i++)
+	    comm->insert(operserv.services_admin.ExtractWord(i, ", "), operserv.FirstName());
     }
 
     if (commserv.IsList(commserv.sop.Name))
 	comm = commserv.GetList(commserv.sop.Name);
     else
     {
-	comm = map_entry<Committee_t>(new Committee_t(commserv.sop.Name,
-			*(commserv.GetList(commserv.sadmin.Name).entry()),
-			"Services Operators"));
+	comm =
+	    map_entry < Committee_t >
+	    (new Committee_t(commserv.sop.Name, *(commserv.GetList(commserv.sadmin.Name).entry()), "Services Operators"));
 	commserv.AddList(comm);
     }
     comm->Secure(commserv.sop.Secure);
@@ -3435,9 +3474,9 @@ bool Magick::get_config_values()
 	comm = commserv.GetList(commserv.admin.Name);
     else
     {
-	comm = map_entry<Committee_t>(new Committee_t(commserv.admin.Name,
-			*(commserv.GetList(commserv.sadmin.Name).entry()),
-			"Server Administrators"));
+	comm =
+	    map_entry < Committee_t >
+	    (new Committee_t(commserv.admin.Name, *(commserv.GetList(commserv.sadmin.Name).entry()), "Server Administrators"));
 	commserv.AddList(comm);
     }
     comm->Secure(commserv.admin.Secure);
@@ -3448,9 +3487,9 @@ bool Magick::get_config_values()
 	comm = commserv.GetList(commserv.oper.Name);
     else
     {
-	comm = map_entry<Committee_t>(new Committee_t(commserv.oper.Name,
-			*(commserv.GetList(commserv.admin.Name).entry()),
-			"Server Operators"));
+	comm =
+	    map_entry < Committee_t >
+	    (new Committee_t(commserv.oper.Name, *(commserv.GetList(commserv.admin.Name).entry()), "Server Operators"));
 	commserv.AddList(comm);
     }
     comm->Secure(commserv.oper.Secure);
@@ -3469,9 +3508,9 @@ bool Magick::get_config_values()
     }
     else
     {
-	comm = map_entry<Committee_t>(new Committee_t(commserv.all.Name,
-			*(commserv.GetList(commserv.admin.Name).entry()),
-			"All Users"));
+	comm =
+	    map_entry < Committee_t >
+	    (new Committee_t(commserv.all.Name, *(commserv.GetList(commserv.admin.Name).entry()), "All Users"));
 	commserv.AddList(comm);
     }
     comm->Secure(false);
@@ -3490,9 +3529,9 @@ bool Magick::get_config_values()
     }
     else
     {
-	comm = map_entry<Committee_t>(new Committee_t(commserv.regd.Name,
-			*(commserv.GetList(commserv.sop.Name).entry()),
-			"Registered Users"));
+	comm =
+	    map_entry < Committee_t >
+	    (new Committee_t(commserv.regd.Name, *(commserv.GetList(commserv.sop.Name).entry()), "Registered Users"));
 	commserv.AddList(comm);
     }
     comm->Secure(false);
@@ -3501,8 +3540,9 @@ bool Magick::get_config_values()
 
     if (reconnect && Connected())
     {
-	server.raw(((server.proto.Tokens() && !server.proto.GetNonToken("ERROR").empty()) ?
-		server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
+	server.
+	    raw(((server.proto.Tokens()
+		  && !server.proto.GetNonToken("ERROR").empty())? server.proto.GetNonToken("ERROR") : mstring("ERROR")) + " " +
 		" :Closing Link: Configuration reload required restart!");
 	Disconnect();
     }
@@ -3512,176 +3552,184 @@ bool Magick::get_config_values()
     RET(true);
 }
 
-int SignalHandler::handle_signal(int signum, siginfo_t *si, ucontext_t *uctx)
+int SignalHandler::handle_signal(int signum, siginfo_t * si, ucontext_t * uctx)
 {
-    static_cast<void>(si);
-    static_cast<void>(uctx);
+    static_cast < void >(si);
+    static_cast < void >(uctx);
 
     // No trace, screws with LastFunc...
     //FT("SignalHandler::handle_signal", (signum, "(siginfo_t *) si", "(ucontext_t *) uctx"));
     ThreadID *tid;
 
     // todo: fill this sucker in
-    switch(signum)
+    switch (signum)
     {
 #if defined(SIGPIPE) && (SIGPIPE!=0)
     case SIGPIPE:
 	{
-	vector<ThreadID*> ids = mThread::findall();
-	for (unsigned int i=0; i<ids.size(); i++)
-	    if (ids[i] != NULL)
-		ids[i]->Flush();
+	    vector < ThreadID * >ids = mThread::findall();
+	    for (unsigned int i = 0; i < ids.size(); i++)
+		if (ids[i] != NULL)
+		    ids[i]->Flush();
 	}
 	break;
 #endif
 
-    case SIGINT:	// Re-signon all clients
-	LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SIGNON", ( signum));
+    case SIGINT:		// Re-signon all clients
+	LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SIGNON", (signum));
 	Magick::instance().server.SignOnAll();
 	break;
 
 #if defined(SIGIOT) && (SIGIOT != 0)
-    case SIGIOT:	// Thread abort ...
-    {
-	ACE_Thread_Manager *thr_mgr = NULL;
-	switch (Magick::instance().hh.ThreadType())
+    case SIGIOT:		// Thread abort ...
 	{
-	case Heartbeat_Handler::H_Worker:
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL)
-		thr_mgr = &Magick::instance().ircsvchandler->tm;
-	    else
-		thr_mgr = &Magick::instance().thr_mgr();
-	    }
-	    break;
-	case Heartbeat_Handler::H_IrcServer:
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL)
-		thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
-	    }
-	    if (thr_mgr == NULL)
-		thr_mgr = &Magick::instance().thr_mgr();
-	    Magick::instance().Disconnect();
-	    if (Magick::instance().dh_timer > 0)
-		Magick::instance().reactor().cancel_timer(Magick::instance().dh_timer);
-	    Magick::instance().dh_timer = 0;
-	    break;
-	case Heartbeat_Handler::H_Events:
-	    { WLOCK(("Events"));
-	    if (Magick::instance().events != NULL)
+	    ACE_Thread_Manager *thr_mgr = NULL;
+
+	    switch (Magick::instance().hh.ThreadType())
 	    {
-		thr_mgr = Magick::instance().events->thr_mgr();
-		// Cant afford to do the wait ...
-//		if (!Magick::instance().events->fini())
-//		    Magick::instance().events->wait();
-		delete Magick::instance().events;
-		Magick::instance().events = NULL;
+	    case Heartbeat_Handler::H_Worker:
+		{
+		    RLOCK(("IrcSvcHandler"));
+		    if (Magick::instance().ircsvchandler != NULL)
+			thr_mgr = &Magick::instance().ircsvchandler->tm;
+		    else
+			thr_mgr = &Magick::instance().thr_mgr();
+		}
+		break;
+	    case Heartbeat_Handler::H_IrcServer:
+		{
+		    RLOCK(("IrcSvcHandler"));
+		    if (Magick::instance().ircsvchandler != NULL)
+			thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
+		}
+		if (thr_mgr == NULL)
+		    thr_mgr = &Magick::instance().thr_mgr();
+		Magick::instance().Disconnect();
+		if (Magick::instance().dh_timer > 0)
+		    Magick::instance().reactor().cancel_timer(Magick::instance().dh_timer);
+		Magick::instance().dh_timer = 0;
+		break;
+	    case Heartbeat_Handler::H_Events:
+		{
+		    WLOCK(("Events"));
+		    if (Magick::instance().events != NULL)
+		    {
+			thr_mgr = Magick::instance().events->thr_mgr();
+			// Cant afford to do the wait ...
+//              if (!Magick::instance().events->fini())
+//                  Magick::instance().events->wait();
+			delete Magick::instance().events;
+
+			Magick::instance().events = NULL;
+		    }
+		    if (thr_mgr == NULL)
+			thr_mgr = &Magick::instance().thr_mgr();
+		    Magick::instance().events = new EventTask(&Magick::instance().thr_mgr());
+		    Magick::instance().events->open((void *) &Magick::instance());
+		}
+		break;
+	    case Heartbeat_Handler::H_DCC:
+		{
+		    WLOCK(("DCC"));
+		    if (Magick::instance().dcc != NULL)
+		    {
+			thr_mgr = Magick::instance().dcc->thr_mgr();
+			// Cant afford to do the wait ...
+//              if (!Magick::instance().dcc->fini())
+//                  Magick::instance().dcc->close();
+			delete Magick::instance().dcc;
+
+			Magick::instance().dcc = NULL;
+		    }
+		    if (thr_mgr == NULL)
+			thr_mgr = &Magick::instance().thr_mgr();
+		    Magick::instance().dcc = new DccMap(&Magick::instance().thr_mgr());
+		    Magick::instance().dcc->open((void *) &Magick::instance());
+		}
+		break;
+	    case Heartbeat_Handler::H_Main:	// Its a REAL SIGABRT ...
+		{
+		    vector < ThreadID * >ids = mThread::findall();
+		    for (unsigned int i = 0; i < ids.size(); i++)
+			if (ids[i] != NULL)
+			    ids[i]->Flush();
+		}
+		tid = mThread::find();
+		LOG(LM_ALERT, "SYS_ERRORS/SIGNAL_KILL", (signum, tid->LastFunc()));
+		ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_KILL", (signum, tid->LastFunc()));
+		ACE_OS::sleep(1);
+		Magick::instance().Shutdown(true);
+		Magick::instance().Die();
+		return -1;
+	    default:
+		// Invalid ... WTF? ignore.
+		break;
 	    }
-	    if (thr_mgr == NULL)
-		thr_mgr = &Magick::instance().thr_mgr();
-	    Magick::instance().events = new EventTask(&Magick::instance().thr_mgr());
-	    Magick::instance().events->open((void *) &Magick::instance());
-	    }
-	    break;
-	case Heartbeat_Handler::H_DCC:
-	    { WLOCK(("DCC"));
-	    if (Magick::instance().dcc != NULL)
-	    {
-		thr_mgr = Magick::instance().dcc->thr_mgr();
-		// Cant afford to do the wait ...
-//		if (!Magick::instance().dcc->fini())
-//		    Magick::instance().dcc->close();
-		delete Magick::instance().dcc;
-		Magick::instance().dcc = NULL;
-	    }
-	    if (thr_mgr == NULL)
-		thr_mgr = &Magick::instance().thr_mgr();
-	    Magick::instance().dcc = new DccMap(&Magick::instance().thr_mgr());
-	    Magick::instance().dcc->open((void *) &Magick::instance());
-	    }
-	    break;
-	case Heartbeat_Handler::H_Main: // Its a REAL SIGABRT ...
-	    {
-	    vector<ThreadID*> ids = mThread::findall();
-	    for (unsigned int i=0; i<ids.size(); i++)
-		if (ids[i] != NULL)
-		    ids[i]->Flush();
-	    }
-	    tid = mThread::find();
-	    LOG(LM_ALERT, "SYS_ERRORS/SIGNAL_KILL", ( signum, tid->LastFunc()));
-	    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_KILL", ( signum, tid->LastFunc()));
-	    ACE_OS::sleep(1);
-	    Magick::instance().Shutdown(true);
-	    Magick::instance().Die();
-	    return -1;
-	default:
-	    // Invalid ... WTF? ignore.
+	    Magick::instance().hh.RemoveThread();
+	    if (thr_mgr != NULL)
+		thr_mgr->exit();
 	    break;
 	}
-	Magick::instance().hh.RemoveThread();
-	if (thr_mgr != NULL)
-	    thr_mgr->exit();
-	break;
-    }
 #endif
 
 #if defined(SIGTERM) && (SIGTERM != 0)
-    case SIGTERM:	// Save DB's (often prequil to -KILL!)
-	{ RLOCK(("Events"));
-	if (Magick::instance().events != NULL)
+    case SIGTERM:		// Save DB's (often prequil to -KILL!)
 	{
-	    LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SAVE", ( signum));
-	    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_SAVE", ( signum));
-	    Magick::instance().events->ForceSave();
-	}}
+	    RLOCK(("Events"));
+	    if (Magick::instance().events != NULL)
+	    {
+		LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_SAVE", (signum));
+		ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_SAVE", (signum));
+		Magick::instance().events->ForceSave();
+	    }
+	}
 	break;
 #endif
 
 
 #if defined(SIGHUP) && (SIGHUP != 0)
-    case SIGHUP:	// Reload CFG/DB's
-	LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_LOAD", ( signum));
+    case SIGHUP:		// Reload CFG/DB's
+	LOG(LM_NOTICE, "SYS_ERRORS/SIGNAL_LOAD", (signum));
 	if (!Magick::instance().get_config_values())
 	{
-	    LOG(LM_EMERGENCY, "COMMANDLINE/NO_CFG_FILE", (
-	    					Magick::instance().Config_File()));
+	    LOG(LM_EMERGENCY, "COMMANDLINE/NO_CFG_FILE", (Magick::instance().Config_File()));
 	}
 	else
 	{
-	    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_LOAD", ( signum));
+	    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_LOAD", (signum));
 	}
 	break;
 #endif
 
 
-    case SIGILL:	// illegal opcode, this suckers gone walkabouts..
+    case SIGILL:		// illegal opcode, this suckers gone walkabouts..
 #if defined(SIGBUS) && (SIGBUS != 0)
-    case SIGBUS:	// BUS error (fatal)
+    case SIGBUS:		// BUS error (fatal)
 #endif
-    case SIGSEGV:	// Segmentation Fault
+    case SIGSEGV:		// Segmentation Fault
 	{
-	vector<ThreadID*> ids = mThread::findall();
-	for (unsigned int i=0; i<ids.size(); i++)
-	    if (ids[i] != NULL)
-		ids[i]->Flush();
+	    vector < ThreadID * >ids = mThread::findall();
+	    for (unsigned int i = 0; i < ids.size(); i++)
+		if (ids[i] != NULL)
+		    ids[i]->Flush();
 	}
 	tid = mThread::find();
-	LOG(LM_ALERT, "SYS_ERRORS/SIGNAL_KILL", ( signum, tid->LastFunc()));
-	ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_KILL", ( signum, tid->LastFunc()));
+	LOG(LM_ALERT, "SYS_ERRORS/SIGNAL_KILL", (signum, tid->LastFunc()));
+	ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/SIGNAL_KILL", (signum, tid->LastFunc()));
 	ACE_OS::sleep(1);
 	Magick::instance().Shutdown(true);
 	Magick::instance().Die();
 	return -1;
 	break;
 
-    default:		// Everything else.
-	LOG(LM_WARNING, "SYS_ERRORS/SIGNAL_IGNORE", ( signum));
-	break;//ignore (todo log that we got it and we're ignoring it)
+    default:			// Everything else.
+	LOG(LM_WARNING, "SYS_ERRORS/SIGNAL_IGNORE", (signum));
+	break;			//ignore (todo log that we got it and we're ignoring it)
     }
     return 0;
 }
 
-bool Magick::ValidateLogger(ACE_Log_Msg *instance) const
+bool Magick::ValidateLogger(ACE_Log_Msg * instance) const
 {
     FT("Magick::ValidateLogger", ("(ACE_Log_Msg *) instance"));
 
@@ -3718,10 +3766,12 @@ bool Magick::ActivateLogger()
     NFT("Magick::ActivateLogger");
     if (logger != NULL)
 	delete logger;
+
     logger = new Logger;
     if (logger != NULL && !logger->opened())
     {
 	delete logger;
+
 	logger = NULL;
     }
     RET(logger != NULL);
@@ -3732,10 +3782,11 @@ void Magick::DeactivateLogger()
     NFT("Magick::DeactivateLogger");
     if (logger != NULL)
 	delete logger;
+
     logger = NULL;
 }
 
-void Magick::EndLogMessage(ACE_Log_Msg *instance) const
+void Magick::EndLogMessage(ACE_Log_Msg * instance) const
 {
     FT("Magick::EndLogMessage", ("(ACE_Log_Msg *) instance"));
 
@@ -3762,7 +3813,7 @@ Logger::~Logger()
 	fout.Close();
 }
 
-void Logger::log(ACE_Log_Record &log_record)
+void Logger::log(ACE_Log_Record & log_record)
 {
     FT("Logger::log", ("(ACE_Log_Record &) log_record"));
 
@@ -3770,10 +3821,11 @@ void Logger::log(ACE_Log_Record &log_record)
 	return;
 
     mstring text_priority;
+
     switch (log_record.type())
     {
 
-    // Stuff normal users dont wanna see
+	// Stuff normal users dont wanna see
     case LM_TRACE:
 #ifndef DEBUG
 	return;
@@ -3781,56 +3833,56 @@ void Logger::log(ACE_Log_Record &log_record)
 	text_priority = "TRACE";
 	break;
 
-    // Stuff you have to turn VERBOSE on to see
+	// Stuff you have to turn VERBOSE on to see
     case LM_DEBUG:
 	if (!Magick::instance().Verbose())
 	    return;
 	text_priority = "DEBUG";
 	break;
 
-    // Normal information that most users want
+	// Normal information that most users want
     case LM_INFO:
 	text_priority = "INFO";
 	break;
 
-    // Still normal, but notable (eg. SOP commands)
+	// Still normal, but notable (eg. SOP commands)
     case LM_NOTICE:
 	text_priority = "NOTICE";
 	break;
 
-    // An attempt at data corruption (denied) or recoverable error
+	// An attempt at data corruption (denied) or recoverable error
     case LM_WARNING:
 	text_priority = "WARNING";
 	break;
 
-    // Startup messages only (ie. boot)
+	// Startup messages only (ie. boot)
     case LM_STARTUP:
 	text_priority = "STARTUP";
 	break;
 
-    // A data corruption that we repaird
+	// A data corruption that we repaird
     case LM_ERROR:
 	text_priority = "ERROR";
 	break;
 
-    // A data corruption we could not repair (left in system or
-    // more drastic action taken, eg. the record being removed)
+	// A data corruption we could not repair (left in system or
+	// more drastic action taken, eg. the record being removed)
     case LM_CRITICAL:
 	text_priority = "CRITICAL";
 	break;
 
-    // A situation that caused us to hard abort, but did not kill
-    // us but may have caused a thread to die, etc.
+	// A situation that caused us to hard abort, but did not kill
+	// us but may have caused a thread to die, etc.
     case LM_ALERT:
 	text_priority = "ALERT";
 	break;
 
-    // A situation we could not reover from, we're outtahere.
+	// A situation we could not reover from, we're outtahere.
     case LM_EMERGENCY:
 	text_priority = "FATAL";
 	break;
 
-    // Should NEVER get this, but its there for completeness.
+	// Should NEVER get this, but its there for completeness.
     default:
 	text_priority = "UNKNOWN";
 	break;
@@ -3839,34 +3891,37 @@ void Logger::log(ACE_Log_Record &log_record)
     /* Pulled directly from ACE ... */
     time_t sec = log_record.time_stamp().sec();
     struct tm *tmval = localtime(&sec);
-    char ctp[21]; // 21 is a magic number...
-    if (ACE_OS::strftime (ctp, sizeof(ctp), "%d %b %Y %H:%M:%S", tmval) == 0)
+    char ctp[21];		// 21 is a magic number...
+
+    if (ACE_OS::strftime(ctp, sizeof(ctp), "%d %b %Y %H:%M:%S", tmval) == 0)
 	return;
 
     mstring out;
-    out.Format("%s.%03ld | %-8s | ",
-	ctp, log_record.time_stamp().usec() / 1000,
-	text_priority.c_str());
+
+    out.Format("%s.%03ld | %-8s | ", ctp, log_record.time_stamp().usec() / 1000, text_priority.c_str());
     mstring tmp(log_record.msg_data());
 
     unsigned int i;
-    for (i=1; i<= tmp.WordCount("\n\r"); i++)
+
+    for (i = 1; i <= tmp.WordCount("\n\r"); i++)
 	fout.Write(out + tmp.ExtractWord(i, "\n\r"));
 
     fout.Flush();
 
     if (!Magick::instance().files.Logchan().empty() && Magick::instance().Connected())
     {
-	{ RLOCK(("IrcSvcHandler"));
-	if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
 	{
-	    if (Magick::instance().chanserv.IsLive(Magick::instance().files.Logchan()))
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
 	    {
-		for (i=1; i<=tmp.WordCount("\n\r"); i++)
-		    Magick::instance().server.PRIVMSG(Magick::instance().operserv.FirstName(),
-			Magick::instance().files.Logchan(), out + tmp.ExtractWord(i, "\n\r"));
+		if (Magick::instance().chanserv.IsLive(Magick::instance().files.Logchan()))
+		{
+		    for (i = 1; i <= tmp.WordCount("\n\r"); i++)
+			Magick::instance().server.PRIVMSG(Magick::instance().operserv.FirstName(),
+							  Magick::instance().files.Logchan(), out + tmp.ExtractWord(i, "\n\r"));
+		}
 	    }
-	}}
+	}
     }
 
     if (log_record.type() == LM_EMERGENCY)
@@ -3897,6 +3952,7 @@ bool Logger::opened() const
 {
     NFT("Logger::opened");
     bool retval = fout.IsOpened();
+
     RET(retval);
 }
 
@@ -3935,64 +3991,68 @@ void Magick::doscripthandle(const mstring& server, const mstring& command, const
 }
 */
 
-bool Magick::startup_t::IsServer(const mstring& svr)const
+bool Magick::startup_t::IsServer(const mstring & svr) const
 {
     FT("Magick::startup_t::IsServer", (svr));
 
     RLOCK(("Startup", "Servers"));
-    if (servers.find(svr.LowerCase()) != servers.end()) {
+    if (servers.find(svr.LowerCase()) != servers.end())
+    {
 	RET(true);
     }
     RET(false);
 }
 
-pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > Magick::startup_t::Server(const mstring& svr)const
+pair < unsigned int, triplet < unsigned int, mstring, unsigned long > >Magick::startup_t::Server(const mstring & svr) const
 {
     FT("Magick::startup_t::Server", (svr));
-    pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > value(0, triplet<unsigned int,mstring,unsigned long>(0, "", 0));
+    pair < unsigned int, triplet < unsigned int, mstring, unsigned long > >value(0, triplet < unsigned int, mstring,
+										 unsigned long >(0, "", 0));
 
     RLOCK(("Startup", "Servers"));
-    if (IsServer(svr)) {
+    if (IsServer(svr))
+    {
 	value = servers.find(svr.LowerCase())->second;
     }
-    NRET(pair<unsigned int. triplet<unsigned int. mstring. unsigned long> >, value);
+    NRET(pair < unsigned int.triplet < unsigned int.mstring.unsigned long > >, value);
 }
 
-vector<mstring> Magick::startup_t::PriorityList(const unsigned int pri) const
+vector < mstring > Magick::startup_t::PriorityList(const unsigned int pri) const
 {
     FT("Magick::startup_t::PriorityList", (pri));
-    vector<mstring> list;
+    vector < mstring > list;
 
-    map<mstring,pair<unsigned int, triplet<unsigned int,mstring,unsigned long> > >::const_iterator iter;
+    map < mstring, pair < unsigned int, triplet < unsigned int, mstring, unsigned long > > >::const_iterator iter;
 
     RLOCK(("Startup", "Servers"));
-    for (iter=servers.begin(); iter!=servers.end(); iter++) {
+    for (iter = servers.begin(); iter != servers.end(); iter++)
+    {
 	if (iter->second.first == pri)
 	    list.push_back(iter->first);
     }
-    NRET(vector<mstring>, list);
+    NRET(vector < mstring >, list);
 }
 
-bool Magick::startup_t::IsAllowed(const mstring& svr, const mstring& uplink)const
+bool Magick::startup_t::IsAllowed(const mstring & svr, const mstring & uplink) const
 {
     FT("Magick::startup_t::IsAllowed", (svr, uplink));
 
-    map<mstring,vector<mstring> >::const_iterator i;
+    map < mstring, vector < mstring > >::const_iterator i;
     RLOCK(("Startup", "Allows"));
     if (!allows.size())
     {
 	RET(true);
     }
 
-    for (i=allows.begin(); i!=allows.end(); i++)
+    for (i = allows.begin(); i != allows.end(); i++)
     {
 	if (svr == i->first)
 	{
 	    if (i->second.size())
 	    {
-		vector<mstring>::const_iterator j;
+		vector < mstring >::const_iterator j;
 		RLOCK2(("Startup", "Allows", i->first));
-		for (j=i->second.begin(); j!=i->second.end(); j++)
+		for (j = i->second.begin(); j != i->second.end(); j++)
 		{
 		    if (uplink.Matches(*j))
 		    {
@@ -4011,46 +4071,45 @@ bool Magick::startup_t::IsAllowed(const mstring& svr, const mstring& uplink)cons
     RET(false);
 }
 
-vector<mstring> Magick::startup_t::Allow(const mstring& svr)const
+vector < mstring > Magick::startup_t::Allow(const mstring & svr) const
 {
     FT("Magick::startup_t::Allow", (svr));
 
-    map<mstring,vector<mstring> >::const_iterator i;
+    map < mstring, vector < mstring > >::const_iterator i;
     RLOCK(("Startup", "Allows"));
-    for (i=allows.begin(); i!=allows.end(); i++)
+    for (i = allows.begin(); i != allows.end(); i++)
     {
 	if (svr == i->first)
 	{
-	    NRET(vector<mstring>, i->second);
+	    NRET(vector < mstring >, i->second);
 	}
     }
 
-    vector<mstring> blank;
-    NRET(vector<mstring>, blank);
+    vector < mstring > blank;
+    NRET(vector < mstring >, blank);
 }
 
-vector<mstring> Magick::startup_t::AllowList()const
+vector < mstring > Magick::startup_t::AllowList() const
 {
     NFT("Magick::startup_t::AllowList");
-    vector<mstring> list;
+    vector < mstring > list;
 
-    map<mstring,vector<mstring> >::const_iterator i;
+    map < mstring, vector < mstring > >::const_iterator i;
     RLOCK(("Startup", "Allows"));
-    for (i=allows.begin(); i!=allows.end(); i++)
+    for (i = allows.begin(); i != allows.end(); i++)
     {
 	list.push_back(i->first);
     }
 
-    NRET(vector<mstring>, list);
+    NRET(vector < mstring >, list);
 }
 
-pair<mstring,mstring> Magick::GetKeys()const
+pair < mstring, mstring > Magick::GetKeys() const
 {
     NFT("Magick::GetKeys");
-    pair<mstring,mstring> retval;
+    pair < mstring, mstring > retval;
 #ifdef HASCRYPT
-    if (!files.KeyFile().empty() &&
-	mFile::Exists(files.KeyFile()))
+    if (!files.KeyFile().empty() && mFile::Exists(files.KeyFile()))
     {
 	mFile keyfile(files.KeyFile());
 	char key1[MAX_KEYLEN], key2[MAX_KEYLEN], tmp[MAX_KEYLEN];
@@ -4078,14 +4137,14 @@ pair<mstring,mstring> Magick::GetKeys()const
 	    memset(tmp, 0, MAX_KEYLEN);
 	    keyfile.Read(tmp, MAX_KEYLEN);
 	    mCRYPT(tmp, key2, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 0);
-	    retval = pair<mstring,mstring>(key1,key2);
-fflush(stdout);
+	    retval = pair < mstring, mstring > (key1, key2);
+	    fflush(stdout);
 	}
 	else
 	    LOG(LM_CRITICAL, "ERROR/KEY_CORRUPT", (files.KeyFile()));
     }
 #endif
-    NRET(pair<mstring_mstring>, retval);
+    NRET(pair < mstring_mstring >, retval);
 }
 
 
@@ -4097,37 +4156,39 @@ void Magick::Disconnect(const bool reconnect)
     i_reconnect = reconnect;
     MCE(i_reconnect);
     server.sraw("QUIT :" + startup.Services_Quitmsg());
-    { RLOCK(("IrcSvcHandler"));
-    if (ircsvchandler != NULL)
     {
-	if (Magick::instance().hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
+	RLOCK(("IrcSvcHandler"));
+	if (ircsvchandler != NULL)
 	{
-	    if(dh_timer == 0)
+	    if (Magick::instance().hh.ThreadType() != Heartbeat_Handler::H_IrcServer)
 	    {
-		ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
-		if (thr_mgr == NULL)
-		    thr_mgr = &Magick::instance().thr_mgr();
+		if (dh_timer == 0)
+		{
+		    ACE_Thread_Manager *thr_mgr = Magick::instance().ircsvchandler->thr_mgr();
+
+		    if (thr_mgr == NULL)
+			thr_mgr = &Magick::instance().thr_mgr();
 #if defined(SIGIOT) && (SIGIOT != 0)
-		thr_mgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
+		    thr_mgr->kill_task(Magick::instance().ircsvchandler, SIGIOT);
 #endif
-		while (Magick::instance().Pause())
-		    ACE_OS::sleep(1);
-		dh_timer = reactor().schedule_timer(&dh,
-					NULL, ACE_Time_Value(10));
+		    while (Magick::instance().Pause())
+			ACE_OS::sleep(1);
+		    dh_timer = reactor().schedule_timer(&dh, NULL, ACE_Time_Value(10));
+		}
+		else if (dh_timer < 0)
+		{
+		    dh.handle_timeout(ACE_Time_Value::zero, NULL);
+		}
 	    }
-	    else if (dh_timer < 0)
+	    else
 	    {
 		dh.handle_timeout(ACE_Time_Value::zero, NULL);
 	    }
 	}
-	else
-	{
-	    dh.handle_timeout(ACE_Time_Value::zero, NULL);
-	}
-    }}
+    }
 }
 
-void Magick::send(const mstring& in) const
+void Magick::send(const mstring & in) const
 {
     RLOCK(("IrcSvcHandler"));
     if (ircsvchandler != NULL)
@@ -4139,29 +4200,29 @@ SXP::Tag Magick::tag_Magick("Magick");
 void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
     FT("Magick::BeginElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
-    if( pElement->IsA( operserv.GetClassTag() ) )
+    if (pElement->IsA(operserv.GetClassTag()))
     {
-        pIn->ReadTo(&operserv);
+	pIn->ReadTo(&operserv);
     }
-    else if( pElement->IsA( nickserv.GetClassTag() ) )
+    else if (pElement->IsA(nickserv.GetClassTag()))
     {
-        pIn->ReadTo(&nickserv);
+	pIn->ReadTo(&nickserv);
     }
-    else if( pElement->IsA( chanserv.GetClassTag() ) )
+    else if (pElement->IsA(chanserv.GetClassTag()))
     {
-        pIn->ReadTo(&chanserv);
+	pIn->ReadTo(&chanserv);
     }
-    else if( pElement->IsA( memoserv.GetClassTag() ) )
+    else if (pElement->IsA(memoserv.GetClassTag()))
     {
-        pIn->ReadTo(&memoserv);
+	pIn->ReadTo(&memoserv);
     }
-    else if( pElement->IsA( commserv.GetClassTag() ) )
+    else if (pElement->IsA(commserv.GetClassTag()))
     {
-        pIn->ReadTo(&commserv);
+	pIn->ReadTo(&commserv);
     }
-    else if( pElement->IsA( filesys.GetClassTag() ) )
+    else if (pElement->IsA(filesys.GetClassTag()))
     {
-        pIn->ReadTo(&filesys);
+	pIn->ReadTo(&filesys);
     }
     else
     {
@@ -4171,25 +4232,25 @@ void Magick::BeginElement(SXP::IParser * pIn, SXP::IElement * pElement)
 
 void Magick::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 {
-    static_cast<void>(pIn);
+    static_cast < void >(pIn);
 
     FT("Magick::EndElement", ("(SXP::IParser *) pIn", "(SXP::IElement *) pElement"));
     // load up simple elements here. (ie single pieces of data)
-    if( pElement->IsA( tag_Magick ) )
+    if (pElement->IsA(tag_Magick))
     {
-        operserv.PostLoad();
-        nickserv.PostLoad();
-        chanserv.PostLoad();
-        memoserv.PostLoad();
-        commserv.PostLoad();
-        filesys.PostLoad();
+	operserv.PostLoad();
+	nickserv.PostLoad();
+	chanserv.PostLoad();
+	memoserv.PostLoad();
+	commserv.PostLoad();
+	filesys.PostLoad();
 	// Scripted ...
     }
 }
 
-void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict& attribs)
+void Magick::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
 {
-    static_cast<void>(attribs);
+    static_cast < void >(attribs);
 
     FT("Magick::WriteElement", ("(SXP::IOutStream *) pOut", "(SXP::dict &) attribs"));
 
@@ -4216,12 +4277,12 @@ void Magick::save_databases()
     if (i_saving)
 	return;
     i_saving = true;
-    if (mFile::Exists(files.Database()+".old"))
-	mFile::Erase(files.Database()+".old");
-    if (mFile::Exists(files.Database()+".new"))
-	mFile::Erase(files.Database()+".new");
+    if (mFile::Exists(files.Database() + ".old"))
+	mFile::Erase(files.Database() + ".old");
+    if (mFile::Exists(files.Database() + ".new"))
+	mFile::Erase(files.Database() + ".new");
     if (mFile::Exists(files.Database()))
-	mFile::Copy(files.Database(), files.Database()+".old");
+	mFile::Copy(files.Database(), files.Database() + ".old");
     {
 	long retval = 0;
 	Stage *ls = NULL;
@@ -4250,7 +4311,7 @@ void Magick::save_databases()
 
 	if (files.Encryption())
 	{
-	    pair<mstring,mstring> keys = GetKeys();
+	    pair < mstring, mstring > keys = GetKeys();
 	    if (keys.first.length() && keys.second.length())
 	    {
 		cs = new CryptStage(*ls, keys.first, keys.second);
@@ -4261,7 +4322,7 @@ void Magick::save_databases()
 	    }
 	}
 
-	fs = new FileStage(*ls, files.Database()+".new");
+	fs = new FileStage(*ls, files.Database() + ".new");
 	if (fs != NULL && fs->Validate())
 	    ls = fs;
 	else
@@ -4273,23 +4334,26 @@ void Magick::save_databases()
 	if (ls != NULL)
 	    retval = ls->Consume();
 
-CleanUp:
+      CleanUp:
 	if (fs != NULL)
 	    delete fs;
+
 	if (cs != NULL)
 	    delete cs;
+
 	if (zs != NULL)
 	    delete zs;
+
 	if (xs != NULL)
 	    delete xs;
     }
-    if (mFile::Exists(files.Database()+".new"))
+    if (mFile::Exists(files.Database() + ".new"))
     {
-	mFile::Copy(files.Database()+".new", files.Database());
-	mFile::Erase(files.Database()+".new");
+	mFile::Copy(files.Database() + ".new", files.Database());
+	mFile::Erase(files.Database() + ".new");
     }
-    if (mFile::Exists(files.Database()+".old"))
-	mFile::Erase(files.Database()+".old");
+    if (mFile::Exists(files.Database() + ".old"))
+	mFile::Erase(files.Database() + ".old");
     i_saving = false;
 }
 
@@ -4319,7 +4383,7 @@ void Magick::load_databases()
 
 	if (ls->GetTag() & STAGE_TAG_CRYPT)
 	{
-	    pair<mstring,mstring> keys = GetKeys();
+	    pair < mstring, mstring > keys = GetKeys();
 	    if (keys.first.length() && keys.second.length())
 	    {
 		cs = new CryptStage(*ls, keys.first, keys.second);
@@ -4356,26 +4420,26 @@ void Magick::load_databases()
 	    NLOG(LM_CRITICAL, "SYS_ERRORS/STAGE_FAIL_ABORT");
 	    goto CleanUp;
 	}
-	
+
 	if (ls != NULL)
 	    retval = ls->Consume();
 	if (retval <= 0)
 	{
-	    switch (static_cast<stage_errors>(retval * -1))
+	    switch (static_cast < stage_errors > (retval * -1))
 	    {
-	    case SE_CRY_NoKeys: // Encrypted but no/invalid key specified
+	    case SE_CRY_NoKeys:	// Encrypted but no/invalid key specified
 		NLOG(LM_EMERGENCY, "ERROR/DB_NOKEY");
 		break;
-	    case SE_CRY_CryptError: // Decryption failed
+	    case SE_CRY_CryptError:	// Decryption failed
 		NLOG(LM_EMERGENCY, "ERROR/DB_NODECRYPT");
 		break;
-	    case SE_CPS_StreamError: // Decompression failed
+	    case SE_CPS_StreamError:	// Decompression failed
 		NLOG(LM_EMERGENCY, "ERROR/DB_NODECOMPRESS");
 		break;
-	    case SE_VFY_Failed: // Sanity check failed
+	    case SE_VFY_Failed:	// Sanity check failed
 		NLOG(LM_EMERGENCY, "ERROR/DB_NOSANITY");
 		break;
-	    case SE_XML_ParseError: // XML parse failed
+	    case SE_XML_ParseError:	// XML parse failed
 		NLOG(LM_EMERGENCY, "ERROR/DB_NOPARSE");
 		break;
 	    default:
@@ -4384,39 +4448,43 @@ void Magick::load_databases()
 	    }
 	}
 
-CleanUp:
+      CleanUp:
 	if (xs != NULL)
 	    delete xs;
+
 	if (vs != NULL)
 	    delete vs;
+
 	if (zs != NULL)
 	    delete zs;
+
 	if (cs != NULL)
 	    delete cs;
+
 	if (fs != NULL)
 	    delete fs;
     }
 }
 
 
-set<mstring> Magick::LNG_Loaded() const
+set < mstring > Magick::LNG_Loaded() const
 {
-    set<mstring> retval;
-    map<mstring, map<mstring, mstring> >::const_iterator i;
+    set < mstring > retval;
+    map < mstring, map < mstring, mstring > >::const_iterator i;
     RLOCK(("Messages"));
-    for (i=Messages.begin(); i!=Messages.end(); i++)
+    for (i = Messages.begin(); i != Messages.end(); i++)
     {
 	retval.insert(i->first);
     }
     return retval;
 }
 
-size_t Magick::LNG_Usage(const mstring& lang) const
+size_t Magick::LNG_Usage(const mstring & lang) const
 {
     size_t retval = 0;
 
-    map<mstring, map<mstring, mstring> >::const_iterator i;
-    map<mstring, mstring>::const_iterator j;
+    map < mstring, map < mstring, mstring > >::const_iterator i;
+    map < mstring, mstring >::const_iterator j;
     RLOCK(("Messages"));
     i = Messages.find(lang.UpperCase());
     if (i != Messages.end())
@@ -4433,25 +4501,25 @@ size_t Magick::LNG_Usage(const mstring& lang) const
     return retval;
 }
 
-set<mstring> Magick::HLP_Loaded() const
+set < mstring > Magick::HLP_Loaded() const
 {
-    set<mstring> retval;
-    map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::const_iterator i;
+    set < mstring > retval;
+    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >::const_iterator i;
     RLOCK(("Help"));
-    for (i=Help.begin(); i!=Help.end(); i++)
+    for (i = Help.begin(); i != Help.end(); i++)
     {
 	retval.insert(i->first);
     }
     return retval;
 }
 
-size_t Magick::HLP_Usage(const mstring& lang) const
+size_t Magick::HLP_Usage(const mstring & lang) const
 {
     size_t retval = 0;
 
-    map<mstring, map<mstring, vector<triplet<mstring, mstring, mstring> > > >::const_iterator i;
-    map<mstring, vector<triplet<mstring, mstring, mstring> > >::const_iterator j;
-    vector<triplet<mstring, mstring, mstring> >::const_iterator k;
+    map < mstring, map < mstring, vector < triplet < mstring, mstring, mstring > > > >::const_iterator i;
+    map < mstring, vector < triplet < mstring, mstring, mstring > > >::const_iterator j;
+    vector < triplet < mstring, mstring, mstring > >::const_iterator k;
 
     RLOCK(("Help"));
     i = Help.find(lang.UpperCase());
@@ -4459,7 +4527,7 @@ size_t Magick::HLP_Usage(const mstring& lang) const
     {
 	retval += i->first.capacity();
 	RLOCK2(("Help", lang.UpperCase()));
-	for (j=i->second.begin(); j != i->second.end(); j++)
+	for (j = i->second.begin(); j != i->second.end(); j++)
 	{
 	    retval += j->first.capacity();
 	    for (k = j->second.begin(); k != j->second.end(); k++)
@@ -4478,9 +4546,9 @@ size_t Magick::LFO_Usage() const
 {
     size_t retval = 0;
 
-    map<mstring,mstring>::const_iterator i;
+    map < mstring, mstring >::const_iterator i;
     RLOCK(("LogMessages"));
-    for (i=LogMessages.begin(); i!=LogMessages.end(); i++)
+    for (i = LogMessages.begin(); i != LogMessages.end(); i++)
     {
 	retval += i->first.capacity();
 	retval += i->second.capacity();
@@ -4491,19 +4559,16 @@ size_t Magick::LFO_Usage() const
 
 void Magick::DumpB() const
 {
-    MB(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
-	handlermap.size(), i_verbose, i_services_dir, i_config_file,
-	i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown,
-	i_reconnect, i_localhost));
+    MB(0,
+       (argv.size(), Messages.size(), Help.size(), LogMessages.size(), handlermap.size(), i_verbose, i_services_dir,
+	i_config_file, i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown, i_reconnect, i_localhost));
     MB(16, (i_gotconnect, i_currentserver, i_connected, i_saving));
 }
 
 void Magick::DumpE() const
 {
-    ME(0, (argv.size(), Messages.size(), Help.size(), LogMessages.size(),
-	handlermap.size(), i_verbose, i_services_dir, i_config_file,
-	i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown,
-	i_reconnect, i_localhost));
+    ME(0,
+       (argv.size(), Messages.size(), Help.size(), LogMessages.size(), handlermap.size(), i_verbose, i_services_dir,
+	i_config_file, i_programname, i_ResetTime, i_level, i_pause, i_auto, i_shutdown, i_reconnect, i_localhost));
     ME(16, (i_gotconnect, i_currentserver, i_connected, i_saving));
 }
-

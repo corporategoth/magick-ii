@@ -1,9 +1,9 @@
 #include "pch.h"
 #ifdef WIN32
-  #pragma hdrstop
+#pragma hdrstop
 #else
-  #pragma implementation
-  #pragma implementation "version.h"
+#pragma implementation
+#pragma implementation "version.h"
 #endif
 
 /*  Magick IRC Services
@@ -19,6 +19,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_server_cpp_ ## x () { return y; }
 RCSID(server_cpp, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -28,6 +29,9 @@ RCSID(server_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.204  2002/01/12 14:42:09  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.203  2002/01/10 19:30:39  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -547,61 +551,61 @@ void Protocol::SetTokens(const unsigned int type)
     tokens.clear();
     switch (type)
     {
-    case 1000: // ircu >= 2.10.x
+    case 1000:			// ircu >= 2.10.x
 	tokens["AB"] = "ADMIN";
-	tokens["A"]  = "AWAY";
+	tokens["A"] = "AWAY";
 	tokens["CN"] = "CNOTICE";
 	tokens["CO"] = "CONNECT";
 	tokens["CP"] = "CPRIVMSG";
-	tokens["C"]  = "CREATE";
+	tokens["C"] = "CREATE";
 	tokens["DE"] = "DESTRUCT";
 	tokens["DS"] = "DESYNCH";
 	tokens["EB"] = "END_OF_BURST";
 	tokens["EA"] = "EOB_ACK";
-	tokens["Y"]  = "ERROR";
+	tokens["Y"] = "ERROR";
 	tokens["GL"] = "GLINE";
-	tokens["F"]  = "INFO";
-	tokens["I"]  = "INVITE";
-	tokens["J"]  = "JOIN";
-	tokens["K"]  = "KICK";
-	tokens["D"]  = "KILL";
+	tokens["F"] = "INFO";
+	tokens["I"] = "INVITE";
+	tokens["J"] = "JOIN";
+	tokens["K"] = "KICK";
+	tokens["D"] = "KILL";
 	tokens["LI"] = "LINKS";
 	tokens["LU"] = "LUSERS";
-	tokens["M"]  = "MODE";
+	tokens["M"] = "MODE";
 	tokens["MO"] = "MOTD";
-	tokens["E"]  = "NAMES";
-	tokens["N"]  = "NICK";
-	tokens["O"]  = "NOTICE";
-	tokens["L"]  = "PART";
-	tokens["G"]  = "PING";
-	tokens["Z"]  = "PONG";
-	tokens["P"]  = "PRIVMSG";
-	tokens["Q"]  = "QUIT";
+	tokens["E"] = "NAMES";
+	tokens["N"] = "NICK";
+	tokens["O"] = "NOTICE";
+	tokens["L"] = "PART";
+	tokens["G"] = "PING";
+	tokens["Z"] = "PONG";
+	tokens["P"] = "PRIVMSG";
+	tokens["Q"] = "QUIT";
 	tokens["RI"] = "RPING";
 	tokens["RO"] = "RPONG";
 	tokens["SE"] = "SETTIME";
-	tokens["U"]  = "SILENCE";
+	tokens["U"] = "SILENCE";
 	tokens["SQ"] = "SQUIT";
-	tokens["R"]  = "STATS";
+	tokens["R"] = "STATS";
 	tokens["TI"] = "TIME";
 	tokens["TR"] = "TOPIC";
-	tokens["V"]  = "VERSION";
+	tokens["V"] = "VERSION";
 	tokens["WC"] = "WALLCHOPS";
 	tokens["WA"] = "WALLOPS";
-	tokens["H"]  = "WHO";
-	tokens["W"]  = "WHOIS";
-	tokens["X"]  = "WHOWAS";
-//	tokens["ACTION"] = CTCP_DELIM_CHAR + "ACTION";
-//	tokens["VERSION"] = CTCP_DELIM_CHAR + "VERSION";
-//	tokens["PING"] = CTCP_DELIM_CHAR + "PING";
-//	tokens["PONG"] = CTCP_DELIM_CHAR + "PONG";
-//	tokens["CLIENTINFO"] = CTCP_DELIM_CHAR + "CLIENTINFO";
-//	tokens["USERINFO"] = CTCP_DELIM_CHAR + "USERINFO";
-//	tokens["TIME"] = CTCP_DELIM_CHAR + "TIME";
-//	tokens["ERRMSG"] = CTCP_DELIM_CHAR + "ERRMSG";
+	tokens["H"] = "WHO";
+	tokens["W"] = "WHOIS";
+	tokens["X"] = "WHOWAS";
+//      tokens["ACTION"] = CTCP_DELIM_CHAR + "ACTION";
+//      tokens["VERSION"] = CTCP_DELIM_CHAR + "VERSION";
+//      tokens["PING"] = CTCP_DELIM_CHAR + "PING";
+//      tokens["PONG"] = CTCP_DELIM_CHAR + "PONG";
+//      tokens["CLIENTINFO"] = CTCP_DELIM_CHAR + "CLIENTINFO";
+//      tokens["USERINFO"] = CTCP_DELIM_CHAR + "USERINFO";
+//      tokens["TIME"] = CTCP_DELIM_CHAR + "TIME";
+//      tokens["ERRMSG"] = CTCP_DELIM_CHAR + "ERRMSG";
 	break;
 
-    case 0001: // DAL >= 4.4.15
+    case 0001:			// DAL >= 4.4.15
 	tokens["!"] = "PRIVMSG";
 	tokens["\\"] = "WHO";
 	tokens["#"] = "WHOIS";
@@ -683,7 +687,7 @@ void Protocol::SetTokens(const unsigned int type)
 	tokens["s"] = "PRIVMSG HelpServ";
 	break;
 
-    case 0002: // Relic >= 2.1
+    case 0002:			// Relic >= 2.1
 	SetTokens(0001);
 	tokens.erase("1");
 	tokens.erase("3");
@@ -709,12 +713,12 @@ void Protocol::SetTokens(const unsigned int type)
 	tokens["Rz"] = "RW";
 	break;
 
-    case 0003: // Relic 4.0
+    case 0003:			// Relic 4.0
 	SetTokens(0001);
 	tokens["e"] = "MODNICK";
 	break;
 
-    case 0004: // Unreal
+    case 0004:			// Unreal
 	SetTokens(0001);
 	tokens["t"] = "RULES";
 	tokens["u"] = "MAP";
@@ -770,12 +774,9 @@ void Protocol::SetTokens(const unsigned int type)
     }
 }
 
-Protocol::Protocol()
-    : i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false),
-      i_Helpops(false), i_Chatops(false), i_Tokens(false), i_P12(false),
-      i_TSora(false), i_SJoin(false), i_BigTopic(false), i_TopicJoin(false),
-      i_Akill(0), i_Signon(0), i_Modes(3), i_ChanModeArg("ovbkl"),
-      i_Server("SERVER %s %d :%s"), i_Numeric(0)
+Protocol::Protocol():i_Number(0), i_NickLen(9), i_MaxLine(450), i_Globops(false), i_Helpops(false), i_Chatops(false), i_Tokens(false), i_P12(false),
+i_TSora(false), i_SJoin(false), i_BigTopic(false), i_TopicJoin(false), i_Akill(0), i_Signon(0), i_Modes(3),
+i_ChanModeArg("ovbkl"), i_Server("SERVER %s %d :%s"), i_Numeric(0)
 {
     NFT("Protocol::Protocol");
     DumpB();
@@ -790,19 +791,19 @@ void Protocol::Set(const unsigned int in)
     DumpB();
     switch (in)
     {
-    case 0: // RFC
+    case 0:			// RFC
 	i_Signon = 0000;
 	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
-    case 1: // RFC with TS8
+    case 1:			// RFC with TS8
 	i_Signon = 0001;
 	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
-    case 10: // DAL < 4.4.15
+    case 10:			// DAL < 4.4.15
 	i_BigTopic = true;
 	i_NickLen = 32;
 	i_Signon = 1000;
@@ -812,7 +813,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0000);
 	break;
 
-    case 11: // DAL >= 4.4.15
+    case 11:			// DAL >= 4.4.15
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
@@ -830,7 +831,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 12: // Bahamut
+    case 12:			// Bahamut
 	i_NickLen = 32;
 	i_Signon = 2001;
 	i_Globops = true;
@@ -852,13 +853,13 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 20: // UnderNet < 2.10.x
+    case 20:			// UnderNet < 2.10.x
 	i_Signon = 1000;
 	i_Akill = 2000;
 	SetTokens(0000);
 	break;
 
-    case 21: // UnderNet >= 2.10.x
+    case 21:			// UnderNet >= 2.10.x
 	i_Signon = 1000;
 	i_Akill = 2000;
 	i_Server = "SERVER %s %d 0 0 P10 %d :%s";
@@ -868,7 +869,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(1000);
 	break;
 
-    case 30: // Hybrid 5/6
+    case 30:			// Hybrid 5/6
 	i_NickLen = 9;
 	i_Signon = 2000;
 	i_TopicJoin = true;
@@ -879,7 +880,7 @@ void Protocol::Set(const unsigned int in)
 	i_Protoctl = "CAPAB QS EX CHW";
 	break;
 
-    case 31: // Hybrid 7
+    case 31:			// Hybrid 7
 	i_NickLen = 9;
 	i_Signon = 2000;
 	i_TopicJoin = true;
@@ -890,7 +891,7 @@ void Protocol::Set(const unsigned int in)
 	i_Protoctl = "CAPAB QS EX CHW";
 	break;
 
-    case 40: // Elite
+    case 40:			// Elite
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
@@ -906,7 +907,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 50: // Relic 2.0 (dreamforge based)
+    case 50:			// Relic 2.0 (dreamforge based)
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Helpops = true;
@@ -925,7 +926,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 51: // Relic 2.1 (dreamforge based)
+    case 51:			// Relic 2.1 (dreamforge based)
 	i_NickLen = 32;
 	i_Globops = true;
 	i_Helpops = true;
@@ -947,7 +948,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0002);
 	break;
 
-    case 53: // Relic 4.0 (bahamut based)
+    case 53:			// Relic 4.0 (bahamut based)
 	i_NickLen = 32;
 	i_Signon = 2002;
 	i_Globops = true;
@@ -967,7 +968,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0003);
 	break;
 
-    case 54: // Relic 5.0 (hybrid based)
+    case 54:			// Relic 5.0 (hybrid based)
 	i_NickLen = 32;
 	i_Signon = 2000;
 	i_Akill = 2003;
@@ -977,7 +978,7 @@ void Protocol::Set(const unsigned int in)
 	i_Protoctl = "CAPAB QS EX";
 	break;
 
-    case 60: // Aurora
+    case 60:			// Aurora
 	i_NickLen = 32;
 	i_Signon = 1002;
 	i_Globops = true;
@@ -996,7 +997,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0001);
 	break;
 
-    case 70: // Unreal
+    case 70:			// Unreal
 	i_NickLen = 32;
 	i_Signon = 2003;
 	i_Globops = true;
@@ -1018,7 +1019,7 @@ void Protocol::Set(const unsigned int in)
 	SetTokens(0004);
 	break;
 
-    case 80: // UltimateIRCD
+    case 80:			// UltimateIRCD
 	i_NickLen = 32;
 	i_Signon = 1001;
 	i_Globops = true;
@@ -1044,20 +1045,21 @@ void Protocol::Set(const unsigned int in)
     DumpE();
 }
 
-mstring Protocol::GetToken(const mstring& in) const
+mstring Protocol::GetToken(const mstring & in) const
 {
     FT("Protocol::GetToken", (in));
-    map<mstring,mstring>::const_iterator iter = tokens.find(in);
+    map < mstring, mstring >::const_iterator iter = tokens.find(in);
     if (iter == tokens.end())
 	RET("");
     RET(iter->second);
 }
 
-mstring Protocol::GetNonToken(const mstring& in) const
+mstring Protocol::GetNonToken(const mstring & in) const
 {
     FT("Protocol::GetNonToken", (in));
     mstring retval;
-    map<mstring,mstring>::const_iterator iter;
+
+    map < mstring, mstring >::const_iterator iter;
     for (iter = tokens.begin(); iter != tokens.end(); iter++)
     {
 	if (iter->second.IsSameAs(in))
@@ -1071,22 +1073,22 @@ mstring Protocol::GetNonToken(const mstring& in) const
 
 void Protocol::DumpB() const
 {
-    MB(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops,
-	i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
+    MB(0,
+       (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
 	i_TopicJoin, i_Akill, i_Signon, i_Modes, i_ChanModeArg));
-    MB(16, (i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl,
-	i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE,
-	i_UNSQLINE, i_SVSHOST, tokens.size()));
+    MB(16,
+       (i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE,
+	i_SVSHOST, tokens.size()));
 }
 
 void Protocol::DumpE() const
 {
-    ME(0, (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops,
-	i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
+    ME(0,
+       (i_Number, i_NickLen, i_MaxLine, i_Globops, i_Helpops, i_Chatops, i_Tokens, i_P12, i_TSora, i_SJoin, i_BigTopic,
 	i_TopicJoin, i_Akill, i_Signon, i_Modes, i_ChanModeArg));
-    ME(16, (i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl,
-	i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE,
-	i_UNSQLINE, i_SVSHOST, tokens.size()));
+    ME(16,
+       (i_Server, i_Numeric, i_Burst, i_EndBurst, i_Protoctl, i_SVSNICK, i_SVSMODE, i_SVSKILL, i_SVSNOOP, i_SQLINE, i_UNSQLINE,
+	i_SVSHOST, tokens.size()));
 }
 
 void Server_t::defaults()
@@ -1106,11 +1108,9 @@ Server_t::Server_t()
     DumpE();
 }
 
-Server_t::Server_t(const mstring& name, const mstring& description,
-	const unsigned long numeric)
-    : i_Name(name.LowerCase()), i_AltName(name.LowerCase()), i_Numeric(numeric),
-      i_Uplink(Magick::instance().startup.Server_Name().LowerCase()),
-      i_Description(description)
+Server_t::Server_t(const mstring & name, const mstring & description, const unsigned long numeric):i_Name(name.LowerCase()),
+i_AltName(name.LowerCase()), i_Numeric(numeric), i_Uplink(Magick::instance().startup.Server_Name().LowerCase()),
+i_Description(description)
 {
     FT("Server_t::Server_t", (name, description, numeric));
     defaults();
@@ -1118,11 +1118,9 @@ Server_t::Server_t(const mstring& name, const mstring& description,
     DumpE();
 }
 
-Server_t::Server_t(const mstring& name, const int hops, const mstring& description,
-	const unsigned long numeric)
-    : i_Name(name.LowerCase()), i_AltName(name.LowerCase()), i_Numeric(numeric),
-      i_Uplink(Magick::instance().startup.Server_Name().LowerCase()),
-      i_Description(description)
+Server_t::Server_t(const mstring & name, const int hops, const mstring & description,
+		   const unsigned long numeric):i_Name(name.LowerCase()), i_AltName(name.LowerCase()), i_Numeric(numeric),
+i_Uplink(Magick::instance().startup.Server_Name().LowerCase()), i_Description(description)
 {
     FT("Server_t::Server_t", (name, hops, description, numeric));
     defaults();
@@ -1131,10 +1129,9 @@ Server_t::Server_t(const mstring& name, const int hops, const mstring& descripti
     DumpE();
 }
 
-Server_t::Server_t(const mstring& name, const mstring& uplink, const int hops,
-	const mstring& description, const unsigned long numeric)
-    : i_Name(name.LowerCase()), i_AltName(name.LowerCase()), i_Numeric(numeric),
-      i_Uplink(uplink.LowerCase()), i_Description(description)
+Server_t::Server_t(const mstring & name, const mstring & uplink, const int hops, const mstring & description,
+		   const unsigned long numeric):i_Name(name.LowerCase()), i_AltName(name.LowerCase()), i_Numeric(numeric),
+i_Uplink(uplink.LowerCase()), i_Description(description)
 {
     FT("Server_t::Server_t", (name, uplink, hops, description, numeric));
     defaults();
@@ -1142,7 +1139,7 @@ Server_t::Server_t(const mstring& name, const mstring& uplink, const int hops,
     DumpE();
 }
 
-Server_t &Server_t::operator=(const Server_t &in)
+Server_t & Server_t::operator=(const Server_t & in)
 {
     FT("Server_t::operator=", ("(const Server_t &) in"));
     i_Name = in.i_Name;
@@ -1165,7 +1162,7 @@ mstring Server_t::AltName() const
     RET(i_AltName);
 }
 
-void Server_t::AltName(const mstring& in)
+void Server_t::AltName(const mstring & in)
 {
     FT("Server_t::AltName", (in));
     WLOCK(("Server", "list", i_Name.LowerCase(), "i_AltName"));
@@ -1218,9 +1215,10 @@ void Server_t::Ping()
     WLOCK(("Server", "list", i_Name.LowerCase(), "i_Ping"));
     if (!i_Ping)
     {
-	Magick::instance().server.sraw(((Magick::instance().server.proto.Tokens() && !Magick::instance().server.proto.GetNonToken("PING").empty()) ?
-		Magick::instance().server.proto.GetNonToken("PING") : mstring("PING")) +
-		" " + Magick::instance().startup.Server_Name() + " :" + i_Name);
+	Magick::instance().server.
+	    sraw(((Magick::instance().server.proto.Tokens()
+		   && !Magick::instance().server.proto.GetNonToken("PING").empty())? Magick::instance().server.proto.
+		  GetNonToken("PING") : mstring("PING")) + " " + Magick::instance().startup.Server_Name() + " :" + i_Name);
 	MCB(i_Ping);
 	i_Ping = ACE_OS::gettimeofday().msec();
 	MCE(i_Ping);
@@ -1249,6 +1247,7 @@ float Server_t::Lag() const
     NFT("Server_t::Lag");
     RLOCK(("Server", "list", i_Name.LowerCase(), "i_Lag"));
     float retval = i_Lag / 1000.0;
+
     RET(retval);
 }
 
@@ -1264,15 +1263,17 @@ unsigned int Server_t::Users() const
     NFT("Server_t::Users");
 
     unsigned int count = 0;
+
     NickServ::live_t::iterator k;
-    { RLOCK(("NickServ", "live"));
-    for (k=Magick::instance().nickserv.LiveBegin();
-	 k!=Magick::instance().nickserv.LiveEnd(); k++)
     {
-	map_entry<Nick_Live_t> nlive(k->second);
-	if (nlive->Server().IsSameAs(i_Name, true))
-	    count++;
-    }}
+	RLOCK(("NickServ", "live"));
+	for (k = Magick::instance().nickserv.LiveBegin(); k != Magick::instance().nickserv.LiveEnd(); k++)
+	{
+	    map_entry < Nick_Live_t > nlive(k->second);
+	    if (nlive->Server().IsSameAs(i_Name, true))
+		count++;
+	}
+    }
     RET(count);
 }
 
@@ -1281,65 +1282,68 @@ unsigned int Server_t::Opers() const
     NFT("Server_t::Opers");
 
     unsigned int count = 0;
+
     NickServ::live_t::iterator k;
-    { RLOCK(("NickServ", "live"));
-    for (k=Magick::instance().nickserv.LiveBegin();
-	 k!=Magick::instance().nickserv.LiveEnd(); k++)
     {
-	map_entry<Nick_Live_t> nlive(k->second);
-	if (nlive->Server().IsSameAs(i_Name, true) && nlive->HasMode("o"))
-	    count++;
-    }}
+	RLOCK(("NickServ", "live"));
+	for (k = Magick::instance().nickserv.LiveBegin(); k != Magick::instance().nickserv.LiveEnd(); k++)
+	{
+	    map_entry < Nick_Live_t > nlive(k->second);
+	    if (nlive->Server().IsSameAs(i_Name, true) && nlive->HasMode("o"))
+		count++;
+	}
+    }
     RET(count);
 }
 
-vector<mstring> Server_t::Downlinks() const
+vector < mstring > Server_t::Downlinks() const
 {
     NFT("Server_t::Downlinks");
-    vector<mstring> downlinks;
+    vector < mstring > downlinks;
     Server::list_t::iterator iter;
 
-    { RLOCK(("Server", "list"));
-    for(iter=Magick::instance().server.ListBegin();
-	iter!=Magick::instance().server.ListEnd(); iter++)
     {
-	map_entry<Server_t> server(iter->second);
-	if (!i_Name.empty() && server->Uplink().IsSameAs(i_Name, true))
-	    downlinks.push_back(iter->first);
-    }}
-    NRET(vector<mstring>, downlinks);
+	RLOCK(("Server", "list"));
+	for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
+	{
+	    map_entry < Server_t > server(iter->second);
+	    if (!i_Name.empty() && server->Uplink().IsSameAs(i_Name, true))
+		downlinks.push_back(iter->first);
+	}
+    }
+    NRET(vector < mstring >, downlinks);
 }
 
-vector<mstring> Server_t::AllDownlinks() const
+vector < mstring > Server_t::AllDownlinks() const
 {
     NFT("Server_t::AllDownlinks");
-    vector<mstring> downlinks, uplinks, uplinks2;
+    vector < mstring > downlinks, uplinks, uplinks2;
     Server::list_t::iterator iter;
     bool found = false;
 
-    { RLOCK(("Server", "list"));
-    for(iter=Magick::instance().server.ListBegin();
-	iter!=Magick::instance().server.ListEnd(); iter++)
     {
-	map_entry<Server_t> server(iter->second);
-	if (server->Uplink().IsSameAs(i_Name, true))
+	RLOCK(("Server", "list"));
+	for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 	{
-	    downlinks.push_back(iter->first);
-	    uplinks.push_back(iter->first);
-	    found = true;
+	    map_entry < Server_t > server(iter->second);
+	    if (server->Uplink().IsSameAs(i_Name, true))
+	    {
+		downlinks.push_back(iter->first);
+		uplinks.push_back(iter->first);
+		found = true;
+	    }
 	}
-    }}
+    }
 
     while (found)
     {
 	found = false;
-	for (unsigned int i=0; i<uplinks.size(); i++) 
+	for (unsigned int i = 0; i < uplinks.size(); i++)
 	{
 	    RLOCK(("Server", "list"));
-	    for(iter=Magick::instance().server.ListBegin();
-		iter!=Magick::instance().server.ListEnd(); iter++)
+	    for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 	    {
-		map_entry<Server_t> server(iter->second);
+		map_entry < Server_t > server(iter->second);
 		if (server->Uplink().IsSameAs(uplinks[i], true))
 		{
 		    downlinks.push_back(iter->first);
@@ -1353,7 +1357,7 @@ vector<mstring> Server_t::AllDownlinks() const
 	uplinks2.clear();
     }
 
-    NRET(vector<mstring>, downlinks);
+    NRET(vector < mstring >, downlinks);
 }
 
 
@@ -1376,28 +1380,27 @@ size_t Server_t::Usage() const
 
 void Server_t::DumpB() const
 {
-    MB(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description,
-	i_Ping, i_Lag, i_Jupe));
+    MB(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description, i_Ping, i_Lag, i_Jupe));
 }
 
 void Server_t::DumpE() const
 {
-    ME(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description,
-	i_Ping, i_Lag, i_Jupe));
+    ME(0, (i_Name, i_AltName, i_Numeric, i_Uplink, i_Hops, i_Description, i_Ping, i_Lag, i_Jupe));
 }
 
 
-void Server::raw(const mstring& text) const
+void Server::raw(const mstring & text) const
 {
     FT("Server::raw", (text));
     Magick::instance().send(text);
 }
 
-void Server::sraw(const mstring& text) const
+void Server::sraw(const mstring & text) const
 {
     mstring out;
+
 //  if (proto.Numeric())
-//	out << "@" << base64_to_str(GetOurNumeric()) << " ";
+//      out << "@" << base64_to_str(GetOurNumeric()) << " ";
 //  else
     if (!proto.Numeric())
 	out << ":" << Magick::instance().startup.Server_Name() << " ";
@@ -1411,8 +1414,9 @@ void Server::SignOnAll()
 
     mstring doison;
     unsigned int i;
+
     WLOCK(("Server", "WaitIsOn"));
-    for (i=1; i<=Magick::instance().operserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().operserv.GetNames().WordCount(" "); i++)
     {
 	if (!Magick::instance().nickserv.IsLive(Magick::instance().operserv.GetNames().ExtractWord(i, " ")))
 	{
@@ -1420,7 +1424,7 @@ void Server::SignOnAll()
 	    WaitIsOn.insert(Magick::instance().operserv.GetNames().ExtractWord(i, " "));
 	}
     }
-    for (i=1; i<=Magick::instance().nickserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().nickserv.GetNames().WordCount(" "); i++)
     {
 	if (!Magick::instance().nickserv.IsLive(Magick::instance().nickserv.GetNames().ExtractWord(i, " ")))
 	{
@@ -1428,7 +1432,7 @@ void Server::SignOnAll()
 	    WaitIsOn.insert(Magick::instance().nickserv.GetNames().ExtractWord(i, " "));
 	}
     }
-    for (i=1; i<=Magick::instance().chanserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().chanserv.GetNames().WordCount(" "); i++)
     {
 	if (!Magick::instance().nickserv.IsLive(Magick::instance().chanserv.GetNames().ExtractWord(i, " ")))
 	{
@@ -1436,7 +1440,7 @@ void Server::SignOnAll()
 	    WaitIsOn.insert(Magick::instance().chanserv.GetNames().ExtractWord(i, " "));
 	}
     }
-    for (i=1; i<=Magick::instance().memoserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().memoserv.GetNames().WordCount(" "); i++)
     {
 	if (!Magick::instance().nickserv.IsLive(Magick::instance().memoserv.GetNames().ExtractWord(i, " ")))
 	{
@@ -1444,7 +1448,7 @@ void Server::SignOnAll()
 	    WaitIsOn.insert(Magick::instance().memoserv.GetNames().ExtractWord(i, " "));
 	}
     }
-    for (i=1; i<=Magick::instance().commserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().commserv.GetNames().WordCount(" "); i++)
     {
 	if (!Magick::instance().nickserv.IsLive(Magick::instance().commserv.GetNames().ExtractWord(i, " ")))
 	{
@@ -1452,7 +1456,7 @@ void Server::SignOnAll()
 	    WaitIsOn.insert(Magick::instance().commserv.GetNames().ExtractWord(i, " "));
 	}
     }
-    for (i=1; i<=Magick::instance().servmsg.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().servmsg.GetNames().WordCount(" "); i++)
     {
 	if (!Magick::instance().nickserv.IsLive(Magick::instance().servmsg.GetNames().ExtractWord(i, " ")))
 	{
@@ -1462,43 +1466,43 @@ void Server::SignOnAll()
     }
 
     if (!doison.empty())
-	sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ?
-		proto.GetNonToken("ISON") : mstring("ISON")) + " :" +
-		doison);
+	sraw(((proto.Tokens()
+	       && !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " :" + doison);
 }
 
 
-void Server::SignOffAll(const mstring& reason)
+void Server::SignOffAll(const mstring & reason)
 {
     FT("Server::SignOffAll", (reason));
 
     unsigned int i;
-    for (i=1; i<=Magick::instance().operserv.GetNames().WordCount(" "); i++)
+
+    for (i = 1; i <= Magick::instance().operserv.GetNames().WordCount(" "); i++)
     {
 	if (Magick::instance().nickserv.IsLive(Magick::instance().operserv.GetNames().ExtractWord(i, " ")))
 	    Magick::instance().operserv.signoff(Magick::instance().operserv.GetNames().ExtractWord(i, " "), reason);
     }
-    for (i=1; i<=Magick::instance().nickserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().nickserv.GetNames().WordCount(" "); i++)
     {
 	if (Magick::instance().nickserv.IsLive(Magick::instance().nickserv.GetNames().ExtractWord(i, " ")))
 	    Magick::instance().nickserv.signoff(Magick::instance().nickserv.GetNames().ExtractWord(i, " "), reason);
     }
-    for (i=1; i<=Magick::instance().chanserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().chanserv.GetNames().WordCount(" "); i++)
     {
 	if (Magick::instance().nickserv.IsLive(Magick::instance().chanserv.GetNames().ExtractWord(i, " ")))
 	    Magick::instance().chanserv.signoff(Magick::instance().chanserv.GetNames().ExtractWord(i, " "), reason);
     }
-    for (i=1; i<=Magick::instance().memoserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().memoserv.GetNames().WordCount(" "); i++)
     {
 	if (Magick::instance().nickserv.IsLive(Magick::instance().memoserv.GetNames().ExtractWord(i, " ")))
 	    Magick::instance().memoserv.signoff(Magick::instance().memoserv.GetNames().ExtractWord(i, " "), reason);
     }
-    for (i=1; i<=Magick::instance().commserv.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().commserv.GetNames().WordCount(" "); i++)
     {
 	if (Magick::instance().nickserv.IsLive(Magick::instance().commserv.GetNames().ExtractWord(i, " ")))
 	    Magick::instance().commserv.signoff(Magick::instance().commserv.GetNames().ExtractWord(i, " "), reason);
     }
-    for (i=1; i<=Magick::instance().servmsg.GetNames().WordCount(" "); i++)
+    for (i = 1; i <= Magick::instance().servmsg.GetNames().WordCount(" "); i++)
     {
 	if (Magick::instance().nickserv.IsLive(Magick::instance().servmsg.GetNames().ExtractWord(i, " ")))
 	    Magick::instance().servmsg.signoff(Magick::instance().servmsg.GetNames().ExtractWord(i, " "), reason);
@@ -1509,7 +1513,7 @@ void Server::SignOffAll(const mstring& reason)
 Server::Server()
 {
     NFT("Server::Server");
-    messages=true;
+    messages = true;
     WLOCK(("Server", "i_UserMax"));
     i_UserMax = 0;
     DumpE();
@@ -1522,7 +1526,7 @@ size_t Server::UserMax() const
     RET(i_UserMax);
 }
 
-void Server::OurUplink(const mstring& server)
+void Server::OurUplink(const mstring & server)
 {
     FT("Server::OurUplink", (server));
     WLOCK(("Server", "i_OurUplink"));
@@ -1538,12 +1542,12 @@ mstring Server::OurUplink() const
     RET(i_OurUplink);
 }
 
-void Server::FlushMsgs(const mstring& nick)
+void Server::FlushMsgs(const mstring & nick)
 {
     FT("Server::FlushMsgs", (nick));
 
-    map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > >::iterator i;
-    list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > >::iterator j;
+    map < mstring, list < triplet < send_type, mDateTime, triplet < mstring, mstring, mstring > > > >::iterator i;
+    list < triplet < send_type, mDateTime, triplet < mstring, mstring, mstring > > >::iterator j;
 
     // Dont report this, thats the point of the queue...
     if (!Magick::instance().nickserv.IsLive(nick))
@@ -1554,7 +1558,7 @@ void Server::FlushMsgs(const mstring& nick)
     if ((i = ToBeSent.find(nick.LowerCase())) != ToBeSent.end())
     {
 	WLOCK(("Server", "ToBeSent", i->first));
-	for (j=i->second.begin(); j!=i->second.end(); j++)
+	for (j = i->second.begin(); j != i->second.end(); j++)
 	{
 	    if (j->second.SecondsSince() > Magick::instance().config.Squit_Protect())
 		continue;
@@ -1610,10 +1614,9 @@ void Server::FlushMsgs(const mstring& nick)
 		WALLOPS(nick, j->third.first);
 		break;
 	    default:
-		LOG(LM_WARNING, "ERROR/REQ_UNKNOWN", (
-			static_cast<int>(j->first), i->first, j->third.first,
-			j->third.second, j->third.third,
-			ToHumanTime(j->second.SecondsSince())));
+		LOG(LM_WARNING, "ERROR/REQ_UNKNOWN",
+		    (static_cast < int >(j->first), i->first, j->third.first, j->third.second, j->third.third,
+		     ToHumanTime(j->second.SecondsSince())));
 		break;
 	    }
 	}
@@ -1623,9 +1626,9 @@ void Server::FlushMsgs(const mstring& nick)
 }
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void Server::AddList(Server_t *in) throw(E_Server_List)
+void Server::AddList(Server_t * in) throw(E_Server_List)
 #else
-void Server::AddList(Server_t *in)
+void Server::AddList(Server_t * in)
 #endif
 {
     FT("Server::AddList", ("(Server_t *) in"));
@@ -1661,7 +1664,7 @@ void Server::AddList(Server_t *in)
     }
 
     RLOCK(("Server", "list"));
-    map_entry<Server_t> old_entry(i_list, in->Name().LowerCase());
+    map_entry < Server_t > old_entry(i_list, in->Name().LowerCase());
     if (old_entry.entry() != NULL)
     {
 	old_entry->setDelete();
@@ -1673,9 +1676,9 @@ void Server::AddList(Server_t *in)
 
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-map_entry<Server_t> Server::GetList(const mstring &in) const throw(E_Server_List)
+map_entry < Server_t > Server::GetList(const mstring & in) const throw(E_Server_List)
 #else
-map_entry<Server_t> Server::GetList(const mstring &in) const
+map_entry < Server_t > Server::GetList(const mstring & in) const
 #endif
 {
     FT("Server::GetList", (in));
@@ -1710,14 +1713,14 @@ map_entry<Server_t> Server::GetList(const mstring &in) const
 #endif
     }
 
-    NRET(map_entry<Server_t>, map_entry<Server_t>(iter->second));
+    NRET(map_entry < Server_t >, map_entry < Server_t > (iter->second));
 }
 
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-void Server::RemList(const mstring &in, bool downlinks) throw(E_Server_List)
+void Server::RemList(const mstring & in, bool downlinks) throw(E_Server_List)
 #else
-void Server::RemList(const mstring &in, bool downlinks)
+void Server::RemList(const mstring & in, bool downlinks)
 #endif
 {
     FT("Server::RemList", (in, downlinks));
@@ -1734,10 +1737,10 @@ void Server::RemList(const mstring &in, bool downlinks)
 #endif
     }
 
-    vector<mstring> Kill;
+    vector < mstring > Kill;
     if (iter->second != NULL)
     {
-	map_entry<Server_t> me(iter->second);
+	map_entry < Server_t > me(iter->second);
 
 	if (downlinks)
 	{
@@ -1755,7 +1758,7 @@ void Server::RemList(const mstring &in, bool downlinks)
     WLOCK(("Server", "list"));
     i_list.erase(iter);
 
-    for (unsigned int i=0; i<Kill.size(); i++)
+    for (unsigned int i = 0; i < Kill.size(); i++)
     {
 	iter = i_list.find(Kill[i].LowerCase());
 	if (iter == i_list.end())
@@ -1763,19 +1766,20 @@ void Server::RemList(const mstring &in, bool downlinks)
 
 	if (iter->second != NULL)
 	{
-	    map_entry<Server_t> ent(iter->second);
+	    map_entry < Server_t > ent(iter->second);
 	    ent->setDelete();
 	}
 	i_list.erase(iter);
-    }    
+    }
 }
 
 
-bool Server::IsList(const mstring& server) const
+bool Server::IsList(const mstring & server) const
 {
     FT("Server::IsList", (server));
     RLOCK(("Server", "list"));
     bool retval = (i_list.find(server.LowerCase()) != i_list.end());
+
     RET(retval);
 }
 
@@ -1784,26 +1788,30 @@ mstring Server::ServerNumeric(const unsigned long num) const
 {
     FT("Server::ServerNumeric", (num));
     mstring retval;
+
     Server::list_t::const_iterator iter;
 
-    { RLOCK(("Server", "list"));
-    for (iter=ListBegin(); iter!=ListEnd(); iter++)
     {
-	map_entry<Server_t> server(iter->second);
-	if (server->Numeric() == num)
+	RLOCK(("Server", "list"));
+	for (iter = ListBegin(); iter != ListEnd(); iter++)
 	{
-	    retval = server->Name();
-	    break;
+	    map_entry < Server_t > server(iter->second);
+	    if (server->Numeric() == num)
+	    {
+		retval = server->Name();
+		break;
+	    }
 	}
-    }}
+    }
     RET(retval);
 }
 
 
-mstring Server::GetServer(const mstring& server) const
+mstring Server::GetServer(const mstring & server) const
 {
     FT("Server::GetServer", (server));
     mstring retval;
+
     RLOCK(("Server", "list"));
     if (proto.Numeric())
     {
@@ -1821,39 +1829,38 @@ unsigned long Server::GetOurNumeric() const
 {
     NFT("Server::GetOurNumeric");
     unsigned long retval = Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.third;
+
     RET(retval);
 }
 
 
-bool Server::IsSquit(const mstring& server) const
+bool Server::IsSquit(const mstring & server) const
 {
     FT("Server::IsSquit", (server));
     RLOCK(("Server", "ServerSquit"));
     bool retval = (ServerSquit.find(server.LowerCase()) != ServerSquit.end());
+
     RET(retval);
 }
 
-void Server::Jupe(const mstring& server, const mstring& reason)
+void Server::Jupe(const mstring & server, const mstring & reason)
 {
     FT("Server::Jupe", (server, reason));
     if (IsList(server))
-	raw(((proto.Tokens() && !proto.GetNonToken("SQUIT").empty()) ?
-		proto.GetNonToken("SQUIT") : mstring("SQUIT")) +
-		" " + server.LowerCase() + " :JUPE command used.");
-	    // SERVER downlink hops :description
-	    // :uplink SERVER downlink hops :description
+	raw(((proto.Tokens()
+	      && !proto.GetNonToken("SQUIT").empty())? proto.GetNonToken("SQUIT") : mstring("SQUIT")) + " " +
+	    server.LowerCase() + " :JUPE command used.");
+    // SERVER downlink hops :description
+    // :uplink SERVER downlink hops :description
     mstring tmp;
-    tmp.Format(proto.Server().c_str(),
-	    server.LowerCase().c_str(), 2,
-	    ("JUPED (" + reason + ")").c_str());
+
+    tmp.Format(proto.Server().c_str(), server.LowerCase().c_str(), 2, ("JUPED (" + reason + ")").c_str());
     raw(tmp);
-    map_entry<Server_t> jupe(new Server_t(server.LowerCase(),
-				"JUPED (" + reason + ")"));
+    map_entry < Server_t > jupe(new Server_t(server.LowerCase(), "JUPED (" + reason + ")"));
     Magick::instance().server.AddList(jupe);
 }
 
-void Server::AKILL(const mstring& host, const mstring& reason,
-	const unsigned long exptime, const mstring& killer)
+void Server::AKILL(const mstring & host, const mstring & reason, const unsigned long exptime, const mstring & killer)
 {
     FT("Server::AKILL", (host, reason, exptime, killer));
 
@@ -1861,6 +1868,7 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	return;
 
     mstring line;
+
     switch (proto.Akill())
     {
     case 0000:
@@ -1870,19 +1878,17 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	    line << proto.GetNonToken("AKILL");
 	else
 	    line << "AKILL";
-	line << " " << host.After("@") << " " << host.Before("@") <<
-		" :" << reason;
+	line << " " << host.After("@") << " " << host.Before("@") << " :" << reason;
 	break;
     case 1001:
 	if (proto.Tokens() && !proto.GetNonToken("AKILL").empty())
 	    line << proto.GetNonToken("AKILL");
 	else
 	    line << "AKILL";
-	line << " " << host.After("@") << " " << host.Before("@") <<
-		" " << exptime << " " << ((!killer.empty()) ? killer :
-		Magick::instance().operserv.FirstName()) << " " <<
-		static_cast<time_t>(mDateTime::CurrentDateTime()) <<
-		" :" << reason;
+	line << " " << host.After("@") << " " << host.
+	    Before("@") << " " << exptime << " " << ((!killer.empty())? killer : Magick::instance().operserv.
+						     FirstName()) << " " << static_cast < time_t >
+	    (mDateTime::CurrentDateTime()) << " :" << reason;
 	break;
     case 2000:
 	if (proto.Tokens() && !proto.GetNonToken("GLINE").empty())
@@ -1916,21 +1922,15 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	else
 	    line << "GLINE";
 
-	sraw(line + "VOnick1 VOuser1 VOhost1 VOserver1 " +
-		host.Before("@") + " " + host.After("@") + " :" +
-		reason);
+	sraw(line + "VOnick1 VOuser1 VOhost1 VOserver1 " + host.Before("@") + " " + host.After("@") + " :" + reason);
 
-	sraw(line + "VOnick2 VOuser2 VOhost2 VOserver2 " +
-		host.Before("@") + " " + host.After("@") + " :" +
-		reason);
+	sraw(line + "VOnick2 VOuser2 VOhost2 VOserver2 " + host.Before("@") + " " + host.After("@") + " :" + reason);
 
 	if (Magick::instance().nickserv.IsLive(Magick::instance().operserv.FirstName()))
 	{
-	    map_entry<Nick_Live_t> os = Magick::instance().nickserv.GetLive(Magick::instance().operserv.FirstName());
-	    line << " " << os->Name() << " " << os->User() << " " << os->Host()
-		<< " " << Magick::instance().startup.Server_Name() << " "
-		<< host.Before("@") << " " << host.After("@")
-		<< " :" << reason;
+	    map_entry < Nick_Live_t > os = Magick::instance().nickserv.GetLive(Magick::instance().operserv.FirstName());
+	    line << " " << os->Name() << " " << os->User() << " " << os->Host() << " " << Magick::instance().startup.
+		Server_Name() << " " << host.Before("@") << " " << host.After("@") << " :" << reason;
 	}
 	break;
     case 3001:
@@ -1938,23 +1938,22 @@ void Server::AKILL(const mstring& host, const mstring& reason,
 	    line << proto.GetNonToken("KLINE");
 	else
 	    line << "KLINE";
-	line << " " << killer << " * " << exptime << " "
-		<< host.Before("@") << " " << host.After("@")
-		<< " :" << reason;
+	line << " " << killer << " * " << exptime << " " << host.Before("@") << " " << host.After("@") << " :" << reason;
 	break;
     }
 
     // GLINING clients do this for us ...
     NickServ::live_t::iterator iter;
-    vector<mstring> killusers;
-    { RLOCK(("NickServ", "live"));
-    for (iter = Magick::instance().nickserv.LiveBegin();
-	 iter != Magick::instance().nickserv.LiveEnd(); iter++)
+    vector < mstring > killusers;
     {
-	map_entry<Nick_Live_t> nlive(iter->second);
-	if (nlive->Mask(Nick_Live_t::U_P_H).After("!").Matches(host, true))
-	    killusers.push_back(iter->first);
-    }}
+	RLOCK(("NickServ", "live"));
+	for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
+	{
+	    map_entry < Nick_Live_t > nlive(iter->second);
+	    if (nlive->Mask(Nick_Live_t::U_P_H).After("!").Matches(host, true))
+		killusers.push_back(iter->first);
+	}
+    }
 
     if (!line.empty())
     {
@@ -1964,7 +1963,8 @@ void Server::AKILL(const mstring& host, const mstring& reason,
     }
 
     unsigned int j;
-    for (j=0; j<killusers.size(); j++)
+
+    for (j = 0; j < killusers.size(); j++)
     {
 	if (proto.Akill() < 2000)
 	    Magick::instance().server.KILL(Magick::instance().operserv.FirstName(), killusers[j], reason);
@@ -1973,8 +1973,7 @@ void Server::AKILL(const mstring& host, const mstring& reason,
     }
 }
 
-void Server::ANONKILL(const mstring& nick, const mstring& dest,
-	const mstring& reason)
+void Server::ANONKILL(const mstring & nick, const mstring & dest, const mstring & reason)
 {
     FT("Server::ANONKILL", (nick, dest, reason));
 
@@ -1982,67 +1981,62 @@ void Server::ANONKILL(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_KILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		dest, reason, "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_KILL, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (dest, reason, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"KILL", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("KILL", nick));
     }
     else if (!Magick::instance().nickserv.IsLive(dest))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		"KILL", nick, dest));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", ("KILL", nick, dest));
     }
     else
     {
-	Magick::instance().nickserv.GetLive(dest)->Quit(
-		"Killed (" + reason + ")");
+	Magick::instance().nickserv.GetLive(dest)->Quit("Killed (" + reason + ")");
 	Magick::instance().nickserv.RemLive(dest);
 	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("KILL").empty()) ?
-			proto.GetNonToken("KILL") : mstring("KILL")) +
-		" " + dest + " :" + reason);
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + dest + " :" +
+	    reason);
 	mMessage::CheckDependancies(mMessage::NickNoExists, dest);
     }
 }
 
 
-void Server::AWAY(const mstring& nick, const mstring& reason)
+void Server::AWAY(const mstring & nick, const mstring & reason)
 {
     FT("Server::AWAY", (nick, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
-		"AWAY", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", ("AWAY", nick));
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"AWAY", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("AWAY", nick));
     }
     else
     {
 	mstring line;
+
 	Magick::instance().nickserv.GetLive(nick)->Away(reason);
 	if (proto.Tokens() && !proto.GetNonToken("AWAY").empty())
 	    line << proto.GetNonToken("AWAY");
 	else
 	    line << "AWAY";
-	if(!reason.empty())
-	    line=" : " + reason;
-	raw(":" + nick + " " +  line);
+	if (!reason.empty())
+	    line = " : " + reason;
+	raw(":" + nick + " " + line);
     }
 }
 
 
-void Server::GLOBOPS(const mstring& nick, const mstring& message)
+void Server::GLOBOPS(const mstring & nick, const mstring & message)
 {
     FT("Server::GLOBOPS", (nick, message));
 
@@ -2050,36 +2044,37 @@ void Server::GLOBOPS(const mstring& nick, const mstring& message)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_GLOBOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		message, "", "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_GLOBOPS, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (message, "", "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"GLOBOPS", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("GLOBOPS", nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Action();
 	mstring line = ":" + nick + " ";
-	if (proto.Globops())
-	    line += ((proto.Tokens() && !proto.GetNonToken("GLOBOPS").empty()) ?
-			proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
-	else
-	    line += ((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
-			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
 
-	for (unsigned int i=1; i<=message.WordCount("\n\r"); i++)
+	if (proto.Globops())
+	    line +=
+		((proto.Tokens()
+		  && !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
+	else
+	    line +=
+		((proto.Tokens()
+		  && !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+
+	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
 
 
-void Server::HELPOPS(const mstring& nick, const mstring& message)
+void Server::HELPOPS(const mstring & nick, const mstring & message)
 {
     FT("Server::HELPOPS", (nick, message));
 
@@ -2087,40 +2082,42 @@ void Server::HELPOPS(const mstring& nick, const mstring& message)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_HELPOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		message, "", "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_HELPOPS, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (message, "", "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"HELPOPS", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("HELPOPS", nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Action();
 
 	mstring line = ":" + nick + " ";
-	if (proto.Helpops())
-	    line += ((proto.Tokens() && !proto.GetNonToken("HELPOPS").empty()) ?
-			proto.GetNonToken("HELPOPS") : mstring("HELPOPS")) + " :";
-	else if (proto.Globops())
-	    line += ((proto.Tokens() && !proto.GetNonToken("GLOBOPS").empty()) ?
-			proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
-	else
-	    line += ((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
-			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
 
-	for (unsigned int i=1; i<=message.WordCount("\n\r"); i++)
+	if (proto.Helpops())
+	    line +=
+		((proto.Tokens()
+		  && !proto.GetNonToken("HELPOPS").empty())? proto.GetNonToken("HELPOPS") : mstring("HELPOPS")) + " :";
+	else if (proto.Globops())
+	    line +=
+		((proto.Tokens()
+		  && !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
+	else
+	    line +=
+		((proto.Tokens()
+		  && !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+
+	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
 
 
-void Server::CHATOPS(const mstring& nick, const mstring& message)
+void Server::CHATOPS(const mstring & nick, const mstring & message)
 {
     FT("Server::CHATOPS", (nick, message));
 
@@ -2128,41 +2125,42 @@ void Server::CHATOPS(const mstring& nick, const mstring& message)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_CHATOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		message, "", "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_CHATOPS, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (message, "", "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"CHATOPS", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("CHATOPS", nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Action();
 
 	mstring line = ":" + nick + " ";
-	if (proto.Chatops())
-	    line += ((proto.Tokens() && !proto.GetNonToken("CHATOPS").empty()) ?
-			proto.GetNonToken("CHATOPS") : mstring("CHATOPS")) + " :";
-	else if (proto.Globops())
-	    line += ((proto.Tokens() && !proto.GetNonToken("GLOBOPS").empty()) ?
-			proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
-	else
-	    line += ((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
-			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
 
-	for (unsigned int i=1; i<=message.WordCount("\n\r"); i++)
+	if (proto.Chatops())
+	    line +=
+		((proto.Tokens()
+		  && !proto.GetNonToken("CHATOPS").empty())? proto.GetNonToken("CHATOPS") : mstring("CHATOPS")) + " :";
+	else if (proto.Globops())
+	    line +=
+		((proto.Tokens()
+		  && !proto.GetNonToken("GLOBOPS").empty())? proto.GetNonToken("GLOBOPS") : mstring("GLOBOPS")) + " :";
+	else
+	    line +=
+		((proto.Tokens()
+		  && !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+
+	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
 
 
-void Server::INVITE(const mstring& nick, const mstring& dest,
-	const mstring& channel)
+void Server::INVITE(const mstring & nick, const mstring & dest, const mstring & channel)
 {
     FT("Server::INVITE", (nick, dest, channel));
 
@@ -2170,60 +2168,54 @@ void Server::INVITE(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_INVITE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		dest, channel, "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_INVITE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (dest, channel, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"INVITE", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("INVITE", nick));
     }
     else if (!Magick::instance().nickserv.IsLive(dest))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		"INVITE", nick, dest));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", ("INVITE", nick, dest));
     }
     else if (!Magick::instance().chanserv.IsLive(channel))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
-		"INVITE", nick, channel));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", ("INVITE", nick, channel));
     }
     else
     {
 	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("INVITE").empty()) ?
-			proto.GetNonToken("INVITE") : mstring("INVITE")) +
-		" " + dest + " :" + channel);
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("INVITE").empty())? proto.GetNonToken("INVITE") : mstring("INVITE")) + " " + dest + " :" +
+	    channel);
     }
 }
 
 
-void Server::JOIN(const mstring& nick, const mstring& channel)
+void Server::JOIN(const mstring & nick, const mstring & channel)
 {
     FT("Server::JOIN", (nick, channel));
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
-		"JOIN", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", ("JOIN", nick));
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"JOIN", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("JOIN", nick));
     }
     else
     {
 	// Make sure we split the channels here, so that we can
 	// do the Join's AFTER the command it sent to the network,
 	// else we'll end up senind modes before joins.
-	vector<mstring> channels;
-	vector<mstring>::iterator ci;
-	for (unsigned int i=1; i<=channel.WordCount(", "); i++)
+	vector < mstring > channels;
+	vector < mstring >::iterator ci;
+	for (unsigned int i = 1; i <= channel.WordCount(", "); i++)
 	    channels.push_back(channel.ExtractWord(i, ", "));
 
 	mstring out;
@@ -2232,30 +2224,28 @@ void Server::JOIN(const mstring& nick, const mstring& channel)
 	// channel individually, else we do a standard JOIN.
 	if (proto.SJoin())
 	{
-	    out << ":" << nick << " " <<
-		((proto.Tokens() && !proto.GetNonToken("SJOIN").empty()) ?
-			proto.GetNonToken("SJOIN") : mstring("SJOIN"))
-		<< " " << mDateTime::CurrentDateTime().timetstring() << " ";
+	    out << ":" << nick << " " << ((proto.Tokens() && !proto.GetNonToken("SJOIN").empty())? proto.
+					  GetNonToken("SJOIN") : mstring("SJOIN")) << " " << mDateTime::CurrentDateTime().
+		timetstring() << " ";
 
-	    for (ci=channels.begin(); ci!=channels.end(); ci++)
+	    for (ci = channels.begin(); ci != channels.end(); ci++)
 		raw(out + *ci);
 	}
-        else
-        {
-	    out << ":" << nick << " " <<
-		((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
-			proto.GetNonToken("JOIN") : mstring("JOIN")) << " :";
+	else
+	{
+	    out << ":" << nick << " " << ((proto.Tokens() && !proto.GetNonToken("JOIN").empty())? proto.
+					  GetNonToken("JOIN") : mstring("JOIN")) << " :";
 
 	    bool firstchan = true;
-	    for (ci=channels.begin(); ci!=channels.end(); ci++)
+
+	    for (ci = channels.begin(); ci != channels.end(); ci++)
 	    {
 		if (out.length() + ci->length() + 1 > proto.MaxLine())
 		{
 		    raw(out);
 		    out.erase();
-		    out << ":" << nick << " " <<
-			((proto.Tokens() && !proto.GetNonToken("JOIN").empty()) ?
-				proto.GetNonToken("JOIN") : mstring("JOIN")) << " :";
+		    out << ":" << nick << " " << ((proto.Tokens() && !proto.GetNonToken("JOIN").empty())? proto.
+						  GetNonToken("JOIN") : mstring("JOIN")) << " :";
 		    firstchan = true;
 		}
 		if (firstchan)
@@ -2267,15 +2257,14 @@ void Server::JOIN(const mstring& nick, const mstring& channel)
 	    raw(out);
 	}
 
-	map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(nick);
-	for (ci=channels.begin(); ci!=channels.end(); ci++)
+	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(nick);
+	for (ci = channels.begin(); ci != channels.end(); ci++)
 	    nlive->Join(*ci);
     }
 }
 
 
-void Server::KICK(const mstring& nick, const mstring& dest,
-	const mstring& channel, const mstring& reason)
+void Server::KICK(const mstring & nick, const mstring & dest, const mstring & channel, const mstring & reason)
 {
     FT("Server::KICK", (nick, dest, channel, reason));
 
@@ -2283,46 +2272,40 @@ void Server::KICK(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_KICK, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		dest, channel, reason)));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_KICK, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (dest, channel, reason)));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"KICK", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("KICK", nick));
     }
     else if (!Magick::instance().nickserv.IsLive(dest))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		"KICK", nick, dest));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", ("KICK", nick, dest));
     }
     else if (!Magick::instance().chanserv.IsLive(channel))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
-		"KICK", nick, channel));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", ("KICK", nick, channel));
     }
     else if (!Magick::instance().chanserv.GetLive(channel)->IsIn(dest))
     {
-	LOG(LM_WARNING, "ERROR/REQ_NOTINCHAN", (
-		"KICK", nick, dest, channel));
+	LOG(LM_WARNING, "ERROR/REQ_NOTINCHAN", ("KICK", nick, dest, channel));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(dest)->Kick(nick, channel);
 	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("KICK").empty()) ?
-			proto.GetNonToken("KICK") : mstring("KICK")) +
-		" " + channel + " " + dest + " :" + reason);
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("KICK").empty())? proto.GetNonToken("KICK") : mstring("KICK")) + " " + channel + " " +
+	    dest + " :" + reason);
     }
 }
 
 
-void Server::KILL(const mstring& nick, const mstring& dest,
-	const mstring& reason)
+void Server::KILL(const mstring & nick, const mstring & dest, const mstring & reason)
 {
     FT("Server::KILL", (nick, dest, reason));
 
@@ -2330,111 +2313,99 @@ void Server::KILL(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_KILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		dest, reason, "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_KILL, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (dest, reason, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"KILL", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("KILL", nick));
     }
     else if (!Magick::instance().nickserv.IsLive(dest))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		"KILL", nick, dest));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", ("KILL", nick, dest));
     }
     else
     {
-	Magick::instance().nickserv.GetLive(dest)->Quit(
-		"Killed (" + nick + " (" + reason + "))");
+	Magick::instance().nickserv.GetLive(dest)->Quit("Killed (" + nick + " (" + reason + "))");
 	Magick::instance().nickserv.RemLive(dest);
 	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("KILL").empty()) ?
-			proto.GetNonToken("KILL") : mstring("KILL")) +
-		" " + dest + " :" + Magick::instance().nickserv.GetLive(nick)->Host() +
-		"!" + nick + " (" + reason + ")");
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + dest + " :" +
+	    Magick::instance().nickserv.GetLive(nick)->Host() + "!" + nick + " (" + reason + ")");
 	mMessage::CheckDependancies(mMessage::NickNoExists, dest);
     }
 }
 
 
-void Server::MODE(const mstring& nick, const mstring& mode)
+void Server::MODE(const mstring & nick, const mstring & mode)
 {
     FT("Server::MODE", (nick, mode));
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
-		"MODE", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", ("MODE", nick));
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"MODE", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("MODE", nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Mode(mode);
 	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("MODE").empty()) ?
-			proto.GetNonToken("MODE") : mstring("MODE")) +
-		" " + nick + " :" + mode);
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("MODE").empty())? proto.GetNonToken("MODE") : mstring("MODE")) + " " + nick + " :" + mode);
     }
 }
 
 
-void Server::MODE(const mstring& nick, const mstring& channel,
-	const mstring& mode) 
+void Server::MODE(const mstring & nick, const mstring & channel, const mstring & mode)
 {
     FT("Server::MODE", (nick, channel, mode));
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
-		"MODE", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", ("MODE", nick));
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"MODE", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("MODE", nick));
     }
     else if (!Magick::instance().chanserv.IsLive(channel))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
-		"MODE", nick, channel));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", ("MODE", nick, channel));
     }
     else
     {
 	Magick::instance().chanserv.GetLive(channel)->Mode(nick, mode);
 	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("MODE").empty()) ?
-			proto.GetNonToken("MODE") : mstring("MODE")) +
-		" " + channel + " " + mode.Before(" ") + " " +
-		mode.After(" "));
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("MODE").empty())? proto.GetNonToken("MODE") : mstring("MODE")) + " " + channel + " " +
+	    mode.Before(" ") + " " + mode.After(" "));
     }
 }
 
 
-void Server::NICK(const mstring& nick, const mstring& user,
-	const mstring& host, const mstring& i_server, const mstring& name)
+void Server::NICK(const mstring & nick, const mstring & user, const mstring & host, const mstring & i_server,
+		  const mstring & name)
 {
     FT("Server::NICK", (nick, user, host, i_server, name));
 
     if (Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_TOUSER", (
-		"NICK", i_server, nick));
+	LOG(LM_WARNING, "ERROR/REQ_TOUSER", ("NICK", i_server, nick));
     }
     else
     {
 	mstring server(i_server);
+
 	if (proto.Numeric() && IsList(server))
 	    server = base64_to_str(GetList(server)->Numeric());
 	mstring out, token;
+
 	switch (proto.Signon())
 	{
 	case 0000:
@@ -2443,8 +2414,7 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick  << " " << user << " " << host <<
-		" " << server << " :" << name;
+	    out << " " << nick << " " << user << " " << host << " " << server << " :" << name;
 	    break;
 	case 0001:
 	    token = "USER";
@@ -2452,9 +2422,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick  << mDateTime::CurrentDateTime().timetstring() <<
-		" " << user << " " << host << " " << server <<
-		" :" << name;
+	    out << " " << nick << mDateTime::CurrentDateTime().
+		timetstring() << " " << user << " " << host << " " << server << " :" << name;
 	    break;
 	case 1000:
 	    token = "NICK";
@@ -2464,8 +2433,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" " << user << " " << host << " " << server;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
+		timetstring() << " " << user << " " << host << " " << server;
 	    if (proto.P12())
 		out << " +" << Magick::instance().startup.Setmode();
 	    out << " :" << name;
@@ -2478,8 +2447,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" " << user << " " << host << " " << server << " 1";
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
+		timetstring() << " " << user << " " << host << " " << server << " 1";
 	    if (proto.P12())
 		out << " +" << Magick::instance().startup.Setmode();
 	    out << " :" << name;
@@ -2492,9 +2461,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" " << user << " " << host << " " << server << " 1 "
-		<< host;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
+		timetstring() << " " << user << " " << host << " " << server << " 1 " << host;
 	    if (proto.P12())
 		out << " +" << Magick::instance().startup.Setmode();
 	    out << " :" << name;
@@ -2507,9 +2475,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" " << user << " " << host << " " << host << " " <<
-		server << " 1";
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
+		timetstring() << " " << user << " " << host << " " << host << " " << server << " 1";
 	    if (proto.P12())
 		out << " +" << Magick::instance().startup.Setmode();
 	    out << " :" << name;
@@ -2522,9 +2489,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" +" << Magick::instance().startup.Setmode() << " " << user <<
-		" " << host << " " << server << " :" << name;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << Magick::instance().startup.
+		Setmode() << " " << user << " " << host << " " << server << " :" << name;
 	    break;
 	case 2001:
 	    token = "NICK";
@@ -2534,9 +2500,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" +" << Magick::instance().startup.Setmode() << " " << user <<
-		" " << host << " " << server << " 1 :" << name;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << Magick::instance().startup.
+		Setmode() << " " << user << " " << host << " " << server << " 1 :" << name;
 	    break;
 	case 2002:
 	    token = "NICK";
@@ -2546,10 +2511,8 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" +" << Magick::instance().startup.Setmode() << " " << user <<
-		" " << host << " " << host << " " << server << " 1 :" <<
-		name;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() << " +" << Magick::instance().startup.
+		Setmode() << " " << user << " " << host << " " << host << " " << server << " 1 :" << name;
 	    break;
 	case 2003:
 	    token = "NICK";
@@ -2559,79 +2522,76 @@ void Server::NICK(const mstring& nick, const mstring& user,
 		out << proto.GetNonToken(token);
 	    else
 		out << token;
-	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().timetstring() <<
-		" " << user << " " << host << " " << server << " 1 +" <<
-		Magick::instance().startup.Setmode() << " " << host << " :" << name;
+	    out << " " << nick << " 1 " << mDateTime::CurrentDateTime().
+		timetstring() << " " << user << " " << host << " " << server << " 1 +" << Magick::instance().startup.
+		Setmode() << " " << host << " :" << name;
 	    break;
 	}
 	// Sign ourselves in ...
 
 	if (Magick::instance().nickserv.IsLiveAll(nick.LowerCase()))
 	{
-	    map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(nick);
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(nick);
 	    nlive->Quit("SQUIT - " + nlive->Server());
 	    Magick::instance().nickserv.RemLive(nick);
 	    mMessage::CheckDependancies(mMessage::NickNoExists, nick);
 	}
-	map_entry<Nick_Live_t> tmp(new Nick_Live_t(nick, user, host, name));
+	map_entry < Nick_Live_t > tmp(new Nick_Live_t(nick, user, host, name));
 	if (proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000))
-		tmp->Mode(Magick::instance().startup.Setmode());
+	    tmp->Mode(Magick::instance().startup.Setmode());
 	Magick::instance().nickserv.AddLive(tmp);
-	{ WLOCK2(("Server", "i_UserMax"));
-	if (i_UserMax < Magick::instance().nickserv.LiveSize())
 	{
-	    MCB(i_UserMax);
-	    i_UserMax = Magick::instance().nickserv.LiveSize();
-	    MCE(i_UserMax);
-	}}
+	    WLOCK2(("Server", "i_UserMax"));
+	    if (i_UserMax < Magick::instance().nickserv.LiveSize())
+	    {
+		MCB(i_UserMax);
+		i_UserMax = Magick::instance().nickserv.LiveSize();
+		MCE(i_UserMax);
+	    }
+	}
 	raw(out);
 	mMessage::CheckDependancies(mMessage::NickExists, nick);
     }
 }
 
 
-void Server::NICK(const mstring& oldnick, const mstring& newnick)
+void Server::NICK(const mstring & oldnick, const mstring & newnick)
 {
     FT("Server::NICK", (oldnick, newnick));
 
     if (!Magick::instance().nickserv.IsLive(oldnick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
-		"NICK", oldnick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", ("NICK", oldnick));
     }
     else if (!Magick::instance().nickserv.GetLive(oldnick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"NICK", oldnick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("NICK", oldnick));
     }
     else
     {
-	map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(oldnick);
+	map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(oldnick);
 	Magick::instance().nickserv.RemLive(oldnick);
 	nlive->setDelete(false);
 	nlive->Name(newnick);
 	if (Magick::instance().nickserv.IsLiveAll(newnick))
 	{
-	    map_entry<Nick_Live_t> tmp = Magick::instance().nickserv.GetLive(newnick);
+	    map_entry < Nick_Live_t > tmp = Magick::instance().nickserv.GetLive(newnick);
 	    tmp->Quit("SQUIT - " + tmp->Server());
 	    Magick::instance().nickserv.RemLive(newnick);
 	    mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
 	}
 	Magick::instance().nickserv.AddLive(nlive);
 	raw(":" + oldnick + " " +
-		((proto.Tokens() && !proto.GetNonToken("NICK").empty()) ?
-			proto.GetNonToken("NICK") : mstring("NICK")) +
-		" " + newnick + (proto.TSora() ?
-			" :" + mDateTime::CurrentDateTime().timetstring() :
-			mstring("")));
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("NICK").empty())? proto.GetNonToken("NICK") : mstring("NICK")) + " " + newnick +
+	    (proto.TSora()? " :" + mDateTime::CurrentDateTime().timetstring() : mstring("")));
 	mMessage::CheckDependancies(mMessage::NickNoExists, oldnick);
 	mMessage::CheckDependancies(mMessage::NickExists, newnick);
     }
 }
 
 
-void Server::NOTICE(const mstring& nick, const mstring& dest,
-	const mstring& text)
+void Server::NOTICE(const mstring & nick, const mstring & dest, const mstring & text)
 {
     FT("Server::NOTICE", (nick, dest, text));
 
@@ -2639,96 +2599,84 @@ void Server::NOTICE(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_NOTICE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		dest, text, "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_NOTICE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (dest, text, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"NOTICE", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("NOTICE", nick));
     }
-    else if (!(dest[0u] == '$' || dest[0u] == '#' ||
-		Magick::instance().nickserv.IsLive(dest) ||
-		Magick::instance().chanserv.IsLive(dest)))
+    else if (!
+	     (dest[0u] == '$' || dest[0u] == '#' || Magick::instance().nickserv.IsLive(dest)
+	      || Magick::instance().chanserv.IsLive(dest)))
     {
 	if (IsChan(dest))
 	{
-	    LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
-		"NOTICE", nick, dest));
+	    LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", ("NOTICE", nick, dest));
 	}
 	else
 	{
-	    LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		"NOTICE", nick, dest));
+	    LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", ("NOTICE", nick, dest));
 	}
     }
-    else if (Magick::instance().nickserv.IsLive(dest) &&
-	Magick::instance().nickserv.GetLive(dest)->IsServices())
+    else if (Magick::instance().nickserv.IsLive(dest) && Magick::instance().nickserv.GetLive(dest)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", (
-		"NOTICE", nick));
+	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", ("NOTICE", nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Action();
 
-	mstring line = ":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-		" " + dest + " :";
-	for (unsigned int i=1; i<=text.WordCount("\n\r"); i++)
+	mstring line =
+	    ":" + nick + " " +
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + dest + " :";
+	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    raw(line + text.ExtractWord(i, "\n\r"));
     }
 }
 
 
-void Server::PART(const mstring& nick, const mstring& channel,
-	const mstring& reason)
+void Server::PART(const mstring & nick, const mstring & channel, const mstring & reason)
 {
     FT("Server::PART", (nick, channel, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
-		"PART", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", ("PART", nick));
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"PART", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("PART", nick));
     }
     else if (!Magick::instance().chanserv.IsLive(channel))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
-		"PART", nick, channel));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", ("PART", nick, channel));
     }
     else if (!Magick::instance().chanserv.GetLive(channel)->IsIn(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_NOTINCHAN", (
-		"KICK", nick, nick, channel));
+	LOG(LM_WARNING, "ERROR/REQ_NOTINCHAN", ("KICK", nick, nick, channel));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Part(channel);
 	mstring tmpResult;
-	if(!reason.empty())
-	    tmpResult=" :"+reason;
+
+	if (!reason.empty())
+	    tmpResult = " :" + reason;
 	else
-	    tmpResult="";
+	    tmpResult = "";
 	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("PART").empty()) ?
-			proto.GetNonToken("PART") : mstring("PART")) +
-		" " + channel + tmpResult);
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("PART").empty())? proto.GetNonToken("PART") : mstring("PART")) + " " + channel + tmpResult);
     }
 }
 
 
-void Server::PRIVMSG(const mstring& nick, const mstring& dest,
-	const mstring& text)
+void Server::PRIVMSG(const mstring & nick, const mstring & dest, const mstring & text)
 {
     FT("Server::PRIVMSG", (nick, dest, text));
 
@@ -2736,57 +2684,50 @@ void Server::PRIVMSG(const mstring& nick, const mstring& dest,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_PRIVMSG, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		dest, text, "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_PRIVMSG, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (dest, text, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"PRIVMSG", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("PRIVMSG", nick));
     }
-    else if (!(dest[0u] == '$' || dest[0u] == '#' ||
-		Magick::instance().nickserv.IsLive(dest) ||
-		Magick::instance().chanserv.IsLive(dest)))
+    else if (!
+	     (dest[0u] == '$' || dest[0u] == '#' || Magick::instance().nickserv.IsLive(dest)
+	      || Magick::instance().chanserv.IsLive(dest)))
     {
 	if (IsChan(dest))
 	{
-	    LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
-		"PRIVMSG", nick, dest));
+	    LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", ("PRIVMSG", nick, dest));
 	}
 	else
 	{
-	    LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		"PRIVMSG", nick, dest));
+	    LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", ("PRIVMSG", nick, dest));
 	}
     }
-    else if (Magick::instance().nickserv.IsLive(dest) &&
-	Magick::instance().nickserv.GetLive(dest)->IsServices())
+    else if (Magick::instance().nickserv.IsLive(dest) && Magick::instance().nickserv.GetLive(dest)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", (
-		"PRIVMSG", nick));
+	LOG(LM_WARNING, "ERROR/REQ_TOSERVICE", ("PRIVMSG", nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Action();
 
-	mstring line = ":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("PRIVMSG").empty()) ?
-			proto.GetNonToken("PRIVMSG") : mstring("PRIVMSG")) +
-		" " + dest + " :";
-	for (unsigned int i=1; i<=text.WordCount("\n\r"); i++)
+	mstring line =
+	    ":" + nick + " " +
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("PRIVMSG").empty())? proto.GetNonToken("PRIVMSG") : mstring("PRIVMSG")) + " " + dest + " :";
+	for (unsigned int i = 1; i <= text.WordCount("\n\r"); i++)
 	    raw(line + text.ExtractWord(i, "\n\r"));
     }
 }
 
 
-void Server::SQLINE(const mstring& nick, const mstring& target,
-	const mstring& reason)
+void Server::SQLINE(const mstring & nick, const mstring & target, const mstring & reason)
 {
-    FT("Server::SQLINE", (nick, target,reason));
+    FT("Server::SQLINE", (nick, target, reason));
 
     if (proto.SQLINE().empty())
 	return;
@@ -2795,21 +2736,20 @@ void Server::SQLINE(const mstring& nick, const mstring& target,
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SQLINE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		target, reason, "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_SQLINE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (target, reason, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		proto.SQLINE(), nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (proto.SQLINE(), nick));
     }
     else
     {
 	mstring output;
+
 	output << ":" << nick << " ";
 	if (proto.Tokens() && !proto.GetNonToken(proto.SQLINE()).empty())
 	    output << proto.GetNonToken(proto.SQLINE());
@@ -2821,34 +2761,31 @@ void Server::SQLINE(const mstring& nick, const mstring& target,
 }
 
 
-void Server::QUIT(const mstring& nick, const mstring& reason)
+void Server::QUIT(const mstring & nick, const mstring & reason)
 {
     FT("Server::QUIT", (nick, reason));
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
-		"QUIT", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", ("QUIT", nick));
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"QUIT", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("QUIT", nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Quit(reason);
 	Magick::instance().nickserv.RemLive(nick);
 	raw(":" + nick + " " +
-		((proto.Tokens() && !proto.GetNonToken("QUIT").empty()) ?
-			proto.GetNonToken("QUIT") : mstring("QUIT")) +
-		" :" + reason);
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("QUIT").empty())? proto.GetNonToken("QUIT") : mstring("QUIT")) + " :" + reason);
 	mMessage::CheckDependancies(mMessage::NickNoExists, nick);
     }
 }
 
 
-void Server::RAKILL(const mstring& host)
+void Server::RAKILL(const mstring & host)
 {
     FT("Server::RAKILL", (host));
 
@@ -2856,6 +2793,7 @@ void Server::RAKILL(const mstring& host)
 	return;
 
     mstring line;
+
     switch (proto.Akill())
     {
     case 0000:
@@ -2906,8 +2844,7 @@ void Server::RAKILL(const mstring& host)
 	sraw(line);
 }
 
-void Server::SVSHOST(const mstring& mynick, const mstring& nick,
-	const mstring& newhost)
+void Server::SVSHOST(const mstring & mynick, const mstring & nick, const mstring & newhost)
 {
     FT("Server::SVSHOST", (mynick, nick, newhost));
 
@@ -2918,27 +2855,25 @@ void Server::SVSHOST(const mstring& mynick, const mstring& nick,
     {
 	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[mynick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSHOST, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		nick, newhost, "")));
+	ToBeSent[mynick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					       mstring > >(t_SVSHOST, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							   mstring > (nick, newhost, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(mynick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		proto.SVSHOST(), nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (proto.SVSHOST(), nick));
     }
     else if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		proto.SVSHOST(), mynick, nick));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (proto.SVSHOST(), mynick, nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->AltHost(newhost);
 	mstring output;
+
 	output << ":" << mynick << " ";
 	if (proto.Tokens() && !proto.GetNonToken(proto.SVSHOST()).empty())
 	    output << proto.GetNonToken(proto.SVSHOST());
@@ -2950,8 +2885,7 @@ void Server::SVSHOST(const mstring& mynick, const mstring& nick,
 }
 
 
-void Server::SVSKILL(const mstring& mynick, const mstring& nick,
-	const mstring& reason)
+void Server::SVSKILL(const mstring & mynick, const mstring & nick, const mstring & reason)
 {
     FT("Server::SVSKILL", (mynick, nick, reason));
 
@@ -2962,28 +2896,26 @@ void Server::SVSKILL(const mstring& mynick, const mstring& nick,
     {
 	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[mynick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSKILL, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		nick, reason, "")));
+	ToBeSent[mynick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					       mstring > >(t_SVSKILL, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							   mstring > (nick, reason, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(mynick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		proto.SVSKILL(), nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (proto.SVSKILL(), nick));
     }
     else if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		proto.SVSKILL(), mynick, nick));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (proto.SVSKILL(), mynick, nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Quit(reason);
 	Magick::instance().nickserv.RemLive(nick);
 	mstring output;
+
 	output << ":" << mynick << " ";
 	if (proto.Tokens() && !proto.GetNonToken(proto.SVSKILL()).empty())
 	    output << proto.GetNonToken(proto.SVSKILL());
@@ -2996,8 +2928,7 @@ void Server::SVSKILL(const mstring& mynick, const mstring& nick,
 }
 
 
-void Server::SVSNICK(const mstring& mynick, const mstring& nick,
-	const mstring& newnick)
+void Server::SVSNICK(const mstring & mynick, const mstring & nick, const mstring & newnick)
 {
     FT("Server::SVSNICK", (mynick, nick, newnick));
 
@@ -3008,45 +2939,40 @@ void Server::SVSNICK(const mstring& mynick, const mstring& nick,
     {
 	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[mynick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSNICK, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		nick, newnick, "")));
+	ToBeSent[mynick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					       mstring > >(t_SVSNICK, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							   mstring > (nick, newnick, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(mynick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		proto.SVSNICK(), nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (proto.SVSNICK(), nick));
     }
     else if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		proto.SVSNICK(), mynick, nick));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (proto.SVSNICK(), mynick, nick));
     }
     else if (Magick::instance().nickserv.IsLive(newnick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_TOUSER", (
-		proto.SVSNICK(), mynick, newnick));
+	LOG(LM_WARNING, "ERROR/REQ_TOUSER", (proto.SVSNICK(), mynick, newnick));
     }
     else
     {
 	mstring output;
+
 	output << ":" << mynick << " ";
 	if (proto.Tokens() && !proto.GetNonToken(proto.SVSNICK()).empty())
 	    output << proto.GetNonToken(proto.SVSNICK());
 	else
 	    output << proto.SVSNICK();
-	output << " " << nick << " " <<
-		    newnick << " :" << time_t(NULL);
+	output << " " << nick << " " << newnick << " :" << time_t(NULL);
 	raw(output);
     }
 }
 
 
-void Server::SVSNOOP(const mstring& nick, const mstring& server,
-	const bool onoff)
+void Server::SVSNOOP(const mstring & nick, const mstring & server, const bool onoff)
 {
     FT("Server::SVSNOOP", (nick, server, onoff));
 
@@ -3055,22 +2981,20 @@ void Server::SVSNOOP(const mstring& nick, const mstring& server,
 
     if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (
-		proto.SVSNOOP(), nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONUSER", (proto.SVSNOOP(), nick));
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		proto.SVSNOOP(), nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (proto.SVSNOOP(), nick));
     }
     else if (!IsList(server))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONSERVER", (
-		proto.SVSNOOP(), nick, server));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONSERVER", (proto.SVSNOOP(), nick, server));
     }
     else
     {
 	mstring output;
+
 	output << ":" << nick << " ";
 	if (proto.Tokens() && !proto.GetNonToken(proto.SVSNOOP()).empty())
 	    output << proto.GetNonToken(proto.SVSNOOP());
@@ -3082,8 +3006,7 @@ void Server::SVSNOOP(const mstring& nick, const mstring& server,
 }
 
 
-void Server::SVSMODE(const mstring& mynick, const mstring& nick,
-	const mstring& mode)
+void Server::SVSMODE(const mstring & mynick, const mstring & nick, const mstring & mode)
 {
     FT("Server::SVSMODE", (mynick, nick, mode));
 
@@ -3094,27 +3017,25 @@ void Server::SVSMODE(const mstring& mynick, const mstring& nick,
     {
 	WLOCK(("Server", "ToBeSent", mynick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[mynick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_SVSMODE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		nick, mode, "")));
+	ToBeSent[mynick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					       mstring > >(t_SVSMODE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							   mstring > (nick, mode, "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(mynick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		proto.SVSMODE(), nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (proto.SVSMODE(), nick));
     }
     else if (!Magick::instance().nickserv.IsLive(nick))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (
-		proto.SVSMODE(), mynick, nick));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONUSER", (proto.SVSMODE(), mynick, nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Mode(mode);
 	mstring output;
+
 	output << ":" << mynick << " ";
 	if (proto.Tokens() && !proto.GetNonToken(proto.SVSMODE()).empty())
 	    output << proto.GetNonToken(proto.SVSMODE());
@@ -3126,42 +3047,40 @@ void Server::SVSMODE(const mstring& mynick, const mstring& nick,
 }
 
 
-void Server::TOPIC(const mstring& nick, const mstring& setter,
-	const mstring& channel, const mstring& topic, const mDateTime& settime)
+void Server::TOPIC(const mstring & nick, const mstring & setter, const mstring & channel, const mstring & topic,
+		   const mDateTime & settime)
 {
     FT("Server::TOPIC", (nick, setter, channel, topic, settime));
 
-    
+
     if (!Magick::instance().nickserv.IsLive(nick))
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_TOPIC, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		setter, channel, topic)));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_TOPIC, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (setter, channel, topic)));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"TOPIC", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("TOPIC", nick));
     }
     else if (!Magick::instance().chanserv.IsLive(channel))
     {
-	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", (
-		"TOPIC", nick, channel));
+	LOG(LM_WARNING, "ERROR/REQ_FORNONCHAN", ("TOPIC", nick, channel));
     }
     else
     {
 	mstring out;
+
 	out << ":" << nick << " ";
 	if (proto.Tokens() && !proto.GetNonToken("TOPIC").empty())
 	    out << proto.GetNonToken("TOPIC");
 	else
 	    out << "TOPIC";
-	
+
 	out << " " << channel;
 	if (proto.BigTopic())
 	    out << " " << setter;
@@ -3173,7 +3092,8 @@ void Server::TOPIC(const mstring& nick, const mstring& setter,
 	}
 
 	bool dojoin = false;
-	map_entry<Chan_Live_t> chan = Magick::instance().chanserv.GetLive(channel);
+
+	map_entry < Chan_Live_t > chan = Magick::instance().chanserv.GetLive(channel);
 	chan->Topic(nick, topic, setter, settime);
 	if (proto.TopicJoin() && !chan->IsIn(Magick::instance().chanserv.FirstName()))
 	    dojoin = true;
@@ -3187,7 +3107,7 @@ void Server::TOPIC(const mstring& nick, const mstring& setter,
 }
 
 
-void Server::UNSQLINE(const mstring& nick, const mstring& target)
+void Server::UNSQLINE(const mstring & nick, const mstring & target)
 {
     FT("Server::UNSQLINE", (nick, target));
 
@@ -3198,21 +3118,20 @@ void Server::UNSQLINE(const mstring& nick, const mstring& target)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_UNSQLINE, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		target, "", "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_UNSQLINE, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (target, "", "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		proto.UNSQLINE(), nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (proto.UNSQLINE(), nick));
     }
     else
     {
 	mstring output;
+
 	output << ":" << nick << " ";
 	if (proto.Tokens() && !proto.GetNonToken(proto.UNSQLINE()).empty())
 	    output << proto.GetNonToken(proto.UNSQLINE());
@@ -3224,7 +3143,7 @@ void Server::UNSQLINE(const mstring& nick, const mstring& target)
 }
 
 
-void Server::WALLOPS(const mstring& nick, const mstring& message)
+void Server::WALLOPS(const mstring & nick, const mstring & message)
 {
     FT("Server::WALLOPS", (nick, message));
 
@@ -3232,44 +3151,42 @@ void Server::WALLOPS(const mstring& nick, const mstring& message)
     {
 	WLOCK(("Server", "ToBeSent", nick.LowerCase()));
 	MCB(ToBeSent.size());
-	ToBeSent[nick.LowerCase()].push_back(
-		triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> >(
-		t_WALLOPS, mDateTime::CurrentDateTime(), triplet<mstring, mstring, mstring>(
-		message, "", "")));
+	ToBeSent[nick.LowerCase()].push_back(triplet < send_type, mDateTime, triplet < mstring, mstring,
+					     mstring > >(t_WALLOPS, mDateTime::CurrentDateTime(), triplet < mstring, mstring,
+							 mstring > (message, "", "")));
 	MCE(ToBeSent.size());
 	return;
     }
     else if (!Magick::instance().nickserv.GetLive(nick)->IsServices())
     {
-	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", (
-		"WALLOPS", nick));
+	LOG(LM_WARNING, "ERROR/REQ_BYNONSERVICE", ("WALLOPS", nick));
     }
     else
     {
 	Magick::instance().nickserv.GetLive(nick)->Action();
 
-	mstring line = ":" + nick + " " + 
-		((proto.Tokens() && !proto.GetNonToken("WALLOPS").empty()) ?
-			proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
+	mstring line =
+	    ":" + nick + " " +
+	    ((proto.Tokens()
+	      && !proto.GetNonToken("WALLOPS").empty())? proto.GetNonToken("WALLOPS") : mstring("WALLOPS")) + " :";
 
-	for (unsigned int i=1; i<=message.WordCount("\n\r"); i++)
+	for (unsigned int i = 1; i <= message.WordCount("\n\r"); i++)
 	    raw(line + message.ExtractWord(i, "\n\r"));
     }
 }
 
 
-void Server::KillUnknownUser(const mstring& user) const
+void Server::KillUnknownUser(const mstring & user) const
 {
     FT("Server::KillUnknownUser", (user));
-    sraw(((proto.Tokens() && !proto.GetNonToken("KILL").empty()) ?
-		proto.GetNonToken("KILL") : mstring("KILL")) +
-		" " + user + " :" + Magick::instance().startup.Server_Name() +
-		" (" + user + "(?) <- " + Magick::instance().CurrentServer() + ")");
+    sraw(((proto.Tokens()
+	   && !proto.GetNonToken("KILL").empty())? proto.GetNonToken("KILL") : mstring("KILL")) + " " + user + " :" +
+	 Magick::instance().startup.Server_Name() + " (" + user + "(?) <- " + Magick::instance().CurrentServer() + ")");
     LOG(LM_ERROR, "OTHER/KILL_UNKNOWN", (user));
 }
 
 
-void Server::execute(mstring& source, const mstring& msgtype, const mstring& params)
+void Server::execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
     //okay this is the main networkserv command switcher
     FT("Server::execute", (source, msgtype, params));
@@ -3374,7 +3291,7 @@ void Server::execute(mstring& source, const mstring& msgtype, const mstring& par
     }
 }
 
-void Server::parse_A(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_A(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_A", (source, msgtype, params));
 
@@ -3387,96 +3304,98 @@ void Server::parse_A(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="ADCHAT")
+    if (msgtype == "ADCHAT")
+    {
+	// Useless admin chatter.
+    }
+    else if (msgtype == "ADMIN")
+    {
 	{
-	    // Useless admin chatter.
-	}
-	else if (msgtype=="ADMIN")
-	{
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL &&
-		Magick::instance().ircsvchandler->HTM_Level() > 3)
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-								mVarArray(msgtype));
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :" + tmp.c_str());
-		return;
-	    }}
-	    // :source ADMIN
-	    sraw("256 " + source + " :Administrative info about " +
-		Magick::instance().startup.Server_Name());
-	    sraw("257 " + source + " :" + Magick::instance().startup.Server_Desc());
-	    sraw("258 " + source + " :Admins - " + Magick::instance().operserv.Services_Admin());
-	    sraw("259 " + source + " :" + FULLNAME + " - " + EMAIL);
-	}
-	else if (msgtype=="AKILL")
-	{
-	    // We will ignore AKILLS because they're not relivant to us.
-	    // we will not be akilling our own clients ;P
-	}
-	else if (msgtype=="AWAY")
-	{
-	    if (source.Contains("."))
-		return;
+					   mVarArray(msgtype));
 
-	    // :source AWAY
-	    // :source AWAY :This is my reason
-	    if (params.empty())
+		raw(((proto.Tokens()
+		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+		    source + " :" + tmp.c_str());
+		return;
+	    }
+	}
+	// :source ADMIN
+	sraw("256 " + source + " :Administrative info about " + Magick::instance().startup.Server_Name());
+	sraw("257 " + source + " :" + Magick::instance().startup.Server_Desc());
+	sraw("258 " + source + " :Admins - " + Magick::instance().operserv.Services_Admin());
+	sraw("259 " + source + " :" + FULLNAME + " - " + EMAIL);
+    }
+    else if (msgtype == "AKILL")
+    {
+	// We will ignore AKILLS because they're not relivant to us.
+	// we will not be akilling our own clients ;P
+    }
+    else if (msgtype == "AWAY")
+    {
+	if (source.Contains("."))
+	    return;
+
+	// :source AWAY
+	// :source AWAY :This is my reason
+	if (params.empty())
+	{
+	    Magick::instance().nickserv.GetLive(source)->Away("");
+
+	    // HAS to be AFTER the nickname is added to map.
+	    CommServ::list_t::iterator iter;
 	    {
-		Magick::instance().nickserv.GetLive(source)->Away("");
-
-		// HAS to be AFTER the nickname is added to map.
-		CommServ::list_t::iterator iter;
-		{ RLOCK2(("CommServ", "list"));
-		for (iter = Magick::instance().commserv.ListBegin();
-				    iter != Magick::instance().commserv.ListEnd();
-				    iter++)
+		RLOCK2(("CommServ", "list"));
+		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		{
-		    map_entry<Committee_t> comm(iter->second);
+		    map_entry < Committee_t > comm(iter->second);
 		    if (comm->IsOn(source))
 		    {
 			MLOCK(("CommServ", "list", iter->first, "message"));
-			for (comm->message = comm->MSG_begin();
-			    comm->message != comm->MSG_end();
-			    comm->message++)
+			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
-			    Magick::instance().servmsg.send(source, "[" + IRC_Bold +
-					    comm->Name() + IRC_Off + "] " +
-					    comm->message->Entry());
+			    Magick::instance().servmsg.send(source,
+							    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
+							    comm->message->Entry());
 			}
-		    }
-		}}
-
-		if (Magick::instance().nickserv.IsStored(source))
-		{
-		    mstring who = Magick::instance().nickserv.GetStored(source)->Host().LowerCase();
-		    if (who.empty())
-			who = source;
-		    if (Magick::instance().memoserv.IsNick(who))
-		    {
-			size_t count = Magick::instance().memoserv.NickMemoCount(who);
-			if (count)
-			    SEND(Magick::instance().memoserv.FirstName(), source, "MS_STATUS/NS_UNREAD",
-				(count, Magick::instance().memoserv.FirstName()));
 		    }
 		}
 	    }
-	    else
-		Magick::instance().nickserv.GetLive(source)->Away(params.After(":"));
+
+	    if (Magick::instance().nickserv.IsStored(source))
+	    {
+		mstring who = Magick::instance().nickserv.GetStored(source)->Host().LowerCase();
+
+		if (who.empty())
+		    who = source;
+		if (Magick::instance().memoserv.IsNick(who))
+		{
+		    size_t count = Magick::instance().memoserv.NickMemoCount(who);
+
+		    if (count)
+			SEND(Magick::instance().memoserv.FirstName(), source, "MS_STATUS/NS_UNREAD",
+			     (count, Magick::instance().memoserv.FirstName()));
+		}
+	    }
 	}
 	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+	    Magick::instance().nickserv.GetLive(source)->Away(params.After(":"));
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_B(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_B(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_B", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3486,17 +3405,17 @@ void Server::parse_B(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="BURST")
-	{
-	    // Thanks to bahamut :)
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    if (msgtype == "BURST")
+    {
+	// Thanks to bahamut :)
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_C(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_C", (source, msgtype, params));
 
@@ -3509,49 +3428,49 @@ void Server::parse_C(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="CAPAB")
+    if (msgtype == "CAPAB")
+    {
+	// Bahamut version of the PROTOCTL line
+	if ((" " + params + " ").Contains(" TOKEN "))
+	    proto.Tokens(true);
+	if ((" " + params + " ").Contains(" SSJOIN ") || (" " + params + " ").Contains(" SJOIN "))
+	    proto.SJoin(true);
+    }
+    else if (msgtype == "CHATOPS")
+    {
+    }
+    else if (msgtype == "CONNECT")
+    {
+	// :soul.darker.net 481 ChanServ :Permission Denied- You do not have the correct IRC operator privileges
+	// :source CONNECT some.server port :our.server
+	if (IsList(params.ExtractWord(1, ": "))
+	    || params.ExtractWord(1, ": ").IsSameAs(Magick::instance().startup.Server_Name(), true))
 	{
-	    // Bahamut version of the PROTOCTL line
-	    if ((" " + params + " ").Contains(" TOKEN "))
-		proto.Tokens(true);
-	    if ((" " + params + " ").Contains(" SSJOIN ") ||
-		(" " + params + " ").Contains(" SJOIN "))
-		proto.SJoin(true);
-	}
-	else if (msgtype=="CHATOPS")
-	{
-	}
-	else if (msgtype=="CONNECT")
-	{
-	    // :soul.darker.net 481 ChanServ :Permission Denied- You do not have the correct IRC operator privileges
-	    // :source CONNECT some.server port :our.server
-	    if (IsList(params.ExtractWord(1, ": ")) ||
-	    	params.ExtractWord(1, ": ").IsSameAs(Magick::instance().startup.Server_Name(), true))
-	    {
-		sraw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :Connect: Server " + params.ExtractWord(1, ": ") +
-			" already exists from " + Magick::instance().startup.Server_Name());
-	    }
-	    else
-	    {
-		sraw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :Connect: Host " +
-			params.ExtractWord(1, ": ") + " not listed in irc.conf");
-	    }
+	    sraw(((proto.Tokens()
+		   && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		 " :Connect: Server " + params.ExtractWord(1,
+							   ": ") + " already exists from " +
+		 Magick::instance().startup.Server_Name());
 	}
 	else
 	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+	    sraw(((proto.Tokens()
+		   && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " + source +
+		 " :Connect: Host " + params.ExtractWord(1, ": ") + " not listed in irc.conf");
 	}
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_D(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_D(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_D", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3561,10 +3480,10 @@ void Server::parse_D(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
-void Server::parse_E(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_E(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_E", (source, msgtype, params));
 
@@ -3577,35 +3496,34 @@ void Server::parse_E(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="END_OF_BURST" || msgtype=="EOB")
-	{
-	    // Tis only nice, afterall ...
-	    Magick::instance().server.sraw(((proto.Tokens() &&
-		!proto.GetNonToken("EOB_ACK").empty()) ?
-		proto.GetNonToken("EOB_ACK") :
-		mstring("EOB_ACK")));
-	}
-	else if (msgtype=="EOB_ACK")
-	{
-	    // Thank you, drive through ...
-	}
-	else if (msgtype=="ERROR")
-	{
-	    // ERROR :This is my error
-	    LOG(LM_NOTICE, "OTHER/SERVER_MSG", (
-		    msgtype, params.After(":")));
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    if (msgtype == "END_OF_BURST" || msgtype == "EOB")
+    {
+	// Tis only nice, afterall ...
+	Magick::instance().server.
+	    sraw(((proto.Tokens()
+		   && !proto.GetNonToken("EOB_ACK").empty())? proto.GetNonToken("EOB_ACK") : mstring("EOB_ACK")));
+    }
+    else if (msgtype == "EOB_ACK")
+    {
+	// Thank you, drive through ...
+    }
+    else if (msgtype == "ERROR")
+    {
+	// ERROR :This is my error
+	LOG(LM_NOTICE, "OTHER/SERVER_MSG", (msgtype, params.After(":")));
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_F(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_F(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_F", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3615,10 +3533,10 @@ void Server::parse_F(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
-void Server::parse_G(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_G(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_G", (source, msgtype, params));
 
@@ -3631,37 +3549,37 @@ void Server::parse_G(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="GLINE")
-	{
-	    // We will ignore GLINES because they're not relivant to us.
-	    // we will not be glining our own clients ;P
-	}
-	else if (msgtype=="GLOBOPS")
-	{
-	    // :source GLOBOPS :This message
-	    // useless chatter ... can be ignored.
-	}
-	else if (msgtype=="GNOTICE")
-	{
-	    // :server GNOTICE :This message
-	    LOG(LM_NOTICE, "OTHER/SERVER_MSG", (
-		msgtype, params.After(":")));
-	}
-	else if (msgtype=="GOPER")
-	{
-	    // useless chatter ... can be ignored.
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    if (msgtype == "GLINE")
+    {
+	// We will ignore GLINES because they're not relivant to us.
+	// we will not be glining our own clients ;P
+    }
+    else if (msgtype == "GLOBOPS")
+    {
+	// :source GLOBOPS :This message
+	// useless chatter ... can be ignored.
+    }
+    else if (msgtype == "GNOTICE")
+    {
+	// :server GNOTICE :This message
+	LOG(LM_NOTICE, "OTHER/SERVER_MSG", (msgtype, params.After(":")));
+    }
+    else if (msgtype == "GOPER")
+    {
+	// useless chatter ... can be ignored.
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_H(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_H(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_H", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3671,21 +3589,21 @@ void Server::parse_H(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="HELP")
-	{
-	    // ignore ...
-	}
-	else if (msgtype=="HELPOP")
-	{
-	    // ignore ...
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    if (msgtype == "HELP")
+    {
+	// ignore ...
+    }
+    else if (msgtype == "HELPOP")
+    {
+	// ignore ...
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_I(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_I(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_I", (source, msgtype, params));
 
@@ -3698,63 +3616,65 @@ void Server::parse_I(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="INFO")
+    if (msgtype == "INFO")
+    {
+	// :source INFO :server/nick
 	{
-	    // :source INFO :server/nick
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL &&
-		Magick::instance().ircsvchandler->HTM_Level() > 3)
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-								mVarArray(msgtype));
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :" + tmp.c_str());
+					   mVarArray(msgtype));
+
+		raw(((proto.Tokens()
+		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+		    source + " :" + tmp.c_str());
 		return;
 	    }
 	    else
-		for (unsigned int i=0; i<sizeof(contrib)/sizeof(mstring); i++)
+		for (unsigned int i = 0; i < sizeof(contrib) / sizeof(mstring); i++)
 		    sraw("371 " + source + " :" + contrib[i]);
-	    }
-	    sraw("374 " + source + " :End of /INFO report");
 	}
-	else if (msgtype=="INVITE")
-	{
-	    // :source INVITE target :channel
-	    //:PreZ INVITE ChanServ :#chatzone
+	sraw("374 " + source + " :End of /INFO report");
+    }
+    else if (msgtype == "INVITE")
+    {
+	// :source INVITE target :channel
+	//:PreZ INVITE ChanServ :#chatzone
 
-	    // We can ignore this, as our clients will not 'join on invite'
-	    // and we dont really need an invitation to join ...
-	}
-	else if (msgtype=="ISON")
-	{
-	    // :heaven.darker.net ISON ChanServ
-	    // :soul.darker.net 303 heaven.darker.net :ChanServ
-	    // :heaven.darker.net ISON zBlerk
-	    // :soul.darker.net 303 heaven.darker.net :
+	// We can ignore this, as our clients will not 'join on invite'
+	// and we dont really need an invitation to join ...
+    }
+    else if (msgtype == "ISON")
+    {
+	// :heaven.darker.net ISON ChanServ
+	// :soul.darker.net 303 heaven.darker.net :ChanServ
+	// :heaven.darker.net ISON zBlerk
+	// :soul.darker.net 303 heaven.darker.net :
 
-	    // repl: :our.server 303 source :local.nick
-	    mstring isonstr;
-	    for (unsigned int i=1; i<=params.WordCount(": "); i++)
+	// repl: :our.server 303 source :local.nick
+	mstring isonstr;
+
+	for (unsigned int i = 1; i <= params.WordCount(": "); i++)
+	{
+	    if (isonstr.length() > proto.MaxLine())
 	    {
-		if (isonstr.length() > proto.MaxLine())
-		{
-		    sraw("303 " + source + " :" + isonstr);
-		    isonstr.erase();
-		}
-		if (Magick::instance().nickserv.IsLive(params.ExtractWord(i, ": ")))
-		    isonstr += params.ExtractWord(i, ": ") + " ";
-	    }
-	    if (!isonstr.empty())
 		sraw("303 " + source + " :" + isonstr);
+		isonstr.erase();
+	    }
+	    if (Magick::instance().nickserv.IsLive(params.ExtractWord(i, ": ")))
+		isonstr += params.ExtractWord(i, ": ") + " ";
 	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+	if (!isonstr.empty())
+	    sraw("303 " + source + " :" + isonstr);
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_J(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_J(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_J", (source, msgtype, params));
 
@@ -3767,25 +3687,26 @@ void Server::parse_J(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="JOIN")
-	{
-	    if (source.Contains("."))
-		return;
+    if (msgtype == "JOIN")
+    {
+	if (source.Contains("."))
+	    return;
 
-	    // :source JOIN :#channel
-	    for (unsigned int i=1; i<=params.WordCount(":, "); i++)
-	    {
-		mstring chan(params.ExtractWord(i, ":, "));
-		Magick::instance().nickserv.GetLive(source)->Join(chan);
-	    }
-	}
-	else
+	// :source JOIN :#channel
+	for (unsigned int i = 1; i <= params.WordCount(":, "); i++)
 	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+	    mstring chan(params.ExtractWord(i, ":, "));
+
+	    Magick::instance().nickserv.GetLive(source)->Join(chan);
 	}
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_K(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_K", (source, msgtype, params));
 
@@ -3798,72 +3719,72 @@ void Server::parse_K(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="KICK")
+    if (msgtype == "KICK")
+    {
+	// :source KICK #channel target :reason
+	// KICK #channel target :reason
+
+	// KICK for UNKNOWN USER.
+	if (!Magick::instance().nickserv.IsLive(params.ExtractWord(2, ": ")))
 	{
-	    // :source KICK #channel target :reason
-	    // KICK #channel target :reason
-
-	    // KICK for UNKNOWN USER.
-	    if (!Magick::instance().nickserv.IsLive(params.ExtractWord(2, ": ")))
-	    {
-		KillUnknownUser(params.ExtractWord(2, ": "));
-		return;
-	    }
-
-	    if (!source.Contains(".") &&
-		!Magick::instance().nickserv.GetLive(source)->IsInChan(params.ExtractWord(1, ": ")))
-		sraw(((proto.Tokens() && !proto.GetNonToken("KICK").empty()) ?
-			proto.GetNonToken("KICK") : mstring("KICK")) +
-			" " + params.ExtractWord(1, ": ") + " " + source + " :You are not in this channel");
-
-	    // NOTE: as the message has already been broadcasted,
-	    // we still need to acomodate for it.
-	    Magick::instance().nickserv.GetLive(params.ExtractWord(2, ": "))->Kick(source, params.ExtractWord(1, ": "));
+	    KillUnknownUser(params.ExtractWord(2, ": "));
+	    return;
 	}
-	else if (msgtype=="KILL")
-	{
-	    // :source/server KILL target :reason
-	    // LOCAL clients ONLY (remotes are a QUIT).
-	    //:PreZ KILL kick`kill`abuse :castle.srealm.net.au!PreZ (blah)
-	    if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
-	    {
-		// sign on services again if they're killed.
-		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
-		if (nlive->IsServices())
-		{
-		    LOG(LM_WARNING, "OTHER/KILLED", (
-			    params.ExtractWord(1, ": "),
-			    (!Magick::instance().nickserv.IsLive(source) ? source :
-			    Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H))));
-		    WLOCK2(("Server", "WaitIsOn"));
-		    WaitIsOn.insert(params.ExtractWord(1, ": "));
-		    sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ?
-			proto.GetNonToken("ISON") : mstring("ISON")) +
-			" " + params.ExtractWord(1, ": "));
-		}
-		int wc = params.After(":").WordCount("!");
-		nlive-> Quit("Killed (" + params.After(":").After("!", wc-1) + ")");
-		Magick::instance().nickserv.RemLive(params.ExtractWord(1, ": "));
-		mMessage::CheckDependancies(mMessage::NickNoExists, params.ExtractWord(1, ": "));
-	    }
-	    else
-	    {
-		LOG(LM_ERROR, "ERROR/REC_FORNONUSER", (
-			"KILL", source, params.ExtractWord(1, ": ")));
-	    }
 
+	if (!source.Contains(".") && !Magick::instance().nickserv.GetLive(source)->IsInChan(params.ExtractWord(1, ": ")))
+	    sraw(((proto.Tokens()
+		   && !proto.GetNonToken("KICK").empty())? proto.GetNonToken("KICK") : mstring("KICK")) + " " +
+		 params.ExtractWord(1, ": ") + " " + source + " :You are not in this channel");
+
+	// NOTE: as the message has already been broadcasted,
+	// we still need to acomodate for it.
+	Magick::instance().nickserv.GetLive(params.ExtractWord(2, ": "))->Kick(source, params.ExtractWord(1, ": "));
+    }
+    else if (msgtype == "KILL")
+    {
+	// :source/server KILL target :reason
+	// LOCAL clients ONLY (remotes are a QUIT).
+	//:PreZ KILL kick`kill`abuse :castle.srealm.net.au!PreZ (blah)
+	if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
+	{
+	    // sign on services again if they're killed.
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
+	    if (nlive->IsServices())
+	    {
+		LOG(LM_WARNING, "OTHER/KILLED",
+		    (params.ExtractWord(1, ": "),
+		     (!Magick::instance().nickserv.IsLive(source) ? source : Magick::instance().nickserv.GetLive(source)->
+		      Mask(Nick_Live_t::N_U_P_H))));
+		WLOCK2(("Server", "WaitIsOn"));
+		WaitIsOn.insert(params.ExtractWord(1, ": "));
+		sraw(((proto.Tokens()
+		       && !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " " +
+		     params.ExtractWord(1, ": "));
+	    }
+	    int wc = params.After(":").WordCount("!");
+
+	    nlive->Quit("Killed (" + params.After(":").After("!", wc - 1) + ")");
+	    Magick::instance().nickserv.RemLive(params.ExtractWord(1, ": "));
+	    mMessage::CheckDependancies(mMessage::NickNoExists, params.ExtractWord(1, ": "));
 	}
 	else
 	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+	    LOG(LM_ERROR, "ERROR/REC_FORNONUSER", ("KILL", source, params.ExtractWord(1, ": ")));
 	}
+
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_L(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_L", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -3873,82 +3794,83 @@ void Server::parse_L(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="LINKS")
-	{
-	    //:ChanServ LINKS :temple.magick.tm
-	    //:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
-	    //:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
+    if (msgtype == "LINKS")
+    {
+	//:ChanServ LINKS :temple.magick.tm
+	//:temple.magick.tm 364 ChanServ temple.magick.tm temple.magick.tm :0 Magick IRC Services Test Network
+	//:temple.magick.tm 365 ChanServ temple.magick.tm :End of /LINKS list.
 
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL &&
-		Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-								mVarArray(msgtype));
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :" + tmp.c_str());
+					   mVarArray(msgtype));
+
+		raw(((proto.Tokens()
+		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+		    source + " :" + tmp.c_str());
 		return;
 	    }
 	    else
 	    {
 		sraw("364 " + source + " " + Magick::instance().startup.Server_Name() + " " +
-		    Magick::instance().startup.Server_Name() + " :0 " + Magick::instance().startup.Server_Desc());
+		     Magick::instance().startup.Server_Name() + " :0 " + Magick::instance().startup.Server_Desc());
 
 		Server::list_t::iterator iter;
 		RLOCK2(("Server", "list"));
-		for(iter=Magick::instance().server.ListBegin();
-		    iter!=Magick::instance().server.ListEnd(); iter++)
+		for (iter = Magick::instance().server.ListBegin(); iter != Magick::instance().server.ListEnd(); iter++)
 		{
-		    map_entry<Server_t> server(iter->second);
-		    sraw("364 " + source + " " + server->Name() + " " +
-			server->Uplink() + " :" + server->Hops() + " " +
-			server->Description());
+		    map_entry < Server_t > server(iter->second);
+		    sraw("364 " + source + " " + server->Name() + " " + server->Uplink() + " :" + server->Hops() + " " +
+			 server->Description());
 		}
-	    }}
-
-	    sraw("365 " + source + " " + Magick::instance().startup.Server_Name() + " :End of /LINKS list.");
-
+	    }
 	}
-	else if (msgtype=="LIST")
-	{
-	    sraw("321 " + source + " Channel :Users  Name");
 
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL &&
-		Magick::instance().ircsvchandler->HTM_Level() > 3)
+	sraw("365 " + source + " " + Magick::instance().startup.Server_Name() + " :End of /LINKS list.");
+
+    }
+    else if (msgtype == "LIST")
+    {
+	sraw("321 " + source + " Channel :Users  Name");
+
+	{
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-								mVarArray(msgtype));
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :" + tmp.c_str());
+					   mVarArray(msgtype));
+
+		raw(((proto.Tokens()
+		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+		    source + " :" + tmp.c_str());
 		return;
 	    }
 	    else
 	    {
 		ChanServ::live_t::iterator iter;
-		{ RLOCK2(("ChanServ", "live"));
-		for (iter=Magick::instance().chanserv.LiveBegin();
-		     iter!=Magick::instance().chanserv.LiveEnd(); iter++)
 		{
-		    map_entry<Chan_Live_t> clive(iter->second);
-		    if (!(clive->HasMode("s") || clive->HasMode("p")))
-			sraw("322 " + source + " " + clive->Name() + " " +
-				mstring(clive->Users()) +  " :" +
-				clive->Topic());
-		}}
-	    }}
+		    RLOCK2(("ChanServ", "live"));
+		    for (iter = Magick::instance().chanserv.LiveBegin(); iter != Magick::instance().chanserv.LiveEnd(); iter++)
+		    {
+			map_entry < Chan_Live_t > clive(iter->second);
+			if (!(clive->HasMode("s") || clive->HasMode("p")))
+			    sraw("322 " + source + " " + clive->Name() + " " + mstring(clive->Users()) + " :" + clive->Topic());
+		    }
+		}
+	    }
+	}
 
-	    sraw("323 " + source + " :End of /LIST");
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+	sraw("323 " + source + " :End of /LIST");
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_M(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_M", (source, msgtype, params));
 
@@ -3961,76 +3883,76 @@ void Server::parse_M(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="MODE")
+    if (msgtype == "MODE")
+    {
+	// :source MODE source :mode
+	// :source MODE #channel mode params...
+	// :server MODE #channel mode params... creationtime
+	if (IsChan(params.ExtractWord(1, ": ")))
 	{
-	    // :source MODE source :mode
-	    // :source MODE #channel mode params...
-	    // :server MODE #channel mode params... creationtime
-	    if (IsChan(params.ExtractWord(1, ": ")))
+	    if (Magick::instance().chanserv.IsLive(params.ExtractWord(1, ": ")))
 	    {
-		if (Magick::instance().chanserv.IsLive(params.ExtractWord(1, ": ")))
-		{
-		    Magick::instance().chanserv.GetLive(params.ExtractWord(1, ": "))->Mode(source, params.After(" "));
-		}
-		else
-		{
-		    LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
-			"MODE", source, params.ExtractWord(1, ": ")));
-		}
+		Magick::instance().chanserv.GetLive(params.ExtractWord(1, ": "))->Mode(source, params.After(" "));
 	    }
 	    else
 	    {
-		if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
-		{
-		    Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->Mode(params.ExtractWord(2, ": "));
-		}
-		else
-		{
-		    LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
-			"MODE", source, params.ExtractWord(1, ": ")));
-		}
-	    }
-	}
-	else if (msgtype=="MODNICK")
-	{
-	    // forcably changed nicks (handle like nick)
-	}
-	else if (msgtype=="MOTD")
-	{
-	    if (mFile::Exists(Magick::instance().files.Motdfile()))
-	    {
-		sraw("375 " + source + " :Message Of The Day");
-		{ RLOCK(("IrcSvcHandler"));
-		if (Magick::instance().ircsvchandler != NULL &&
-		    Magick::instance().ircsvchandler->HTM_Level() > 3)
-		{
-		    mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-								mVarArray(msgtype));
-		    raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :" + tmp.c_str());
-		    return;
-		}
-		else
-		{
-		    vector<mstring> tmp = mFile::UnDump(Magick::instance().files.Motdfile());
-		    for (unsigned int i=0; i<tmp.size(); i++)
-			sraw("372 " + source + " :" + tmp[i].c_str());
-		}}
-		sraw("376 " + source + " :End of MOTD.");
-	    }
-	    else
-	    {
-		sraw("422 " + source + " :No MOTD exists.");
+		LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", ("MODE", source, params.ExtractWord(1, ": ")));
 	    }
 	}
 	else
 	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+	    if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
+	    {
+		Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->Mode(params.ExtractWord(2, ": "));
+	    }
+	    else
+	    {
+		LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", ("MODE", source, params.ExtractWord(1, ": ")));
+	    }
 	}
+    }
+    else if (msgtype == "MODNICK")
+    {
+	// forcably changed nicks (handle like nick)
+    }
+    else if (msgtype == "MOTD")
+    {
+	if (mFile::Exists(Magick::instance().files.Motdfile()))
+	{
+	    sraw("375 " + source + " :Message Of The Day");
+	    {
+		RLOCK(("IrcSvcHandler"));
+		if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+		{
+		    mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
+					       mVarArray(msgtype));
+
+		    raw(((proto.Tokens()
+			  && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+			source + " :" + tmp.c_str());
+		    return;
+		}
+		else
+		{
+		    vector < mstring > tmp = mFile::UnDump(Magick::instance().files.Motdfile());
+		    for (unsigned int i = 0; i < tmp.size(); i++)
+			sraw("372 " + source + " :" + tmp[i].c_str());
+		}
+	    }
+	    sraw("376 " + source + " :End of MOTD.");
+	}
+	else
+	{
+	    sraw("422 " + source + " :No MOTD exists.");
+	}
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_N", (source, msgtype, params));
 
@@ -4043,241 +3965,221 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="NAMES")
-	{
-	    // :source NAMES #channel our.server
+    if (msgtype == "NAMES")
+    {
+	// :source NAMES #channel our.server
 //:soul.darker.net 353 ChanServ = #chatzone :killkickabuseme @Aimee Jupiter @Allanon Ghost_ wildrose
 //:soul.darker.net 366 ChanServ #chatzone :End of /NAMES list.
-	    sraw("366 " + source + " " + params.ExtractWord(1, ": ") + " :End of /NAMES list.");
+	sraw("366 " + source + " " + params.ExtractWord(1, ": ") + " :End of /NAMES list.");
 
-	}
-	else if (msgtype=="NETINFO")
+    }
+    else if (msgtype == "NETINFO")
+    {
+	// Ignore -- unrealism
+    }
+    else if (msgtype == "NICK")
+    {
+	if (source.Contains("."))
 	{
-	    // Ignore -- unrealism
-	}
-	else if (msgtype=="NICK")
-	{
-	    if (source.Contains("."))
+	    // NEW USER
+	    mstring newnick = params.ExtractWord(1, ": ");
+
+	    // DONT kill when we do SQUIT protection.
+	    map < mstring, list < mstring > >::iterator i;
 	    {
-		// NEW USER
-		mstring newnick = params.ExtractWord(1, ": ");
-
-		// DONT kill when we do SQUIT protection.
-		map<mstring,list<mstring> >::iterator i;
-		{ RLOCK(("Server", "ToBeSquit"));
-		for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
+		RLOCK(("Server", "ToBeSquit"));
+		for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 		{
-		    list<mstring>::iterator k;
+		    list < mstring >::iterator k;
 		    WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
-		    for (k=i->second.begin(); k!=i->second.end(); k++)
+		    for (k = i->second.begin(); k != i->second.end(); k++)
 			if (k->IsSameAs(newnick, true))
 			{
-			    list<mstring>::iterator j = k;  j--;
+			    list < mstring >::iterator j = k;
+			    j--;
 			    i->second.erase(k);
-			    k=j;
+			    k = j;
 			}
-		}}
-
-		mstring server;
-		mstring modes;
-		switch (proto.Signon())
-		{
-		case 0000:
-		case 0001:
-		    break;
-		case 1000: // NICK nick hops time user host server :realname
-		case 1001: // NICK nick hops time user host server 1 :realname
-		case 1002: // NICK nick hops time user host server 0 real-host :realname
-		    server = GetServer(params.ExtractWord(6, ": "));
-		    break;
-		case 1003: // NICK nick hops time user real-host host server 0 :realname
-		    server = GetServer(params.ExtractWord(7, ": "));
-		    break;
-		case 2000: // NICK nick hops time mode user host server :realname
-		case 2001: // NICK nick hops time mode user host server 0 :realname
-		    modes = params.ExtractWord(4, ": ");
-		    server = GetServer(params.ExtractWord(7, ": "));
-		    break;
-		case 2002: // NICK nick hops time mode user host maskhost server 0 :realname
-		    modes = params.ExtractWord(4, ": ");
-		    server = GetServer(params.ExtractWord(8, ": "));
-		    break;
-		case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
-		    modes = params.ExtractWord(8, ": ");
-		    server = GetServer(params.ExtractWord(6, ": "));
-		    break;
 		}
-		if (Magick::instance().nickserv.IsLiveAll(newnick))
-		{
-		    map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(newnick);
-		    COM(("Previous SQUIT checking if %s == %s and %s == %s",
-			nlive->Squit().c_str(), server.c_str(),
-			nlive->SignonTime().DateTimeString().c_str(),
-			mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
-		    // IF the squit server = us, and the signon time matches
-		    if (nlive->Squit().IsSameAs(server, true) &&
-			nlive->SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
-		    {
-			nlive->ClearSquit(modes);
-			mMessage::CheckDependancies(mMessage::NickExists, newnick);
-			return;    // nice way to avoid repeating ones self :)
-		    }
-		    else
-		    {
-			nlive->Quit("SQUIT - " + nlive->Server());
-			Magick::instance().nickserv.RemLive(newnick);
-			mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
-		    }
-		}
+	    }
 
-		switch (proto.Signon())
+	    mstring server;
+	    mstring modes;
+
+	    switch (proto.Signon())
+	    {
+	    case 0000:
+	    case 0001:
+		break;
+	    case 1000:		// NICK nick hops time user host server :realname
+	    case 1001:		// NICK nick hops time user host server 1 :realname
+	    case 1002:		// NICK nick hops time user host server 0 real-host :realname
+		server = GetServer(params.ExtractWord(6, ": "));
+		break;
+	    case 1003:		// NICK nick hops time user real-host host server 0 :realname
+		server = GetServer(params.ExtractWord(7, ": "));
+		break;
+	    case 2000:		// NICK nick hops time mode user host server :realname
+	    case 2001:		// NICK nick hops time mode user host server 0 :realname
+		modes = params.ExtractWord(4, ": ");
+		server = GetServer(params.ExtractWord(7, ": "));
+		break;
+	    case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
+		modes = params.ExtractWord(4, ": ");
+		server = GetServer(params.ExtractWord(8, ": "));
+		break;
+	    case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+		modes = params.ExtractWord(8, ": ");
+		server = GetServer(params.ExtractWord(6, ": "));
+		break;
+	    }
+	    if (Magick::instance().nickserv.IsLiveAll(newnick))
+	    {
+		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+		COM(("Previous SQUIT checking if %s == %s and %s == %s", nlive->Squit().c_str(), server.c_str(),
+		     nlive->SignonTime().DateTimeString().c_str(),
+		     mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
+		// IF the squit server = us, and the signon time matches
+		if (nlive->Squit().IsSameAs(server, true)
+		    && nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
 		{
-		case 0000:
-		case 0001:
-		    break;
-		case 1000: // NICK nick hops time user host server :realname
-		    {
-			map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			    params.ExtractWord(2, ": "),
-			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    server,
-			    params.ExtractWord(4, ": "),
-			    params.ExtractWord(5, ": "),
-			    params.After(":")
-			));
-			Magick::instance().nickserv.AddLive(tmp);
-		    }
-		    break;
-		case 1001: // NICK nick hops time user host server 1 :realname
-		    {
-			map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			    params.ExtractWord(1, ": "),
-			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    server,
-			    params.ExtractWord(4, ": "),
-			    params.ExtractWord(5, ": "),
-			    params.After(":")
-			));
-			Magick::instance().nickserv.AddLive(tmp);
-		    }
-		    break;
-		case 1002: // NICK nick hops time user host server 0 real-host :realname
-		    {
-			map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			    params.ExtractWord(1, ": "),
-			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    server,
-			    params.ExtractWord(4, ": "),
-			    params.ExtractWord(8, ": "),
-			    params.After(":")
-			));
-			tmp->AltHost(params.ExtractWord(5, ": "));
-			Magick::instance().nickserv.AddLive(tmp);
-		    }
-		    break;
-		case 1003: // NICK nick hops time user real-host host server 0 :realname
-		    {
-			map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			    params.ExtractWord(1, ": "),
-			    static_cast<time_t>(atoul(params.ExtractWord(4, ": "))),
-			    server,
-			    params.ExtractWord(4, ": "),
-			    params.ExtractWord(5, ": "),
-			    params.After(":")
-			));
-			tmp->AltHost(params.ExtractWord(6, ": "));
-			Magick::instance().nickserv.AddLive(tmp);
-		    }
-		    break;
-		case 2000: // NICK nick hops time mode user host server :realname
-		    {
-			map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			    params.ExtractWord(1, ": "),
-			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    server,
-			    params.ExtractWord(5, ": "),
-			    params.ExtractWord(6, ": "),
-			    params.After(":")
-			));
-			tmp->Mode(modes);
-			Magick::instance().nickserv.AddLive(tmp);
-		    }
-		    break;
-		case 2001: // NICK nick hops time mode user host server 0 :realname
-		    {
-			map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			    params.ExtractWord(1, ": "),
-			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    server,
-			    params.ExtractWord(5, ": "),
-			    params.ExtractWord(6, ": "),
-			    params.After(":")
-			));
-			tmp->Mode(modes);
-			Magick::instance().nickserv.AddLive(tmp);
-		    }
-		    break;
-		case 2002: // NICK nick hops time mode user host maskhost server 0 :realname
-		    {
-			map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			    params.ExtractWord(1, ": "),
-			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    server,
-			    params.ExtractWord(5, ": "),
-			    params.ExtractWord(6, ": "),
-			    params.After(":")
-			));
-			tmp->Mode(modes);
-			tmp->AltHost(params.ExtractWord(7, ": "));
-			Magick::instance().nickserv.AddLive(tmp);
-		    }
-		    break;
-		case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
-		    {
-			map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			    params.ExtractWord(1, ": "),
-			    static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			    server,
-			    params.ExtractWord(4, ": "),
-			    params.ExtractWord(5, ": "),
-			    params.After(":")
-			));
-			tmp->Mode(modes);
-			tmp->AltHost(params.ExtractWord(9, ": "));
-			Magick::instance().nickserv.AddLive(tmp);
-		    }
-		    break;
+		    nlive->ClearSquit(modes);
+		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		    return;	// nice way to avoid repeating ones self :)
+		}
+		else
+		{
+		    nlive->Quit("SQUIT - " + nlive->Server());
+		    Magick::instance().nickserv.RemLive(newnick);
+		    mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
+		}
+	    }
+
+	    switch (proto.Signon())
+	    {
+	    case 0000:
+	    case 0001:
+		break;
+	    case 1000:		// NICK nick hops time user host server :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(2, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(3, ": "))), server,
+					params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 1001:		// NICK nick hops time user host server 1 :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(1, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(3, ": "))), server,
+					params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 1002:		// NICK nick hops time user host server 0 real-host :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(1, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(3, ": "))), server,
+					params.ExtractWord(4, ": "), params.ExtractWord(8, ": "), params.After(":")));
+		    tmp->AltHost(params.ExtractWord(5, ": "));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 1003:		// NICK nick hops time user real-host host server 0 :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(1, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(4, ": "))), server,
+					params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		    tmp->AltHost(params.ExtractWord(6, ": "));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 2000:		// NICK nick hops time mode user host server :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(1, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(3, ": "))), server,
+					params.ExtractWord(5, ": "), params.ExtractWord(6, ": "), params.After(":")));
+		    tmp->Mode(modes);
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 2001:		// NICK nick hops time mode user host server 0 :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(1, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(3, ": "))), server,
+					params.ExtractWord(5, ": "), params.ExtractWord(6, ": "), params.After(":")));
+		    tmp->Mode(modes);
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(1, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(3, ": "))), server,
+					params.ExtractWord(5, ": "), params.ExtractWord(6, ": "), params.After(":")));
+		    tmp->Mode(modes);
+		    tmp->AltHost(params.ExtractWord(7, ": "));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+		{
+		    map_entry < Nick_Live_t >
+			tmp(new
+			    Nick_Live_t(params.ExtractWord(1, ": "),
+					static_cast < time_t > (atoul(params.ExtractWord(3, ": "))), server,
+					params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		    tmp->Mode(modes);
+		    tmp->AltHost(params.ExtractWord(9, ": "));
+		    Magick::instance().nickserv.AddLive(tmp);
+		}
+		break;
+	    }
+
+	    if (Magick::instance().nickserv.IsLive(newnick))
+	    {
+		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+		if (nlive->Server().empty())
+		{
+		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		    KILL(Magick::instance().nickserv.FirstName(), newnick, nlive->RealName());
+		    return;
 		}
 
-		if (Magick::instance().nickserv.IsLive(newnick))
 		{
-		    map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(newnick);
-		    if (nlive->Server().empty())
-		    {
-			mMessage::CheckDependancies(mMessage::NickExists, newnick);
-			KILL(Magick::instance().nickserv.FirstName(), newnick,
-				nlive->RealName());
-			return;
-		    }
-
-		    { WLOCK2(("Server", "i_UserMax"));
+		    WLOCK2(("Server", "i_UserMax"));
 		    if (i_UserMax < Magick::instance().nickserv.LiveSize())
 		    {
 			MCB(i_UserMax);
 			i_UserMax = Magick::instance().nickserv.LiveSize();
 			MCE(i_UserMax);
-		    }}
+		    }
+		}
 
-		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
-		    // HAS to be AFTER the nickname is added to map.
-		    CommServ::list_t::iterator iter;
-		    mstring setmode;
-		    { RLOCK2(("CommServ", "list"));
-		    for (iter = Magick::instance().commserv.ListBegin();
-				    iter != Magick::instance().commserv.ListEnd();
-				    iter++)
+		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		// HAS to be AFTER the nickname is added to map.
+		CommServ::list_t::iterator iter;
+		mstring setmode;
+
+		{
+		    RLOCK2(("CommServ", "list"));
+		    for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		    {
-			map_entry<Committee_t> comm(iter->second);
+			map_entry < Committee_t > comm(iter->second);
 			if (comm->IsOn(newnick))
 			{
 			    if (iter->first == Magick::instance().commserv.ALL_Name())
@@ -4294,77 +4196,75 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 				setmode += Magick::instance().commserv.SADMIN_SetMode();
 
 			    MLOCK(("CommServ", "list", iter->first, "message"));
-			    for (comm->message = comm->MSG_begin();
-				comm->message != comm->MSG_end();
-				comm->message++)
+			    for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			    {
-				Magick::instance().servmsg.send(newnick, "[" + IRC_Bold +
-					    comm->Name() + IRC_Off + "] " +
-					    comm->message->Entry());
+				Magick::instance().servmsg.send(newnick,
+								"[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
+								comm->message->Entry());
 			    }
-			}
-		    }}
-		    if (!setmode.empty())
-		    {
-			mstring setmode2;
-			for (unsigned int j=0; j<setmode.size(); j++)
-			{
-			    if (setmode[j] != '+' && setmode[j] != '-' &&
-				setmode[j] != ' ' &&
-				!nlive->HasMode(setmode[j]))
-			        setmode2 += setmode[j];
-			}
-			SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
-		    }
-		    if (Magick::instance().nickserv.IsStored(newnick))
-		    {
-			map_entry<Nick_Stored_t> nstored = Magick::instance().nickserv.GetStored(newnick);
-			if (nstored->Forbidden())
-			{
-			    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
-				(ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-			}
-			else if (nstored->Protect() && !nstored->IsOnline())
-			{
-			    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
-				(ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
 			}
 		    }
 		}
-	    }
-	    else
-	    {
-		if (Magick::instance().nickserv.IsLive(source))
+		if (!setmode.empty())
 		{
-		   map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(source);
-		    // CHANGE NICK
-		   if (!source.IsSameAs(params.ExtractWord(1, ": ")))
-		   {
-			mstring newnick(params.ExtractWord(1, ": "));
-			set<mstring> wason = nlive->Name(newnick);
-			Magick::instance().nickserv.RemLive(source);
-			nlive->setDelete(false);
-			mMessage::CheckDependancies(mMessage::NickNoExists, source);
-			Magick::instance().nickserv.AddLive(nlive);
-			mMessage::CheckDependancies(mMessage::NickExists, newnick);
-			if (Magick::instance().nickserv.IsRecovered(source))
-			{
-			    Magick::instance().server.NICK(source,
-				(Magick::instance().startup.Ownuser() ?
-				source : Magick::instance().startup.Services_User()),
-				Magick::instance().startup.Services_Host(),
-				Magick::instance().startup.Server_Name(),
-				"Nickname Enforcer");
-			}
+		    mstring setmode2;
 
-			CommServ::list_t::iterator iter;
-			mstring setmode;
-			{ RLOCK2(("CommServ", "list"));
-			for (iter = Magick::instance().commserv.ListBegin();
-				    iter != Magick::instance().commserv.ListEnd();
-				    iter++)
+		    for (unsigned int j = 0; j < setmode.size(); j++)
+		    {
+			if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
+			    setmode2 += setmode[j];
+		    }
+		    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
+		}
+		if (Magick::instance().nickserv.IsStored(newnick))
+		{
+		    map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
+		    if (nstored->Forbidden())
+		    {
+			SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
+			     (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+		    }
+		    else if (nstored->Protect() && !nstored->IsOnline())
+		    {
+			SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
+			     (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+		    }
+		}
+	    }
+	}
+	else
+	{
+	    if (Magick::instance().nickserv.IsLive(source))
+	    {
+		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(source);
+		// CHANGE NICK
+		if (!source.IsSameAs(params.ExtractWord(1, ": ")))
+		{
+		    mstring newnick(params.ExtractWord(1, ": "));
+
+		    set < mstring > wason = nlive->Name(newnick);
+		    Magick::instance().nickserv.RemLive(source);
+		    nlive->setDelete(false);
+		    mMessage::CheckDependancies(mMessage::NickNoExists, source);
+		    Magick::instance().nickserv.AddLive(nlive);
+		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		    if (Magick::instance().nickserv.IsRecovered(source))
+		    {
+			Magick::instance().server.NICK(source,
+						       (Magick::instance().startup.Ownuser()? source : Magick::instance().
+							startup.Services_User()), Magick::instance().startup.Services_Host(),
+						       Magick::instance().startup.Server_Name(), "Nickname Enforcer");
+		    }
+
+		    CommServ::list_t::iterator iter;
+		    mstring setmode;
+
+		    {
+			RLOCK2(("CommServ", "list"));
+			for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd();
+			     iter++)
 			{
-			    map_entry<Committee_t> comm(iter->second);
+			    map_entry < Committee_t > comm(iter->second);
 			    if (wason.find(iter->first) == wason.end() && comm->IsOn(newnick))
 			    {
 				if (iter->first == Magick::instance().commserv.ALL_Name())
@@ -4381,95 +4281,96 @@ void Server::parse_N(mstring &source, const mstring &msgtype, const mstring &par
 				    setmode += Magick::instance().commserv.SADMIN_SetMode();
 
 				MLOCK(("CommServ", "list", iter->first, "message"));
-				for (comm->message = comm->MSG_begin();
-					comm->message != comm->MSG_end();
-					comm->message++)
+				for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 				{
-				    Magick::instance().servmsg.send(newnick, "[" + IRC_Bold +
-					    comm->Name() + IRC_Off + "] " +
-					    comm->message->Entry());
+				    Magick::instance().servmsg.send(newnick,
+								    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
+								    comm->message->Entry());
 				}
 			    }
-			}}
-			if (!setmode.empty())
-			{
-			    mstring setmode2;
-			    for (unsigned int j=0; j<setmode.size(); j++)
-			    {
-				if (setmode[j] != '+' && setmode[j] != '-' &&
-					setmode[j] != ' ' &&
-					!nlive->HasMode(setmode[j]))
-			        setmode2 += setmode[j];
-			    }
-			    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
 			}
-
-			if (Magick::instance().nickserv.IsStored(newnick))
-			{
-			    map_entry<Nick_Stored_t> nstored = Magick::instance().nickserv.GetStored(newnick);
-			    if (nstored->Forbidden())
-			    {
-				SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
-					(ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-			    }
-			    else if (nstored->Protect() && !nstored->IsOnline())
-			    {
-				SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
-					(ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-			    }
-			}
-
 		    }
-		    else
+		    if (!setmode.empty())
 		    {
-			nlive->Name(params.ExtractWord(1, ": "));
+			mstring setmode2;
+
+			for (unsigned int j = 0; j < setmode.size(); j++)
+			{
+			    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
+				setmode2 += setmode[j];
+			}
+			SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
 		    }
+
+		    if (Magick::instance().nickserv.IsStored(newnick))
+		    {
+			map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
+			if (nstored->Forbidden())
+			{
+			    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
+				 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+			}
+			else if (nstored->Protect() && !nstored->IsOnline())
+			{
+			    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
+				 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+			}
+		    }
+
+		}
+		else
+		{
+		    nlive->Name(params.ExtractWord(1, ": "));
 		}
 	    }
 	}
-	else if (msgtype=="NOTICE")
+    }
+    else if (msgtype == "NOTICE")
+    {
+	// :source NOTICE target/#channel :message
+	// NOTICE target :message
+	if (!Magick::instance().GotConnect())
+	    return;
+
+	mstring dest = params.ExtractWord(1, ": ");
+	char c = 0;
+
+	while (c != dest.first())
 	{
-	    // :source NOTICE target/#channel :message
-	    // NOTICE target :message
-	    if (!Magick::instance().GotConnect())
-		return;
-
-	    mstring dest = params.ExtractWord(1, ": ");
-	    char c = 0;
-	    while (c != dest.first())
+	    c = dest.first();
+	    switch (c)
 	    {
-		c = dest.first();
-		switch (c)
-		{
-		case '@': // Op Msg
-		case '%': // HalfOp Msg
-		case '+': // Voice Msg
-		    dest.erase(0, 0);
-		    break;
-		}
+	    case '@':		// Op Msg
+	    case '%':		// HalfOp Msg
+	    case '+':		// Voice Msg
+		dest.erase(0, 0);
+		break;
 	    }
+	}
 
-	    if (!IsChan(dest))
+	if (!IsChan(dest))
+	{
 	    {
-		{ RLOCK(("IrcSvcHandler"));
+		RLOCK(("IrcSvcHandler"));
 		if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
 		{
-		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
-			"NOTICE", source, params.ExtractWord(1, ": ")));
-		}}
+		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", ("NOTICE", source, params.ExtractWord(1, ": ")));
+		}
 	    }
 	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_O(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_O(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_O", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -4479,16 +4380,16 @@ void Server::parse_O(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="OPER")
-	{
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    if (msgtype == "OPER")
+    {
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_P(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_P", (source, msgtype, params));
 
@@ -4501,110 +4402,110 @@ void Server::parse_P(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="PART")
-	{
-	    if (source.Contains("."))
-		return;
+    if (msgtype == "PART")
+    {
+	if (source.Contains("."))
+	    return;
 
-	    // :source PART #channel :reason
-	    Magick::instance().nickserv.GetLive(source)->Part(params.ExtractWord(1, ": "));
+	// :source PART #channel :reason
+	Magick::instance().nickserv.GetLive(source)->Part(params.ExtractWord(1, ": "));
+    }
+    else if (msgtype == "PASS")
+    {
+	if (!source.Contains("."))
+	    return;
+
+	/* TRACE ... (usually leave off) */
+	/*
+	 * for (int i=0; i<tt_MAX; i++)
+	 * Trace::TurnSet(static_cast<threadtype_enum>(i), 0xffff);
+	 */
+
+	// PASS :password
+	if (params.ExtractWord(1, ": ") != Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.second)
+	{
+	    LOG(LM_ERROR, "OTHER/WRONGPASS", (Magick::instance().CurrentServer()));
+	    CP(("Server password mismatch.  Closing socket."));
+	    raw(((proto.Tokens()
+		  && !proto.GetNonToken("ERROR").empty())? proto.GetNonToken("ERROR") : mstring("ERROR")) +
+		" :No Access (passwd mismatch) [" + Magick::instance().CurrentServer() + "]");
+	    raw(((proto.Tokens()
+		  && !proto.GetNonToken("ERROR").empty())? proto.GetNonToken("ERROR") : mstring("ERROR")) +
+		" :Closing Link: [" + Magick::instance().CurrentServer() + "] (Bad Password)");
+	    sraw("464 " + Magick::instance().CurrentServer() + " :" + "Password Incorrect");
+	    Magick::instance().Disconnect();
 	}
-	else if (msgtype=="PASS")
+    }
+    else if (msgtype == "PING")
+    {
+	// PING :some.server
+	// :some.server PING some.server :our.server
+	sraw(((proto.Tokens()
+	       && !proto.GetNonToken("PONG").empty())? proto.GetNonToken("PONG") : mstring("PONG")) + " " +
+	     Magick::instance().startup.Server_Name() + " :" + source);
+    }
+    else if (msgtype == "PONG")
+    {
+	// Receive info back for LAG MONITOR.
+	// we'll send out ':our.server PING our.server :remote.server'
+	// for EACH server, at the same time execute Ping() on it.
+
+	// :server PONG server :our.server
+	if (IsList(source))
+	    GetList(source)->Pong();
+
+    }
+    else if (msgtype == "PRIVMSG")
+    {
+	// :source PRIVMSG target/#channel :message
+	if (!Magick::instance().GotConnect())
+	    return;
+
+	mstring dest = params.ExtractWord(1, ": ");
+	char c = 0;
+
+	while (c != dest.first())
 	{
-	    if (!source.Contains("."))
-		return;
-
-	    /* TRACE ... (usually leave off) */
-	    /*
-	    for (int i=0; i<tt_MAX; i++)
-		Trace::TurnSet(static_cast<threadtype_enum>(i), 0xffff);
-	    */
-
-	    // PASS :password
-	    if (params.ExtractWord(1, ": ") != Magick::instance().startup.Server(Magick::instance().CurrentServer()).second.second)
+	    c = dest.first();
+	    switch (c)
 	    {
-		LOG(LM_ERROR, "OTHER/WRONGPASS", (
-			Magick::instance().CurrentServer()));
-		CP(("Server password mismatch.  Closing socket."));
-		raw(((proto.Tokens() && !proto.GetNonToken("ERROR").empty()) ?
-			proto.GetNonToken("ERROR") : mstring("ERROR")) +
-			" :No Access (passwd mismatch) [" + Magick::instance().CurrentServer() + "]");
-		raw(((proto.Tokens() && !proto.GetNonToken("ERROR").empty()) ?
-			proto.GetNonToken("ERROR") : mstring("ERROR")) +
-			" :Closing Link: [" + Magick::instance().CurrentServer() + "] (Bad Password)");
-		sraw("464 " + Magick::instance().CurrentServer() + " :" + "Password Incorrect");
-		Magick::instance().Disconnect();
+	    case '@':		// Op Msg
+	    case '%':		// HalfOp Msg
+	    case '+':		// Voice Msg
+		dest.erase(0, 0);
+		break;
 	    }
 	}
-	else if (msgtype=="PING")
-	{
-	    // PING :some.server
-	    // :some.server PING some.server :our.server
-	    sraw(((proto.Tokens() && !proto.GetNonToken("PONG").empty()) ?
-		proto.GetNonToken("PONG") : mstring("PONG")) +
-		" " + Magick::instance().startup.Server_Name() + " :" + source);
-	}
-	else if (msgtype=="PONG")
-	{
-	    // Receive info back for LAG MONITOR.
-	    // we'll send out ':our.server PING our.server :remote.server'
-	    // for EACH server, at the same time execute Ping() on it.
 
-	    // :server PONG server :our.server
-	    if (IsList(source))
-		GetList(source)->Pong();
-
-	}
-	else if (msgtype=="PRIVMSG")
+	if (!IsChan(dest))
 	{
-	    // :source PRIVMSG target/#channel :message
-	    if (!Magick::instance().GotConnect())
-		return;
-
-	    mstring dest = params.ExtractWord(1, ": ");
-	    char c = 0;
-	    while (c != dest.first())
 	    {
-		c = dest.first();
-		switch (c)
-		{
-		case '@': // Op Msg
-		case '%': // HalfOp Msg
-		case '+': // Voice Msg
-		    dest.erase(0, 0);
-		    break;
-		}
-	    }
-
-	    if (!IsChan(dest))
-	    {
-		{ RLOCK(("IrcSvcHandler"));
+		RLOCK(("IrcSvcHandler"));
 		if (Magick::instance().ircsvchandler != NULL && !Magick::instance().ircsvchandler->Burst())
 		{
-		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
-			"PRIVMSG", source, params.ExtractWord(1, ": ")));
-		}}
+		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", ("PRIVMSG", source, params.ExtractWord(1, ": ")));
+		}
 	    }
 	}
-	else if (msgtype=="PROTOCTL")
-	{
-	    if (!source.Contains("."))
-		return;
+    }
+    else if (msgtype == "PROTOCTL")
+    {
+	if (!source.Contains("."))
+	    return;
 
-	    // Turn on tokens dynamically ...
-	    if ((" " + params + " ").Contains(" TOKEN "))
-		proto.Tokens(true);
-	    if ((" " + params + " ").Contains(" SSJOIN ") ||
-		(" " + params + " ").Contains(" SJOIN "))
-		proto.SJoin(true);
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+	// Turn on tokens dynamically ...
+	if ((" " + params + " ").Contains(" TOKEN "))
+	    proto.Tokens(true);
+	if ((" " + params + " ").Contains(" SSJOIN ") || (" " + params + " ").Contains(" SJOIN "))
+	    proto.SJoin(true);
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_Q(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_Q(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_Q", (source, msgtype, params));
 
@@ -4617,77 +4518,73 @@ void Server::parse_Q(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="QUIT")
+    if (msgtype == "QUIT")
+    {
+	// :source QUIT :reason
+	// :source QUIT :server server
+
+	if (source.Contains("."))
+	    return;
+
+	// OK, 4 words (always for squit), the 4nd word is a server
+	// and the 3rd word is the uplink of the 4th word (a server)
+	if (params.WordCount(": ") == 2 && IsList(params.ExtractWord(2, ": "))
+	    && GetList(params.ExtractWord(2, ": "))->Uplink().IsSameAs(params.ExtractWord(1, ": "), true))
 	{
-	    // :source QUIT :reason
-	    // :source QUIT :server server
+	    // Suspected SQUIT
+	    //
+	    // - Add user to ToBeSquit map under servername
+	    // - Add data(4) to ServerSquit map with a timer to clear
+	    //
+	    // IF no SQUIT message received, user is QUIT and server
+	    // is removed from ServerSquit map -- ie. its FAKE!
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(source);
+	    nlive->SetSquit();
+	    WLOCK2(("Server", "ToBeSquit"));
+	    MCB(ToBeSquit.size());
+	    ToBeSquit[params.ExtractWord(2, ": ").LowerCase()].push_back(source.LowerCase());
+	    LOG(LM_NOTICE, "OTHER/SQUIT_FIRST", (params.ExtractWord(2, ": "), params.ExtractWord(1, ": ")));
 
-	    if (source.Contains("."))
-		return;
-
-	    // OK, 4 words (always for squit), the 4nd word is a server
-	    // and the 3rd word is the uplink of the 4th word (a server)
-	    if (params.WordCount(": ")==2 && IsList(params.ExtractWord(2, ": ")) &&
-		GetList(params.ExtractWord(2, ": "))->Uplink().IsSameAs(params.ExtractWord(1, ": "), true))
+	    WLOCK3(("Server", "ServerSquit"));
+	    if (ServerSquit.find(nlive->Server()) == ServerSquit.end())
 	    {
-		// Suspected SQUIT
-		//
-		// - Add user to ToBeSquit map under servername
-		// - Add data(4) to ServerSquit map with a timer to clear
-		//
-		// IF no SQUIT message received, user is QUIT and server
-		// is removed from ServerSquit map -- ie. its FAKE!
-		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(source);
-		nlive->SetSquit();
-		WLOCK2(("Server", "ToBeSquit"));
-		MCB(ToBeSquit.size());
-		ToBeSquit[params.ExtractWord(2, ": ").LowerCase()].push_back(source.LowerCase());
-		LOG(LM_NOTICE, "OTHER/SQUIT_FIRST", (
-			params.ExtractWord(2, ": "),
-			params.ExtractWord(1, ": ")));
-
-		WLOCK3(("Server", "ServerSquit"));
-		if (ServerSquit.find(nlive->Server()) == ServerSquit.end())
-		{
-		    CB(1, ServerSquit.size());
-		    while (Magick::instance().Pause())
-			ACE_OS::sleep(1);
-		    ServerSquit[nlive->Server()] =
-			Magick::instance().reactor().schedule_timer(&tobesquit,
-				new mstring(nlive->Server()),
-				ACE_Time_Value(10));
-		    CE(1, ServerSquit.size());
-		}
-		MCE(ToBeSquit.size());
+		CB(1, ServerSquit.size());
+		while (Magick::instance().Pause())
+		    ACE_OS::sleep(1);
+		ServerSquit[nlive->Server()] =
+		    Magick::instance().reactor().schedule_timer(&tobesquit, new mstring(nlive->Server()), ACE_Time_Value(10));
+		CE(1, ServerSquit.size());
 	    }
-	    else
-	    {
-		// Normal quit ...
-
-		// Kind of illegal to do, but accomodate anyway, re-signon
-		// services if someone quits them (how?!?)
-
-		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(source);
-		if (nlive->IsServices())
-		    sraw(((proto.Tokens() && !proto.GetNonToken("ISON").empty()) ?
-			proto.GetNonToken("ISON") : mstring("ISON")) +
-			" " + source);
-		nlive->Quit(params.After(":"));
-		Magick::instance().nickserv.RemLive(source);
-	    }
-	    mMessage::CheckDependancies(mMessage::NickNoExists, source);
+	    MCE(ToBeSquit.size());
 	}
 	else
 	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+	    // Normal quit ...
+
+	    // Kind of illegal to do, but accomodate anyway, re-signon
+	    // services if someone quits them (how?!?)
+
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(source);
+	    if (nlive->IsServices())
+		sraw(((proto.Tokens()
+		       && !proto.GetNonToken("ISON").empty())? proto.GetNonToken("ISON") : mstring("ISON")) + " " + source);
+	    nlive->Quit(params.After(":"));
+	    Magick::instance().nickserv.RemLive(source);
 	}
+	mMessage::CheckDependancies(mMessage::NickNoExists, source);
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_R(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_R(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_R", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -4697,31 +4594,31 @@ void Server::parse_R(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="RAKILL")
-	{
-	    // We will ignore AKILLS because they're not relivant to us.
-	    // we will not be akilling our own clients ;P
-	}
-	else if (msgtype=="REHASH")
-	{
-	    // Will we ever get this via. net??  ignore.
-	}
-	else if (msgtype=="RESTART")
-	{
-	    // Will we ever get this via. net??  ignore.
-	}
-	else if (msgtype=="RQLINE")
-	{
-	    // We will ignore RQLINES because they're not relivant to us.
-	    // we will not be qlining our own clients ;P
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    if (msgtype == "RAKILL")
+    {
+	// We will ignore AKILLS because they're not relivant to us.
+	// we will not be akilling our own clients ;P
+    }
+    else if (msgtype == "REHASH")
+    {
+	// Will we ever get this via. net??  ignore.
+    }
+    else if (msgtype == "RESTART")
+    {
+	// Will we ever get this via. net??  ignore.
+    }
+    else if (msgtype == "RQLINE")
+    {
+	// We will ignore RQLINES because they're not relivant to us.
+	// we will not be qlining our own clients ;P
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_S", (source, msgtype, params));
 
@@ -4734,595 +4631,551 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="SETHOST")
-	{
-	    if (source.Contains("."))
-		return;
+    if (msgtype == "SETHOST")
+    {
+	if (source.Contains("."))
+	    return;
 
-	    // From UnrealIRCD
-	    // :source SVSHOST newhost
-	    if (Magick::instance().nickserv.IsLive(source))
+	// From UnrealIRCD
+	// :source SVSHOST newhost
+	if (Magick::instance().nickserv.IsLive(source))
+	{
+	    Magick::instance().nickserv.GetLive(source)->AltHost(params.ExtractWord(1, ": "));
+	}
+    }
+    else if (msgtype == "SETTIME")
+    {
+	// RWORLDism -- ignore.
+    }
+    else if (msgtype == "SERVER")
+    {
+	if (!source.Contains("."))
+	    return;
+
+	// SERVER downlink hops :description
+	// :uplink SERVER downlink hops :description
+
+	unsigned long numeric = 0;
+
+	if (source.IsSameAs(Magick::instance().startup.Server_Name(), true))
+	{
+	    if (Magick::instance().startup.IsAllowed(params.ExtractWord(1, ": "), source))
 	    {
-		Magick::instance().nickserv.GetLive(source)->AltHost(params.ExtractWord(1, ": "));
+		// unreal puts the numeric in the desctiption, ie.
+		// SERVER downlink hops :Uversion-servopts-numeric description
+		//        Only this way for direct links --^^^^^^^
+		if (proto.Number() >= 70 && proto.Number() <= 79)
+		{
+		    numeric = atoi(params.After(":").ExtractWord(3, "-"));
+		    map_entry < Server_t >
+			tmp(new
+			    Server_t(params.ExtractWord(1, ": ").LowerCase(),
+				     atoi(params.ExtractWord(2, ": ").LowerCase().c_str()), params.After(":").After(" "),
+				     numeric));
+		    AddList(tmp);
+		}
+		else
+		{
+		    map_entry < Server_t >
+			tmp(new
+			    Server_t(params.ExtractWord(1, ": ").LowerCase(),
+				     atoi(params.ExtractWord(2, ": ").LowerCase().c_str()), params.After(":")));
+		    if (proto.Numeric())
+		    {
+			numeric = atoi(params.ExtractWord(proto.Numeric(), ": "));
+			tmp->Numeric(numeric);
+		    }
+		    AddList(tmp);
+		}
+
+		LOG(LM_INFO, "OTHER/LINK", (params.ExtractWord(1, ": "), Magick::instance().startup.Server_Name()));
+		Magick::instance().GotConnect(true);
+		SignOnAll();
+		mMessage::CheckDependancies(mMessage::ServerExists, params.ExtractWord(1, ": "));
+		if (proto.Numeric())
+		    mMessage::CheckDependancies(mMessage::ServerExists, ultoa(numeric));
+	    }
+	    else
+	    {
+//                  ANNOUNCE(Magick::instance().operserv.FirstName(),
+//                      "MISC/INVALIDLINK", (
+//                      params.ExtractWord(1, ": "),
+//                      Magick::instance().startup.Server_Name()));
+		LOG(LM_ERROR, "OTHER/INVALIDLINK", (params.ExtractWord(1, ": "), Magick::instance().startup.Server_Name()));
+		raw("SQUIT " + params.ExtractWord(1, ": ") + " :" + Magick::instance().getMessage("MISC/MAYNOTLINK"));
+		Magick::instance().Disconnect();
 	    }
 	}
-	else if (msgtype=="SETTIME")
+	else
 	{
-	    // RWORLDism -- ignore.
-	}
-	else if (msgtype=="SERVER")
-	{
-	    if (!source.Contains("."))
-		return;
-
-	    // SERVER downlink hops :description
-	    // :uplink SERVER downlink hops :description
-
-	    unsigned long numeric = 0;
-	    if (source.IsSameAs(Magick::instance().startup.Server_Name(), true))
+	    if (Magick::instance().startup.IsAllowed(params.ExtractWord(1, ": "), source))
 	    {
-		if (Magick::instance().startup.IsAllowed(params.ExtractWord(1, ": "), source))
+		if (IsList(source))
 		{
-		    // unreal puts the numeric in the desctiption, ie.
-		    // SERVER downlink hops :Uversion-servopts-numeric description
-		    //        Only this way for direct links --^^^^^^^
-		    if (proto.Number() >= 70 && proto.Number() <= 79)
+		    map_entry < Server_t >
+			tmp(new
+			    Server_t(params.ExtractWord(1, ": ").LowerCase(), source,
+				     atoi(params.ExtractWord(2, ": ").LowerCase().c_str()), params.After(":")));
+		    if (proto.Numeric())
 		    {
-			numeric = atoi(params.After(":").ExtractWord(3, "-"));
-			map_entry<Server_t> tmp(new Server_t(
-				params.ExtractWord(1, ": ").LowerCase(),
-				atoi(params.ExtractWord(2, ": ").LowerCase().c_str()),
-				params.After(":").After(" "), numeric));
-			AddList(tmp);
+			numeric = atoi(params.ExtractWord(proto.Numeric(), ": "));
+			tmp->Numeric(numeric);
 		    }
-		    else
-		    {
-			map_entry<Server_t> tmp(new Server_t(
-				params.ExtractWord(1, ": ").LowerCase(),
-				atoi(params.ExtractWord(2, ": ").LowerCase().c_str()),
-				params.After(":")));
-			if (proto.Numeric())
-			{
-			    numeric = atoi(params.ExtractWord(proto.Numeric(), ": "));
-			    tmp->Numeric(numeric);
-			}
-			AddList(tmp);
-		    }
+		    AddList(tmp);
+		    LOG(LM_INFO, "OTHER/LINK", (params.ExtractWord(1, ": "), source));
 
-		    LOG(LM_INFO, "OTHER/LINK", (
-			params.ExtractWord(1, ": "),
-			Magick::instance().startup.Server_Name()));
-		    Magick::instance().GotConnect(true);
-		    SignOnAll();
 		    mMessage::CheckDependancies(mMessage::ServerExists, params.ExtractWord(1, ": "));
 		    if (proto.Numeric())
 			mMessage::CheckDependancies(mMessage::ServerExists, ultoa(numeric));
 		}
 		else
 		{
-//		    ANNOUNCE(Magick::instance().operserv.FirstName(),
-//			"MISC/INVALIDLINK", (
-//			params.ExtractWord(1, ": "),
-//			Magick::instance().startup.Server_Name()));
-		    LOG(LM_ERROR, "OTHER/INVALIDLINK", (
-			params.ExtractWord(1, ": "),
-			Magick::instance().startup.Server_Name()));
-		    raw("SQUIT " + params.ExtractWord(1, ": ") + " :" +
-			Magick::instance().getMessage("MISC/MAYNOTLINK"));
-		    Magick::instance().Disconnect();
+		    LOG(LM_ERROR, "ERROR/REC_FORNONSERVER", ("SERVER", params.ExtractWord(1, ": "), source));
 		}
 	    }
 	    else
 	    {
-		if (Magick::instance().startup.IsAllowed(params.ExtractWord(1, ": "), source))
-		{
-		    if (IsList(source))
-		    {
-			map_entry<Server_t> tmp(new Server_t(
-				params.ExtractWord(1, ": ").LowerCase(), source,
-				atoi(params.ExtractWord(2, ": ").LowerCase().c_str()),
-				params.After(":")));
-			if (proto.Numeric())
-			{
-			    numeric = atoi(params.ExtractWord(proto.Numeric(), ": "));
-			    tmp->Numeric(numeric);
-			}
-			AddList(tmp);
-			LOG(LM_INFO, "OTHER/LINK", (
-			    params.ExtractWord(1, ": "), source));
+		ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/INVALIDLINK", (params.ExtractWord(1, ": "), source));
+		LOG(LM_ERROR, "OTHER/INVALIDLINK", (params.ExtractWord(1, ": "), source));
+		sraw("SQUIT " + params.ExtractWord(1, ": ") + " :" + Magick::instance().getMessage("MISC/MAYNOTLINK"));
+	    }
+	}
+    }
+    else if (msgtype == "SGLINE")
+    {
+	// like we care ...
+    }
+    else if (msgtype == "SILENCE")
+    {
+	// Another one to ignore ...
+    }
+    else if (msgtype == "SJOIN")
+    {
+	//:server SJOIN chan-stamp #channel +modes extra-params :@opd_nick +voice_nick nick 
+	//:relic.devel.relic.net SJOIN 952608432 #blah + <none> :@Kwahraw +PreZ Zephyr
 
-			mMessage::CheckDependancies(mMessage::ServerExists, params.ExtractWord(1, ": "));
-			if (proto.Numeric())
-			    mMessage::CheckDependancies(mMessage::ServerExists, ultoa(numeric));
+	//:user SJOIN chan-stamp #channel #channel etc...
+
+	if (source.Contains("."))
+	{
+	    mstring chan(params.ExtractWord(2, ": "));
+
+	    unsigned int i;
+
+	    vector < mstring > users;
+	    mstring modes;
+
+	    if (params.Before(":").WordCount(" ") >= 3)
+		modes = params.Before(":").ExtractWord(3, " ");
+	    mstring mode_params, nick;
+	    bool oped, halfoped, voiced, owner, prot, isban, isexcept;
+
+	    if (modes.length())
+	    {
+		for (i = 0; i < proto.ChanModeArg().length(); i++)
+		    if (modes.Contains(proto.ChanModeArg()[i]))
+		    {
+			mode_params = params.Before(":").After(" ", 3);
+			break;
+		    }
+	    }
+	    for (i = 1; i <= params.After(":").WordCount(" "); i++)
+	    {
+		nick = params.After(":").ExtractWord(i, " ");
+		if (!nick.empty())
+		{
+		    char c = 0;
+
+		    oped = halfoped = voiced = owner = prot = false;
+		    isban = isexcept = false;
+		    while (c != nick[0u])
+		    {
+			c = nick[0u];
+			switch (nick[0u])
+			{
+			case '@':
+			    oped = true;
+			    nick.erase(0, 0);
+			    break;
+			case '%':
+			    halfoped = true;
+			    nick.erase(0, 0);
+			    break;
+			case '+':
+			    voiced = true;
+			    nick.erase(0, 0);
+			    break;
+			case '*':
+			    owner = true;
+			    nick.erase(0, 0);
+			    break;
+			case '~':
+			    prot = true;
+			    nick.erase(0, 0);
+			    break;
+			case '&':
+			    isban = true;
+			    nick.erase(0, 0);
+			    break;
+			case '"':
+			    isexcept = true;
+			    nick.erase(0, 0);
+			    break;
+			}
+		    }
+		    if (!(isban || isexcept) && Magick::instance().nickserv.IsLive(nick))
+		    {
+			if (oped)
+			{
+			    modes += "o";
+			    mode_params += " " + nick;
+			}
+			if (halfoped)
+			{
+			    modes += "h";
+			    mode_params += " " + nick;
+			}
+			if (voiced)
+			{
+			    modes += "v";
+			    mode_params += " " + nick;
+			}
+			if (owner)
+			{
+			    modes += "q";
+			    mode_params += " " + nick;
+			}
+			if (prot)
+			{
+			    modes += "a";
+			    mode_params += " " + nick;
+			}
+
+			users.push_back(nick);
+		    }
+		    else if (isban)
+		    {
+			modes += "b";
+			mode_params += " " + nick;
+			nick.erase();
+		    }
+		    else if (isexcept)
+		    {
+			modes += "e";
+			mode_params += " " + nick;
+			nick.erase();
 		    }
 		    else
 		    {
-			LOG(LM_ERROR, "ERROR/REC_FORNONSERVER", (
-				"SERVER", params.ExtractWord(1, ": "), source));
+			LOG(LM_WARNING, "ERROR/REC_FORNONUSER", ("SJOIN", source, nick));
+			if (oped)
+			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'o', source, nick, chan));
+			if (halfoped)
+			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'h', source, nick, chan));
+			if (voiced)
+			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'v', source, nick, chan));
+			if (owner)
+			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'q', source, nick, chan));
+			if (prot)
+			    LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", ('+', 'a', source, nick, chan));
 		    }
-		}
-		else
-		{
-		    ANNOUNCE(Magick::instance().operserv.FirstName(),
-			"MISC/INVALIDLINK", (
-			params.ExtractWord(1, ": "), source));
-		    LOG(LM_ERROR, "OTHER/INVALIDLINK", (
-			params.ExtractWord(1, ": "), source));
-		    sraw("SQUIT " + params.ExtractWord(1, ": ") + " :" +
-			Magick::instance().getMessage("MISC/MAYNOTLINK"));
 		}
 	    }
-	}
-	else if (msgtype=="SGLINE")
-	{
-	    // like we care ...
-	}
-	else if (msgtype=="SILENCE")
-	{
-	    // Another one to ignore ...
-	}
-	else if (msgtype=="SJOIN")
-	{
-	    //:server SJOIN chan-stamp #channel +modes extra-params :@opd_nick +voice_nick nick 
-	    //:relic.devel.relic.net SJOIN 952608432 #blah + <none> :@Kwahraw +PreZ Zephyr
-	    
-	    //:user SJOIN chan-stamp #channel #channel etc...
 
-	    if (source.Contains("."))
+	    if (users.size())
 	    {
-		mstring chan(params.ExtractWord(2, ": "));
-
-		unsigned int i;
-		vector<mstring> users;
-		mstring modes;
-		if (params.Before(":").WordCount(" ") >= 3)
-		    modes = params.Before(":").ExtractWord(3, " ");
-		mstring mode_params, nick;
-		bool oped, halfoped, voiced, owner, prot, isban, isexcept;
-		if (modes.length())
+		for (i = 0; i < users.size(); i++)
 		{
-		    for (i=0; i < proto.ChanModeArg().length(); i++)
-			if (modes.Contains(proto.ChanModeArg()[i]))
+		    Magick::instance().nickserv.GetLive(users[i])->Join(chan);
+		}
+		CP(("MODE TO %s: %s", chan.LowerCase().c_str(), (modes + " " + mode_params).c_str()));
+		if (Magick::instance().chanserv.IsLive(chan))
+		{
+		    Magick::instance().chanserv.GetLive(chan)->Mode(source, modes + " " + mode_params);
+		}
+	    }
+	    else if (modes.length() > 1)
+	    {
+		LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", ("MODE", source, chan));
+	    }
+	}
+	else
+	{
+	    unsigned int i;
+	    bool oped, halfoped, voiced, owner, prot;
+	    mstring chan;
+
+	    if (Magick::instance().nickserv.IsLive(source))
+	    {
+		for (i = 2; i <= params.WordCount(":, "); i++)
+		{
+		    char c = 0;
+
+		    chan = params.ExtractWord(i, ":, ");
+		    oped = halfoped = voiced = owner = prot = false;
+		    while (c != chan[0u])
+		    {
+			c = chan[0u];
+			switch (chan[0u])
 			{
-			    mode_params = params.Before(":").After(" ", 3);
+			case '@':
+			    oped = true;
+			    chan.erase(0, 0);
+			    break;
+			case '%':
+			    halfoped = true;
+			    chan.erase(0, 0);
+			    break;
+			case '+':
+			    voiced = true;
+			    chan.erase(0, 0);
+			    break;
+			case '*':
+			    owner = true;
+			    chan.erase(0, 0);
+			    break;
+			case '~':
+			    prot = true;
+			    chan.erase(0, 0);
 			    break;
 			}
-		}
-		for (i=1; i <= params.After(":").WordCount(" "); i++)
-		{
-		    nick = params.After(":").ExtractWord(i, " ");
-		    if (!nick.empty())
-		    {
-			char c = 0;
-			oped = halfoped = voiced = owner = prot = false;
-			isban = isexcept = false;
-			while (c != nick[0u])
-			{
-			    c = nick[0u];
-			    switch(nick[0u])
-			    {
-			    case '@':
-				oped = true;
-				nick.erase(0, 0);
-			        break;
-			    case '%':
-				halfoped = true;
-				nick.erase(0, 0);
-			        break;
-			    case '+':
-				voiced = true;
-				nick.erase(0, 0);
-			        break;
-			    case '*':
-				owner = true;
-				nick.erase(0, 0);
-			        break;
-			    case '~':
-				prot = true;
-				nick.erase(0, 0);
-			        break;
-			    case '&':
-				isban = true;
-				nick.erase(0, 0);
-			        break;
-			    case '"':
-				isexcept = true;
-				nick.erase(0, 0);
-			        break;
-			    }
-			}
-			if (!(isban || isexcept) &&
-			    Magick::instance().nickserv.IsLive(nick))
-			{
-			    if (oped)
-			    {
-				modes += "o";
-				mode_params += " " + nick;
-			    }
-			    if (halfoped)
-			    {
-				modes += "h";
-				mode_params += " " + nick;
-			    }
-			    if (voiced)
-			    {
-				modes += "v";
-				mode_params += " " + nick;
-			    }
-			    if (owner)
-			    {
-				modes += "q";
-				mode_params += " " + nick;
-			    }
-			    if (prot)
-			    {
-				modes += "a";
-				mode_params += " " + nick;
-			    }
-
-			    users.push_back(nick);
-			}
-			else if (isban)
-			{
-			    modes += "b";
-			    mode_params += " " + nick;
-			    nick.erase();
-			}
-			else if (isexcept)
-			{
-			    modes += "e";
-			    mode_params += " " + nick;
-			    nick.erase();
-			}
-			else
-			{
-			    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
-				"SJOIN", source, nick));
-			    if (oped)
-				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
-					'+', 'o', source, nick, chan));
-			    if (halfoped)
-				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
-					'+', 'h', source, nick, chan));
-			    if (voiced)
-				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
-					'+', 'v', source, nick, chan));
-			    if (owner)
-				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
-					'+', 'q', source, nick, chan));
-			    if (prot)
-				LOG(LM_WARNING, "ERROR/MODE_NOTINCHAN", (
-					'+', 'a', source, nick, chan));
-			}
 		    }
-		}
-
-		if (users.size())
-		{
-		    for (i=0; i<users.size(); i++)
-		    {
-			Magick::instance().nickserv.GetLive(users[i])->Join(chan);
-		    }
-		    CP(("MODE TO %s: %s", chan.LowerCase().c_str(),
-			(modes + " " + mode_params).c_str()));
-		    if (Magick::instance().chanserv.IsLive(chan))
-		    {
-			Magick::instance().chanserv.GetLive(chan)->Mode(
-				source, modes + " " + mode_params);
-		    }
-		}
-		else if (modes.length() > 1)
-		{
-		    LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", (
-			"MODE", source, chan));
+		    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(source);
+		    nlive->Join(chan);
+		    map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(chan);
+		    if (oped)
+			clive->Mode(nlive->Server(), "+o " + source);
+		    if (halfoped)
+			clive->Mode(nlive->Server(), "+h " + source);
+		    if (voiced)
+			clive->Mode(nlive->Server(), "+v " + source);
+		    if (owner)
+			clive->Mode(nlive->Server(), "+q " + source);
+		    if (prot)
+			clive->Mode(nlive->Server(), "+a " + source);
 		}
 	    }
 	    else
 	    {
-		unsigned int i;
-		bool oped, halfoped, voiced, owner, prot;
-		mstring chan;
-
-		if (Magick::instance().nickserv.IsLive(source))
-		{
-		    for (i=2; i<=params.WordCount(":, "); i++)
-		    {
-			char c = 0;
-			chan = params.ExtractWord(i, ":, ");
-			oped = halfoped = voiced = owner = prot = false;
-			while (c != chan[0u])
-			{
-			    c = chan[0u];
-			    switch(chan[0u])
-			    {
-			    case '@':
-				oped = true;
-				chan.erase(0, 0);
-				break;
-			    case '%':
-				halfoped = true;
-				chan.erase(0, 0);
-				break;
-			    case '+':
-				voiced = true;
-				chan.erase(0, 0);
-				break;
-			    case '*':
-				owner = true;
-				chan.erase(0, 0);
-				break;
-			    case '~':
-				prot = true;
-				chan.erase(0, 0);
-				break;
-			    }
-			}
-			map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(source);
-			nlive->Join(chan);
-			map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(chan);
-			if (oped)
-			    clive->Mode(nlive->Server(), "+o " + source);
-			if (halfoped)
-			    clive->Mode(nlive->Server(), "+h " + source);
-			if (voiced)
-			    clive->Mode(nlive->Server(), "+v " + source);
-			if (owner)
-			    clive->Mode(nlive->Server(), "+q " + source);
-			if (prot)
-			    clive->Mode(nlive->Server(), "+a " + source);
-		    }
-		}
-		else
-		{
-		    LOG(LM_WARNING, "ERROR/REC_FORNONUSER", (
-			"SJOIN", source, source));
-		}
+		LOG(LM_WARNING, "ERROR/REC_FORNONUSER", ("SJOIN", source, source));
 	    }
 	}
-	else if (msgtype=="SMO")
-	{
-	    // Thanks to unreal for ANOTHER chatter message ..
-	}
-	else if (msgtype=="SNICK")
-	{
-	    if (!source.Contains("."))
-		return;
+    }
+    else if (msgtype == "SMO")
+    {
+	// Thanks to unreal for ANOTHER chatter message ..
+    }
+    else if (msgtype == "SNICK")
+    {
+	if (!source.Contains("."))
+	    return;
 
-	    // NEW USER
-	    mstring newnick = params.ExtractWord(1, ": ");
+	// NEW USER
+	mstring newnick = params.ExtractWord(1, ": ");
 
-	    // DONT kill when we do SQUIT protection.
-	    map<mstring,list<mstring> >::iterator i;
-	    { RLOCK(("Server", "ToBeSquit"));
-	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
+	// DONT kill when we do SQUIT protection.
+	map < mstring, list < mstring > >::iterator i;
+	{
+	    RLOCK(("Server", "ToBeSquit"));
+	    for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 	    {
-		list<mstring>::iterator k;
+		list < mstring >::iterator k;
 		WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
-		for (k=i->second.begin(); k!=i->second.end(); k++)
+		for (k = i->second.begin(); k != i->second.end(); k++)
 		    if (k->IsSameAs(newnick, true))
 		    {
 			i->second.erase(k);
 			break;
 		    }
-	    }}
+	    }
+	}
 
-	    mstring modes;
-	    mstring server;
-	    switch (proto.Signon())
+	mstring modes;
+	mstring server;
+
+	switch (proto.Signon())
+	{
+	case 0000:
+	case 0001:
+	    break;
+	case 1000:		// SNICK nick hops time user host server modes :realname
+	    modes = params.ExtractWord(7, ": ");
+	    server = GetServer(params.ExtractWord(6, ": "));
+	    break;
+	case 1001:		// SNICK nick hops time user host server 1 modes :realname
+	    modes = params.ExtractWord(8, ": ");
+	    server = GetServer(params.ExtractWord(6, ": "));
+	    break;
+	case 1002:		// SNICK nick hops time user host server 0 real-host modes :realname
+	    modes = params.ExtractWord(9, ": ");
+	    server = GetServer(params.ExtractWord(6, ": "));
+	    break;
+	case 1003:		// SNICK nick hops time user real-host host server 0 modes :realname
+	    modes = params.ExtractWord(9, ": ");
+	    server = GetServer(params.ExtractWord(7, ": "));
+	    break;
+	case 2000:		// SNICK nick hops time mode user host server :realname
+	case 2001:		// SNICK nick hops time mode user host server 0 :realname
+	    modes = params.ExtractWord(4, ": ");
+	    server = GetServer(params.ExtractWord(7, ": "));
+	    break;
+	case 2002:		// SNICK nick hops time mode user host maskhost server 0 :realname
+	    modes = params.ExtractWord(4, ": ");
+	    server = GetServer(params.ExtractWord(8, ": "));
+	    break;
+	case 2003:		// SNICK nick hops time user host server 0 mode maskhost :realname
+	    modes = params.ExtractWord(8, ": ");
+	    server = GetServer(params.ExtractWord(6, ": "));
+	    break;
+	}
+
+	if (Magick::instance().nickserv.IsLiveAll(newnick))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+	    COM(("Previous SQUIT checking if %s == %s and %s == %s", nlive->Squit().c_str(), server.c_str(),
+		 nlive->SignonTime().DateTimeString().c_str(),
+		 mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
+	    // IF the squit server = us, and the signon time matches
+	    if (nlive->Squit().IsSameAs(server, true)
+		&& nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
 	    {
-	    case 0000:
-	    case 0001:
-		break;
-	    case 1000: // SNICK nick hops time user host server modes :realname
-		modes = params.ExtractWord(7, ": ");
-		server = GetServer(params.ExtractWord(6, ": "));
-		break;
-	    case 1001: // SNICK nick hops time user host server 1 modes :realname
-		modes = params.ExtractWord(8, ": ");
-		server = GetServer(params.ExtractWord(6, ": "));
-		break;
-	    case 1002: // SNICK nick hops time user host server 0 real-host modes :realname
-		modes = params.ExtractWord(9, ": ");
-		server = GetServer(params.ExtractWord(6, ": "));
-		break;
-	    case 1003: // SNICK nick hops time user real-host host server 0 modes :realname
-		modes = params.ExtractWord(9, ": ");
-		server = GetServer(params.ExtractWord(7, ": "));
-		break;
-	    case 2000: // SNICK nick hops time mode user host server :realname
-	    case 2001: // SNICK nick hops time mode user host server 0 :realname
-		modes = params.ExtractWord(4, ": ");
-		server = GetServer(params.ExtractWord(7, ": "));
-		break;
-	    case 2002: // SNICK nick hops time mode user host maskhost server 0 :realname
-		modes = params.ExtractWord(4, ": ");
-		server = GetServer(params.ExtractWord(8, ": "));
-		break;
-	    case 2003: // SNICK nick hops time user host server 0 mode maskhost :realname
-		modes = params.ExtractWord(8, ": ");
-		server = GetServer(params.ExtractWord(6, ": "));
-		break;
+		nlive->ClearSquit(modes);
+		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		return;		// nice way to avoid repeating ones self :)
+	    }
+	    else
+	    {
+		nlive->Quit("SQUIT - " + nlive->Server());
+		Magick::instance().nickserv.RemLive(newnick);
+		mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
+	    }
+	}
+
+	// hops = servers from us
+	// services = 1 for service, 0 for user
+	// DAL4.4.15+ SNICK name hops time user host server services modes :real name
+
+	switch (proto.Signon())
+	{
+	case 0000:
+	case 0001:
+	    break;
+	case 1000:		// SNICK nick hops time user host server modes :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		tmp->Mode(modes);
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 1001:		// SNICK nick hops time user host server 1 modes :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		tmp->Mode(modes);
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 1002:		// SNICK nick hops time user host server 0 real-host modes :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(4, ": "), params.ExtractWord(8, ": "), params.After(":")));
+		tmp->Mode(modes);
+		tmp->AltHost(params.ExtractWord(5, ": "));
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 1003:		// SNICK nick hops time user real-host host server 0 modes :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		tmp->Mode(modes);
+		tmp->AltHost(params.ExtractWord(6, ": "));
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 2000:		// SNICK nick hops time mode user host server :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(5, ": "), params.ExtractWord(6, ": "), params.After(":")));
+		tmp->Mode(modes);
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 2001:		// SNICK nick hops time mode user host server 0 :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(5, ": "), params.ExtractWord(6, ": "), params.After(":")));
+		tmp->Mode(params.ExtractWord(4, ": "));
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 2002:		// SNICK nick hops time mode user host maskhost server 0 :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(5, ": "), params.ExtractWord(6, ": "), params.After(":")));
+		tmp->Mode(modes);
+		tmp->AltHost(params.ExtractWord(7, ": "));
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 2003:		// SNICK nick hops time user host server 0 mode maskhost :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(3, ": "))),
+				    server, params.ExtractWord(4, ": "), params.ExtractWord(5, ": "), params.After(":")));
+		tmp->Mode(modes);
+		tmp->AltHost(params.ExtractWord(9, ": "));
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	}
+
+	if (Magick::instance().nickserv.IsLive(newnick))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+	    if (nlive->Server().empty())
+	    {
+		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		KILL(Magick::instance().nickserv.FirstName(), newnick, nlive->RealName());
+		return;
 	    }
 
-	    if (Magick::instance().nickserv.IsLiveAll(newnick))
 	    {
-		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(newnick);
-		COM(("Previous SQUIT checking if %s == %s and %s == %s",
-			nlive->Squit().c_str(), server.c_str(),
-			nlive->SignonTime().DateTimeString().c_str(),
-			mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
-		// IF the squit server = us, and the signon time matches
-		if (nlive->Squit().IsSameAs(server, true) &&
-		    nlive->SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
-		{
-		    nlive->ClearSquit(modes);
-		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
-		    return;    // nice way to avoid repeating ones self :)
-		}
-		else
-		{
-		    nlive->Quit("SQUIT - " + nlive->Server());
-		    Magick::instance().nickserv.RemLive(newnick);
-		    mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
-		}
-	    }
-
-	    // hops = servers from us
-	    // services = 1 for service, 0 for user
-	    // DAL4.4.15+ SNICK name hops time user host server services modes :real name
-
-	    switch (proto.Signon())
-	    {
-	    case 0000:
-	    case 0001:
-		break;
-	    case 1000: // SNICK nick hops time user host server modes :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			server,
-			params.ExtractWord(4, ": "),
-			params.ExtractWord(5, ": "),
-			params.After(":")
-		    ));
-		    tmp->Mode(modes);
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 1001: // SNICK nick hops time user host server 1 modes :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			server,
-			params.ExtractWord(4, ": "),
-			params.ExtractWord(5, ": "),
-			params.After(":")
-		    ));
-		    tmp->Mode(modes);
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 1002: // SNICK nick hops time user host server 0 real-host modes :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			server,
-			params.ExtractWord(4, ": "),
-			params.ExtractWord(8, ": "),
-			params.After(":")
-		    ));
-		    tmp->Mode(modes);
-		    tmp->AltHost(params.ExtractWord(5, ": "));
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 1003: // SNICK nick hops time user real-host host server 0 modes :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			server,
-			params.ExtractWord(4, ": "),
-			params.ExtractWord(5, ": "),
-			params.After(":")
-		    ));
-		    tmp->Mode(modes);
-		    tmp->AltHost(params.ExtractWord(6, ": "));
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 2000: // SNICK nick hops time mode user host server :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			server,
-			params.ExtractWord(5, ": "),
-			params.ExtractWord(6, ": "),
-			params.After(":")
-		    ));
-		    tmp->Mode(modes);
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 2001: // SNICK nick hops time mode user host server 0 :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			server,
-			params.ExtractWord(5, ": "),
-			params.ExtractWord(6, ": "),
-			params.After(":")
-		    ));
-		    tmp->Mode(params.ExtractWord(4, ": "));
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 2002: // SNICK nick hops time mode user host maskhost server 0 :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			server,
-			params.ExtractWord(5, ": "),
-			params.ExtractWord(6, ": "),
-			params.After(":")
-		    ));
-		    tmp->Mode(modes);
-		    tmp->AltHost(params.ExtractWord(7, ": "));
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 2003: // SNICK nick hops time user host server 0 mode maskhost :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(3, ": "))),
-			server,
-			params.ExtractWord(4, ": "),
-			params.ExtractWord(5, ": "),
-			params.After(":")
-		    ));
-		    tmp->Mode(modes);
-		    tmp->AltHost(params.ExtractWord(9, ": "));
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    }
-
-	    if (Magick::instance().nickserv.IsLive(newnick))
-	    {
-		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(newnick);
-		if (nlive->Server().empty())
-		{
-		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
-		    KILL(Magick::instance().nickserv.FirstName(), newnick,
-			nlive->RealName());
-		    return;
-		}
-
-		{ WLOCK2(("Server", "i_UserMax"));
+		WLOCK2(("Server", "i_UserMax"));
 		if (i_UserMax < Magick::instance().nickserv.LiveSize())
 		{
 		    MCB(i_UserMax);
 		    i_UserMax = Magick::instance().nickserv.LiveSize();
 		    MCE(i_UserMax);
-		}}
+		}
+	    }
 
-		mMessage::CheckDependancies(mMessage::NickExists, newnick);
-		// HAS to be AFTER the nickname is added to map.
-		CommServ::list_t::iterator iter;
-		mstring setmode;
-		{ RLOCK2(("CommServ", "list"));
-		for (iter = Magick::instance().commserv.ListBegin();
-				iter != Magick::instance().commserv.ListEnd();
-				iter++)
+	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
+	    // HAS to be AFTER the nickname is added to map.
+	    CommServ::list_t::iterator iter;
+	    mstring setmode;
+
+	    {
+		RLOCK2(("CommServ", "list"));
+		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		{
-		    map_entry<Committee_t> comm(iter->second);
+		    map_entry < Committee_t > comm(iter->second);
 		    if (comm->IsOn(newnick))
 		    {
 			if (iter->first == Magick::instance().commserv.ALL_Name())
@@ -5339,111 +5192,108 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			    setmode += Magick::instance().commserv.SADMIN_SetMode();
 
 			MLOCK(("CommServ", "list", iter->first, "message"));
-			for (comm->message = comm->MSG_begin();
-			     comm->message != comm->MSG_end();
-			     comm->message++)
+			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
-			    Magick::instance().servmsg.send(newnick, "[" + IRC_Bold +
-					comm->Name() + IRC_Off + "] " +
-					comm->message->Entry());
+			    Magick::instance().servmsg.send(newnick,
+							    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
+							    comm->message->Entry());
 			}
-		    }
-		}}
-		if (!setmode.empty())
-		{
-		    mstring setmode2;
-		    for (unsigned int j=0; j<setmode.size(); j++)
-		    {
-			if (setmode[j] != '+' && setmode[j] != '-' &&
-			    setmode[j] != ' ' &&
-			    !nlive->HasMode(setmode[j]))
-			    setmode2 += setmode[j];
-		    }
-		    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
-		}
-		if (Magick::instance().nickserv.IsStored(newnick))
-		{
-		    map_entry<Nick_Stored_t> nstored = Magick::instance().nickserv.GetStored(newnick);
-		    if (nstored->Forbidden())
-		    {
-			SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
-			    (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		    }
-		    else if (nstored->Protect() && !nstored->IsOnline())
-		    {
-			SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
-			    (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
 		    }
 		}
 	    }
-	}
-	else if (msgtype=="SQLINE")
-	{
-	    // We will ignore SQLINES because they're not relivant to us.
-	    // we will not be qlining our own clients ;P
-	}
-	else if (msgtype=="SQUIT")
-	{
-	    // SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
-	    // SQUIT lifestone.darker.net :Ping timeout
-	    // :PreZ SQUIT server :reason
-
-	    if (IsList(params.ExtractWord(1, ": ")))
+	    if (!setmode.empty())
 	    {
-		map_entry<Server_t> server = GetList(params.ExtractWord(1, ": "));
-		if (server->Jupe())
-		    raw(((proto.Tokens() && !proto.GetNonToken("SQUIT").empty()) ?
-			  proto.GetNonToken("SQUIT") : mstring("SQUIT")) +
-			  " " + server->Name() + " :" + params.After(": ", 2));
+		mstring setmode2;
 
-		unsigned int i;
-		vector<mstring> tlist = server->AllDownlinks();
-		tlist.push_back(server->Name());
-		LOG(LM_NOTICE, "OTHER/SQUIT_SECOND", (
-		    server->Name(), server->Uplink()));
+		for (unsigned int j = 0; j < setmode.size(); j++)
+		{
+		    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
+			setmode2 += setmode[j];
+		}
+		SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
+	    }
+	    if (Magick::instance().nickserv.IsStored(newnick))
+	    {
+		map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
+		if (nstored->Forbidden())
+		{
+		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
+			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+		}
+		else if (nstored->Protect() && !nstored->IsOnline())
+		{
+		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
+			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+		}
+	    }
+	}
+    }
+    else if (msgtype == "SQLINE")
+    {
+	// We will ignore SQLINES because they're not relivant to us.
+	// we will not be qlining our own clients ;P
+    }
+    else if (msgtype == "SQUIT")
+    {
+	// SQUIT shadow.darker.net :soul.darker.net lifestone.darker.net
+	// SQUIT lifestone.darker.net :Ping timeout
+	// :PreZ SQUIT server :reason
 
-		RemList(server->Name());
+	if (IsList(params.ExtractWord(1, ": ")))
+	{
+	    map_entry < Server_t > server = GetList(params.ExtractWord(1, ": "));
+	    if (server->Jupe())
+		raw(((proto.Tokens()
+		      && !proto.GetNonToken("SQUIT").empty())? proto.GetNonToken("SQUIT") : mstring("SQUIT")) + " " +
+		    server->Name() + " :" + params.After(": ", 2));
 
-		{ WLOCK2(("Server", "ToBeSquit"));
+	    unsigned int i;
+
+	    vector < mstring > tlist = server->AllDownlinks();
+	    tlist.push_back(server->Name());
+	    LOG(LM_NOTICE, "OTHER/SQUIT_SECOND", (server->Name(), server->Uplink()));
+
+	    RemList(server->Name());
+
+	    {
+		WLOCK2(("Server", "ToBeSquit"));
 		WLOCK3(("Server", "ServerSquit"));
 		MCB(ToBeSquit.size());
 		CB(1, ServerSquit.size());
-		for (i=0; i<tlist.size(); i++)
+		for (i = 0; i < tlist.size(); i++)
 		{
 		    if (ToBeSquit.find(tlist[i]) != ToBeSquit.end())
 			ToBeSquit.erase(tlist[i]);
 		    if (ServerSquit.find(tlist[i]) != ServerSquit.end())
 		    {
 			mstring *arg = NULL;
-			if (Magick::instance().reactor().cancel_timer(
-				ServerSquit[tlist[i]], reinterpret_cast<const void **>(arg))
-				&& arg != NULL)
+			if (Magick::instance().reactor().
+			    cancel_timer(ServerSquit[tlist[i]], reinterpret_cast < const void **>(arg)) && arg != NULL)
 			    delete arg;
 		    }
 		    while (Magick::instance().Pause())
 			ACE_OS::sleep(1);
 		    ServerSquit[tlist[i]] =
-			Magick::instance().reactor().schedule_timer(&squit,
-			new mstring(tlist[i]),
-			ACE_Time_Value(Magick::instance().config.Squit_Protect()));
+			Magick::instance().reactor().schedule_timer(&squit, new mstring(tlist[i]),
+								    ACE_Time_Value(Magick::instance().config.Squit_Protect()));
 		}
 		CE(1, ServerSquit.size());
 		MCE(ToBeSquit.size());
-		}
-		NickServ::live_t::iterator iter;
-		vector<mstring> chunked, chunked2;
-		{ RLOCK(("NickServ", "live"));
-		for (iter = Magick::instance().nickserv.LiveBegin();
-		     iter != Magick::instance().nickserv.LiveEnd(); iter++)
+	    }
+	    NickServ::live_t::iterator iter;
+	    vector < mstring > chunked, chunked2;
+	    {
+		RLOCK(("NickServ", "live"));
+		for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 		{
-		    map_entry<Nick_Live_t> nlive(iter->second);
+		    map_entry < Nick_Live_t > nlive(iter->second);
 		    if (nlive->IsServices() && ListSize() == 0)
 		    {
 			chunked.push_back(iter->first);
 		    }
 		    else
 		    {
-			for (i=0; i<tlist.size(); i++)
+			for (i = 0; i < tlist.size(); i++)
 			{
 			    if (nlive->Server().IsSameAs(tlist[i], true))
 			    {
@@ -5453,91 +5303,89 @@ void Server::parse_S(mstring &source, const mstring &msgtype, const mstring &par
 			    }
 			}
 		    }
-		}}
-	        // Sign off services if we have NO uplink
-		for (i=0; i<chunked.size(); i++)
-		    QUIT(chunked[i], "SQUIT - " + server->Name());
-		for (i=0; i<chunked2.size(); i++)
-		    mMessage::CheckDependancies(mMessage::NickNoExists, chunked2[i]);
-		for (i=0; i<tlist.size(); i++)
-		    mMessage::CheckDependancies(mMessage::ServerNoExists, tlist[i]);
-	    }
-	}
-	else if (msgtype=="STATS")
-	{
-	    // :source STATS type :our.server
-	    //:temple.magick.tm 219 ChanServ o :End of /STATS report
-	    sraw("219 " + source + " " + params.ExtractWord(1, ": ") +
-		" :End of /STATS report");
-	}
-	else if (msgtype=="SUMMON")
-	{
-	    // :source SUMMON user our.server *
-	    sraw("445 " + source + " :SUMMON has been disabled");
-	}
-	else if (msgtype=="SVINFO")
-	{
-	    // Bahamut compatable - ignore.
-	}
-	else if (msgtype=="SVSHOST")
-	{
-	    // :source SVSHOST user newhost
-	    if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
-	    {
-		Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->AltHost(params.ExtractWord(2, ": "));
-	    }
-	}
-	else if (msgtype=="SVSKILL")
-	{
-	    // Same as KILL (but by services)
-	}
-	else if (msgtype=="SVSMODE")
-	{
-	    // Handle just as mode, WITHOUT sanity
-	    if (IsChan(params.ExtractWord(1, ": ")))
-	    {
-		if (Magick::instance().chanserv.IsLive(params.ExtractWord(1, ": ")))
-		{
-		    Magick::instance().chanserv.GetLive(params.ExtractWord(1, ": "))->Mode(source, params.After(" "));
 		}
-		else
-		{
-		    LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
-			"SVSMODE", source,  params.ExtractWord(1, ": ")));
-		}
+	    }
+	    // Sign off services if we have NO uplink
+	    for (i = 0; i < chunked.size(); i++)
+		QUIT(chunked[i], "SQUIT - " + server->Name());
+	    for (i = 0; i < chunked2.size(); i++)
+		mMessage::CheckDependancies(mMessage::NickNoExists, chunked2[i]);
+	    for (i = 0; i < tlist.size(); i++)
+		mMessage::CheckDependancies(mMessage::ServerNoExists, tlist[i]);
+	}
+    }
+    else if (msgtype == "STATS")
+    {
+	// :source STATS type :our.server
+	//:temple.magick.tm 219 ChanServ o :End of /STATS report
+	sraw("219 " + source + " " + params.ExtractWord(1, ": ") + " :End of /STATS report");
+    }
+    else if (msgtype == "SUMMON")
+    {
+	// :source SUMMON user our.server *
+	sraw("445 " + source + " :SUMMON has been disabled");
+    }
+    else if (msgtype == "SVINFO")
+    {
+	// Bahamut compatable - ignore.
+    }
+    else if (msgtype == "SVSHOST")
+    {
+	// :source SVSHOST user newhost
+	if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
+	{
+	    Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->AltHost(params.ExtractWord(2, ": "));
+	}
+    }
+    else if (msgtype == "SVSKILL")
+    {
+	// Same as KILL (but by services)
+    }
+    else if (msgtype == "SVSMODE")
+    {
+	// Handle just as mode, WITHOUT sanity
+	if (IsChan(params.ExtractWord(1, ": ")))
+	{
+	    if (Magick::instance().chanserv.IsLive(params.ExtractWord(1, ": ")))
+	    {
+		Magick::instance().chanserv.GetLive(params.ExtractWord(1, ": "))->Mode(source, params.After(" "));
 	    }
 	    else
 	    {
-		if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
-		{
-		    Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->Mode(params.ExtractWord(2, ": "));
-		}
-		else
-		{
-		    LOG(LM_CRITICAL, "ERROR/REC_FORNONUSER", (
-			"SVSMODE", source,  params.ExtractWord(1, ": ")));
-		}
+		LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", ("SVSMODE", source, params.ExtractWord(1, ": ")));
 	    }
-	}
-	else if (msgtype=="SVSNICK")
-	{
-	    // forcably changed nicks (handle like nick)
-	}
-	else if (msgtype=="SVSNOOP")
-	{
-	    // Deny all OPERS on server, ignore.
-	}
-	else if (msgtype=="SZLINE")
-	{
-	   // zzzzZzzzZzzZzZZzZzZZZZzzzZzzz....
 	}
 	else
 	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+	    if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
+	    {
+		Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->Mode(params.ExtractWord(2, ": "));
+	    }
+	    else
+	    {
+		LOG(LM_CRITICAL, "ERROR/REC_FORNONUSER", ("SVSMODE", source, params.ExtractWord(1, ": ")));
+	    }
 	}
+    }
+    else if (msgtype == "SVSNICK")
+    {
+	// forcably changed nicks (handle like nick)
+    }
+    else if (msgtype == "SVSNOOP")
+    {
+	// Deny all OPERS on server, ignore.
+    }
+    else if (msgtype == "SZLINE")
+    {
+	// zzzzZzzzZzzZzZZzZzZZZZzzzZzzz....
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_T(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_T", (source, msgtype, params));
 
@@ -5550,59 +5398,54 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="TIME")
-	{
-	    // :source TIME :our.server
-	    sraw("391 " + source + " :" + mDateTime::CurrentDateTime().DateTimeString());
-	}
-	else if (msgtype=="TOPIC")
-	{
-	    // :user TOPIC #channel :topic
-	    // :user TOPIC #channel
-	    // -OR-
-	    // :server/user TOPIC #channel setter time :topic
-	    // :server/user TOPIC #channel setter
-	    // TIME is not standard (time is optional);
+    if (msgtype == "TIME")
+    {
+	// :source TIME :our.server
+	sraw("391 " + source + " :" + mDateTime::CurrentDateTime().DateTimeString());
+    }
+    else if (msgtype == "TOPIC")
+    {
+	// :user TOPIC #channel :topic
+	// :user TOPIC #channel
+	// -OR-
+	// :server/user TOPIC #channel setter time :topic
+	// :server/user TOPIC #channel setter
+	// TIME is not standard (time is optional);
 
-	    if (Magick::instance().chanserv.IsLive(params.ExtractWord(1, ": ")))
-	    {
-		map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(params.ExtractWord(1, ": "));
-		if (params.Contains(":"))
-		{ // Setting
-		    if (params.Before(":").WordCount(" ") < 2)
-			clive->Topic(source, params.After(":"), source,
-				mDateTime::CurrentDateTime());
-		    else if (params.Before(":").WordCount(" ") < 3)
-			clive->Topic(source, params.After(":"),
-				params.ExtractWord(2, ": "),
-				mDateTime::CurrentDateTime());
-		    else
-			clive->Topic(source, params.After(":"),
-				params.ExtractWord(2, ": "),
-				static_cast<time_t>(atoul(params.ExtractWord(3, ": "))));
-		}
+	if (Magick::instance().chanserv.IsLive(params.ExtractWord(1, ": ")))
+	{
+	    map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(params.ExtractWord(1, ": "));
+	    if (params.Contains(":"))
+	    {			// Setting
+		if (params.Before(":").WordCount(" ") < 2)
+		    clive->Topic(source, params.After(":"), source, mDateTime::CurrentDateTime());
+		else if (params.Before(":").WordCount(" ") < 3)
+		    clive->Topic(source, params.After(":"), params.ExtractWord(2, ": "), mDateTime::CurrentDateTime());
 		else
-		{ // Clearing
-		    if (params.WordCount(" ") < 2)
-			clive->Topic(source, "", source);
-		    else
-			clive->Topic(source, "", params.ExtractWord(2, ": "));
-		}
+		    clive->Topic(source, params.After(":"), params.ExtractWord(2, ": "),
+				 static_cast < time_t > (atoul(params.ExtractWord(3, ": "))));
 	    }
 	    else
-	    {
-		LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", (
-			"TOPIC", source, params.ExtractWord(1, ": ")));
+	    {			// Clearing
+		if (params.WordCount(" ") < 2)
+		    clive->Topic(source, "", source);
+		else
+		    clive->Topic(source, "", params.ExtractWord(2, ": "));
 	    }
 	}
-	else if (msgtype=="TRACE")
+	else
 	{
-	    // :source TRACE :server/target
-	    // repl:
-	    //:ChanServ TRACE temple.magick.tm
-	    //:temple.magick.tm 206 ChanServ Server 0 0S 0C temple.magick.tm *!*@temple.magick.tm 1313208
-	    //:ChanServ TRACE PreZ
-	    //:temple.magick.tm 206 ChanServ Server 0 0S 0C temple.magick.tm *!*@temple.magick.tm 1313208
+	    LOG(LM_CRITICAL, "ERROR/REC_FORNONCHAN", ("TOPIC", source, params.ExtractWord(1, ": ")));
+	}
+    }
+    else if (msgtype == "TRACE")
+    {
+	// :source TRACE :server/target
+	// repl:
+	//:ChanServ TRACE temple.magick.tm
+	//:temple.magick.tm 206 ChanServ Server 0 0S 0C temple.magick.tm *!*@temple.magick.tm 1313208
+	//:ChanServ TRACE PreZ
+	//:temple.magick.tm 206 ChanServ Server 0 0S 0C temple.magick.tm *!*@temple.magick.tm 1313208
 
 //:ChanServ TRACE Aimee
 //:soul.darker.net 200 ChanServ Link Aurora2.2-r Aimee lifestone.darker.net
@@ -5623,45 +5466,49 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 //:vampire.darker.net 209 ChanServ Class 50 :1
 //:vampire.darker.net 209 ChanServ Class 10 :1
 //:vampire.darker.net 209 ChanServ Class 1 :7
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL &&
-		Magick::instance().ircsvchandler->HTM_Level() > 3)
+	{
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-								mVarArray(msgtype));
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :" + tmp.c_str());
-		return;
-	    }}
-	    mstring out;
-	    if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")) &&
-		Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->IsServices())
-	    {
-		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
-		if (nlive->HasMode("o"))
-		    out << "204 " << source << " Operator 10 ";
-		else
-		    out << "205 " << source << " User 1 ";
-		out << nlive->Name() << " [" << nlive->User() << "@"
-			<< nlive->Host() << "] :" << nlive->LastAction().SecondsSince();
-		sraw(out);
-	    }
-	    else
-	    {
-		unsigned long opers=0, users=0;
-		out << "206 " << source << "Server 50 " << ListSize()+1 <<
-			"S " << Magick::instance().nickserv.LiveSize() << "C " <<
-			OurUplink() << "[0.0.0.0] AutoConn.!*@" <<
-			Magick::instance().startup.Server_Name() << " :0";
-		sraw(out);
+					   mVarArray(msgtype));
 
-		NickServ::live_t::iterator iter;
-		{ RLOCK2(("NickServ", "live"));
-		for (iter=Magick::instance().nickserv.LiveBegin();
-			iter!=Magick::instance().nickserv.LiveEnd(); iter++)
+		raw(((proto.Tokens()
+		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+		    source + " :" + tmp.c_str());
+		return;
+	    }
+	}
+	mstring out;
+
+	if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": "))
+	    && Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "))->IsServices())
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
+	    if (nlive->HasMode("o"))
+		out << "204 " << source << " Operator 10 ";
+	    else
+		out << "205 " << source << " User 1 ";
+	    out << nlive->Name() << " [" << nlive->User() << "@" << nlive->Host() << "] :" << nlive->LastAction().
+		SecondsSince();
+	    sraw(out);
+	}
+	else
+	{
+	    unsigned long opers = 0, users = 0;
+
+	    out << "206 " << source << "Server 50 " << ListSize() +
+		1 << "S " << Magick::instance().nickserv.
+		LiveSize() << "C " << OurUplink() << "[0.0.0.0] AutoConn.!*@" << Magick::instance().startup.
+		Server_Name() << " :0";
+	    sraw(out);
+
+	    NickServ::live_t::iterator iter;
+	    {
+		RLOCK2(("NickServ", "live"));
+		for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
 		{
-		    map_entry<Nick_Live_t> nlive(iter->second);
+		    map_entry < Nick_Live_t > nlive(iter->second);
 		    if (nlive->IsServices())
 		    {
 			out.erase();
@@ -5675,42 +5522,40 @@ void Server::parse_T(mstring &source, const mstring &msgtype, const mstring &par
 			    out << "205 " << source << " User 1 ";
 			    users++;
 			}
-			out << nlive->Name() << " [" <<
-				nlive->User() << "@" <<
-				nlive->Host() << "] :" <<
-				nlive->LastAction().SecondsSince();
+			out << nlive->Name() << " [" << nlive->User() << "@" << nlive->Host() << "] :" << nlive->LastAction().
+			    SecondsSince();
 			sraw(out);
-			
+
 		    }
-		}}
-		out.erase();
-		out << "209 " << source << " Class 50 :1";
-		sraw(out);
-		if (opers)
-		{
-		    out.erase();
-		    out << "209 " << source << " Class 10 :" << opers;
-		    sraw(out);
-		}
-		if (users)
-		{
-		    out.erase();
-		    out << "209 " << source << " Class 1 :" << users;
-		    sraw(out);
 		}
 	    }
 	    out.erase();
-	    out << "262 " << source << " " << Magick::instance().startup.Server_Name() <<
-		" :End of TRACE";
+	    out << "209 " << source << " Class 50 :1";
 	    sraw(out);
+	    if (opers)
+	    {
+		out.erase();
+		out << "209 " << source << " Class 10 :" << opers;
+		sraw(out);
+	    }
+	    if (users)
+	    {
+		out.erase();
+		out << "209 " << source << " Class 1 :" << users;
+		sraw(out);
+	    }
 	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+	out.erase();
+	out << "262 " << source << " " << Magick::instance().startup.Server_Name() << " :End of TRACE";
+	sraw(out);
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_U", (source, msgtype, params));
 
@@ -5723,169 +5568,165 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="UMODE2")
-	{
-	    if (source.Contains("."))
-		return;
+    if (msgtype == "UMODE2")
+    {
+	if (source.Contains("."))
+	    return;
 
-	    Magick::instance().nickserv.GetLive(source)->Mode(params.ExtractWord(1, ": "));
-	}
-	else if (msgtype=="UNGLINE")
-	{
-	    // We will ignore GLINES because they're not relivant to us.
-	    // we will not be glining our own clients ;P
-	}
-	else if (msgtype=="UNRQLINE")
-	{
-	    // We will ignore RQLINES because they're not relivant to us.
-	    // we will not be qlining our own clients ;P
-	}
-	else if (msgtype=="UNSQLINE")
-	{
-	    // We will ignore SQLINES because they're not relivant to us.
-	    // we will not be qlining our own clients ;P
-	}
-	else if (msgtype=="UNZLINE")
-	{
-	    // We will ignore ZLINES because they're not relivant to us.
-	    // we will not be zlining our own clients ;P
-	}
-	else if (msgtype=="USER")
-	{
-	    if (!source.Contains("."))
-		return;
+	Magick::instance().nickserv.GetLive(source)->Mode(params.ExtractWord(1, ": "));
+    }
+    else if (msgtype == "UNGLINE")
+    {
+	// We will ignore GLINES because they're not relivant to us.
+	// we will not be glining our own clients ;P
+    }
+    else if (msgtype == "UNRQLINE")
+    {
+	// We will ignore RQLINES because they're not relivant to us.
+	// we will not be qlining our own clients ;P
+    }
+    else if (msgtype == "UNSQLINE")
+    {
+	// We will ignore SQLINES because they're not relivant to us.
+	// we will not be qlining our own clients ;P
+    }
+    else if (msgtype == "UNZLINE")
+    {
+	// We will ignore ZLINES because they're not relivant to us.
+	// we will not be zlining our own clients ;P
+    }
+    else if (msgtype == "USER")
+    {
+	if (!source.Contains("."))
+	    return;
 
-	    // NEW USER
-	    mstring newnick = params.ExtractWord(1, ": ");
+	// NEW USER
+	mstring newnick = params.ExtractWord(1, ": ");
 
-	    // DONT kill when we do SQUIT protection.
-	    map<mstring,list<mstring> >::iterator i;
-	    { RLOCK(("Server", "ToBeSquit"));
-	    for (i=ToBeSquit.begin(); i!=ToBeSquit.end(); i++)
+	// DONT kill when we do SQUIT protection.
+	map < mstring, list < mstring > >::iterator i;
+	{
+	    RLOCK(("Server", "ToBeSquit"));
+	    for (i = ToBeSquit.begin(); i != ToBeSquit.end(); i++)
 	    {
-		list<mstring>::iterator k;
+		list < mstring >::iterator k;
 		WLOCK2(("Server", "ToBeSquit", i->first.LowerCase()));
-		for (k=i->second.begin(); k!=i->second.end(); k++)
+		for (k = i->second.begin(); k != i->second.end(); k++)
 		    if (k->IsSameAs(newnick, true))
 		    {
-		        list<mstring>::iterator j = k;  j--;
-		        i->second.erase(k);
-		        k=j;
+			list < mstring >::iterator j = k;
+			j--;
+			i->second.erase(k);
+			k = j;
 		    }
-	    }}
+	    }
+	}
 
-	    mstring server;
-	    mstring modes;
-	    switch (proto.Signon())
+	mstring server;
+	mstring modes;
+
+	switch (proto.Signon())
+	{
+	case 0000:
+	    server = GetServer(params.ExtractWord(4, ": "));
+	    break;
+	case 0001:
+	    server = GetServer(params.ExtractWord(5, ": "));
+	    break;
+	case 1000:		// NICK nick hops time user host server :realname
+	case 1001:		// NICK nick hops time user host server 1 :realname
+	case 1002:		// NICK nick hops time user host server 0 real-host :realname
+	case 1003:		// NICK nick hops time user real-host host server 0 :realname
+	case 2000:		// NICK nick hops time mode user host server :realname
+	case 2001:		// NICK nick hops time mode user host server 0 :realname
+	case 2002:		// NICK nick hops time mode user host maskhost server 0 :realname
+	case 2003:		// NICK nick hops time user host server 0 mode maskhost :realname
+	    break;
+	}
+
+	if (Magick::instance().nickserv.IsLiveAll(newnick))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+	    COM(("Previous SQUIT checking if %s == %s and %s == %s", nlive->Squit().c_str(), server.c_str(),
+		 nlive->SignonTime().DateTimeString().c_str(),
+		 mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
+	    // IF the squit server = us, and the signon time matches
+	    if (nlive->Squit().IsSameAs(server, true)
+		&& nlive->SignonTime() == mDateTime(static_cast < time_t > (atoul(params.ExtractWord(3, ": ")))))
 	    {
-	    case 0000:
-		server = GetServer(params.ExtractWord(4, ": "));
-		break;
-	    case 0001:
-		server = GetServer(params.ExtractWord(5, ": "));
-		break;
-	    case 1000: // NICK nick hops time user host server :realname
-	    case 1001: // NICK nick hops time user host server 1 :realname
-	    case 1002: // NICK nick hops time user host server 0 real-host :realname
-	    case 1003: // NICK nick hops time user real-host host server 0 :realname
-	    case 2000: // NICK nick hops time mode user host server :realname
-	    case 2001: // NICK nick hops time mode user host server 0 :realname
-	    case 2002: // NICK nick hops time mode user host maskhost server 0 :realname
-	    case 2003: // NICK nick hops time user host server 0 mode maskhost :realname
-		break;
+		nlive->ClearSquit(modes);
+		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		return;		// nice way to avoid repeating ones self :)
+	    }
+	    else
+	    {
+		nlive->Quit("SQUIT - " + nlive->Server());
+		Magick::instance().nickserv.RemLive(newnick);
+		mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
+	    }
+	}
+
+	switch (proto.Signon())
+	{
+	case 0000:		// USER nick user host server :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), time(NULL), server, params.ExtractWord(2, ": "),
+				    params.ExtractWord(3, ": "), params.After(":")));
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 0001:		// USER nick time user host server :realname
+	    {
+		map_entry < Nick_Live_t >
+		    tmp(new
+			Nick_Live_t(params.ExtractWord(1, ": "), static_cast < time_t > (atoul(params.ExtractWord(2, ": "))),
+				    server, params.ExtractWord(3, ": "), params.ExtractWord(4, ": "), params.After(":")));
+		Magick::instance().nickserv.AddLive(tmp);
+	    }
+	    break;
+	case 1000:
+	case 1001:
+	case 1002:
+	case 1003:
+	case 2000:
+	case 2001:
+	case 2002:
+	case 2003:
+	    break;
+	}
+
+	if (Magick::instance().nickserv.IsLive(newnick))
+	{
+	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(newnick);
+	    if (nlive->Server().empty())
+	    {
+		mMessage::CheckDependancies(mMessage::NickExists, newnick);
+		KILL(Magick::instance().nickserv.FirstName(), newnick, nlive->RealName());
+		return;
 	    }
 
-	    if (Magick::instance().nickserv.IsLiveAll(newnick))
 	    {
-		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(newnick);
-		COM(("Previous SQUIT checking if %s == %s and %s == %s",
-			nlive->Squit().c_str(), server.c_str(),
-			nlive->SignonTime().DateTimeString().c_str(),
-			mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))).DateTimeString().c_str()));
-		// IF the squit server = us, and the signon time matches
-		if (nlive->Squit().IsSameAs(server, true) &&
-		    nlive->SignonTime() == mDateTime(static_cast<time_t>(atoul(params.ExtractWord(3, ": ")))))
-		{
-		    nlive->ClearSquit(modes);
-		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
-		    return;    // nice way to avoid repeating ones self :)
-		}
-		else
-		{
-		    nlive->Quit("SQUIT - " + nlive->Server());
-		    Magick::instance().nickserv.RemLive(newnick);
-		    mMessage::CheckDependancies(mMessage::NickNoExists, newnick);
-		}
-	    }
-
-	    switch (proto.Signon())
-	    {
-	    case 0000: // USER nick user host server :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			time(NULL),
-			server,
-			params.ExtractWord(2, ": "),
-			params.ExtractWord(3, ": "),
-			params.After(":")
-		    ));
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 0001: // USER nick time user host server :realname
-		{
-		    map_entry<Nick_Live_t> tmp(new Nick_Live_t(
-			params.ExtractWord(1, ": "),
-			static_cast<time_t>(atoul(params.ExtractWord(2, ": "))),
-			server,
-			params.ExtractWord(3, ": "),
-			params.ExtractWord(4, ": "),
-			params.After(":")
-		    ));
-		    Magick::instance().nickserv.AddLive(tmp);
-		}
-		break;
-	    case 1000:
-	    case 1001:
-	    case 1002:
-	    case 1003:
-	    case 2000:
-	    case 2001:
-	    case 2002:
-	    case 2003:
-		break;
-	    }
-
-	    if (Magick::instance().nickserv.IsLive(newnick))
-	    {
-		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(newnick);
-		if (nlive->Server().empty())
-		{
-		    mMessage::CheckDependancies(mMessage::NickExists, newnick);
-		    KILL(Magick::instance().nickserv.FirstName(), newnick,
-			nlive->RealName());
-		    return;
-		}
-
-		{ WLOCK2(("Server", "i_UserMax"));
+		WLOCK2(("Server", "i_UserMax"));
 		if (i_UserMax < Magick::instance().nickserv.LiveSize())
 		{
 		    MCB(i_UserMax);
 		    i_UserMax = Magick::instance().nickserv.LiveSize();
 		    MCE(i_UserMax);
-		}}
+		}
+	    }
 
-		mMessage::CheckDependancies(mMessage::NickExists, newnick);
-		// HAS to be AFTER the nickname is added to map.
-		CommServ::list_t::iterator iter;
-		mstring setmode;
-		{ RLOCK2(("CommServ", "list"));
-		for (iter = Magick::instance().commserv.ListBegin();
-				iter != Magick::instance().commserv.ListEnd();
-				iter++)
+	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
+	    // HAS to be AFTER the nickname is added to map.
+	    CommServ::list_t::iterator iter;
+	    mstring setmode;
+
+	    {
+		RLOCK2(("CommServ", "list"));
+		for (iter = Magick::instance().commserv.ListBegin(); iter != Magick::instance().commserv.ListEnd(); iter++)
 		{
-		    map_entry<Committee_t> comm(iter->second);
+		    map_entry < Committee_t > comm(iter->second);
 		    if (comm->IsOn(newnick))
 		    {
 			if (iter->first == Magick::instance().commserv.ALL_Name())
@@ -5902,92 +5743,87 @@ void Server::parse_U(mstring &source, const mstring &msgtype, const mstring &par
 			    setmode += Magick::instance().commserv.SADMIN_SetMode();
 
 			MLOCK(("CommServ", "list", iter->first, "message"));
-			for (comm->message = comm->MSG_begin();
-			     comm->message != comm->MSG_end();
-			     comm->message++)
+			for (comm->message = comm->MSG_begin(); comm->message != comm->MSG_end(); comm->message++)
 			{
-			    Magick::instance().servmsg.send(newnick, "[" + IRC_Bold +
-					comm->Name() + IRC_Off + "] " +
-					comm->message->Entry());
+			    Magick::instance().servmsg.send(newnick,
+							    "[" + IRC_Bold + comm->Name() + IRC_Off + "] " +
+							    comm->message->Entry());
 			}
 		    }
-		}}
-		if (!setmode.empty())
-		{
-		    mstring setmode2;
-		    for (unsigned int j=0; j<setmode.size(); j++)
-		    {
-			if (setmode[j] != '+' && setmode[j] != '-' &&
-			    setmode[j] != ' ' &&
-			    !nlive->HasMode(setmode[j]))
-			    setmode2 += setmode[j];
-		    }
-		    SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
 		}
-		if (Magick::instance().nickserv.IsStored(newnick))
+	    }
+	    if (!setmode.empty())
+	    {
+		mstring setmode2;
+
+		for (unsigned int j = 0; j < setmode.size(); j++)
 		{
-		    map_entry<Nick_Stored_t> nstored = Magick::instance().nickserv.GetStored(newnick);
-		    if (nstored->Forbidden())
-		    {
-			SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
-			    (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		    }
-		    else if (nstored->Protect() && !nstored->IsOnline())
-		    {
-			SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
-			    (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
-		    }
+		    if (setmode[j] != '+' && setmode[j] != '-' && setmode[j] != ' ' && !nlive->HasMode(setmode[j]))
+			setmode2 += setmode[j];
+		}
+		SVSMODE(Magick::instance().nickserv.FirstName(), newnick, "+" + setmode2);
+	    }
+	    if (Magick::instance().nickserv.IsStored(newnick))
+	    {
+		map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(newnick);
+		if (nstored->Forbidden())
+		{
+		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/FORBIDDEN",
+			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
+		}
+		else if (nstored->Protect() && !nstored->IsOnline())
+		{
+		    SEND(Magick::instance().nickserv.FirstName(), newnick, "ERR_SITUATION/PROTECTED",
+			 (ToHumanTime(Magick::instance().nickserv.Ident(), newnick)));
 		}
 	    }
 	}
-	else if (msgtype=="USERHOST")
+    }
+    else if (msgtype == "USERHOST")
+    {
+	if (!params.empty())
 	{
-	    if (!params.empty())
-	    {
-		sraw("461 " + source + " USERHOST :Not enough paramaters");
-	    }
-	    else
-	    {
-		if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
-		{
-		    map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
-		    if (!Magick::instance().nickserv.IsStored(nlive->Name()) ? 1 :
-			!Magick::instance().nickserv.GetStored(nlive->Name())->Private())
-		    {
-			sraw("302 " + source + " :" + nlive->Name() +
-				"*=-" + nlive->User() +
-				"@" + nlive->AltHost());
-		    }
-		    else
-		    {
-			sraw("302 " + source + " :" + nlive->Name() +
-				"*=-" + nlive->User() + "@" +
-				Magick::instance().getMessage("VALS/ONLINE"));
-		    }
-		}
-		else
-		{
-		    sraw("401 " + source + " " + params.ExtractWord(1, ": ") +
-			" :No such nickname/channel.");
-		}
-	    }
-	}
-	else if (msgtype=="USERS")
-	{
-	    // :source USERS :our.server
-	    sraw("446 " + source + " :USERS has been disabled");
+	    sraw("461 " + source + " USERHOST :Not enough paramaters");
 	}
 	else
 	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+	    if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
+	    {
+		map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
+		if (!Magick::instance().nickserv.IsStored(nlive->Name())? 1 : !Magick::instance().nickserv.
+		    GetStored(nlive->Name())->Private())
+		{
+		    sraw("302 " + source + " :" + nlive->Name() + "*=-" + nlive->User() + "@" + nlive->AltHost());
+		}
+		else
+		{
+		    sraw("302 " + source + " :" + nlive->Name() + "*=-" + nlive->User() + "@" +
+			 Magick::instance().getMessage("VALS/ONLINE"));
+		}
+	    }
+	    else
+	    {
+		sraw("401 " + source + " " + params.ExtractWord(1, ": ") + " :No such nickname/channel.");
+	    }
 	}
+    }
+    else if (msgtype == "USERS")
+    {
+	// :source USERS :our.server
+	sraw("446 " + source + " :USERS has been disabled");
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_V(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_V(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_V", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -5997,78 +5833,78 @@ void Server::parse_V(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="VERSION")
-	{
-	    // :source VERSION :our.server
-	    //:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
-	    mstring tmp(VERSION);
-	    if(!RELEASE.empty())
-		tmp+=RELEASE;
-	    if(!PATCH1.empty())
-		tmp+="+"+PATCH1;
-	    if(!PATCH2.empty())
-		tmp+="+"+PATCH2;
-	    if(!PATCH3.empty())
-		tmp+="+"+PATCH3;
-	    if(!PATCH4.empty())
-		tmp+="+"+PATCH4;
-	    if(!PATCH5.empty())
-		tmp+="+"+PATCH5;
-	    if(!PATCH6.empty())
-		tmp+="+"+PATCH6;
-	    if(!PATCH7.empty())
-		tmp+="+"+PATCH7;
-	    if(!PATCH8.empty())
-		tmp+="+"+PATCH8;
-	    if(!PATCH9.empty())
-		tmp+="+"+PATCH9;
-	    tmp << " [";
+    if (msgtype == "VERSION")
+    {
+	// :source VERSION :our.server
+	//:temple.magick.tm 351 ChanServ dal4.4.17. temple.magick.tm :AiMnW
+	mstring tmp(VERSION);
+
+	if (!RELEASE.empty())
+	    tmp += RELEASE;
+	if (!PATCH1.empty())
+	    tmp += "+" + PATCH1;
+	if (!PATCH2.empty())
+	    tmp += "+" + PATCH2;
+	if (!PATCH3.empty())
+	    tmp += "+" + PATCH3;
+	if (!PATCH4.empty())
+	    tmp += "+" + PATCH4;
+	if (!PATCH5.empty())
+	    tmp += "+" + PATCH5;
+	if (!PATCH6.empty())
+	    tmp += "+" + PATCH6;
+	if (!PATCH7.empty())
+	    tmp += "+" + PATCH7;
+	if (!PATCH8.empty())
+	    tmp += "+" + PATCH8;
+	if (!PATCH9.empty())
+	    tmp += "+" + PATCH9;
+	tmp << " [";
 #ifdef HASCRYPT
-	    tmp << "C";
+	tmp << "C";
 #else
-	    tmp << "c";
+	tmp << "c";
 #endif
 #ifdef MAGICK_TRACE_WORKS
-	    tmp << "T";
+	tmp << "T";
 #else
-	    tmp << "t";
+	tmp << "t";
 #endif
 #ifdef MAGICK_LOCKS_WORK
-	    tmp << "L";
+	tmp << "L";
 #else
-	    tmp << "l";
+	tmp << "l";
 #endif
 #ifdef MAGICK_HAS_EXCEPTIONS
-	    tmp << "E";
+	tmp << "E";
 #else
-	    tmp << "e";
+	tmp << "e";
 #endif
 #ifdef CONVERT
-	    tmp << "V";
+	tmp << "V";
 #else
-	    tmp << "v";
+	tmp << "v";
 #endif
 #ifdef GETPASS
-	    tmp << "G";
+	tmp << "G";
 #else
-	    tmp << "g";
+	tmp << "g";
 #endif
 #if defined(MAGICK_USE_MPATROL) || defined(MAGICK_USE_EFENCE)
-	    tmp << "D";
+	tmp << "D";
 #else
-	    tmp << "d";
+	tmp << "d";
 #endif
-	    tmp << "] Build #" << BUILD_NUMBER << " (" << BUILD_TIME <<
-		") " << sysinfo_type() << " " << sysinfo_rel() << ".";
-	    sraw("351 " + source + " " + PACKAGE + " " + Magick::instance().startup.Server_Name() + " :" + tmp);
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+	tmp << "] Build #" << BUILD_NUMBER << " (" << BUILD_TIME << ") " << sysinfo_type() << " " << sysinfo_rel() << ".";
+	sraw("351 " + source + " " + PACKAGE + " " + Magick::instance().startup.Server_Name() + " :" + tmp);
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_W(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_W", (source, msgtype, params));
 
@@ -6081,13 +5917,13 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="WALLOPS")
-	{
-	    // :source WALLOPS :text
-	    // useless chatter ... can be ignored.
-	}
-	else if (msgtype=="WHO")
-	{
+    if (msgtype == "WALLOPS")
+    {
+	// :source WALLOPS :text
+	// useless chatter ... can be ignored.
+    }
+    else if (msgtype == "WHO")
+    {
 //:ChanServ WHO
 //:soul.darker.net 352 ChanServ #chatzone ~striker syd-56K-162.tpgi.com.au requiem.darker.net killkickabuseme H :2 Pain looks good on other people...
 //:soul.darker.net 352 ChanServ * blah darker.net heaven.darker.net ChanServ H* :1 <bad-realname>
@@ -6139,65 +5975,66 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 //:soul.darker.net 352 ChanServ #chatzone ~jason axe.net.au vampire.darker.net Wau|oK G%@ :2 Nothing really matters..
 //:soul.darker.net 352 ChanServ #operzone satan680 pc134.net19.ktv.koping.se vampire.darker.net Alien G*@ :2 am I GOD ?
 //:soul.darker.net 315 ChanServ vampire.darker.net :End of /WHO list.
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL &&
-		Magick::instance().ircsvchandler->HTM_Level() > 3)
-	    {
-		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-								mVarArray(msgtype));
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :" + tmp.c_str());
-		return;
-	    }}
-
-	}
-	else if (msgtype=="WHOIS")
 	{
-	    // :source WHOIS target :target
-		//:ChanServ WHOIS PreZ :PreZ
-		//:soul.darker.net 311 ChanServ PreZ prez castle.srealm.net.au * :I am what the people fear, I need not fear them.
-		//:soul.darker.net 307 ChanServ PreZ :is a registered nick
-		//:soul.darker.net 319 ChanServ PreZ :#chatzone #darkernet @#mrcoffee #pagan @#wicca
-		//:soul.darker.net 312 ChanServ PreZ soul.darker.net :Show me a dream .. I'll show you my nightmare
-		//:soul.darker.net 301 ChanServ PreZ :Automatically set away [SZon]  Away since Sun Jul 18 20:15
-		//:soul.darker.net 313 ChanServ PreZ :is an IRC Operator
-		//:soul.darker.net 310 ChanServ PreZ :looks very helpful.
-		//:soul.darker.net 317 ChanServ PreZ 557 932291863 :seconds idle, signon time
-		//:soul.darker.net 318 ChanServ PreZ :End of /WHOIS list.
-
-	    { RLOCK(("IrcSvcHandler"));
-	    if (Magick::instance().ircsvchandler != NULL &&
-		Magick::instance().ircsvchandler->HTM_Level() > 3)
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
 	    {
 		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
-								mVarArray(msgtype));
-		raw(((proto.Tokens() && !proto.GetNonToken("NOTICE").empty()) ?
-			proto.GetNonToken("NOTICE") : mstring("NOTICE")) +
-			" " + source + " :" + tmp.c_str());
-		sraw("318 " + source + " " + params.ExtractWord(1, ": ") +
-			" :End of /WHOIS list.");
+					   mVarArray(msgtype));
+
+		raw(((proto.Tokens()
+		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+		    source + " :" + tmp.c_str());
+		return;
+	    }
+	}
+
+    }
+    else if (msgtype == "WHOIS")
+    {
+	// :source WHOIS target :target
+	//:ChanServ WHOIS PreZ :PreZ
+	//:soul.darker.net 311 ChanServ PreZ prez castle.srealm.net.au * :I am what the people fear, I need not fear them.
+	//:soul.darker.net 307 ChanServ PreZ :is a registered nick
+	//:soul.darker.net 319 ChanServ PreZ :#chatzone #darkernet @#mrcoffee #pagan @#wicca
+	//:soul.darker.net 312 ChanServ PreZ soul.darker.net :Show me a dream .. I'll show you my nightmare
+	//:soul.darker.net 301 ChanServ PreZ :Automatically set away [SZon]  Away since Sun Jul 18 20:15
+	//:soul.darker.net 313 ChanServ PreZ :is an IRC Operator
+	//:soul.darker.net 310 ChanServ PreZ :looks very helpful.
+	//:soul.darker.net 317 ChanServ PreZ 557 932291863 :seconds idle, signon time
+	//:soul.darker.net 318 ChanServ PreZ :End of /WHOIS list.
+
+	{
+	    RLOCK(("IrcSvcHandler"));
+	    if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->HTM_Level() > 3)
+	    {
+		mstring tmp = parseMessage(Magick::instance().getMessage(source, "MISC/HTM"),
+					   mVarArray(msgtype));
+
+		raw(((proto.Tokens()
+		      && !proto.GetNonToken("NOTICE").empty())? proto.GetNonToken("NOTICE") : mstring("NOTICE")) + " " +
+		    source + " :" + tmp.c_str());
+		sraw("318 " + source + " " + params.ExtractWord(1, ": ") + " :End of /WHOIS list.");
 		return;
 	    }
 	    else
 	    {
 		if (Magick::instance().nickserv.IsLive(params.ExtractWord(1, ": ")))
 		{
-		    map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
-		    sraw("311 " + source + " " + nlive->Name() + " " +
-			nlive->User() + " " + nlive->Host() +
-			" * :" + nlive->RealName());
+		    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(params.ExtractWord(1, ": "));
+		    sraw("311 " + source + " " + nlive->Name() + " " + nlive->User() + " " + nlive->Host() + " * :" +
+			 nlive->RealName());
 
 		    if (nlive->IsRecognized())
 		    {
-			sraw("307 " + source + " " + nlive->Name() +
-				" : is a registered nick");
+			sraw("307 " + source + " " + nlive->Name() + " : is a registered nick");
 		    }
 
-		    set<mstring> chans = nlive->Channels();
-		    set<mstring>::iterator iter;
+		    set < mstring > chans = nlive->Channels();
+		    set < mstring >::iterator iter;
 		    mstring outline = "319 " + source + " " + nlive->Name() + " :";
-		    for (iter=chans.begin(); iter!=chans.end(); iter++)
+
+		    for (iter = chans.begin(); iter != chans.end(); iter++)
 		    {
 			if (outline.size() + iter->size() > proto.MaxLine())
 			{
@@ -6209,10 +6046,9 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 			if (!Magick::instance().chanserv.IsLive(*iter))
 			    continue;
 
-			map_entry<Chan_Live_t> clive = Magick::instance().chanserv.GetLive(*iter);
+			map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(*iter);
 			// Channel +p or +s, and source not in chan
-			if ((clive->HasMode("s") || clive->HasMode("p")) &&
-				!clive->IsIn(source))
+			if ((clive->HasMode("s") || clive->HasMode("p")) && !clive->IsIn(source))
 			    continue;
 
 			if (clive->IsOp(nlive->Name()))
@@ -6228,70 +6064,62 @@ void Server::parse_W(mstring &source, const mstring &msgtype, const mstring &par
 			sraw(outline);
 
 		    if (nlive->IsServices())
-			sraw("312 " + source + " " + nlive->Name() + " " +
-				Magick::instance().startup.Server_Name() +
-				" :" + Magick::instance().startup.Server_Desc());
+			sraw("312 " + source + " " + nlive->Name() + " " + Magick::instance().startup.Server_Name() + " :" +
+			     Magick::instance().startup.Server_Desc());
 		    else if (IsList(nlive->Server()))
-			sraw("312 " + source + " " + nlive->Name() + " " +
-				nlive->Server() + " :" +
-				GetList(nlive->Server())->Description());
+			sraw("312 " + source + " " + nlive->Name() + " " + nlive->Server() + " :" +
+			     GetList(nlive->Server())->Description());
 
 		    if (!nlive->Away().empty())
-			sraw("301 " + source + " " + nlive->Name() + " :" +
-				nlive->Away());
+			sraw("301 " + source + " " + nlive->Name() + " :" + nlive->Away());
 
 		    if (nlive->HasMode("o"))
 		    {
 			if (nlive->HasMode("A"))
-			    sraw("313 " + source + " " + nlive->Name() +
-				" :is an IRC Operator (Server Administrator)");
+			    sraw("313 " + source + " " + nlive->Name() + " :is an IRC Operator (Server Administrator)");
 			else if (nlive->HasMode("a"))
-			    sraw("313 " + source + " " + nlive->Name() +
-				" :is an IRC Operator (Services Operator)");
+			    sraw("313 " + source + " " + nlive->Name() + " :is an IRC Operator (Services Operator)");
 			else
-			    sraw("313 " + source + " " + nlive->Name() +
-				" :is an IRC Operator");
+			    sraw("313 " + source + " " + nlive->Name() + " :is an IRC Operator");
 		    }
 
 		    if (nlive->HasMode("h"))
-			sraw("310 " + source + " " + nlive->Name() +
-				" :looks very helpful.");
+			sraw("310 " + source + " " + nlive->Name() + " :looks very helpful.");
 
 		    if (nlive->IsServices())
 		    {
-    			mstring signon_idletime;
-			signon_idletime << nlive->LastAction().SecondsSince()
-				<< " " << nlive->SignonTime().timetstring();
-			sraw("317 " + source + " " + nlive->Name() + " " +
-				signon_idletime + " :seconds idle, signon time");
+			mstring signon_idletime;
+
+			signon_idletime << nlive->LastAction().SecondsSince() << " " << nlive->SignonTime().timetstring();
+			sraw("317 " + source + " " + nlive->Name() + " " + signon_idletime + " :seconds idle, signon time");
 		    }
 
-		    sraw("318 " + source + " " + nlive->Name() +
-			" :End of /WHOIS list.");
+		    sraw("318 " + source + " " + nlive->Name() + " :End of /WHOIS list.");
 		}
 		else
 		{
-		    sraw("401 " + source + " " + params.ExtractWord(1, ": ") +
-			" :No such nickname/channel.");
+		    sraw("401 " + source + " " + params.ExtractWord(1, ": ") + " :No such nickname/channel.");
 		}
-	    }}
+	    }
+	}
 
-	}
-	else if (msgtype=="WHOWAS")
-	{
-	    // Dont store 'previous user' info, so ignore.
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    }
+    else if (msgtype == "WHOWAS")
+    {
+	// Dont store 'previous user' info, so ignore.
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::parse_X(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_X(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_X", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -6301,14 +6129,15 @@ void Server::parse_X(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
-void Server::parse_Y(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_Y(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_Y", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -6318,14 +6147,15 @@ void Server::parse_Y(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 }
 
-void Server::parse_Z(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::parse_Z(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::parse_Z", (source, msgtype, params));
 
-    static_cast<void>(params);
+    static_cast < void >(params);
+
     if (source[0u] == '@' && proto.Numeric())
 	source = GetServer(source.After("@"));
 
@@ -6335,18 +6165,18 @@ void Server::parse_Z(mstring &source, const mstring &msgtype, const mstring &par
 	else
 	    source = OurUplink();
 
-	if (msgtype=="ZLINE")
-	{
-	    // We will ignore ZLINES because they're not relivant to us.
-	    // we will not be zlining our own clients ;P
-	}
-	else
-	{
-	    LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
-	}
+    if (msgtype == "ZLINE")
+    {
+	// We will ignore ZLINES because they're not relivant to us.
+	// we will not be zlining our own clients ;P
+    }
+    else
+    {
+	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+    }
 }
 
-void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstring &params)
+void Server::numeric_execute(mstring & source, const mstring & msgtype, const mstring & params)
 {
     FT("Server::numeric_execute", (source, msgtype, params));
 
@@ -6365,199 +6195,194 @@ void Server::numeric_execute(mstring &source, const mstring &msgtype, const mstr
 
     switch (numeric)
     {
-    case 303:     // RPL_ISON
+    case 303:			// RPL_ISON
 	{
-	{ RLOCK(("IrcSvcHandler"));
-	if (Magick::instance().ircsvchandler != NULL &&
-	    Magick::instance().ircsvchandler->Burst())
-	{
-	    Magick::instance().ircsvchandler->EndBurst();
-	    if (!proto.Burst().empty())
-		Magick::instance().server.sraw(((proto.Tokens() &&
-		    !proto.GetNonToken(proto.Burst()).empty()) ?
-		    proto.GetNonToken(proto.Burst()) : mstring(proto.Burst())));
-	}}
-
-	Magick::instance().operserv.CloneList_check();
-	for (unsigned int i=1; i<=params.WordCount(": "); i++)
-	{
-	    // Remove clients from 'signon list' who are
-	    // already on the network.
-	    WLOCK(("Server", "WaitIsOn"));
-	    if (WaitIsOn.find(params.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
-		WaitIsOn.erase(params.ExtractWord(i, ": "));
-	}
-	if (WaitIsOn.size())
-	{
-	    set<mstring>::reverse_iterator k;
-	    RLOCK(("Server", "WaitIsOn"));
-	    for (k=WaitIsOn.rbegin(); k!=WaitIsOn.rend(); k++)
 	    {
-		if (Magick::instance().operserv.IsName(*k) &&
-			!Magick::instance().nickserv.IsLive(*k))
+		RLOCK(("IrcSvcHandler"));
+		if (Magick::instance().ircsvchandler != NULL && Magick::instance().ircsvchandler->Burst())
 		{
-		    Magick::instance().operserv.signon(*k);
+		    Magick::instance().ircsvchandler->EndBurst();
+		    if (!proto.Burst().empty())
+			Magick::instance().server.
+			    sraw(((proto.Tokens()
+				   && !proto.GetNonToken(proto.Burst()).empty())? proto.GetNonToken(proto.
+												    Burst()) : mstring(proto.
+														       Burst
+														       ())));
 		}
-		else if (Magick::instance().nickserv.IsName(*k) &&
-			!Magick::instance().nickserv.IsLive(*k))
-		{
-		    Magick::instance().nickserv.signon(*k);
-		}
-		else if (Magick::instance().chanserv.IsName(*k) &&
-			!Magick::instance().nickserv.IsLive(*k))
-		{
-		    Magick::instance().chanserv.signon(*k);
+	    }
 
-		    if (Magick::instance().chanserv.FirstName() == *k)
+	    Magick::instance().operserv.CloneList_check();
+	    for (unsigned int i = 1; i <= params.WordCount(": "); i++)
+	    {
+		// Remove clients from 'signon list' who are
+		// already on the network.
+		WLOCK(("Server", "WaitIsOn"));
+		if (WaitIsOn.find(params.ExtractWord(i, ": ").LowerCase()) != WaitIsOn.end())
+		    WaitIsOn.erase(params.ExtractWord(i, ": "));
+	    }
+	    if (WaitIsOn.size())
+	    {
+		set < mstring >::reverse_iterator k;
+		RLOCK(("Server", "WaitIsOn"));
+		for (k = WaitIsOn.rbegin(); k != WaitIsOn.rend(); k++)
+		{
+		    if (Magick::instance().operserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
 		    {
-			if (Magick::instance().chanserv.Hide())
-			    MODE(*k, "+i");
-			vector<mstring> joins;
-			ChanServ::stored_t::iterator iter;
-			map<mstring,mstring> modes;
-			map<mstring,triplet<mstring,mstring,mDateTime> > topics;
+			Magick::instance().operserv.signon(*k);
+		    }
+		    else if (Magick::instance().nickserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
+		    {
+			Magick::instance().nickserv.signon(*k);
+		    }
+		    else if (Magick::instance().chanserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
+		    {
+			Magick::instance().chanserv.signon(*k);
 
-			// Should be fact finding ONLY ...
-			{ RLOCK2(("ChanServ", "stored"));
-			for (iter=Magick::instance().chanserv.StoredBegin();
-			     iter!=Magick::instance().chanserv.StoredEnd(); iter++)
+			if (Magick::instance().chanserv.FirstName() == *k)
 			{
-			    map_entry<Chan_Stored_t> cstored(iter->second);
-			    map_entry<Chan_Live_t> clive;
-			    if (Magick::instance().chanserv.IsLive(iter->first))
-				clive = Magick::instance().chanserv.GetLive(iter->first);
+			    if (Magick::instance().chanserv.Hide())
+				MODE(*k, "+i");
+			    vector < mstring > joins;
+			    ChanServ::stored_t::iterator iter;
+			    map < mstring, mstring > modes;
+			    map < mstring, triplet < mstring, mstring, mDateTime > >topics;
 
-			    // If its live and got JOIN on || not live and mlock +k or +i
-			    if ((clive.entry() != NULL && cstored->Join()) ||
-				(clive.entry() == NULL && !cstored->Forbidden() &&
-				(!cstored->Mlock_Key().empty() ||
-				cstored->Mlock_On().Contains("i"))))
+			    // Should be fact finding ONLY ...
 			    {
-				joins.push_back(iter->first);
-				if(clive.entry() == NULL)
+				RLOCK2(("ChanServ", "stored"));
+				for (iter = Magick::instance().chanserv.StoredBegin();
+				     iter != Magick::instance().chanserv.StoredEnd(); iter++)
 				{
-				    modes[iter->first] = "+s";
-				    if (cstored->Mlock_On().Contains("i"))
-					modes[iter->first] += "i";
-				    if(!cstored->Mlock_Key().empty())
-					modes[iter->first] += "k " +
-						cstored->Mlock_Key();
+				    map_entry < Chan_Stored_t > cstored(iter->second);
+				    map_entry < Chan_Live_t > clive;
+				    if (Magick::instance().chanserv.IsLive(iter->first))
+					clive = Magick::instance().chanserv.GetLive(iter->first);
+
+				    // If its live and got JOIN on || not live and mlock +k or +i
+				    if ((clive.entry() != NULL && cstored->Join())
+					|| (clive.entry() == NULL && !cstored->Forbidden()
+					    && (!cstored->Mlock_Key().empty() || cstored->Mlock_On().Contains("i"))))
+				    {
+					joins.push_back(iter->first);
+					if (clive.entry() == NULL)
+					{
+					    modes[iter->first] = "+s";
+					    if (cstored->Mlock_On().Contains("i"))
+						modes[iter->first] += "i";
+					    if (!cstored->Mlock_Key().empty())
+						modes[iter->first] += "k " + cstored->Mlock_Key();
+					}
+				    }
+
+				    if (clive.entry() != NULL && !cstored->Last_Topic().empty() && !cstored->Suspended())
+				    {
+					if ((cstored->Topiclock() && clive->Topic() != cstored->Last_Topic())
+					    || (cstored->Keeptopic() && clive->Topic().empty()))
+					{
+					    topics[iter->first] =
+						triplet < mstring, mstring, mDateTime > (cstored->Last_Topic_Setter(),
+											 cstored->Last_Topic(),
+											 cstored->Last_Topic_Set_Time());
+					}
+				    }
 				}
 			    }
 
-			    if (clive.entry() != NULL &&
-				!cstored->Last_Topic().empty() &&
-				!cstored->Suspended())
-			    {
-				if ((cstored->Topiclock() &&
-					clive->Topic() != cstored->Last_Topic()) ||
-					(cstored->Keeptopic() &&
-					clive->Topic().empty()))
-				{
-				    topics[iter->first] = triplet<mstring,mstring,mDateTime>(
-					cstored->Last_Topic_Setter(),
-					cstored->Last_Topic(),
-					cstored->Last_Topic_Set_Time());
-				}
-			    }
-			}}
+			    vector < mstring >::iterator j;
+			    mstring joinline;
 
-			vector<mstring>::iterator j;
-			mstring joinline;
-			for (j=joins.begin(); j!=joins.end(); j++)
-			{
-			    if (joinline.length() + j->length() > proto.MaxLine())
+			    for (j = joins.begin(); j != joins.end(); j++)
+			    {
+				if (joinline.length() + j->length() > proto.MaxLine())
+				{
+				    JOIN(Magick::instance().chanserv.FirstName(), joinline);
+				    joinline.erase();
+				}
+				if (joinline.length())
+				    joinline << ",";
+				joinline << *j;
+			    }
+			    if (joinline.length())
 			    {
 				JOIN(Magick::instance().chanserv.FirstName(), joinline);
 				joinline.erase();
 			    }
-			    if (joinline.length())
-				joinline << ",";
-			    joinline << *j;
-			}
-			if (joinline.length())
-			{
-			    JOIN(Magick::instance().chanserv.FirstName(), joinline);
-			    joinline.erase();
-			}
 
-			map<mstring,mstring>::iterator m;
-			for (m=modes.begin(); m!=modes.end(); m++)
-			{
-			    Magick::instance().chanserv.GetLive(m->first)->SendMode(m->second);
-			}
+			    map < mstring, mstring >::iterator m;
+			    for (m = modes.begin(); m != modes.end(); m++)
+			    {
+				Magick::instance().chanserv.GetLive(m->first)->SendMode(m->second);
+			    }
 
-			map<mstring,triplet<mstring,mstring,mDateTime> >::iterator t;;
-			for (t=topics.begin(); t!=topics.end(); t++)
-			{
-			    Magick::instance().server.TOPIC(*k, t->second.first,
-				t->first, t->second.second, t->second.third);
+			    map < mstring, triplet < mstring, mstring, mDateTime > >::iterator t;;
+			    for (t = topics.begin(); t != topics.end(); t++)
+			    {
+				Magick::instance().server.TOPIC(*k, t->second.first, t->first, t->second.second,
+								t->second.third);
+			    }
 			}
 		    }
-		}
-		else if (Magick::instance().memoserv.IsName(*k) &&
-			!Magick::instance().nickserv.IsLive(*k))
-		{
-		    Magick::instance().memoserv.signon(*k);
-		}
-		else if (Magick::instance().commserv.IsName(*k) &&
-			!Magick::instance().nickserv.IsLive(*k))
-		{
-		    Magick::instance().commserv.signon(*k);
-		}
-		else if (Magick::instance().servmsg.IsName(*k) &&
-			!Magick::instance().nickserv.IsLive(*k))
-		{
-		    Magick::instance().servmsg.signon(*k);
-		    if (Magick::instance().servmsg.FirstName() == *k)
-			Magick::instance().server.MODE(*k, "+o");
-		}
+		    else if (Magick::instance().memoserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
+		    {
+			Magick::instance().memoserv.signon(*k);
+		    }
+		    else if (Magick::instance().commserv.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
+		    {
+			Magick::instance().commserv.signon(*k);
+		    }
+		    else if (Magick::instance().servmsg.IsName(*k) && !Magick::instance().nickserv.IsLive(*k))
+		    {
+			Magick::instance().servmsg.signon(*k);
+			if (Magick::instance().servmsg.FirstName() == *k)
+			    Magick::instance().server.MODE(*k, "+o");
+		    }
 
-		if (!(proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000)) &&
-		    Magick::instance().nickserv.IsLive(*k) && !Magick::instance().startup.Setmode().empty())
-		    Magick::instance().server.MODE(*k, "+" + Magick::instance().startup.Setmode());
-		FlushMsgs(*k);
+		    if (!(proto.P12() || (proto.Signon() >= 2000 && proto.Signon() < 3000))
+			&& Magick::instance().nickserv.IsLive(*k) && !Magick::instance().startup.Setmode().empty())
+			Magick::instance().server.MODE(*k, "+" + Magick::instance().startup.Setmode());
+		    FlushMsgs(*k);
+		}
 	    }
-	}
-	{ WLOCK(("Server", "WaitIsOn"));
-	WaitIsOn.clear();
-	}
-	if (!proto.EndBurst().empty())
-	    Magick::instance().server.sraw(((proto.Tokens() &&
-		!proto.GetNonToken(proto.EndBurst()).empty()) ?
-		proto.GetNonToken(proto.EndBurst()) : mstring(proto.EndBurst())));
+	    {
+		WLOCK(("Server", "WaitIsOn"));
+		WaitIsOn.clear();
+	    }
+	    if (!proto.EndBurst().empty())
+		Magick::instance().server.
+		    sraw(((proto.Tokens()
+			   && !proto.GetNonToken(proto.EndBurst()).empty())? proto.GetNonToken(proto.
+											       EndBurst()) : mstring(proto.
+														     EndBurst
+														     ())));
 	}
 	break;
-    case 436:     // ERR_NICKCOLLISION
+    case 436:			// ERR_NICKCOLLISION
 	// MUST handle.
 	break;
-    case 464:     // ERR_PASSWDMISMATCH
+    case 464:			// ERR_PASSWDMISMATCH
 	// MUST handle (Stop connecting).
-	LOG(LM_ERROR, "OTHER/WRONGPASS", (
-		Magick::instance().CurrentServer()));
+	LOG(LM_ERROR, "OTHER/WRONGPASS", (Magick::instance().CurrentServer()));
 	Magick::instance().Disconnect();
 	break;
-    case 465:     // ERR_YOUREBANNEDCREEP
+    case 465:			// ERR_YOUREBANNEDCREEP
 	// MUST handle (Stop connecting).
-	LOG(LM_ERROR, "OTHER/WEAREBANNED", (
-		Magick::instance().CurrentServer()));
+	LOG(LM_ERROR, "OTHER/WEAREBANNED", (Magick::instance().CurrentServer()));
 	Magick::instance().Disconnect();
 	break;
     default:
 	// We dont bother with what we get back -- useless anyway.
-//	LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
+//      LOG(LM_WARNING, "ERROR/UNKNOWN_MSG", (msgtype));
 	break;
     }
 }
 
 void Server::DumpB() const
 {
-    MB(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(),
-	i_OurUplink, ToBeSent.size()));
+    MB(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(), i_OurUplink, ToBeSent.size()));
 }
 
 void Server::DumpE() const
 {
-    ME(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(),
-	i_OurUplink, ToBeSent.size()));
+    ME(0, (i_UserMax, ServerSquit.size(), ToBeSquit.size(), i_OurUplink, ToBeSent.size()));
 }

@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-  #pragma hdrstop
+#pragma hdrstop
 #else
-  #pragma implementation
+#pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -18,6 +18,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_trace_cpp_ ## x () { return y; }
 RCSID(trace_cpp, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -27,6 +28,9 @@ RCSID(trace_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.115  2002/01/12 14:42:09  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.114  2001/12/20 08:02:33  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -172,126 +176,278 @@ RCSID(trace_cpp, "@(#)$Id$");
 
 mstring threadname[tt_MAX] = { "LOST", "MAIN", "NS", "CS", "MS", "OS", "XS", "NET", "SCRIPT", "MBASE" };
 
-unsigned short makehex (const mstring &SLevel)
+unsigned short makehex(const mstring & SLevel)
 {
-    if (SLevel.length() != 6 || SLevel[0u]!='0' ||
-		    (SLevel[1u]!='x' && SLevel[1u]!='X'))
+    if (SLevel.length() != 6 || SLevel[0u] != '0' || (SLevel[1u] != 'x' && SLevel[1u] != 'X'))
 	return 0;
 
     unsigned short level = 0;
-    for (unsigned int j=2; j<6; j++) {
-	switch(SLevel[j]) {
+
+    for (unsigned int j = 2; j < 6; j++)
+    {
+	switch (SLevel[j])
+	{
 	case 'F':
 	case 'f':
-	    switch(j) {
-	    case 5: level |= 0x000f; break;
-	    case 4: level |= 0x00f0; break;
-	    case 3: level |= 0x0f00; break;
-	    case 2: level |= 0xf000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x000f;
+		break;
+	    case 4:
+		level |= 0x00f0;
+		break;
+	    case 3:
+		level |= 0x0f00;
+		break;
+	    case 2:
+		level |= 0xf000;
+		break;
+	    }
+	    break;
 	case 'E':
 	case 'e':
-	    switch(j) {
-	    case 5: level |= 0x000e; break;
-	    case 4: level |= 0x00e0; break;
-	    case 3: level |= 0x0e00; break;
-	    case 2: level |= 0xe000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x000e;
+		break;
+	    case 4:
+		level |= 0x00e0;
+		break;
+	    case 3:
+		level |= 0x0e00;
+		break;
+	    case 2:
+		level |= 0xe000;
+		break;
+	    }
+	    break;
 	case 'D':
 	case 'd':
-	    switch(j) {
-	    case 5: level |= 0x000d; break;
-	    case 4: level |= 0x00d0; break;
-	    case 3: level |= 0x0d00; break;
-	    case 2: level |= 0xd000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x000d;
+		break;
+	    case 4:
+		level |= 0x00d0;
+		break;
+	    case 3:
+		level |= 0x0d00;
+		break;
+	    case 2:
+		level |= 0xd000;
+		break;
+	    }
+	    break;
 	case 'C':
 	case 'c':
-	    switch(j) {
-	    case 5: level |= 0x000c; break;
-	    case 4: level |= 0x00c0; break;
-	    case 3: level |= 0x0c00; break;
-	    case 2: level |= 0xc000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x000c;
+		break;
+	    case 4:
+		level |= 0x00c0;
+		break;
+	    case 3:
+		level |= 0x0c00;
+		break;
+	    case 2:
+		level |= 0xc000;
+		break;
+	    }
+	    break;
 	case 'B':
 	case 'b':
-	    switch(j) {
-	    case 5: level |= 0x000b; break;
-	    case 4: level |= 0x00b0; break;
-	    case 3: level |= 0x0b00; break;
-	    case 2: level |= 0xb000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x000b;
+		break;
+	    case 4:
+		level |= 0x00b0;
+		break;
+	    case 3:
+		level |= 0x0b00;
+		break;
+	    case 2:
+		level |= 0xb000;
+		break;
+	    }
+	    break;
 	case 'A':
 	case 'a':
-	    switch(j) {
-	    case 5: level |= 0x000a; break;
-	    case 4: level |= 0x00a0; break;
-	    case 3: level |= 0x0a00; break;
-	    case 2: level |= 0xa000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x000a;
+		break;
+	    case 4:
+		level |= 0x00a0;
+		break;
+	    case 3:
+		level |= 0x0a00;
+		break;
+	    case 2:
+		level |= 0xa000;
+		break;
+	    }
+	    break;
 	case '9':
-	    switch(j) {
-	    case 5: level |= 0x0009; break;
-	    case 4: level |= 0x0090; break;
-	    case 3: level |= 0x0900; break;
-	    case 2: level |= 0x9000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0009;
+		break;
+	    case 4:
+		level |= 0x0090;
+		break;
+	    case 3:
+		level |= 0x0900;
+		break;
+	    case 2:
+		level |= 0x9000;
+		break;
+	    }
+	    break;
 	case '8':
-	    switch(j) {
-	    case 5: level |= 0x0008; break;
-	    case 4: level |= 0x0080; break;
-	    case 3: level |= 0x0800; break;
-	    case 2: level |= 0x8000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0008;
+		break;
+	    case 4:
+		level |= 0x0080;
+		break;
+	    case 3:
+		level |= 0x0800;
+		break;
+	    case 2:
+		level |= 0x8000;
+		break;
+	    }
+	    break;
 	case '7':
-	    switch(j) {
-	    case 5: level |= 0x0007; break;
-	    case 4: level |= 0x0070; break;
-	    case 3: level |= 0x0700; break;
-	    case 2: level |= 0x7000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0007;
+		break;
+	    case 4:
+		level |= 0x0070;
+		break;
+	    case 3:
+		level |= 0x0700;
+		break;
+	    case 2:
+		level |= 0x7000;
+		break;
+	    }
+	    break;
 	case '6':
-	    switch(j) {
-	    case 5: level |= 0x0006; break;
-	    case 4: level |= 0x0060; break;
-	    case 3: level |= 0x0600; break;
-	    case 2: level |= 0x6000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0006;
+		break;
+	    case 4:
+		level |= 0x0060;
+		break;
+	    case 3:
+		level |= 0x0600;
+		break;
+	    case 2:
+		level |= 0x6000;
+		break;
+	    }
+	    break;
 	case '5':
-	    switch(j) {
-	    case 5: level |= 0x0005; break;
-	    case 4: level |= 0x0050; break;
-	    case 3: level |= 0x0500; break;
-	    case 2: level |= 0x5000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0005;
+		break;
+	    case 4:
+		level |= 0x0050;
+		break;
+	    case 3:
+		level |= 0x0500;
+		break;
+	    case 2:
+		level |= 0x5000;
+		break;
+	    }
+	    break;
 	case '4':
-	    switch(j) {
-	    case 5: level |= 0x0004; break;
-	    case 4: level |= 0x0040; break;
-	    case 3: level |= 0x0400; break;
-	    case 2: level |= 0x4000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0004;
+		break;
+	    case 4:
+		level |= 0x0040;
+		break;
+	    case 3:
+		level |= 0x0400;
+		break;
+	    case 2:
+		level |= 0x4000;
+		break;
+	    }
+	    break;
 	case '3':
-	    switch(j) {
-	    case 5: level |= 0x0003; break;
-	    case 4: level |= 0x0030; break;
-	    case 3: level |= 0x0300; break;
-	    case 2: level |= 0x3000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0003;
+		break;
+	    case 4:
+		level |= 0x0030;
+		break;
+	    case 3:
+		level |= 0x0300;
+		break;
+	    case 2:
+		level |= 0x3000;
+		break;
+	    }
+	    break;
 	case '2':
-	    switch(j) {
-	    case 5: level |= 0x0002; break;
-	    case 4: level |= 0x0020; break;
-	    case 3: level |= 0x0200; break;
-	    case 2: level |= 0x2000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0002;
+		break;
+	    case 4:
+		level |= 0x0020;
+		break;
+	    case 3:
+		level |= 0x0200;
+		break;
+	    case 2:
+		level |= 0x2000;
+		break;
+	    }
+	    break;
 	case '1':
-	    switch(j) {
-	    case 5: level |= 0x0001; break;
-	    case 4: level |= 0x0010; break;
-	    case 3: level |= 0x0100; break;
-	    case 2: level |= 0x1000; break;
-	    } break;
+	    switch (j)
+	    {
+	    case 5:
+		level |= 0x0001;
+		break;
+	    case 4:
+		level |= 0x0010;
+		break;
+	    case 3:
+		level |= 0x0100;
+		break;
+	    case 2:
+		level |= 0x1000;
+		break;
+	    }
+	    break;
 	case '0':
 	    break;
 	default:
@@ -303,13 +459,11 @@ unsigned short makehex (const mstring &SLevel)
 
 // ===================================================
 
-ThreadID::ThreadID()
-	: t_internaltype(tt_LOST), t_indent(0), t_intrace(false)
+ThreadID::ThreadID():t_internaltype(tt_LOST), t_indent(0), t_intrace(false)
 {
 }
 
-ThreadID::ThreadID(const threadtype_enum Type)
-	: t_internaltype(Type), t_indent(0), t_intrace(false)
+ThreadID::ThreadID(const threadtype_enum Type):t_internaltype(Type), t_indent(0), t_intrace(false)
 {
 }
 
@@ -324,14 +478,15 @@ void ThreadID::assign(const threadtype_enum Type)
     t_internaltype = Type;
 }
 
-void ThreadID::WriteOut(const mstring &message)
+void ThreadID::WriteOut(const mstring & message)
 {
 #ifndef MAGICK_TRACE_WORKS
-    static_cast<void>(message);
+    static_cast < void >(message);
 #else
     mstring finalout;
-    for (int i=0; i<t_indent; i++)
-        finalout += ".  ";
+
+    for (int i = 0; i < t_indent; i++)
+	finalout += ".  ";
     finalout += message;
 
     messages.push_back(finalout);
@@ -341,6 +496,7 @@ void ThreadID::WriteOut(const mstring &message)
 mstring ThreadID::logname() const
 {
     mstring name("trace");
+
     if (strlen(threadname[t_internaltype]))
 	name << "_" << threadname[t_internaltype];
     name << ".log";
@@ -357,35 +513,39 @@ void ThreadID::Flush()
 	return;
 
     ThreadID *tid = mThread::find();
+
     if (tid != NULL)
 	tid->t_intrace = true;
-    list<pair<threadtype_enum, mstring> >::iterator iter;
-    list<pair<threadtype_enum, mstring> > ThreadMessageQueue2;
-    list<mstring> pre_messages;
-    { MLOCK(("ThreadMessageQueue"));
-    for (iter=ThreadMessageQueue.begin(); iter!=ThreadMessageQueue.end(); iter++)
+    list < pair < threadtype_enum, mstring > >::iterator iter;
+    list < pair < threadtype_enum, mstring > >ThreadMessageQueue2;
+    list < mstring > pre_messages;
     {
-    	if (iter->first == t_internaltype)
-    	{
-    	    pre_messages.push_back(iter->second);
-    	}
-    	else
-    	{
-    	    ThreadMessageQueue2.push_back(*iter);
-    	}
-    }
-    if (ThreadMessageQueue2.size())
-    	ThreadMessageQueue = ThreadMessageQueue2;
+	MLOCK(("ThreadMessageQueue"));
+	for (iter = ThreadMessageQueue.begin(); iter != ThreadMessageQueue.end(); iter++)
+	{
+	    if (iter->first == t_internaltype)
+	    {
+		pre_messages.push_back(iter->second);
+	    }
+	    else
+	    {
+		ThreadMessageQueue2.push_back(*iter);
+	    }
+	}
+	if (ThreadMessageQueue2.size())
+	    ThreadMessageQueue = ThreadMessageQueue2;
     }
 
     if (messages.size() || pre_messages.size())
     {
 	mstring tmp;
+
 	tmp.Format("OUTPUT FROM THREAD ID %p", this);
 	pre_messages.push_front(tmp);
-	{ MLOCK(("TraceDump", logname()));
- 	mFile::Dump(pre_messages, Magick::instance().Services_Dir()+DirSlash+logname(), true, true);
-	mFile::Dump(messages, Magick::instance().Services_Dir()+DirSlash+logname(), true, true);
+	{
+	    MLOCK(("TraceDump", logname()));
+	    mFile::Dump(pre_messages, Magick::instance().Services_Dir() + DirSlash + logname(), true, true);
+	    mFile::Dump(messages, Magick::instance().Services_Dir() + DirSlash + logname(), true, true);
 	}
 	messages.clear();
     }
@@ -401,45 +561,51 @@ void ThreadID::Flush()
 // receiving all trace information.
 
 unsigned short Trace::traces[tt_MAX] = { 0 };
-vector<Trace::levelname_struct> Trace::levelname; // Initialised in main.cpp
-list<pair<threadtype_enum, mstring> > ThreadMessageQueue;
+
+vector < Trace::levelname_struct > Trace::levelname;	// Initialised in main.cpp
+list < pair < threadtype_enum, mstring > >ThreadMessageQueue;
 
 int levelname_count()
 {
-    return sizeof(Trace::levelname)/sizeof(Trace::levelname_struct);
+    return sizeof(Trace::levelname) / sizeof(Trace::levelname_struct);
 }
 
 
 // ===================================================
 
 //      \  function()
-T_Functions::T_Functions(const mstring &name)
-	: m_name(name)
+T_Functions::T_Functions(const mstring & name):m_name(name)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
+	return;			// should throw an exception later
     i_prevfunc = tid->LastFunc();
     tid->LastFunc(name);
-    if (IsOn(tid, Functions)) {
+    if (IsOn(tid, Functions))
+    {
 	mstring message = "\\  " + m_name + "()";
+
 	tid->WriteOut(message);
     }
     tid->indentup();
 }
 
 //      \  function( (char) T, (int) 5 )
-T_Functions::T_Functions(const mstring &name, const mVarArray &args)
-	: m_name(name)
+T_Functions::T_Functions(const mstring & name, const mVarArray & args):m_name(name)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
+	return;			// should throw an exception later
     i_prevfunc = tid->LastFunc();
     tid->LastFunc(name);
-    if (IsOn(tid, Functions)) {
+    if (IsOn(tid, Functions))
+    {
 	mstring message = "\\  " + m_name + "(";
-	for (int i=0; i<args.count(); i++) {
+
+	for (int i = 0; i < args.count(); i++)
+	{
 	    message += " (" + args[i].type() + ") " + args[i].AsString();
 	    if (i < args.count() - 1)
 		message += ", ";
@@ -452,18 +618,21 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 
 //      /  (char) Y
 T_Functions::~T_Functions()
-{ 
+{
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    tid->indentdown(); 
+	return;			// should throw an exception later
+    tid->indentdown();
     tid->LastFunc(i_prevfunc);
-    if (IsOn(tid, Functions)) {
+    if (IsOn(tid, Functions))
+    {
 	mstring message;
+
 	if (!return_value.type().empty())
-		message="/  (" + return_value.type() + ") " + return_value.AsString();
+	    message = "/  (" + return_value.type() + ") " + return_value.AsString();
 	else
-		message="/ ";
+	    message = "/ ";
 	tid->WriteOut(message);
     }
 }
@@ -480,18 +649,21 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 {
     mstring output;
     va_list args;
-    va_start (args, fmt);
+
+    va_start(args, fmt);
     output.FormatV(fmt, args);
-    va_end (args);
+    va_end(args);
     common(output);
 }
 
-void T_CheckPoint::common(const mstring &input)
+void T_CheckPoint::common(const mstring & input)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, CheckPoint)) {
+	return;			// should throw an exception later
+    if (IsOn(tid, CheckPoint))
+    {
 	tid->WriteOut("** " + input);
     }
 }
@@ -508,18 +680,21 @@ T_Comments::T_Comments(const char *fmt, ...)
 {
     va_list args;
     mstring output;
-    va_start (args, fmt);
+
+    va_start(args, fmt);
     output.FormatV(fmt, args);
-    va_end (args);
+    va_end(args);
     common(output);
 }
 
-void T_Comments::common(const mstring &input)
+void T_Comments::common(const mstring & input)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, Comments)) {
+	return;			// should throw an exception later
+    if (IsOn(tid, Comments))
+    {
 	tid->WriteOut("## " + input);
     }
 }
@@ -529,20 +704,23 @@ void T_Comments::common(const mstring &input)
 //      << DE1(PreZ)
 //      << DE2(prez)
 //      << DE3(srealm.net.au)
-T_Modify::T_Modify(const mVarArray &args, unsigned int offset)
-	: i_args(args), i_offset(offset)
+T_Modify::T_Modify(const mVarArray & args, unsigned int offset):i_args(args), i_offset(offset)
 {
 }
 
 void T_Modify::Begin()
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, Modify)) {
-	for (int i=0; i<i_args.count(); i++) {
+	return;			// should throw an exception later
+    if (IsOn(tid, Modify))
+    {
+	for (int i = 0; i < i_args.count(); i++)
+	{
 	    mstring message;
-	    message << "<< " << "DE" << i+i_offset+1 << "(" << i_args[i].AsString() << ")";
+
+	    message << "<< " << "DE" << i + i_offset + 1 << "(" << i_args[i].AsString() << ")";
 	    tid->WriteOut(message);
 	}
     }
@@ -554,12 +732,16 @@ void T_Modify::Begin()
 void T_Modify::End()
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, Modify)) {
-	for (int i=0; i<i_args.count(); i++) {
+	return;			// should throw an exception later
+    if (IsOn(tid, Modify))
+    {
+	for (int i = 0; i < i_args.count(); i++)
+	{
 	    mstring message;
-	    message << ">> " << "DE" << i+i_offset+1 << "(" << i_args[i].AsString() << ")";
+
+	    message << ">> " << "DE" << i + i_offset + 1 << "(" << i_args[i].AsString() << ")";
 	    tid->WriteOut(message);
 	}
     }
@@ -570,25 +752,26 @@ void T_Modify::End()
 //      << DE1(PreZ)
 //      << DE2(prez)
 //      << DE3(srealm.net.au)
-T_Changing::T_Changing(const mstring &name, const mVariant &arg)
-	: i_name(name), i_arg(arg)
+T_Changing::T_Changing(const mstring & name, const mVariant & arg):i_name(name), i_arg(arg)
 {
 }
 
 //      >> DE1(PreZ)
 //      >> DE2(prez)
 //      >> DE3(corewars.net)
-void T_Changing::End(const mVariant &arg)
+void T_Changing::End(const mVariant & arg)
 {
     if (i_name.empty())
 	return;
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, Changing)) {
+	return;			// should throw an exception later
+    if (IsOn(tid, Changing))
+    {
 	mstring message;
-	message << "== " << i_name << " = " << i_arg.AsString() << " -> " <<
-			arg.AsString();
+
+	message << "== " << i_name << " = " << i_arg.AsString() << " -> " << arg.AsString();
 	tid->WriteOut(message);
     }
 }
@@ -598,19 +781,22 @@ void T_Changing::End(const mVariant &arg)
 //      <- PreZ :PRIVMSG ChanServ :help blah
 //      -> ChanServ :PRIVMSG PreZ :Unknown command 'blah'
 //      -- ChanServ :PRIVMSG ChanServ :WTF?!
-T_Chatter::T_Chatter(const dir_enum direction, const mstring &input)
+T_Chatter::T_Chatter(const dir_enum direction, const mstring & input)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, Chatter)) {
+	return;			// should throw an exception later
+    if (IsOn(tid, Chatter))
+    {
 	mstring message;
+
 	if (direction == D_From)
 	    message << "<- " << input;
-	else if(direction == D_To)
+	else if (direction == D_To)
 	    message << "-> " << input;
 	else
-	    message << "-- " << input; // Confused
+	    message << "-- " << input;	// Confused
 	tid->WriteOut(message);
     }
 }
@@ -631,19 +817,21 @@ T_Chatter::T_Chatter(const dir_enum direction, const mstring &input)
 //      :+ R ChanInfo::#Magick
 //      :+ W NickInfo::PreZ::Flags
 //      :+ M Magick::LoadMessages
-void T_Locking::open(const locktype_enum ltype, const mstring &lockname) 
+void T_Locking::open(const locktype_enum ltype, const mstring & lockname)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
+	return;			// should throw an exception later
     if (IsOn(tid, Locking))
     {
 	locktype = ltype;
 	name = lockname;
 	mstring message;
-	if(locktype == L_Read)
+
+	if (locktype == L_Read)
 	    message << ":+ " << "R " << name;
-	else if(locktype == L_Write)
+	else if (locktype == L_Write)
 	    message << ":+ " << "W " << name;
 	else if (locktype == L_Mutex)
 	    message << ":+ " << "M " << name;
@@ -660,15 +848,18 @@ void T_Locking::open(const locktype_enum ltype, const mstring &lockname)
 T_Locking::~T_Locking()
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, Locking)) {
+	return;			// should throw an exception later
+    if (IsOn(tid, Locking))
+    {
 	if (!name.empty())
 	{
-    	    mstring message;
-	    if(locktype == L_Read)
-	        message << ":- " << "R " << name;
-	    else if(locktype == L_Write)
+	    mstring message;
+
+	    if (locktype == L_Read)
+		message << ":- " << "R " << name;
+	    else if (locktype == L_Write)
 		message << ":- " << "W " << name;
 	    else if (locktype == L_Mutex)
 		message << ":- " << "M " << name;
@@ -681,23 +872,28 @@ T_Locking::~T_Locking()
 
 // ===================================================
 
-T_Source::T_Source(const mstring &text)
+T_Source::T_Source(const mstring & text)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, Source)) {
+	return;			// should throw an exception later
+    if (IsOn(tid, Source))
+    {
 	tid->WriteOut("$$ " + text);
     }
 }
 
-T_Source::T_Source(const mstring &section, const mstring &key, const mstring &value)
+T_Source::T_Source(const mstring & section, const mstring & key, const mstring & value)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
-    if (IsOn(tid, Source)) {
+	return;			// should throw an exception later
+    if (IsOn(tid, Source))
+    {
 	mstring message;
+
 	message << "$$ [" << section << "] " << key << " = " << value;
 	tid->WriteOut(message);
     }
@@ -716,16 +912,18 @@ T_Source::T_Source(const mstring &section, const mstring &key, const mstring &va
 
 // T_Sockets::T_Sockets() {}
 
-void T_Sockets::Begin(const unsigned long id, const unsigned short local,
-	const unsigned short remote, const mstring &host, const dir_enum direction)
+void T_Sockets::Begin(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
+		      const dir_enum direction)
 {
     s_id = id;
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
+	return;			// should throw an exception later
     if (IsOn(tid, Sockets))
     {
 	mstring message;
+
 	message << "|+ " << s_id << ": " << local;
 	if (direction == D_To)
 	    message << " <- ";
@@ -738,17 +936,18 @@ void T_Sockets::Begin(const unsigned long id, const unsigned short local,
     }
 }
 
-void T_Sockets::Failed(const unsigned long id, const unsigned short local,
-	const unsigned short remote, const mstring &host, const mstring &reason,
-	const dir_enum direction)
+void T_Sockets::Failed(const unsigned long id, const unsigned short local, const unsigned short remote, const mstring & host,
+		       const mstring & reason, const dir_enum direction)
 {
     s_id = id;
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
+	return;			// should throw an exception later
     if (IsOn(tid, Sockets))
     {
 	mstring message;
+
 	message << "|| " << s_id << ": " << local;
 	if (direction == D_To)
 	    message << " <- ";
@@ -762,14 +961,16 @@ void T_Sockets::Failed(const unsigned long id, const unsigned short local,
 }
 
 
-void T_Sockets::Resolve(const socktype_enum type, const mstring &info)
+void T_Sockets::Resolve(const socktype_enum type, const mstring & info)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
+	return;			// should throw an exception later
     if (IsOn(tid, Sockets))
     {
 	mstring message;
+
 	message << "|= " << s_id << ": ";
 	switch (type)
 	{
@@ -798,14 +999,16 @@ void T_Sockets::Resolve(const socktype_enum type, const mstring &info)
     }
 }
 
-void T_Sockets::End(const mstring &reason)
+void T_Sockets::End(const mstring & reason)
 {
     ThreadID *tid = mThread::find();
+
     if (tid == NULL || tid->InTrace())
-	return; // should throw an exception later
+	return;			// should throw an exception later
     if (IsOn(tid, Sockets))
     {
 	mstring message;
+
 	message << "|- " << s_id << ": " << reason;
 	tid->WriteOut(message);
     }

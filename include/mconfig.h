@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _MCONFIG_H
 #include "pch.h"
 RCSID(mconfig_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(mconfig_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.24  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.23  2001/12/12 03:31:15  prez
 ** Re-wrote the occurances/find/replace functions in mstring to actually work
 ** with contents that includes a binary 0.  Also fixed PreParse in mconfig.
@@ -109,75 +114,93 @@ RCSID(mconfig_h, "@(#) $Id$");
 class ceNode
 {
     friend class mConfigEngine;
-private:
-    mstring i_Name;
-    map<mstring,mstring> i_keys;
-    map<mstring,ceNode * > i_children;
-public:
-    ceNode() {}
-    ceNode(ceNode &in) { *this=in; }
+  private:
+      mstring i_Name;
+      map < mstring, mstring > i_keys;
+      map < mstring, ceNode * >i_children;
+  public:
+      ceNode()
+    {
+    }
+    ceNode(ceNode & in)
+    {
+	*this = in;
+    }
     ~ceNode();
-    ceNode& operator=(const ceNode &in);
-    bool operator==(const ceNode &in)const;
-    bool operator<(const ceNode &in)const
-	{ return (i_Name < in.i_Name); }
-    mstring Name() { return i_Name; }
-    bool SetKey(const mstring &KeyName, const mstring &Value);
-    bool DeleteKey(const mstring &KeyName);
-    bool CreateNode(const mstring &NodeName);
-    bool DeleteNode(const mstring &NodeName);
-    bool NodeExists(const mstring &NodeName) const;
-    bool KeyExists(const mstring &KeyName) const;
-    mstring GetKey(const mstring &KeyName, const mstring &DefValue) const;
-    ceNode *GetNode(const mstring &NodeName);
-    mstring Write(const mstring &KeyName, const mstring &Value);
-    map<mstring,mstring> GetMap() const;
+    ceNode & operator=(const ceNode & in);
+    bool operator==(const ceNode & in) const;
+    bool operator<(const ceNode & in) const
+    {
+	return (i_Name < in.i_Name);
+    }
+    mstring Name()
+    {
+	return i_Name;
+    }
+    bool SetKey(const mstring & KeyName, const mstring & Value);
+    bool DeleteKey(const mstring & KeyName);
+    bool CreateNode(const mstring & NodeName);
+    bool DeleteNode(const mstring & NodeName);
+    bool NodeExists(const mstring & NodeName) const;
+    bool KeyExists(const mstring & KeyName) const;
+    mstring GetKey(const mstring & KeyName, const mstring & DefValue) const;
+    ceNode *GetNode(const mstring & NodeName);
+    mstring Write(const mstring & KeyName, const mstring & Value);
+    map < mstring, mstring > GetMap()const;
 };
 
 class mConfigEngine
 {
-private:
+  private:
     ceNode RootNode;
     mstring i_FileName;
-    vector<mstring> PreParse(const vector<mstring>& in);
-public:
-    mConfigEngine() {}
-    mConfigEngine(const mstring& FileName)
-	{
-	    i_FileName=FileName;
-	    LoadFile();
-	}
+      vector < mstring > PreParse(const vector < mstring > &in);
+  public:
+      mConfigEngine()
+    {
+    }
+    mConfigEngine(const mstring & FileName)
+    {
+	i_FileName = FileName;
+	LoadFile();
+    }
 
-    mstring FileName() { return i_FileName; }
+    mstring FileName()
+    {
+	return i_FileName;
+    }
     bool LoadFile();
-    bool LoadFromString(const mstring& configstring);
-    bool LoadFromArray(const vector<mstring> &configarray);
+    bool LoadFromString(const mstring & configstring);
+    bool LoadFromArray(const vector < mstring > &configarray);
     bool SaveFile();
     void Empty();
 
-    map<mstring,mstring> GetMap() const { return RootNode.GetMap(); }
-    mstring Read(const mstring &key, const mstring& Defailt="") const;
-    bool Read(const mstring &key, mstring &outvar, const mstring& Default="") const;
-    bool Read(const mstring &key, bool &outvar, const bool Default=false) const;
-    bool Read(const mstring &key, int &outvar, const int Default=0) const;
-    bool Read(const mstring &key, unsigned int &outvar, const unsigned int Default=0) const;
-    bool Read(const mstring &key, long &outvar, const long Default=0) const;
-    bool Read(const mstring &key, unsigned long &outvar, const unsigned long Default=0) const;
-    bool Read(const mstring &key, float &outvar, const float Default=0.0) const;
-    bool Read(const mstring &key, double &outvar, const double Default=0.0) const;
+    map < mstring, mstring > GetMap()const
+    {
+	return RootNode.GetMap();
+    }
+    mstring Read(const mstring & key, const mstring & Defailt = "") const;
+    bool Read(const mstring & key, mstring & outvar, const mstring & Default = "") const;
+    bool Read(const mstring & key, bool & outvar, const bool Default = false) const;
+    bool Read(const mstring & key, int &outvar, const int Default = 0) const;
+    bool Read(const mstring & key, unsigned int &outvar, const unsigned int Default = 0) const;
+    bool Read(const mstring & key, long &outvar, const long Default = 0) const;
+    bool Read(const mstring & key, unsigned long &outvar, const unsigned long Default = 0) const;
+    bool Read(const mstring & key, float &outvar, const float Default = 0.0) const;
+    bool Read(const mstring & key, double &outvar, const double Default = 0.0) const;
 
-    mstring Write(const mstring &key,const mstring &value);
-    bool Write(const mstring &key,const bool value);
-    int Write(const mstring &key,const int value);
-    unsigned int Write(const mstring &key,const unsigned int value);
-    long Write(const mstring &key,const long value);
-    unsigned long Write(const mstring &key,const unsigned long value);
-    double Write(const mstring &key,const double value);
+    mstring Write(const mstring & key, const mstring & value);
+    bool Write(const mstring & key, const bool value);
+    int Write(const mstring & key, const int value);
+    unsigned int Write(const mstring & key, const unsigned int value);
+    long Write(const mstring & key, const long value);
+    unsigned long Write(const mstring & key, const unsigned long value);
+    double Write(const mstring & key, const double value);
 
-    ceNode *GetNode(const mstring& NodeName);
-    bool DeleteNode(const mstring& NodeName);
-    bool DeleteKey(const mstring& KeyName);
-    bool NodeExists(const mstring &NodeName) const;
+    ceNode *GetNode(const mstring & NodeName);
+    bool DeleteNode(const mstring & NodeName);
+    bool DeleteKey(const mstring & KeyName);
+    bool NodeExists(const mstring & NodeName) const;
 };
 
 #endif

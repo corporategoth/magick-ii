@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _SERVER_H
 #include "pch.h"
 RCSID(server_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(server_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.78  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.77  2002/01/10 19:30:37  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -268,13 +273,13 @@ class Protocol
      * 2003 = NICK nick hops signon-time user host server service mode althost :realname
      */
     unsigned int i_Signon;
-    unsigned int i_Modes; /* Modes per line */
-    mstring i_ChanModeArg; /* Channel Modes that have arguments */
+    unsigned int i_Modes;	/* Modes per line */
+    mstring i_ChanModeArg;	/* Channel Modes that have arguments */
 
-    mstring i_Server;	/* Should have %s %d %s in it (in order) */
-    int i_Numeric;	/* # paramater that is numeric! */
-    mstring i_Burst;	/* Simply do we need to announce a flood? */
-    mstring i_EndBurst; /* and if we do, how do we tell em we're done */
+    mstring i_Server;		/* Should have %s %d %s in it (in order) */
+    int i_Numeric;		/* # paramater that is numeric! */
+    mstring i_Burst;		/* Simply do we need to announce a flood? */
+    mstring i_EndBurst;		/* and if we do, how do we tell em we're done */
 
     /* PROTOCTL and CAPAB identifiers
      *
@@ -305,7 +310,7 @@ class Protocol
      * (*) = We do not support this at the moment.
      */
 
-    mstring i_Protoctl; /* Verbatum (null if not sent) */
+    mstring i_Protoctl;		/* Verbatum (null if not sent) */
 
     /* Strings for each of the following commands ... */
     mstring i_SVSNICK;
@@ -318,52 +323,144 @@ class Protocol
 
     // This is a map of real commands -> tokenized commands
     // to save bandwidth.
-    map<mstring,mstring> tokens;
+      map < mstring, mstring > tokens;
     void SetTokens(unsigned int type);
 
-public:
-    Protocol();
-    ~Protocol() {}
+  public:
+      Protocol();
+     ~Protocol()
+    {
+    }
     void Set(const unsigned int in);
-    mstring GetToken(const mstring& in) const;
-    mstring GetNonToken(const mstring& in) const;
+    mstring GetToken(const mstring & in) const;
+    mstring GetNonToken(const mstring & in) const;
 
-    unsigned int Number() const   { return i_Number; }
-    unsigned int NickLen() const  { return i_NickLen; }
-    unsigned int MaxLine() const  { return i_MaxLine; }
-    bool Globops() const	  { return i_Globops; }
-    bool Helpops() const	  { return i_Helpops; }
-    bool Chatops() const	  { return i_Helpops; }
-    bool Tokens() const		  { return i_Tokens; }
-    void Tokens(const bool in)	  { i_Tokens = in; }
-    bool SJoin() const		  { return i_SJoin; }
-    void SJoin(const bool in)	  { i_SJoin = in; }
-    bool P12() const		  { return i_P12; }
-    bool TSora() const		  { return i_TSora; }
-    bool BigTopic() const	  { return i_BigTopic; }
-    bool TopicJoin() const	  { return i_TopicJoin; }
-    unsigned int Akill() const    { return i_Akill; }
-    unsigned int Signon() const   { return i_Signon; }
-    unsigned int Modes() const    { return i_Modes; }
-    mstring ChanModeArg() const   { return i_ChanModeArg; }
-    mstring Server() const	  { return i_Server; }
-    int Numeric() const		  { return i_Numeric; }
-    mstring SVSNICK() const	  { return i_SVSNICK; }
-    mstring SVSMODE() const	  { return i_SVSMODE; }
-    mstring SVSKILL() const	  { return i_SVSKILL; }
-    mstring SVSNOOP() const	  { return i_SVSNOOP; }
-    mstring SQLINE() const	  { return i_SQLINE; }
-    mstring UNSQLINE() const	  { return i_UNSQLINE; }
-    mstring SVSHOST() const	  { return i_SVSHOST; }
-    mstring Burst() const	  { return i_Burst; }
-    mstring EndBurst() const	  { return i_EndBurst; }
-    mstring Protoctl() const	  { return i_Protoctl; }
+    unsigned int Number() const
+    {
+	return i_Number;
+    }
+    unsigned int NickLen() const
+    {
+	return i_NickLen;
+    }
+    unsigned int MaxLine() const
+    {
+	return i_MaxLine;
+    }
+    bool Globops() const
+    {
+	return i_Globops;
+    }
+    bool Helpops() const
+    {
+	return i_Helpops;
+    }
+    bool Chatops() const
+    {
+	return i_Helpops;
+    }
+    bool Tokens() const
+    {
+	return i_Tokens;
+    }
+    void Tokens(const bool in)
+    {
+	i_Tokens = in;
+    }
+    bool SJoin() const
+    {
+	return i_SJoin;
+    }
+    void SJoin(const bool in)
+    {
+	i_SJoin = in;
+    }
+    bool P12() const
+    {
+	return i_P12;
+    }
+    bool TSora() const
+    {
+	return i_TSora;
+    }
+    bool BigTopic() const
+    {
+	return i_BigTopic;
+    }
+    bool TopicJoin() const
+    {
+	return i_TopicJoin;
+    }
+    unsigned int Akill() const
+    {
+	return i_Akill;
+    }
+    unsigned int Signon() const
+    {
+	return i_Signon;
+    }
+    unsigned int Modes() const
+    {
+	return i_Modes;
+    }
+    mstring ChanModeArg() const
+    {
+	return i_ChanModeArg;
+    }
+    mstring Server() const
+    {
+	return i_Server;
+    }
+    int Numeric() const
+    {
+	return i_Numeric;
+    }
+    mstring SVSNICK() const
+    {
+	return i_SVSNICK;
+    }
+    mstring SVSMODE() const
+    {
+	return i_SVSMODE;
+    }
+    mstring SVSKILL() const
+    {
+	return i_SVSKILL;
+    }
+    mstring SVSNOOP() const
+    {
+	return i_SVSNOOP;
+    }
+    mstring SQLINE() const
+    {
+	return i_SQLINE;
+    }
+    mstring UNSQLINE() const
+    {
+	return i_UNSQLINE;
+    }
+    mstring SVSHOST() const
+    {
+	return i_SVSHOST;
+    }
+    mstring Burst() const
+    {
+	return i_Burst;
+    }
+    mstring EndBurst() const
+    {
+	return i_EndBurst;
+    }
+    mstring Protoctl() const
+    {
+	return i_Protoctl;
+    }
 
     void DumpB() const;
     void DumpE() const;
 };
 
-class Server_t : public mUserDef, public ref_class
+class Server_t:public mUserDef, public ref_class
 {
     mstring i_Name;
     mstring i_AltName;
@@ -376,28 +473,40 @@ class Server_t : public mUserDef, public ref_class
     bool i_Jupe;
 
     void defaults();
-public:
-    Server_t();
-    Server_t(const Server_t &in) : mUserDef(in), ref_class() { *this = in; }
-    Server_t(const mstring& name, const mstring& description,
-    				const unsigned long numeric = 0);
-    Server_t(const mstring& name, const int hops, const mstring& description,
-				const unsigned long numeric = 0);
-    Server_t(const mstring& name, const mstring& uplink, const int hops,
-		const mstring& description, const unsigned long numeric = 0);
-    ~Server_t() {}
+  public:
+      Server_t();
+      Server_t(const Server_t & in):mUserDef(in), ref_class()
+    {
+	*this = in;
+    }
+    Server_t(const mstring & name, const mstring & description, const unsigned long numeric = 0);
+    Server_t(const mstring & name, const int hops, const mstring & description, const unsigned long numeric = 0);
+    Server_t(const mstring & name, const mstring & uplink, const int hops, const mstring & description,
+	     const unsigned long numeric = 0);
+    ~Server_t()
+    {
+    }
 
-    Server_t &operator=(const Server_t &in);
-    bool operator==(const Server_t &in) const
-	{ return (i_Name == in.i_Name); }
-    bool operator!=(const Server_t &in) const
-	{ return (i_Name == in.i_Name); }
-    bool operator<(const Server_t &in) const
-	{ return (i_Name < in.i_Name); }
+    Server_t & operator=(const Server_t & in);
+    bool operator==(const Server_t & in) const
+    {
+	return (i_Name == in.i_Name);
+    }
+    bool operator!=(const Server_t & in) const
+    {
+	return (i_Name == in.i_Name);
+    }
+    bool operator<(const Server_t & in) const
+    {
+	return (i_Name < in.i_Name);
+    }
 
-    mstring Name() const	{ return i_Name; }
+    mstring Name() const
+    {
+	return i_Name;
+    }
     mstring AltName() const;
-    void AltName(const mstring& in);
+    void AltName(const mstring & in);
     unsigned long Numeric() const;
     void Numeric(const unsigned long num);
     mstring Uplink() const;
@@ -410,160 +519,189 @@ public:
     unsigned int Users() const;
     unsigned int Opers() const;
 
-    vector<mstring> Downlinks() const;
-    vector<mstring> AllDownlinks() const;
-    
+    vector < mstring > Downlinks()const;
+    vector < mstring > AllDownlinks()const;
+
     size_t Usage() const;
     void DumpB() const;
     void DumpE() const;
 };
 
 
-class Server : public mBase
+class Server:public mBase
 {
     friend class Magick;
     friend class Server_t;
     friend class Reconnect_Handler;
     friend class ToBeSquit_Handler;
     friend class Squit_Handler;
-    friend int IrcSvcHandler::handle_close (ACE_HANDLE, ACE_Reactor_Mask);
+    friend int IrcSvcHandler::handle_close(ACE_HANDLE, ACE_Reactor_Mask);
 
-    void raw(const mstring& send) const;
-    void sraw(const mstring& send) const;
-    set<mstring> WaitIsOn;
+    void raw(const mstring & send) const;
+    void sraw(const mstring & send) const;
+      set < mstring > WaitIsOn;
 
     size_t i_UserMax;
-    map<mstring,long> ServerSquit;
-    map<mstring,list<mstring> > ToBeSquit;
+      map < mstring, long >ServerSquit;
+      map < mstring, list < mstring > >ToBeSquit;
     ToBeSquit_Handler tobesquit;
     Squit_Handler squit;
     mstring i_OurUplink;
-    
-    enum send_type {
+
+    enum send_type
+    {
 	t_GLOBOPS, t_HELPOPS, t_CHATOPS, t_INVITE, t_KICK, t_KILL,
 	t_NOTICE, t_PRIVMSG, t_SQLINE, t_SVSMODE, t_SVSNICK,
-	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS };
-    map<mstring, list<triplet<send_type, mDateTime, triplet<mstring, mstring, mstring> > > > ToBeSent;
-    void FlushMsgs(const mstring& nick);
+	t_SVSKILL, t_SVSHOST, t_TOPIC, t_UNSQLINE, t_WALLOPS
+    };
+      map < mstring, list < triplet < send_type, mDateTime, triplet < mstring, mstring, mstring > > > >ToBeSent;
+    void FlushMsgs(const mstring & nick);
 
-public:
-    typedef map<mstring,Server_t *> list_t;
+  public:
+    typedef map < mstring, Server_t * >list_t;
 
-private:
+  private:
 
-    list_t i_list;
+      list_t i_list;
 
-    void OurUplink(const mstring& server);
-public:
-    Server();
-    ~Server() {}
+    void OurUplink(const mstring & server);
+  public:
+      Server();
+     ~Server()
+    {
+    }
     void SignOnAll();
-    void SignOffAll(const mstring& reason = "");
+    void SignOffAll(const mstring & reason = "");
     Protocol proto;
     size_t UserMax() const;
 
 #ifdef MAGICK_HAS_EXCEPTIONS
-    void AddList(Server_t *in) throw(E_Server_List);
-    void AddList(const Server_t &in) throw(E_Server_List)
-	{ AddList(new Server_t(in)); }
-    void AddList(const map_entry<Server_t> &in) throw(E_Server_List)
-	{ AddList(in.entry()); }
-    map_entry<Server_t> GetList(const mstring &in) const throw(E_Server_List);
-    void RemList(const mstring &in, bool downlinks = true) throw(E_Server_List);
+    void AddList(Server_t * in) throw(E_Server_List);
+    void AddList(const Server_t & in) throw(E_Server_List)
+    {
+	AddList(new Server_t(in));
+    }
+    void AddList(const map_entry < Server_t > &in) throw(E_Server_List)
+    {
+	AddList(in.entry());
+    }
+    map_entry < Server_t > GetList(const mstring & in) const throw(E_Server_List);
+    void RemList(const mstring & in, bool downlinks = true) throw(E_Server_List);
 #else
-    void AddList(Server_t *in);
-    void AddList(const Server_t &in)
-	{ AddList(new Server_t(in)); }
-    void AddList(const map_entry<Server_t> &in)
-	{ AddList(in.entry()); }
-    map_entry<Server_t> GetList(const mstring &in);
-    void RemList(const mstring &in, bool downlinks = true);
+    void AddList(Server_t * in);
+    void AddList(const Server_t & in)
+    {
+	AddList(new Server_t(in));
+    }
+    void AddList(const map_entry < Server_t > &in)
+    {
+	AddList(in.entry());
+    }
+    map_entry < Server_t > GetList(const mstring & in);
+    void RemList(const mstring & in, bool downlinks = true);
 #endif
-    list_t::iterator ListBegin() { return i_list.begin(); }
-    list_t::iterator ListEnd() { return i_list.end(); }
-    list_t::const_iterator ListBegin() const { return i_list.begin(); }
-    list_t::const_iterator ListEnd() const { return i_list.end(); }
-    size_t ListSize() const { return i_list.size(); }
-    bool IsList(const mstring& server) const;
+    list_t::iterator ListBegin()
+    {
+	return i_list.begin();
+    }
+    list_t::iterator ListEnd()
+    {
+	return i_list.end();
+    }
+    list_t::const_iterator ListBegin()const
+    {
+	return i_list.begin();
+    }
+    list_t::const_iterator ListEnd() const
+    {
+	return i_list.end();
+    }
+    size_t ListSize() const
+    {
+	return i_list.size();
+    }
+    bool IsList(const mstring & server) const;
     mstring ServerNumeric(const unsigned long num) const;
 
     mstring OurUplink() const;
-    mstring GetServer(const mstring& server) const;
+    mstring GetServer(const mstring & server) const;
     unsigned long GetOurNumeric() const;
+
     // NOTE: This is NOT always accurate -- all it does is look
     // to see if there is a timer active to process the server's
     // squit, REGARDLESS of wether it is currently connected or not.
-    bool IsSquit(const mstring& server) const;
-    void Jupe(const mstring& server, const mstring& reason);
+    bool IsSquit(const mstring & server) const;
+    void Jupe(const mstring & server, const mstring & reason);
 
-    void AKILL(const mstring& host, const mstring& reason = "",
-	const unsigned long time = 0, const mstring& killer = "");
-    void ANONKILL(const mstring& nick, const mstring& dest, const mstring& reason);
-    void AWAY(const mstring& nick, const mstring& reason = "");
-    void GLOBOPS(const mstring& nick, const mstring& message);
-    void HELPOPS(const mstring& nick, const mstring& message);
-    void CHATOPS(const mstring& nick, const mstring& message);
-    void INVITE(const mstring& nick, const mstring& dest, const mstring& channel);
-    void JOIN(const mstring& nick, const mstring& channel);
-    void KICK(const mstring& nick, const mstring& dest,
-	const mstring& channel, const mstring& reason = "");
-    void KILL(const mstring& nick, const mstring& dest, const mstring& reason);
-    void MODE(const mstring& nick, const mstring& mode);
-    void MODE(const mstring& nick, const mstring& channel, const mstring& mode);
-    void NICK(const mstring& nick, const mstring& user, const mstring& host,
-    	const mstring& server, const mstring& realname);
-    void NICK(const mstring& oldnick, const mstring& newnick);
-    void NOTICE(const mstring& nick, const mstring& dest, const mstring& text);
-    void PART(const mstring& nick, const mstring& channel,
-	const mstring& reason = "");
-    void PRIVMSG(const mstring& nick, const mstring& dest, const mstring& text);
-    void QUIT(const mstring& nick, const mstring& reason = "");
-    void SQLINE(const mstring& nick, const mstring& target,
-	const mstring& reason = "");
-    void RAKILL(const mstring& host);
-    void SVSMODE(const mstring& mynick, const mstring& nick, const mstring& mode);
-    void SVSNICK(const mstring& mynick, const mstring& nick, const mstring& newnick);
-    void SVSNOOP(const mstring& nick, const mstring& server, const bool onoff);
-    void SVSKILL(const mstring& mynick, const mstring& nick, const mstring& reason);
-    void SVSHOST(const mstring& mynick, const mstring& nick, const mstring& newhost);
-    void TOPIC(const mstring& nick, const mstring& setter,
-	const mstring& channel, const mstring& topic = "",
-	const mDateTime& time = mDateTime::CurrentDateTime());
-    void UNSQLINE(const mstring& nick, const mstring& target);
-    void WALLOPS(const mstring& nick, const mstring& message);
-    void KillUnknownUser(const mstring& user) const;
-    unsigned int SeenMessage(const mstring& data);
+    void AKILL(const mstring & host, const mstring & reason = "", const unsigned long time = 0, const mstring & killer = "");
+    void ANONKILL(const mstring & nick, const mstring & dest, const mstring & reason);
+    void AWAY(const mstring & nick, const mstring & reason = "");
+    void GLOBOPS(const mstring & nick, const mstring & message);
+    void HELPOPS(const mstring & nick, const mstring & message);
+    void CHATOPS(const mstring & nick, const mstring & message);
+    void INVITE(const mstring & nick, const mstring & dest, const mstring & channel);
+    void JOIN(const mstring & nick, const mstring & channel);
+    void KICK(const mstring & nick, const mstring & dest, const mstring & channel, const mstring & reason = "");
+    void KILL(const mstring & nick, const mstring & dest, const mstring & reason);
+    void MODE(const mstring & nick, const mstring & mode);
+    void MODE(const mstring & nick, const mstring & channel, const mstring & mode);
+    void NICK(const mstring & nick, const mstring & user, const mstring & host, const mstring & server,
+	      const mstring & realname);
+    void NICK(const mstring & oldnick, const mstring & newnick);
+    void NOTICE(const mstring & nick, const mstring & dest, const mstring & text);
+    void PART(const mstring & nick, const mstring & channel, const mstring & reason = "");
+    void PRIVMSG(const mstring & nick, const mstring & dest, const mstring & text);
+    void QUIT(const mstring & nick, const mstring & reason = "");
+    void SQLINE(const mstring & nick, const mstring & target, const mstring & reason = "");
+    void RAKILL(const mstring & host);
+    void SVSMODE(const mstring & mynick, const mstring & nick, const mstring & mode);
+    void SVSNICK(const mstring & mynick, const mstring & nick, const mstring & newnick);
+    void SVSNOOP(const mstring & nick, const mstring & server, const bool onoff);
+    void SVSKILL(const mstring & mynick, const mstring & nick, const mstring & reason);
+    void SVSHOST(const mstring & mynick, const mstring & nick, const mstring & newhost);
+    void TOPIC(const mstring & nick, const mstring & setter, const mstring & channel, const mstring & topic =
+	       "", const mDateTime & time = mDateTime::CurrentDateTime());
+    void UNSQLINE(const mstring & nick, const mstring & target);
+    void WALLOPS(const mstring & nick, const mstring & message);
+    void KillUnknownUser(const mstring & user) const;
+    unsigned int SeenMessage(const mstring & data);
 
-    threadtype_enum Get_TType() const { return tt_ServNet; }
-    mstring GetInternalName() const { return "Server"; }
-    void execute(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_A(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_B(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_C(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_D(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_E(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_F(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_G(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_H(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_I(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_J(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_K(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_L(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_M(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_N(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_O(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_P(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_Q(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_R(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_S(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_T(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_U(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_V(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_W(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_X(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_Y(mstring& source, const mstring& msgtype, const mstring& params);
-    void parse_Z(mstring& source, const mstring& msgtype, const mstring& params);
-    void numeric_execute(mstring& source, const mstring& msgtype, const mstring& params);
+    threadtype_enum Get_TType() const
+    {
+	return tt_ServNet;
+    }
+    mstring GetInternalName() const
+    {
+	return "Server";
+    }
+    void execute(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_A(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_B(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_C(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_D(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_E(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_F(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_G(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_H(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_I(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_J(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_K(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_L(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_M(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_N(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_O(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_P(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_Q(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_R(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_S(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_T(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_U(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_V(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_W(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_X(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_Y(mstring & source, const mstring & msgtype, const mstring & params);
+    void parse_Z(mstring & source, const mstring & msgtype, const mstring & params);
+    void numeric_execute(mstring & source, const mstring & msgtype, const mstring & params);
 
     void DumpB() const;
     void DumpE() const;

@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _IRCSOCKET_H
 #include "pch.h"
 RCSID(ircsocket_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.64  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.63  2002/01/02 08:30:09  prez
 ** Fixed the shutdown code.  Also added a thread manager as a magick member.
 **
@@ -165,19 +170,21 @@ RCSID(ircsocket_h, "@(#) $Id$");
 
 #include "variant.h"
 
-class Heartbeat_Handler : public ACE_Event_Handler
+class Heartbeat_Handler:public ACE_Event_Handler
 {
-public:
-    enum heartbeat_enum { H_Invalid = 0, H_Worker, H_Main,
-			H_IrcServer, H_Events, H_DCC, H_MAX };
+  public:
+    enum heartbeat_enum
+    { H_Invalid = 0, H_Worker, H_Main,
+	H_IrcServer, H_Events, H_DCC, H_MAX
+    };
     static const char *names[H_MAX];
 
-private:
-    typedef map<ACE_thread_t, triplet<heartbeat_enum, mDateTime, bool> > threads_t;
+  private:
+    typedef map < ACE_thread_t, triplet < heartbeat_enum, mDateTime, bool > >threads_t;
     threads_t threads;
 
-public:
-    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+  public:
+    int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 
     void AddThread(heartbeat_enum type, ACE_thread_t id = ACE_Thread::self());
     void RemoveThread(ACE_thread_t id = ACE_Thread::self());
@@ -188,48 +195,48 @@ public:
     size_t count(heartbeat_enum type);
 };
 
-class Reconnect_Handler : public ACE_Event_Handler
+class Reconnect_Handler:public ACE_Event_Handler
 {
-public:
-    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
-    mstring Reconnect_Handler::FindNext(const mstring& i_server);
+  public:
+    int handle_timeout(const ACE_Time_Value & tv, const void *arg);
+    mstring Reconnect_Handler::FindNext(const mstring & i_server);
 };
 
-class Disconnect_Handler : public ACE_Event_Handler
+class Disconnect_Handler:public ACE_Event_Handler
 {
-public:
-    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+  public:
+    int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class ToBeSquit_Handler : public ACE_Event_Handler
+class ToBeSquit_Handler:public ACE_Event_Handler
 {
-public:
-    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+  public:
+    int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class Squit_Handler : public ACE_Event_Handler
+class Squit_Handler:public ACE_Event_Handler
 {
-public:
-    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+  public:
+    int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class InFlight_Handler : public ACE_Event_Handler
+class InFlight_Handler:public ACE_Event_Handler
 {
-public:
-    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+  public:
+    int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class Part_Handler : public ACE_Event_Handler
+class Part_Handler:public ACE_Event_Handler
 {
-public:
-    int handle_timeout (const ACE_Time_Value &tv, const void *arg);
+  public:
+    int handle_timeout(const ACE_Time_Value & tv, const void *arg);
 };
 
-class EventTask : public ACE_Task<ACE_MT_SYNCH>
+class EventTask:public ACE_Task < ACE_MT_SYNCH >
 {
-    typedef ACE_Task<ACE_MT_SYNCH> internal;
+    typedef ACE_Task < ACE_MT_SYNCH > internal;
 
-    set<mstring> cmodes_pending;
+      set < mstring > cmodes_pending;
     Magick *magick_instance;
     mDateTime last_expire;
     mDateTime last_save;
@@ -237,39 +244,44 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
     mDateTime last_ping;
     mDateTime last_msgcheck;
     static void *save_databases(void *in = NULL);
-    void do_expire(mDateTime &synctime);
-    void do_check(mDateTime &synctime);
-    void do_ping(mDateTime &synctime);
-    void do_msgcheck(mDateTime &synctime);
-    void do_modes(mDateTime &synctime);
+    void do_expire(mDateTime & synctime);
+    void do_check(mDateTime & synctime);
+    void do_ping(mDateTime & synctime);
+    void do_msgcheck(mDateTime & synctime);
+    void do_modes(mDateTime & synctime);
 
-public:
-    EventTask(ACE_Thread_Manager *tm = 0) : internal(tm) {}
-    void AddChannelModePending(const mstring &in);
+  public:
+      EventTask(ACE_Thread_Manager * tm = 0):internal(tm)
+    {
+    }
+    void AddChannelModePending(const mstring & in);
 
     void ForceSave();
     void ForcePing();
-    mstring SyncTime(const mstring& source = "") const;
-    int open(void *in=0);
+    mstring SyncTime(const mstring & source = "") const;
+    int open(void *in = 0);
     int close(unsigned long in = 0);
     int svc(void);
-    int fini() { return 0; }
+    int fini()
+    {
+	return 0;
+    }
     void DumpB() const;
     void DumpE() const;
 };
 
 class mMessage;
-class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
+class IrcSvcHandler:public ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH >
 {
-    friend int Heartbeat_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg);
+    friend int Heartbeat_Handler::handle_timeout(const ACE_Time_Value & tv, const void *arg);
     friend class SignalHandler;
 
-    typedef ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH> inherited;
+    typedef ACE_Svc_Handler < ACE_SOCK_STREAM, ACE_MT_SYNCH > inherited;
     // This takes any characters read from the socket that dont
     // end in \r or \n, and adds them to next read's run.
     mstring flack;
 
-    map<time_t, size_t> traffic;
+      map < time_t, size_t > traffic;
     size_t in_traffic, out_traffic;
     mDateTime connect_time;
     mDateTime last_htm_check;
@@ -284,18 +296,29 @@ class IrcSvcHandler : public ACE_Svc_Handler<ACE_SOCK_STREAM,ACE_MT_SYNCH>
     ACE_Activation_Queue message_queue;
 
     static void *worker(void *);
-public:
-    int send(const mstring& data);
+  public:
+    int send(const mstring & data);
     int open(void * = 0);
     int handle_input(ACE_HANDLE handle);
-    int handle_close (ACE_HANDLE = ACE_INVALID_HANDLE,
-		ACE_Reactor_Mask = ACE_Event_Handler::ALL_EVENTS_MASK);
+    int handle_close(ACE_HANDLE = ACE_INVALID_HANDLE, ACE_Reactor_Mask = ACE_Event_Handler::ALL_EVENTS_MASK);
     int fini();
 
-    unsigned long Local_IP() const { return sock.Local_IP(); }
-    size_t In_Traffic() const { return in_traffic; }
-    size_t Out_Traffic() const { return out_traffic; }
-    mDateTime Connect_Time() const { return connect_time; }
+    unsigned long Local_IP() const
+    {
+	return sock.Local_IP();
+    }
+    size_t In_Traffic() const
+    {
+	return in_traffic;
+    }
+    size_t Out_Traffic() const
+    {
+	return out_traffic;
+    }
+    mDateTime Connect_Time() const
+    {
+	return connect_time;
+    }
     time_t HTM_Gap() const;
     unsigned short HTM_Level() const;
     size_t HTM_Threshold() const;
@@ -305,18 +328,21 @@ public:
     bool Burst() const;
     mDateTime SyncTime() const;
     void EndBurst();
-    int Threads() { return tm.count_threads(); }
+    int Threads()
+    {
+	return tm.count_threads();
+    }
 
-    void enqueue(mMessage *mm);
-    void enqueue(const mstring &message, const u_long priority = static_cast<u_long>(P_Normal));
+    void enqueue(mMessage * mm);
+    void enqueue(const mstring & message, const u_long priority = static_cast < u_long > (P_Normal));
     void enqueue_shutdown();
-    void enqueue_sleep(const mstring& time = "1s");
+    void enqueue_sleep(const mstring & time = "1s");
     void enqueue_test();
 
     void DumpB() const;
     void DumpE() const;
 };
 
-typedef ACE_Connector<IrcSvcHandler,ACE_SOCK_CONNECTOR> IrcConnector;
+typedef ACE_Connector < IrcSvcHandler, ACE_SOCK_CONNECTOR > IrcConnector;
 
 #endif

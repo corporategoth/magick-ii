@@ -1,4 +1,6 @@
+
 /* crypto/bf/blowfish.h */
+
 /* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
  * All rights reserved.
  *
@@ -60,11 +62,12 @@
 #define HEADER_BLOWFISH_H
 
 #ifdef  __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #ifdef NO_BF
-  #error BF is disabled.
+#error BF is disabled.
 #endif
 
 #define BF_ENCRYPT	1
@@ -86,7 +89,7 @@ extern "C" {
      * does it have on performance on none-T3E machines. I could declare
      * int, but at least on C90 sizeof(int) can be chosen at compile time.
      * So I've chosen long...
-     *					<appro@fy.chalmers.se>
+     *                                  <appro@fy.chalmers.se>
      */
 #    define BF_LONG unsigned long
 #    define BF_LONG_LOG2 3
@@ -98,20 +101,21 @@ extern "C" {
 #define BF_ROUNDS	16
 #define BF_BLOCK	8
 
-typedef struct bf_key_st
-	{
-	BF_LONG P[BF_ROUNDS+2];
-	BF_LONG S[4*256];
-	} BF_KEY;
+    typedef struct bf_key_st
+    {
+	BF_LONG P[BF_ROUNDS + 2];
+	BF_LONG S[4 * 256];
+    }
+    BF_KEY;
 
- 
-void BF_set_key(BF_KEY *key, int len, const unsigned char *data);
 
-void BF_encrypt(BF_LONG *data,const BF_KEY *key);
-void BF_decrypt(BF_LONG *data,const BF_KEY *key);
+    void BF_set_key(BF_KEY * key, int len, const unsigned char *data);
 
-void BF_cbc_encrypt(const unsigned char *in, unsigned char *out, long length,
-	const BF_KEY *schedule, unsigned char *ivec, int enc);
+    void BF_encrypt(BF_LONG * data, const BF_KEY * key);
+    void BF_decrypt(BF_LONG * data, const BF_KEY * key);
+
+    void BF_cbc_encrypt(const unsigned char *in, unsigned char *out, long length, const BF_KEY * schedule, unsigned char *ivec,
+			int enc);
 
 #ifdef  __cplusplus
 }

@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _CONVERT_MAGICK_H
 #include "pch.h"
 RCSID(convert_magick_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(convert_magick_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.5  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.4  2002/01/10 19:30:37  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -73,7 +78,7 @@ RCSID(convert_magick_h, "@(#) $Id$");
  * akill_		2-
  * allow_		1-
  */
- 
+
 /****************************************************************************
  * nick.db
  ****************************************************************************/
@@ -107,18 +112,18 @@ extern const char *clone_db;
  * lists; the list is determined by the first character of the nick.  Nicks
  * are stored in alphabetical order within lists. */
 
-#define	NI_KILLPROTECT	0x00000001  /* Kill others who take this nick */
-#define	NI_SECURE	0x00000002  /* Don't recognize unless IDENTIFY'd */
-#define	NI_VERBOTEN	0x00000004  /* Nick may not be registered or used */
-#define	NI_IRCOP	0x00000008  /* IrcOP - Nick will not expire */
-#define	NI_PRIVATE	0x00000010  /* Private - Dont show up in list */
-#define	NI_SUSPENDED	0x00000020  /* Suspended - May not IDENTIFY */
-#define	NI_PRIVMSG	0x00000040  /* use PRIVMSG instead of NOTICE */
-#define NI_SLAVE	0x00000080  /* Nick is just a 'linked' nick */
+#define	NI_KILLPROTECT	0x00000001	/* Kill others who take this nick */
+#define	NI_SECURE	0x00000002	/* Don't recognize unless IDENTIFY'd */
+#define	NI_VERBOTEN	0x00000004	/* Nick may not be registered or used */
+#define	NI_IRCOP	0x00000008	/* IrcOP - Nick will not expire */
+#define	NI_PRIVATE	0x00000010	/* Private - Dont show up in list */
+#define	NI_SUSPENDED	0x00000020	/* Suspended - May not IDENTIFY */
+#define	NI_PRIVMSG	0x00000040	/* use PRIVMSG instead of NOTICE */
+#define NI_SLAVE	0x00000080	/* Nick is just a 'linked' nick */
 
-#define	NI_IDENTIFIED	0x80000000  /* User has IDENTIFY'd */
-#define	NI_RECOGNIZED	0x40000000  /* User comes from a known addy */
-#define	NI_KILL_HELD	0x20000000  /* Nick is being held after a kill */
+#define	NI_IDENTIFIED	0x80000000	/* User has IDENTIFY'd */
+#define	NI_RECOGNIZED	0x40000000	/* User comes from a known addy */
+#define	NI_KILL_HELD	0x20000000	/* Nick is being held after a kill */
 
 /*************************************************************************/
 
@@ -129,24 +134,34 @@ extern const char *clone_db;
 
 /* Retain topic even after last person leaves channel */
 #define	CI_KEEPTOPIC	0x00000001
+
 /* Don't allow non-authorized users to be opped */
 #define	CI_SECUREOPS	0x00000002
+
 /* Hide channel from ChanServ LIST command */
 #define	CI_PRIVATE	0x00000004
+
 /* Topic can only be changed by SET TOPIC */
 #define	CI_TOPICLOCK	0x00000008
+
 /* Those not allowed ops are kickbanned */
 #define	CI_RESTRICTED	0x00000010
+
 /* Don't auto-deop anyone */
 #define	CI_LEAVEOPS	0x00000020
+
 /* Don't allow any privileges unless a user is IDENTIFY'd with NickServ */
 #define	CI_SECURE	0x00000040
+
 /* Don't allow the channel to be registered or used */
 #define	CI_VERBOTEN	0x00000080
+
 /* Dont honour channel access list or founder */
 #define	CI_SUSPENDED	0x00000100
+
 /* ChanServ joins channel when its established */
 #define	CI_JOIN		0x00000200
+
 /* Revenge flags */
 #define	CI_REV1		0x80000000
 #define	CI_REV2		0x40000000
@@ -209,7 +224,8 @@ extern const char *clone_db;
 #define	M_LOGON	0
 #define	M_OPER	1
 
-struct NickInfo_V1 {
+struct NickInfo_V1
+{
     NickInfo_V1 *next, *prev;
     char nick[NICKMAX];
     char pass[PASSMAX];
@@ -217,13 +233,14 @@ struct NickInfo_V1 {
     char *last_realname;
     time_t time_registered;
     time_t last_seen;
-    long accesscount;	/* # of entries */
-    char **access;	/* Array of strings */
-    long flags;		/* See below */
-    long reserved[4];	/* For future expansion -- set to 0 */
+    long accesscount;		/* # of entries */
+    char **access;		/* Array of strings */
+    long flags;			/* See below */
+    long reserved[4];		/* For future expansion -- set to 0 */
 };
 
-struct NickInfo_V3 {
+struct NickInfo_V3
+{
     NickInfo_V3 *next, *prev;
     char nick[NICKMAX];
     char pass[PASSMAX];
@@ -233,15 +250,16 @@ struct NickInfo_V3 {
     char *last_realname;
     time_t time_registered;
     time_t last_seen;
-    long accesscount;	/* # of entries */
-    char **access;	/* Array of strings */
-    long ignorecount;   /* # of entries */
-    char **ignore;	/* Array of strings */
-    long flags;		/* See below */
-    long reserved[4];	/* For future expansion -- set to 0 */
+    long accesscount;		/* # of entries */
+    char **access;		/* Array of strings */
+    long ignorecount;		/* # of entries */
+    char **ignore;		/* Array of strings */
+    long flags;			/* See below */
+    long reserved[4];		/* For future expansion -- set to 0 */
 };
 
-struct NickInfo_CUR {
+struct NickInfo_CUR
+{
     NickInfo_CUR *next, *prev;
     char nick[NICKMAX];
     char pass[PASSMAX];
@@ -251,12 +269,12 @@ struct NickInfo_CUR {
     char *last_realname;
     time_t time_registered;
     time_t last_seen;
-    long accesscount;	/* # of entries */
-    char **access;	/* Array of strings */
-    long ignorecount;   /* # of entries */
-    char **ignore;	/* Array of strings */
-    long flags;		/* See below */
-    long reserved[4];	/* For future expansion -- set to 0 */
+    long accesscount;		/* # of entries */
+    char **access;		/* Array of strings */
+    long ignorecount;		/* # of entries */
+    char **ignore;		/* Array of strings */
+    long flags;			/* See below */
+    long reserved[4];		/* For future expansion -- set to 0 */
 };
 
 typedef struct NickInfo_CUR NickInfo;
@@ -265,91 +283,96 @@ typedef struct NickInfo_CUR NickInfo;
  * chan.db
  ****************************************************************************/
 
-struct ChanAccess {
+struct ChanAccess
+{
     short level;
-    short is_nick;	/* 1 if this is a nick, 0 if a user@host mask.  If
-			 * -1, then this entry is currently unused (a hack
-			 * to get numbered lists to have consistent
-			 * numbering). */
+    short is_nick;		/* 1 if this is a nick, 0 if a user@host mask.  If
+				 * -1, then this entry is currently unused (a hack
+				 * to get numbered lists to have consistent
+				 * numbering). */
     char *name;
 };
 
-struct AutoKick {
+struct AutoKick
+{
     short is_nick;
     short pad;
     char *name;
     char *reason;
 };
 
-struct ChanInfo_V1 {
+struct ChanInfo_V1
+{
     ChanInfo_V1 *next, *prev;
     char name[CHANMAX];
-    char founder[NICKMAX];		/* Always a reg'd nick */
+    char founder[NICKMAX];	/* Always a reg'd nick */
     char founderpass[PASSMAX];
     char *desc;
     time_t time_registered;
     time_t last_used;
     long accesscount;
-    ChanAccess *access;			/* List of authorized users */
+    ChanAccess *access;		/* List of authorized users */
     long akickcount;
     AutoKick *akick;
-    short mlock_on, mlock_off;		/* See channel modes below */
-    long mlock_limit;			/* 0 if no limit */
-    char *mlock_key;			/* NULL if no key */
-    char *last_topic;			/* Last topic on the channel */
+    short mlock_on, mlock_off;	/* See channel modes below */
+    long mlock_limit;		/* 0 if no limit */
+    char *mlock_key;		/* NULL if no key */
+    char *last_topic;		/* Last topic on the channel */
     char last_topic_setter[NICKMAX];	/* Who set the last topic */
-    time_t last_topic_time;		/* When the last topic was set */
-    long flags;				/* See below */
-    short *cmd_access;			/* Access levels for commands */
-    long reserved[3];			/* For future expansion -- set to 0 */
+    time_t last_topic_time;	/* When the last topic was set */
+    long flags;			/* See below */
+    short *cmd_access;		/* Access levels for commands */
+    long reserved[3];		/* For future expansion -- set to 0 */
 };
 
-struct ChanInfo_V3 {
+struct ChanInfo_V3
+{
     ChanInfo_V3 *next, *prev;
     char name[CHANMAX];
-    char founder[NICKMAX];		/* Always a reg'd nick */
+    char founder[NICKMAX];	/* Always a reg'd nick */
     char founderpass[PASSMAX];
     char *desc;
     char *url;
     time_t time_registered;
     time_t last_used;
     long accesscount;
-    ChanAccess *access;			/* List of authorized users */
+    ChanAccess *access;		/* List of authorized users */
     long akickcount;
     AutoKick *akick;
-    short mlock_on, mlock_off;		/* See channel modes below */
-    long mlock_limit;			/* 0 if no limit */
-    char *mlock_key;			/* NULL if no key */
-    char *last_topic;			/* Last topic on the channel */
+    short mlock_on, mlock_off;	/* See channel modes below */
+    long mlock_limit;		/* 0 if no limit */
+    char *mlock_key;		/* NULL if no key */
+    char *last_topic;		/* Last topic on the channel */
     char last_topic_setter[NICKMAX];	/* Who set the last topic */
-    time_t last_topic_time;		/* When the last topic was set */
-    long flags;				/* See below */
-    short *cmd_access;			/* Access levels for commands */
-    long reserved[3];			/* For future expansion -- set to 0 */
+    time_t last_topic_time;	/* When the last topic was set */
+    long flags;			/* See below */
+    short *cmd_access;		/* Access levels for commands */
+    long reserved[3];		/* For future expansion -- set to 0 */
 };
 
-struct ChanInfo_CUR {
+struct ChanInfo_CUR
+{
     ChanInfo_CUR *next, *prev;
     char name[CHANMAX];
-    char founder[NICKMAX];		/* Always a reg'd nick */
+    char founder[NICKMAX];	/* Always a reg'd nick */
     char founderpass[PASSMAX];
     char *desc;
     char *url;
     time_t time_registered;
     time_t last_used;
     long accesscount;
-    ChanAccess *access;			/* List of authorized users */
+    ChanAccess *access;		/* List of authorized users */
     long akickcount;
     AutoKick *akick;
     char mlock_on[64], mlock_off[64];	/* See channel modes below */
-    long mlock_limit;			/* 0 if no limit */
-    char *mlock_key;			/* NULL if no key */
-    char *last_topic;			/* Last topic on the channel */
+    long mlock_limit;		/* 0 if no limit */
+    char *mlock_key;		/* NULL if no key */
+    char *last_topic;		/* Last topic on the channel */
     char last_topic_setter[NICKMAX];	/* Who set the last topic */
-    time_t last_topic_time;		/* When the last topic was set */
-    long flags;				/* See below */
-    short *cmd_access;			/* Access levels for commands */
-    long reserved[3];			/* For future expansion -- set to 0 */
+    time_t last_topic_time;	/* When the last topic was set */
+    long flags;			/* See below */
+    short *cmd_access;		/* Access levels for commands */
+    long reserved[3];		/* For future expansion -- set to 0 */
 };
 
 typedef struct ChanInfo_CUR ChanInfo;
@@ -358,28 +381,31 @@ typedef struct ChanInfo_CUR ChanInfo;
  * memo.db and news.db
  ****************************************************************************/
 
-struct Memo {
+struct Memo
+{
     char sender[NICKMAX];
-    long number;	/* Index number -- not necessarily array position! */
-    time_t time;	/* When it was sent */
+    long number;		/* Index number -- not necessarily array position! */
+    time_t time;		/* When it was sent */
     char *text;
-    long reserved[4];	/* For future expansion -- set to 0 */
+    long reserved[4];		/* For future expansion -- set to 0 */
 };
 
-struct MemoList_CUR {
+struct MemoList_CUR
+{
     MemoList_CUR *next, *prev;
-    char nick[NICKMAX];	/* Owner of the memos */
-    long n_memos;	/* Number of memos */
-    Memo *memos;	/* The memos themselves */
-    long reserved[4];	/* For future expansion -- set to 0 */
+    char nick[NICKMAX];		/* Owner of the memos */
+    long n_memos;		/* Number of memos */
+    Memo *memos;		/* The memos themselves */
+    long reserved[4];		/* For future expansion -- set to 0 */
 };
 
-struct NewsList_CUR {
+struct NewsList_CUR
+{
     NewsList_CUR *next, *prev;
-    char chan[CHANMAX];	/* Owner of the memos */
-    long n_newss;	/* Number of memos */
-    Memo *newss;	/* The memos themselves */
-    long reserved[4];	/* For future expansion -- set to 0 */
+    char chan[CHANMAX];		/* Owner of the memos */
+    long n_newss;		/* Number of memos */
+    Memo *newss;		/* The memos themselves */
+    long reserved[4];		/* For future expansion -- set to 0 */
 };
 
 typedef struct MemoList_CUR MemoList;
@@ -389,27 +415,31 @@ typedef struct NewsList_CUR NewsList;
  * others
  ****************************************************************************/
 
-struct Message {
+struct Message
+{
     char *text;
     short type;
     char who[NICKMAX];
     time_t time;
 };
 
-struct Akill_V1 {
+struct Akill_V1
+{
     char *mask;
     char *reason;
     time_t time;
 };
 
-struct Akill {
+struct Akill
+{
     char *mask;
     char *reason;
     char who[NICKMAX];
     time_t time;
 };
 
-struct Allow {
+struct Allow
+{
     char *host;
     int amount;
     char *reason;
@@ -417,7 +447,8 @@ struct Allow {
     time_t time;
 };
 
-struct Sop {
+struct Sop
+{
     char nick[NICKMAX];
 };
 
@@ -426,24 +457,25 @@ class Chan_Stored_t;
 class Memo_t;
 class News_t;
 
-int get_file_version (FILE * f, const char *filename);
-void load_ns_dbase (void);
-void delnick (NickInfo * ni);
-Nick_Stored_t *CreateNickEntry(NickInfo_CUR *ni);
-void load_cs_dbase (void);
-char *oldmodeconv (short inmode);
-void delchan (ChanInfo *ci);
-Chan_Stored_t *CreateChanEntry(ChanInfo_CUR *ci);
-void load_ms_dbase (void);
-void load_news_dbase (void);
-void del_memolist (MemoList * ml);
-void del_newslist (NewsList * nl);
-list<Memo_t> CreateMemoEntry(MemoList_CUR *ml);
-list<News_t> CreateNewsEntry(NewsList_CUR *nl);
-void load_sop ();
-void load_message ();
-void load_akill ();
-void load_clone ();
+int get_file_version(FILE * f, const char *filename);
+void load_ns_dbase(void);
+void delnick(NickInfo * ni);
+Nick_Stored_t *CreateNickEntry(NickInfo_CUR * ni);
+void load_cs_dbase(void);
+char *oldmodeconv(short inmode);
+void delchan(ChanInfo * ci);
+Chan_Stored_t *CreateChanEntry(ChanInfo_CUR * ci);
+void load_ms_dbase(void);
+void load_news_dbase(void);
+void del_memolist(MemoList * ml);
+void del_newslist(NewsList * nl);
+
+list < Memo_t > CreateMemoEntry(MemoList_CUR * ml);
+list < News_t > CreateNewsEntry(NewsList_CUR * nl);
+void load_sop();
+void load_message();
+void load_akill();
+void load_clone();
 
 
 #endif /* CONVERT */

@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-  #pragma hdrstop
+#pragma hdrstop
 #else
-  #pragma implementation
+#pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -18,6 +18,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_lockable_cpp_ ## x () { return y; }
 RCSID(lockable_cpp, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -27,6 +28,9 @@ RCSID(lockable_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.79  2002/01/12 14:42:09  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.78  2002/01/10 19:30:38  prez
 ** FINALLY finished a MAJOR overhaul ... now have a 'safe pointer', that
 ** ensures that data being used cannot be deleted while still being used.
@@ -239,15 +243,19 @@ RCSID(lockable_cpp, "@(#)$Id$");
 
 mLock_Mutex *mLOCK::maplock = NULL;
 mLock_Mutex *mThread::maplock = NULL;
-map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > > mLOCK::LockMap;
-ACE_Expandable_Cached_Fixed_Allocator<ACE_Thread_Mutex> mLOCK::memory_area(
-	(sizeof(mLock_Read) > sizeof(mLock_Write) ?
-	    (sizeof(mLock_Read) > sizeof(mLock_Mutex) ?
-		sizeof(mLock_Read) : sizeof(mLock_Mutex)) :
-	    (sizeof(mLock_Write) > sizeof(mLock_Mutex) ?
-		sizeof(mLock_Write) : sizeof(mLock_Mutex))), LOCK_SEGMENT);
+map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >mLOCK::LockMap;
 
-map<unsigned long, mSocket *> mSocket::SockMap;
+ACE_Expandable_Cached_Fixed_Allocator < ACE_Thread_Mutex >
+    mLOCK::
+memory_area((sizeof(mLock_Read) >
+	     sizeof(mLock_Write) ? (sizeof(mLock_Read) >
+				    sizeof(mLock_Mutex) ? sizeof(mLock_Read) : sizeof(mLock_Mutex)) : (sizeof(mLock_Write) >
+												       sizeof(mLock_Mutex) ?
+												       sizeof(mLock_Write) :
+												       sizeof(mLock_Mutex))),
+	    LOCK_SEGMENT);
+
+map < unsigned long, mSocket * >mSocket::SockMap;
 
 bool mLOCK::AcquireMapLock()
 {
@@ -255,12 +263,14 @@ bool mLOCK::AcquireMapLock()
 	maplock = new mLock_Mutex("LockMap");
     if (maplock == NULL)
     {
+
 /*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
 		"MUTEX", "LockMap")); */
 	return false;
     }
     if (maplock->acquire() < 0)
     {
+
 /*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
 		"MUTEX", "LockMap")); */
 	return false;
@@ -274,6 +284,7 @@ bool mLOCK::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
+
 /*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
 		"MUTEX", "LockMap")); */
 	return false;
@@ -281,25 +292,25 @@ bool mLOCK::ReleaseMapLock()
     return true;
 }
 
-mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
+mLOCK::mLOCK(const locktype_enum type, const mVarArray & args)
 {
     islocked = false;
-    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
-	Magick::instance().ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() || Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     int i;
+
 #ifdef MAGICK_TRACE_WORKS
     int count = 0;
 #endif
-    map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > >::iterator lockiter;
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
     mstring lockname;
     char hash[33];
     mLock_Mutex *mutex_lock;
     mLock_Write *write_lock;
     mLock_Read *read_lock;
 
-    for (i=0; i<args.count()-1; i++)
+    for (i = 0; i < args.count() - 1; i++)
     {
 	if (!lockname.empty())
 	    lockname += "::";
@@ -313,29 +324,29 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
 	    {
 		lockiter->second.second[ACE_Thread::self()] = L_Read;
-		read_lock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+		read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
 	    }
 	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
 	    {
 		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", (
-			"READ", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("READ", lockname));
 		return;
 	    }
 	}
 	else
 	{
 	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    read_lock = new mLock_Read(reinterpret_cast<const char *>(hash));
+	    read_lock = new mLock_Read(reinterpret_cast < const char *>(hash));
+
 	    if (read_lock == NULL)
 	    {
 		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
-		    "READ", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("READ", lockname));
 		return;
 	    }
-	    map<ACE_thread_t, locktype_enum> tmap;
-	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(read_lock, tmap);
+	    map < ACE_thread_t, locktype_enum > tmap;
+	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > >(read_lock, tmap);
+
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
 	}
 	ReleaseMapLock();
@@ -343,8 +354,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (read_lock->acquire() < 0)
 	    {
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-		    "READ", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", lockname));
 		read_lock = NULL;
 		if (!AcquireMapLock())
 		    return;
@@ -353,9 +363,10 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 		    lockiter->second.second.erase(ACE_Thread::self());
 		    if (!lockiter->second.second.size())
 		    {
-			read_lock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+			read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
 			if (read_lock != NULL)
 			    delete read_lock;
+
 			read_lock = NULL;
 			LockMap.erase(lockiter);
 		    }
@@ -389,29 +400,29 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
 	    {
 		lockiter->second.second[ACE_Thread::self()] = L_Read;
-		read_lock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+		read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
 	    }
 	    else if (lockiter->second.second[ACE_Thread::self()] == L_Mutex)
 	    {
 		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", (
-			"READ", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("READ", lockname));
 		return;
 	    }
 	}
 	else
 	{
 	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    read_lock = new mLock_Read(reinterpret_cast<const char *>(hash));
+	    read_lock = new mLock_Read(reinterpret_cast < const char *>(hash));
+
 	    if (read_lock == NULL)
 	    {
 		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
-		    "READ", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("READ", lockname));
 		return;
 	    }
-	    map<ACE_thread_t, locktype_enum> tmap;
-	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(read_lock, tmap);
+	    map < ACE_thread_t, locktype_enum > tmap;
+	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > >(read_lock, tmap);
+
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Read;
 	}
 	ReleaseMapLock();
@@ -419,8 +430,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (read_lock->acquire() < 0)
 	    {
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-		    "READ", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", lockname));
 		read_lock = NULL;
 		if (!AcquireMapLock())
 		    return;
@@ -429,9 +439,10 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 		    lockiter->second.second.erase(ACE_Thread::self());
 		    if (!lockiter->second.second.size())
 		    {
-			read_lock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+			read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
 			if (read_lock != NULL)
 			    delete read_lock;
+
 			read_lock = NULL;
 			LockMap.erase(lockiter);
 		    }
@@ -456,17 +467,16 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (lockiter->second.second.find(ACE_Thread::self()) != lockiter->second.second.end())
 	    {
-	        switch (lockiter->second.second[ACE_Thread::self()])
+		switch (lockiter->second.second[ACE_Thread::self()])
 		{
 		case L_Read:
 		    lockiter->second.second[ACE_Thread::self()] = L_WriteUpgrade;
-		    read_lock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
-		    write_lock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
+		    read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
+		    write_lock = reinterpret_cast < mLock_Write * >(lockiter->second.first);
 		    break;
 		case L_Mutex:
 		    ReleaseMapLock();
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", (
-			"WRITE", lockname));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("WRITE", lockname));
 		    return;
 		default:
 		    break;
@@ -475,22 +485,23 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    else
 	    {
 		lockiter->second.second[ACE_Thread::self()] = L_Write;
-		write_lock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
+		write_lock = reinterpret_cast < mLock_Write * >(lockiter->second.first);
 	    }
 	}
 	else
 	{
 	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    write_lock = new mLock_Write(reinterpret_cast<const char *>(hash));
+	    write_lock = new mLock_Write(reinterpret_cast < const char *>(hash));
+
 	    if (write_lock == NULL)
 	    {
 		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
-		    "WRITE", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("WRITE", lockname));
 		return;
 	    }
-	    map<ACE_thread_t, locktype_enum> tmap;
-	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(write_lock, tmap);
+	    map < ACE_thread_t, locktype_enum > tmap;
+	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > >(write_lock, tmap);
+
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Write;
 	}
 	ReleaseMapLock();
@@ -498,8 +509,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (read_lock->release() < 0)
 	    {
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
-		    "READ", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", lockname));
 	    }
 	    read_lock = NULL;
 	}
@@ -507,8 +517,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (write_lock->acquire() < 0)
 	    {
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-		    "WRITE", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("WRITE", lockname));
 		write_lock = NULL;
 		if (!AcquireMapLock())
 		    return;
@@ -517,9 +526,10 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 		    lockiter->second.second.erase(ACE_Thread::self());
 		    if (!lockiter->second.second.size())
 		    {
-			write_lock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
+			write_lock = reinterpret_cast < mLock_Write * >(lockiter->second.first);
 			if (write_lock != NULL)
 			    delete read_lock;
+
 			write_lock = NULL;
 			LockMap.erase(lockiter);
 		    }
@@ -542,37 +552,37 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	    return;
 	if ((lockiter = LockMap.find(lockname)) != LockMap.end())
 	{
-	    map<ACE_thread_t, locktype_enum>::iterator iter;
-	    for (iter = lockiter->second.second.begin(); iter!=lockiter->second.second.end(); iter++)
+	    map < ACE_thread_t, locktype_enum >::iterator iter;
+	    for (iter = lockiter->second.second.begin(); iter != lockiter->second.second.end(); iter++)
 	    {
 		if (iter->second != L_Mutex)
 		{
 		    ReleaseMapLock();
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", (
-			"MUTEX", lockname));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_DUP", ("MUTEX", lockname));
 		    return;
 		}
 	    }
-	
+
 	    if (lockiter->second.second.find(ACE_Thread::self()) == lockiter->second.second.end())
 	    {
 		lockiter->second.second[ACE_Thread::self()] = L_Mutex;
-		mutex_lock = reinterpret_cast<mLock_Mutex *>(lockiter->second.first);
+		mutex_lock = reinterpret_cast < mLock_Mutex * >(lockiter->second.first);
 	    }
 	}
 	else
 	{
 	    mHASH(lockname.c_str(), lockname.length(), hash);
-	    mutex_lock = new mLock_Mutex(reinterpret_cast<const char *>(hash));
+	    mutex_lock = new mLock_Mutex(reinterpret_cast < const char *>(hash));
+
 	    if (mutex_lock == NULL)
 	    {
 		ReleaseMapLock();
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
-		    "MUTEX", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", ("MUTEX", lockname));
 		return;
 	    }
-	    map<ACE_thread_t, locktype_enum> tmap;
-	    LockMap[lockname] = pair<void *, map<ACE_thread_t, locktype_enum> >(mutex_lock, tmap);
+	    map < ACE_thread_t, locktype_enum > tmap;
+	    LockMap[lockname] = pair < void *, map < ACE_thread_t, locktype_enum > >(mutex_lock, tmap);
+
 	    LockMap[lockname].second[ACE_Thread::self()] = L_Mutex;
 	}
 	ReleaseMapLock();
@@ -580,8 +590,7 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 	{
 	    if (mutex_lock->acquire() < 0)
 	    {
-		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-		    "MUTEX", lockname));
+		LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("MUTEX", lockname));
 		mutex_lock = NULL;
 		if (!AcquireMapLock())
 		    return;
@@ -590,9 +599,10 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 		    lockiter->second.second.erase(ACE_Thread::self());
 		    if (!lockiter->second.second.size())
 		    {
-			mutex_lock = reinterpret_cast<mLock_Mutex *>(lockiter->second.first);
+			mutex_lock = reinterpret_cast < mLock_Mutex * >(lockiter->second.first);
 			if (mutex_lock != NULL)
 			    delete mutex_lock;
+
 			mutex_lock = NULL;
 			LockMap.erase(lockiter);
 		    }
@@ -615,17 +625,16 @@ mLOCK::mLOCK(const locktype_enum type, const mVarArray &args)
 
 mLOCK::~mLOCK()
 {
-    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
-	Magick::instance().ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() || Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     int i;
-    map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > >::iterator lockiter;
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator lockiter;
     mLock_Mutex *mutex_lock;
     mLock_Write *write_lock;
     mLock_Read *read_lock;
 
-    for (i=locks.size()-1; i>=0; i--)
+    for (i = locks.size() - 1; i >= 0; i--)
     {
 	if (!AcquireMapLock())
 	    return;
@@ -635,25 +644,26 @@ mLOCK::~mLOCK()
 	    write_lock = NULL;
 	    mutex_lock = NULL;
 	    bool killit = false;
-	    map<ACE_thread_t, locktype_enum>::iterator iter = lockiter->second.second.find(ACE_Thread::self());
+
+	    map < ACE_thread_t, locktype_enum >::iterator iter = lockiter->second.second.find(ACE_Thread::self());
 	    if (iter != lockiter->second.second.end())
 	    {
 		switch (iter->second)
 		{
 		case L_Read:
-		    read_lock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+		    read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
 		    break;
 		case L_Write:
 		case L_WriteUpgrade:
-		    write_lock = reinterpret_cast<mLock_Write *>(lockiter->second.first);
+		    write_lock = reinterpret_cast < mLock_Write * >(lockiter->second.first);
 		    break;
 		case L_Mutex:
-		    mutex_lock = reinterpret_cast<mLock_Mutex *>(lockiter->second.first);
+		    mutex_lock = reinterpret_cast < mLock_Mutex * >(lockiter->second.first);
 		    break;
 		default:
 		    break;
 		}
-		
+
 		if (iter->second == L_WriteUpgrade)
 		    lockiter->second.second[ACE_Thread::self()] = L_Read;
 		else
@@ -671,33 +681,33 @@ mLOCK::~mLOCK()
 	    {
 		if (read_lock->release() < 0)
 		{
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
-			"READ", locks[i]));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("READ", locks[i]));
 		}
 		if (killit)
 		    delete read_lock;
+
 		read_lock = NULL;
 	    }
 	    if (write_lock != NULL)
 	    {
 		if (write_lock->release() < 0)
 		{
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
-			"WRITE", locks[i]));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("WRITE", locks[i]));
 		}
 		if (killit)
 		    delete write_lock;
+
 		write_lock = NULL;
 	    }
 	    if (mutex_lock != NULL)
 	    {
 		if (mutex_lock->release() < 0)
 		{
-		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
-			"MUTEX", locks[i]));
+		    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", ("MUTEX", locks[i]));
 		}
 		if (killit)
 		    delete mutex_lock;
+
 		mutex_lock = NULL;
 	    }
 
@@ -705,19 +715,17 @@ mLOCK::~mLOCK()
 		return;
 	    if ((lockiter = LockMap.find(locks[i])) != LockMap.end())
 	    {
-		if ((iter = lockiter->second.second.find(ACE_Thread::self())) !=
-			lockiter->second.second.end())
+		if ((iter = lockiter->second.second.find(ACE_Thread::self())) != lockiter->second.second.end())
 		{
 		    // We're still here, must have been an upgraded lock,
 		    // time to downgrade it ...
 		    if (iter->second == L_Read)
 		    {
-			read_lock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+			read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
 			ReleaseMapLock();
 			if (read_lock->acquire() < 0)
 			{
-			    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
-				"READ", locks[i]));
+			    LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", ("READ", locks[i]));
 			    read_lock = NULL;
 			    if (!AcquireMapLock())
 				return;
@@ -726,9 +734,10 @@ mLOCK::~mLOCK()
 				lockiter->second.second.erase(ACE_Thread::self());
 				if (!lockiter->second.second.size())
 				{
-				    read_lock = reinterpret_cast<mLock_Read *>(lockiter->second.first);
+				    read_lock = reinterpret_cast < mLock_Read * >(lockiter->second.first);
 				    if (read_lock != NULL)
 					delete read_lock;
+
 				    read_lock = NULL;
 				    LockMap.erase(lockiter);
 				}
@@ -737,35 +746,35 @@ mLOCK::~mLOCK()
 			}
 			read_lock = NULL;
 		    }
-		    else /* Its not a read lock */
+		    else	/* Its not a read lock */
 			ReleaseMapLock();
 		}
-		else /* Our thread isnt listed in the threads with this lock */
+		else		/* Our thread isnt listed in the threads with this lock */
 		    ReleaseMapLock();
 	    }
-	    else /* This lock doesnt exist */
+	    else		/* This lock doesnt exist */
 		ReleaseMapLock();
 	}
-	else /* This lock NEVER existed */
+	else			/* This lock NEVER existed */
 	    ReleaseMapLock();
     }
 }
 
-list<pair<void *, locktype_enum> > mLOCK::GetLocks(ACE_thread_t thr)
+list < pair < void *, locktype_enum > >mLOCK::GetLocks(ACE_thread_t thr)
 {
-    list<pair<void *, locktype_enum> > retval;
-    map<mstring, pair<void *, map<ACE_thread_t, locktype_enum> > >::iterator i;
-    map<ACE_thread_t, locktype_enum>::iterator j;
+    list < pair < void *, locktype_enum > >retval;
+    map < mstring, pair < void *, map < ACE_thread_t, locktype_enum > > >::iterator i;
+
+    map < ACE_thread_t, locktype_enum >::iterator j;
 
     if (!AcquireMapLock())
 	return retval;
-    for (i=LockMap.begin(); i!=LockMap.end(); i++)
+    for (i = LockMap.begin(); i != LockMap.end(); i++)
     {
-	for (j=i->second.second.begin(); j!=i->second.second.end(); j++)
+	for (j = i->second.second.begin(); j != i->second.second.end(); j++)
 	{
 	    if (j->first == thr)
-		retval.push_back(pair<void *, locktype_enum>(
-			i->second.first, j->second));
+		retval.push_back(pair < void *, locktype_enum > (i->second.first, j->second));
 	}
     }
     ReleaseMapLock();
@@ -781,8 +790,10 @@ unsigned short mSocket::FindAvailPort()
 
     ACE_INET_Addr la;
     ACE_SOCK_Acceptor acc(ACE_Addr::sap_any);
+
     acc.get_local_addr(la);
     unsigned short retval = la.get_port_number();
+
     acc.close();
     RET(retval);
 }
@@ -796,13 +807,13 @@ void mSocket::init()
     sockid = 0;
     DestroyMe = false;
 
-    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() ||
-	Magick::instance().ResetTime() == mDateTime(0.0))
+    if (Magick::StartTime() == mDateTime(0.0) || !Magick::instance_exists() || Magick::instance().ResetTime() == mDateTime(0.0))
 	return;
 
     unsigned long i;
+
     MLOCK(("SockMap"));
-    for (i=1; i>0; i++)
+    for (i = 1; i > 0; i++)
 	if (SockMap.find(i) == SockMap.end())
 	{
 	    SockMap[i] = this;
@@ -820,7 +831,7 @@ mSocket::~mSocket()
     SockMap.erase(sockid);
 }
 
-mSocket &mSocket::operator=(const mSocket &in)
+mSocket & mSocket::operator=(const mSocket & in)
 {
     FT("mSocket::operator=", ("(const mSocket &) in"));
 
@@ -835,14 +846,15 @@ mSocket &mSocket::operator=(const mSocket &in)
     sock = in.sock;
     in.sock = NULL;
 
-    { MLOCK2(("SockMap"));
-    SockMap[sockid] = this;
+    {
+	MLOCK2(("SockMap"));
+	SockMap[sockid] = this;
     }
     NRET(mSocket &, *this);
 }
 
 
-bool mSocket::Connect(const ACE_INET_Addr &addr, const unsigned long timeout)
+bool mSocket::Connect(const ACE_INET_Addr & addr, const unsigned long timeout)
 {
     FT("mSocket::Connect", ("(ACE_INET_Addr) addr", timeout));
 
@@ -863,11 +875,12 @@ bool mSocket::Connect(const ACE_INET_Addr &addr, const unsigned long timeout)
     {
 	last_error = errno;
 #ifdef MAGICK_TRACE_WORKS
-	trace.Failed(sockid, local.get_port_number(), remote.get_port_number(),
-	    mstring(remote.get_host_addr()), Last_Error_String(), D_From);
-		
-#endif	
+	trace.Failed(sockid, local.get_port_number(), remote.get_port_number(), mstring(remote.get_host_addr()),
+		     Last_Error_String(), D_From);
+
+#endif
 	delete sock;
+
 	sock = NULL;
 	RET(false);
     }
@@ -875,10 +888,9 @@ bool mSocket::Connect(const ACE_INET_Addr &addr, const unsigned long timeout)
     sock->get_local_addr(local);
     sock->get_remote_addr(remote);
 #ifdef MAGICK_TRACE_WORKS
-    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
-	mstring(remote.get_host_addr()), D_From);
-		
-#endif	
+    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(), mstring(remote.get_host_addr()), D_From);
+
+#endif
     RET(true);
 }
 
@@ -887,14 +899,16 @@ bool mSocket::Connect(const unsigned long host, const unsigned short port, const
     FT("mSocket::Connect", (host, port, timeout));
     ACE_INET_Addr tmp(port, host);
     bool retval = Connect(tmp, timeout);
+
     RET(retval);
 }
 
-bool mSocket::Connect(const mstring &host, const unsigned short port, const unsigned long timeout)
+bool mSocket::Connect(const mstring & host, const unsigned short port, const unsigned long timeout)
 {
     FT("mSocket::Connect", (host, port, timeout));
     ACE_INET_Addr tmp(port, host);
     bool retval = Connect(tmp, timeout);
+
     RET(retval);
 }
 
@@ -920,10 +934,11 @@ bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
     {
 	last_error = errno;
 #ifdef MAGICK_TRACE_WORKS
-	trace.Failed(sockid, local.get_port_number(), remote.get_port_number(),
-	    mstring(remote.get_host_addr()), Last_Error_String(), D_To);
-#endif	
+	trace.Failed(sockid, local.get_port_number(), remote.get_port_number(), mstring(remote.get_host_addr()),
+		     Last_Error_String(), D_To);
+#endif
 	delete sock;
+
 	sock = NULL;
 	RET(false);
     }
@@ -932,13 +947,12 @@ bool mSocket::Accept(const unsigned short port, const unsigned long timeout)
     sock->get_local_addr(local);
     sock->get_remote_addr(remote);
 #ifdef MAGICK_TRACE_WORKS
-    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
-	mstring(remote.get_host_addr()), D_To);
-#endif	
+    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(), mstring(remote.get_host_addr()), D_To);
+#endif
     RET(true);
 }
 
-bool mSocket::Bind(ACE_SOCK_Stream *in, const dir_enum direction, const bool alloc)
+bool mSocket::Bind(ACE_SOCK_Stream * in, const dir_enum direction, const bool alloc)
 {
     FT("mSocket::Bind", ("(ACE_SOCK_Stream *) in"));
     if (in == NULL)
@@ -956,11 +970,10 @@ bool mSocket::Bind(ACE_SOCK_Stream *in, const dir_enum direction, const bool all
     sock->get_remote_addr(remote);
 
 #ifdef MAGICK_TRACE_WORKS
-    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(),
-	mstring(remote.get_host_addr()), direction);
+    trace.Begin(sockid, local.get_port_number(), remote.get_port_number(), mstring(remote.get_host_addr()), direction);
 #else
-    static_cast<void>(direction);
-#endif	
+    static_cast < void >(direction);
+#endif
 
     RET(true);
 }
@@ -973,6 +986,7 @@ ACE_SOCK_Stream *mSocket::Unbind()
     trace.End(Last_Error_String());
 #endif
     ACE_SOCK_Stream *retval = sock;
+
     sock = NULL;
     last_error = 0;
     NRET(ACE_SOCK_Stream *, retval);
@@ -983,6 +997,7 @@ mstring mSocket::Local_Host() const
     NFT("mSocket::Local_Host");
     RLOCK(("mSocket", sockid));
     mstring retval(local.get_host_addr());
+
     RET(retval);
 }
 
@@ -991,6 +1006,7 @@ unsigned long mSocket::Local_IP() const
     NFT("mSocket::Local_IP");
     RLOCK(("mSocket", sockid));
     unsigned long retval = local.get_ip_address();
+
     RET(retval);
 }
 
@@ -999,6 +1015,7 @@ unsigned short mSocket::Local_Port() const
     NFT("mSocket::Local_Port");
     RLOCK(("mSocket", sockid));
     unsigned short retval = local.get_port_number();
+
     RET(retval);
 }
 
@@ -1007,6 +1024,7 @@ mstring mSocket::Remote_Host() const
     NFT("mSocket::Remote_Host");
     RLOCK(("mSocket", sockid));
     mstring retval = remote.get_host_addr();
+
     RET(retval);
 }
 
@@ -1015,6 +1033,7 @@ unsigned long mSocket::Remote_IP() const
     NFT("mSocket::Remote_IP");
     RLOCK(("mSocket", sockid));
     unsigned long retval = remote.get_ip_address();
+
     RET(retval);
 }
 
@@ -1023,6 +1042,7 @@ unsigned short mSocket::Remote_Port() const
     NFT("mSocket::Remote_Port");
     RLOCK(("mSocket", sockid));
     unsigned short retval = remote.get_port_number();
+
     RET(retval);
 }
 
@@ -1033,15 +1053,15 @@ bool mSocket::IsConnected() const
     RET(sock != NULL);
 }
 
-void mSocket::Resolve(const socktype_enum type, const mstring &info)
+void mSocket::Resolve(const socktype_enum type, const mstring & info)
 {
-    FT("mSocket::Resolve", (static_cast<int>(type), info));
+    FT("mSocket::Resolve", (static_cast < int >(type), info));
 #ifdef MAGICK_TRACE_WORKS
     WLOCK(("mSocket", sockid));
     trace.Resolve(type, info);
 #else
-    static_cast<void>(type);
-    static_cast<void>(info);
+    static_cast < void >(type);
+    static_cast < void >(info);
 #endif
 }
 
@@ -1057,6 +1077,7 @@ mstring mSocket::Last_Error_String() const
     NFT("mSocket::Last_Error_String");
     RLOCK(("mSocket", sockid));
     mstring retval = strerror(last_error);
+
     RET(retval);
 }
 
@@ -1064,6 +1085,7 @@ ssize_t mSocket::send(void *buf, const size_t len, const unsigned long timeout)
 {
     FT("mSocket::send", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
+
     WLOCK(("mSocket", sockid));
     ssize_t retval = sock->send(buf, len, timeout ? &tv : 0);
 
@@ -1082,6 +1104,7 @@ ssize_t mSocket::recv(void *buf, const size_t len, const unsigned long timeout)
 {
     FT("mSocket::recv", ("(void *) buf", len, timeout));
     ACE_Time_Value tv(timeout);
+
     WLOCK(("mSocket", sockid));
     ssize_t retval = sock->recv(buf, len, timeout ? &tv : 0);
 
@@ -1100,12 +1123,13 @@ int mSocket::close()
 {
     NFT("mSocket::close");
     int retval = 0;
+
     WLOCK(("mSocket", sockid));
     if (sock != NULL)
     {
 #ifdef MAGICK_TRACE_WORKS
 	trace.End(Last_Error_String());
-#endif	
+#endif
 	retval = sock->close();
 	if (retval < 0)
 	    last_error = errno;
@@ -1113,6 +1137,7 @@ int mSocket::close()
 	    last_error = 0;
 	if (DestroyMe)
 	    delete sock;
+
 	sock = NULL;
     }
     RET(retval);
@@ -1126,12 +1151,14 @@ bool mThread::AcquireMapLock()
 	maplock = new mLock_Mutex("SelfToThreadIdMap");
     if (maplock == NULL)
     {
+
 /*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_OPEN", (
 		"MUTEX", "SelfToThreadIdMap")); */
 	return false;
     }
     if (maplock->acquire() < 0)
     {
+
 /*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_ACQUIRE", (
 		"MUTEX", "SelfToThreadIdMap")); */
 	return false;
@@ -1145,6 +1172,7 @@ bool mThread::ReleaseMapLock()
 	return true;
     if (maplock->release() < 0)
     {
+
 /*	LOG(LM_CRITICAL, "SYS_ERRORS/LOCK_RELEASE", (
 		"MUTEX", "SelfToThreadIdMap")); */
 	return false;
@@ -1154,7 +1182,7 @@ bool mThread::ReleaseMapLock()
 
 
 
-ThreadID* mThread::find(const ACE_thread_t thread)
+ThreadID *mThread::find(const ACE_thread_t thread)
 {
     if (Magick::StartTime() == mDateTime(0.0))
 	return NULL;
@@ -1163,22 +1191,23 @@ ThreadID* mThread::find(const ACE_thread_t thread)
 	return NULL;
 
     ThreadID *tid = NULL;
-    if(selftothreadidmap.find(thread) != selftothreadidmap.end())
+
+    if (selftothreadidmap.find(thread) != selftothreadidmap.end())
 	tid = selftothreadidmap[thread];
 
     ReleaseMapLock();
     return tid;
 }
 
-vector<ThreadID*> mThread::findall()
+vector < ThreadID * >mThread::findall()
 {
-    vector<ThreadID*> threadlist;
+    vector < ThreadID * >threadlist;
     selftothreadidmap_t::const_iterator iter;
 
     if (!AcquireMapLock())
 	return threadlist;
 
-    for (iter=selftothreadidmap.begin(); iter!=selftothreadidmap.end(); iter++)
+    for (iter = selftothreadidmap.begin(); iter != selftothreadidmap.end(); iter++)
 	threadlist.push_back(iter->second);
 
     ReleaseMapLock();
@@ -1188,10 +1217,11 @@ vector<ThreadID*> mThread::findall()
 void mThread::Attach(const threadtype_enum ttype)
 {
     FT("mThread::Attach", ("(threadtype_enum) ttype"));
-    ThreadID *tmpid=new ThreadID(ttype);
+    ThreadID *tmpid = new ThreadID(ttype);
+
     if (!AcquireMapLock())
 	return;
-    selftothreadidmap[ACE_Thread::self()]=tmpid;
+    selftothreadidmap[ACE_Thread::self()] = tmpid;
     ReleaseMapLock();
     COM(("Thread ID has been attached."));
 }
@@ -1199,8 +1229,9 @@ void mThread::Attach(const threadtype_enum ttype)
 void mThread::Detach()
 {
     NFT("mThread::Detach");
-    ThreadID *tmpid=find();
-    if(tmpid==NULL)
+    ThreadID *tmpid = find();
+
+    if (tmpid == NULL)
     {
 	// todo ttype to typename
 	CP(("mThread::Detach without valid mThread::Attach..."));
@@ -1211,21 +1242,23 @@ void mThread::Detach()
     selftothreadidmap.erase(ACE_Thread::self());
     ReleaseMapLock();
     delete tmpid;
+
     COM(("Thread ID has been detached."));
 }
 
 void mThread::ReAttach(const threadtype_enum ttype)
 {
     FT("mThread::ReAttach", ("(threadtype_enum) ttype"));
-    ThreadID *tmpid=find();
-    if(tmpid==NULL)
+    ThreadID *tmpid = find();
+
+    if (tmpid == NULL)
     {
 	// ReAttach does an attach if it wasnt there
-	CP(("mThread::ReAttach without valid mThread::Attach... type: %s",threadname[ttype].c_str()));
-	tmpid=new ThreadID();
+	CP(("mThread::ReAttach without valid mThread::Attach... type: %s", threadname[ttype].c_str()));
+	tmpid = new ThreadID();
 	if (!AcquireMapLock())
 	    return;
-	selftothreadidmap[ACE_Thread::self()]=tmpid;
+	selftothreadidmap[ACE_Thread::self()] = tmpid;
 	ReleaseMapLock();
     }
 #ifdef MAGICK_TRACE_WORKS	// Get rid of 'unused veriable' warning

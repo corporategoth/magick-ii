@@ -1,6 +1,7 @@
 #ifndef WIN32
-  #pragma interface
+#pragma interface
 #endif
+
 /*  Magick IRC Services
 **
 ** (c) 1997-2001 Preston Elder <prez@magick.tm>
@@ -16,6 +17,7 @@
 #define _DCCENGINE_H
 #include "pch.h"
 RCSID(dccengine_h, "@(#) $Id$");
+
 /* ========================================================== **
 **
 ** Third Party Changes (please include e-mail address):
@@ -25,6 +27,9 @@ RCSID(dccengine_h, "@(#) $Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.19  2002/01/12 14:42:08  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.18  2001/11/12 01:05:01  prez
 ** Added new warning flags, and changed code to reduce watnings ...
 **
@@ -58,31 +63,27 @@ RCSID(dccengine_h, "@(#) $Id$");
 
 #include "mstring.h"
 
-const char CTCP_DELIM_CHAR='\001';
-const char CTCP_QUOTE_CHAR='\\';
-const char CTCP_MQUOTE_CHAR='\020';
+const char CTCP_DELIM_CHAR = '\001';
+const char CTCP_QUOTE_CHAR = '\\';
+const char CTCP_MQUOTE_CHAR = '\020';
+
 //#define CTCP_QUOTE_EM   "\r\n\001\\"
 
 class DccEngine
 {
-public:
-    static void DoDccSend(const mstring& mynick, const mstring& source,
-		   const ACE_INET_Addr &addr, mstring &filename,
-		   const size_t size);
-    static void DoDccChat(const mstring& mynick, const mstring& source,
-		   const ACE_INET_Addr &addr);
-    static void GotDCC(const mstring& mynick, const mstring& source,
-		const mstring& in);
-    static mstring encode(const mstring &type, const mstring& in = "");
-    static void decodeReply(const mstring& mynick, const mstring& source,
-		const mstring& in);
-    static void decodeRequest(const mstring& mynick, const mstring& source,
-		const mstring& in);
-    static mstring lowQuote(const mstring& in);
-    static mstring lowDequote(const mstring& in);
-    static mstring ctcpQuote(const mstring& in);
-    static mstring ctcpDequote(const mstring& in);
-    static vector<mstring> ctcpExtract(const mstring& in);
+  public:
+    static void DoDccSend(const mstring & mynick, const mstring & source, const ACE_INET_Addr & addr, mstring & filename,
+			  const size_t size);
+    static void DoDccChat(const mstring & mynick, const mstring & source, const ACE_INET_Addr & addr);
+    static void GotDCC(const mstring & mynick, const mstring & source, const mstring & in);
+    static mstring encode(const mstring & type, const mstring & in = "");
+    static void decodeReply(const mstring & mynick, const mstring & source, const mstring & in);
+    static void decodeRequest(const mstring & mynick, const mstring & source, const mstring & in);
+    static mstring lowQuote(const mstring & in);
+    static mstring lowDequote(const mstring & in);
+    static mstring ctcpQuote(const mstring & in);
+    static mstring ctcpDequote(const mstring & in);
+    static vector < mstring > ctcpExtract(const mstring & in);
 };
 
 #endif

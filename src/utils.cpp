@@ -1,8 +1,8 @@
 #include "pch.h"
 #ifdef WIN32
-  #pragma hdrstop
+#pragma hdrstop
 #else
-  #pragma implementation
+#pragma implementation
 #endif
 
 /*  Magick IRC Services
@@ -18,6 +18,7 @@
 ** ========================================================== */
 #define RCSID(x,y) const char *rcsid_utils_cpp_ ## x () { return y; }
 RCSID(utils_cpp, "@(#)$Id$");
+
 /* ==========================================================
 **
 ** Third Party Changes (please include e-mail address):
@@ -27,6 +28,9 @@ RCSID(utils_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.76  2002/01/12 14:42:09  prez
+** Pretty-printed all code ... looking at implementing an auto-prettyprint.
+**
 ** Revision 1.75  2001/12/20 08:02:33  prez
 ** Massive change -- 'Parent' has been changed to Magick::instance(), will
 ** soon also move the ACE_Reactor over, and will be able to have multipal
@@ -233,34 +237,34 @@ RCSID(utils_cpp, "@(#)$Id$");
 
 #include "magick.h"
 
-vector<int> ParseNumbers(const mstring &what)
+vector < int >ParseNumbers(const mstring & what)
 {
     FT("ParseNumbers", (what));
-    vector<int> numbers;
+    vector < int >numbers;
     unsigned int i;
     mstring tmp;
 
-    for (i=1; i<=what.WordCount(", "); i++)
+    for (i = 1; i <= what.WordCount(", "); i++)
     {
 	tmp = what.ExtractWord(i, ", ");
-	if (!tmp.IsNumber() || tmp[0U] == '-' ||
-	    tmp[tmp.size()-1] == '-' || tmp.WordCount("-") > 2)
+	if (!tmp.IsNumber() || tmp[0U] == '-' || tmp[tmp.size() - 1] == '-' || tmp.WordCount("-") > 2)
 	{
 	    numbers.push_back(-1);
 	}
 	else if (tmp.Contains("-"))
 	{
 	    int j, limit;
+
 	    j = atoi(tmp.Before("-").c_str());
 	    limit = atoi(tmp.After("-").c_str());
 	    if (limit >= j)
 	    {
-		for (; j<=limit; j++)
+		for (; j <= limit; j++)
 		    numbers.push_back(j);
 	    }
 	    else
 	    {
-		for (; j>=limit; j--)
+		for (; j >= limit; j--)
 		    numbers.push_back(j);
 	    }
 	}
@@ -269,19 +273,20 @@ vector<int> ParseNumbers(const mstring &what)
 	    numbers.push_back(atoi(tmp.c_str()));
 	}
     }
-    NRET(vector<int>, numbers);
+    NRET(vector < int >, numbers);
 }
 
-bool MakeDirectory(const mstring &in)
+bool MakeDirectory(const mstring & in)
 {
     FT("MakeDirectory", (in));
 
     int i, occ = in.Occurances(DirSlash);
 
-    for (i=0; i<=occ; i++)
+    for (i = 0; i <= occ; i++)
     {
 	mstring path(in);
 	int pos = in.find(DirSlash, i + 1);
+
 	if (pos >= 1)
 	    path.Truncate(pos);
 	else if (pos == 0)
@@ -296,6 +301,7 @@ bool MakeDirectory(const mstring &in)
 #endif
 
 	int j = ACE_OS::access(path.c_str(), X_OK);
+
 	if (j < 0)
 	{
 	    // Its the root, forget it ... *sigh*
@@ -308,8 +314,7 @@ bool MakeDirectory(const mstring &in)
 	    j = ACE_OS::mkdir(in.c_str());
 	    if (j < 0 && errno)
 	    {
-		LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", (
-			"mkdir", in, errno, strerror(errno)));
+		LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", ("mkdir", in, errno, strerror(errno)));
 		RET(false);
 	    }
 	}
@@ -323,7 +328,7 @@ bool MakeDirectory(const mstring &in)
 }
 
 
-unsigned long FromHumanTime(const mstring &in)
+unsigned long FromHumanTime(const mstring & in)
 {
     FT("FromHumanTime", (in));
 
@@ -332,15 +337,16 @@ unsigned long FromHumanTime(const mstring &in)
 
     if (in[0u] == '+')
 	i++;
-    for (; i<in.size(); i++)
+    for (; i < in.size(); i++)
     {
-	switch(in[i])
+	switch (in[i])
 	{
 	case 'Y':
 	case 'y':
 	    if (number != 0)
 	    {
-		total += number * static_cast<unsigned long>(60.0 * 60.0 * 24.0 * 365.25);
+		total += number * static_cast < unsigned long >(60.0 * 60.0 * 24.0 * 365.25);
+
 		number = 0;
 	    }
 	    break;
@@ -395,7 +401,8 @@ unsigned long FromHumanTime(const mstring &in)
 	case '8':
 	case '9':
 	    number *= 10;
-	    number += static_cast<unsigned long>(in[i] - '0');
+	    number += static_cast < unsigned long >(in[i] - '0');
+
 	    break;
 	default:
 	    RET(0);
@@ -407,18 +414,19 @@ unsigned long FromHumanTime(const mstring &in)
     RET(total);
 }
 
-mstring ToHumanTime(const unsigned long in, const mstring &source)
+mstring ToHumanTime(const unsigned long in, const mstring & source)
 {
     FT("ToHumanTime", (in, source));
 
     mstring retval;
-    if (in==0)
+
+    if (in == 0)
     {
 	retval = Magick::instance().getMessage(source, "VALS/TIME_UNLIMITED");
     }
     else
     {
-	retval = DisectTime(static_cast<long>(in), source);
+	retval = DisectTime(static_cast < long >(in), source);
     }
 
     RET(retval);
@@ -436,7 +444,7 @@ mstring ToHumanNumber(const unsigned long in)
 	RET(retval);
     }
 
-    switch (retval[retval.length()-1])
+    switch (retval[retval.length() - 1])
     {
     case '3':
 	retval += "rd";
@@ -459,26 +467,29 @@ mstring ToHumanSpace(const unsigned long in)
 {
     FT("ToHumanSpace", (in));
     mstring retval;
+
     retval.Format("%ub", in);
 
     unsigned long value = 1024;
-    for (int power = 1; power<5; power++)
+
+    for (int power = 1; power < 5; power++)
     {
 	CP(("Comparing %d to %d = %d", in, power, value));
 	if (in >= value)
 	{
-	    switch (power) {
+	    switch (power)
+	    {
 	    case 4:
-	    	retval.Format("%uTb", in / value);
+		retval.Format("%uTb", in / value);
 		break;
 	    case 3:
-	    	retval.Format("%uGb", in / value);
+		retval.Format("%uGb", in / value);
 		break;
 	    case 2:
-	    	retval.Format("%uMb", in / value);
+		retval.Format("%uMb", in / value);
 		break;
 	    case 1:
-	    	retval.Format("%uKb", in / value);
+		retval.Format("%uKb", in / value);
 		break;
 	    }
 	}
@@ -489,18 +500,18 @@ mstring ToHumanSpace(const unsigned long in)
     RET(retval);
 }
 
-unsigned long FromHumanSpace(const mstring &in)
+unsigned long FromHumanSpace(const mstring & in)
 {
     FT("FromHumanTime", (in));
 
-    unsigned int i=0;
+    unsigned int i = 0;
     unsigned long number = 0, total = 0;
 
-    if (in.first()=='+')
+    if (in.first() == '+')
 	i++;
-    for (i=0; i<in.size(); i++)
+    for (i = 0; i < in.size(); i++)
     {
-	switch(in[i])
+	switch (in[i])
 	{
 	case 'T':
 	case 't':
@@ -553,7 +564,8 @@ unsigned long FromHumanSpace(const mstring &in)
 	case '8':
 	case '9':
 	    number *= 10;
-	    number += static_cast<unsigned long>(in[i] - '0');
+	    number += static_cast < unsigned long >(in[i] - '0');
+
 	    break;
 	default:
 	    RET(0);
@@ -565,12 +577,12 @@ unsigned long FromHumanSpace(const mstring &in)
     RET(total);
 }
 
-mstring parseMessage(const mstring & message, const mVarArray& va)
+mstring parseMessage(const mstring & message, const mVarArray & va)
 {
     FT("parseMessage", (message, "(const mVarArray&) va"));
 
     mstring data, tok;
-    int start, end, toknum, length = static_cast<int>(message.length());
+    int start, end, toknum, length = static_cast < int >(message.length());
 
     start = end = 0;
     while (end < length)
@@ -583,18 +595,18 @@ mstring parseMessage(const mstring & message, const mVarArray& va)
 	}
 	end += start;
 	if (end > start)
-	    data << message.SubString(start, end-1);
-	if (message[static_cast<size_t>(end+1)] == '$')
+	    data << message.SubString(start, end - 1);
+	if (message[static_cast < size_t > (end + 1)] == '$')
 	{
 	    data << '$';
-	    start = end+2;
+	    start = end + 2;
 	    continue;
 	}
 
 	tok.erase();
-	while (isdigit(message[static_cast<size_t>(++end)]))
+	while (isdigit(message[static_cast < size_t > (++end)]))
 	{
-	    tok << message[static_cast<size_t>(end)];
+	    tok << message[static_cast < size_t > (end)];
 	    if (tok == "0")
 		break;
 	}
@@ -613,15 +625,13 @@ mstring parseMessage(const mstring & message, const mVarArray& va)
 	start = end;
     }
 
-    RET(data);    
+    RET(data);
 }
 
 
-size_t mCRYPT(const char *in, char *out, const size_t size,
-	const char *key1, const char *key2, const bool enc)
+size_t mCRYPT(const char *in, char *out, const size_t size, const char *key1, const char *key2, const bool enc)
 {
-    FT("mCRYPT", ("(const char *) in", "(char *) out", size,
-	"(const char *) key1", "(const char *) key2", enc));
+    FT("mCRYPT", ("(const char *) in", "(char *) out", size, "(const char *) key1", "(const char *) key2", enc));
 
 #ifndef HASCRYPT
     memset(out, 0, size);
@@ -632,22 +642,23 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
     unsigned char ivec1[8], ivec2[8], ivec3[8], buf1[8], buf2[8];
     unsigned int i, j;
 
-    BF_set_key(&bfkey1, strlen(key1), reinterpret_cast<const unsigned char *>(key1));
-    BF_set_key(&bfkey2, strlen(key2), reinterpret_cast<const unsigned char *>(key2));
+    BF_set_key(&bfkey1, strlen(key1), reinterpret_cast < const unsigned char *>(key1));
+    BF_set_key(&bfkey2, strlen(key2), reinterpret_cast < const unsigned char *>(key2));
+
     memset(ivec1, 0, 8);
     memset(ivec2, 0, 8);
     memset(ivec3, 0, 8);
 
-    for (i=0; i<size; i+=8)
+    for (i = 0; i < size; i += 8)
     {
 	memset(buf1, 0, 8);
 	memset(buf2, 0, 8);
 
-	if (i+8 < size)
+	if (i + 8 < size)
 	    memcpy(buf1, &in[i], 8);
 	else
-	    for (j=0; j<8 && i+j < size; j++)
-		buf1[j] = in[i+j];
+	    for (j = 0; j < 8 && i + j < size; j++)
+		buf1[j] = in[i + j];
 
 	BF_cbc_encrypt(buf1, buf2, 8, &bfkey1, ivec1, enc ? BF_ENCRYPT : BF_DECRYPT);
 	BF_cbc_encrypt(buf2, buf1, 8, &bfkey2, ivec2, enc ? BF_DECRYPT : BF_ENCRYPT);
@@ -655,7 +666,7 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
 
 	memcpy(&out[i], buf2, 8);
     }
-    out[i]=0;
+    out[i] = 0;
 
     // Security ... dont leave keys around ...
     memset(&bfkey1, 0, sizeof(BF_KEY));
@@ -667,98 +678,104 @@ size_t mCRYPT(const char *in, char *out, const size_t size,
 void mHASH16(const char *in, const size_t size, char *out)
 {
     MD5_CTX c;
+
     memset(out, 0, MD5_DIGEST_LENGTH);
     MD5_Init(&c);
-    MD5_Update(&c, const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(in)), size);
-    MD5_Final(const_cast<unsigned char *>(reinterpret_cast<const unsigned char *>(out)), &c);
+    MD5_Update(&c, const_cast < unsigned char *>(reinterpret_cast < const unsigned char *>(in)), size);
+    MD5_Final(const_cast < unsigned char *>(reinterpret_cast < const unsigned char *>(out)), &c);
+
     memset(&c, 0, sizeof(MD5_CTX));
 }
 
 void mHASH(const char *in, const size_t size, char *out)
 {
     unsigned char md[MD5_DIGEST_LENGTH];
-    mHASH16(in, size, reinterpret_cast<char *>(md));
-    memset(out, 0, (MD5_DIGEST_LENGTH*2)+1);
-    for (int i=0; i<MD5_DIGEST_LENGTH; i++)
-	sprintf(&out[i*2], "%02x", md[i]);
+    mHASH16(in, size, reinterpret_cast < char *>(md));
+
+    memset(out, 0, (MD5_DIGEST_LENGTH * 2) + 1);
+    for (int i = 0; i < MD5_DIGEST_LENGTH; i++)
+	sprintf(&out[i * 2], "%02x", md[i]);
     memset(md, 0, MD5_DIGEST_LENGTH);
 }
 
 /* Copied direct from Unreal code */
 static const char char_to_base64[] = {
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, -1, -1, -1, -1, -1, -1,
-	-1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
-	25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1,
-	-1, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
-	51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, -1, 63, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -1, -1, -1, -1, -1,
+    -1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+    25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, -1, -1, -1, -1, -1,
+    -1, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+    51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, -1, 63, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
 
 static const char base64_to_char[] = {
-	'0', '1', '2', '3', '4', '5', '6', '7',
-	'8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
-	'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-	'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-	'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
-	'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
-	'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-	'u', 'v', 'w', 'x', 'y', 'z', '{', '}' };
+    '0', '1', '2', '3', '4', '5', '6', '7',
+    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
+    'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
+    'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+    'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+    'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+    'u', 'v', 'w', 'x', 'y', 'z', '{', '}'
+};
 
 
-unsigned long str_to_base64(const mstring &in)
+unsigned long str_to_base64(const mstring & in)
 {
-	if (!in.length())
-	    return 0;
+    if (!in.length())
+	return 0;
 
-	unsigned long i = 0, v = char_to_base64[static_cast<unsigned char>(in[static_cast<size_t>(i++)])];
+    unsigned long i = 0, v = char_to_base64[static_cast < unsigned char >(in[static_cast < size_t > (i++)])];
 
-	while (i < in.length())
-	{
-		v <<= 6;
-		v += char_to_base64[static_cast<unsigned char>(in[static_cast<size_t>(i++)])];
-	}
+    while (i < in.length())
+    {
+	v <<= 6;
+	v += char_to_base64[static_cast < unsigned char >(in[static_cast < size_t > (i++)])];
+    }
 
-	return v;
+    return v;
 }
 
 
 mstring base64_to_str(unsigned long in)
 {
-	/* 32/6 == max 6 bytes for representation, 
-	 * +1 for the null, +1 for byte boundaries 
-	 */
-	char base64buf[8];
-	unsigned long i = 7;
+    /* 32/6 == max 6 bytes for representation, 
+     * +1 for the null, +1 for byte boundaries 
+     */
+    char base64buf[8];
+    unsigned long i = 7;
 
-	base64buf[i] = '\0';
+    base64buf[i] = '\0';
 
-	do
-	{
-		base64buf[--i] = base64_to_char[in & 63];
-	}
-	while (in >>= 6);
+    do
+    {
+	base64buf[--i] = base64_to_char[in & 63];
+    }
+    while (in >>= 6);
 
-	return mstring(base64buf + i);
+    return mstring(base64buf + i);
 }
 
 mstring sysinfo_node()
 {
     mstring retval;
     ACE_utsname *type = new ACE_utsname;
+
     ACE_OS::uname(type);
     retval = type->nodename;
     delete type;
+
     return retval;
 }
 
@@ -766,9 +783,11 @@ mstring sysinfo_type()
 {
     mstring retval;
     ACE_utsname *type = new ACE_utsname;
+
     ACE_OS::uname(type);
     retval << type->sysname << "/" << type->machine;
     delete type;
+
     return retval;
 }
 
@@ -776,8 +795,10 @@ mstring sysinfo_rel()
 {
     mstring retval;
     ACE_utsname *type = new ACE_utsname;
+
     ACE_OS::uname(type);
     retval = type->release;
     delete type;
+
     return retval;
 }
