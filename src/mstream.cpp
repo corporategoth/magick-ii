@@ -1653,11 +1653,14 @@ off_t wxFileInputStream::OnSysTell() const
 // wxFileOutputStream
 // ----------------------------------------------------------------------------
 
-wxFileOutputStream::wxFileOutputStream(const mstring& fileName)
+wxFileOutputStream::wxFileOutputStream(const mstring& fileName, bool Append)
 {
-  m_file = new wxFile(fileName, wxFile::write);
-  m_file_destroy = true;
-  m_o_streambuf->SetBufferIO(1024);
+    if(Append==false)
+	m_file = new wxFile(fileName, wxFile::write);
+    else
+	m_file = new wxFile(fileName, wxFile::write_append);
+    m_file_destroy = true;
+    m_o_streambuf->SetBufferIO(1024);
 }
 
 wxFileOutputStream::wxFileOutputStream(wxFile& file)

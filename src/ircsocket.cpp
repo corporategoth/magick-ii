@@ -20,7 +20,7 @@ int IrcSvcHandler::open(void *in)
     FT("IrcSvcHandler::open", (in));
     ACE_Reactor::instance()->register_handler(this,ACE_Event_Handler::READ_MASK);
     // todo activate the task
-    activate(THR_NEW_LWP,1);
+    activate(0,1);
 
     RET(0);
 }

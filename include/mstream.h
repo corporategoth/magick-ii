@@ -510,7 +510,7 @@ class wxFileInputStream: public wxInputStream {
 
 class wxFileOutputStream: public wxOutputStream {
  public:
-  wxFileOutputStream(const mstring& fileName);
+  wxFileOutputStream(const mstring& fileName, bool append=false);
   wxFileOutputStream(wxFile& file);
   wxFileOutputStream(int fd);
   virtual ~wxFileOutputStream();

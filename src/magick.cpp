@@ -137,6 +137,7 @@ int Magick::Start()
 	s_Outlet.Format("%s%d",services_prefix.c_str(),services_level);
     //open_log();
 
+#if 0
 #ifndef WIN32
     if(live==false)
     {
@@ -153,6 +154,7 @@ int Magick::Start()
             RET(1);
         }
     }
+#endif
 #endif
     wxFile pidfile;
     pidfile.Create(pid_filename,true);
@@ -265,8 +267,9 @@ int Magick::Start()
 
 
     // not so temporary event handling mechanism
-    while(shutdown!=true)
-	ACE_Reactor::instance()->handle_events();
+    //todo: while( below!=-1(TimeValue) { do cleanup's } that way every
+    // say 5 mins or so it breaks from the event loop to cleanup
+    ACE_Reactor::instance()->run_event_loop();
 
     //todo work out some way to "ignore" signals
     ACE_Reactor::instance()->remove_handler(SIGINT);
@@ -743,7 +746,7 @@ void Magick::get_config_values()
     in.Read(ts_Startup+"Services_Host",&services_host,"darker.net");
     in.Read(ts_Startup+"LEVEL",&services_level,1);
     in.Read(ts_Startup+"TZ_Offset",&tz_offset,0);
-    in.Read(ts_Startup+"Stop",&shutdown);
+    in.Read(ts_Startup+"Stop",&i_shutdown);
 
     in.Read(ts_Services+"Nickserv",&nickserv.on,true);
     in.Read(ts_Services+"Chanserv",&chanserv.on,true);
@@ -892,5 +895,19 @@ void Magick::dobobhandle(const mstring& server, const mstring& command, const ms
     if(checkifhandled(server,command)==true)
     {
 	bob.Call((handlermap[pair<mstring,mstring>(server,command)])[0],1,data.c_str());
+    }
+}
+
+bool Magick::shutdown()
+{
+    return i_shutdown;
+}
+
+void Magick::shutdown(bool in)
+{
+    i_shutdown=in;
+    if(in==true)
+    {
+	ACE_Reactor::instance()->end_event_loop();
     }
 }

@@ -56,6 +56,7 @@ ThreadID::ThreadID()
     t_indent = 0;
     t_internaltype = tt_MAIN;
     t_number = 0;
+    out=NULL;
 }
 
 ThreadID::ThreadID(threadtype_enum Type, int Number)
@@ -63,6 +64,7 @@ ThreadID::ThreadID(threadtype_enum Type, int Number)
     t_indent = 0;
     t_internaltype = Type;
     t_number = Number;
+    out=NULL;
 }
 
 ThreadID ThreadID::assign(threadtype_enum Type, int Number)
@@ -86,19 +88,21 @@ void ThreadID::WriteOut(const mstring &message)
 {
     
     //below for now till i get the operator bool happening.
-/*    if (out.LastError()!=wxStream_NOERROR) 
+    if (out==NULL||out->Ok()!=true) 
     {
-        out=wxFileOutputStream(logname());
-        out.SeekO(0,wxFromEnd);
+        out=new wxFileOutputStream(logname(),true); // true sets append to true.
+        out->SeekO(0,wxFromEnd);
     }
-    assert(out.LastError()==wxStream_NOERROR);
-*/
+    wxASSERT(out==NULL);
+    wxASSERT(out->LastError()!=wxStream_NOERROR);
+
     mstring finalout = "";
     for (int i=0; i<t_indent; i++)
         finalout += ".  ";
     finalout += message;
-//    out << finalout << wxEndL;
-    cout << finalout << endl;
+    *out << finalout << wxEndL;
+    // note to prez. wxEndL == ("\n"+flush the stream),  "\n" == don't flush the stream.
+//    cout << finalout << endl;
 }
 
 // ===================================================

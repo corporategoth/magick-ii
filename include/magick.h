@@ -75,6 +75,8 @@ private:
 	IrcSvcHandler *ircsvchandler;
 	map<pair<mstring,mstring>,vector<mstring> > handlermap;
 public:
+	void shutdown(bool in);
+	bool shutdown();
 	// get bob to handle it.
 	void dobobhandle(const mstring& server, const mstring& command, const mstring& data);
 	// is there a bob handler there?
@@ -128,7 +130,6 @@ public:
 	int override_level;
 	mstring motd_filename;
 	bool show_sync;
-	bool shutdown;
 	mstring password;
 
 
@@ -145,6 +146,7 @@ protected:
 	mstring server_name;
 	int remote_port;
 	mstring remote_server;
+	bool i_shutdown;
 };
 
 extern Magick *MagickObject;

@@ -301,7 +301,7 @@ void mThread::spawn(threadtype_enum type,ACE_THR_FUNC func, void *arg)
     args->first=func;
     args->second=arg;
     args->third=type;
-    ACE_Thread::spawn(handler_hack,(void *)args);
+    ACE_Thread::spawn(handler_hack,(void *)args,0);
 }
 void mThread::resumeself()
 {

@@ -120,14 +120,14 @@ private:
     threadtype_enum t_internaltype;
     int t_number;
     short t_indent;
-    wxOutputStream out;
+    wxFileOutputStream *out;
     
     mstring logname();
 
 public:
     ThreadID();
     ThreadID(threadtype_enum Type, int Number);
-    ~ThreadID() {}
+    ~ThreadID() { if(out!=NULL) delete out;}
     ThreadID assign(threadtype_enum Type, int Number);
     threadtype_enum type() { return t_internaltype; }
     void indentup() { t_indent++; }
@@ -203,14 +203,14 @@ public:
     static bool IsOn(ThreadID *tid)
 	{ return IsOn(tid->type(), SLevel); }
 
-    static bool TurnUp(threadtype_enum type)
+    static void TurnUp(threadtype_enum type)
 	{ TurnUp(type, SLevel); }
     static void TurnUp(ThreadID *tid, level_enum level)
 	{ TurnUp(tid->type(), level); }
     static void TurnUp(ThreadID *tid)
 	{ TurnUp(tid->type(), SLevel); }
 
-    static bool TurnDown(threadtype_enum type)
+    static void TurnDown(threadtype_enum type)
 	{ TurnDown(type, SLevel); }
     static void TurnDown(ThreadID *tid, level_enum level)
 	{ TurnDown(tid->type(), level); }
