@@ -1,0 +1,163 @@
+RCS-ID:      $Id$
+
+Plan for Magick 2.1
+===================
+
+Development Strategy
+--------------------
+
+Magick 2.1 will be done in stages, and at the completion of each stage, an
+alpha version of Magick 2.1 will be released.  Beta versions of Magick 2.1
+will not be available until ALL stages are complete, and as of that time,
+no new major developments should occur in the code, only bug fixes and
+minor-medium code enhansements.
+
+All bugs reported during the beta process should be logged in the Magick
+Bug Tracking System (MBTS).  Magick will remain in beta until all bugs
+marked high and above are resolved.  Bug reviews should take place at
+regular intervals, however attendance is not mandatory.  Once Magick has
+cleared the beta process, a release candidates will begin to be created.
+Once this happens, the code will be branched, and all work on Magick 2.1
+will occur on a branch (and must be manually merged back onto the head
+branch manually).  Only bugs marked critical, or those directly authorized
+by the Development Team head should be worked on when release candidates
+are being created.
+
+Once Magick has passed all regression tests, and has no more critical
+bugs, and has been given the thumbs up by the Magick Development Team
+head, will 2.1 actually be released.  During this time, emphasis should
+be on intergration and making Magick as easy as possible to install and
+setup.  User feedback is very important with this process!
+The Development Team head should not give a thumbs up until the release
+candidate has been thoroughly tested by actual users of Magick.
+
+There is no time limit on when each stage of Magick will be completed,
+the emphasis is on getting it right, not getting it fast.
+
+
+Stages Overview
+---------------
+
+The stages Magick will go through in 2.1 will be:
+
+1. Mantra
+Magick will be split in two.  A new library called Mantra will be created
+that contains all the technologies inside Magick that are not necessarily
+Magick specific.  This includes things like tracing, logging, threads,
+thread locking, etc.  Ther is alot of code that has been developed to
+support Magick, but could be used in other projects.  When done, only ocde
+that is specific to Magick will remain inside Magick itself.
+
+Once all the non-specific code of Magick is stripped out into Mantra, a
+review will be done to look at the API that Mantra will expose to the
+client developer (Magick currently, but its feasable that other projects
+will use Mantra), and what the back end of Mantra itself should be using,
+if anything.  Initially this will still be ACE, however we may decide
+to get rid of ACE, and replace it with another library, or cut down the
+parts of ACE we use and put it directly into Mantra, or just write it all
+ourselves.  This will need much discussion.
+
+
+2. Data Storage Abstraction
+Magick's current method of data storage is too hard-coded, and both the
+storage in memory, and to disk should be abstracted in such a way as to
+make it generic, and more importantly, create a way to swap out the
+back-end storage mechanism with something else entirely.  This will most
+likely mean switching to a properties style system (whereby Magick no
+longer has hard-coded veriables with the value for XYZ in it, but instead
+a set of named properties, to find out the value of XYZ, you just look up
+that property.  This has nothing to do with how other parts of magick or
+the scripting language look up data, just how it is stored internally).
+
+The actual properties mechanism should be part of Mantra, and how it is
+implemented should be invisible to Magick.  This will allow us to be able
+to swap out the back end of the properties storage at will, so we could
+do such things as keep the current XML storage, change the backend to some
+kind of SQL database, etc.
+
+
+3. Scripting Language
+This will actually be a Mantra project, however hooks will go into Magick.
+We must develop a method to hand over control (in a thread safe manner) to
+a scripting language, in a way that the scripting language will be able to
+interact with the C++ Magick code.  The way this should work, is at various
+points in Magick, callbacks will be made that will launch certain scripted
+functions.  The return code of that scripted function will determine if
+Magick should continue processing after control is returned from the script
+file, or whether to just stop processing.
+
+The scripting language should have the ability to do things such as retrieve
+records from the various services, and operate on them (using method calls),
+modify the data it recieved in a fashion that it will be permanently altered,
+and when processing continues in Magick, it will be working on the modified
+data, and it should be able to create its OWN service that will be considered
+equivalent to one inside Magick, however ALL operations on those services
+will be done inside the scripting language.
+
+The current scripting language of choice is Python.  Several scripts should
+also be created that showcase the ability of the scripting language, from
+being able to re-bind a command to a different committee, to storing their
+own data and having their own commands, right up to being able to create an
+entirely new service (with commands and data storage).
+
+
+4. Inter-Magick Protocol
+A protocol should be defined, and implemented for communications between
+Magick servers.  This protocol should remain easily extensable, as it will
+also be used to communicate with the Magick Client (see later point).  This
+include such things as sharing information about the current state of Magick
+(average lag to the network, etc), include a method to both send a full data
+update to another server and send incremental updates as data changes.  Once
+the protocol is complete, Magick should be setup to use it, and 'backup'
+Magick and failover support should be implemented.  This protocol should
+be able to be encrypted or compressed if it is enabled.
+
+Eventually, Magick should be able to run in two different modes, Backup
+or Distributed.  Under Backup mode, if the current Magick is not the primary
+set of services on a network, it will just sit in waiting as a backup, and
+when primary services go down or become too lagged, it will be available to
+take over as master.  In Distributed mode, each version of Magick will be
+configured to host a certain service (or set of services), meaning that
+NickServ could be on service A, and ChanServ on service B, and OperServ
+on service C, and to the user, it would act no differently than if they were
+all on the same system.
+
+
+5. Magick Client
+Two methods for interacting with Magick should be developed.  First will be
+an interface via. telnet or DCC that allows extra functionality than the
+standard command set does, but is still restricted.  Second will be the
+Magick GUI, which will use the Inter-Magick Protocol to interface with Magick,
+and will have much more functionality than the DCC or telnet interface,
+including the ability to view and modify all data in the database.  This
+GUI should also use encryption and/or compression if enabled.  The gui, like
+another Magick process, will continually recieve database updates from the
+Magick server it is connected to.
+
+The GUI should be able to:
+   - Work on Windows or X-Windows.
+   - Authenticate to Magick using the database keys (if encrypted).
+   - Modify the data in Magick (using the update message).
+   - Monitor the log file.
+   - Change the configuration of Magick.
+   - Execute all commands available with the DCC or Telnet interface.
+
+
+6. Expanded Functionality
+There is alot of extra functionality that Magick could have, and is requested
+by users.  These include things such as:
+   - SSL and ZIP support for IRCD's that offer it.
+   - Better Statistics (and historical stats) reporting.
+   - Better akill support (ie. akill on real name mask, nick name mask,
+     being in a channel or setting a topic with a keyword).
+   - Having permanent AKILLS.
+   - Reserve nicknames (not forbid, but actually sign on the nick).
+   - Make IRCD configuration more flexable (ie. no hard-coded numbers).
+   - Better clone detection (ie. using user@host aswell as @host).
+   - Enhansed CS on-join/news messages
+   - Enforced password changes after X days (with history checking).
+   - More verbose services output (especially ChanServ).
+
+Many of these things (and more) are in the suggestion and TODO lists, and should
+be analyzed for feasability, and assessed as to whether it should be inside
+Magick itself, or at minimum, should be a default releases script.
