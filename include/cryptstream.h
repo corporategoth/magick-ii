@@ -24,6 +24,9 @@ static const char *ident_cryptstream_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.11  2000/04/06 12:44:09  prez
+** Removed SXP and EXPAT directories
+**
 ** Revision 1.10  2000/03/30 11:24:53  prez
 ** Added threads to the filesys establishment.
 **
@@ -47,8 +50,6 @@ static const char *ident_cryptstream_h = "@(#) $Id$";
 #include "mstream.h"
 #include "mstring.h"
 
-#define HASCRYPT
-
 #ifdef HASCRYPT
 extern "C"
 {
@@ -64,8 +65,8 @@ public:
 protected:
     size_t OnSysRead(void *buffer, size_t size);
 private:
-    bool ppgiven;
 #ifdef HASCRYPT
+    bool ppgiven;
     des_key_schedule key1;
     des_key_schedule key2;
     des_cblock ivec;
@@ -80,8 +81,8 @@ public:
 protected:
     size_t OnSysWrite(const void *buffer, size_t size);
 private:
-    bool ppgiven;
 #ifdef HASCRYPT
+    bool ppgiven;
     des_key_schedule key1;
     des_key_schedule key2;
     des_cblock ivec;

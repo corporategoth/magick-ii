@@ -24,6 +24,9 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.116  2000/04/06 12:44:09  prez
+** Removed SXP and EXPAT directories
+**
 ** Revision 1.115  2000/04/03 09:45:21  prez
 ** Made use of some config entries that were non-used, and
 ** removed some redundant ones ...
@@ -292,6 +295,7 @@ public:
 	void Connected(bool in)	    { i_connected = in; }
 	void Disconnect();
 	void send(mstring text);
+	mstring GetKey();
 	void save_databases();
 	void load_databases();
         Reconnect_Handler rh;
