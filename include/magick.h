@@ -173,58 +173,6 @@ protected:
 	int Config_PING_FREQUENCY;
 	int Config_STARTHRESH;
 
-	int NickServ_EXPIRE;
-	int NickServ_RELEASE;
-	int NickServ_PASSFAIL;
-	bool NickServ_DEF_KILL;
-	bool NickServ_LCK_KILL;
-	bool NickServ_DEF_PRIVMSG;
-	bool NickServ_LCK_PRIVMSG;
-	bool NickServ_DEF_PRIVATE;
-	bool NickServ_LCK_PRIVATE;
-	bool NickServ_DEF_SECURE;
-	bool NickServ_LCK_SECURE;
-
-	int ChanServ_EXPIRE;
-	mstring ChanServ_DEF_AKICK;
-	int ChanServ_CHANKEEP;
-	mstring ChanServ_DEF_MLOCK;
-	mstring ChanServ_LCK_MLOCK;
-	bool ChanServ_DEF_KEEPTOPIC;
-	bool ChanServ_LCK_KEEPTOPIC;
-	bool ChanServ_DEF_TOPICLOCK;
-	bool ChanServ_LCK_TOPICLOCK;
-	bool ChanServ_DEF_PRIVATE;
-	bool ChanServ_LCK_PRIVATE;
-	bool ChanServ_DEF_SECUREOPS;
-	bool ChanServ_LCK_SECUREOPS;
-	bool ChanServ_DEF_SECURE;
-	bool ChanServ_LCK_SECURE;
-	bool ChanServ_DEF_RESTRICTED;
-	bool ChanServ_LCK_RESTRICTED;
-	bool ChanServ_DEF_JOIN;
-	bool ChanServ_LCK_JOIN;
-	mstring ChanServ_DEF_REVENGE;
-	bool ChanServ_LCK_REVENGE;
-	int ChanServ_LEVEL_MIN;
-	int ChanServ_LEVEL_MAX;
-	int ChanServ_LVL_AUTODEOP;
-	int ChanServ_LVL_AUTOVOICE;
-	int ChanServ_LVL_AUTOOP;
-	int ChanServ_LVL_READMEMO;
-	int ChanServ_LVL_WRITEMEMO;
-	int ChanServ_LVL_DELMEMO;
-	int ChanServ_LVL_AKICK;
-	int ChanServ_LVL_STARAKICK;
-	int ChanServ_LVL_UNBAN;
-	int ChanServ_LVL_ACCESS;
-	int ChanServ_LVL_SET;
-	int ChanServ_LVL_CMDINVITE;
-	int ChanServ_LVL_CMDUNBAN;
-	int ChanServ_LVL_CMDVOICE;
-	int ChanServ_LVL_CMDOP;
-	int ChanServ_LVL_CMDCLEAR;
-
 	int MemoServ_NEWS_EXPIRE;
 
 	mstring OperServ_SERVICES_ADMIN;

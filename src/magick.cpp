@@ -236,9 +236,9 @@ int Magick::Start()
     ACE_UNUSED_ARG (sigttsp);
 #endif
 
-    if(strlen(Services_NickServ))
+    if(!Services_NickServ.IsEmpty())
 	nickserv.init();
-    if(strlen(Services_ChanServ))
+    if(!Services_ChanServ.IsEmpty())
 	chanserv.init();
 
     // etc.
@@ -445,7 +445,7 @@ void Magick::LoadExternalMessages()
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
 #ifdef WIN32
-    wxFileConfig fconf("magick","",wxGetCwd()+"\\lang\\"+Files_LANGUAGE"+.lng");
+    wxFileConfig fconf("magick","",wxGetCwd()+"\\lang\\"+Files_LANGUAGE+".lng");
 #else
     wxFileConfig fconf("magick","",wxGetCwd()+"/lang/"+Files_LANGUAGE+".lng");
 #endif
@@ -675,7 +675,7 @@ bool Magick::check_config()
         wxLogError("CONFIG: Cannot set Startup_LAGTIME < 1.");
         RET(false);
     }
-    if (NickServ_PASSFAIL < 1)
+    if (nickserv.passfail_max < 1)
     {
 	// change this to the logging mechanism
         wxLogError("CONFIG: Cannot set [NickServ] PASSFAIL < 1.");
@@ -760,57 +760,57 @@ void Magick::get_config_values()
     in.Read(ts_Config+"PING_FREQUENCY",&Config_PING_FREQUENCY,30);
     in.Read(ts_Config+"STARTHRESH",&Config_STARTHRESH, 4);
 
-    in.Read(ts_NickServ+"EXPIRE",&NickServ_EXPIRE,28);
-    in.Read(ts_NickServ+"RELEASE",&NickServ_RELEASE,60);
-    in.Read(ts_NickServ+"PASSFAIL",&NickServ_PASSFAIL,5);
-    in.Read(ts_NickServ+"DEF_KILL",&NickServ_DEF_KILL,true);
-    in.Read(ts_NickServ+"LCK_KILL",&NickServ_LCK_KILL,false);
-    in.Read(ts_NickServ+"DEF_PRIVMSG",&NickServ_DEF_PRIVMSG,false);
-    in.Read(ts_NickServ+"LCK_PRIVMSG",&NickServ_LCK_PRIVMSG,false);
-    in.Read(ts_NickServ+"DEF_PRIVATE",&NickServ_DEF_PRIVATE,false);
-    in.Read(ts_NickServ+"LCK_PRIVATE",&NickServ_LCK_PRIVATE,false);
-    in.Read(ts_NickServ+"DEF_SECURE",&NickServ_DEF_SECURE,false);
-    in.Read(ts_NickServ+"LCK_SECURE",&NickServ_LCK_SECURE,false);
+    in.Read(ts_NickServ+"EXPIRE",&nickserv.expire,28);
+    in.Read(ts_NickServ+"RELEASE",&nickserv.release,60);
+    in.Read(ts_NickServ+"PASSFAIL",&nickserv.passfail_max,5);
+    in.Read(ts_NickServ+"DEF_KILL",&nickserv.def_kill,true);
+    in.Read(ts_NickServ+"LCK_KILL",&nickserv.lck_kill,false);
+    in.Read(ts_NickServ+"DEF_PRIVMSG",&nickserv.def_privmsg,false);
+    in.Read(ts_NickServ+"LCK_PRIVMSG",&nickserv.lck_privmsg,false);
+    in.Read(ts_NickServ+"DEF_PRIVATE",&nickserv.def_private,false);
+    in.Read(ts_NickServ+"LCK_PRIVATE",&nickserv.lck_private,false);
+    in.Read(ts_NickServ+"DEF_SECURE",&nickserv.def_secure,false);
+    in.Read(ts_NickServ+"LCK_SECURE",&nickserv.lck_secure,false);
 
-    in.Read(ts_ChanServ+"EXPIRE",&ChanServ_EXPIRE,14);
-    in.Read(ts_ChanServ+"DEF_AKICK",&ChanServ_DEF_AKICK,"You have been banned from channel");
-    in.Read(ts_ChanServ+"CHANKEEP",&ChanServ_CHANKEEP,15);
-    in.Read(ts_ChanServ+"DEF_MLOCK",&ChanServ_DEF_MLOCK,"+nt");
-    in.Read(ts_ChanServ+"LCK_MLOCK",&ChanServ_LCK_MLOCK,"+");
-    in.Read(ts_ChanServ+"DEF_KEEPTOPIC",&ChanServ_DEF_KEEPTOPIC,true);
-    in.Read(ts_ChanServ+"LCK_KEEPTOPIC",&ChanServ_LCK_KEEPTOPIC,false);
-    in.Read(ts_ChanServ+"DEF_TOPICLOCK",&ChanServ_DEF_TOPICLOCK,false);
-    in.Read(ts_ChanServ+"LCK_TOPICLOCK",&ChanServ_LCK_TOPICLOCK,false);
-    in.Read(ts_ChanServ+"DEF_PRIVATE",&ChanServ_DEF_PRIVATE,false);
-    in.Read(ts_ChanServ+"LCK_PRIVATE",&ChanServ_LCK_PRIVATE,false);
-    in.Read(ts_ChanServ+"DEF_SECUREOPS",&ChanServ_DEF_SECUREOPS,false);
-    in.Read(ts_ChanServ+"LCK_SECUREOPS",&ChanServ_LCK_SECUREOPS,false);
-    in.Read(ts_ChanServ+"DEF_SECURE",&ChanServ_DEF_SECURE,false);
-    in.Read(ts_ChanServ+"LCK_SECURE",&ChanServ_LCK_SECURE,false);
-    in.Read(ts_ChanServ+"DEF_RESTRICTED",&ChanServ_DEF_RESTRICTED,false);
-    in.Read(ts_ChanServ+"LCK_RESTRICTED",&ChanServ_LCK_RESTRICTED,false);
-    in.Read(ts_ChanServ+"DEF_JOIN",&ChanServ_DEF_JOIN,false);
-    in.Read(ts_ChanServ+"LCK_JOIN",&ChanServ_LCK_JOIN,false);
-    in.Read(ts_ChanServ+"DEF_REVENGE",&ChanServ_DEF_REVENGE,"NONE");
-    in.Read(ts_ChanServ+"LCK_REVENGE",&ChanServ_LCK_REVENGE,false);
-    in.Read(ts_ChanServ+"LEVEL_MIN",&ChanServ_LEVEL_MIN,-1);
-    in.Read(ts_ChanServ+"LEVEL_MAX",&ChanServ_LEVEL_MAX,30);
-    in.Read(ts_ChanServ+"LVL_AUTODEOP",&ChanServ_LVL_AUTODEOP,-1);
-    in.Read(ts_ChanServ+"LVL_AUTOVOICE",&ChanServ_LVL_AUTOVOICE,5);
-    in.Read(ts_ChanServ+"LVL_AUTOOP",&ChanServ_LVL_AUTOOP,10);
-    in.Read(ts_ChanServ+"LVL_READMEMO",&ChanServ_LVL_READMEMO,0);
-    in.Read(ts_ChanServ+"LVL_WRITEMEMO",&ChanServ_LVL_WRITEMEMO,15);
-    in.Read(ts_ChanServ+"LVL_DELMEMO",&ChanServ_LVL_DELMEMO,25);
-    in.Read(ts_ChanServ+"LVL_AKICK",&ChanServ_LVL_AKICK,20);
-    in.Read(ts_ChanServ+"LVL_STARAKICK",&ChanServ_LVL_STARAKICK,25);
-    in.Read(ts_ChanServ+"LVL_UNBAN",&ChanServ_LVL_UNBAN,10);
-    in.Read(ts_ChanServ+"LVL_ACCESS",&ChanServ_LVL_ACCESS,5);
-    in.Read(ts_ChanServ+"LVL_SET",&ChanServ_LVL_SET,25);
-    in.Read(ts_ChanServ+"LVL_CMDINVITE",&ChanServ_LVL_CMDINVITE,5);
-    in.Read(ts_ChanServ+"LVL_CMDUNBAN",&ChanServ_LVL_CMDUNBAN,10);
-    in.Read(ts_ChanServ+"LVL_CMDVOICE",&ChanServ_LVL_CMDVOICE,5);
-    in.Read(ts_ChanServ+"LVL_CMDOP",&ChanServ_LVL_CMDOP,10);
-    in.Read(ts_ChanServ+"LVL_CMDCLEAR",&ChanServ_LVL_CMDCLEAR,20);
+    in.Read(ts_ChanServ+"EXPIRE",&chanserv.expire,14);
+    in.Read(ts_ChanServ+"DEF_AKICK",&chanserv.def_akick_reason,"You have been banned from channel");
+    in.Read(ts_ChanServ+"CHANKEEP",&chanserv.chankeep,15);
+    in.Read(ts_ChanServ+"DEF_MLOCK",&chanserv.def_mlock,"+nt");
+    in.Read(ts_ChanServ+"LCK_MLOCK",&chanserv.lck_mlock,"+");
+    in.Read(ts_ChanServ+"DEF_KEEPTOPIC",&chanserv.def_keeptopic,true);
+    in.Read(ts_ChanServ+"LCK_KEEPTOPIC",&chanserv.lck_keeptopic,false);
+    in.Read(ts_ChanServ+"DEF_TOPICLOCK",&chanserv.def_topiclock,false);
+    in.Read(ts_ChanServ+"LCK_TOPICLOCK",&chanserv.lck_topiclock,false);
+    in.Read(ts_ChanServ+"DEF_PRIVATE",&chanserv.def_private,false);
+    in.Read(ts_ChanServ+"LCK_PRIVATE",&chanserv.lck_private,false);
+    in.Read(ts_ChanServ+"DEF_SECUREOPS",&chanserv.def_secureops,false);
+    in.Read(ts_ChanServ+"LCK_SECUREOPS",&chanserv.lck_secureops,false);
+    in.Read(ts_ChanServ+"DEF_SECURE",&chanserv.def_secure,false);
+    in.Read(ts_ChanServ+"LCK_SECURE",&chanserv.lck_secure,false);
+    in.Read(ts_ChanServ+"DEF_RESTRICTED",&chanserv.def_restricted,false);
+    in.Read(ts_ChanServ+"LCK_RESTRICTED",&chanserv.lck_restricted,false);
+    in.Read(ts_ChanServ+"DEF_JOIN",&chanserv.def_join,false);
+    in.Read(ts_ChanServ+"LCK_JOIN",&chanserv.lck_join,false);
+    in.Read(ts_ChanServ+"DEF_REVENGE",&chanserv.def_revenge,"NONE");
+    in.Read(ts_ChanServ+"LCK_REVENGE",&chanserv.lck_revenge,false);
+    in.Read(ts_ChanServ+"LEVEL_MIN",&chanserv.level_min,-1);
+    in.Read(ts_ChanServ+"LEVEL_MAX",&chanserv.level_max,30);
+    in.Read(ts_ChanServ+"LVL_AUTODEOP",&chanserv.lvl_autodeop,-1);
+    in.Read(ts_ChanServ+"LVL_AUTOVOICE",&chanserv.lvl_autovoice,5);
+    in.Read(ts_ChanServ+"LVL_AUTOOP",&chanserv.lvl_autoop,10);
+    in.Read(ts_ChanServ+"LVL_READMEMO",&chanserv.lvl_readmemo,0);
+    in.Read(ts_ChanServ+"LVL_WRITEMEMO",&chanserv.lvl_writememo,15);
+    in.Read(ts_ChanServ+"LVL_DELMEMO",&chanserv.lvl_delmemo,25);
+    in.Read(ts_ChanServ+"LVL_AKICK",&chanserv.lvl_akick,20);
+    in.Read(ts_ChanServ+"LVL_STARAKICK",&chanserv.lvl_starakick,25);
+    in.Read(ts_ChanServ+"LVL_UNBAN",&chanserv.lvl_unban,10);
+    in.Read(ts_ChanServ+"LVL_ACCESS",&chanserv.lvl_access,5);
+    in.Read(ts_ChanServ+"LVL_SET",&chanserv.lvl_set,25);
+    in.Read(ts_ChanServ+"LVL_CMDINVITE",&chanserv.lvl_cmdinvite,5);
+    in.Read(ts_ChanServ+"LVL_CMDUNBAN",&chanserv.lvl_cmdunban,10);
+    in.Read(ts_ChanServ+"LVL_CMDVOICE",&chanserv.lvl_cmdvoice,5);
+    in.Read(ts_ChanServ+"LVL_CMDOP",&chanserv.lvl_cmdop,10);
+    in.Read(ts_ChanServ+"LVL_CMDCLEAR",&chanserv.lvl_cmdclear,20);
 
     in.Read(ts_MemoServ+"NEWS_EXPIRE",&MemoServ_NEWS_EXPIRE,21);
 
