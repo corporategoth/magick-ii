@@ -445,9 +445,9 @@ void Magick::LoadExternalMessages()
     WLOCK lock("Magick","LoadMessages");
     // need to transfer wxGetWorkingDirectory() and prepend it to english.lng
 #ifdef WIN32
-    wxFileConfig fconf("magick","",wxGetCwd()+"\\english.lng");
+    wxFileConfig fconf("magick","",wxGetCwd()+"\\lang\\"+Files_LANGUAGE"+.lng");
 #else
-    wxFileConfig fconf("magick","",wxGetCwd()+"/english.lng");
+    wxFileConfig fconf("magick","",wxGetCwd()+"/lang/"+Files_LANGUAGE+".lng");
 #endif
     int i;
     // change this to not just update the internal defaults but also to

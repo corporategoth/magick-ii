@@ -12,7 +12,7 @@
 ; tables listed below which outline the codes and their meanings.
 ;
 ; The C replacement codes are used to insert a value from Magick
-; into the string.  These should NEVER be removed, they mey be
+; into the string.  These should NEVER be removed, they may be
 ; moved around, but NOT removed (if removed, results are very
 ; unpredictable!).  These are also known as 'live' codes.
 ;
@@ -32,30 +32,30 @@
 ; --------------------------------------------------------------
 ;
 ; C replacement codes:
-;   %s = String		%c = Single Character
-;   %d = Integer	%f = Numeric (with DP's)
-;   %o = Octal		%x = Hexidecimal
+;   %s = String         %c = Single Character
+;   %d = Integer        %f = Numeric (with DP's)
+;   %o = Octal          %x = Hexidecimal
 ;   %% = Literal %
 ; The DP in %f can be moved by telling it how many numbers
-; are to appear before and after the DP.  eg. %3.2l for 3
+; are to appear before and after the DP.  eg. %3.2f for 3
 ; numbers before, and 2 after the decimal point.
 ;
 ; IRC beautifying codes:
-;   ^B () = BOLD	- Make text between look brighter
-;   ^_ () = UNDERLINE	- Underline text between
-;   ^V () = REVERSE	- Switch foreground and background
-;   ^O () = CANCEL	- Back to non-bold/underline/reverse
-;   ^C () = COLOUR	- See below
+;   ^B () = BOLD       - Make text between look brighter
+;   ^_ () = UNDERLINE  - Underline text between
+;   ^V () = REVERSE    - Switch foreground and background
+;   ^O () = CANCEL     - Back to non-bold/underline/reverse
+;   ^C () = COLOUR     - See below
 ;
 ; mIRC colour codes:
-;   0 = White		8  = Yellow
-;   1 = Black		9  = Bright Green
-;   2 = Blue		10 = Cyan
-;   3 = Green		11 = Bright Cyan
-;   4 = Red		12 = Bright Blue
-;   5 = Orange		13 = Bright Magenta
-;   6 = Magenta		14 = Grey
-;   7 = Bright Red	15 = Bright Grey
+;   0 = White           8  = Yellow
+;   1 = Black           9  = Bright Green
+;   2 = Blue            10 = Cyan
+;   3 = Green           11 = Bright Cyan
+;   4 = Red             12 = Bright Blue
+;   5 = Orange          13 = Bright Magenta
+;   6 = Magenta         14 = Grey
+;   7 = Bright Red      15 = Bright Grey
 ; 
 
 ; Command syntax errors.
@@ -79,6 +79,8 @@ WRONG_PASSWORD     =Password incorrect.
 ACCESS_DENIED      =Access denied.
 SUSPENDED_NICK     =Access denied for SUSPENDED nicknames.
 SUSPENDED_CHAN     =Access denied for SUSPENDED channels.
+MLOCK_LOCKED       =Sorry, MLOCK %c is locked, you may not change this value.
+LOCKED             =Sorry, %s is locked, you may not change this value.
 TEMP_DISABLED      =Sorry, %s is temporarily disabled.
 FAILED             =Sorry, %s failed.
 YOU_DONT_EXIST     =Sorry, could not obtain your user information.
@@ -89,12 +91,12 @@ READ_ONLY          =WARNING: Services are in read-only mode, changes will not 
 [ERR/VERIFY]
 NEED_PASSWORD      =Password identification required for %s.
 NEED_OPS           =You must be a channel operator for %s.
-IDENT_NICK_FIRST   =Please retry after typing /MSG %s IDENTIFY password.
-IDENT_CHAN_FIRST   =Please retry after typing /MSG %s IDENTIFY %s password.
+IDENT_NICK_FIRST   =Please retry after typing /MSG %s IDENTIFY password.
+IDENT_CHAN_FIRST   =Please retry after typing /MSG %s IDENTIFY %s password.
 NICK_FORBIDDEN     =This nickname may not be used.  Please choose another.
 NICK_OWNED         =This nickname is owned by someone else.  Please choose another.
 NICK_SECURE        =This nickname is registered and protected.
-NICK_IDENTIFY      =If this is your nick, type /MSG %s IDENTIFY password
+NICK_IDENTIFY      =If this is your nick, type /MSG %s IDENTIFY password.
 WILL_KILL_YOU      =If you do not change within one minute, you will be disconnected.
 
 ; They are (or the target is) the wrong kind of person.
