@@ -154,7 +154,7 @@ void Magick::LoadInternalMessages()
 
 	/* Why not just:
 	{
-		ostream out("tmplang.lng");
+		ofstream out("tmplang.lng");
 		for (i=0;i<def_langent;i++, def_lang++)
 			out << def_lang[i] << endl;
 	}
