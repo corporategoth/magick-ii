@@ -172,6 +172,8 @@ public class mct extends JApplet implements ActionListener
 		{
 		    public boolean accept(File f)
 		    {
+			if (f.isDirectory())
+			    return true;
 			if (f.isFile() && f.getName().endsWith(".ini"))
 			    return true;
 			return false;
