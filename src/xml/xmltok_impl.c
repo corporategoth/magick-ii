@@ -811,6 +811,7 @@ static
 int PREFIX(contentTok)(const ENCODING *enc, const char *ptr, const char *end,
 		       const char **nextTokPtr)
 {
+unsigned int i;
   if (ptr == end)
     return XML_TOK_NONE;
   if (MINBPC(enc) > 1) {
@@ -822,6 +823,7 @@ int PREFIX(contentTok)(const ENCODING *enc, const char *ptr, const char *end,
       end = ptr + n;
     }
   }
+
   switch (BYTE_TYPE(enc, ptr)) {
   case BT_LT:
     return PREFIX(scanLt)(enc, ptr + MINBPC(enc), end, nextTokPtr);
@@ -1526,53 +1528,33 @@ int PREFIX(charRefNumber)(const ENCODING *enc, const char *ptr)
 static
 int PREFIX(predefinedEntityName)(const ENCODING *enc, const char *ptr, const char *end)
 {
-  switch ((end - ptr)/MINBPC(enc)) {
-  case 2:
-    if (CHAR_MATCHES(enc, ptr + MINBPC(enc), 't')) {
-      switch (BYTE_TO_ASCII(enc, ptr)) {
-      case 'l':
-	return '<';
-      case 'g':
-	return '>';
-      }
-    }
-    break;
-  case 3:
-    if (CHAR_MATCHES(enc, ptr, 'a')) {
-      ptr += MINBPC(enc);
-      if (CHAR_MATCHES(enc, ptr, 'm')) {
-	ptr += MINBPC(enc);
-	if (CHAR_MATCHES(enc, ptr, 'p'))
-	  return '&';
-      }
-    }
-    break;
-  case 4:
-    switch (BYTE_TO_ASCII(enc, ptr)) {
-    case 'q':
-      ptr += MINBPC(enc);
-      if (CHAR_MATCHES(enc, ptr, 'u')) {
-	ptr += MINBPC(enc);
-	if (CHAR_MATCHES(enc, ptr, 'o')) {
-	  ptr += MINBPC(enc);
-  	  if (CHAR_MATCHES(enc, ptr, 't'))
-	    return '"';
-	}
-      }
-      break;
-    case 'a':
-      ptr += MINBPC(enc);
-      if (CHAR_MATCHES(enc, ptr, 'p')) {
-	ptr += MINBPC(enc);
-	if (CHAR_MATCHES(enc, ptr, 'o')) {
-	  ptr += MINBPC(enc);
-  	  if (CHAR_MATCHES(enc, ptr, 's'))
-	    return '\'';
-	}
-      }
-      break;
-    }
+  char str[16], asc[4];
+  int i, len=(end-ptr)/MINBPC(enc);
+  memset(str, 0, 16);
+  memset(asc, 0, 4);
+
+  for (i=0; i<len; i++)
+  {
+    str[i]=BYTE_TO_ASCII(enc, ptr);
+    ptr+=MINBPC(enc);
   }
+
+  if (strcmp(str, "lt")==0) {
+    return '<';
+  } else if (strcmp(str, "gt")==0) {
+    return '>';
+  } else if (strcmp(str, "amp")==0) {
+    return '&';
+  } else if (strcmp(str, "quot")==0) {
+    return '"';
+  } else if (strcmp(str, "pos")==0) {
+    return '\'';
+  } else if (strncmp(str, "asc", 3)==0) {
+    for (i=0; i<4 && i+3<strlen(str); i++)
+	asc[i]=str[i+3];
+    return atoi(asc);
+  }
+
   return 0;
 }
 

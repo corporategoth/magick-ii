@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.69  2000/07/29 21:58:54  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.68  2000/07/21 00:18:49  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -2332,7 +2338,7 @@ void MemoServ::PostLoad()
     // Linkage, etc
 
     unsigned int i, j;
-    for (i=0; m_array.size(); i++)
+    for (i=0; i<m_array.size(); i++)
     {
 	if (m_array[i] != NULL)
 	{
@@ -2354,7 +2360,7 @@ void MemoServ::PostLoad()
     }
     m_array.clear();
 
-    for (i=0; n_array.size(); i++)
+    for (i=0; i<n_array.size(); i++)
     {
 	if (n_array[i] != NULL)
 	{

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.91  2000/07/29 21:58:54  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.90  2000/07/21 00:18:50  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -1905,6 +1911,8 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
 		    Parent->startup.Level(), Parent->Level());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LAG"),
 		    ToHumanTime(Parent->startup.Lagtime()).c_str());
+    ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_LAGCHECK"),
+		    ToHumanTime(Parent->config.Ping_Frequency()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SERVERS"),
 		    Parent->startup.Server_size());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_RELINK"),
@@ -1914,11 +1922,11 @@ void OperServ::do_settings_Config(mstring mynick, mstring source, mstring params
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SQUIT2"),
 		    ToHumanTime(Parent->config.Squit_Cancel()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_SYNC"),
-		    ToHumanTime(Parent->config.Cycletime()).c_str(),
+		    ToHumanTime(Parent->config.Savetime()).c_str(),
 		    Parent->events->SyncTime().c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_CYCLE"),
-		    ToHumanTime(Parent->config.Checktime()).c_str(),
-		    ToHumanTime(Parent->config.Ping_Frequency()).c_str());
+		    ToHumanTime(Parent->config.Cycletime()).c_str(),
+		    ToHumanTime(Parent->config.Checktime()).c_str());
     ::send(mynick, source, Parent->getMessage(source, "OS_SETTINGS/CFG_DCC1"),
 		    ToHumanSpace(Parent->files.Blocksize()).c_str(),
 		    ToHumanTime(Parent->files.Timeout()).c_str());

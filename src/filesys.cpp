@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.40  2000/07/29 21:58:53  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.39  2000/07/21 00:18:49  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -1504,7 +1510,7 @@ int DccMap::svc(void)
     unsigned long WorkId;
     while (!Parent->Shutdown())
     {
-	COM(("Active Size is %d", active.size()));
+	/*COM(("Active Size is %d", active.size()));*/
 	if (!active.size())
 	{
 	    ACE_OS::sleep(1);

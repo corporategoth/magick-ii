@@ -1403,7 +1403,9 @@ int initScan(const ENCODING **encodingTable,
     /* only a single byte available for auto-detection */
     /* a well-formed document entity must have more than one byte */
     if (state != XML_CONTENT_STATE)
+    {
       return XML_TOK_PARTIAL;
+    }
     /* so we're parsing an external text entity... */
     /* if UTF-16 was externally specified, then we need at least 2 bytes */
     switch (INIT_ENC_INDEX(enc)) {

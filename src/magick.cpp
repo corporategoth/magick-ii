@@ -29,6 +29,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.256  2000/07/29 21:58:53  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.255  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -544,14 +550,7 @@ int Magick::Start()
     // Re-direct log output to this file (log output is to STDERR)
     freopen((files.Logfile()).c_str(), "a", stderr);
 
-    // load the local messages database and internal "default messages"
-    // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
-    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_LANG"));
-    LoadInternalMessages();
-
     FLUSH();
-    load_databases();
-
     // Need to shut down, it wont be carried over fork.
     // We will re-start it ASAP after fork.
     Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_FORK"));
@@ -573,20 +572,6 @@ int Magick::Start()
     }
     // Can only open these after fork if we want then to live
 
-/*			Trace::TurnSet(tt_MAIN, 0xffff);
-		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
-			    Trace::TurnSet((threadtype_enum) i, 0xffff); */
-
-    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS"));
-    { WLOCK(("Events"));
-    events = new EventTask;
-    events->open();
-    }
-    { WLOCK(("DccMap"));
-    dcc = new DccMap;
-    dcc->open();
-    }
-
     pidfile.Open(files.Pidfile().Strip(mstring::stBoth),"w");
     if(pidfile.IsOpened())
     {
@@ -597,6 +582,27 @@ int Magick::Start()
     }
     /*else
 	log_perror ("Warning: cannot write to PID file %s", files.Pidfile());*/
+
+/*			Trace::TurnSet(tt_MAIN, 0xffff);
+		    for (int i=tt_MAIN+1; i<tt_MAX; i++)
+			    Trace::TurnSet((threadtype_enum) i, 0xffff); */
+
+    // load the local messages database and internal "default messages"
+    // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
+    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_LANG"));
+    LoadInternalMessages();
+
+    load_databases();
+
+    Log(LM_STARTUP, getLogMessage("COMMANDLINE/START_EVENTS"));
+    { WLOCK(("Events"));
+    events = new EventTask;
+    events->open();
+    }
+    { WLOCK(("DccMap"));
+    dcc = new DccMap;
+    dcc->open();
+    }
 
     // okay here we start setting up the ACE_Reactor and ACE_Event_Handler's
     signalhandler=new SignalHandler;
@@ -1020,6 +1026,7 @@ void Magick::dump_help()
 	 << "--compress X       -c      Override [FILES/COMPRESSION] to X.\n"
 	 << "--relink X         -r      Override [CONFIG/SERVER_RELINK] to X.\n"
 	 << "--cycle X          -t      Override [CONFIG/CYCLETIME] to X.\n"
+	 << "--save X           -w      Override [CONFIG/SAVETIME] to X.\n"
 	 << "--check X          -T      Override [CONFIG/CHECKTIME] to X.\n"
 	 << "--ping X           -p      Override [CONFIG/PING_FREQUENCY] to X.\n"
 	 << "--lwm X            -m      Override [CONFIG/LOW_WATER_MARK] to X.\n"
@@ -2181,6 +2188,12 @@ bool Magick::get_config_values()
     else
 	config.cycletime = FromHumanTime("5m");
 
+    in.Read(ts_Config+"SAVETIME",value_mstring,"5m");
+    if (FromHumanTime(value_mstring))
+	config.savetime = FromHumanTime(value_mstring);
+    else
+	config.savetime = FromHumanTime("5m");
+
     in.Read(ts_Config+"CHECKTIME",value_mstring,"5s");
     if (FromHumanTime(value_mstring))
 	config.checktime = FromHumanTime(value_mstring);
@@ -2967,10 +2980,14 @@ void Magick::save_databases()
 	SXP::dict attribs;
 	WriteElement(&o, attribs);
     }
+    if (mFile::Exists(files.Database()))
+	mFile::Copy(files.Database(), files.Database()+".old");
     if (mFile::Exists(files.Database()+".new"))
     {
 	mFile::Copy(files.Database()+".new", files.Database());
 	mFile::Erase(files.Database()+".new");
+	if (mFile::Exists(files.Database()+".old"))
+	    mFile::Erase(files.Database()+".old");
     }
 }
 

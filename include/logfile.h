@@ -24,8 +24,11 @@ static const char *ident_logfile_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.8  2000/06/19 13:15:34  prez
-** Documentation, what a novel concept.
+** Revision 1.9  2000/07/29 21:58:52  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
 **
 **
 ** ========================================================== */
@@ -33,10 +36,10 @@ static const char *ident_logfile_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded log output file.
  * Based upon lang/english.lfo.
- * Created on Mon Jun 19 09:24:14 EST 2000
+ * Created on Sun Jul 30 05:27:38 EST 2000
  */
 
-unsigned int def_logent =     340;
+unsigned int def_logent =     319;
 char *def_log[] = {
 "; Magick IRC Services",
 "; (c) 1996-1999 Preston A. Elder, W. King",
@@ -257,13 +260,12 @@ char *def_log[] = {
 "; These are used when an automated event kicks off.",
 ";",
 "[EVENT]",
-"STARTUP          =MAGICK II HAS STARTED UP SUCCESSFULLY.",
 "EXPIRE_AKILL     =Expiring akill for %s (%s) set by %s for %s.",
 "EXPIRE_NICK      =Expiring nickname %s (%s).",
 "EXPIRE_CHAN      =Expiring channel %s (%s).",
 "EXPIRE_NEWS      =Expiring news article for channel %s.",
-"LOAD             =Database version %u.%u has been loaded.",
-"SAVE             =Database saved.",
+"LOAD             =Loading databases ...",
+"SAVE             =Databases saved.",
 "UNBAN            =Removed ban %s from channel %s due to timeout (%s).",
 "KILLPROTECT      =Killed/renamed nickname %s for failure to identify.",
 "PING             =Pinged all servers.",
@@ -275,30 +277,8 @@ char *def_log[] = {
 "KILL_THREAD      =Killing thread, not enough work to warent it.",
 "",
 ";",
-"; These are errors that come from wx routines.",
+"; These are errors that come from system based",
 ";",
-"[WX_ERRORS]",
-"ENVIRONMENT      =Environment variables expansion failed - missing '%c' at position %d in '%s'.",
-"EXTRA            ='%s' has extra '..', ignored.",
-"GLOBAL_CFG       =Can't open global configuration file '%s'.",
-"USER_CFG         =Can't open user configuration file '%s'.",
-"USER_CFG_WRITE   =Can't write to user configuration file '%s'.",
-"USER_CFG_DEL     =Can't delete user configuration file '%s'.",
-"UNEXPECTED_CHAR  =File '%s': unexpected character %c at line %d.",
-"UNEXPECTED_CHAR2 =Unexpected '%c' at position %d in '%s'.",
-"LINE_IGNORED     =File '%s', line %d: '%s' ignored after group header.",
-"EQUALS_EXPECTED  =File '%s', line %d: '=' expected but not received, ignored.",
-"IMMUT_IGNORE     =File '%s', line %d: value for immutable key '%s' ignored.",
-"IMMUT_IGNORE2    =Attempt to change immutable key '%s' ignored.",
-"DUPLICATE_KEY    =File '%s', line %d: key '%s' was first found at line %d.",
-"DUPLICATE_KEY2   =Entry '%s' appears more than once in group '%s'",
-"MAYNOTSTART      =Entry name can't start with '%c'.",
-"MAYNOTCONTAIN    =Character '%c' is invalid in a config entry name.",
-"NOHOMEDIR        =Can't find user's HOME, using current directory.",
-"BINFILE          ='%s' is probably a binary file.",
-"CANTWRITE        =Can't write file '%s' to disk.",
-"OUTOFTXNIDS      =Cannot create any more Transaction ID's",
-"",
 "[SYS_ERRORS]",
 "COULDNOTOPEN     =Could not open file %s (%s).",
 "FILEMAPFULL      =Could not find an available file number for type %d!",
@@ -313,6 +293,13 @@ char *def_log[] = {
 "NOT_IMPLEMENTED  =Entered %s, which is not implemented.",
 "INVALID_FORMAT   =Invalid date format char %d%c in %s.",
 "NOT_LITERAL      =Chatacter %c should be in quotes, taken as literal in %s.",
+"OUTOFTXNIDS      =Cannot create any more Transaction ID's",
+"FAILED_FORK      =Failed to fork new process with %d, terminating.",
+"FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.",
+"LOCK_OPEN        =Fialed to open %s lock for %s.",
+"LOCK_ACQUIRE     =Failed to acquire %s lock for %s.",
+"LOCK_RELEASE     =Failed to release %s lock for %s.",
+"EXCEPTION        =Exception thrown on line %d, column %d of %s.",
 "",
 ";",
 "; This is a section for miscellaneous other occurances.",
@@ -371,12 +358,7 @@ char *def_log[] = {
 "KEYMISMATCH      =Channel key mismatch (%s | %s) for channel %s from %s.",
 "NOLIMIT          =No limit specified when required for channel %s from %s.",
 "NOLANGTOKEN      =Invalid token %s for language %s used, error returned.",
-"FAILED_FORK      =Failed to fork new process with %d, terminating.",
-"FAILED_SETPGID   =Failed to set permissions on process with %d, terminating.",
-"LOCK_OPEN        =Fialed to open %s lock for %s.",
-"LOCK_ACQUIRE     =Failed to acquire %s lock for %s.",
-"LOCK_RELEASE     =Failed to release %s lock for %s.",
-"EXCEPTION        =Exception thrown on line %d, column %d of %s.",
 "BADSET           =Tried to set BAD data (%s) for %s on %s.",
+"CORRUPT_DB       =Database file corrupted or invalid key in keyfile.",
 "" };
 #endif

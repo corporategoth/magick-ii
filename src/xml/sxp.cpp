@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.10  2000/07/29 21:58:55  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.9  2000/07/21 01:10:17  prez
 ** Fixed the dbase corruption checking ...
 **
@@ -140,18 +146,20 @@ void MFileOutStream::PrintV(char *format, va_list argptr)
 {
     mstring tmp;
     tmp.FormatV(format, argptr);
-    if (strlen(buffer) + tmp.Len() >= buf_sz)
+    if (buf_cnt + tmp.Len() >= buf_sz)
 	ExpandBuf();
-    strcpy(&buffer[strlen(buffer)], tmp.c_str());
+    strcpy(&buffer[buf_cnt], tmp.c_str());
+    buf_cnt+=tmp.Len();
 }
 
 void MFileOutStream::Indent()
 {
 	for(int i=0; i<m_nIndent; i++)
 	{
-	    if (strlen(buffer)+1 >= buf_sz)
+	    if (buf_cnt+1 >= buf_sz)
 		ExpandBuf();
-	    buffer[strlen(buffer)] = '\t';
+	    buffer[buf_cnt] = '\t';
+	    buf_cnt++;
 	}
 }
 
@@ -162,7 +170,8 @@ MFileOutStream::MFileOutStream(mstring chFilename, int comp, mstring ikey)
 	m_nIndent = 0;
 	compress = comp;
 	key = ikey;
-	buf_sz = 1024;
+	buf_sz = INIT_BUFSIZE;
+	buf_cnt = 0;
 	buffer = (char *) malloc(sizeof(char) * buf_sz);
 	memset(buffer, 0, sizeof(char) * buf_sz);
 }
@@ -174,7 +183,8 @@ MFileOutStream::MFileOutStream(mstring chFilename, FILE *fp, int comp, mstring i
 	m_nIndent = 0;
 	compress = comp;
 	key = ikey;
-	buf_sz = 1024;
+	buf_sz = INIT_BUFSIZE;
+	buf_cnt = 0;
 	buffer = (char *) malloc(sizeof(char) * buf_sz);
 	memset(buffer, 0, sizeof(char) * buf_sz);
 }
@@ -183,7 +193,7 @@ MFileOutStream::~MFileOutStream()
 {
 	unsigned char tag = SXP_TAG;
 	char *outbuf = NULL;
-	size_t new_sz = 0, attempt, length=strlen(buffer);
+	size_t new_sz = 0, attempt, length=buf_cnt;
 	if (!out.IsOpened())
 	    return;
 	if (compress)
@@ -291,9 +301,10 @@ void MFileOutStream::BeginXML(void)
 	// conversion functions in IElement::Retrieve() and 
 	// IOutStream::WriteElement
 	mstring tmp = XML_STRING;
-	if (strlen(buffer) + strlen(XML_STRING) >= buf_sz)
+	if (buf_cnt + strlen(XML_STRING) >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[strlen(buffer)], XML_STRING);
+	strcpy(&buffer[buf_cnt], XML_STRING);
+	buf_cnt+=strlen(XML_STRING);
 }
 
 void MFileOutStream::BeginObject(Tag& t, dict& attribs)
@@ -301,22 +312,25 @@ void MFileOutStream::BeginObject(Tag& t, dict& attribs)
 	Indent(); m_nIndent++;
 	mstring tmp;
 	tmp.Format("<%s", t.ch);
-	if (strlen(buffer) + tmp.Len() >= buf_sz)
+	if (buf_cnt + tmp.Len() >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[strlen(buffer)], tmp.c_str());
+	strcpy(&buffer[buf_cnt], tmp.c_str());
+	buf_cnt+=tmp.Len();
 	for(dict::iterator i=attribs.begin(); i!=attribs.end(); i++) {
 		tmp = "";
 		tmp.Format(" %s=\"%s\"",
 			(*i).first.c_str(),
 			(*i).second.c_str() );
-		if (strlen(buffer) + tmp.Len() >= buf_sz)
+		if (buf_cnt + tmp.Len() >= buf_sz)
 		    ExpandBuf();
-		strcpy(&buffer[strlen(buffer)], tmp.c_str());
+		strcpy(&buffer[buf_cnt], tmp.c_str());
+		buf_cnt+=tmp.Len();
 	}
 	tmp = ">\n";
-	if (strlen(buffer) + tmp.Len() >= buf_sz)
+	if (buf_cnt + tmp.Len() >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[strlen(buffer)], tmp.c_str());
+	strcpy(&buffer[buf_cnt], tmp.c_str());
+	buf_cnt+=tmp.Len();
 }
 
 void MFileOutStream::EndObject  (Tag& t)
@@ -325,9 +339,10 @@ void MFileOutStream::EndObject  (Tag& t)
 	Indent();
 	mstring tmp;
 	tmp.Format("</%s>\n", t.ch);
-	if (strlen(buffer) + tmp.Len() >= buf_sz)
+	if (buf_cnt + tmp.Len() >= buf_sz)
 	    ExpandBuf();
-	strcpy(&buffer[strlen(buffer)], tmp.c_str());
+	strcpy(&buffer[buf_cnt], tmp.c_str());
+	buf_cnt+=tmp.Len();
 }
 
 void MFileOutStream::WriteSubElement(IPersistObj *pObj, dict& attribs)
@@ -433,8 +448,8 @@ int CParser::FeedFile(mstring chFilename, mstring ikey)
 		    free(buffer);
 		if (retval == 0)
 		{
-		   Shutdown();
-		   retval = 1;
+		    Shutdown();
+		    retval = 1;
 		}
 		if( m_bShuttingDown )
 		    DoShutdown();

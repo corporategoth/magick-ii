@@ -25,6 +25,12 @@ static const char *ident_magick_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.137  2000/07/29 21:58:52  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.136  2000/07/28 14:49:34  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -216,6 +222,7 @@ private:
 	bool i_gotconnect;
 	mstring i_server;
 	bool i_connected;
+	bool i_saving;
 
 	static SXP::Tag tag_Magick;
 public:
@@ -325,6 +332,7 @@ public:
 		unsigned long squit_protect;
 		unsigned long squit_cancel;
 		unsigned long cycletime;
+		unsigned long savetime;
 		unsigned long checktime;
 		unsigned long ping_frequency;
 		unsigned int starthresh;
@@ -340,6 +348,7 @@ public:
 		unsigned long Squit_Protect()	{ return squit_protect; }
 		unsigned long Squit_Cancel()	{ return squit_cancel; }
 		unsigned long Cycletime()	{ return cycletime; }
+		unsigned long Savetime()	{ return savetime; }
 		unsigned long Checktime()	{ return checktime; }
 		unsigned long Ping_Frequency()	{ return ping_frequency; }
 		unsigned int Starthresh()	{ return starthresh; }
@@ -394,6 +403,7 @@ public:
 	mstring Server()	    { return i_server; }
 	bool Connected()	    { return i_connected; }
 	void Connected(bool in)	    { i_connected = in; }
+	bool Saving()		    { return i_saving; }
 	void Disconnect();
 	void send(mstring text);
 	mstring GetKey();

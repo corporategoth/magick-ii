@@ -1,3 +1,4 @@
+
 /*
 The contents of this file are subject to the Mozilla Public License
 Version 1.1 (the "License"); you may not use this file except in
@@ -1120,9 +1121,13 @@ doContent(XML_Parser parser,
 					      next - enc->minBytesPerChar);
 	if (ch) {
 	  if (characterDataHandler)
+	  {
 	    characterDataHandler(handlerArg, &ch, 1);
+	  }
 	  else if (defaultHandler)
+	  {
 	    reportDefault(parser, enc, s, next);
+	  }
 	  break;
 	}
 	name = poolStoreString(&dtd.pool, enc,
@@ -1134,7 +1139,9 @@ doContent(XML_Parser parser,
 	poolDiscard(&dtd.pool);
 	if (!entity) {
 	  if (dtd.complete || dtd.standalone)
+	  {
 	    return XML_ERROR_UNDEFINED_ENTITY;
+	  }
 	  if (defaultHandler)
 	    reportDefault(parser, enc, s, next);
 	  break;
@@ -2646,7 +2653,9 @@ reportDefault(XML_Parser parser, const ENCODING *enc, const char *s, const char 
     } while (s != end);
   }
   else
+  {
     defaultHandler(handlerArg, (XML_Char *)s, (XML_Char *)end - (XML_Char *)s);
+  }
 }
 
 

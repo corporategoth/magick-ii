@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.187  2000/07/29 21:58:52  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.186  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -926,6 +932,9 @@ void Chan_Live_t::SendMode(mstring in)
 	case 'l':
 	    if (add)
 	    {
+		if (!(Parent->chanserv.IsStored(i_Name) &&
+		    Parent->chanserv.stored[i_Name.LowerCase()].Mlock_Off().Contains("l")))
+		{
 		if (in.WordCount(" ") >= param)
 		{
 		    if (ModeExists(p_modes_off, p_modes_off_params, false, 'l'))
@@ -935,10 +944,13 @@ void Chan_Live_t::SendMode(mstring in)
 		    p_modes_on += "l";
 		    p_modes_on_params.push_back(in.ExtractWord(param, " "));
 		    param++;
-		}
+		}}
 	    }
 	    else
 	    {
+		if (!(Parent->chanserv.IsStored(i_Name) &&
+		    Parent->chanserv.stored[i_Name.LowerCase()].Mlock_On().Contains("l")))
+		{
 		if (i_Limit)
 		{
 		    if (ModeExists(p_modes_on, p_modes_on_params, true, 'l'))
@@ -947,7 +959,7 @@ void Chan_Live_t::SendMode(mstring in)
 		    {
 			p_modes_off += "l";
 		    }
-		}
+		}}
 	    }
 	    break;
 	case 'k':
@@ -958,17 +970,23 @@ void Chan_Live_t::SendMode(mstring in)
 		    // ONLY allow +k if we've turned it off before, or one isnt set
 		    if (i_Key == "" || ModeExists(p_modes_off, p_modes_off_params, false, 'k'))
 		    {
+		    if (!(Parent->chanserv.IsStored(i_Name) &&
+			Parent->chanserv.stored[i_Name.LowerCase()].Mlock_Off().Contains("k")))
+		    {
 			// DONT take off 'off' value, coz we can -k+k key1 key2
 			if (!ModeExists(p_modes_on, p_modes_on_params, true, 'k'))
 			{
 			    p_modes_on += "k";
 			    p_modes_on_params.push_back(in.ExtractWord(param, " "));
 			}
-		    }
+		    }}
 		}
 		else
 		{
 		    if (i_Key == in.ExtractWord(param, " "))
+		    {
+		    if (!(Parent->chanserv.IsStored(i_Name) &&
+			Parent->chanserv.stored[i_Name.LowerCase()].Mlock_On().Contains("k")))
 		    {
 			if (ModeExists(p_modes_on, p_modes_on_params, true, 'k'))
 			    RemoveMode(p_modes_on, p_modes_on_params, true, 'k');
@@ -977,7 +995,7 @@ void Chan_Live_t::SendMode(mstring in)
 			    p_modes_off += "k";
 			    p_modes_off_params.push_back(in.ExtractWord(param, " "));
 			}
-		    }
+		    }}
 		}
 		param++;
 	    }
@@ -987,21 +1005,27 @@ void Chan_Live_t::SendMode(mstring in)
 		{
 		    if (!modes.Contains(mode[i]))
 		    {
+		    if (!(Parent->chanserv.IsStored(i_Name) &&
+			Parent->chanserv.stored[i_Name.LowerCase()].Mlock_Off().Contains(mstring(mode[i]))))
+		    {
 			if (ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
 			    RemoveMode(p_modes_off, p_modes_off_params, false, mode[i]);
 			if (!ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
 			    p_modes_on += mode[i];
-		    }
+		    }}
 		}
 		else
 		{
 		    if (modes.Contains(mode[i]))
 		    {
+		    if (!(Parent->chanserv.IsStored(i_Name) &&
+			Parent->chanserv.stored[i_Name.LowerCase()].Mlock_On().Contains(mstring(mode[i]))))
+		    {
 			if (ModeExists(p_modes_on, p_modes_on_params, true, mode[i]))
 			    RemoveMode(p_modes_on, p_modes_on_params, true, mode[i]);
 			if (!ModeExists(p_modes_off, p_modes_off_params, false, mode[i]))
 			    p_modes_off += mode[i];
-		    }
+		    }}
 		}
 	    break;
 	}
@@ -1603,11 +1627,42 @@ void Chan_Stored_t::Join(mstring nick)
 void Chan_Stored_t::Part(mstring nick)
 {
     FT("Chan_Stored_t::Part", (nick));
+
+    if (Parent->nickserv.IsLive(nick) &&
+	Parent->nickserv.live[nick.LowerCase()].IsServices())
+	return;
+
     if (GetAccess(nick)>0)
     {
 	WLOCK(("ChanServ", "stored", i_Name.LowerCase(), "i_LastUsed"));
 	i_LastUsed = Now();
     }
+
+    Chan_Live_t *clive = NULL;
+    if (Parent->chanserv.IsLive(i_Name))
+	clive = &Parent->chanserv.live[i_Name.LowerCase()];
+
+    if (clive != NULL && clive->Users() == 1 && Join())
+    {
+	Parent->server.PART(Parent->chanserv.FirstName(), i_Name);
+	clive = NULL;
+    }
+
+    if ((clive == NULL || clive->Users() == 0) &&
+	Mlock_On().Contains("i") || Mlock_Key() != "")
+    {
+	Parent->server.JOIN(Parent->chanserv.FirstName(), i_Name);
+	if (Parent->chanserv.IsLive(i_Name))
+	{
+	    clive = &Parent->chanserv.live[i_Name.LowerCase()];
+	    clive->SendMode("+s");
+	    if (Mlock_On().Contains("i"))
+		clive->SendMode("+i");
+	    if (Mlock_Key() != "")
+		clive->SendMode("+k " + Mlock_Key());
+	}
+    }
+
 }
 
 
@@ -5825,7 +5880,9 @@ void ChanServ::do_Mode(mstring mynick, mstring source, mstring params)
 		modes.c_str(), channel.c_str());
 	return;
     }
-    else if (cstored->GetAccess(source, "VIEW"))
+    else if (cstored->GetAccess(source, "VIEW") ||
+	(Parent->commserv.IsList(Parent->commserv.SOP_Name()) &&
+	 Parent->commserv.list[Parent->commserv.SOP_Name()].IsOn(source)))
     {
 	mstring output;
 	output << clive->Name() << ": +" << clive->Mode();

@@ -25,6 +25,12 @@ static const char *ident_sxp_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.8  2000/07/29 21:58:52  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.7  2000/07/21 00:18:46  prez
 ** Fixed database loading, we can now load AND save databases...
 **
@@ -67,6 +73,7 @@ static const char *ident_sxp_h = "@(#) $Id$";
 #undef JUST_MFILE
 
 #define XML_STRING	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+#define INIT_BUFSIZE	32 * 1024
 #define SXP_TAG		0x01	// Required to force write.
 #define SXP_COMPRESS	0x02
 #define SXP_ENCRYPT	0x04
@@ -296,7 +303,7 @@ SXP_NS_BEGIN
 // this should be at least 3-4 times the number of tags you use
 // the more, the better
 
-#define SXP_HTSIZE		256
+#define SXP_HTSIZE		1024
 
 	// a singleton hashtable
 	// for tags
@@ -373,7 +380,15 @@ SXP_NS_BEGIN
 			case '<': ret.append("&lt;",   4); break;
 			case '>': ret.append("&gt;",   4); break;
 			case '"': ret.append("&quot;", 6); break;
-			default:  ret.append(1, *p);
+			default:
+			    if (*p < 32 || *p > 126)
+			    {
+				mstring tmp;
+				tmp.Format("&asc%d;", (unsigned char) *p);
+				ret.append(tmp.c_str(), tmp.Len());
+			    }
+			    else
+				ret.append(1, *p);
 			}
 		}
 		return ret;
@@ -390,7 +405,15 @@ SXP_NS_BEGIN
 				case L'"': ret.append("&quot;"); break;
 				case L'<': ret.append("&lt;"); break;
 				case L'>': ret.append("&gt;"); break;
-				default:   ret.append(1, (char)*p);
+				default:
+				    if (*p < 32 || *p > 126)
+				    {
+					mstring tmp;
+					tmp.Format("&asc%d;", (unsigned char) *p);
+					ret.append(tmp.c_str());
+				    }
+				    else
+					ret.append(1, (char)*p);
 				}
 			} else {
 #define SXP_CHAR_CAST (char)
@@ -428,6 +451,17 @@ SXP_NS_BEGIN
 				} else if( strcmp(p+1, "quot;") == 0 ) {
 					p += 5;
 					ret.append(1, '"');
+				} else if (strncmp(p+1, "asc", 3)==0) {
+					p += 4;
+					char tmp[5];
+					memset(tmp, 0, 5);
+					for (short i=0; *p != ';' && i<5; p++, i++)
+					    tmp[i] = *p;
+					p--;
+					if (strlen(tmp))
+					    ret.append(1, (char) atoi(tmp));
+				} else {
+					ret.append(1, '&');
 				}
 			}
 		}
@@ -452,6 +486,13 @@ SXP_NS_BEGIN
 					ret.append(1, L'>');
 				} else if( strncmp(pstr+pos+1, "quot;", 5) == 0 ) {
 					ret.append(1, L'"');
+				} else if (strncmp(pstr+pos+1, "asc", 3)==0) {
+					char tmp[5];
+					memset(tmp, 0, 5);
+					for (short i=0; pstr+pos+2+i != ';' && i<5; i++)
+					    tmp[i] = pstr+pos+2+i;
+					if (strlen(tmp))
+					    ret.append(1, L((char) atoi(tmp)));
 				} else {
 					ret.append(1, L'&');
 				}
@@ -548,6 +589,7 @@ SXP_NS_BEGIN
 		mFile out;
 		int m_nIndent, compress;
 		size_t buf_sz;
+		size_t buf_cnt;
 		char *buffer;
 		mstring key;
 

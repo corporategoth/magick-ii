@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.96  2000/07/29 21:58:55  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.95  2000/06/25 07:58:50  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -323,7 +329,7 @@ T_Functions::T_Functions(const mstring &name)
 {
     m_name=name;
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Functions);
     if (IsOn(tid)) {
@@ -338,7 +344,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 {
     m_name=name;
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Functions);
     if (IsOn(tid)) {
@@ -358,7 +364,7 @@ T_Functions::T_Functions(const mstring &name, const mVarArray &args)
 T_Functions::~T_Functions()
 { 
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     tid->indentdown(); 
     ShortLevel(Functions);
@@ -393,7 +399,7 @@ T_CheckPoint::T_CheckPoint(const char *fmt, ...)
 void T_CheckPoint::common(const char *input)
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(CheckPoint);
     if (IsOn(tid)) {
@@ -424,7 +430,7 @@ T_Comments::T_Comments(const char *fmt, ...)
 void T_Comments::common(const char *input)
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Comments);
     if (IsOn(tid)) {
@@ -442,7 +448,7 @@ void T_Comments::common(const char *input)
 T_Modify::T_Modify(const mVarArray &args)
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Modify);
     if (IsOn(tid)) {
@@ -460,7 +466,7 @@ T_Modify::T_Modify(const mVarArray &args)
 void T_Modify::End(const mVarArray &args)
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Modify);
     if (IsOn(tid)) {
@@ -480,7 +486,7 @@ void T_Modify::End(const mVarArray &args)
 T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Chatter);
     if (IsOn(tid)) {
@@ -514,7 +520,7 @@ T_Chatter::T_Chatter(dir_enum direction, const mstring &input)
 void T_Locking::open(T_Locking::type_enum ltype, mstring lockname) 
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Locking);
     if (IsOn(tid)) 
@@ -539,7 +545,7 @@ void T_Locking::open(T_Locking::type_enum ltype, mstring lockname)
 T_Locking::~T_Locking()
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Locking);
     if (IsOn(tid)) {
@@ -571,7 +577,7 @@ T_Locking::~T_Locking()
 T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Sockets);
     if (IsOn(tid)) 
@@ -585,7 +591,7 @@ T_Sockets::T_Sockets(unsigned int local, unsigned int remote, mstring host)
 T_Sockets::End(mstring reason)
 {
     tid = mThread::find();
-    if (!tid)
+    if (tid == NULL)
 	return; // should throw an exception later
     ShortLevel(Sockets);
     if (IsOn(tid)) 

@@ -24,9 +24,11 @@ static const char *ident_language_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.18  2000/07/28 14:49:34  prez
-** Ditched the old wx stuff, mconfig now in use, we're now ready to
-** release (only got some conversion tests to do).
+** Revision 1.19  2000/07/29 21:58:52  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
 **
 **
 ** ========================================================== */
@@ -34,7 +36,7 @@ static const char *ident_language_h = "@(#) $Id$";
 
 /* Automatically generated hard-coded language file.
  * Based upon lang/english.lng.
- * Created on Fri Jul 28 07:00:01 EST 2000
+ * Created on Sun Jul 30 05:27:35 EST 2000
  */
 
 unsigned int def_langent =     858;

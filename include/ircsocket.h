@@ -25,6 +25,12 @@ static const char *ident_ircsocket_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.36  2000/07/29 21:58:52  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.35  2000/06/18 12:49:26  prez
 ** Finished locking, need to do some cleanup, still some small parts
 ** of magick.cpp/h not locked properly, and need to ensure the case
@@ -132,6 +138,7 @@ class EventTask : public ACE_Task<ACE_MT_SYNCH>
     mDateTime last_save;
     mDateTime last_check;
     mDateTime last_ping;
+    static void *save_databases(void *in = NULL);
 public:
     void ForceSave();
     void ForcePing();

@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.55  2000/07/29 21:58:53  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.54  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -162,14 +168,14 @@ bool DoEncodeDate(int Year, int Month, int Day, mDateTime& Date)
 {
   int I;
   bool Result = false;
-  int tmpDay=Day;
+  int tmpDay=Day-1;
 
   mDayTable &DayTable = GetDayTable(Year);
   if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) &&
-    (Day >= 1) && (Day <= DayTable[Month]))
+    (Day >= 1) && (Day <= DayTable[Month-1]))
   {
     for(I = 1; I<Month;I++) 
-		tmpDay+=DayTable[I];
+		tmpDay+=DayTable[I-1];
     I = Year - 1;
     Date.Val = (double)(I * 365 + I / 4 - I / 100 + I / 400 + tmpDay - DateDelta);
     Result = true;
@@ -217,7 +223,7 @@ mDateTime& mDateTime::operator=(time_t in)
 {
 	tm *tmst;
 	tmst=localtime(&in);
-	*this=mDateTime(tmst->tm_year+1900,tmst->tm_mon+1,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec-1,0);
+	*this=mDateTime(tmst->tm_year+1900,tmst->tm_mon+1,tmst->tm_mday)+mDateTime(tmst->tm_hour,tmst->tm_min,tmst->tm_sec,0);
 	return *this;
 }
 mDateTime& mDateTime::operator+=(const mDateTime& in)
@@ -597,7 +603,7 @@ mDateTime::operator time_t()
 	localtm.tm_mday=Day;
 	localtm.tm_hour=Hour;
 	localtm.tm_min=Min;
-	localtm.tm_sec=Sec+1;
+	localtm.tm_sec=Sec;
 	localtm.tm_isdst=0;
 	return mktime(&localtm);
 }
@@ -831,7 +837,9 @@ mstring mDateTime::Ago(bool gmt)
 
 unsigned long mDateTime::SecondsSince()
 {
-    return (MSecondsSince() / 1000);
+    mDateTime dummyvar=Now()-(*this);
+    unsigned long CurrentVal=(unsigned long)(dummyvar.Val*(double)SecsPerDay);
+    return CurrentVal;
 }
 
 unsigned long mDateTime::MinutesSince()

@@ -25,6 +25,12 @@ static const char *ident_mstring_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.46  2000/07/29 21:58:52  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.45  2000/07/28 14:49:34  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -184,7 +190,7 @@ const char *ltoa(long l);
 const char *ultoa(unsigned long l);
 #endif
 #ifndef HAVE_ATOUL
-#define atoul(x) strtoul(x, NULL, 10);
+#define atoul(x) strtoul(x, NULL, 10)
 #endif
 
 extern const mstring DirSlash;

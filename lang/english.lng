@@ -741,12 +741,13 @@ HTM                =HTM will trigger at %s/s, Current average traffic is %.1fKb/
 [OS_SETTINGS]
 CFG_LEVEL          =Base level is %d, current level is %d.
 CFG_LAG            =Level is increased if lag is more than %s.
+CFG_LAGCHECK       =Server lag is checked every %s.
 CFG_SERVERS        =Services have %d possible server(s) to connect to.
 CFG_RELINK         =Services relink in %s if SQUIT.
 CFG_SQUIT1         =SQUIT protection lasts %s.
 CFG_SQUIT2         =Users have %s to reconnect before SQUIT protection activates.
 CFG_SYNC           =Databases save every %s, and sync in %s.
-CFG_CYCLE          =Hyperactive cycle is %s, and lag check is %s.
+CFG_CYCLE          =Active cycle is %s, and Hyperactive cycle is %s.
 CFG_DCC1           =DCC block size is %s and will time out in %s.
 CFG_DCC2           =Minimum DCC speed is %s and maximum is %s over %s.
 

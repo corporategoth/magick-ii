@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.15  2000/07/29 21:58:53  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.14  2000/05/21 04:49:39  prez
 ** Removed all wxLog tags, now totally using our own logging.
 **
@@ -387,7 +393,10 @@ CreateNickEntry(NickInfo *ni)
 	if (ni->flags & NI_IRCOP)
 	{
 	    out.i_NoExpire = true;
-	    if (Parent->commserv.IsList(Parent->commserv.OPER_Name()))
+	    // NOT a SADMIN, and OPER does exist.
+	    if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+		  Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(out.i_Name)) &&
+		Parent->commserv.IsList(Parent->commserv.OPER_Name()))
 		Parent->commserv.list[Parent->commserv.OPER_Name()].insert(
 		    mstring(out.i_Name), Parent->commserv.FirstName());
 	}
@@ -1380,8 +1389,10 @@ load_sop ()
 	{
 	    for (j=0; j<nsop; ++j)
 	    {
-		Parent->commserv.list[Parent->commserv.SOP_Name()].insert(
-		    mstring(sops[i].nick), Parent->commserv.FirstName());
+ 		if (!(Parent->commserv.IsList(Parent->commserv.SADMIN_Name()) &&
+		     Parent->commserv.list[Parent->commserv.SADMIN_Name()].IsIn(sops[j].nick)))
+		    Parent->commserv.list[Parent->commserv.SOP_Name()].insert(
+		    mstring(sops[j].nick), Parent->commserv.FirstName());
 	    }
 	}
 	ACE_OS::free(sops);

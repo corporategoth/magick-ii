@@ -27,6 +27,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.111  2000/07/29 21:58:54  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.110  2000/07/28 14:49:36  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -704,33 +710,51 @@ void NetworkServ::SignOnAll()
     WLOCK(("Server", "WaitIsOn"));
     for (i=1; i<=Parent->operserv.GetNames().WordCount(" "); i++)
     {
-	doison += " " + Parent->operserv.GetNames().ExtractWord(i, " ");
-	WaitIsOn.insert(Parent->operserv.GetNames().ExtractWord(i, " "));
+	if (!Parent->nickserv.IsLive(Parent->operserv.GetNames().ExtractWord(i, " ")))
+	{
+	    doison += " " + Parent->operserv.GetNames().ExtractWord(i, " ");
+	    WaitIsOn.insert(Parent->operserv.GetNames().ExtractWord(i, " "));
+	}
     }
     for (i=1; i<=Parent->nickserv.GetNames().WordCount(" "); i++)
     {
-	doison += " " + Parent->nickserv.GetNames().ExtractWord(i, " ");
-	WaitIsOn.insert(Parent->nickserv.GetNames().ExtractWord(i, " "));
+	if (!Parent->nickserv.IsLive(Parent->nickserv.GetNames().ExtractWord(i, " ")))
+	{
+	    doison += " " + Parent->nickserv.GetNames().ExtractWord(i, " ");
+	    WaitIsOn.insert(Parent->nickserv.GetNames().ExtractWord(i, " "));
+	}
     }
     for (i=1; i<=Parent->chanserv.GetNames().WordCount(" "); i++)
     {
-	doison += " " + Parent->chanserv.GetNames().ExtractWord(i, " ");
-	WaitIsOn.insert(Parent->chanserv.GetNames().ExtractWord(i, " "));
+	if (!Parent->nickserv.IsLive(Parent->chanserv.GetNames().ExtractWord(i, " ")))
+	{
+	    doison += " " + Parent->chanserv.GetNames().ExtractWord(i, " ");
+	    WaitIsOn.insert(Parent->chanserv.GetNames().ExtractWord(i, " "));
+	}
     }
     for (i=1; i<=Parent->memoserv.GetNames().WordCount(" "); i++)
     {
-	doison += " " + Parent->memoserv.GetNames().ExtractWord(i, " ");
-	WaitIsOn.insert(Parent->memoserv.GetNames().ExtractWord(i, " "));
+	if (!Parent->nickserv.IsLive(Parent->memoserv.GetNames().ExtractWord(i, " ")))
+	{
+	    doison += " " + Parent->memoserv.GetNames().ExtractWord(i, " ");
+	    WaitIsOn.insert(Parent->memoserv.GetNames().ExtractWord(i, " "));
+	}
     }
     for (i=1; i<=Parent->commserv.GetNames().WordCount(" "); i++)
     {
-	doison += " " + Parent->commserv.GetNames().ExtractWord(i, " ");
-	WaitIsOn.insert(Parent->commserv.GetNames().ExtractWord(i, " "));
+	if (!Parent->nickserv.IsLive(Parent->commserv.GetNames().ExtractWord(i, " ")))
+	{
+	    doison += " " + Parent->commserv.GetNames().ExtractWord(i, " ");
+	    WaitIsOn.insert(Parent->commserv.GetNames().ExtractWord(i, " "));
+	}
     }
     for (i=1; i<=Parent->servmsg.GetNames().WordCount(" "); i++)
     {
-	doison += " " + Parent->servmsg.GetNames().ExtractWord(i, " ");
-	WaitIsOn.insert(Parent->servmsg.GetNames().ExtractWord(i, " "));
+	if (!Parent->nickserv.IsLive(Parent->servmsg.GetNames().ExtractWord(i, " ")))
+	{
+	    doison += " " + Parent->servmsg.GetNames().ExtractWord(i, " ");
+	    WaitIsOn.insert(Parent->servmsg.GetNames().ExtractWord(i, " "));
+	}
     }
 
     if (doison != "")
@@ -2238,7 +2262,8 @@ void NetworkServ::execute(const mstring & data)
 		{
 		    Log(LM_WARNING, Parent->getLogMessage("OTHER/KILLED"),
 			    data.ExtractWord(3, ": ").c_str(),
-			    Parent->nickserv.live[sourceL].Mask(Nick_Live_t::N_U_P_H).c_str());
+			    (!Parent->nickserv.IsLive(sourceL) ? sourceL.c_str() :
+			    Parent->nickserv.live[sourceL].Mask(Nick_Live_t::N_U_P_H).c_str()));
 		    WLOCK(("Server", "WaitIsOn"));
 		    WaitIsOn.insert(data.ExtractWord(3, ": "));
 		    sraw(((proto.Tokens() && proto.GetNonToken("ISON") != "") ?
@@ -3827,11 +3852,14 @@ void NetworkServ::numeric_execute(const mstring & data)
 	    RLOCK(("Server", "WaitIsOn"));
 	    for (k=WaitIsOn.begin(); k!=WaitIsOn.end(); k++)
 	    {
-		if (Parent->operserv.IsName(*k))
+		if (Parent->operserv.IsName(*k) &&
+			!Parent->nickserv.IsLive(*k))
 		    Parent->operserv.signon(*k);
-		else if (Parent->nickserv.IsName(*k))
+		else if (Parent->nickserv.IsName(*k) &&
+			!Parent->nickserv.IsLive(*k))
 		    Parent->nickserv.signon(*k);
-		else if (Parent->chanserv.IsName(*k))
+		else if (Parent->chanserv.IsName(*k) &&
+			!Parent->nickserv.IsLive(*k))
 		{
 		    Parent->chanserv.signon(*k);
 
@@ -3841,18 +3869,28 @@ void NetworkServ::numeric_execute(const mstring & data)
 			    MODE(*k, "+i");
 			mstring joinline;
 			map<mstring,Chan_Stored_t>::iterator iter;
+			map<mstring,mstring> modes;
 			{ RLOCK(("ChanServ", "stored"));
 			for (iter=Parent->chanserv.stored.begin(); iter!=Parent->chanserv.stored.end(); iter++)
 			{
 			    // If its live and got JOIN on || not live and mlock +k or +i
 			    if ((Parent->chanserv.IsLive(iter->first) && iter->second.Join()) ||
 				(!Parent->chanserv.IsLive(iter->first) &&
-				(iter->second.Mlock_On().Contains("k") ||
+				(iter->second.Mlock_Key() != "" ||
 				iter->second.Mlock_On().Contains("i"))))
 			    {
 				if (joinline.Len())
 				    joinline << ",";
 				joinline << iter->first;
+				if(!Parent->chanserv.IsLive(iter->first))
+				{
+				    modes[iter->first] = "+s";
+				    if (iter->second.Mlock_On().Contains("i"))
+					modes[iter->first] += "i";
+				    if(iter->second.Mlock_Key() != "")
+					modes[iter->first] += "k " +
+						iter->second.Mlock_Key();
+				}
 				if (joinline.Len() > proto.MaxLine())
 				{
 				    JOIN(Parent->chanserv.FirstName(), joinline);
@@ -3865,13 +3903,22 @@ void NetworkServ::numeric_execute(const mstring & data)
 			    JOIN(Parent->chanserv.FirstName(), joinline);
 			    joinline = "";
 			}
+			map<mstring,mstring>::iterator i;
+			for (i=modes.begin(); i!=modes.end(); i++)
+			{
+			    if (Parent->chanserv.IsLive(i->first))
+				Parent->chanserv.live[i->first].SendMode(i->second);
+			}
 		    }
 		}
-		else if (Parent->memoserv.IsName(*k))
+		else if (Parent->memoserv.IsName(*k) &&
+			!Parent->nickserv.IsLive(*k))
 		    Parent->memoserv.signon(*k);
-		else if (Parent->commserv.IsName(*k))
+		else if (Parent->commserv.IsName(*k) &&
+			!Parent->nickserv.IsLive(*k))
 		    Parent->commserv.signon(*k);
-		else if (Parent->servmsg.IsName(*k))
+		else if (Parent->servmsg.IsName(*k) &&
+			!Parent->nickserv.IsLive(*k))
 		{
 		    Parent->servmsg.signon(*k);
 		    if (Parent->servmsg.FirstName() == *k)

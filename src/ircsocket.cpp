@@ -26,6 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.116  2000/07/29 21:58:53  prez
+** Fixed XML loading of weird characters ...
+** 2 known bugs now, 1) last_seen dates are loaded incorrectly on alot
+** of nicknames, which means we expire lots of nicknames.  2) services
+** wont rejoin a +i/+k channel when last user exits.
+**
 ** Revision 1.115  2000/07/28 14:49:35  prez
 ** Ditched the old wx stuff, mconfig now in use, we're now ready to
 ** release (only got some conversion tests to do).
@@ -662,6 +668,12 @@ int Part_Handler::handle_timeout (const ACE_Time_Value &tv, const void *arg)
     RET(0);
 }
 
+void *EventTask::save_databases(void *in)
+{
+    Parent->save_databases();
+    return NULL;
+}
+
 void EventTask::ForceSave()
 {
     NFT("EventTask::ForceSave");
@@ -680,7 +692,7 @@ mstring EventTask::SyncTime()
 {
     NFT("EventTask::SyncTime");
     RLOCK(("Events", "last_save"));
-    mstring retval = ToHumanTime(Parent->config.Cycletime() - (unsigned long)last_save.SecondsSince());
+    mstring retval = ToHumanTime(Parent->config.Savetime() - (unsigned long)last_save.SecondsSince());
     RET(retval);
 }
 
@@ -710,6 +722,8 @@ int EventTask::svc(void)
     WLOCK4(("Events", "last_ping"));
     last_expire = last_save = last_check = last_ping = Now();
     }
+
+    ACE_Thread_Manager tm;
     while(!Parent->Shutdown())
     {
 	// Make sure we're turned on ...
@@ -803,20 +817,36 @@ int EventTask::svc(void)
 		for (nsi = Parent->nickserv.stored.begin();
 			nsi != Parent->nickserv.stored.end(); nsi++)
 		{
-		    if (!nsi->second.NoExpire() || nsi->second.Forbidden() ||
-			nsi->second.Suspended())
+		    if (!(nsi->second.NoExpire() || nsi->second.Forbidden() ||
+			nsi->second.Suspended()))
 		    {
 			if (nsi->second.Host() == "")
 			{
 			    if (nsi->second.LastAllSeenTime().SecondsSince() >
 				Parent->nickserv.Expire())
+			    {
 				expired_nicks.push_back(nsi->first);
+Log(LM_INFO, "Nick %s was last all seen %s (%d) ago (Expiry is %s (%d))",
+	nsi->second.Name().c_str(),
+	ToHumanTime(nsi->second.LastAllSeenTime().SecondsSince()).c_str(),
+	nsi->second.LastAllSeenTime().SecondsSince(),
+	ToHumanTime(Parent->nickserv.Expire()).c_str(),
+	Parent->nickserv.Expire());
+			    }
 			}
 			else
 			{
 			    if (nsi->second.LastSeenTime().SecondsSince() >
 				Parent->nickserv.Expire())
+			    {
 				expired_nicks.push_back(nsi->first);
+Log(LM_INFO, "Nick %s was last seen %s (%d) ago (Expiry is %s (%d))",
+	nsi->second.Name().c_str(),
+	ToHumanTime(nsi->second.LastSeenTime().SecondsSince()).c_str(),
+	nsi->second.LastSeenTime().SecondsSince(),
+	ToHumanTime(Parent->nickserv.Expire()).c_str(),
+	Parent->nickserv.Expire());
+			    }
 			}
 		    }
 		}}
@@ -840,8 +870,8 @@ int EventTask::svc(void)
 		for (csi = Parent->chanserv.stored.begin();
 			csi != Parent->chanserv.stored.end(); csi++)
 		{
-		    if (!csi->second.NoExpire() || csi->second.Forbidden() ||
-			csi->second.Suspended())
+		    if (!(csi->second.NoExpire() || csi->second.Forbidden() ||
+			csi->second.Suspended()))
 		    {
 			if (csi->second.LastUsed().SecondsSince() >
 			    Parent->chanserv.Expire())
@@ -908,10 +938,12 @@ int EventTask::svc(void)
 	}}
 
 	{ RLOCK(("Events", "last_save"));
-	if (last_save.SecondsSince() >= Parent->config.Cycletime())
+	if (Parent->Saving())
+	    last_save = Now();
+	if (last_save.SecondsSince() >= Parent->config.Savetime())
 	{
 	    CP(("Starting DATABASE SAVE ..."));
-	    Parent->save_databases();
+	    tm.spawn(save_databases, NULL);
 
 	    WLOCK(("Events", "last_save"));
 	    last_save = Now();
