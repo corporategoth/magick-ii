@@ -140,7 +140,7 @@ public class Files extends TabbedPane
 	rv += "UMASK = " + umask.getText() + "\n";
 	rv += "PIDFILE = " + pidfile.getText() + "\n";
 	rv += "LOGFILE = " + logfile.getText() + "\n";
-	rv += "VERBOSE = " + verbose.getText() + "\n";
+	rv += "VERBOSE = " + (verbose.isSelected() ? "TRUE" : "FALSE") + "\n";
 	rv += "LOGCHAN = " + logchan.getText() + "\n";
 	rv += "MOTDFILE = " + motdfile.getText() + "\n";
 	rv += "LANGDIR = " + langdir.getText() + "\n";

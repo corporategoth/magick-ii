@@ -177,7 +177,7 @@ public class OperServ extends TabbedPane
 	rv += "IGNORE_LIMIT = " + ignore_limit.getText() + "\n";
 	rv += "IGNORE_REMOVE = " + ignore_remove.getText() + "\n";
 	rv += "IGNORE_METHOD = " + (ignore_method.getSelectedIndex() + 1) + "\n";
-	rv += "LOG_IGNORE = " + log_ignore.getText() + "\n";
+	rv += "LOG_IGNORE = " + (log_ignore.isSelected() ? "TRUE" : "FALSE") + "\n";
 	rv += "INIT_HTM_GAP = " + init_htm_gap.getText() + "\n";
 	rv += "INIT_HTM_THRESH = " + init_htm_thresh.getText() + "\n";
 	rv += "MAX_HTM_GAP = " + max_htm_gap.getText() + "\n";
