@@ -983,6 +983,7 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #if defined(SIGTERM) && (SIGTERM != 0)
     case SIGTERM:	// Save DB's (often prequil to -KILL!)
+	Parent->shutdown(true);	// Temp, we just kill on CTRL-C
 	break;
 #endif
 #if defined(SIGQUIT) && (SIGQUIT != 0)
@@ -1010,6 +1011,8 @@ int SignalHandler::handle_signal(int signum, siginfo_t *siginfo, ucontext_t *uco
 	break;
 #endif
     case SIGILL:	// Re-try last call.
+	Parent->shutdown(true);	// Temp, we just kill on CTRL-C
+	return -1;
 	break;
 #ifdef SIGTRAP
     case SIGTRAP:	// Throw exception

@@ -263,11 +263,6 @@ mstring mDateTime::FormatString(const mstring& format)const
 	int ampmtype=0;
 	DecodeDate(Year,Month,Day);
 	DecodeTime(Hour,Min,Sec,MSec);
-	wxLogWarning("mDateTime::FormatString values Hour: %d, Min: %d, Sec: %d MSec: %d",Hour,Min,Sec,MSec);
-	Hour=abs(Hour);
-	Min=abs(Min);
-	Sec=abs(Sec);
-	MSec=abs(MSec);
 
 	if(format.Find("a/p")!=-1)
 		ampmtype=1;
@@ -572,12 +567,15 @@ void mDateTime::DecodeDate(int &year, int &month, int &day)const
   day=D;
 
 }
+
 void mDateTime::DecodeTime(int &hour, int &min, int &sec, int& msec)const
 {
 	//(Hour * 3600000 + Min * 60000 + Sec * 1000 + MSec) / MSecsPerDay;
-	int CurrentVal=(int)(Val*(double)MSecsPerDay)%MSecsPerDay;
+	int CurrentVal=(int)(fmod(Val,1.0)*(double)MSecsPerDay);
 	int LeftOver;
+	//Time = ((double)Hour * 3600000.0 + (double)Min * 60000.0 + (double)Sec * 1000.0 + (double)MSec) / (double)MSecsPerDay;
 
+	wxLogDebug("mDateTime::DecodeTime CurrentVal=%d",CurrentVal);
 	LeftOver=CurrentVal%3600000;
 	hour=CurrentVal/3600000;
 	CurrentVal=LeftOver;
@@ -589,6 +587,7 @@ void mDateTime::DecodeTime(int &hour, int &min, int &sec, int& msec)const
 	LeftOver=CurrentVal%1000;
 	sec=CurrentVal/1000;
 	msec=LeftOver;
+	wxLogDebug("mDateTime::DecodeTime hour=%d min=%d sec=%d msec=%d", hour,min,sec,msec);
 }
 
 wxOutputStream& operator<<(wxOutputStream& os, const mDateTime& src)
