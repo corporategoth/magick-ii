@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.61  2000/06/27 18:56:59  prez
+** Added choosing of keys to configure, also created the keygen,
+** and scrambler (so keys are not stored in clear text, even in
+** the .h and binary files).  We should be set to do the decryption
+** process now, as encryption (except for encryption of db's) is
+** all done :)
+**
 ** Revision 1.60  2000/06/25 07:58:50  prez
 ** Added Bahamut support, listing of languages, and fixed some minor bugs.
 **
@@ -1014,10 +1021,10 @@ void ServMsg::do_Stats(mstring mynick, mstring source, mstring params)
     ::send(mynick, source, Parent->getMessage(source, "STATS/GEN_USERS"),
 		Parent->nickserv.live.size(), opers);
 
-    if (Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1u))
+    if ((Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1)))
 	::send(mynick, source, Parent->getMessage(source, "STATS/GEN_CLONES"),
 		Parent->operserv.CloneList_sum() - Parent->operserv.CloneList_size(),
-		Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1u));
+		Parent->operserv.CloneList_size() - Parent->operserv.CloneList_size(1));
 }
 
 

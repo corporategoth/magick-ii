@@ -26,8 +26,12 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
-** Revision 1.88  2000/06/26 11:23:17  prez
-** Added auto-akill on clone triggers
+** Revision 1.89  2000/06/27 18:56:59  prez
+** Added choosing of keys to configure, also created the keygen,
+** and scrambler (so keys are not stored in clear text, even in
+** the .h and binary files).  We should be set to do the decryption
+** process now, as encryption (except for encryption of db's) is
+** all done :)
 **
 ** Revision 1.87  2000/06/21 09:00:06  prez
 ** Fixed bug in mFile
@@ -285,7 +289,7 @@ size_t OperServ::CloneList_size(unsigned int amt)
     RLOCK(("OperServ", "CloneList"));
     for (i=CloneList.begin(); i!=CloneList.end(); i++)
     {
-	if (i->second.first >= amt)
+	if (i->second.first == amt)
 	    value++;
     }
     RET(value);

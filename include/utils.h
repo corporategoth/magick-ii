@@ -25,6 +25,13 @@ static const char *ident_utils_h = "@(#) $Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.25  2000/06/27 18:56:59  prez
+** Added choosing of keys to configure, also created the keygen,
+** and scrambler (so keys are not stored in clear text, even in
+** the .h and binary files).  We should be set to do the decryption
+** process now, as encryption (except for encryption of db's) is
+** all done :)
+**
 ** Revision 1.24  2000/05/28 05:05:13  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -102,6 +109,9 @@ mstring ToHumanTime(unsigned long in);
 mstring ToHumanNumber(unsigned long in);
 unsigned long FromHumanSpace(mstring in);
 mstring ToHumanSpace(unsigned long in);
+mstring GetRealKey(bool second);
+#define LOWER_CHAR 35
+#define UPPER_CHAR 126
 
 // extrapolated from the ms's pair<T1,T2> template code
 

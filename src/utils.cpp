@@ -26,6 +26,13 @@ static const char *ident = "@(#)$Id$";
 ** Changes by Magick Development Team <magick-devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.39  2000/06/27 18:56:59  prez
+** Added choosing of keys to configure, also created the keygen,
+** and scrambler (so keys are not stored in clear text, even in
+** the .h and binary files).  We should be set to do the decryption
+** process now, as encryption (except for encryption of db's) is
+** all done :)
+**
 ** Revision 1.38  2000/05/28 05:05:14  prez
 ** More makefile stuff ... Now we should work on all platforms.
 ** Added alot of checking for different .h files, functions, etc.
@@ -548,4 +555,32 @@ unsigned long FromHumanSpace(mstring in)
 	total += number;
 
     RET(total);
+}
+
+mstring GetRealKey(bool second)
+{
+    FT("GetRealKey", (second));
+    mstring retval;
+    int i;
+    char key[1024];
+    if (second)
+	strcpy(key, CRYPTO_KEY2);
+    else
+	strcpy(key, CRYPTO_KEY2);
+    for (i=0; i<strlen(key); i++)
+    {
+	if (key[i] < LOWER_CHAR || key[i] > UPPER_CHAR)
+	{
+	    retval += key[i];
+	}
+	else if (key[i] > UPPER_CHAR - CRYPTO_SCRAMBLE)
+	{
+	    retval += key[i] + CRYPTO_SCRAMBLE + LOWER_CHAR - UPPER_CHAR;
+	}
+	else
+	{
+	    retval += key[i] + CRYPTO_SCRAMBLE;
+	}
+    }
+    NRET(mstring, retval);
 }

@@ -238,6 +238,9 @@ x SQUIT protection.  Magick will keep a live server map of server,uplink.  When
   to re-generate the keyfile if they move or change OS's.  They keyfile
   itself will create 2 keys (once decrypted) to be used for databased and
   inter-magick communication encryption.
+  > Might infact be an idea to ask the user to enter in two keys (defaulting
+    to uname -n and uname -s), this way we can ensure uniqueness for those
+    who have a clue what they are doing.
 
 x Add to mDateTime a 'Difference' function that will output the difference
 	of the stored value to the current time (Now()).  It should output
