@@ -27,6 +27,9 @@ RCSID(commserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2001/11/04 19:23:09  ungod
+** fixed up compilation for borland c++ builder
+**
 ** Revision 1.104  2001/11/03 21:02:52  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -2644,15 +2647,15 @@ void CommServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     Parent->commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE"),
-		committee, onoff.GetBool() ?
+		committee, (onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON") :
-			Parent->getMessage(source, "VALS/OFF")));
+			Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("COMMSERV_INFO/SET_SECURE"),
-	committee, onoff.GetBool() ?
+	committee, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 
@@ -2728,15 +2731,15 @@ void CommServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     Parent->commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
-		committee, onoff.GetBool() ?
+		committee, (onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON") :
-			Parent->getMessage(source, "VALS/OFF")));
+			Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE"),
-	committee, onoff.GetBool() ?
+	committee, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 
@@ -2812,15 +2815,15 @@ void CommServ::do_set_OpenMemos(const mstring &mynick, const mstring &source, co
     Parent->commserv.stats.i_Set++;
     SEND(mynick, source, "COMMSERV/SET_TO", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
-		committee, onoff.GetBool() ?
+		committee, (onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON") :
-			Parent->getMessage(source, "VALS/OFF")));
+			Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS"),
-	committee, onoff.GetBool() ?
+	committee, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 
@@ -2891,15 +2894,15 @@ void CommServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     Parent->commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_SECURE"),
-		committee, onoff.GetBool() ?
+		committee, (onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON") :
-			Parent->getMessage(source, "VALS/OFF")));
+			Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("COMMSERV_INFO/SET_SECURE"),
-	committee, onoff.GetBool() ?
+	committee, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 
@@ -2970,15 +2973,15 @@ void CommServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     Parent->commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_PRIVATE"),
-		committee, onoff.GetBool() ?
+		committee, (onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON") :
-			Parent->getMessage(source, "VALS/OFF")));
+			Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("COMMSERV_INFO/SET_PRIVATE"),
-	committee, onoff.GetBool() ?
+	committee, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 
@@ -3049,15 +3052,15 @@ void CommServ::do_lock_OpenMemos(const mstring &mynick, const mstring &source, c
     Parent->commserv.stats.i_Lock++;
     SEND(mynick, source, "COMMSERV/LOCKED", (
 		Parent->getMessage(source, "COMMSERV_INFO/SET_OPENMEMOS"),
-		committee, onoff.GetBool() ?
+		committee, (onoff.GetBool() ?
 			Parent->getMessage(source, "VALS/ON") :
-			Parent->getMessage(source, "VALS/OFF")));
+			Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_INFO, "COMMSERV/LOCKED", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("COMMSERV_INFO/SET_OPENMEMOS"),
-	committee, onoff.GetBool() ?
+	committee, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 

@@ -4,8 +4,7 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="xml.lib"/>
-    <OBJFILES value="Debug\xml.obj Debug\sxp.obj Debug\hashtable.obj Debug\xmlparse.obj 
-      Debug\xmlrole.obj Debug\xmltok.obj"/>
+    <OBJFILES value="xml.obj sxp.obj hashtable.obj xmlparse.obj xmlrole.obj xmltok.obj"/>
     <RESFILES value=""/>
     <IDLFILES value=""/>
     <IDLGENFILES value=""/>
@@ -22,7 +21,7 @@
     <DEBUGLIBPATH value=""/>
     <RELEASELIBPATH value=""/>
     <LINKER value="TLib"/>
-    <USERDEFINES value="_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT"/>
+    <USERDEFINES value="_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT;STDC_HEADERS"/>
     <SYSDEFINES value="NO_STRICT;_VIS_NOLIB"/>
     <MAINSOURCE value="xml.cpp"/>
     <INCLUDEPATH value="..\..\include;..\..\..\support\ace_wrappers;$(BCB)\include;$(BCB)\include\vcl;..\..\..\support\zlib"/>
@@ -35,10 +34,10 @@
     <IDLCFLAGS value="-I..\..\include -I..\..\..\support\ace_wrappers -I$(BCB)\include 
       -I$(BCB)\include\vcl -I..\..\..\support\zlib -src_suffix cpp -D_DEBUG 
       -DDEBUG -DWIN32 -D_CONSOLE -D_MBCS -DACE_NTRACE=1 -DACE_USE_RCSID=0 
-      -DHASCRYPT -boa"/>
-    <CFLAG1 value="-vGc -vGt -vGd -Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Hc -Q 
-      -Vx -Ve -X- -r- -a8 -b -d -k -y -v -vi- -c -tWM"/>
-    <PFLAGS value="-N2Debug -N0Debug -$YD -$W -$O- -v -JPHN -M"/>
+      -DHASCRYPT -DSTDC_HEADERS -boa"/>
+    <CFLAG1 value="-Od -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Hc -Q -Vx -Ve -X- -r- 
+      -a8 -5 -b -d -k -y -v -vi- -c -tWM"/>
+    <PFLAGS value="-$YD -$W -$O- -v -JPHN -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zd"/>
     <LFLAGS value=""/>
@@ -90,14 +89,19 @@ Count=1
 Item0=$(BCB)\source\vcl
 
 [HistoryLists\hlConditionals]
-Count=2
-Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT
-Item1=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0
+Count=3
+Item0=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT;STDC_HEADERS
+Item1=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0;HASCRYPT
+Item2=_DEBUG;DEBUG;WIN32;_CONSOLE;_MBCS;ACE_NTRACE=1;ACE_USE_RCSID=0
 
 [HistoryLists\hlIntOutputDir]
 Count=2
-Item0=D:\working\Magick-II\src\xml\Debug
-Item1=Debug
+Item0=Debug
+Item1=D:\working\Magick-II\src\xml\Debug
+
+[HistoryLists\hlTlibPageSize]
+Count=1
+Item0=0x0010
 
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
@@ -112,7 +116,7 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=1
-LinkCGLIB=1
+LinkCGLIB=0
 
 [CORBA]
 AddServerUnit=1

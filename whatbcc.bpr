@@ -33,8 +33,8 @@
   </MACROS>
   <OPTIONS>
     <IDLCFLAGS value="-I$(BCB)\include -src_suffix cpp -boa"/>
-    <CFLAG1 value="-vGc -vGt -vGd -O2 -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -w 
-      -Tkh30000 -X- -a8 -6 -b -d -k -y -v -vi- -c -tWM -tWC"/>
+    <CFLAG1 value="-O2 -H=d:\PROGRA~1\borland\CBUILD~2\lib\vcl50.csm -Q -w -Tkh30000 -X- -a8 
+      -5 -b -d -k -y -v -vi- -c -tWM -tWC"/>
     <PFLAGS value="-$YD -$W -$O- -v -JPHN -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zd"/>
@@ -43,7 +43,7 @@
   <LINKER>
     <ALLOBJ value="c0x32.obj $(OBJFILES)"/>
     <ALLRES value="$(RESFILES)"/>
-    <ALLLIB value="cg32.lib $(LIBFILES) import32.lib cw32mt.lib"/>
+    <ALLLIB value="$(LIBFILES) import32.lib cw32mt.lib"/>
   </LINKER>
   <IDEOPTIONS>
 [Version Info]
@@ -98,7 +98,7 @@ RemoteDebug=0
 [Compiler]
 ShowInfoMsgs=0
 LinkDebugVcl=1
-LinkCGLIB=1
+LinkCGLIB=0
 
 [CORBA]
 AddServerUnit=1

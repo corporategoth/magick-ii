@@ -20,6 +20,9 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.21  2001/11/04 19:23:09  ungod
+** fixed up compilation for borland c++ builder
+**
 ** Revision 1.20  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -111,7 +114,11 @@ RCSID(magick_keygen_c, "@(#)$Id$");
 
 #include <stdio.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#else
+#define W_OK 0x02
+#endif
 #include "config.h"
 #ifdef HASCRYPT
 #include <stdarg.h>

@@ -27,6 +27,9 @@ RCSID(operserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.133  2001/11/04 19:23:09  ungod
+** fixed up compilation for borland c++ builder
+**
 ** Revision 1.132  2001/11/03 21:02:54  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -1818,20 +1821,20 @@ void OperServ::do_NOOP(const mstring &mynick, const mstring &source, const mstri
     Parent->server.SVSNOOP(mynick, target, onoff.GetBool());
     Parent->operserv.stats.i_Noop++;
     SEND(mynick, source, "OS_COMMAND/NOOP", (
-	    onoff.GetBool() ?
+		(onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF"),
+		Parent->getMessage(source, "VALS/OFF")),
 	    target));
     ANNOUNCE(mynick, "MISC/NOOP", (
-	    source, onoff.GetBool() ?
+		source, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF"),
+		Parent->getMessage("VALS/OFF")),
 	    target));
     LOG(LM_INFO, "OPERSERV/NOOP", (
 	Parent->nickserv.GetLive(source.LowerCase()).Mask(Nick_Live_t::N_U_P_H),
-	target, onoff.GetBool() ?
+	target, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 

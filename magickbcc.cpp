@@ -26,6 +26,7 @@ USELIB("src\xml\xml.lib");
 USEUNIT("src\mconfig.cpp");
 USEUNIT("src\convert_magick.cpp");
 USEUNIT("src\convert_esper.cpp");
+USEUNIT("src\convert_epona.cpp");
 //---------------------------------------------------------------------------
 #endif // defined(__BORLANDC__)
 

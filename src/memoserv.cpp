@@ -27,6 +27,9 @@ RCSID(memoserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.105  2001/11/04 19:23:09  ungod
+** fixed up compilation for borland c++ builder
+**
 ** Revision 1.104  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -2508,9 +2511,9 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	recipiant = iter->Sender();
 	output = parseMessage(Parent->getMessage("MS_STATUS/REPLY_ARG"),
 		mVarArray(who,
-		(iter->Text().size() > 20) ?
-		    (iter->Text().SubString(0, 19) + "...") :
-		    iter->Text(),
+		((iter->Text().size() > 20) ?
+			(iter->Text().SubString(0, 19) + "...") :
+			iter->Text()),
 		text));
 	}
     }
@@ -2562,15 +2565,15 @@ void MemoServ::do_Reply(const mstring &mynick, const mstring &source, const mstr
 	if (iter->File())
 	    output = parseMessage(Parent->getMessage("MS_STATUS/REPLY_ARG"),
 		mVarArray(Parent->filesys.GetName(FileMap::MemoAttach, iter->File()),
-		(iter->Text().length() > 20) ?
-		    (iter->Text().SubString(0, 19) + "...") :
-		    iter->Text(),
+		((iter->Text().length() > 20) ?
+			(iter->Text().SubString(0, 19) + "...") :
+		    iter->Text()),
 		text));
 	else
 	    output = parseMessage(Parent->getMessage("MS_STATUS/REPLY"),
-		mVarArray((iter->Text().length() > 20) ?
-		    (iter->Text().SubString(0, 19) + "...") :
-		    iter->Text(),
+		mVarArray(((iter->Text().length() > 20) ?
+			(iter->Text().SubString(0, 19) + "...") :
+		    iter->Text()),
 		text));
 
 	}
@@ -3154,16 +3157,16 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    }}
 	    SEND(mynick, source, "MS_COMMAND/CS_SET_ALL", (
 			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
-			who, onoff.GetBool() ?
+			who, (onoff.GetBool() ?
 				Parent->getMessage("VALS/ON") :
-				Parent->getMessage("VALS/OFF")));
+				Parent->getMessage("VALS/OFF"))));
 
 	    LOG(LM_DEBUG, "MEMOSERV/SET_ALL", (
 		Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
-		who, onoff.GetBool() ?
+		who, (onoff.GetBool() ?
 			Parent->getMessage("VALS/ON") :
-			Parent->getMessage("VALS/OFF")));
+			Parent->getMessage("VALS/OFF"))));
 	}
 	else
 	{
@@ -3210,16 +3213,16 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    {
 		SEND(mynick, source, "MS_COMMAND/CS_SET", (
 			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
-			output, who, onoff.GetBool() ?
+			output, who, (onoff.GetBool() ?
 				Parent->getMessage("VALS/ON") :
-				Parent->getMessage("VALS/OFF")));
+				Parent->getMessage("VALS/OFF"))));
 		output.erase();
 		LOG(LM_DEBUG, "MEMOSERV/SET", (
 			Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
-			count, who, onoff.GetBool() ?
+			count, who, (onoff.GetBool() ?
 				Parent->getMessage("VALS/ON") :
-				Parent->getMessage("VALS/OFF")));
+				Parent->getMessage("VALS/OFF"))));
 	    }
 	    if (nonnumeric)
 		NSEND(mynick, source, "ERR_SYNTAX/NONNUMERIC");
@@ -3267,9 +3270,9 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    }}
 	    SEND(mynick, source, "MS_COMMAND/NS_SET_ALL", (
 		Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
-		onoff.GetBool() ?
+		(onoff.GetBool() ?
 			Parent->getMessage("VALS/ON") :
-			Parent->getMessage("VALS/OFF")));
+			Parent->getMessage("VALS/OFF"))));
 	}
 	else
 	{
@@ -3315,9 +3318,9 @@ void MemoServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
 	    {
 		SEND(mynick, source, "MS_COMMAND/NS_SET", (
 			Parent->getMessage(source, "MS_STATUS/SET_NOEXPIRE"),
-			output, onoff.GetBool() ?
+			output, (onoff.GetBool() ?
 				Parent->getMessage("VALS/ON") :
-				Parent->getMessage("VALS/OFF")));
+				Parent->getMessage("VALS/OFF"))));
 		output.erase();
 	    }
 	    if (nonnumeric)

@@ -33,8 +33,8 @@
   <OPTIONS>
     <IDLCFLAGS value="-I$(BCB)\include -I$(BCB)\include\ATL -I..\..\include 
       -I..\..\..\support\zlib -src_suffix cpp -DWIN32 -D_DEBUG -D_WINDOWS -boa"/>
-    <CFLAG1 value="-Od -H=vcl50.csm -Q -w -Tkh30000 -X- -r- -a8 -6 -b -d -k -y -v -vi- -q 
-      -tWR -tWM -c"/>
+    <CFLAG1 value="-Od -H=vcl50.csm -w -Tkh30000 -X- -r- -a8 -5 -b -d -k -y -v -vi- -q -tWR 
+      -tWM -c"/>
     <PFLAGS value="-$YD -$W -$O-"/>
     <RFLAGS value="/i$(BCB)\include;$(BCB)\include\mfc"/>
     <AFLAGS value="/mx /w2 /zi"/>

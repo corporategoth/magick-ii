@@ -27,6 +27,9 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.2  2001/11/04 19:23:09  ungod
+** fixed up compilation for borland c++ builder
+**
 ** Revision 1.1  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -57,6 +60,9 @@ RCSID(convert_epona_cpp, "@(#)$Id$");
 #ifdef CONVERT
 #include "convert_epona.h"
 #include "magick.h"
+#ifdef _WIN32
+#define strcasecmp stricmp
+#endif
 
 /* Database file handling routines.
  *

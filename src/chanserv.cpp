@@ -27,6 +27,9 @@ RCSID(chanserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.262  2001/11/04 19:23:08  ungod
+** fixed up compilation for borland c++ builder
+**
 ** Revision 1.261  2001/11/03 21:02:51  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -11564,15 +11567,15 @@ void ChanServ::do_set_KeepTopic(const mstring &mynick, const mstring &source, co
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
-	    channel, onoff.GetBool() ?
+		(channel, onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/KEEPTOPIC"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11643,15 +11646,15 @@ void ChanServ::do_set_TopicLock(const mstring &mynick, const mstring &source, co
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/TOPICLOCK"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/KEEPTOPIC"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11722,15 +11725,15 @@ void ChanServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/PRIVATE"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/PRIVATE"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11801,15 +11804,15 @@ void ChanServ::do_set_SecureOps(const mstring &mynick, const mstring &source, co
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/SECUREOPS"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/SECUREOPS"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11880,15 +11883,15 @@ void ChanServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/SECURE"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/SECURE"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params)
@@ -11952,15 +11955,15 @@ void ChanServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     Parent->chanserv.stats.i_NoExpire++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/NOEXPIRE"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/NOEXPIRE"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12031,15 +12034,15 @@ void ChanServ::do_set_Anarchy(const mstring &mynick, const mstring &source, cons
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/ANARCHY"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/ANARCHY"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12110,15 +12113,15 @@ void ChanServ::do_set_KickOnBan(const mstring &mynick, const mstring &source, co
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/KICKONBAN"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/KICKONBAN"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12189,15 +12192,15 @@ void ChanServ::do_set_Restricted(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/RESTRICTED"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/RESTRICTED"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12277,15 +12280,15 @@ void ChanServ::do_set_Join(const mstring &mynick, const mstring &source, const m
     Parent->chanserv.stats.i_Set++;
     SEND(mynick, source, "CS_COMMAND/SET_TO", (
 	    Parent->getMessage(source, "CS_SET/JOIN"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/JOIN"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
 	!Parent->chanserv.GetLive(channel).IsIn(
 		Parent->chanserv.FirstName()))
@@ -12598,15 +12601,15 @@ void ChanServ::do_lock_KeepTopic(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/KEEPTOPIC"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/KEEPTOPIC"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12672,15 +12675,15 @@ void ChanServ::do_lock_TopicLock(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/TOPICLOCK"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/TOPICLOCK"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12746,15 +12749,15 @@ void ChanServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/PRIVATE"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/PRIVATE"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12820,15 +12823,15 @@ void ChanServ::do_lock_SecureOps(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/SECUREOPS"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/SECUREOPS"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12894,15 +12897,15 @@ void ChanServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/SECURE"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/SECURE"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, const mstring &params)
@@ -12968,15 +12971,15 @@ void ChanServ::do_lock_Anarchy(const mstring &mynick, const mstring &source, con
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/ANARCHY"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/ANARCHY"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, const mstring &params)
@@ -13042,15 +13045,15 @@ void ChanServ::do_lock_KickOnBan(const mstring &mynick, const mstring &source, c
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/KICKONBAN"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/KICKONBAN"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, const mstring &params)
@@ -13110,21 +13113,21 @@ void ChanServ::do_lock_Restricted(const mstring &mynick, const mstring &source, 
     }
 
     cstored.L_Restricted(false);
-    cstored.Restricted(onoff.GetBool());
+	cstored.Restricted(onoff.GetBool());
     cstored.L_Restricted(true);
     }
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/RESTRICTED"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/RESTRICTED"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
 }
 
 void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const mstring &params)
@@ -13199,32 +13202,32 @@ void ChanServ::do_lock_Join(const mstring &mynick, const mstring &source, const 
     Parent->chanserv.stats.i_Lock++;
     SEND(mynick, source, "CS_COMMAND/LOCKED", (
 	    Parent->getMessage(source, "CS_SET/JOIN"),
-	    channel, onoff.GetBool() ?
+		channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
+		Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "CHANSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("CS_SET/JOIN"),
-	channel, onoff.GetBool() ?
+	channel, (onoff.GetBool() ?
 		Parent->getMessage(source, "VALS/ON") :
-		Parent->getMessage(source, "VALS/OFF")));
-    if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
+		Parent->getMessage(source, "VALS/OFF"))));
+	if (onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
 	!Parent->chanserv.GetLive(channel).IsIn(
 		Parent->chanserv.FirstName()))
-    {
+	{
 	Parent->server.JOIN(Parent->chanserv.FirstName(), channel);
-    }
-    else if (!onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
+	}
+	else if (!onoff.GetBool() && Parent->chanserv.IsLive(channel) &&
 	Parent->chanserv.GetLive(channel).IsIn(
 		Parent->chanserv.FirstName()))
-    {
+	{
 	Parent->server.PART(Parent->chanserv.FirstName(), channel);
-    }
+	}
 }
 
 void ChanServ::do_lock_Revenge(const mstring &mynick, const mstring &source, const mstring &params)
 {
-    FT("ChanServ::do_lock_Revenge", (mynick, source, params));
+	FT("ChanServ::do_lock_Revenge", (mynick, source, params));
 
     mstring message = mstring(params.Before(" ") + " " +
 		params.ExtractWord(3, " ")).UpperCase();

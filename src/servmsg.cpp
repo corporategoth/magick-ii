@@ -27,6 +27,9 @@ RCSID(servmsg_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.93  2001/11/04 19:23:09  ungod
+** fixed up compilation for borland c++ builder
+**
 ** Revision 1.92  2001/11/03 21:02:54  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -1097,17 +1100,17 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 	user = tmp.ru_utime;
 	sys  = tmp.ru_stime;
 	SEND(mynick, source, "STATS/USE_CPU", (
-		(sys.sec() == 0) ?
+		((sys.sec() == 0) ?
 			Parent->getMessage(source, "VALS/TIME_NONE") :
-			ToHumanTime(sys.sec(), source),
-		(user.sec() == 0) ?
+			ToHumanTime(sys.sec(), source)),
+		((user.sec() == 0) ?
 			Parent->getMessage(source, "VALS/TIME_NONE") :
-			ToHumanTime(user.sec(), source)));
-    }
+			ToHumanTime(user.sec(), source))));
+	}
 
-    { RLOCK(("IrcSvcHandler"));
-    if (Parent->ircsvchandler != NULL)
-    {
+	{ RLOCK(("IrcSvcHandler"));
+	if (Parent->ircsvchandler != NULL)
+	{
 	SEND(mynick, source, "STATS/USE_TRAFFIC", (
 		ToHumanSpace(Parent->ircsvchandler->In_Traffic()),
 		ToHumanSpace(Parent->ircsvchandler->In_Traffic() /
@@ -1116,13 +1119,13 @@ void ServMsg::do_stats_Usage(const mstring &mynick, const mstring &source, const
 		ToHumanSpace(Parent->ircsvchandler->Out_Traffic() /
 		Parent->ircsvchandler->Connect_Time().SecondsSince()),
 		ToHumanTime(Parent->ircsvchandler->Connect_Time().SecondsSince(), source)));
-    }}
+	}}
 
-    size = 0;
-    NickServ::live_t::iterator i;
-    { RLOCK(("NickServ", "live"));
-    for (i=Parent->nickserv.LiveBegin(); i!=Parent->nickserv.LiveEnd(); i++)
-    {
+	size = 0;
+	NickServ::live_t::iterator i;
+	{ RLOCK(("NickServ", "live"));
+	for (i=Parent->nickserv.LiveBegin(); i!=Parent->nickserv.LiveEnd(); i++)
+	{
 	RLOCK2(("NickServ", "live", i->first));
 	size += i->first.capacity();
 	size += i->second.Usage();

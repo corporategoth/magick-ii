@@ -27,6 +27,9 @@ RCSID(nickserv_cpp, "@(#)$Id$");
 ** Changes by Magick Development Team <devel@magick.tm>:
 **
 ** $Log$
+** Revision 1.189  2001/11/04 19:23:09  ungod
+** fixed up compilation for borland c++ builder
+**
 ** Revision 1.188  2001/11/03 21:02:53  prez
 ** Mammoth change, including ALL changes for beta12, and all stuff done during
 ** the time GOTH.NET was down ... approx. 3 months.  Includes EPONA conv utils.
@@ -7917,15 +7920,15 @@ void NickServ::do_set_Protect(const mstring &mynick, const mstring &source, cons
     Parent->nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
 			Parent->getMessage(source, "NS_SET/PROTECT"),
-			onoff.GetBool() ?
+			(onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PROTECT"),
-	source, onoff.GetBool() ?
+	source, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const mstring &params)
@@ -7967,15 +7970,15 @@ void NickServ::do_set_Secure(const mstring &mynick, const mstring &source, const
     Parent->nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
 			Parent->getMessage(source, "NS_SET/SECURE"),
-			onoff.GetBool() ?
+			(onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/SECURE"),
-	source, onoff.GetBool() ?
+	source, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8034,15 +8037,15 @@ void NickServ::do_set_NoExpire(const mstring &mynick, const mstring &source, con
     Parent->nickserv.stats.i_NoExpire++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_SET_TO", (
 			Parent->getMessage(source, "NS_SET/NOEXPIRE"),
-			nickname, onoff.GetBool() ?
+			nickname, (onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_NOTICE, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/NOEXPIRE"),
-	nickname, onoff.GetBool() ?
+	nickname, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 
@@ -8085,15 +8088,15 @@ void NickServ::do_set_NoMemo(const mstring &mynick, const mstring &source, const
     Parent->nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
 			Parent->getMessage(source, "NS_SET/NOMEMO"),
-			onoff.GetBool() ?
+			(onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/NOMEMO"),
-	source, onoff.GetBool() ?
+	source, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_Private(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8135,15 +8138,15 @@ void NickServ::do_set_Private(const mstring &mynick, const mstring &source, cons
     Parent->nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
 			Parent->getMessage(source, "NS_SET/PRIVATE"),
-			onoff.GetBool() ?
+			(onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVATE"),
-	source, onoff.GetBool() ?
+	source, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8185,15 +8188,15 @@ void NickServ::do_set_PRIVMSG(const mstring &mynick, const mstring &source, cons
     Parent->nickserv.stats.i_Set++;
     SEND(mynick, source, "NS_YOU_COMMAND/OPT_SET_TO", (
 			Parent->getMessage(source, "NS_SET/PRIVMSG"),
-			onoff.GetBool() ?
+			(onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/SET", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVMSG"),
-	source, onoff.GetBool() ?
+	source, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_set_Language(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8314,15 +8317,15 @@ void NickServ::do_lock_Protect(const mstring &mynick, const mstring &source, con
     Parent->nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
 			Parent->getMessage(source, "NS_SET/PROTECT"),
-			nickname, onoff.GetBool() ?
+			nickname, (onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PROTECT"),
-	nickname, onoff.GetBool() ?
+	nickname, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8385,15 +8388,15 @@ void NickServ::do_lock_Secure(const mstring &mynick, const mstring &source, cons
     Parent->nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
 			Parent->getMessage(source, "NS_SET/SECURE"),
-			nickname, onoff.GetBool() ?
+			nickname, (onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/SECURE"),
-	nickname, onoff.GetBool() ?
+	nickname, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8456,15 +8459,15 @@ void NickServ::do_lock_NoMemo(const mstring &mynick, const mstring &source, cons
     Parent->nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
 			Parent->getMessage(source, "NS_SET/NOMEMO"),
-			nickname, onoff.GetBool() ?
+			nickname, (onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/NOMEMO"),
-	nickname, onoff.GetBool() ?
+	nickname, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8527,15 +8530,15 @@ void NickServ::do_lock_Private(const mstring &mynick, const mstring &source, con
     Parent->nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
 			Parent->getMessage(source, "NS_SET/PRIVATE"),
-			nickname, onoff.GetBool() ?
+			nickname, (onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVATE"),
-	nickname, onoff.GetBool() ?
+	nickname, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, const mstring &params)
@@ -8598,15 +8601,15 @@ void NickServ::do_lock_PRIVMSG(const mstring &mynick, const mstring &source, con
     Parent->nickserv.stats.i_Lock++;
     SEND(mynick, source, "NS_OTH_COMMAND/OPT_LOCKED", (
 			Parent->getMessage(source, "NS_SET/PRIVMSG"),
-			nickname, onoff.GetBool() ?
+			nickname, (onoff.GetBool() ?
 				Parent->getMessage(source, "VALS/ON") :
-				Parent->getMessage(source, "VALS/OFF")));
+				Parent->getMessage(source, "VALS/OFF"))));
     LOG(LM_DEBUG, "NICKSERV/LOCK", (
 	Parent->nickserv.GetLive(source).Mask(Nick_Live_t::N_U_P_H),
 	Parent->getMessage("NS_SET/PRIVMSG"),
-	nickname, onoff.GetBool() ?
+	nickname, (onoff.GetBool() ?
 		Parent->getMessage("VALS/ON") :
-		Parent->getMessage("VALS/OFF")));
+		Parent->getMessage("VALS/OFF"))));
 }
 
 void NickServ::do_lock_Language(const mstring &mynick, const mstring &source, const mstring &params)
