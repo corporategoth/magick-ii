@@ -455,3 +455,42 @@ size_t mstring::Replace(const mstring & szOld, const mstring & szNew, bool repla
 
 	return uiCount;
 }
+
+mstring mstring::Strip(stripType s)
+{
+	mstring str=*this;
+	if(s&stLeading) str.Trim(false);
+	if(s&stTrailing) str.Trim(true);
+	return str;
+}
+
+void mstring::UpperCase()
+{
+	MakeUpper();
+}
+
+mstring mstring::operator ( )(size_t start, size_t len)
+{
+	return Mid(start,len);
+}
+
+mstring& mstring::operator <<(int i)
+{
+	mstring s;
+	s.Format("%d",i);
+	return *this<<s;
+}
+
+mstring& mstring::operator <<(float f)
+{
+	mstring s;
+	s.Format("%f",f);
+	return *this<<s;
+}
+
+mstring& mstring::operator <<(double d)
+{
+	mstring s;
+	s.Format("%g",d);
+	return *this<<s;
+}

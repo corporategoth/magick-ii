@@ -91,6 +91,10 @@ SOURCE=.\include\bob.hpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wx\Datstrm.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\lockable.cpp
 # End Source File
 # Begin Source File
@@ -111,6 +115,10 @@ SOURCE=.\src\main.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wx\Mstream.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\mstring.cpp
 # End Source File
 # Begin Source File
@@ -119,7 +127,19 @@ SOURCE=.\include\mstring.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\wx\Stream.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\docs\todo.txt
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wx\Wfstream.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\wx\Zstream.cpp
 # End Source File
 # End Target
 # End Project

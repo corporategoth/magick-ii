@@ -7,6 +7,14 @@ class mstring:public string
 {
 	typedef string inherited;
 public:
+	mstring& operator <<(double d);
+	mstring& operator <<(float f);
+	mstring& operator<<(int i);
+	mstring operator()(size_t start,size_t len);
+	void UpperCase();
+    // values for first parameter of Strip function
+	enum stripType {stLeading, stTrailing , stBoth };
+	mstring Strip(stripType s=stTrailing);
 	size_t Replace(const mstring& szOld, const mstring& szNew, bool replaceAll=true);
 	mstring& RemoveLast();
 	mstring& Remove(size_t nStart, size_t nLen);
@@ -31,8 +39,6 @@ public:
 	mstring& Append(const mstring& in);
 	// values for second parameter of CompareTo function
 	enum caseCompare {ccExact, ccIgnoreCase};
-    // values for first parameter of Strip function
-	enum stripType {stLeading, stTrailing , stBoth };
 
 	int CompareTo(const mstring& in, caseCompare cmp=ccExact);
 	int FormatV(const char *pszFormat, va_list argptr);
