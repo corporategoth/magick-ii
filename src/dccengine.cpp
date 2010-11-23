@@ -197,8 +197,6 @@ void DccEngine::decodeReply(const mstring & mynick, const mstring & source, cons
     static_cast < void > (source);
     static_cast < void > (in);
 
-#if 0 // Unused code, for now, why bother wasting cycles ...
-
     FT("DccEngine::decodeReply", (in));
 
     vector < mstring > ResVector;
@@ -217,10 +215,17 @@ void DccEngine::decodeReply(const mstring & mynick, const mstring & source, cons
     {
 	mstring ResHigh = ctcpDequote(*i);
 
+	if (ResHigh.Before(" ").UpperCase() == "VERSION")
+	{
+	    if (Magick::instance().nickserv.IsLive(source))
+	    {
+		map_entry<Nick_Live_t> nlive = Magick::instance().nickserv.GetLive(source);
+		nlive->Version(ResHigh.After(" "));
+	    }
+	}
+
 	// todo if( ) { } else if( ) {} where first word is SED etc.
     }
-
-#endif // Unused code, for now, why bother wasting cycles ...
 
     ETCB();
 }

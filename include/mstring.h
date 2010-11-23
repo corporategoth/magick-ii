@@ -61,7 +61,7 @@ RCSID(mstring_h, "@(#) $Id$");
  * 3. ACE: new/delete with try/catch
  * 4. CLUSTER: memory_area.alloc/memory_area.dealloc
  */
-#define ALLOCTYPE	3
+#define ALLOCTYPE	2
 
 #if ALLOCTYPE == 4
 
@@ -521,7 +521,7 @@ public:
      *  @return The Xth character from the beginning of current contents,
 		or 0 if the specified offset is past either end.
      */
-    const char first(size_t off = 1) const;
+    char first(size_t off = 1) const;
 
     /** Grab the Xth character from the end of the current contents
      *  @param off Offset from the end of the current contents,
@@ -529,7 +529,7 @@ public:
      *  @return The Xth character from the end of current contents,
 		or 0 if the specified offset is past either end.
      */
-    const char last(size_t off = 1) const;
+    char last(size_t off = 1) const;
 
     /** Length of the current contents */
     size_t length() const;
@@ -651,7 +651,7 @@ public:
 		starting with 0.
      *  @see first();
      */
-    const char operator [] (const size_t off) const
+    char operator [] (const size_t off) const
     {
 	return first(off + 1);
     }

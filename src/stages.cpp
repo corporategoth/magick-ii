@@ -442,7 +442,7 @@ long CryptStage::Read(char *buf, size_t size)
     }
     // Ignore trailing null's when decrypting (for what we added ...)
     if (!encrypt)
-	while (buf[i - 2] == 0)
+	while (i > 2 && buf[i - 2] == 0)
 	    i--;
     RET(i);
     ETCB();

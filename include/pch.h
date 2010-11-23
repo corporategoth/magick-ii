@@ -44,6 +44,7 @@
 #define _THREAD_SAFE
 #ifdef __cplusplus
 #include <ace/config.h>
+#define ACE_HAS_TIMEZONE_GETTIMEOFDAY 1
 #include <ace/Version.h>
 #ifdef ACE_HAS_PTHREADS
 #  define __STL_PTHREADS
@@ -254,33 +255,33 @@ typedef struct utsname ACE_utsname;
 #if defined(HAVE_MPATROL_H) && defined(MAGICK_USE_MPATROL)
 #  include <mpatrol.h>
 #else
-#    define malloc	ACE_OS::malloc
-#    define calloc	ACE_OS::calloc
+//#    define malloc	ACE_OS::malloc
+//#    define calloc	ACE_OS::calloc
 // # define memalign    ACE_OS::memalign
 // # define valloc      ACE_OS::valloc
 // # define pvalloc     ACE_OS::pvalloc
-#    define strdup	ACE_OS::strdup
+//#    define strdup	ACE_OS::strdup
 // # define strndup     ACE_OS::strndup
 // # define strsave     ACE_OS::strsave
 // # define strnsave    ACE_OS::strnsave
-#    define realloc	ACE_OS::realloc
+//#    define realloc	ACE_OS::realloc
 // # define recalloc    ACE_OS::recalloc
 // # define expand      ACE_OS::expand
-#    define free	ACE_OS::free
+//#    define free	ACE_OS::free
 // # define cfree       ACE_OS::cfree
 // # define new         ACE_OS::new
 // # define new[]       ACE_OS::new[]
 // # define delete      ACE_OS::delete
 // # define delete[]    ACE_OS::delete[]
-#    define memset	ACE_OS::memset
+//#    define memset	ACE_OS::memset
 // # define bzero       ACE_OS::bzero
 // # define memccpy     ACE_OS::memccpy
-#    define memcpy	ACE_OS::memcpy
-#    define memmove	ACE_OS::memmove
+//#    define memcpy	ACE_OS::memcpy
+//#    define memmove	ACE_OS::memmove
 // # define bcopy       ACE_OS::bcopy
-#    define memchr	ACE_OS::memchr
+//#    define memchr	ACE_OS::memchr
 // # define memmem      ACE_OS::memmem
-#    define memcmp	ACE_OS::memcmp
+//#    define memcmp	ACE_OS::memcmp
 // # define bcmp        ACE_OS::bcmp
 #endif
 

@@ -391,6 +391,15 @@ mDateTime Chan_Live_t::Topic_Set_Time() const
     ETCB();
 }
 
+mDateTime Chan_Live_t::Last_Limit_Change() const
+{
+    BTCB();
+    NFT(("Chan_Live_t::Last_Limit_Change"));
+    RLOCK((lck_ChanServ, lck_live, i_Name.LowerCase(), "i_Last_Limit_Change"));
+    RET(i_Last_Limit_Change);
+    ETCB();
+}
+
 unsigned int Chan_Live_t::Squit() const
 {
     BTCB();
@@ -857,6 +866,7 @@ bool Chan_Live_t::ModeExists(const mstring & mode, const vector < mstring > & mo
     unsigned int i, param;
 
     if (reqparam.empty())
+    {
 	if (mode.Contains(reqmode))
 	{
 	    RET(true);
@@ -865,6 +875,7 @@ bool Chan_Live_t::ModeExists(const mstring & mode, const vector < mstring > & mo
 	{
 	    RET(false);
 	}
+    }
 
     for (param = 0, i = 0; i < mode.size(); i++)
     {
@@ -1567,6 +1578,7 @@ void Chan_Live_t::Mode(const mstring & source, const mstring & in)
 			    RemoveMode(p_modes_off, p_modes_off_params, false, change[i]);
 			newmode += change[i];
 		    }
+		    i_Last_Limit_Change = mDateTime::CurrentDateTime();
 		    break;
 		default:
 		    if (fwdargs <= wc)
@@ -2266,18 +2278,22 @@ void Chan_Stored_t::SetTopic(const mstring & source, const mstring & setter, con
     ETCB();
 }
 
-void Chan_Stored_t::Mode(const mstring & setter, const mstring & mode)
+void Chan_Stored_t::Mode(const mstring & i_setter, const mstring & mode)
 {
     BTCB();
-    FT("Chan_Stored_t::Mode", (setter, mode));
+    FT("Chan_Stored_t::Mode", (i_setter, mode));
     // ENFORCE mlock
 
     if (!Magick::instance().chanserv.IsLive(i_Name))
     {
-	LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", ("MODE", setter, i_Name));
+	LOG(LM_WARNING, "ERROR/REC_FORNONCHAN", ("MODE", i_setter, i_Name));
 	return;
     }
 
+    mstring setter(i_setter);
+    int pos = setter.find("!");
+    if (pos >= 0)
+	setter.erase(pos);
     if (Magick::instance().nickserv.IsLive(setter) && Magick::instance().nickserv.GetLive(setter)->IsServices())
 	return;
 
@@ -2598,6 +2614,9 @@ void Chan_Stored_t::defaults()
     lock.Join = false;
     setting.Revenge = Magick::instance().chanserv.DEF_Revenge();
     lock.Revenge = false;
+    setting.LimitBump = Magick::instance().chanserv.DEF_LimitBump();
+    setting.LimitBumpTime = Magick::instance().chanserv.DEF_LimitBumpTime();
+    lock.LimitBump = false;
     setting.Forbidden = false;
     setting.NoExpire = Magick::instance().chanserv.DEF_NoExpire();
 
@@ -2882,6 +2901,9 @@ Chan_Stored_t &Chan_Stored_t::operator=(const Chan_Stored_t & in)
     lock.Join = in.lock.Join;
     setting.Revenge = in.setting.Revenge;
     lock.Revenge = in.lock.Revenge;
+    setting.LimitBump = in.setting.LimitBump;
+    setting.LimitBumpTime = in.setting.LimitBumpTime;
+    lock.LimitBump = in.lock.LimitBump;
     i_Suspend_By = in.i_Suspend_By;
     i_Suspend_Time = in.i_Suspend_Time;
     setting.Forbidden = in.setting.Forbidden;
@@ -3342,13 +3364,29 @@ vector < mstring > Chan_Stored_t::Mlock(const mstring & source, const mstring & 
 		    }
 		    else
 		    {
-			setting.Mlock_Limit = atol(mode.ExtractWord(fwdargs, " ").c_str());
+			if (LimitBump())
+			{
+			    output.erase();
+			    output = parseMessage(Magick::instance().getMessage(source, "ERR_SITUATION/NOMLOCK"),
+				    mVarArray("+l", Magick::instance().getMessage(source, "CS_SET/LIMITBUMP")));
+			    retval.push_back(output);
+			}
+			else
+			    setting.Mlock_Limit = atol(mode.ExtractWord(fwdargs, " ").c_str());
 		    }
 		    fwdargs++;
 		}
 		else
 		{
-		    setting.Mlock_Off += change[i];
+		    if (LimitBump())
+		    {
+			output.erase();
+			output = parseMessage(Magick::instance().getMessage(source, "ERR_SITUATION/NOMLOCK"),
+				mVarArray("-l", Magick::instance().getMessage(source, "CS_SET/LIMITBUMP")));
+			retval.push_back(output);
+		    }
+		    else
+			setting.Mlock_Off += change[i];
 		}
 		break;
 	    default:
@@ -4540,6 +4578,99 @@ bool Chan_Stored_t::L_Revenge() const
     ETCB();
 }
 
+bool Chan_Stored_t::LimitBump(const unsigned long in, const unsigned long time)
+{
+    BTCB();
+    FT("Chan_Stored_t::LimitBump", (in, time));
+    // We can't set a limit bump of we're locked mlocked on OR off.
+    if (L_Mlock().Contains("l"))
+	RET(false);
+    if (!L_LimitBump())
+    {
+	{
+	    WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.LimitBump"));
+	    WLOCK2((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Off"));
+	    WLOCK3((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.Mlock_Limit"));
+	    MCB(setting.LimitBump);
+	    CB(1, setting.LimitBumpTime);
+	    CB(2, setting.Mlock_Off);
+	    CB(3, setting.Mlock_Limit);
+	    setting.LimitBump = in;
+	    setting.LimitBumpTime = time;
+	    setting.Mlock_Off.Remove("l");
+	    setting.Mlock_Limit = 0;
+	    CE(1, setting.LimitBumpTime);
+	    CE(2, setting.Mlock_Off);
+	    CE(3, setting.Mlock_Limit);
+	    MCE(setting.LimitBump);
+	}
+
+	if (Magick::instance().chanserv.IsLive(i_Name))
+	{
+	    map_entry < Chan_Live_t > clive = Magick::instance().chanserv.GetLive(i_Name);
+	    if (clive->Users() + in != clive->Limit())
+		clive->SendMode("+l " + mstring(clive->Users() + in));
+	}
+	RET(true);
+    }
+
+    RET(false);
+    ETCB();
+}
+
+unsigned long Chan_Stored_t::LimitBump() const
+{
+    BTCB();
+    NFT("Chan_Stored_t::LimitBump");
+    if (!Magick::instance().chanserv.LCK_LimitBump())
+    {
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.LimitBump"));
+	RET(setting.LimitBump);
+    }
+    RET(Magick::instance().chanserv.DEF_LimitBump());
+    ETCB();
+}
+
+unsigned long Chan_Stored_t::LimitBumpTime() const
+{
+    BTCB();
+    NFT("Chan_Stored_t::LimitBumpTime");
+    if (!Magick::instance().chanserv.LCK_LimitBump())
+    {
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "setting.LimitBump"));
+	RET(setting.LimitBumpTime);
+    }
+    RET(Magick::instance().chanserv.DEF_LimitBumpTime());
+    ETCB();
+}
+
+void Chan_Stored_t::L_LimitBump(const bool in)
+{
+    BTCB();
+    FT("Chan_Stored_t::L_LimitBump", (in));
+    if (!Magick::instance().chanserv.LCK_LimitBump())
+    {
+	WLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.LimitBump"));
+	MCB(lock.LimitBump);
+	lock.LimitBump = in;
+	MCE(lock.LimitBump);
+    }
+    ETCB();
+}
+
+bool Chan_Stored_t::L_LimitBump() const
+{
+    BTCB();
+    NFT("Chan_Stored_t::L_LimitBump");
+    if (!Magick::instance().chanserv.LCK_LimitBump())
+    {
+	RLOCK((lck_ChanServ, lck_stored, i_Name.LowerCase(), "lock.LimitBump"));
+	RET(lock.LimitBump);
+    }
+    RET(true);
+    ETCB();
+}
+
 bool Chan_Stored_t::Suspended() const
 {
     BTCB();
@@ -5282,6 +5413,8 @@ SXP::Tag Chan_Stored_t::tag_set_KickOnBan("SET_KickOnBan");
 SXP::Tag Chan_Stored_t::tag_set_Restricted("SET_Restricted");
 SXP::Tag Chan_Stored_t::tag_set_Join("SET_Join");
 SXP::Tag Chan_Stored_t::tag_set_Revenge("SET_Revenge");
+SXP::Tag Chan_Stored_t::tag_set_LimitBump("SET_LimitBump");
+SXP::Tag Chan_Stored_t::tag_set_LimitBumpTime("SET_LimitBumpTime");
 SXP::Tag Chan_Stored_t::tag_Forbidden("Forbidden");
 SXP::Tag Chan_Stored_t::tag_lock_Mlock_On("LOCK_Mlock_On");
 SXP::Tag Chan_Stored_t::tag_lock_Mlock_Off("LOCK_Mlock_Off");
@@ -5298,6 +5431,7 @@ SXP::Tag Chan_Stored_t::tag_lock_KickOnBan("LOCK_KickOnBan");
 SXP::Tag Chan_Stored_t::tag_lock_Restricted("LOCK_Restricted");
 SXP::Tag Chan_Stored_t::tag_lock_Join("LOCK_Join");
 SXP::Tag Chan_Stored_t::tag_lock_Revenge("LOCK_Revenge");
+SXP::Tag Chan_Stored_t::tag_lock_LimitBump("LOCK_LimitBump");
 SXP::Tag Chan_Stored_t::tag_Suspend_By("Suspend_By");
 SXP::Tag Chan_Stored_t::tag_Suspend_Time("Suspend_Time");
 SXP::Tag Chan_Stored_t::tag_Level("Level");
@@ -5528,6 +5662,10 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
     }
     if (pElement->IsA(tag_set_Revenge))
 	pElement->Retrieve(setting.Revenge);
+    if (pElement->IsA(tag_set_LimitBump))
+	pElement->Retrieve(setting.LimitBump);
+    if (pElement->IsA(tag_set_LimitBumpTime))
+	pElement->Retrieve(setting.LimitBumpTime);
     if (pElement->IsA(tag_Forbidden))
     {
 	bool tmp;
@@ -5623,6 +5761,13 @@ void Chan_Stored_t::EndElement(SXP::IParser * pIn, SXP::IElement * pElement)
 	pElement->Retrieve(tmp);
 	lock.Revenge = tmp;
     }
+    if (pElement->IsA(tag_lock_LimitBump))
+    {
+	bool tmp;
+
+	pElement->Retrieve(tmp);
+	lock.LimitBump = tmp;
+    }
     if (pElement->IsA(tag_Suspend_By))
 	pElement->Retrieve(i_Suspend_By);
     if (pElement->IsA(tag_Suspend_Time))
@@ -5683,6 +5828,8 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_set_Restricted, setting.Restricted);
     pOut->WriteElement(tag_set_Join, setting.Join);
     pOut->WriteElement(tag_set_Revenge, setting.Revenge);
+    pOut->WriteElement(tag_set_LimitBump, setting.LimitBump);
+    pOut->WriteElement(tag_set_LimitBumpTime, setting.LimitBumpTime);
     pOut->WriteElement(tag_Forbidden, setting.Forbidden);
     pOut->WriteElement(tag_lock_Mlock_On, lock.Mlock_On);
     pOut->WriteElement(tag_lock_Mlock_Off, lock.Mlock_Off);
@@ -5698,6 +5845,7 @@ void Chan_Stored_t::WriteElement(SXP::IOutStream * pOut, SXP::dict & attribs)
     pOut->WriteElement(tag_lock_Restricted, lock.Restricted);
     pOut->WriteElement(tag_lock_Join, lock.Join);
     pOut->WriteElement(tag_lock_Revenge, lock.Revenge);
+    pOut->WriteElement(tag_lock_LimitBump, lock.LimitBump);
     pOut->WriteElement(tag_Suspend_By, i_Suspend_By);
     pOut->WriteElement(tag_Suspend_Time, i_Suspend_Time);
 
@@ -5818,8 +5966,9 @@ void Chan_Stored_t::DumpB() const
     MB(32,
        (setting.Secure, lock.Secure, setting.NoExpire, setting.Anarchy, lock.Anarchy, setting.KickOnBan, lock.KickOnBan,
 	setting.Restricted, lock.Restricted, setting.Join, lock.Join, setting.Forbidden, setting.Revenge, lock.Revenge,
-	i_Suspend_By, i_Suspend_Time));
-    MB(48, (i_Level.size(), i_Access.size(), i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
+	setting.LimitBump, setting.LimitBumpTime));
+    MB(48, (lock.LimitBump, i_Suspend_By, i_Suspend_Time, i_Level.size(), i_Access.size(), i_Akick.size(), i_Greet.size(),
+	i_Message.size(), i_UserDef.size()));
     ETCB();
 }
 
@@ -5836,8 +5985,9 @@ void Chan_Stored_t::DumpE() const
     ME(32,
        (setting.Secure, lock.Secure, setting.NoExpire, setting.Anarchy, lock.Anarchy, setting.KickOnBan, lock.KickOnBan,
 	setting.Restricted, lock.Restricted, setting.Join, lock.Join, setting.Forbidden, setting.Revenge, lock.Revenge,
-	i_Suspend_By, i_Suspend_Time));
-    ME(48, (i_Level.size(), i_Access.size(), i_Akick.size(), i_Greet.size(), i_Message.size(), i_UserDef.size()));
+	setting.LimitBump, setting.LimitBumpTime));
+    ME(48, (lock.LimitBump, i_Suspend_By, i_Suspend_Time, i_Level.size(), i_Access.size(), i_Akick.size(), i_Greet.size(),
+	i_Message.size(), i_UserDef.size()));
     ETCB();
 }
 

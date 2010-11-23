@@ -91,7 +91,15 @@ namespace SXP
     // Interface forwards
 
     interface IPersistObj;
-    struct Tag;
+    // wraps the element names ("tags") in a dual string-hash key
+    // representation
+    struct Tag
+    {
+	const char *ch;
+	unsigned long dw;
+	Tag(const char *name);
+    };
+
 
     template < class T > interface IFilePointer
     {
@@ -209,15 +217,6 @@ namespace SXP
 
     // the hashtable facility, used for element names
 
-    // wraps the element names ("tags") in a dual string-hash key
-    // representation
-    struct Tag
-    {
-	const char *ch;
-	unsigned long dw;
-	Tag(const char *name);
-    };
-
 // hashtable size
 // this should be at least 3-4 times the number of tags you use
 // the more, the better
@@ -256,7 +255,7 @@ namespace SXP
 	{
 	    unsigned long dw = 0;
 
-	    for (; *ch; dw = (dw << 5) - dw + *ch++);
+	    for (; *ch; dw = (dw << 5) - dw + *ch++) {}
 	    return dw;
 	}
 

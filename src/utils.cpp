@@ -113,7 +113,7 @@ bool MakeDirectory(const mstring & in)
 		continue;
 
 	    // Doesnt exist, try and create it ...
-	    j = ACE_OS::mkdir(in.c_str());
+	    j = mkdir(in.c_str(), 0777);
 	    if (j < 0 && errno)
 	    {
 		LOG(LM_ERROR, "SYS_ERRORS/DIROPERROR", ("mkdir", in, errno, strerror(errno)));

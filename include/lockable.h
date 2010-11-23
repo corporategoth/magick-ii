@@ -147,8 +147,8 @@ public:
 #undef new
 #undef delete
 #endif
-#undef malloc
-#undef free
+//#undef malloc
+//#undef free
 
 #ifdef MAGICK_TOKENIZED_LOCKS
 class mLock_Read : public ACE_Local_RLock
@@ -269,8 +269,8 @@ public:
 #define free(p) \
     __mp_free((p), MP_AT_FREE, MP_FUNCNAME, __FILE__, __LINE__, 0)
 #else
-#    define malloc	ACE_OS::malloc
-#    define free	ACE_OS::free
+//#    define malloc	ACE_OS::malloc
+//#    define free	ACE_OS::free
 #endif
 
 #define RLOCK(y)   mVarArray __lockR1_VarArray y; mLOCK __lockR1(L_Read,  __lockR1_VarArray)

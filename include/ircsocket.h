@@ -34,6 +34,7 @@ RCSID(ircsocket_h, "@(#) $Id$");
 ** ======================================================================= */
 
 #include "variant.h"
+#include <ace/Svc_Handler.h>
 
 class Heartbeat_Handler : public ACE_Event_Handler
 {
@@ -103,7 +104,7 @@ class Reconnect_Handler : public ACE_Event_Handler
 {
 public:
     int handle_timeout(const ACE_Time_Value & tv, const void *arg);
-    Connection_t Reconnect_Handler::FindNext(const mstring &server, unsigned short port);
+    Connection_t FindNext(const mstring &server, unsigned short port);
 };
 
 class Disconnect_Handler : public ACE_Event_Handler
@@ -147,6 +148,7 @@ class EventTask : public ACE_Task < ACE_MT_SYNCH >
     mDateTime last_check;
     mDateTime last_ping;
     mDateTime last_msgcheck;
+public:
     static ACE_THR_FUNC_RETURN save_databases(void *in = NULL);
     void do_expire(mDateTime & synctime);
     void do_check(mDateTime & synctime);

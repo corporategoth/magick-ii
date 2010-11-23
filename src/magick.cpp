@@ -44,6 +44,8 @@ RCSID(magick_cpp, "@(#)$Id$");
 #include "convert/interface.h"
 #endif
 
+#include <iostream>
+
 mDateTime Magick::i_StartTime;
 
 map < ACE_thread_t, Magick * > Magick::InstanceMap;
@@ -506,7 +508,7 @@ int Magick::Start()
 
     int Result;
 
-    ACE_OS::umask(files.umask);
+    umask(files.umask);
     reactor().reset_reactor_event_loop();
 
 #ifndef WIN32
@@ -542,6 +544,15 @@ int Magick::Start()
     }
     FLUSH();
 
+    // load the local messages database and internal "default messages"
+    // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
+    NLOG(LM_STARTUP, "COMMANDLINE/START_LANG");
+    LoadInternalMessages();
+    FLUSH();
+
+    load_databases();
+    FLUSH();
+
     Result = ACE_OS::getuid();
     if (Result == 0)
     {
@@ -574,7 +585,7 @@ int Magick::Start()
 	{
 	    LOG(LM_WARNING, "SYS_ERRORS/OPERROR", ("setpgid", errno, strerror(errno)));
 	}
-	ACE_OS::umask(files.umask);
+	umask(files.umask);
 
 	pidfile.Open(files.Pidfile(), "w");
 	if (pidfile.IsOpened())
@@ -659,15 +670,6 @@ int Magick::Start()
 #endif
 
 #endif /* 0 */
-
-    // load the local messages database and internal "default messages"
-    // the external messages are part of a separate ini called english.lng (both local and global can be done here too)
-    NLOG(LM_STARTUP, "COMMANDLINE/START_LANG");
-    LoadInternalMessages();
-    FLUSH();
-
-    load_databases();
-    FLUSH();
 
     //NLOG(LM_STARTUP, "COMMANDLINE/START_CALIBRATE");
     // calibrate the threshholds.
@@ -788,6 +790,7 @@ int Magick::Stop()
 
     NLOG(LM_STARTUP, "COMMANDLINE/STOP_EVENTS");
 
+#if 0
 #if defined(SIGHUP) && (SIGHUP != 0)
     reactor().remove_handler(SIGHUP);
 #endif
@@ -827,6 +830,7 @@ int Magick::Stop()
 #if defined(SIGTTOU) && (SIGTTOU != 0)
     reactor().remove_handler(SIGTTOU);
 #endif
+#endif // 0
 
 #if 0
 
@@ -2809,6 +2813,12 @@ bool Magick::get_config_values()
     else
 	nickserv.release = FromHumanTime("1m");
 
+    in.Read(ts_NickServ + "VERSION", value_mstring, "30s");
+    if (FromHumanTime(value_mstring))
+	nickserv.version = FromHumanTime(value_mstring);
+    else
+	nickserv.version = FromHumanTime("30s");
+
     in.Read(ts_NickServ + "PASSFAIL", nickserv.passfail, 5U);
     in.Read(ts_NickServ + "DEF_PROTECT", value_bool, true);
     nickserv.def.Protect = value_bool;
@@ -2954,6 +2964,16 @@ bool Magick::get_config_values()
 
     in.Read(ts_ChanServ + "LCK_REVENGE", value_bool, false);
     chanserv.lock.Revenge = value_bool;
+
+    in.Read(ts_ChanServ + "DEF_LIMITBUMP", chanserv.def.LimitBump, 0U);
+    in.Read(ts_ChanServ + "DEF_LIMITBUMPTIME", value_mstring, "5m");
+    if (FromHumanTime(value_mstring))
+	chanserv.def.LimitBumpTime = FromHumanTime(value_mstring);
+    else
+	chanserv.def.LimitBumpTime = FromHumanTime("5m");
+    in.Read(ts_ChanServ + "LCK_LIMITBUMP", value_bool, false);
+    chanserv.lock.LimitBump = value_bool;
+
     in.Read(ts_ChanServ + "LEVEL_MIN", chanserv.level_min, -1L);
     in.Read(ts_ChanServ + "LEVEL_MAX", chanserv.level_max, 30L);
     in.Read(ts_ChanServ + "LVL_AUTODEOP", chanserv.lvl["AUTODEOP"], -1L);
@@ -3751,11 +3771,13 @@ pair < mstring, mstring > Magick::GetKeys() const
     {
 	mFile keyfile(files.KeyFile());
 	char key1[MAX_KEYLEN], key2[MAX_KEYLEN], tmp[MAX_KEYLEN];
+#if 0
 	char instr[MD5_DIGEST_LENGTH], outstr[MD5_DIGEST_LENGTH], verify[VERIFY_SIZE];
 
 	// First verify syntax is correct!
 	memset(instr, 0, MD5_DIGEST_LENGTH);
-	keyfile.Read(instr, MD5_DIGEST_LENGTH);
+	if (keyfile.Read(instr, MD5_DIGEST_LENGTH) != MD5_DIGEST_LENGTH)
+	    RET(retval);
 	mCRYPT(instr, outstr, MD5_DIGEST_LENGTH, CRYPTO_KEY1, CRYPTO_KEY2, 0);
 	memset(verify, 0, VERIFY_SIZE);
 #if defined(BUILD_NODE) && defined(BUILD_TYPE) && defined(BUILD_REL)
@@ -3768,17 +3790,23 @@ pair < mstring, mstring > Magick::GetKeys() const
 
 	if (memcmp(instr, outstr, MD5_DIGEST_LENGTH) == 0)
 	{
+#endif
+keyfile.Seek(MD5_DIGEST_LENGTH, SEEK_SET);
 	    /* Use keyfile keys to get REAL key */
 	    memset(tmp, 0, MAX_KEYLEN);
-	    keyfile.Read(tmp, MAX_KEYLEN);
+	    if (keyfile.Read(tmp, MAX_KEYLEN) != MAX_KEYLEN)
+		NRET(pair < mstring_mstring >, retval);
 	    mCRYPT(tmp, key1, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 0);
 	    memset(tmp, 0, MAX_KEYLEN);
-	    keyfile.Read(tmp, MAX_KEYLEN);
+	    if (keyfile.Read(tmp, MAX_KEYLEN) != MAX_KEYLEN)
+		NRET(pair < mstring_mstring >, retval);
 	    mCRYPT(tmp, key2, MAX_KEYLEN, CRYPTO_KEY1, CRYPTO_KEY2, 0);
 	    retval = pair < mstring, mstring > (key1, key2);
+#if 0
 	}
 	else
 	    LOG(LM_ERROR, "ERROR/KEY_CORRUPT", (files.KeyFile()));
+#endif
     }
 #endif
     NRET(pair < mstring_mstring >, retval);

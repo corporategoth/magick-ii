@@ -566,10 +566,12 @@ mDateTime StringToDate(const mstring & in)
     else if (shortdateformat.Before(mDateTime::DateSeparator) == "yyyy")
 	year = first;
     else if (shortdateformat.Before(mDateTime::DateSeparator) == "yy")
+    {
 	if (first + 100 <= mDateTime::CurrentDateTime().Year2() + 150)
 	    year = first + mDateTime::CurrentDateTime().Century();
 	else
 	    year = first + mDateTime::CurrentDateTime().Century() - 100;
+    }
     if (shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "mm" ||
 	shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "m")
 	month = second;
@@ -579,10 +581,12 @@ mDateTime StringToDate(const mstring & in)
     else if (shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "yyyy")
 	year = second;
     else if (shortdateformat.After(mDateTime::DateSeparator).Before(mDateTime::DateSeparator) == "yy")
+    {
 	if (second + 100 <= mDateTime::CurrentDateTime().Year2() + 150)
 	    year = second + mDateTime::CurrentDateTime().Century();
 	else
 	    year = second + mDateTime::CurrentDateTime().Century() - 100;
+    }
     if (shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "mm" ||
 	shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "m")
 	month = third;
@@ -592,10 +596,12 @@ mDateTime StringToDate(const mstring & in)
     else if (shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "yyyy")
 	year = third;
     else if (shortdateformat.After(mDateTime::DateSeparator).After(mDateTime::DateSeparator) == "yy")
+    {
 	if (third + 100 <= mDateTime::CurrentDateTime().Year2() + 150)
 	    year = third + mDateTime::CurrentDateTime().Century();
 	else
 	    year = third + mDateTime::CurrentDateTime().Century() - 100;
+    }
     return mDateTime(year, month, day);
 }
 
@@ -824,8 +830,9 @@ mstring DisectTime(const long intime, const mstring & source)
 
 mDateTime GMT(const mDateTime & in, const bool to)
 {
-    ACE_OS::tzset();
-    double offset = ACE_OS::timezone() * (to ? 1 : -1) * 1000000;
+    tzset();
+//    double offset = ACE_OS::timezone() * (to ? 1 : -1) * 1000000;
+    double offset = timezone * (to ? 1 : -1) * 1000000;
     double val = in.Internal();
     int days = static_cast < int > (val);
     double msecs = fmod(val, 1.0) * MSecsPerDay;

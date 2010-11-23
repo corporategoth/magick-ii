@@ -35,7 +35,7 @@ RCSID(stages_h, "@(#) $Id$");
 
 #include "xml/sxp.h"
 
-#define	DEF_STAGE_BUFFER	32768
+#define	DEF_STAGE_BUFFER	65536
 #define STAGE_TAG_XML		0x00000001
 #define STAGE_TAG_COMPRESS	0x00000002
 #define	STAGE_TAG_CRYPT		0x00000004

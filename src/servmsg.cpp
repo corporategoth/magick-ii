@@ -764,6 +764,7 @@ void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, cons
     SEND(mynick, source, "STATS/OPER_CLONE", (Magick::instance().operserv.Clone_size()));
     SEND(mynick, source, "STATS/OPER_AKILL", (Magick::instance().operserv.Akill_size()));
     SEND(mynick, source, "STATS/OPER_OPERDENY", (Magick::instance().operserv.OperDeny_size()));
+    SEND(mynick, source, "STATS/OPER_KILLPHRASE", (Magick::instance().operserv.KillPhrase_size()));
     SEND(mynick, source, "STATS/OPER_IGNORE", (Magick::instance().operserv.Ignore_size()));
 
     SEND(mynick, source, "STATS/OPER_CMD", (ToHumanTime(Magick::instance().operserv.stats.ClearTime().SecondsSince())));
@@ -799,6 +800,8 @@ void ServMsg::do_stats_Oper(const mstring & mynick, const mstring & source, cons
 	  fmstring("%10d", Magick::instance().operserv.stats.Ignore())));
     if (!Magick::instance().server.proto.SVSHOST().empty())
 	SEND(mynick, source, "STATS/OPER_CMD9", (fmstring("%10d", Magick::instance().operserv.stats.Hide())));
+    SEND(mynick, source, "STATS/OPER_CMD10",
+	 (fmstring("%10d", Magick::instance().operserv.stats.KillPhrase())));
     Magick::instance().servmsg.stats.i_Stats++;
     ETCB();
 }
@@ -823,11 +826,12 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
 
     rusage tmp;
 
-    ACE_OS::getrusage(RUSAGE_SELF, &tmp);
+    getrusage(RUSAGE_SELF, &tmp);
     ACE_Time_Value user, sys;
 
-    user = tmp.ru_utime;
-    sys = tmp.ru_stime;
+//    user = tmp.ru_utime;
+//    sys = tmp.ru_stime;
+    sys = user = (time_t) 0;
     SEND(mynick, source, "STATS/USE_CPU",
 	 (((sys.sec() == 0) ? Magick::instance().getMessage(source, "VALS/TIME_NONE") : ToHumanTime(sys.sec(), source)),
 	  ((user.sec() == 0) ? Magick::instance().getMessage(source, "VALS/TIME_NONE") : ToHumanTime(user.sec(), source))));
@@ -955,9 +959,11 @@ void ServMsg::do_stats_Usage(const mstring & mynick, const mstring & source, con
 	 (fmstring
 	  ("%5d",
 	   (Magick::instance().operserv.Clone_size() + Magick::instance().operserv.Akill_size() +
-	    Magick::instance().operserv.OperDeny_size() + Magick::instance().operserv.Ignore_size())),
+	    Magick::instance().operserv.OperDeny_size() + Magick::instance().operserv.Ignore_size() +
+	    Magick::instance().operserv.KillPhrase_size())),
 	  ToHumanSpace(Magick::instance().operserv.Clone_Usage() + Magick::instance().operserv.Akill_Usage() +
-		       Magick::instance().operserv.OperDeny_Usage() + Magick::instance().operserv.Ignore_Usage())));
+		       Magick::instance().operserv.OperDeny_Usage() + Magick::instance().operserv.Ignore_Usage() +
+		       Magick::instance().operserv.KillPhrase_Usage())));
 
     size = 0;
     Server::list_t::iterator p;

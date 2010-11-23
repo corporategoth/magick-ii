@@ -101,6 +101,8 @@ public:
 #ifndef JUST_MFILE
 #include "xml/sxp.h"
 #include "lockable.h"
+#include <ace/config.h>
+#include <ace/Task.h>
 
 unsigned short FindAvailPort();
 
@@ -220,6 +222,7 @@ public:
     void DumpE() const;
 };
 
+class Magick;
 class DccMap : public ACE_Task < ACE_MT_SYNCH >
 {
     typedef ACE_Task < ACE_MT_SYNCH > internal;

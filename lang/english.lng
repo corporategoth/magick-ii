@@ -111,6 +111,7 @@ NOLIMIT            =No limit specified, but required (ignored).
 MUSTBEHEX          =You may only specify characters 0-f, $1 digits long.
 MUSTBESIZE         =You must specify a size $1 or above.
 MUSTBEHOST         =You may only specify something that would be valid as a host name.
+MUSTBETIME         =You may only specify a time between $1 and $2.
 
 ;
 ; This section describes SITUATION errors, ie. errors where you have
@@ -155,6 +156,7 @@ NOACCESS           =Access denied.
 NOT_SUPPORTED      =This functionality is not supported by the IRC Server in use.
 ISLOCKED_NICK      =$1 option is locked for ALL nicknames.
 ISLOCKED_CHAN      =$1 option is locked for ALL channels.
+NOMLOCK            =Cannot mode lock "$1" while $2 option is set.
 
 ;
 ; This section deals with DCC actions.
@@ -226,6 +228,7 @@ KILL_OPERDENY      =Tried to /OPER when DENIED
 KICK_RESTRICTED    =This channel is restricted.
 RENAMED_IDENT      =You have been renamed for failure to identify.
 RENAMED_FORBID     =You have been renamed as your nickname was forbidden.
+ISBOT              =You are suspected of being a hostile bot!
 MAYNOTLINK         =You may not link to this IRC Network.
 
 EXPIRE_AKILL       =Expiring akill for $1 ($2) set by $3 for $4.
@@ -243,6 +246,7 @@ AKILL_EXTEND       =$1 just extended the AKILL on host \b$2\b by $3.
 KILLCHAN_ADD       =$1 just added kill channel \b$2\b for $3 ($4) - $5 client(s) killed ($6%).
 KILLCHAN_EXTEND    =$1 just extended the kill channel time \b$2\b by $3.
 OPERDENY_ADD       =$1 just added Oper Deny on host \b$2\b.
+KILLPHRASE_ADD     =$1 just added Kill Phrase \b$2\b.
 QLINE              =$1 just turned $2 a quarantine on nicknames matching \b$3\b.
 NOOP               =$1 just turned $2 IRC Operator quarantine on server \b$3\b.
 KILL               =$1 just silently killed user $2.
@@ -267,6 +271,9 @@ SIGNAL_LOAD        =Received signal #$1, server configuration file reloaded.
 SIGNAL_SAVE        =Received signal #$1, database save triggered.
 SIGNAL_KILL        =PANIC!  Received signal #$1, Last function was $2, shutting down!
 THREAD_DEAD_HALF   =PANIC!  Over half of threads not processing, shutting down!
+
+KILL_NOCHAN        =$1 just killed all users not in any channel for $2 - $3 client(s) killed.
+AKILL_NOCHAN       =$1 just AKILLed all users not in any channel for $2 ($3) - $4 client(s) killed.
 
 ENTLIST_CLEAR      =Value of $1 has been cleared.
 ENTLIST_SET        =Value of $1 has been set to $2.
@@ -324,6 +331,7 @@ CHAN_CMD15         =LOCK          $1 / UNLOCK        $2
 OPER_CLONE         =Clone Override entries     : $1
 OPER_AKILL         =Auto Kill entries          : $1
 OPER_OPERDENY      =Oper Deny entries          : $1
+OPER_KILLPHRASE    =Kill Phrase entries        : $1
 OPER_IGNORE        =Ignore entries             : $1
 OPER_CMD           =Successful Command Usage ($1):
 OPER_CMD1          =TRACE         $1 / MODE          $2
@@ -335,6 +343,7 @@ OPER_CMD6          =JUPE          $1 / ON/OFF        $2
 OPER_CMD7          =CLONE         $1 / AKILL         $2
 OPER_CMD8          =OPERDENY      $1 / IGNORE        $2
 OPER_CMD9          =HIDE          $1 / KILLCHAN      $2
+OPER_CMD10         =KILLPHRASE    $1
 
 OTH_MEMO           =Users with waiting memos   : $1
 OTH_NEWS           =Channels with news articles: $1
@@ -431,6 +440,7 @@ CLONE              =clone override
 AKILL              =automatic kill
 KILLCHAN           =kill channel
 OPERDENY           =IRC operator deny
+KILLPHRASE         =kill phrase
 SIGNORE            =services ignore
 CHANNEL            =channel
 NICKNAME           =nickname
@@ -507,6 +517,7 @@ DESCRIPTION        =\   Description: $1
 COMMENT            =\       Comment: $1
 COMMITTEES         =\    Committees: $1
 OPTIONS            =\       Options: $1
+VERSION            =\       Version: $1
 HASPIC             =This user has a picture available ($1).  Type \b/MSG $2 SEND $3\b to download it.
 ISONLINE           =This user is currently online.  Type \b/whois $1\b for more information.
 NOEXPIRE           =non-expiring
@@ -602,6 +613,7 @@ TOPIC              =\ Last Topic: $1
 TOPICBY            =\        Set: $1 ago by $2
 MLOCK              =\  Mode Lock: $1
 REVENGE            =\    Revenge: $1
+LIMITBUMP          =\ Bump Limit: $1 every $2
 BANTIME            =Ban Removal: $1
 PARTTIME           =Greet Delay: $1
 OPTIONS            =\    Options: $1
@@ -640,6 +652,7 @@ KICKONBAN          =Kick On Ban
 RESTRICTED         =Restricted
 JOIN               =Services Join
 REVENGE            =Revenge Level
+LIMITBUMP          =Limit Bump
 
 LVL_AUTODEOP       =Automatic Deop/Devoice
 LVL_AUTOVOICE      =Automatic Voice
@@ -851,6 +864,7 @@ CHAN_IDENT         =Users will be killed if they fail to identify $1 time(s).
 CHAN_KEEPTIME      =Channels are kept for $1 after AKICKing the last user.
 CHAN_BANTIME       =Default ban keep time is $1.
 CHAN_PARTTIME      =Default greet delay time is $1.
+CHAN_LIMITBUMP     =Default limit bump is $1 every $2.
 CHAN_MLOCK         =Default mode lock is "$1", modes "$2" are forced.
 CHAN_OPTIONS       =Default channel options are: $1
 CHAN_REVENGE       =Default revenge level is $1.

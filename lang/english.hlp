@@ -1376,7 +1376,7 @@
 10 =REGD::    URL          DESCRIPTION  MLOCK        BANTIME
 11 =REGD::    PARTTIME     KEEPTOPIC    TOPICLOCK    PRIVATE
 12 =REGD::    SECUREOPS    SECURE       ANARCHY      JOIN
-13 =REGD::    KICKONBAN    RESTRICTED   REVENGE      
+13 =REGD::    KICKONBAN    RESTRICTED   REVENGE      LIMITBUMP
 14 =SOP::As a SOP you may also use the following commands:
 15 =SOP::    COMMENT      NOEXPIRE
 
@@ -1614,6 +1614,20 @@
 10 =REGD::Setting this to RESET will restore the default value.
 11 =REGD::You must have SET privileges to use this command.
 
+[CHANSERV/SET/LIMITBUMP]
+01 =REGD::SET <channel> LIMITBUMP <num <time>|RESET> 
+02 =REGD::
+03 =REGD::This will automatically set the limit to num above
+04 =REGD::the current user count every time.  So if this is
+05 =REGD::set to 5, and there are 20 users in the channel,
+06 =REGD::the limit will be set to 25 (if it is not already.)
+07 =REGD::This value is in Standard Time Format (see the
+08 =REGD::global noticer's help on TIME).
+09 =REGD::
+10 =REGD::Setting this value to 0 will display EACH join.
+11 =REGD::Setting this to RESET will restore the default value.
+12 =REGD::You must have SET privileges to use this command.
+
 [CHANSERV/SET/REVENGE/LEVELS]
 01 =::Available Channel Revenge Levels
 02 =::
@@ -1637,7 +1651,7 @@
 07 =SOP::    MLOCK        BANTIME      PARTTIME     KEEPTOPIC
 08 =SOP::    TOPICLOCK    PRIVATE      SECUREOPS    SECURE
 09 =SOP::    ANARCHY      KICKONBAN    JOIN         RESTRICTED
-10 =SOP::    REVENGE
+10 =SOP::    REVENGE      LIMITBUMP
 
 [CHANSERV/LOCK/MLOCK]
 01 =SOP::LOCK <channel> MLOCK <modes|RESET>
@@ -1770,6 +1784,16 @@
 07 =SOP::as you are removing the right to change their own record.
 08 =SOP::Setting this to RESET will lock the default value.
 
+[CHANSERV/LOCK/LIMITBUMP]
+01 =SOP::LOCK <channel> PARTTIME <parttime <time>|RESET>
+02 =SOP::
+03 =SOP::This will lock the value of Limit Bump for a channel to
+04 =SOP::whatever you set it to.  Doing this, will prevent the
+05 =SOP::the founder and people with SET privileges from being
+06 =SOP::able to override this setting, so please use with caution,
+07 =SOP::as you are removing the right to change their own record.
+08 =SOP::Setting this to RESET will lock the default value.
+
 [CHANSERV/UNLOCK]
 01 =SOP::Services allows you to lock a value for a channel,
 02 =SOP::preventing the user from overriding your setting.
@@ -1779,7 +1803,7 @@
 06 =SOP::    MLOCK        BANTIME      PARTTIME     KEEPTOPIC
 07 =SOP::    TOPICLOCK    PRIVATE      SECUREOPS    SECURE
 08 =SOP::    ANARCHY      KICKONBAN    JOIN         RESTRICTED
-09 =SOP::    REVENGE
+09 =SOP::    REVENGE      LIMITBUMP
 
 [CHANSERV/UNLOCK/MLOCK]
 01 =SOP::UNLOCK <channel> MLOCK
@@ -1857,6 +1881,12 @@
 01 =SOP::UNLOCK <channel> REVENGE
 02 =SOP::
 03 =SOP::This will unlock the value of Revenge for a
+04 =SOP::channel, however the value will remain the same.
+
+[CHANSERV/UNLOCK/LIMITBUMP]
+01 =SOP::UNLOCK <channel> LIMITBUMP
+02 =SOP::
+03 =SOP::This will unlock the value of Limit Bump for a
 04 =SOP::channel, however the value will remain the same.
 
 
@@ -2587,6 +2617,7 @@
 06 =OPER SOP::    MODE         PING         SETTINGS     REGISTER
 07A=OPER:SOP:    IDENTIFY     KILLCHAN
 07B=SOP::    IDENTIFY     OPERDENY     HTM          KILLCHAN
+07C=SOP::    KILLNOCHAN   AKILLNOCHAN  KILLPHRASE
 08 =ADMIN::And as a Server Admin, the following commands:
 09 =ADMIN::    QLINE        UNQLINE      NOOP         JUPE
 10 =ADMIN::    KILL         HIDE
@@ -3026,6 +3057,42 @@
 06 =SOP::If a mask is specified, only entries matching that mask
 07 =SOP::will be displayed, wildcards may be specified.
 
+[OPERSERV/KILLPHRASE]
+01 =SOP::Flood bots are fairly predictable.  Often they will
+02 =SOP::mass message people with certain phrases.  This will
+03 =SOP::automatically akill anyone who messages any services
+04 =SOP::nickname with any of the kill phrases.
+05 =SOP::
+06A=SOP:SADMIN:You may view the kill phrase list with:
+06B=SADMIN::You may maintain the kill phrase list with:
+07A=SOP:SADMIN:    LIST
+07B=SADMIN::    ADD          DEL          LIST
+
+[OPERSERV/KILLPHRASE/ADD]
+01 =SADMIN::OPERDENY ADD [time] <string>
+02 =SADMIN::
+03 =SADMIN::This will add the phrase to the Kill Phrases list.
+07 =SADMIN::You may optionally specify a time in Standard Time
+08 =SADMIN::Format.  If you do so, it will be used as the time
+09 =SADMIN::to keep the Auto Kill in effect (depending on access,
+10 =SADMIN::there are various maximum times specifiable).  If
+11 =SADMIN::you do not specify a time, the default will be used
+12 =SADMIN::(see SETTINGS OTHER for this).
+
+[OPERSERV/OPERDENY/DEL]
+01 =SADMIN::OPERDENY DEL <mask|NUM>
+02 =SADMIN::
+03 =SADMIN::This will remove a phrase from the Kill Phrases list.
+
+[OPERSERV/OPERDENY/LIST]
+01 =SOP::OPERDENY LIST [mask]
+02 =SOP::
+03 =SOP::This will list all entries on the Kill Phrases list,
+04 =SOP::including who added them, how long the phrase has been
+05 =SOP::banned for, and a number that can be used to delete it.
+06 =SOP::If a mask is specified, only entries matching that mas
+07 =SOP::will be displayed, wildcards may be specified.
+
 [OPERSERV/IGNORE]
 01 =OPER SOP::Services has 2 ignore lists, one temporary, and one
 02 =OPER SOP::permanent.  A user can be added to either by triggering
@@ -3110,3 +3177,20 @@
 07 =OPER SOP::Kill Channel list.  If a channel is specified, only
 08 =OPER SOP::that entry will be displayed.  You may specify wildcards
 09 =OPER SOP::to see multiple entries.
+
+[OPERSERV/KILLNOCHAN]
+01 =SOP::KILLNOCHAN <reason>
+02 =SOP::
+03 =SOP::This will kill all users online who are not presently
+04 =SOP::inside any channels.  Many flooding bots often are
+05 =SOP::online without being inside any channel - this will
+06 =SOP::take care of them.
+
+[OPERSERV/AKILLNOCHAN]
+01 =SOP::AKILLNOCHAN [time] <reason>
+02 =SOP::
+03 =SOP::This will add all users who are not presently in any
+04 =SOP::channel to the AKILL list.  Many flooding bots often are
+05 =SOP::online without being inside any channel - this will
+06 =SOP::take care of them.
+

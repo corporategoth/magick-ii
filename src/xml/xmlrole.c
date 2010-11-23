@@ -4,7 +4,7 @@ Copyright (c) 1998, 1999 Thai Open Source Software Center Ltd
 See the file COPYING for copying permission.
 */
 
-static char RCSId[] = "$Header$";
+static char RCSId[] = "$Header: /home/cvs/magick/Magick-II/src/xml/xmlrole.c,v 1.8 2003/01/25 05:21:15 prez Exp $";
 
 #include "xml/xmlconfig.h"
 #include "xml/xmlrole.h"

@@ -7,7 +7,7 @@
 
 // IDataOutput: bundles together methods for printing out simple data
 // to a tag, e.g. <height>188</height> to the
-// stdio.h file pointer returned by the FP() method, aided by an Indent()
+// stdio.h file pointer returned by the FP() method, aided by an this->Indent()
 // method which knows how many tabs to print before your tag.
 
 #include "datetime.h"
@@ -19,82 +19,82 @@ public:
 
     inline void WriteElement(Tag & t, const bool val, dict & attribs = blank_dict)
     {
-	Indent();
+	this->Indent();
 	mstring param;
 
 	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
 	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-	Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
+	this->Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
     }
 
     inline void WriteElement(Tag & t, const int val, dict & attribs = blank_dict)
     {
-	Indent();
+	this->Indent();
 	mstring param;
 
 	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
 	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-	Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
+	this->Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
     }
 
     inline void WriteElement(Tag & t, const long val, dict & attribs = blank_dict)
     {
-	Indent();
+	this->Indent();
 	mstring param;
 
 	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
 	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-	Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
+	this->Print("<%s%s>%d</%s>\n", t.ch, param.c_str(), val, t.ch);
     }
 
     inline void WriteElement(Tag & t, const double val, dict & attribs = blank_dict)
     {
-	Indent();
+	this->Indent();
 	mstring param;
 
 	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
 	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-	Print("<%s%s>%7.60g</%s>\n", t.ch, param.c_str(), val, t.ch);
+	this->Print("<%s%s>%7.60g</%s>\n", t.ch, param.c_str(), val, t.ch);
     }
 
     inline void WriteElement(Tag & t, const unsigned int val, dict & attribs = blank_dict)
     {
-	Indent();
+	this->Indent();
 	mstring param;
 
 	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
 	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-	Print("<%s%s>%u</%s>\n", t.ch, param.c_str(), val, t.ch);
+	this->Print("<%s%s>%u</%s>\n", t.ch, param.c_str(), val, t.ch);
     }
 
     inline void WriteElement(Tag & t, const unsigned long val, dict & attribs = blank_dict)
     {
-	Indent();
+	this->Indent();
 	mstring param;
 
 	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
 	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
-	Print("<%s%s>%u</%s>\n", t.ch, param.c_str(), val, t.ch);
+	this->Print("<%s%s>%u</%s>\n", t.ch, param.c_str(), val, t.ch);
     }
 
     inline void WriteElement(Tag & t, const mstring & val, dict & attribs = blank_dict)
     {
-	Indent();
+	this->Indent();
 	mstring param;
 
 	dict::iterator iter;
 	for (iter = attribs.begin(); iter != attribs.end(); iter++)
 	    param << " " << iter->first.c_str() << "=\"" << iter->second.c_str() << "\"";
 	if (!val.empty())
-	    Print("<%s%s>%s</%s>\n", t.ch, param.c_str(), XMLEscape(val.c_str()).c_str(), t.ch);
+	    this->Print("<%s%s>%s</%s>\n", t.ch, param.c_str(), XMLEscape(val.c_str()).c_str(), t.ch);
 	else
-	    Print("<%s%s/>\n", t.ch, param.c_str());
+	    this->Print("<%s%s/>\n", t.ch, param.c_str());
     }
 
     inline void WriteElement(Tag & t, const mDateTime & val, dict & attribs = blank_dict)

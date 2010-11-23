@@ -51,6 +51,7 @@ class Nick_Live_t : public mUserDef, public ref_class
     mstring i_squit;
     mstring i_away;
     mstring modes;
+    mstring i_version;
 
     set < mstring > joined_channels;
     vector < mDateTime > last_msg_times;
@@ -164,6 +165,16 @@ public:
     void Quit(const mstring & reason);
     bool IsInChan(const mstring & channel);
     set < mstring > Channels() const;
+
+    void Version(const mstring & version)
+    {
+	i_version = version;
+    }
+
+    mstring Version() const
+    {
+	return i_version;
+    }
 
     // true if user ignored
     bool FloodTrigger();
@@ -489,6 +500,7 @@ private:
     unsigned long delay;	// How long between registrations
     unsigned long ident;	// How long to wait for IDENT
     unsigned long release;	// How long to keep after failed ident
+    unsigned long version;	// How long to wait for a CTCP version reply
     unsigned int passfail;	// Number of password fails before kill
     unsigned long picsize;	// Maximum picture size
     mstring picext;		// Valid PIC extensions
@@ -700,6 +712,10 @@ public:
     unsigned long Release() const
     {
 	return release;
+    }
+    unsigned long Version() const
+    {
+	return version;
     }
     unsigned int Passfail() const
     {

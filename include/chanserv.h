@@ -56,6 +56,7 @@ class Chan_Live_t : public mUserDef, public ref_class
     mstring i_Topic;
     mstring i_Topic_Setter;
     mDateTime i_Topic_Set_Time;
+    mDateTime i_Last_Limit_Change;
     mstring modes;
     unsigned int i_Limit;
     mstring i_Key;
@@ -122,6 +123,7 @@ public:
     mstring Topic() const;
     mstring Topic_Setter() const;
     mDateTime Topic_Set_Time() const;
+    mDateTime Last_Limit_Change() const;
 
     unsigned long Numeric() const;
     void Numeric(const unsigned long num);
@@ -218,6 +220,8 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 	unsigned long Bantime;
 	unsigned long Parttime;
 	mstring Revenge;
+	unsigned int LimitBump;
+	unsigned int LimitBumpTime;
 	mstring Mlock_On;
 	mstring Mlock_Off;
 	mstring Mlock_Key;
@@ -240,6 +244,7 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 	bool Bantime:1;
 	bool Parttime:1;
 	bool Revenge:1;
+	bool LimitBump:1;
 	mstring Mlock_On;
 	mstring Mlock_Off;
     }
@@ -266,11 +271,11 @@ class Chan_Stored_t : public mUserDef, public SXP::IPersistObj, public ref_class
 	tag_Password, tag_Email, tag_URL, tag_Comment, tag_Topic, tag_Topic_Setter, tag_Topic_Set_Time, tag_set_Mlock_On,
 	tag_set_Mlock_Off, tag_set_Mlock_Key, tag_set_Mlock_Limit, tag_set_Bantime, tag_set_Parttime, tag_set_KeepTopic,
 	tag_set_TopicLock, tag_set_Private, tag_set_SecureOps, tag_set_Secure, tag_set_NoExpire, tag_set_Anarchy,
-	tag_set_KickOnBan, tag_set_Restricted, tag_set_Join, tag_set_Revenge, tag_Forbidden, tag_lock_Mlock_On,
-	tag_lock_Mlock_Off, tag_lock_Bantime, tag_lock_Parttime, tag_lock_KeepTopic, tag_lock_TopicLock, tag_lock_Private,
-	tag_lock_SecureOps, tag_lock_Secure, tag_lock_NoExpire, tag_lock_Anarchy, tag_lock_KickOnBan, tag_lock_Restricted,
-	tag_lock_Join, tag_lock_Revenge, tag_Suspend_By, tag_Suspend_Time, tag_Level, tag_Access, tag_Akick, tag_Greet,
-	tag_Message, tag_UserDef;
+	tag_set_KickOnBan, tag_set_Restricted, tag_set_Join, tag_set_Revenge, tag_set_LimitBump, tag_set_LimitBumpTime,
+	tag_Forbidden, tag_lock_Mlock_On, tag_lock_Mlock_Off, tag_lock_Bantime, tag_lock_Parttime, tag_lock_KeepTopic,
+	tag_lock_TopicLock, tag_lock_Private, tag_lock_SecureOps, tag_lock_Secure, tag_lock_NoExpire, tag_lock_Anarchy,
+	tag_lock_KickOnBan, tag_lock_Restricted, tag_lock_Join, tag_lock_Revenge, tag_lock_LimitBump, 
+	tag_Suspend_By, tag_Suspend_Time, tag_Level, tag_Access, tag_Akick, tag_Greet, tag_Message, tag_UserDef;
 
     void ChgAttempt(const mstring & nick, const mstring & newnick);
     bool Join(const mstring & nick);
@@ -409,6 +414,11 @@ public:
     bool Revenge(const mstring & in);
     bool L_Revenge() const;
     void L_Revenge(const bool in);
+    unsigned long LimitBump() const;
+    unsigned long LimitBumpTime() const;
+    bool LimitBump(const unsigned long in, const unsigned long time);
+    bool L_LimitBump() const;
+    void L_LimitBump(const bool in);
 
     bool Suspended() const;
     mstring Suspend_By() const;
@@ -588,6 +598,8 @@ private:
 	unsigned long Bantime;
 	unsigned long Parttime;
 	mstring Revenge;
+	unsigned long LimitBump;
+	unsigned long LimitBumpTime;
 	mstring Mlock;
     }
     def;
@@ -609,6 +621,7 @@ private:
 	bool Bantime:1;
 	bool Parttime:1;
 	bool Revenge:1;
+	bool LimitBump:1;
 	mstring Mlock;
     }
     lock;
@@ -972,6 +985,18 @@ public:
     {
 	return lock.Revenge;
     }
+	unsigned long DEF_LimitBump() const
+	{
+		return def.LimitBump;
+	}
+	unsigned long DEF_LimitBumpTime() const
+	{
+		return def.LimitBumpTime;
+	}
+	bool LCK_LimitBump() const
+	{
+		return lock.LimitBump;
+	}
     long LVL(const mstring & level) const;
     bool IsLVL(const mstring & level) const;
     vector < mstring > LVL() const;
@@ -1140,6 +1165,7 @@ public:
     static void do_set_Restricted(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_set_Join(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_set_Revenge(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_set_LimitBump(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_lock_Mlock(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_lock_BanTime(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_lock_PartTime(const mstring & mynick, const mstring & source, const mstring & params);
@@ -1153,6 +1179,7 @@ public:
     static void do_lock_Restricted(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_lock_Join(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_lock_Revenge(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_lock_LimitBump(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_unlock_Mlock(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_unlock_BanTime(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_unlock_PartTime(const mstring & mynick, const mstring & source, const mstring & params);
@@ -1166,6 +1193,7 @@ public:
     static void do_unlock_Restricted(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_unlock_Join(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_unlock_Revenge(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_unlock_LimitBump(const mstring & mynick, const mstring & source, const mstring & params);
 
     SXP::Tag & GetClassTag() const
     {

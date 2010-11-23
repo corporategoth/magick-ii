@@ -35,6 +35,8 @@ RCSID(filesys_cpp, "@(#)$Id$");
 ** ======================================================================= */
 
 #include "magick.h"
+#include <sys/stat.h>
+#include <ace/Dirent.h>
 
 std::queue < unsigned long > DccMap::active;
 
@@ -147,7 +149,7 @@ bool mFile::IsOpened() const
     BTCB();
     NFT("mFile::IsOpened");
     MLOCK((lck_mFile, i_name));
-    bool retval = (fd != NULL);
+    bool retval = (fd != NULL && fileno(fd) >= 0);
 
     RET(retval);
     ETCB();
@@ -304,9 +306,9 @@ long mFile::Length() const
     if (!IsOpened())
 	RET(-1);
     long retval = 0;
-    ACE_stat st;
+    struct stat st;
 
-    opres = ACE_OS::stat(i_name, &st);
+    opres = stat(i_name, &st);
     if (opres < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("fstat", i_name, errno, strerror(errno)));
@@ -330,9 +332,9 @@ mDateTime mFile::LastMod() const
     if (!IsOpened())
 	RET(0.0);
     mDateTime retval;
-    ACE_stat st;
+    struct stat st;
 
-    opres = ACE_OS::stat(i_name, &st);
+    opres = stat(i_name, &st);
     if (opres < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("fstat", i_name, errno, strerror(errno)));
@@ -458,9 +460,9 @@ long mFile::Length(const mstring & name)
     if (!Exists(name))
 	RET(0);
     long retval = 0;
-    ACE_stat st;
+    struct stat st;
 
-    opres = ACE_OS::stat(name.c_str(), &st);
+    opres = stat(name.c_str(), &st);
     if (opres < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("stat", name, errno, strerror(errno)));
@@ -484,9 +486,9 @@ mDateTime mFile::LastMod(const mstring & name)
     if (!Exists(name))
 	RET(0.0);
     mDateTime retval;
-    ACE_stat st;
+    struct stat st;
 
-    opres = ACE_OS::stat(name.c_str(), &st);
+    opres = stat(name.c_str(), &st);
     if (opres < 0 && errno)
     {
 	LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR", ("stat", name, errno, strerror(errno)));
@@ -514,12 +516,12 @@ long mFile::Copy(const mstring & infile, const mstring & outfile, const bool app
     if (!(in.IsOpened() && out.IsOpened()))
 	RET(0);
 
-    unsigned char c[32768];
+    unsigned char c[65535];
     size_t total = 0, length = in.Length();
 
     do
     {
-	size_t bytesread = in.Read(c, 32768);
+	size_t bytesread = in.Read(c, 65535);
 
 	total += out.Write(c, bytesread);
     } while (total < length - 1);
@@ -640,7 +642,7 @@ size_t mFile::DirUsage(const mstring & directory)
 
     struct dirent *entry = NULL;
     ACE_DIR *dir = NULL;
-    ACE_stat st;
+    struct stat st;
 
     if ((dir = ACE_OS_Dirent::opendir(directory.c_str())) != NULL)
     {
@@ -648,7 +650,7 @@ size_t mFile::DirUsage(const mstring & directory)
 	{
 	    if (strlen(entry->d_name))
 	    {
-		opres = ACE_OS::stat((directory + DirSlash + entry->d_name).c_str(), &st);
+		opres = stat((directory + DirSlash + entry->d_name).c_str(), &st);
 		if (opres < 0 && errno)
 		{
 		    LOG(LM_ERROR, "SYS_ERRORS/FILEOPERROR",

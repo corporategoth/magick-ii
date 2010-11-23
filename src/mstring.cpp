@@ -344,6 +344,7 @@ void mstring::erase(int begin, int end)
     }
 
     if (end < 0 || end >= static_cast < int > (i_len))
+    {
 	if (begin >= static_cast < int > (i_len))
 	{
 	    lock_rel();
@@ -351,6 +352,7 @@ void mstring::erase(int begin, int end)
 	}
 	else
 	    end = i_len - 1;
+    }
     if (begin < 0)
 	begin = 0;
     if (begin > end)
@@ -538,7 +540,7 @@ const unsigned char *mstring::uc_str() const
     return static_cast < const unsigned char * > (retval);
 }
 
-const char mstring::first(size_t off) const
+char mstring::first(size_t off) const
 {
     char retval = 0;
 
@@ -547,10 +549,10 @@ const char mstring::first(size_t off) const
 	retval = i_str[off - 1];
     lock_rel();
 
-    return static_cast < const char > (retval);
+    return static_cast < char > (retval);
 }
 
-const char mstring::last(size_t off) const
+char mstring::last(size_t off) const
 {
     char retval = 0;
 
@@ -559,7 +561,7 @@ const char mstring::last(size_t off) const
 	retval = i_str[i_len - off];
     lock_rel();
 
-    return static_cast < const char > (retval);
+    return static_cast < char > (retval);
 }
 
 size_t mstring::length() const
@@ -1498,20 +1500,37 @@ int mstring::Format(const char *fmt, ...)
 int mstring::FormatV(const char *fmt, va_list argptr)
 {
     int len = -1, sz = sizeof(int);
-    char *buffer;
+//    char *buffer = NULL;
+	char buffer[4096];
+	sz = 4096;
 
+/*
     while (1)
     {
 	buffer = alloc(sz);
 	if (buffer == NULL)
 	    return -1;
+*/
 
 	memset(buffer, 0, sz);
 	len = vsnprintf(buffer, sz, fmt, argptr);
+	if (len >= 0 && len <= sz)
+	{
+		copy(buffer, len);
+		return len;
+	}
+	else
+	{
+		copy(NULL, 0);
+		return -1;
+	}
+/*
 	if (buffer[sz - 1] == 0 && len >= 0 && len < sz)
 	{
+		if (len > 
 	    if (len == 0)
 	    {
+			cop
 		dealloc(buffer);
 		buffer = NULL;
 	    }
@@ -1526,15 +1545,16 @@ int mstring::FormatV(const char *fmt, va_list argptr)
 	    sz *= 2;
 	} while (len >= sz);
     }
-    if (buffer)
-    {
+   if (buffer)
+  {
 	copy(buffer, len);
 	dealloc(buffer);
 	buffer = NULL;
-    }
-    else
+   }
+  else
 	copy(NULL, 0);
     return len;
+*/
 }
 
 mstring mstring::Before(const mstring & in, const int occurance) const

@@ -302,7 +302,7 @@ bool Protocol::Set(const mstring & filename)
     for (unsigned int i = 0; i < characters.size(); i++)
     {
 	Numeric.base64_to_char[i] = characters[i] [0U];
-	Numeric.char_to_base64[characters[i] [0U]] = (char) i;
+	Numeric.char_to_base64[(size_t) characters[i] [0U]] = (char) i;
     }
 
     map < mstring, mstring > file = cfg.GetMap();
@@ -3452,6 +3452,7 @@ void Server::parse_C(mstring & source, const mstring & msgtype, const mstring & 
 
 	    set<mstring> wason;
 	    nlive->PostSignon(wason);
+	    ::privmsg(Magick::instance().nickserv.FirstName(), newnick, DccEngine::encode("VERSION"));
 
 	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
 	    if (nlive->Numeric())
@@ -3760,7 +3761,7 @@ void Server::parse_K(mstring & source, const mstring & msgtype, const mstring & 
 	// NOTE: as the message has already been broadcast,
 	// we still need to acomodate for it.
 	if (!chan.empty() && !nick.empty())
-	    Magick::instance().nickserv.GetLive(nick)->Kick(nick, chan);
+	    Magick::instance().nickserv.GetLive(nick)->Kick(source, chan);
     }
     else if (msgtype == "KILL")
     {
@@ -3924,10 +3925,16 @@ void Server::parse_M(mstring & source, const mstring & msgtype, const mstring & 
 	    if (!chan.empty())
 	    {
 		mstring mode = IrcParam(params, 2);
+		unsigned int i = 3;
+		unsigned int wc = IrcParamCount(params);
+		if (mode.IsNumber())
+		{
+		    mode = IrcParam(params, 3);
+		    ++i;
+		}
 
-		unsigned int i, wc = IrcParamCount(params);
 		mstring mode_param;
-		for (i=3; i<=wc; i++)
+		for (; i<=wc; i++)
 		    mode_param += " " + IrcParam(params, i);
 
 		if (proto.Numeric.User())
@@ -4293,6 +4300,7 @@ void Server::parse_N(mstring & source, const mstring & msgtype, const mstring & 
 
 		set<mstring> wason;
 		nlive->PostSignon(wason);
+		::privmsg(Magick::instance().nickserv.FirstName(), newnick, DccEngine::encode("VERSION"));
 
 		mMessage::CheckDependancies(mMessage::NickExists, newnick);
 		if (nlive->Numeric())
@@ -4860,6 +4868,7 @@ void Server::parse_S(mstring & source, const mstring & msgtype, const mstring & 
 
 	    set<mstring> wason;
 	    nlive->PostSignon(wason);
+	    ::privmsg(Magick::instance().nickserv.FirstName(), newnick, DccEngine::encode("VERSION"));
 
 	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
 	    if (nlive->Numeric())
@@ -5771,6 +5780,7 @@ void Server::parse_U(mstring & source, const mstring & msgtype, const mstring & 
 
 	    set<mstring> wason;
 	    nlive->PostSignon(wason);
+	    ::privmsg(Magick::instance().nickserv.FirstName(), newnick, DccEngine::encode("VERSION"));
 
 	    mMessage::CheckDependancies(mMessage::NickExists, newnick);
 	    if (nlive->Numeric())

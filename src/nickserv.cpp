@@ -1487,11 +1487,15 @@ void NickServ::do_Info(const mstring & mynick, const mstring & source, const mst
 
     if (!output.empty())
 	SEND(mynick, source, "NS_INFO/OPTIONS", (output));
+    if (nick->IsOnline())
+    {
+	if (isoper)
+	    SEND(mynick, source, "NS_INFO/VERSION", (Magick::instance().nickserv.GetLive(nick->Name())->Version()));
+	SEND(mynick, source, "NS_INFO/ISONLINE", (Magick::instance().getLname(nick->Name())));
+    }
     if (nick->PicNum() && Magick::instance().filesys.Exists(FileMap::Picture, nick->PicNum()))
 	SEND(mynick, source, "NS_INFO/HASPIC",
 	     (ToHumanSpace(Magick::instance().filesys.GetSize(FileMap::Picture, nick->PicNum())), mynick, nick->Name()));
-    if (nick->IsOnline())
-	SEND(mynick, source, "NS_INFO/ISONLINE", (Magick::instance().getLname(nick->Name())));
     {
 	RLOCK((lck_Events));
 	if (Magick::instance().servmsg.ShowSync() && Magick::instance().events != NULL)

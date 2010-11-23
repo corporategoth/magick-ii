@@ -100,7 +100,7 @@ dnl          -Winline -Wtemplate-debugging -Wpacked
 dnl          -Wtraditional -Wstrict-prototypes 
 dnl          -Wformat-security -Wundef
 dnl POSSIBLES: -Wunreachable-code -Wdisabled-optimization
-CPPWARN="-W -Wall -Wimport -Wmissing-prototypes \
+CPPWARN="-W -Wall -Wimport \
 	-Wpointer-arith -Wsign-compare -Wwrite-strings"
 CWARN="-Wbad-function-cast -Wmissing-declarations -Wnested-externs"
 CXXWARN="-Woverloaded-virtual -Wsynth -Wno-deprecated"

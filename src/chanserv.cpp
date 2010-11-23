@@ -184,6 +184,8 @@ void ChanServ::AddCommands()
 						 ChanServ::do_set_Join);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* REV*", Magick::instance().commserv.REGD_Name(),
 						 ChanServ::do_set_Revenge);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* LIM*B*", Magick::instance().commserv.REGD_Name(),
+						 ChanServ::do_set_LimitBump);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "SET* H*LP", Magick::instance().commserv.REGD_Name(),
 						 do_3param);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK M*LOCK", Magick::instance().commserv.SOP_Name(),
@@ -212,6 +214,8 @@ void ChanServ::AddCommands()
 						 ChanServ::do_lock_Join);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK REV*", Magick::instance().commserv.SOP_Name(),
 						 ChanServ::do_lock_Revenge);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK LIM*B*", Magick::instance().commserv.SOP_Name(),
+						 ChanServ::do_lock_LimitBump);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "LOCK H*LP", Magick::instance().commserv.SOP_Name(),
 						 do_3param);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK M*LOCK", Magick::instance().commserv.SOP_Name(),
@@ -240,6 +244,8 @@ void ChanServ::AddCommands()
 						 ChanServ::do_unlock_Join);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK REV*", Magick::instance().commserv.SOP_Name(),
 						 ChanServ::do_unlock_Revenge);
+    Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK LIM*B*", Magick::instance().commserv.SOP_Name(),
+						 ChanServ::do_unlock_LimitBump);
     Magick::instance().commands.AddSystemCommand(GetInternalName(), "UNLOCK H*LP", Magick::instance().commserv.SOP_Name(),
 						 do_3param);
 
@@ -1122,6 +1128,8 @@ void ChanServ::do_Info(const mstring & mynick, const mstring & source, const mst
 	SEND(mynick, source, "CS_INFO/MLOCK", (chan->Mlock()));
     if (!chan->Revenge().empty())
 	SEND(mynick, source, "CS_INFO/REVENGE", (Magick::instance().getMessage(source, "CS_SET/REV_" + chan->Revenge())));
+    if (chan->LimitBump())
+	SEND(mynick, source, "CS_INFO/LIMITBUMP", (chan->LimitBump(), ToHumanTime(chan->LimitBumpTime(), source)));
     if (chan->Bantime())
 	SEND(mynick, source, "CS_INFO/BANTIME", (ToHumanTime(chan->Bantime(), source)));
     if (chan->Parttime())
@@ -6442,6 +6450,93 @@ void ChanServ::do_set_Revenge(const mstring & mynick, const mstring & source, co
     ETCB();
 }
 
+void ChanServ::do_set_LimitBump(const mstring & mynick, const mstring & source, const mstring & params)
+{
+    BTCB();
+    FT("ChanServ::do_set_LimitBump", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
+    if (params.WordCount(" ") < 4)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    mstring channel = params.ExtractWord(2, " ");
+    mstring value = params.ExtractWord(4, " ");
+
+    if (!Magick::instance().chanserv.IsStored(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
+	return;
+    }
+
+    unsigned long num = 0, time = 0;
+
+    if (value.IsSameAs("default", true) || value.IsSameAs("reset", true))
+    {
+	num = Magick::instance().chanserv.DEF_LimitBump();
+	time = Magick::instance().chanserv.DEF_LimitBumpTime();
+    }
+    else if (params.WordCount(" ") < 5)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+    else
+    {
+	mstring stime = params.ExtractWord(5, " ");
+	num = atoi(value.c_str());
+	time = FromHumanTime(stime);
+    }
+
+    if (num < 1 || num > 1000)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, 1000));
+	return;
+    }
+
+    if (time < 15 || time > 86400)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBETIME", (ToHumanTime(15), ToHumanTime(86400)));
+	return;
+    }
+
+    map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(channel);
+    channel = cstored->Name();
+
+    if (cstored->Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    // If we have 2 params, and we have SUPER access, or are a SOP
+    if (!cstored->GetAccess(source, "SET"))
+    {
+	NSEND(mynick, source, "ERR_SITUATION/NOACCESS");
+	return;
+    }
+
+    if (cstored->L_LimitBump())
+    {
+	SEND(mynick, source, "CS_STATUS/ISLOCKED", (Magick::instance().getMessage(source, "CS_SET/LIMITBUMP"), channel));
+	return;
+    }
+
+    cstored->LimitBump(num, time);
+    Magick::instance().chanserv.stats.i_Set++;
+    SEND(mynick, source, "CS_COMMAND/SET_TO",
+	 (Magick::instance().getMessage(source, "CS_SET/LIMITBUMP"), channel,
+	 value + "/" + ToHumanTime(time, source)));
+    LOG(LM_DEBUG, "CHANSERV/SET",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("CS_SET/LIMITBUMP"), channel,
+	 value + "/" + ToHumanTime(num, source)));
+    ETCB();
+}
+
 void ChanServ::do_lock_Mlock(const mstring & mynick, const mstring & source, const mstring & params)
 {
     BTCB();
@@ -7270,6 +7365,88 @@ void ChanServ::do_lock_Revenge(const mstring & mynick, const mstring & source, c
     ETCB();
 }
 
+void ChanServ::do_lock_LimitBump(const mstring & mynick, const mstring & source, const mstring & params)
+{
+    BTCB();
+    FT("ChanServ::do_lock_LimitBump", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
+    if (params.WordCount(" ") < 4)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    mstring channel = params.ExtractWord(2, " ");
+    mstring value = params.ExtractWord(4, " ");
+
+    if (!Magick::instance().chanserv.IsStored(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
+	return;
+    }
+
+    unsigned long num = 0, time = 0;
+
+    if (value.IsSameAs("default", true) || value.IsSameAs("reset", true))
+    {
+	num = Magick::instance().chanserv.DEF_LimitBump();
+	time = Magick::instance().chanserv.DEF_LimitBumpTime();
+    }
+    else if (params.WordCount(" ") < 5)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+    else
+    {
+	mstring stime = params.ExtractWord(5, " ");
+	num = atoi(value.c_str());
+	time = FromHumanTime(stime);
+    }
+
+    if (num < 1 || num > 1000)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBENUMBER", (1, 1000));
+	return;
+    }
+
+    if (time < 15 || time > 86400)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/MUSTBETIME", (ToHumanTime(15), ToHumanTime(86400)));
+	return;
+    }
+
+    map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(channel);
+    channel = cstored->Name();
+
+    if (cstored->Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    if (Magick::instance().chanserv.LCK_LimitBump())
+    {
+	SEND(mynick, source, "CS_STATUS/ISLOCKED", (Magick::instance().getMessage(source, "CS_SET/LIMITBUMP"), channel));
+	return;
+    }
+
+    cstored->L_LimitBump(false);
+    cstored->LimitBump(num, time);
+    cstored->L_LimitBump(true);
+    Magick::instance().chanserv.stats.i_Lock++;
+    SEND(mynick, source, "CS_COMMAND/LOCKED",
+	 (Magick::instance().getMessage(source, "CS_SET/LIMITBUMP"), channel,
+	 value + "/" + ToHumanTime(time, source)));
+    LOG(LM_DEBUG, "CHANSERV/LOCK",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("CS_SET/LIMITBUMP"), channel,
+	 value + "/" + ToHumanTime(num, source)));
+    ETCB();
+}
+
 void ChanServ::do_unlock_Mlock(const mstring & mynick, const mstring & source, const mstring & params)
 {
     BTCB();
@@ -7834,6 +8011,50 @@ void ChanServ::do_unlock_Revenge(const mstring & mynick, const mstring & source,
     LOG(LM_DEBUG, "CHANSERV/UNLOCK",
 	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
 	 Magick::instance().getMessage("CS_SET/REVENGE"), channel));
+    ETCB();
+}
+
+void ChanServ::do_unlock_LimitBump(const mstring & mynick, const mstring & source, const mstring & params)
+{
+    BTCB();
+    FT("ChanServ::do_unlock_LimitBump", (mynick, source, params));
+
+    mstring message = mstring(params.Before(" ") + " " + params.ExtractWord(3, " ")).UpperCase();
+
+    if (params.WordCount(" ") < 3)
+    {
+	SEND(mynick, source, "ERR_SYNTAX/NEED_PARAMS", (message, mynick, message));
+	return;
+    }
+
+    mstring channel = params.ExtractWord(2, " ");
+
+    if (!Magick::instance().chanserv.IsStored(channel))
+    {
+	SEND(mynick, source, "CS_STATUS/ISNOTSTORED", (channel));
+	return;
+    }
+    map_entry < Chan_Stored_t > cstored = Magick::instance().chanserv.GetStored(channel);
+    channel = cstored->Name();
+
+    if (cstored->Forbidden())
+    {
+	SEND(mynick, source, "CS_STATUS/ISFORBIDDEN", (channel));
+	return;
+    }
+
+    if (Magick::instance().chanserv.LCK_LimitBump())
+    {
+	SEND(mynick, source, "CS_STATUS/ISLOCKED", (Magick::instance().getMessage(source, "CS_SET/LIMITBUMP"), channel));
+	return;
+    }
+
+    cstored->L_LimitBump(false);
+    Magick::instance().chanserv.stats.i_Unlock++;
+    SEND(mynick, source, "CS_COMMAND/UNLOCKED", (Magick::instance().getMessage(source, "CS_SET/LIMITBUMP"), channel));
+    LOG(LM_DEBUG, "CHANSERV/UNLOCK",
+	(Magick::instance().nickserv.GetLive(source)->Mask(Nick_Live_t::N_U_P_H),
+	 Magick::instance().getMessage("CS_SET/LIMITBUMP"), channel));
     ETCB();
 }
 

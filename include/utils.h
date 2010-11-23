@@ -34,6 +34,7 @@ RCSID(utils_h, "@(#) $Id$");
 ** ======================================================================= */
 
 #include "variant.h"
+#include "mexceptions.h"
 #ifdef HASCRYPT
 #include "crypt/blowfish.h"
 #define VERIFY_SIZE	128

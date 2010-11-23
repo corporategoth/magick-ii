@@ -77,6 +77,7 @@ public:
     typedef entlist_val_pair_t < unsigned int, mstring > Clone_Type;
     typedef entlist_val_pair_t < unsigned long, mstring > Akill_Type;
     typedef entlist_val_t < mstring > OperDeny_Type;
+    typedef entlist_val_t < unsigned long > KillPhrase_Type;
     typedef entlist_val_t < bool > Ignore_Type;
     typedef entlist_val_pair_t < unsigned long, mstring > KillChan_Type;
 
@@ -92,6 +93,9 @@ private:
     // Mask (N_U_H), Reason (mstring)
     set < OperDeny_Type > i_OperDeny;
 
+    // String, Reason (mstring)
+    set < KillPhrase_Type > i_KillPhrase;
+
     // Mask (N_U_H), Permanent (bool)
     set < Ignore_Type > i_Ignore;
 
@@ -102,6 +106,7 @@ private:
     vector < Akill_Type * > a_array;
     vector < KillChan_Type * > k_array;
     vector < OperDeny_Type * > o_array;
+    vector < KillPhrase_Type * > kp_array;
     vector < Ignore_Type * > i_array;
 
     void AddCommands();
@@ -111,7 +116,7 @@ private:
     bool AddHost(const mstring & host);
     void RemHost(const mstring & host);
 
-    static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny, tag_Ignore, tag_KillChan;
+    static SXP::Tag tag_OperServ, tag_Clone, tag_Akill, tag_OperDeny, tag_KillPhrase, tag_Ignore, tag_KillChan;
 
 public:
     OperServ();
@@ -140,6 +145,7 @@ public:
 	unsigned long i_Clone;
 	unsigned long i_Akill;
 	unsigned long i_OperDeny;
+	unsigned long i_KillPhrase;
 	unsigned long i_Ignore;
 	unsigned long i_KillChan;
 
@@ -152,7 +158,7 @@ public:
 	{
 	    i_ClearTime = mDateTime::CurrentDateTime();
 	    i_Trace = i_Mode = i_Qline = i_Unqline = i_Noop = i_Kill = i_Hide = i_Ping = i_Update = i_Reload = i_Unload =
-		i_Jupe = i_OnOff = i_Clone = i_Akill = i_OperDeny = i_Ignore = i_KillChan = 0;
+		i_Jupe = i_OnOff = i_Clone = i_Akill = i_OperDeny = i_KillPhrase = i_Ignore = i_KillChan = 0;
 	}
 	mDateTime ClearTime() const
 	{
@@ -221,6 +227,10 @@ public:
 	unsigned long OperDeny() const
 	{
 	    return i_OperDeny;
+	}
+	unsigned long KillPhrase() const
+	{
+	    return i_KillPhrase;
 	}
 	unsigned long Ignore() const
 	{
@@ -416,6 +426,27 @@ public:
 
     set < OperDeny_Type >::iterator OperDeny;
 
+    bool KillPhrase_insert(const mstring & entry, unsigned long expiry, const mstring & nick);
+    bool KillPhrase_erase();
+
+    set < KillPhrase_Type >::iterator KillPhrase_begin()
+    {
+	return i_KillPhrase.begin();
+    }
+    set < KillPhrase_Type >::iterator KillPhrase_end()
+    {
+	return i_KillPhrase.end();
+    }
+    size_t KillPhrase_size() const
+    {
+	return i_KillPhrase.size();
+    }
+    size_t KillPhrase_Usage() const;
+    bool KillPhrase_find(const mstring & entry);
+    unsigned long KillPhrase_value(const mstring & entry);
+
+    set < KillPhrase_Type >::iterator KillPhrase;
+
     bool Ignore_insert(const mstring & entry, const bool perm, const mstring & nick,
 		       const mDateTime & added = mDateTime::CurrentDateTime());
     bool Ignore_erase();
@@ -506,12 +537,17 @@ public:
     static void do_operdeny_Add(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_operdeny_Del(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_operdeny_List(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_killphrase_Add(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_killphrase_Del(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_killphrase_List(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_ignore_Add(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_ignore_Del(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_ignore_List(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_killchan_Add(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_killchan_Del(const mstring & mynick, const mstring & source, const mstring & params);
     static void do_killchan_List(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_kill_nochan(const mstring & mynick, const mstring & source, const mstring & params);
+    static void do_akill_nochan(const mstring & mynick, const mstring & source, const mstring & params);
 
     SXP::Tag & GetClassTag() const
     {
