@@ -28,7 +28,7 @@ EXTRA_DIST = base.cpp chanserv.cpp chandata.cpp commserv.cpp datetime.cpp dcceng
 
 ####### kdevelop will overwrite this part!!! (end)############
 
-PROGRAMS=relink
+EXTRA_PROGRAMS=relink
 
 if STAMPED
 STAMP = 1
