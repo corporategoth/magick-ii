@@ -1,6 +1,7 @@
 ####### kdevelop will overwrite this part!!! (begin)##########
 STAMPED_PROGS = magick magick_keygen
 bin_PROGRAMS = $(STAMPED_PROGS) magick_stampkeys
+noinst_PROGRAMS = relink
 
 magick_stampkeys_SOURCES = magick_stampkeys.c
 
