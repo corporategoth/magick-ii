@@ -1063,38 +1063,8 @@ int mMessage::call()
 			(Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
 			 Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(src))))
 		    {
-			map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(src);
-			mstring killmask = nlive->Mask(Nick_Live_t::P_H).After("!");
-			size_t killusers = 0;
-			RLOCK((lck_NickServ, lck_live));
-			NickServ::live_t::iterator iter;
-			for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd(); iter++)
-			{
-			    map_entry < Nick_Live_t > nlive(iter->second);
-			    if (!nlive->IsServices() && nlive->Mask(Nick_Live_t::U_P_H).After("!").Matches(killmask, true))
-				killusers++;
-			}
-
-			float percent = 100.0 * static_cast < float > (killusers) /
-				static_cast < float > (Magick::instance().nickserv.LiveSize());
-			if (percent <= Magick::instance().operserv.Akill_Reject())
-			{
-			    Magick::instance().operserv.Akill_insert(killmask, 
-					 Magick::instance().operserv.KillPhrase->Value(),
-					 Magick::instance().getMessage("MISC/ISBOT"),
-					 serv->FirstName());
-			    Magick::instance().server.AKILL(killmask,
-					 Magick::instance().getMessage("MISC/ISBOT"),
-					 Magick::instance().operserv.KillPhrase->Value(),
-					 serv->FirstName());
-			    ANNOUNCE(Magick::instance().operserv.FirstName(), "MISC/AKILL_ADD", (serv->FirstName(),
-				     killmask, ToHumanTime(Magick::instance().operserv.KillPhrase->Value()),
-					Magick::instance().getMessage("MISC/ISBOT"), killusers, fmstring("%.2f", percent)));
-			    LOG(LM_INFO, "OPERSERV/AKILL_ADD", (serv->FirstName(),
-				killmask, ToHumanTime(Magick::instance().operserv.KillPhrase->Value()),
-				Magick::instance().getMessage("MISC/ISBOT")));
-			    RET(0);
-			}
+			Magick::instance().operserv.KillBot(src);
+			RET(0);
 		    }
 		}
 

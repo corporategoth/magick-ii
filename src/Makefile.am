@@ -15,6 +15,8 @@ endif
 magick_keygen_SOURCES = magick_keygen.c
 magick_keygen_LDADD   = ./crypt/libcrypt.a
 
+relink_SOURCES = 
+
 if CONVERT
 SUBDIRS = crypt xml convert
 else
@@ -28,8 +30,6 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(AM_CPPFLAGS) $(CFLAGS) $(AM_CF
 EXTRA_DIST = base.cpp chanserv.cpp chandata.cpp commserv.cpp datetime.cpp dccengine.cpp filesys.cpp ircsocket.cpp lockable.cpp magick.cpp mconfig.cpp main.cpp memoserv.cpp mstring.cpp nickserv.cpp nickdata.cpp operserv.cpp server.cpp servmsg.cpp stages.cpp trace.cpp utils.cpp variant.cpp magick_keygen.c magick_stampkeys.c
 
 ####### kdevelop will overwrite this part!!! (end)############
-
-EXTRA_PROGRAMS=relink
 
 if STAMPED
 STAMP = 1

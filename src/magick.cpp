@@ -2813,11 +2813,11 @@ bool Magick::get_config_values()
     else
 	nickserv.release = FromHumanTime("1m");
 
-    in.Read(ts_NickServ + "VERSION", value_mstring, "30s");
+    in.Read(ts_NickServ + "VERSION", value_mstring, "0");
     if (FromHumanTime(value_mstring))
 	nickserv.version = FromHumanTime(value_mstring);
     else
-	nickserv.version = FromHumanTime("30s");
+	nickserv.version = 0;
 
     in.Read(ts_NickServ + "PASSFAIL", nickserv.passfail, 5U);
     in.Read(ts_NickServ + "DEF_PROTECT", value_bool, true);
@@ -3080,6 +3080,20 @@ bool Magick::get_config_values()
 	operserv.clone_akilltime = FromHumanTime(value_mstring);
     else
 	operserv.clone_akilltime = FromHumanTime("30m");
+
+    in.Read(ts_OperServ + "DEF_BOT", operserv.def_bot, "You are suspected of being a hostile bot!");
+    in.Read(ts_OperServ + "BOT_TRIGGER", operserv.bot_trigger, 5U);
+    in.Read(ts_OperServ + "BOT_TIME", value_mstring, "6h");
+    if (FromHumanTime(value_mstring))
+	operserv.bot_time = FromHumanTime(value_mstring);
+    else
+	operserv.bot_time = FromHumanTime("6h");
+    in.Read(ts_OperServ + "BOT_AKILL", operserv.bot_akill,  "You are suspected of being a hostile bot!");
+    in.Read(ts_OperServ + "BOT_AKILLTIME", value_mstring, "1w");
+    if (FromHumanTime(value_mstring))
+	operserv.bot_akilltime = FromHumanTime(value_mstring);
+    else
+	operserv.bot_akilltime = FromHumanTime("30m");
 
     in.Read(ts_OperServ + "FLOOD_TIME", value_mstring, "10s");
     if (FromHumanTime(value_mstring))

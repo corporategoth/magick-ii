@@ -153,6 +153,117 @@ void OperServ::RemHost(const mstring & host)
     ETCB();
 }
 
+void OperServ::KillBot(const mstring & name)
+{
+    BTCB();
+    FT("OperServ::KillBot", (name));
+
+    if (!Magick::instance().nickserv.IsLive(name))
+	return;
+    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(name);
+
+    if (nlive->IsServices() || nlive->HasMode("o"))
+	return;
+
+    mstring host = nlive->Mask(Nick_Live_t::P_H).After("!");
+
+    bool setAkill = false;
+
+    {
+	MLOCK((lck_OperServ, "BotList"));
+	MCB(BotList.size());
+
+	pair<map<mstring, list<mDateTime> >::iterator, bool> rv =
+	    	BotList.insert(make_pair(host.LowerCase(), list<mDateTime>()));
+
+	// Get rid of entries from the beginning...
+	mDateTime thr(static_cast<time_t>(time(NULL) - Bot_Time()));
+	list<mDateTime>::iterator iter = lower_bound(rv.first->second.begin(), rv.first->second.end(), thr);
+	rv.first->second.erase(rv.first->second.begin(), iter);
+
+	CP(("Event Size after purge is %d", rv.first->second.size()));
+
+	rv.first->second.push_back(mDateTime::CurrentDateTime());
+	bool burst = false;
+
+	{
+	    RLOCK((lck_IrcSvcHandler));
+	    if (Magick::instance().ircsvchandler != NULL)
+		burst = Magick::instance().ircsvchandler->Burst();
+	}
+
+	if (!burst && rv.first->second.size() > Magick::instance().operserv.Bot_Trigger())
+	    setAkill = true;
+
+	MCE(BotList.size());
+    }
+
+    if (setAkill)
+    {
+	CP(("Reached MAX bot kills, adding AKILL ..."));
+
+	MLOCK((lck_OperServ, "Akill"));
+	if (!Akill_find("*@" + host))
+	{
+	    NickServ::live_t::iterator iter;
+	    size_t killusers = 0;
+	    {
+		RLOCK((lck_NickServ, lck_live));
+		for (iter = Magick::instance().nickserv.LiveBegin(); iter != Magick::instance().nickserv.LiveEnd();
+		     iter++)
+		{
+		    map_entry < Nick_Live_t > nlive2(iter->second);
+		    if (nlive2->Host().IsSameAs(host, true))
+		    {
+			// We can't set an akill if there is a services bot or an oper
+			// on the same mask.  So just kill the offending user.
+			if (nlive2->IsServices() || nlive2->HasMode("o"))
+			{
+			    setAkill = false;
+			    break;
+			}
+
+			++killusers;
+		    }
+		}
+	    }
+
+	    if (setAkill)
+	    {
+		float percent =
+		    100.0 * static_cast < float > (killusers) / static_cast < float >
+		    (Magick::instance().nickserv.LiveSize());
+
+		Akill_insert("*@" + host, Magick::instance().operserv.Bot_AkillTime(),
+			     Magick::instance().operserv.Bot_Akill(), FirstName());
+		Magick::instance().server.AKILL("*@" + host, Magick::instance().operserv.Bot_Akill(), 
+						Magick::instance().operserv.Bot_AkillTime(),
+						Magick::instance().nickserv.FirstName());
+		ANNOUNCE(FirstName(), "MISC/AKILL_ADD",
+			 (FirstName(), host, ToHumanTime(Magick::instance().operserv.Bot_AkillTime()),
+			  Magick::instance().operserv.Bot_Akill(), killusers, fmstring("%.2f", percent)));
+		LOG(LM_INFO, "OPERSERV/AKILL_ADD",
+		    (FirstName(), host, ToHumanTime(Magick::instance().operserv.Bot_AkillTime()),
+		     Magick::instance().operserv.Bot_Akill()));
+	    }
+	    else
+	    {
+		LOG(LM_INFO, "EVENT/BOTKILL", (nlive->Mask(Nick_Live_t::N_U_P_H)));
+		Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(), name,
+					       Magick::instance().operserv.Def_Bot());
+	    }
+	}
+    }
+    else
+    {
+	LOG(LM_INFO, "EVENT/BOTKILL", (nlive->Mask(Nick_Live_t::N_U_P_H)));
+	Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(), name,
+				       Magick::instance().operserv.Def_Bot());
+    }
+
+    ETCB();
+}
+
 size_t OperServ::CloneList_sum() const
 {
     BTCB();

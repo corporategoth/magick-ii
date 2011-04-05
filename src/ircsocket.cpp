@@ -2587,20 +2587,21 @@ void EventTask::do_check(mDateTime & synctime)
 	Magick::instance().nickserv.IsLive(Magick::instance().nickserv.FirstName()))
     {
 	vector < mstring > chunked;
-//	vector < mstring > noversion;
+	vector < mstring > noversion;
 	{
 	    RLOCK((lck_NickServ, lck_live));
 	    for (nli = Magick::instance().nickserv.LiveBegin(); nli != Magick::instance().nickserv.LiveEnd(); nli++)
 	    {
 		map_entry < Nick_Live_t > nlive(nli->second);
-//		if (nlive->Version().empty() && !nlive->IsServices() && !nlive->HasMode("o") &&
-//		    nlive->MySignonTime().SecondsSince() >= Magick::instance().nickserv.Version())
-//		{
-//		    // If they identify to a valid nickname, skip it!
-//		    if (!Magick::instance().nickserv.IsStored(nlive->Name()) ||
-//			!Magick::instance().nickserv.GetStored(nlive->Name())->IsOnline())
-//			noversion.push_back(nlive->Name());
-//		}
+		if (Magick::instance().nickserv.Version() &&
+		    nlive->Version().empty() && !nlive->IsServices() && !nlive->HasMode("o") &&
+		    nlive->MySignonTime().SecondsSince() >= Magick::instance().nickserv.Version())
+		{
+		    // If they identify to a valid nickname, skip it!
+		    if (!Magick::instance().nickserv.IsStored(nlive->Name()) ||
+			!Magick::instance().nickserv.GetStored(nlive->Name())->IsOnline())
+			noversion.push_back(nlive->Name());
+		}
 		if (Magick::instance().nickserv.IsStored(nlive->Name()))
 		{
 		    map_entry < Nick_Stored_t > nstored = Magick::instance().nickserv.GetStored(nlive->Name());
@@ -2612,16 +2613,10 @@ void EventTask::do_check(mDateTime & synctime)
 		}
 	    }
 	}
-//	for (i = 0; i < noversion.size(); ++i)
-//	{
-//	    if (!Magick::instance().nickserv.IsLive(noversion[i]))
-//		continue;
-//	    map_entry < Nick_Live_t > nlive = Magick::instance().nickserv.GetLive(noversion[i]);
-//
-//	    LOG(LM_INFO, "EVENT/BOTKILL", (nlive->Mask(Nick_Live_t::N_U_P_H)));
-//	    Magick::instance().server.KILL(Magick::instance().nickserv.FirstName(), noversion[i],
-//					   Magick::instance().getMessage("MISC/ISBOT"));
-//	}
+	for (i = 0; i < noversion.size(); ++i)
+	{
+	    Magick::instance().operserv.KillBot(noversion[i]);
+	}
 
 	for (i = 0; i < chunked.size(); i++)
 	{

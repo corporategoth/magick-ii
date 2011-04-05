@@ -61,6 +61,11 @@ private:
     unsigned long clone_time;
     mstring clone_akill;
     unsigned long clone_akilltime;
+    mstring def_bot;
+    unsigned int bot_trigger;
+    unsigned long bot_time;
+    mstring bot_akill;
+    unsigned long bot_akilltime;
     unsigned long flood_time;
     unsigned int flood_msgs;
     unsigned long ignore_time;
@@ -86,6 +91,9 @@ private:
     // Mask (H), Limit (int), Reason (mstring)
     set < Clone_Type > i_Clone;
     map < mstring, pair < unsigned int, list < mDateTime > > > CloneList;
+
+    // Record of bots killed.
+    map < mstring, list < mDateTime > > BotList;
 
     // Mask (U_H), Expire (long), Reason (mstring)
     set < Akill_Type > i_Akill;
@@ -307,6 +315,26 @@ public:
     {
 	return clone_akilltime;
     }
+    mstring Def_Bot() const
+    {
+	return def_bot;
+    }
+    unsigned int Bot_Trigger() const
+    {
+	return bot_trigger;
+    }
+    unsigned long Bot_Time() const
+    {
+	return bot_time;
+    }
+    mstring Bot_Akill() const
+    {
+	return bot_akill;
+    }
+    unsigned long Bot_AkillTime() const
+    {
+	return bot_akilltime;
+    }
     unsigned long Flood_Time() const
     {
 	return flood_time;
@@ -382,6 +410,8 @@ public:
     pair < unsigned int, mstring > Clone_value(const mstring & entry);
 
     set < Clone_Type >::iterator Clone;
+
+    void KillBot(const mstring & name);
 
     bool Akill_insert(const mstring & entry, const unsigned long value, const mstring & reason, const mstring & nick,
 		      const mDateTime & added = mDateTime::CurrentDateTime());
