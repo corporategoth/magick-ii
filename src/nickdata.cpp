@@ -1010,13 +1010,14 @@ void Nick_Live_t::Join(const mstring & chan)
 					"!" + Magick::instance().server.proto.Numeric.UserNumeric(Numeric()));
     }
 
+    if (!IsServices() && !HasMode("o"))
     {
 	MLOCK((lck_OperServ, "KillChan"));
-	if (Magick::instance().operserv.KillChan_find(chan) &&
-	    !((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
-	     Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsOn(i_Name)) ||
+	if (Magick::instance().operserv.KillChan_find(chan) && !((IsIdentified() || IsRecognized()) &&
+	    ((Magick::instance().commserv.IsList(Magick::instance().commserv.OPER_Name()) &&
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.OPER_Name())->IsIn(i_Name)) ||
 	    (Magick::instance().commserv.IsList(Magick::instance().commserv.SOP_Name()) &&
-	     Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsOn(i_Name))))
+	     Magick::instance().commserv.GetList(Magick::instance().commserv.SOP_Name())->IsIn(i_Name)))))
 	{
 	    mstring killmask = Mask(Magick::instance().operserv.Ignore_Method()).After("!");
 	    size_t killusers = 0;
