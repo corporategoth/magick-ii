@@ -38,7 +38,7 @@ AM_CONFIG_HEADER(include/config.h)
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
-dnl AM_PROG_GCJ
+AM_PROG_GCJ
 AC_REQUIRE_CPP
 AC_HEADER_TIME
 AC_HEADER_STDC
@@ -542,10 +542,12 @@ if test "$hostlock" = "true"; then
       -DBUILD_REL=\"\\\"$BUILD_REL\\\"\""
   else
     echo "${ECHO_T}${ac_t}not done"
+    AM_CONDITIONAL(STAMPED, test 0)
     unset BUILD_NODE BUILD_TYPE BUILD_REL
   fi
 else
   echo "${ECHO_T}${ac_t}not done"
+  AM_CONDITIONAL(STAMPED, test 0)
   unset BUILD_NODE BUILD_TYPE BUILD_REL
 fi
 
