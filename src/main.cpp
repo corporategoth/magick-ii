@@ -33,6 +33,7 @@ RCSID(main_cpp, "@(#)$Id$");
 ** ======================================================================= */
 
 #include "magick.h"
+#include <ace/Init_ACE.h>
 
 #ifdef WIN32
 bool isWinNT()
