@@ -43,7 +43,7 @@
 #define _REENTRANT
 #define _THREAD_SAFE
 #ifdef __cplusplus
-#include <ace/config.h>
+#include <ace/config-all.h>
 #define ACE_HAS_TIMEZONE_GETTIMEOFDAY 1
 #include <ace/Version.h>
 #ifdef ACE_HAS_PTHREADS
